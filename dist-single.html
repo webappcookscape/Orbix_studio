@@ -103,6 +103,23 @@ input,select{font:inherit;color:inherit}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
 .btn.primary:hover{background:var(--blue-2);color:#fff}
 
+.pwa-install-btn{
+  background:linear-gradient(135deg,#DC2626,#B91C1C);
+  color:#FFFFFF;border-color:#DC2626;border-radius:6px;
+  display:inline-flex;align-items:center;gap:6px;
+  box-shadow:0 2px 8px rgba(220,38,38,.25);
+  font-weight:700;letter-spacing:.04em;
+  transition:all .15s ease;
+}
+.pwa-install-btn:hover{
+  background:linear-gradient(135deg,#B91C1C,#7F1D1D);
+  color:#FFFFFF;border-color:#B91C1C;
+  transform:translateY(-1px);box-shadow:0 4px 12px rgba(220,38,38,.35);
+}
+.db-badge.db-offline{
+  background:#FEF3C7;color:#B45309;border-color:#FDE68A;
+}
+
 /* ══════════ VIEWS ══════════ */
 #main{flex:1 1 auto;position:relative;min-height:0}
 .view{position:absolute;inset:0;display:none}
@@ -1406,6 +1423,10 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       <button class="vtab" data-view="report">Report</button>
     </nav>
     <div class="topacts">
+      <button class="btn pwa-install-btn" id="pwaInstallBtn" hidden title="Install Orbix Studio on your PC or Phone">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Install App</span>
+      </button>
       <div id="dbStatusBadge" class="db-badge" title="Database connection status">
         <span class="db-dot"></span> PostgreSQL
       </div>
@@ -11591,6 +11612,108 @@ window.addEventListener("resize",function(){
   clearTimeout(window.__rz);
   window.__rz=setTimeout(function(){ fit(); camApply(); },140);
 });
+})();
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ORBIX STUDIO — PWA Registration, Offline Engine & Install Manager
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+(function () {
+  'use strict';
+
+  var deferredPrompt = null;
+
+  // 1. Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js')
+        .then(function (reg) {
+          console.log('[PWA] Service Worker registered with scope:', reg.scope);
+
+          reg.addEventListener('updatefound', function () {
+            var newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', function () {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[PWA] New update available. Refreshing for latest version.');
+                }
+              });
+            }
+          });
+        })
+        .catch(function (err) {
+          console.warn('[PWA] Service Worker registration failed:', err);
+        });
+    });
+  }
+
+  // 2. Install Prompt (Chrome, Edge, Android, iOS)
+  window.addEventListener('beforeinstallprompt', function (e) {
+    // Prevent the mini-infobar from appearing automatically on mobile
+    e.preventDefault();
+    deferredPrompt = e;
+
+    var installBtn = document.getElementById('pwaInstallBtn');
+    if (installBtn) {
+      installBtn.hidden = false;
+      installBtn.style.display = 'inline-flex';
+    }
+  });
+
+  window.addEventListener('appinstalled', function () {
+    console.log('[PWA] App successfully installed to device!');
+    deferredPrompt = null;
+    var installBtn = document.getElementById('pwaInstallBtn');
+    if (installBtn) {
+      installBtn.hidden = true;
+      installBtn.style.display = 'none';
+    }
+  });
+
+  // 3. Setup Install Button Handler & Offline / Online Listeners
+  document.addEventListener('DOMContentLoaded', function () {
+    var installBtn = document.getElementById('pwaInstallBtn');
+    if (installBtn) {
+      installBtn.addEventListener('click', function () {
+        if (!deferredPrompt) {
+          alert('To install Orbix Studio:\n\n• On Chrome/Edge: Click the install icon in your address bar.\n• On iOS Safari: Tap Share -> "Add to Home Screen".');
+          return;
+        }
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function (choiceResult) {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('[PWA] User accepted installation');
+          } else {
+            console.log('[PWA] User dismissed installation');
+          }
+          deferredPrompt = null;
+          installBtn.hidden = true;
+          installBtn.style.display = 'none';
+        });
+      });
+    }
+
+    // Network status listener
+    function updateOnlineStatus() {
+      var dbBadge = document.getElementById('dbStatusBadge');
+      if (!dbBadge) return;
+
+      if (!navigator.onLine) {
+        dbBadge.className = 'db-badge db-offline';
+        dbBadge.innerHTML = '<span class="db-dot" style="background:#F59E0B"></span> Offline CAD Mode';
+        dbBadge.title = 'Offline mode active. All 2D/3D edits and projects are safely preserved locally.';
+      } else {
+        // Online: let orbix-projects update the PostgreSQL status
+        if (window.OrbixProjects && typeof window.OrbixProjects.checkDbStatus === 'function') {
+          window.OrbixProjects.checkDbStatus();
+        }
+      }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+  });
 })();
 
 </script>

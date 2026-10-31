@@ -98,6 +98,23 @@ input,select{font:inherit;color:inherit}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
 .btn.primary:hover{background:var(--blue-2);color:#fff}
 
+.pwa-install-btn{
+  background:linear-gradient(135deg,#DC2626,#B91C1C);
+  color:#FFFFFF;border-color:#DC2626;border-radius:6px;
+  display:inline-flex;align-items:center;gap:6px;
+  box-shadow:0 2px 8px rgba(220,38,38,.25);
+  font-weight:700;letter-spacing:.04em;
+  transition:all .15s ease;
+}
+.pwa-install-btn:hover{
+  background:linear-gradient(135deg,#B91C1C,#7F1D1D);
+  color:#FFFFFF;border-color:#B91C1C;
+  transform:translateY(-1px);box-shadow:0 4px 12px rgba(220,38,38,.35);
+}
+.db-badge.db-offline{
+  background:#FEF3C7;color:#B45309;border-color:#FDE68A;
+}
+
 /* ══════════ VIEWS ══════════ */
 #main{flex:1 1 auto;position:relative;min-height:0}
 .view{position:absolute;inset:0;display:none}

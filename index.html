@@ -5,15 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Design in 3D and generate factory process sheets, panel cutting lists, edge banding, and CNC drilling with Orbix Studio.">
 <title>Orbix Studio</title>
-<link rel="icon" type="image/jpeg" href="logo.jpeg">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Orbix Studio">
+<meta name="application-name" content="Orbix Studio">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Orbix Studio — 3D Interior Design, Cutting Plans & Quotations">
 <meta property="og:description" content="Pick a design or upload your process sheet. See your designs in 3D with real laminates, then get nesting, drilling, DXF and accurate BOQ quotes.">
-<meta property="og:image" content="logo.jpeg">
+<meta property="og:image" content="icon-512.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Orbix Studio">
 <meta name="twitter:description" content="3D Interior Design, cutting plans, nesting and quotations.">
-<meta name="twitter:image" content="logo.jpeg">
+<meta name="twitter:image" content="icon-512.png">
 <meta name="theme-color" content="#D32F2F">
 </head>
 <body>
@@ -47,6 +55,10 @@
       <button class="vtab" data-view="report">Report</button>
     </nav>
     <div class="topacts">
+      <button class="btn pwa-install-btn" id="pwaInstallBtn" hidden title="Install Orbix Studio on your PC or Phone">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Install App</span>
+      </button>
       <div id="dbStatusBadge" class="db-badge" title="Database connection status">
         <span class="db-dot"></span> PostgreSQL
       </div>
@@ -600,6 +612,7 @@
 <script src="orbix-3d.js"></script>
 <script src="orbix-ui.js"></script>
 <script src="app.js"></script>
+<script src="pwa.js"></script>
 <!-- ARTIFACT-END -->
 </body>
 </html>
