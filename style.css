@@ -155,8 +155,7 @@ input,select{font:inherit;color:inherit}
 .stagewrap{flex:1 1 auto;display:flex;flex-direction:column;min-width:0}
 #stage{
   flex:1 1 auto;position:relative;min-height:0;
-  background:
-    radial-gradient(120% 95% at 50% 12%, #EDEBE6 0%, var(--stage) 52%, var(--stage-2) 100%);
+  background: linear-gradient(180deg, #64B5F6 0%, #90CAF9 32%, #BBDEFB 65%, #E3F2FD 88%, #F0F9FF 100%);
   perspective:2600px;perspective-origin:50% 46%;
   overflow:hidden;cursor:grab;touch-action:none;
 }
@@ -867,9 +866,9 @@ tr.rv-guess td{background:#FFF7D6}
 }
 .chip:hover{color:var(--ink);border-color:var(--ink-3)}
 .chip.is-on{background:var(--blue);border-color:var(--blue);color:#fff}
-/* photographic vignette over the viewer */
+/* soft sky vignette over the viewer */
 #stage::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(120% 92% at 50% 44%, rgba(0,0,0,0) 56%, rgba(28,24,18,.20) 100%)}
+  background:radial-gradient(120% 92% at 50% 44%, rgba(255,255,255,0) 65%, rgba(13, 71, 161, 0.06) 100%)}
 
 /* open-source link */
 .ghstar{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:9px 12px;border:1px solid var(--blue);color:var(--blue);text-decoration:none;font:600 12px/1 "IBM Plex Sans Condensed",sans-serif;letter-spacing:.06em;text-transform:uppercase;background:#fff}
@@ -1512,6 +1511,27 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
   transition:all .15s;
 }
 .auth-logout-btn:hover{background:#FEE2E2;border-color:#FCA5A5;color:#DC2626}
+
+/* ══════════ FULL AUTH / LOGIN SCREEN ══════ */
+.auth-screen{
+  position:fixed;inset:0;z-index:99999;
+  background:radial-gradient(circle at 50% 25%, #1E293B 0%, #0F172A 70%, #020617 100%);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;box-sizing:border-box;overflow-y:auto;
+}
+.auth-card{
+  background:#FFFFFF;border-radius:18px;
+  width:100%;max-width:440px;padding:32px 28px;
+  box-shadow:0 25px 60px -15px rgba(0,0,0,.6);
+  animation:modalPop .25s ease;display:flex;flex-direction:column;gap:18px;
+}
+.auth-brand{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.auth-logo{width:56px;height:56px;border-radius:12px;object-fit:cover;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.auth-title{font-size:22px;font-weight:700;color:#0F172A;margin:4px 0 0 0}
+.auth-sub{font-size:12.5px;color:#64748B;margin:0}
+.auth-form{display:flex;flex-direction:column;gap:14px}
+.auth-submit-btn{width:100%;padding:12px;font-size:14px;font-weight:700;margin-top:4px}
+
 
 
 

@@ -47,22 +47,49 @@
           } else if (!this.currentUser.role || (this.currentUser.role !== 'admin' && this.currentUser.role !== 'employee')) {
             this.currentUser.role = 'employee';
           }
+          this.showApp();
+          this.updateUserUI();
         } else {
-          this.currentUser = {
-            id: 'usr_admin',
-            name: 'Dev Kancheti',
-            email: 'admin@orbixstudio.io',
-            role: 'admin',
-            designation: 'Studio Admin',
-            company: 'Orbix Design Studio',
-            avatar: 'AD'
-          };
-          localStorage.setItem('orbix_current_user', JSON.stringify(this.currentUser));
+          this.currentUser = null;
+          this.showLogin();
         }
       } catch (e) {
-        this.currentUser = { id: 'usr_admin', name: 'Dev Kancheti', email: 'admin@orbixstudio.io', role: 'admin', designation: 'Studio Admin', avatar: 'AD' };
+        this.currentUser = null;
+        this.showLogin();
       }
-      this.updateUserUI();
+    },
+
+    showApp: function () {
+      var appEl = document.getElementById('app');
+      var authEl = document.getElementById('authScreen');
+      if (appEl) appEl.style.display = 'flex';
+      if (authEl) authEl.style.display = 'none';
+    },
+
+    showLogin: function () {
+      var appEl = document.getElementById('app');
+      var authEl = document.getElementById('authScreen');
+      if (appEl) appEl.style.display = 'none';
+      if (authEl) {
+        authEl.style.display = 'flex';
+        var errAlert = document.getElementById('authScreenError');
+        if (errAlert) errAlert.style.display = 'none';
+        var idInput = document.getElementById('authIdentifier');
+        if (idInput) setTimeout(function () { idInput.focus(); }, 100);
+      }
+    },
+
+    logout: function () {
+      try {
+        localStorage.removeItem('orbix_current_user');
+      } catch (e) {}
+      this.currentUser = null;
+      this.closeModal('userModal');
+      this.closeModal('loginModal');
+      this.showLogin();
+      if (typeof showToast === 'function') {
+        showToast('Logged out of session.');
+      }
     },
 
     setCurrentUser: function (user) {
@@ -70,12 +97,13 @@
       try {
         localStorage.setItem('orbix_current_user', JSON.stringify(user));
       } catch (e) {}
+      this.showApp();
       this.updateUserUI();
       this.applyRolePermissions();
       this.fetchProjects();
       if (typeof showToast === 'function') {
         var roleName = this.isAdmin() ? 'Admin' : 'Employee';
-        showToast('Switched user to ' + user.name + ' (' + roleName + ')');
+        showToast('Active account: ' + user.name + ' (' + roleName + ')');
       }
     },
 
@@ -960,15 +988,85 @@
 
       // Logout buttons
       var handleLogout = function () {
-        self.closeModal('userModal');
-        self.openLoginModal();
+        self.logout();
       };
       var logoutBtn = document.getElementById('userLogoutBtn');
       if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
       var modalSignOut = document.getElementById('modalSignOutBtn');
       if (modalSignOut) modalSignOut.addEventListener('click', handleLogout);
 
-      // Login Form Submission
+      // Full-Screen Login Form Submission (#authLoginForm)
+      var authPageForm = document.getElementById('authLoginForm');
+      if (authPageForm) {
+        authPageForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var errAlert = document.getElementById('authScreenError');
+          if (errAlert) errAlert.style.display = 'none';
+
+          var identifier = document.getElementById('authIdentifier').value.trim();
+          var password = document.getElementById('authPassword').value.trim();
+          if (!identifier || !password) return;
+
+          var submitBtn = document.getElementById('authScreenSubmitBtn');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing In...';
+          }
+
+          fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: identifier, password: password })
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Sign In to Workspace';
+            }
+            if (data.success && data.user) {
+              authPageForm.reset();
+              self.setCurrentUser(data.user);
+              if (typeof showToast === 'function') {
+                showToast('✓ Welcome back, ' + data.user.name + ' (' + (data.user.role === 'admin' ? 'Admin' : 'Employee') + ')');
+              }
+            } else {
+              if (errAlert) {
+                errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
+                errAlert.style.display = 'block';
+              }
+            }
+          })
+          .catch(function (err) {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Sign In to Workspace';
+            }
+            if (errAlert) {
+              errAlert.textContent = 'Sign-in error: ' + err.message;
+              errAlert.style.display = 'block';
+            }
+          });
+        });
+      }
+
+      // Demo Chips on Full-Screen Login Page
+      document.querySelectorAll('.auth-demo-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var idVal = this.getAttribute('data-login');
+          var pwVal = this.getAttribute('data-pw');
+          var idInput = document.getElementById('authIdentifier');
+          var pwInput = document.getElementById('authPassword');
+          if (idInput && pwInput) {
+            idInput.value = idVal;
+            pwInput.value = pwVal;
+            var submitBtn = document.getElementById('authScreenSubmitBtn');
+            if (submitBtn) submitBtn.focus();
+          }
+        });
+      });
+
+      // Login Modal Form Submission (#loginForm)
       var loginForm = document.getElementById('loginForm');
       if (loginForm) {
         loginForm.addEventListener('submit', function (e) {
@@ -1025,7 +1123,7 @@
       }
 
       // Quick Demo Credentials chips in Login Modal
-      document.querySelectorAll('.aqh-chip').forEach(function (chip) {
+      document.querySelectorAll('.aqh-chip:not(.auth-demo-chip)').forEach(function (chip) {
         chip.addEventListener('click', function () {
           var idVal = this.getAttribute('data-login');
           var pwVal = this.getAttribute('data-pw');
