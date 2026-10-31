@@ -6,12 +6,20 @@
 CREATE TABLE IF NOT EXISTS users (
   id VARCHAR(64) PRIMARY KEY,
   name VARCHAR(128) NOT NULL,
+  username VARCHAR(64) UNIQUE,
   email VARCHAR(128) UNIQUE NOT NULL,
-  role VARCHAR(64) DEFAULT 'Designer',
+  password VARCHAR(128) DEFAULT '123456',
+  role VARCHAR(64) DEFAULT 'employee',
+  designation VARCHAR(128) DEFAULT 'Modular Designer',
   company VARCHAR(128) DEFAULT 'Orbix Studio',
   avatar VARCHAR(256),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Ensure columns exist if table was created in an earlier migration
+ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(64);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(128) DEFAULT '123456';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS designation VARCHAR(128) DEFAULT 'Modular Designer';
 
 -- Projects Table
 CREATE TABLE IF NOT EXISTS projects (
@@ -49,11 +57,7 @@ CREATE TABLE IF NOT EXISTS project_forks (
   original_project_id VARCHAR(64) REFERENCES projects(id) ON DELETE SET NULL,
   forked_project_id VARCHAR(64) NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   forked_by VARCHAR(64) REFERENCES users(id) ON DELETE CASCADE,
-  forked_by_name VARCHAR(128) NOT NULL,
+  forked_to_name VARCHAR(128),
+  forked_to_email VARCHAR(128),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-
--- Indexes for lightning fast queries
-CREATE INDEX IF NOT EXISTS idx_projects_created_by ON projects(created_by);
-CREATE INDEX IF NOT EXISTS idx_projects_updated_at ON projects(updated_at DESC);
-CREATE INDEX IF NOT EXISTS idx_project_shares_token ON project_shares(share_token);

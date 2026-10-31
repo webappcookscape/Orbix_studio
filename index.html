@@ -66,10 +66,13 @@
       <div id="dbStatusBadge" class="db-badge" title="Database connection status">
         <span class="db-dot"></span> PostgreSQL
       </div>
-      <button class="user-avatar-btn" id="userAvatarBtn" title="Current User & Switcher">
-        <span class="u-avatar">DK</span>
-        <span class="u-name">Dev Kancheti</span>
-      </button>
+      <div class="topbar-auth-group">
+        <button class="user-avatar-btn" id="userAvatarBtn" title="Current User & Profile">
+          <span class="u-avatar">DK</span>
+          <span class="u-name">Dev Kancheti</span>
+        </button>
+        <button class="auth-logout-btn" id="userLogoutBtn" title="Sign out of this session">Logout</button>
+      </div>
       <button class="btn" id="printBtn">Print</button>
       <button class="btn" id="csvBtn">CSV</button>
       <button class="btn" id="dxfBtn">DXF</button>
@@ -574,17 +577,45 @@
 
       <!-- Admin Only: Create Employee Form -->
       <div class="admin-create-emp-box" id="adminCreateEmpBox" style="display:none;">
-        <h4 class="modal-section-title">➕ Create New Employee</h4>
-        <p class="modal-section-desc">Create employee accounts. Employees get access to Home, Floor Plan (2D), 3D Studio &amp; Pricing.</p>
+        <h4 class="modal-section-title">➕ Create New Employee Account</h4>
+        <p class="modal-section-desc">Create login accounts for your team. Employees get access to Home, Floor Plan (2D), 3D Studio &amp; Pricing.</p>
+        
+        <!-- Success Alert with Credentials -->
+        <div class="emp-created-alert" id="empCreatedAlert" style="display:none;">
+          <div class="eca-icon">✓</div>
+          <div class="eca-content">
+            <div class="eca-title">Employee Account Created Successfully!</div>
+            <div class="eca-desc">Share these login credentials with the employee:</div>
+            <div class="eca-cred-grid">
+              <div class="eca-item"><span>Name:</span> <strong id="ecaName"></strong></div>
+              <div class="eca-item"><span>Username:</span> <strong id="ecaUsername"></strong></div>
+              <div class="eca-item"><span>Email:</span> <strong id="ecaEmail"></strong></div>
+              <div class="eca-item"><span>Password:</span> <strong id="ecaPassword"></strong></div>
+              <div class="eca-item"><span>Role:</span> <strong id="ecaRole">Employee</strong></div>
+            </div>
+          </div>
+          <button type="button" class="eca-dismiss-btn" id="ecaDismissBtn" title="Dismiss">✕</button>
+        </div>
+
         <form id="createEmployeeForm" class="create-emp-form">
           <div class="form-row-2col">
             <div class="form-group">
-              <label class="form-label">Employee Name *</label>
+              <label class="form-label">Employee Full Name *</label>
               <input type="text" id="newEmpName" class="form-input" placeholder="e.g. Rahul Verma" required>
             </div>
             <div class="form-group">
+              <label class="form-label">Username *</label>
+              <input type="text" id="newEmpUsername" class="form-input" placeholder="e.g. rahul" required>
+            </div>
+          </div>
+          <div class="form-row-2col">
+            <div class="form-group">
               <label class="form-label">Email Address *</label>
               <input type="email" id="newEmpEmail" class="form-input" placeholder="e.g. rahul@orbixstudio.io" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Initial Password *</label>
+              <input type="text" id="newEmpPassword" class="form-input" placeholder="e.g. rahul123" value="123456" required>
             </div>
           </div>
           <div class="form-row-2col">
@@ -600,17 +631,60 @@
               </select>
             </div>
           </div>
-          <button type="submit" class="btn primary" id="submitNewEmpBtn">+ Create Employee</button>
+          <button type="submit" class="btn primary" id="submitNewEmpBtn">+ Create Employee Account</button>
         </form>
       </div>
 
-      <h4 class="modal-section-title" style="margin-top:20px;">Switch Active Profile</h4>
-      <p class="modal-section-desc">Switch between Admin and Employee profiles to test role-based access:</p>
+      <h4 class="modal-section-title" style="margin-top:20px;">Team Profiles</h4>
+      <p class="modal-section-desc">Active studio team accounts:</p>
       <div class="switch-users-list" id="switchUsersList"></div>
     </div>
     <div class="modal-foot">
-      <button type="button" class="btn modal-close-btn">Close</button>
+      <button type="button" class="btn" id="modalSignOutBtn">Sign Out</button>
+      <button type="button" class="btn primary modal-close-btn">Done</button>
     </div>
+  </div>
+</div>
+
+<!-- ══════ MODAL: LOGIN / SIGN IN ══════ -->
+<div class="orbix-modal" id="loginModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog" style="max-width:440px;">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Sign In to Orbix Studio</h3>
+        <p class="modal-sub">Login with your username or email and password</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <form id="loginForm">
+      <div class="modal-body">
+        <div id="loginErrorAlert" class="auth-error-alert" style="display:none;"></div>
+        
+        <div class="form-group">
+          <label class="form-label">Username or Email Address *</label>
+          <input type="text" id="loginIdentifier" class="form-input" placeholder="e.g. admin or alex@orbixstudio.io" required autocomplete="username">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Password *</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="Enter password" required autocomplete="current-password">
+        </div>
+
+        <div class="auth-quick-hint">
+          <div class="aqh-title">Quick Demo Credentials:</div>
+          <div class="aqh-chips">
+            <button type="button" class="aqh-chip" data-login="admin" data-pw="admin123">👑 <strong>Admin:</strong> admin / admin123</button>
+            <button type="button" class="aqh-chip" data-login="alex" data-pw="alex123">👤 <strong>Employee:</strong> alex / alex123</button>
+            <button type="button" class="aqh-chip" data-login="priya" data-pw="priya123">👤 <strong>Employee:</strong> priya / priya123</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn modal-close-btn">Cancel</button>
+        <button type="submit" class="btn primary" id="loginSubmitBtn">Sign In</button>
+      </div>
+    </form>
   </div>
 </div>
 

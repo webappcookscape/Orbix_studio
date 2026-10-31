@@ -873,7 +873,9 @@
             return;
           }
           var name = document.getElementById('newEmpName').value.trim();
+          var username = document.getElementById('newEmpUsername').value.trim();
           var email = document.getElementById('newEmpEmail').value.trim();
+          var password = document.getElementById('newEmpPassword').value.trim() || '123456';
           var title = document.getElementById('newEmpTitle').value.trim() || 'Modular Designer';
           var role = document.getElementById('newEmpRole').value || 'employee';
 
@@ -883,7 +885,9 @@
 
           var payload = {
             name: name,
+            username: username,
             email: email,
+            password: password,
             role: role,
             designation: title,
             company: 'Orbix Studio',
@@ -899,17 +903,42 @@
           .then(function (data) {
             if (data.user) {
               createEmpForm.reset();
+              // Show Success Alert with credentials
+              var alertBox = document.getElementById('empCreatedAlert');
+              if (alertBox) {
+                var elName = document.getElementById('ecaName');
+                var elUser = document.getElementById('ecaUsername');
+                var elEmail = document.getElementById('ecaEmail');
+                var elPass = document.getElementById('ecaPassword');
+                var elRole = document.getElementById('ecaRole');
+                if (elName) elName.textContent = data.user.name;
+                if (elUser) elUser.textContent = data.user.username || data.user.id;
+                if (elEmail) elEmail.textContent = data.user.email;
+                if (elPass) elPass.textContent = data.user.password || password;
+                if (elRole) elRole.textContent = data.user.role === 'admin' ? 'Admin' : 'Employee';
+                alertBox.style.display = 'flex';
+              }
+
               self.fetchUsers(function () {
                 self.openUserModal();
               });
               if (typeof showToast === 'function') {
-                showToast('✓ Successfully created ' + (data.user.role === 'admin' ? 'Admin' : 'Employee') + ': ' + data.user.name);
+                showToast('✓ Employee account created: ' + data.user.name);
               }
             }
           })
           .catch(function (err) {
             if (typeof showToast === 'function') showToast('Error creating employee: ' + err.message);
           });
+        });
+      }
+
+      // Dismiss employee created alert
+      var dismissEcaBtn = document.getElementById('ecaDismissBtn');
+      if (dismissEcaBtn) {
+        dismissEcaBtn.addEventListener('click', function () {
+          var alertBox = document.getElementById('empCreatedAlert');
+          if (alertBox) alertBox.style.display = 'none';
         });
       }
 
@@ -920,6 +949,88 @@
           self.openUserModal();
         });
       }
+
+      // Logout buttons
+      var handleLogout = function () {
+        self.closeModal('userModal');
+        self.openLoginModal();
+      };
+      var logoutBtn = document.getElementById('userLogoutBtn');
+      if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+      var modalSignOut = document.getElementById('modalSignOutBtn');
+      if (modalSignOut) modalSignOut.addEventListener('click', handleLogout);
+
+      // Login Form Submission
+      var loginForm = document.getElementById('loginForm');
+      if (loginForm) {
+        loginForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var errAlert = document.getElementById('loginErrorAlert');
+          if (errAlert) errAlert.style.display = 'none';
+
+          var identifier = document.getElementById('loginIdentifier').value.trim();
+          var password = document.getElementById('loginPassword').value.trim();
+          if (!identifier || !password) return;
+
+          var submitBtn = document.getElementById('loginSubmitBtn');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing In...';
+          }
+
+          fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: identifier, password: password })
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Sign In';
+            }
+            if (data.success && data.user) {
+              self.setCurrentUser(data.user);
+              self.closeModal('loginModal');
+              loginForm.reset();
+              if (typeof showToast === 'function') {
+                showToast('✓ Welcome back, ' + data.user.name + ' (' + (data.user.role === 'admin' ? 'Admin' : 'Employee') + ')');
+              }
+            } else {
+              if (errAlert) {
+                errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
+                errAlert.style.display = 'block';
+              }
+            }
+          })
+          .catch(function (err) {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Sign In';
+            }
+            if (errAlert) {
+              errAlert.textContent = 'Sign-in error: ' + err.message;
+              errAlert.style.display = 'block';
+            }
+          });
+        });
+      }
+
+      // Quick Demo Credentials chips in Login Modal
+      document.querySelectorAll('.aqh-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var idVal = this.getAttribute('data-login');
+          var pwVal = this.getAttribute('data-pw');
+          var idInput = document.getElementById('loginIdentifier');
+          var pwInput = document.getElementById('loginPassword');
+          if (idInput && pwInput) {
+            idInput.value = idVal;
+            pwInput.value = pwVal;
+            var submitBtn = document.getElementById('loginSubmitBtn');
+            if (submitBtn) submitBtn.focus();
+          }
+        });
+      });
 
       // Copy share link button
       var copyLinkBtn = document.getElementById('copyShareLinkBtn');
@@ -945,6 +1056,17 @@
           });
         });
       });
+    },
+
+    openLoginModal: function () {
+      var modal = document.getElementById('loginModal');
+      if (modal) {
+        var errAlert = document.getElementById('loginErrorAlert');
+        if (errAlert) errAlert.style.display = 'none';
+        modal.classList.add('is-open');
+        var idInput = document.getElementById('loginIdentifier');
+        if (idInput) setTimeout(function () { idInput.focus(); }, 100);
+      }
     },
 
     openUserModal: function () {

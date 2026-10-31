@@ -19,7 +19,9 @@ const DEFAULT_USERS = [
   {
     id: 'usr_admin',
     name: 'Dev Kancheti',
+    username: 'admin',
     email: 'admin@orbixstudio.io',
+    password: 'admin123',
     role: 'admin',
     designation: 'Studio Admin',
     company: 'Orbix Design Studio',
@@ -28,7 +30,9 @@ const DEFAULT_USERS = [
   {
     id: 'usr_alex',
     name: 'Alex Mercer',
+    username: 'alex',
     email: 'alex@orbixstudio.io',
+    password: 'alex123',
     role: 'employee',
     designation: 'Production Estimator',
     company: 'Precision Modular Works',
@@ -37,7 +41,9 @@ const DEFAULT_USERS = [
   {
     id: 'usr_priya',
     name: 'Priya Sharma',
+    username: 'priya',
     email: 'priya@orbixstudio.io',
+    password: 'priya123',
     role: 'employee',
     designation: 'Modular Designer',
     company: 'Archform Interiors',
@@ -181,8 +187,14 @@ class DBManager {
         console.log('Seeding initial PostgreSQL records...');
         for (const u of this.localStore.users || DEFAULT_USERS) {
           await client.query(
-            'INSERT INTO users (id, name, email, role, company, avatar) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (id) DO NOTHING',
-            [u.id, u.name, u.email, u.role, u.company, u.avatar]
+            `INSERT INTO users (id, name, username, email, password, role, designation, company, avatar)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+             ON CONFLICT (id) DO UPDATE SET
+               username = COALESCE(users.username, EXCLUDED.username),
+               password = COALESCE(users.password, EXCLUDED.password),
+               designation = COALESCE(users.designation, EXCLUDED.designation),
+               role = EXCLUDED.role`,
+            [u.id, u.name, u.username || u.id, u.email, u.password || '123456', u.role, u.designation || 'Modular Designer', u.company, u.avatar]
           );
         }
         for (const p of this.localStore.projects || DEFAULT_PROJECTS) {
@@ -220,17 +232,20 @@ class DBManager {
 
   async createUser(userData) {
     const id = userData.id || ('usr_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6));
-    const name = userData.name || 'New Designer';
+    const name = userData.name || 'New Employee';
     const email = userData.email || `${id}@orbixstudio.io`;
-    const role = userData.role || 'Interior Designer';
+    const username = (userData.username || name.toLowerCase().replace(/[^a-z0-9]/g, '') || id).trim();
+    const password = userData.password || '123456';
+    const role = (userData.role === 'admin') ? 'admin' : 'employee';
+    const designation = userData.designation || 'Modular Designer';
     const company = userData.company || 'Orbix Studio';
     const avatar = userData.avatar || name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 
-    const user = { id, name, email, role, company, avatar, created_at: new Date().toISOString() };
+    const user = { id, name, username, email, password, role, designation, company, avatar, created_at: new Date().toISOString() };
 
     // Update local store
     this.localStore.users = this.localStore.users || [];
-    const idx = this.localStore.users.findIndex(u => u.id === id || u.email === email);
+    const idx = this.localStore.users.findIndex(u => u.id === id || u.email === email || (username && u.username === username));
     if (idx >= 0) {
       this.localStore.users[idx] = { ...this.localStore.users[idx], ...user };
     } else {
@@ -241,13 +256,52 @@ class DBManager {
     if (this.isPgConnected) {
       try {
         await this.pgPool.query(
-          `INSERT INTO users (id, name, email, role, company, avatar)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           ON CONFLICT (id) DO UPDATE SET name = $2, email = $3, role = $4, company = $5, avatar = $6`,
-          [id, name, email, role, company, avatar]
+          `INSERT INTO users (id, name, username, email, password, role, designation, company, avatar)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+           ON CONFLICT (id) DO UPDATE SET
+             name = $2, username = $3, email = $4, password = $5, role = $6, designation = $7, company = $8, avatar = $9`,
+          [id, name, username, email, password, role, designation, company, avatar]
         );
       } catch (err) {
         console.error('PostgreSQL createUser error:', err.message);
+      }
+    }
+
+    return user;
+  }
+
+  async authenticateUser(identifier, password) {
+    if (!identifier || !password) return null;
+    const cleanId = identifier.trim().toLowerCase();
+    const cleanPw = password.trim();
+
+    let user = null;
+    if (this.isPgConnected) {
+      try {
+        const res = await this.pgPool.query(
+          'SELECT * FROM users WHERE LOWER(email) = $1 OR LOWER(username) = $1 OR LOWER(name) = $1 LIMIT 1',
+          [cleanId]
+        );
+        if (res.rows.length) {
+          const u = res.rows[0];
+          if (u.password === cleanPw || (!u.password && cleanPw === '123456')) {
+            user = u;
+          }
+        }
+      } catch (err) {
+        console.error('PostgreSQL authenticateUser error:', err.message);
+      }
+    }
+
+    if (!user) {
+      const users = this.localStore.users || DEFAULT_USERS;
+      const found = users.find(u =>
+        (u.email && u.email.toLowerCase() === cleanId) ||
+        (u.username && u.username.toLowerCase() === cleanId) ||
+        (u.name && u.name.toLowerCase() === cleanId)
+      );
+      if (found && (found.password === cleanPw || (!found.password && cleanPw === '123456'))) {
+        user = found;
       }
     }
 

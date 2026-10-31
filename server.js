@@ -42,6 +42,23 @@ app.get('/api/status', (req, res) => {
   });
 });
 
+// Authentication (Login with username/email and password)
+app.post('/api/login', async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+    if (!identifier || !password) {
+      return res.status(400).json({ success: false, error: 'Username/Email and Password are required.' });
+    }
+    const user = await db.authenticateUser(identifier, password);
+    if (!user) {
+      return res.status(401).json({ success: false, error: 'Invalid username/email or password.' });
+    }
+    res.json({ success: true, user });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Users
 app.get('/api/users', async (req, res) => {
   try {

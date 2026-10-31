@@ -3,7 +3,9 @@
     {
       "id": "usr_dev",
       "name": "Dev Kancheti",
+      "username": "admin",
       "email": "dev@orbixstudio.io",
+      "password": "admin123",
       "role": "admin",
       "designation": "Studio Head / Admin",
       "company": "Orbix Design Studio",
@@ -12,7 +14,9 @@
     {
       "id": "usr_alex",
       "name": "Alex Mercer",
+      "username": "alex",
       "email": "alex@orbixstudio.io",
+      "password": "alex123",
       "role": "employee",
       "designation": "Production Estimator",
       "company": "Precision Modular Works",
@@ -21,7 +25,9 @@
     {
       "id": "usr_priya",
       "name": "Priya Sharma",
+      "username": "priya",
       "email": "priya@orbixstudio.io",
+      "password": "priya123",
       "role": "employee",
       "designation": "Modular Designer",
       "company": "Archform Interiors",
