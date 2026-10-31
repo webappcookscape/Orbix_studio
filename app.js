@@ -1453,7 +1453,11 @@ function sceneLayouts(uOpt){
 }
 function buildScene(){
   var u0=U();
-  if(!u0){
+  var hasArchProject = (window.OrbixUI && window.OrbixUI.project);
+  var actTab = document.querySelector('.vtab.is-on');
+  var isDesignView = actTab && actTab.getAttribute('data-view') === 'design';
+
+  if(!u0 || (hasArchProject && !isDesignView)){
     MID=1200;
     if(GL.ok) GL.show([]);
     if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();

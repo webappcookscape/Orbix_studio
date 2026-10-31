@@ -768,32 +768,19 @@
       if (!window.S || !window.S.units || !this.project || !this.project.plan) return;
       var furnList = this.project.plan.furniture = this.project.plan.furniture || [];
 
+      // Only synchronize dimensions/materials back to furniture that was already placed on the plan
+      // NEVER auto-create or inject phantom units into the floor plan!
       for (var uIdx = 0; uIdx < window.S.units.length; uIdx++) {
         var u = window.S.units[uIdx];
-        var isFM = (u.label === 'FM 600' || (u.label && u.label.indexOf('FM 600') !== -1));
+        if (!u || !u._furnId) continue;
         var match = null;
 
         for (var f = 0; f < furnList.length; f++) {
-          if ((u._furnId && furnList[f].id === u._furnId) ||
-              (u.id && furnList[f].id === u.id) ||
-              (furnList[f].name === u.label) ||
-              (isFM && (furnList[f].id === 'fm-01' || furnList[f].name === 'FM 600' || furnList[f].name.indexOf('FM 600') !== -1))) {
+          if (furnList[f].id === u._furnId) {
             match = furnList[f];
             break;
           }
         }
-
-        var cat = (u.ctype === 'kbase') ? 'kitchen_base' :
-                  (u.ctype === 'kwall') ? 'kitchen_wall' :
-                  (u.ctype === 'ktall') ? 'kitchen_tall' :
-                  (u.ctype === 'tv') ? 'tv_unit' : 'wardrobe';
-
-        var modelType = (isFM || cat === 'kitchen_base') ? 'kitchen_fm' :
-                        (cat === 'kitchen_wall') ? 'kitchen_wm' :
-                        (u.drawers > 0) ? 'wr_drawers' : 'wr_shelves';
-
-        var shutterMat = isFM ? 'HDHMR_18MM' : 'HDHMR_18MM';
-        var shutterFin = isFM ? '4x Tuff Gloss' : (u.shutterCol || 'Brazilian Horizontal Walnut');
 
         if (match) {
           match.dimensions = { W: u.W || match.dimensions.W, H: u.H || match.dimensions.H, D: u.D || match.dimensions.D };
@@ -801,27 +788,6 @@
           if (u.handle) match.unitConfig.handle = u.handle;
           if (u.shutterCol) match.unitConfig.shutterCol = u.shutterCol;
           if (u.carcass) match.unitConfig.carcass = u.carcass;
-        } else {
-          var newPlacement = Core.createFurniturePlacement({
-            id: isFM ? 'fm-01' : ('u3d_' + (uIdx + 1) + '_' + Date.now()),
-            name: u.label || ('Unit ' + (uIdx + 1)),
-            category: cat,
-            modelType: modelType,
-            refCode: isFM ? 'FM-01' : ('C' + (12 + furnList.length + 1)),
-            pos: { x: 2400 + uIdx * 700, y: 6600 },
-            dimensions: { W: u.W || 600, H: u.H || 750, D: u.D || 550 },
-            unitConfig: {
-              shutterCol: u.shutterCol || 'MDF 7701',
-              carcass: u.carcass || 'MDF 1135',
-              shutters: u.shutters || 1,
-              handle: u.handle || 'gprof'
-            },
-            materials: {
-              shutter: { material: shutterMat, finish: shutterFin },
-              carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
-            }
-          });
-          furnList.push(newPlacement);
         }
       }
     },

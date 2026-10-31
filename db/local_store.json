@@ -71,7 +71,7 @@
             "dateCreated": "31 Oct 2026",
             "validUntil": "30 Nov 2026",
             "status": "approved",
-            "dateModified": "2026-10-31T11:32:37.560Z"
+            "dateModified": "2026-10-31T12:33:11.940Z"
           },
           "plan": {
             "gridSize": 100,
@@ -182,11 +182,11 @@
                 "id": "door_trs9j1ms5",
                 "type": "door",
                 "wallId": "wall_yqr1q9un4",
-                "offset": 8072.209091476779,
+                "offset": 8072,
                 "width": 900,
                 "height": 2100,
                 "sillHeight": 0,
-                "swing": "in-left",
+                "swing": "out-right",
                 "frameThick": 75,
                 "label": "D1",
                 "glazing": "clear"
@@ -804,7 +804,7 @@
       "is_shared": false,
       "fork_count": 1,
       "created_at": "2026-10-31T07:03:12.104Z",
-      "updated_at": "2026-10-31T12:17:14.916Z"
+      "updated_at": "2026-10-31T12:53:19.660Z"
     },
     {
       "id": "proj_mvw2z6d1i4ur",
