@@ -231,43 +231,14 @@ function newUnit(label){
   };
 }
 var S={
-  units:[
-    newUnit("MBR"),
-    {
-      label:"FM 600",
-      ctype:"kbase",
-      elev:0,
-      drawEvery:false,
-      counter:"black",
-      hfinish:"black",
-      dstyle:"slab",
-      paint:"#5B6E7A",
-      shape:"straight",
-      W2:600,
-      H:750,
-      W:600,
-      D:550,
-      T:18,
-      type:"hinged",
-      shutters:1,
-      sections:1,
-      shelves:1,
-      drawers:0,
-      drawerH:180,
-      loft:false,
-      loftH:0,
-      loftShutters:0,
-      back:18,
-      handle:"gprof",
-      carcass:"MDF 1135",
-      shutterCol:"MDF 7701"
-    }
-  ],
+  units:[],
   active:0,
   head:{dealer:"",place:"",dorder:"",cust:"",proc:"",order:"",date:"",sticker:"",supply:"MDF Boards Provided by Party"},
   frames:{h:2400,w:65,q:10,col:"White",rate:275}
 };
-function U(){ return S.units[S.active]; }
+window.S = S;
+function U(){ return (S.units && S.units.length && S.active < S.units.length && S.active >= 0) ? S.units[S.active] : null; }
+window.U = U;
 function save(){
   try{ localStorage.setItem("cupboard-cad",JSON.stringify({units:S.units,head:S.head,frames:S.frames,rates:RATES,lam:LAMINATES,imported:S.imported||null})); }catch(e){}
 }
@@ -275,39 +246,8 @@ function load(){
   try{
     var raw=localStorage.getItem("cupboard-cad"); if(!raw) return;
     var d=JSON.parse(raw);
-    if(d.units&&d.units.length){
+    if(d.units&&Array.isArray(d.units)){
       S.units=d.units;
-      if(!S.units.some(function(u){ return u.label && u.label.indexOf("FM 600")!==-1; })){
-        S.units.push({
-          label:"FM 600",
-          ctype:"kbase",
-          elev:0,
-          drawEvery:false,
-          counter:"black",
-          hfinish:"black",
-          dstyle:"slab",
-          paint:"#5B6E7A",
-          shape:"straight",
-          W2:600,
-          H:750,
-          W:600,
-          D:550,
-          T:18,
-          type:"hinged",
-          shutters:1,
-          sections:1,
-          shelves:1,
-          drawers:0,
-          drawerH:180,
-          loft:false,
-          loftH:0,
-          loftShutters:0,
-          back:18,
-          handle:"gprof",
-          carcass:"MDF 1135",
-          shutterCol:"MDF 7701"
-        });
-      }
     }
     if(d.head) S.head=d.head;
     if(d.frames) S.frames=d.frames;
@@ -902,9 +842,9 @@ function layoutKitchen(u){
       L.boxes.push({shape:"cyl",r:9,len:700,x:fx-330,y:330,z:fz+380,mat:"metal"});      /* long door handle */
       L.boxes.push({shape:"cyl",r:9,len:260,x:fx-330,y:1200,z:fz+380,mat:"metal"});
     }
-    if(!run.island && run.ry!==180){ var ww=(run.ry||0)?run.len+900:16000; L.boxes.push({x:0,y:0,z:-D/2-14,w:ww,h:3000,d:14,mat:"wall",noFrame:true}); L.boxes.push({x:0,y:0,z:-D/2-6,w:ww,h:110,d:2,mat:"ao",tile:110,noFrame:true}); }
+    if(!run.island && run.ry!==180 && !(window.OrbixUI && window.OrbixUI.project)){ var ww=(run.ry||0)?run.len+900:16000; L.boxes.push({x:0,y:0,z:-D/2-14,w:ww,h:3000,d:14,mat:"wall",noFrame:true}); L.boxes.push({x:0,y:0,z:-D/2-6,w:ww,h:110,d:2,mat:"ao",tile:110,noFrame:true}); }
     L.transform=(run.ry||run.tx||run.tz)?{tx:run.tx,tz:run.tz,ry:run.ry}:null;
-    if(first){ L.boxes.push({x:0,y:-13,z:1400,w:20000,h:12,d:14000,mat:"floor",tile:1200,noFrame:true}); first=false; }
+    if(first && !(window.OrbixUI && window.OrbixUI.project)){ L.boxes.push({x:0,y:-13,z:1400,w:20000,h:12,d:14000,mat:"floor",tile:1200,noFrame:true}); first=false; }
     out.push(L);
   });
   return out;
@@ -1078,6 +1018,7 @@ function shiftLayoutZ(lay,dz){
   return lay;
 }
 function roomBoxes(zWall,D){
+  if(window.OrbixUI && window.OrbixUI.project) return [];
   return [{x:0,y:0,z:zWall-7,w:16000,h:3000,d:14,mat:"wall",noFrame:true},
           {x:0,y:0,z:zWall+1,w:16000,h:110,d:2,mat:"ao",tile:110,noFrame:true},
           {x:0,y:-13,z:5000-D/2,w:16000,h:12,d:10000,mat:"floor",tile:1200,noFrame:true}];
@@ -1486,6 +1427,7 @@ function roomStats(){
 function sceneLayouts(uOpt){
   if(!uOpt && ROOM.id) return layoutRoom();
   var u0=uOpt||U();
+  if(!u0) return [];
   if(u0.ctype==="kitchen") return layoutKitchen(u0);
   if(u0.ctype==="tv") return layoutTv(u0);
   if(u0.ctype==="crockery") return layoutCrockery(u0);
@@ -1497,21 +1439,32 @@ function sceneLayouts(uOpt){
     L.push(lay);
   });
   if(runs[1]) L[0].boxes.push({x:u0.W/2+u0.T/2,y:0,z:0,w:u0.T,h:u0.H+(u0.loft?u0.loftH+2:0),d:u0.D,col:u0.carcass,role:"side"});
-  /* the room: a wall behind every run, one floor, and the dark line where they meet */
-  L.forEach(function(lay,i){
-    var u=runs[i], ww=i?u.W+1600:16000;
-    lay.boxes.push({x:0,y:0,z:-u.D/2-14,w:ww,h:3000,d:14,mat:"wall",noFrame:true});
-    lay.boxes.push({x:0,y:0,z:-u.D/2-6,w:ww,h:110,d:2,mat:"ao",tile:110,noFrame:true});
-  });
-  L[0].boxes.push({x:0,y:-13,z:5000-runs[0].D/2,w:16000,h:12,d:10000,mat:"floor",tile:1200,noFrame:true});
+  /* only generate synthetic backdrop wall if NOT working inside architectural CAD project */
+  var hasArchProject = (window.OrbixUI && window.OrbixUI.project);
+  if(!hasArchProject && runs.length){
+    L.forEach(function(lay,i){
+      var u=runs[i], ww=i?u.W+1600:16000;
+      lay.boxes.push({x:0,y:0,z:-u.D/2-14,w:ww,h:3000,d:14,mat:"wall",noFrame:true});
+      lay.boxes.push({x:0,y:0,z:-u.D/2-6,w:ww,h:110,d:2,mat:"ao",tile:110,noFrame:true});
+    });
+    L[0].boxes.push({x:0,y:-13,z:5000-runs[0].D/2,w:16000,h:12,d:10000,mat:"floor",tile:1200,noFrame:true});
+  }
   return L;
 }
 function buildScene(){
   var u0=U();
+  if(!u0){
+    MID=1200;
+    if(GL.ok) GL.show([]);
+    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+    camApply();
+    return;
+  }
   MID=(u0.H+(u0.loft?u0.loftH+2:0)+(u0.elev||0))/2;
   var L=sceneLayouts();
   if(GL.ok) GL.show(L); else cssRender(L,u0);
   if(GL.ok && ROOM.id) GL.handlesSet((ROOM.handles && roomExtendable() && !ROOM.walls)?roomHandles():[],ROOM.bed);
+  if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
   camApply();
 }
 
@@ -3121,8 +3074,13 @@ function renderRail(){
 
   var r=$("#railScroll"); r.innerHTML="";
   var u=U();
-
-  var g1=grp(r,"Unit");
+  if(!u){
+    var gEmpty=grp(r,"3D Studio Units");
+    var pEmpty=el(null,gEmpty,"p");
+    pEmpty.style.cssText="font-size:12px;color:var(--ink-2);line-height:1.5;margin-bottom:12px";
+    pEmpty.textContent="No cupboards in this project yet. Draw walls and place furniture in 2D Floor Plan, or click '+ Unit' above.";
+    return;
+  }
   fld(el("row",g1),"Label",u.label,function(v){
     u.label=v;
     var c=$all(".uchip")[S.active]; if(c) c.textContent=v||("Unit "+(S.active+1));
@@ -3440,7 +3398,10 @@ function refreshHeavy(invalidate){
 
 /* ══════════ LEGEND + FOOT ══════════ */
 function renderLegend(){
-  var u=U(), w=$("#legend"); w.innerHTML="";
+  var w=$("#legend"); if(!w) return;
+  w.innerHTML="";
+  var u=U();
+  if(!u) return;
   [["Carcass",u.carcass],["Shutter",u.shutterCol]].forEach(function(p){
     var l=lam(p[1]), b=el("lg",w);
     el("lg-sw",b).style.backgroundImage="url("+tex(l,144)+")";
@@ -3718,7 +3679,12 @@ function elevDraw(u){
   d.text(tx+825,ty+50,"CARCASS "+u.carcass+"   SHUTTER "+u.shutterCol+"   HANDLE "+H(u.handle).label,46);
   return d;
 }
-function renderElev(){ $("#draft").innerHTML=drawSVG(elevDraw(U())); }
+function renderElev(){
+  var draft = $("#draft"); if(!draft) return;
+  var u = U();
+  if(!u){ draft.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px">No units in this project yet. Add furniture or draw walls in 2D Floor Plan.</div>'; return; }
+  draft.innerHTML = drawSVG(elevDraw(u));
+}
 
 /* ══════════ EXPORT ══════════ */
 var dlNS=null, dlReady=false;
@@ -3820,7 +3786,7 @@ $("#frontBtn").addEventListener("click",function(){ cam.yaw=0; cam.pitch=-2; cam
     b.textContent=open?"Close all":"Open all"; b.setAttribute("aria-pressed",String(open));
   });
 })();
-$("#isoBtn").addEventListener("click",function(){ if(U().ctype==="kitchen"){ cam.yaw=-34; cam.pitch=-17; cam.zoom=-0.12; } else { cam.yaw=-26; cam.pitch=-7; } camApply(); });
+$("#isoBtn").addEventListener("click",function(){ var u=U(); if(u && u.ctype==="kitchen"){ cam.yaw=-34; cam.pitch=-17; cam.zoom=-0.12; } else { cam.yaw=-26; cam.pitch=-7; } camApply(); });
 $("#sideBtn").addEventListener("click",function(){ cam.yaw=-62; cam.pitch=-4; camApply(); });
 
 /* ═══════════════════════════════════════════════════════════════

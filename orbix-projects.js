@@ -405,9 +405,17 @@
         localStorage.setItem('orbix_active_project_id', id);
       } catch (e) {}
 
+      // Clear legacy sample cupboard cache from localStorage so it doesn't leak into projects
+      try {
+        localStorage.removeItem('cupboard-cad');
+      } catch (e) {}
+
       // Reset 3D units to this project's units (empty for fresh new projects)
       if (window.S) {
         window.S.units = (project.data && Array.isArray(project.data.units)) ? project.data.units : [];
+        window.S.active = 0;
+        if (typeof buildScene === 'function') buildScene();
+        if (typeof renderRail === 'function') renderRail();
         if (typeof renderAll === 'function') renderAll();
         if (typeof fit === 'function') fit();
         if (typeof camApply === 'function') camApply();
