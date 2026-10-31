@@ -2218,10 +2218,10 @@ var GL=(function(){
     var hits=ray.intersectObjects(homeObj.children,true);
     for(var i=0;i<hits.length;i++){
       var o=hits[i].object;
-      while(o && !o.userData.isFurniture && o!==homeObj){
+      while(o && o.parent && o.parent !== homeObj && (!o.userData || !o.userData.isFurnitureGroup)){
         o=o.parent;
       }
-      if(o && o.userData && o.userData.isFurniture){
+      if(o && o.userData && (o.userData.isFurniture || o.userData.isFurnitureGroup)){
         return { object:o, id:o.userData.furnitureId, hitPoint:hits[i].point };
       }
     }
@@ -2866,9 +2866,16 @@ function camApply(){
     if(GL.ok && GL.pickFurniture && e.button === 0){
       var fHit = GL.pickFurniture(e.clientX, e.clientY);
       if(fHit){
+        var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+        var groupObj = fHit.object;
+        while(groupObj && groupObj.parent && groupObj.parent !== homeObj && (!groupObj.userData || !groupObj.userData.isFurnitureGroup)){
+          groupObj = groupObj.parent;
+        }
+        if(!groupObj) groupObj = fHit.object;
+
         furnDrag = {
           id: fHit.id,
-          obj: fHit.object,
+          obj: groupObj,
           startX: e.clientX,
           startY: e.clientY,
           moved: false,
@@ -2876,7 +2883,7 @@ function camApply(){
         };
         var p = GL.floorPoint(e.clientX, e.clientY);
         if(p){
-          furnDrag.offset = { x: fHit.object.position.x - p.x, z: fHit.object.position.z - p.z };
+          furnDrag.offset = { x: groupObj.position.x - p.x, z: groupObj.position.z - p.z };
         }
         stage.setPointerCapture(e.pointerId);
         stage.classList.add("grab");
@@ -2971,9 +2978,10 @@ function camApply(){
           }
           if(window.OrbixUI.renderBOQ) window.OrbixUI.renderBOQ();
           if(window.OrbixUI.renderInspector) window.OrbixUI.renderInspector([{ type: 'furniture', id: fd.id }]);
+          if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
         }
       } else {
-        // Just clicked: select the furniture unit
+        // Just clicked: select the furniture unit and show customize inspector
         if(window.OrbixUI && window.OrbixUI.editor){
           window.OrbixUI.editor.selected = [{ type: 'furniture', id: fd.id }];
           if(window.OrbixUI.editor.render) window.OrbixUI.editor.render();
@@ -2993,6 +3001,21 @@ function camApply(){
       return;
     }
   }, true);
+
+  // Double-click on any 3D furniture unit: Open in 3D Studio Customizer
+  stage.addEventListener("dblclick", function(e){
+    if(GL.ok && GL.pickFurniture){
+      var fHit = GL.pickFurniture(e.clientX, e.clientY);
+      if(fHit && fHit.id){
+        if(window.OrbixUI && window.OrbixUI.editor){
+          window.OrbixUI.editor.selected = [{ type: 'furniture', id: fHit.id }];
+          if(window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
+        }
+        var btn = document.getElementById('inspOpen3DStudio');
+        if(btn) btn.click();
+      }
+    }
+  });
 
   // Main camera orbit & pan listeners
   stage.addEventListener("pointerdown", function(e){

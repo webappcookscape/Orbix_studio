@@ -378,7 +378,7 @@
   ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     var fg = new THREE.Group();
     fg.name = 'Furniture_' + furn.id;
-    fg.userData = { isFurniture: true, furnitureId: furn.id, furniture: furn };
+    fg.userData = { isFurniture: true, isFurnitureGroup: true, furnitureId: furn.id, furniture: furn };
 
     var dims = furn.dimensions || { W: 1200, H: 2100, D: 600 };
     var cat = furn.category || 'wardrobe';
@@ -410,7 +410,7 @@
     bodyMesh.position.set(0, plinthH + bodyH / 2, -10);
     bodyMesh.castShadow = true;
     bodyMesh.receiveShadow = true;
-    bodyMesh.userData = fg.userData;
+    bodyMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(bodyMesh);
 
     // Countertop Stone (if kitchen/crockery/vanity)
@@ -420,7 +420,7 @@
       cMesh.position.set(0, dims.H - counterH / 2, 2.5);
       cMesh.castShadow = true;
       cMesh.receiveShadow = true;
-      cMesh.userData = fg.userData;
+      cMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
       fg.add(cMesh);
     }
 
@@ -438,7 +438,7 @@
       sMesh.position.set(sX, sY, sZ);
       sMesh.castShadow = true;
       sMesh.receiveShadow = true;
-      sMesh.userData = fg.userData;
+      sMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
       fg.add(sMesh);
 
       // Handle pull
@@ -447,7 +447,7 @@
       var hX = (s % 2 === 0) ? sX + shW / 2 - 25 : sX - shW / 2 + 25;
       var hY = isBase ? sY + shH * 0.25 : sY;
       hMesh.position.set(hX, hY, sZ + 14);
-      hMesh.userData = fg.userData;
+      hMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
       fg.add(hMesh);
     }
 

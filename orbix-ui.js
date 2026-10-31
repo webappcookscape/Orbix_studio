@@ -548,6 +548,13 @@
           roomOptions += '<option value="' + rooms[r].id + '"' + (fn.roomId === rooms[r].id ? ' selected' : '') + '>' + rooms[r].name + '</option>';
         }
 
+        var shutterFinish = (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) ||
+                            (fn.unitConfig && fn.unitConfig.shutterCol) || 'Brazilian Horizontal Walnut';
+        var carcassFinish = (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) ||
+                            (fn.unitConfig && fn.unitConfig.carcass) || 'Absolute White';
+        var shuttersCount = (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1);
+        var drawersCount = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? fn.unitConfig.drawers : 0;
+
         panel.innerHTML =
           '<div class="insp-title">Modular Unit Properties</div>' +
           '<div class="insp-row"><label>Item Name</label><input type="text" id="inspFurnName" value="' + fn.name + '"></div>' +
@@ -555,6 +562,20 @@
           '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspFurnW" value="' + fn.dimensions.W + '" step="50"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspFurnH" value="' + fn.dimensions.H + '" step="50"></div>' +
           '<div class="insp-row"><label>Depth (mm)</label><input type="number" id="inspFurnD" value="' + fn.dimensions.D + '" step="50"></div>' +
+          '<div class="insp-row"><label>Shutters</label><input type="number" id="inspFurnShutters" value="' + shuttersCount + '" min="0" max="8"></div>' +
+          '<div class="insp-row"><label>Drawers</label><input type="number" id="inspFurnDrawers" value="' + drawersCount + '" min="0" max="6"></div>' +
+          '<div class="insp-row"><label>Shutter Finish</label><select id="inspFurnShutterCol">' +
+            '<option value="Brazilian Horizontal Walnut"' + (shutterFinish.indexOf('Walnut') !== -1 ? ' selected' : '') + '>Brazilian Walnut</option>' +
+            '<option value="Absolute White"' + (shutterFinish.indexOf('White') !== -1 || shutterFinish.indexOf('Gloss') !== -1 ? ' selected' : '') + '>Absolute White Gloss</option>' +
+            '<option value="Sage Green Matte"' + (shutterFinish.indexOf('Sage') !== -1 ? ' selected' : '') + '>Sage Green Matte</option>' +
+            '<option value="Sonoma Oak"' + (shutterFinish.indexOf('Oak') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
+            '<option value="Concrete Look"' + (shutterFinish.indexOf('Concrete') !== -1 ? ' selected' : '') + '>Concrete Look</option>' +
+          '</select></div>' +
+          '<div class="insp-row"><label>Carcass</label><select id="inspFurnCarcass">' +
+            '<option value="Absolute White"' + (carcassFinish.indexOf('White') !== -1 ? ' selected' : '') + '>Absolute White (BWP)</option>' +
+            '<option value="Brazilian Horizontal Walnut"' + (carcassFinish.indexOf('Walnut') !== -1 ? ' selected' : '') + '>Walnut Woodgrain</option>' +
+            '<option value="Sonoma Oak"' + (carcassFinish.indexOf('Oak') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
+          '</select></div>' +
           '<button class="btn primary full" id="inspOpen3DStudio" style="margin-top:8px">📐 Open &amp; Customize in 3D Studio</button>' +
           '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (R)</button>' +
           '<button class="btn danger full" id="inspDelFurn" style="margin-top:8px">Delete Unit</button>';
@@ -574,20 +595,68 @@
         document.getElementById('inspFurnW').addEventListener('change', function (e) {
           fn.dimensions.W = parseFloat(e.target.value);
           self.editor.pushHistory('Resize Furniture');
+          self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
+          if (self.render3DHome) self.render3DHome();
         });
         document.getElementById('inspFurnH').addEventListener('change', function (e) {
           fn.dimensions.H = parseFloat(e.target.value);
           self.editor.pushHistory('Resize Furniture');
+          self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
+          if (self.render3DHome) self.render3DHome();
         });
         document.getElementById('inspFurnD').addEventListener('change', function (e) {
           fn.dimensions.D = parseFloat(e.target.value);
           self.editor.pushHistory('Resize Furniture');
+          self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
+          if (self.render3DHome) self.render3DHome();
+        });
+        document.getElementById('inspFurnShutters').addEventListener('change', function (e) {
+          if (!fn.unitConfig) fn.unitConfig = {};
+          fn.unitConfig.shutters = parseInt(e.target.value) || 0;
+          self.editor.pushHistory('Edit Shutters Count');
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          self.editor.render();
+          if (self.render3DHome) self.render3DHome();
+        });
+        document.getElementById('inspFurnDrawers').addEventListener('change', function (e) {
+          if (!fn.unitConfig) fn.unitConfig = {};
+          fn.unitConfig.drawers = parseInt(e.target.value) || 0;
+          self.editor.pushHistory('Edit Drawers Count');
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          self.editor.render();
+          if (self.render3DHome) self.render3DHome();
+        });
+        document.getElementById('inspFurnShutterCol').addEventListener('change', function (e) {
+          if (!fn.materials) fn.materials = {};
+          if (!fn.materials.shutter) fn.materials.shutter = { material: 'HDHMR_18MM' };
+          fn.materials.shutter.finish = e.target.value;
+          if (!fn.unitConfig) fn.unitConfig = {};
+          fn.unitConfig.shutterCol = e.target.value;
+          self.editor.pushHistory('Change Shutter Finish');
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          self.editor.render();
+          if (self.render3DHome) self.render3DHome();
+        });
+        document.getElementById('inspFurnCarcass').addEventListener('change', function (e) {
+          if (!fn.materials) fn.materials = {};
+          if (!fn.materials.carcass) fn.materials.carcass = { material: 'BWP_18MM' };
+          fn.materials.carcass.finish = e.target.value;
+          if (!fn.unitConfig) fn.unitConfig = {};
+          fn.unitConfig.carcass = e.target.value;
+          self.editor.pushHistory('Change Carcass Finish');
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          self.editor.render();
+          if (self.render3DHome) self.render3DHome();
         });
         document.getElementById('inspOpen3DStudio').addEventListener('click', function () {
           if (window.S && window.S.units) {
@@ -600,6 +669,14 @@
             }
             if (existingIdx !== -1) {
               window.S.active = existingIdx;
+              var activeUnit = window.S.units[existingIdx];
+              activeUnit.W = fn.dimensions.W;
+              activeUnit.H = fn.dimensions.H;
+              activeUnit.D = fn.dimensions.D;
+              if (fn.unitConfig && fn.unitConfig.shutters !== undefined) activeUnit.shutters = fn.unitConfig.shutters;
+              if (fn.unitConfig && fn.unitConfig.drawers !== undefined) activeUnit.drawers = fn.unitConfig.drawers;
+              if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) activeUnit.shutterCol = fn.materials.shutter.finish;
+              if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) activeUnit.carcass = fn.materials.carcass.finish;
             } else {
               var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
               var newU = {
@@ -611,7 +688,7 @@
                 D: fn.dimensions.D,
                 T: 18,
                 type: (fn.unitConfig && fn.unitConfig.type) || 'hinged',
-                shutters: (fn.unitConfig && fn.unitConfig.shutters) || (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1),
+                shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1),
                 sections: (fn.unitConfig && fn.unitConfig.sections) || (fn.dimensions.W > 1200 ? 2 : 1),
                 shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isKitchen ? 1 : 3),
                 drawers: (fn.unitConfig && fn.unitConfig.drawers) || 0,
@@ -624,8 +701,8 @@
                 handle: (fn.unitConfig && fn.unitConfig.handle) || 'gprof',
                 hfinish: (fn.unitConfig && fn.unitConfig.hfinish) || 'black',
                 counter: (fn.unitConfig && fn.unitConfig.counter) || (isKitchen ? 'black' : 'none'),
-                carcass: 'MDF 1135',
-                shutterCol: 'MDF 7701'
+                carcass: (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'Absolute White',
+                shutterCol: (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'Brazilian Horizontal Walnut'
               };
               window.S.units.push(newU);
               window.S.active = window.S.units.length - 1;
@@ -639,10 +716,13 @@
         document.getElementById('inspRotateFurn').addEventListener('click', function () {
           fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
           self.editor.pushHistory('Rotate Furniture');
+          self.saveToLocalStorage();
           self.editor.render();
+          if (self.render3DHome) self.render3DHome();
         });
         document.getElementById('inspDelFurn').addEventListener('click', function () {
           self.editor.deleteSelected();
+          if (self.render3DHome) self.render3DHome();
         });
       }
     },
