@@ -214,6 +214,40 @@
       }
 
       var furnSel = document.getElementById('planFurnSelect');
+      function syncFurnDropdown() {
+        if (!furnSel || !Core.FURNITURE_CATALOG) return;
+        var currentVal = furnSel.value;
+        furnSel.innerHTML = '';
+
+        var importedGroup = document.createElement('optgroup');
+        importedGroup.label = 'Imported Modular Units (Catalog)';
+        var standardGroup = document.createElement('optgroup');
+        standardGroup.label = 'Standard Library';
+
+        for (var i = 0; i < Core.FURNITURE_CATALOG.length; i++) {
+          var item = Core.FURNITURE_CATALOG[i];
+          var opt = document.createElement('option');
+          opt.value = item.id;
+          var dimsText = item.dimensions ? (' (' + item.dimensions.W + '×' + item.dimensions.H + ')') : '';
+          opt.textContent = (item.icon ? item.icon + ' ' : '') + item.name + dimsText;
+          if (item.id.indexOf('-') !== -1 || ['W-01', 'W-02', 'W-03', 'CR-01', 'TV-01', 'K-01', 'K-02'].indexOf(item.id) !== -1) {
+            importedGroup.appendChild(opt);
+          } else {
+            standardGroup.appendChild(opt);
+          }
+        }
+        if (importedGroup.children.length > 0) furnSel.appendChild(importedGroup);
+        if (standardGroup.children.length > 0) furnSel.appendChild(standardGroup);
+
+        if (currentVal && furnSel.querySelector('option[value="' + currentVal + '"]')) {
+          furnSel.value = currentVal;
+        } else if (furnSel.options.length > 0) {
+          furnSel.selectedIndex = 0;
+        }
+      }
+
+      syncFurnDropdown();
+
       if (furnSel && Core.FURNITURE_CATALOG) {
         furnSel.addEventListener('change', function () {
           var fId = furnSel.value;
@@ -225,6 +259,34 @@
           }
           var fBtn = document.querySelector('.plan-tool-btn[data-tool="furniture"]');
           if (fBtn) fBtn.click();
+        });
+      }
+
+      var importUnitsBtn = document.getElementById('planImportUnitsBtn');
+      var unitsCsvInput = document.getElementById('planUnitsCsvInput');
+      if (importUnitsBtn && unitsCsvInput) {
+        importUnitsBtn.addEventListener('click', function () {
+          unitsCsvInput.click();
+        });
+        unitsCsvInput.addEventListener('change', function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            try {
+              var res = Core.importUnitsFromCSV(ev.target.result);
+              syncFurnDropdown();
+              if (res.items.length > 0) {
+                furnSel.value = res.items[0].id;
+                self.editor.furniturePreset = res.items[0];
+              }
+              alert('Successfully imported ' + res.added + ' modular units from CSV into catalog!');
+            } catch (err) {
+              alert('Error importing CSV: ' + err.message);
+            }
+          };
+          reader.readAsText(file);
+          unitsCsvInput.value = '';
         });
       }
     },

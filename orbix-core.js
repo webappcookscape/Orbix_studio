@@ -925,6 +925,240 @@
      Standard Modular Furniture Catalog
      ───────────────────────────────────────────────────────────────────────────── */
   var FURNITURE_CATALOG = [
+    // ─── Imported Modular Units from units_import_template.csv ───
+    {
+      id: 'W-01',
+      code: 'W-01',
+      name: 'Master Bed 2-Door Wardrobe (Shelves)',
+      modelType: 'wr_shelves',
+      category: 'wardrobe',
+      icon: '🚪',
+      dimensions: { W: 1200, H: 2100, D: 600 },
+      materials: {
+        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
+        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: 'hinged',
+        dstyle: 'slab',
+        glassTint: 'none',
+        profileColor: 'none',
+        sections: 1,
+        shelves: 4,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: 'none',
+        handle: 'gprof',
+        hfinish: 'black',
+        led: false,
+        carcass: 'BWP_18MM',
+        shutterCol: 'Brazilian Horizontal Walnut'
+      },
+      pricingOverrides: { baseRate: 1696 },
+      customRate: 1696
+    },
+    {
+      id: 'W-02',
+      code: 'W-02',
+      name: 'Master Bed 3-Door Wardrobe (Drawers + Loft)',
+      modelType: 'wr_drawers',
+      category: 'wardrobe',
+      icon: '🚪',
+      dimensions: { W: 1800, H: 2100, D: 600 },
+      materials: {
+        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
+        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+      },
+      unitConfig: {
+        shutters: 3,
+        doorType: 'hinged',
+        dstyle: 'slab',
+        glassTint: 'none',
+        profileColor: 'none',
+        sections: 2,
+        shelves: 4,
+        drawers: 2,
+        loft: true,
+        loftH: 600,
+        counter: 'none',
+        handle: 'gprof',
+        hfinish: 'black',
+        led: false,
+        carcass: 'BWP_18MM',
+        shutterCol: 'Brazilian Horizontal Walnut'
+      },
+      pricingOverrides: { baseRate: 1795 },
+      customRate: 1795
+    },
+    {
+      id: 'W-03',
+      code: 'W-03',
+      name: '2-Door Glass Profile Sliding Wardrobe',
+      modelType: 'wr_sliding',
+      category: 'wardrobe',
+      icon: '↔️',
+      dimensions: { W: 1800, H: 2400, D: 650 },
+      materials: {
+        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
+        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+      },
+      unitConfig: {
+        type: 'sliding',
+        shutters: 2,
+        doorType: 'sliding',
+        dstyle: 'aluglass',
+        glassTint: 'fluted',
+        profileColor: 'black',
+        sections: 2,
+        shelves: 5,
+        drawers: 2,
+        loft: false,
+        loftH: 0,
+        counter: 'none',
+        handle: 'none',
+        hfinish: 'black',
+        led: true,
+        carcass: 'BWP_18MM',
+        shutterCol: 'Brazilian Horizontal Walnut'
+      },
+      pricingOverrides: { baseRate: 2150 },
+      customRate: 2150
+    },
+    {
+      id: 'CR-01',
+      code: 'CR-01',
+      name: 'Fluted Glass Hutch · Walnut',
+      modelType: 'crockery_tall',
+      category: 'crockery',
+      icon: '🍷',
+      dimensions: { W: 900, H: 2100, D: 450 },
+      materials: {
+        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
+        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: 'hinged',
+        dstyle: 'aluglass',
+        glassTint: 'fluted',
+        profileColor: 'black',
+        sections: 1,
+        shelves: 3,
+        drawers: 2,
+        loft: false,
+        loftH: 0,
+        counter: 'galaxy',
+        handle: 'gprof',
+        hfinish: 'black',
+        led: true,
+        carcass: 'BWP_18MM',
+        shutterCol: 'Brazilian Horizontal Walnut'
+      },
+      pricingOverrides: { baseRate: 2250 },
+      customRate: 2250
+    },
+    {
+      id: 'TV-01',
+      code: 'TV-01',
+      name: 'Living TV Media Entertainment Unit',
+      modelType: 'tv_console',
+      category: 'tv_unit',
+      icon: '📺',
+      dimensions: { W: 2400, H: 1800, D: 400 },
+      materials: {
+        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
+        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: 'open',
+        dstyle: 'slab',
+        glassTint: 'none',
+        profileColor: 'none',
+        sections: 3,
+        shelves: 2,
+        drawers: 3,
+        loft: false,
+        loftH: 0,
+        counter: 'none',
+        handle: 'gola',
+        hfinish: 'black',
+        led: true,
+        carcass: 'BWP_18MM',
+        shutterCol: 'Brazilian Horizontal Walnut'
+      },
+      pricingOverrides: { baseRate: 1984 },
+      customRate: 1984
+    },
+    {
+      id: 'K-01',
+      code: 'K-01',
+      name: 'Kitchen Lower Base Run (3m)',
+      modelType: 'kitchen_base',
+      category: 'kitchen_base',
+      icon: '🍳',
+      dimensions: { W: 3000, H: 850, D: 600 },
+      materials: {
+        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
+        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+      },
+      unitConfig: {
+        shutters: 5,
+        doorType: 'hinged',
+        dstyle: 'slab',
+        glassTint: 'none',
+        profileColor: 'none',
+        sections: 4,
+        shelves: 3,
+        drawers: 4,
+        loft: false,
+        loftH: 0,
+        counter: 'black',
+        handle: 'gprof',
+        hfinish: 'black',
+        led: false,
+        carcass: 'BWP_18MM',
+        shutterCol: 'Brazilian Horizontal Walnut'
+      },
+      pricingOverrides: { baseRate: 1796 },
+      customRate: 1796
+    },
+    {
+      id: 'K-02',
+      code: 'K-02',
+      name: 'Kitchen Upper Wall Cabinets (3m)',
+      modelType: 'kitchen_wall',
+      category: 'kitchen_wall',
+      icon: '🎛️',
+      dimensions: { W: 3000, H: 700, D: 350 },
+      materials: {
+        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
+        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+      },
+      unitConfig: {
+        shutters: 5,
+        doorType: 'hinged',
+        dstyle: 'slab',
+        glassTint: 'none',
+        profileColor: 'none',
+        sections: 4,
+        shelves: 3,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: 'none',
+        handle: 'gprof',
+        hfinish: 'black',
+        led: false,
+        carcass: 'BWP_18MM',
+        shutterCol: 'Brazilian Horizontal Walnut'
+      },
+      pricingOverrides: { baseRate: 1545 },
+      customRate: 1545
+    },
+    // ─── Standard Library ───
     {
       id: 'fm-01',
       name: 'FM 600 (Kitchen Base)',
@@ -1146,6 +1380,112 @@
     return record;
   }
 
+  /* ─────────────────────────────────────────────────────────────────────────────
+     CSV Modular Units Importer
+     ───────────────────────────────────────────────────────────────────────────── */
+  function parseUnitsCSV(csvText) {
+    if (!csvText || typeof csvText !== 'string') return [];
+    var lines = csvText.trim().split(/\r?\n/);
+    if (lines.length < 2) return [];
+    var headers = lines[0].split(',').map(function (h) { return h.trim(); });
+    var items = [];
+
+    for (var i = 1; i < lines.length; i++) {
+      var rowStr = lines[i].trim();
+      if (!rowStr) continue;
+      var cols = rowStr.split(',').map(function (c) { return c.trim(); });
+      var row = {};
+      for (var h = 0; h < headers.length; h++) {
+        row[headers[h]] = cols[h] !== undefined ? cols[h] : '';
+      }
+
+      var code = row['Item_Code'] || uid('unit');
+      var name = row['Item_Name'] || code;
+      var cat = row['Category'] || 'wardrobe';
+      var mType = row['Model_Type'] || 'wr_shelves';
+      var w = parseFloat(row['Width_mm']) || 1200;
+      var h = parseFloat(row['Height_mm']) || 2100;
+      var d = parseFloat(row['Depth_mm']) || 600;
+      var rate = parseFloat(row['Unit_Rate_INR']) || 1700;
+
+      var iconMap = {
+        wardrobe: '🚪',
+        kitchen_base: '🍳',
+        kitchen_wall: '🎛️',
+        kitchen_tall: '🥫',
+        crockery: '🍷',
+        tv_unit: '📺',
+        vanity: '🪞',
+        shoe_rack: '👟'
+      };
+
+      var item = {
+        id: code,
+        code: code,
+        name: name,
+        modelType: mType,
+        category: cat,
+        icon: iconMap[cat] || '📦',
+        dimensions: { W: w, H: h, D: d },
+        materials: {
+          shutter: {
+            material: row['Shutter_Material'] || 'HDHMR_18MM',
+            finish: row['Shutter_Finish'] || 'Brazilian Horizontal Walnut'
+          },
+          carcass: {
+            material: row['Carcass_Material'] || 'BWP_18MM',
+            finish: row['Carcass_Finish'] || 'Absolute White'
+          }
+        },
+        unitConfig: {
+          shutters: parseInt(row['Shutters_Count']) || 0,
+          doorType: row['Door_Type'] || 'hinged',
+          dstyle: row['Door_Style'] || 'slab',
+          glassTint: row['Glass_Tint'] || 'none',
+          profileColor: row['Profile_Color'] || 'none',
+          sections: parseInt(row['Internal_Sections']) || 1,
+          shelves: parseInt(row['Shelves_Count']) || 0,
+          drawers: parseInt(row['Drawers_Count']) || 0,
+          loft: String(row['Has_Loft']).toUpperCase() === 'TRUE',
+          loftH: parseFloat(row['Loft_Height_mm']) || 0,
+          counter: row['Countertop'] || 'none',
+          handle: row['Handle_Type'] || 'gprof',
+          hfinish: row['Handle_Finish'] || 'black',
+          led: String(row['LED_Light']).toUpperCase() === 'TRUE',
+          carcass: row['Carcass_Material'] || 'BWP_18MM',
+          shutterCol: row['Shutter_Finish'] || 'Brazilian Horizontal Walnut'
+        },
+        pricingOverrides: { baseRate: rate },
+        customRate: rate
+      };
+
+      items.push(item);
+    }
+    return items;
+  }
+
+  function importUnitsFromCSV(csvText) {
+    var parsed = parseUnitsCSV(csvText);
+    var added = 0;
+    for (var i = 0; i < parsed.length; i++) {
+      var item = parsed[i];
+      var existingIdx = -1;
+      for (var j = 0; j < FURNITURE_CATALOG.length; j++) {
+        if (FURNITURE_CATALOG[j].id === item.id) {
+          existingIdx = j;
+          break;
+        }
+      }
+      if (existingIdx >= 0) {
+        FURNITURE_CATALOG[existingIdx] = item;
+      } else {
+        FURNITURE_CATALOG.unshift(item);
+      }
+      added++;
+    }
+    return { added: added, total: FURNITURE_CATALOG.length, items: parsed };
+  }
+
   return {
     SFT_FACTOR: SFT_FACTOR,
     SQM_FACTOR: SQM_FACTOR,
@@ -1172,6 +1512,8 @@
     deserializeProject: deserializeProject,
     PRICE_TIERS: PRICE_TIERS,
     MODEL_RATES_MATRIX: MODEL_RATES_MATRIX,
-    resolveModelType: resolveModelType
+    resolveModelType: resolveModelType,
+    parseUnitsCSV: parseUnitsCSV,
+    importUnitsFromCSV: importUnitsFromCSV
   };
 });

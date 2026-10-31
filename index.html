@@ -416,21 +416,32 @@
           </select>
           <button class="plan-tool-btn" data-tool="furniture" title="Place Modular Furniture (F)">+ Furniture</button>
           <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place">
-            <option value="w2d">2-Door Wardrobe (900mm)</option>
-            <option value="w3d" selected>3-Door Wardrobe (1350mm)</option>
-            <option value="w4d">4-Door Master Wardrobe (1800mm)</option>
-            <option value="w_slide">2-Door Sliding Wardrobe (1800mm)</option>
-            <option value="fm-01">FM 600 Kitchen Base (600mm)</option>
-            <option value="k_base">Kitchen Base Run (3000mm)</option>
-            <option value="k_wall">Kitchen Wall Run (3000mm)</option>
-            <option value="k_tall">Kitchen Tall Pantry (600mm)</option>
-            <option value="k_island">Kitchen Island (1500mm)</option>
-            <option value="tv_media">TV Media Wall (2100mm)</option>
-            <option value="crockery">Crockery Unit (1200mm)</option>
-            <option value="vanity">Vanity / Dresser (1000mm)</option>
-            <option value="shoe_rack">Shoe Cabinet (1000mm)</option>
-            <option value="bed_queen">Queen Bed (1600mm)</option>
-            <option value="bed_king">King Bed (1900mm)</option>
+            <optgroup label="Imported Modular Units (Catalog)">
+              <option value="W-01" selected>W-01: Master Bed 2-Door Wardrobe (1200x2100)</option>
+              <option value="W-02">W-02: Master Bed 3-Door + Loft (1800x2100+600)</option>
+              <option value="W-03">W-03: 2-Door Glass Profile Sliding (1800x2400)</option>
+              <option value="CR-01">CR-01: Fluted Glass Hutch · Walnut (900x2100)</option>
+              <option value="TV-01">TV-01: Living TV Media Entertainment (2400x1800)</option>
+              <option value="K-01">K-01: Kitchen Lower Base Run (3000x850)</option>
+              <option value="K-02">K-02: Kitchen Upper Wall Cabinets (3000x700)</option>
+            </optgroup>
+            <optgroup label="Standard Library">
+              <option value="w2d">2-Door Wardrobe (900mm)</option>
+              <option value="w3d">3-Door Wardrobe (1350mm)</option>
+              <option value="w4d">4-Door Master Wardrobe (1800mm)</option>
+              <option value="w_slide">2-Door Sliding Wardrobe (1800mm)</option>
+              <option value="fm-01">FM 600 Kitchen Base (600mm)</option>
+              <option value="k_base">Kitchen Base Run (3000mm)</option>
+              <option value="k_wall">Kitchen Wall Run (3000mm)</option>
+              <option value="k_tall">Kitchen Tall Pantry (600mm)</option>
+              <option value="k_island">Kitchen Island (1500mm)</option>
+              <option value="tv_media">TV Media Wall (2100mm)</option>
+              <option value="crockery">Crockery Unit (1200mm)</option>
+              <option value="vanity">Vanity / Dresser (1000mm)</option>
+              <option value="shoe_rack">Shoe Cabinet (1000mm)</option>
+              <option value="bed_queen">Queen Bed (1600mm)</option>
+              <option value="bed_king">King Bed (1900mm)</option>
+            </optgroup>
           </select>
           <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">Split</button>
         </div>
@@ -444,8 +455,10 @@
           <button class="plan-tool-btn" id="planClear" title="Clear all walls">Clear</button>
           <button class="plan-tool-btn" id="planExportJson" title="Save Project JSON">Export</button>
           <button class="plan-tool-btn" id="planImportJson" title="Open Project JSON">Import</button>
+          <button class="plan-tool-btn" id="planImportUnitsBtn" title="Import Modular Units CSV">Import Units CSV</button>
           <button class="plan-tool-btn" id="planView3D" style="background:#1B4F72;color:#fff;border-color:#1B4F72;" title="View Whole Home in 3D">View 3D Home ➔</button>
           <input type="file" id="planFileInput" accept=".json,.orbix" hidden>
+          <input type="file" id="planUnitsCsvInput" accept=".csv" hidden>
         </div>
 
         <div class="live-quote-badge" id="liveQuotationBadge">
