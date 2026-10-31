@@ -1683,7 +1683,7 @@ var GL=(function(){
       case "steel":  m=new THREE.MeshStandardMaterial({color:0xC9CCCF,metalness:1,roughness:0.38,envMapIntensity:1.1}); break;
       case "hob":    m=new THREE.MeshPhysicalMaterial({color:0x0b0b0e,roughness:0.06,metalness:0,clearcoat:1,clearcoatRoughness:0.05,envMapIntensity:1.3}); break;
       case "tile":   m=tileMat(); break;
-      case "wall":   m=new THREE.MeshStandardMaterial({color:0xEFECE5,roughness:0.96,metalness:0}); break;
+      case "wall":   m=new THREE.MeshStandardMaterial({color:0xE8DEC8,roughness:0.96,metalness:0}); break;
       case "window": m=new THREE.MeshBasicMaterial({color:NEO?0xFFF1DA:0xFFFDF7}); break;
       case "floor":  m=floorMat(); break;
     }
