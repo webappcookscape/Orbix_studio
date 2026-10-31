@@ -13,17 +13,16 @@
     }
   ],
   "projects": [
-    
     {
       "id": "proj_mvw214o8gxdq",
-      "title": "Lodha Crown \u2014 3BHK Kitchen & Wardrobe",
+      "title": "Lodha Crown — 3BHK Kitchen & Wardrobe",
       "client": "Sanjay Kapoor",
       "type": "Kitchen",
       "status": "Draft",
-      "created_by": "usr_admin",
-      "owner_name": "Cookscape Admin",
-      "owner_email": "admin@cookscape.com",
-      "units_count": 5,
+      "created_by": "usr_dev",
+      "owner_name": "Dev Kancheti",
+      "owner_email": "dev@orbixstudio.io",
+      "units_count": 3,
       "boards_est": 14,
       "data": {
         "units": [
@@ -71,7 +70,7 @@
             "dateCreated": "31 Oct 2026",
             "validUntil": "30 Nov 2026",
             "status": "approved",
-            "dateModified": "2026-10-31T12:33:11.940Z"
+            "dateModified": "2026-10-31T13:04:12.084Z"
           },
           "plan": {
             "gridSize": 100,
@@ -247,87 +246,13 @@
             "rooms": [],
             "furniture": [
               {
-                "id": "furn_rzq004zcw",
-                "name": "FM 600 (Kitchen Base)",
-                "category": "kitchen_base",
-                "roomId": null,
-                "pos": {
-                  "x": -400,
-                  "y": 1600,
-                  "z": 0
-                },
-                "rotY": 1.5707963267948966,
-                "dimensions": {
-                  "W": 600,
-                  "H": 750,
-                  "D": 550
-                },
-                "materials": {
-                  "shutter": {
-                    "material": "HDHMR_18MM",
-                    "finish": "Brazilian Horizontal Walnut"
-                  },
-                  "carcass": {
-                    "material": "BWP_18MM",
-                    "finish": "Absolute White"
-                  }
-                },
-                "unitConfig": {
-                  "shutters": 1,
-                  "shelves": 1,
-                  "drawers": 0,
-                  "dstyle": "slab",
-                  "counter": "black",
-                  "handle": "gprof",
-                  "hfinish": "black",
-                  "carcass": "MDF 3411",
-                  "shutterCol": "MDF 7701"
-                },
-                "pricingOverrides": null,
-                "notes": ""
-              },
-              {
-                "id": "u3d_1_1793445752561",
-                "name": "SHOE",
-                "category": "wardrobe",
-                "roomId": null,
-                "pos": {
-                  "x": 2400,
-                  "y": 6600
-                },
-                "rotY": 0,
-                "dimensions": {
-                  "W": 1200,
-                  "H": 900,
-                  "D": 350
-                },
-                "materials": {
-                  "shutter": {
-                    "material": "HDHMR_18MM",
-                    "finish": "MDF 1135"
-                  },
-                  "carcass": {
-                    "material": "BWP_18MM",
-                    "finish": "Absolute White"
-                  }
-                },
-                "unitConfig": {
-                  "shutterCol": "MDF 1135",
-                  "carcass": "MDF 1135",
-                  "shutters": 3,
-                  "handle": "ibh8"
-                },
-                "pricingOverrides": null,
-                "notes": ""
-              },
-              {
-                "id": "furn_944kudr5r",
+                "id": "furn_tq6jeg7k7",
                 "name": "FCM -RT (Kitchen Base)",
                 "category": "kitchen_base",
                 "roomId": null,
                 "pos": {
-                  "x": -6500,
-                  "y": -100,
+                  "x": -4100,
+                  "y": 4000,
                   "z": 0
                 },
                 "rotY": 0,
@@ -368,13 +293,13 @@
                 "notes": ""
               },
               {
-                "id": "furn_n4stwppwd",
+                "id": "furn_fxpriuerw",
                 "name": "WM 1200 (Kitchen Wall)",
                 "category": "kitchen_wall",
                 "roomId": null,
                 "pos": {
-                  "x": 50,
-                  "y": -2150,
+                  "x": -200,
+                  "y": 5200,
                   "z": 0
                 },
                 "rotY": 0,
@@ -415,16 +340,16 @@
                 "notes": ""
               },
               {
-                "id": "furn_aw6mpc6pf",
+                "id": "furn_5zzicyf2s",
                 "name": "FM 600 (Kitchen Base)",
                 "category": "kitchen_base",
                 "roomId": null,
                 "pos": {
-                  "x": -2400,
-                  "y": 1250,
+                  "x": 1200,
+                  "y": 2500,
                   "z": 0
                 },
-                "rotY": 0,
+                "rotY": 1.5707963267948966,
                 "dimensions": {
                   "W": 600,
                   "H": 750,
@@ -459,7 +384,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "\u20b9",
+            "currencySymbol": "₹",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -804,7 +729,7 @@
       "is_shared": false,
       "fork_count": 1,
       "created_at": "2026-10-31T07:03:12.104Z",
-      "updated_at": "2026-10-31T12:53:19.660Z"
+      "updated_at": "2026-10-31T13:19:19.667Z"
     },
     {
       "id": "proj_mvw2z6d1i4ur",
@@ -812,9 +737,9 @@
       "client": "test",
       "type": "Full Apartment",
       "status": "Draft",
-      "created_by": "usr_admin",
-      "owner_name": "Cookscape Admin",
-      "owner_email": "admin@cookscape.com",
+      "created_by": "usr_dev",
+      "owner_name": "Dev Kancheti",
+      "owner_email": "dev@orbixstudio.io",
       "units_count": 3,
       "boards_est": 6,
       "data": {
@@ -1235,7 +1160,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "\u20b9",
+            "currencySymbol": "₹",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -1588,9 +1513,9 @@
       "client": "Aditya Birla",
       "type": "Full Apartment",
       "status": "Draft",
-      "created_by": "usr_admin",
-      "owner_name": "Cookscape Admin",
-      "owner_email": "admin@cookscape.com",
+      "created_by": "usr_dev",
+      "owner_name": "Dev Kancheti",
+      "owner_email": "dev@orbixstudio.io",
       "units_count": 1,
       "boards_est": 8,
       "data": {
@@ -1621,9 +1546,9 @@
       "client": "test",
       "type": "Full Apartment",
       "status": "Draft",
-      "created_by": "usr_admin",
-      "owner_name": "Cookscape Admin",
-      "owner_email": "admin@cookscape.com",
+      "created_by": "usr_dev",
+      "owner_name": "Dev Kancheti",
+      "owner_email": "dev@orbixstudio.io",
       "units_count": 1,
       "boards_est": 10,
       "data": {
@@ -1645,13 +1570,13 @@
     },
     {
       "id": "proj_mvw214oig5m3",
-      "title": "Lodha Crown \u2014 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)",
+      "title": "Lodha Crown — 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)",
       "client": "Sanjay Kapoor",
       "type": "Kitchen",
       "status": "Draft",
-      "created_by": "usr_admin",
-      "owner_name": "Cookscape Admin",
-      "owner_email": "admin@cookscape.com",
+      "created_by": "usr_alex",
+      "owner_name": "Alex Mercer",
+      "owner_email": "alex@modularedge.com",
       "units_count": 1,
       "boards_est": 14,
       "data": {
@@ -1664,13 +1589,13 @@
     },
     {
       "id": "proj_palm_tv",
-      "title": "Palm Beach Penthouse \u2014 Fluted Walnut Media Wall",
+      "title": "Palm Beach Penthouse — Fluted Walnut Media Wall",
       "client": "Ananya Deshmukh",
       "type": "TV Wall",
       "status": "Draft",
-      "created_by": "usr_admin",
-      "owner_name": "Cookscape Admin",
-      "owner_email": "admin@cookscape.com",
+      "created_by": "usr_priya",
+      "owner_name": "Priya Sharma",
+      "owner_email": "priya@archform.in",
       "units_count": 2,
       "boards_est": 8,
       "data": {
@@ -1700,13 +1625,13 @@
     },
     {
       "id": "proj_hiranandani",
-      "title": "Hiranandani Villa \u2014 Master Wardrobe & Loft",
+      "title": "Hiranandani Villa — Master Wardrobe & Loft",
       "client": "Rajesh & Sunita Singhania",
       "type": "Wardrobe",
       "status": "In Review",
-      "created_by": "usr_admin",
-      "owner_name": "Cookscape Admin",
-      "owner_email": "admin@cookscape.com",
+      "created_by": "usr_dev",
+      "owner_name": "Dev Kancheti",
+      "owner_email": "dev@orbixstudio.io",
       "units_count": 3,
       "boards_est": 12,
       "data": {
@@ -1736,13 +1661,13 @@
     },
     {
       "id": "proj_emerald",
-      "title": "Emerald Greens \u2014 Parallel Acrylic Kitchen",
+      "title": "Emerald Greens — Parallel Acrylic Kitchen",
       "client": "Vikram Mehta",
       "type": "Kitchen",
       "status": "CNC Ready",
-      "created_by": "usr_admin",
-      "owner_name": "Cookscape Admin",
-      "owner_email": "admin@cookscape.com",
+      "created_by": "usr_alex",
+      "owner_name": "Alex Mercer",
+      "owner_email": "alex@modularedge.com",
       "units_count": 6,
       "boards_est": 18,
       "data": {

@@ -1453,14 +1453,19 @@ function sceneLayouts(uOpt){
 }
 function buildScene(){
   var u0=U();
-  var hasArchProject = (window.OrbixUI && window.OrbixUI.project);
-  var actTab = document.querySelector('.vtab.is-on');
-  var isDesignView = actTab && actTab.getAttribute('data-view') === 'design';
+  var hasArchProject = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
 
-  if(!u0 || (hasArchProject && !isDesignView)){
+  if(hasArchProject){
+    MID=1200;
+    if(GL.ok) GL.show([]); // Clear standalone root so no unit is rendered at (0,0,0)
+    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+    camApply();
+    return;
+  }
+
+  if(!u0){
     MID=1200;
     if(GL.ok) GL.show([]);
-    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
     camApply();
     return;
   }
@@ -1468,7 +1473,6 @@ function buildScene(){
   var L=sceneLayouts();
   if(GL.ok) GL.show(L); else cssRender(L,u0);
   if(GL.ok && ROOM.id) GL.handlesSet((ROOM.handles && roomExtendable() && !ROOM.walls)?roomHandles():[],ROOM.bed);
-  if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
   camApply();
 }
 
@@ -3007,6 +3011,9 @@ function camApply(){
           }
           if(window.OrbixUI.renderBOQ) window.OrbixUI.renderBOQ();
           if(window.OrbixUI.renderInspector) window.OrbixUI.renderInspector([{ type: 'furniture', id: fd.id }]);
+          if(window.OrbixUI && typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function'){
+            window.OrbixUI.selectFurnitureIn3DStudio(fd.id);
+          }
           if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
         }
       } else {
@@ -3015,6 +3022,9 @@ function camApply(){
           window.OrbixUI.editor.selected = [{ type: 'furniture', id: fd.id }];
           if(window.OrbixUI.editor.render) window.OrbixUI.editor.render();
           if(window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
+        }
+        if(window.OrbixUI && typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function'){
+          window.OrbixUI.selectFurnitureIn3DStudio(fd.id);
         }
       }
       return;
@@ -3146,7 +3156,14 @@ function renderRail(){
   S.units.forEach(function(u,i){
     var c=el("uchip"+(i===S.active?" is-on":""),uw,"button");
     c.textContent=u.label||("Unit "+(i+1));
-    c.addEventListener("click",function(){ S.active=i; renderRail(); renderAll(); });
+    c.addEventListener("click",function(){
+      S.active=i;
+      renderRail();
+      renderAll();
+      if(u._furnId && window.OrbixUI && window.OrbixUI.highlight3DFurniture){
+        window.OrbixUI.highlight3DFurniture(u._furnId);
+      }
+    });
   });
   var add=el("uchip add",uw,"button");
   add.textContent="+ Unit";
@@ -3481,6 +3498,9 @@ function softAll(geometry){
   clearTimeout(softT);
   softT=setTimeout(function(){
     nestBust();
+    if(window.OrbixUI && typeof window.OrbixUI.sync3DStudioUnits === 'function'){
+      window.OrbixUI.sync3DStudioUnits();
+    }
     if(geometry){ fit(); buildScene(); }
     renderLegend(); renderFoot(); renderSheet(); renderElev();
     refreshHeavy(false);
@@ -3489,6 +3509,9 @@ function softAll(geometry){
 }
 function renderAll(){
   nestBust();
+  if(window.OrbixUI && typeof window.OrbixUI.sync3DStudioUnits === 'function'){
+    window.OrbixUI.sync3DStudioUnits();
+  }
   fit(); buildScene(); renderLegend(); renderFoot(); renderSheet(); renderElev();
   refreshHeavy(true);
   save();
@@ -3871,7 +3894,13 @@ function setView(v){
     b.setAttribute("aria-pressed",String(on));
   });
   $all(".view").forEach(function(s){ s.classList.toggle("is-on",s.id==="view-"+v); });
-  if(v==="design"){ fit(); camApply(); if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(); }
+  if(v==="design"){
+    if(window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function'){
+      window.OrbixUI.syncProjectUnitsTo3DStudio();
+    }
+    fit(); camApply();
+    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+  }
   if(v==="panels") renderPanels();
   if(v==="nest"){ renderNestOpts(); renderNest(); }
   if(v==="quote") renderQuote();

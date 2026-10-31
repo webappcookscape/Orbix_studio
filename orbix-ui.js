@@ -73,6 +73,7 @@
       }
       this.updateUI();
       this.renderBOQ();
+      this.syncProjectUnitsTo3DStudio();
     },
 
     createNewProject: function (title, clientName) {
@@ -775,12 +776,141 @@
       }
     },
 
+    syncProjectUnitsTo3DStudio: function (selectFurnId) {
+      if (!this.project || !this.project.plan) return;
+      var furnList = this.project.plan.furniture || [];
+      if (!furnList.length) return;
+
+      window.S = window.S || {};
+      window.S.units = window.S.units || [];
+
+      // Map existing units by _furnId
+      var existingMap = {};
+      window.S.units.forEach(function (u) {
+        if (u._furnId) existingMap[u._furnId] = u;
+      });
+
+      var newUnits = [];
+      for (var f = 0; f < furnList.length; f++) {
+        var fn = furnList[f];
+        var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
+        var existing = existingMap[fn.id];
+
+        if (existing) {
+          existing.label = fn.name;
+          existing.W = fn.dimensions.W || existing.W;
+          existing.H = fn.dimensions.H || existing.H;
+          existing.D = fn.dimensions.D || existing.D;
+          if (fn.unitConfig) {
+            if (fn.unitConfig.shutters !== undefined) existing.shutters = fn.unitConfig.shutters;
+            if (fn.unitConfig.drawers !== undefined) existing.drawers = fn.unitConfig.drawers;
+            if (fn.unitConfig.shelves !== undefined) existing.shelves = fn.unitConfig.shelves;
+            if (fn.unitConfig.handle) existing.handle = fn.unitConfig.handle;
+            if (fn.unitConfig.dstyle) existing.dstyle = fn.unitConfig.dstyle;
+          }
+          if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) {
+            existing.shutterCol = fn.materials.shutter.finish;
+          }
+          if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) {
+            existing.carcass = fn.materials.carcass.finish;
+          }
+          newUnits.push(existing);
+        } else {
+          var u = {
+            label: fn.name,
+            ctype: isKitchen ? 'kbase' : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
+            _furnId: fn.id,
+            W: fn.dimensions.W || 600,
+            H: fn.dimensions.H || 750,
+            D: fn.dimensions.D || 550,
+            T: 18,
+            type: (fn.unitConfig && fn.unitConfig.type) || 'hinged',
+            shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1),
+            sections: (fn.unitConfig && fn.unitConfig.sections) || (fn.dimensions.W > 1200 ? 2 : 1),
+            shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isKitchen ? 1 : 3),
+            drawers: (fn.unitConfig && fn.unitConfig.drawers) || 0,
+            drawerH: 180,
+            loft: (fn.unitConfig && fn.unitConfig.loft) || false,
+            loftH: 600,
+            loftShutters: 2,
+            back: 18,
+            dstyle: (fn.unitConfig && fn.unitConfig.dstyle) || 'slab',
+            handle: (fn.unitConfig && fn.unitConfig.handle) || 'gprof',
+            hfinish: (fn.unitConfig && fn.unitConfig.hfinish) || 'black',
+            counter: (fn.unitConfig && fn.unitConfig.counter) || (isKitchen ? 'black' : 'none'),
+            carcass: (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135',
+            shutterCol: (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701'
+          };
+          newUnits.push(u);
+        }
+      }
+
+      window.S.units = newUnits;
+
+      // Select specific unit or first unit
+      var targetIdx = 0;
+      if (selectFurnId) {
+        for (var i = 0; i < window.S.units.length; i++) {
+          if (window.S.units[i]._furnId === selectFurnId) {
+            targetIdx = i;
+            break;
+          }
+        }
+      } else if (this.editor && this.editor.selected && this.editor.selected.length) {
+        var selId = this.editor.selected[0].id;
+        for (var j = 0; j < window.S.units.length; j++) {
+          if (window.S.units[j]._furnId === selId) {
+            targetIdx = j;
+            break;
+          }
+        }
+      }
+      window.S.active = targetIdx;
+      if (typeof window.renderRail === 'function') window.renderRail();
+    },
+
+    selectFurnitureIn3DStudio: function (furnId) {
+      if (!furnId) return;
+      this.syncProjectUnitsTo3DStudio(furnId);
+      for (var i = 0; i < window.S.units.length; i++) {
+        if (window.S.units[i]._furnId === furnId) {
+          window.S.active = i;
+          break;
+        }
+      }
+      if (typeof window.renderRail === 'function') window.renderRail();
+      if (typeof window.renderLegend === 'function') window.renderLegend();
+      this.highlight3DFurniture(furnId);
+    },
+
+    highlight3DFurniture: function (furnId) {
+      if (!window.__cc || !window.__cc.gl || !window.__cc.gl.getScene) return;
+      var scene = window.__cc.gl.getScene();
+      var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+      if (!homeObj) return;
+
+      homeObj.traverse(function (obj) {
+        if (obj.userData && obj.userData.isFurnitureGroup) {
+          var isSel = (obj.userData.furnitureId === furnId);
+          obj.traverse(function (child) {
+            if (child.isMesh && child.material && child.material.emissive) {
+              if (isSel) {
+                child.userData._origEmissive = (child.userData._origEmissive !== undefined) ? child.userData._origEmissive : child.material.emissive.getHex();
+                child.material.emissive.setHex(0x1a2e3b);
+              } else if (child.userData._origEmissive !== undefined) {
+                child.material.emissive.setHex(child.userData._origEmissive);
+              }
+            }
+          });
+        }
+      });
+      if (window.__cc.gl.settle) window.__cc.gl.settle();
+    },
+
     sync3DStudioUnits: function () {
       if (!window.S || !window.S.units || !this.project || !this.project.plan) return;
       var furnList = this.project.plan.furniture = this.project.plan.furniture || [];
 
-      // Only synchronize dimensions/materials back to furniture that was already placed on the plan
-      // NEVER auto-create or inject phantom units into the floor plan!
       for (var uIdx = 0; uIdx < window.S.units.length; uIdx++) {
         var u = window.S.units[uIdx];
         if (!u || !u._furnId) continue;
@@ -794,13 +924,29 @@
         }
 
         if (match) {
+          if (u.label) match.name = u.label;
           match.dimensions = { W: u.W || match.dimensions.W, H: u.H || match.dimensions.H, D: u.D || match.dimensions.D };
-          if (u.shutters) match.unitConfig.shutters = u.shutters;
+          match.unitConfig = match.unitConfig || {};
+          if (u.shutters !== undefined) match.unitConfig.shutters = u.shutters;
           if (u.handle) match.unitConfig.handle = u.handle;
-          if (u.shutterCol) match.unitConfig.shutterCol = u.shutterCol;
-          if (u.carcass) match.unitConfig.carcass = u.carcass;
+          if (u.dstyle) match.unitConfig.dstyle = u.dstyle;
+          if (u.drawers !== undefined) match.unitConfig.drawers = u.drawers;
+          if (u.shelves !== undefined) match.unitConfig.shelves = u.shelves;
+          if (u.shutterCol) {
+            match.unitConfig.shutterCol = u.shutterCol;
+            match.materials = match.materials || {};
+            match.materials.shutter = match.materials.shutter || {};
+            match.materials.shutter.finish = u.shutterCol;
+          }
+          if (u.carcass) {
+            match.unitConfig.carcass = u.carcass;
+            match.materials = match.materials || {};
+            match.materials.carcass = match.materials.carcass || {};
+            match.materials.carcass.finish = u.carcass;
+          }
         }
       }
+      this.saveToLocalStorage();
     },
 
     renderBOQ: function () {

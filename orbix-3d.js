@@ -154,19 +154,6 @@
     // 3. Build Placed Furniture Units in 3D
     for (var f = 0; f < furniture.length; f++) {
       var furn = furniture[f];
-      // Do not duplicate the unit currently being interactively rendered by 3D Studio (U())
-      if (typeof window !== 'undefined' && typeof window.U === 'function') {
-        try {
-          var activeU = window.U();
-          if (activeU && (
-            (activeU._furnId && activeU._furnId === furn.id) ||
-            (activeU.label === furn.name) ||
-            (furn.name === 'FM 600' && (activeU.label === 'FM 600' || (activeU.label && activeU.label.indexOf('FM 600') !== -1)))
-          )) {
-            continue; // Skip rendering duplicate static box for the active studio unit!
-          }
-        } catch (e) {}
-      }
       var furnMesh = this.buildFurnitureMesh(furn);
       if (furnMesh) this.group.add(furnMesh);
     }
