@@ -159,7 +159,7 @@ input,select{font:inherit;color:inherit}
 .stagewrap{flex:1 1 auto;display:flex;flex-direction:column;min-width:0}
 #stage{
   flex:1 1 auto;position:relative;min-height:0;
-  background: linear-gradient(180deg, #87CEEB 0%, #B2E2F8 35%, #DDF1FC 70%, #F2F9FD 100%);
+  background: linear-gradient(180deg, #3FA9F5 0%, #68BAF7 28%, #96D2FA 58%, #C4E6FC 82%, #DCF1FD 100%);
   perspective:2600px;perspective-origin:50% 46%;
   overflow:hidden;cursor:grab;touch-action:none;
 }
@@ -872,7 +872,7 @@ tr.rv-guess td{background:#FFF7D6}
 .chip.is-on{background:var(--blue);border-color:var(--blue);color:#fff}
 /* soft sky vignette over the viewer */
 #stage::after{content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(120% 92% at 50% 44%, rgba(255,255,255,0) 65%, rgba(13, 71, 161, 0.06) 100%)}
+  background:radial-gradient(120% 92% at 50% 44%, rgba(255,255,255,0) 65%, rgba(63, 169, 245, 0.08) 100%)}
 
 /* open-source link */
 .ghstar{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:9px 12px;border:1px solid var(--blue);color:var(--blue);text-decoration:none;font:600 12px/1 "IBM Plex Sans Condensed",sans-serif;letter-spacing:.06em;text-transform:uppercase;background:#fff}

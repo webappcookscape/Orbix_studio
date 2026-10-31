@@ -1508,6 +1508,36 @@ var GL=(function(){
     box( 0,-4490,0, 6000,80,6000, 0.7, 0xe9e3d8);
     return s;
   }
+  function makeGrassFloorMat(){
+    var c=document.createElement("canvas"); c.width=c.height=512;
+    var g=c.getContext("2d"), rnd=mulberry(4242);
+    // Darker grass-green / mossy grout line
+    g.fillStyle="#325A1C"; g.fillRect(0,0,512,512);
+    for(var i=0;i<2;i++) for(var j=0;j<2;j++){
+      // Fresh, vibrant grass green tiles
+      g.fillStyle=(i+j)%2?"#5EAC34":"#529E2C"; g.fillRect(i*256+4,j*256+4,248,248);
+      // Fine organic grass blade stippling
+      for(var k=0;k<280;k++){
+        g.fillStyle="rgba(25,60,12,"+(0.06+rnd()*0.10).toFixed(3)+")";
+        g.fillRect(i*256+4+rnd()*248,j*256+4+rnd()*248,1+rnd()*3,2+rnd()*3);
+      }
+      for(var k=0;k<140;k++){
+        g.fillStyle="rgba(165,230,90,"+(0.08+rnd()*0.14).toFixed(3)+")";
+        g.fillRect(i*256+4+rnd()*248,j*256+4+rnd()*248,1+rnd()*2,1+rnd()*2);
+      }
+    }
+    var tex=new THREE.CanvasTexture(c);
+    tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+    tex.repeat.set(50,50);
+    tex.encoding=THREE.sRGBEncoding;
+    if(renderer && renderer.capabilities) tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+    var m=new THREE.MeshStandardMaterial({
+      map:tex,
+      roughness:0.65,
+      metalness:0.02
+    });
+    return m;
+  }
   function init(){
     if(!window.THREE) return false;
     try{ renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:"high-performance"}); }
@@ -1538,8 +1568,8 @@ var GL=(function(){
     var fill=new THREE.DirectionalLight(0xe8eef8,0.42); fill.position.set(2600,1900,4800); scene.add(fill);
     var rim=new THREE.DirectionalLight(0xdfe8f5,0.4); rim.position.set(2400,1600,-2600); scene.add(rim);
     scene.add(new THREE.HemisphereLight(0xeef1f5,0x8c8478,0.32));
-    floor=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000),new THREE.ShadowMaterial({opacity:0.4}));
-    floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+    floor=new THREE.Mesh(new THREE.PlaneGeometry(60000,60000),makeGrassFloorMat());
+    floor.rotation.x=-Math.PI/2; floor.position.y=-1; floor.receiveShadow=true; scene.add(floor);
     root=new THREE.Group(); scene.add(root);
     ok=true; return true;
   }
@@ -1669,13 +1699,14 @@ var GL=(function(){
       var md=new THREE.MeshPhysicalMaterial({map:floorT,roughness:0.16,metalness:0,clearcoat:0.9,clearcoatRoughness:0.12,envMapIntensity:0.9});
       matCache["sp|floor"]=md; return md;
     }
-    /* 2 × 2 large porcelain tiles per repeat (1200 mm) — 600 mm tiles with a fine grout (Light Green Grass) */
+    /* 2 × 2 large porcelain tiles per repeat (1200 mm) — 600 mm tiles with a fine grout (Grass Green) */
     var c=document.createElement("canvas"); c.width=c.height=512;
     var g=c.getContext("2d"), rnd=mulberry(4242);
-    g.fillStyle="#789E5A"; g.fillRect(0,0,512,512);
+    g.fillStyle="#325A1C"; g.fillRect(0,0,512,512);
     for(var i=0;i<2;i++) for(var j=0;j<2;j++){
-      g.fillStyle=(i+j)%2?"#A5D67D":"#97C96E"; g.fillRect(i*256+2,j*256+2,252,252);
-      for(var k=0;k<180;k++){ g.fillStyle="rgba(55,100,35,"+(0.05+rnd()*0.07).toFixed(3)+")"; g.fillRect(i*256+2+rnd()*252,j*256+2+rnd()*252,1+rnd()*3,1); }
+      g.fillStyle=(i+j)%2?"#5EAC34":"#529E2C"; g.fillRect(i*256+4,j*256+4,248,248);
+      for(var k=0;k<280;k++){ g.fillStyle="rgba(25,60,12,"+(0.06+rnd()*0.10).toFixed(3)+")"; g.fillRect(i*256+4+rnd()*248,j*256+4+rnd()*248,1+rnd()*3,2+rnd()*3); }
+      for(var k=0;k<140;k++){ g.fillStyle="rgba(165,230,90,"+(0.08+rnd()*0.14).toFixed(3)+")"; g.fillRect(i*256+4+rnd()*248,j*256+4+rnd()*248,1+rnd()*2,1+rnd()*2); }
     }
     floorT=new THREE.CanvasTexture(c); floorT.wrapS=floorT.wrapT=THREE.RepeatWrapping; floorT.encoding=THREE.sRGBEncoding; floorT.anisotropy=renderer.capabilities.getMaxAnisotropy();
     var m=new THREE.MeshPhysicalMaterial({map:floorT,roughness:0.32,metalness:0,clearcoat:0.35,clearcoatRoughness:0.25,envMapIntensity:0.6});
