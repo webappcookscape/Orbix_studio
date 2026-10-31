@@ -46,10 +46,78 @@
       "created_by": "usr_dev",
       "owner_name": "Dev Kancheti",
       "owner_email": "dev@orbixstudio.io",
-      "units_count": 1,
+      "units_count": 5,
       "boards_est": 14,
       "data": {
-        "units": [],
+        "units": [
+          {
+            "label": "SHOE",
+            "ctype": "shoe",
+            "elev": 0,
+            "drawEvery": false,
+            "counter": "black",
+            "hfinish": "black",
+            "dstyle": "steel",
+            "paint": "#5B6E7A",
+            "shape": "straight",
+            "W2": 1200,
+            "H": 900,
+            "W": 1200,
+            "D": 350,
+            "T": 18,
+            "type": "hinged",
+            "shutters": 3,
+            "sections": 1,
+            "shelves": 2,
+            "drawers": 0,
+            "drawerH": 180,
+            "loft": false,
+            "loftH": 600,
+            "loftShutters": 3,
+            "back": 18,
+            "handle": "ibh8",
+            "carcass": "MDF 1135",
+            "shutterCol": "MDF 1135",
+            "kWallCol": null,
+            "kWallDs": null,
+            "shutterCol2": null,
+            "hgrain": false,
+            "glassTint": "fluted",
+            "frameFin": "black",
+            "leatherHex": "#4A3626",
+            "kSplash": "subway",
+            "kSplashHex": null
+          },
+          {
+            "label": "FM 600",
+            "ctype": "kbase",
+            "elev": 0,
+            "drawEvery": false,
+            "counter": "black",
+            "hfinish": "black",
+            "dstyle": "slab",
+            "paint": "#5B6E7A",
+            "shape": "straight",
+            "W2": 600,
+            "H": 750,
+            "W": 600,
+            "D": 550,
+            "T": 18,
+            "type": "hinged",
+            "shutters": 1,
+            "sections": 1,
+            "shelves": 1,
+            "drawers": 0,
+            "drawerH": 180,
+            "loft": false,
+            "loftH": 0,
+            "loftShutters": 0,
+            "back": 18,
+            "handle": "gprof",
+            "carcass": "MDF 1135",
+            "shutterCol": "MDF 7701"
+          }
+        ],
         "plan": {
           "schemaVersion": "1.0.0",
           "id": "proj_215l4pkoa",
@@ -64,7 +132,7 @@
             "dateCreated": "31 Oct 2026",
             "validUntil": "30 Nov 2026",
             "status": "approved",
-            "dateModified": "2026-10-31T11:16:46.342Z"
+            "dateModified": "2026-10-31T11:25:17.428Z"
           },
           "plan": {
             "gridSize": 100,
@@ -251,7 +319,175 @@
                 },
                 "rotY": 1.5707963267948966,
                 "dimensions": {
-                  "W": 800,
+                  "W": 600,
+                  "H": 750,
+                  "D": 550
+                },
+                "materials": {
+                  "shutter": {
+                    "material": "HDHMR_18MM",
+                    "finish": "Brazilian Horizontal Walnut"
+                  },
+                  "carcass": {
+                    "material": "BWP_18MM",
+                    "finish": "Absolute White"
+                  }
+                },
+                "unitConfig": {
+                  "shutters": 1,
+                  "shelves": 1,
+                  "drawers": 0,
+                  "dstyle": "slab",
+                  "counter": "black",
+                  "handle": "gprof",
+                  "hfinish": "black",
+                  "carcass": "MDF 1135",
+                  "shutterCol": "MDF 7701"
+                },
+                "pricingOverrides": null,
+                "notes": ""
+              },
+              {
+                "id": "u3d_1_1793445752561",
+                "name": "SHOE",
+                "category": "wardrobe",
+                "roomId": null,
+                "pos": {
+                  "x": 2400,
+                  "y": 6600
+                },
+                "rotY": 0,
+                "dimensions": {
+                  "W": 1200,
+                  "H": 900,
+                  "D": 350
+                },
+                "materials": {
+                  "shutter": {
+                    "material": "HDHMR_18MM",
+                    "finish": "MDF 1135"
+                  },
+                  "carcass": {
+                    "material": "BWP_18MM",
+                    "finish": "Absolute White"
+                  }
+                },
+                "unitConfig": {
+                  "shutterCol": "MDF 1135",
+                  "carcass": "MDF 1135",
+                  "shutters": 3,
+                  "handle": "ibh8"
+                },
+                "pricingOverrides": null,
+                "notes": ""
+              },
+              {
+                "id": "furn_944kudr5r",
+                "name": "FCM -RT (Kitchen Base)",
+                "category": "kitchen_base",
+                "roomId": null,
+                "pos": {
+                  "x": -6500,
+                  "y": -100,
+                  "z": 0
+                },
+                "rotY": 0,
+                "dimensions": {
+                  "W": 1200,
+                  "H": 750,
+                  "D": 550
+                },
+                "materials": {
+                  "shutter": {
+                    "material": "HDHMR_18MM",
+                    "finish": "Brazilian Horizontal Walnut"
+                  },
+                  "carcass": {
+                    "material": "BWP_18MM",
+                    "finish": "Absolute White"
+                  }
+                },
+                "unitConfig": {
+                  "shutters": 1,
+                  "doorType": "hinged",
+                  "dstyle": "slab",
+                  "glassTint": "none",
+                  "profileColor": "none",
+                  "sections": 0,
+                  "shelves": 1,
+                  "drawers": 0,
+                  "loft": false,
+                  "loftH": 0,
+                  "counter": "none",
+                  "handle": "gprof",
+                  "hfinish": "black",
+                  "led": false,
+                  "carcass": "BWP_18mm",
+                  "shutterCol": "Absolute White"
+                },
+                "pricingOverrides": null,
+                "notes": ""
+              },
+              {
+                "id": "furn_n4stwppwd",
+                "name": "WM 1200 (Kitchen Wall)",
+                "category": "kitchen_wall",
+                "roomId": null,
+                "pos": {
+                  "x": -6700,
+                  "y": 1400,
+                  "z": 0
+                },
+                "rotY": 0,
+                "dimensions": {
+                  "W": 1200,
+                  "H": 600,
+                  "D": 300
+                },
+                "materials": {
+                  "shutter": {
+                    "material": "HDHMR_18MM",
+                    "finish": "Brazilian Horizontal Walnut"
+                  },
+                  "carcass": {
+                    "material": "BWP_18MM",
+                    "finish": "Absolute White"
+                  }
+                },
+                "unitConfig": {
+                  "shutters": 2,
+                  "doorType": "hinged",
+                  "dstyle": "slab",
+                  "glassTint": "none",
+                  "profileColor": "none",
+                  "sections": 0,
+                  "shelves": 1,
+                  "drawers": 0,
+                  "loft": false,
+                  "loftH": 0,
+                  "counter": "none",
+                  "handle": "gprof",
+                  "hfinish": "black",
+                  "led": false,
+                  "carcass": "BWP_18mm",
+                  "shutterCol": "Absolute White"
+                },
+                "pricingOverrides": null,
+                "notes": ""
+              },
+              {
+                "id": "furn_aw6mpc6pf",
+                "name": "FM 600 (Kitchen Base)",
+                "category": "kitchen_base",
+                "roomId": null,
+                "pos": {
+                  "x": -6500,
+                  "y": 3200,
+                  "z": 0
+                },
+                "rotY": 0,
+                "dimensions": {
+                  "W": 600,
                   "H": 750,
                   "D": 550
                 },
@@ -629,7 +865,7 @@
       "is_shared": false,
       "fork_count": 1,
       "created_at": "2026-10-31T07:03:12.104Z",
-      "updated_at": "2026-10-31T11:22:14.922Z"
+      "updated_at": "2026-10-31T11:27:14.974Z"
     },
     {
       "id": "proj_mvw2z6d1i4ur",

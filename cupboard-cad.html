@@ -11212,6 +11212,7 @@ function renderRail(){
     pEmpty.textContent="No cupboards in this project yet. Draw walls and place furniture in 2D Floor Plan, or click '+ Unit' above.";
     return;
   }
+  var g1=grp(r,"Unit");
   fld(el("row",g1),"Label",u.label,function(v){
     u.label=v;
     var c=$all(".uchip")[S.active]; if(c) c.textContent=v||("Unit "+(S.active+1));
