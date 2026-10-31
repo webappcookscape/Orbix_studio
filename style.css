@@ -1418,6 +1418,38 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 .cc-close{background:none;border:none;color:#94A3B8;font-size:20px;cursor:pointer}
 .cc-close:hover{color:#FFFFFF}
 
+/* ══════════ ROLE BADGES & EMPLOYEE MANAGEMENT ══════════ */
+.u-role-pill{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:0.5px;
+}
+.u-role-pill.badge-admin{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D}
+.u-role-pill.badge-employee{background:#E0F2FE;color:#0369A1;border:1px solid #BAE6FD}
+
+.role-badge{
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;
+  display:inline-block;
+}
+.role-badge.admin{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D}
+.role-badge.employee{background:#E0F2FE;color:#0369A1;border:1px solid #BAE6FD}
+
+.u-avatar.is-admin-avatar{background:linear-gradient(135deg,#D97706,#B45309)}
+
+.admin-create-emp-box{
+  background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;
+  padding:14px 16px;margin:16px 0;box-shadow:inset 0 1px 3px rgba(0,0,0,.02);
+}
+.admin-create-emp-box .modal-section-title{margin-top:0;font-size:13px;color:#1E293B}
+.admin-create-emp-box .modal-section-desc{font-size:11.5px;color:#64748B;margin-bottom:12px}
+
+.create-emp-form{display:flex;flex-direction:column;gap:10px}
+.form-row-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:580px){
+  .form-row-2col{grid-template-columns:1fr}
+}
+
+
 
 
 

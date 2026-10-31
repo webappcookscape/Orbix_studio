@@ -563,14 +563,49 @@
       <div class="user-current-card">
         <div class="ucc-avatar"><span class="u-avatar big">DK</span></div>
         <div class="ucc-info">
-          <h4 id="curUserName">Dev Kancheti</h4>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <h4 id="curUserName" style="margin:0;">Dev Kancheti</h4>
+            <span class="role-badge" id="curUserBadge">Admin</span>
+          </div>
           <span class="ucc-email" id="curUserEmail">dev@orbixstudio.io</span>
-          <span class="ucc-role" id="curUserRole">Lead Modular Designer</span>
+          <span class="ucc-role" id="curUserRole">Studio Head</span>
         </div>
       </div>
 
-      <h4 class="modal-section-title">Switch Active Profile</h4>
-      <p class="modal-section-desc">Test multi-user collaboration and colleague copy isolation in real-time:</p>
+      <!-- Admin Only: Create Employee Form -->
+      <div class="admin-create-emp-box" id="adminCreateEmpBox" style="display:none;">
+        <h4 class="modal-section-title">➕ Create New Employee</h4>
+        <p class="modal-section-desc">Create employee accounts. Employees get access to Home, Floor Plan (2D), 3D Studio &amp; Pricing.</p>
+        <form id="createEmployeeForm" class="create-emp-form">
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label">Employee Name *</label>
+              <input type="text" id="newEmpName" class="form-input" placeholder="e.g. Rahul Verma" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address *</label>
+              <input type="email" id="newEmpEmail" class="form-input" placeholder="e.g. rahul@orbixstudio.io" required>
+            </div>
+          </div>
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label">Job Title / Designation</label>
+              <input type="text" id="newEmpTitle" class="form-input" placeholder="e.g. Modular CAD Designer">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <select id="newEmpRole" class="form-input">
+                <option value="employee" selected>Employee (Home, 2D Plan, 3D, Pricing)</option>
+                <option value="admin">Admin (All Menus &amp; All Projects)</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn primary" id="submitNewEmpBtn">+ Create Employee</button>
+        </form>
+      </div>
+
+      <h4 class="modal-section-title" style="margin-top:20px;">Switch Active Profile</h4>
+      <p class="modal-section-desc">Switch between Admin and Employee profiles to test role-based access:</p>
       <div class="switch-users-list" id="switchUsersList"></div>
     </div>
     <div class="modal-foot">

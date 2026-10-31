@@ -17,26 +17,29 @@ const SCHEMA_PATH = path.join(DATA_DIR, 'schema.sql');
 // Default Seeds
 const DEFAULT_USERS = [
   {
-    id: 'usr_dev',
+    id: 'usr_admin',
     name: 'Dev Kancheti',
-    email: 'dev@orbixstudio.io',
-    role: 'Lead Modular Designer',
+    email: 'admin@orbixstudio.io',
+    role: 'admin',
+    designation: 'Studio Admin',
     company: 'Orbix Design Studio',
-    avatar: 'DK'
+    avatar: 'AD'
   },
   {
     id: 'usr_alex',
     name: 'Alex Mercer',
-    email: 'alex@modularedge.com',
-    role: 'Production Estimator',
+    email: 'alex@orbixstudio.io',
+    role: 'employee',
+    designation: 'Production Estimator',
     company: 'Precision Modular Works',
     avatar: 'AM'
   },
   {
     id: 'usr_priya',
     name: 'Priya Sharma',
-    email: 'priya@archform.in',
-    role: 'Interior Architect',
+    email: 'priya@orbixstudio.io',
+    role: 'employee',
+    designation: 'Modular Designer',
     company: 'Archform Interiors',
     avatar: 'PS'
   }
@@ -257,8 +260,9 @@ class DBManager {
   }
 
   // ── Project Methods ──
-  async getProjects({ search = '', filter = 'all', userId = '' } = {}) {
+  async getProjects({ search = '', filter = 'all', userId = '', userRole = '' } = {}) {
     let projects = [];
+    const isAdmin = userRole === 'admin';
     if (this.isPgConnected) {
       try {
         let query = 'SELECT * FROM projects WHERE 1=1';
@@ -271,12 +275,20 @@ class DBManager {
           pIndex++;
         }
 
+        // Role-based filtering:
+        // Admin: can see all projects unless specifically filtering by 'mine' or 'shared'
+        // Employee: only sees their own projects OR projects that are shared
         if (filter === 'mine' && userId) {
           query += ` AND created_by = $${pIndex}`;
           params.push(userId);
           pIndex++;
         } else if (filter === 'shared') {
           query += ` AND is_shared = true`;
+        } else if (!isAdmin && userId) {
+          // Employee viewing 'all': restrict to own projects and shared projects
+          query += ` AND (created_by = $${pIndex} OR is_shared = true)`;
+          params.push(userId);
+          pIndex++;
         }
 
         query += ' ORDER BY updated_at DESC';
@@ -300,6 +312,8 @@ class DBManager {
         projects = projects.filter(p => p.created_by === userId);
       } else if (filter === 'shared') {
         projects = projects.filter(p => p.is_shared);
+      } else if (!isAdmin && userId) {
+        projects = projects.filter(p => p.created_by === userId || p.is_shared);
       }
       projects.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
     }

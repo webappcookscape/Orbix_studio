@@ -68,8 +68,8 @@ app.get('/api/users/:id', async (req, res) => {
 // Projects
 app.get('/api/projects', async (req, res) => {
   try {
-    const { search, filter, userId } = req.query;
-    const projects = await db.getProjects({ search, filter, userId });
+    const { search, filter, userId, userRole } = req.query;
+    const projects = await db.getProjects({ search, filter, userId, userRole });
     res.json({ success: true, count: projects.length, projects });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

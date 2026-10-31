@@ -1423,6 +1423,38 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 .cc-close{background:none;border:none;color:#94A3B8;font-size:20px;cursor:pointer}
 .cc-close:hover{color:#FFFFFF}
 
+/* ══════════ ROLE BADGES & EMPLOYEE MANAGEMENT ══════════ */
+.u-role-pill{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:0.5px;
+}
+.u-role-pill.badge-admin{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D}
+.u-role-pill.badge-employee{background:#E0F2FE;color:#0369A1;border:1px solid #BAE6FD}
+
+.role-badge{
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px;
+  display:inline-block;
+}
+.role-badge.admin{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D}
+.role-badge.employee{background:#E0F2FE;color:#0369A1;border:1px solid #BAE6FD}
+
+.u-avatar.is-admin-avatar{background:linear-gradient(135deg,#D97706,#B45309)}
+
+.admin-create-emp-box{
+  background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;
+  padding:14px 16px;margin:16px 0;box-shadow:inset 0 1px 3px rgba(0,0,0,.02);
+}
+.admin-create-emp-box .modal-section-title{margin-top:0;font-size:13px;color:#1E293B}
+.admin-create-emp-box .modal-section-desc{font-size:11.5px;color:#64748B;margin-bottom:12px}
+
+.create-emp-form{display:flex;flex-direction:column;gap:10px}
+.form-row-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:580px){
+  .form-row-2col{grid-template-columns:1fr}
+}
+
+
 
 
 
@@ -1960,14 +1992,49 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       <div class="user-current-card">
         <div class="ucc-avatar"><span class="u-avatar big">DK</span></div>
         <div class="ucc-info">
-          <h4 id="curUserName">Dev Kancheti</h4>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <h4 id="curUserName" style="margin:0;">Dev Kancheti</h4>
+            <span class="role-badge" id="curUserBadge">Admin</span>
+          </div>
           <span class="ucc-email" id="curUserEmail">dev@orbixstudio.io</span>
-          <span class="ucc-role" id="curUserRole">Lead Modular Designer</span>
+          <span class="ucc-role" id="curUserRole">Studio Head</span>
         </div>
       </div>
 
-      <h4 class="modal-section-title">Switch Active Profile</h4>
-      <p class="modal-section-desc">Test multi-user collaboration and colleague copy isolation in real-time:</p>
+      <!-- Admin Only: Create Employee Form -->
+      <div class="admin-create-emp-box" id="adminCreateEmpBox" style="display:none;">
+        <h4 class="modal-section-title">➕ Create New Employee</h4>
+        <p class="modal-section-desc">Create employee accounts. Employees get access to Home, Floor Plan (2D), 3D Studio &amp; Pricing.</p>
+        <form id="createEmployeeForm" class="create-emp-form">
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label">Employee Name *</label>
+              <input type="text" id="newEmpName" class="form-input" placeholder="e.g. Rahul Verma" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address *</label>
+              <input type="email" id="newEmpEmail" class="form-input" placeholder="e.g. rahul@orbixstudio.io" required>
+            </div>
+          </div>
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label">Job Title / Designation</label>
+              <input type="text" id="newEmpTitle" class="form-input" placeholder="e.g. Modular CAD Designer">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role</label>
+              <select id="newEmpRole" class="form-input">
+                <option value="employee" selected>Employee (Home, 2D Plan, 3D, Pricing)</option>
+                <option value="admin">Admin (All Menus &amp; All Projects)</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn primary" id="submitNewEmpBtn">+ Create Employee</button>
+        </form>
+      </div>
+
+      <h4 class="modal-section-title" style="margin-top:20px;">Switch Active Profile</h4>
+      <p class="modal-section-desc">Switch between Admin and Employee profiles to test role-based access:</p>
       <div class="switch-users-list" id="switchUsersList"></div>
     </div>
     <div class="modal-foot">
@@ -2001,9 +2068,17 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       this.initEventListeners();
       this.fetchDBStatus();
       this.fetchUsers(function () {
+        self.applyRolePermissions();
         self.fetchProjects();
       });
       this.startAutoSaveLoop();
+      this.guardViews();
+    },
+
+    isAdmin: function () {
+      if (!this.currentUser) return false;
+      var r = (this.currentUser.role || '').toLowerCase();
+      return r === 'admin' || r.indexOf('admin') !== -1;
     },
 
     loadCachedUser: function () {
@@ -2011,19 +2086,27 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         var saved = localStorage.getItem('orbix_current_user');
         if (saved) {
           this.currentUser = JSON.parse(saved);
+          // Normalize legacy cached data
+          if (this.currentUser.id === 'usr_dev' || this.currentUser.id === 'usr_admin') {
+            this.currentUser.role = 'admin';
+            this.currentUser.designation = 'Studio Admin';
+          } else if (!this.currentUser.role || (this.currentUser.role !== 'admin' && this.currentUser.role !== 'employee')) {
+            this.currentUser.role = 'employee';
+          }
         } else {
           this.currentUser = {
-            id: 'usr_dev',
+            id: 'usr_admin',
             name: 'Dev Kancheti',
-            email: 'dev@orbixstudio.io',
-            role: 'Lead Modular Designer',
+            email: 'admin@orbixstudio.io',
+            role: 'admin',
+            designation: 'Studio Admin',
             company: 'Orbix Design Studio',
-            avatar: 'DK'
+            avatar: 'AD'
           };
           localStorage.setItem('orbix_current_user', JSON.stringify(this.currentUser));
         }
       } catch (e) {
-        this.currentUser = { id: 'usr_dev', name: 'Dev Kancheti', email: 'dev@orbixstudio.io', role: 'Designer', avatar: 'DK' };
+        this.currentUser = { id: 'usr_admin', name: 'Dev Kancheti', email: 'admin@orbixstudio.io', role: 'admin', designation: 'Studio Admin', avatar: 'AD' };
       }
       this.updateUserUI();
     },
@@ -2034,27 +2117,110 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         localStorage.setItem('orbix_current_user', JSON.stringify(user));
       } catch (e) {}
       this.updateUserUI();
+      this.applyRolePermissions();
       this.fetchProjects();
       if (typeof showToast === 'function') {
-        showToast('Switched user to ' + user.name + ' (' + user.role + ')');
+        var roleName = this.isAdmin() ? 'Admin' : 'Employee';
+        showToast('Switched user to ' + user.name + ' (' + roleName + ')');
+      }
+    },
+
+    guardViews: function () {
+      var self = this;
+      var checkAndGuard = function () {
+        if (typeof window.setView === 'function' && !window.setView._isGuarded) {
+          var origSetView = window.setView;
+          window.setView = function (v) {
+            if (self.currentUser && !self.isAdmin()) {
+              var allowed = ['home', 'plan', 'design', 'boq'];
+              if (allowed.indexOf(v) === -1) {
+                if (typeof showToast === 'function') {
+                  showToast('View restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+                }
+                return;
+              }
+            }
+            origSetView(v);
+          };
+          window.setView._isGuarded = true;
+        }
+      };
+      checkAndGuard();
+      setTimeout(checkAndGuard, 1000);
+    },
+
+    applyRolePermissions: function () {
+      var isAdm = this.isAdmin();
+      // Admin has all access; Employee only has home, floor plan (2D), 3D Studio, Pricing (boq)
+      var allowedViews = isAdm 
+        ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
+        : ['home', 'plan', 'design', 'boq'];
+
+      // 1. Control visibility of top navigation tabs
+      var navTabs = document.querySelectorAll('.topbar .views .vtab');
+      navTabs.forEach(function (tab) {
+        var v = tab.getAttribute('data-view');
+        if (allowedViews.indexOf(v) !== -1) {
+          tab.style.display = '';
+          tab.removeAttribute('hidden');
+        } else {
+          tab.style.display = 'none';
+          tab.setAttribute('hidden', '');
+        }
+      });
+
+      // 2. If employee is currently on an unauthorized view, redirect to home
+      var activeTab = document.querySelector('.topbar .views .vtab.is-on');
+      var activeView = activeTab ? activeTab.getAttribute('data-view') : 'home';
+      if (allowedViews.indexOf(activeView) === -1) {
+        if (typeof window.setView === 'function') {
+          window.setView('home');
+        }
+      }
+
+      // 3. Update topbar user avatar & role badge
+      var avatarEl = document.getElementById('userAvatarBtn');
+      if (avatarEl && this.currentUser) {
+        var roleLabel = isAdm ? 'Admin' : 'Employee';
+        var roleClass = isAdm ? 'badge-admin' : 'badge-employee';
+        avatarEl.innerHTML = '<span class="u-avatar ' + (isAdm ? 'is-admin-avatar' : '') + '">' + 
+          (this.currentUser.avatar || 'US') + '</span>' +
+          '<span class="u-name">' + this.currentUser.name + '</span>' +
+          '<span class="u-role-pill ' + roleClass + '">' + roleLabel + '</span>';
+      }
+
+      // 4. Update Current User Card in Modal
+      var modalName = document.getElementById('curUserName');
+      if (modalName) modalName.textContent = this.currentUser ? this.currentUser.name : '';
+      var modalEmail = document.getElementById('curUserEmail');
+      if (modalEmail) modalEmail.textContent = this.currentUser ? this.currentUser.email : '';
+      var modalRole = document.getElementById('curUserRole');
+      if (modalRole) modalRole.textContent = (this.currentUser ? (this.currentUser.designation || this.currentUser.role) : '') + ' • ' + (this.currentUser ? this.currentUser.company : '');
+      var modalBadge = document.getElementById('curUserBadge');
+      if (modalBadge) {
+        modalBadge.textContent = isAdm ? 'Admin (Full Access)' : 'Employee';
+        modalBadge.className = 'role-badge ' + (isAdm ? 'admin' : 'employee');
+      }
+
+      // 5. Show/hide Admin employee creation box in Modal
+      var adminBox = document.getElementById('adminCreateEmpBox');
+      if (adminBox) {
+        adminBox.style.display = isAdm ? 'block' : 'none';
+      }
+
+      // 6. Project Dashboard description
+      var pSecDesc = document.querySelector('.psection-title-wrap p');
+      if (pSecDesc) {
+        if (isAdm) {
+          pSecDesc.textContent = 'Admin Workspace — Full access to all projects, factory nesting, exports & production.';
+        } else {
+          pSecDesc.textContent = 'Employee Workspace — Your projects and projects shared with you.';
+        }
       }
     },
 
     updateUserUI: function () {
-      var user = this.currentUser;
-      if (!user) return;
-
-      var avatarEl = document.getElementById('userAvatarBtn');
-      if (avatarEl) {
-        avatarEl.innerHTML = '<span class="u-avatar">' + (user.avatar || 'US') + '</span><span class="u-name">' + user.name + '</span><span class="u-role">' + (user.role || '') + '</span>';
-      }
-
-      var modalName = document.getElementById('curUserName');
-      if (modalName) modalName.textContent = user.name;
-      var modalEmail = document.getElementById('curUserEmail');
-      if (modalEmail) modalEmail.textContent = user.email;
-      var modalRole = document.getElementById('curUserRole');
-      if (modalRole) modalRole.textContent = user.role + ' • ' + (user.company || '');
+      this.applyRolePermissions();
     },
 
     fetchDBStatus: function () {
@@ -2106,9 +2272,11 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
     fetchProjects: function () {
       var self = this;
+      var roleParam = this.isAdmin() ? 'admin' : 'employee';
       var url = '/api/projects?search=' + encodeURIComponent(this.searchQuery) +
         '&filter=' + encodeURIComponent(this.filter) +
-        '&userId=' + encodeURIComponent(this.currentUser ? this.currentUser.id : '');
+        '&userId=' + encodeURIComponent(this.currentUser ? this.currentUser.id : '') +
+        '&userRole=' + encodeURIComponent(roleParam);
 
       var listContainer = document.getElementById('projectsGrid');
       if (listContainer && (!self.projects || !self.projects.length)) {
@@ -2741,6 +2909,56 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         });
       }
 
+      // Admin Create Employee Form
+      var createEmpForm = document.getElementById('createEmployeeForm');
+      if (createEmpForm) {
+        createEmpForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!self.isAdmin()) {
+            if (typeof showToast === 'function') showToast('Only Admin can create new employees.');
+            return;
+          }
+          var name = document.getElementById('newEmpName').value.trim();
+          var email = document.getElementById('newEmpEmail').value.trim();
+          var title = document.getElementById('newEmpTitle').value.trim() || 'Modular Designer';
+          var role = document.getElementById('newEmpRole').value || 'employee';
+
+          if (!name || !email) return;
+
+          var initials = name.split(' ').map(function (n) { return n[0]; }).join('').toUpperCase().substring(0, 2) || 'EM';
+
+          var payload = {
+            name: name,
+            email: email,
+            role: role,
+            designation: title,
+            company: 'Orbix Studio',
+            avatar: initials
+          };
+
+          fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.user) {
+              createEmpForm.reset();
+              self.fetchUsers(function () {
+                self.openUserModal();
+              });
+              if (typeof showToast === 'function') {
+                showToast('✓ Successfully created ' + (data.user.role === 'admin' ? 'Admin' : 'Employee') + ': ' + data.user.name);
+              }
+            }
+          })
+          .catch(function (err) {
+            if (typeof showToast === 'function') showToast('Error creating employee: ' + err.message);
+          });
+        });
+      }
+
       // User Profile & Switcher Button in Topbar
       var userBtn = document.getElementById('userAvatarBtn');
       if (userBtn) {
@@ -2780,15 +2998,26 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       var modal = document.getElementById('userModal');
       if (!modal) return;
 
+      this.applyRolePermissions();
+
       var userListEl = document.getElementById('switchUsersList');
       if (userListEl) {
         var html = '';
         this.users.forEach(function (u) {
           var isCurrent = self.currentUser && self.currentUser.id === u.id;
+          var uIsAdmin = (u.role || '').toLowerCase() === 'admin' || (u.role || '').toLowerCase().indexOf('admin') !== -1;
+          var roleBadgeHtml = '<span class="role-badge ' + (uIsAdmin ? 'admin' : 'employee') + '">' + (uIsAdmin ? 'Admin' : 'Employee') + '</span>';
+
           html += '<div class="u-switch-item' + (isCurrent ? ' is-current' : '') + '" data-uid="' + u.id + '">' +
             '<div class="u-info">' +
-              '<span class="u-avatar">' + (u.avatar || 'US') + '</span>' +
-              '<div><strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong><span>' + u.role + ' • ' + (u.company || '') + '</span></div>' +
+              '<span class="u-avatar ' + (uIsAdmin ? 'is-admin-avatar' : '') + '">' + (u.avatar || 'US') + '</span>' +
+              '<div>' +
+                '<div style="display:flex;align-items:center;gap:6px;">' +
+                  '<strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong>' +
+                  roleBadgeHtml +
+                '</div>' +
+                '<span>' + (u.designation || u.role) + ' • ' + (u.company || '') + '</span>' +
+              '</div>' +
             '</div>' +
             (!isCurrent ? '<button class="btn switch-user-btn" data-uid="' + u.id + '">Switch</button>' : '<span class="current-tag">Current</span>') +
           '</div>';

@@ -22,9 +22,17 @@
       this.initEventListeners();
       this.fetchDBStatus();
       this.fetchUsers(function () {
+        self.applyRolePermissions();
         self.fetchProjects();
       });
       this.startAutoSaveLoop();
+      this.guardViews();
+    },
+
+    isAdmin: function () {
+      if (!this.currentUser) return false;
+      var r = (this.currentUser.role || '').toLowerCase();
+      return r === 'admin' || r.indexOf('admin') !== -1;
     },
 
     loadCachedUser: function () {
@@ -32,19 +40,27 @@
         var saved = localStorage.getItem('orbix_current_user');
         if (saved) {
           this.currentUser = JSON.parse(saved);
+          // Normalize legacy cached data
+          if (this.currentUser.id === 'usr_dev' || this.currentUser.id === 'usr_admin') {
+            this.currentUser.role = 'admin';
+            this.currentUser.designation = 'Studio Admin';
+          } else if (!this.currentUser.role || (this.currentUser.role !== 'admin' && this.currentUser.role !== 'employee')) {
+            this.currentUser.role = 'employee';
+          }
         } else {
           this.currentUser = {
-            id: 'usr_dev',
+            id: 'usr_admin',
             name: 'Dev Kancheti',
-            email: 'dev@orbixstudio.io',
-            role: 'Lead Modular Designer',
+            email: 'admin@orbixstudio.io',
+            role: 'admin',
+            designation: 'Studio Admin',
             company: 'Orbix Design Studio',
-            avatar: 'DK'
+            avatar: 'AD'
           };
           localStorage.setItem('orbix_current_user', JSON.stringify(this.currentUser));
         }
       } catch (e) {
-        this.currentUser = { id: 'usr_dev', name: 'Dev Kancheti', email: 'dev@orbixstudio.io', role: 'Designer', avatar: 'DK' };
+        this.currentUser = { id: 'usr_admin', name: 'Dev Kancheti', email: 'admin@orbixstudio.io', role: 'admin', designation: 'Studio Admin', avatar: 'AD' };
       }
       this.updateUserUI();
     },
@@ -55,27 +71,110 @@
         localStorage.setItem('orbix_current_user', JSON.stringify(user));
       } catch (e) {}
       this.updateUserUI();
+      this.applyRolePermissions();
       this.fetchProjects();
       if (typeof showToast === 'function') {
-        showToast('Switched user to ' + user.name + ' (' + user.role + ')');
+        var roleName = this.isAdmin() ? 'Admin' : 'Employee';
+        showToast('Switched user to ' + user.name + ' (' + roleName + ')');
+      }
+    },
+
+    guardViews: function () {
+      var self = this;
+      var checkAndGuard = function () {
+        if (typeof window.setView === 'function' && !window.setView._isGuarded) {
+          var origSetView = window.setView;
+          window.setView = function (v) {
+            if (self.currentUser && !self.isAdmin()) {
+              var allowed = ['home', 'plan', 'design', 'boq'];
+              if (allowed.indexOf(v) === -1) {
+                if (typeof showToast === 'function') {
+                  showToast('View restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+                }
+                return;
+              }
+            }
+            origSetView(v);
+          };
+          window.setView._isGuarded = true;
+        }
+      };
+      checkAndGuard();
+      setTimeout(checkAndGuard, 1000);
+    },
+
+    applyRolePermissions: function () {
+      var isAdm = this.isAdmin();
+      // Admin has all access; Employee only has home, floor plan (2D), 3D Studio, Pricing (boq)
+      var allowedViews = isAdm 
+        ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
+        : ['home', 'plan', 'design', 'boq'];
+
+      // 1. Control visibility of top navigation tabs
+      var navTabs = document.querySelectorAll('.topbar .views .vtab');
+      navTabs.forEach(function (tab) {
+        var v = tab.getAttribute('data-view');
+        if (allowedViews.indexOf(v) !== -1) {
+          tab.style.display = '';
+          tab.removeAttribute('hidden');
+        } else {
+          tab.style.display = 'none';
+          tab.setAttribute('hidden', '');
+        }
+      });
+
+      // 2. If employee is currently on an unauthorized view, redirect to home
+      var activeTab = document.querySelector('.topbar .views .vtab.is-on');
+      var activeView = activeTab ? activeTab.getAttribute('data-view') : 'home';
+      if (allowedViews.indexOf(activeView) === -1) {
+        if (typeof window.setView === 'function') {
+          window.setView('home');
+        }
+      }
+
+      // 3. Update topbar user avatar & role badge
+      var avatarEl = document.getElementById('userAvatarBtn');
+      if (avatarEl && this.currentUser) {
+        var roleLabel = isAdm ? 'Admin' : 'Employee';
+        var roleClass = isAdm ? 'badge-admin' : 'badge-employee';
+        avatarEl.innerHTML = '<span class="u-avatar ' + (isAdm ? 'is-admin-avatar' : '') + '">' + 
+          (this.currentUser.avatar || 'US') + '</span>' +
+          '<span class="u-name">' + this.currentUser.name + '</span>' +
+          '<span class="u-role-pill ' + roleClass + '">' + roleLabel + '</span>';
+      }
+
+      // 4. Update Current User Card in Modal
+      var modalName = document.getElementById('curUserName');
+      if (modalName) modalName.textContent = this.currentUser ? this.currentUser.name : '';
+      var modalEmail = document.getElementById('curUserEmail');
+      if (modalEmail) modalEmail.textContent = this.currentUser ? this.currentUser.email : '';
+      var modalRole = document.getElementById('curUserRole');
+      if (modalRole) modalRole.textContent = (this.currentUser ? (this.currentUser.designation || this.currentUser.role) : '') + ' • ' + (this.currentUser ? this.currentUser.company : '');
+      var modalBadge = document.getElementById('curUserBadge');
+      if (modalBadge) {
+        modalBadge.textContent = isAdm ? 'Admin (Full Access)' : 'Employee';
+        modalBadge.className = 'role-badge ' + (isAdm ? 'admin' : 'employee');
+      }
+
+      // 5. Show/hide Admin employee creation box in Modal
+      var adminBox = document.getElementById('adminCreateEmpBox');
+      if (adminBox) {
+        adminBox.style.display = isAdm ? 'block' : 'none';
+      }
+
+      // 6. Project Dashboard description
+      var pSecDesc = document.querySelector('.psection-title-wrap p');
+      if (pSecDesc) {
+        if (isAdm) {
+          pSecDesc.textContent = 'Admin Workspace — Full access to all projects, factory nesting, exports & production.';
+        } else {
+          pSecDesc.textContent = 'Employee Workspace — Your projects and projects shared with you.';
+        }
       }
     },
 
     updateUserUI: function () {
-      var user = this.currentUser;
-      if (!user) return;
-
-      var avatarEl = document.getElementById('userAvatarBtn');
-      if (avatarEl) {
-        avatarEl.innerHTML = '<span class="u-avatar">' + (user.avatar || 'US') + '</span><span class="u-name">' + user.name + '</span><span class="u-role">' + (user.role || '') + '</span>';
-      }
-
-      var modalName = document.getElementById('curUserName');
-      if (modalName) modalName.textContent = user.name;
-      var modalEmail = document.getElementById('curUserEmail');
-      if (modalEmail) modalEmail.textContent = user.email;
-      var modalRole = document.getElementById('curUserRole');
-      if (modalRole) modalRole.textContent = user.role + ' • ' + (user.company || '');
+      this.applyRolePermissions();
     },
 
     fetchDBStatus: function () {
@@ -127,9 +226,11 @@
 
     fetchProjects: function () {
       var self = this;
+      var roleParam = this.isAdmin() ? 'admin' : 'employee';
       var url = '/api/projects?search=' + encodeURIComponent(this.searchQuery) +
         '&filter=' + encodeURIComponent(this.filter) +
-        '&userId=' + encodeURIComponent(this.currentUser ? this.currentUser.id : '');
+        '&userId=' + encodeURIComponent(this.currentUser ? this.currentUser.id : '') +
+        '&userRole=' + encodeURIComponent(roleParam);
 
       var listContainer = document.getElementById('projectsGrid');
       if (listContainer && (!self.projects || !self.projects.length)) {
@@ -762,6 +863,56 @@
         });
       }
 
+      // Admin Create Employee Form
+      var createEmpForm = document.getElementById('createEmployeeForm');
+      if (createEmpForm) {
+        createEmpForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!self.isAdmin()) {
+            if (typeof showToast === 'function') showToast('Only Admin can create new employees.');
+            return;
+          }
+          var name = document.getElementById('newEmpName').value.trim();
+          var email = document.getElementById('newEmpEmail').value.trim();
+          var title = document.getElementById('newEmpTitle').value.trim() || 'Modular Designer';
+          var role = document.getElementById('newEmpRole').value || 'employee';
+
+          if (!name || !email) return;
+
+          var initials = name.split(' ').map(function (n) { return n[0]; }).join('').toUpperCase().substring(0, 2) || 'EM';
+
+          var payload = {
+            name: name,
+            email: email,
+            role: role,
+            designation: title,
+            company: 'Orbix Studio',
+            avatar: initials
+          };
+
+          fetch('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.user) {
+              createEmpForm.reset();
+              self.fetchUsers(function () {
+                self.openUserModal();
+              });
+              if (typeof showToast === 'function') {
+                showToast('✓ Successfully created ' + (data.user.role === 'admin' ? 'Admin' : 'Employee') + ': ' + data.user.name);
+              }
+            }
+          })
+          .catch(function (err) {
+            if (typeof showToast === 'function') showToast('Error creating employee: ' + err.message);
+          });
+        });
+      }
+
       // User Profile & Switcher Button in Topbar
       var userBtn = document.getElementById('userAvatarBtn');
       if (userBtn) {
@@ -801,15 +952,26 @@
       var modal = document.getElementById('userModal');
       if (!modal) return;
 
+      this.applyRolePermissions();
+
       var userListEl = document.getElementById('switchUsersList');
       if (userListEl) {
         var html = '';
         this.users.forEach(function (u) {
           var isCurrent = self.currentUser && self.currentUser.id === u.id;
+          var uIsAdmin = (u.role || '').toLowerCase() === 'admin' || (u.role || '').toLowerCase().indexOf('admin') !== -1;
+          var roleBadgeHtml = '<span class="role-badge ' + (uIsAdmin ? 'admin' : 'employee') + '">' + (uIsAdmin ? 'Admin' : 'Employee') + '</span>';
+
           html += '<div class="u-switch-item' + (isCurrent ? ' is-current' : '') + '" data-uid="' + u.id + '">' +
             '<div class="u-info">' +
-              '<span class="u-avatar">' + (u.avatar || 'US') + '</span>' +
-              '<div><strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong><span>' + u.role + ' • ' + (u.company || '') + '</span></div>' +
+              '<span class="u-avatar ' + (uIsAdmin ? 'is-admin-avatar' : '') + '">' + (u.avatar || 'US') + '</span>' +
+              '<div>' +
+                '<div style="display:flex;align-items:center;gap:6px;">' +
+                  '<strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong>' +
+                  roleBadgeHtml +
+                '</div>' +
+                '<span>' + (u.designation || u.role) + ' • ' + (u.company || '') + '</span>' +
+              '</div>' +
             '</div>' +
             (!isCurrent ? '<button class="btn switch-user-btn" data-uid="' + u.id + '">Switch</button>' : '<span class="current-tag">Current</span>') +
           '</div>';

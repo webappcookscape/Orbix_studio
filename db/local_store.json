@@ -4,23 +4,26 @@
       "id": "usr_dev",
       "name": "Dev Kancheti",
       "email": "dev@orbixstudio.io",
-      "role": "Lead Modular Designer",
+      "role": "admin",
+      "designation": "Studio Head / Admin",
       "company": "Orbix Design Studio",
       "avatar": "DK"
     },
     {
       "id": "usr_alex",
       "name": "Alex Mercer",
-      "email": "alex@modularedge.com",
-      "role": "Production Estimator",
+      "email": "alex@orbixstudio.io",
+      "role": "employee",
+      "designation": "Production Estimator",
       "company": "Precision Modular Works",
       "avatar": "AM"
     },
     {
       "id": "usr_priya",
       "name": "Priya Sharma",
-      "email": "priya@archform.in",
-      "role": "Interior Architect",
+      "email": "priya@orbixstudio.io",
+      "role": "employee",
+      "designation": "Modular Designer",
       "company": "Archform Interiors",
       "avatar": "PS"
     }
