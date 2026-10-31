@@ -1,0 +1,8 @@
+Item_Code,Item_Name,Category,Model_Type,Width_mm,Height_mm,Depth_mm,Shutters_Count,Door_Type,Door_Style,Glass_Tint,Profile_Color,Internal_Sections,Shelves_Count,Drawers_Count,Has_Loft,Loft_Height_mm,Shutter_Material,Shutter_Finish,Carcass_Material,Carcass_Finish,Countertop,Handle_Type,Handle_Finish,LED_Light,Unit_Rate_INR
+W-01,Master Bed 2-Door Wardrobe (Shelves),wardrobe,wr_shelves,1200,2100,600,2,hinged,slab,none,none,1,4,0,FALSE,0,HDHMR_18MM,Brazilian Horizontal Walnut,BWP_18MM,Absolute White,none,gprof,black,FALSE,1696
+W-02,Master Bed 3-Door Wardrobe (Drawers + Loft),wardrobe,wr_drawers,1800,2100,600,3,hinged,slab,none,none,2,4,2,TRUE,600,HDHMR_18MM,Brazilian Horizontal Walnut,BWP_18MM,Absolute White,none,gprof,black,FALSE,1795
+W-03,2-Door Glass Profile Sliding Wardrobe,wardrobe,wr_sliding,1800,2400,650,2,sliding,aluglass,fluted,black,2,5,2,FALSE,0,HDHMR_18MM,Brazilian Horizontal Walnut,BWP_18MM,Absolute White,none,none,black,TRUE,2150
+CR-01,Fluted Glass Hutch · Walnut,crockery,crockery_tall,900,2100,450,2,hinged,aluglass,fluted,black,1,3,2,FALSE,0,HDHMR_18MM,Brazilian Horizontal Walnut,BWP_18MM,Absolute White,galaxy,gprof,black,TRUE,2250
+TV-01,Living TV Media Entertainment Unit,tv_unit,tv_console,2400,1800,400,0,open,slab,none,none,3,2,3,FALSE,0,HDHMR_18MM,Brazilian Horizontal Walnut,BWP_18MM,Absolute White,none,gola,black,TRUE,1984
+K-01,Kitchen Lower Base Run (3m),kitchen_base,kitchen_base,3000,850,600,5,hinged,slab,none,none,4,3,4,FALSE,0,HDHMR_18MM,Brazilian Horizontal Walnut,BWP_18MM,Absolute White,black,gprof,black,FALSE,1796
+K-02,Kitchen Upper Wall Cabinets (3m),kitchen_wall,kitchen_wall,3000,700,350,5,hinged,slab,none,none,4,3,0,FALSE,0,HDHMR_18MM,Brazilian Horizontal Walnut,BWP_18MM,Absolute White,none,gprof,black,FALSE,1545

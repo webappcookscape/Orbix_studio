@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Design in 3D and generate factory process sheets, panel cutting lists, edge banding, and CNC drilling with Orbix Studio.">
+<title>Orbix Studio</title>
+<link rel="icon" type="image/jpeg" href="logo.jpeg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Orbix Studio — 3D Interior Design, Cutting Plans & Quotations">
+<meta property="og:description" content="Pick a design or upload your process sheet. See your designs in 3D with real laminates, then get nesting, drilling, DXF and accurate BOQ quotes.">
+<meta property="og:image" content="logo.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Orbix Studio">
+<meta name="twitter:description" content="3D Interior Design, cutting plans, nesting and quotations.">
+<meta name="twitter:image" content="logo.jpeg">
+<meta name="theme-color" content="#D32F2F">
+</head>
+<body>
+<!-- ARTIFACT-START -->
+<title>Orbix Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<div id="app">
+
+  <header class="topbar">
+    <div class="tool">
+      <img src="logo.jpeg" alt="Orbix Studio" class="tool-logo">
+      <span class="tool-name">Orbix&nbsp;Studio</span>
+    </div>
+    <nav class="views" aria-label="View">
+      <button class="vtab is-on" data-view="home">Home</button>
+      <button class="vtab" data-view="plan">Floor Plan (2D)</button>
+      <button class="vtab" data-view="design">3D Studio</button>
+      <button class="vtab" data-view="kitchen">Kitchens</button>
+      <button class="vtab" data-view="gallery">Gallery</button>
+      <button class="vtab" data-view="boq">Orbix BOQ</button>
+      <button class="vtab" data-view="quote">Quote</button>
+      <button class="vtab" data-view="sheet">Process sheet</button>
+      <button class="vtab" data-view="elev">Elevation</button>
+      <button class="vtab" data-view="panels">Panels &amp; drilling</button>
+      <button class="vtab" data-view="nest">Nesting</button>
+      <button class="vtab" data-view="upload">Upload</button>
+      <button class="vtab" data-view="report">Report</button>
+    </nav>
+    <div class="topacts">
+      <button class="btn" id="printBtn">Print</button>
+      <button class="btn" id="csvBtn">CSV</button>
+      <button class="btn" id="dxfBtn">DXF</button>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ══════ HOME ══════ -->
+    <section class="view is-on" id="view-home">
+      <div class="home">
+        <div class="hero">
+          <p class="eyebrow">For interior designers, modular factories and enterprises</p>
+          <h1>Upload a cutting list.<br>Get the cutting plan — and the savings.</h1>
+          <p class="lede">Orbix Studio reads the process sheet you already have, rebuilds every cupboard virtually, nests the panels onto 8&nbsp;×&nbsp;4 boards and hands your factory a plain-English plan: what to order, how to cut, where to drill — and exactly how much you saved against what you would have ordered.</p>
+          <div class="cta">
+            <button class="btn primary big" data-go="upload">Upload a process sheet</button>
+            <button class="btn big" id="trySample">See it on a sample job</button>
+            <button class="btn big" data-go="design">Design from scratch</button>
+            <button class="btn big" data-go="kitchen">Design a kitchen</button>
+          </div>
+        </div>
+        <div class="steps">
+          <div class="step"><span>1</span><h3>Upload</h3><p>A PDF or CSV process sheet — heights, widths, quantities and colour codes, in the format factories already use. Or paste the rows.</p></div>
+          <div class="step"><span>2</span><h3>Plan virtually</h3><p>Every unit is rebuilt in 3D from its own panels, in its own laminate. Check fronts, colours and lofts before a board is cut.</p></div>
+          <div class="step"><span>3</span><h3>Optimise</h3><p>Guillotine nesting on 2440&nbsp;×&nbsp;1220 boards, grain-locked, saw kerf included. System&nbsp;32 boring on every panel, exported to a CNC-ready DXF.</p></div>
+          <div class="step"><span>4</span><h3>Read the savings</h3><p>Boards ordered versus boards needed, offcut recovered, edge banding and cutting — then a numbered plan the floor can follow.</p></div>
+        </div>
+        <div class="who">
+          <div><h3>Designers</h3><p>Quote a wardrobe in minutes on real board counts instead of a 30% allowance. Send your fabricator a DXF, not a sketch.</p></div>
+          <div><h3>Factories</h3><p>A cutting map per sheet, a boring schedule per panel, edge-banding lengths per row. No draftsman between the order and the saw.</p></div>
+          <div><h3>Enterprises</h3><p>One costing rule for every dealer and every job. Every process sheet gets the same nesting, the same drilling, the same savings report.</p></div>
+        </div>
+        <div class="proof">
+          <div class="pf"><b id="pf1">—</b><span>sheets on the sample job, versus 14 ordered</span></div>
+          <div class="pf"><b id="pf2">—</b><span>board yield after nesting</span></div>
+          <div class="pf"><b id="pf3">—</b><span>panels bored and banded from one upload</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ UPLOAD ══════ -->
+    <section class="view" id="view-upload">
+      <div class="sheetwrap">
+        <div class="vbar">
+          <h2 class="vtitle">Upload a process sheet</h2>
+          <p class="vsub">PDF or CSV. We read rows of <b>Height · Width · Qty · Remarks · Colour</b>, the unit headings between them, the board list you ordered and your cutting and edge-banding rates — so the report compares against your real order, not a guess.</p>
+        </div>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileIn" accept=".pdf,.csv,.txt" hidden>
+          <p class="dz-big">Drop a PDF or CSV here, or <button class="link" id="pickFile">choose a file</button></p>
+          <p class="dz-small">Or paste rows — one panel per line: <code>height width qty remarks colour</code></p>
+        </div>
+        <textarea id="pasteIn" rows="7" spellcheck="false" placeholder="MBR&#10;1000 520 1 Shutter MDF 1135&#10;2400 100 2 Dummy MDF 1135&#10;1795 800 1 Sliding Shutter 10&quot; IBH MDF 3410"></textarea>
+        <div class="uprow">
+          <button class="btn primary" id="importPaste">Import pasted rows</button>
+          <button class="btn" id="trySample2">Load the sample job</button>
+          <span class="upstatus" id="upStatus"></span>
+        </div>
+        <div class="uplog" id="upLog"></div>
+        <div class="upreview" id="upReview" hidden></div>
+      </div>
+    </section>
+
+    <!-- ══════ GALLERY ══════ -->
+    <section class="view" id="view-gallery">
+      <div class="sheetwrap wide">
+        <div class="vbar">
+          <h2 class="vtitle">Design catalogue</h2>
+          <p class="vsub">Every model in every look we build — from the steel almirahs of the 70s to reeded oak and cane, and full modular kitchens in straight, L, U, parallel and island layouts. Pick one to open it in the studio; every card is rendered live from the same engine.</p>
+          <div class="units" id="galTypes"></div>
+          <div class="chiprow" id="galEras" style="margin-top:10px"></div>
+          <div class="galcount" id="galCount"></div>
+        </div>
+        <div class="galgrid" id="galGrid"></div>
+      </div>
+    </section>
+
+    <!-- ══════ DESIGN ══════ -->
+    <section class="view" id="view-design">
+      <div class="stagewrap">
+        <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
+          <div id="world"></div>
+        </div>
+        <div class="stagebar">
+          <div class="legend" id="legend"></div>
+          <div class="viewbtns">
+            <button class="minibtn" id="presentBtn" aria-pressed="false">Present</button>
+            <button class="minibtn" id="openBtn" aria-pressed="false">Open all</button>
+            <button class="minibtn" id="frontBtn">Front</button>
+            <button class="minibtn" id="isoBtn">3/4</button>
+            <button class="minibtn" id="sideBtn">Side</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="rail" id="rail">
+        <div class="units" id="units"></div>
+        <div class="railscroll" id="railScroll"></div>
+        <div class="railfoot">
+          <div class="rf-line"><span>Panels</span><b id="rfPanels">—</b></div>
+          <div class="rf-line"><span>Area</span><b id="rfSft">—</b></div>
+          <div class="rf-line"><span>Boards 8×4</span><b id="rfSheets">—</b></div>
+          <div class="rf-line"><span>E/B</span><b id="rfEb">—</b></div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ══════ PROCESS SHEET ══════ -->
+    <section class="view" id="view-sheet">
+      <div class="paper" id="paper">
+        <h1 class="ps-title">Process Sheet</h1>
+
+        <div class="ps-head">
+          <table class="ps-meta">
+            <tr><td class="k">Dealer Name:</td><td><input id="f_dealer" placeholder="—"></td></tr>
+            <tr><td class="k">Place :</td><td><input id="f_place" placeholder="—"></td></tr>
+            <tr><td class="k">Dealer Order No:</td><td><input id="f_dorder" placeholder="—"></td></tr>
+            <tr><td class="k">Customer Name :</td><td><input id="f_cust" placeholder="—"></td></tr>
+          </table>
+          <table class="ps-meta right">
+            <tr><td class="k">Proc By:</td><td><input id="f_proc" placeholder="—"></td></tr>
+            <tr><td class="k">Order No:</td><td><input id="f_order" placeholder="—"></td></tr>
+            <tr><td class="k">Date :</td><td><input id="f_date" placeholder="—"></td></tr>
+          </table>
+        </div>
+
+        <div class="ps-banner">
+          <div class="hl big">Jobwork</div>
+          <div class="sub">No Packing</div>
+          <div class="hl">Sticker Name : "<input id="f_sticker" class="inl" placeholder="—">"</div>
+          <div class="redline"><input id="f_supply" class="inl red" value="MDF Boards Provided by Party"></div>
+        </div>
+
+        <h2 class="ps-sec">Jobwork — Cutting and <span id="f_ebLabel">2mm</span> E/B</h2>
+        <p class="ps-note">E/B code — 4S: all four edges · 2L: both long edges · 1L: one long edge · 1L1S: one long + one short · — : none. E/B Ft is banded running feet for that row.</p>
+        <div class="tscroll">
+          <table class="ps-table" id="psTable"></table>
+        </div>
+
+        <h2 class="ps-sec small">65mm Plywood Laminate Frames</h2>
+        <div class="tscroll">
+          <table class="ps-table" id="frTable"></table>
+        </div>
+
+        <div class="tscroll">
+          <table class="ps-table charge" id="chTable"></table>
+        </div>
+
+        <div class="tscroll">
+          <table class="ps-table charge" id="bdTable"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ ELEVATION ══════ -->
+    <section class="view" id="view-elev">
+      <div class="drafting" id="draft"></div>
+    </section>
+
+    <!-- ══════ PANELS + DRILLING ══════ -->
+    <section class="view" id="view-panels">
+      <div class="sheetwrap">
+        <div class="vbar">
+          <h2 class="vtitle">Panel &amp; drilling schedule</h2>
+          <p class="vsub">System 32 boring. Hinge cup <b>&Oslash;35</b> at <b>22.5&nbsp;mm</b> from the hinge edge; shelf pins <b>&Oslash;5</b> on a <b>32&nbsp;mm</b> pitch, <b>37&nbsp;mm</b> in from front and back; runner fixings <b>&Oslash;5</b> at <b>37&nbsp;mm</b> from the front edge. Every hole below is exported on the DRILL layer of the DXF.</p>
+        </div>
+        <div class="panelgrid" id="panelGrid"></div>
+      </div>
+    </section>
+
+    <!-- ══════ NESTING ══════ -->
+    <section class="view" id="view-nest">
+      <div class="sheetwrap">
+        <div class="vbar">
+          <h2 class="vtitle">Sheet nesting</h2>
+          <p class="vsub">Guillotine-cut optimisation on 2440&nbsp;&times;&nbsp;1220 boards. Woodgrain laminates are locked to grain direction; plain and gloss may rotate.</p>
+          <div class="nestopts" id="nestOpts"></div>
+        </div>
+        <div class="neststats" id="nestStats"></div>
+        <div class="nestsheets" id="nestSheets"></div>
+      </div>
+    </section>
+
+    <!-- ══════ REPORT ══════ -->
+    <section class="view" id="view-report">
+      <div class="sheetwrap"><div class="paper" id="reportPaper"></div></div>
+    </section>
+
+    <!-- ══════ ORBIX FLOOR PLAN (2D) ══════ -->
+    <section class="view" id="view-plan">
+      <div class="plan-toolbar">
+        <div class="plan-toolgroup">
+          <button class="plan-tool-btn is-active" data-tool="select" title="Select & Move (S)">Select</button>
+          <button class="plan-tool-btn" data-tool="wall" title="Draw Wall (W)">+ Wall</button>
+          <select class="plan-select" id="planWallThickness" title="Wall Thickness">
+            <option value="100">100 mm (Drywall)</option>
+            <option value="150" selected>150 mm (Partition)</option>
+            <option value="200">200 mm (External)</option>
+            <option value="230">230 mm (Brick)</option>
+          </select>
+          <button class="plan-tool-btn" data-tool="door" title="Place Door (D)">+ Door</button>
+          <select class="plan-select" id="planDoorWidth" title="Door Width">
+            <option value="750">750 mm (Bath)</option>
+            <option value="900" selected>900 mm (Bed)</option>
+            <option value="1000">1000 mm (Main)</option>
+            <option value="1200">1200 mm (Wide)</option>
+          </select>
+          <button class="plan-tool-btn" data-tool="window" title="Place Window (Win)">+ Window</button>
+          <select class="plan-select" id="planWindowWidth" title="Window Width">
+            <option value="900">900 mm</option>
+            <option value="1200" selected>1200 mm</option>
+            <option value="1500">1500 mm</option>
+            <option value="1800">1800 mm</option>
+          </select>
+          <button class="plan-tool-btn" data-tool="furniture" title="Place Modular Furniture (F)">+ Furniture</button>
+          <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place">
+            <option value="w2d">2-Door Wardrobe (900mm)</option>
+            <option value="w3d" selected>3-Door Wardrobe (1350mm)</option>
+            <option value="w4d">4-Door Master Wardrobe (1800mm)</option>
+            <option value="w_slide">2-Door Sliding Wardrobe (1800mm)</option>
+            <option value="fm-01">FM 600 Kitchen Base (600mm)</option>
+            <option value="k_base">Kitchen Base Run (3000mm)</option>
+            <option value="k_wall">Kitchen Wall Run (3000mm)</option>
+            <option value="k_tall">Kitchen Tall Pantry (600mm)</option>
+            <option value="k_island">Kitchen Island (1500mm)</option>
+            <option value="tv_media">TV Media Wall (2100mm)</option>
+            <option value="crockery">Crockery Unit (1200mm)</option>
+            <option value="vanity">Vanity / Dresser (1000mm)</option>
+            <option value="shoe_rack">Shoe Cabinet (1000mm)</option>
+            <option value="bed_queen">Queen Bed (1600mm)</option>
+            <option value="bed_king">King Bed (1900mm)</option>
+          </select>
+          <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">Split</button>
+        </div>
+
+        <div class="plan-toolgroup">
+          <button class="plan-tool-btn" id="planUndo" title="Undo (Ctrl+Z)">↶</button>
+          <button class="plan-tool-btn" id="planRedo" title="Redo (Ctrl+Y)">↷</button>
+          <button class="plan-tool-btn" id="planDelete" title="Delete Selected (Del)">✕</button>
+          <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen">Fit</button>
+          <button class="plan-tool-btn" id="planSampleHome" title="Load sample 2BHK floor plan">Sample 2BHK</button>
+          <button class="plan-tool-btn" id="planClear" title="Clear all walls">Clear</button>
+          <button class="plan-tool-btn" id="planExportJson" title="Save Project JSON">Export</button>
+          <button class="plan-tool-btn" id="planImportJson" title="Open Project JSON">Import</button>
+          <button class="plan-tool-btn" id="planView3D" style="background:#1B4F72;color:#fff;border-color:#1B4F72;" title="View Whole Home in 3D">View 3D Home ➔</button>
+          <input type="file" id="planFileInput" accept=".json,.orbix" hidden>
+        </div>
+
+        <div class="live-quote-badge" id="liveQuotationBadge">
+          <span class="badge-label">Estimated Total:</span>
+          <span class="badge-amount">₹ 0</span>
+        </div>
+      </div>
+
+      <div class="plan-layout">
+        <div id="planCanvasContainer"></div>
+        <aside class="plan-inspector">
+          <div id="planInspectorContent"></div>
+        </aside>
+      </div>
+
+      <div class="plan-stats-bar" id="planStats">
+        0 Rooms · 0 sq ft · 0 Walls · 0 Units
+      </div>
+    </section>
+
+    <!-- ══════ ORBIX BOQ / QUOTATION ══════ -->
+    <section class="view" id="view-boq">
+      <div id="orbixBOQTable"></div>
+    </section>
+
+    <!-- ══════ QUOTE ══════ -->
+    <section class="view" id="view-quote">
+      <div class="sheetwrap">
+        <div class="paper" id="quotePaper"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="orbix-core.js"></script>
+<script src="orbix-plan.js"></script>
+<script src="orbix-3d.js"></script>
+<script src="orbix-ui.js"></script>
+<script src="app.js"></script>
+<!-- ARTIFACT-END -->
+</body>
+</html>

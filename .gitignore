@@ -1,0 +1,7 @@
+# generated / local
+dist/
+cupboard-cad-dist.zip
+shots/
+.netlify-demo.json
+.DS_Store
+*.log
