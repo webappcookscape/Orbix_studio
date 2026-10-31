@@ -6,3 +6,5 @@ CR-01,Fluted Glass Hutch · Walnut,crockery,crockery_tall,900,2100,450,2,hinged,
 TV-01,Living TV Media Entertainment Unit,tv_unit,tv_console,2400,1800,400,0,open,slab,none,none,3,2,3,FALSE,0,HDHMR_18MM,Brazilian Horizontal Walnut,BWP_18MM,Absolute White,none,gola,black,TRUE,1984
 K-01,Kitchen Lower Base Run (3m),kitchen_base,kitchen_base,3000,850,600,5,hinged,slab,none,none,4,3,4,FALSE,0,HDHMR_18MM,Brazilian Horizontal Walnut,BWP_18MM,Absolute White,black,gprof,black,FALSE,1796
 K-02,Kitchen Upper Wall Cabinets (3m),kitchen_wall,kitchen_wall,3000,700,350,5,hinged,slab,none,none,4,3,0,FALSE,0,HDHMR_18MM,Brazilian Horizontal Walnut,BWP_18MM,Absolute White,none,gprof,black,FALSE,1545
+fm-rt-01,FCM -RT,kitchen_base,kitchen_fm,1200,750,550,1,hinged,slab,none,none,0,1,0,FALSE,0,HDHMR_18mm,Absolute White,BWP_18mm,Absolute White,none,gprof,black,FALSE,17398.79
+wm-01,WM 1200,kitchen_wall,kitchen_wm,1200,600,300,2,hinged,slab,none,none,0,1,0,FALSE,0,HDHMR_18mm,Absolute White,BWP_18mm,Absolute White,none,gprof,black,FALSE,5986.88

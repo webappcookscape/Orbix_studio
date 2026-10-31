@@ -925,6 +925,73 @@
      Standard Modular Furniture Catalog
      ───────────────────────────────────────────────────────────────────────────── */
   var FURNITURE_CATALOG = [
+    // ─── Imported Modular Units from units_import_template (1).xlsx ───
+    {
+      id: 'fm-rt-01',
+      code: 'fm-rt-01',
+      name: 'FCM -RT (Kitchen Base)',
+      modelType: 'kitchen_fm',
+      category: 'kitchen_base',
+      icon: '🍳',
+      dimensions: { W: 1200, H: 750, D: 550 },
+      materials: {
+        shutter: { material: 'HDHMR_18mm', finish: 'Absolute White' },
+        carcass: { material: 'BWP_18mm', finish: 'Absolute White' }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: 'hinged',
+        dstyle: 'slab',
+        glassTint: 'none',
+        profileColor: 'none',
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: 'none',
+        handle: 'gprof',
+        hfinish: 'black',
+        led: false,
+        carcass: 'BWP_18mm',
+        shutterCol: 'Absolute White'
+      },
+      pricingOverrides: { baseRate: 17398.79 },
+      customRate: 17398.79
+    },
+    {
+      id: 'wm-01',
+      code: 'wm-01',
+      name: 'WM 1200 (Kitchen Wall)',
+      modelType: 'kitchen_wm',
+      category: 'kitchen_wall',
+      icon: '🎛️',
+      dimensions: { W: 1200, H: 600, D: 300 },
+      materials: {
+        shutter: { material: 'HDHMR_18mm', finish: 'Absolute White' },
+        carcass: { material: 'BWP_18mm', finish: 'Absolute White' }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: 'hinged',
+        dstyle: 'slab',
+        glassTint: 'none',
+        profileColor: 'none',
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: 'none',
+        handle: 'gprof',
+        hfinish: 'black',
+        led: false,
+        carcass: 'BWP_18mm',
+        shutterCol: 'Absolute White'
+      },
+      pricingOverrides: { baseRate: 5986.88 },
+      customRate: 5986.88
+    },
     // ─── Imported Modular Units from units_import_template.csv ───
     {
       id: 'W-01',
@@ -1401,12 +1468,43 @@
 
       var code = row['Item_Code'] || uid('unit');
       var name = row['Item_Name'] || code;
-      var cat = row['Category'] || 'wardrobe';
-      var mType = row['Model_Type'] || 'wr_shelves';
+
+      var rawCat = (row['Category'] || '').toLowerCase();
+      var cat = 'wardrobe';
+      if (rawCat.indexOf('kitchen') !== -1 && (rawCat.indexOf('wm') !== -1 || rawCat.indexOf('wall') !== -1)) {
+        cat = 'kitchen_wall';
+      } else if (rawCat.indexOf('kitchen') !== -1 || rawCat.indexOf('base') !== -1 || rawCat.indexOf('fm') !== -1) {
+        cat = 'kitchen_base';
+      } else if (rawCat.indexOf('crockery') !== -1) {
+        cat = 'crockery';
+      } else if (rawCat.indexOf('tv') !== -1) {
+        cat = 'tv_unit';
+      } else if (rawCat.indexOf('vanity') !== -1) {
+        cat = 'vanity';
+      } else if (rawCat.indexOf('shoe') !== -1) {
+        cat = 'shoe_rack';
+      }
+
+      var rawMType = (row['Model_Type'] || '').toLowerCase();
+      var mType = 'wr_shelves';
+      if (rawMType.indexOf('wm') !== -1) mType = 'kitchen_wm';
+      else if (rawMType.indexOf('fm') !== -1 || rawMType.indexOf('base') !== -1) mType = 'kitchen_fm';
+      else if (rawMType.indexOf('sliding') !== -1) mType = 'wr_sliding';
+      else if (rawMType.indexOf('drawer') !== -1) mType = 'wr_drawers';
+      else if (row['Model_Type']) mType = row['Model_Type'].trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_');
+
       var w = parseFloat(row['Width_mm']) || 1200;
       var h = parseFloat(row['Height_mm']) || 2100;
       var d = parseFloat(row['Depth_mm']) || 600;
       var rate = parseFloat(row['Unit_Rate_INR']) || 1700;
+
+      var hasLoftVal = String(row['Has_Loft'] || '').trim().toUpperCase();
+      var hasLoft = (hasLoftVal === 'TRUE' || hasLoftVal === '1');
+
+      var ledVal = String(row['LED_Light'] || '').trim().toUpperCase();
+      var hasLed = (ledVal === 'TRUE' || ledVal === '1');
+
+      var handleType = (row['Handle_Type'] || 'gprof').toLowerCase().replace(/\s+/g, '');
 
       var iconMap = {
         wardrobe: '🚪',
@@ -1429,11 +1527,11 @@
         dimensions: { W: w, H: h, D: d },
         materials: {
           shutter: {
-            material: row['Shutter_Material'] || 'HDHMR_18MM',
-            finish: row['Shutter_Finish'] || 'Brazilian Horizontal Walnut'
+            material: row['Shutter_Material'] || 'HDHMR_18mm',
+            finish: row['Shutter_Finish'] || 'Absolute White'
           },
           carcass: {
-            material: row['Carcass_Material'] || 'BWP_18MM',
+            material: row['Carcass_Material'] || 'BWP_18mm',
             finish: row['Carcass_Finish'] || 'Absolute White'
           }
         },
@@ -1443,17 +1541,17 @@
           dstyle: row['Door_Style'] || 'slab',
           glassTint: row['Glass_Tint'] || 'none',
           profileColor: row['Profile_Color'] || 'none',
-          sections: parseInt(row['Internal_Sections']) || 1,
+          sections: parseInt(row['Internal_Sections']) || 0,
           shelves: parseInt(row['Shelves_Count']) || 0,
           drawers: parseInt(row['Drawers_Count']) || 0,
-          loft: String(row['Has_Loft']).toUpperCase() === 'TRUE',
+          loft: hasLoft,
           loftH: parseFloat(row['Loft_Height_mm']) || 0,
           counter: row['Countertop'] || 'none',
-          handle: row['Handle_Type'] || 'gprof',
+          handle: handleType,
           hfinish: row['Handle_Finish'] || 'black',
-          led: String(row['LED_Light']).toUpperCase() === 'TRUE',
-          carcass: row['Carcass_Material'] || 'BWP_18MM',
-          shutterCol: row['Shutter_Finish'] || 'Brazilian Horizontal Walnut'
+          led: hasLed,
+          carcass: row['Carcass_Material'] || 'BWP_18mm',
+          shutterCol: row['Shutter_Finish'] || 'Absolute White'
         },
         pricingOverrides: { baseRate: rate },
         customRate: rate

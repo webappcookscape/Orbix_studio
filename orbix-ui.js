@@ -230,7 +230,7 @@
           opt.value = item.id;
           var dimsText = item.dimensions ? (' (' + item.dimensions.W + '×' + item.dimensions.H + ')') : '';
           opt.textContent = (item.icon ? item.icon + ' ' : '') + item.name + dimsText;
-          if (item.id.indexOf('-') !== -1 || ['W-01', 'W-02', 'W-03', 'CR-01', 'TV-01', 'K-01', 'K-02'].indexOf(item.id) !== -1) {
+          if (item.id.indexOf('-') !== -1 || ['W-01', 'W-02', 'W-03', 'CR-01', 'TV-01', 'K-01', 'K-02', 'fm-rt-01', 'wm-01'].indexOf(item.id) !== -1) {
             importedGroup.appendChild(opt);
           } else {
             standardGroup.appendChild(opt);
