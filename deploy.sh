@@ -60,8 +60,19 @@ else
     exit 1
 fi
 
-# 4. Check / Restart Node server with PM2
-echo -e "${YELLOW}[4/5] Managing Node process with PM2...${NC}"
+# 4. Configure PostgreSQL user & database
+echo -e "${YELLOW}[4/5] Configuring PostgreSQL credentials & database...${NC}"
+if command -v psql &> /dev/null; then
+    # Set password for postgres user so password authentication succeeds
+    sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';" 2>/dev/null || true
+    # Create cupboard_cad database if it doesn't exist
+    sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = 'cupboard_cad'" 2>/dev/null | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE cupboard_cad OWNER postgres;" 2>/dev/null || true
+    # Purge legacy demo accounts from PostgreSQL
+    sudo -u postgres psql -d cupboard_cad -c "DELETE FROM users WHERE id IN ('usr_dev', 'usr_alex', 'usr_priya') OR email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in');" 2>/dev/null || true
+fi
+
+# 5. Check / Restart Node server with PM2
+echo -e "${YELLOW}[5/5] Managing Node process with PM2...${NC}"
 if ! command -v pm2 &> /dev/null; then
     echo -e "Installing PM2 globally..."
     sudo npm install -g pm2
@@ -76,10 +87,7 @@ else
 fi
 pm2 save
 
-# Purge legacy demo accounts from PostgreSQL if psql is available
-if command -v psql &> /dev/null; then
-    sudo -u postgres psql -d cupboard_cad -c "DELETE FROM users WHERE id IN ('usr_dev', 'usr_alex', 'usr_priya') OR email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in');" 2>/dev/null || true
-fi
+
 
 # 5. Check Nginx virtual host (NEVER overwrite existing SSL configs!)
 echo -e "${YELLOW}[5/5] Checking Nginx virtual host...${NC}"
