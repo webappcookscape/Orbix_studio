@@ -22,6 +22,12 @@ app.get('/sw.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'sw.js'));
 });
 
+// PWA Manifest Route with correct MIME type
+app.get('/manifest.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+  res.sendFile(path.join(__dirname, 'manifest.json'));
+});
+
 // Serve static assets from project root
 app.use(express.static(path.join(__dirname)));
 

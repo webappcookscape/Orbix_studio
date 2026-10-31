@@ -106,7 +106,7 @@ server {
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
 
     # Static assets caching
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot|pdf|csv|xlsx)$ {
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot|pdf|csv|xlsx|json|webmanifest)$ {
         expires 30d;
         add_header Cache-Control "public, no-transform";
         try_files \$uri @node;
@@ -174,7 +174,7 @@ server {
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
 
     # Static assets caching
-    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot|pdf|csv|xlsx)$ {
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot|pdf|csv|xlsx|json|webmanifest)$ {
         expires 30d;
         add_header Cache-Control "public, no-transform";
         try_files \$uri @node;
