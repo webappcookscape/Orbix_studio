@@ -18,14 +18,14 @@ const SCHEMA_PATH = path.join(DATA_DIR, 'schema.sql');
 const DEFAULT_USERS = [
   {
     id: 'usr_admin',
-    name: 'Dev Kancheti',
+    name: 'Cookscape Admin',
     username: 'admin',
-    email: 'admin@orbixstudio.io',
+    email: 'admin@cookscape.com',
     password: 'admin123',
     role: 'admin',
-    designation: 'Studio Admin',
-    company: 'Orbix Design Studio',
-    avatar: 'AD'
+    designation: 'System Administrator',
+    company: 'Cookscape',
+    avatar: 'CA'
   },
   {
     id: 'usr_alex',

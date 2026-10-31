@@ -1571,15 +1571,6 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       <button type="submit" class="btn primary big auth-submit-btn" id="authScreenSubmitBtn">
         Sign In to Workspace
       </button>
-
-      <div class="auth-quick-hint">
-        <div class="aqh-title">Quick Demo Credentials:</div>
-        <div class="aqh-chips">
-          <button type="button" class="aqh-chip auth-demo-chip" data-login="admin" data-pw="admin123">👑 <strong>Admin:</strong> admin / admin123 (All Access)</button>
-          <button type="button" class="aqh-chip auth-demo-chip" data-login="alex" data-pw="alex123">👤 <strong>Employee:</strong> alex / alex123 (Design &amp; Pricing)</button>
-          <button type="button" class="aqh-chip auth-demo-chip" data-login="priya" data-pw="priya123">👤 <strong>Employee:</strong> priya / priya123 (Design &amp; Pricing)</button>
-        </div>
-      </div>
     </form>
   </div>
 </div>
@@ -2221,15 +2212,6 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         <div class="form-group">
           <label class="form-label">Password *</label>
           <input type="password" id="loginPassword" class="form-input" placeholder="Enter password" required autocomplete="current-password">
-        </div>
-
-        <div class="auth-quick-hint">
-          <div class="aqh-title">Quick Demo Credentials:</div>
-          <div class="aqh-chips">
-            <button type="button" class="aqh-chip" data-login="admin" data-pw="admin123">👑 <strong>Admin:</strong> admin / admin123</button>
-            <button type="button" class="aqh-chip" data-login="alex" data-pw="alex123">👤 <strong>Employee:</strong> alex / alex123</button>
-            <button type="button" class="aqh-chip" data-login="priya" data-pw="priya123">👤 <strong>Employee:</strong> priya / priya123</button>
-          </div>
         </div>
       </div>
       <div class="modal-foot">
@@ -3292,94 +3274,6 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           });
         });
       }
-
-      // Demo Chips on Full-Screen Login Page
-      document.querySelectorAll('.auth-demo-chip').forEach(function (chip) {
-        chip.addEventListener('click', function () {
-          var idVal = this.getAttribute('data-login');
-          var pwVal = this.getAttribute('data-pw');
-          var idInput = document.getElementById('authIdentifier');
-          var pwInput = document.getElementById('authPassword');
-          if (idInput && pwInput) {
-            idInput.value = idVal;
-            pwInput.value = pwVal;
-            var submitBtn = document.getElementById('authScreenSubmitBtn');
-            if (submitBtn) submitBtn.focus();
-          }
-        });
-      });
-
-      // Login Modal Form Submission (#loginForm)
-      var loginForm = document.getElementById('loginForm');
-      if (loginForm) {
-        loginForm.addEventListener('submit', function (e) {
-          e.preventDefault();
-          var errAlert = document.getElementById('loginErrorAlert');
-          if (errAlert) errAlert.style.display = 'none';
-
-          var identifier = document.getElementById('loginIdentifier').value.trim();
-          var password = document.getElementById('loginPassword').value.trim();
-          if (!identifier || !password) return;
-
-          var submitBtn = document.getElementById('loginSubmitBtn');
-          if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Signing In...';
-          }
-
-          fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ identifier: identifier, password: password })
-          })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Sign In';
-            }
-            if (data.success && data.user) {
-              self.setCurrentUser(data.user);
-              self.closeModal('loginModal');
-              loginForm.reset();
-              if (typeof showToast === 'function') {
-                showToast('✓ Welcome back, ' + data.user.name + ' (' + (data.user.role === 'admin' ? 'Admin' : 'Employee') + ')');
-              }
-            } else {
-              if (errAlert) {
-                errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
-                errAlert.style.display = 'block';
-              }
-            }
-          })
-          .catch(function (err) {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Sign In';
-            }
-            if (errAlert) {
-              errAlert.textContent = 'Sign-in error: ' + err.message;
-              errAlert.style.display = 'block';
-            }
-          });
-        });
-      }
-
-      // Quick Demo Credentials chips in Login Modal
-      document.querySelectorAll('.aqh-chip:not(.auth-demo-chip)').forEach(function (chip) {
-        chip.addEventListener('click', function () {
-          var idVal = this.getAttribute('data-login');
-          var pwVal = this.getAttribute('data-pw');
-          var idInput = document.getElementById('loginIdentifier');
-          var pwInput = document.getElementById('loginPassword');
-          if (idInput && pwInput) {
-            idInput.value = idVal;
-            pwInput.value = pwVal;
-            var submitBtn = document.getElementById('loginSubmitBtn');
-            if (submitBtn) submitBtn.focus();
-          }
-        });
-      });
 
       // Copy share link button
       var copyLinkBtn = document.getElementById('copyShareLinkBtn');

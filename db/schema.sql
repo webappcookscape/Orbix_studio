@@ -21,6 +21,26 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(64);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(128) DEFAULT '123456';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS designation VARCHAR(128) DEFAULT 'Modular Designer';
 
+-- Upsert Cookscape Admin Account
+INSERT INTO users (id, name, username, email, password, role, designation, company, avatar)
+VALUES (
+  'usr_admin',
+  'Cookscape Admin',
+  'admin',
+  'admin@cookscape.com',
+  'admin123',
+  'admin',
+  'System Administrator',
+  'Cookscape',
+  'CA'
+)
+ON CONFLICT (id) DO UPDATE SET
+  name = 'Cookscape Admin',
+  username = 'admin',
+  email = 'admin@cookscape.com',
+  password = 'admin123',
+  role = 'admin';
+
 -- Projects Table
 CREATE TABLE IF NOT EXISTS projects (
   id VARCHAR(64) PRIMARY KEY,
