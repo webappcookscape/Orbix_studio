@@ -5592,6 +5592,19 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         return;
       }
 
+      if (self.dragState && self.dragState.type === 'move_opening') {
+        var w = self.dragState.wall;
+        var op = self.dragState.opening;
+        var wLen = Core.wallLength(w);
+        var proj = Core.projectPointToSegment(worldPt, w.start, w.end);
+        var minO = Math.round(op.width / 2);
+        var maxO = Math.max(minO, Math.round(wLen - op.width / 2));
+        op.offset = Math.max(minO, Math.min(maxO, Math.round(proj.t * wLen)));
+        self.render();
+        self.onSelectionChange(self.selected);
+        return;
+      }
+
       // Live drawing render
       if (self.activeTool === 'wall' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.wallChainStart) {
         self.render();
@@ -5600,7 +5613,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
     window.addEventListener('mouseup', function () {
       if (self.dragState) {
-        if (self.dragState.type === 'move_vertex' || self.dragState.type === 'move_wall' || self.dragState.type === 'move_furniture') {
+        if (self.dragState.type === 'move_vertex' || self.dragState.type === 'move_wall' || self.dragState.type === 'move_furniture' || self.dragState.type === 'move_opening') {
           self.pushHistory('Move ' + (self.dragState.type === 'move_furniture' ? 'Furniture' : 'Wall'));
         }
         self.dragState = null;
@@ -5685,6 +5698,11 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         };
         if (Vec2.dist(worldPt, opCenter) < op.width / 2 + 100) {
           this.selected = [{ type: 'opening', id: op.id }];
+          this.dragState = {
+            type: 'move_opening',
+            opening: op,
+            wall: ow
+          };
           this.onSelectionChange(this.selected);
           this.render();
           return;
@@ -6035,7 +6053,9 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       var wNorm = Core.wallNormal(w);
       var halfW = op.width / 2;
 
-      var centerPt = { x: w.start.x + wDir.x * op.offset, y: w.start.y + wDir.y * op.offset };
+      var wLen = Core.wallLength(w);
+      var safeOffset = Math.max(halfW, Math.min(wLen - halfW, op.offset));
+      var centerPt = { x: w.start.x + wDir.x * safeOffset, y: w.start.y + wDir.y * safeOffset };
       var opStart = { x: centerPt.x - wDir.x * halfW, y: centerPt.y - wDir.y * halfW };
       var opEnd = { x: centerPt.x + wDir.x * halfW, y: centerPt.y + wDir.y * halfW };
 
@@ -6057,27 +6077,40 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       ctx.fill();
 
       if (op.type === 'door') {
-        // Draw Door Swing Arc
-        var hingePt = opStart;
-        var sHinge = sStart;
-        var doorAngle = Core.wallAngle(w);
+        // Draw Door Swing Arc (Inward Left, Inward Right, Outward Left, Outward Right)
+        var swing = op.swing || 'in-left';
+        var isRight = swing.indexOf('right') !== -1;
+        var isOut = swing.indexOf('out') !== -1;
+
+        var hingePt = isRight ? opEnd : opStart;
+        var sHinge = isRight ? sEnd : sStart;
         var swingRadiusPx = op.width * this.zoom;
+
+        var normDir = isOut ? { x: -wNorm.x, y: -wNorm.y } : { x: wNorm.x, y: wNorm.y };
+        var leafDir = isRight ? { x: -wDir.x, y: -wDir.y } : { x: wDir.x, y: wDir.y };
+
+        var leafEndWorld = { x: hingePt.x + normDir.x * op.width, y: hingePt.y + normDir.y * op.width };
+        var sLeaf = this.worldToScreen(leafEndWorld);
 
         ctx.strokeStyle = isSelected ? '#1B4F72' : '#2E7BB5';
         ctx.lineWidth = isSelected ? 2 : 1.5;
 
-        // Swing line
+        // Swing leaf line (door slab)
         ctx.beginPath();
         ctx.moveTo(sHinge.x, sHinge.y);
-        var leafEndWorld = { x: hingePt.x + wNorm.x * op.width, y: hingePt.y + wNorm.y * op.width };
-        var sLeaf = this.worldToScreen(leafEndWorld);
         ctx.lineTo(sLeaf.x, sLeaf.y);
         ctx.stroke();
 
-        // Dotted quarter arc
+        // Dotted quarter arc from closed position along wall to open leaf
+        var startAngle = Math.atan2(leafDir.y, leafDir.x);
+        var endAngle = Math.atan2(normDir.y, normDir.x);
+        var diff = endAngle - startAngle;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+
         ctx.setLineDash([3, 3]);
         ctx.beginPath();
-        ctx.arc(sHinge.x, sHinge.y, swingRadiusPx, doorAngle, doorAngle + Math.PI / 2, false);
+        ctx.arc(sHinge.x, sHinge.y, swingRadiusPx, startAngle, endAngle, diff < 0);
         ctx.stroke();
         ctx.setLineDash([]);
       } else {
@@ -6443,9 +6476,11 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       var currX = 0;
       for (var i = 0; i < ops.length; i++) {
         var op = ops[i];
-        var opStart = Math.max(0, op.offset - op.width / 2);
-        var opEnd = Math.min(wLen, op.offset + op.width / 2);
-        var opWidth = opEnd - opStart;
+        var halfOpW = (op.width || 900) / 2;
+        var safeOffset = Math.max(halfOpW, Math.min(wLen - halfOpW, op.offset));
+        var opStart = Math.max(0, safeOffset - halfOpW);
+        var opEnd = Math.min(wLen, safeOffset + halfOpW);
+        var opWidth = Math.max(100, opEnd - opStart);
         var opHeight = op.height || (op.type === 'door' ? 2100 : 1200);
         var sillH = op.sillHeight || (op.type === 'door' ? 0 : 900);
 
@@ -6549,13 +6584,21 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     leafMesh.position.set(leafW / 2, leafH / 2, 0);
     leafMesh.castShadow = true;
 
-    // Hinge Pivot Group
+    // Hinge Pivot Group with Left/Right and Inward/Outward swing
     var hinge = new THREE.Group();
-    hinge.position.set(frameT, 0, 0);
+    var swing = op.swing || 'in-left';
+    var isRight = swing.indexOf('right') !== -1;
+    var isOut = swing.indexOf('out') !== -1;
 
-    // Swing angle: open 45 degrees into room
-    var swingAngle = Math.PI / 4;
-    if (op.swing && op.swing.indexOf('out') !== -1) swingAngle = -swingAngle;
+    if (isRight) {
+      hinge.position.set(width - frameT, 0, 0);
+      leafMesh.position.set(-leafW / 2, leafH / 2, 0);
+      var swingAngle = isOut ? Math.PI / 4 : -Math.PI / 4;
+    } else {
+      hinge.position.set(frameT, 0, 0);
+      leafMesh.position.set(leafW / 2, leafH / 2, 0);
+      var swingAngle = isOut ? -Math.PI / 4 : Math.PI / 4;
+    }
     hinge.rotation.y = swingAngle;
     hinge.add(leafMesh);
 
@@ -7223,44 +7266,81 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           if (this.project.plan.openings[i].id === sel.id) { op = this.project.plan.openings[i]; break; }
         }
         if (!op) return;
+
+        var wall = this.editor.getWall(op.wallId);
+        var wallL = wall ? Math.round(Core.wallLength(wall)) : 5000;
+        var minOff = Math.round(op.width / 2);
+        var maxOff = Math.max(minOff, Math.round(wallL - op.width / 2));
+
+        if (op.offset < minOff || op.offset > maxOff) {
+          op.offset = Math.max(minOff, Math.min(maxOff, op.offset));
+        }
+
         panel.innerHTML =
           '<div class="insp-title">' + (op.type === 'door' ? 'Door' : 'Window') + ' Properties</div>' +
-          '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspOpW" value="' + op.width + '" step="50"></div>' +
-          '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspOpH" value="' + op.height + '" step="50"></div>' +
-          '<div class="insp-row"><label>Offset along wall (mm)</label><input type="number" id="inspOpOff" value="' + Math.round(op.offset) + '" step="50"></div>' +
+          '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspOpW" value="' + op.width + '" min="400" max="3000" step="50"></div>' +
+          '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspOpH" value="' + op.height + '" min="500" max="3500" step="50"></div>' +
+          '<div class="insp-row"><label>Offset along wall (mm)</label><input type="number" id="inspOpOff" value="' + Math.round(op.offset) + '" min="' + minOff + '" max="' + maxOff + '" step="50"></div>' +
+          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Allowed: ' + minOff + ' mm – ' + maxOff + ' mm (Wall: ' + wallL + ' mm)</div>' +
           (op.type === 'door' ?
             '<div class="insp-row"><label>Swing</label><select id="inspOpSwing">' +
-            '<option value="in-left"' + (op.swing === 'in-left' ? ' selected' : '') + '>Inward Left</option>' +
+            '<option value="in-left"' + ((op.swing || 'in-left') === 'in-left' ? ' selected' : '') + '>Inward Left</option>' +
             '<option value="in-right"' + (op.swing === 'in-right' ? ' selected' : '') + '>Inward Right</option>' +
             '<option value="out-left"' + (op.swing === 'out-left' ? ' selected' : '') + '>Outward Left</option>' +
             '<option value="out-right"' + (op.swing === 'out-right' ? ' selected' : '') + '>Outward Right</option>' +
             '</select></div>' :
-            '<div class="insp-row"><label>Sill Height (mm)</label><input type="number" id="inspOpSill" value="' + (op.sillHeight || 900) + '" step="50"></div>'
+            '<div class="insp-row"><label>Sill Height (mm)</label><input type="number" id="inspOpSill" value="' + (op.sillHeight || 900) + '" min="0" max="2500" step="50"></div>'
           ) +
           '<button class="btn danger full" id="inspDelOp" style="margin-top:12px">Delete ' + (op.type === 'door' ? 'Door' : 'Window') + '</button>';
 
-        document.getElementById('inspOpW').addEventListener('change', function (e) {
-          op.width = parseFloat(e.target.value);
-          self.editor.pushHistory('Edit Opening Width');
+        var updateOp = function () {
+          var wVal = parseFloat(document.getElementById('inspOpW').value);
+          var hVal = parseFloat(document.getElementById('inspOpH').value);
+          var offVal = parseFloat(document.getElementById('inspOpOff').value);
+
+          if (!isNaN(wVal) && wVal >= 200) op.width = wVal;
+          if (!isNaN(hVal) && hVal >= 200) op.height = hVal;
+
+          var curWall = self.editor.getWall(op.wallId);
+          var curWallL = curWall ? Core.wallLength(curWall) : 5000;
+          var curMin = Math.round(op.width / 2);
+          var curMax = Math.max(curMin, Math.round(curWallL - op.width / 2));
+
+          if (!isNaN(offVal)) {
+            op.offset = Math.max(curMin, Math.min(curMax, offVal));
+          }
+
+          var swingEl = document.getElementById('inspOpSwing');
+          if (swingEl) {
+            op.swing = swingEl.value;
+          }
+
+          var sillEl = document.getElementById('inspOpSill');
+          if (sillEl) {
+            var sVal = parseFloat(sillEl.value);
+            if (!isNaN(sVal)) op.sillHeight = sVal;
+          }
+
+          self.editor.pushHistory('Edit ' + (op.type === 'door' ? 'Door' : 'Window'));
           self.editor.render();
+          if (typeof self.render3DHome === 'function') {
+            self.render3DHome();
+          }
+        };
+
+        ['input', 'change'].forEach(function (evt) {
+          var elW = document.getElementById('inspOpW');
+          if (elW) elW.addEventListener(evt, updateOp);
+          var elH = document.getElementById('inspOpH');
+          if (elH) elH.addEventListener(evt, updateOp);
+          var elOff = document.getElementById('inspOpOff');
+          if (elOff) elOff.addEventListener(evt, updateOp);
+          var elSw = document.getElementById('inspOpSwing');
+          if (elSw) elSw.addEventListener(evt, updateOp);
+          var elSi = document.getElementById('inspOpSill');
+          if (elSi) elSi.addEventListener(evt, updateOp);
         });
-        document.getElementById('inspOpH').addEventListener('change', function (e) {
-          op.height = parseFloat(e.target.value);
-          self.editor.pushHistory('Edit Opening Height');
-          self.editor.render();
-        });
-        document.getElementById('inspOpOff').addEventListener('change', function (e) {
-          op.offset = parseFloat(e.target.value);
-          self.editor.pushHistory('Edit Opening Offset');
-          self.editor.render();
-        });
-        if (op.type === 'door') {
-          document.getElementById('inspOpSwing').addEventListener('change', function (e) {
-            op.swing = e.target.value;
-            self.editor.pushHistory('Edit Swing');
-            self.editor.render();
-          });
-        }
+
         document.getElementById('inspDelOp').addEventListener('click', function () {
           self.editor.deleteSelected();
         });

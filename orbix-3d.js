@@ -191,9 +191,11 @@
       var currX = 0;
       for (var i = 0; i < ops.length; i++) {
         var op = ops[i];
-        var opStart = Math.max(0, op.offset - op.width / 2);
-        var opEnd = Math.min(wLen, op.offset + op.width / 2);
-        var opWidth = opEnd - opStart;
+        var halfOpW = (op.width || 900) / 2;
+        var safeOffset = Math.max(halfOpW, Math.min(wLen - halfOpW, op.offset));
+        var opStart = Math.max(0, safeOffset - halfOpW);
+        var opEnd = Math.min(wLen, safeOffset + halfOpW);
+        var opWidth = Math.max(100, opEnd - opStart);
         var opHeight = op.height || (op.type === 'door' ? 2100 : 1200);
         var sillH = op.sillHeight || (op.type === 'door' ? 0 : 900);
 
@@ -297,13 +299,21 @@
     leafMesh.position.set(leafW / 2, leafH / 2, 0);
     leafMesh.castShadow = true;
 
-    // Hinge Pivot Group
+    // Hinge Pivot Group with Left/Right and Inward/Outward swing
     var hinge = new THREE.Group();
-    hinge.position.set(frameT, 0, 0);
+    var swing = op.swing || 'in-left';
+    var isRight = swing.indexOf('right') !== -1;
+    var isOut = swing.indexOf('out') !== -1;
 
-    // Swing angle: open 45 degrees into room
-    var swingAngle = Math.PI / 4;
-    if (op.swing && op.swing.indexOf('out') !== -1) swingAngle = -swingAngle;
+    if (isRight) {
+      hinge.position.set(width - frameT, 0, 0);
+      leafMesh.position.set(-leafW / 2, leafH / 2, 0);
+      var swingAngle = isOut ? Math.PI / 4 : -Math.PI / 4;
+    } else {
+      hinge.position.set(frameT, 0, 0);
+      leafMesh.position.set(leafW / 2, leafH / 2, 0);
+      var swingAngle = isOut ? -Math.PI / 4 : Math.PI / 4;
+    }
     hinge.rotation.y = swingAngle;
     hinge.add(leafMesh);
 

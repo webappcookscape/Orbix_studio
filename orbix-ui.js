@@ -494,44 +494,81 @@
           if (this.project.plan.openings[i].id === sel.id) { op = this.project.plan.openings[i]; break; }
         }
         if (!op) return;
+
+        var wall = this.editor.getWall(op.wallId);
+        var wallL = wall ? Math.round(Core.wallLength(wall)) : 5000;
+        var minOff = Math.round(op.width / 2);
+        var maxOff = Math.max(minOff, Math.round(wallL - op.width / 2));
+
+        if (op.offset < minOff || op.offset > maxOff) {
+          op.offset = Math.max(minOff, Math.min(maxOff, op.offset));
+        }
+
         panel.innerHTML =
           '<div class="insp-title">' + (op.type === 'door' ? 'Door' : 'Window') + ' Properties</div>' +
-          '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspOpW" value="' + op.width + '" step="50"></div>' +
-          '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspOpH" value="' + op.height + '" step="50"></div>' +
-          '<div class="insp-row"><label>Offset along wall (mm)</label><input type="number" id="inspOpOff" value="' + Math.round(op.offset) + '" step="50"></div>' +
+          '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspOpW" value="' + op.width + '" min="400" max="3000" step="50"></div>' +
+          '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspOpH" value="' + op.height + '" min="500" max="3500" step="50"></div>' +
+          '<div class="insp-row"><label>Offset along wall (mm)</label><input type="number" id="inspOpOff" value="' + Math.round(op.offset) + '" min="' + minOff + '" max="' + maxOff + '" step="50"></div>' +
+          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Allowed: ' + minOff + ' mm – ' + maxOff + ' mm (Wall: ' + wallL + ' mm)</div>' +
           (op.type === 'door' ?
             '<div class="insp-row"><label>Swing</label><select id="inspOpSwing">' +
-            '<option value="in-left"' + (op.swing === 'in-left' ? ' selected' : '') + '>Inward Left</option>' +
+            '<option value="in-left"' + ((op.swing || 'in-left') === 'in-left' ? ' selected' : '') + '>Inward Left</option>' +
             '<option value="in-right"' + (op.swing === 'in-right' ? ' selected' : '') + '>Inward Right</option>' +
             '<option value="out-left"' + (op.swing === 'out-left' ? ' selected' : '') + '>Outward Left</option>' +
             '<option value="out-right"' + (op.swing === 'out-right' ? ' selected' : '') + '>Outward Right</option>' +
             '</select></div>' :
-            '<div class="insp-row"><label>Sill Height (mm)</label><input type="number" id="inspOpSill" value="' + (op.sillHeight || 900) + '" step="50"></div>'
+            '<div class="insp-row"><label>Sill Height (mm)</label><input type="number" id="inspOpSill" value="' + (op.sillHeight || 900) + '" min="0" max="2500" step="50"></div>'
           ) +
           '<button class="btn danger full" id="inspDelOp" style="margin-top:12px">Delete ' + (op.type === 'door' ? 'Door' : 'Window') + '</button>';
 
-        document.getElementById('inspOpW').addEventListener('change', function (e) {
-          op.width = parseFloat(e.target.value);
-          self.editor.pushHistory('Edit Opening Width');
+        var updateOp = function () {
+          var wVal = parseFloat(document.getElementById('inspOpW').value);
+          var hVal = parseFloat(document.getElementById('inspOpH').value);
+          var offVal = parseFloat(document.getElementById('inspOpOff').value);
+
+          if (!isNaN(wVal) && wVal >= 200) op.width = wVal;
+          if (!isNaN(hVal) && hVal >= 200) op.height = hVal;
+
+          var curWall = self.editor.getWall(op.wallId);
+          var curWallL = curWall ? Core.wallLength(curWall) : 5000;
+          var curMin = Math.round(op.width / 2);
+          var curMax = Math.max(curMin, Math.round(curWallL - op.width / 2));
+
+          if (!isNaN(offVal)) {
+            op.offset = Math.max(curMin, Math.min(curMax, offVal));
+          }
+
+          var swingEl = document.getElementById('inspOpSwing');
+          if (swingEl) {
+            op.swing = swingEl.value;
+          }
+
+          var sillEl = document.getElementById('inspOpSill');
+          if (sillEl) {
+            var sVal = parseFloat(sillEl.value);
+            if (!isNaN(sVal)) op.sillHeight = sVal;
+          }
+
+          self.editor.pushHistory('Edit ' + (op.type === 'door' ? 'Door' : 'Window'));
           self.editor.render();
+          if (typeof self.render3DHome === 'function') {
+            self.render3DHome();
+          }
+        };
+
+        ['input', 'change'].forEach(function (evt) {
+          var elW = document.getElementById('inspOpW');
+          if (elW) elW.addEventListener(evt, updateOp);
+          var elH = document.getElementById('inspOpH');
+          if (elH) elH.addEventListener(evt, updateOp);
+          var elOff = document.getElementById('inspOpOff');
+          if (elOff) elOff.addEventListener(evt, updateOp);
+          var elSw = document.getElementById('inspOpSwing');
+          if (elSw) elSw.addEventListener(evt, updateOp);
+          var elSi = document.getElementById('inspOpSill');
+          if (elSi) elSi.addEventListener(evt, updateOp);
         });
-        document.getElementById('inspOpH').addEventListener('change', function (e) {
-          op.height = parseFloat(e.target.value);
-          self.editor.pushHistory('Edit Opening Height');
-          self.editor.render();
-        });
-        document.getElementById('inspOpOff').addEventListener('change', function (e) {
-          op.offset = parseFloat(e.target.value);
-          self.editor.pushHistory('Edit Opening Offset');
-          self.editor.render();
-        });
-        if (op.type === 'door') {
-          document.getElementById('inspOpSwing').addEventListener('change', function (e) {
-            op.swing = e.target.value;
-            self.editor.pushHistory('Edit Swing');
-            self.editor.render();
-          });
-        }
+
         document.getElementById('inspDelOp').addEventListener('click', function () {
           self.editor.deleteSelected();
         });

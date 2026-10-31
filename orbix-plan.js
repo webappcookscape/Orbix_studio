@@ -339,6 +339,19 @@
         return;
       }
 
+      if (self.dragState && self.dragState.type === 'move_opening') {
+        var w = self.dragState.wall;
+        var op = self.dragState.opening;
+        var wLen = Core.wallLength(w);
+        var proj = Core.projectPointToSegment(worldPt, w.start, w.end);
+        var minO = Math.round(op.width / 2);
+        var maxO = Math.max(minO, Math.round(wLen - op.width / 2));
+        op.offset = Math.max(minO, Math.min(maxO, Math.round(proj.t * wLen)));
+        self.render();
+        self.onSelectionChange(self.selected);
+        return;
+      }
+
       // Live drawing render
       if (self.activeTool === 'wall' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.wallChainStart) {
         self.render();
@@ -347,7 +360,7 @@
 
     window.addEventListener('mouseup', function () {
       if (self.dragState) {
-        if (self.dragState.type === 'move_vertex' || self.dragState.type === 'move_wall' || self.dragState.type === 'move_furniture') {
+        if (self.dragState.type === 'move_vertex' || self.dragState.type === 'move_wall' || self.dragState.type === 'move_furniture' || self.dragState.type === 'move_opening') {
           self.pushHistory('Move ' + (self.dragState.type === 'move_furniture' ? 'Furniture' : 'Wall'));
         }
         self.dragState = null;
@@ -432,6 +445,11 @@
         };
         if (Vec2.dist(worldPt, opCenter) < op.width / 2 + 100) {
           this.selected = [{ type: 'opening', id: op.id }];
+          this.dragState = {
+            type: 'move_opening',
+            opening: op,
+            wall: ow
+          };
           this.onSelectionChange(this.selected);
           this.render();
           return;
@@ -782,7 +800,9 @@
       var wNorm = Core.wallNormal(w);
       var halfW = op.width / 2;
 
-      var centerPt = { x: w.start.x + wDir.x * op.offset, y: w.start.y + wDir.y * op.offset };
+      var wLen = Core.wallLength(w);
+      var safeOffset = Math.max(halfW, Math.min(wLen - halfW, op.offset));
+      var centerPt = { x: w.start.x + wDir.x * safeOffset, y: w.start.y + wDir.y * safeOffset };
       var opStart = { x: centerPt.x - wDir.x * halfW, y: centerPt.y - wDir.y * halfW };
       var opEnd = { x: centerPt.x + wDir.x * halfW, y: centerPt.y + wDir.y * halfW };
 
@@ -804,27 +824,40 @@
       ctx.fill();
 
       if (op.type === 'door') {
-        // Draw Door Swing Arc
-        var hingePt = opStart;
-        var sHinge = sStart;
-        var doorAngle = Core.wallAngle(w);
+        // Draw Door Swing Arc (Inward Left, Inward Right, Outward Left, Outward Right)
+        var swing = op.swing || 'in-left';
+        var isRight = swing.indexOf('right') !== -1;
+        var isOut = swing.indexOf('out') !== -1;
+
+        var hingePt = isRight ? opEnd : opStart;
+        var sHinge = isRight ? sEnd : sStart;
         var swingRadiusPx = op.width * this.zoom;
+
+        var normDir = isOut ? { x: -wNorm.x, y: -wNorm.y } : { x: wNorm.x, y: wNorm.y };
+        var leafDir = isRight ? { x: -wDir.x, y: -wDir.y } : { x: wDir.x, y: wDir.y };
+
+        var leafEndWorld = { x: hingePt.x + normDir.x * op.width, y: hingePt.y + normDir.y * op.width };
+        var sLeaf = this.worldToScreen(leafEndWorld);
 
         ctx.strokeStyle = isSelected ? '#1B4F72' : '#2E7BB5';
         ctx.lineWidth = isSelected ? 2 : 1.5;
 
-        // Swing line
+        // Swing leaf line (door slab)
         ctx.beginPath();
         ctx.moveTo(sHinge.x, sHinge.y);
-        var leafEndWorld = { x: hingePt.x + wNorm.x * op.width, y: hingePt.y + wNorm.y * op.width };
-        var sLeaf = this.worldToScreen(leafEndWorld);
         ctx.lineTo(sLeaf.x, sLeaf.y);
         ctx.stroke();
 
-        // Dotted quarter arc
+        // Dotted quarter arc from closed position along wall to open leaf
+        var startAngle = Math.atan2(leafDir.y, leafDir.x);
+        var endAngle = Math.atan2(normDir.y, normDir.x);
+        var diff = endAngle - startAngle;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+
         ctx.setLineDash([3, 3]);
         ctx.beginPath();
-        ctx.arc(sHinge.x, sHinge.y, swingRadiusPx, doorAngle, doorAngle + Math.PI / 2, false);
+        ctx.arc(sHinge.x, sHinge.y, swingRadiusPx, startAngle, endAngle, diff < 0);
         ctx.stroke();
         ctx.setLineDash([]);
       } else {
