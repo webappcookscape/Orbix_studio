@@ -1,0 +1,284 @@
+{
+  "users": [
+    {
+      "id": "usr_dev",
+      "name": "Dev Kancheti",
+      "email": "dev@orbixstudio.io",
+      "role": "Lead Modular Designer",
+      "company": "Orbix Design Studio",
+      "avatar": "DK"
+    },
+    {
+      "id": "usr_alex",
+      "name": "Alex Mercer",
+      "email": "alex@modularedge.com",
+      "role": "Production Estimator",
+      "company": "Precision Modular Works",
+      "avatar": "AM"
+    },
+    {
+      "id": "usr_priya",
+      "name": "Priya Sharma",
+      "email": "priya@archform.in",
+      "role": "Interior Architect",
+      "company": "Archform Interiors",
+      "avatar": "PS"
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj_mvw3m7r1tams",
+      "title": "Brand New Custom Villa",
+      "client": "Aditya Birla",
+      "type": "Full Apartment",
+      "status": "Draft",
+      "created_by": "usr_dev",
+      "owner_name": "Dev Kancheti",
+      "owner_email": "dev@orbixstudio.io",
+      "units_count": 1,
+      "boards_est": 8,
+      "data": {
+        "units": [],
+        "plan": {
+          "schemaVersion": "1.0.0",
+          "meta": {
+            "title": "Brand New Custom Villa",
+            "clientName": "Aditya Birla"
+          },
+          "plan": {
+            "gridSize": 100,
+            "walls": [],
+            "openings": [],
+            "rooms": [],
+            "furniture": []
+          }
+        }
+      },
+      "is_shared": false,
+      "fork_count": 0,
+      "created_at": "2026-10-31T07:47:35.485Z",
+      "updated_at": "2026-10-31T07:47:35.485Z"
+    },
+    {
+      "id": "proj_mvw2z6d1i4ur",
+      "title": "test",
+      "client": "test",
+      "type": "Full Apartment",
+      "status": "Draft",
+      "created_by": "usr_dev",
+      "owner_name": "Dev Kancheti",
+      "owner_email": "dev@orbixstudio.io",
+      "units_count": 1,
+      "boards_est": 6,
+      "data": {
+        "units": [
+          {
+            "label": "Initial Cabinet Run",
+            "kind": "wardrobe",
+            "w": 1800,
+            "h": 2100,
+            "d": 600,
+            "lam": "Walnut Plank"
+          }
+        ]
+      },
+      "is_shared": false,
+      "fork_count": 0,
+      "created_at": "2026-10-31T07:29:40.598Z",
+      "updated_at": "2026-10-31T07:29:40.598Z"
+    },
+    {
+      "id": "proj_mvw2hyikh09h",
+      "title": "test",
+      "client": "test",
+      "type": "Full Apartment",
+      "status": "Draft",
+      "created_by": "usr_dev",
+      "owner_name": "Dev Kancheti",
+      "owner_email": "dev@orbixstudio.io",
+      "units_count": 1,
+      "boards_est": 10,
+      "data": {
+        "units": [
+          {
+            "label": "Initial Cabinet Run",
+            "kind": "wardrobe",
+            "w": 1800,
+            "h": 2100,
+            "d": 600,
+            "lam": "Walnut Plank"
+          }
+        ]
+      },
+      "is_shared": false,
+      "fork_count": 0,
+      "created_at": "2026-10-31T07:16:17.276Z",
+      "updated_at": "2026-10-31T07:16:17.276Z"
+    },
+    {
+      "id": "proj_mvw214oig5m3",
+      "title": "Lodha Crown — 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)",
+      "client": "Sanjay Kapoor",
+      "type": "Kitchen",
+      "status": "Draft",
+      "created_by": "usr_alex",
+      "owner_name": "Alex Mercer",
+      "owner_email": "alex@modularedge.com",
+      "units_count": 1,
+      "boards_est": 14,
+      "data": {
+        "units": []
+      },
+      "is_shared": false,
+      "fork_count": 0,
+      "created_at": "2026-10-31T07:03:12.114Z",
+      "updated_at": "2026-10-31T07:03:12.114Z"
+    },
+    {
+      "id": "proj_mvw214o8gxdq",
+      "title": "Lodha Crown — 3BHK Kitchen & Wardrobe",
+      "client": "Sanjay Kapoor",
+      "type": "Kitchen",
+      "status": "Draft",
+      "created_by": "usr_dev",
+      "owner_name": "Dev Kancheti",
+      "owner_email": "dev@orbixstudio.io",
+      "units_count": 1,
+      "boards_est": 14,
+      "data": {
+        "units": []
+      },
+      "is_shared": false,
+      "fork_count": 1,
+      "created_at": "2026-10-31T07:03:12.104Z",
+      "updated_at": "2026-10-31T07:03:12.114Z"
+    },
+    {
+      "id": "proj_palm_tv",
+      "title": "Palm Beach Penthouse — Fluted Walnut Media Wall",
+      "client": "Ananya Deshmukh",
+      "type": "TV Wall",
+      "status": "Draft",
+      "created_by": "usr_priya",
+      "owner_name": "Priya Sharma",
+      "owner_email": "priya@archform.in",
+      "units_count": 2,
+      "boards_est": 8,
+      "data": {
+        "units": [
+          {
+            "label": "Floating Media Console with 3 Drawers",
+            "kind": "base",
+            "w": 2400,
+            "h": 400,
+            "d": 450,
+            "lam": "Smoked Walnut"
+          },
+          {
+            "label": "Acoustic Fluted Panelling Backdrop",
+            "kind": "wall",
+            "w": 2400,
+            "h": 2200,
+            "d": 50,
+            "lam": "Smoked Walnut"
+          }
+        ]
+      },
+      "is_shared": true,
+      "fork_count": 1,
+      "created_at": "2026-10-30T06:59:42.285Z",
+      "updated_at": "2026-10-31T06:59:42.285Z"
+    },
+    {
+      "id": "proj_hiranandani",
+      "title": "Hiranandani Villa — Master Wardrobe & Loft",
+      "client": "Rajesh & Sunita Singhania",
+      "type": "Wardrobe",
+      "status": "In Review",
+      "created_by": "usr_dev",
+      "owner_name": "Dev Kancheti",
+      "owner_email": "dev@orbixstudio.io",
+      "units_count": 3,
+      "boards_est": 12,
+      "data": {
+        "units": [
+          {
+            "label": "Master 3-Door Hinged Wardrobe",
+            "kind": "wardrobe",
+            "w": 1800,
+            "h": 2100,
+            "d": 600,
+            "lam": "Walnut Plank"
+          },
+          {
+            "label": "Overhead Storage Loft Run",
+            "kind": "loft",
+            "w": 1800,
+            "h": 600,
+            "d": 600,
+            "lam": "Off-White Matte"
+          }
+        ]
+      },
+      "is_shared": true,
+      "fork_count": 2,
+      "created_at": "2026-10-28T06:59:42.283Z",
+      "updated_at": "2026-10-31T04:59:42.285Z"
+    },
+    {
+      "id": "proj_emerald",
+      "title": "Emerald Greens — Parallel Acrylic Kitchen",
+      "client": "Vikram Mehta",
+      "type": "Kitchen",
+      "status": "CNC Ready",
+      "created_by": "usr_alex",
+      "owner_name": "Alex Mercer",
+      "owner_email": "alex@modularedge.com",
+      "units_count": 6,
+      "boards_est": 18,
+      "data": {
+        "units": [
+          {
+            "label": "Base Unit 2-Drawer Pot & Pan",
+            "kind": "base",
+            "w": 900,
+            "h": 870,
+            "d": 600,
+            "lam": "Sage Green Matte"
+          },
+          {
+            "label": "Sink Base Unit 2-Shutter",
+            "kind": "base",
+            "w": 900,
+            "h": 870,
+            "d": 600,
+            "lam": "Sage Green Matte"
+          },
+          {
+            "label": "Overhead Wall Glass Lift-Up",
+            "kind": "wall",
+            "w": 900,
+            "h": 720,
+            "d": 350,
+            "lam": "Fluted Glass"
+          }
+        ]
+      },
+      "is_shared": false,
+      "fork_count": 0,
+      "created_at": "2026-10-24T06:59:42.285Z",
+      "updated_at": "2026-10-30T18:59:42.285Z"
+    }
+  ],
+  "shares": [],
+  "forks": [
+    {
+      "id": "frk_mvw214oi",
+      "original_project_id": "proj_mvw214o8gxdq",
+      "forked_project_id": "proj_mvw214oig5m3",
+      "forked_by": "usr_alex",
+      "forked_by_name": "Alex Mercer",
+      "created_at": "2026-10-31T07:03:12.114Z"
+    }
+  ]
+}

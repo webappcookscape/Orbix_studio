@@ -3806,6 +3806,7 @@ function setView(v){
   if(v==="plan" && window.OrbixUI && window.OrbixUI.editor){ window.OrbixUI.editor.resize(); window.OrbixUI.editor.render(); }
   if(v==="boq" && window.OrbixUI){ window.OrbixUI.renderBOQ(); }
 }
+window.setView = setView;
 $all(".vtab").forEach(function(b){ b.addEventListener("click",function(){
   if(b.dataset.view==="kitchen"){ galState.type="kitchen"; setView("gallery"); return; }
   setView(b.dataset.view);

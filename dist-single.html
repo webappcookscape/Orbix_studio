@@ -520,43 +520,183 @@ input,select{font:inherit;color:inherit}
 #view-home,#view-upload,#view-report{background:var(--paper);overflow-y:auto}
 #view-home.is-on,#view-upload.is-on,#view-report.is-on{display:block}
 #view-upload,#view-report{background:var(--stage-2);padding:22px 16px 60px}
-.home{max-width:1080px;margin:0 auto;padding:56px 24px 80px}
-.hero{max-width:760px}
-.hero .eyebrow{
-  font-family:var(--cond);font-size:11px;font-weight:600;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--blue);margin-bottom:18px;
+
+#view-home{
+  background: radial-gradient(120% 70% at 50% -10%, #FFF7F7 0%, #FFFFFF 42%, #F9FAFB 100%);
 }
-.hero h1{
-  font-size:clamp(30px,4.6vw,50px);font-weight:600;line-height:1.06;
-  letter-spacing:-.015em;text-wrap:balance;margin-bottom:20px;
+
+.home{
+  max-width:1160px;margin:0 auto;padding:48px 24px 80px;
+  display:flex;flex-direction:column;gap:44px;
 }
-.hero .lede{font-size:16.5px;line-height:1.6;color:var(--ink-2);max-width:66ch}
-.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
-.btn.big{padding:12px 20px;font-size:13px}
-.steps{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;
-  background:var(--rule);border:1px solid var(--rule);margin-top:56px;
+
+/* Hero */
+.hero{max-width:820px}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 13px;border-radius:999px;
+  background:rgba(211,47,47,.06);border:1px solid rgba(211,47,47,.22);
+  margin-bottom:18px;
 }
-.step{background:var(--panel);padding:22px 20px 24px}
-.step span{
-  display:inline-block;font-family:var(--mono);font-size:12px;font-weight:600;
-  color:var(--blue);border:1.5px solid var(--blue);width:26px;height:26px;
-  line-height:23px;text-align:center;margin-bottom:12px;
+.badge-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--blue);
+  box-shadow:0 0 0 3px rgba(211,47,47,.2);
 }
-.step h3{font-size:15px;font-weight:600;margin-bottom:6px}
-.step p,.who p{font-size:13px;line-height:1.55;color:var(--ink-2)}
-.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:28px;margin-top:48px}
-.who h3{
-  font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--blue);margin-bottom:8px;
+.badge-text{
+  font-family:var(--cond);font-size:11.5px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--blue);
 }
+.hero-title{
+  font-size:clamp(32px,4.5vw,52px);font-weight:700;line-height:1.08;
+  letter-spacing:-.025em;color:#111827;text-wrap:balance;margin-bottom:18px;
+}
+.hero-accent{
+  color:var(--blue);
+  background:linear-gradient(135deg,#991B1B 0%,#D32F2F 50%,#EF4444 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero .lede{
+  font-size:16px;line-height:1.65;color:#4B5563;max-width:70ch;margin-bottom:26px;
+}
+.cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn.big{padding:11px 18px;font-size:12.5px;border-radius:6px;font-weight:600}
+.cta-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(180deg,#D32F2F 0%,#B71C1C 100%);
+  color:#fff;border:1px solid #991B1B;
+  box-shadow:0 4px 14px rgba(211,47,47,.28),inset 0 1px 0 rgba(255,255,255,.2);
+  transition:all .18s ease;
+}
+.cta-primary:hover{
+  background:#B71C1C;color:#fff;transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(211,47,47,.36);
+}
+.cta-arrow{transition:transform .18s ease;margin-left:2px}
+.cta-primary:hover .cta-arrow{transform:translateX(3px)}
+.cta-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  background:#FFFFFF;border:1px solid #D1D5DB;color:#374151;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);transition:all .18s ease;
+}
+.cta-btn:hover{
+  border-color:var(--blue);color:var(--blue);transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(0,0,0,.06);
+}
+
+/* Proof & Live Metrics Strip */
+.proof-wrap{
+  background:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;
+  padding:22px 24px;box-shadow:0 4px 20px -2px rgba(0,0,0,.04);
+}
+.proof-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #F3F4F6;
+}
+.section-tag{
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--blue);
+}
+.proof-note{font-family:var(--mono);font-size:11px;color:#6B7280}
 .proof{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;
-  background:var(--rule);border:1px solid var(--rule);margin-top:48px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
 }
-.pf{background:var(--panel);padding:18px 20px}
-.pf b{display:block;font-family:var(--mono);font-size:30px;font-weight:600;color:var(--ink)}
-.pf span{font-size:12px;color:var(--ink-2)}
+.pf{display:flex;flex-direction:column;gap:6px}
+.pf-top{display:flex;align-items:center;gap:10px}
+.pf b{
+  display:block;font-family:var(--mono);font-size:32px;font-weight:700;
+  color:#111827;line-height:1;letter-spacing:-.02em;
+}
+.pf-pill{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;padding:2px 7px;
+  border-radius:4px;text-transform:uppercase;letter-spacing:.04em;
+}
+.pf-pill.save{background:#ECFDF5;color:#047857;border:1px solid #A7F3D0}
+.pf-pill.opt{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
+.pf-pill.ready{background:#FEF3C7;color:#B45309;border:1px solid #FDE68A}
+.pf-label{font-size:13px;font-weight:500;color:#4B5563;line-height:1.4}
+
+/* Section Blocks */
+.section-block{display:flex;flex-direction:column;gap:18px}
+.section-intro{display:flex;flex-direction:column;gap:4px}
+.section-title{font-size:22px;font-weight:700;color:#111827;letter-spacing:-.015em}
+
+/* 4-Step Process */
+.steps{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;
+}
+.step{
+  background:#FFFFFF;border:1px solid #E5E7EB;border-radius:10px;
+  padding:22px 20px 18px;display:flex;flex-direction:column;position:relative;
+  box-shadow:0 1px 3px rgba(0,0,0,.03);transition:all .2s ease;
+}
+.step:hover{
+  border-color:#CBD5E1;transform:translateY(-2px);box-shadow:0 8px 20px -4px rgba(0,0,0,.07);
+}
+.step-num{
+  font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue);
+  background:var(--blue-soft);width:30px;height:30px;line-height:30px;
+  text-align:center;border-radius:6px;margin-bottom:12px;
+}
+.step h3{font-size:15.5px;font-weight:700;color:#111827;margin-bottom:8px}
+.step p{font-size:13px;line-height:1.58;color:#4B5563;flex:1 1 auto}
+.step-foot{
+  margin-top:14px;padding-top:10px;border-top:1px solid #F3F4F6;
+  font-family:var(--mono);font-size:10.5px;color:#6B7280;font-weight:500;
+}
+
+/* Audience Cards */
+.who{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;
+}
+.who-card{
+  background:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;
+  padding:26px 22px;display:flex;flex-direction:column;gap:10px;
+  box-shadow:0 1px 3px rgba(0,0,0,.03);transition:all .2s ease;position:relative;
+}
+.who-card:hover{
+  border-color:#CBD5E1;transform:translateY(-2px);box-shadow:0 10px 24px -4px rgba(0,0,0,.08);
+}
+.who-card.highlight-card{
+  border-color:rgba(211,47,47,.3);background:linear-gradient(180deg,#FFFFFF 0%,#FFFDFD 100%);
+}
+.who-card.highlight-card:hover{border-color:var(--blue)}
+.who-pill{
+  align-self:flex-start;font-family:var(--cond);font-size:10.5px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:4px;
+  background:#F3F4F6;color:#4B5563;
+}
+.who-pill-prime{background:var(--blue-soft);color:var(--blue)}
+.who-card h3{font-size:19px;font-weight:700;color:#111827}
+.who-card p{font-size:13.5px;line-height:1.6;color:#4B5563}
+.who-specs{
+  list-style:none;margin-top:6px;padding-top:12px;border-top:1px solid #F3F4F6;
+  display:flex;flex-direction:column;gap:7px;
+}
+.who-specs li{
+  font-size:12px;color:#374151;display:flex;align-items:center;gap:8px;
+}
+.who-specs li::before{
+  content:"";display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:var(--blue);flex:0 0 auto;
+}
+
+/* Quick Launch Bottom Banner */
+.home-bottom-banner{
+  background:linear-gradient(135deg,#1F2937 0%,#111827 100%);border-radius:12px;
+  padding:28px 32px;color:#FFFFFF;display:flex;justify-content:space-between;
+  align-items:center;gap:20px;flex-wrap:wrap;box-shadow:0 10px 25px -5px rgba(0,0,0,.12);
+}
+.banner-text h3{font-size:19px;font-weight:700;color:#FFFFFF;margin-bottom:4px}
+.banner-text p{font-size:13.5px;color:#9CA3AF}
+.banner-acts{display:flex;gap:10px;align-items:center}
+.banner-acts .btn{border-radius:6px}
+.banner-acts .btn:not(.primary){background:#374151;color:#F9FAFB;border-color:#4B5563}
+.banner-acts .btn:not(.primary):hover{background:#4B5563;color:#FFFFFF;border-color:#6B7280}
+
+@media(max-width:800px){
+  .proof{grid-template-columns:1fr;gap:18px}
+  .home-bottom-banner{flex-direction:column;align-items:flex-start}
+}
 
 /* ══════════ UPLOAD ══════════ */
 .dropzone{
@@ -918,6 +1058,326 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
   html, body, #app, #main{overflow:visible!important;position:static!important;height:auto!important;background:#fff!important}
 }
 
+/* ══════════ TOPBAR USER & DB STATUS ══════════ */
+.db-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;
+  border-radius:999px;font-family:var(--mono);font-size:11px;font-weight:600;
+  border:1px solid #E2E8F0;background:#F8FAFC;color:#475569;
+}
+.db-badge .db-dot{width:7px;height:7px;border-radius:50%;background:#94A3B8}
+.db-badge.is-pg{background:#ECFDF5;border-color:#A7F3D0;color:#047857}
+.db-badge.is-pg .db-dot{background:#10B981;box-shadow:0 0 0 2px rgba(16,185,129,.25)}
+.db-badge.is-local{background:#EFF6FF;border-color:#BFDBFE;color:#1D4ED8}
+.db-badge.is-local .db-dot{background:#3B82F6}
+
+.user-avatar-btn{
+  display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 6px;
+  background:#F8FAFC;border:1px solid #CBD5E1;border-radius:999px;cursor:pointer;
+  transition:all .15s ease;
+}
+.user-avatar-btn:hover{background:#F1F5F9;border-color:var(--blue)}
+.u-avatar{
+  width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;
+  font-family:var(--mono);font-size:11px;font-weight:700;display:flex;
+  align-items:center;justify-content:center;
+}
+.u-avatar.small{width:22px;height:22px;font-size:10px}
+.u-avatar.big{width:46px;height:46px;font-size:16px}
+.u-name{font-size:12px;font-weight:600;color:#1E293B}
+.u-role{display:none;font-size:11px;color:#64748B}
+
+/* ══════════ PROJECTS DASHBOARD ══════════ */
+.projects-section{
+  background:#FFFFFF;border:1px solid #E2E8F0;border-radius:14px;
+  padding:28px 26px;box-shadow:0 4px 20px -2px rgba(0,0,0,.04);
+  display:flex;flex-direction:column;gap:20px;
+}
+.psection-header{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  border-bottom:1px solid #F1F5F9;padding-bottom:16px;flex-wrap:wrap;gap:12px;
+}
+.psection-title-wrap{display:flex;flex-direction:column;gap:4px}
+.psection-title-row{display:flex;align-items:center;gap:10px}
+.pcount-badge{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  padding:2px 8px;border-radius:999px;background:#F1F5F9;color:#64748B;
+}
+
+/* Toolbar */
+.ptoolbar{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:16px;flex-wrap:wrap;
+}
+.psearch-box{
+  display:flex;align-items:center;gap:8px;background:#F8FAFC;
+  border:1px solid #CBD5E1;border-radius:8px;padding:8px 12px;
+  flex:1 1 280px;max-width:440px;
+}
+.psearch-box svg{color:#64748B;flex:0 0 auto}
+.psearch-box input{
+  border:none;background:transparent;outline:none;font-size:13px;
+  color:#1E293B;width:100%;
+}
+.pfilters{display:flex;gap:6px;flex-wrap:wrap}
+.pfilter-btn{
+  font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;padding:7px 14px;border-radius:6px;
+  border:1px solid #CBD5E1;background:#FFFFFF;color:#475569;
+  cursor:pointer;transition:all .15s ease;
+}
+.pfilter-btn:hover{background:#F8FAFC;color:#0F172A}
+.pfilter-btn.is-active{
+  background:var(--blue-soft);border-color:#FECACA;color:var(--blue);
+}
+
+/* Projects Grid */
+.projects-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;
+}
+.proj-loading, .proj-empty{
+  grid-column:1/-1;padding:48px 24px;text-align:center;
+  background:#F8FAFC;border:1px dashed #CBD5E1;border-radius:12px;
+}
+.proj-empty-icon{margin-bottom:12px;color:#94A3B8}
+.proj-empty h3{font-size:18px;font-weight:700;color:#1E293B;margin-bottom:6px}
+.proj-empty p{font-size:13.5px;color:#64748B;max-width:48ch;margin:0 auto 18px}
+
+/* Project Card */
+.proj-card{
+  background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+  padding:20px;display:flex;flex-direction:column;gap:12px;
+  box-shadow:0 1px 3px rgba(0,0,0,.03);transition:all .2s ease;
+  position:relative;
+}
+.proj-card:hover{
+  border-color:#94A3B8;transform:translateY(-2px);
+  box-shadow:0 10px 24px -4px rgba(0,0,0,.08);
+}
+.proj-card.is-active-proj{
+  border-color:var(--blue);box-shadow:0 0 0 1px var(--blue);
+}
+.pcard-top{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:10px;
+}
+.pcard-badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ptag{
+  font-family:var(--cond);font-size:10.5px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:2px 8px;border-radius:4px;
+  background:#F1F5F9;color:#475569;
+}
+.ptag.type-wardrobe{background:#FEF2F2;color:#DC2626}
+.ptag.type-kitchen{background:#ECFDF5;color:#047857}
+.ptag.type-tv-wall{background:#EFF6FF;color:#1D4ED8}
+
+.pstatus{
+  font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 6px;
+  border-radius:4px;text-transform:uppercase;
+}
+.pstatus.draft{background:#F1F5F9;color:#64748B}
+.pstatus.in-review{background:#FEF3C7;color:#B45309}
+.pstatus.cnc-ready{background:#ECFDF5;color:#047857}
+
+.pshared-pill, .pfork-pill{
+  font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px;
+  background:#EDE9FE;color:#6D28D9;font-weight:600;
+}
+
+.pcard-actions{display:flex;gap:4px}
+.pact-icon{
+  width:28px;height:28px;border-radius:6px;display:flex;
+  align-items:center;justify-content:center;color:#64748B;
+  background:#F8FAFC;border:1px solid #E2E8F0;cursor:pointer;
+  transition:all .15s ease;
+}
+.pact-icon:hover{background:#FFFFFF;color:var(--blue);border-color:var(--blue)}
+.pact-icon.del-act:hover{color:#DC2626;border-color:#FCA5A5}
+
+.pcard-title{
+  font-size:16.5px;font-weight:700;color:#0F172A;line-height:1.3;
+  cursor:pointer;transition:color .15s;
+}
+.pcard-title:hover{color:var(--blue)}
+.pcard-client{
+  display:flex;align-items:center;gap:6px;font-size:12.5px;
+  color:#64748B;font-weight:500;
+}
+
+.pcard-meta-grid{
+  display:flex;flex-direction:column;gap:5px;
+  background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:9px 11px;
+  font-size:12px;
+}
+.pmeta-item{display:flex;gap:6px;align-items:baseline;color:#334155}
+.pm-lbl{font-family:var(--mono);font-size:10.5px;color:#64748B;font-weight:600;min-width:62px}
+.pm-val{color:#0F172A}
+.ptag.bh-badge{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
+.ptag.cp-code{background:#FEF3C7;color:#B45309;font-family:var(--mono)}
+.pstatus.pstatus-active{background:#ECFDF5;color:#047857}
+.pstatus.pstatus-draft{background:#F1F5F9;color:#64748B}
+.pstatus.pstatus-done{background:#EFF6FF;color:#1D4ED8}
+
+.pcard-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  background:#F8FAFC;border:1px solid #F1F5F9;border-radius:8px;padding:8px 10px;
+}
+.pstat{display:flex;flex-direction:column;align-items:center;text-align:center}
+.pstat b{font-family:var(--mono);font-size:15px;font-weight:700;color:#0F172A}
+.pstat span{font-size:10px;color:#64748B;text-transform:uppercase;font-weight:600}
+
+.pcard-foot{
+  display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid #F1F5F9;padding-top:10px;margin-top:2px;
+}
+.pcard-owner{display:flex;align-items:center;gap:8px}
+.powner-avatar{
+  width:24px;height:24px;border-radius:50%;background:#E2E8F0;color:#334155;
+  font-family:var(--mono);font-size:10px;font-weight:700;display:flex;
+  align-items:center;justify-content:center;
+}
+.powner-details{display:flex;flex-direction:column}
+.powner-name{font-size:11.5px;font-weight:600;color:#1E293B}
+.powner-date{font-size:10px;color:#94A3B8}
+
+.open-proj-btn{
+  display:inline-flex;align-items:center;gap:5px;padding:6px 12px;
+  background:#0F172A;color:#FFFFFF;border-radius:6px;font-size:11.5px;
+  font-weight:600;border:none;cursor:pointer;transition:all .15s ease;
+}
+.open-proj-btn:hover{background:var(--blue)}
+
+/* ══════════ MODALS ══════════ */
+.orbix-modal{display:none;position:fixed;inset:0;z-index:9999}
+.orbix-modal.is-open{display:flex;align-items:center;justify-content:center}
+.modal-backdrop{
+  position:absolute;inset:0;background:rgba(15,23,42,.6);
+  backdrop-filter:blur(3px);
+}
+.modal-dialog{
+  position:relative;background:#FFFFFF;border-radius:14px;
+  width:100%;max-width:520px;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;overflow:hidden;animation:modalPop .2s ease;
+}
+@keyframes modalPop{
+  from{opacity:0;transform:scale(.96)}
+  to{opacity:1;transform:scale(1)}
+}
+.modal-head{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:20px 24px;border-bottom:1px solid #E2E8F0;
+}
+.modal-title{font-size:18px;font-weight:700;color:#0F172A}
+.modal-sub{font-size:12.5px;color:#64748B;margin-top:2px}
+.modal-close-btn{
+  background:none;border:none;font-size:22px;color:#94A3B8;cursor:pointer;
+  line-height:1;padding:2px 6px;border-radius:4px;
+}
+.modal-close-btn:hover{color:#0F172A;background:#F1F5F9}
+
+.modal-body{padding:20px 24px;display:flex;flex-direction:column;gap:14px}
+.modal-foot{
+  padding:16px 24px;background:#F8FAFC;border-top:1px solid #E2E8F0;
+  display:flex;justify-content:flex-end;gap:10px;
+}
+
+/* Form Controls */
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-label{font-size:12px;font-weight:600;color:#334155}
+.form-label .req{color:#DC2626}
+.form-input, .form-select{
+  width:100%;padding:9px 12px;border:1px solid #CBD5E1;border-radius:6px;
+  font-size:13px;color:#0F172A;background:#FFFFFF;outline:none;
+}
+.form-input:focus, .form-select:focus{
+  border-color:var(--blue);box-shadow:0 0 0 2px rgba(211,47,47,.15);
+}
+.modal-hint{
+  display:flex;align-items:center;gap:8px;font-size:11.5px;
+  color:#64748B;background:#F1F5F9;padding:8px 10px;border-radius:6px;
+}
+.modal-hint svg{flex:0 0 auto;color:var(--blue)}
+
+/* Colleague Copy Guarantee Notice */
+.copy-guarantee-box{
+  background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;
+  padding:12px 14px;display:flex;gap:12px;align-items:flex-start;
+}
+.cg-icon{
+  width:26px;height:26px;border-radius:50%;background:#3B82F6;color:#FFFFFF;
+  font-size:14px;font-weight:700;display:flex;align-items:center;
+  justify-content:center;flex:0 0 auto;
+}
+.cg-text strong{font-size:13px;color:#1E40AF;display:block;margin-bottom:2px}
+.cg-text p{font-size:12px;color:#3B82F6;line-height:1.45;margin:0}
+
+.share-link-row{display:flex;gap:8px}
+.share-link-row input{flex:1 1 auto;font-family:var(--mono);font-size:11.5px}
+
+.colleagues-list{display:flex;flex-direction:column;gap:8px;max-height:180px;overflow-y:auto}
+.colleague-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 10px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;
+}
+.col-info{display:flex;align-items:center;gap:8px}
+.col-info div{display:flex;flex-direction:column}
+.col-info strong{font-size:12.5px;color:#0F172A}
+.col-info span{font-size:11px;color:#64748B}
+.send-copy-btn{
+  font-size:11.5px;padding:5px 10px;border-radius:4px;
+  border-color:#3B82F6;color:#1D4ED8;background:#EFF6FF;
+}
+.send-copy-btn:hover{background:#3B82F6;color:#FFFFFF}
+
+/* User Switcher */
+.user-current-card{
+  display:flex;align-items:center;gap:14px;padding:14px;
+  background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;
+}
+.ucc-info h4{font-size:16px;font-weight:700;color:#0F172A}
+.ucc-email{font-size:12px;color:#64748B;display:block}
+.ucc-role{font-size:11.5px;color:var(--blue);font-weight:600;display:block;margin-top:2px}
+
+.modal-section-title{font-size:13.5px;font-weight:700;color:#0F172A;margin-top:10px}
+.modal-section-desc{font-size:12px;color:#64748B;margin-bottom:8px}
+.switch-users-list{display:flex;flex-direction:column;gap:8px}
+.u-switch-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 12px;background:#FFFFFF;border:1px solid #CBD5E1;border-radius:6px;
+}
+.u-switch-item.is-current{border-color:#10B981;background:#F0FDF4}
+.u-info{display:flex;align-items:center;gap:10px}
+.u-info div{display:flex;flex-direction:column}
+.u-info strong{font-size:12.5px;color:#0F172A}
+.u-info span{font-size:11px;color:#64748B}
+.current-tag{
+  font-family:var(--mono);font-size:10.5px;font-weight:700;
+  color:#059669;padding:2px 8px;border-radius:4px;background:#D1FAE5;
+}
+
+/* Colleague Copy Floating Banner */
+.colleague-copy-banner{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:#1E293B;color:#FFFFFF;border-radius:10px;padding:12px 18px;
+  box-shadow:0 12px 30px rgba(0,0,0,.25);z-index:9998;opacity:0;
+  transition:all .28s cubic-bezier(.16,1,.3,1);max-width:90%;width:580px;
+}
+.colleague-copy-banner.is-shown{
+  transform:translateX(-50%) translateY(0);opacity:1;
+}
+.cc-banner-inner{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.cc-banner-left{display:flex;align-items:center;gap:12px}
+.cc-icon{
+  width:28px;height:28px;border-radius:50%;background:#3B82F6;color:#FFFFFF;
+  display:flex;align-items:center;justify-content:center;font-weight:700;
+  flex:0 0 auto;
+}
+.cc-banner-left strong{font-size:13px;display:block;margin-bottom:2px}
+.cc-banner-left p{font-size:12px;color:#94A3B8;margin:0;line-height:1.4}
+.cc-close{background:none;border:none;color:#94A3B8;font-size:20px;cursor:pointer}
+.cc-close:hover{color:#FFFFFF}
+
+
 
 
 
@@ -946,6 +1406,13 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       <button class="vtab" data-view="report">Report</button>
     </nav>
     <div class="topacts">
+      <div id="dbStatusBadge" class="db-badge" title="Database connection status">
+        <span class="db-dot"></span> PostgreSQL
+      </div>
+      <button class="user-avatar-btn" id="userAvatarBtn" title="Current User & Switcher">
+        <span class="u-avatar">DK</span>
+        <span class="u-name">Dev Kancheti</span>
+      </button>
       <button class="btn" id="printBtn">Print</button>
       <button class="btn" id="csvBtn">CSV</button>
       <button class="btn" id="dxfBtn">DXF</button>
@@ -957,33 +1424,161 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     <!-- ══════ HOME ══════ -->
     <section class="view is-on" id="view-home">
       <div class="home">
-        <div class="hero">
-          <p class="eyebrow">For interior designers, modular factories and enterprises</p>
-          <h1>Upload a cutting list.<br>Get the cutting plan — and the savings.</h1>
-          <p class="lede">Orbix Studio reads the process sheet you already have, rebuilds every cupboard virtually, nests the panels onto 8&nbsp;×&nbsp;4 boards and hands your factory a plain-English plan: what to order, how to cut, where to drill — and exactly how much you saved against what you would have ordered.</p>
-          <div class="cta">
-            <button class="btn primary big" data-go="upload">Upload a process sheet</button>
-            <button class="btn big" id="trySample">See it on a sample job</button>
-            <button class="btn big" data-go="design">Design from scratch</button>
-            <button class="btn big" data-go="kitchen">Design a kitchen</button>
+        
+        <!-- ══════ PROJECTS DASHBOARD ══════ -->
+
+        <!-- Live Proof & Metrics Strip -->
+        <div class="proof-wrap">
+          <div class="proof-header">
+            <span class="section-tag">LIVE VERIFICATION</span>
+            <span class="proof-note">Automated nest audit on standard job</span>
+          </div>
+          <div class="proof">
+            <div class="pf">
+              <div class="pf-top">
+                <b id="pf1">—</b>
+                <span class="pf-pill save">-2 Saved</span>
+              </div>
+              <div class="pf-label">sheets on the sample job, versus 14 ordered</div>
+            </div>
+            <div class="pf">
+              <div class="pf-top">
+                <b id="pf2">—</b>
+                <span class="pf-pill opt">Guillotine Nest</span>
+              </div>
+              <div class="pf-label">board yield after nesting</div>
+            </div>
+            <div class="pf">
+              <div class="pf-top">
+                <b id="pf3">—</b>
+                <span class="pf-pill ready">CNC DXF</span>
+              </div>
+              <div class="pf-label">panels bored and banded from one upload</div>
+            </div>
           </div>
         </div>
-        <div class="steps">
-          <div class="step"><span>1</span><h3>Upload</h3><p>A PDF or CSV process sheet — heights, widths, quantities and colour codes, in the format factories already use. Or paste the rows.</p></div>
-          <div class="step"><span>2</span><h3>Plan virtually</h3><p>Every unit is rebuilt in 3D from its own panels, in its own laminate. Check fronts, colours and lofts before a board is cut.</p></div>
-          <div class="step"><span>3</span><h3>Optimise</h3><p>Guillotine nesting on 2440&nbsp;×&nbsp;1220 boards, grain-locked, saw kerf included. System&nbsp;32 boring on every panel, exported to a CNC-ready DXF.</p></div>
-          <div class="step"><span>4</span><h3>Read the savings</h3><p>Boards ordered versus boards needed, offcut recovered, edge banding and cutting — then a numbered plan the floor can follow.</p></div>
+
+        <!-- ══════ PROJECTS DASHBOARD ══════ -->
+        <div class="projects-section" id="homeProjectsSection">
+          <div class="psection-header">
+            <div class="psection-title-wrap">
+              <span class="section-tag">POSTGRESQL CAD WORKSPACE</span>
+              <div class="psection-title-row">
+                <h2 class="section-title">All Projects</h2>
+                <span class="pcount-badge" id="projectCountLabel">Loading...</span>
+              </div>
+            </div>
+            <div class="psection-acts">
+              <button class="btn primary big" id="homeCreateProjectBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Create New Project</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Toolbar -->
+          <div class="ptoolbar">
+            <div class="psearch-box">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="projectSearchInput" placeholder="Search projects by title, client or owner..." autocomplete="off">
+            </div>
+            <div class="pfilters">
+              <button class="pfilter-btn is-active" data-filter="all">All Projects</button>
+              <button class="pfilter-btn" data-filter="mine">My Projects</button>
+              <button class="pfilter-btn" data-filter="shared">Shared with Me</button>
+            </div>
+          </div>
+
+          <!-- Projects Grid -->
+          <div class="projects-grid" id="projectsGrid"></div>
         </div>
-        <div class="who">
-          <div><h3>Designers</h3><p>Quote a wardrobe in minutes on real board counts instead of a 30% allowance. Send your fabricator a DXF, not a sketch.</p></div>
-          <div><h3>Factories</h3><p>A cutting map per sheet, a boring schedule per panel, edge-banding lengths per row. No draftsman between the order and the saw.</p></div>
-          <div><h3>Enterprises</h3><p>One costing rule for every dealer and every job. Every process sheet gets the same nesting, the same drilling, the same savings report.</p></div>
+
+        <!-- 4-Step Process Section -->
+        <div class="section-block">
+          <div class="section-intro">
+            <span class="section-tag">THE WORKFLOW</span>
+            <h2 class="section-title">From cutting list to factory floor in four steps</h2>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">01</div>
+              <h3>Upload</h3>
+              <p>A PDF or CSV process sheet — heights, widths, quantities and colour codes, in the format factories already use. Or paste the rows.</p>
+              <div class="step-foot">PDF · CSV · Raw Rows</div>
+            </div>
+            <div class="step">
+              <div class="step-num">02</div>
+              <h3>Plan virtually</h3>
+              <p>Every unit is rebuilt in 3D from its own panels, in its own laminate. Check fronts, colours and lofts before a board is cut.</p>
+              <div class="step-foot">Real-time 3D · Laminate Match</div>
+            </div>
+            <div class="step">
+              <div class="step-num">03</div>
+              <h3>Optimise</h3>
+              <p>Guillotine nesting on 2440&nbsp;×&nbsp;1220 boards, grain-locked, saw kerf included. System&nbsp;32 boring on every panel, exported to a CNC-ready DXF.</p>
+              <div class="step-foot">Grain-Lock · System 32 CNC</div>
+            </div>
+            <div class="step">
+              <div class="step-num">04</div>
+              <h3>Read the savings</h3>
+              <p>Boards ordered versus boards needed, offcut recovered, edge banding and cutting — then a numbered plan the floor can follow.</p>
+              <div class="step-foot">Accurate ₹ BOQ · Numbered Plan</div>
+            </div>
+          </div>
         </div>
-        <div class="proof">
-          <div class="pf"><b id="pf1">—</b><span>sheets on the sample job, versus 14 ordered</span></div>
-          <div class="pf"><b id="pf2">—</b><span>board yield after nesting</span></div>
-          <div class="pf"><b id="pf3">—</b><span>panels bored and banded from one upload</span></div>
+
+        <!-- Value for Audience Section -->
+        <div class="section-block">
+          <div class="section-intro">
+            <span class="section-tag">WHO IT'S FOR</span>
+            <h2 class="section-title">Built for precision across every department</h2>
+          </div>
+          <div class="who">
+            <div class="who-card">
+              <div class="who-pill">Designers &amp; Studios</div>
+              <h3>Designers</h3>
+              <p>Quote a wardrobe in minutes on real board counts instead of a 30% allowance. Send your fabricator a DXF, not a sketch.</p>
+              <ul class="who-specs">
+                <li>Instant board-count quoting</li>
+                <li>Zero sketch misunderstandings</li>
+                <li>Live 3D client presentations</li>
+              </ul>
+            </div>
+            <div class="who-card highlight-card">
+              <div class="who-pill who-pill-prime">Modular Factories</div>
+              <h3>Factories</h3>
+              <p>A cutting map per sheet, a boring schedule per panel, edge-banding lengths per row. No draftsman between the order and the saw.</p>
+              <ul class="who-specs">
+                <li>Numbered beam saw cutting maps</li>
+                <li>Exact System 32 boring coordinates</li>
+                <li>Pre-calculated edge-banding lengths</li>
+              </ul>
+            </div>
+            <div class="who-card">
+              <div class="who-pill">Enterprises &amp; OEM</div>
+              <h3>Enterprises</h3>
+              <p>One costing rule for every dealer and every job. Every process sheet gets the same nesting, the same drilling, the same savings report.</p>
+              <ul class="who-specs">
+                <li>Unified multi-store costing formula</li>
+                <li>Automated board savings audits</li>
+                <li>Seamless dealer-to-plant pipeline</li>
+              </ul>
+            </div>
+          </div>
         </div>
+
+        <!-- Quick Launch Bottom Banner -->
+        <div class="home-bottom-banner">
+          <div class="banner-text">
+            <h3>Start your project in seconds</h3>
+            <p>Upload your process sheet or test the full pipeline with a pre-loaded sample job.</p>
+          </div>
+          <div class="banner-acts">
+            <button class="btn primary big" data-go="upload">Upload Process Sheet</button>
+            <button class="btn big" data-go="design">Launch 3D Studio</button>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -1228,7 +1823,882 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
   </main>
 </div>
 
+<!-- Colleague Copy Notification Banner -->
+<div id="colleagueCopyBanner" class="colleague-copy-banner"></div>
+
+<!-- ══════ MODAL: CREATE NEW PROJECT ══════ -->
+<div class="orbix-modal" id="createProjectModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Create New Project</h3>
+        <p class="modal-sub">Initialize project in PostgreSQL database & start designing</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <form id="createProjectForm">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="newProjClient">Client Name <span class="req">*</span></label>
+            <input type="text" id="newProjClient" class="form-input" placeholder="e.g. Vikram Singhania" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newProjContact">Contact Number <span class="req">*</span></label>
+            <input type="tel" id="newProjContact" class="form-input" placeholder="e.g. +91 98765 43210" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="newProjLocation">Location <span class="req">*</span></label>
+            <input type="text" id="newProjLocation" class="form-input" placeholder="e.g. Whitefield, Bengaluru" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newProjBhName">BH Name <span class="req">*</span></label>
+            <input type="text" id="newProjBhName" class="form-input" placeholder="e.g. Prestige Heights / Tower B" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="newProjDateTime">Date &amp; Time <span class="req">*</span></label>
+            <input type="datetime-local" id="newProjDateTime" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newProjCpCode">CP Code</label>
+            <input type="text" id="newProjCpCode" class="form-input" placeholder="e.g. CP-9042">
+          </div>
+        </div>
+        <div class="modal-hint">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>Creates an active project and opens directly into 2D Floor Plan.</span>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn modal-close-btn">Cancel</button>
+        <button type="submit" class="btn primary big">Create &amp; Open 2D Plan &rarr;</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════ MODAL: SHARE WITH COLLEAGUE ══════ -->
+<div class="orbix-modal" id="shareModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Share Project with Colleague</h3>
+        <p class="modal-sub" id="shareProjTitle">Project Title</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Colleague Works in Copy Guarantee Notice -->
+      <div class="copy-guarantee-box">
+        <div class="cg-icon">⑂</div>
+        <div class="cg-text">
+          <strong>Colleague Works in Copy</strong>
+          <p>When colleagues open or receive this project, Orbix automatically creates an isolated copy for them. Your master project remains untouched.</p>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">Direct Shareable Link (Copy-on-Open)</label>
+        <div class="share-link-row">
+          <input type="text" id="shareLinkInput" class="form-input" readonly>
+          <button type="button" class="btn primary" id="copyShareLinkBtn">Copy Link</button>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:20px;">
+        <label class="form-label">Send Isolated Copy to a Colleague</label>
+        <div class="colleagues-list" id="colleaguesList"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn modal-close-btn">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MODAL: USER PROFILE & SWITCHER ══════ -->
+<div class="orbix-modal" id="userModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">User Profile &amp; Workspace</h3>
+        <p class="modal-sub">Switch user profile or manage modular studio team</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="user-current-card">
+        <div class="ucc-avatar"><span class="u-avatar big">DK</span></div>
+        <div class="ucc-info">
+          <h4 id="curUserName">Dev Kancheti</h4>
+          <span class="ucc-email" id="curUserEmail">dev@orbixstudio.io</span>
+          <span class="ucc-role" id="curUserRole">Lead Modular Designer</span>
+        </div>
+      </div>
+
+      <h4 class="modal-section-title">Switch Active Profile</h4>
+      <p class="modal-section-desc">Test multi-user collaboration and colleague copy isolation in real-time:</p>
+      <div class="switch-users-list" id="switchUsersList"></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn modal-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
+/* ═══════════════════════════════════════════════════════════════════════════════
+   ORBIX STUDIO — Projects, User Management & Colleague Copy-on-Share Engine
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+(function (root) {
+  'use strict';
+
+  var API_BASE = ''; // Same host (Express backend)
+
+  var OrbixProjects = {
+    currentUser: null,
+    activeProjectId: null,
+    projects: [],
+    users: [],
+    filter: 'all',
+    searchQuery: '',
+    dbStatus: null,
+
+    init: function () {
+      var self = this;
+      this.loadCachedUser();
+      this.initEventListeners();
+      this.fetchDBStatus();
+      this.fetchUsers(function () {
+        self.fetchProjects();
+      });
+    },
+
+    loadCachedUser: function () {
+      try {
+        var saved = localStorage.getItem('orbix_current_user');
+        if (saved) {
+          this.currentUser = JSON.parse(saved);
+        } else {
+          this.currentUser = {
+            id: 'usr_dev',
+            name: 'Dev Kancheti',
+            email: 'dev@orbixstudio.io',
+            role: 'Lead Modular Designer',
+            company: 'Orbix Design Studio',
+            avatar: 'DK'
+          };
+          localStorage.setItem('orbix_current_user', JSON.stringify(this.currentUser));
+        }
+      } catch (e) {
+        this.currentUser = { id: 'usr_dev', name: 'Dev Kancheti', email: 'dev@orbixstudio.io', role: 'Designer', avatar: 'DK' };
+      }
+      this.updateUserUI();
+    },
+
+    setCurrentUser: function (user) {
+      this.currentUser = user;
+      try {
+        localStorage.setItem('orbix_current_user', JSON.stringify(user));
+      } catch (e) {}
+      this.updateUserUI();
+      this.fetchProjects();
+      if (typeof showToast === 'function') {
+        showToast('Switched user to ' + user.name + ' (' + user.role + ')');
+      }
+    },
+
+    updateUserUI: function () {
+      var user = this.currentUser;
+      if (!user) return;
+
+      var avatarEl = document.getElementById('userAvatarBtn');
+      if (avatarEl) {
+        avatarEl.innerHTML = '<span class="u-avatar">' + (user.avatar || 'US') + '</span><span class="u-name">' + user.name + '</span><span class="u-role">' + (user.role || '') + '</span>';
+      }
+
+      var modalName = document.getElementById('curUserName');
+      if (modalName) modalName.textContent = user.name;
+      var modalEmail = document.getElementById('curUserEmail');
+      if (modalEmail) modalEmail.textContent = user.email;
+      var modalRole = document.getElementById('curUserRole');
+      if (modalRole) modalRole.textContent = user.role + ' • ' + (user.company || '');
+    },
+
+    fetchDBStatus: function () {
+      var self = this;
+      fetch('/api/status')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          self.dbStatus = data.db;
+          self.renderDBStatusBadge();
+        })
+        .catch(function () {
+          self.dbStatus = { postgres: { connected: false }, localSync: { active: true } };
+          self.renderDBStatusBadge();
+        });
+    },
+
+    renderDBStatusBadge: function () {
+      var badge = document.getElementById('dbStatusBadge');
+      if (!badge) return;
+      var isPg = this.dbStatus && this.dbStatus.postgres && this.dbStatus.postgres.connected;
+      if (isPg) {
+        badge.className = 'db-badge is-pg';
+        badge.innerHTML = '<span class="db-dot"></span> PostgreSQL Active';
+        badge.title = 'Connected to PostgreSQL database (' + (this.dbStatus.postgres.database || 'cupboard_cad') + ')';
+      } else {
+        badge.className = 'db-badge is-local';
+        badge.innerHTML = '<span class="db-dot"></span> Local Sync Active';
+        badge.title = 'Running with local persistence and background PostgreSQL connector';
+      }
+    },
+
+    fetchUsers: function (cb) {
+      var self = this;
+      fetch('/api/users')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.users && data.users.length) {
+            self.users = data.users;
+            // Ensure currentUser matches one of the known users
+            var matched = self.users.find(function (u) { return u.id === self.currentUser.id; });
+            if (matched) self.currentUser = matched;
+          }
+          if (cb) cb();
+        })
+        .catch(function () {
+          if (cb) cb();
+        });
+    },
+
+    fetchProjects: function () {
+      var self = this;
+      var url = '/api/projects?search=' + encodeURIComponent(this.searchQuery) +
+        '&filter=' + encodeURIComponent(this.filter) +
+        '&userId=' + encodeURIComponent(this.currentUser ? this.currentUser.id : '');
+
+      var listContainer = document.getElementById('projectsGrid');
+      if (listContainer && (!self.projects || !self.projects.length)) {
+        listContainer.innerHTML = '<div class="proj-loading">Loading projects from PostgreSQL...</div>';
+      }
+
+      fetch(url)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          self.projects = data.projects || [];
+          self.renderProjectsList();
+        })
+        .catch(function () {
+          self.renderProjectsList();
+        });
+    },
+
+    renderProjectsList: function () {
+      var container = document.getElementById('projectsGrid');
+      if (!container) return;
+
+      var countEl = document.getElementById('projectCountLabel');
+      if (countEl) {
+        countEl.textContent = this.projects.length + (this.projects.length === 1 ? ' project' : ' projects');
+      }
+
+      if (!this.projects.length) {
+        container.innerHTML = '<div class="proj-empty">' +
+          '<div class="proj-empty-icon">' +
+            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
+          '</div>' +
+          '<h3>No projects found</h3>' +
+          '<p>' + (this.searchQuery ? 'No projects matched "' + this.searchQuery + '". Try clearing filters.' : 'Create your first project or launch from a pre-set catalogue design.') + '</p>' +
+          '<button class="btn primary big" id="emptyCreateBtn">+ Create New Project</button>' +
+        '</div>';
+
+        var emptyBtn = document.getElementById('emptyCreateBtn');
+        if (emptyBtn) {
+          emptyBtn.addEventListener('click', function () {
+            OrbixProjects.openCreateModal();
+          });
+        }
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < this.projects.length; i++) {
+        var p = this.projects[i];
+        var isOwner = this.currentUser && (p.created_by === this.currentUser.id || p.owner_email === this.currentUser.email);
+        var dateStr = 'Recently';
+        try {
+          var d = new Date(p.updated_at || p.created_at);
+          dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch (e) {}
+
+        var details = p.data && p.data.details ? p.data.details : {};
+        var contactStr = p.contact_number || details.contactNumber || '';
+        var locationStr = p.location || details.location || '';
+        var bhStr = p.bh_name || details.bhName || '';
+        var cpStr = p.cp_code || details.cpCode || '';
+        var clientStr = p.client || details.clientName || 'Private Client';
+        var statusClass = (p.status === 'Active' || p.status === 'In Progress') ? 'pstatus-active' : (p.status === 'Completed' ? 'pstatus-done' : 'pstatus-draft');
+        var typeBadge = p.type || 'Interior CAD';
+
+        html += '<div class="proj-card' + (p.id === this.activeProjectId ? ' is-active-proj' : '') + '" data-id="' + p.id + '">' +
+          '<div class="pcard-top">' +
+            '<div class="pcard-badges">' +
+              (bhStr ? '<span class="ptag bh-badge">BH: ' + bhStr + '</span>' : '<span class="ptag type-wardrobe">' + typeBadge + '</span>') +
+              (cpStr ? '<span class="ptag cp-code">CP: ' + cpStr + '</span>' : '') +
+              '<span class="pstatus ' + statusClass + '">' + (p.status || 'Draft') + '</span>' +
+              (p.is_shared ? '<span class="pshared-pill" title="Shared with colleagues">🔗 Shared</span>' : '') +
+              (p.fork_count ? '<span class="pfork-pill" title="' + p.fork_count + ' colleague copies created">⑂ ' + p.fork_count + ' copies</span>' : '') +
+            '</div>' +
+            '<div class="pcard-actions">' +
+              '<button class="pact-icon share-act" title="Share with colleague (they work in copy)" data-id="' + p.id + '">' +
+                '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
+              '</button>' +
+              '<button class="pact-icon fork-act" title="Work in a copy (duplicate for me)" data-id="' + p.id + '">' +
+                '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+              '</button>' +
+              '<button class="pact-icon del-act" title="Delete project" data-id="' + p.id + '">' +
+                '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+
+          '<h3 class="pcard-title" data-open="' + p.id + '">' + (p.title || clientStr) + '</h3>' +
+
+          '<div class="pcard-meta-grid">' +
+            '<div class="pmeta-item"><span class="pm-lbl">Client:</span> <strong class="pm-val">' + clientStr + '</strong>' + (contactStr ? ' (' + contactStr + ')' : '') + '</div>' +
+            (locationStr ? '<div class="pmeta-item"><span class="pm-lbl">Location:</span> <span class="pm-val">' + locationStr + '</span></div>' : '') +
+            (bhStr ? '<div class="pmeta-item"><span class="pm-lbl">BH Name:</span> <span class="pm-val">' + bhStr + '</span></div>' : '') +
+          '</div>' +
+
+          '<div class="pcard-foot">' +
+            '<div class="pcard-owner">' +
+              '<span class="powner-avatar">' + (p.owner_name ? p.owner_name.substring(0, 2).toUpperCase() : 'DK') + '</span>' +
+              '<div class="powner-details">' +
+                '<span class="powner-name">' + (isOwner ? 'You' : p.owner_name) + '</span>' +
+                '<span class="powner-date">' + dateStr + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="pcard-btns">' +
+              '<button class="btn open-proj-btn" data-open="' + p.id + '" title="Open project in 2D Floor Plan">' +
+                '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
+                '<span>Open 2D Plan</span>' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }
+
+      container.innerHTML = html;
+      this.bindCardEvents();
+    },
+
+    bindCardEvents: function () {
+      var self = this;
+      var cards = document.querySelectorAll('.proj-card');
+      cards.forEach(function (card) {
+        var id = card.getAttribute('data-id');
+
+        // Clicking anywhere on the project card (or the Open 2D button) opens it in 2D
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function (e) {
+          // If clicked specifically on share, fork, or delete action icons, do not open
+          if (e.target.closest('.share-act') || e.target.closest('.fork-act') || e.target.closest('.del-act')) {
+            return;
+          }
+          e.preventDefault();
+          self.openProject(id);
+        });
+
+        // Share action
+        var shareBtn = card.querySelector('.share-act');
+        if (shareBtn) {
+          shareBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            self.openShareModal(id);
+          });
+        }
+
+        // Fork / Work in Copy action
+        var forkBtn = card.querySelector('.fork-act');
+        if (forkBtn) {
+          forkBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            self.forkProjectForCurrentUser(id);
+          });
+        }
+
+        // Delete action
+        var delBtn = card.querySelector('.del-act');
+        if (delBtn) {
+          delBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            self.deleteProject(id);
+          });
+        }
+      });
+    },
+
+    openProject: function (id) {
+      var project = this.projects.find(function (p) { return p.id === id; });
+      if (!project) return;
+
+      this.activeProjectId = id;
+      try {
+        localStorage.setItem('orbix_active_project_id', id);
+      } catch (e) {}
+
+      // Reset 3D units to this project's units (empty for fresh new projects)
+      if (window.S) {
+        window.S.units = (project.data && Array.isArray(project.data.units)) ? project.data.units : [];
+        if (typeof renderAll === 'function') renderAll();
+        if (typeof fit === 'function') fit();
+        if (typeof camApply === 'function') camApply();
+      }
+
+      // Load 2D floor plan into OrbixUI (clean slate for new projects, or saved walls)
+      if (window.OrbixUI) {
+        var planToLoad = null;
+        if (project.data && project.data.plan && project.data.plan.plan) {
+          planToLoad = project.data.plan;
+        } else if (window.OrbixCore && typeof window.OrbixCore.createProject === 'function') {
+          // Brand new clean empty project canvas
+          planToLoad = window.OrbixCore.createProject(project.title);
+          if (planToLoad.meta) planToLoad.meta.clientName = project.client || '';
+        }
+
+        if (planToLoad && typeof window.OrbixUI.loadProject === 'function') {
+          window.OrbixUI.loadProject(planToLoad);
+        }
+      }
+
+      // Switch to 2D Floor Plan view
+      // 1. Try global window.setView
+      if (typeof window.setView === 'function') {
+        window.setView('plan');
+      } else if (window.__cc && typeof window.__cc.setView === 'function') {
+        window.__cc.setView('plan');
+      }
+
+      // 2. Trigger click on the 2D Floor Plan topbar tab
+      var planTab = document.querySelector('.vtab[data-view="plan"]');
+      if (planTab) {
+        planTab.click();
+      }
+
+      // 3. Guaranteed DOM fallback for view activation
+      document.querySelectorAll('.vtab').forEach(function (b) {
+        var on = b.getAttribute('data-view') === 'plan';
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+      document.querySelectorAll('.view').forEach(function (s) {
+        s.classList.toggle('is-on', s.id === 'view-plan');
+      });
+
+      // Ensure 2D plan canvas is resized and drawn to fit
+      setTimeout(function () {
+        if (window.OrbixUI && window.OrbixUI.editor) {
+          window.OrbixUI.editor.resize();
+          window.OrbixUI.editor.render();
+          if (typeof window.OrbixUI.editor.zoomFit === 'function') {
+            window.OrbixUI.editor.zoomFit();
+          }
+        }
+      }, 50);
+
+      if (typeof showToast === 'function') {
+        showToast('Opened in 2D Floor Plan: ' + project.title);
+      }
+    },
+
+    saveActiveProject: function (dataUpdates) {
+      if (!this.activeProjectId) return;
+      var self = this;
+      var project = this.projects.find(function (p) { return p.id === self.activeProjectId; });
+      if (!project) return;
+
+      project.data = project.data || {};
+      if (dataUpdates.plan) project.data.plan = dataUpdates.plan;
+      if (dataUpdates.units) project.data.units = dataUpdates.units;
+
+      var fCount = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
+        ? project.data.plan.plan.furniture.length : 0;
+      project.units_count = fCount || (project.data.units ? project.data.units.length : 0);
+
+      // Save to localStorage
+      try {
+        if (project.data.plan) {
+          localStorage.setItem('orbix-project', JSON.stringify(project.data.plan));
+        }
+      } catch (e) {}
+
+      // Debounced backend save to PostgreSQL
+      clearTimeout(this._saveDebounce);
+      this._saveDebounce = setTimeout(function () {
+        fetch('/api/projects/' + self.activeProjectId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            data: project.data,
+            units_count: project.units_count
+          })
+        }).catch(function (e) {
+          console.warn('Auto-save to backend failed:', e);
+        });
+      }, 500);
+    },
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // "COLLEAGUES WORK IN COPY" — Fork & Share Handlers
+    // ═══════════════════════════════════════════════════════════════════════════
+    forkProjectForCurrentUser: function (originalId) {
+      var self = this;
+      var original = this.projects.find(function (p) { return p.id === originalId; });
+      if (!original) return;
+
+      fetch('/api/projects/' + originalId + '/fork', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ colleagueUser: self.currentUser })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.success && data.project) {
+          self.fetchProjects();
+          self.openProject(data.project.id);
+          self.showCopyNotification(original.title, data.project.title);
+        }
+      })
+      .catch(function (err) {
+        alert('Failed to create copy: ' + err.message);
+      });
+    },
+
+    forkProjectForColleague: function (originalId, colleagueUser) {
+      var self = this;
+      fetch('/api/projects/' + originalId + '/fork', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ colleagueUser: colleagueUser })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.success && data.project) {
+          self.closeModal('shareModal');
+          self.fetchProjects();
+          if (typeof showToast === 'function') {
+            showToast('✓ Created copy for ' + colleagueUser.name + ': "' + data.project.title + '"');
+          }
+        }
+      });
+    },
+
+    showCopyNotification: function (originalTitle, copyTitle) {
+      var banner = document.getElementById('colleagueCopyBanner');
+      if (!banner) return;
+      banner.innerHTML = '<div class="cc-banner-inner">' +
+        '<div class="cc-banner-left">' +
+          '<span class="cc-icon">⑂</span>' +
+          '<div>' +
+            '<strong>Working in an Isolated Copy</strong>' +
+            '<p>Branched from "<em>' + originalTitle + '</em>". Your edits will be saved to "<strong>' + copyTitle + '</strong>" and will never overwrite the original master file.</p>' +
+          '</div>' +
+        '</div>' +
+        '<button class="cc-close" onclick="this.parentElement.parentElement.classList.remove(\'is-shown\')">&times;</button>' +
+      '</div>';
+      banner.classList.add('is-shown');
+      setTimeout(function () {
+        banner.classList.remove('is-shown');
+      }, 9000);
+    },
+
+    openShareModal: function (projectId) {
+      var project = this.projects.find(function (p) { return p.id === projectId; });
+      if (!project) return;
+
+      var modal = document.getElementById('shareModal');
+      if (!modal) return;
+
+      var titleEl = document.getElementById('shareProjTitle');
+      if (titleEl) titleEl.textContent = project.title;
+
+      var shareUrl = window.location.origin + '?share=' + project.id + '&mode=copy';
+      var linkInput = document.getElementById('shareLinkInput');
+      if (linkInput) linkInput.value = shareUrl;
+
+      // Populate colleague list
+      var colContainer = document.getElementById('colleaguesList');
+      if (colContainer) {
+        var self = this;
+        var colleagueHtml = '';
+        var otherUsers = this.users.filter(function (u) { return u.id !== self.currentUser.id; });
+        if (!otherUsers.length) {
+          colleagueHtml = '<div class="no-colleagues">No other colleagues found. Add one in User Management.</div>';
+        } else {
+          otherUsers.forEach(function (u) {
+            colleagueHtml += '<div class="colleague-row">' +
+              '<div class="col-info">' +
+                '<span class="u-avatar small">' + (u.avatar || 'US') + '</span>' +
+                '<div><strong>' + u.name + '</strong><span>' + u.email + ' • ' + (u.role || 'Colleague') + '</span></div>' +
+              '</div>' +
+              '<button class="btn send-copy-btn" data-uid="' + u.id + '">Send Copy ⑂</button>' +
+            '</div>';
+          });
+        }
+        colContainer.innerHTML = colleagueHtml;
+
+        // Bind Send Copy buttons
+        colContainer.querySelectorAll('.send-copy-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var uid = this.getAttribute('data-uid');
+            var colUser = self.users.find(function (u) { return u.id === uid; });
+            if (colUser) {
+              self.forkProjectForColleague(project.id, colUser);
+            }
+          });
+        });
+      }
+
+      modal.setAttribute('data-proj-id', projectId);
+      modal.classList.add('is-open');
+    },
+
+    deleteProject: function (id) {
+      var project = this.projects.find(function (p) { return p.id === id; });
+      var title = project ? project.title : 'this project';
+      if (!confirm('Are you sure you want to delete "' + title + '"? This will remove it from PostgreSQL.')) return;
+
+      var self = this;
+      fetch('/api/projects/' + id, { method: 'DELETE' })
+        .then(function (r) { return r.json(); })
+        .then(function () {
+          self.fetchProjects();
+          if (typeof showToast === 'function') {
+            showToast('Deleted project: ' + title);
+          }
+        });
+    },
+
+    openCreateModal: function () {
+      var modal = document.getElementById('createProjectModal');
+      if (modal) {
+        var dtInput = document.getElementById('newProjDateTime');
+        if (dtInput) {
+          var now = new Date();
+          var localIso = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+          dtInput.value = localIso;
+        }
+        modal.classList.add('is-open');
+      }
+    },
+
+    closeModal: function (modalId) {
+      var modal = document.getElementById(modalId);
+      if (modal) modal.classList.remove('is-open');
+    },
+
+    initEventListeners: function () {
+      var self = this;
+
+      // Filter Chips
+      var filterButtons = document.querySelectorAll('.pfilter-btn');
+      filterButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          filterButtons.forEach(function (b) { b.classList.remove('is-active'); });
+          btn.classList.add('is-active');
+          self.filter = btn.getAttribute('data-filter') || 'all';
+          self.fetchProjects();
+        });
+      });
+
+      // Search input
+      var searchInput = document.getElementById('projectSearchInput');
+      if (searchInput) {
+        var debounce = null;
+        searchInput.addEventListener('input', function () {
+          clearTimeout(debounce);
+          debounce = setTimeout(function () {
+            self.searchQuery = searchInput.value.trim();
+            self.fetchProjects();
+          }, 200);
+        });
+      }
+
+      // Create Project Button on Home
+      var createBtn = document.getElementById('homeCreateProjectBtn');
+      if (createBtn) {
+        createBtn.addEventListener('click', function () {
+          self.openCreateModal();
+        });
+      }
+
+      // Create Project Form Submit
+      var createForm = document.getElementById('createProjectForm');
+      if (createForm) {
+        createForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var client = document.getElementById('newProjClient').value.trim();
+          var contact = document.getElementById('newProjContact').value.trim();
+          var location = document.getElementById('newProjLocation').value.trim();
+          var bhName = document.getElementById('newProjBhName').value.trim();
+          var dateTime = document.getElementById('newProjDateTime').value;
+          var cpCode = document.getElementById('newProjCpCode').value.trim();
+
+          if (!client) return;
+
+          var title = client + (bhName ? ' — ' + bhName : '') + (location ? ' (' + location + ')' : '');
+
+          var freshPlan = (window.OrbixCore && typeof window.OrbixCore.createProject === 'function')
+            ? window.OrbixCore.createProject(title)
+            : {
+                schemaVersion: '1.0.0',
+                meta: { title: title, clientName: client, designerName: self.currentUser ? self.currentUser.name : '' },
+                plan: { gridSize: 100, walls: [], openings: [], rooms: [], furniture: [] }
+              };
+          if (freshPlan.meta) {
+            freshPlan.meta.clientName = client;
+            freshPlan.meta.contactNumber = contact;
+            freshPlan.meta.siteLocation = location;
+            freshPlan.meta.bhName = bhName;
+            freshPlan.meta.dateTime = dateTime;
+            freshPlan.meta.cpCode = cpCode;
+          }
+
+          var payload = {
+            title: title,
+            client: client,
+            contact_number: contact,
+            location: location,
+            bh_name: bhName,
+            date_time: dateTime,
+            cp_code: cpCode,
+            type: bhName || 'Interior CAD',
+            boards_est: 0,
+            units_count: 0,
+            data: {
+              units: [], // Clean slate for new project!
+              plan: freshPlan,
+              details: {
+                clientName: client,
+                contactNumber: contact,
+                location: location,
+                bhName: bhName,
+                dateTime: dateTime,
+                cpCode: cpCode
+              }
+            },
+            currentUser: self.currentUser
+          };
+
+          fetch('/api/projects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.project) {
+              self.closeModal('createProjectModal');
+              createForm.reset();
+              self.fetchProjects();
+              self.openProject(data.project.id);
+            }
+          });
+        });
+      }
+
+      // User Profile & Switcher Button in Topbar
+      var userBtn = document.getElementById('userAvatarBtn');
+      if (userBtn) {
+        userBtn.addEventListener('click', function () {
+          self.openUserModal();
+        });
+      }
+
+      // Copy share link button
+      var copyLinkBtn = document.getElementById('copyShareLinkBtn');
+      if (copyLinkBtn) {
+        copyLinkBtn.addEventListener('click', function () {
+          var input = document.getElementById('shareLinkInput');
+          if (input) {
+            input.select();
+            document.execCommand('copy');
+            copyLinkBtn.textContent = 'Copied!';
+            setTimeout(function () {
+              copyLinkBtn.textContent = 'Copy Link';
+            }, 2000);
+          }
+        });
+      }
+
+      // Modal close triggers
+      document.querySelectorAll('.modal-close-btn, .modal-backdrop').forEach(function (el) {
+        el.addEventListener('click', function () {
+          document.querySelectorAll('.orbix-modal').forEach(function (m) {
+            m.classList.remove('is-open');
+          });
+        });
+      });
+    },
+
+    openUserModal: function () {
+      var self = this;
+      var modal = document.getElementById('userModal');
+      if (!modal) return;
+
+      var userListEl = document.getElementById('switchUsersList');
+      if (userListEl) {
+        var html = '';
+        this.users.forEach(function (u) {
+          var isCurrent = self.currentUser && self.currentUser.id === u.id;
+          html += '<div class="u-switch-item' + (isCurrent ? ' is-current' : '') + '" data-uid="' + u.id + '">' +
+            '<div class="u-info">' +
+              '<span class="u-avatar">' + (u.avatar || 'US') + '</span>' +
+              '<div><strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong><span>' + u.role + ' • ' + (u.company || '') + '</span></div>' +
+            '</div>' +
+            (!isCurrent ? '<button class="btn switch-user-btn" data-uid="' + u.id + '">Switch</button>' : '<span class="current-tag">Current</span>') +
+          '</div>';
+        });
+        userListEl.innerHTML = html;
+
+        userListEl.querySelectorAll('.switch-user-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var uid = this.getAttribute('data-uid');
+            var u = self.users.find(function (x) { return x.id === uid; });
+            if (u) {
+              self.setCurrentUser(u);
+              self.closeModal('userModal');
+            }
+          });
+        });
+      }
+
+      modal.classList.add('is-open');
+    }
+  };
+
+  root.OrbixProjects = OrbixProjects;
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { OrbixProjects.init(); });
+  } else {
+    OrbixProjects.init();
+  }
+
+})(window);
+
 /* ═══════════════════════════════════════════════════════════════════════════════
    ORBIX STUDIO — Architectural Model, Project Schema & Geometry Core
    Version: 1.0.0
@@ -3922,6 +5392,12 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           self.saveToLocalStorage();
           self.updateUI();
           self.renderBOQ();
+          if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
+            window.OrbixProjects.saveActiveProject({
+              plan: proj,
+              units: window.S ? window.S.units : []
+            });
+          }
         },
         onSelectionChange: function (selected) {
           self.renderInspector(selected);
@@ -3931,11 +5407,34 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       this.bindToolbar();
       this.updateUI();
       this.renderBOQ();
+    },
 
-      // If project has no walls, offer sample 2BHK
-      if (!this.project.plan.walls || this.project.plan.walls.length === 0) {
-        this.loadSampleHome();
+    loadProject: function (proj) {
+      if (!proj) return;
+      this.project = proj;
+      this.saveToLocalStorage();
+      if (this.editor) {
+        this.editor.project = proj;
+        this.editor.selected = [];
+        this.editor.wallChainStart = null;
+        this.editor.history = [];
+        this.editor.historyIndex = -1;
+        this.editor.pushHistory('Open Project');
+        this.editor.resize();
+        this.editor.render();
+        if (typeof this.editor.zoomFit === 'function') {
+          this.editor.zoomFit();
+        }
       }
+      this.updateUI();
+      this.renderBOQ();
+    },
+
+    createNewProject: function (title, clientName) {
+      var fresh = Core.createProject(title || 'New Project');
+      if (clientName && fresh.meta) fresh.meta.clientName = clientName;
+      this.loadProject(fresh);
+      return fresh;
     },
 
     saveToLocalStorage: function () {
@@ -9002,6 +10501,7 @@ function setView(v){
   if(v==="plan" && window.OrbixUI && window.OrbixUI.editor){ window.OrbixUI.editor.resize(); window.OrbixUI.editor.render(); }
   if(v==="boq" && window.OrbixUI){ window.OrbixUI.renderBOQ(); }
 }
+window.setView = setView;
 $all(".vtab").forEach(function(b){ b.addEventListener("click",function(){
   if(b.dataset.view==="kitchen"){ galState.type="kitchen"; setView("gallery"); return; }
   setView(b.dataset.view);

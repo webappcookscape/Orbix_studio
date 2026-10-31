@@ -37,6 +37,12 @@
           self.saveToLocalStorage();
           self.updateUI();
           self.renderBOQ();
+          if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
+            window.OrbixProjects.saveActiveProject({
+              plan: proj,
+              units: window.S ? window.S.units : []
+            });
+          }
         },
         onSelectionChange: function (selected) {
           self.renderInspector(selected);
@@ -46,11 +52,34 @@
       this.bindToolbar();
       this.updateUI();
       this.renderBOQ();
+    },
 
-      // If project has no walls, offer sample 2BHK
-      if (!this.project.plan.walls || this.project.plan.walls.length === 0) {
-        this.loadSampleHome();
+    loadProject: function (proj) {
+      if (!proj) return;
+      this.project = proj;
+      this.saveToLocalStorage();
+      if (this.editor) {
+        this.editor.project = proj;
+        this.editor.selected = [];
+        this.editor.wallChainStart = null;
+        this.editor.history = [];
+        this.editor.historyIndex = -1;
+        this.editor.pushHistory('Open Project');
+        this.editor.resize();
+        this.editor.render();
+        if (typeof this.editor.zoomFit === 'function') {
+          this.editor.zoomFit();
+        }
       }
+      this.updateUI();
+      this.renderBOQ();
+    },
+
+    createNewProject: function (title, clientName) {
+      var fresh = Core.createProject(title || 'New Project');
+      if (clientName && fresh.meta) fresh.meta.clientName = clientName;
+      this.loadProject(fresh);
+      return fresh;
     },
 
     saveToLocalStorage: function () {

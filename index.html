@@ -47,6 +47,13 @@
       <button class="vtab" data-view="report">Report</button>
     </nav>
     <div class="topacts">
+      <div id="dbStatusBadge" class="db-badge" title="Database connection status">
+        <span class="db-dot"></span> PostgreSQL
+      </div>
+      <button class="user-avatar-btn" id="userAvatarBtn" title="Current User & Switcher">
+        <span class="u-avatar">DK</span>
+        <span class="u-name">Dev Kancheti</span>
+      </button>
       <button class="btn" id="printBtn">Print</button>
       <button class="btn" id="csvBtn">CSV</button>
       <button class="btn" id="dxfBtn">DXF</button>
@@ -58,33 +65,161 @@
     <!-- ══════ HOME ══════ -->
     <section class="view is-on" id="view-home">
       <div class="home">
-        <div class="hero">
-          <p class="eyebrow">For interior designers, modular factories and enterprises</p>
-          <h1>Upload a cutting list.<br>Get the cutting plan — and the savings.</h1>
-          <p class="lede">Orbix Studio reads the process sheet you already have, rebuilds every cupboard virtually, nests the panels onto 8&nbsp;×&nbsp;4 boards and hands your factory a plain-English plan: what to order, how to cut, where to drill — and exactly how much you saved against what you would have ordered.</p>
-          <div class="cta">
-            <button class="btn primary big" data-go="upload">Upload a process sheet</button>
-            <button class="btn big" id="trySample">See it on a sample job</button>
-            <button class="btn big" data-go="design">Design from scratch</button>
-            <button class="btn big" data-go="kitchen">Design a kitchen</button>
+        
+        <!-- ══════ PROJECTS DASHBOARD ══════ -->
+
+        <!-- Live Proof & Metrics Strip -->
+        <div class="proof-wrap">
+          <div class="proof-header">
+            <span class="section-tag">LIVE VERIFICATION</span>
+            <span class="proof-note">Automated nest audit on standard job</span>
+          </div>
+          <div class="proof">
+            <div class="pf">
+              <div class="pf-top">
+                <b id="pf1">—</b>
+                <span class="pf-pill save">-2 Saved</span>
+              </div>
+              <div class="pf-label">sheets on the sample job, versus 14 ordered</div>
+            </div>
+            <div class="pf">
+              <div class="pf-top">
+                <b id="pf2">—</b>
+                <span class="pf-pill opt">Guillotine Nest</span>
+              </div>
+              <div class="pf-label">board yield after nesting</div>
+            </div>
+            <div class="pf">
+              <div class="pf-top">
+                <b id="pf3">—</b>
+                <span class="pf-pill ready">CNC DXF</span>
+              </div>
+              <div class="pf-label">panels bored and banded from one upload</div>
+            </div>
           </div>
         </div>
-        <div class="steps">
-          <div class="step"><span>1</span><h3>Upload</h3><p>A PDF or CSV process sheet — heights, widths, quantities and colour codes, in the format factories already use. Or paste the rows.</p></div>
-          <div class="step"><span>2</span><h3>Plan virtually</h3><p>Every unit is rebuilt in 3D from its own panels, in its own laminate. Check fronts, colours and lofts before a board is cut.</p></div>
-          <div class="step"><span>3</span><h3>Optimise</h3><p>Guillotine nesting on 2440&nbsp;×&nbsp;1220 boards, grain-locked, saw kerf included. System&nbsp;32 boring on every panel, exported to a CNC-ready DXF.</p></div>
-          <div class="step"><span>4</span><h3>Read the savings</h3><p>Boards ordered versus boards needed, offcut recovered, edge banding and cutting — then a numbered plan the floor can follow.</p></div>
+
+        <!-- ══════ PROJECTS DASHBOARD ══════ -->
+        <div class="projects-section" id="homeProjectsSection">
+          <div class="psection-header">
+            <div class="psection-title-wrap">
+              <span class="section-tag">POSTGRESQL CAD WORKSPACE</span>
+              <div class="psection-title-row">
+                <h2 class="section-title">All Projects</h2>
+                <span class="pcount-badge" id="projectCountLabel">Loading...</span>
+              </div>
+            </div>
+            <div class="psection-acts">
+              <button class="btn primary big" id="homeCreateProjectBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Create New Project</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Toolbar -->
+          <div class="ptoolbar">
+            <div class="psearch-box">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="projectSearchInput" placeholder="Search projects by title, client or owner..." autocomplete="off">
+            </div>
+            <div class="pfilters">
+              <button class="pfilter-btn is-active" data-filter="all">All Projects</button>
+              <button class="pfilter-btn" data-filter="mine">My Projects</button>
+              <button class="pfilter-btn" data-filter="shared">Shared with Me</button>
+            </div>
+          </div>
+
+          <!-- Projects Grid -->
+          <div class="projects-grid" id="projectsGrid"></div>
         </div>
-        <div class="who">
-          <div><h3>Designers</h3><p>Quote a wardrobe in minutes on real board counts instead of a 30% allowance. Send your fabricator a DXF, not a sketch.</p></div>
-          <div><h3>Factories</h3><p>A cutting map per sheet, a boring schedule per panel, edge-banding lengths per row. No draftsman between the order and the saw.</p></div>
-          <div><h3>Enterprises</h3><p>One costing rule for every dealer and every job. Every process sheet gets the same nesting, the same drilling, the same savings report.</p></div>
+
+        <!-- 4-Step Process Section -->
+        <div class="section-block">
+          <div class="section-intro">
+            <span class="section-tag">THE WORKFLOW</span>
+            <h2 class="section-title">From cutting list to factory floor in four steps</h2>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">01</div>
+              <h3>Upload</h3>
+              <p>A PDF or CSV process sheet — heights, widths, quantities and colour codes, in the format factories already use. Or paste the rows.</p>
+              <div class="step-foot">PDF · CSV · Raw Rows</div>
+            </div>
+            <div class="step">
+              <div class="step-num">02</div>
+              <h3>Plan virtually</h3>
+              <p>Every unit is rebuilt in 3D from its own panels, in its own laminate. Check fronts, colours and lofts before a board is cut.</p>
+              <div class="step-foot">Real-time 3D · Laminate Match</div>
+            </div>
+            <div class="step">
+              <div class="step-num">03</div>
+              <h3>Optimise</h3>
+              <p>Guillotine nesting on 2440&nbsp;×&nbsp;1220 boards, grain-locked, saw kerf included. System&nbsp;32 boring on every panel, exported to a CNC-ready DXF.</p>
+              <div class="step-foot">Grain-Lock · System 32 CNC</div>
+            </div>
+            <div class="step">
+              <div class="step-num">04</div>
+              <h3>Read the savings</h3>
+              <p>Boards ordered versus boards needed, offcut recovered, edge banding and cutting — then a numbered plan the floor can follow.</p>
+              <div class="step-foot">Accurate ₹ BOQ · Numbered Plan</div>
+            </div>
+          </div>
         </div>
-        <div class="proof">
-          <div class="pf"><b id="pf1">—</b><span>sheets on the sample job, versus 14 ordered</span></div>
-          <div class="pf"><b id="pf2">—</b><span>board yield after nesting</span></div>
-          <div class="pf"><b id="pf3">—</b><span>panels bored and banded from one upload</span></div>
+
+        <!-- Value for Audience Section -->
+        <div class="section-block">
+          <div class="section-intro">
+            <span class="section-tag">WHO IT'S FOR</span>
+            <h2 class="section-title">Built for precision across every department</h2>
+          </div>
+          <div class="who">
+            <div class="who-card">
+              <div class="who-pill">Designers &amp; Studios</div>
+              <h3>Designers</h3>
+              <p>Quote a wardrobe in minutes on real board counts instead of a 30% allowance. Send your fabricator a DXF, not a sketch.</p>
+              <ul class="who-specs">
+                <li>Instant board-count quoting</li>
+                <li>Zero sketch misunderstandings</li>
+                <li>Live 3D client presentations</li>
+              </ul>
+            </div>
+            <div class="who-card highlight-card">
+              <div class="who-pill who-pill-prime">Modular Factories</div>
+              <h3>Factories</h3>
+              <p>A cutting map per sheet, a boring schedule per panel, edge-banding lengths per row. No draftsman between the order and the saw.</p>
+              <ul class="who-specs">
+                <li>Numbered beam saw cutting maps</li>
+                <li>Exact System 32 boring coordinates</li>
+                <li>Pre-calculated edge-banding lengths</li>
+              </ul>
+            </div>
+            <div class="who-card">
+              <div class="who-pill">Enterprises &amp; OEM</div>
+              <h3>Enterprises</h3>
+              <p>One costing rule for every dealer and every job. Every process sheet gets the same nesting, the same drilling, the same savings report.</p>
+              <ul class="who-specs">
+                <li>Unified multi-store costing formula</li>
+                <li>Automated board savings audits</li>
+                <li>Seamless dealer-to-plant pipeline</li>
+              </ul>
+            </div>
+          </div>
         </div>
+
+        <!-- Quick Launch Bottom Banner -->
+        <div class="home-bottom-banner">
+          <div class="banner-text">
+            <h3>Start your project in seconds</h3>
+            <p>Upload your process sheet or test the full pipeline with a pre-loaded sample job.</p>
+          </div>
+          <div class="banner-acts">
+            <button class="btn primary big" data-go="upload">Upload Process Sheet</button>
+            <button class="btn big" data-go="design">Launch 3D Studio</button>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -329,6 +464,137 @@
   </main>
 </div>
 
+<!-- Colleague Copy Notification Banner -->
+<div id="colleagueCopyBanner" class="colleague-copy-banner"></div>
+
+<!-- ══════ MODAL: CREATE NEW PROJECT ══════ -->
+<div class="orbix-modal" id="createProjectModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Create New Project</h3>
+        <p class="modal-sub">Initialize project in PostgreSQL database & start designing</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <form id="createProjectForm">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="newProjClient">Client Name <span class="req">*</span></label>
+            <input type="text" id="newProjClient" class="form-input" placeholder="e.g. Vikram Singhania" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newProjContact">Contact Number <span class="req">*</span></label>
+            <input type="tel" id="newProjContact" class="form-input" placeholder="e.g. +91 98765 43210" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="newProjLocation">Location <span class="req">*</span></label>
+            <input type="text" id="newProjLocation" class="form-input" placeholder="e.g. Whitefield, Bengaluru" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newProjBhName">BH Name <span class="req">*</span></label>
+            <input type="text" id="newProjBhName" class="form-input" placeholder="e.g. Prestige Heights / Tower B" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="newProjDateTime">Date &amp; Time <span class="req">*</span></label>
+            <input type="datetime-local" id="newProjDateTime" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="newProjCpCode">CP Code</label>
+            <input type="text" id="newProjCpCode" class="form-input" placeholder="e.g. CP-9042">
+          </div>
+        </div>
+        <div class="modal-hint">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span>Creates an active project and opens directly into 2D Floor Plan.</span>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn modal-close-btn">Cancel</button>
+        <button type="submit" class="btn primary big">Create &amp; Open 2D Plan &rarr;</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════ MODAL: SHARE WITH COLLEAGUE ══════ -->
+<div class="orbix-modal" id="shareModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Share Project with Colleague</h3>
+        <p class="modal-sub" id="shareProjTitle">Project Title</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Colleague Works in Copy Guarantee Notice -->
+      <div class="copy-guarantee-box">
+        <div class="cg-icon">⑂</div>
+        <div class="cg-text">
+          <strong>Colleague Works in Copy</strong>
+          <p>When colleagues open or receive this project, Orbix automatically creates an isolated copy for them. Your master project remains untouched.</p>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">Direct Shareable Link (Copy-on-Open)</label>
+        <div class="share-link-row">
+          <input type="text" id="shareLinkInput" class="form-input" readonly>
+          <button type="button" class="btn primary" id="copyShareLinkBtn">Copy Link</button>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:20px;">
+        <label class="form-label">Send Isolated Copy to a Colleague</label>
+        <div class="colleagues-list" id="colleaguesList"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn modal-close-btn">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MODAL: USER PROFILE & SWITCHER ══════ -->
+<div class="orbix-modal" id="userModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">User Profile &amp; Workspace</h3>
+        <p class="modal-sub">Switch user profile or manage modular studio team</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="user-current-card">
+        <div class="ucc-avatar"><span class="u-avatar big">DK</span></div>
+        <div class="ucc-info">
+          <h4 id="curUserName">Dev Kancheti</h4>
+          <span class="ucc-email" id="curUserEmail">dev@orbixstudio.io</span>
+          <span class="ucc-role" id="curUserRole">Lead Modular Designer</span>
+        </div>
+      </div>
+
+      <h4 class="modal-section-title">Switch Active Profile</h4>
+      <p class="modal-section-desc">Test multi-user collaboration and colleague copy isolation in real-time:</p>
+      <div class="switch-users-list" id="switchUsersList"></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn modal-close-btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="orbix-projects.js"></script>
 <script src="orbix-core.js"></script>
 <script src="orbix-plan.js"></script>
 <script src="orbix-3d.js"></script>
