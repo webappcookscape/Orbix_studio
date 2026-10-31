@@ -5,3 +5,5 @@ shots/
 .netlify-demo.json
 .DS_Store
 *.log
+node_modules/
+.env 
