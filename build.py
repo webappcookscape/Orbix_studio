@@ -4,7 +4,7 @@ any host that wants one file). Usage: python3 build.py [out.html]"""
 import sys, os, base64
 
 here = os.path.dirname(os.path.abspath(__file__))
-src = open(os.path.join(here, 'index.html')).read()
+src = open(os.path.join(here, 'index.html'), encoding='utf-8').read()
 frag = src.split('<!-- ARTIFACT-START -->')[1].split('<!-- ARTIFACT-END -->')[0]
 css = open(os.path.join(here, 'style.css'), encoding='utf-8').read()
 orbix_core = open(os.path.join(here, 'orbix-core.js'), encoding='utf-8').read()

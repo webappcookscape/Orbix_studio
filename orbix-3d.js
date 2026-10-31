@@ -26,16 +26,16 @@
   ArchitecturalRenderer.prototype.initMaterials = function () {
     if (typeof THREE === 'undefined') return;
 
-    // Wall Plaster (Off-white architectural matte)
+    // Wall Plaster (Warm architectural beige matte)
     this.materials.wall = new THREE.MeshStandardMaterial({
-      color: 0xF4F2ED,
-      roughness: 0.85,
-      metalness: 0.05
+      color: 0xE8DEC8, // Warm interior beige
+      roughness: 0.88,
+      metalness: 0.02
     });
 
     // Wall Core (Cutaway section interior)
     this.materials.wallCore = new THREE.MeshStandardMaterial({
-      color: 0xDDD8CE,
+      color: 0xD9CEBA, // Harmonious deeper beige core
       roughness: 0.9,
       metalness: 0.0
     });
