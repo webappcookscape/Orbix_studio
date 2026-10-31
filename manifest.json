@@ -50,10 +50,10 @@
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Orbix BOQ & Nesting",
-      "short_name": "Nesting",
-      "description": "Guillotine nesting on 8x4 boards & BOQ",
-      "url": "./?view=nest",
+      "name": "Pricing & Nesting",
+      "short_name": "Pricing",
+      "description": "Factory pricing, BOQ and guillotine nesting on 8x4 boards",
+      "url": "./?view=boq",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
