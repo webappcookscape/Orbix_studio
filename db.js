@@ -26,28 +26,6 @@ const DEFAULT_USERS = [
     designation: 'System Administrator',
     company: 'Cookscape',
     avatar: 'CA'
-  },
-  {
-    id: 'usr_alex',
-    name: 'Alex Mercer',
-    username: 'alex',
-    email: 'alex@orbixstudio.io',
-    password: 'alex123',
-    role: 'employee',
-    designation: 'Production Estimator',
-    company: 'Precision Modular Works',
-    avatar: 'AM'
-  },
-  {
-    id: 'usr_priya',
-    name: 'Priya Sharma',
-    username: 'priya',
-    email: 'priya@orbixstudio.io',
-    password: 'priya123',
-    role: 'employee',
-    designation: 'Modular Designer',
-    company: 'Archform Interiors',
-    avatar: 'PS'
   }
 ];
 
@@ -134,7 +112,19 @@ class DBManager {
     if (fs.existsSync(LOCAL_STORE_PATH)) {
       try {
         const raw = fs.readFileSync(LOCAL_STORE_PATH, 'utf-8');
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.users)) {
+          parsed.users = parsed.users.filter(u =>
+            u.id !== 'usr_dev' && u.id !== 'usr_alex' && u.id !== 'usr_priya' &&
+            u.email !== 'dev@orbixstudio.io' && u.email !== 'alex@orbixstudio.io' &&
+            u.email !== 'priya@orbixstudio.io' && u.email !== 'alex@modularedge.com' &&
+            u.email !== 'priya@archform.in'
+          );
+          if (!parsed.users.some(u => u.id === 'usr_admin')) {
+            parsed.users.unshift(DEFAULT_USERS[0]);
+          }
+        }
+        return parsed;
       } catch (e) {
         console.warn('Could not read local store, creating fresh:', e.message);
       }
@@ -180,6 +170,11 @@ class DBManager {
         await client.query(schemaSql);
         console.log('✓ PostgreSQL schema verified/applied.');
       }
+
+      // Purge obsolete demo accounts permanently
+      await client.query(
+        "DELETE FROM users WHERE id IN ('usr_dev', 'usr_alex', 'usr_priya') OR email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in')"
+      );
 
       // Check if we need to seed
       const userRes = await client.query('SELECT count(*) FROM users');
@@ -518,7 +513,7 @@ class DBManager {
     const now = new Date().toISOString();
     const ownerName = currentUser ? currentUser.name : (projectData.owner_name || 'Design Lead');
     const ownerEmail = currentUser ? currentUser.email : (projectData.owner_email || 'design@orbixstudio.io');
-    const createdBy = currentUser ? currentUser.id : (projectData.created_by || 'usr_dev');
+    const createdBy = currentUser ? currentUser.id : (projectData.created_by || 'usr_admin');
 
     const project = {
       id,

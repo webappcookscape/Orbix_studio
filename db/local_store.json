@@ -1,40 +1,28 @@
 {
   "users": [
     {
-      "id": "usr_dev",
-      "name": "Dev Kancheti",
-      "email": "dev@orbixstudio.io",
-      "role": "Lead Modular Designer",
-      "company": "Orbix Design Studio",
-      "avatar": "DK"
-    },
-    {
-      "id": "usr_alex",
-      "name": "Alex Mercer",
-      "email": "alex@modularedge.com",
-      "role": "Production Estimator",
-      "company": "Precision Modular Works",
-      "avatar": "AM"
-    },
-    {
-      "id": "usr_priya",
-      "name": "Priya Sharma",
-      "email": "priya@archform.in",
-      "role": "Interior Architect",
-      "company": "Archform Interiors",
-      "avatar": "PS"
+      "id": "usr_admin",
+      "name": "Cookscape Admin",
+      "username": "admin",
+      "email": "admin@cookscape.com",
+      "password": "admin123",
+      "role": "admin",
+      "designation": "System Administrator",
+      "company": "Cookscape",
+      "avatar": "CA"
     }
   ],
   "projects": [
+    
     {
       "id": "proj_mvw214o8gxdq",
-      "title": "Lodha Crown — 3BHK Kitchen & Wardrobe",
+      "title": "Lodha Crown \u2014 3BHK Kitchen & Wardrobe",
       "client": "Sanjay Kapoor",
       "type": "Kitchen",
       "status": "Draft",
-      "created_by": "usr_dev",
-      "owner_name": "Dev Kancheti",
-      "owner_email": "dev@orbixstudio.io",
+      "created_by": "usr_admin",
+      "owner_name": "Cookscape Admin",
+      "owner_email": "admin@cookscape.com",
       "units_count": 5,
       "boards_est": 14,
       "data": {
@@ -471,7 +459,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "₹",
+            "currencySymbol": "\u20b9",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -824,9 +812,9 @@
       "client": "test",
       "type": "Full Apartment",
       "status": "Draft",
-      "created_by": "usr_dev",
-      "owner_name": "Dev Kancheti",
-      "owner_email": "dev@orbixstudio.io",
+      "created_by": "usr_admin",
+      "owner_name": "Cookscape Admin",
+      "owner_email": "admin@cookscape.com",
       "units_count": 3,
       "boards_est": 6,
       "data": {
@@ -1247,7 +1235,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "₹",
+            "currencySymbol": "\u20b9",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -1600,9 +1588,9 @@
       "client": "Aditya Birla",
       "type": "Full Apartment",
       "status": "Draft",
-      "created_by": "usr_dev",
-      "owner_name": "Dev Kancheti",
-      "owner_email": "dev@orbixstudio.io",
+      "created_by": "usr_admin",
+      "owner_name": "Cookscape Admin",
+      "owner_email": "admin@cookscape.com",
       "units_count": 1,
       "boards_est": 8,
       "data": {
@@ -1633,9 +1621,9 @@
       "client": "test",
       "type": "Full Apartment",
       "status": "Draft",
-      "created_by": "usr_dev",
-      "owner_name": "Dev Kancheti",
-      "owner_email": "dev@orbixstudio.io",
+      "created_by": "usr_admin",
+      "owner_name": "Cookscape Admin",
+      "owner_email": "admin@cookscape.com",
       "units_count": 1,
       "boards_est": 10,
       "data": {
@@ -1657,13 +1645,13 @@
     },
     {
       "id": "proj_mvw214oig5m3",
-      "title": "Lodha Crown — 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)",
+      "title": "Lodha Crown \u2014 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)",
       "client": "Sanjay Kapoor",
       "type": "Kitchen",
       "status": "Draft",
-      "created_by": "usr_alex",
-      "owner_name": "Alex Mercer",
-      "owner_email": "alex@modularedge.com",
+      "created_by": "usr_admin",
+      "owner_name": "Cookscape Admin",
+      "owner_email": "admin@cookscape.com",
       "units_count": 1,
       "boards_est": 14,
       "data": {
@@ -1676,13 +1664,13 @@
     },
     {
       "id": "proj_palm_tv",
-      "title": "Palm Beach Penthouse — Fluted Walnut Media Wall",
+      "title": "Palm Beach Penthouse \u2014 Fluted Walnut Media Wall",
       "client": "Ananya Deshmukh",
       "type": "TV Wall",
       "status": "Draft",
-      "created_by": "usr_priya",
-      "owner_name": "Priya Sharma",
-      "owner_email": "priya@archform.in",
+      "created_by": "usr_admin",
+      "owner_name": "Cookscape Admin",
+      "owner_email": "admin@cookscape.com",
       "units_count": 2,
       "boards_est": 8,
       "data": {
@@ -1712,13 +1700,13 @@
     },
     {
       "id": "proj_hiranandani",
-      "title": "Hiranandani Villa — Master Wardrobe & Loft",
+      "title": "Hiranandani Villa \u2014 Master Wardrobe & Loft",
       "client": "Rajesh & Sunita Singhania",
       "type": "Wardrobe",
       "status": "In Review",
-      "created_by": "usr_dev",
-      "owner_name": "Dev Kancheti",
-      "owner_email": "dev@orbixstudio.io",
+      "created_by": "usr_admin",
+      "owner_name": "Cookscape Admin",
+      "owner_email": "admin@cookscape.com",
       "units_count": 3,
       "boards_est": 12,
       "data": {
@@ -1748,13 +1736,13 @@
     },
     {
       "id": "proj_emerald",
-      "title": "Emerald Greens — Parallel Acrylic Kitchen",
+      "title": "Emerald Greens \u2014 Parallel Acrylic Kitchen",
       "client": "Vikram Mehta",
       "type": "Kitchen",
       "status": "CNC Ready",
-      "created_by": "usr_alex",
-      "owner_name": "Alex Mercer",
-      "owner_email": "alex@modularedge.com",
+      "created_by": "usr_admin",
+      "owner_name": "Cookscape Admin",
+      "owner_email": "admin@cookscape.com",
       "units_count": 6,
       "boards_est": 18,
       "data": {

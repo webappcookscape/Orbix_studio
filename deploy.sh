@@ -31,8 +31,16 @@ echo -e "${BLUE}==============================================${NC}"
 if [ -d "$PROJECT_DIR/.git" ]; then
     echo -e "${YELLOW}[1/5] Pulling latest changes from Git...${NC}"
     cd "$PROJECT_DIR"
+    # Preserve runtime database so created employees & projects are never lost on deploy
+    if [ -f "db/local_store.json" ]; then
+        cp db/local_store.json /tmp/orbix_local_store_backup.json 2>/dev/null || true
+    fi
     git fetch origin main
     git reset --hard origin/main
+    # Restore runtime data if it existed
+    if [ -f "/tmp/orbix_local_store_backup.json" ]; then
+        cp /tmp/orbix_local_store_backup.json db/local_store.json 2>/dev/null || true
+    fi
 else
     echo -e "${YELLOW}[1/5] Git directory not detected at ${PROJECT_DIR}.${NC}"
 fi
@@ -67,6 +75,11 @@ else
     pm2 start server.js --name "$PM2_APP_NAME"
 fi
 pm2 save
+
+# Purge legacy demo accounts from PostgreSQL if psql is available
+if command -v psql &> /dev/null; then
+    sudo -u postgres psql -d cupboard_cad -c "DELETE FROM users WHERE id IN ('usr_dev', 'usr_alex', 'usr_priya') OR email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in');" 2>/dev/null || true
+fi
 
 # 5. Check Nginx virtual host (NEVER overwrite existing SSL configs!)
 echo -e "${YELLOW}[5/5] Checking Nginx virtual host...${NC}"

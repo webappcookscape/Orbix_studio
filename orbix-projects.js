@@ -40,10 +40,15 @@
         var saved = localStorage.getItem('orbix_current_user');
         if (saved) {
           this.currentUser = JSON.parse(saved);
-          // Normalize legacy cached data
-          if (this.currentUser.id === 'usr_dev' || this.currentUser.id === 'usr_admin') {
+          // If cached user is an obsolete demo account, clear session
+          if (this.currentUser.id === 'usr_dev' || this.currentUser.id === 'usr_alex' || this.currentUser.id === 'usr_priya' || (this.currentUser.email && this.currentUser.email.indexOf('@orbixstudio.io') !== -1)) {
+            localStorage.removeItem('orbix_current_user');
+            this.currentUser = null;
+            this.showLogin();
+            return;
+          }
+          if (this.currentUser.id === 'usr_admin') {
             this.currentUser.role = 'admin';
-            this.currentUser.designation = 'Studio Admin';
           } else if (!this.currentUser.role || (this.currentUser.role !== 'admin' && this.currentUser.role !== 'employee')) {
             this.currentUser.role = 'employee';
           }
@@ -241,7 +246,12 @@
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data.users && data.users.length) {
-            self.users = data.users;
+            self.users = data.users.filter(function (u) {
+              return u.id !== 'usr_dev' && u.id !== 'usr_alex' && u.id !== 'usr_priya' &&
+                     u.email !== 'dev@orbixstudio.io' && u.email !== 'alex@orbixstudio.io' &&
+                     u.email !== 'priya@orbixstudio.io' && u.email !== 'alex@modularedge.com' &&
+                     u.email !== 'priya@archform.in';
+            });
             // Ensure currentUser matches one of the known users
             var matched = self.users.find(function (u) { return u.id === self.currentUser.id; });
             if (matched) self.currentUser = matched;
