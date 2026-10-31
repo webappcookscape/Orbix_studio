@@ -3,33 +3,24 @@
     {
       "id": "usr_dev",
       "name": "Dev Kancheti",
-      "username": "admin",
       "email": "dev@orbixstudio.io",
-      "password": "admin123",
-      "role": "admin",
-      "designation": "Studio Head / Admin",
+      "role": "Lead Modular Designer",
       "company": "Orbix Design Studio",
       "avatar": "DK"
     },
     {
       "id": "usr_alex",
       "name": "Alex Mercer",
-      "username": "alex",
-      "email": "alex@orbixstudio.io",
-      "password": "alex123",
-      "role": "employee",
-      "designation": "Production Estimator",
+      "email": "alex@modularedge.com",
+      "role": "Production Estimator",
       "company": "Precision Modular Works",
       "avatar": "AM"
     },
     {
       "id": "usr_priya",
       "name": "Priya Sharma",
-      "username": "priya",
-      "email": "priya@orbixstudio.io",
-      "password": "priya123",
-      "role": "employee",
-      "designation": "Modular Designer",
+      "email": "priya@archform.in",
+      "role": "Interior Architect",
       "company": "Archform Interiors",
       "avatar": "PS"
     }
@@ -1483,7 +1474,7 @@
       "is_shared": false,
       "fork_count": 1,
       "created_at": "2026-10-31T07:03:12.104Z",
-      "updated_at": "2026-10-31T10:39:14.959Z"
+      "updated_at": "2026-10-31T10:49:14.949Z"
     },
     {
       "id": "proj_palm_tv",
