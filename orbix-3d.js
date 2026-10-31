@@ -40,9 +40,9 @@
       metalness: 0.0
     });
 
-    // Floor Finishes
+    // Floor Finishes (Light green grass color)
     this.materials.floorTile = new THREE.MeshStandardMaterial({
-      color: 0xE8E6DF,
+      color: 0x97C96E,
       roughness: 0.35,
       metalness: 0.1
     });

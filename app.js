@@ -1648,10 +1648,10 @@ var GL=(function(){
     if(matCache["sp|tile"]) return matCache["sp|tile"];
     /* one tile of texture = GRAIN_W × GRAIN_H mm on the wall: 3 × 10 subway tiles with grout */
     var c=document.createElement("canvas"); c.width=512; c.height=775;
-    var g=c.getContext("2d"); g.fillStyle="#C8C4BC"; g.fillRect(0,0,512,775);
+    var g=c.getContext("2d"); g.fillStyle="#789E5A"; g.fillRect(0,0,512,775);
     var cols=3, rows=10, tw=512/cols, th=775/rows;
     for(var r=0;r<rows;r++){ var off=(r%2)?tw/2:0;
-      for(var cI=-1;cI<=cols;cI++){ g.fillStyle=(r+cI)%3?"#F3F1EC":"#EDEAE3"; g.fillRect(cI*tw+off+3,r*th+3,tw-6,th-6); } }
+      for(var cI=-1;cI<=cols;cI++){ g.fillStyle=(r+cI)%3?"#BBE696":"#A8D980"; g.fillRect(cI*tw+off+3,r*th+3,tw-6,th-6); } }
     tileT=new THREE.CanvasTexture(c); tileT.wrapS=tileT.wrapT=THREE.RepeatWrapping; tileT.encoding=THREE.sRGBEncoding;
     var m=new THREE.MeshPhysicalMaterial({map:tileT,roughness:0.18,metalness:0,clearcoat:0.8,clearcoatRoughness:0.15,envMapIntensity:0.9});
     matCache["sp|tile"]=m; return m;
@@ -1669,13 +1669,13 @@ var GL=(function(){
       var md=new THREE.MeshPhysicalMaterial({map:floorT,roughness:0.16,metalness:0,clearcoat:0.9,clearcoatRoughness:0.12,envMapIntensity:0.9});
       matCache["sp|floor"]=md; return md;
     }
-    /* 2 × 2 large porcelain tiles per repeat (1200 mm) — 600 mm tiles with a fine grout */
+    /* 2 × 2 large porcelain tiles per repeat (1200 mm) — 600 mm tiles with a fine grout (Light Green Grass) */
     var c=document.createElement("canvas"); c.width=c.height=512;
     var g=c.getContext("2d"), rnd=mulberry(4242);
-    g.fillStyle="#CFCBC3"; g.fillRect(0,0,512,512);
+    g.fillStyle="#789E5A"; g.fillRect(0,0,512,512);
     for(var i=0;i<2;i++) for(var j=0;j<2;j++){
-      g.fillStyle=(i+j)%2?"#E8E4DC":"#E3DFD7"; g.fillRect(i*256+2,j*256+2,252,252);
-      for(var k=0;k<160;k++){ g.fillStyle="rgba(120,110,95,"+(0.03+rnd()*0.05).toFixed(3)+")"; g.fillRect(i*256+2+rnd()*252,j*256+2+rnd()*252,1+rnd()*3,1); }
+      g.fillStyle=(i+j)%2?"#A5D67D":"#97C96E"; g.fillRect(i*256+2,j*256+2,252,252);
+      for(var k=0;k<180;k++){ g.fillStyle="rgba(55,100,35,"+(0.05+rnd()*0.07).toFixed(3)+")"; g.fillRect(i*256+2+rnd()*252,j*256+2+rnd()*252,1+rnd()*3,1); }
     }
     floorT=new THREE.CanvasTexture(c); floorT.wrapS=floorT.wrapT=THREE.RepeatWrapping; floorT.encoding=THREE.sRGBEncoding; floorT.anisotropy=renderer.capabilities.getMaxAnisotropy();
     var m=new THREE.MeshPhysicalMaterial({map:floorT,roughness:0.32,metalness:0,clearcoat:0.35,clearcoatRoughness:0.25,envMapIntensity:0.6});
@@ -2791,7 +2791,7 @@ function cssRender(L,u0){
       var t = b.col ? tex(lam(b.col)) : null;
       var n=box(g,{x:b.x,y:b.y,z:b.z,w:b.w,h:b.h,d:b.d,tex:t,eb:b.role==="front",faces:b.role==="front"?["F","L","R","T","Bo"]:["F","L","R","T"]});
       if(b.mat==="reveal") n.firstChild.style.background="#241E18";
-      else if(b.mat) $all(".face",n).forEach(function(f){ f.style.background=/granite|galaxy|green/.test(b.mat)?"#27272b":/marble|quartz|beige|splash|tile|glass/.test(b.mat)?"#e8e4dc":b.mat==="steel"?"#C9CCCF":/^leather/.test(b.mat)?b.mat.slice(8):/^(black|nickel|brass|chrome)$/.test(b.mat)?"#3a3a3c":b.mat==="led"?"#FFE6B8":"#2b2723"; });
+      else if(b.mat) $all(".face",n).forEach(function(f){ f.style.background=/granite|galaxy|green/.test(b.mat)?"#27272b":/marble|quartz|beige|splash|tile|glass/.test(b.mat)?"#e8e4dc":b.mat==="floor"||/tile/.test(b.mat)?"#97C96E":b.mat==="steel"?"#C9CCCF":/^leather/.test(b.mat)?b.mat.slice(8):/^(black|nickel|brass|chrome)$/.test(b.mat)?"#3a3a3c":b.mat==="led"?"#FFE6B8":"#2b2723"; });
     });
   });
 }
