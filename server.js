@@ -88,6 +88,28 @@ app.get('/api/users/:id', async (req, res) => {
   }
 });
 
+app.put('/api/users/:id', async (req, res) => {
+  try {
+    const updated = await db.updateUser(req.params.id, req.body);
+    if (!updated) return res.status(404).json({ success: false, error: 'User not found' });
+    res.json({ success: true, user: updated });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    if (req.params.id === 'usr_admin') {
+      return res.status(403).json({ success: false, error: 'Cannot delete primary admin account.' });
+    }
+    const result = await db.deleteUser(req.params.id);
+    res.json({ success: true, result });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
 // Projects
 app.get('/api/projects', async (req, res) => {
   try {

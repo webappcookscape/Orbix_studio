@@ -1,6 +1,17 @@
 {
   "users": [
     {
+      "id": "usr_admin",
+      "name": "Cookscape Admin",
+      "username": "admin",
+      "email": "admin@cookscape.com",
+      "password": "admin123",
+      "role": "admin",
+      "designation": "System Administrator",
+      "company": "Cookscape",
+      "avatar": "CA"
+    },
+    {
       "id": "usr_dev",
       "name": "Dev Kancheti",
       "email": "dev@orbixstudio.io",

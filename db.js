@@ -270,6 +270,132 @@ class DBManager {
     return user;
   }
 
+  async updateUser(id, updates) {
+    if (!id) throw new Error('User ID is required');
+
+    let user = await this.getUser(id);
+    if (!user) throw new Error('User not found');
+
+    const name = (updates.name !== undefined && updates.name !== null) ? updates.name.trim() : user.name;
+    const username = (updates.username !== undefined && updates.username !== null) ? updates.username.trim() : (user.username || user.id);
+    const email = (updates.email !== undefined && updates.email !== null) ? updates.email.trim() : user.email;
+    const designation = (updates.designation !== undefined && updates.designation !== null) ? updates.designation.trim() : (user.designation || 'Modular Designer');
+    const company = (updates.company !== undefined && updates.company !== null) ? updates.company.trim() : (user.company || 'Orbix Studio');
+
+    // Only update password if non-empty string is provided
+    let password = user.password || '123456';
+    if (updates.password && updates.password.trim() !== '') {
+      password = updates.password.trim();
+    }
+
+    // Protect primary admin from role demotion
+    let role = user.role || 'employee';
+    if (id === 'usr_admin' || (user.email && user.email.toLowerCase() === 'admin@cookscape.com')) {
+      role = 'admin';
+    } else if (updates.role !== undefined && updates.role !== null) {
+      role = (updates.role === 'admin') ? 'admin' : 'employee';
+    }
+
+    let avatar = updates.avatar;
+    if (!avatar && name) {
+      avatar = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    }
+    if (!avatar) avatar = user.avatar || 'US';
+
+    const updatedUser = {
+      ...user,
+      name,
+      username,
+      email,
+      password,
+      role,
+      designation,
+      company,
+      avatar,
+      updated_at: new Date().toISOString()
+    };
+
+    // Update in localStore
+    this.localStore.users = this.localStore.users || [];
+    const idx = this.localStore.users.findIndex(u => u.id === id);
+    if (idx >= 0) {
+      this.localStore.users[idx] = updatedUser;
+    } else {
+      this.localStore.users.push(updatedUser);
+    }
+    this.saveLocalStore();
+
+    // Update in PostgreSQL
+    if (this.isPgConnected) {
+      try {
+        const query = `
+          UPDATE users SET
+            name = $2,
+            username = $3,
+            email = $4,
+            password = $5,
+            role = $6,
+            designation = $7,
+            company = $8,
+            avatar = $9
+          WHERE id = $1
+          RETURNING *;
+        `;
+        const res = await this.pgPool.query(query, [id, name, username, email, password, role, designation, company, avatar]);
+        if (res.rows && res.rows.length) {
+          return res.rows[0];
+        }
+      } catch (err) {
+        console.error('PostgreSQL updateUser error:', err.message);
+      }
+    }
+
+    return updatedUser;
+  }
+
+  async deleteUser(id) {
+    if (!id) throw new Error('User ID is required');
+
+    // Protect primary admin
+    if (id === 'usr_admin') {
+      throw new Error('Primary administrator account cannot be deleted');
+    }
+
+    const user = await this.getUser(id);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.email && user.email.toLowerCase() === 'admin@cookscape.com') {
+      throw new Error('Primary administrator account cannot be deleted');
+    }
+
+    // Delete in PostgreSQL
+    if (this.isPgConnected) {
+      try {
+        await this.pgPool.query('DELETE FROM users WHERE id = $1', [id]);
+      } catch (err) {
+        console.error('PostgreSQL deleteUser error:', err.message);
+        throw err;
+      }
+    }
+
+    // Delete in localStore
+    if (this.localStore.users) {
+      this.localStore.users = this.localStore.users.filter(u => u.id !== id);
+    }
+    if (this.localStore.projects) {
+      this.localStore.projects.forEach(p => {
+        if (p.created_by === id) {
+          p.created_by = null;
+        }
+      });
+    }
+    this.saveLocalStore();
+
+    return { success: true, id };
+  }
+
   async authenticateUser(identifier, password) {
     if (!identifier || !password) return null;
     const cleanId = identifier.trim().toLowerCase();
@@ -309,8 +435,9 @@ class DBManager {
   }
 
   async getUser(id) {
+    if (!id) return null;
     const users = await this.getUsers();
-    return users.find(u => u.id === id) || users[0] || null;
+    return users.find(u => u.id === id) || null;
   }
 
   // ── Project Methods ──

@@ -97,6 +97,10 @@ input,select{font:inherit;color:inherit}
 .btn:hover{border-color:var(--blue-2);color:var(--blue)}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
 .btn.primary:hover{background:var(--blue-2);color:#fff}
+.btn.danger{background:#FEE2E2;border-color:#FCA5A5;color:#DC2626}
+.btn.danger:hover{background:#DC2626;border-color:#DC2626;color:#FFFFFF}
+.btn.small{padding:4px 8px;font-size:11px}
+.u-switch-actions{display:flex;align-items:center;gap:6px}
 
 .pwa-install-btn{
   background:linear-gradient(135deg,#DC2626,#B91C1C);

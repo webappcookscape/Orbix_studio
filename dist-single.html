@@ -102,6 +102,10 @@ input,select{font:inherit;color:inherit}
 .btn:hover{border-color:var(--blue-2);color:var(--blue)}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
 .btn.primary:hover{background:var(--blue-2);color:#fff}
+.btn.danger{background:#FEE2E2;border-color:#FCA5A5;color:#DC2626}
+.btn.danger:hover{background:#DC2626;border-color:#DC2626;color:#FFFFFF}
+.btn.small{padding:4px 8px;font-size:11px}
+.u-switch-actions{display:flex;align-items:center;gap:6px}
 
 .pwa-install-btn{
   background:linear-gradient(135deg,#DC2626,#B91C1C);
@@ -2204,6 +2208,65 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
   </div>
 </div>
 
+<!-- ══════ MODAL: EDIT USER (ADMIN ONLY) ══════ -->
+<div class="orbix-modal" id="editUserModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog" style="max-width:540px;">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">✏️ Edit Team Account</h3>
+        <p class="modal-sub">Update employee details, password, and system role</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <form id="editUserForm">
+      <div class="modal-body">
+        <input type="hidden" id="editUserId">
+        
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" id="editUserName" class="form-input" placeholder="e.g. Rahul Verma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Username *</label>
+            <input type="text" id="editUserUsername" class="form-input" placeholder="e.g. rahul" required>
+          </div>
+        </div>
+
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label">Email Address *</label>
+            <input type="email" id="editUserEmail" class="form-input" placeholder="e.g. rahul@cookscape.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input type="text" id="editUserPassword" class="form-input" placeholder="Leave blank to keep current">
+          </div>
+        </div>
+
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label">Job Title / Designation</label>
+            <input type="text" id="editUserTitle" class="form-input" placeholder="e.g. Modular CAD Designer">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select id="editUserRole" class="form-input">
+              <option value="employee">Employee (Home, 2D Plan, 3D, Pricing)</option>
+              <option value="admin">Admin (All Menus &amp; All Projects)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn modal-close-btn">Cancel</button>
+        <button type="submit" class="btn primary" id="saveEditUserBtn">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- ══════ MODAL: LOGIN / SIGN IN ══════ -->
 <div class="orbix-modal" id="loginModal">
   <div class="modal-backdrop"></div>
@@ -2326,6 +2389,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       this.currentUser = null;
       this.closeModal('userModal');
       this.closeModal('loginModal');
+      this.closeModal('editUserModal');
       this.showLogin();
       if (typeof showToast === 'function') {
         showToast('Logged out of session.');
@@ -3306,6 +3370,87 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         });
       }
 
+      // Admin Edit Team Account Form (#editUserForm)
+      var editUserForm = document.getElementById('editUserForm');
+      if (editUserForm) {
+        editUserForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          if (!self.isAdmin()) {
+            if (typeof showToast === 'function') showToast('Only Admin can edit team accounts.');
+            return;
+          }
+          var uid = document.getElementById('editUserId').value;
+          var name = document.getElementById('editUserName').value.trim();
+          var username = document.getElementById('editUserUsername').value.trim();
+          var email = document.getElementById('editUserEmail').value.trim();
+          var password = document.getElementById('editUserPassword').value.trim();
+          var title = document.getElementById('editUserTitle').value.trim();
+          var roleSelect = document.getElementById('editUserRole');
+          var role = roleSelect ? roleSelect.value : 'employee';
+
+          if (!uid || !name || !email) {
+            alert('Full Name and Email Address are required.');
+            return;
+          }
+
+          var payload = {
+            name: name,
+            username: username,
+            email: email,
+            designation: title,
+            role: role
+          };
+          if (password) {
+            payload.password = password;
+          }
+
+          var saveBtn = document.getElementById('saveEditUserBtn');
+          if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+          }
+
+          fetch('/api/users/' + encodeURIComponent(uid), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (saveBtn) {
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Save Changes';
+            }
+            if (data.success && data.user) {
+              // If edited active user, update active session
+              if (self.currentUser && self.currentUser.id === uid) {
+                self.currentUser = Object.assign({}, self.currentUser, data.user);
+                try {
+                  localStorage.setItem('orbix_current_user', JSON.stringify(self.currentUser));
+                } catch (e) {}
+                self.updateUserUI();
+              }
+              self.closeModal('editUserModal');
+              if (typeof showToast === 'function') {
+                showToast('✓ Account updated: ' + data.user.name);
+              }
+              self.fetchUsers(function () {
+                self.openUserModal();
+              });
+            } else {
+              alert('Failed to update account: ' + (data.error || 'Server error'));
+            }
+          })
+          .catch(function (err) {
+            if (saveBtn) {
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Save Changes';
+            }
+            alert('Error updating user: ' + err.message);
+          });
+        });
+      }
+
       // Modal close triggers
       document.querySelectorAll('.modal-close-btn, .modal-backdrop').forEach(function (el) {
         el.addEventListener('click', function () {
@@ -3336,11 +3481,32 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
       var userListEl = document.getElementById('switchUsersList');
       if (userListEl) {
+        var isAdm = self.isAdmin();
         var html = '';
         this.users.forEach(function (u) {
           var isCurrent = self.currentUser && self.currentUser.id === u.id;
           var uIsAdmin = (u.role || '').toLowerCase() === 'admin' || (u.role || '').toLowerCase().indexOf('admin') !== -1;
           var roleBadgeHtml = '<span class="role-badge ' + (uIsAdmin ? 'admin' : 'employee') + '">' + (uIsAdmin ? 'Admin' : 'Employee') + '</span>';
+          var isPrimaryAdmin = u.id === 'usr_admin' || (u.email && u.email.toLowerCase() === 'admin@cookscape.com');
+
+          var actionsHtml = '<div class="u-switch-actions">';
+          if (!isCurrent) {
+            actionsHtml += '<button class="btn small switch-user-btn" data-uid="' + u.id + '" type="button">Switch</button>';
+          } else {
+            actionsHtml += '<span class="current-tag">Current</span>';
+          }
+
+          if (isAdm) {
+            actionsHtml += '<button class="btn small edit-user-btn" data-uid="' + u.id + '" type="button" title="Edit account">Edit</button>';
+            if (!isPrimaryAdmin && (!self.currentUser || u.id !== self.currentUser.id)) {
+              actionsHtml += '<button class="btn small danger del-user-btn" data-uid="' + u.id + '" data-uname="' + (u.name || u.username || 'User') + '" type="button" title="Delete account">Delete</button>';
+            }
+          }
+          actionsHtml += '</div>';
+
+          var userMeta = '';
+          if (u.username) userMeta += '@' + u.username + ' • ';
+          userMeta += (u.email || '') + ' • ' + (u.designation || (uIsAdmin ? 'Admin' : 'Employee'));
 
           html += '<div class="u-switch-item' + (isCurrent ? ' is-current' : '') + '" data-uid="' + u.id + '">' +
             '<div class="u-info">' +
@@ -3350,14 +3516,15 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
                   '<strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong>' +
                   roleBadgeHtml +
                 '</div>' +
-                '<span>' + (u.designation || u.role) + ' • ' + (u.company || '') + '</span>' +
+                '<span>' + userMeta + '</span>' +
               '</div>' +
             '</div>' +
-            (!isCurrent ? '<button class="btn switch-user-btn" data-uid="' + u.id + '">Switch</button>' : '<span class="current-tag">Current</span>') +
+            actionsHtml +
           '</div>';
         });
         userListEl.innerHTML = html;
 
+        // Switch user event
         userListEl.querySelectorAll('.switch-user-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var uid = this.getAttribute('data-uid');
@@ -3368,9 +3535,91 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
             }
           });
         });
+
+        // Edit user event (Admin only)
+        userListEl.querySelectorAll('.edit-user-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var uid = this.getAttribute('data-uid');
+            var u = self.users.find(function (x) { return x.id === uid; });
+            if (u) {
+              self.openEditUserModal(u);
+            }
+          });
+        });
+
+        // Delete user event (Admin only)
+        userListEl.querySelectorAll('.del-user-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var uid = this.getAttribute('data-uid');
+            var uname = this.getAttribute('data-uname') || 'this user';
+            self.confirmAndDeleteUser(uid, uname);
+          });
+        });
       }
 
       modal.classList.add('is-open');
+    },
+
+    openEditUserModal: function (u) {
+      var self = this;
+      var editModal = document.getElementById('editUserModal');
+      if (!editModal) return;
+
+      var idEl = document.getElementById('editUserId');
+      var nameEl = document.getElementById('editUserName');
+      var usernameEl = document.getElementById('editUserUsername');
+      var emailEl = document.getElementById('editUserEmail');
+      var passEl = document.getElementById('editUserPassword');
+      var titleEl = document.getElementById('editUserTitle');
+      var roleEl = document.getElementById('editUserRole');
+
+      if (idEl) idEl.value = u.id;
+      if (nameEl) nameEl.value = u.name || '';
+      if (usernameEl) usernameEl.value = u.username || '';
+      if (emailEl) emailEl.value = u.email || '';
+      if (passEl) passEl.value = '';
+      if (titleEl) titleEl.value = u.designation || '';
+
+      var isPrimaryAdmin = u.id === 'usr_admin' || (u.email && u.email.toLowerCase() === 'admin@cookscape.com');
+      if (roleEl) {
+        roleEl.value = (u.role || '').toLowerCase() === 'admin' ? 'admin' : 'employee';
+        roleEl.disabled = isPrimaryAdmin;
+      }
+
+      self.closeModal('userModal');
+      editModal.classList.add('is-open');
+    },
+
+    confirmAndDeleteUser: function (uid, uname) {
+      var self = this;
+      if (!uid) return;
+      if (uid === 'usr_admin') {
+        alert('Primary administrator account cannot be deleted.');
+        return;
+      }
+      if (!confirm('Are you sure you want to permanently delete team account "' + uname + '"?\n\nThis will remove their login access. Any projects created by them will be preserved.')) {
+        return;
+      }
+
+      fetch('/api/users/' + encodeURIComponent(uid), {
+        method: 'DELETE'
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.success) {
+          if (typeof showToast === 'function') {
+            showToast('✓ Account deleted: ' + uname);
+          }
+          self.fetchUsers(function () {
+            self.openUserModal();
+          });
+        } else {
+          alert('Failed to delete account: ' + (data.error || 'Server error'));
+        }
+      })
+      .catch(function (err) {
+        alert('Error deleting account: ' + err.message);
+      });
     }
   };
 

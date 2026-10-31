@@ -690,6 +690,65 @@
   </div>
 </div>
 
+<!-- ══════ MODAL: EDIT USER (ADMIN ONLY) ══════ -->
+<div class="orbix-modal" id="editUserModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog" style="max-width:540px;">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">✏️ Edit Team Account</h3>
+        <p class="modal-sub">Update employee details, password, and system role</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <form id="editUserForm">
+      <div class="modal-body">
+        <input type="hidden" id="editUserId">
+        
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" id="editUserName" class="form-input" placeholder="e.g. Rahul Verma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Username *</label>
+            <input type="text" id="editUserUsername" class="form-input" placeholder="e.g. rahul" required>
+          </div>
+        </div>
+
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label">Email Address *</label>
+            <input type="email" id="editUserEmail" class="form-input" placeholder="e.g. rahul@cookscape.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input type="text" id="editUserPassword" class="form-input" placeholder="Leave blank to keep current">
+          </div>
+        </div>
+
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label">Job Title / Designation</label>
+            <input type="text" id="editUserTitle" class="form-input" placeholder="e.g. Modular CAD Designer">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select id="editUserRole" class="form-input">
+              <option value="employee">Employee (Home, 2D Plan, 3D, Pricing)</option>
+              <option value="admin">Admin (All Menus &amp; All Projects)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn modal-close-btn">Cancel</button>
+        <button type="submit" class="btn primary" id="saveEditUserBtn">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- ══════ MODAL: LOGIN / SIGN IN ══════ -->
 <div class="orbix-modal" id="loginModal">
   <div class="modal-backdrop"></div>
