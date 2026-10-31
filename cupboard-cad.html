@@ -120,6 +120,35 @@ input,select{font:inherit;color:inherit}
   background:#FEF3C7;color:#B45309;border-color:#FDE68A;
 }
 
+/* Auto-Save Indicator */
+.autosave-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 10px;
+  background:#F8FAFC;border:1px solid #CBD5E1;border-radius:6px;
+  font-family:var(--mono);font-size:11px;font-weight:600;color:#475569;
+  user-select:none;transition:all .2s ease;
+}
+.autosave-pill .save-dot{
+  width:7px;height:7px;border-radius:50%;background:#10B981;
+  transition:all .2s ease;
+}
+.autosave-pill.saving{
+  background:#EFF6FF;border-color:#93C5FD;color:#1D4ED8;
+}
+.autosave-pill.saving .save-dot{
+  background:#2563EB;
+  animation:savePulse .8s infinite alternate;
+}
+.autosave-pill.offline{
+  background:#FFFBEB;border-color:#FCD34D;color:#B45309;
+}
+.autosave-pill.offline .save-dot{
+  background:#F59E0B;
+}
+@keyframes savePulse{
+  from{transform:scale(.8);opacity:.5}
+  to{transform:scale(1.3);opacity:1}
+}
+
 /* ══════════ VIEWS ══════════ */
 #main{flex:1 1 auto;position:relative;min-height:0}
 .view{position:absolute;inset:0;display:none}
@@ -1427,6 +1456,10 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <span>Install App</span>
       </button>
+      <div id="autoSaveIndicator" class="autosave-pill" title="Auto-saves working projects every 15 seconds to PostgreSQL">
+        <span class="save-dot"></span>
+        <span class="save-text">Auto-save 15s</span>
+      </div>
       <div id="dbStatusBadge" class="db-badge" title="Database connection status">
         <span class="db-dot"></span> PostgreSQL
       </div>
@@ -1970,6 +2003,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       this.fetchUsers(function () {
         self.fetchProjects();
       });
+      this.startAutoSaveLoop();
     },
 
     loadCachedUser: function () {
@@ -2313,6 +2347,95 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       }
     },
 
+    // 15-second interval auto-saver for all working projects
+    startAutoSaveLoop: function () {
+      var self = this;
+      if (this._autoSaveTimer) clearInterval(this._autoSaveTimer);
+      // Auto save every 15 seconds (15000ms)
+      this._autoSaveTimer = setInterval(function () {
+        self.autoSaveWorkingProject();
+      }, 15000);
+      console.log('[Orbix Studio] Auto-save loop initialized (every 15s)');
+    },
+
+    autoSaveWorkingProject: function () {
+      // Find active project or latest working project
+      var activeId = this.activeProjectId;
+      if (!activeId) {
+        try {
+          activeId = localStorage.getItem('orbix_active_project_id');
+        } catch (e) {}
+      }
+      if (!activeId && this.projects && this.projects.length) {
+        activeId = this.projects[0].id;
+      }
+      if (!activeId) return;
+
+      var self = this;
+      var project = this.projects.find(function (p) { return p.id === activeId; });
+      if (!project) return;
+
+      var currentPlan = (window.OrbixUI && window.OrbixUI.project) ? window.OrbixUI.project : null;
+      var currentUnits = (window.S && Array.isArray(window.S.units)) ? window.S.units : null;
+
+      if (!currentPlan && !currentUnits) return;
+
+      project.data = project.data || {};
+      if (currentPlan) project.data.plan = currentPlan;
+      if (currentUnits) project.data.units = currentUnits;
+
+      var fCount = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
+        ? project.data.plan.plan.furniture.length : 0;
+      project.units_count = fCount || (project.data.units ? project.data.units.length : 0);
+
+      // Save to localStorage immediately
+      try {
+        if (project.data.plan) {
+          localStorage.setItem('orbix-project', JSON.stringify(project.data.plan));
+        }
+        localStorage.setItem('orbix_active_project_id', activeId);
+      } catch (e) {}
+
+      // Update topbar indicator: "Auto-saving..."
+      self.setSaveIndicator('saving');
+
+      // Sync to PostgreSQL backend
+      fetch('/api/projects/' + activeId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: project.data,
+          units_count: project.units_count
+        })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function () {
+        var now = new Date();
+        var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        self.setSaveIndicator('saved', timeStr);
+      })
+      .catch(function (err) {
+        console.warn('[AutoSave 15s] PostgreSQL save buffered to local sync:', err);
+        self.setSaveIndicator('offline');
+      });
+    },
+
+    setSaveIndicator: function (status, timeStr) {
+      var el = document.getElementById('autoSaveIndicator');
+      if (!el) return;
+
+      if (status === 'saving') {
+        el.className = 'autosave-pill saving';
+        el.innerHTML = '<span class="save-dot"></span><span class="save-text">Auto-saving...</span>';
+      } else if (status === 'saved') {
+        el.className = 'autosave-pill saved';
+        el.innerHTML = '<span class="save-dot"></span><span class="save-text">Auto-saved ' + (timeStr || '') + '</span>';
+      } else if (status === 'offline') {
+        el.className = 'autosave-pill offline';
+        el.innerHTML = '<span class="save-dot"></span><span class="save-text">Saved locally</span>';
+      }
+    },
+
     saveActiveProject: function (dataUpdates) {
       if (!this.activeProjectId) return;
       var self = this;
@@ -2334,6 +2457,8 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         }
       } catch (e) {}
 
+      self.setSaveIndicator('saving');
+
       // Debounced backend save to PostgreSQL
       clearTimeout(this._saveDebounce);
       this._saveDebounce = setTimeout(function () {
@@ -2344,8 +2469,15 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
             data: project.data,
             units_count: project.units_count
           })
-        }).catch(function (e) {
+        })
+        .then(function () {
+          var now = new Date();
+          var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          self.setSaveIndicator('saved', timeStr);
+        })
+        .catch(function (e) {
           console.warn('Auto-save to backend failed:', e);
+          self.setSaveIndicator('offline');
         });
       }, 500);
     },

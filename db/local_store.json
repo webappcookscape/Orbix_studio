@@ -68,24 +68,383 @@
       "created_by": "usr_dev",
       "owner_name": "Dev Kancheti",
       "owner_email": "dev@orbixstudio.io",
-      "units_count": 1,
+      "units_count": 0,
       "boards_est": 6,
       "data": {
-        "units": [
-          {
-            "label": "Initial Cabinet Run",
-            "kind": "wardrobe",
-            "w": 1800,
-            "h": 2100,
-            "d": 600,
-            "lam": "Walnut Plank"
-          }
-        ]
+        "units": [],
+        "plan": {
+          "schemaVersion": "1.0.0",
+          "id": "proj_jsx8obrn5",
+          "meta": {
+            "title": "test",
+            "clientName": "test",
+            "siteAddress": "",
+            "designerName": "",
+            "dateCreated": "2026-10-31T09:09:14.705Z",
+            "dateModified": "2026-10-31T09:09:24.777Z",
+            "status": "draft",
+            "notes": ""
+          },
+          "plan": {
+            "gridSize": 100,
+            "majorGridSize": 1000,
+            "snapToGrid": true,
+            "snapToAngle": true,
+            "snapDistance": 150,
+            "walls": [],
+            "openings": [],
+            "rooms": [],
+            "furniture": []
+          },
+          "rateCard": {
+            "version": "1.0",
+            "currency": "INR",
+            "currencySymbol": "₹",
+            "gstPercent": 18,
+            "marginPercent": 15,
+            "selectedTier": "PRICE 1",
+            "priceTiers": [
+              "PRICE 1",
+              "PRICE 2",
+              "PRICE 3",
+              "PRICE 4",
+              "LIVE LANE",
+              "CC MATTE",
+              "CC GLOSSY",
+              "SURABHI",
+              "MR+"
+            ],
+            "modelRates": {
+              "kitchen_wm": {
+                "id": "kitchen_wm",
+                "label": "Kitcehn - WM",
+                "description": "Kitchen Wall Mounted / Wall Units",
+                "category": "kitchen_wall",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 1545,
+                  "PRICE 2": 1696,
+                  "PRICE 3": 1785,
+                  "PRICE 4": 1950,
+                  "LIVE LANE": 2034,
+                  "CC MATTE": 2228,
+                  "CC GLOSSY": 2422,
+                  "SURABHI": 2616,
+                  "MR+": 2929
+                }
+              },
+              "kitchen_fm": {
+                "id": "kitchen_fm",
+                "label": "Kitcehn - FM",
+                "description": "Kitchen Floor Mounted / Base Units",
+                "category": "kitchen_base",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 1796,
+                  "PRICE 2": 1969,
+                  "PRICE 3": 1975,
+                  "PRICE 4": 2214,
+                  "LIVE LANE": 2500,
+                  "CC MATTE": 2906,
+                  "CC GLOSSY": 3113,
+                  "SURABHI": 3391,
+                  "MR+": 3786
+                }
+              },
+              "kitchen_d2d3": {
+                "id": "kitchen_d2d3",
+                "label": "Kitcehn - D2/D3",
+                "description": "Kitchen 2-Drawer / 3-Drawer Tandem Units",
+                "category": "kitchen_base",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 1972,
+                  "PRICE 2": 2196,
+                  "PRICE 3": 2714,
+                  "PRICE 4": 2527,
+                  "LIVE LANE": 3600,
+                  "CC MATTE": 3945,
+                  "CC GLOSSY": 4172,
+                  "SURABHI": 4369,
+                  "MR+": 5127
+                }
+              },
+              "kitchen_os": {
+                "id": "kitchen_os",
+                "label": "Kitcehn o/s",
+                "description": "Kitchen Open Shelves / Open Boxes",
+                "category": "kitchen_wall",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 895,
+                  "PRICE 2": 984,
+                  "PRICE 3": 1184,
+                  "PRICE 4": 1236,
+                  "LIVE LANE": 1196,
+                  "CC MATTE": 1250,
+                  "CC GLOSSY": 1567,
+                  "SURABHI": 1786,
+                  "MR+": 1984
+                }
+              },
+              "spice_rack": {
+                "id": "spice_rack",
+                "label": "Spice Rack (OPEN BOXES)",
+                "description": "Spice Rack Open Storage Units",
+                "category": "kitchen_wall",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 2272,
+                  "PRICE 2": 2725,
+                  "PRICE 3": 3996,
+                  "PRICE 4": 4579,
+                  "LIVE LANE": 4650,
+                  "CC MATTE": 4969,
+                  "CC GLOSSY": 5679,
+                  "SURABHI": 5786,
+                  "MR+": 6969
+                }
+              },
+              "wr_shelves": {
+                "id": "wr_shelves",
+                "label": "Wr - Modular - ONLY SHELVES",
+                "description": "Modular Wardrobe with Internal Shelves",
+                "category": "wardrobe",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 1545,
+                  "PRICE 2": 1696,
+                  "PRICE 3": 1872,
+                  "PRICE 4": 1996,
+                  "LIVE LANE": 1827,
+                  "CC MATTE": 1984,
+                  "CC GLOSSY": 2072,
+                  "SURABHI": 2227,
+                  "MR+": 2714
+                }
+              },
+              "wr_drawers": {
+                "id": "wr_drawers",
+                "label": "Wr - Modular - 2 DRAWERS",
+                "description": "Modular Wardrobe with 2 Internal Drawers",
+                "category": "wardrobe",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 1740,
+                  "PRICE 2": 1891,
+                  "PRICE 3": 2067,
+                  "PRICE 4": 2191,
+                  "LIVE LANE": 2022,
+                  "CC MATTE": 2179,
+                  "CC GLOSSY": 2267,
+                  "SURABHI": 2400,
+                  "MR+": 2909
+                }
+              },
+              "wr_sliding": {
+                "id": "wr_sliding",
+                "label": "Wr - Modular - SLIDING",
+                "description": "Modular Sliding Door Wardrobe",
+                "category": "wardrobe",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 1795,
+                  "PRICE 2": 1984,
+                  "PRICE 3": 2195,
+                  "PRICE 4": 2295,
+                  "LIVE LANE": 2345,
+                  "CC MATTE": 2575,
+                  "CC GLOSSY": 2725,
+                  "SURABHI": 2929,
+                  "MR+": 3366
+                }
+              },
+              "loft_os": {
+                "id": "loft_os",
+                "label": "Loft - O/S",
+                "description": "Overhead Loft / Open Shutter Unit",
+                "category": "wardrobe",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 895,
+                  "PRICE 2": 996,
+                  "PRICE 3": 1069,
+                  "PRICE 4": 1227,
+                  "LIVE LANE": 996,
+                  "CC MATTE": 1127,
+                  "CC GLOSSY": 1269,
+                  "SURABHI": 1369,
+                  "MR+": 1567
+                }
+              },
+              "pooja_cnc": {
+                "id": "pooja_cnc",
+                "label": "POOJA WITH CNC",
+                "description": "Mandir / Pooja Unit with CNC Jali",
+                "category": "crockery",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 1969,
+                  "PRICE 2": 2196,
+                  "PRICE 3": 2725,
+                  "PRICE 4": 3169,
+                  "LIVE LANE": 2100,
+                  "CC MATTE": 2260,
+                  "CC GLOSSY": 2433,
+                  "SURABHI": 2648,
+                  "MR+": 2929
+                }
+              },
+              "tv_cabinet": {
+                "id": "tv_cabinet",
+                "label": "TV Unit Cabinet",
+                "description": "TV Media Console & Cabinet Wall",
+                "category": "tv_unit",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 1984,
+                  "PRICE 2": 2724,
+                  "PRICE 3": 2929,
+                  "PRICE 4": 3786,
+                  "LIVE LANE": 3600,
+                  "CC MATTE": 4200,
+                  "CC GLOSSY": 4359,
+                  "SURABHI": 4844,
+                  "MR+": 5679
+                }
+              },
+              "wall_paneling": {
+                "id": "wall_paneling",
+                "label": "Wall Paneling",
+                "description": "Decorative Fluted Wall Paneling",
+                "category": "wall_paneling",
+                "pricingModel": "front_area",
+                "rates": {
+                  "PRICE 1": 796,
+                  "PRICE 2": 845,
+                  "PRICE 3": 936,
+                  "PRICE 4": 969,
+                  "LIVE LANE": 960,
+                  "CC MATTE": 1027,
+                  "CC GLOSSY": 1196,
+                  "SURABHI": 1247,
+                  "MR+": 1427
+                }
+              }
+            },
+            "categories": {
+              "wardrobe": {
+                "name": "Wardrobe & Storage",
+                "pricingModel": "front_area",
+                "baseRatePerSft": 1700,
+                "loftRatePerSft": 1450,
+                "depthMultiplier": false,
+                "standardDepth": 600,
+                "deepCabinetExtraPer100mm": 120
+              },
+              "kitchen_base": {
+                "name": "Kitchen Base Units",
+                "pricingModel": "running_ft",
+                "baseRatePerRft": 2800,
+                "standardDepth": 600,
+                "standardHeight": 850
+              },
+              "kitchen_wall": {
+                "name": "Kitchen Wall Units",
+                "pricingModel": "running_ft",
+                "baseRatePerRft": 2100,
+                "standardDepth": 350,
+                "standardHeight": 700
+              },
+              "kitchen_tall": {
+                "name": "Kitchen Tall Unit",
+                "pricingModel": "front_area",
+                "baseRatePerSft": 2200
+              },
+              "tv_unit": {
+                "name": "TV & Media Wall",
+                "pricingModel": "front_area",
+                "baseRatePerSft": 1650
+              },
+              "crockery": {
+                "name": "Crockery Display",
+                "pricingModel": "front_area",
+                "baseRatePerSft": 1950
+              },
+              "vanity": {
+                "name": "Vanity / Dressing Table",
+                "pricingModel": "front_area",
+                "baseRatePerSft": 1600
+              },
+              "shoe_rack": {
+                "name": "Shoe Rack",
+                "pricingModel": "front_area",
+                "baseRatePerSft": 1400
+              },
+              "civil_walls": {
+                "name": "Brickwork / Drywall",
+                "pricingModel": "wall_area",
+                "baseRatePerSft": 180
+              },
+              "flooring": {
+                "name": "Tiling & Flooring",
+                "pricingModel": "floor_area",
+                "baseRatePerSft": 140
+              },
+              "false_ceiling": {
+                "name": "Gypsum False Ceiling",
+                "pricingModel": "floor_area",
+                "baseRatePerSft": 130
+              },
+              "painting": {
+                "name": "Interior Painting",
+                "pricingModel": "surface_area",
+                "baseRatePerSft": 45
+              }
+            },
+            "materials": {
+              "MDF 1135": {
+                "name": "White Matte",
+                "rateAddPerSft": 0
+              },
+              "MDF 3410": {
+                "name": "Walnut Woodgrain",
+                "rateAddPerSft": 60
+              },
+              "MDF 2204": {
+                "name": "Sonoma Oak",
+                "rateAddPerSft": 50
+              },
+              "MDF 6601": {
+                "name": "Gloss White Acrylic",
+                "rateAddPerSft": 250
+              },
+              "MDF 7701": {
+                "name": "Sage Green Matte",
+                "rateAddPerSft": 110
+              },
+              "MDF 7707": {
+                "name": "Navy Blue Matte",
+                "rateAddPerSft": 110
+              },
+              "MDF 8801": {
+                "name": "Concrete Look",
+                "rateAddPerSft": 150
+              }
+            },
+            "laborRates": {
+              "installationPerSft": 85,
+              "carcassAssemblyPerSft": 65,
+              "transportLumpSum": 4500
+            }
+          },
+          "quotationHistory": []
+        }
       },
       "is_shared": false,
       "fork_count": 0,
       "created_at": "2026-10-31T07:29:40.598Z",
-      "updated_at": "2026-10-31T07:29:40.598Z"
+      "updated_at": "2026-10-31T09:09:25.334Z"
     },
     {
       "id": "proj_mvw2hyikh09h",

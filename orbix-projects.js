@@ -24,6 +24,7 @@
       this.fetchUsers(function () {
         self.fetchProjects();
       });
+      this.startAutoSaveLoop();
     },
 
     loadCachedUser: function () {
@@ -367,6 +368,95 @@
       }
     },
 
+    // 15-second interval auto-saver for all working projects
+    startAutoSaveLoop: function () {
+      var self = this;
+      if (this._autoSaveTimer) clearInterval(this._autoSaveTimer);
+      // Auto save every 15 seconds (15000ms)
+      this._autoSaveTimer = setInterval(function () {
+        self.autoSaveWorkingProject();
+      }, 15000);
+      console.log('[Orbix Studio] Auto-save loop initialized (every 15s)');
+    },
+
+    autoSaveWorkingProject: function () {
+      // Find active project or latest working project
+      var activeId = this.activeProjectId;
+      if (!activeId) {
+        try {
+          activeId = localStorage.getItem('orbix_active_project_id');
+        } catch (e) {}
+      }
+      if (!activeId && this.projects && this.projects.length) {
+        activeId = this.projects[0].id;
+      }
+      if (!activeId) return;
+
+      var self = this;
+      var project = this.projects.find(function (p) { return p.id === activeId; });
+      if (!project) return;
+
+      var currentPlan = (window.OrbixUI && window.OrbixUI.project) ? window.OrbixUI.project : null;
+      var currentUnits = (window.S && Array.isArray(window.S.units)) ? window.S.units : null;
+
+      if (!currentPlan && !currentUnits) return;
+
+      project.data = project.data || {};
+      if (currentPlan) project.data.plan = currentPlan;
+      if (currentUnits) project.data.units = currentUnits;
+
+      var fCount = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
+        ? project.data.plan.plan.furniture.length : 0;
+      project.units_count = fCount || (project.data.units ? project.data.units.length : 0);
+
+      // Save to localStorage immediately
+      try {
+        if (project.data.plan) {
+          localStorage.setItem('orbix-project', JSON.stringify(project.data.plan));
+        }
+        localStorage.setItem('orbix_active_project_id', activeId);
+      } catch (e) {}
+
+      // Update topbar indicator: "Auto-saving..."
+      self.setSaveIndicator('saving');
+
+      // Sync to PostgreSQL backend
+      fetch('/api/projects/' + activeId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: project.data,
+          units_count: project.units_count
+        })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function () {
+        var now = new Date();
+        var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        self.setSaveIndicator('saved', timeStr);
+      })
+      .catch(function (err) {
+        console.warn('[AutoSave 15s] PostgreSQL save buffered to local sync:', err);
+        self.setSaveIndicator('offline');
+      });
+    },
+
+    setSaveIndicator: function (status, timeStr) {
+      var el = document.getElementById('autoSaveIndicator');
+      if (!el) return;
+
+      if (status === 'saving') {
+        el.className = 'autosave-pill saving';
+        el.innerHTML = '<span class="save-dot"></span><span class="save-text">Auto-saving...</span>';
+      } else if (status === 'saved') {
+        el.className = 'autosave-pill saved';
+        el.innerHTML = '<span class="save-dot"></span><span class="save-text">Auto-saved ' + (timeStr || '') + '</span>';
+      } else if (status === 'offline') {
+        el.className = 'autosave-pill offline';
+        el.innerHTML = '<span class="save-dot"></span><span class="save-text">Saved locally</span>';
+      }
+    },
+
     saveActiveProject: function (dataUpdates) {
       if (!this.activeProjectId) return;
       var self = this;
@@ -388,6 +478,8 @@
         }
       } catch (e) {}
 
+      self.setSaveIndicator('saving');
+
       // Debounced backend save to PostgreSQL
       clearTimeout(this._saveDebounce);
       this._saveDebounce = setTimeout(function () {
@@ -398,8 +490,15 @@
             data: project.data,
             units_count: project.units_count
           })
-        }).catch(function (e) {
+        })
+        .then(function () {
+          var now = new Date();
+          var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          self.setSaveIndicator('saved', timeStr);
+        })
+        .catch(function (e) {
           console.warn('Auto-save to backend failed:', e);
+          self.setSaveIndicator('offline');
         });
       }, 500);
     },
