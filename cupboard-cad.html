@@ -2915,12 +2915,21 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       if (!project) return;
 
       project.data = project.data || {};
-      if (dataUpdates.plan) project.data.plan = dataUpdates.plan;
-      if (dataUpdates.units) project.data.units = dataUpdates.units;
+      dataUpdates = dataUpdates || {};
+      if (dataUpdates.plan) {
+        project.data.plan = dataUpdates.plan;
+      } else if (window.OrbixUI && window.OrbixUI.project) {
+        project.data.plan = window.OrbixUI.project;
+      }
+      if (dataUpdates.units) {
+        project.data.units = dataUpdates.units;
+      } else if (window.S && window.S.units) {
+        project.data.units = window.S.units;
+      }
 
-      var fCount = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
-        ? project.data.plan.plan.furniture.length : 0;
-      project.units_count = fCount || (project.data.units ? project.data.units.length : 0);
+      var planFurn = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
+        || (project.data.plan && project.data.plan.furniture) || [];
+      project.units_count = planFurn.length || (project.data.units ? project.data.units.length : 0);
 
       // Save to localStorage
       try {
@@ -6335,54 +6344,70 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       metalness: 0.0
     });
 
-    // Floor Finishes (Light green grass color)
+    // Floor Finishes (Light green grass color) - DoubleSide so visible from all angles
     this.materials.floorTile = new THREE.MeshStandardMaterial({
       color: 0x97C96E,
       roughness: 0.35,
-      metalness: 0.1
+      metalness: 0.1,
+      side: THREE.DoubleSide
     });
 
     this.materials.floorWood = new THREE.MeshStandardMaterial({
       color: 0xB8936A,
       roughness: 0.5,
-      metalness: 0.05
+      metalness: 0.05,
+      side: THREE.DoubleSide
     });
 
     // Ceiling & False Ceiling
     this.materials.ceiling = new THREE.MeshStandardMaterial({
       color: 0xFFFFFF,
       roughness: 0.9,
-      metalness: 0.0
+      metalness: 0.0,
+      side: THREE.DoubleSide
     });
 
     // Door Wood & Frame
     this.materials.doorWood = new THREE.MeshStandardMaterial({
-      color: 0x4A3A2E, // Warm Wenge / Dark Walnut
-      roughness: 0.6,
-      metalness: 0.1
+      color: 0x543B2B, // Dark Walnut / Teak
+      roughness: 0.45,
+      metalness: 0.08
     });
 
     this.materials.doorFrame = new THREE.MeshStandardMaterial({
-      color: 0x33261D,
+      color: 0x332218, // Hardwood Frame
       roughness: 0.5,
-      metalness: 0.2
+      metalness: 0.15
+    });
+
+    this.materials.doorHandle = new THREE.MeshStandardMaterial({
+      color: 0xD4AF37, // Polished Architectural Brass
+      roughness: 0.2,
+      metalness: 0.85
     });
 
     // Window Aluminum Frame & Glazing
     this.materials.windowFrame = new THREE.MeshStandardMaterial({
-      color: 0x222224, // Charcoal / Matte Black Aluminum
+      color: 0x222224, // Charcoal Architectural Aluminum
       roughness: 0.3,
       metalness: 0.8
     });
 
+    this.materials.sillStone = new THREE.MeshStandardMaterial({
+      color: 0xECE9E2, // White marble sill ledge
+      roughness: 0.3,
+      metalness: 0.05
+    });
+
     this.materials.glass = new THREE.MeshPhysicalMaterial({
-      color: 0xC8E0EC,
+      color: 0x90C8E8,
       transparent: true,
-      opacity: 0.35,
-      roughness: 0.1,
+      opacity: 0.42,
+      roughness: 0.05,
       metalness: 0.1,
-      transmission: 0.9,
-      ior: 1.5
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05,
+      side: THREE.DoubleSide
     });
   };
 
@@ -6462,39 +6487,61 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     group.name = 'Wall_' + wall.id;
 
     var wLen = Core.wallLength(wall);
+    if (!wLen || wLen < 50) return null;
     var wHeight = wall.height || 2800;
     var wThick = wall.thickness || 150;
     var angle = Core.wallAngle(wall);
 
-    // Wall position center
     var start = wall.start;
 
-    // Local coordinate system: along wall length (X: 0 to wLen), height (Y: 0 to wHeight), thickness (Z: -halfT to +halfT)
-    if (!ops || ops.length === 0) {
+    // Filter and sanitize valid openings
+    var validOps = [];
+    if (ops && ops.length > 0) {
+      for (var o = 0; o < ops.length; o++) {
+        var op = ops[o];
+        if (!op) continue;
+        var opW = op.width || (op.type === 'door' ? 900 : 1200);
+        if (opW >= wLen - 20) opW = Math.max(200, wLen - 40);
+        var halfW = opW / 2;
+        var minOff = halfW + 10;
+        var maxOff = Math.max(minOff, wLen - halfW - 10);
+        var rawOff = (typeof op.offset === 'number' && !isNaN(op.offset)) ? op.offset : (wLen / 2);
+        var safeOff = Math.max(minOff, Math.min(maxOff, rawOff));
+        validOps.push({
+          raw: op,
+          width: opW,
+          offset: safeOff,
+          height: op.height || (op.type === 'door' ? 2100 : 1200),
+          sillHeight: op.sillHeight || (op.type === 'door' ? 0 : 900),
+          type: op.type || 'door',
+          swing: op.swing || 'in-left'
+        });
+      }
+    }
+
+    if (validOps.length === 0) {
       // Solid Wall: Single extruded box
       var geo = new THREE.BoxGeometry(wLen, wHeight, wThick);
       var mesh = new THREE.Mesh(geo, this.materials.wall);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      // Center box at mid-length and mid-height
       mesh.position.set(wLen / 2, wHeight / 2, 0);
       group.add(mesh);
     } else {
-      // Wall with Openings: Sort openings by offset along wall
-      ops.sort(function (a, b) { return a.offset - b.offset; });
+      validOps.sort(function (a, b) { return a.offset - b.offset; });
 
       var currX = 0;
-      for (var i = 0; i < ops.length; i++) {
-        var op = ops[i];
-        var halfOpW = (op.width || 900) / 2;
-        var safeOffset = Math.max(halfOpW, Math.min(wLen - halfOpW, op.offset));
-        var opStart = Math.max(0, safeOffset - halfOpW);
-        var opEnd = Math.min(wLen, safeOffset + halfOpW);
+      for (var i = 0; i < validOps.length; i++) {
+        var vOp = validOps[i];
+        var halfOpW = vOp.width / 2;
+        var opStart = Math.max(currX, vOp.offset - halfOpW);
+        var opEnd = Math.min(wLen, opStart + vOp.width);
         var opWidth = Math.max(100, opEnd - opStart);
-        var opHeight = op.height || (op.type === 'door' ? 2100 : 1200);
-        var sillH = op.sillHeight || (op.type === 'door' ? 0 : 900);
+        var opHeight = Math.min(wHeight - 50, vOp.height);
+        var sillH = Math.max(0, vOp.sillHeight);
+        if (sillH + opHeight > wHeight) opHeight = wHeight - sillH - 20;
 
-        // 1. Solid segment to the left of opening (from currX to opStart)
+        // 1. Solid segment to the left of opening
         if (opStart > currX + 1) {
           var segW = opStart - currX;
           var segGeo = new THREE.BoxGeometry(segW, wHeight, wThick);
@@ -6515,7 +6562,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           group.add(sillMesh);
         }
 
-        // 3. Above opening lintel segment (from opTop to wHeight)
+        // 3. Above opening lintel segment
         var opTop = sillH + opHeight;
         if (wHeight > opTop + 1) {
           var lintelH = wHeight - opTop;
@@ -6528,12 +6575,12 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         }
 
         // 4. Construct Door / Window Frame and Leaf in the cutout
-        if (op.type === 'door') {
-          var doorGroup = this.buildDoor3D(op, opWidth, opHeight, wThick);
+        if (vOp.type === 'door') {
+          var doorGroup = this.buildDoor3D(vOp.raw, opWidth, opHeight, wThick);
           doorGroup.position.set(opStart, 0, 0);
           group.add(doorGroup);
         } else {
-          var winGroup = this.buildWindow3D(op, opWidth, opHeight, sillH, wThick);
+          var winGroup = this.buildWindow3D(vOp.raw, opWidth, opHeight, sillH, wThick);
           winGroup.position.set(opStart, sillH, 0);
           group.add(winGroup);
         }
@@ -6553,16 +6600,13 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       }
     }
 
-    // Orient and position the wall group in world space
-    // Standard Three.js CAD convention: X is East, Z is South, Y is Up
     group.position.set(start.x, 0, start.y);
-    group.rotation.y = -angle; // rotate in X-Z plane
-
+    group.rotation.y = -angle;
     return group;
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
-     Build 3D Door (Frame, Leaf, Swing Angle)
+     Build 3D Door (Frame, Leaf, 4-Way Swing, Hardware Handle)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildDoor3D = function (op, width, height, wallThick) {
     var dg = new THREE.Group();
@@ -6572,16 +6616,22 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     var jambGeo = new THREE.BoxGeometry(frameT, height, frameD);
     var leftJamb = new THREE.Mesh(jambGeo, this.materials.doorFrame);
     leftJamb.position.set(frameT / 2, height / 2, 0);
+    leftJamb.castShadow = true;
+    leftJamb.receiveShadow = true;
     dg.add(leftJamb);
 
     var rightJamb = new THREE.Mesh(jambGeo, this.materials.doorFrame);
     rightJamb.position.set(width - frameT / 2, height / 2, 0);
+    rightJamb.castShadow = true;
+    rightJamb.receiveShadow = true;
     dg.add(rightJamb);
 
     // Head Frame
     var headGeo = new THREE.BoxGeometry(width, frameT, frameD);
     var head = new THREE.Mesh(headGeo, this.materials.doorFrame);
     head.position.set(width / 2, height - frameT / 2, 0);
+    head.castShadow = true;
+    head.receiveShadow = true;
     dg.add(head);
 
     // Door Shutter Leaf (Rotatable on Hinge)
@@ -6591,55 +6641,79 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
     var leafGeo = new THREE.BoxGeometry(leafW, leafH, leafThick);
     var leafMesh = new THREE.Mesh(leafGeo, this.materials.doorWood);
-    leafMesh.position.set(leafW / 2, leafH / 2, 0);
     leafMesh.castShadow = true;
+    leafMesh.receiveShadow = true;
 
     // Hinge Pivot Group with Left/Right and Inward/Outward swing
     var hinge = new THREE.Group();
-    var swing = op.swing || 'in-left';
+    var swing = (op && op.swing) || 'in-left';
     var isRight = swing.indexOf('right') !== -1;
     var isOut = swing.indexOf('out') !== -1;
 
+    var swingAngle;
     if (isRight) {
       hinge.position.set(width - frameT, 0, 0);
       leafMesh.position.set(-leafW / 2, leafH / 2, 0);
-      var swingAngle = isOut ? Math.PI / 4 : -Math.PI / 4;
+      swingAngle = isOut ? Math.PI / 3.5 : -Math.PI / 3.5;
     } else {
       hinge.position.set(frameT, 0, 0);
       leafMesh.position.set(leafW / 2, leafH / 2, 0);
-      var swingAngle = isOut ? -Math.PI / 4 : Math.PI / 4;
+      swingAngle = isOut ? -Math.PI / 3.5 : Math.PI / 3.5;
     }
     hinge.rotation.y = swingAngle;
     hinge.add(leafMesh);
+
+    // Architectural Door Handle Hardware
+    var handleGeo = new THREE.CylinderGeometry(7, 7, 130, 12);
+    var handleMat = this.materials.doorHandle || this.materials.doorWood;
+    var handleMesh = new THREE.Mesh(handleGeo, handleMat);
+    var handleX = isRight ? -leafW + 45 : leafW - 45;
+    handleMesh.position.set(handleX, leafH * 0.48, leafThick / 2 + 12);
+    handleMesh.rotation.x = Math.PI / 2;
+    handleMesh.castShadow = true;
+    hinge.add(handleMesh);
+
+    var backHandle = new THREE.Mesh(handleGeo, handleMat);
+    backHandle.position.set(handleX, leafH * 0.48, -leafThick / 2 - 12);
+    backHandle.rotation.x = Math.PI / 2;
+    hinge.add(backHandle);
 
     dg.add(hinge);
     return dg;
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
-     Build 3D Window (Outer Frame, Glazing Bars, Glass Pane)
+     Build 3D Window (Outer Frame, Mullion Bars, Glass Pane, Stone Sill)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildWindow3D = function (op, width, height, sillH, wallThick) {
     var wg = new THREE.Group();
-    var frameT = 50, frameD = wallThick - 20;
+    var frameT = 50, frameD = wallThick - 10;
 
     // Outer Frame Border
     var hGeo = new THREE.BoxGeometry(width, frameT, frameD);
     var topF = new THREE.Mesh(hGeo, this.materials.windowFrame);
     topF.position.set(width / 2, height - frameT / 2, 0);
+    topF.castShadow = true;
+    topF.receiveShadow = true;
     wg.add(topF);
 
     var botF = new THREE.Mesh(hGeo, this.materials.windowFrame);
     botF.position.set(width / 2, frameT / 2, 0);
+    botF.castShadow = true;
+    botF.receiveShadow = true;
     wg.add(botF);
 
     var vGeo = new THREE.BoxGeometry(frameT, height - frameT * 2, frameD);
     var leftF = new THREE.Mesh(vGeo, this.materials.windowFrame);
     leftF.position.set(frameT / 2, height / 2, 0);
+    leftF.castShadow = true;
+    leftF.receiveShadow = true;
     wg.add(leftF);
 
     var rightF = new THREE.Mesh(vGeo, this.materials.windowFrame);
     rightF.position.set(width - frameT / 2, height / 2, 0);
+    rightF.castShadow = true;
+    rightF.receiveShadow = true;
     wg.add(rightF);
 
     // Glass Pane
@@ -6648,12 +6722,35 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     glassMesh.position.set(width / 2, height / 2, 0);
     wg.add(glassMesh);
 
+    // Center Vertical Mullion Bar
+    if (width > 750) {
+      var mulVGeo = new THREE.BoxGeometry(28, height - frameT * 2, frameD * 0.7);
+      var mulVMesh = new THREE.Mesh(mulVGeo, this.materials.windowFrame);
+      mulVMesh.position.set(width / 2, height / 2, 0);
+      mulVMesh.castShadow = true;
+      wg.add(mulVMesh);
+    }
+
+    // Horizontal Transom Bar
+    if (height > 1200) {
+      var mulHGeo = new THREE.BoxGeometry(width - frameT * 2, 24, frameD * 0.7);
+      var mulHMesh = new THREE.Mesh(mulHGeo, this.materials.windowFrame);
+      mulHMesh.position.set(width / 2, height * 0.65, 0);
+      mulHMesh.castShadow = true;
+      wg.add(mulHMesh);
+    }
+
+    // Exterior Stone Sill Ledge
+    var sillLedgeGeo = new THREE.BoxGeometry(width + 50, 28, wallThick + 40);
+    var sillLedge = new THREE.Mesh(sillLedgeGeo, this.materials.sillStone || this.materials.wall);
+    sillLedge.position.set(width / 2, 14, 0);
+    sillLedge.castShadow = true;
+    sillLedge.receiveShadow = true;
+    wg.add(sillLedge);
+
     return wg;
   };
 
-  /* ─────────────────────────────────────────────────────────────────────────────
-     Build 3D Room Floor (Triangulated Polygon Plane)
-     ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildRoomFloor = function (room) {
     if (!room.polygon || room.polygon.length < 3) return null;
 
@@ -6758,7 +6855,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
     // Position and rotate unit
     fg.position.set(furn.pos.x, furn.pos.z || 0, furn.pos.y);
-    fg.rotation.y = furn.rotY || 0;
+    fg.rotation.y = -(furn.rotY || 0);
 
     return fg;
   };
@@ -7332,6 +7429,10 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           }
 
           self.editor.pushHistory('Edit ' + (op.type === 'door' ? 'Door' : 'Window'));
+          self.saveToLocalStorage();
+          if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
+            window.OrbixProjects.saveActiveProject({ plan: self.project });
+          }
           self.editor.render();
           if (typeof self.render3DHome === 'function') {
             self.render3DHome();
@@ -7353,6 +7454,13 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
         document.getElementById('inspDelOp').addEventListener('click', function () {
           self.editor.deleteSelected();
+          self.saveToLocalStorage();
+          if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
+            window.OrbixProjects.saveActiveProject({ plan: self.project });
+          }
+          if (typeof self.render3DHome === 'function') {
+            self.render3DHome();
+          }
         });
       } else if (sel.type === 'furniture') {
         var fn = null;
@@ -7925,11 +8033,59 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       }
     },
 
+    syncFurnitureWith3DStudio: function () {
+      if (!window.S || !this.project || !this.project.plan) return;
+      window.S.units = window.S.units || [];
+      var furnList = this.project.plan.furniture || [];
+
+      // Ensure every placed furniture unit has a counterpart in S.units
+      for (var f = 0; f < furnList.length; f++) {
+        var fn = furnList[f];
+        var found = -1;
+        for (var u = 0; u < window.S.units.length; u++) {
+          if (window.S.units[u]._furnId === fn.id) {
+            found = u;
+            break;
+          }
+        }
+        if (found !== -1) {
+          var eu = window.S.units[found];
+          eu.W = fn.dimensions.W || eu.W;
+          eu.H = fn.dimensions.H || eu.H;
+          eu.D = fn.dimensions.D || eu.D;
+          if (fn.unitConfig) {
+            if (fn.unitConfig.shutters != null) eu.shutters = fn.unitConfig.shutters;
+            if (fn.unitConfig.handle) eu.handle = fn.unitConfig.handle;
+            if (fn.unitConfig.shutterCol) eu.shutterCol = fn.unitConfig.shutterCol;
+            if (fn.unitConfig.carcass) eu.carcass = fn.unitConfig.carcass;
+          }
+        } else {
+          var nu = typeof window.newUnit === 'function' ? window.newUnit(fn.name) : { label: fn.name };
+          nu._furnId = fn.id;
+          nu.W = (fn.dimensions && fn.dimensions.W) || 1200;
+          nu.H = (fn.dimensions && fn.dimensions.H) || 2100;
+          nu.D = (fn.dimensions && fn.dimensions.D) || 600;
+          if (fn.unitConfig) {
+            if (fn.unitConfig.shutters != null) nu.shutters = fn.unitConfig.shutters;
+            if (fn.unitConfig.handle) nu.handle = fn.unitConfig.handle;
+            if (fn.unitConfig.shutterCol) nu.shutterCol = fn.unitConfig.shutterCol;
+            if (fn.unitConfig.carcass) nu.carcass = fn.unitConfig.carcass;
+          }
+          window.S.units.push(nu);
+        }
+      }
+      if (window.S.units.length > 0 && (window.S.active < 0 || window.S.active >= window.S.units.length)) {
+        window.S.active = 0;
+      }
+    },
+
     render3DHome: function () {
       if (typeof THREE === 'undefined' || !window.__cc || !window.__cc.gl) return;
       var gl = window.__cc.gl;
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
+
+      this.syncFurnitureWith3DStudio();
 
       if (!this.archRenderer && root.Orbix3D) {
         this.archRenderer = new root.Orbix3D(scene);
@@ -7939,6 +8095,9 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         if (gl.frame) gl.frame();
         if (gl.apply) gl.apply();
         if (gl.settle) gl.settle();
+      }
+      if (typeof window.renderRail === 'function') {
+        window.renderRail();
       }
     },
 
@@ -9799,7 +9958,7 @@ var GL=(function(){
     }
     var tex=new THREE.CanvasTexture(c);
     tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
-    tex.repeat.set(50,50);
+    tex.repeat.set(120,120);
     tex.encoding=THREE.sRGBEncoding;
     if(renderer && renderer.capabilities) tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
     var m=new THREE.MeshStandardMaterial({
@@ -9823,12 +9982,12 @@ var GL=(function(){
     stage.appendChild(renderer.domElement);
     stage.classList.add("gl");
     scene=new THREE.Scene();
-    camera=new THREE.PerspectiveCamera(24,1,120,80000);
+    camera=new THREE.PerspectiveCamera(24,1,50,1000000);
     target=new THREE.Vector3();
     pmrem=new THREE.PMREMGenerator(renderer);
     /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
     scene.environment=(NEO||FX)?pmrem.fromScene(makeRoomScene(),0.04,10,30000).texture:pmrem.fromEquirectangular(makeEnv()).texture;
-    if(EMBED) camera.far=40000;
+    if(EMBED) camera.far=80000;
     keyL=new THREE.DirectionalLight(0xfff3e4,NEO?1.55:1.45);
     keyL.position.set(-1700,3400,2700); keyL.castShadow=true;
     keyL.shadow.mapSize.set(4096,4096);
@@ -9839,7 +9998,7 @@ var GL=(function(){
     var fill=new THREE.DirectionalLight(0xe8eef8,0.42); fill.position.set(2600,1900,4800); scene.add(fill);
     var rim=new THREE.DirectionalLight(0xdfe8f5,0.4); rim.position.set(2400,1600,-2600); scene.add(rim);
     scene.add(new THREE.HemisphereLight(0xeef1f5,0x8c8478,0.32));
-    floor=new THREE.Mesh(new THREE.PlaneGeometry(60000,60000),makeGrassFloorMat());
+    floor=new THREE.Mesh(new THREE.PlaneGeometry(300000,300000),makeGrassFloorMat());
     floor.rotation.x=-Math.PI/2; floor.position.y=-1; floor.receiveShadow=true; scene.add(floor);
     root=new THREE.Group(); scene.add(root);
     ok=true; return true;
@@ -10307,6 +10466,25 @@ var GL=(function(){
   }
   function show(L){
     clear();
+    // Position root to match active furniture unit's floor plan coordinates
+    var furnPos = null, furnRot = 0;
+    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.furniture){
+      var activeU = U();
+      if(activeU && activeU._furnId){
+        var match = window.OrbixUI.project.plan.furniture.find(function(f){ return f.id === activeU._furnId; });
+        if(match && match.pos){
+          furnPos = match.pos;
+          furnRot = match.rotY || 0;
+        }
+      }
+    }
+    if(furnPos){
+      root.position.set(furnPos.x, furnPos.z || 0, furnPos.y);
+      root.rotation.y = -furnRot;
+    } else {
+      root.position.set(0, 0, 0);
+      root.rotation.y = 0;
+    }
     L.forEach(function(lay){
       var g=new THREE.Group();
       if(lay.transform){ g.position.set(lay.transform.tx,0,lay.transform.tz); g.rotation.y=lay.transform.ry*Math.PI/180; }
@@ -10531,7 +10709,13 @@ var GL=(function(){
     if(!ok) return;
     var r=stage.getBoundingClientRect();
     if(r.width&&r.height){ var cw0=renderer.domElement.width; renderer.setSize(r.width,r.height,false); if(renderer.domElement.width!==cw0) fxResize(); camera.aspect=r.width/r.height; camera.updateProjectionMatrix(); }
-    var yaw=cam.yaw*Math.PI/180, el=(-cam.pitch)*Math.PI/180, d=dist/(1+cam.zoom);
+    var yaw=cam.yaw*Math.PI/180, el=(-cam.pitch)*Math.PI/180;
+    var safeZoom = Math.max(0.15, 1 + cam.zoom);
+    var d = dist / safeZoom;
+    if(camera.far < d * 4){
+      camera.far = Math.max(1000000, d * 5);
+      camera.updateProjectionMatrix();
+    }
     camera.position.set(target.x+d*Math.sin(yaw)*Math.cos(el), target.y+d*Math.sin(el), target.z+d*Math.cos(yaw)*Math.cos(el));
     camera.lookAt(target);
     render();
@@ -11109,7 +11293,7 @@ function fit(){
 }
 function camApply(){
   cam.pitch=Math.max(-85,Math.min(85,cam.pitch));
-  cam.zoom=Math.max(-0.85,Math.min(3.5,cam.zoom));
+  cam.zoom=Math.max(-0.80,Math.min(3.5,cam.zoom));
   if(GL.ok){ GL.apply(); return; }
   var s=scale*(1+cam.zoom);
   world.style.transform="rotateX("+(-cam.pitch)+"deg) rotateY("+cam.yaw+"deg) scale3d("+s+","+s+","+s+")";
@@ -11304,7 +11488,7 @@ function camApply(){
     if(ids.length === 2){
       var a = pts[ids[0]], b = pts[ids[1]];
       var d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-      if(lastD) cam.zoom += (d - lastD) * 0.004;
+      if(lastD) cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom + (d - lastD) * 0.004));
       lastD = d;
     } else {
       var dx = e.clientX - prev.clientX;
@@ -11341,7 +11525,7 @@ function camApply(){
   stage.addEventListener("pointercancel", up);
   stage.addEventListener("wheel", function(e){
     e.preventDefault();
-    cam.zoom -= e.deltaY * 0.0016;
+    cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom - e.deltaY * 0.0016));
     camApply();
   }, { passive: false });
 })();
@@ -11393,8 +11577,32 @@ function renderRail(){
   var add=el("uchip add",uw,"button");
   add.textContent="+ Unit";
   add.addEventListener("click",function(){
-    S.units.push(newUnit("UNIT "+(S.units.length+1)));
-    S.active=S.units.length-1; renderRail(); renderAll();
+    var nu=newUnit("UNIT "+(S.units.length+1));
+    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
+      var plan=window.OrbixUI.project.plan;
+      plan.furniture=plan.furniture||[];
+      var fId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
+      nu._furnId=fId;
+      var cX=2000, cY=2000;
+      if(plan.rooms&&plan.rooms.length>0&&plan.rooms[0].center){ cX=plan.rooms[0].center.x; cY=plan.rooms[0].center.y; }
+      else if(plan.walls&&plan.walls.length>0){ cX=plan.walls[0].start.x+800; cY=plan.walls[0].start.y+800; }
+      plan.furniture.push({
+        id:fId,
+        name:nu.label,
+        category:nu.ctype||'wardrobe',
+        pos:{x:cX,y:cY},
+        rotY:0,
+        dimensions:{W:nu.W||1200,H:nu.H||2100,D:nu.D||600},
+        unitConfig:{shutters:nu.shutters||2,handle:nu.handle||'bar'}
+      });
+      if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+      if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+      if(window.OrbixUI.editor) window.OrbixUI.editor.render();
+      if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+    }
+    S.units.push(nu);
+    S.active=S.units.length-1;
+    renderRail(); renderAll();
   });
 
   var r=$("#railScroll"); r.innerHTML="";

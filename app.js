@@ -1532,7 +1532,7 @@ var GL=(function(){
     }
     var tex=new THREE.CanvasTexture(c);
     tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
-    tex.repeat.set(50,50);
+    tex.repeat.set(120,120);
     tex.encoding=THREE.sRGBEncoding;
     if(renderer && renderer.capabilities) tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
     var m=new THREE.MeshStandardMaterial({
@@ -1556,12 +1556,12 @@ var GL=(function(){
     stage.appendChild(renderer.domElement);
     stage.classList.add("gl");
     scene=new THREE.Scene();
-    camera=new THREE.PerspectiveCamera(24,1,120,80000);
+    camera=new THREE.PerspectiveCamera(24,1,50,1000000);
     target=new THREE.Vector3();
     pmrem=new THREE.PMREMGenerator(renderer);
     /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
     scene.environment=(NEO||FX)?pmrem.fromScene(makeRoomScene(),0.04,10,30000).texture:pmrem.fromEquirectangular(makeEnv()).texture;
-    if(EMBED) camera.far=40000;
+    if(EMBED) camera.far=80000;
     keyL=new THREE.DirectionalLight(0xfff3e4,NEO?1.55:1.45);
     keyL.position.set(-1700,3400,2700); keyL.castShadow=true;
     keyL.shadow.mapSize.set(4096,4096);
@@ -1572,7 +1572,7 @@ var GL=(function(){
     var fill=new THREE.DirectionalLight(0xe8eef8,0.42); fill.position.set(2600,1900,4800); scene.add(fill);
     var rim=new THREE.DirectionalLight(0xdfe8f5,0.4); rim.position.set(2400,1600,-2600); scene.add(rim);
     scene.add(new THREE.HemisphereLight(0xeef1f5,0x8c8478,0.32));
-    floor=new THREE.Mesh(new THREE.PlaneGeometry(60000,60000),makeGrassFloorMat());
+    floor=new THREE.Mesh(new THREE.PlaneGeometry(300000,300000),makeGrassFloorMat());
     floor.rotation.x=-Math.PI/2; floor.position.y=-1; floor.receiveShadow=true; scene.add(floor);
     root=new THREE.Group(); scene.add(root);
     ok=true; return true;
@@ -2040,6 +2040,25 @@ var GL=(function(){
   }
   function show(L){
     clear();
+    // Position root to match active furniture unit's floor plan coordinates
+    var furnPos = null, furnRot = 0;
+    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.furniture){
+      var activeU = U();
+      if(activeU && activeU._furnId){
+        var match = window.OrbixUI.project.plan.furniture.find(function(f){ return f.id === activeU._furnId; });
+        if(match && match.pos){
+          furnPos = match.pos;
+          furnRot = match.rotY || 0;
+        }
+      }
+    }
+    if(furnPos){
+      root.position.set(furnPos.x, furnPos.z || 0, furnPos.y);
+      root.rotation.y = -furnRot;
+    } else {
+      root.position.set(0, 0, 0);
+      root.rotation.y = 0;
+    }
     L.forEach(function(lay){
       var g=new THREE.Group();
       if(lay.transform){ g.position.set(lay.transform.tx,0,lay.transform.tz); g.rotation.y=lay.transform.ry*Math.PI/180; }
@@ -2264,7 +2283,13 @@ var GL=(function(){
     if(!ok) return;
     var r=stage.getBoundingClientRect();
     if(r.width&&r.height){ var cw0=renderer.domElement.width; renderer.setSize(r.width,r.height,false); if(renderer.domElement.width!==cw0) fxResize(); camera.aspect=r.width/r.height; camera.updateProjectionMatrix(); }
-    var yaw=cam.yaw*Math.PI/180, el=(-cam.pitch)*Math.PI/180, d=dist/(1+cam.zoom);
+    var yaw=cam.yaw*Math.PI/180, el=(-cam.pitch)*Math.PI/180;
+    var safeZoom = Math.max(0.15, 1 + cam.zoom);
+    var d = dist / safeZoom;
+    if(camera.far < d * 4){
+      camera.far = Math.max(1000000, d * 5);
+      camera.updateProjectionMatrix();
+    }
     camera.position.set(target.x+d*Math.sin(yaw)*Math.cos(el), target.y+d*Math.sin(el), target.z+d*Math.cos(yaw)*Math.cos(el));
     camera.lookAt(target);
     render();
@@ -2842,7 +2867,7 @@ function fit(){
 }
 function camApply(){
   cam.pitch=Math.max(-85,Math.min(85,cam.pitch));
-  cam.zoom=Math.max(-0.85,Math.min(3.5,cam.zoom));
+  cam.zoom=Math.max(-0.80,Math.min(3.5,cam.zoom));
   if(GL.ok){ GL.apply(); return; }
   var s=scale*(1+cam.zoom);
   world.style.transform="rotateX("+(-cam.pitch)+"deg) rotateY("+cam.yaw+"deg) scale3d("+s+","+s+","+s+")";
@@ -3037,7 +3062,7 @@ function camApply(){
     if(ids.length === 2){
       var a = pts[ids[0]], b = pts[ids[1]];
       var d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-      if(lastD) cam.zoom += (d - lastD) * 0.004;
+      if(lastD) cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom + (d - lastD) * 0.004));
       lastD = d;
     } else {
       var dx = e.clientX - prev.clientX;
@@ -3074,7 +3099,7 @@ function camApply(){
   stage.addEventListener("pointercancel", up);
   stage.addEventListener("wheel", function(e){
     e.preventDefault();
-    cam.zoom -= e.deltaY * 0.0016;
+    cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom - e.deltaY * 0.0016));
     camApply();
   }, { passive: false });
 })();
@@ -3126,8 +3151,32 @@ function renderRail(){
   var add=el("uchip add",uw,"button");
   add.textContent="+ Unit";
   add.addEventListener("click",function(){
-    S.units.push(newUnit("UNIT "+(S.units.length+1)));
-    S.active=S.units.length-1; renderRail(); renderAll();
+    var nu=newUnit("UNIT "+(S.units.length+1));
+    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
+      var plan=window.OrbixUI.project.plan;
+      plan.furniture=plan.furniture||[];
+      var fId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
+      nu._furnId=fId;
+      var cX=2000, cY=2000;
+      if(plan.rooms&&plan.rooms.length>0&&plan.rooms[0].center){ cX=plan.rooms[0].center.x; cY=plan.rooms[0].center.y; }
+      else if(plan.walls&&plan.walls.length>0){ cX=plan.walls[0].start.x+800; cY=plan.walls[0].start.y+800; }
+      plan.furniture.push({
+        id:fId,
+        name:nu.label,
+        category:nu.ctype||'wardrobe',
+        pos:{x:cX,y:cY},
+        rotY:0,
+        dimensions:{W:nu.W||1200,H:nu.H||2100,D:nu.D||600},
+        unitConfig:{shutters:nu.shutters||2,handle:nu.handle||'bar'}
+      });
+      if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+      if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+      if(window.OrbixUI.editor) window.OrbixUI.editor.render();
+      if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+    }
+    S.units.push(nu);
+    S.active=S.units.length-1;
+    renderRail(); renderAll();
   });
 
   var r=$("#railScroll"); r.innerHTML="";

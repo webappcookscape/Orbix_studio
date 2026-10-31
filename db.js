@@ -591,7 +591,20 @@ class DBManager {
         values.push(id);
         const q = `UPDATE projects SET ${fields.join(', ')} WHERE id = $${pIndex} RETURNING *`;
         const res = await this.pgPool.query(q, values);
-        if (res.rows.length) updatedProject = res.rows[0];
+        if (res.rows.length) {
+          updatedProject = res.rows[0];
+        } else {
+          // If project was not yet in PostgreSQL, upsert it from localStore
+          const lp = (this.localStore.projects || []).find(p => p.id === id);
+          if (lp) {
+            await this.pgPool.query(
+              `INSERT INTO projects (id, title, client, type, status, created_by, owner_name, owner_email, units_count, boards_est, data, is_shared, fork_count, created_at, updated_at)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+               ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, units_count = EXCLUDED.units_count, updated_at = EXCLUDED.updated_at`,
+              [lp.id, lp.title || 'Untitled', lp.client || '', lp.type || 'residential', lp.status || 'draft', lp.created_by || 'usr_admin', lp.owner_name || 'Design Lead', lp.owner_email || 'admin@cookscape.com', lp.units_count || 0, lp.boards_est || 0, JSON.stringify(lp.data || {}), lp.is_shared || false, lp.fork_count || 0, lp.created_at || now, now]
+            );
+          }
+        }
       } catch (err) {
         console.error('PostgreSQL updateProject error:', err.message);
       }

@@ -612,12 +612,21 @@
       if (!project) return;
 
       project.data = project.data || {};
-      if (dataUpdates.plan) project.data.plan = dataUpdates.plan;
-      if (dataUpdates.units) project.data.units = dataUpdates.units;
+      dataUpdates = dataUpdates || {};
+      if (dataUpdates.plan) {
+        project.data.plan = dataUpdates.plan;
+      } else if (window.OrbixUI && window.OrbixUI.project) {
+        project.data.plan = window.OrbixUI.project;
+      }
+      if (dataUpdates.units) {
+        project.data.units = dataUpdates.units;
+      } else if (window.S && window.S.units) {
+        project.data.units = window.S.units;
+      }
 
-      var fCount = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
-        ? project.data.plan.plan.furniture.length : 0;
-      project.units_count = fCount || (project.data.units ? project.data.units.length : 0);
+      var planFurn = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
+        || (project.data.plan && project.data.plan.furniture) || [];
+      project.units_count = planFurn.length || (project.data.units ? project.data.units.length : 0);
 
       // Save to localStorage
       try {

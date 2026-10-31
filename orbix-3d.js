@@ -40,54 +40,70 @@
       metalness: 0.0
     });
 
-    // Floor Finishes (Light green grass color)
+    // Floor Finishes (Light green grass color) - DoubleSide so visible from all angles
     this.materials.floorTile = new THREE.MeshStandardMaterial({
       color: 0x97C96E,
       roughness: 0.35,
-      metalness: 0.1
+      metalness: 0.1,
+      side: THREE.DoubleSide
     });
 
     this.materials.floorWood = new THREE.MeshStandardMaterial({
       color: 0xB8936A,
       roughness: 0.5,
-      metalness: 0.05
+      metalness: 0.05,
+      side: THREE.DoubleSide
     });
 
     // Ceiling & False Ceiling
     this.materials.ceiling = new THREE.MeshStandardMaterial({
       color: 0xFFFFFF,
       roughness: 0.9,
-      metalness: 0.0
+      metalness: 0.0,
+      side: THREE.DoubleSide
     });
 
     // Door Wood & Frame
     this.materials.doorWood = new THREE.MeshStandardMaterial({
-      color: 0x4A3A2E, // Warm Wenge / Dark Walnut
-      roughness: 0.6,
-      metalness: 0.1
+      color: 0x543B2B, // Dark Walnut / Teak
+      roughness: 0.45,
+      metalness: 0.08
     });
 
     this.materials.doorFrame = new THREE.MeshStandardMaterial({
-      color: 0x33261D,
+      color: 0x332218, // Hardwood Frame
       roughness: 0.5,
-      metalness: 0.2
+      metalness: 0.15
+    });
+
+    this.materials.doorHandle = new THREE.MeshStandardMaterial({
+      color: 0xD4AF37, // Polished Architectural Brass
+      roughness: 0.2,
+      metalness: 0.85
     });
 
     // Window Aluminum Frame & Glazing
     this.materials.windowFrame = new THREE.MeshStandardMaterial({
-      color: 0x222224, // Charcoal / Matte Black Aluminum
+      color: 0x222224, // Charcoal Architectural Aluminum
       roughness: 0.3,
       metalness: 0.8
     });
 
+    this.materials.sillStone = new THREE.MeshStandardMaterial({
+      color: 0xECE9E2, // White marble sill ledge
+      roughness: 0.3,
+      metalness: 0.05
+    });
+
     this.materials.glass = new THREE.MeshPhysicalMaterial({
-      color: 0xC8E0EC,
+      color: 0x90C8E8,
       transparent: true,
-      opacity: 0.35,
-      roughness: 0.1,
+      opacity: 0.42,
+      roughness: 0.05,
       metalness: 0.1,
-      transmission: 0.9,
-      ior: 1.5
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05,
+      side: THREE.DoubleSide
     });
   };
 
@@ -167,39 +183,61 @@
     group.name = 'Wall_' + wall.id;
 
     var wLen = Core.wallLength(wall);
+    if (!wLen || wLen < 50) return null;
     var wHeight = wall.height || 2800;
     var wThick = wall.thickness || 150;
     var angle = Core.wallAngle(wall);
 
-    // Wall position center
     var start = wall.start;
 
-    // Local coordinate system: along wall length (X: 0 to wLen), height (Y: 0 to wHeight), thickness (Z: -halfT to +halfT)
-    if (!ops || ops.length === 0) {
+    // Filter and sanitize valid openings
+    var validOps = [];
+    if (ops && ops.length > 0) {
+      for (var o = 0; o < ops.length; o++) {
+        var op = ops[o];
+        if (!op) continue;
+        var opW = op.width || (op.type === 'door' ? 900 : 1200);
+        if (opW >= wLen - 20) opW = Math.max(200, wLen - 40);
+        var halfW = opW / 2;
+        var minOff = halfW + 10;
+        var maxOff = Math.max(minOff, wLen - halfW - 10);
+        var rawOff = (typeof op.offset === 'number' && !isNaN(op.offset)) ? op.offset : (wLen / 2);
+        var safeOff = Math.max(minOff, Math.min(maxOff, rawOff));
+        validOps.push({
+          raw: op,
+          width: opW,
+          offset: safeOff,
+          height: op.height || (op.type === 'door' ? 2100 : 1200),
+          sillHeight: op.sillHeight || (op.type === 'door' ? 0 : 900),
+          type: op.type || 'door',
+          swing: op.swing || 'in-left'
+        });
+      }
+    }
+
+    if (validOps.length === 0) {
       // Solid Wall: Single extruded box
       var geo = new THREE.BoxGeometry(wLen, wHeight, wThick);
       var mesh = new THREE.Mesh(geo, this.materials.wall);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      // Center box at mid-length and mid-height
       mesh.position.set(wLen / 2, wHeight / 2, 0);
       group.add(mesh);
     } else {
-      // Wall with Openings: Sort openings by offset along wall
-      ops.sort(function (a, b) { return a.offset - b.offset; });
+      validOps.sort(function (a, b) { return a.offset - b.offset; });
 
       var currX = 0;
-      for (var i = 0; i < ops.length; i++) {
-        var op = ops[i];
-        var halfOpW = (op.width || 900) / 2;
-        var safeOffset = Math.max(halfOpW, Math.min(wLen - halfOpW, op.offset));
-        var opStart = Math.max(0, safeOffset - halfOpW);
-        var opEnd = Math.min(wLen, safeOffset + halfOpW);
+      for (var i = 0; i < validOps.length; i++) {
+        var vOp = validOps[i];
+        var halfOpW = vOp.width / 2;
+        var opStart = Math.max(currX, vOp.offset - halfOpW);
+        var opEnd = Math.min(wLen, opStart + vOp.width);
         var opWidth = Math.max(100, opEnd - opStart);
-        var opHeight = op.height || (op.type === 'door' ? 2100 : 1200);
-        var sillH = op.sillHeight || (op.type === 'door' ? 0 : 900);
+        var opHeight = Math.min(wHeight - 50, vOp.height);
+        var sillH = Math.max(0, vOp.sillHeight);
+        if (sillH + opHeight > wHeight) opHeight = wHeight - sillH - 20;
 
-        // 1. Solid segment to the left of opening (from currX to opStart)
+        // 1. Solid segment to the left of opening
         if (opStart > currX + 1) {
           var segW = opStart - currX;
           var segGeo = new THREE.BoxGeometry(segW, wHeight, wThick);
@@ -220,7 +258,7 @@
           group.add(sillMesh);
         }
 
-        // 3. Above opening lintel segment (from opTop to wHeight)
+        // 3. Above opening lintel segment
         var opTop = sillH + opHeight;
         if (wHeight > opTop + 1) {
           var lintelH = wHeight - opTop;
@@ -233,12 +271,12 @@
         }
 
         // 4. Construct Door / Window Frame and Leaf in the cutout
-        if (op.type === 'door') {
-          var doorGroup = this.buildDoor3D(op, opWidth, opHeight, wThick);
+        if (vOp.type === 'door') {
+          var doorGroup = this.buildDoor3D(vOp.raw, opWidth, opHeight, wThick);
           doorGroup.position.set(opStart, 0, 0);
           group.add(doorGroup);
         } else {
-          var winGroup = this.buildWindow3D(op, opWidth, opHeight, sillH, wThick);
+          var winGroup = this.buildWindow3D(vOp.raw, opWidth, opHeight, sillH, wThick);
           winGroup.position.set(opStart, sillH, 0);
           group.add(winGroup);
         }
@@ -258,16 +296,13 @@
       }
     }
 
-    // Orient and position the wall group in world space
-    // Standard Three.js CAD convention: X is East, Z is South, Y is Up
     group.position.set(start.x, 0, start.y);
-    group.rotation.y = -angle; // rotate in X-Z plane
-
+    group.rotation.y = -angle;
     return group;
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
-     Build 3D Door (Frame, Leaf, Swing Angle)
+     Build 3D Door (Frame, Leaf, 4-Way Swing, Hardware Handle)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildDoor3D = function (op, width, height, wallThick) {
     var dg = new THREE.Group();
@@ -277,16 +312,22 @@
     var jambGeo = new THREE.BoxGeometry(frameT, height, frameD);
     var leftJamb = new THREE.Mesh(jambGeo, this.materials.doorFrame);
     leftJamb.position.set(frameT / 2, height / 2, 0);
+    leftJamb.castShadow = true;
+    leftJamb.receiveShadow = true;
     dg.add(leftJamb);
 
     var rightJamb = new THREE.Mesh(jambGeo, this.materials.doorFrame);
     rightJamb.position.set(width - frameT / 2, height / 2, 0);
+    rightJamb.castShadow = true;
+    rightJamb.receiveShadow = true;
     dg.add(rightJamb);
 
     // Head Frame
     var headGeo = new THREE.BoxGeometry(width, frameT, frameD);
     var head = new THREE.Mesh(headGeo, this.materials.doorFrame);
     head.position.set(width / 2, height - frameT / 2, 0);
+    head.castShadow = true;
+    head.receiveShadow = true;
     dg.add(head);
 
     // Door Shutter Leaf (Rotatable on Hinge)
@@ -296,55 +337,79 @@
 
     var leafGeo = new THREE.BoxGeometry(leafW, leafH, leafThick);
     var leafMesh = new THREE.Mesh(leafGeo, this.materials.doorWood);
-    leafMesh.position.set(leafW / 2, leafH / 2, 0);
     leafMesh.castShadow = true;
+    leafMesh.receiveShadow = true;
 
     // Hinge Pivot Group with Left/Right and Inward/Outward swing
     var hinge = new THREE.Group();
-    var swing = op.swing || 'in-left';
+    var swing = (op && op.swing) || 'in-left';
     var isRight = swing.indexOf('right') !== -1;
     var isOut = swing.indexOf('out') !== -1;
 
+    var swingAngle;
     if (isRight) {
       hinge.position.set(width - frameT, 0, 0);
       leafMesh.position.set(-leafW / 2, leafH / 2, 0);
-      var swingAngle = isOut ? Math.PI / 4 : -Math.PI / 4;
+      swingAngle = isOut ? Math.PI / 3.5 : -Math.PI / 3.5;
     } else {
       hinge.position.set(frameT, 0, 0);
       leafMesh.position.set(leafW / 2, leafH / 2, 0);
-      var swingAngle = isOut ? -Math.PI / 4 : Math.PI / 4;
+      swingAngle = isOut ? -Math.PI / 3.5 : Math.PI / 3.5;
     }
     hinge.rotation.y = swingAngle;
     hinge.add(leafMesh);
+
+    // Architectural Door Handle Hardware
+    var handleGeo = new THREE.CylinderGeometry(7, 7, 130, 12);
+    var handleMat = this.materials.doorHandle || this.materials.doorWood;
+    var handleMesh = new THREE.Mesh(handleGeo, handleMat);
+    var handleX = isRight ? -leafW + 45 : leafW - 45;
+    handleMesh.position.set(handleX, leafH * 0.48, leafThick / 2 + 12);
+    handleMesh.rotation.x = Math.PI / 2;
+    handleMesh.castShadow = true;
+    hinge.add(handleMesh);
+
+    var backHandle = new THREE.Mesh(handleGeo, handleMat);
+    backHandle.position.set(handleX, leafH * 0.48, -leafThick / 2 - 12);
+    backHandle.rotation.x = Math.PI / 2;
+    hinge.add(backHandle);
 
     dg.add(hinge);
     return dg;
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
-     Build 3D Window (Outer Frame, Glazing Bars, Glass Pane)
+     Build 3D Window (Outer Frame, Mullion Bars, Glass Pane, Stone Sill)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildWindow3D = function (op, width, height, sillH, wallThick) {
     var wg = new THREE.Group();
-    var frameT = 50, frameD = wallThick - 20;
+    var frameT = 50, frameD = wallThick - 10;
 
     // Outer Frame Border
     var hGeo = new THREE.BoxGeometry(width, frameT, frameD);
     var topF = new THREE.Mesh(hGeo, this.materials.windowFrame);
     topF.position.set(width / 2, height - frameT / 2, 0);
+    topF.castShadow = true;
+    topF.receiveShadow = true;
     wg.add(topF);
 
     var botF = new THREE.Mesh(hGeo, this.materials.windowFrame);
     botF.position.set(width / 2, frameT / 2, 0);
+    botF.castShadow = true;
+    botF.receiveShadow = true;
     wg.add(botF);
 
     var vGeo = new THREE.BoxGeometry(frameT, height - frameT * 2, frameD);
     var leftF = new THREE.Mesh(vGeo, this.materials.windowFrame);
     leftF.position.set(frameT / 2, height / 2, 0);
+    leftF.castShadow = true;
+    leftF.receiveShadow = true;
     wg.add(leftF);
 
     var rightF = new THREE.Mesh(vGeo, this.materials.windowFrame);
     rightF.position.set(width - frameT / 2, height / 2, 0);
+    rightF.castShadow = true;
+    rightF.receiveShadow = true;
     wg.add(rightF);
 
     // Glass Pane
@@ -353,12 +418,35 @@
     glassMesh.position.set(width / 2, height / 2, 0);
     wg.add(glassMesh);
 
+    // Center Vertical Mullion Bar
+    if (width > 750) {
+      var mulVGeo = new THREE.BoxGeometry(28, height - frameT * 2, frameD * 0.7);
+      var mulVMesh = new THREE.Mesh(mulVGeo, this.materials.windowFrame);
+      mulVMesh.position.set(width / 2, height / 2, 0);
+      mulVMesh.castShadow = true;
+      wg.add(mulVMesh);
+    }
+
+    // Horizontal Transom Bar
+    if (height > 1200) {
+      var mulHGeo = new THREE.BoxGeometry(width - frameT * 2, 24, frameD * 0.7);
+      var mulHMesh = new THREE.Mesh(mulHGeo, this.materials.windowFrame);
+      mulHMesh.position.set(width / 2, height * 0.65, 0);
+      mulHMesh.castShadow = true;
+      wg.add(mulHMesh);
+    }
+
+    // Exterior Stone Sill Ledge
+    var sillLedgeGeo = new THREE.BoxGeometry(width + 50, 28, wallThick + 40);
+    var sillLedge = new THREE.Mesh(sillLedgeGeo, this.materials.sillStone || this.materials.wall);
+    sillLedge.position.set(width / 2, 14, 0);
+    sillLedge.castShadow = true;
+    sillLedge.receiveShadow = true;
+    wg.add(sillLedge);
+
     return wg;
   };
 
-  /* ─────────────────────────────────────────────────────────────────────────────
-     Build 3D Room Floor (Triangulated Polygon Plane)
-     ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildRoomFloor = function (room) {
     if (!room.polygon || room.polygon.length < 3) return null;
 
@@ -463,7 +551,7 @@
 
     // Position and rotate unit
     fg.position.set(furn.pos.x, furn.pos.z || 0, furn.pos.y);
-    fg.rotation.y = furn.rotY || 0;
+    fg.rotation.y = -(furn.rotY || 0);
 
     return fg;
   };

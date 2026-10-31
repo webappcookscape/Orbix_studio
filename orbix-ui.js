@@ -550,6 +550,10 @@
           }
 
           self.editor.pushHistory('Edit ' + (op.type === 'door' ? 'Door' : 'Window'));
+          self.saveToLocalStorage();
+          if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
+            window.OrbixProjects.saveActiveProject({ plan: self.project });
+          }
           self.editor.render();
           if (typeof self.render3DHome === 'function') {
             self.render3DHome();
@@ -571,6 +575,13 @@
 
         document.getElementById('inspDelOp').addEventListener('click', function () {
           self.editor.deleteSelected();
+          self.saveToLocalStorage();
+          if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
+            window.OrbixProjects.saveActiveProject({ plan: self.project });
+          }
+          if (typeof self.render3DHome === 'function') {
+            self.render3DHome();
+          }
         });
       } else if (sel.type === 'furniture') {
         var fn = null;
@@ -1143,11 +1154,59 @@
       }
     },
 
+    syncFurnitureWith3DStudio: function () {
+      if (!window.S || !this.project || !this.project.plan) return;
+      window.S.units = window.S.units || [];
+      var furnList = this.project.plan.furniture || [];
+
+      // Ensure every placed furniture unit has a counterpart in S.units
+      for (var f = 0; f < furnList.length; f++) {
+        var fn = furnList[f];
+        var found = -1;
+        for (var u = 0; u < window.S.units.length; u++) {
+          if (window.S.units[u]._furnId === fn.id) {
+            found = u;
+            break;
+          }
+        }
+        if (found !== -1) {
+          var eu = window.S.units[found];
+          eu.W = fn.dimensions.W || eu.W;
+          eu.H = fn.dimensions.H || eu.H;
+          eu.D = fn.dimensions.D || eu.D;
+          if (fn.unitConfig) {
+            if (fn.unitConfig.shutters != null) eu.shutters = fn.unitConfig.shutters;
+            if (fn.unitConfig.handle) eu.handle = fn.unitConfig.handle;
+            if (fn.unitConfig.shutterCol) eu.shutterCol = fn.unitConfig.shutterCol;
+            if (fn.unitConfig.carcass) eu.carcass = fn.unitConfig.carcass;
+          }
+        } else {
+          var nu = typeof window.newUnit === 'function' ? window.newUnit(fn.name) : { label: fn.name };
+          nu._furnId = fn.id;
+          nu.W = (fn.dimensions && fn.dimensions.W) || 1200;
+          nu.H = (fn.dimensions && fn.dimensions.H) || 2100;
+          nu.D = (fn.dimensions && fn.dimensions.D) || 600;
+          if (fn.unitConfig) {
+            if (fn.unitConfig.shutters != null) nu.shutters = fn.unitConfig.shutters;
+            if (fn.unitConfig.handle) nu.handle = fn.unitConfig.handle;
+            if (fn.unitConfig.shutterCol) nu.shutterCol = fn.unitConfig.shutterCol;
+            if (fn.unitConfig.carcass) nu.carcass = fn.unitConfig.carcass;
+          }
+          window.S.units.push(nu);
+        }
+      }
+      if (window.S.units.length > 0 && (window.S.active < 0 || window.S.active >= window.S.units.length)) {
+        window.S.active = 0;
+      }
+    },
+
     render3DHome: function () {
       if (typeof THREE === 'undefined' || !window.__cc || !window.__cc.gl) return;
       var gl = window.__cc.gl;
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
+
+      this.syncFurnitureWith3DStudio();
 
       if (!this.archRenderer && root.Orbix3D) {
         this.archRenderer = new root.Orbix3D(scene);
@@ -1157,6 +1216,9 @@
         if (gl.frame) gl.frame();
         if (gl.apply) gl.apply();
         if (gl.settle) gl.settle();
+      }
+      if (typeof window.renderRail === 'function') {
+        window.renderRail();
       }
     },
 
