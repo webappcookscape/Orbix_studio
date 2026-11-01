@@ -1726,3 +1726,13 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     justify-content: flex-end;
   }
 }
+
+
+/* ══════ Strict Employee Role Restrictions ══════ */
+body.role-employee .admin-only-tab,
+body.role-employee #adminTeamProfilesSection,
+body.role-employee #adminCreateEmpBox,
+#userModal.role-employee #adminTeamProfilesSection,
+#userModal.role-employee #adminCreateEmpBox {
+  display: none !important;
+}

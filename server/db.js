@@ -9,7 +9,7 @@ require('dotenv').config({ path: path.join(ROOT_DIR, '.env') });
 require('dotenv').config();
 const { Pool } = require('pg');
 
-const DATA_DIR = path.join(__dirname, 'db');
+const DATA_DIR = path.join(ROOT_DIR, 'db');
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
@@ -253,8 +253,11 @@ class DBManager {
       client.release();
     } catch (err) {
       this.isPgConnected = false;
-      this.pgError = err.message;
-      console.log(`ℹ PostgreSQL status: ${err.message}. Local sync store active.`);
+      const errMsg = (err.errors && err.errors.length)
+        ? err.errors.map(e => (e.code ? e.code + ': ' : '') + (e.message || '')).join(' | ')
+        : (err.message || (err.code ? 'Code: ' + err.code : err.toString()));
+      this.pgError = errMsg;
+      console.log(`ℹ PostgreSQL status: ${errMsg}. Local sync store active.`);
       // Retry in 15 seconds if PG is starting up
       setTimeout(() => this.initPostgreSQL(), 15000);
     }

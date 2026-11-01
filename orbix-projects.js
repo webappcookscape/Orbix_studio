@@ -299,6 +299,7 @@
       var self = this;
       OrbixRouter.init();
       this.loadCachedUser();
+      this.applyRolePermissions();
       this.initEventListeners();
       this.fetchDBStatus();
       this.fetchUsers(function () {
@@ -459,6 +460,18 @@
         if (typeof window.setView === 'function' && !window.setView._isGuarded) {
           var origSetView = window.setView;
           window.setView = function (v) {
+            var isAdm = self.isAdmin();
+            var allowedViews = isAdm 
+              ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
+              : ['home', 'plan', 'design', 'boq'];
+            if (!isAdm && allowedViews.indexOf(v) === -1) {
+              if (typeof showToast === 'function') {
+                showToast('Restricted: Employee accounts have access to Home, Floor Plan (2D), 3D Studio & Pricing.');
+              }
+              origSetView('home');
+              if (root.OrbixRouter) root.OrbixRouter.updateUrl('home', true);
+              return;
+            }
             origSetView(v);
           };
           window.setView._isGuarded = true;
@@ -470,6 +483,13 @@
 
     applyRolePermissions: function () {
       var isAdm = this.isAdmin();
+      document.body.classList.toggle('role-employee', !isAdm);
+      document.body.classList.toggle('role-admin', isAdm);
+      var userModalEl = document.getElementById('userModal');
+      if (userModalEl) {
+        userModalEl.classList.toggle('role-employee', !isAdm);
+        userModalEl.classList.toggle('role-admin', isAdm);
+      }
       // Admin has all access; Employee only has home, floor plan (2D), 3D Studio, Pricing (boq)
       var allowedViews = isAdm 
         ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
@@ -894,20 +914,10 @@
         localStorage.removeItem('cupboard-cad');
       } catch (e) {}
 
-      // Reset 3D units strictly synchronized with live project
-      if (window.S) {
-        window.S.units = (project.data && project.data.units && Array.isArray(project.data.units)) ? project.data.units : [];
-        window.S.active = 0;
-        if (typeof renderRail === 'function') renderRail();
-        if (typeof buildScene === 'function') buildScene();
-        if (typeof fit === 'function') fit();
-        if (typeof camApply === 'function') camApply();
-      }
-
-      // Load 2D floor plan into OrbixUI
+      // 1. Load 2D floor plan into OrbixUI first
       if (window.OrbixUI) {
         var planToLoad = null;
-        if (project.data && project.data.plan && project.data.plan.plan) {
+        if (project.data && project.data.plan && (project.data.plan.plan || project.data.plan.walls)) {
           planToLoad = project.data.plan;
         } else if (window.OrbixCore && typeof window.OrbixCore.createProject === 'function') {
           planToLoad = window.OrbixCore.createProject(project.title);
@@ -918,6 +928,23 @@
           window.OrbixUI.loadProject(planToLoad);
         }
       }
+
+      // 2. Synchronize 3D units strictly synchronized with live project
+      if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
+        window.OrbixUI.syncProjectUnitsTo3DStudio();
+      } else if (window.S) {
+        window.S.units = (project.data && project.data.units && Array.isArray(project.data.units)) ? project.data.units : [];
+        window.S.active = 0;
+      }
+
+      // 3. Build 3D Studio scene, render architecture & frame camera
+      if (typeof renderRail === 'function') renderRail();
+      if (typeof buildScene === 'function') buildScene();
+      if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
+        window.OrbixUI.render3DHome();
+      }
+      if (typeof fit === 'function') fit();
+      if (typeof camApply === 'function') camApply();
 
       if (switchView !== false) {
         if (root.OrbixRouter) {
@@ -1711,8 +1738,11 @@
       }
 
       if (!isAdm) {
+        if (adminTeamSec) adminTeamSec.style.display = 'none';
+        if (adminBox) adminBox.style.display = 'none';
         var userListEl = document.getElementById('switchUsersList');
         if (userListEl) userListEl.innerHTML = '';
+        modal.classList.add('is-open');
         return;
       }
 

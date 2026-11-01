@@ -2296,6 +2296,9 @@ var GL=(function(){
     if(homeObj && homeObj.children.length>0){
       homeObj.updateMatrixWorld(true);
       homeObj.traverse(function(o){ if(o.isMesh && o.visible) box.expandByObject(o); });
+      if(box.isEmpty()){
+        homeObj.traverse(function(o){ if(o.isMesh) box.expandByObject(o); });
+      }
     }
     if(box.isEmpty()){
       root.updateMatrixWorld(true);
@@ -4044,8 +4047,9 @@ function setView(v){
     if(window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function'){
       window.OrbixUI.syncProjectUnitsTo3DStudio();
     }
+    if(typeof buildScene === 'function') buildScene();
+    if(window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') window.OrbixUI.render3DHome();
     fit(); camApply();
-    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
   }
   if(v==="panels") renderPanels();
   if(v==="nest"){ renderNestOpts(); renderNest(); }

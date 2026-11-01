@@ -67,6 +67,10 @@
       this.updateUI();
       this.renderBOQ();
       this.syncProjectUnitsTo3DStudio();
+      if (typeof window.buildScene === 'function') window.buildScene();
+      if (typeof this.render3DHome === 'function') this.render3DHome();
+      if (typeof window.fit === 'function') window.fit();
+      if (typeof window.camApply === 'function') window.camApply();
     },
 
     createNewProject: function (title, clientName) {
