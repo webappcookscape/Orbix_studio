@@ -284,7 +284,7 @@
 
   // ═══════════════════════════════════════════════════════════════════════════════
   // ORBIX ROUTER — Clean URL Routing, Browser History & Role-Based Navigation
-  
+
 
   var OrbixProjects = {
     currentUser: null,
@@ -309,7 +309,7 @@
           if (self.projects && self.projects.length > 0) {
             var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
             var savedId = null;
-            try { savedId = localStorage.getItem(userActiveKey); } catch (e) {}
+            try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
             var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
             self.openProject(toOpen.id, false);
           }
@@ -381,7 +381,7 @@
         localStorage.removeItem('orbix-project');
         localStorage.removeItem('orbix_active_project_id');
         localStorage.removeItem('cupboard-cad');
-      } catch (e) {}
+      } catch (e) { }
       this.currentUser = null;
       this.activeProjectId = null;
       this.projects = [];
@@ -414,7 +414,7 @@
         localStorage.removeItem('orbix-project');
         localStorage.removeItem('orbix_active_project_id');
         localStorage.removeItem('cupboard-cad');
-      } catch (e) {}
+      } catch (e) { }
 
       // Reset workspace to clean project for the newly logged-in account
       if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
@@ -436,7 +436,7 @@
         if (self.projects && self.projects.length > 0) {
           var userActiveKey = 'orbix_active_proj_' + user.id;
           var savedId = null;
-          try { savedId = localStorage.getItem(userActiveKey); } catch (e) {}
+          try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
           var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
           self.openProject(toOpen.id, false);
         }
@@ -461,7 +461,7 @@
           var origSetView = window.setView;
           window.setView = function (v) {
             var isAdm = self.isAdmin();
-            var allowedViews = isAdm 
+            var allowedViews = isAdm
               ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
               : ['home', 'plan', 'design', 'boq'];
             if (!isAdm && allowedViews.indexOf(v) === -1) {
@@ -491,7 +491,7 @@
         userModalEl.classList.toggle('role-admin', isAdm);
       }
       // Admin has all access; Employee only has home, floor plan (2D), 3D Studio, Pricing (boq)
-      var allowedViews = isAdm 
+      var allowedViews = isAdm
         ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
         : ['home', 'plan', 'design', 'boq'];
 
@@ -522,7 +522,7 @@
       if (avatarEl && this.currentUser) {
         var roleLabel = isAdm ? 'Admin' : 'Employee';
         var roleClass = isAdm ? 'badge-admin' : 'badge-employee';
-        avatarEl.innerHTML = '<span class="u-avatar ' + (isAdm ? 'is-admin-avatar' : '') + '">' + 
+        avatarEl.innerHTML = '<span class="u-avatar ' + (isAdm ? 'is-admin-avatar' : '') + '">' +
           (this.currentUser.avatar || 'US') + '</span>' +
           '<span class="u-name">' + this.currentUser.name + '</span>' +
           '<span class="u-role-pill ' + roleClass + '">' + roleLabel + '</span>';
@@ -605,24 +605,59 @@
 
     fetchUsers: function (cb) {
       var self = this;
+
       fetch('/api/users')
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+          if (!r.ok) throw new Error('Unable to fetch users');
+          return r.json();
+        })
         .then(function (data) {
-          if (data.users && data.users.length) {
+          if (Array.isArray(data.users)) {
             self.users = data.users.filter(function (u) {
-              return u.id !== 'usr_dev' && u.id !== 'usr_alex' && u.id !== 'usr_priya' &&
-                     u.email !== 'dev@orbixstudio.io' && u.email !== 'alex@orbixstudio.io' &&
-                     u.email !== 'priya@orbixstudio.io' && u.email !== 'alex@modularedge.com' &&
-                     u.email !== 'priya@archform.in';
+              return u.id !== 'usr_dev' &&
+                u.id !== 'usr_alex' &&
+                u.id !== 'usr_priya' &&
+                u.email !== 'dev@orbixstudio.io' &&
+                u.email !== 'alex@orbixstudio.io' &&
+                u.email !== 'priya@orbixstudio.io' &&
+                u.email !== 'alex@modularedge.com' &&
+                u.email !== 'priya@archform.in';
             });
-            // Ensure currentUser matches one of the known users
-            var matched = self.users.find(function (u) { return u.id === self.currentUser.id; });
-            if (matched) self.currentUser = matched;
+
+            if (self.currentUser) {
+              var cachedEmail = (self.currentUser.email || '').trim().toLowerCase();
+
+              var matched = self.users.find(function (u) {
+                return u.id === self.currentUser.id;
+              });
+
+              if (!matched && cachedEmail) {
+                matched = self.users.find(function (u) {
+                  return (u.email || '').trim().toLowerCase() === cachedEmail;
+                });
+              }
+
+              if (matched) {
+                self.currentUser = matched;
+
+                try {
+                  localStorage.setItem(
+                    'orbix_current_user',
+                    JSON.stringify(matched)
+                  );
+                } catch (e) {
+                  console.warn('Unable to refresh cached user:', e);
+                }
+              }
+            }
+
             self.populateBhDropdown();
           }
+
           if (cb) cb();
         })
-        .catch(function () {
+        .catch(function (err) {
+          console.error('User synchronization failed:', err.message);
           if (cb) cb();
         });
     },
@@ -685,7 +720,7 @@
         try {
           var dismissed = localStorage.getItem('orbix_dismissed_share_' + noticeKey);
           if (dismissed === 'true') return false;
-        } catch (e) {}
+        } catch (e) { }
         return true;
       });
 
@@ -703,17 +738,17 @@
 
       container.innerHTML = '<div class="shared-copy-alert-banner" id="sharedAlert_' + noticeKey + '">' +
         '<div class="sca-left">' +
-          '<div class="sca-icon">⑂</div>' +
-          '<div class="sca-content">' +
-            '<div class="sca-title">' + sharedByName + ' (' + sharedByDesig + ') has shared their project copy with you</div>' +
-            '<div class="sca-desc">Project: "<strong>' + projectTitle + '</strong>". An isolated duplicate has been added to your projects.</div>' +
-          '</div>' +
+        '<div class="sca-icon">⑂</div>' +
+        '<div class="sca-content">' +
+        '<div class="sca-title">' + sharedByName + ' (' + sharedByDesig + ') has shared their project copy with you</div>' +
+        '<div class="sca-desc">Project: "<strong>' + projectTitle + '</strong>". An isolated duplicate has been added to your projects.</div>' +
+        '</div>' +
         '</div>' +
         '<div class="sca-actions">' +
-          '<button type="button" class="btn primary small sca-open-btn" data-pid="' + project.id + '">Open Project</button>' +
-          '<button type="button" class="btn small sca-cancel-btn" data-nid="' + noticeKey + '">Cancel</button>' +
+        '<button type="button" class="btn primary small sca-open-btn" data-pid="' + project.id + '">Open Project</button>' +
+        '<button type="button" class="btn small sca-cancel-btn" data-nid="' + noticeKey + '">Cancel</button>' +
         '</div>' +
-      '</div>';
+        '</div>';
 
       var cancelBtn = container.querySelector('.sca-cancel-btn');
       if (cancelBtn) {
@@ -722,7 +757,7 @@
           var nid = this.getAttribute('data-nid');
           try {
             localStorage.setItem('orbix_dismissed_share_' + nid, 'true');
-          } catch (err) {}
+          } catch (err) { }
           container.innerHTML = '';
         });
       }
@@ -749,12 +784,12 @@
       if (!this.projects.length) {
         container.innerHTML = '<div class="proj-empty">' +
           '<div class="proj-empty-icon">' +
-            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
+          '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
           '</div>' +
           '<h3>No projects found</h3>' +
           '<p>' + (this.searchQuery ? 'No projects matched "' + this.searchQuery + '". Try clearing filters.' : 'Create your first project or launch from a pre-set catalogue design.') + '</p>' +
           '<button class="btn primary big" id="emptyCreateBtn">+ Create New Project</button>' +
-        '</div>';
+          '</div>';
 
         var emptyBtn = document.getElementById('emptyCreateBtn');
         if (emptyBtn) {
@@ -773,7 +808,7 @@
         try {
           var d = new Date(p.updated_at || p.created_at);
           dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-        } catch (e) {}
+        } catch (e) { }
 
         var details = p.data && p.data.details ? p.data.details : {};
         var contactStr = p.contact_number || details.contactNumber || '';
@@ -786,50 +821,50 @@
 
         html += '<div class="proj-card' + (p.id === this.activeProjectId ? ' is-active-proj' : '') + '" data-id="' + p.id + '">' +
           '<div class="pcard-top">' +
-            '<div class="pcard-badges">' +
-              (bhStr ? '<span class="ptag bh-badge">BH: ' + bhStr + '</span>' : '<span class="ptag type-wardrobe">' + typeBadge + '</span>') +
-              (cpStr ? '<span class="ptag cp-code">CP: ' + cpStr + '</span>' : '') +
-              '<span class="pstatus ' + statusClass + '">' + (p.status || 'Draft') + '</span>' +
-              (p.is_shared ? '<span class="pshared-pill" title="Shared with colleagues">🔗 Shared</span>' : '') +
-              (p.fork_count ? '<span class="pfork-pill" title="' + p.fork_count + ' colleague copies created">⑂ ' + p.fork_count + ' copies</span>' : '') +
-            '</div>' +
-            '<div class="pcard-actions">' +
-              '<button class="pact-icon share-act" title="Share with colleague (they work in copy)" data-id="' + p.id + '">' +
-                '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
-              '</button>' +
-              '<button class="pact-icon fork-act" title="Work in a copy (duplicate for me)" data-id="' + p.id + '">' +
-                '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
-              '</button>' +
-              '<button class="pact-icon del-act" title="Delete project" data-id="' + p.id + '">' +
-                '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
-              '</button>' +
-            '</div>' +
+          '<div class="pcard-badges">' +
+          (bhStr ? '<span class="ptag bh-badge">BH: ' + bhStr + '</span>' : '<span class="ptag type-wardrobe">' + typeBadge + '</span>') +
+          (cpStr ? '<span class="ptag cp-code">CP: ' + cpStr + '</span>' : '') +
+          '<span class="pstatus ' + statusClass + '">' + (p.status || 'Draft') + '</span>' +
+          (p.is_shared ? '<span class="pshared-pill" title="Shared with colleagues">🔗 Shared</span>' : '') +
+          (p.fork_count ? '<span class="pfork-pill" title="' + p.fork_count + ' colleague copies created">⑂ ' + p.fork_count + ' copies</span>' : '') +
+          '</div>' +
+          '<div class="pcard-actions">' +
+          '<button class="pact-icon share-act" title="Share with colleague (they work in copy)" data-id="' + p.id + '">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
+          '</button>' +
+          '<button class="pact-icon fork-act" title="Work in a copy (duplicate for me)" data-id="' + p.id + '">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+          '</button>' +
+          '<button class="pact-icon del-act" title="Delete project" data-id="' + p.id + '">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+          '</button>' +
+          '</div>' +
           '</div>' +
 
           '<h3 class="pcard-title" data-open="' + p.id + '">' + (p.title || clientStr) + '</h3>' +
 
           '<div class="pcard-meta-grid">' +
-            '<div class="pmeta-item"><span class="pm-lbl">Client:</span> <strong class="pm-val">' + clientStr + '</strong>' + (contactStr ? ' (' + contactStr + ')' : '') + '</div>' +
-            (locationStr ? '<div class="pmeta-item"><span class="pm-lbl">Location:</span> <span class="pm-val">' + locationStr + '</span></div>' : '') +
-            (bhStr ? '<div class="pmeta-item"><span class="pm-lbl">BH Name:</span> <span class="pm-val">' + bhStr + '</span></div>' : '') +
+          '<div class="pmeta-item"><span class="pm-lbl">Client:</span> <strong class="pm-val">' + clientStr + '</strong>' + (contactStr ? ' (' + contactStr + ')' : '') + '</div>' +
+          (locationStr ? '<div class="pmeta-item"><span class="pm-lbl">Location:</span> <span class="pm-val">' + locationStr + '</span></div>' : '') +
+          (bhStr ? '<div class="pmeta-item"><span class="pm-lbl">BH Name:</span> <span class="pm-val">' + bhStr + '</span></div>' : '') +
           '</div>' +
 
           '<div class="pcard-foot">' +
-            '<div class="pcard-owner">' +
-              '<span class="powner-avatar">' + (p.owner_name ? p.owner_name.substring(0, 2).toUpperCase() : 'DK') + '</span>' +
-              '<div class="powner-details">' +
-                '<span class="powner-name">' + (isOwner ? 'You' : p.owner_name) + '</span>' +
-                '<span class="powner-date">' + dateStr + '</span>' +
-              '</div>' +
-            '</div>' +
-            '<div class="pcard-btns">' +
-              '<button class="btn open-proj-btn" data-open="' + p.id + '" title="Open project in 2D Floor Plan">' +
-                '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
-                '<span>Open 2D Plan</span>' +
-              '</button>' +
-            '</div>' +
+          '<div class="pcard-owner">' +
+          '<span class="powner-avatar">' + (p.owner_name ? p.owner_name.substring(0, 2).toUpperCase() : 'DK') + '</span>' +
+          '<div class="powner-details">' +
+          '<span class="powner-name">' + (isOwner ? 'You' : p.owner_name) + '</span>' +
+          '<span class="powner-date">' + dateStr + '</span>' +
           '</div>' +
-        '</div>';
+          '</div>' +
+          '<div class="pcard-btns">' +
+          '<button class="btn open-proj-btn" data-open="' + p.id + '" title="Open project in 2D Floor Plan">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
+          '<span>Open 2D Plan</span>' +
+          '</button>' +
+          '</div>' +
+          '</div>' +
+          '</div>';
       }
 
       container.innerHTML = html;
@@ -894,7 +929,7 @@
       if (this.currentUser) {
         try {
           localStorage.setItem('orbix_active_proj_' + this.currentUser.id, id);
-        } catch (e) {}
+        } catch (e) { }
       }
 
       // Fetch fresh live project from PostgreSQL
@@ -912,7 +947,7 @@
     _loadProjectIntoWorkspace: function (project, switchView) {
       try {
         localStorage.removeItem('cupboard-cad');
-      } catch (e) {}
+      } catch (e) { }
 
       // 1. Load 2D floor plan into OrbixUI first
       if (window.OrbixUI) {
@@ -986,7 +1021,7 @@
       if (!activeId) {
         try {
           activeId = localStorage.getItem('orbix_active_proj_' + this.currentUser.id);
-        } catch (e) {}
+        } catch (e) { }
       }
       if (!activeId) return;
 
@@ -1013,7 +1048,7 @@
           localStorage.setItem('orbix_project_' + this.currentUser.id + '_' + activeId, JSON.stringify(project.data.plan));
         }
         localStorage.setItem('orbix_active_proj_' + this.currentUser.id, activeId);
-      } catch (e) {}
+      } catch (e) { }
 
       var self = this;
       self.setSaveIndicator('saving');
@@ -1027,16 +1062,16 @@
           units_count: project.units_count
         })
       })
-      .then(function (r) { return r.json(); })
-      .then(function () {
-        var now = new Date();
-        var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        self.setSaveIndicator('saved', timeStr);
-      })
-      .catch(function (err) {
-        console.warn('[AutoSave Live] PostgreSQL offline:', err);
-        self.setSaveIndicator('offline');
-      });
+        .then(function (r) { return r.json(); })
+        .then(function () {
+          var now = new Date();
+          var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          self.setSaveIndicator('saved', timeStr);
+        })
+        .catch(function (err) {
+          console.warn('[AutoSave Live] PostgreSQL offline:', err);
+          self.setSaveIndicator('offline');
+        });
     },
 
     setSaveIndicator: function (status, timeStr) {
@@ -1083,7 +1118,7 @@
         if (project.data.plan && self.currentUser) {
           localStorage.setItem('orbix_project_' + self.currentUser.id + '_' + self.activeProjectId, JSON.stringify(project.data.plan));
         }
-      } catch (e) {}
+      } catch (e) { }
 
       self.setSaveIndicator('saving');
 
@@ -1098,15 +1133,15 @@
             units_count: project.units_count
           })
         })
-        .then(function () {
-          var now = new Date();
-          var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          self.setSaveIndicator('saved', timeStr);
-        })
-        .catch(function (e) {
-          console.warn('Auto-save to backend failed:', e);
-          self.setSaveIndicator('offline');
-        });
+          .then(function () {
+            var now = new Date();
+            var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            self.setSaveIndicator('saved', timeStr);
+          })
+          .catch(function (e) {
+            console.warn('Auto-save to backend failed:', e);
+            self.setSaveIndicator('offline');
+          });
       }, 500);
     },
 
@@ -1123,17 +1158,17 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ colleagueUser: self.currentUser })
       })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.success && data.project) {
-          self.fetchProjects();
-          self.openProject(data.project.id);
-          self.showCopyNotification(original.title, data.project.title);
-        }
-      })
-      .catch(function (err) {
-        alert('Failed to create copy: ' + err.message);
-      });
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.success && data.project) {
+            self.fetchProjects();
+            self.openProject(data.project.id);
+            self.showCopyNotification(original.title, data.project.title);
+          }
+        })
+        .catch(function (err) {
+          alert('Failed to create copy: ' + err.message);
+        });
     },
 
     forkProjectForColleague: function (originalId, colleagueUser) {
@@ -1141,21 +1176,21 @@
       fetch('/api/projects/' + originalId + '/fork', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           colleagueUser: colleagueUser,
           senderUser: self.currentUser
         })
       })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.success && data.project) {
-          self.closeModal('shareModal');
-          self.fetchProjects();
-          if (typeof showToast === 'function') {
-            showToast('✓ Created copy for ' + colleagueUser.name + ': "' + data.project.title + '"');
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.success && data.project) {
+            self.closeModal('shareModal');
+            self.fetchProjects();
+            if (typeof showToast === 'function') {
+              showToast('✓ Created copy for ' + colleagueUser.name + ': "' + data.project.title + '"');
+            }
           }
-        }
-      });
+        });
     },
 
     showCopyNotification: function (originalTitle, copyTitle) {
@@ -1163,14 +1198,14 @@
       if (!banner) return;
       banner.innerHTML = '<div class="cc-banner-inner">' +
         '<div class="cc-banner-left">' +
-          '<span class="cc-icon">⑂</span>' +
-          '<div>' +
-            '<strong>Working in an Isolated Copy</strong>' +
-            '<p>Branched from "<em>' + originalTitle + '</em>". Your edits will be saved to "<strong>' + copyTitle + '</strong>" and will never overwrite the original master file.</p>' +
-          '</div>' +
+        '<span class="cc-icon">⑂</span>' +
+        '<div>' +
+        '<strong>Working in an Isolated Copy</strong>' +
+        '<p>Branched from "<em>' + originalTitle + '</em>". Your edits will be saved to "<strong>' + copyTitle + '</strong>" and will never overwrite the original master file.</p>' +
+        '</div>' +
         '</div>' +
         '<button class="cc-close" onclick="this.parentElement.parentElement.classList.remove(\'is-shown\')">&times;</button>' +
-      '</div>';
+        '</div>';
       banner.classList.add('is-shown');
       setTimeout(function () {
         banner.classList.remove('is-shown');
@@ -1203,11 +1238,11 @@
           otherUsers.forEach(function (u) {
             colleagueHtml += '<div class="colleague-row">' +
               '<div class="col-info">' +
-                '<span class="u-avatar small">' + (u.avatar || 'US') + '</span>' +
-                '<div><strong>' + u.name + '</strong><span>' + u.email + ' • ' + (u.role || 'Colleague') + '</span></div>' +
+              '<span class="u-avatar small">' + (u.avatar || 'US') + '</span>' +
+              '<div><strong>' + u.name + '</strong><span>' + u.email + ' • ' + (u.role || 'Colleague') + '</span></div>' +
               '</div>' +
               '<button class="btn send-copy-btn" data-uid="' + u.id + '">Send Copy ⑂</button>' +
-            '</div>';
+              '</div>';
           });
         }
         colContainer.innerHTML = colleagueHtml;
@@ -1240,7 +1275,7 @@
           if (self.activeProjectId === id) {
             self.activeProjectId = null;
             if (self.currentUser) {
-              try { localStorage.removeItem('orbix_active_proj_' + self.currentUser.id); } catch (e) {}
+              try { localStorage.removeItem('orbix_active_proj_' + self.currentUser.id); } catch (e) { }
             }
             if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
               window.OrbixUI.resetProject('New Project');
@@ -1387,10 +1422,10 @@
           var freshPlan = (window.OrbixCore && typeof window.OrbixCore.createProject === 'function')
             ? window.OrbixCore.createProject(title)
             : {
-                schemaVersion: '1.0.0',
-                meta: { title: title, clientName: client, designerName: self.currentUser ? self.currentUser.name : '' },
-                plan: { gridSize: 100, walls: [], openings: [], rooms: [], furniture: [] }
-              };
+              schemaVersion: '1.0.0',
+              meta: { title: title, clientName: client, designerName: self.currentUser ? self.currentUser.name : '' },
+              plan: { gridSize: 100, walls: [], openings: [], rooms: [], furniture: [] }
+            };
           if (freshPlan.meta) {
             freshPlan.meta.clientName = client;
             freshPlan.meta.contactNumber = contact;
@@ -1431,15 +1466,15 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (data.project) {
-              self.closeModal('createProjectModal');
-              createForm.reset();
-              self.fetchProjects();
-              self.openProject(data.project.id);
-            }
-          });
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (data.project) {
+                self.closeModal('createProjectModal');
+                createForm.reset();
+                self.fetchProjects();
+                self.openProject(data.project.id);
+              }
+            });
         });
       }
 
@@ -1479,37 +1514,37 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (data.user) {
-              createEmpForm.reset();
-              // Show Success Alert with credentials
-              var alertBox = document.getElementById('empCreatedAlert');
-              if (alertBox) {
-                var elName = document.getElementById('ecaName');
-                var elUser = document.getElementById('ecaUsername');
-                var elEmail = document.getElementById('ecaEmail');
-                var elPass = document.getElementById('ecaPassword');
-                var elRole = document.getElementById('ecaRole');
-                if (elName) elName.textContent = data.user.name;
-                if (elUser) elUser.textContent = data.user.username || data.user.id;
-                if (elEmail) elEmail.textContent = data.user.email;
-                if (elPass) elPass.textContent = data.user.password || password;
-                if (elRole) elRole.textContent = data.user.role === 'admin' ? 'Admin' : 'Employee';
-                alertBox.style.display = 'flex';
-              }
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (data.user) {
+                createEmpForm.reset();
+                // Show Success Alert with credentials
+                var alertBox = document.getElementById('empCreatedAlert');
+                if (alertBox) {
+                  var elName = document.getElementById('ecaName');
+                  var elUser = document.getElementById('ecaUsername');
+                  var elEmail = document.getElementById('ecaEmail');
+                  var elPass = document.getElementById('ecaPassword');
+                  var elRole = document.getElementById('ecaRole');
+                  if (elName) elName.textContent = data.user.name;
+                  if (elUser) elUser.textContent = data.user.username || data.user.id;
+                  if (elEmail) elEmail.textContent = data.user.email;
+                  if (elPass) elPass.textContent = data.user.password || password;
+                  if (elRole) elRole.textContent = data.user.role === 'admin' ? 'Admin' : 'Employee';
+                  alertBox.style.display = 'flex';
+                }
 
-              self.fetchUsers(function () {
-                self.openUserModal();
-              });
-              if (typeof showToast === 'function') {
-                showToast('✓ Employee account created: ' + data.user.name);
+                self.fetchUsers(function () {
+                  self.openUserModal();
+                });
+                if (typeof showToast === 'function') {
+                  showToast('✓ Employee account created: ' + data.user.name);
+                }
               }
-            }
-          })
-          .catch(function (err) {
-            if (typeof showToast === 'function') showToast('Error creating employee: ' + err.message);
-          });
+            })
+            .catch(function (err) {
+              if (typeof showToast === 'function') showToast('Error creating employee: ' + err.message);
+            });
         });
       }
 
@@ -1562,35 +1597,35 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identifier: identifier, password: password })
           })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Sign In to Workspace';
-            }
-            if (data.success && data.user) {
-              authPageForm.reset();
-              self.setCurrentUser(data.user);
-              if (typeof showToast === 'function') {
-                showToast('✓ Welcome back, ' + data.user.name + ' (' + (data.user.role === 'admin' ? 'Admin' : 'Employee') + ')');
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In to Workspace';
               }
-            } else {
+              if (data.success && data.user) {
+                authPageForm.reset();
+                self.setCurrentUser(data.user);
+                if (typeof showToast === 'function') {
+                  showToast('✓ Welcome back, ' + data.user.name + ' (' + (data.user.role === 'admin' ? 'Admin' : 'Employee') + ')');
+                }
+              } else {
+                if (errAlert) {
+                  errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
+                  errAlert.style.display = 'block';
+                }
+              }
+            })
+            .catch(function (err) {
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In to Workspace';
+              }
               if (errAlert) {
-                errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
+                errAlert.textContent = 'Sign-in error: ' + err.message;
                 errAlert.style.display = 'block';
               }
-            }
-          })
-          .catch(function (err) {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Sign In to Workspace';
-            }
-            if (errAlert) {
-              errAlert.textContent = 'Sign-in error: ' + err.message;
-              errAlert.style.display = 'block';
-            }
-          });
+            });
         });
       }
 
@@ -1663,39 +1698,39 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (saveBtn) {
-              saveBtn.disabled = false;
-              saveBtn.textContent = 'Save Changes';
-            }
-            if (data.success && data.user) {
-              // If edited active user, update active session
-              if (self.currentUser && self.currentUser.id === uid) {
-                self.currentUser = Object.assign({}, self.currentUser, data.user);
-                try {
-                  localStorage.setItem('orbix_current_user', JSON.stringify(self.currentUser));
-                } catch (e) {}
-                self.updateUserUI();
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
               }
-              self.closeModal('editUserModal');
-              if (typeof showToast === 'function') {
-                showToast('✓ Account updated: ' + data.user.name);
+              if (data.success && data.user) {
+                // If edited active user, update active session
+                if (self.currentUser && self.currentUser.id === uid) {
+                  self.currentUser = Object.assign({}, self.currentUser, data.user);
+                  try {
+                    localStorage.setItem('orbix_current_user', JSON.stringify(self.currentUser));
+                  } catch (e) { }
+                  self.updateUserUI();
+                }
+                self.closeModal('editUserModal');
+                if (typeof showToast === 'function') {
+                  showToast('✓ Account updated: ' + data.user.name);
+                }
+                self.fetchUsers(function () {
+                  self.openUserModal();
+                });
+              } else {
+                alert('Failed to update account: ' + (data.error || 'Server error'));
               }
-              self.fetchUsers(function () {
-                self.openUserModal();
-              });
-            } else {
-              alert('Failed to update account: ' + (data.error || 'Server error'));
-            }
-          })
-          .catch(function (err) {
-            if (saveBtn) {
-              saveBtn.disabled = false;
-              saveBtn.textContent = 'Save Changes';
-            }
-            alert('Error updating user: ' + err.message);
-          });
+            })
+            .catch(function (err) {
+              if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+              }
+              alert('Error updating user: ' + err.message);
+            });
         });
       }
 
@@ -1777,17 +1812,17 @@
 
           html += '<div class="u-switch-item' + (isCurrent ? ' is-current' : '') + '" data-uid="' + u.id + '">' +
             '<div class="u-info">' +
-              '<span class="u-avatar ' + (uIsAdmin ? 'is-admin-avatar' : '') + '">' + (u.avatar || 'US') + '</span>' +
-              '<div>' +
-                '<div style="display:flex;align-items:center;gap:6px;">' +
-                  '<strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong>' +
-                  roleBadgeHtml +
-                '</div>' +
-                '<span>' + userMeta + '</span>' +
-              '</div>' +
+            '<span class="u-avatar ' + (uIsAdmin ? 'is-admin-avatar' : '') + '">' + (u.avatar || 'US') + '</span>' +
+            '<div>' +
+            '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong>' +
+            roleBadgeHtml +
+            '</div>' +
+            '<span>' + userMeta + '</span>' +
+            '</div>' +
             '</div>' +
             actionsHtml +
-          '</div>';
+            '</div>';
         });
         userListEl.innerHTML = html;
 
@@ -1871,22 +1906,22 @@
       fetch('/api/users/' + encodeURIComponent(uid), {
         method: 'DELETE'
       })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.success) {
-          if (typeof showToast === 'function') {
-            showToast('✓ Account deleted: ' + uname);
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.success) {
+            if (typeof showToast === 'function') {
+              showToast('✓ Account deleted: ' + uname);
+            }
+            self.fetchUsers(function () {
+              self.openUserModal();
+            });
+          } else {
+            alert('Failed to delete account: ' + (data.error || 'Server error'));
           }
-          self.fetchUsers(function () {
-            self.openUserModal();
-          });
-        } else {
-          alert('Failed to delete account: ' + (data.error || 'Server error'));
-        }
-      })
-      .catch(function (err) {
-        alert('Error deleting account: ' + err.message);
-      });
+        })
+        .catch(function (err) {
+          alert('Error deleting account: ' + err.message);
+        });
     }
   };
 
