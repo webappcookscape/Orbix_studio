@@ -31,10 +31,10 @@ const DEFAULT_USERS = [
     avatar: 'CA'
   },
   {
-    id: 'usr_sangathamizh',
+    id: 'usr_mvwe6obve1ks',
     name: 'Sangathamizh',
-    username: 'sangathamizh',
-    email: 'sangathamizh@cookscape.com',
+    username: 'ST',
+    email: 'designteam.cookscape@gmail.com',
     password: 'admin123',
     role: 'admin',
     designation: 'Business Head',
@@ -42,7 +42,7 @@ const DEFAULT_USERS = [
     avatar: 'S'
   },
   {
-    id: 'usr_elakkiya',
+    id: 'usr_mvweb77exij0',
     name: 'Elakkiya',
     username: 'elakkiya',
     email: 'elakkiya.sakthivelu3089@gmail.com',
@@ -53,7 +53,7 @@ const DEFAULT_USERS = [
     avatar: 'E'
   },
   {
-    id: 'usr_aravind',
+    id: 'usr_mvxh5at49a9d',
     name: 'Aravind',
     username: 'aravind',
     email: 'webapp.cookscape@gmail.com',
@@ -140,42 +140,92 @@ class DBManager {
     this.pgPool = null;
     this.isPgConnected = false;
     this.pgError = null;
+    this.pgInitInProgress = false;
+  this.pgRetryTimer = null;
     this.localStore = this.loadLocalStore();
     this.initPostgreSQL();
   }
 
-  loadLocalStore() {
-    if (fs.existsSync(LOCAL_STORE_PATH)) {
-      try {
-        const raw = fs.readFileSync(LOCAL_STORE_PATH, 'utf-8');
-        const parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.users)) {
-          parsed.users = parsed.users.filter(u =>
-            u.id !== 'usr_dev' && u.id !== 'usr_alex' && u.id !== 'usr_priya' &&
-            u.email !== 'dev@orbixstudio.io' && u.email !== 'alex@orbixstudio.io' &&
-            u.email !== 'priya@orbixstudio.io' && u.email !== 'alex@modularedge.com' &&
-            u.email !== 'priya@archform.in'
+loadLocalStore() {
+  if (fs.existsSync(LOCAL_STORE_PATH)) {
+    try {
+      const raw = fs.readFileSync(LOCAL_STORE_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+
+      if (parsed && Array.isArray(parsed.users)) {
+        parsed.users = parsed.users.filter(u =>
+          u.id !== 'usr_dev' &&
+          u.id !== 'usr_alex' &&
+          u.id !== 'usr_priya' &&
+          u.email !== 'dev@orbixstudio.io' &&
+          u.email !== 'alex@orbixstudio.io' &&
+          u.email !== 'priya@orbixstudio.io' &&
+          u.email !== 'alex@modularedge.com' &&
+          u.email !== 'priya@archform.in'
+        );
+
+        // Preserve other users; normalize only the four known accounts.
+        parsed.users = parsed.users.map(existing => {
+          const defU = DEFAULT_USERS.find(u =>
+            u.id === existing.id ||
+            (u.email && u.email.toLowerCase() === existing.email?.toLowerCase()) ||
+            (u.name && u.name.toLowerCase() === existing.name?.toLowerCase())
           );
-          DEFAULT_USERS.forEach(defU => {
-            if (!parsed.users.some(u => u.id === defU.id || (u.email && u.email.toLowerCase() === defU.email.toLowerCase()))) {
-              parsed.users.push(defU);
-            }
-          });
+
+          if (!defU) return existing;
+
+          return {
+            ...existing,
+            ...defU,
+            password: existing.password || defU.password
+          };
+        });
+
+        // Add any default accounts that are missing.
+        for (const defU of DEFAULT_USERS) {
+          if (!parsed.users.some(u => u.id === defU.id)) {
+            parsed.users.push(defU);
+          }
         }
-        return parsed;
-      } catch (e) {
-        console.warn('Could not read local store, creating fresh:', e.message);
+
+        // Correct local project owner IDs using the owner details.
+        parsed.projects = (parsed.projects || []).map(p => {
+          const owner = DEFAULT_USERS.find(u =>
+            (p.owner_email &&
+              u.email.toLowerCase() === p.owner_email.toLowerCase()) ||
+            (p.owner_name &&
+              u.name.toLowerCase() === p.owner_name.toLowerCase())
+          );
+
+          return owner
+            ? {
+                ...p,
+                created_by: owner.id,
+                owner_name: owner.name,
+                owner_email: owner.email
+              }
+            : p;
+        });
       }
+
+      this.saveLocalStore(parsed);
+      return parsed;
+
+    } catch (e) {
+      console.warn('Could not read local store, creating fresh:', e.message);
     }
-    const initial = {
-      users: DEFAULT_USERS,
-      projects: DEFAULT_PROJECTS,
-      shares: [],
-      forks: []
-    };
-    this.saveLocalStore(initial);
-    return initial;
   }
+
+  const initial = {
+    users: DEFAULT_USERS,
+    projects: DEFAULT_PROJECTS,
+    shares: [],
+    forks: []
+  };
+
+  this.saveLocalStore(initial);
+  return initial;
+}
 
   saveLocalStore(data) {
     // If PostgreSQL is connected and operating as live DB, do not write to local_store.json
@@ -189,79 +239,145 @@ class DBManager {
     }
   }
 
-  async initPostgreSQL() {
-    const connectionString = process.env.DATABASE_URL ||
-      `postgresql://${process.env.PGUSER || 'postgres'}:${process.env.PGPASSWORD || 'postgres'}@${process.env.PGHOST || 'localhost'}:${process.env.PGPORT || 5432}/${process.env.PGDATABASE || 'cupboard_cad'}`;
 
-    try {
+async initPostgreSQL() {
+  // Prevent overlapping initialization attempts
+  if (this.pgInitInProgress) {
+    return;
+  }
+
+  this.pgInitInProgress = true;
+
+  let client = null;
+
+  const connectionString = process.env.DATABASE_URL ||
+    `postgresql://${process.env.PGUSER || 'postgres'}:${process.env.PGPASSWORD || 'postgres'}@${process.env.PGHOST || 'localhost'}:${process.env.PGPORT || 5432}/${process.env.PGDATABASE || 'cupboard_cad'}`;
+
+  try {
+    // Create the pool only once. Reuse it during retries.
+    if (!this.pgPool) {
       this.pgPool = new Pool({
         connectionString,
-        connectionTimeoutMillis: 3500,
+        max: 5,
+        connectionTimeoutMillis: 5000,
         idleTimeoutMillis: 10000
       });
+    }
 
-      // Test connection
-      const client = await this.pgPool.connect();
-      console.log('✓ Successfully connected to PostgreSQL server!');
-      this.isPgConnected = true;
-      this.pgError = null;
+    // Test connection
+    client = await this.pgPool.connect();
 
-      // Run schema
-      if (fs.existsSync(SCHEMA_PATH)) {
-        const schemaSql = fs.readFileSync(SCHEMA_PATH, 'utf-8');
-        await client.query(schemaSql);
-        console.log('✓ PostgreSQL schema verified/applied.');
-      }
+    console.log('✓ Successfully connected to PostgreSQL server!');
 
-      // Purge obsolete demo accounts permanently
-      await client.query(
-        "DELETE FROM users WHERE id IN ('usr_dev', 'usr_alex', 'usr_priya') OR email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in')"
-      );
+    // Run schema
+    if (fs.existsSync(SCHEMA_PATH)) {
+      const schemaSql = fs.readFileSync(SCHEMA_PATH, 'utf-8');
+      await client.query(schemaSql);
+      console.log('✓ PostgreSQL schema verified/applied.');
+    }
 
-      // Ensure all 4 Cookscape team accounts are always in PostgreSQL
-      for (const u of DEFAULT_USERS) {
+    // Purge obsolete demo accounts
+    await client.query(
+      "DELETE FROM users WHERE id IN ('usr_dev', 'usr_alex', 'usr_priya') OR email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in')"
+    );
+
+    // Ensure all 4 Cookscape team accounts exist
+   // Ensure default users exist without overwriting existing accounts.
+for (const u of DEFAULT_USERS) {
+  await client.query(
+    `INSERT INTO users (
+      id, name, username, email, password,
+      role, designation, company, avatar
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    ON CONFLICT DO NOTHING`,
+    [
+      u.id,
+      u.name,
+      u.username,
+      u.email,
+      u.password,
+      u.role,
+      u.designation,
+      u.company,
+      u.avatar
+    ]
+  );
+}
+
+    // Check whether projects need initial seeding
+    const projRes = await client.query(
+      'SELECT count(*) FROM projects'
+    );
+
+    if (parseInt(projRes.rows[0].count, 10) === 0) {
+      console.log('Seeding initial PostgreSQL project records...');
+
+      for (const p of this.localStore.projects || DEFAULT_PROJECTS) {
         await client.query(
-          `INSERT INTO users (id, name, username, email, password, role, designation, company, avatar)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-           ON CONFLICT (id) DO UPDATE SET
-             name = EXCLUDED.name,
-             username = COALESCE(users.username, EXCLUDED.username),
-             email = EXCLUDED.email,
-             password = COALESCE(users.password, EXCLUDED.password),
-             designation = COALESCE(users.designation, EXCLUDED.designation),
-             role = EXCLUDED.role,
-             company = EXCLUDED.company,
-             avatar = EXCLUDED.avatar`,
-          [u.id, u.name, u.username || u.id, u.email, u.password || '123456', u.role, u.designation || 'Modular Designer', u.company, u.avatar]
+          `INSERT INTO projects (
+            id, title, client, type, status, created_by,
+            owner_name, owner_email, units_count, boards_est,
+            data, is_shared, fork_count, created_at, updated_at
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+                  $11, $12, $13, $14, $15)
+          ON CONFLICT (id) DO NOTHING`,
+          [
+            p.id,
+            p.title,
+            p.client,
+            p.type,
+            p.status,
+            p.created_by,
+            p.owner_name,
+            p.owner_email,
+            p.units_count,
+            p.boards_est,
+            JSON.stringify(p.data),
+            p.is_shared,
+            p.fork_count,
+            p.created_at,
+            p.updated_at
+          ]
         );
       }
 
-      // Check if we need to seed projects
-      const projRes = await client.query('SELECT count(*) FROM projects');
-      if (parseInt(projRes.rows[0].count, 10) === 0) {
-        console.log('Seeding initial PostgreSQL project records...');
-        for (const p of this.localStore.projects || DEFAULT_PROJECTS) {
-          await client.query(
-            `INSERT INTO projects (id, title, client, type, status, created_by, owner_name, owner_email, units_count, boards_est, data, is_shared, fork_count, created_at, updated_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) ON CONFLICT (id) DO NOTHING`,
-            [p.id, p.title, p.client, p.type, p.status, p.created_by, p.owner_name, p.owner_email, p.units_count, p.boards_est, JSON.stringify(p.data), p.is_shared, p.fork_count, p.created_at, p.updated_at]
-          );
-        }
-        console.log('✓ Initial PostgreSQL seed completed.');
-      }
-
-      client.release();
-    } catch (err) {
-      this.isPgConnected = false;
-      const errMsg = (err.errors && err.errors.length)
-        ? err.errors.map(e => (e.code ? e.code + ': ' : '') + (e.message || '')).join(' | ')
-        : (err.message || (err.code ? 'Code: ' + err.code : err.toString()));
-      this.pgError = errMsg;
-      console.log(`ℹ PostgreSQL status: ${errMsg}. Local sync store active.`);
-      // Retry in 15 seconds if PG is starting up
-      setTimeout(() => this.initPostgreSQL(), 15000);
+      console.log('✓ Initial PostgreSQL seed completed.');
     }
+
+    // Mark PostgreSQL live only after initialization succeeds
+    this.isPgConnected = true;
+    this.pgError = null;
+
+    console.log('✓ PostgreSQL initialization completed successfully.');
+
+  } catch (err) {
+    this.isPgConnected = false;
+    this.pgError = err.message;
+
+    console.error(
+      `ℹ PostgreSQL status: ${err.message}. Local sync store active.`
+    );
+
+    // Schedule only one retry
+    if (!this.pgRetryTimer) {
+      this.pgRetryTimer = setTimeout(() => {
+        this.pgRetryTimer = null;
+        this.initPostgreSQL();
+      }, 15000);
+    }
+
+  } finally {
+    // Always release the manually acquired client
+    if (client) {
+      client.release();
+    }
+
+    this.pgInitInProgress = false;
   }
+}
+
 
   // ── User Methods ──
   async getUsers() {
