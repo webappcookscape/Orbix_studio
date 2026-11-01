@@ -192,23 +192,30 @@ app.post('/api/projects/:id/fork', async (req, res) => {
   }
 });
 
-// SPA Routes: Explicit URL paths for all views
+// SPA Routes: Explicit URL paths for all views & navbar links
 const SPA_VIEWS = [
   '/',
   '/home',
+  '/login',
+  '/2d-plan',
+  '/floor-plan',
   '/plan',
-  '/design',
+  '/2dplan',
   '/3d-studio',
   '/3dstudio',
+  '/design',
   '/pricing',
   '/boq',
   '/quote',
   '/gallery',
   '/kitchen',
-  '/users',
-  '/upload',
+  '/sheet',
+  '/elev',
+  '/panels',
   '/nest',
-  '/report'
+  '/upload',
+  '/report',
+  '/users'
 ];
 
 SPA_VIEWS.forEach(v => {

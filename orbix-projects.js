@@ -14,10 +14,14 @@
     ROUTE_MAP: {
       '/': 'home',
       '/home': 'home',
+      '/login': 'login',
+      '/2d-plan': 'plan',
+      '/floor-plan': 'plan',
       '/plan': 'plan',
-      '/design': 'design',
+      '/2dplan': 'plan',
       '/3d-studio': 'design',
       '/3dstudio': 'design',
+      '/design': 'design',
       '/pricing': 'boq',
       '/boq': 'boq',
       '/quote': 'quote',
@@ -34,7 +38,8 @@
 
     VIEW_TO_PATH: {
       'home': '/home',
-      'plan': '/plan',
+      'login': '/login',
+      'plan': '/2d-plan',
       'design': '/3d-studio',
       'boq': '/pricing',
       'quote': '/quote',
@@ -155,6 +160,14 @@
     },
 
     navigateTo: function (v, replace) {
+      if (v === 'login') {
+        this.updateUrl('login', replace);
+        if (typeof OrbixProjects.showLogin === 'function') {
+          OrbixProjects.showLogin();
+        }
+        return;
+      }
+
       if (v === 'users') {
         if (!OrbixProjects.isAdmin()) {
           if (typeof showToast === 'function') {
@@ -203,6 +216,14 @@
         var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
         if (h) v = this.ROUTE_MAP['/' + h];
       }
+      if (v === 'login') {
+        this.updateUrl('login', true);
+        if (typeof OrbixProjects.showLogin === 'function') {
+          OrbixProjects.showLogin();
+        }
+        return;
+      }
+
       if (!v) v = 'home';
 
       if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
@@ -523,7 +544,7 @@
       this.closeModal('editUserModal');
       this.showLogin();
       if (OrbixRouter) {
-        OrbixRouter.updateUrl('home', false);
+        OrbixRouter.updateUrl('login', false);
       }
       if (typeof showToast === 'function') {
         showToast('Logged out of session.');
@@ -732,6 +753,7 @@
             // Ensure currentUser matches one of the known users
             var matched = self.users.find(function (u) { return u.id === self.currentUser.id; });
             if (matched) self.currentUser = matched;
+            self.populateBhDropdown();
           }
           if (cb) cb();
         })
@@ -1359,7 +1381,62 @@
         });
     },
 
+    populateBhDropdown: function () {
+      var select = document.getElementById('newProjBhName');
+      if (!select) return;
+
+      var currentVal = select.value;
+      select.innerHTML = '<option value="" disabled selected>-- Select Business Head (BH) --</option>';
+
+      var namesSeen = {};
+
+      // 1. Add all users from database
+      if (this.users && this.users.length) {
+        this.users.forEach(function (u) {
+          if (u.name && !namesSeen[u.name.toLowerCase()]) {
+            namesSeen[u.name.toLowerCase()] = true;
+            var opt = document.createElement('option');
+            opt.value = u.name;
+            opt.textContent = u.name + ' (' + (u.designation || (u.role === 'admin' ? 'Business Head' : 'Studio Designer')) + ')';
+            select.appendChild(opt);
+          }
+        });
+      }
+
+      // 2. Add standard Cookscape Business Heads & Leads
+      var defaultBhs = [
+        { name: 'Sangathamizh', role: 'Business Head' },
+        { name: 'Cookscape Admin', role: 'System Head' },
+        { name: 'Aravind', role: 'Floor Architect / FA' },
+        { name: 'Elakkiya', role: 'Floor Architect / FA' },
+        { name: 'Dev Kancheti', role: 'Design Lead' }
+      ];
+      defaultBhs.forEach(function (b) {
+        if (!namesSeen[b.name.toLowerCase()]) {
+          namesSeen[b.name.toLowerCase()] = true;
+          var opt = document.createElement('option');
+          opt.value = b.name;
+          opt.textContent = b.name + ' (' + b.role + ')';
+          select.appendChild(opt);
+        }
+      });
+
+      // 3. Add Cookscape Studio branches/hubs
+      var hubGroup = document.createElement('optgroup');
+      hubGroup.label = 'Cookscape Branches / Hubs';
+      ['Cookscape Chennai Central', 'Cookscape OMR Hub', 'Cookscape Coimbatore', 'Cookscape Bangalore'].forEach(function (h) {
+        var opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = h;
+        hubGroup.appendChild(opt);
+      });
+      select.appendChild(hubGroup);
+
+      if (currentVal) select.value = currentVal;
+    },
+
     openCreateModal: function () {
+      this.populateBhDropdown();
       var modal = document.getElementById('createProjectModal');
       if (modal) {
         var dtInput = document.getElementById('newProjDateTime');

@@ -2162,7 +2162,14 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           </div>
           <div class="form-group">
             <label class="form-label" for="newProjBhName">BH Name <span class="req">*</span></label>
-            <input type="text" id="newProjBhName" class="form-input" placeholder="e.g. Prestige Heights / Tower B" required>
+            <select id="newProjBhName" class="form-input" required>
+              <option value="" disabled selected>-- Select Business Head (BH) --</option>
+              <option value="Sangathamizh">Sangathamizh (Business Head)</option>
+              <option value="Cookscape Admin">Cookscape Admin (System Head)</option>
+              <option value="Aravind">Aravind (Floor Architect / FA)</option>
+              <option value="Elakkiya">Elakkiya (Floor Architect / FA)</option>
+              <option value="Dev Kancheti">Dev Kancheti (Design Lead)</option>
+            </select>
           </div>
         </div>
         <div class="form-row">
@@ -2484,10 +2491,14 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     ROUTE_MAP: {
       '/': 'home',
       '/home': 'home',
+      '/login': 'login',
+      '/2d-plan': 'plan',
+      '/floor-plan': 'plan',
       '/plan': 'plan',
-      '/design': 'design',
+      '/2dplan': 'plan',
       '/3d-studio': 'design',
       '/3dstudio': 'design',
+      '/design': 'design',
       '/pricing': 'boq',
       '/boq': 'boq',
       '/quote': 'quote',
@@ -2504,7 +2515,8 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
     VIEW_TO_PATH: {
       'home': '/home',
-      'plan': '/plan',
+      'login': '/login',
+      'plan': '/2d-plan',
       'design': '/3d-studio',
       'boq': '/pricing',
       'quote': '/quote',
@@ -2625,6 +2637,14 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     },
 
     navigateTo: function (v, replace) {
+      if (v === 'login') {
+        this.updateUrl('login', replace);
+        if (typeof OrbixProjects.showLogin === 'function') {
+          OrbixProjects.showLogin();
+        }
+        return;
+      }
+
       if (v === 'users') {
         if (!OrbixProjects.isAdmin()) {
           if (typeof showToast === 'function') {
@@ -2673,6 +2693,14 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
         if (h) v = this.ROUTE_MAP['/' + h];
       }
+      if (v === 'login') {
+        this.updateUrl('login', true);
+        if (typeof OrbixProjects.showLogin === 'function') {
+          OrbixProjects.showLogin();
+        }
+        return;
+      }
+
       if (!v) v = 'home';
 
       if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
@@ -2993,7 +3021,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       this.closeModal('editUserModal');
       this.showLogin();
       if (OrbixRouter) {
-        OrbixRouter.updateUrl('home', false);
+        OrbixRouter.updateUrl('login', false);
       }
       if (typeof showToast === 'function') {
         showToast('Logged out of session.');
@@ -3202,6 +3230,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
             // Ensure currentUser matches one of the known users
             var matched = self.users.find(function (u) { return u.id === self.currentUser.id; });
             if (matched) self.currentUser = matched;
+            self.populateBhDropdown();
           }
           if (cb) cb();
         })
@@ -3829,7 +3858,62 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         });
     },
 
+    populateBhDropdown: function () {
+      var select = document.getElementById('newProjBhName');
+      if (!select) return;
+
+      var currentVal = select.value;
+      select.innerHTML = '<option value="" disabled selected>-- Select Business Head (BH) --</option>';
+
+      var namesSeen = {};
+
+      // 1. Add all users from database
+      if (this.users && this.users.length) {
+        this.users.forEach(function (u) {
+          if (u.name && !namesSeen[u.name.toLowerCase()]) {
+            namesSeen[u.name.toLowerCase()] = true;
+            var opt = document.createElement('option');
+            opt.value = u.name;
+            opt.textContent = u.name + ' (' + (u.designation || (u.role === 'admin' ? 'Business Head' : 'Studio Designer')) + ')';
+            select.appendChild(opt);
+          }
+        });
+      }
+
+      // 2. Add standard Cookscape Business Heads & Leads
+      var defaultBhs = [
+        { name: 'Sangathamizh', role: 'Business Head' },
+        { name: 'Cookscape Admin', role: 'System Head' },
+        { name: 'Aravind', role: 'Floor Architect / FA' },
+        { name: 'Elakkiya', role: 'Floor Architect / FA' },
+        { name: 'Dev Kancheti', role: 'Design Lead' }
+      ];
+      defaultBhs.forEach(function (b) {
+        if (!namesSeen[b.name.toLowerCase()]) {
+          namesSeen[b.name.toLowerCase()] = true;
+          var opt = document.createElement('option');
+          opt.value = b.name;
+          opt.textContent = b.name + ' (' + b.role + ')';
+          select.appendChild(opt);
+        }
+      });
+
+      // 3. Add Cookscape Studio branches/hubs
+      var hubGroup = document.createElement('optgroup');
+      hubGroup.label = 'Cookscape Branches / Hubs';
+      ['Cookscape Chennai Central', 'Cookscape OMR Hub', 'Cookscape Coimbatore', 'Cookscape Bangalore'].forEach(function (h) {
+        var opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = h;
+        hubGroup.appendChild(opt);
+      });
+      select.appendChild(hubGroup);
+
+      if (currentVal) select.value = currentVal;
+    },
+
     openCreateModal: function () {
+      this.populateBhDropdown();
       var modal = document.getElementById('createProjectModal');
       if (modal) {
         var dtInput = document.getElementById('newProjDateTime');
@@ -14362,6 +14446,22 @@ $("#printBtn").addEventListener("click",function(){
 
 /* ══════════ VIEWS ══════════ */
 function setView(v){
+  // Check employee role restrictions
+  if (window.OrbixProjects && window.OrbixProjects.currentUser && !window.OrbixProjects.isAdmin()) {
+    var allowed = ['home', 'plan', 'design', 'boq'];
+    if (allowed.indexOf(v) === -1) {
+      if (typeof showToast === 'function') {
+        showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+      }
+      v = 'home';
+    }
+  }
+
+  // Update browser URL via router
+  if (window.OrbixRouter && typeof window.OrbixRouter.updateUrl === 'function') {
+    window.OrbixRouter.updateUrl(v, false);
+  }
+
   $all(".vtab").forEach(function(b){
     var on=b.dataset.view===v;
     b.classList.toggle("is-on",on);
@@ -14384,9 +14484,15 @@ function setView(v){
   if(v==="boq" && window.OrbixUI){ window.OrbixUI.renderBOQ(); }
 }
 window.setView = setView;
-$all(".vtab").forEach(function(b){ b.addEventListener("click",function(){
-  if(b.dataset.view==="kitchen"){ galState.type="kitchen"; setView("gallery"); return; }
-  setView(b.dataset.view);
+$all(".vtab").forEach(function(b){ b.addEventListener("click",function(e){
+  e.preventDefault();
+  var target = b.dataset.view;
+  if(target==="kitchen"){ galState.type="kitchen"; target="gallery"; }
+  if(window.OrbixRouter && typeof window.OrbixRouter.navigateTo === 'function'){
+    window.OrbixRouter.navigateTo(target, false);
+  } else {
+    setView(target);
+  }
 }); });
 $("#frontBtn").addEventListener("click",function(){ cam.yaw=0; cam.pitch=-2; camApply(); });
 (function(){

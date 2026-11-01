@@ -548,7 +548,14 @@
           </div>
           <div class="form-group">
             <label class="form-label" for="newProjBhName">BH Name <span class="req">*</span></label>
-            <input type="text" id="newProjBhName" class="form-input" placeholder="e.g. Prestige Heights / Tower B" required>
+            <select id="newProjBhName" class="form-input" required>
+              <option value="" disabled selected>-- Select Business Head (BH) --</option>
+              <option value="Sangathamizh">Sangathamizh (Business Head)</option>
+              <option value="Cookscape Admin">Cookscape Admin (System Head)</option>
+              <option value="Aravind">Aravind (Floor Architect / FA)</option>
+              <option value="Elakkiya">Elakkiya (Floor Architect / FA)</option>
+              <option value="Dev Kancheti">Dev Kancheti (Design Lead)</option>
+            </select>
           </div>
         </div>
         <div class="form-row">

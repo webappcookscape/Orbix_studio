@@ -4018,6 +4018,22 @@ $("#printBtn").addEventListener("click",function(){
 
 /* ══════════ VIEWS ══════════ */
 function setView(v){
+  // Check employee role restrictions
+  if (window.OrbixProjects && window.OrbixProjects.currentUser && !window.OrbixProjects.isAdmin()) {
+    var allowed = ['home', 'plan', 'design', 'boq'];
+    if (allowed.indexOf(v) === -1) {
+      if (typeof showToast === 'function') {
+        showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+      }
+      v = 'home';
+    }
+  }
+
+  // Update browser URL via router
+  if (window.OrbixRouter && typeof window.OrbixRouter.updateUrl === 'function') {
+    window.OrbixRouter.updateUrl(v, false);
+  }
+
   $all(".vtab").forEach(function(b){
     var on=b.dataset.view===v;
     b.classList.toggle("is-on",on);
@@ -4040,9 +4056,15 @@ function setView(v){
   if(v==="boq" && window.OrbixUI){ window.OrbixUI.renderBOQ(); }
 }
 window.setView = setView;
-$all(".vtab").forEach(function(b){ b.addEventListener("click",function(){
-  if(b.dataset.view==="kitchen"){ galState.type="kitchen"; setView("gallery"); return; }
-  setView(b.dataset.view);
+$all(".vtab").forEach(function(b){ b.addEventListener("click",function(e){
+  e.preventDefault();
+  var target = b.dataset.view;
+  if(target==="kitchen"){ galState.type="kitchen"; target="gallery"; }
+  if(window.OrbixRouter && typeof window.OrbixRouter.navigateTo === 'function'){
+    window.OrbixRouter.navigateTo(target, false);
+  } else {
+    setView(target);
+  }
 }); });
 $("#frontBtn").addEventListener("click",function(){ cam.yaw=0; cam.pitch=-2; camApply(); });
 (function(){
