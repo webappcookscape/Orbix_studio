@@ -181,11 +181,11 @@ app.post('/api/projects/:id/share', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 app.post('/api/projects/:id/fork', async (req, res) => {
   try {
-    const { colleagueUser } = req.body;
+    const { colleagueUser, senderUser } = req.body;
     if (!colleagueUser || !colleagueUser.name) {
       return res.status(400).json({ success: false, error: 'Colleague user information required' });
     }
-    const forkResult = await db.forkProjectForColleague(req.params.id, colleagueUser);
+    const forkResult = await db.forkProjectForColleague(req.params.id, colleagueUser, senderUser);
     res.json({ success: true, ...forkResult });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

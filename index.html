@@ -116,6 +116,9 @@
         
 
 
+        <!-- Shared Project Copy Alert Banner -->
+        <div id="sharedCopyAlertContainer" class="shared-alert-container"></div>
+
         <!-- ══════ PROJECTS DASHBOARD ══════ -->
         <div class="projects-section" id="homeProjectsSection">
           <div class="psection-header">
@@ -680,9 +683,12 @@
         </form>
       </div>
 
-      <h4 class="modal-section-title" style="margin-top:20px;">Team Profiles</h4>
-      <p class="modal-section-desc">Active studio team accounts:</p>
-      <div class="switch-users-list" id="switchUsersList"></div>
+      <!-- Admin Only: Team Profiles Switcher -->
+      <div id="adminTeamProfilesSection">
+        <h4 class="modal-section-title" style="margin-top:20px;">Team Profiles</h4>
+        <p class="modal-section-desc">Active studio team accounts:</p>
+        <div class="switch-users-list" id="switchUsersList"></div>
+      </div>
     </div>
     <div class="modal-foot">
       <button type="button" class="btn" id="modalSignOutBtn">Sign Out</button>

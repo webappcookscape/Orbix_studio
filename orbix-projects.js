@@ -76,6 +76,26 @@
 
       this.hookSetView();
 
+      // Direct router click listeners for all navbar tabs
+      var navTabs = document.querySelectorAll('.topbar .views .vtab');
+      navTabs.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          var v = btn.getAttribute('data-view');
+          self.navigateTo(v, false);
+        });
+      });
+
+      // Brand logo navigates to home
+      var brand = document.querySelector('.topbar .tool');
+      if (brand) {
+        brand.style.cursor = 'pointer';
+        brand.addEventListener('click', function (e) {
+          e.preventDefault();
+          self.navigateTo('home', false);
+        });
+      }
+
       document.addEventListener('click', function (e) {
         var a = e.target.closest('a');
         if (a && a.getAttribute('href')) {
@@ -544,7 +564,12 @@
           var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
           self.openProject(toOpen.id, false);
         }
-        OrbixRouter.dispatchInitialRoute();
+        // Always navigate to home page after login
+        if (root.OrbixRouter) {
+          root.OrbixRouter.navigateTo('home', true);
+        } else if (typeof window.setView === 'function') {
+          window.setView('home');
+        }
       });
 
       if (typeof showToast === 'function') {
@@ -630,10 +655,22 @@
         modalBadge.className = 'role-badge ' + (isAdm ? 'admin' : 'employee');
       }
 
-      // 5. Show/hide Admin employee creation box in Modal
+      // 5. Show/hide Admin employee creation box and Team Profiles section in Modal
       var adminBox = document.getElementById('adminCreateEmpBox');
       if (adminBox) {
         adminBox.style.display = isAdm ? 'block' : 'none';
+      }
+      var adminTeamSec = document.getElementById('adminTeamProfilesSection');
+      if (adminTeamSec) {
+        adminTeamSec.style.display = isAdm ? 'block' : 'none';
+      }
+      var modalTitle = document.querySelector('#userModal .modal-title');
+      var modalSub = document.querySelector('#userModal .modal-sub');
+      if (modalTitle) {
+        modalTitle.textContent = isAdm ? 'User Profile & Workspace' : 'User Profile';
+      }
+      if (modalSub) {
+        modalSub.textContent = isAdm ? 'Switch user profile or manage modular studio team' : 'Your active account details and session';
       }
 
       // 6. Project Dashboard description
@@ -728,6 +765,7 @@
         .then(function (data) {
           self.projects = data.projects || [];
           self.renderProjectsList();
+          self.renderSharedCopyAlert();
           if (self.projects.length === 0) {
             self.activeProjectId = null;
             if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
@@ -738,8 +776,78 @@
         })
         .catch(function () {
           self.renderProjectsList();
+          self.renderSharedCopyAlert();
           if (cb) cb();
         });
+    },
+
+    renderSharedCopyAlert: function () {
+      var container = document.getElementById('sharedCopyAlertContainer');
+      if (!container) return;
+
+      if (!this.projects || !this.projects.length) {
+        container.innerHTML = '';
+        return;
+      }
+
+      var self = this;
+      var pending = this.projects.filter(function (p) {
+        var sn = p.shareNotice || (p.data && p.data.shareNotice);
+        if (!sn) return false;
+        var noticeKey = sn.noticeId || ('sn_' + p.id);
+        try {
+          var dismissed = localStorage.getItem('orbix_dismissed_share_' + noticeKey);
+          if (dismissed === 'true') return false;
+        } catch (e) {}
+        return true;
+      });
+
+      if (!pending.length) {
+        container.innerHTML = '';
+        return;
+      }
+
+      var project = pending[0];
+      var sn = project.shareNotice || project.data.shareNotice;
+      var noticeKey = sn.noticeId || ('sn_' + project.id);
+      var sharedByName = sn.sharedByName || project.owner_name || 'A Colleague';
+      var sharedByDesig = sn.sharedByDesignation || 'Modular Designer';
+      var projectTitle = sn.originalTitle || project.title;
+
+      container.innerHTML = '<div class="shared-copy-alert-banner" id="sharedAlert_' + noticeKey + '">' +
+        '<div class="sca-left">' +
+          '<div class="sca-icon">⑂</div>' +
+          '<div class="sca-content">' +
+            '<div class="sca-title">' + sharedByName + ' (' + sharedByDesig + ') has shared their project copy with you</div>' +
+            '<div class="sca-desc">Project: "<strong>' + projectTitle + '</strong>". An isolated duplicate has been added to your projects.</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="sca-actions">' +
+          '<button type="button" class="btn primary small sca-open-btn" data-pid="' + project.id + '">Open Project</button>' +
+          '<button type="button" class="btn small sca-cancel-btn" data-nid="' + noticeKey + '">Cancel</button>' +
+        '</div>' +
+      '</div>';
+
+      var cancelBtn = container.querySelector('.sca-cancel-btn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var nid = this.getAttribute('data-nid');
+          try {
+            localStorage.setItem('orbix_dismissed_share_' + nid, 'true');
+          } catch (err) {}
+          container.innerHTML = '';
+        });
+      }
+
+      var openBtn = container.querySelector('.sca-open-btn');
+      if (openBtn) {
+        openBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var pid = this.getAttribute('data-pid');
+          self.openProject(pid, true);
+        });
+      }
     },
 
     renderProjectsList: function () {
@@ -1139,7 +1247,10 @@
       fetch('/api/projects/' + originalId + '/fork', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ colleagueUser: colleagueUser })
+        body: JSON.stringify({ 
+          colleagueUser: colleagueUser,
+          senderUser: self.currentUser
+        })
       })
       .then(function (r) { return r.json(); })
       .then(function (data) {

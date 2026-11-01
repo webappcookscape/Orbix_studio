@@ -1548,6 +1548,102 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
 
 
+/* ══════════ SHARED PROJECT COPY NOTIFICATION BANNER ══════ */
+.shared-alert-container {
+  margin: 0 0 20px 0;
+}
+.shared-copy-alert-banner {
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border: 1px solid #93C5FD;
+  border-left: 4px solid #2563EB;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sca-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1 1 auto;
+}
+.sca-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #2563EB;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex: 0 0 36px;
+  font-weight: 700;
+}
+.sca-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sca-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1E3A8A;
+}
+.sca-desc {
+  font-size: 12px;
+  color: #3B82F6;
+  margin: 0;
+}
+.sca-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.sca-open-btn {
+  background: #2563EB !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  font-weight: 600;
+  border-radius: 7px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.sca-open-btn:hover {
+  background: #1D4ED8 !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+.sca-cancel-btn {
+  background: #FFFFFF !important;
+  color: #64748B !important;
+  border: 1px solid #CBD5E1 !important;
+  font-weight: 600;
+  border-radius: 7px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.sca-cancel-btn:hover {
+  background: #F1F5F9 !important;
+  color: #334155 !important;
+}
+@media (max-width: 768px) {
+  .shared-copy-alert-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sca-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
 </style>
 
 <!-- ══════ FULL AUTH / LOGIN SCREEN ══════ -->
@@ -1633,6 +1729,9 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       <div class="home">
         
 
+
+        <!-- Shared Project Copy Alert Banner -->
+        <div id="sharedCopyAlertContainer" class="shared-alert-container"></div>
 
         <!-- ══════ PROJECTS DASHBOARD ══════ -->
         <div class="projects-section" id="homeProjectsSection">
@@ -2198,9 +2297,12 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         </form>
       </div>
 
-      <h4 class="modal-section-title" style="margin-top:20px;">Team Profiles</h4>
-      <p class="modal-section-desc">Active studio team accounts:</p>
-      <div class="switch-users-list" id="switchUsersList"></div>
+      <!-- Admin Only: Team Profiles Switcher -->
+      <div id="adminTeamProfilesSection">
+        <h4 class="modal-section-title" style="margin-top:20px;">Team Profiles</h4>
+        <p class="modal-section-desc">Active studio team accounts:</p>
+        <div class="switch-users-list" id="switchUsersList"></div>
+      </div>
     </div>
     <div class="modal-foot">
       <button type="button" class="btn" id="modalSignOutBtn">Sign Out</button>
@@ -2399,6 +2501,26 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       });
 
       this.hookSetView();
+
+      // Direct router click listeners for all navbar tabs
+      var navTabs = document.querySelectorAll('.topbar .views .vtab');
+      navTabs.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          var v = btn.getAttribute('data-view');
+          self.navigateTo(v, false);
+        });
+      });
+
+      // Brand logo navigates to home
+      var brand = document.querySelector('.topbar .tool');
+      if (brand) {
+        brand.style.cursor = 'pointer';
+        brand.addEventListener('click', function (e) {
+          e.preventDefault();
+          self.navigateTo('home', false);
+        });
+      }
 
       document.addEventListener('click', function (e) {
         var a = e.target.closest('a');
@@ -2868,7 +2990,12 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
           self.openProject(toOpen.id, false);
         }
-        OrbixRouter.dispatchInitialRoute();
+        // Always navigate to home page after login
+        if (root.OrbixRouter) {
+          root.OrbixRouter.navigateTo('home', true);
+        } else if (typeof window.setView === 'function') {
+          window.setView('home');
+        }
       });
 
       if (typeof showToast === 'function') {
@@ -2954,10 +3081,22 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         modalBadge.className = 'role-badge ' + (isAdm ? 'admin' : 'employee');
       }
 
-      // 5. Show/hide Admin employee creation box in Modal
+      // 5. Show/hide Admin employee creation box and Team Profiles section in Modal
       var adminBox = document.getElementById('adminCreateEmpBox');
       if (adminBox) {
         adminBox.style.display = isAdm ? 'block' : 'none';
+      }
+      var adminTeamSec = document.getElementById('adminTeamProfilesSection');
+      if (adminTeamSec) {
+        adminTeamSec.style.display = isAdm ? 'block' : 'none';
+      }
+      var modalTitle = document.querySelector('#userModal .modal-title');
+      var modalSub = document.querySelector('#userModal .modal-sub');
+      if (modalTitle) {
+        modalTitle.textContent = isAdm ? 'User Profile & Workspace' : 'User Profile';
+      }
+      if (modalSub) {
+        modalSub.textContent = isAdm ? 'Switch user profile or manage modular studio team' : 'Your active account details and session';
       }
 
       // 6. Project Dashboard description
@@ -3052,6 +3191,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         .then(function (data) {
           self.projects = data.projects || [];
           self.renderProjectsList();
+          self.renderSharedCopyAlert();
           if (self.projects.length === 0) {
             self.activeProjectId = null;
             if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
@@ -3062,8 +3202,78 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         })
         .catch(function () {
           self.renderProjectsList();
+          self.renderSharedCopyAlert();
           if (cb) cb();
         });
+    },
+
+    renderSharedCopyAlert: function () {
+      var container = document.getElementById('sharedCopyAlertContainer');
+      if (!container) return;
+
+      if (!this.projects || !this.projects.length) {
+        container.innerHTML = '';
+        return;
+      }
+
+      var self = this;
+      var pending = this.projects.filter(function (p) {
+        var sn = p.shareNotice || (p.data && p.data.shareNotice);
+        if (!sn) return false;
+        var noticeKey = sn.noticeId || ('sn_' + p.id);
+        try {
+          var dismissed = localStorage.getItem('orbix_dismissed_share_' + noticeKey);
+          if (dismissed === 'true') return false;
+        } catch (e) {}
+        return true;
+      });
+
+      if (!pending.length) {
+        container.innerHTML = '';
+        return;
+      }
+
+      var project = pending[0];
+      var sn = project.shareNotice || project.data.shareNotice;
+      var noticeKey = sn.noticeId || ('sn_' + project.id);
+      var sharedByName = sn.sharedByName || project.owner_name || 'A Colleague';
+      var sharedByDesig = sn.sharedByDesignation || 'Modular Designer';
+      var projectTitle = sn.originalTitle || project.title;
+
+      container.innerHTML = '<div class="shared-copy-alert-banner" id="sharedAlert_' + noticeKey + '">' +
+        '<div class="sca-left">' +
+          '<div class="sca-icon">⑂</div>' +
+          '<div class="sca-content">' +
+            '<div class="sca-title">' + sharedByName + ' (' + sharedByDesig + ') has shared their project copy with you</div>' +
+            '<div class="sca-desc">Project: "<strong>' + projectTitle + '</strong>". An isolated duplicate has been added to your projects.</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="sca-actions">' +
+          '<button type="button" class="btn primary small sca-open-btn" data-pid="' + project.id + '">Open Project</button>' +
+          '<button type="button" class="btn small sca-cancel-btn" data-nid="' + noticeKey + '">Cancel</button>' +
+        '</div>' +
+      '</div>';
+
+      var cancelBtn = container.querySelector('.sca-cancel-btn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var nid = this.getAttribute('data-nid');
+          try {
+            localStorage.setItem('orbix_dismissed_share_' + nid, 'true');
+          } catch (err) {}
+          container.innerHTML = '';
+        });
+      }
+
+      var openBtn = container.querySelector('.sca-open-btn');
+      if (openBtn) {
+        openBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var pid = this.getAttribute('data-pid');
+          self.openProject(pid, true);
+        });
+      }
     },
 
     renderProjectsList: function () {
@@ -3463,7 +3673,10 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       fetch('/api/projects/' + originalId + '/fork', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ colleagueUser: colleagueUser })
+        body: JSON.stringify({ 
+          colleagueUser: colleagueUser,
+          senderUser: self.currentUser
+        })
       })
       .then(function (r) { return r.json(); })
       .then(function (data) {

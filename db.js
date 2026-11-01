@@ -511,6 +511,26 @@ class DBManager {
       }
       projects.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
     }
+
+    projects = projects.map(p => {
+      let data = p.data;
+      if (typeof data === 'string') {
+        try { data = JSON.parse(data); } catch (e) { data = {}; }
+      }
+      data = data || {};
+
+      // If shared with this user from another creator, ensure shareNotice exists
+      if (userId && p.created_by !== userId && !data.shareNotice) {
+        data.shareNotice = {
+          noticeId: 'sn_share_' + p.id,
+          sharedByName: p.owner_name || 'A Colleague',
+          sharedByDesignation: 'Modular Designer',
+          originalTitle: p.title
+        };
+      }
+      return { ...p, data };
+    });
+
     return projects;
   }
 
@@ -685,7 +705,7 @@ class DBManager {
   // "COLLEAGUES WORK IN COPY" — Master Fork Engine
   // Creates an isolated copy for the colleague so the original is untouched.
   // ═══════════════════════════════════════════════════════════════════════════
-  async forkProjectForColleague(originalProjectId, colleagueUser) {
+  async forkProjectForColleague(originalProjectId, colleagueUser, senderUser = null) {
     const original = await this.getProject(originalProjectId);
     if (!original) throw new Error('Original project not found');
 
@@ -695,6 +715,24 @@ class DBManager {
 
     // Deep clone data
     const clonedData = JSON.parse(JSON.stringify(original.data || { units: [] }));
+
+    let sharedByName = senderUser ? senderUser.name : null;
+    let sharedByDesignation = senderUser ? (senderUser.designation || 'Modular Designer') : null;
+
+    if (!sharedByName && original.created_by) {
+      const creator = await this.getUser(original.created_by);
+      sharedByName = creator ? creator.name : (original.owner_name || 'A Colleague');
+      sharedByDesignation = creator ? (creator.designation || 'Modular Designer') : 'Design Lead';
+    }
+
+    // Attach share notice metadata for colleague notification banner
+    clonedData.shareNotice = {
+      noticeId: 'sn_' + forkedId,
+      sharedByName: sharedByName || 'A Colleague',
+      sharedByDesignation: sharedByDesignation || 'Modular Designer',
+      originalTitle: original.title,
+      sharedAt: now
+    };
 
     const forkedProject = {
       id: forkedId,
