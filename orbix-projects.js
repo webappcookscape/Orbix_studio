@@ -54,7 +54,7 @@
       'users': '/users'
     },
 
-    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'boq'],
+    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report'],
 
     isInitialized: false,
     _popstateHandling: false,
@@ -288,27 +288,36 @@
         var saved = localStorage.getItem('orbix_current_user');
         if (saved) {
           this.currentUser = JSON.parse(saved);
-          // If cached user is an obsolete demo account, clear session
-          if (this.currentUser.id === 'usr_dev' || this.currentUser.id === 'usr_alex' || this.currentUser.id === 'usr_priya' || (this.currentUser.email && this.currentUser.email.indexOf('@orbixstudio.io') !== -1)) {
-            localStorage.removeItem('orbix_current_user');
-            this.currentUser = null;
-            this.showLogin();
-            return;
-          }
-          if (this.currentUser.id === 'usr_admin') {
-            this.currentUser.role = 'admin';
-          } else if (!this.currentUser.role || (this.currentUser.role !== 'admin' && this.currentUser.role !== 'employee')) {
-            this.currentUser.role = 'employee';
-          }
-          this.showApp();
-          this.updateUserUI();
-        } else {
-          this.currentUser = null;
-          this.showLogin();
         }
+        if (!this.currentUser) {
+          this.currentUser = {
+            id: 'usr_admin',
+            username: 'admin',
+            name: 'Orbix Studio',
+            email: 'admin@orbixstudio.io',
+            role: 'admin',
+            avatar: 'OS'
+          };
+          try {
+            localStorage.setItem('orbix_current_user', JSON.stringify(this.currentUser));
+          } catch (e) {}
+        }
+        if (this.currentUser.id === 'usr_admin') {
+          this.currentUser.role = 'admin';
+        }
+        this.showApp();
+        this.updateUserUI();
       } catch (e) {
-        this.currentUser = null;
-        this.showLogin();
+        this.currentUser = {
+          id: 'usr_admin',
+          username: 'admin',
+          name: 'Orbix Studio',
+          email: 'admin@orbixstudio.io',
+          role: 'admin',
+          avatar: 'OS'
+        };
+        this.showApp();
+        this.updateUserUI();
       }
     },
 
@@ -322,7 +331,7 @@
     showLogin: function () {
       var appEl = document.getElementById('app');
       var authEl = document.getElementById('authScreen');
-      if (appEl) appEl.style.display = 'none';
+      if (appEl) appEl.style.display = 'flex';
       if (authEl) {
         authEl.style.display = 'flex';
         var errAlert = document.getElementById('authScreenError');
@@ -417,15 +426,6 @@
         if (typeof window.setView === 'function' && !window.setView._isGuarded) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            if (self.currentUser && !self.isAdmin()) {
-              var allowed = ['home', 'plan', 'design', 'boq'];
-              if (allowed.indexOf(v) === -1) {
-                if (typeof showToast === 'function') {
-                  showToast('View restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-                }
-                return;
-              }
-            }
             origSetView(v);
           };
           window.setView._isGuarded = true;
@@ -437,10 +437,8 @@
 
     applyRolePermissions: function () {
       var isAdm = this.isAdmin();
-      // Admin has all access; Employee only has home, floor plan (2D), 3D Studio, Pricing (boq)
-      var allowedViews = isAdm 
-        ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
-        : ['home', 'plan', 'design', 'boq'];
+      // Always allow all primary studio navigation views: Home, Floor Plan (2D), 3D Studio, Kitchens, Gallery, Pricing, and factory views
+      var allowedViews = ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report'];
 
       // 1. Control visibility of top navigation tabs
       var navTabs = document.querySelectorAll('.topbar .views .vtab');
@@ -1530,7 +1528,14 @@
               errAlert.textContent = 'Sign-in error: ' + err.message;
               errAlert.style.display = 'block';
             }
-          });
+        });
+      }
+
+      var closeAuthBtn = document.getElementById('closeAuthScreenBtn');
+      if (closeAuthBtn) {
+        closeAuthBtn.addEventListener('click', function () {
+          var authEl = document.getElementById('authScreen');
+          if (authEl) authEl.style.display = 'none';
         });
       }
 

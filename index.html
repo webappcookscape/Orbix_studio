@@ -33,8 +33,9 @@
 <link rel="stylesheet" href="style.css">
 
 <!-- ══════ FULL AUTH / LOGIN SCREEN ══════ -->
-<div id="authScreen" class="auth-screen">
-  <div class="auth-card">
+<div id="authScreen" class="auth-screen" style="display:none;">
+  <div class="auth-card" style="position:relative;">
+    <button type="button" id="closeAuthScreenBtn" style="position:absolute;top:16px;right:18px;font-size:24px;line-height:1;color:#64748B;cursor:pointer;background:none;border:none;">&times;</button>
     <div class="auth-brand">
       <img src="logo.jpeg" alt="Orbix Studio" class="auth-logo">
       <h1 class="auth-title">Orbix Studio</h1>
@@ -61,7 +62,7 @@
   </div>
 </div>
 
-<div id="app">
+<div id="app" style="display:flex;">
 
   <header class="topbar">
     <div class="tool">
@@ -72,8 +73,8 @@
       <button class="vtab is-on" data-view="home">Home</button>
       <button class="vtab" data-view="plan">Floor Plan (2D)</button>
       <button class="vtab" data-view="design">3D Studio</button>
-      <button class="vtab" data-view="kitchen" hidden style="display:none;">Kitchens</button>
-      <button class="vtab" data-view="gallery" hidden style="display:none;">Gallery</button>
+      <button class="vtab" data-view="kitchen">Kitchens</button>
+      <button class="vtab" data-view="gallery">Gallery</button>
       <button class="vtab" data-view="boq">Pricing</button>
       <button class="vtab admin-only-tab" data-view="quote" style="display:none;">Quote</button>
       <button class="vtab admin-only-tab" data-view="sheet" style="display:none;">Process sheet</button>
