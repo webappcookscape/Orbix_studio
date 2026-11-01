@@ -1018,6 +1018,94 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 .matrix-th-btn.is-active{color:var(--blue);font-weight:700}
 .tier-col-active{background:#FEE2E2!important;font-weight:600;color:var(--blue)!important}
 
+/* Room Scope & Room-Wise Pricing Filter Bar */
+.boq-room-filter-bar{
+  display:flex;align-items:center;flex-wrap:wrap;gap:10px;
+  background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:6px;
+  padding:10px 14px;margin-bottom:18px;
+}
+.boq-room-filter-label{
+  font-family:var(--cond);font-size:12px;font-weight:700;
+  color:#1E40AF;text-transform:uppercase;letter-spacing:.04em;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.room-pill-group{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.room-filter-pill{
+  border:1px solid #BFDBFE;background:#FFFFFF;padding:5px 12px;
+  border-radius:16px;font-family:var(--sans);font-size:12px;font-weight:600;
+  color:#1E3A8A;cursor:pointer;transition:all .18s ease;display:inline-flex;
+  align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.room-filter-pill:hover{
+  border-color:#2563EB;background:#DBEAFE;color:#1D4ED8;transform:translateY(-1px);
+}
+.room-filter-pill.is-active{
+  background:#1D4ED8;color:#FFFFFF;border-color:#1E40AF;
+  box-shadow:0 2px 8px rgba(29,78,216,.35);font-weight:700;
+}
+.room-filter-pill.is-active .room-pill-badge{
+  background:rgba(255,255,255,0.22);color:#FFFFFF;border-color:transparent;
+}
+.room-pill-badge{
+  font-family:var(--mono);font-size:10px;font-weight:600;
+  background:#EFF6FF;color:#2563EB;padding:2px 6px;border-radius:10px;
+  border:1px solid #DBEAFE;
+}
+
+/* Room-Wise Cost Contribution & Breakdown Card */
+.boq-room-summary-card{
+  background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;
+  padding:16px 20px;margin-bottom:24px;
+}
+.boq-room-card-head{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;border-bottom:1px solid #E2E8F0;padding-bottom:10px;
+}
+.boq-room-card-head h4{
+  font-family:var(--cond);font-size:14px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.03em;color:#0F172A;margin:0;
+}
+.boq-room-badge{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  padding:3px 8px;border-radius:4px;background:#E0F2FE;color:#0369A1;
+}
+.boq-room-grid{
+  display:grid;grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));gap:12px;
+}
+.boq-room-stat-card{
+  background:#FFFFFF;border:1.5px solid #E2E8F0;border-radius:6px;
+  padding:12px 14px;transition:all .18s ease;position:relative;
+}
+.boq-room-stat-card:hover{
+  border-color:#93C5FD;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.05);
+}
+.boq-room-stat-card.is-selected{
+  border-color:#3B82F6;background:#F0F7FF;
+}
+.boq-room-stat-title{
+  font-family:var(--sans);font-size:13px;font-weight:700;color:#0F172A;margin-bottom:2px;
+}
+.boq-room-stat-area{
+  font-size:11px;color:#64748B;margin-bottom:8px;
+}
+.boq-room-stat-cost{
+  font-family:var(--mono);font-size:15px;font-weight:700;color:#1E3A8A;margin-bottom:4px;
+}
+.boq-room-stat-items{
+  font-size:11px;color:#475569;margin-bottom:8px;font-weight:500;
+}
+.boq-room-bar{
+  width:100%;height:5px;background:#E2E8F0;border-radius:3px;overflow:hidden;margin-bottom:8px;
+}
+.boq-room-bar-fill{
+  height:100%;background:linear-gradient(90deg, #3B82F6, #1D4ED8);border-radius:3px;
+}
+.room-sec-row td{
+  background:#F1F5F9!important;padding:9px 12px!important;
+  font-family:var(--sans);font-size:12.5px;color:#0F172A;
+  border-top:2px solid #CBD5E1!important;border-bottom:1px solid #CBD5E1!important;
+}
+
 /* Quotation Document Header & Material Table Styles (matching official BOQ format) */
 .boq-sheet{max-width:1280px;margin:0 auto;background:#fff;border:1px solid #E2E8F0;padding:28px 36px;box-shadow:0 6px 24px rgba(0,0,0,.06);border-radius:4px}
 .quote-top-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;border-bottom:2px solid var(--blue);padding-bottom:18px;margin-bottom:20px}

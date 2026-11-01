@@ -1427,7 +1427,11 @@
       if (!boqEl) return;
 
       this.sync3DStudioUnits();
-      var quote = Core.generateFullQuotation(this.project);
+      if (!this.selectedBOQRooms) {
+        this.selectedBOQRooms = ['all'];
+      }
+
+      var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms);
       var sym = quote.currencySymbol;
       var rateCard = this.project.rateCard || Core.DEFAULT_RATE_CARD;
       var self = this;
@@ -1446,6 +1450,71 @@
         '<button class="btn" id="boqToggleRateCardBtn">Configure Company Rates</button>' +
         '</div>' +
 
+        // ── Room Scope & Filter Bar ──
+        '<div class="boq-room-filter-bar no-print">' +
+        '<div class="boq-room-filter-label"><span class="room-icon">🏠</span> <b>Room Pricing Scope:</b></div>' +
+        '<div class="room-pill-group">';
+
+      var isAllRooms = (!this.selectedBOQRooms || this.selectedBOQRooms.indexOf('all') !== -1);
+      var totalProjectUnits = quote.allRoomsSummary ? quote.allRoomsSummary.reduce(function (acc, item) { return acc + item.itemCount; }, 0) : quote.furnitureItems.length;
+
+      html += '<button class="room-filter-pill' + (isAllRooms ? ' is-active' : '') + '" data-room="all">' +
+        '✨ All Rooms <span class="room-pill-badge">' + totalProjectUnits + ' units</span>' +
+        '</button>';
+
+      var projectRooms = (this.project.plan && this.project.plan.rooms) || [];
+      for (var prm = 0; prm < projectRooms.length; prm++) {
+        var rObj = projectRooms[prm];
+        var isThisRoomActive = !isAllRooms && self.selectedBOQRooms.indexOf(rObj.id) !== -1;
+        var rSummary = (quote.allRoomsSummary || []).filter(function (s) { return s.id === rObj.id; })[0];
+        var rUnitsCount = rSummary ? rSummary.itemCount : 0;
+        var rSubtotalStr = rSummary && rSummary.roomSubtotal > 0 ? (' · ₹' + Math.round(rSummary.roomSubtotal).toLocaleString('en-IN')) : '';
+
+        var rIcon = rObj.name.indexOf('Bed') !== -1 ? '🛏️ ' :
+                    rObj.name.indexOf('Kitchen') !== -1 ? '🍳 ' :
+                    rObj.name.indexOf('Living') !== -1 ? '🛋️ ' :
+                    rObj.name.indexOf('Dining') !== -1 ? '🍽️ ' : '🚪 ';
+
+        html += '<button class="room-filter-pill' + (isThisRoomActive ? ' is-active' : '') + '" data-room="' + rObj.id + '">' +
+          rIcon + rObj.name + ' <span class="room-pill-badge">' + rUnitsCount + ' units' + rSubtotalStr + '</span>' +
+          '</button>';
+      }
+
+      var genSummary = (quote.allRoomsSummary || []).filter(function (s) { return s.id === '_general'; })[0];
+      if (genSummary && genSummary.itemCount > 0) {
+        var isGenActive = !isAllRooms && self.selectedBOQRooms.indexOf('_general') !== -1;
+        html += '<button class="room-filter-pill' + (isGenActive ? ' is-active' : '') + '" data-room="_general">' +
+          '📦 General / Unassigned <span class="room-pill-badge">' + genSummary.itemCount + ' units</span>' +
+          '</button>';
+      }
+
+      html += '</div></div>' +
+
+        // ── Room-Wise Cost Contribution & Breakdown Cards ──
+        (quote.allRoomsSummary && quote.allRoomsSummary.length > 0 ? (
+          '<div class="boq-room-summary-card no-print">' +
+          '<div class="boq-room-card-head">' +
+          '<h4>🏠 Room-Wise Cost Contribution & Area Breakdown</h4>' +
+          '<span class="boq-room-badge">' + (quote.isFiltered ? ('Filtered: ' + self.selectedBOQRooms.length + ' room(s) selected') : 'Full Home Scope') + '</span>' +
+          '</div>' +
+          '<div class="boq-room-grid">' +
+          quote.allRoomsSummary.map(function (rs) {
+            var isCardSelected = (!quote.isFiltered) || (self.selectedBOQRooms && self.selectedBOQRooms.indexOf(rs.id) !== -1);
+            return '<div class="boq-room-stat-card' + (isCardSelected ? ' is-selected' : '') + '">' +
+              '<div class="boq-room-stat-title">' + rs.name + '</div>' +
+              '<div class="boq-room-stat-area">' + (rs.areaSqFt > 0 ? (Math.round(rs.areaSqFt) + ' sq ft (' + rs.areaSqM.toFixed(1) + ' m²)') : 'Modular Units Only') + '</div>' +
+              '<div class="boq-room-stat-cost">₹ ' + Math.round(rs.roomSubtotal).toLocaleString('en-IN') + '.00</div>' +
+              '<div class="boq-room-stat-items">' + rs.itemCount + ' unit' + (rs.itemCount === 1 ? '' : 's') + ' · ' + rs.percentShare + '% share</div>' +
+              '<div class="boq-room-bar"><div class="boq-room-bar-fill" style="width:' + Math.min(100, Math.max(5, rs.percentShare)) + '%"></div></div>' +
+              '<button class="btn small boq-room-select-btn" data-room="' + rs.id + '" style="margin-top:6px;width:100%;font-size:11px;padding:3px 6px;">' +
+              (isCardSelected && quote.isFiltered ? '✓ Active in Quote' : 'Filter this Room') +
+              '</button>' +
+              '</div>';
+          }).join('') +
+          '</div></div>'
+        ) : '') +
+
+        // ── Finish Tier Selector Bar ──
         '<div class="boq-tier-bar no-print">' +
         '<div class="boq-tier-label"><span class="tier-icon">🏷️</span> <b>Price Variant & Finish Tier:</b></div>' +
         '<div class="tier-pill-group">';
@@ -1503,12 +1572,12 @@
         '<div class="qh-row"><span class="qh-lbl">Customer</span><span class="qh-val">' + (this.project.meta.clientName || 'Dhanesh') + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Design ID</span><span class="qh-val">' + (this.project.meta.designId || 'Design1') + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Designer</span><span class="qh-val">' + (this.project.meta.designerName || 'Abishek Kumar') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Scope</span><span class="qh-val">' + (this.project.meta.scope || 'Complete design') + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Scope</span><span class="qh-val">' + (quote.isFiltered ? ('Selected Rooms: ' + quote.furnitureItems.map(function (it) { return it.roomName; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) : (this.project.meta.scope || 'Complete Interior Design')) + '</span></div>' +
         '</div>' +
         '<div class="qh-right">' +
         '<div class="qh-row"><span class="qh-lbl">Quotation Date</span><span class="qh-val">' + (this.project.meta.dateCreated || '28 Oct, 2026') + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Price Expiry Date</span><span class="qh-val">' + (this.project.meta.validUntil || '27 Nov, 2026') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Total No. of Items</span><span class="qh-val">' + quote.furnitureItems.length + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Total No. of Items</span><span class="qh-val">' + quote.furnitureItems.length + (quote.isFiltered ? ' (Filtered Scope)' : '') + '</span></div>' +
         '<div class="qh-row total"><span class="qh-lbl">Total Amount</span><span class="qh-val">INR ' + quote.grandTotal.toLocaleString('en-IN') + '.00</span></div>' +
         '</div>' +
         '</div>' +
@@ -1528,58 +1597,100 @@
         '<th style="width:90px;text-align:right">Quantity</th>' +
         '<th style="width:100px;text-align:right">Price<br>(INR)</th>' +
         '</tr>' +
-        '<tr class="sec-bar-row"><td colspan="11"><b>Products</b></td></tr>' +
+        '<tr class="sec-bar-row"><td colspan="11"><b>Products &amp; Modular Woodwork (' + (quote.isFiltered ? 'Filtered Room Selection' : 'All Rooms') + ')</b></td></tr>' +
         '</thead>' +
         '<tbody>';
 
-      for (var f = 0; f < quote.furnitureItems.length; f++) {
-        var it = quote.furnitureItems[f];
-        var d = it.dimensions || { W: 1200, H: 2100, D: 600 };
-        var codePrefix = it.category === 'wardrobe' ? 'W' : it.category.indexOf('kitchen') !== -1 ? 'K' : it.category.indexOf('bed') !== -1 ? 'B' : it.category === 'tv_unit' ? 'TV' : 'U';
-        var refCode = it.refCode || ('C' + (12 + f + 1));
-        var svgThumb = self.getUnitSVG(it.category);
+      if (quote.furnitureItems.length === 0) {
+        html += '<tr><td colspan="11" style="text-align:center;padding:32px 16px;color:#64748B;font-size:13px;">' +
+          'No modular furniture units placed in the currently selected room scope. ' +
+          '<button class="btn small" style="margin-left:8px;" id="boqResetFilterBtn">Show All Rooms</button>' +
+          '</td></tr>';
+      } else {
+        // Group items by Room Name
+        var itemsByRoom = {};
+        var roomNamesOrder = [];
+        for (var f = 0; f < quote.furnitureItems.length; f++) {
+          var it = quote.furnitureItems[f];
+          var rmName = it.roomName || 'General';
+          if (!itemsByRoom[rmName]) {
+            itemsByRoom[rmName] = [];
+            roomNamesOrder.push(rmName);
+          }
+          itemsByRoom[rmName].push(it);
+        }
 
-        var smat = (it.materials && it.materials.shutter) ? it.materials.shutter : { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' };
-        var cmat = (it.materials && it.materials.carcass) ? it.materials.carcass : { material: 'BWP_18MM', finish: 'Absolute White' };
+        var globalItemIndex = 0;
+        for (var rOrd = 0; rOrd < roomNamesOrder.length; rOrd++) {
+          var rName = roomNamesOrder[rOrd];
+          var rItems = itemsByRoom[rName];
+          var rSubtotal = 0;
+          for (var ri = 0; ri < rItems.length; ri++) {
+            rSubtotal += rItems[ri].totalAmount;
+          }
 
-        html += '<tr>' +
-          '<td class="c-center">' + (f + 1) + '</td>' +
-          '<td class="c-center bold">' + refCode + '</td>' +
-          '<td class="c-center p-0">' + svgThumb + '</td>' +
-          '<td>' +
-          '<div class="item-name">' + it.name + '</div>' +
-          '<div class="item-sub">Group: ' + (it.modelLabel || it.modelType || 'WR 2 DOOR SHELF') + '</div>' +
-          '<div class="item-sub">Model: ' + it.name + '</div>' +
-          '</td>' +
-          '<td class="dim-cell">' +
-          '<div>Width: ' + d.W + '</div>' +
-          '<div>Depth: ' + d.D + '</div>' +
-          '<div>Height: ' + d.H + '</div>' +
-          '</td>' +
-          '<td class="c-center">' + (it.categoryName || 'Wardrobe') + '</td>' +
-          '<td class="fin-cell">' +
-          '<div class="fin-block">' +
-          '<div class="fin-title">Shutter</div>' +
-          '<div>Material : ' + smat.material + '</div>' +
-          '<div>Finish : ' + smat.finish + '</div>' +
-          '</div>' +
-          '<div class="fin-block" style="margin-top:4px">' +
-          '<div class="fin-title">Carcass</div>' +
-          '<div>Material : ' + cmat.material + '</div>' +
-          '<div>Finish : ' + cmat.finish + '</div>' +
-          '</div>' +
-          '</td>' +
-          '<td class="acc-cell">' +
-          '<div>Auto Soft-Close Hinges</div>' +
-          '<div>Cam Connectors</div>' +
-          '</td>' +
-          '<td class="c-num">' + it.baseRate.toLocaleString('en-IN') + '</td>' +
-          '<td class="c-num">' + it.areaSft.toFixed(2) + ' sq foot</td>' +
-          '<td class="c-num bold">' + Math.round(it.totalAmount).toLocaleString('en-IN') + '.00</td>' +
-          '</tr>';
+          var rFound = (self.project.plan.rooms || []).filter(function (rm) { return rm.name === rName || rm.id === (rItems[0] && rItems[0].roomId); })[0];
+          var rAreaStr = rFound && rFound.areaSqFt > 0 ? (Math.round(rFound.areaSqFt) + ' sq ft · ' + rFound.areaSqM.toFixed(1) + ' m²') : '';
+
+          html += '<tr class="room-sec-row"><td colspan="11">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+            '<div><span style="font-size:15px;margin-right:6px">🏠</span><b>Room: ' + rName + '</b>' +
+            (rAreaStr ? (' &nbsp;<span style="color:#64748B;font-size:11px">(' + rAreaStr + ')</span>') : '') +
+            ' &nbsp;·&nbsp; <span style="color:#2563EB;font-weight:600">' + rItems.length + ' Unit' + (rItems.length === 1 ? '' : 's') + '</span></div>' +
+            '<div>Room Subtotal: <b style="font-family:var(--mono);color:#1E3A8A">₹ ' + Math.round(rSubtotal).toLocaleString('en-IN') + '.00</b></div>' +
+            '</div></td></tr>';
+
+          for (var fItem = 0; fItem < rItems.length; fItem++) {
+            var item = rItems[fItem];
+            globalItemIndex++;
+            var d = item.dimensions || { W: 1200, H: 2100, D: 600 };
+            var codePrefix = item.category === 'wardrobe' ? 'W' : item.category.indexOf('kitchen') !== -1 ? 'K' : item.category.indexOf('bed') !== -1 ? 'B' : item.category === 'tv_unit' ? 'TV' : 'U';
+            var refCode = item.refCode || ('C' + (12 + globalItemIndex));
+            var svgThumb = self.getUnitSVG(item.category);
+
+            var smat = (item.materials && item.materials.shutter) ? item.materials.shutter : { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' };
+            var cmat = (item.materials && item.materials.carcass) ? item.materials.carcass : { material: 'BWP_18MM', finish: 'Absolute White' };
+
+            html += '<tr>' +
+              '<td class="c-center">' + globalItemIndex + '</td>' +
+              '<td class="c-center bold">' + refCode + '</td>' +
+              '<td class="c-center p-0">' + svgThumb + '</td>' +
+              '<td>' +
+              '<div class="item-name">' + item.name + '</div>' +
+              '<div class="item-sub">Group: ' + (item.modelLabel || item.modelType || 'WR 2 DOOR SHELF') + '</div>' +
+              '<div class="item-sub">Model: ' + item.name + '</div>' +
+              '</td>' +
+              '<td class="dim-cell">' +
+              '<div>Width: ' + d.W + '</div>' +
+              '<div>Depth: ' + d.D + '</div>' +
+              '<div>Height: ' + d.H + '</div>' +
+              '</td>' +
+              '<td class="c-center">' + (item.categoryName || 'Wardrobe') + '</td>' +
+              '<td class="fin-cell">' +
+              '<div class="fin-block">' +
+              '<div class="fin-title">Shutter</div>' +
+              '<div>Material : ' + smat.material + '</div>' +
+              '<div>Finish : ' + smat.finish + '</div>' +
+              '</div>' +
+              '<div class="fin-block" style="margin-top:4px">' +
+              '<div class="fin-title">Carcass</div>' +
+              '<div>Material : ' + cmat.material + '</div>' +
+              '<div>Finish : ' + cmat.finish + '</div>' +
+              '</div>' +
+              '</td>' +
+              '<td class="acc-cell">' +
+              '<div>Auto Soft-Close Hinges</div>' +
+              '<div>Cam Connectors</div>' +
+              '</td>' +
+              '<td class="c-num">' + item.baseRate.toLocaleString('en-IN') + '</td>' +
+              '<td class="c-num">' + item.areaSft.toFixed(2) + ' sq foot</td>' +
+              '<td class="c-num bold">' + Math.round(item.totalAmount).toLocaleString('en-IN') + '.00</td>' +
+              '</tr>';
+          }
+        }
       }
 
-      html += '<tr class="subtotal-bar"><td colspan="10" style="text-align:right;padding-right:12px;font-weight:700">SUBTOTAL PRODUCTS</td><td class="c-num bold">' + Math.round(quote.subtotalWoodwork).toLocaleString('en-IN') + '.00</td></tr>';
+      html += '<tr class="subtotal-bar"><td colspan="10" style="text-align:right;padding-right:12px;font-weight:700">SUBTOTAL PRODUCTS (' + (quote.isFiltered ? 'SELECTED SCOPE' : 'ALL ROOMS') + ')</td><td class="c-num bold">' + Math.round(quote.subtotalWoodwork).toLocaleString('en-IN') + '.00</td></tr>';
 
       // Dynamic Hardware Calculation based on actual placed units
       var totalHinges = 0;
@@ -1656,13 +1767,12 @@
 
       var grandWoodwork = quote.subtotalWoodwork;
       var totalLabor = quote.installCharge;
-      // Pro-rate transport for small orders / single units
-      var totalTransport = (quote.furnitureItems.length === 1 && quote.furnitureItems[0].areaSft < 15) ? 650 : (quote.furnitureItems.length <= 2 ? 1500 : quote.transportCharge);
+      var totalTransport = quote.transportCharge;
       var netTaxable = Math.round(grandWoodwork + totalHw + totalLabor + totalTransport + quote.marginAmount);
       var gst18 = Math.round(netTaxable * 0.18);
       var allInclusiveTotal = netTaxable + gst18;
 
-      html += '<tr class="sec-bar-row"><td colspan="11"><b>Commercial Estimate Summary</b></td></tr>' +
+      html += '<tr class="sec-bar-row"><td colspan="11"><b>Commercial Estimate Summary (' + (quote.isFiltered ? 'Active Scope' : 'Entire Home') + ')</b></td></tr>' +
         '<tr><td colspan="4"></td><td colspan="6" class="bold">Modular Woodwork Subtotal</td><td class="c-num">' + Math.round(grandWoodwork).toLocaleString('en-IN') + '.00</td></tr>' +
         (totalHw > 0 ? ('<tr><td colspan="4"></td><td colspan="6" class="bold">Hardware &amp; Functional Fittings Subtotal</td><td class="c-num">' + Math.round(totalHw).toLocaleString('en-IN') + '.00</td></tr>') : '') +
         '<tr><td colspan="4"></td><td colspan="6" class="bold">Installation &amp; Assembly Labor</td><td class="c-num">' + Math.round(totalLabor).toLocaleString('en-IN') + '.00</td></tr>' +
@@ -1708,6 +1818,41 @@
           self.exportXLSX();
         });
       }
+
+      var resetFilterBtn = document.getElementById('boqResetFilterBtn');
+      if (resetFilterBtn) {
+        resetFilterBtn.addEventListener('click', function () {
+          self.selectedBOQRooms = ['all'];
+          self.renderBOQ();
+        });
+      }
+
+      // Room filter pill clicks & Stat card clicks
+      var roomFilterBtns = boqEl.querySelectorAll('.room-filter-pill, .boq-room-select-btn');
+      roomFilterBtns.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var rTarget = btn.getAttribute('data-room');
+          if (!rTarget || rTarget === 'all') {
+            self.selectedBOQRooms = ['all'];
+          } else {
+            if (!self.selectedBOQRooms || self.selectedBOQRooms.indexOf('all') !== -1) {
+              self.selectedBOQRooms = [rTarget];
+            } else {
+              var pos = self.selectedBOQRooms.indexOf(rTarget);
+              if (pos !== -1) {
+                self.selectedBOQRooms.splice(pos, 1);
+                if (self.selectedBOQRooms.length === 0) {
+                  self.selectedBOQRooms = ['all'];
+                }
+              } else {
+                self.selectedBOQRooms.push(rTarget);
+              }
+            }
+          }
+          self.renderBOQ();
+        });
+      });
 
       var toggleRcBtn = document.getElementById('boqToggleRateCardBtn');
       var rcDrawer = document.getElementById('rateCardDrawer');
@@ -1860,13 +2005,14 @@
 
     exportXLSX: function () {
       this.sync3DStudioUnits();
-      var quote = Core.generateFullQuotation(this.project);
+      var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms);
       var currentTier = (this.project.rateCard && this.project.rateCard.selectedTier) || 'PRICE 1';
       var meta = (this.project && this.project.meta) || {};
+      var roomScopeText = quote.isFiltered ? ('Filtered: ' + (self.selectedBOQRooms || []).join(', ')) : 'All Rooms (Entire Home)';
 
       var rows = [
         ['ORBIX STUDIO — RESIDENTIAL INTERIOR ESTIMATION & QUOTATION'],
-        ['Quote Ref #:', meta.quoteId || 'ORB-2026-089', 'Date:', meta.dateCreated || new Date().toLocaleDateString('en-IN'), 'Status:', 'Approved Estimate', 'Active Tier:', currentTier],
+        ['Quote Ref #:', meta.quoteId || 'ORB-2026-089', 'Date:', meta.dateCreated || new Date().toLocaleDateString('en-IN'), 'Status:', 'Approved Estimate', 'Active Tier:', currentTier, 'Scope:', roomScopeText],
         ['Client Name:', meta.clientName || 'Aravind K.', 'Contact:', meta.phone || '+91 98450 12345', 'Email:', meta.email || 'aravind@example.com'],
         ['Site Address:', meta.siteAddress || 'Flat 402, Skyline Residency, Bangalore', 'Designer:', meta.designerName || 'Orbix Studio Design Team'],
         [],

@@ -511,18 +511,131 @@
   }
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Planar Graph Subdivision Helpers for Multi-Room & T-Junctions
+     ───────────────────────────────────────────────────────────────────────────── */
+  function segmentIntersection(p1, p2, p3, p4, tol) {
+    tol = tol || 1e-4;
+    var dx1 = p2.x - p1.x, dy1 = p2.y - p1.y;
+    var dx2 = p4.x - p3.x, dy2 = p4.y - p3.y;
+    var denom = dx1 * dy2 - dy1 * dx2;
+    if (Math.abs(denom) < 1e-7) return null; // parallel or colinear
+
+    var t = ((p3.x - p1.x) * dy2 - (p3.y - p1.y) * dx2) / denom;
+    var u = ((p3.x - p1.x) * dy1 - (p3.y - p1.y) * dx1) / denom;
+
+    if (t > tol && t < 1.0 - tol && u > tol && u < 1.0 - tol) {
+      return {
+        pt: { x: p1.x + t * dx1, y: p1.y + dy1 * t },
+        t1: t,
+        t2: u
+      };
+    }
+    return null;
+  }
+
+  function projectPointOnSegment(p, a, b) {
+    var dx = b.x - a.x, dy = b.y - a.y;
+    var l2 = dx * dx + dy * dy;
+    if (l2 < 1e-9) return { pt: { x: a.x, y: a.y }, t: 0, dist: Math.hypot(p.x - a.x, p.y - a.y) };
+    var t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2;
+    t = Math.max(0, Math.min(1, t));
+    var proj = { x: a.x + t * dx, y: a.y + t * dy };
+    return { pt: proj, t: t, dist: Math.hypot(p.x - proj.x, p.y - proj.y) };
+  }
+
+  function subdivideWalls(walls, snapTol) {
+    snapTol = snapTol || 80;
+    var cuts = [];
+    for (var i = 0; i < walls.length; i++) {
+      cuts.push([0, 1]);
+    }
+
+    // 1. Cross segment-segment intersections
+    for (var i = 0; i < walls.length; i++) {
+      for (var j = i + 1; j < walls.length; j++) {
+        var inter = segmentIntersection(walls[i].start, walls[i].end, walls[j].start, walls[j].end);
+        if (inter) {
+          cuts[i].push(inter.t1);
+          cuts[j].push(inter.t2);
+        }
+      }
+    }
+
+    // 2. T-junctions: endpoints of wall i meeting the interior of wall j
+    for (var i = 0; i < walls.length; i++) {
+      var pts = [walls[i].start, walls[i].end];
+      for (var p = 0; p < 2; p++) {
+        var pt = pts[p];
+        for (var j = 0; j < walls.length; j++) {
+          if (i === j) continue;
+          var wj = walls[j];
+          var proj = projectPointOnSegment(pt, wj.start, wj.end);
+          var l = Math.hypot(wj.end.x - wj.start.x, wj.end.y - wj.start.y);
+          var distFromEndpoints = Math.min(proj.t * l, (1 - proj.t) * l);
+          if (proj.dist <= snapTol && distFromEndpoints > 40) {
+            cuts[j].push(proj.t);
+          }
+        }
+      }
+    }
+
+    // 3. Build linear subsegments
+    var subSegments = [];
+    for (var i = 0; i < walls.length; i++) {
+      var w = walls[i];
+      // Deduplicate and sort cut parameters
+      var rawCuts = cuts[i].map(function (t) { return Math.round(t * 10000) / 10000; });
+      var uniqueTs = [];
+      for (var u = 0; u < rawCuts.length; u++) {
+        if (uniqueTs.indexOf(rawCuts[u]) === -1) uniqueTs.push(rawCuts[u]);
+      }
+      uniqueTs.sort(function (a, b) { return a - b; });
+
+      for (var k = 0; k < uniqueTs.length - 1; k++) {
+        var tA = uniqueTs[k], tB = uniqueTs[k + 1];
+        if (tB - tA < 0.001) continue;
+        var pA = {
+          x: w.start.x + tA * (w.end.x - w.start.x),
+          y: w.start.y + tA * (w.end.y - w.start.y)
+        };
+        var pB = {
+          x: w.start.x + tB * (w.end.x - w.start.x),
+          y: w.start.y + tB * (w.end.y - w.start.y)
+        };
+        if (Math.hypot(pB.x - pA.x, pB.y - pA.y) > 40) {
+          subSegments.push({
+            wallId: w.id,
+            thickness: w.thickness,
+            height: w.height,
+            start: pA,
+            end: pB
+          });
+        }
+      }
+    }
+    return subSegments;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Room Boundary Detection (Planar Face Traversal)
      ───────────────────────────────────────────────────────────────────────────── */
   function detectRooms(project) {
-    var walls = project.plan.walls;
+    var walls = project.plan.walls || [];
     if (walls.length < 3) {
       project.plan.rooms = [];
       return [];
     }
 
-    // Build vertex adjacency map
+    // Step 1: Subdivide walls at all cross-junctions and T-junctions
+    var segments = subdivideWalls(walls, 80);
+    if (segments.length < 3) {
+      project.plan.rooms = [];
+      return [];
+    }
+
+    // Step 2: Build vertex adjacency map with vertex clustering
     var vertices = [];
-    var TOL = 30; // 30 mm snapping tolerance for vertices
+    var TOL = 60; // 60 mm snapping tolerance for vertices
 
     function findOrAddVertex(pt) {
       for (var i = 0; i < vertices.length; i++) {
@@ -535,17 +648,16 @@
     }
 
     var halfEdges = []; // directed edges
-    for (var w = 0; w < walls.length; w++) {
-      var wl = walls[w];
-      if (wallLength(wl) < 50) continue; // ignore zero-length walls
-      var vStart = findOrAddVertex(wl.start);
-      var vEnd = findOrAddVertex(wl.end);
+    for (var s = 0; s < segments.length; s++) {
+      var seg = segments[s];
+      var vStart = findOrAddVertex(seg.start);
+      var vEnd = findOrAddVertex(seg.end);
       if (vStart === vEnd) continue;
 
       // Directed edge 0: start -> end
       var e0 = {
         id: halfEdges.length,
-        wallId: wl.id,
+        wallId: seg.wallId,
         from: vStart,
         to: vEnd,
         angle: Vec2.angle(vertices[vStart].pt, vertices[vEnd].pt),
@@ -557,7 +669,7 @@
       // Directed edge 1: end -> start
       var e1 = {
         id: halfEdges.length,
-        wallId: wl.id,
+        wallId: seg.wallId,
         from: vEnd,
         to: vStart,
         angle: Vec2.angle(vertices[vEnd].pt, vertices[vStart].pt),
@@ -571,12 +683,12 @@
       vertices[vEnd].edges.push(e1);
     }
 
-    // Sort outgoing edges around each vertex CCW (ascending order of angle)
+    // Step 3: Sort outgoing edges around each vertex CCW (ascending order of angle)
     for (var v = 0; v < vertices.length; v++) {
       vertices[v].edges.sort(function (a, b) { return a.angle - b.angle; });
     }
 
-    // Find cycles using Left-Face traversal (CCW interior loops)
+    // Step 4: Find cycles using Left-Face traversal (CCW interior loops)
     var cycles = [];
     for (var e = 0; e < halfEdges.length; e++) {
       var edge = halfEdges[e];
@@ -587,7 +699,7 @@
       var guard = 0;
       var closed = false;
 
-      while (!curr.visited && guard++ < 200) {
+      while (!curr.visited && guard++ < 300) {
         curr.visited = true;
         cycle.push(curr);
 
@@ -611,36 +723,44 @@
       if (closed && cycle.length >= 3) {
         var poly = cycle.map(function (ce) { return Vec2.clone(vertices[ce.from].pt); });
         var area = Vec2.polygonArea(poly);
-        // Only positive area loops represent interior faces in CCW orientation
+        // Positive area loops represent interior faces in CCW orientation
         if (area > 500000) { // minimum 0.5 m² to be a valid room
           var wallIds = [];
           for (var k = 0; k < cycle.length; k++) {
             if (wallIds.indexOf(cycle[k].wallId) === -1) wallIds.push(cycle[k].wallId);
+          }
+          var perim = 0;
+          for (var pIdx = 0; pIdx < poly.length; pIdx++) {
+            var pNext = poly[(pIdx + 1) % poly.length];
+            perim += Vec2.dist(poly[pIdx], pNext);
           }
           cycles.push({
             polygon: poly,
             areaSqMm: area,
             areaSqM: area / SQM_FACTOR,
             areaSqFt: area / SFT_FACTOR,
+            perimeter: perim,
             wallIds: wallIds
           });
         }
       }
     }
 
-    // Update existing room entities or create new ones
+    // Step 5: Update existing room entities or create new ones with smart apartment naming
     var updatedRooms = [];
     var existingRooms = project.plan.rooms || [];
+    var unassignedCycles = [];
 
     for (var c = 0; c < cycles.length; c++) {
       var cyc = cycles[c];
       var center = Vec2.polygonCentroid(cyc.polygon);
       var matchedRoom = null;
 
-      // Match with an existing room by centroid containment
+      // Match with an existing room by centroid containment or center distance
       for (var er = 0; er < existingRooms.length; er++) {
-        if (Vec2.pointInPolygon(center, existingRooms[er].polygon)) {
-          matchedRoom = existingRooms[er];
+        var exR = existingRooms[er];
+        if (exR.polygon && (Vec2.pointInPolygon(center, exR.polygon) || Vec2.dist(center, Vec2.polygonCentroid(exR.polygon)) < 500)) {
+          matchedRoom = exR;
           break;
         }
       }
@@ -650,19 +770,64 @@
         matchedRoom.areaSqMm = cyc.areaSqMm;
         matchedRoom.areaSqM = cyc.areaSqM;
         matchedRoom.areaSqFt = cyc.areaSqFt;
+        matchedRoom.perimeter = cyc.perimeter;
         matchedRoom.wallIds = cyc.wallIds;
         updatedRooms.push(matchedRoom);
       } else {
-        var defaultName = 'Room ' + (updatedRooms.length + 1);
-        var r = createRoom({
-          name: defaultName,
-          polygon: cyc.polygon,
-          areaSqMm: cyc.areaSqMm,
-          areaSqM: cyc.areaSqM,
-          areaSqFt: cyc.areaSqFt,
-          wallIds: cyc.wallIds
-        });
-        updatedRooms.push(r);
+        unassignedCycles.push(cyc);
+      }
+    }
+
+    // Contextual naming pool for newly detected residential apartment rooms (e.g. 2BHK/3BHK)
+    var apartmentPresets = [
+      'Living / Hall',
+      'Master Bedroom',
+      'Bedroom 2',
+      'Modular Kitchen',
+      'Dining Room',
+      'Guest Bedroom',
+      'Foyer / Entry',
+      'Bathroom 1'
+    ];
+
+    // Sort unassigned cycles by area descending to assign larger rooms to Living/Master Bed
+    unassignedCycles.sort(function (a, b) { return b.areaSqM - a.areaSqM; });
+
+    for (var u = 0; u < unassignedCycles.length; u++) {
+      var uCyc = unassignedCycles[u];
+      var roomIdx = updatedRooms.length;
+      var roomName = (roomIdx < apartmentPresets.length) ? apartmentPresets[roomIdx] : ('Room ' + (roomIdx + 1));
+      if (cycles.length === 1) {
+        roomName = 'Room 1';
+      }
+
+      var newRoom = createRoom({
+        name: roomName,
+        polygon: uCyc.polygon,
+        areaSqMm: uCyc.areaSqMm,
+        areaSqM: uCyc.areaSqM,
+        areaSqFt: uCyc.areaSqFt,
+        perimeter: uCyc.perimeter,
+        wallIds: uCyc.wallIds
+      });
+      updatedRooms.push(newRoom);
+    }
+
+    // Step 6: Auto-associate placed furniture units with their enclosing room
+    var furniture = project.plan.furniture || [];
+    for (var f = 0; f < furniture.length; f++) {
+      var item = furniture[f];
+      if (item.pos) {
+        for (var rm = 0; rm < updatedRooms.length; rm++) {
+          if (Vec2.pointInPolygon(item.pos, updatedRooms[rm].polygon)) {
+            // If item has no roomId or its existing roomId is not in updatedRooms, associate it
+            var hasValidRoom = updatedRooms.some(function (r) { return r.id === item.roomId; });
+            if (!item.roomId || !hasValidRoom) {
+              item.roomId = updatedRooms[rm].id;
+            }
+            break;
+          }
+        }
       }
     }
 
@@ -760,6 +925,7 @@
     var totalItemAmount = baseAmount + extraDepthCharge + matCharge;
 
     return {
+      id: item.id,
       itemId: item.id,
       name: item.name,
       modelType: modelType,
@@ -789,7 +955,7 @@
     };
   }
 
-  function generateFullQuotation(project) {
+  function generateFullQuotation(project, selectedRoomIds) {
     var rateCard = project.rateCard || DEFAULT_RATE_CARD;
     var furniture = project.plan.furniture || [];
     var rooms = project.plan.rooms || [];
@@ -799,26 +965,86 @@
       roomMap[rooms[r].id] = rooms[r];
     }
 
+    // Auto-associate unassigned furniture items if inside a room
+    for (var fIdx = 0; fIdx < furniture.length; fIdx++) {
+      var fu = furniture[fIdx];
+      if ((!fu.roomId || !roomMap[fu.roomId]) && fu.pos) {
+        for (var rmIdx = 0; rmIdx < rooms.length; rmIdx++) {
+          if (rooms[rmIdx].polygon && Vec2.pointInPolygon(fu.pos, rooms[rmIdx].polygon)) {
+            fu.roomId = rooms[rmIdx].id;
+            break;
+          }
+        }
+      }
+    }
+
+    // Normalize room filter
+    var isFiltered = false;
+    var filterMap = {};
+    if (selectedRoomIds && Array.isArray(selectedRoomIds) && selectedRoomIds.length > 0 && selectedRoomIds.indexOf('all') === -1) {
+      isFiltered = true;
+      for (var s = 0; s < selectedRoomIds.length; s++) {
+        filterMap[selectedRoomIds[s]] = true;
+      }
+    }
+
+    // Initialize room breakdown metrics map for all detected rooms
+    var roomSummaries = {};
+    for (var rj = 0; rj < rooms.length; rj++) {
+      var rObj = rooms[rj];
+      roomSummaries[rObj.id] = {
+        id: rObj.id,
+        name: rObj.name || ('Room ' + (rj + 1)),
+        areaSqFt: rObj.areaSqFt || 0,
+        areaSqM: rObj.areaSqM || 0,
+        itemCount: 0,
+        woodworkSubtotal: 0,
+        civilSubtotal: 0,
+        roomSubtotal: 0,
+        percentShare: 0
+      };
+    }
+    roomSummaries['_general'] = {
+      id: '_general',
+      name: 'General / Unassigned',
+      areaSqFt: 0,
+      areaSqM: 0,
+      itemCount: 0,
+      woodworkSubtotal: 0,
+      civilSubtotal: 0,
+      roomSubtotal: 0,
+      percentShare: 0
+    };
+
     var lineItems = [];
     var categoryTotals = {};
     var roomTotals = {};
     var subtotal = 0;
+    var allItemsTotalWoodwork = 0;
 
     // 1. Modular Furniture & Cabinetry Line Items
     for (var i = 0; i < furniture.length; i++) {
       var f = furniture[i];
       var cost = calculateItemCost(f, rateCard);
-      cost.roomId = f.roomId;
+      cost.roomId = f.roomId || '_general';
       cost.roomName = (f.roomId && roomMap[f.roomId]) ? roomMap[f.roomId].name : 'General';
 
-      lineItems.push(cost);
-      subtotal += cost.totalAmount;
+      allItemsTotalWoodwork += cost.totalAmount;
 
-      // Group by category
-      categoryTotals[cost.category] = (categoryTotals[cost.category] || 0) + cost.totalAmount;
+      var bId = roomMap[cost.roomId] ? cost.roomId : '_general';
+      if (roomSummaries[bId]) {
+        roomSummaries[bId].itemCount++;
+        roomSummaries[bId].woodworkSubtotal += cost.totalAmount;
+        roomSummaries[bId].roomSubtotal += cost.totalAmount;
+      }
 
-      // Group by room
-      roomTotals[cost.roomName] = (roomTotals[cost.roomName] || 0) + cost.totalAmount;
+      var matchesFilter = !isFiltered || filterMap[cost.roomId] || filterMap[cost.roomName];
+      if (matchesFilter) {
+        lineItems.push(cost);
+        subtotal += cost.totalAmount;
+        categoryTotals[cost.category] = (categoryTotals[cost.category] || 0) + cost.totalAmount;
+        roomTotals[cost.roomName] = (roomTotals[cost.roomName] || 0) + cost.totalAmount;
+      }
     }
 
     // 2. Civil / Architectural Line Items (Optional: False Ceiling, Flooring, Painting from detected rooms)
@@ -826,38 +1052,54 @@
     for (var rm = 0; rm < rooms.length; rm++) {
       var room = rooms[rm];
       if (room.areaSqFt > 0) {
+        var civilMatches = !isFiltered || filterMap[room.id] || filterMap[room.name];
+
         // Flooring
         if (rateCard.categories.flooring && rateCard.categories.flooring.baseRatePerSft) {
           var floorCost = room.areaSqFt * rateCard.categories.flooring.baseRatePerSft;
-          civilLineItems.push({
-            name: 'Flooring: ' + room.name,
-            category: 'flooring',
-            roomName: room.name,
-            areaSft: room.areaSqFt,
-            baseRate: rateCard.categories.flooring.baseRatePerSft,
-            totalAmount: floorCost,
-            formulaDescription: room.areaSqFt.toFixed(1) + ' SFT @ ' + rateCard.currencySymbol + rateCard.categories.flooring.baseRatePerSft + '/SFT'
-          });
-          subtotal += floorCost;
-          categoryTotals.flooring = (categoryTotals.flooring || 0) + floorCost;
-          roomTotals[room.name] = (roomTotals[room.name] || 0) + floorCost;
+          if (roomSummaries[room.id]) {
+            roomSummaries[room.id].civilSubtotal += floorCost;
+            roomSummaries[room.id].roomSubtotal += floorCost;
+          }
+          if (civilMatches) {
+            civilLineItems.push({
+              name: 'Flooring: ' + room.name,
+              category: 'flooring',
+              roomName: room.name,
+              roomId: room.id,
+              areaSft: room.areaSqFt,
+              baseRate: rateCard.categories.flooring.baseRatePerSft,
+              totalAmount: floorCost,
+              formulaDescription: room.areaSqFt.toFixed(1) + ' SFT @ ' + rateCard.currencySymbol + rateCard.categories.flooring.baseRatePerSft + '/SFT'
+            });
+            subtotal += floorCost;
+            categoryTotals.flooring = (categoryTotals.flooring || 0) + floorCost;
+            roomTotals[room.name] = (roomTotals[room.name] || 0) + floorCost;
+          }
         }
 
         // False Ceiling (if enabled for the room)
         if (room.falseCeiling && rateCard.categories.false_ceiling) {
           var fcCost = room.areaSqFt * rateCard.categories.false_ceiling.baseRatePerSft;
-          civilLineItems.push({
-            name: 'False Ceiling: ' + room.name,
-            category: 'false_ceiling',
-            roomName: room.name,
-            areaSft: room.areaSqFt,
-            baseRate: rateCard.categories.false_ceiling.baseRatePerSft,
-            totalAmount: fcCost,
-            formulaDescription: room.areaSqFt.toFixed(1) + ' SFT @ ' + rateCard.currencySymbol + rateCard.categories.false_ceiling.baseRatePerSft + '/SFT'
-          });
-          subtotal += fcCost;
-          categoryTotals.false_ceiling = (categoryTotals.false_ceiling || 0) + fcCost;
-          roomTotals[room.name] = (roomTotals[room.name] || 0) + fcCost;
+          if (roomSummaries[room.id]) {
+            roomSummaries[room.id].civilSubtotal += fcCost;
+            roomSummaries[room.id].roomSubtotal += fcCost;
+          }
+          if (civilMatches) {
+            civilLineItems.push({
+              name: 'False Ceiling: ' + room.name,
+              category: 'false_ceiling',
+              roomName: room.name,
+              roomId: room.id,
+              areaSft: room.areaSqFt,
+              baseRate: rateCard.categories.false_ceiling.baseRatePerSft,
+              totalAmount: fcCost,
+              formulaDescription: room.areaSqFt.toFixed(1) + ' SFT @ ' + rateCard.currencySymbol + rateCard.categories.false_ceiling.baseRatePerSft + '/SFT'
+            });
+            subtotal += fcCost;
+            categoryTotals.false_ceiling = (categoryTotals.false_ceiling || 0) + fcCost;
+            roomTotals[room.name] = (roomTotals[room.name] || 0) + fcCost;
+          }
         }
       }
     }
@@ -869,7 +1111,9 @@
     }
 
     var installCharge = totalWoodworkSft * (rateCard.laborRates.installationPerSft || 85);
-    var transportCharge = rateCard.laborRates.transportLumpSum || 4500;
+    var transportCharge = lineItems.length === 0 ? 0 :
+                          (lineItems.length === 1 && totalWoodworkSft < 15) ? 650 :
+                          (lineItems.length <= 2 ? 1500 : (rateCard.laborRates.transportLumpSum || 4500));
     var laborTotal = installCharge + transportCharge;
 
     var grossBeforeTax = subtotal + laborTotal;
@@ -878,6 +1122,22 @@
     var gstAmount = netBeforeTax * ((rateCard.gstPercent || 18) / 100.0);
     var grandTotal = netBeforeTax + gstAmount;
 
+    // Convert roomSummaries to array and compute % share
+    var allRoomsSummary = [];
+    var totalProjectSpend = 0;
+    for (var skSum in roomSummaries) {
+      totalProjectSpend += roomSummaries[skSum].roomSubtotal;
+    }
+    if (totalProjectSpend <= 0) totalProjectSpend = 1;
+
+    for (var sk in roomSummaries) {
+      var sItem = roomSummaries[sk];
+      if (sItem.itemCount > 0 || (sItem.id !== '_general' && sItem.areaSqFt > 0)) {
+        sItem.percentShare = Math.round((sItem.roomSubtotal / totalProjectSpend) * 100);
+        allRoomsSummary.push(sItem);
+      }
+    }
+
     return {
       currency: rateCard.currency || 'INR',
       currencySymbol: rateCard.currencySymbol || '₹',
@@ -885,6 +1145,9 @@
       selectedTier: rateCard.selectedTier || null,
       priceTiers: rateCard.priceTiers || PRICE_TIERS,
       modelRates: rateCard.modelRates || MODEL_RATES_MATRIX,
+      selectedRoomIds: selectedRoomIds || ['all'],
+      isFiltered: isFiltered,
+      allRoomsSummary: allRoomsSummary,
       furnitureItems: lineItems,
       civilItems: civilLineItems,
       categoryTotals: categoryTotals,
