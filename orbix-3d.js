@@ -291,6 +291,11 @@
 
     group.position.set(start.x, 0, start.y);
     group.rotation.y = -angle;
+    group.userData = {
+      isWall: true,
+      wallId: wall.id,
+      mid: { x: (start.x + wall.end.x) / 2, y: (start.y + wall.end.y) / 2 }
+    };
     return group;
   };
 

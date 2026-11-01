@@ -98,48 +98,107 @@
     };
   };
 
-  // Snapping logic: Vertex Snap -> Alignment Guides -> Grid Snap
+  // Snapping logic: Joint Snap -> Perpendicular/Parallel -> Orthogonal -> Grid Snap
   PlanEditor.prototype.snapPoint = function (worldPt, ignoreWallId) {
     var snapDistMm = 200; // snapping radius in mm
     var snapped = Vec2.clone(worldPt);
-    var snapInfo = { snapped: false, type: null, targetPt: null };
+    var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
 
-    // 1. Vertex snapping to existing wall endpoints
-    var walls = this.project.plan.walls;
+    // 1. Vertex magnetic snap to existing wall endpoints / joints
     for (var i = 0; i < walls.length; i++) {
       var w = walls[i];
       if (w.id === ignoreWallId) continue;
       if (Vec2.dist(worldPt, w.start) < snapDistMm) {
-        return { pt: Vec2.clone(w.start), type: 'vertex', target: w.start };
+        return { pt: Vec2.clone(w.start), type: 'joint', target: w.start, label: 'Wall Joint' };
       }
       if (Vec2.dist(worldPt, w.end) < snapDistMm) {
-        return { pt: Vec2.clone(w.end), type: 'vertex', target: w.end };
+        return { pt: Vec2.clone(w.end), type: 'joint', target: w.end, label: 'Wall Joint' };
       }
     }
 
-    // 2. Angle constraint snapping (0°, 45°, 90°, 135°, 180°, etc.) from chain start
+    // 2. When drawing a wall (wallChainStart active), check angle guides:
     if (this.wallChainStart) {
       var dx = worldPt.x - this.wallChainStart.x;
       var dy = worldPt.y - this.wallChainStart.y;
-      var dist = Math.sqrt(dx * dx + dy * dy);
-      var angle = Math.atan2(dy, dx);
+      var rawDist = Math.sqrt(dx * dx + dy * dy);
+      var currentAngle = Math.atan2(dy, dx);
+      var targetDist = (this.numericInputBuffer && parseFloat(this.numericInputBuffer) > 0) ? parseFloat(this.numericInputBuffer) : rawDist;
+
+      // 2a. Perpendicular & Parallel guides relative to existing walls
+      for (var j = 0; j < walls.length; j++) {
+        var ew = walls[j];
+        if (ew.id === ignoreWallId) continue;
+        var ewAngle = Math.atan2(ew.end.y - ew.start.y, ew.end.x - ew.start.x);
+
+        // Parallel angles: ewAngle, ewAngle + PI, ewAngle - PI
+        var parAngles = [ewAngle, ewAngle + Math.PI, ewAngle - Math.PI];
+        for (var p = 0; p < parAngles.length; p++) {
+          var diffP = Math.atan2(Math.sin(currentAngle - parAngles[p]), Math.cos(currentAngle - parAngles[p]));
+          if (Math.abs(diffP) < 0.12) { // within ~7 degrees
+            var snapAngle = parAngles[p];
+            snapped.x = this.wallChainStart.x + Math.cos(snapAngle) * targetDist;
+            snapped.y = this.wallChainStart.y + Math.sin(snapAngle) * targetDist;
+            return {
+              pt: snapped,
+              type: 'parallel',
+              target: ew,
+              label: '∥ Parallel',
+              angleDeg: Math.round(((snapAngle * 180 / Math.PI) % 360 + 360) % 360)
+            };
+          }
+        }
+
+        // Perpendicular angles: ewAngle + PI/2, ewAngle - PI/2
+        var perpAngles = [ewAngle + Math.PI / 2, ewAngle - Math.PI / 2];
+        for (var q = 0; q < perpAngles.length; q++) {
+          var diffQ = Math.atan2(Math.sin(currentAngle - perpAngles[q]), Math.cos(currentAngle - perpAngles[q]));
+          if (Math.abs(diffQ) < 0.12) {
+            var snapAnglePerp = perpAngles[q];
+            snapped.x = this.wallChainStart.x + Math.cos(snapAnglePerp) * targetDist;
+            snapped.y = this.wallChainStart.y + Math.sin(snapAnglePerp) * targetDist;
+            return {
+              pt: snapped,
+              type: 'perpendicular',
+              target: ew,
+              label: '⊥ 90° Perpendicular',
+              angleDeg: Math.round(((snapAnglePerp * 180 / Math.PI) % 360 + 360) % 360)
+            };
+          }
+        }
+      }
+
+      // 2b. Orthogonal snapping: 0°, 90°, 180°, 270° (or 45° increments)
       var snapStep = Math.PI / 4; // 45 degrees
-      var nearestAngle = Math.round(angle / snapStep) * snapStep;
-      if (Math.abs(angle - nearestAngle) < 0.15) { // within ~8.5 degrees
-        snapped.x = this.wallChainStart.x + Math.cos(nearestAngle) * dist;
-        snapped.y = this.wallChainStart.y + Math.sin(nearestAngle) * dist;
-        snapInfo = { snapped: true, type: 'angle', angleDeg: Math.round(nearestAngle * 180 / Math.PI) };
+      var nearestAngle = Math.round(currentAngle / snapStep) * snapStep;
+      if (Math.abs(currentAngle - nearestAngle) < 0.15) { // within ~8.5 degrees
+        snapped.x = this.wallChainStart.x + Math.cos(nearestAngle) * targetDist;
+        snapped.y = this.wallChainStart.y + Math.sin(nearestAngle) * targetDist;
+        var deg = Math.round(((nearestAngle * 180 / Math.PI) % 360 + 360) % 360);
+        var orthoLabel = (deg === 0 || deg === 180) ? '180° Straight' : (deg === 90 || deg === 270) ? '90° Orthogonal' : deg + '° Angle';
+        return {
+          pt: snapped,
+          type: (deg % 90 === 0) ? 'ortho' : 'angle',
+          label: orthoLabel,
+          angleDeg: deg
+        };
+      }
+
+      // If numericInputBuffer is active on free angle:
+      if (this.numericInputBuffer && parseFloat(this.numericInputBuffer) > 0) {
+        snapped.x = this.wallChainStart.x + Math.cos(currentAngle) * targetDist;
+        snapped.y = this.wallChainStart.y + Math.sin(currentAngle) * targetDist;
+        return { pt: snapped, type: 'typed', label: targetDist + ' mm' };
       }
     }
 
     // 3. Grid snap (100 mm grid)
-    if (!snapInfo.snapped && this.project.plan.snapToGrid) {
+    if (this.project.plan.snapToGrid) {
       var grid = this.project.plan.gridSize || 100;
       snapped.x = Math.round(snapped.x / grid) * grid;
       snapped.y = Math.round(snapped.y / grid) * grid;
     }
 
-    return { pt: snapped, type: snapInfo.type || 'grid' };
+    return { pt: snapped, type: 'grid' };
   };
 
   // Find wall and projection nearest to world point
@@ -382,6 +441,50 @@
         self.redo();
         return;
       }
+      // 1. Numeric typing for exact wall length (when drawing wall)
+      if (self.wallChainStart) {
+        if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
+          e.preventDefault();
+          self.numericInputBuffer = (self.numericInputBuffer || '') + e.key;
+          self.render();
+          return;
+        }
+        if (e.key === 'Backspace' && self.numericInputBuffer && self.numericInputBuffer.length > 0) {
+          e.preventDefault();
+          self.numericInputBuffer = self.numericInputBuffer.slice(0, -1);
+          self.render();
+          return;
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (self.numericInputBuffer && parseFloat(self.numericInputBuffer) > 0) {
+            var targetL = parseFloat(self.numericInputBuffer);
+            var snappedEnd = self.snapPoint(self.cursorWorld);
+            var dx = snappedEnd.pt.x - self.wallChainStart.x;
+            var dy = snappedEnd.pt.y - self.wallChainStart.y;
+            var ang = Math.atan2(dy, dx);
+            var exactEndPt = {
+              x: Math.round(self.wallChainStart.x + Math.cos(ang) * targetL),
+              y: Math.round(self.wallChainStart.y + Math.sin(ang) * targetL)
+            };
+            if (Vec2.dist(self.wallChainStart, exactEndPt) > 50) {
+              var newW = Core.createWall({
+                start: self.wallChainStart,
+                end: exactEndPt,
+                thickness: self.wallPreset.thickness,
+                height: self.wallPreset.height
+              });
+              self.project.plan.walls.push(newW);
+              self.pushHistory('Draw Wall (' + Math.round(targetL) + 'mm)');
+              self.wallChainStart = Vec2.clone(exactEndPt);
+              self.numericInputBuffer = '';
+              self.render();
+              return;
+            }
+          }
+        }
+      }
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         self.deleteSelected();
@@ -422,6 +525,11 @@
         }
       }
       if (e.key === 'Escape') {
+        if (self.numericInputBuffer) {
+          self.numericInputBuffer = '';
+          self.render();
+          return;
+        }
         self.wallChainStart = null;
         self.selected = [];
         self.activeTool = 'select';
@@ -511,6 +619,18 @@
       return;
     }
 
+    // Check if clicked inside a room polygon
+    var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
+    for (var r = 0; r < rooms.length; r++) {
+      if (rooms[r].polygon && rooms[r].polygon.length >= 3 && Core.Vec2.pointInPolygon(worldPt, rooms[r].polygon)) {
+        if (!isShift) this.selected = [];
+        this.selected.push({ type: 'room', id: rooms[r].id });
+        this.onSelectionChange(this.selected);
+        this.render();
+        return;
+      }
+    }
+
     // Clicked empty space -> clear selection
     if (!isShift) {
       this.selected = [];
@@ -523,6 +643,7 @@
     var snapped = this.snapPoint(worldPt);
     if (!this.wallChainStart) {
       this.wallChainStart = Vec2.clone(snapped.pt);
+      this.numericInputBuffer = '';
     } else {
       var endPt = Vec2.clone(snapped.pt);
       if (Vec2.dist(this.wallChainStart, endPt) > 100) {
@@ -536,6 +657,7 @@
         this.pushHistory('Draw Wall');
         // Chain to the next wall
         this.wallChainStart = Vec2.clone(endPt);
+        this.numericInputBuffer = '';
       }
     }
     this.render();
@@ -730,8 +852,10 @@
       var r = rooms[i];
       if (!r.polygon || r.polygon.length < 3) continue;
 
+      var isSelected = this.isSelected('room', r.id);
+
       // Floor Fill
-      ctx.fillStyle = 'rgba(232, 241, 245, 0.45)';
+      ctx.fillStyle = isSelected ? 'rgba(37, 99, 235, 0.16)' : 'rgba(232, 241, 245, 0.45)';
       ctx.beginPath();
       var p0 = this.worldToScreen(r.polygon[0]);
       ctx.moveTo(p0.x, p0.y);
@@ -742,19 +866,47 @@
       ctx.closePath();
       ctx.fill();
 
+      if (isSelected) {
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
       // Room Center Label
       var centroid = Core.Vec2.polygonCentroid(r.polygon);
       var cScreen = this.worldToScreen(centroid);
 
-      ctx.fillStyle = '#23211E';
-      ctx.font = '600 13px "IBM Plex Sans", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(r.name, cScreen.x, cScreen.y - 8);
+      var nameTxt = r.name || ('Room ' + (i + 1));
+      var areaTxt = (r.areaSqM || 0).toFixed(1) + ' m²  ·  ' + Math.round(r.areaSqFt || 0) + ' sq ft';
 
-      ctx.fillStyle = '#6C6862';
+      // Badge pill
+      ctx.font = '600 13px "IBM Plex Sans", sans-serif';
+      var nw = ctx.measureText(nameTxt).width;
       ctx.font = '500 11px "IBM Plex Mono", monospace';
-      var areaTxt = r.areaSqM.toFixed(1) + ' m²  ·  ' + Math.round(r.areaSqFt) + ' sq ft';
-      ctx.fillText(areaTxt, cScreen.x, cScreen.y + 10);
+      var aw = ctx.measureText(areaTxt).width;
+      var bw = Math.max(nw, aw) + 24;
+      var bh = 42;
+
+      ctx.fillStyle = isSelected ? '#1e3a8a' : 'rgba(255, 255, 255, 0.94)';
+      ctx.strokeStyle = isSelected ? '#3b82f6' : '#d1d5db';
+      ctx.lineWidth = isSelected ? 2 : 1;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(cScreen.x - bw / 2, cScreen.y - bh / 2, bw, bh, 6);
+      else ctx.rect(cScreen.x - bw / 2, cScreen.y - bh / 2, bw, bh);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = isSelected ? '#ffffff' : '#1f2937';
+      ctx.font = '700 13px "IBM Plex Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(nameTxt, cScreen.x, cScreen.y - 9);
+
+      ctx.fillStyle = isSelected ? '#93c5fd' : '#4b5563';
+      ctx.font = '500 10.5px "IBM Plex Mono", monospace';
+      ctx.fillText(areaTxt, cScreen.x, cScreen.y + 9);
     }
   };
 
@@ -1031,13 +1183,80 @@
   };
 
   PlanEditor.prototype.renderPreview = function (ctx) {
-    // 1. Wall drawing preview line
+    // 1. Wall drawing preview line & dynamic guidelines
     if (this.wallChainStart) {
-      var snapped = this.snapPoint(this.cursorWorld);
+      var snap = this.snapPoint(this.cursorWorld);
       var sStart = this.worldToScreen(this.wallChainStart);
-      var sEnd = this.worldToScreen(snapped.pt);
-      var distMm = Math.round(Vec2.dist(this.wallChainStart, snapped.pt));
+      var sEnd = this.worldToScreen(snap.pt);
+      var distMm = Math.round(Vec2.dist(this.wallChainStart, snap.pt));
 
+      // 1a. Draw alignment guide lines if snapped to perpendicular, parallel, or orthogonal
+      if (snap.type === 'perpendicular' || snap.type === 'parallel') {
+        var isPerp = (snap.type === 'perpendicular');
+        ctx.save();
+        ctx.strokeStyle = isPerp ? '#10b981' : '#059669'; // Emerald green
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+
+        var gDx = sEnd.x - sStart.x, gDy = sEnd.y - sStart.y;
+        var gLen = Math.hypot(gDx, gDy) || 1;
+        var ext = 1800;
+        ctx.beginPath();
+        ctx.moveTo(sStart.x - (gDx / gLen) * ext, sStart.y - (gDy / gLen) * ext);
+        ctx.lineTo(sEnd.x + (gDx / gLen) * ext, sEnd.y + (gDy / gLen) * ext);
+        ctx.stroke();
+        ctx.restore();
+
+        // Guide Pill Badge near midpoint
+        var gMidX = (sStart.x + sEnd.x) / 2;
+        var gMidY = (sStart.y + sEnd.y) / 2 - 38;
+        ctx.save();
+        ctx.font = '700 11px "IBM Plex Sans", sans-serif';
+        var gText = (isPerp ? '⊥ 90° Perpendicular' : '∥ Parallel') + (snap.target && snap.target.id ? ' to Wall' : '');
+        var gtw = ctx.measureText(gText).width;
+        ctx.fillStyle = isPerp ? '#065f46' : '#047857';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(gMidX - gtw / 2 - 8, gMidY - 10, gtw + 16, 20, 4);
+        else ctx.rect(gMidX - gtw / 2 - 8, gMidY - 10, gtw + 16, 20);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(gText, gMidX, gMidY);
+        ctx.restore();
+      } else if (snap.type === 'ortho' || snap.type === 'angle') {
+        ctx.save();
+        ctx.strokeStyle = '#0284c7'; // Sky blue
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([5, 4]);
+        var gDx2 = sEnd.x - sStart.x, gDy2 = sEnd.y - sStart.y;
+        var gLen2 = Math.hypot(gDx2, gDy2) || 1;
+        ctx.beginPath();
+        ctx.moveTo(sStart.x - (gDx2 / gLen2) * 1200, sStart.y - (gDy2 / gLen2) * 1200);
+        ctx.lineTo(sEnd.x + (gDx2 / gLen2) * 1200, sEnd.y + (gDy2 / gLen2) * 1200);
+        ctx.stroke();
+        ctx.restore();
+
+        // Angle Pill Badge
+        var gMidX2 = (sStart.x + sEnd.x) / 2;
+        var gMidY2 = (sStart.y + sEnd.y) / 2 - 38;
+        ctx.save();
+        ctx.font = '700 11px "IBM Plex Mono", monospace';
+        var aText = (snap.label || (snap.angleDeg + '°'));
+        var atw = ctx.measureText(aText).width;
+        ctx.fillStyle = '#0369a1';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(gMidX2 - atw / 2 - 8, gMidY2 - 10, atw + 16, 20, 4);
+        else ctx.rect(gMidX2 - atw / 2 - 8, gMidY2 - 10, atw + 16, 20);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(aText, gMidX2, gMidY2);
+        ctx.restore();
+      }
+
+      // Draw ghost wall line
       ctx.strokeStyle = '#1B4F72';
       ctx.lineWidth = Math.max(2, this.wallPreset.thickness * this.zoom);
       ctx.beginPath();
@@ -1045,36 +1264,79 @@
       ctx.lineTo(sEnd.x, sEnd.y);
       ctx.stroke();
 
-      // Dimension badge at cursor
-      ctx.fillStyle = '#1B4F72';
-      ctx.beginPath();
-      ctx.arc(sEnd.x, sEnd.y, 4, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#FFFFFF';
+      // Dimension & Typing HUD Pill
       var midX = (sStart.x + sEnd.x) / 2;
-      var midY = (sStart.y + sEnd.y) / 2 - 15;
-      ctx.font = '600 12px "IBM Plex Mono", monospace';
-      var text = distMm + ' mm';
-      var tw = ctx.measureText(text).width;
-      ctx.fillStyle = 'rgba(27, 79, 114, 0.9)';
-      ctx.fillRect(midX - tw / 2 - 4, midY - 10, tw + 8, 18);
-      ctx.fillStyle = '#FFFFFF';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(text, midX, midY - 1);
+      var midY = (sStart.y + sEnd.y) / 2 - 14;
+
+      if (this.numericInputBuffer) {
+        // Floating keyboard input HUD
+        ctx.save();
+        ctx.font = '700 13px "IBM Plex Mono", monospace';
+        var hudText = '⌨ Length: [ ' + this.numericInputBuffer + ' ] mm  (↵ Enter to draw)';
+        var htw = ctx.measureText(hudText).width;
+        ctx.fillStyle = '#1e3a8a';
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(midX - htw / 2 - 10, midY - 12, htw + 20, 24, 5);
+        else ctx.rect(midX - htw / 2 - 10, midY - 12, htw + 20, 24);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(hudText, midX, midY);
+        ctx.restore();
+      } else {
+        // Standard dimension indicator
+        ctx.save();
+        ctx.font = '600 12px "IBM Plex Mono", monospace';
+        var dText = distMm.toLocaleString() + ' mm';
+        var dtw = ctx.measureText(dText).width;
+        ctx.fillStyle = 'rgba(27, 79, 114, 0.95)';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(midX - dtw / 2 - 8, midY - 10, dtw + 16, 20, 4);
+        else ctx.rect(midX - dtw / 2 - 8, midY - 10, dtw + 16, 20);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(dText, midX, midY);
+        ctx.restore();
+      }
     }
 
-    // 2. Snapping circle indicator
-    if (this.activeTool === 'wall' || this.activeTool === 'select') {
-      var snap = this.snapPoint(this.cursorWorld);
-      if (snap.type === 'vertex') {
-        var sSnap = this.worldToScreen(snap.pt);
-        ctx.strokeStyle = '#00B4D8';
-        ctx.lineWidth = 2;
+    // 2. Snapping circle indicator (Magnetic Joint snap)
+    if (this.activeTool === 'wall' || this.activeTool === 'select' || this.wallChainStart) {
+      var snap2 = this.snapPoint(this.cursorWorld);
+      if (snap2.type === 'joint' || snap2.type === 'vertex') {
+        var sSnap = this.worldToScreen(snap2.pt);
+        ctx.save();
+        ctx.strokeStyle = '#06b6d4'; // Bright cyan
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.arc(sSnap.x, sSnap.y, 7, 0, Math.PI * 2);
+        ctx.arc(sSnap.x, sSnap.y, 9, 0, Math.PI * 2);
         ctx.stroke();
+
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.3)';
+        ctx.beginPath();
+        ctx.arc(sSnap.x, sSnap.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Joint badge
+        ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
+        var jText = '● Joint Snap';
+        var jtw = ctx.measureText(jText).width;
+        ctx.fillStyle = '#0891b2';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(sSnap.x + 12, sSnap.y - 9, jtw + 10, 18, 3);
+        else ctx.rect(sSnap.x + 12, sSnap.y - 9, jtw + 10, 18);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(jText, sSnap.x + 17, sSnap.y);
+        ctx.restore();
       }
     }
 

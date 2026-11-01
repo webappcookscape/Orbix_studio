@@ -813,6 +813,83 @@
           }
           if (self.render3DHome) self.render3DHome();
         });
+      } else if (sel.type === 'room') {
+        var rm = null;
+        var rooms = this.project.plan.rooms || [];
+        for (var r = 0; r < rooms.length; r++) {
+          if (rooms[r].id === sel.id) { rm = rooms[r]; break; }
+        }
+        if (!rm) return;
+
+        var areaSqM = (rm.areaSqM || 0).toFixed(2);
+        var areaSqFt = Math.round(rm.areaSqFt || 0);
+
+        panel.innerHTML =
+          '<div class="insp-title">Room Properties</div>' +
+          '<div class="insp-row"><label>Room Name</label><input type="text" id="inspRoomName" value="' + (rm.name || 'Room') + '"></div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;">' +
+            ['Master Bed', 'Guest Bed', 'Living Room', 'Modular Kitchen', 'Dining', 'Wardrobe Room', 'Kids Bed', 'Pantry'].map(function (preset) {
+              return '<button class="minibtn insp-room-chip" data-name="' + preset + '" style="font-size:11px;padding:3px 7px;">' + preset + '</button>';
+            }).join('') +
+          '</div>' +
+          '<div class="insp-row"><label>Floor Finish</label><select id="inspRoomFloor">' +
+            '<option value="wood"' + ((rm.floorFinish === 'wood') ? ' selected' : '') + '>Wooden Parquet Flooring</option>' +
+            '<option value="marble"' + ((rm.floorFinish === 'marble') ? ' selected' : '') + '>Italian White Marble</option>' +
+            '<option value="tile"' + ((rm.floorFinish === 'tile' || !rm.floorFinish) ? ' selected' : '') + '>Vitrified Light Tiles</option>' +
+            '<option value="concrete"' + ((rm.floorFinish === 'concrete') ? ' selected' : '') + '>Polished Concrete</option>' +
+          '</select></div>' +
+          '<div class="insp-row"><label>Ceiling Ht (mm)</label><input type="number" id="inspRoomHeight" value="' + (rm.ceilingHeight || 2800) + '" step="100"></div>' +
+          '<div class="insp-row"><label>Area (sq.ft)</label><input type="text" value="' + areaSqFt + ' sq ft (' + areaSqM + ' m²)" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
+          '<div class="insp-row"><label>Perimeter (mm)</label><input type="text" value="' + Math.round(rm.perimeter || 0).toLocaleString() + ' mm" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
+          '<button class="btn primary full" id="inspFocusRoom3D" style="margin-top:12px">👁 View Room in 3D Studio</button>';
+
+        var nameInput = document.getElementById('inspRoomName');
+        if (nameInput) {
+          nameInput.addEventListener('input', function (e) {
+            rm.name = e.target.value;
+            self.editor.render();
+            self.saveToLocalStorage();
+          });
+        }
+
+        document.querySelectorAll('.insp-room-chip').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            rm.name = btn.dataset.name;
+            if (nameInput) nameInput.value = btn.dataset.name;
+            self.editor.pushHistory('Rename Room');
+            self.editor.render();
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome();
+          });
+        });
+
+        var floorSel = document.getElementById('inspRoomFloor');
+        if (floorSel) {
+          floorSel.addEventListener('change', function (e) {
+            rm.floorFinish = e.target.value;
+            self.editor.pushHistory('Change Floor Finish');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome();
+          });
+        }
+
+        var htInput = document.getElementById('inspRoomHeight');
+        if (htInput) {
+          htInput.addEventListener('change', function (e) {
+            rm.ceilingHeight = parseFloat(e.target.value) || 2800;
+            self.editor.pushHistory('Change Ceiling Height');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome();
+          });
+        }
+
+        var focusBtn = document.getElementById('inspFocusRoom3D');
+        if (focusBtn) {
+          focusBtn.addEventListener('click', function () {
+            var vtab = document.querySelector('.vtab[data-view="design"]');
+            if (vtab) vtab.click();
+          });
+        }
       }
     },
 
@@ -846,9 +923,28 @@
 
         if (existing) {
           if (fn.name) existing.label = fn.name;
+          if (fn.dimensions) {
+            if (fn.dimensions.W) existing.W = fn.dimensions.W;
+            if (fn.dimensions.H) existing.H = fn.dimensions.H;
+            if (fn.dimensions.D) existing.D = fn.dimensions.D;
+          }
+          if (fn.unitConfig) {
+            if (fn.unitConfig.shutters !== undefined) existing.shutters = fn.unitConfig.shutters;
+            if (fn.unitConfig.drawers !== undefined) existing.drawers = fn.unitConfig.drawers;
+            if (fn.unitConfig.shelves !== undefined) existing.shelves = fn.unitConfig.shelves;
+            if (fn.unitConfig.dstyle) existing.dstyle = fn.unitConfig.dstyle;
+            if (fn.unitConfig.handle) existing.handle = fn.unitConfig.handle;
+            if (fn.unitConfig.hfinish) existing.hfinish = fn.unitConfig.hfinish;
+            if (fn.unitConfig.type) existing.type = fn.unitConfig.type;
+            if (fn.unitConfig.loft !== undefined) existing.loft = fn.unitConfig.loft;
+            if (fn.unitConfig.loftH !== undefined) existing.loftH = fn.unitConfig.loftH;
+          }
+          if (fn.materials) {
+            if (fn.materials.shutter && fn.materials.shutter.finish) existing.shutterCol = fn.materials.shutter.finish;
+            if (fn.materials.carcass && fn.materials.carcass.finish) existing.carcass = fn.materials.carcass.finish;
+          }
           newUnits.push(existing);
         } else {
-          var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
           var isWall = (fn.category === 'kitchen_wall');
           var defH = isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 1800 : (fn.category === 'crockery' ? 2100 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
@@ -921,6 +1017,7 @@
       if (typeof window.renderLegend === 'function') window.renderLegend();
       if (typeof window.buildScene === 'function') window.buildScene();
       this.highlight3DFurniture(furnId);
+      if (typeof this.render3DHome === 'function') this.render3DHome();
     },
 
     highlight3DFurniture: function (furnId) {

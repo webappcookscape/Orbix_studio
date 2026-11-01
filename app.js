@@ -2304,6 +2304,42 @@ var GL=(function(){
     var k = homeObj ? 1.25 : (ROOM.id ? 1.16 : (U().ctype==="kitchen") ? 1.34 : /^(tv|crockery|dresser)$/.test(U().ctype||"") ? 1.18 : 1.12);
     dist=Math.max(dH,dW)*k+size.z*0.5;
   }
+  function updateWallCutaway(){
+    var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+    if(!homeObj) return;
+
+    var mode = window.OrbixWallMode || 'cutaway';
+    homeObj.children.forEach(function(child){
+      if(child.userData && child.userData.isWall){
+        if(mode === 'all'){
+          child.visible = true;
+          return;
+        }
+        if(mode === 'hidden'){
+          child.visible = false;
+          return;
+        }
+        // Auto-cutaway mode
+        var wMid = child.userData.mid;
+        if(!wMid) return;
+
+        var camToTargX = target.x - camera.position.x;
+        var camToTargZ = target.z - camera.position.z;
+        var camToTargDist = Math.hypot(camToTargX, camToTargZ) || 1;
+
+        var camToWallX = wMid.x - camera.position.x;
+        var camToWallZ = wMid.y - camera.position.z;
+        var camToWallDist = Math.hypot(camToWallX, camToWallZ) || 1;
+
+        var dot = (camToTargX * camToWallX + camToTargZ * camToWallZ) / (camToTargDist * camToWallDist);
+
+        // Obstructing if between camera and interior
+        var isObstructing = (camToWallDist < camToTargDist * 0.95 && dot > 0.35);
+        child.visible = !isObstructing;
+      }
+    });
+  }
+
   function apply(){
     if(!ok) return;
     var r=stage.getBoundingClientRect();
@@ -2317,6 +2353,7 @@ var GL=(function(){
     }
     camera.position.set(target.x+d*Math.sin(yaw)*Math.cos(el), target.y+d*Math.sin(el), target.z+d*Math.cos(yaw)*Math.cos(el));
     camera.lookAt(target);
+    updateWallCutaway();
     render();
   }
   /* ── offscreen thumbnail renderer (own context, own environment) ── */
@@ -2386,7 +2423,7 @@ var GL=(function(){
     });
     return out;
   }
-  return {init:init,show:show,frame:frame,apply:apply,debug:debug,toggleAll:toggleAll,settle:settle,pick:pick,pickFurniture:pickFurniture,pickPanel:pickPanel,clearSelect:function(){ clearSelect(); render(); },fxInit:fxInit,fxToggle:fxToggle,setDoors:function(t){ for(var id in doors){ var d=doors[id]; d.t=Math.max(0,Math.min(1,t))*(d.target||1); if(!d.target){ d.req=1; resolve(); d.t=Math.max(0,Math.min(1,t))*d.target; } applyDoor(d); } render(); },setExplode:function(t){ if(!xItems) explodeSetup(); xT=t; xSet(t); },handlesSet:handlesSet,plateSet:plateSet,handleAt:handleAt,floorPoint:floorPoint,thumb:thumb,snapshot:snapshot,explode:explode,assemble:assemble,get exploded(){ return xT>0.5; },get fx(){ return !!composer; },lights:function(){ var n=[]; if(scene) scene.traverse(function(o){ if(o.isLight) n.push(o.type+":"+o.intensity); }); return n; },get ok(){ return ok; },getScene:function(){ return scene; },getTarget:function(){ return target; },setTarget:function(x,y,z){ if(target) target.set(x,y,z); }};
+  return {init:init,show:show,frame:frame,apply:apply,updateWallCutaway:updateWallCutaway,debug:debug,toggleAll:toggleAll,settle:settle,pick:pick,pickFurniture:pickFurniture,pickPanel:pickPanel,clearSelect:function(){ clearSelect(); render(); },fxInit:fxInit,fxToggle:fxToggle,setDoors:function(t){ for(var id in doors){ var d=doors[id]; d.t=Math.max(0,Math.min(1,t))*(d.target||1); if(!d.target){ d.req=1; resolve(); d.t=Math.max(0,Math.min(1,t))*d.target; } applyDoor(d); } render(); },setExplode:function(t){ if(!xItems) explodeSetup(); xT=t; xSet(t); },handlesSet:handlesSet,plateSet:plateSet,handleAt:handleAt,floorPoint:floorPoint,thumb:thumb,snapshot:snapshot,explode:explode,assemble:assemble,get exploded(){ return xT>0.5; },get fx(){ return !!composer; },lights:function(){ var n=[]; if(scene) scene.traverse(function(o){ if(o.isLight) n.push(o.type+":"+o.intensity); }); return n; },get ok(){ return ok; },getScene:function(){ return scene; },getTarget:function(){ return target; },setTarget:function(x,y,z){ if(target) target.set(x,y,z); }};
 })();
 
 /* ═══════════════════════════════════════════════════════════════
@@ -4001,6 +4038,32 @@ $("#frontBtn").addEventListener("click",function(){ cam.yaw=0; cam.pitch=-2; cam
     if(!GL.ok){ toast("Door animation needs WebGL"); return; }
     var open=GL.toggleAll();
     b.textContent=open?"Close all":"Open all"; b.setAttribute("aria-pressed",String(open));
+  });
+})();
+(function(){
+  var b=$("#toggleWallCutawayBtn"); if(!b) return;
+  window.OrbixWallMode = 'cutaway';
+  b.addEventListener("click",function(){
+    if(window.OrbixWallMode === 'cutaway'){
+      window.OrbixWallMode = 'all';
+      b.textContent = '🏛 Walls: All Visible';
+      b.classList.remove('is-on');
+      toast("Showing all walls");
+    } else if(window.OrbixWallMode === 'all'){
+      window.OrbixWallMode = 'hidden';
+      b.textContent = '🚫 Walls: Hidden';
+      b.classList.remove('is-on');
+      toast("Hiding all walls");
+    } else {
+      window.OrbixWallMode = 'cutaway';
+      b.textContent = '👁 Walls: Auto-Cutaway';
+      b.classList.add('is-on');
+      toast("Auto-cutaway: front obstructing walls hidden");
+    }
+    if(GL.ok && GL.updateWallCutaway){
+      GL.updateWallCutaway();
+      GL.settle();
+    }
   });
 })();
 $("#isoBtn").addEventListener("click",function(){ var u=U(); if(u && u.ctype==="kitchen"){ cam.yaw=-34; cam.pitch=-17; cam.zoom=-0.12; } else { cam.yaw=-26; cam.pitch=-7; } camApply(); });
