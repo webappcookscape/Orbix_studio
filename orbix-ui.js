@@ -1568,6 +1568,78 @@
       });
     },
 
+    COMMERCIAL_FIELDS: [
+      { key: 'transport', label: '1. Transport', isDeduction: false },
+      { key: 'designCharges', label: '2. Design charges', isDeduction: false },
+      { key: 'accessories', label: '3. Accessories', isDeduction: false },
+      { key: 'floorMat', label: '4. Floor protective mat', isDeduction: false },
+      { key: 'electrical', label: '5. Electrical', isDeduction: false },
+      { key: 'plumbing', label: '6. Plumbing', isDeduction: false },
+      { key: 'wallpaper', label: '7. Wallpaper', isDeduction: false },
+      { key: 'falseCeiling', label: '8. False ceiling', isDeduction: false },
+      { key: 'appliances', label: '9. Appliances', isDeduction: false },
+      { key: 'civilWorks', label: '10. Civil works', isDeduction: false },
+      { key: 'loadingUnloading', label: '11. Loading and unloading (material)', isDeduction: false },
+      { key: 'outstationTransport', label: '12. Out station transport charges', isDeduction: false },
+      { key: 'discount', label: '13. Discount', isDeduction: true },
+      { key: 'finalDiscount', label: '14. Final discount (check with sir)', isDeduction: true }
+    ],
+
+    getCommercialCharges: function () {
+      if (!this.project) return {};
+      if (!this.project.commercialCharges) {
+        this.project.commercialCharges = {
+          transport: 0,
+          designCharges: 0,
+          accessories: 0,
+          floorMat: 0,
+          electrical: 0,
+          plumbing: 0,
+          wallpaper: 0,
+          falseCeiling: 0,
+          appliances: 0,
+          civilWorks: 0,
+          loadingUnloading: 0,
+          outstationTransport: 0,
+          discount: 0,
+          finalDiscount: 0,
+          gstPercent: 18
+        };
+      }
+      return this.project.commercialCharges;
+    },
+
+    computeCommercialSummary: function (woodworkSubtotal, commCharges) {
+      var charges = commCharges || this.getCommercialCharges();
+      var additions = 0;
+      for (var i = 0; i < this.COMMERCIAL_FIELDS.length; i++) {
+        var f = this.COMMERCIAL_FIELDS[i];
+        var val = parseFloat(charges[f.key]) || 0;
+        if (!f.isDeduction) {
+          additions += val;
+        }
+      }
+      var disc = parseFloat(charges.discount) || 0;
+      var finalDisc = parseFloat(charges.finalDiscount) || 0;
+      var totalDeductions = disc + finalDisc;
+
+      var netTaxable = Math.max(0, Math.round(woodworkSubtotal + additions - totalDeductions));
+      var gstPercent = (charges.gstPercent !== undefined && charges.gstPercent !== null && charges.gstPercent !== '') ? parseFloat(charges.gstPercent) : 18;
+      if (isNaN(gstPercent)) gstPercent = 18;
+      var gstAmount = Math.round(netTaxable * (gstPercent / 100));
+      var grandTotal = netTaxable + gstAmount;
+
+      return {
+        woodworkSubtotal: Math.round(woodworkSubtotal),
+        additions: additions,
+        totalDeductions: totalDeductions,
+        netTaxable: netTaxable,
+        gstPercent: gstPercent,
+        gstAmount: gstAmount,
+        grandTotal: grandTotal
+      };
+    },
+
     renderBOQ: function () {
       var boqEl = document.getElementById('orbixBOQTable');
       if (!boqEl) return;
@@ -1581,6 +1653,9 @@
       var sym = quote.currencySymbol;
       var rateCard = this.project.rateCard || Core.DEFAULT_RATE_CARD;
       var self = this;
+      var commCharges = this.getCommercialCharges();
+      var commSummary = this.computeCommercialSummary(quote.subtotalWoodwork, commCharges);
+
       if (!rateCard.selectedTier) {
         rateCard.selectedTier = 'PRICE 1';
         this.project.rateCard = rateCard;
@@ -1724,7 +1799,7 @@
         '<div class="qh-row"><span class="qh-lbl">Quotation Date</span><span class="qh-val">' + (this.project.meta.dateCreated || '28 Oct, 2026') + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Price Expiry Date</span><span class="qh-val">' + (this.project.meta.validUntil || '27 Nov, 2026') + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Total No. of Items</span><span class="qh-val">' + quote.furnitureItems.length + (quote.isFiltered ? ' (Filtered Scope)' : '') + '</span></div>' +
-        '<div class="qh-row total"><span class="qh-lbl">Total Amount</span><span class="qh-val">INR ' + quote.grandTotal.toLocaleString('en-IN') + '.00</span></div>' +
+        '<div class="qh-row total"><span class="qh-lbl">Total Amount</span><span class="qh-val" id="boqHeaderTotalAmount">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</span></div>' +
         '</div>' +
         '</div>' +
 
@@ -1872,19 +1947,19 @@
 
       var hwItems = [];
       if (totalHinges > 0) {
-        hwItems.push({ code: 'H-01', name: 'Auto Soft-Close Hinges', spec: 'Stainless Steel 304', qty: totalHinges, unit: 'nos', rate: 240, type: 'hinge' });
+        hwItems.push({ code: 'H-01', name: 'Auto Soft-Close Hinges', spec: 'Stainless Steel 304', qty: totalHinges, unit: 'nos', rate: 0, type: 'hinge' });
       }
       if (totalDrawers > 0) {
-        hwItems.push({ code: 'H-02', name: 'Telescopic Drawer Channels', spec: 'Triple Extension Heavy-Duty', qty: totalDrawers, unit: 'pair', rate: 700, type: 'runner' });
+        hwItems.push({ code: 'H-02', name: 'Telescopic Drawer Channels', spec: 'Triple Extension Heavy-Duty', qty: totalDrawers, unit: 'pair', rate: 0, type: 'runner' });
       }
       if (totalHandles > 0) {
-        hwItems.push({ code: 'H-03', name: 'Designer Edge Profile Handles', spec: 'Matte Charcoal Aluminum', qty: totalHandles, unit: 'nos', rate: 350, type: 'handle' });
+        hwItems.push({ code: 'H-03', name: 'Designer Edge Profile Handles', spec: 'Matte Charcoal Aluminum', qty: totalHandles, unit: 'nos', rate: 0, type: 'handle' });
       }
       if (totalWardrobeRails > 0) {
-        hwItems.push({ code: 'H-04', name: 'Wardrobe Hanging Oval Rails', spec: 'Chrome Plated Oval Rail', qty: totalWardrobeRails, unit: 'nos', rate: 450, type: 'rod' });
+        hwItems.push({ code: 'H-04', name: 'Wardrobe Hanging Oval Rails', spec: 'Chrome Plated Oval Rail', qty: totalWardrobeRails, unit: 'nos', rate: 0, type: 'rod' });
       }
       if (totalLocks > 0) {
-        hwItems.push({ code: 'H-05', name: 'Precision Cam Locks', spec: 'Brass Core with Dimple Keys', qty: totalLocks, unit: 'nos', rate: 280, type: 'lock' });
+        hwItems.push({ code: 'H-05', name: 'Precision Cam Locks', spec: 'Brass Core with Dimple Keys', qty: totalLocks, unit: 'nos', rate: 0, type: 'lock' });
       }
 
       var totalHw = 0;
@@ -1903,30 +1978,59 @@
             '<td class="c-center">Hardware</td>' +
             '<td class="fin-cell"><div>Material : ' + hw.spec + '</div></td>' +
             '<td class="acc-cell">System Pack</td>' +
-            '<td class="c-num">' + hw.rate.toLocaleString('en-IN') + '</td>' +
+            '<td class="c-num">0.00</td>' +
             '<td class="c-num">' + hw.qty + ' ' + hw.unit + '</td>' +
-            '<td class="c-num bold">' + hwAmt.toLocaleString('en-IN') + '.00</td>' +
+            '<td class="c-num bold">0.00</td>' +
             '</tr>';
         }
-        html += '<tr class="subtotal-bar"><td colspan="10" style="text-align:right;padding-right:12px;font-weight:700">SUBTOTAL HARDWARE &amp; FITTINGS</td><td class="c-num bold">' + totalHw.toLocaleString('en-IN') + '.00</td></tr>';
+        html += '<tr class="subtotal-bar"><td colspan="10" style="text-align:right;padding-right:12px;font-weight:700">SUBTOTAL HARDWARE &amp; FITTINGS</td><td class="c-num bold">0.00</td></tr>';
       }
 
-      var grandWoodwork = quote.subtotalWoodwork;
-      var totalLabor = quote.installCharge;
-      var totalTransport = quote.transportCharge;
-      var netTaxable = Math.round(grandWoodwork + totalHw + totalLabor + totalTransport + quote.marginAmount);
-      var gst18 = Math.round(netTaxable * 0.18);
-      var allInclusiveTotal = netTaxable + gst18;
-
       html += '<tr class="sec-bar-row"><td colspan="11"><b>Commercial Estimate Summary (' + (quote.isFiltered ? 'Active Scope' : 'Entire Home') + ')</b></td></tr>' +
-        '<tr><td colspan="4"></td><td colspan="6" class="bold">Modular Woodwork Subtotal</td><td class="c-num">' + Math.round(grandWoodwork).toLocaleString('en-IN') + '.00</td></tr>' +
-        (totalHw > 0 ? ('<tr><td colspan="4"></td><td colspan="6" class="bold">Hardware &amp; Functional Fittings Subtotal</td><td class="c-num">' + Math.round(totalHw).toLocaleString('en-IN') + '.00</td></tr>') : '') +
-        '<tr><td colspan="4"></td><td colspan="6" class="bold">Installation &amp; Assembly Labor</td><td class="c-num">' + Math.round(totalLabor).toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr><td colspan="4"></td><td colspan="6" class="bold">Logistics &amp; Site Delivery</td><td class="c-num">' + Math.round(totalTransport).toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr><td colspan="4"></td><td colspan="6" class="bold">Company Overhead / Margin (' + quote.marginPercent + '%)</td><td class="c-num">' + Math.round(quote.marginAmount).toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr class="taxable-row"><td colspan="4"></td><td colspan="6" class="bold">NET TAXABLE VALUE</td><td class="c-num bold">' + netTaxable.toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr><td colspan="4"></td><td colspan="6" class="bold">GST @ 18% (CGST 9% + SGST 9%)</td><td class="c-num">' + gst18.toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr class="grand-row"><td colspan="4"></td><td colspan="6" class="bold grand-lbl">FINAL ALL-INCLUSIVE QUOTE</td><td class="c-num bold grand-val">INR ' + allInclusiveTotal.toLocaleString('en-IN') + '.00</td></tr>' +
+        '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
+        '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>';
+
+      for (var ci = 0; ci < self.COMMERCIAL_FIELDS.length; ci++) {
+        var cf = self.COMMERCIAL_FIELDS[ci];
+        var rawVal = commCharges[cf.key];
+        var displayVal = (rawVal !== undefined && rawVal !== null && rawVal !== 0 && rawVal !== '0') ? rawVal : '';
+
+        html += '<tr class="comm-charge-row">' +
+          '<td colspan="4"></td>' +
+          '<td colspan="4" class="bold' + (cf.isDeduction ? ' text-red' : '') + '">' + cf.label + '</td>' +
+          '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+          '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
+          '<span style="font-size:11px;color:' + (cf.isDeduction ? '#DC2626' : '#64748B') + ';font-weight:600">' + (cf.isDeduction ? '(-) ₹' : '₹') + '</span>' +
+          '<input type="number" min="0" step="any" class="comm-input' + (cf.isDeduction ? ' is-discount' : '') + '" data-key="' + cf.key + '" value="' + displayVal + '" placeholder="0">' +
+          '<span style="font-size:11px;color:#94A3B8">.00</span>' +
+          '</div>' +
+          '</td>' +
+          '</tr>';
+      }
+
+      var gstRateVal = (commCharges.gstPercent !== undefined && commCharges.gstPercent !== null) ? commCharges.gstPercent : 18;
+      html += '<tr class="comm-charge-row" style="background:#F8FAFC">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">15. GST</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
+        '<span style="font-size:11px;color:#64748B">Rate:</span>' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="gstPercent" value="' + gstRateVal + '" style="width:65px" placeholder="18">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
+        '<span id="commGstAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.gstAmount.toLocaleString('en-IN') + '.00</span>' +
+        '</div>' +
+        '</td>' +
+        '</tr>' +
+        '<tr class="taxable-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold" style="font-size:12px">NET TAXABLE VALUE</td>' +
+        '<td colspan="3" class="c-num bold" id="commNetTaxable" style="font-size:13px;color:#1E3A8A">₹ ' + commSummary.netTaxable.toLocaleString('en-IN') + '.00</td>' +
+        '</tr>' +
+        '<tr class="grand-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold grand-lbl" style="font-size:13px">FINAL ALL-INCLUSIVE QUOTE</td>' +
+        '<td colspan="3" class="c-num bold grand-val" id="commFinalTotal" style="font-size:14px">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</td>' +
+        '</tr>' +
         '</tbody></table></div>';
 
       // History Snapshots if available
@@ -1949,6 +2053,36 @@
 
       html += '</div>';
       boqEl.innerHTML = html;
+
+      // Commercial Charges live input bindings
+      var commInputs = boqEl.querySelectorAll('.comm-input');
+      commInputs.forEach(function (inp) {
+        inp.addEventListener('input', function () {
+          var key = inp.getAttribute('data-key');
+          if (!key) return;
+          var val = parseFloat(inp.value);
+          if (isNaN(val)) val = 0;
+
+          self.project.commercialCharges = self.project.commercialCharges || {};
+          self.project.commercialCharges[key] = val;
+
+          var summary = self.computeCommercialSummary(quote.subtotalWoodwork, self.project.commercialCharges);
+
+          var netEl = document.getElementById('commNetTaxable');
+          if (netEl) netEl.textContent = '₹ ' + summary.netTaxable.toLocaleString('en-IN') + '.00';
+
+          var gstAmtEl = document.getElementById('commGstAmount');
+          if (gstAmtEl) gstAmtEl.textContent = summary.gstAmount.toLocaleString('en-IN') + '.00';
+
+          var finalEl = document.getElementById('commFinalTotal');
+          if (finalEl) finalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
+
+          var headerTotalEl = document.getElementById('boqHeaderTotalAmount');
+          if (headerTotalEl) headerTotalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
+
+          self.saveToLocalStorage();
+        });
+      });
 
       // Event bindings for BOQ
       var printBtn = document.getElementById('boqPrintBtn');
@@ -2199,11 +2333,11 @@
       rows.push(['HARDWARE & FUNCTIONAL FITTINGS SPECIFICATIONS']);
 
       var hwItems = [
-        { code: 'H-01', name: 'Auto Soft-Close Hinges (35mm Cup SS)', spec: 'Stainless Steel 304 · Hydraulic Soft-Close', qty: Math.max(8, quote.furnitureItems.length * 4), unit: 'nos', rate: 240 },
-        { code: 'H-02', name: 'Telescopic Drawer Runners (Soft-Close)', spec: 'Triple Extension Heavy-Duty Ball Bearing (45kg)', qty: Math.max(2, quote.furnitureItems.length * 1), unit: 'pair', rate: 700 },
-        { code: 'H-03', name: 'Designer Edge Profile Pull Handles (200mm)', spec: 'Matte Charcoal Aluminum Edge Profile', qty: Math.max(4, quote.furnitureItems.length * 2), unit: 'nos', rate: 350 },
-        { code: 'H-04', name: 'Wardrobe Hanging Oval Rail + Flanges', spec: 'Chrome Plated Oval Rail with Cushioning Gaskets', qty: Math.max(2, quote.furnitureItems.length * 1), unit: 'nos', rate: 450 },
-        { code: 'H-05', name: 'Precision Deadbolt Wardrobe Locks', spec: 'Brass Core with Computerized Dimple Keys', qty: 2, unit: 'nos', rate: 280 }
+        { code: 'H-01', name: 'Auto Soft-Close Hinges (35mm Cup SS)', spec: 'Stainless Steel 304 · Hydraulic Soft-Close', qty: Math.max(8, quote.furnitureItems.length * 4), unit: 'nos', rate: 0 },
+        { code: 'H-02', name: 'Telescopic Drawer Runners (Soft-Close)', spec: 'Triple Extension Heavy-Duty Ball Bearing (45kg)', qty: Math.max(2, quote.furnitureItems.length * 1), unit: 'pair', rate: 0 },
+        { code: 'H-03', name: 'Designer Edge Profile Pull Handles (200mm)', spec: 'Matte Charcoal Aluminum Edge Profile', qty: Math.max(4, quote.furnitureItems.length * 2), unit: 'nos', rate: 0 },
+        { code: 'H-04', name: 'Wardrobe Hanging Oval Rail + Flanges', spec: 'Chrome Plated Oval Rail with Cushioning Gaskets', qty: Math.max(2, quote.furnitureItems.length * 1), unit: 'nos', rate: 0 },
+        { code: 'H-05', name: 'Precision Deadbolt Wardrobe Locks', spec: 'Brass Core with Computerized Dimple Keys', qty: 2, unit: 'nos', rate: 0 }
       ];
 
       var totalHw = 0;
@@ -2225,30 +2359,30 @@
           '-',
           '-',
           hw.qty + ' ' + hw.unit,
-          hw.rate,
-          hwAmt
+          0,
+          0
         ]);
       }
 
-      rows.push(['', '', 'SUBTOTAL HARDWARE & ACCESSORIES', '', '', '', '', '', '', '', '', '', '', '', totalHw]);
+      rows.push(['', '', 'SUBTOTAL HARDWARE & ACCESSORIES', '', '', '', '', '', '', '', '', '', '', '', 0]);
       rows.push([]);
 
-      var grandWoodwork = quote.subtotalWoodwork;
-      var totalLabor = quote.installCharge;
-      var totalTransport = quote.transportCharge;
-      var netTaxable = grandWoodwork + totalHw + totalLabor + totalTransport + quote.marginAmount;
-      var gst18 = Math.round(netTaxable * 0.18);
-      var allInclusiveTotal = netTaxable + gst18;
+      var comm = this.computeCommercialSummary(quote.subtotalWoodwork, this.project.commercialCharges);
+      var commCharges = this.getCommercialCharges();
 
-      rows.push(['COMMERCIAL ESTIMATE SUMMARY']);
-      rows.push(['', '', 'Modular Woodwork Subtotal', '', '', '', '', '', '', '', '', '', '', '', Math.round(grandWoodwork)]);
-      rows.push(['', '', 'Hardware & Fittings Subtotal', '', '', '', '', '', '', '', '', '', '', '', totalHw]);
-      rows.push(['', '', 'Installation & Assembly Labor', '', '', '', '', '', '', '', '', '', '', '', Math.round(totalLabor)]);
-      rows.push(['', '', 'Logistics & Site Transport', '', '', '', '', '', '', '', '', '', '', '', Math.round(totalTransport)]);
-      rows.push(['', '', 'Company Overhead & Margin (' + quote.marginPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', Math.round(quote.marginAmount)]);
-      rows.push(['', '', 'NET TAXABLE AMOUNT BEFORE TAX', '', '', '', '', '', '', '', '', '', '', '', Math.round(netTaxable)]);
-      rows.push(['', '', 'GST @ 18% (CGST 9% + SGST 9%)', '', '', '', '', '', '', '', '', '', '', '', gst18]);
-      rows.push(['', '', 'FINAL ALL-INCLUSIVE ESTIMATE (INR)', '', '', '', '', '', '', '', '', '', '', '', allInclusiveTotal]);
+      rows.push(['COMMERCIAL ESTIMATE SUMMARY (' + (quote.isFiltered ? 'Active Scope' : 'Entire Home') + ')']);
+      rows.push(['', '', 'Modular Woodwork Subtotal', '', '', '', '', '', '', '', '', '', '', '', comm.woodworkSubtotal]);
+      rows.push(['', '', 'Hardware & Functional Fittings Subtotal (Included)', '', '', '', '', '', '', '', '', '', '', '', 0]);
+
+      for (var ci = 0; ci < this.COMMERCIAL_FIELDS.length; ci++) {
+        var cf = this.COMMERCIAL_FIELDS[ci];
+        var cfVal = parseFloat(commCharges[cf.key]) || 0;
+        rows.push(['', '', cf.label, '', '', '', '', '', '', '', '', '', '', '', (cf.isDeduction ? -cfVal : cfVal)]);
+      }
+
+      rows.push(['', '', 'NET TAXABLE VALUE', '', '', '', '', '', '', '', '', '', '', '', comm.netTaxable]);
+      rows.push(['', '', '15. GST @ ' + comm.gstPercent + '% (CGST + SGST)', '', '', '', '', '', '', '', '', '', '', '', comm.gstAmount]);
+      rows.push(['', '', 'FINAL ALL-INCLUSIVE ESTIMATE (INR)', '', '', '', '', '', '', '', '', '', '', '', comm.grandTotal]);
 
       var blob = this.buildXLSXBlob(rows);
       var filename = 'Residential-Interior-Estimation-' + (meta.quoteId || 'ORB-2026-089') + '.xlsx';

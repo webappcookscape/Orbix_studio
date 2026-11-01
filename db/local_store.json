@@ -66,7 +66,7 @@
             "dateCreated": "31 Oct 2026",
             "validUntil": "30 Nov 2026",
             "status": "approved",
-            "dateModified": "2026-11-01T12:10:50.996Z"
+            "dateModified": "2026-11-01T12:19:51.664Z"
           },
           "plan": {
             "gridSize": 100,
@@ -333,43 +333,6 @@
                 "perimeter": 18000
               },
               {
-                "id": "room_x1cu561sx",
-                "name": "Bedroom 2",
-                "type": "bedroom",
-                "wallIds": [
-                  "wall_wyy5c0cqu",
-                  "wall_mqnqjdnpk",
-                  "wall_bv3uvw1j3",
-                  "wall_dk4qg8jxb"
-                ],
-                "polygon": [
-                  {
-                    "x": 0,
-                    "y": 4000
-                  },
-                  {
-                    "x": 3500,
-                    "y": 4000
-                  },
-                  {
-                    "x": 3554.2777664699097,
-                    "y": 6999.999999999999
-                  },
-                  {
-                    "x": 0,
-                    "y": 7000
-                  }
-                ],
-                "areaSqMm": 10581416.649704862,
-                "areaSqM": 10.581416649704863,
-                "areaSqFt": 113.89742089930387,
-                "floorFinish": "vitrified_tile",
-                "ceilingHeight": 2800,
-                "falseCeiling": false,
-                "color": "#E8F1F5",
-                "perimeter": 13054.76873894974
-              },
-              {
                 "id": "room_ceuxum8u3",
                 "name": "Bedroom 2",
                 "type": "bedroom",
@@ -413,7 +376,45 @@
                 "floorFinish": "vitrified_tile",
                 "ceilingHeight": 2800,
                 "falseCeiling": false,
-                "color": "#E8F1F5"
+                "color": "#E8F1F5",
+                "perimeter": 23093.78273323782
+              },
+              {
+                "id": "room_x1cu561sx",
+                "name": "Bedroom 2",
+                "type": "bedroom",
+                "wallIds": [
+                  "wall_wyy5c0cqu",
+                  "wall_mqnqjdnpk",
+                  "wall_bv3uvw1j3",
+                  "wall_dk4qg8jxb"
+                ],
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 4000
+                  },
+                  {
+                    "x": 3500,
+                    "y": 4000
+                  },
+                  {
+                    "x": 3554.2777664699097,
+                    "y": 6999.999999999999
+                  },
+                  {
+                    "x": 0,
+                    "y": 7000
+                  }
+                ],
+                "areaSqMm": 10581416.649704862,
+                "areaSqM": 10.581416649704863,
+                "areaSqFt": 113.89742089930387,
+                "floorFinish": "vitrified_tile",
+                "ceilingHeight": 2800,
+                "falseCeiling": false,
+                "color": "#E8F1F5",
+                "perimeter": 13054.76873894974
               }
             ],
             "furniture": [
@@ -423,8 +424,8 @@
                 "category": "kitchen_base",
                 "roomId": "room_cfjb9onkf",
                 "pos": {
-                  "x": 2750,
-                  "y": 300,
+                  "x": 2850,
+                  "y": 900,
                   "z": 0
                 },
                 "rotY": 0,
@@ -813,7 +814,7 @@
       "is_shared": false,
       "fork_count": 0,
       "created_at": "2026-10-31T07:29:40.598Z",
-      "updated_at": "2026-11-01T12:17:06.996Z"
+      "updated_at": "2026-11-01T12:32:11.995Z"
     },
     {
       "id": "proj_mvxi3r42nieh",
