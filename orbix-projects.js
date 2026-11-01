@@ -606,7 +606,7 @@
     fetchUsers: function (cb) {
       var self = this;
 
-      fetch('/api/users')
+      this.apiFetch('/api/users')
         .then(function (r) {
           if (!r.ok) throw new Error('Unable to fetch users');
           return r.json();
@@ -682,7 +682,7 @@
         listContainer.innerHTML = '<div class="proj-loading">Loading live projects from PostgreSQL...</div>';
       }
 
-      fetch(url)
+      this.apiFetch(url)
         .then(function (r) { return r.json(); })
         .then(function (data) {
           self.projects = data.projects || [];
@@ -1054,7 +1054,7 @@
       self.setSaveIndicator('saving');
 
       // Sync live to PostgreSQL backend
-      fetch('/api/projects/' + activeId, {
+      this.apiFetch('/api/projects/' + activeId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1125,7 +1125,7 @@
       // Debounced backend save to PostgreSQL
       clearTimeout(this._saveDebounce);
       this._saveDebounce = setTimeout(function () {
-        fetch('/api/projects/' + self.activeProjectId, {
+        this.apiFetch('/api/projects/' + self.activeProjectId, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1153,7 +1153,7 @@
       var original = this.projects.find(function (p) { return p.id === originalId; });
       if (!original) return;
 
-      fetch('/api/projects/' + originalId + '/fork', {
+      this.apiFetch('/api/projects/' + originalId + '/fork', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ colleagueUser: self.currentUser })
@@ -1269,7 +1269,7 @@
       if (!confirm('Are you sure you want to delete "' + title + '"? This will remove it from PostgreSQL.')) return;
 
       var self = this;
-      fetch('/api/projects/' + id, { method: 'DELETE' })
+      this.apiFetch('/api/projects/' + id, { method: 'DELETE' })
         .then(function (r) { return r.json(); })
         .then(function () {
           if (self.activeProjectId === id) {
@@ -1461,7 +1461,7 @@
             currentUser: self.currentUser
           };
 
-          fetch('/api/projects', {
+          this.apiFetch('/api/projects', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1509,7 +1509,7 @@
             avatar: initials
           };
 
-          fetch('/api/users', {
+          this.apiFetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1583,7 +1583,7 @@
           if (errAlert) errAlert.style.display = 'none';
 
           var identifier = document.getElementById('authIdentifier').value.trim();
-          var password = document.getElementById('authPassword').value.trim();
+          var password = document.getElementById('authPassword').value; // Never trim password
           if (!identifier || !password) return;
 
           var submitBtn = document.getElementById('authScreenSubmitBtn');
@@ -1592,7 +1592,7 @@
             submitBtn.textContent = 'Signing In...';
           }
 
-          fetch('/api/login', {
+          this.apiFetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identifier: identifier, password: password })
@@ -1693,7 +1693,7 @@
             saveBtn.textContent = 'Saving...';
           }
 
-          fetch('/api/users/' + encodeURIComponent(uid), {
+          this.apiFetch('/api/users/' + encodeURIComponent(uid), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1764,14 +1764,27 @@
       this.applyRolePermissions();
 
       var adminTeamSec = document.getElementById('adminTeamProfilesSection');
-      if (adminTeamSec) {
-        adminTeamSec.style.display = isAdm ? 'block' : 'none';
-      }
       var adminBox = document.getElementById('adminCreateEmpBox');
-      if (adminBox) {
-        adminBox.style.display = isAdm ? 'block' : 'none';
+
+      // Update current user profile card in modal
+      var curNameEl = document.getElementById('curUserName');
+      var curBadgeEl = document.getElementById('curUserBadge');
+      var curEmailEl = document.getElementById('curUserEmail');
+      var curRoleEl = document.getElementById('curUserRole');
+      var curAvatarEl = document.querySelector('#userModal .ucc-avatar .u-avatar');
+
+      if (self.currentUser) {
+        if (curNameEl) curNameEl.textContent = self.currentUser.name;
+        if (curBadgeEl) {
+          curBadgeEl.textContent = isAdm ? 'Admin' : 'Employee';
+          curBadgeEl.className = 'role-badge ' + (isAdm ? 'admin' : 'employee');
+        }
+        if (curEmailEl) curEmailEl.textContent = self.currentUser.email;
+        if (curRoleEl) curRoleEl.textContent = (self.currentUser.designation || (isAdm ? 'System Administrator' : 'Floor Architect / FA')) + ' • ' + (self.currentUser.company || 'Cookscape');
+        if (curAvatarEl) curAvatarEl.textContent = self.currentUser.avatar || 'US';
       }
 
+      // If user is Employee: Strictly show only their own profile and hide team switcher
       if (!isAdm) {
         if (adminTeamSec) adminTeamSec.style.display = 'none';
         if (adminBox) adminBox.style.display = 'none';
@@ -1781,9 +1794,12 @@
         return;
       }
 
+      // If Admin: show employee creation box and team directory (with Edit/Delete, no password-less switch)
+      if (adminTeamSec) adminTeamSec.style.display = 'block';
+      if (adminBox) adminBox.style.display = 'block';
+
       var userListEl = document.getElementById('switchUsersList');
       if (userListEl) {
-        var isAdm = self.isAdmin();
         var html = '';
         this.users.forEach(function (u) {
           var isCurrent = self.currentUser && self.currentUser.id === u.id;
@@ -1792,17 +1808,12 @@
           var isPrimaryAdmin = u.id === 'usr_admin' || (u.email && u.email.toLowerCase() === 'admin@cookscape.com');
 
           var actionsHtml = '<div class="u-switch-actions">';
-          if (!isCurrent) {
-            actionsHtml += '<button class="btn small switch-user-btn" data-uid="' + u.id + '" type="button">Switch</button>';
-          } else {
+          if (isCurrent) {
             actionsHtml += '<span class="current-tag">Current</span>';
           }
-
-          if (isAdm) {
-            actionsHtml += '<button class="btn small edit-user-btn" data-uid="' + u.id + '" type="button" title="Edit account">Edit</button>';
-            if (!isPrimaryAdmin && (!self.currentUser || u.id !== self.currentUser.id)) {
-              actionsHtml += '<button class="btn small danger del-user-btn" data-uid="' + u.id + '" data-uname="' + (u.name || u.username || 'User') + '" type="button" title="Delete account">Delete</button>';
-            }
+          actionsHtml += '<button class="btn small edit-user-btn" data-uid="' + u.id + '" type="button" title="Edit account">Edit</button>';
+          if (!isPrimaryAdmin && (!self.currentUser || u.id !== self.currentUser.id)) {
+            actionsHtml += '<button class="btn small danger del-user-btn" data-uid="' + u.id + '" data-uname="' + (u.name || u.username || 'User') + '" type="button" title="Delete account">Delete</button>';
           }
           actionsHtml += '</div>';
 
@@ -1826,35 +1837,23 @@
         });
         userListEl.innerHTML = html;
 
-        // Switch user event
-        userListEl.querySelectorAll('.switch-user-btn').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var uid = this.getAttribute('data-uid');
-            var u = self.users.find(function (x) { return x.id === uid; });
-            if (u) {
-              self.setCurrentUser(u);
-              self.closeModal('userModal');
-            }
-          });
-        });
-
-        // Edit user event (Admin only)
+        // Edit user event
         userListEl.querySelectorAll('.edit-user-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var uid = this.getAttribute('data-uid');
             var u = self.users.find(function (x) { return x.id === uid; });
-            if (u) {
-              self.openEditUserModal(u);
-            }
+            if (u) self.openEditUserModal(u);
           });
         });
 
-        // Delete user event (Admin only)
+        // Delete user event
         userListEl.querySelectorAll('.del-user-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var uid = this.getAttribute('data-uid');
-            var uname = this.getAttribute('data-uname') || 'this user';
-            self.confirmAndDeleteUser(uid, uname);
+            var uname = this.getAttribute('data-uname');
+            if (confirm('Are you sure you want to delete employee "' + uname + '"?')) {
+              self.deleteUser(uid);
+            }
           });
         });
       }
