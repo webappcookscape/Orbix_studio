@@ -2056,6 +2056,16 @@ var GL=(function(){
   }
   function show(L){
     clear();
+    // When OrbixHome3D is rendering the 3D floor plan with placed furniture,
+    // all furniture units are rendered directly in their 3D room positions by ArchitecturalRenderer.
+    // If OrbixHome3D has furniture, root is kept clear to avoid duplicate overlapping meshes.
+    var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+    if(homeObj && homeObj.children && homeObj.children.length > 0 && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.furniture && window.OrbixUI.project.plan.furniture.length > 0){
+      root.position.set(0, 0, 0);
+      root.rotation.y = 0;
+      return;
+    }
+
     // Position root to match active furniture unit's floor plan coordinates
     var furnPos = null, furnRot = 0;
     if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.furniture){
@@ -2266,6 +2276,9 @@ var GL=(function(){
     var hits=ray.intersectObjects(homeObj.children,true);
     for(var i=0;i<hits.length;i++){
       var o=hits[i].object;
+      if(o && o.userData && o.userData.furnitureId){
+        return { object: (o.userData.parentGroup || o), id: o.userData.furnitureId, hitPoint: hits[i].point };
+      }
       while(o && o.parent && o.parent !== homeObj && (!o.userData || !o.userData.isFurnitureGroup)){
         o=o.parent;
       }

@@ -1099,6 +1099,12 @@
       }
       this.project.units_count = furnList.length;
       this.saveToLocalStorage();
+      if (this.editor) this.editor.render();
+      if (this.render3DHome) this.render3DHome();
+      if (window.S && window.S.units && window.S.units[window.S.active]) {
+        var curU = window.S.units[window.S.active];
+        if (curU && curU._furnId) this.highlight3DFurniture(curU._furnId);
+      }
     },
 
     placeModularUnitIn3D: function (preset) {

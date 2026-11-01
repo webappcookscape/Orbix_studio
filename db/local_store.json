@@ -29,7 +29,7 @@
           {
             "label": "FM 600 (Kitchen Base)",
             "ctype": "kbase",
-            "_furnId": "furn_y7ygfezwh",
+            "_furnId": "furn_wuy6h0ca0",
             "W": 600,
             "H": 750,
             "D": 550,
@@ -49,12 +49,12 @@
             "hfinish": "black",
             "counter": "black",
             "carcass": "Absolute White",
-            "shutterCol": "MDF 7711"
+            "shutterCol": "Brazilian Horizontal Walnut"
           },
           {
             "label": "FM 600 (Kitchen Base)",
             "ctype": "kbase",
-            "_furnId": "furn_3bddvoglz",
+            "_furnId": "furn_nimcfizm4",
             "W": 600,
             "H": 750,
             "D": 550,
@@ -70,50 +70,24 @@
             "loftShutters": 2,
             "back": 18,
             "dstyle": "slab",
-            "handle": "recess",
-            "hfinish": "black",
-            "counter": "black",
-            "carcass": "Absolute White",
-            "shutterCol": "MDF 3420",
-            "shape": "straight"
-          },
-          {
-            "label": "Kitchen Base Run",
-            "ctype": "kbase",
-            "_furnId": "f_mvxi90s8ymvw",
-            "W": 1200,
-            "H": 750,
-            "D": 550,
-            "T": 18,
-            "type": "hinged",
-            "shutters": 2,
-            "sections": 1,
-            "shelves": 3,
-            "drawers": 0,
-            "drawerH": 180,
-            "loft": false,
-            "loftH": 600,
-            "loftShutters": 2,
-            "back": 18,
-            "dstyle": "slab",
-            "handle": "bar",
+            "handle": "gprof",
             "hfinish": "black",
             "counter": "black",
             "carcass": "Absolute White",
             "shutterCol": "Brazilian Horizontal Walnut"
           },
           {
-            "label": "Kitchen Base Run",
+            "label": "FM 600 (Kitchen Base)",
             "ctype": "kbase",
-            "_furnId": "f_mvxi98g8j5hm",
-            "W": 1200,
+            "_furnId": "furn_dj538w41t",
+            "W": 600,
             "H": 750,
             "D": 550,
             "T": 18,
             "type": "hinged",
-            "shutters": 2,
+            "shutters": 1,
             "sections": 1,
-            "shelves": 3,
+            "shelves": 1,
             "drawers": 0,
             "drawerH": 180,
             "loft": false,
@@ -121,32 +95,57 @@
             "loftShutters": 2,
             "back": 18,
             "dstyle": "slab",
-            "handle": "bar",
+            "handle": "gprof",
             "hfinish": "black",
             "counter": "black",
             "carcass": "Absolute White",
             "shutterCol": "Brazilian Horizontal Walnut"
           },
           {
-            "label": "TV Entertainment Unit",
-            "ctype": "tv",
-            "_furnId": "f_mvxi9davuy80",
-            "W": 1800,
-            "H": 1800,
-            "D": 400,
+            "label": "FCM -RT (Kitchen Base)",
+            "ctype": "kbase",
+            "_furnId": "furn_7rd14mlz7",
+            "W": 1200,
+            "H": 750,
+            "D": 550,
             "T": 18,
             "type": "hinged",
-            "shutters": 2,
-            "sections": 2,
-            "shelves": 3,
+            "shutters": 1,
+            "sections": 1,
+            "shelves": 1,
             "drawers": 0,
             "drawerH": 180,
             "loft": false,
-            "loftH": 600,
+            "loftH": 0,
             "loftShutters": 2,
             "back": 18,
             "dstyle": "slab",
-            "handle": "bar",
+            "handle": "gprof",
+            "hfinish": "black",
+            "counter": "none",
+            "carcass": "Absolute White",
+            "shutterCol": "Brazilian Horizontal Walnut"
+          },
+          {
+            "label": "WM 1200 (Kitchen Wall)",
+            "ctype": "kwall",
+            "_furnId": "furn_yds23km2x",
+            "W": 1200,
+            "H": 600,
+            "D": 300,
+            "T": 18,
+            "type": "hinged",
+            "shutters": 2,
+            "sections": 1,
+            "shelves": 1,
+            "drawers": 0,
+            "drawerH": 180,
+            "loft": false,
+            "loftH": 0,
+            "loftShutters": 2,
+            "back": 18,
+            "dstyle": "slab",
+            "handle": "gprof",
             "hfinish": "black",
             "counter": "none",
             "carcass": "Absolute White",
@@ -162,7 +161,7 @@
             "siteAddress": "",
             "designerName": "",
             "dateCreated": "2026-11-01T07:20:54.406Z",
-            "dateModified": "2026-11-01T07:25:16.568Z",
+            "dateModified": "2026-11-01T07:56:36.301Z",
             "status": "draft",
             "notes": "",
             "contactNumber": "7418414780",
@@ -177,367 +176,10 @@
             "snapToGrid": true,
             "snapToAngle": true,
             "snapDistance": 150,
-            "walls": [
-              {
-                "id": "wall_xpellm00l",
-                "start": {
-                  "x": -2700,
-                  "y": -1500
-                },
-                "end": {
-                  "x": 3300.5786757982305,
-                  "y": -1500
-                },
-                "thickness": 230,
-                "height": 2800,
-                "material": "plaster_white",
-                "openings": [],
-                "pinned": false
-              },
-              {
-                "id": "wall_timti0drk",
-                "start": {
-                  "x": 3300.5786757982305,
-                  "y": -1500
-                },
-                "end": {
-                  "x": 3300.5786757982305,
-                  "y": 1505.5969026674493
-                },
-                "thickness": 230,
-                "height": 2800,
-                "material": "plaster_white",
-                "openings": [],
-                "pinned": false
-              },
-              {
-                "id": "wall_jcuspjd14",
-                "start": {
-                  "x": 3300.5786757982305,
-                  "y": 1505.5969026674493
-                },
-                "end": {
-                  "x": -2707.5665196248647,
-                  "y": 1505.59690266745
-                },
-                "thickness": 230,
-                "height": 2800,
-                "material": "plaster_white",
-                "openings": [],
-                "pinned": false
-              },
-              {
-                "id": "wall_vfagoriqp",
-                "start": {
-                  "x": -2707.5665196248647,
-                  "y": 1505.59690266745
-                },
-                "end": {
-                  "x": -2700,
-                  "y": -1500
-                },
-                "thickness": 230,
-                "height": 2800,
-                "material": "plaster_white",
-                "openings": [],
-                "pinned": false
-              }
-            ],
-            "openings": [
-              {
-                "id": "door_7ullziimd",
-                "type": "door",
-                "wallId": "wall_xpellm00l",
-                "offset": 846.2226066897346,
-                "width": 900,
-                "height": 2100,
-                "sillHeight": 0,
-                "swing": "in-left",
-                "frameThick": 75,
-                "label": "D1",
-                "glazing": "clear"
-              },
-              {
-                "id": "window_1y9zmftvh",
-                "type": "window",
-                "wallId": "wall_xpellm00l",
-                "offset": 5217.618223760093,
-                "width": 1200,
-                "height": 1200,
-                "sillHeight": 900,
-                "swing": "in-left",
-                "frameThick": 75,
-                "label": "W1",
-                "glazing": "clear"
-              },
-              {
-                "id": "window_cejq76afr",
-                "type": "window",
-                "wallId": "wall_timti0drk",
-                "offset": 1436.3898500576704,
-                "width": 1200,
-                "height": 1200,
-                "sillHeight": 900,
-                "swing": "in-left",
-                "frameThick": 75,
-                "label": "W1",
-                "glazing": "clear"
-              },
-              {
-                "id": "window_v7xywkkgi",
-                "type": "window",
-                "wallId": "wall_jcuspjd14",
-                "offset": 2801.414892637907,
-                "width": 1200,
-                "height": 1200,
-                "sillHeight": 900,
-                "swing": "in-left",
-                "frameThick": 75,
-                "label": "W1",
-                "glazing": "clear"
-              }
-            ],
-            "rooms": [
-              {
-                "id": "room_uss8ofp81",
-                "name": "Room 1",
-                "type": "bedroom",
-                "wallIds": [
-                  "wall_xpellm00l",
-                  "wall_timti0drk",
-                  "wall_jcuspjd14",
-                  "wall_vfagoriqp"
-                ],
-                "polygon": [
-                  {
-                    "x": -2700,
-                    "y": -1500
-                  },
-                  {
-                    "x": 3300.5786757982305,
-                    "y": -1500
-                  },
-                  {
-                    "x": 3300.5786757982305,
-                    "y": 1505.5969026674493
-                  },
-                  {
-                    "x": -2707.5665196248647,
-                    "y": 1505.59690266745
-                  }
-                ],
-                "areaSqMm": 18046691.636165738,
-                "areaSqM": 18.04669163616574,
-                "areaSqFt": 194.25297208967262,
-                "floorFinish": "vitrified_tile",
-                "ceilingHeight": 2800,
-                "falseCeiling": false,
-                "color": "#E8F1F5"
-              }
-            ],
-            "furniture": [
-              {
-                "id": "furn_y7ygfezwh",
-                "name": "FM 600 (Kitchen Base)",
-                "category": "kitchen_base",
-                "roomId": "room_uss8ofp81",
-                "pos": {
-                  "x": -1900,
-                  "y": 1150,
-                  "z": 0
-                },
-                "rotY": 3.141592653589793,
-                "dimensions": {
-                  "W": 600,
-                  "H": 750,
-                  "D": 550
-                },
-                "materials": {
-                  "shutter": {
-                    "material": "HDHMR_18MM",
-                    "finish": "MDF 7711"
-                  },
-                  "carcass": {
-                    "material": "BWP_18MM",
-                    "finish": "Absolute White"
-                  }
-                },
-                "unitConfig": {
-                  "shutters": 1,
-                  "shelves": 1,
-                  "drawers": 0,
-                  "dstyle": "slab",
-                  "counter": "black",
-                  "handle": "gprof",
-                  "hfinish": "black",
-                  "carcass": "Absolute White",
-                  "shutterCol": "MDF 7711",
-                  "ctype": "kbase",
-                  "type": "hinged",
-                  "loft": false,
-                  "loftH": 600,
-                  "back": 18
-                },
-                "pricingOverrides": null,
-                "notes": ""
-              },
-              {
-                "id": "furn_3bddvoglz",
-                "name": "FM 600 (Kitchen Base)",
-                "category": "kitchen_base",
-                "roomId": "room_uss8ofp81",
-                "pos": {
-                  "x": -1300,
-                  "y": 1150,
-                  "z": 0
-                },
-                "rotY": 3.141592653589793,
-                "dimensions": {
-                  "W": 600,
-                  "H": 750,
-                  "D": 550
-                },
-                "materials": {
-                  "shutter": {
-                    "material": "HDHMR_18MM",
-                    "finish": "MDF 3420"
-                  },
-                  "carcass": {
-                    "material": "BWP_18MM",
-                    "finish": "Absolute White"
-                  }
-                },
-                "unitConfig": {
-                  "shutters": 1,
-                  "shelves": 1,
-                  "drawers": 0,
-                  "dstyle": "slab",
-                  "counter": "black",
-                  "handle": "recess",
-                  "hfinish": "black",
-                  "carcass": "Absolute White",
-                  "shutterCol": "MDF 3420",
-                  "ctype": "kbase",
-                  "type": "hinged",
-                  "loft": false,
-                  "loftH": 600,
-                  "back": 18
-                },
-                "pricingOverrides": null,
-                "notes": ""
-              },
-              {
-                "id": "f_mvxi90s8ymvw",
-                "name": "Kitchen Base Run",
-                "category": "kitchen_base",
-                "roomId": "room_uss8ofp81",
-                "pos": {
-                  "x": 898.3973106968731,
-                  "y": 3.1140817064487085,
-                  "z": 0
-                },
-                "rotY": 0,
-                "dimensions": {
-                  "W": 1200,
-                  "H": 750,
-                  "D": 550
-                },
-                "unitConfig": {
-                  "shutters": 2,
-                  "handle": "bar",
-                  "dstyle": "slab",
-                  "shelves": 3,
-                  "drawers": 0,
-                  "carcass": "Absolute White",
-                  "shutterCol": "Brazilian Horizontal Walnut",
-                  "type": "hinged"
-                },
-                "materials": {
-                  "shutter": {
-                    "material": "HDHMR_18mm",
-                    "finish": "Brazilian Horizontal Walnut"
-                  },
-                  "carcass": {
-                    "material": "BWP_18mm",
-                    "finish": "Absolute White"
-                  }
-                }
-              },
-              {
-                "id": "f_mvxi98g8j5hm",
-                "name": "Kitchen Base Run",
-                "category": "kitchen_base",
-                "roomId": "room_uss8ofp81",
-                "pos": {
-                  "x": 1198.397310696873,
-                  "y": 3.1140817064487085,
-                  "z": 0
-                },
-                "rotY": 0,
-                "dimensions": {
-                  "W": 1200,
-                  "H": 750,
-                  "D": 550
-                },
-                "unitConfig": {
-                  "shutters": 2,
-                  "handle": "bar",
-                  "dstyle": "slab",
-                  "shelves": 3,
-                  "drawers": 0,
-                  "carcass": "Absolute White",
-                  "shutterCol": "Brazilian Horizontal Walnut",
-                  "type": "hinged"
-                },
-                "materials": {
-                  "shutter": {
-                    "material": "HDHMR_18mm",
-                    "finish": "Brazilian Horizontal Walnut"
-                  },
-                  "carcass": {
-                    "material": "BWP_18mm",
-                    "finish": "Absolute White"
-                  }
-                }
-              },
-              {
-                "id": "f_mvxi9davuy80",
-                "name": "TV Entertainment Unit",
-                "category": "tv_unit",
-                "roomId": "room_uss8ofp81",
-                "pos": {
-                  "x": 1498.397310696873,
-                  "y": 3.1140817064487085,
-                  "z": 0
-                },
-                "rotY": 0,
-                "dimensions": {
-                  "W": 1800,
-                  "H": 1800,
-                  "D": 400
-                },
-                "unitConfig": {
-                  "shutters": 2,
-                  "handle": "bar",
-                  "dstyle": "slab",
-                  "shelves": 3,
-                  "drawers": 0,
-                  "carcass": "Absolute White",
-                  "shutterCol": "Brazilian Horizontal Walnut",
-                  "type": "hinged"
-                },
-                "materials": {
-                  "shutter": {
-                    "material": "HDHMR_18mm",
-                    "finish": "Brazilian Horizontal Walnut"
-                  },
-                  "carcass": {
-                    "material": "BWP_18mm",
-                    "finish": "Absolute White"
-                  }
-                }
-              }
-            ]
+            "walls": [],
+            "openings": [],
+            "rooms": [],
+            "furniture": []
           },
           "rateCard": {
             "version": "1.0",
@@ -882,7 +524,7 @@
             }
           },
           "quotationHistory": [],
-          "units_count": 5
+          "units_count": 0
         },
         "details": {
           "clientName": "test",
@@ -896,7 +538,7 @@
       "is_shared": false,
       "fork_count": 0,
       "created_at": "2026-11-01T07:20:54.531Z",
-      "updated_at": "2026-11-01T07:47:10.489Z"
+      "updated_at": "2026-11-01T08:00:10.494Z"
     },
     {
       "id": "proj_mvw2z6d1i4ur",

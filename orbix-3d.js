@@ -152,14 +152,10 @@
     }
 
     // 3. Build Placed Furniture Units in 3D
-    var activeFurnId = (window.S && window.S.units && window.S.units[window.S.active]) ? window.S.units[window.S.active]._furnId : null;
     for (var f = 0; f < furniture.length; f++) {
       var furn = furniture[f];
       var furnMesh = this.buildFurnitureMesh(furn);
       if (furnMesh) {
-        if (activeFurnId && furn.id === activeFurnId) {
-          furnMesh.traverse(function (c) { if (c.isMesh) c.visible = false; });
-        }
         this.group.add(furnMesh);
       }
     }
