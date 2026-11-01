@@ -247,7 +247,12 @@ function load(){
     var raw=localStorage.getItem("cupboard-cad"); if(!raw) return;
     var d=JSON.parse(raw);
     if(d.units&&Array.isArray(d.units)){
-      S.units=d.units;
+      if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
+        var validIds = (window.OrbixUI.project.plan.furniture || []).map(function(f){ return f.id; });
+        S.units = d.units.filter(function(u){ return u._furnId && validIds.indexOf(u._furnId) !== -1; });
+      } else {
+        S.units=d.units;
+      }
     }
     if(d.head) S.head=d.head;
     if(d.frames) S.frames=d.frames;
