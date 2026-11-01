@@ -804,23 +804,7 @@
         var existing = existingMap[fn.id];
 
         if (existing) {
-          existing.label = fn.name;
-          existing.W = fn.dimensions.W || existing.W;
-          existing.H = fn.dimensions.H || existing.H;
-          existing.D = fn.dimensions.D || existing.D;
-          if (fn.unitConfig) {
-            if (fn.unitConfig.shutters !== undefined) existing.shutters = fn.unitConfig.shutters;
-            if (fn.unitConfig.drawers !== undefined) existing.drawers = fn.unitConfig.drawers;
-            if (fn.unitConfig.shelves !== undefined) existing.shelves = fn.unitConfig.shelves;
-            if (fn.unitConfig.handle) existing.handle = fn.unitConfig.handle;
-            if (fn.unitConfig.dstyle) existing.dstyle = fn.unitConfig.dstyle;
-          }
-          if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) {
-            existing.shutterCol = fn.materials.shutter.finish;
-          }
-          if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) {
-            existing.carcass = fn.materials.carcass.finish;
-          }
+          if (fn.name) existing.label = fn.name;
           newUnits.push(existing);
         } else {
           var u = {
@@ -854,7 +838,7 @@
 
       window.S.units = newUnits;
 
-      // Select specific unit or first unit
+      // Select specific unit, current active, or first unit
       var targetIdx = 0;
       if (selectFurnId) {
         for (var i = 0; i < window.S.units.length; i++) {
@@ -871,6 +855,8 @@
             break;
           }
         }
+      } else if (typeof window.S.active === 'number' && window.S.active >= 0 && window.S.active < window.S.units.length) {
+        targetIdx = window.S.active;
       }
       window.S.active = targetIdx;
       if (typeof window.renderRail === 'function') window.renderRail();
@@ -887,31 +873,40 @@
       }
       if (typeof window.renderRail === 'function') window.renderRail();
       if (typeof window.renderLegend === 'function') window.renderLegend();
+      if (typeof window.buildScene === 'function') window.buildScene();
       this.highlight3DFurniture(furnId);
     },
 
     highlight3DFurniture: function (furnId) {
-      if (!window.__cc || !window.__cc.gl || !window.__cc.gl.getScene) return;
-      var scene = window.__cc.gl.getScene();
+      if (!window.__cc || !window.__cc.gl) return;
+      var gl = window.__cc.gl;
+      var scene = gl.getScene ? gl.getScene() : null;
       var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
-      if (!homeObj) return;
-
-      homeObj.traverse(function (obj) {
-        if (obj.userData && obj.userData.isFurnitureGroup) {
-          var isSel = (obj.userData.furnitureId === furnId);
-          obj.traverse(function (child) {
-            if (child.isMesh && child.material && child.material.emissive) {
-              if (isSel) {
-                child.userData._origEmissive = (child.userData._origEmissive !== undefined) ? child.userData._origEmissive : child.material.emissive.getHex();
-                child.material.emissive.setHex(0x1a2e3b);
-              } else if (child.userData._origEmissive !== undefined) {
-                child.material.emissive.setHex(child.userData._origEmissive);
+      if (homeObj) {
+        homeObj.traverse(function (obj) {
+          if (obj.userData && obj.userData.isFurnitureGroup) {
+            var isSel = (obj.userData.furnitureId === furnId);
+            obj.traverse(function (child) {
+              if (child.isMesh && child.material) {
+                var mats = Array.isArray(child.material) ? child.material : [child.material];
+                mats.forEach(function (m) {
+                  if (m.emissive) {
+                    if (isSel) {
+                      child.userData._origEmissive = (child.userData._origEmissive !== undefined) ? child.userData._origEmissive : m.emissive.getHex();
+                      m.emissive.setHex(0x2563eb);
+                      m.emissiveIntensity = 0.45;
+                    } else if (child.userData._origEmissive !== undefined) {
+                      m.emissive.setHex(child.userData._origEmissive);
+                      m.emissiveIntensity = 0;
+                    }
+                  }
+                });
               }
-            }
-          });
-        }
-      });
-      if (window.__cc.gl.settle) window.__cc.gl.settle();
+            });
+          }
+        });
+      }
+      if (gl.settle) gl.settle();
     },
 
     sync3DStudioUnits: function () {
@@ -939,6 +934,12 @@
           if (u.dstyle) match.unitConfig.dstyle = u.dstyle;
           if (u.drawers !== undefined) match.unitConfig.drawers = u.drawers;
           if (u.shelves !== undefined) match.unitConfig.shelves = u.shelves;
+          if (u.ctype) match.unitConfig.ctype = u.ctype;
+          if (u.type) match.unitConfig.type = u.type;
+          if (u.loft !== undefined) match.unitConfig.loft = u.loft;
+          if (u.loftH !== undefined) match.unitConfig.loftH = u.loftH;
+          if (u.back !== undefined) match.unitConfig.back = u.back;
+          if (u.hfinish) match.unitConfig.hfinish = u.hfinish;
           if (u.shutterCol) {
             match.unitConfig.shutterCol = u.shutterCol;
             match.materials = match.materials || {};
@@ -953,6 +954,7 @@
           }
         }
       }
+      this.project.units_count = furnList.length;
       this.saveToLocalStorage();
     },
 
@@ -1308,49 +1310,9 @@
     },
 
     syncFurnitureWith3DStudio: function () {
+      // Safe non-destructive wrapper
       if (!window.S || !this.project || !this.project.plan) return;
-      window.S.units = window.S.units || [];
-      var furnList = this.project.plan.furniture || [];
-
-      // Ensure every placed furniture unit has a counterpart in S.units
-      for (var f = 0; f < furnList.length; f++) {
-        var fn = furnList[f];
-        var found = -1;
-        for (var u = 0; u < window.S.units.length; u++) {
-          if (window.S.units[u]._furnId === fn.id) {
-            found = u;
-            break;
-          }
-        }
-        if (found !== -1) {
-          var eu = window.S.units[found];
-          eu.W = fn.dimensions.W || eu.W;
-          eu.H = fn.dimensions.H || eu.H;
-          eu.D = fn.dimensions.D || eu.D;
-          if (fn.unitConfig) {
-            if (fn.unitConfig.shutters != null) eu.shutters = fn.unitConfig.shutters;
-            if (fn.unitConfig.handle) eu.handle = fn.unitConfig.handle;
-            if (fn.unitConfig.shutterCol) eu.shutterCol = fn.unitConfig.shutterCol;
-            if (fn.unitConfig.carcass) eu.carcass = fn.unitConfig.carcass;
-          }
-        } else {
-          var nu = typeof window.newUnit === 'function' ? window.newUnit(fn.name) : { label: fn.name };
-          nu._furnId = fn.id;
-          nu.W = (fn.dimensions && fn.dimensions.W) || 1200;
-          nu.H = (fn.dimensions && fn.dimensions.H) || 2100;
-          nu.D = (fn.dimensions && fn.dimensions.D) || 600;
-          if (fn.unitConfig) {
-            if (fn.unitConfig.shutters != null) nu.shutters = fn.unitConfig.shutters;
-            if (fn.unitConfig.handle) nu.handle = fn.unitConfig.handle;
-            if (fn.unitConfig.shutterCol) nu.shutterCol = fn.unitConfig.shutterCol;
-            if (fn.unitConfig.carcass) nu.carcass = fn.unitConfig.carcass;
-          }
-          window.S.units.push(nu);
-        }
-      }
-      if (window.S.units.length > 0 && (window.S.active < 0 || window.S.active >= window.S.units.length)) {
-        window.S.active = 0;
-      }
+      this.syncProjectUnitsTo3DStudio();
     },
 
     render3DHome: function () {
@@ -1358,8 +1320,6 @@
       var gl = window.__cc.gl;
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
-
-      this.syncFurnitureWith3DStudio();
 
       if (!this.archRenderer && root.Orbix3D) {
         this.archRenderer = new root.Orbix3D(scene);
@@ -1369,9 +1329,6 @@
         if (gl.frame) gl.frame();
         if (gl.apply) gl.apply();
         if (gl.settle) gl.settle();
-      }
-      if (typeof window.renderRail === 'function') {
-        window.renderRail();
       }
     },
 

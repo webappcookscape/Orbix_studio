@@ -1461,8 +1461,15 @@ function buildScene(){
   var hasArchProject = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
 
   if(hasArchProject){
-    MID=1200;
-    if(GL.ok) GL.show([]); // Clear standalone root so no unit is rendered at (0,0,0)
+    var furnList = window.OrbixUI.project.plan.furniture || [];
+    if(furnList.length === 0 || !u0){
+      MID=1200;
+      if(GL.ok) GL.show([]);
+    } else {
+      MID=(u0.H+(u0.loft?u0.loftH+2:0)+(u0.elev||0))/2;
+      var L=sceneLayouts();
+      if(GL.ok) GL.show(L); else cssRender(L,u0);
+    }
     if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
     camApply();
     return;
@@ -2245,6 +2252,15 @@ var GL=(function(){
     var r=stage.getBoundingClientRect();
     ndc.set(((clientX-r.left)/r.width)*2-1, -((clientY-r.top)/r.height)*2+1);
     ray.setFromCamera(ndc,camera);
+
+    var activeU = U();
+    if(activeU && activeU._furnId && root && root.children.length > 0){
+      var rootHits = ray.intersectObjects(root.children, true);
+      if(rootHits.length > 0){
+        return { object: root, id: activeU._furnId, hitPoint: rootHits[0].point };
+      }
+    }
+
     var homeObj=scene.getObjectByName('OrbixHome3D');
     if(!homeObj) return null;
     var hits=ray.intersectObjects(homeObj.children,true);
@@ -2904,7 +2920,7 @@ function camApply(){
     if(GL.ok && GL.pickFurniture && e.button === 0){
       var fHit = GL.pickFurniture(e.clientX, e.clientY);
       if(fHit){
-        var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+        var homeObj = (GL.getScene && GL.getScene()) ? GL.getScene().getObjectByName('OrbixHome3D') : null;
         var groupObj = fHit.object;
         while(groupObj && groupObj.parent && groupObj.parent !== homeObj && (!groupObj.userData || !groupObj.userData.isFurnitureGroup)){
           groupObj = groupObj.parent;
