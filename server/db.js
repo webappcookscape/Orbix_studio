@@ -141,7 +141,8 @@ class DBManager {
     this.isPgConnected = false;
     this.pgError = null;
     this.pgInitInProgress = false;
-  this.pgRetryTimer = null;
+    this.pgRetryTimer = null;
+
     this.localStore = this.loadLocalStore();
     this.initPostgreSQL();
   }
@@ -241,88 +242,84 @@ loadLocalStore() {
 
 
 async initPostgreSQL() {
-  // Prevent overlapping initialization attempts
   if (this.pgInitInProgress) {
     return;
   }
 
   this.pgInitInProgress = true;
 
-  let client = null;
-
   const connectionString = process.env.DATABASE_URL ||
     `postgresql://${process.env.PGUSER || 'postgres'}:${process.env.PGPASSWORD || 'postgres'}@${process.env.PGHOST || 'localhost'}:${process.env.PGPORT || 5432}/${process.env.PGDATABASE || 'cupboard_cad'}`;
 
+  let pool = null;
+  let client = null;
+
   try {
-    // Create the pool only once. Reuse it during retries.
-    if (!this.pgPool) {
-      this.pgPool = new Pool({
-        connectionString,
-        max: 5,
-        connectionTimeoutMillis: 5000,
-        idleTimeoutMillis: 10000
-      });
-    }
+    pool = new Pool({
+      connectionString,
+      max: 5,
+      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: 10000,
+      allowExitOnIdle: false
+    });
 
-    // Test connection
-    client = await this.pgPool.connect();
+    this.pgPool = pool;
 
-    console.log('✓ Successfully connected to PostgreSQL server!');
+    client = await pool.connect();
 
-    // Run schema
+    console.log('✓ Connected to PostgreSQL.');
+
+    // Apply existing schema
     if (fs.existsSync(SCHEMA_PATH)) {
       const schemaSql = fs.readFileSync(SCHEMA_PATH, 'utf-8');
-      await client.query(schemaSql);
+
+      if (schemaSql.trim()) {
+        await client.query(schemaSql);
+      }
+
       console.log('✓ PostgreSQL schema verified/applied.');
     }
 
-    // Purge obsolete demo accounts
-    await client.query(
-      "DELETE FROM users WHERE id IN ('usr_dev', 'usr_alex', 'usr_priya') OR email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in')"
-    );
+    // Insert missing default users only.
+    // Never overwrite existing users or delete accounts here.
+    for (const u of DEFAULT_USERS) {
+      await client.query(
+        `INSERT INTO users
+          (id, name, username, email, password, role, designation, company, avatar)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT DO NOTHING`,
+        [
+          u.id,
+          u.name,
+          u.username || u.id,
+          u.email,
+          u.password || '123456',
+          u.role,
+          u.designation || 'Modular Designer',
+          u.company,
+          u.avatar
+        ]
+      );
+    }
 
-    // Ensure all 4 Cookscape team accounts exist
-   // Ensure default users exist without overwriting existing accounts.
-for (const u of DEFAULT_USERS) {
-  await client.query(
-    `INSERT INTO users (
-      id, name, username, email, password,
-      role, designation, company, avatar
-    )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    ON CONFLICT DO NOTHING`,
-    [
-      u.id,
-      u.name,
-      u.username,
-      u.email,
-      u.password,
-      u.role,
-      u.designation,
-      u.company,
-      u.avatar
-    ]
-  );
-}
-
-    // Check whether projects need initial seeding
+    // Seed projects only when the database has no projects.
     const projRes = await client.query(
-      'SELECT count(*) FROM projects'
+      'SELECT COUNT(*) FROM projects'
     );
 
     if (parseInt(projRes.rows[0].count, 10) === 0) {
-      console.log('Seeding initial PostgreSQL project records...');
+      console.log('Seeding initial PostgreSQL projects...');
 
       for (const p of this.localStore.projects || DEFAULT_PROJECTS) {
         await client.query(
-          `INSERT INTO projects (
-            id, title, client, type, status, created_by,
-            owner_name, owner_email, units_count, boards_est,
-            data, is_shared, fork_count, created_at, updated_at
-          )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-                  $11, $12, $13, $14, $15)
-          ON CONFLICT (id) DO NOTHING`,
+          `INSERT INTO projects
+            (id, title, client, type, status, created_by,
+             owner_name, owner_email, units_count, boards_est,
+             data, is_shared, fork_count, created_at, updated_at)
+           VALUES
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+             $11, $12, $13, $14, $15)
+           ON CONFLICT (id) DO NOTHING`,
           [
             p.id,
             p.title,
@@ -343,33 +340,50 @@ for (const u of DEFAULT_USERS) {
         );
       }
 
-      console.log('✓ Initial PostgreSQL seed completed.');
+      console.log('✓ Initial PostgreSQL project seed completed.');
     }
 
-    // Mark PostgreSQL live only after initialization succeeds
     this.isPgConnected = true;
     this.pgError = null;
 
-    console.log('✓ PostgreSQL initialization completed successfully.');
+    console.log('✓ PostgreSQL initialization completed.');
 
   } catch (err) {
     this.isPgConnected = false;
-    this.pgError = err.message;
+
+    const errMsg = err.message || String(err);
+    this.pgError = errMsg;
 
     console.error(
-      `ℹ PostgreSQL status: ${err.message}. Local sync store active.`
+      `PostgreSQL initialization failed: ${errMsg}`
     );
 
-    // Schedule only one retry
+    if (this.pgPool === pool) {
+      this.pgPool = null;
+    }
+
+    if (client) {
+      client.release();
+      client = null;
+    }
+
+    if (pool) {
+      await pool.end().catch(() => {});
+    }
+
+    // Schedule only one retry.
     if (!this.pgRetryTimer) {
       this.pgRetryTimer = setTimeout(() => {
         this.pgRetryTimer = null;
         this.initPostgreSQL();
       }, 15000);
+
+      if (this.pgRetryTimer.unref) {
+        this.pgRetryTimer.unref();
+      }
     }
 
   } finally {
-    // Always release the manually acquired client
     if (client) {
       client.release();
     }
