@@ -157,6 +157,18 @@
         });
       }
 
+      var handleExportSkp = function () {
+        self.exportSketchUp();
+      };
+      var btnExportSkp = document.getElementById('exportSkpBtn');
+      if (btnExportSkp) {
+        btnExportSkp.addEventListener('click', handleExportSkp);
+      }
+      var btnExportSkpTop = document.getElementById('exportSkpTopBtn');
+      if (btnExportSkpTop) {
+        btnExportSkpTop.addEventListener('click', handleExportSkp);
+      }
+
       var btnExportJson = document.getElementById('planExportJson');
       if (btnExportJson) {
         btnExportJson.addEventListener('click', function () {
@@ -1423,6 +1435,96 @@
       modal.classList.add('is-open');
       modal.querySelectorAll('.modal-close-btn, .modal-backdrop').forEach(function (b) {
         b.onclick = function () { modal.classList.remove('is-open'); };
+      });
+    },
+
+    exportSketchUp: function (format) {
+      format = format || 'dae';
+      var self = this;
+      var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+
+      if (!this.archRenderer && root.Orbix3D) {
+        this.archRenderer = new root.Orbix3D(scene);
+      }
+
+      var res;
+      try {
+        if (this.archRenderer && typeof this.archRenderer.exportToSketchUpCollada === 'function') {
+          res = this.archRenderer.exportToSketchUpCollada(this.project, scene);
+        } else if (root.Orbix3D && typeof root.Orbix3D.exportSketchUp === 'function') {
+          res = root.Orbix3D.exportSketchUp(this.project, scene);
+        }
+      } catch (err) {
+        console.error('SketchUp export error:', err);
+        alert('Could not export to SketchUp: ' + err.message);
+        return;
+      }
+
+      if (!res || !res.colladaXml) {
+        alert('No 3D geometry available to export. Please add walls or modular units first.');
+        return;
+      }
+
+      var filename = (format === 'skp') ? res.skpFilename : res.filename;
+      var mimeType = (format === 'skp') ? 'application/octet-stream' : 'model/vnd.collada+xml';
+
+      // Deliver file download to browser
+      var blob = new Blob([res.colladaXml], { type: mimeType });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+
+      if (typeof window.showToast === 'function') {
+        window.showToast('✨ Exported whole 3D project for Trimble SketchUp (' + filename + ')! In SketchUp: File ➔ Import to open.');
+      }
+
+      // Show SketchUp modal with stats and direct instructions
+      this.openExportSkpModal(res);
+    },
+
+    openExportSkpModal: function (res) {
+      var modal = document.getElementById('modalExportSkp');
+      if (!modal) return;
+
+      var statsEl = document.getElementById('skpExportStats');
+      if (statsEl && res && res.stats) {
+        var s = res.stats;
+        statsEl.innerHTML =
+          '<span style="background:#EEF2F6;padding:4px 8px;border-radius:4px;">🧱 <b>' + s.walls + '</b> Walls &amp; Cutouts</span>' +
+          '<span style="background:#EEF2F6;padding:4px 8px;border-radius:4px;">🚪 <b>' + s.openings + '</b> Openings</span>' +
+          '<span style="background:#EEF2F6;padding:4px 8px;border-radius:4px;">🪵 <b>' + s.furniture + '</b> Modular Units</span>' +
+          '<span style="background:#EEF2F6;padding:4px 8px;border-radius:4px;">📐 <b>' + (s.triangleCount ? s.triangleCount.toLocaleString() : 'Geometry') + '</b> 3D Triangles</span>' +
+          '<span style="background:#E0F2FE;color:#0284C7;padding:4px 8px;border-radius:4px;font-weight:600;">✅ 1:1 mm Scale</span>';
+      }
+
+      var self = this;
+      var btnDae = document.getElementById('skpDownloadDaeBtn');
+      if (btnDae) {
+        btnDae.onclick = function () {
+          self.exportSketchUp('dae');
+        };
+      }
+      var btnSkp = document.getElementById('skpDownloadSkpBtn');
+      if (btnSkp) {
+        btnSkp.onclick = function () {
+          self.exportSketchUp('skp');
+        };
+      }
+
+      modal.classList.add('is-open');
+      modal.style.display = 'flex';
+
+      function closeModal() {
+        modal.classList.remove('is-open');
+        modal.style.display = 'none';
+      }
+
+      modal.querySelectorAll('.modal-close-btn, #cancelExportSkpBtn, #backdropExportSkp, #closeExportSkpModal').forEach(function (b) {
+        b.onclick = closeModal;
       });
     },
 
