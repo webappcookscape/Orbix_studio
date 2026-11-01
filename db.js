@@ -140,6 +140,10 @@ class DBManager {
   }
 
   saveLocalStore(data) {
+    // If PostgreSQL is connected and operating as live DB, do not write to local_store.json
+    if (this.isPgConnected) {
+      return;
+    }
     try {
       fs.writeFileSync(LOCAL_STORE_PATH, JSON.stringify(data || this.localStore, null, 2), 'utf-8');
     } catch (e) {
@@ -414,7 +418,7 @@ class DBManager {
       }
     }
 
-    if (!user) {
+    if (!user && !this.isPgConnected) {
       const users = this.localStore.users || DEFAULT_USERS;
       const found = users.find(u =>
         (u.email && u.email.toLowerCase() === cleanId) ||
@@ -451,20 +455,28 @@ class DBManager {
           pIndex++;
         }
 
-        // Role-based filtering:
-        // Admin: can see all projects unless specifically filtering by 'mine' or 'shared'
-        // Employee: only sees their own projects OR projects that are shared
-        if (filter === 'mine' && userId) {
-          query += ` AND created_by = $${pIndex}`;
-          params.push(userId);
-          pIndex++;
-        } else if (filter === 'shared') {
-          query += ` AND is_shared = true`;
-        } else if (!isAdmin && userId) {
-          // Employee viewing 'all': restrict to own projects and shared projects
-          query += ` AND (created_by = $${pIndex} OR is_shared = true)`;
-          params.push(userId);
-          pIndex++;
+        // Each account has their own project!
+        // Admin: can see all projects or filter by mine / specific employee
+        // Employee: ONLY sees projects created by them (or shared directly to their email)
+        if (isAdmin) {
+          if (filter === 'mine' && userId) {
+            query += ` AND created_by = $${pIndex}`;
+            params.push(userId);
+            pIndex++;
+          } else if (filter && filter !== 'all') {
+            query += ` AND created_by = $${pIndex}`;
+            params.push(filter);
+            pIndex++;
+          }
+        } else {
+          // Employee: strictly their own projects or shared directly to their email
+          if (userId) {
+            query += ` AND (created_by = $${pIndex} OR id IN (SELECT project_id FROM project_shares WHERE shared_to_email = (SELECT email FROM users WHERE id = $${pIndex} LIMIT 1)))`;
+            params.push(userId);
+            pIndex++;
+          } else {
+            query += ` AND 1=0`; // If no userId provided for employee, return empty
+          }
         }
 
         query += ' ORDER BY updated_at DESC';
@@ -484,12 +496,18 @@ class DBManager {
           (p.owner_name && p.owner_name.toLowerCase().includes(s))
         );
       }
-      if (filter === 'mine' && userId) {
-        projects = projects.filter(p => p.created_by === userId);
-      } else if (filter === 'shared') {
-        projects = projects.filter(p => p.is_shared);
-      } else if (!isAdmin && userId) {
-        projects = projects.filter(p => p.created_by === userId || p.is_shared);
+      if (isAdmin) {
+        if (filter === 'mine' && userId) {
+          projects = projects.filter(p => p.created_by === userId);
+        } else if (filter && filter !== 'all') {
+          projects = projects.filter(p => p.created_by === filter);
+        }
+      } else {
+        if (userId) {
+          projects = projects.filter(p => p.created_by === userId);
+        } else {
+          projects = [];
+        }
       }
       projects.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
     }
@@ -750,11 +768,8 @@ class DBManager {
         host: process.env.PGHOST || 'localhost',
         port: process.env.PGPORT || 5432
       },
-      localSync: {
-        active: true,
-        projectCount: (this.localStore.projects || []).length,
-        userCount: (this.localStore.users || []).length
-      }
+      liveMode: this.isPgConnected,
+      mode: this.isPgConnected ? 'PostgreSQL Live Database' : 'Offline Local Store'
     };
   }
 }

@@ -192,7 +192,32 @@ app.post('/api/projects/:id/fork', async (req, res) => {
   }
 });
 
-// Fallback to index.html
+// SPA Routes: Explicit URL paths for all views
+const SPA_VIEWS = [
+  '/',
+  '/home',
+  '/plan',
+  '/design',
+  '/3d-studio',
+  '/3dstudio',
+  '/pricing',
+  '/boq',
+  '/quote',
+  '/gallery',
+  '/kitchen',
+  '/users',
+  '/upload',
+  '/nest',
+  '/report'
+];
+
+SPA_VIEWS.forEach(v => {
+  app.get(v, (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+  });
+});
+
+// Fallback to index.html for any other URL
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });

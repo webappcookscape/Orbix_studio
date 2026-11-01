@@ -31,13 +31,32 @@ echo -e "${BLUE}==============================================${NC}"
 if [ -d "$PROJECT_DIR/.git" ]; then
     echo -e "${YELLOW}[1/5] Pulling latest changes from Git...${NC}"
     cd "$PROJECT_DIR"
-    # Preserve runtime database so created employees & projects are never lost on deploy
+    # Preserve runtime database and .env so created employees & projects are never lost on deploy
+    if [ -f ".env" ]; then
+        cp .env /tmp/orbix_env_backup 2>/dev/null || true
+    fi
     if [ -f "db/local_store.json" ]; then
         cp db/local_store.json /tmp/orbix_local_store_backup.json 2>/dev/null || true
     fi
     git fetch origin main
     git reset --hard origin/main
-    # Restore runtime data if it existed
+    # Restore .env and runtime data
+    if [ -f "/tmp/orbix_env_backup" ]; then
+        cp /tmp/orbix_env_backup .env 2>/dev/null || true
+    fi
+    if [ ! -f ".env" ]; then
+        cat > .env << 'ENVEOF'
+# PostgreSQL Database Connection
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/cupboard_cad
+PGHOST=localhost
+PGPORT=5432
+PGUSER=postgres
+PGPASSWORD=postgres
+PGDATABASE=cupboard_cad
+PORT=4180
+ENVEOF
+        chmod 600 .env 2>/dev/null || true
+    fi
     if [ -f "/tmp/orbix_local_store_backup.json" ]; then
         cp /tmp/orbix_local_store_backup.json db/local_store.json 2>/dev/null || true
     fi

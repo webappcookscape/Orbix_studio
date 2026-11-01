@@ -7,6 +7,390 @@
 
   var API_BASE = ''; // Same host (Express backend)
 
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // ORBIX ROUTER — Clean URL Routing, Browser History & Role-Based Navigation
+  // ═══════════════════════════════════════════════════════════════════════════════
+  var OrbixRouter = {
+    ROUTE_MAP: {
+      '/': 'home',
+      '/home': 'home',
+      '/plan': 'plan',
+      '/design': 'design',
+      '/3d-studio': 'design',
+      '/3dstudio': 'design',
+      '/pricing': 'boq',
+      '/boq': 'boq',
+      '/quote': 'quote',
+      '/gallery': 'gallery',
+      '/kitchen': 'kitchen',
+      '/sheet': 'sheet',
+      '/elev': 'elev',
+      '/panels': 'panels',
+      '/nest': 'nest',
+      '/upload': 'upload',
+      '/report': 'report',
+      '/users': 'users'
+    },
+
+    VIEW_TO_PATH: {
+      'home': '/home',
+      'plan': '/plan',
+      'design': '/3d-studio',
+      'boq': '/pricing',
+      'quote': '/quote',
+      'gallery': '/gallery',
+      'kitchen': '/kitchen',
+      'sheet': '/sheet',
+      'elev': '/elev',
+      'panels': '/panels',
+      'nest': '/nest',
+      'upload': '/upload',
+      'report': '/report',
+      'users': '/users'
+    },
+
+    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'boq'],
+
+    isInitialized: false,
+    _popstateHandling: false,
+
+    init: function () {
+      if (this.isInitialized) return;
+      var self = this;
+      this.isInitialized = true;
+
+      window.addEventListener('popstate', function () {
+        self._popstateHandling = true;
+        try {
+          var path = window.location.pathname.toLowerCase();
+          var v = self.ROUTE_MAP[path];
+          if (!v) {
+            var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+            v = self.ROUTE_MAP['/' + h] || 'home';
+          }
+          self.navigateTo(v, true);
+        } finally {
+          self._popstateHandling = false;
+        }
+      });
+
+      this.hookSetView();
+
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest('a');
+        if (a && a.getAttribute('href')) {
+          var href = a.getAttribute('href');
+          if (href.startsWith('/') && !href.startsWith('/api') && !href.startsWith('//')) {
+            e.preventDefault();
+            self.navigateByPath(href);
+          }
+        }
+      });
+    },
+
+    hookSetView: function () {
+      var self = this;
+      var hook = function () {
+        if (typeof window.setView === 'function' && !window.setView._isRouterHooked) {
+          var origSetView = window.setView;
+          window.setView = function (v) {
+            if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
+              if (self.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
+                if (typeof showToast === 'function') {
+                  showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+                }
+                if (window.location.pathname !== '/home') {
+                  self.updateUrl('home', false);
+                }
+                origSetView('home');
+                return;
+              }
+            }
+
+            origSetView(v);
+
+            if (!self._popstateHandling) {
+              self.updateUrl(v, false);
+            }
+          };
+          window.setView._isRouterHooked = true;
+        }
+      };
+
+      hook();
+      setTimeout(hook, 200);
+      setTimeout(hook, 1000);
+    },
+
+    updateUrl: function (view, replace) {
+      if (!window.history || !window.history.pushState) return;
+      var canonical = this.VIEW_TO_PATH[view] || ('/' + view);
+      if (window.location.pathname.toLowerCase() !== canonical.toLowerCase()) {
+        if (replace) {
+          window.history.replaceState({ view: view }, '', canonical);
+        } else {
+          window.history.pushState({ view: view }, '', canonical);
+        }
+      }
+    },
+
+    navigateTo: function (v, replace) {
+      if (v === 'users') {
+        if (!OrbixProjects.isAdmin()) {
+          if (typeof showToast === 'function') {
+            showToast('Access restricted: Only Admin accounts can access User Management.');
+          }
+          this.navigateTo('home', true);
+          return;
+        }
+        this.updateUrl('users', replace);
+        if (typeof OrbixProjects.openUserModal === 'function') {
+          OrbixProjects.openUserModal();
+        }
+        return;
+      }
+
+      if (v === 'kitchen') {
+        if (window.galState) window.galState.type = 'kitchen';
+        v = 'gallery';
+      }
+
+      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
+        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
+          if (typeof showToast === 'function') {
+            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+          }
+          v = 'home';
+        }
+      }
+
+      if (typeof window.setView === 'function') {
+        window.setView(v);
+      }
+      this.updateUrl(v, replace);
+    },
+
+    navigateByPath: function (path, replace) {
+      var clean = path.toLowerCase().trim();
+      var v = this.ROUTE_MAP[clean] || 'home';
+      this.navigateTo(v, replace);
+    },
+
+    dispatchInitialRoute: function () {
+      var path = window.location.pathname.toLowerCase();
+      var v = this.ROUTE_MAP[path];
+      if (!v) {
+        var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+        if (h) v = this.ROUTE_MAP['/' + h];
+      }
+      if (!v) v = 'home';
+
+      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
+        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
+          if (typeof showToast === 'function') {
+            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+          }
+          v = 'home';
+        }
+      }
+
+      this.navigateTo(v, true);
+    }
+  };
+  root.OrbixRouter = OrbixRouter;
+
+  // ═══════════════════════════════════════════════════════════════════════════════
+  // ORBIX ROUTER — Clean URL Routing, Browser History & Role-Based Navigation
+  // ═══════════════════════════════════════════════════════════════════════════════
+  var OrbixRouter = {
+    ROUTE_MAP: {
+      '/': 'home',
+      '/home': 'home',
+      '/plan': 'plan',
+      '/design': 'design',
+      '/3d-studio': 'design',
+      '/3dstudio': 'design',
+      '/pricing': 'boq',
+      '/boq': 'boq',
+      '/quote': 'quote',
+      '/gallery': 'gallery',
+      '/kitchen': 'kitchen',
+      '/sheet': 'sheet',
+      '/elev': 'elev',
+      '/panels': 'panels',
+      '/nest': 'nest',
+      '/upload': 'upload',
+      '/report': 'report',
+      '/users': 'users'
+    },
+
+    VIEW_TO_PATH: {
+      'home': '/home',
+      'plan': '/plan',
+      'design': '/3d-studio',
+      'boq': '/pricing',
+      'quote': '/quote',
+      'gallery': '/gallery',
+      'kitchen': '/kitchen',
+      'sheet': '/sheet',
+      'elev': '/elev',
+      'panels': '/panels',
+      'nest': '/nest',
+      'upload': '/upload',
+      'report': '/report',
+      'users': '/users'
+    },
+
+    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'boq'],
+
+    isInitialized: false,
+    _popstateHandling: false,
+
+    init: function () {
+      if (this.isInitialized) return;
+      var self = this;
+      this.isInitialized = true;
+
+      window.addEventListener('popstate', function () {
+        self._popstateHandling = true;
+        try {
+          var path = window.location.pathname.toLowerCase();
+          var v = self.ROUTE_MAP[path];
+          if (!v) {
+            var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+            v = self.ROUTE_MAP['/' + h] || 'home';
+          }
+          self.navigateTo(v, true);
+        } finally {
+          self._popstateHandling = false;
+        }
+      });
+
+      this.hookSetView();
+
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest('a');
+        if (a && a.getAttribute('href')) {
+          var href = a.getAttribute('href');
+          if (href.startsWith('/') && !href.startsWith('/api') && !href.startsWith('//')) {
+            e.preventDefault();
+            self.navigateByPath(href);
+          }
+        }
+      });
+    },
+
+    hookSetView: function () {
+      var self = this;
+      var hook = function () {
+        if (typeof window.setView === 'function' && !window.setView._isRouterHooked) {
+          var origSetView = window.setView;
+          window.setView = function (v) {
+            if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
+              if (self.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
+                if (typeof showToast === 'function') {
+                  showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+                }
+                if (window.location.pathname !== '/home') {
+                  self.updateUrl('home', false);
+                }
+                origSetView('home');
+                return;
+              }
+            }
+
+            origSetView(v);
+
+            if (!self._popstateHandling) {
+              self.updateUrl(v, false);
+            }
+          };
+          window.setView._isRouterHooked = true;
+        }
+      };
+
+      hook();
+      setTimeout(hook, 200);
+      setTimeout(hook, 1000);
+    },
+
+    updateUrl: function (view, replace) {
+      if (!window.history || !window.history.pushState) return;
+      var canonical = this.VIEW_TO_PATH[view] || ('/' + view);
+      if (window.location.pathname.toLowerCase() !== canonical.toLowerCase()) {
+        if (replace) {
+          window.history.replaceState({ view: view }, '', canonical);
+        } else {
+          window.history.pushState({ view: view }, '', canonical);
+        }
+      }
+    },
+
+    navigateTo: function (v, replace) {
+      if (v === 'users') {
+        if (!OrbixProjects.isAdmin()) {
+          if (typeof showToast === 'function') {
+            showToast('Access restricted: Only Admin accounts can access User Management.');
+          }
+          this.navigateTo('home', true);
+          return;
+        }
+        this.updateUrl('users', replace);
+        if (typeof OrbixProjects.openUserModal === 'function') {
+          OrbixProjects.openUserModal();
+        }
+        return;
+      }
+
+      if (v === 'kitchen') {
+        if (window.galState) window.galState.type = 'kitchen';
+        v = 'gallery';
+      }
+
+      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
+        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
+          if (typeof showToast === 'function') {
+            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+          }
+          v = 'home';
+        }
+      }
+
+      if (typeof window.setView === 'function') {
+        window.setView(v);
+      }
+      this.updateUrl(v, replace);
+    },
+
+    navigateByPath: function (path, replace) {
+      var clean = path.toLowerCase().trim();
+      var v = this.ROUTE_MAP[clean] || 'home';
+      this.navigateTo(v, replace);
+    },
+
+    dispatchInitialRoute: function () {
+      var path = window.location.pathname.toLowerCase();
+      var v = this.ROUTE_MAP[path];
+      if (!v) {
+        var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+        if (h) v = this.ROUTE_MAP['/' + h];
+      }
+      if (!v) v = 'home';
+
+      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
+        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
+          if (typeof showToast === 'function') {
+            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
+          }
+          v = 'home';
+        }
+      }
+
+      this.navigateTo(v, true);
+    }
+  };
+  root.OrbixRouter = OrbixRouter;
+
   var OrbixProjects = {
     currentUser: null,
     activeProjectId: null,
@@ -18,12 +402,23 @@
 
     init: function () {
       var self = this;
+      OrbixRouter.init();
       this.loadCachedUser();
       this.initEventListeners();
       this.fetchDBStatus();
       this.fetchUsers(function () {
         self.applyRolePermissions();
-        self.fetchProjects();
+        self.fetchProjects(function () {
+          // Open active project or first project for this user
+          if (self.projects && self.projects.length > 0) {
+            var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
+            var savedId = null;
+            try { savedId = localStorage.getItem(userActiveKey); } catch (e) {}
+            var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
+            self.openProject(toOpen.id, false);
+          }
+          OrbixRouter.dispatchInitialRoute();
+        });
       });
       this.startAutoSaveLoop();
       this.guardViews();
@@ -87,12 +482,29 @@
     logout: function () {
       try {
         localStorage.removeItem('orbix_current_user');
+        localStorage.removeItem('orbix-project');
+        localStorage.removeItem('orbix_active_project_id');
+        localStorage.removeItem('cupboard-cad');
       } catch (e) {}
       this.currentUser = null;
+      this.activeProjectId = null;
+      this.projects = [];
+      if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
+        window.OrbixUI.resetProject('New Project');
+      }
+      if (window.S) {
+        window.S.units = [];
+        window.S.active = 0;
+        if (typeof renderRail === 'function') renderRail();
+        if (typeof buildScene === 'function') buildScene();
+      }
       this.closeModal('userModal');
       this.closeModal('loginModal');
       this.closeModal('editUserModal');
       this.showLogin();
+      if (OrbixRouter) {
+        OrbixRouter.updateUrl('home', false);
+      }
       if (typeof showToast === 'function') {
         showToast('Logged out of session.');
       }
@@ -100,13 +512,41 @@
 
     setCurrentUser: function (user) {
       this.currentUser = user;
+      this.activeProjectId = null; // Always clear active project on account switch!
       try {
         localStorage.setItem('orbix_current_user', JSON.stringify(user));
+        localStorage.removeItem('orbix-project');
+        localStorage.removeItem('orbix_active_project_id');
+        localStorage.removeItem('cupboard-cad');
       } catch (e) {}
+
+      // Reset workspace to clean project for the newly logged-in account
+      if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
+        window.OrbixUI.resetProject('New Project');
+      }
+      if (window.S) {
+        window.S.units = [];
+        window.S.active = 0;
+        if (typeof renderRail === 'function') renderRail();
+        if (typeof buildScene === 'function') buildScene();
+      }
+
       this.showApp();
       this.updateUserUI();
       this.applyRolePermissions();
-      this.fetchProjects();
+
+      var self = this;
+      this.fetchProjects(function () {
+        if (self.projects && self.projects.length > 0) {
+          var userActiveKey = 'orbix_active_proj_' + user.id;
+          var savedId = null;
+          try { savedId = localStorage.getItem(userActiveKey); } catch (e) {}
+          var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
+          self.openProject(toOpen.id, false);
+        }
+        OrbixRouter.dispatchInitialRoute();
+      });
+
       if (typeof showToast === 'function') {
         var roleName = this.isAdmin() ? 'Admin' : 'Employee';
         showToast('Active account: ' + user.name + ' (' + roleName + ')');
@@ -231,12 +671,12 @@
       var isPg = this.dbStatus && this.dbStatus.postgres && this.dbStatus.postgres.connected;
       if (isPg) {
         badge.className = 'db-badge is-pg';
-        badge.innerHTML = '<span class="db-dot"></span> PostgreSQL Active';
-        badge.title = 'Connected to PostgreSQL database (' + (this.dbStatus.postgres.database || 'cupboard_cad') + ')';
+        badge.innerHTML = '<span class="db-dot"></span> PostgreSQL Live DB';
+        badge.title = 'Live connection to PostgreSQL (' + (this.dbStatus.postgres.database || 'cupboard_cad') + ')';
       } else {
         badge.className = 'db-badge is-local';
-        badge.innerHTML = '<span class="db-dot"></span> Local Sync Active';
-        badge.title = 'Running with local persistence and background PostgreSQL connector';
+        badge.innerHTML = '<span class="db-dot"></span> Offline Local Store';
+        badge.title = 'Running in offline fallback mode';
       }
     },
 
@@ -263,17 +703,24 @@
         });
     },
 
-    fetchProjects: function () {
+    fetchProjects: function (cb) {
       var self = this;
+      if (!this.currentUser) {
+        self.projects = [];
+        self.renderProjectsList();
+        if (cb) cb();
+        return;
+      }
+
       var roleParam = this.isAdmin() ? 'admin' : 'employee';
       var url = '/api/projects?search=' + encodeURIComponent(this.searchQuery) +
         '&filter=' + encodeURIComponent(this.filter) +
-        '&userId=' + encodeURIComponent(this.currentUser ? this.currentUser.id : '') +
+        '&userId=' + encodeURIComponent(this.currentUser.id) +
         '&userRole=' + encodeURIComponent(roleParam);
 
       var listContainer = document.getElementById('projectsGrid');
       if (listContainer && (!self.projects || !self.projects.length)) {
-        listContainer.innerHTML = '<div class="proj-loading">Loading projects from PostgreSQL...</div>';
+        listContainer.innerHTML = '<div class="proj-loading">Loading live projects from PostgreSQL...</div>';
       }
 
       fetch(url)
@@ -281,9 +728,17 @@
         .then(function (data) {
           self.projects = data.projects || [];
           self.renderProjectsList();
+          if (self.projects.length === 0) {
+            self.activeProjectId = null;
+            if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
+              window.OrbixUI.resetProject('New Project');
+            }
+          }
+          if (cb) cb();
         })
         .catch(function () {
           self.renderProjectsList();
+          if (cb) cb();
         });
     },
 
@@ -435,23 +890,38 @@
       });
     },
 
-    openProject: function (id) {
+    openProject: function (id, switchView) {
+      var self = this;
       var project = this.projects.find(function (p) { return p.id === id; });
       if (!project) return;
 
       this.activeProjectId = id;
-      try {
-        localStorage.setItem('orbix_active_project_id', id);
-      } catch (e) {}
+      if (this.currentUser) {
+        try {
+          localStorage.setItem('orbix_active_proj_' + this.currentUser.id, id);
+        } catch (e) {}
+      }
 
-      // Clear legacy sample cupboard cache from localStorage so it doesn't leak into projects
+      // Fetch fresh live project from PostgreSQL
+      fetch('/api/projects/' + id)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var liveProj = data.project || project;
+          self._loadProjectIntoWorkspace(liveProj, switchView);
+        })
+        .catch(function () {
+          self._loadProjectIntoWorkspace(project, switchView);
+        });
+    },
+
+    _loadProjectIntoWorkspace: function (project, switchView) {
       try {
         localStorage.removeItem('cupboard-cad');
       } catch (e) {}
 
-      // Reset 3D units - will be strictly synchronized with project.plan.furniture
+      // Reset 3D units strictly synchronized with live project
       if (window.S) {
-        window.S.units = [];
+        window.S.units = (project.data && project.data.units && Array.isArray(project.data.units)) ? project.data.units : [];
         window.S.active = 0;
         if (typeof renderRail === 'function') renderRail();
         if (typeof buildScene === 'function') buildScene();
@@ -459,13 +929,12 @@
         if (typeof camApply === 'function') camApply();
       }
 
-      // Load 2D floor plan into OrbixUI (clean slate for new projects, or saved walls)
+      // Load 2D floor plan into OrbixUI
       if (window.OrbixUI) {
         var planToLoad = null;
         if (project.data && project.data.plan && project.data.plan.plan) {
           planToLoad = project.data.plan;
         } else if (window.OrbixCore && typeof window.OrbixCore.createProject === 'function') {
-          // Brand new clean empty project canvas
           planToLoad = window.OrbixCore.createProject(project.title);
           if (planToLoad.meta) planToLoad.meta.clientName = project.client || '';
         }
@@ -475,43 +944,26 @@
         }
       }
 
-      // Switch to 2D Floor Plan view
-      // 1. Try global window.setView
-      if (typeof window.setView === 'function') {
-        window.setView('plan');
-      } else if (window.__cc && typeof window.__cc.setView === 'function') {
-        window.__cc.setView('plan');
-      }
-
-      // 2. Trigger click on the 2D Floor Plan topbar tab
-      var planTab = document.querySelector('.vtab[data-view="plan"]');
-      if (planTab) {
-        planTab.click();
-      }
-
-      // 3. Guaranteed DOM fallback for view activation
-      document.querySelectorAll('.vtab').forEach(function (b) {
-        var on = b.getAttribute('data-view') === 'plan';
-        b.classList.toggle('is-on', on);
-        b.setAttribute('aria-pressed', String(on));
-      });
-      document.querySelectorAll('.view').forEach(function (s) {
-        s.classList.toggle('is-on', s.id === 'view-plan');
-      });
-
-      // Ensure 2D plan canvas is resized and drawn to fit
-      setTimeout(function () {
-        if (window.OrbixUI && window.OrbixUI.editor) {
-          window.OrbixUI.editor.resize();
-          window.OrbixUI.editor.render();
-          if (typeof window.OrbixUI.editor.zoomFit === 'function') {
-            window.OrbixUI.editor.zoomFit();
-          }
+      if (switchView !== false) {
+        if (root.OrbixRouter) {
+          root.OrbixRouter.navigateTo('plan');
+        } else if (typeof window.setView === 'function') {
+          window.setView('plan');
         }
-      }, 50);
 
-      if (typeof showToast === 'function') {
-        showToast('Opened in 2D Floor Plan: ' + project.title);
+        setTimeout(function () {
+          if (window.OrbixUI && window.OrbixUI.editor) {
+            window.OrbixUI.editor.resize();
+            window.OrbixUI.editor.render();
+            if (typeof window.OrbixUI.editor.zoomFit === 'function') {
+              window.OrbixUI.editor.zoomFit();
+            }
+          }
+        }, 50);
+
+        if (typeof showToast === 'function') {
+          showToast('Opened project: ' + project.title);
+        }
       }
     },
 
@@ -527,19 +979,16 @@
     },
 
     autoSaveWorkingProject: function () {
-      // Find active project or latest working project
+      if (!this.currentUser) return;
       var activeId = this.activeProjectId;
       if (!activeId) {
         try {
-          activeId = localStorage.getItem('orbix_active_project_id');
+          activeId = localStorage.getItem('orbix_active_proj_' + this.currentUser.id);
         } catch (e) {}
-      }
-      if (!activeId && this.projects && this.projects.length) {
-        activeId = this.projects[0].id;
       }
       if (!activeId) return;
 
-      var self = this;
+      // Strictly verify activeId belongs to this user's project list
       var project = this.projects.find(function (p) { return p.id === activeId; });
       if (!project) return;
 
@@ -550,38 +999,24 @@
 
       project.data = project.data || {};
       if (currentPlan) project.data.plan = currentPlan;
+      if (currentUnits) project.data.units = currentUnits;
 
-      // Only retain units in data.units that match actual placed furniture on the 2D plan!
-      var placedFurniture = (currentPlan && currentPlan.plan && currentPlan.plan.furniture) || [];
-      if (placedFurniture.length === 0) {
-        project.data.units = [];
-        if (window.S) {
-          window.S.units = [];
-          window.S.active = 0;
-        }
-      } else {
-        var placedIds = placedFurniture.map(function (f) { return f.id; });
-        var filteredUnits = (currentUnits || []).filter(function (u) {
-          return u._furnId && placedIds.indexOf(u._furnId) !== -1;
-        });
-        project.data.units = filteredUnits;
-        if (window.S) window.S.units = filteredUnits;
-      }
+      var fCount = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
+        ? project.data.plan.plan.furniture.length : 0;
+      project.units_count = fCount || (project.data.units ? project.data.units.length : 0);
 
-      project.units_count = placedFurniture.length;
-
-      // Save to localStorage immediately
+      // Save user-scoped local backup
       try {
         if (project.data.plan) {
-          localStorage.setItem('orbix-project', JSON.stringify(project.data.plan));
+          localStorage.setItem('orbix_project_' + this.currentUser.id + '_' + activeId, JSON.stringify(project.data.plan));
         }
-        localStorage.setItem('orbix_active_project_id', activeId);
+        localStorage.setItem('orbix_active_proj_' + this.currentUser.id, activeId);
       } catch (e) {}
 
-      // Update topbar indicator: "Auto-saving..."
+      var self = this;
       self.setSaveIndicator('saving');
 
-      // Sync to PostgreSQL backend
+      // Sync live to PostgreSQL backend
       fetch('/api/projects/' + activeId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -597,7 +1032,7 @@
         self.setSaveIndicator('saved', timeStr);
       })
       .catch(function (err) {
-        console.warn('[AutoSave 15s] PostgreSQL save buffered to local sync:', err);
+        console.warn('[AutoSave Live] PostgreSQL offline:', err);
         self.setSaveIndicator('offline');
       });
     },
@@ -641,10 +1076,10 @@
         || (project.data.plan && project.data.plan.furniture) || [];
       project.units_count = planFurn.length || (project.data.units ? project.data.units.length : 0);
 
-      // Save to localStorage
+      // Save user-scoped localStorage backup
       try {
-        if (project.data.plan) {
-          localStorage.setItem('orbix-project', JSON.stringify(project.data.plan));
+        if (project.data.plan && self.currentUser) {
+          localStorage.setItem('orbix_project_' + self.currentUser.id + '_' + self.activeProjectId, JSON.stringify(project.data.plan));
         }
       } catch (e) {}
 
@@ -797,6 +1232,15 @@
       fetch('/api/projects/' + id, { method: 'DELETE' })
         .then(function (r) { return r.json(); })
         .then(function () {
+          if (self.activeProjectId === id) {
+            self.activeProjectId = null;
+            if (self.currentUser) {
+              try { localStorage.removeItem('orbix_active_proj_' + self.currentUser.id); } catch (e) {}
+            }
+            if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
+              window.OrbixUI.resetProject('New Project');
+            }
+          }
           self.fetchProjects();
           if (typeof showToast === 'function') {
             showToast('Deleted project: ' + title);
@@ -820,6 +1264,13 @@
     closeModal: function (modalId) {
       var modal = document.getElementById(modalId);
       if (modal) modal.classList.remove('is-open');
+      if (modalId === 'userModal' && window.location.pathname === '/users') {
+        if (root.OrbixRouter) {
+          var activeTab = document.querySelector('.topbar .views .vtab.is-on');
+          var activeView = activeTab ? activeTab.getAttribute('data-view') : 'home';
+          root.OrbixRouter.updateUrl(activeView, false);
+        }
+      }
     },
 
     initEventListeners: function () {

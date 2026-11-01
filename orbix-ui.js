@@ -16,18 +16,8 @@
       var planContainer = document.getElementById('planCanvasContainer');
       if (!planContainer) return;
 
-      // Load saved project from localStorage or create fresh
-      var saved = localStorage.getItem('orbix-project');
-      if (saved) {
-        try {
-          this.project = Core.deserializeProject(saved);
-        } catch (e) {
-          console.warn('Could not load saved Orbix project, starting fresh', e);
-          this.project = Core.createProject('My Dream Home');
-        }
-      } else {
-        this.project = Core.createProject('My Dream Home');
-      }
+      // Initialize with clean project; live project is loaded dynamically from PostgreSQL per account
+      this.project = Core.createProject('Untitled Project');
 
       var self = this;
       this.editor = new PlanEditor(planContainer, {
@@ -52,7 +42,6 @@
       this.bindToolbar();
       this.updateUI();
       this.renderBOQ();
-      this.syncProjectUnitsTo3DStudio();
     },
 
     loadProject: function (proj) {
@@ -84,10 +73,19 @@
       return fresh;
     },
 
+    resetProject: function (title) {
+      var fresh = Core.createProject(title || 'Untitled Project');
+      this.loadProject(fresh);
+      return fresh;
+    },
+
     saveToLocalStorage: function () {
       if (!this.project) return;
       try {
-        localStorage.setItem('orbix-project', Core.serializeProject(this.project));
+        if (window.OrbixProjects && window.OrbixProjects.currentUser && window.OrbixProjects.activeProjectId) {
+          var key = 'orbix_project_' + window.OrbixProjects.currentUser.id + '_' + window.OrbixProjects.activeProjectId;
+          localStorage.setItem(key, Core.serializeProject(this.project));
+        }
       } catch (e) {}
     },
 
