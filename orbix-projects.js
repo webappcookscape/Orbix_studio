@@ -550,11 +550,25 @@
 
       project.data = project.data || {};
       if (currentPlan) project.data.plan = currentPlan;
-      if (currentUnits) project.data.units = currentUnits;
 
-      var fCount = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
-        ? project.data.plan.plan.furniture.length : 0;
-      project.units_count = fCount || (project.data.units ? project.data.units.length : 0);
+      // Only retain units in data.units that match actual placed furniture on the 2D plan!
+      var placedFurniture = (currentPlan && currentPlan.plan && currentPlan.plan.furniture) || [];
+      if (placedFurniture.length === 0) {
+        project.data.units = [];
+        if (window.S) {
+          window.S.units = [];
+          window.S.active = 0;
+        }
+      } else {
+        var placedIds = placedFurniture.map(function (f) { return f.id; });
+        var filteredUnits = (currentUnits || []).filter(function (u) {
+          return u._furnId && placedIds.indexOf(u._furnId) !== -1;
+        });
+        project.data.units = filteredUnits;
+        if (window.S) window.S.units = filteredUnits;
+      }
+
+      project.units_count = placedFurniture.length;
 
       // Save to localStorage immediately
       try {

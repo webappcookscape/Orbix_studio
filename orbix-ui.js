@@ -52,6 +52,7 @@
       this.bindToolbar();
       this.updateUI();
       this.renderBOQ();
+      this.syncProjectUnitsTo3DStudio();
     },
 
     loadProject: function (proj) {

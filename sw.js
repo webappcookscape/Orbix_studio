@@ -3,7 +3,7 @@
    Offline CAD engine, cache-first app shell & resilient background sync
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'orbix-studio-v1';
+const CACHE_NAME = 'orbix-studio-v2';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -26,7 +26,6 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Use catch for individual items so non-critical missing files won't abort install
       return Promise.allSettled(
         STATIC_ASSETS.map((url) =>
           cache.add(url).catch((err) => {
@@ -38,7 +37,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activation: Clean Up Old Caches
+// Activation: Clean Up Old Caches Immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -56,12 +55,13 @@ self.addEventListener('activate', (event) => {
 
 // Fetch Strategy:
 // - API calls (/api/): Network-First, fallback to cached response
-// - Static assets & CDNs: Stale-While-Revalidate or Cache-First
+// - Local app code (.js, .css, .html): Network-First, fallback to cache
+// - External assets: Stale-While-Revalidate
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // Skip non-GET requests and non-http(s) schemes (e.g. chrome-extension://)
+  // Skip non-GET requests and non-http(s) schemes
   if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
     return;
   }
@@ -80,7 +80,6 @@ self.addEventListener('fetch', (event) => {
         .catch(() => {
           return caches.match(request).then((cachedResponse) => {
             if (cachedResponse) return cachedResponse;
-            // If offline and not in cache, return an offline JSON response
             return new Response(
               JSON.stringify({ offline: true, error: 'Offline mode active', projects: [] }),
               { headers: { 'Content-Type': 'application/json' } }
@@ -91,7 +90,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Google Fonts & Static Assets: Stale-While-Revalidate
+  // 2. Local App Code (HTML, JS, CSS): Network-First to guarantee latest code loads
+  if (url.origin === location.origin) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const resClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, resClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // 3. External assets & CDNs: Stale-While-Revalidate
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       const fetchPromise = fetch(request)
