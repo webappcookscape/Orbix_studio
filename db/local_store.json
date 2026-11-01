@@ -22,43 +22,451 @@
       "created_by": "usr_dev",
       "owner_name": "Dev Kancheti",
       "owner_email": "dev@orbixstudio.io",
-      "units_count": 3,
+      "units_count": 4,
       "boards_est": 14,
       "data": {
         "units": [
           {
-            "label": "FM 600",
-            "ctype": "kbase",
-            "elev": 0,
+            "label": "KITCHEN",
+            "ctype": "kitchen",
+            "elev": 100,
             "drawEvery": false,
-            "counter": "black",
-            "hfinish": "black",
+            "counter": "quartz",
+            "hfinish": "nickel",
             "dstyle": "slab",
             "paint": "#5B6E7A",
             "shape": "straight",
-            "W2": 600,
-            "H": 750,
-            "W": 600,
+            "W2": 1200,
+            "H": 720,
+            "W": 3600,
+            "D": 580,
+            "T": 18,
+            "type": "hinged",
+            "shutters": 5,
+            "sections": 5,
+            "shelves": 1,
+            "drawers": 3,
+            "drawerH": 180,
+            "loft": false,
+            "loftH": 600,
+            "loftShutters": 3,
+            "back": 18,
+            "handle": "tbar",
+            "carcass": "MDF 1135",
+            "shutterCol": "MDF 4402",
+            "klayout": "straight",
+            "kA": 3600,
+            "kB": 2400,
+            "kC": 2400,
+            "kWall": true,
+            "kTall": true,
+            "kHob": true,
+            "kSink": true,
+            "kFridge": true,
+            "kOven": true,
+            "kWallCol": null,
+            "kWallDs": null,
+            "shutterCol2": null,
+            "hgrain": false,
+            "glassTint": "fluted",
+            "frameFin": "black",
+            "leatherHex": "#4A3626",
+            "kSplash": "subway",
+            "kSplashHex": null
+          },
+          {
+            "label": "MBR",
+            "ctype": "wardrobe",
+            "elev": 0,
+            "drawEvery": false,
+            "counter": "black",
+            "hfinish": "chrome",
+            "dstyle": "slab",
+            "paint": "#5B6E7A",
+            "shape": "straight",
+            "W2": 1200,
+            "H": 1795,
+            "W": 3000,
             "D": 550,
             "T": 18,
             "type": "hinged",
-            "shutters": 1,
+            "shutters": 9,
             "sections": 1,
-            "shelves": 1,
+            "shelves": 4,
             "drawers": 0,
             "drawerH": 180,
             "loft": false,
-            "loftH": 0,
-            "loftShutters": 0,
+            "loftH": 600,
+            "loftShutters": 3,
             "back": 18,
-            "handle": "gprof",
-            "carcass": "MDF 3411",
-            "shutterCol": "MDF 7701"
+            "handle": "none",
+            "carcass": "MDF 3410/3411",
+            "shutterCol": "MDF 3410/3411",
+            "kind": "imported",
+            "rows": [
+              {
+                "h": 775,
+                "w": 535,
+                "q": 1,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 775,
+                "w": 551,
+                "q": 1,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 775,
+                "w": 551,
+                "q": 1,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 775,
+                "w": 568,
+                "q": 1,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 775,
+                "w": 568,
+                "q": 1,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 775,
+                "w": 514,
+                "q": 1,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 775,
+                "w": 514,
+                "q": 1,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 775,
+                "w": 525,
+                "q": 1,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 775,
+                "w": 525,
+                "q": 1,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 775,
+                "w": 95,
+                "q": 1,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 775,
+                "w": 95,
+                "q": 1,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 1795,
+                "w": 800,
+                "q": 1,
+                "r": "Sliding Shutter",
+                "d": "10\" IBH",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 1795,
+                "w": 800,
+                "q": 1,
+                "r": "Sliding Shutter",
+                "d": "10\" IBH",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 1900,
+                "w": 65,
+                "q": 2,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 1600,
+                "w": 65,
+                "q": 2,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 1900,
+                "w": 100,
+                "q": 2,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 1600,
+                "w": 100,
+                "q": 2,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 1830,
+                "w": 310,
+                "q": 1,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 1600,
+                "w": 120,
+                "q": 2,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              }
+            ]
+          },
+          {
+            "label": "CBR",
+            "ctype": "wardrobe",
+            "elev": 0,
+            "drawEvery": false,
+            "counter": "black",
+            "hfinish": "chrome",
+            "dstyle": "slab",
+            "paint": "#5B6E7A",
+            "shape": "straight",
+            "W2": 1200,
+            "H": 910,
+            "W": 2400,
+            "D": 500,
+            "T": 18,
+            "type": "hinged",
+            "shutters": 5,
+            "sections": 1,
+            "shelves": 4,
+            "drawers": 0,
+            "drawerH": 180,
+            "loft": false,
+            "loftH": 600,
+            "loftShutters": 3,
+            "back": 18,
+            "handle": "none",
+            "carcass": "MDF 3410/3411",
+            "shutterCol": "MDF 3410/3411",
+            "kind": "imported",
+            "rows": [
+              {
+                "h": 910,
+                "w": 500,
+                "q": 1,
+                "r": "Left Panel",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 910,
+                "w": 500,
+                "q": 1,
+                "r": "Right Panel",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 2366,
+                "w": 500,
+                "q": 1,
+                "r": "Top panel",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 2366,
+                "w": 500,
+                "q": 1,
+                "r": "Bottom Panel",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 876,
+                "w": 2366,
+                "q": 1,
+                "r": "Back Panel",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 1166,
+                "w": 397,
+                "q": 2,
+                "r": "ADJ Shelf",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 876,
+                "w": 397,
+                "q": 2,
+                "r": "VP",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 846,
+                "w": 1200,
+                "q": 2,
+                "r": "Sliding Shutter",
+                "d": "8\" IBH",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 830,
+                "w": 564,
+                "q": 4,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 830,
+                "w": 500,
+                "q": 1,
+                "r": "Shutter",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 830,
+                "w": 120,
+                "q": 1,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 2400,
+                "w": 75,
+                "q": 2,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              },
+              {
+                "h": 910,
+                "w": 75,
+                "q": 2,
+                "r": "Dummy",
+                "d": "",
+                "col": "MDF 3410/3411",
+                "guessed": false
+              }
+            ]
+          },
+          {
+            "label": "Master Bed 3-Door Wardrobe",
+            "_furnId": "furn_y8txmlvtj",
+            "W": 1800,
+            "H": 2100,
+            "D": 600,
+            "shutters": 3,
+            "shutterCol": "MDF 3410",
+            "carcass": "MDF 1135"
+          },
+          {
+            "label": "Living TV Entertainment Unit",
+            "_furnId": "furn_vtjkmehjs",
+            "W": 2400,
+            "H": 1800,
+            "D": 400,
+            "shutterCol": "MDF 2204",
+            "carcass": "MDF 1135"
+          },
+          {
+            "label": "Kitchen L-Run Base Cabinets",
+            "_furnId": "furn_vhf46axh2",
+            "W": 3000,
+            "H": 850,
+            "D": 600,
+            "shutterCol": "MDF 7701",
+            "carcass": "MDF 1135"
+          },
+          {
+            "label": "Kitchen Wall Cabinets",
+            "_furnId": "furn_8tny93ev8",
+            "W": 3000,
+            "H": 700,
+            "D": 350,
+            "shutterCol": "MDF 1135",
+            "carcass": "MDF 1135"
           }
         ],
         "plan": {
           "schemaVersion": "1.0.0",
-          "id": "proj_215l4pkoa",
+          "id": "proj_0e03h2fxm",
           "meta": {
             "title": "Residential Interior Estimation",
             "clientName": "Aravind K.",
@@ -67,10 +475,10 @@
             "siteAddress": "Flat 402, Skyline Residency, Bangalore",
             "quoteId": "ORB-2026-089",
             "designerName": "Orbix Studio",
-            "dateCreated": "31 Oct 2026",
-            "validUntil": "30 Nov 2026",
+            "dateCreated": "29 Oct 2026",
+            "validUntil": "28 Nov 2026",
             "status": "approved",
-            "dateModified": "2026-10-31T13:04:12.084Z"
+            "dateModified": "2026-11-01T06:06:03.967Z"
           },
           "plan": {
             "gridSize": 100,
@@ -80,96 +488,288 @@
             "snapDistance": 150,
             "walls": [
               {
-                "id": "wall_yqr1q9un4",
+                "id": "wall_tcuy4kfi9",
                 "start": {
-                  "x": -8700,
-                  "y": -7400
+                  "x": 0,
+                  "y": 0
                 },
                 "end": {
-                  "x": 5300,
-                  "y": -7400
+                  "x": 5000,
+                  "y": 0
                 },
-                "thickness": 230,
+                "thickness": 200,
                 "height": 2800,
                 "material": "plaster_white",
                 "openings": [],
                 "pinned": false
               },
               {
-                "id": "wall_85o1ouk3h",
+                "id": "wall_u2tileruu",
                 "start": {
-                  "x": 5087.129154636192,
-                  "y": -7400
+                  "x": 5000,
+                  "y": 0
                 },
                 "end": {
-                  "x": 5087.129154636193,
-                  "y": 114.20218684441988
+                  "x": 5000,
+                  "y": 4000
                 },
-                "thickness": 230,
+                "thickness": 200,
                 "height": 2800,
                 "material": "plaster_white",
                 "openings": [],
                 "pinned": false
               },
               {
-                "id": "wall_cd56c1ztw",
+                "id": "wall_nmm2jtg5x",
                 "start": {
-                  "x": 5087.129154636193,
-                  "y": 114.20218684441988
+                  "x": 5000,
+                  "y": 4000
                 },
                 "end": {
-                  "x": 15786.567660303255,
-                  "y": 114.20218684441988
+                  "x": 0,
+                  "y": 4000
                 },
-                "thickness": 230,
+                "thickness": 150,
                 "height": 2800,
                 "material": "plaster_white",
                 "openings": [],
                 "pinned": false
               },
               {
-                "id": "wall_89mjvt6gf",
+                "id": "wall_uoszeslky",
                 "start": {
-                  "x": 15786.567660303255,
-                  "y": 114.20218684441988
+                  "x": 0,
+                  "y": 4000
                 },
                 "end": {
-                  "x": 15786.567660303255,
-                  "y": 7564.2153513018875
+                  "x": 0,
+                  "y": 0
                 },
-                "thickness": 230,
+                "thickness": 200,
                 "height": 2800,
                 "material": "plaster_white",
                 "openings": [],
                 "pinned": false
               },
               {
-                "id": "wall_3nlnz68aw",
+                "id": "wall_4qalemvo0",
                 "start": {
-                  "x": 15786.567660303255,
-                  "y": 7564.2153513018875
+                  "x": 4929.166666666668,
+                  "y": -70.83333333333334
                 },
                 "end": {
-                  "x": -8965.372353177816,
-                  "y": 7564.215351301885
+                  "x": 9129.166666666668,
+                  "y": -70.83333333333334
                 },
-                "thickness": 230,
+                "thickness": 200,
                 "height": 2800,
                 "material": "plaster_white",
                 "openings": [],
                 "pinned": false
               },
               {
-                "id": "wall_f1e3tzw6g",
+                "id": "wall_3kf968xwt",
                 "start": {
-                  "x": -8965.372353177816,
-                  "y": 7564.215351301885
+                  "x": 9200,
+                  "y": 0
                 },
                 "end": {
-                  "x": -8700,
-                  "y": -7400
+                  "x": 9200,
+                  "y": 4000
                 },
-                "thickness": 230,
+                "thickness": 200,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_t0mw7j977",
+                "start": {
+                  "x": 9200,
+                  "y": 4000
+                },
+                "end": {
+                  "x": 5000,
+                  "y": 4000
+                },
+                "thickness": 200,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_z473nnoug",
+                "start": {
+                  "x": 0,
+                  "y": 4000
+                },
+                "end": {
+                  "x": 0,
+                  "y": 7000
+                },
+                "thickness": 200,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_03sksdmai",
+                "start": {
+                  "x": 0,
+                  "y": 7000
+                },
+                "end": {
+                  "x": 3500,
+                  "y": 7000
+                },
+                "thickness": 200,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_b6po6je6s",
+                "start": {
+                  "x": 3500,
+                  "y": 7000
+                },
+                "end": {
+                  "x": 3500,
+                  "y": 4000
+                },
+                "thickness": 150,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_r3o4teq15",
+                "start": {
+                  "x": 9129.166666666668,
+                  "y": -70.83333333333334
+                },
+                "end": {
+                  "x": 13440.078517549759,
+                  "y": -70.83333333333334
+                },
+                "thickness": 150,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_3z23pyyjy",
+                "start": {
+                  "x": 13440.078517549759,
+                  "y": -70.83333333333334
+                },
+                "end": {
+                  "x": 13440.078517549759,
+                  "y": 4021.115973033795
+                },
+                "thickness": 150,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_4qlhufs8x",
+                "start": {
+                  "x": 13440.078517549759,
+                  "y": 4021.115973033795
+                },
+                "end": {
+                  "x": 9200,
+                  "y": 4000
+                },
+                "thickness": 150,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_2mqfxfdjh",
+                "start": {
+                  "x": -100,
+                  "y": -200
+                },
+                "end": {
+                  "x": -99.99999999999964,
+                  "y": -5973.442212292951
+                },
+                "thickness": 150,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_ktx8ucnbx",
+                "start": {
+                  "x": 13508.26076306615,
+                  "y": -5973.442212292951
+                },
+                "end": {
+                  "x": -43.21072947162247,
+                  "y": -5973.442212292953
+                },
+                "thickness": 150,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_3fi69gtt1",
+                "start": {
+                  "x": -43.21072947162247,
+                  "y": -5973.442212292953
+                },
+                "end": {
+                  "x": 13360.597986346576,
+                  "y": -5973.442212292953
+                },
+                "thickness": 150,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_ab8g7cy7r",
+                "start": {
+                  "x": 13360.597986346576,
+                  "y": -5973.442212292953
+                },
+                "end": {
+                  "x": 13360.597986346576,
+                  "y": -5723.137333060546
+                },
+                "thickness": 150,
+                "height": 2800,
+                "material": "plaster_white",
+                "openings": [],
+                "pinned": false
+              },
+              {
+                "id": "wall_35ann28m8",
+                "start": {
+                  "x": 13360.597986346576,
+                  "y": -5723.137333060546
+                },
+                "end": {
+                  "x": 13360.597986346576,
+                  "y": 28.869370596145927
+                },
+                "thickness": 150,
                 "height": 2800,
                 "material": "plaster_white",
                 "openings": [],
@@ -178,23 +778,62 @@
             ],
             "openings": [
               {
-                "id": "door_trs9j1ms5",
+                "id": "door_glf4h8pu4",
                 "type": "door",
-                "wallId": "wall_yqr1q9un4",
-                "offset": 8072,
-                "width": 900,
+                "wallId": "wall_tcuy4kfi9",
+                "offset": 1200,
+                "width": 1000,
                 "height": 2100,
                 "sillHeight": 0,
-                "swing": "out-right",
+                "swing": "in-left",
                 "frameThick": 75,
-                "label": "D1",
+                "label": "Main Door",
                 "glazing": "clear"
               },
               {
-                "id": "door_4dmz1smsx",
+                "id": "door_j0hce0qk7",
                 "type": "door",
-                "wallId": "wall_3nlnz68aw",
-                "offset": 20471.87854714454,
+                "wallId": "wall_u2tileruu",
+                "offset": 1500,
+                "width": 900,
+                "height": 2100,
+                "sillHeight": 0,
+                "swing": "in-left",
+                "frameThick": 75,
+                "label": "Bed Door",
+                "glazing": "clear"
+              },
+              {
+                "id": "window_vtozvun0v",
+                "type": "window",
+                "wallId": "wall_3kf968xwt",
+                "offset": 2000,
+                "width": 1500,
+                "height": 1400,
+                "sillHeight": 900,
+                "swing": "in-left",
+                "frameThick": 75,
+                "label": "Bed Window",
+                "glazing": "clear"
+              },
+              {
+                "id": "window_sefkk842e",
+                "type": "window",
+                "wallId": "wall_03sksdmai",
+                "offset": 1800,
+                "width": 1200,
+                "height": 1000,
+                "sillHeight": 900,
+                "swing": "in-left",
+                "frameThick": 75,
+                "label": "Kitchen Window",
+                "glazing": "clear"
+              },
+              {
+                "id": "door_yz78bi0tv",
+                "type": "door",
+                "wallId": "wall_4qlhufs8x",
+                "offset": 2153.3856334806574,
                 "width": 900,
                 "height": 2100,
                 "sillHeight": 0,
@@ -204,10 +843,10 @@
                 "glazing": "clear"
               },
               {
-                "id": "window_oyfyq4iva",
+                "id": "window_w58icuk68",
                 "type": "window",
-                "wallId": "wall_cd56c1ztw",
-                "offset": 5877.559958522522,
+                "wallId": "wall_r3o4teq15",
+                "offset": 2936.6666666666665,
                 "width": 1200,
                 "height": 1200,
                 "sillHeight": 900,
@@ -217,10 +856,10 @@
                 "glazing": "clear"
               },
               {
-                "id": "window_yhhl4oyw4",
+                "id": "window_3fc81xokq",
                 "type": "window",
-                "wallId": "wall_f1e3tzw6g",
-                "offset": 7838.152396830104,
+                "wallId": "wall_t0mw7j977",
+                "offset": 2361.666666666667,
                 "width": 1200,
                 "height": 1200,
                 "sillHeight": 900,
@@ -230,10 +869,23 @@
                 "glazing": "clear"
               },
               {
-                "id": "window_wv1kk750i",
+                "id": "door_3x5wfvsxz",
+                "type": "door",
+                "wallId": "wall_ktx8ucnbx",
+                "offset": 7099.999893500925,
+                "width": 900,
+                "height": 2100,
+                "sillHeight": 0,
+                "swing": "in-left",
+                "frameThick": 75,
+                "label": "D1",
+                "glazing": "clear"
+              },
+              {
+                "id": "window_2s2bnqqtw",
                 "type": "window",
-                "wallId": "wall_3nlnz68aw",
-                "offset": 5421.878547144541,
+                "wallId": "wall_35ann28m8",
+                "offset": 2749.9890888385403,
                 "width": 1200,
                 "height": 1200,
                 "sillHeight": 900,
@@ -243,23 +895,124 @@
                 "glazing": "clear"
               }
             ],
-            "rooms": [],
+            "rooms": [
+              {
+                "id": "room_9gveoepla",
+                "name": "Living Room",
+                "type": "bedroom",
+                "wallIds": [
+                  "wall_tcuy4kfi9",
+                  "wall_u2tileruu",
+                  "wall_nmm2jtg5x",
+                  "wall_uoszeslky"
+                ],
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 0
+                  },
+                  {
+                    "x": 5000,
+                    "y": 0
+                  },
+                  {
+                    "x": 5000,
+                    "y": 4000
+                  },
+                  {
+                    "x": 0,
+                    "y": 4000
+                  }
+                ],
+                "areaSqMm": 20000000,
+                "areaSqM": 20,
+                "areaSqFt": 215.27820833419446,
+                "floorFinish": "vitrified_tile",
+                "ceilingHeight": 2800,
+                "falseCeiling": false,
+                "color": "#E8F1F5"
+              }
+            ],
             "furniture": [
               {
-                "id": "furn_tq6jeg7k7",
-                "name": "FCM -RT (Kitchen Base)",
+                "id": "furn_y8txmlvtj",
+                "name": "Master Bed 3-Door Wardrobe",
+                "category": "wardrobe",
+                "roomId": null,
+                "pos": {
+                  "x": 7000,
+                  "y": 500
+                },
+                "rotY": 0,
+                "dimensions": {
+                  "W": 1800,
+                  "H": 2100,
+                  "D": 600
+                },
+                "materials": {
+                  "shutter": {
+                    "material": "HDHMR_18MM",
+                    "finish": "Brazilian Horizontal Walnut"
+                  },
+                  "carcass": {
+                    "material": "BWP_18MM",
+                    "finish": "Absolute White"
+                  }
+                },
+                "unitConfig": {
+                  "shutterCol": "MDF 3410",
+                  "carcass": "MDF 1135",
+                  "shutters": 3
+                },
+                "pricingOverrides": null,
+                "notes": ""
+              },
+              {
+                "id": "furn_vtjkmehjs",
+                "name": "Living TV Entertainment Unit",
+                "category": "tv_unit",
+                "roomId": "room_9gveoepla",
+                "pos": {
+                  "x": 0,
+                  "y": 300
+                },
+                "rotY": 0,
+                "dimensions": {
+                  "W": 2400,
+                  "H": 1800,
+                  "D": 400
+                },
+                "materials": {
+                  "shutter": {
+                    "material": "HDHMR_18MM",
+                    "finish": "Brazilian Horizontal Walnut"
+                  },
+                  "carcass": {
+                    "material": "BWP_18MM",
+                    "finish": "Absolute White"
+                  }
+                },
+                "unitConfig": {
+                  "shutterCol": "MDF 2204",
+                  "carcass": "MDF 1135"
+                },
+                "pricingOverrides": null,
+                "notes": ""
+              },
+              {
+                "id": "furn_vhf46axh2",
+                "name": "Kitchen L-Run Base Cabinets",
                 "category": "kitchen_base",
                 "roomId": null,
                 "pos": {
                   "x": -4100,
-                  "y": 4000,
-                  "z": 0
+                  "y": -2900
                 },
                 "rotY": 0,
                 "dimensions": {
-                  "W": 1200,
-                  "H": 750,
-                  "D": 550
+                  "W": 3000,
+                  "H": 850,
+                  "D": 600
                 },
                 "materials": {
                   "shutter": {
@@ -272,41 +1025,26 @@
                   }
                 },
                 "unitConfig": {
-                  "shutters": 1,
-                  "doorType": "hinged",
-                  "dstyle": "slab",
-                  "glassTint": "none",
-                  "profileColor": "none",
-                  "sections": 0,
-                  "shelves": 1,
-                  "drawers": 0,
-                  "loft": false,
-                  "loftH": 0,
-                  "counter": "none",
-                  "handle": "gprof",
-                  "hfinish": "black",
-                  "led": false,
-                  "carcass": "BWP_18mm",
-                  "shutterCol": "Absolute White"
+                  "shutterCol": "MDF 7701",
+                  "carcass": "MDF 1135"
                 },
                 "pricingOverrides": null,
                 "notes": ""
               },
               {
-                "id": "furn_fxpriuerw",
-                "name": "WM 1200 (Kitchen Wall)",
+                "id": "furn_8tny93ev8",
+                "name": "Kitchen Wall Cabinets",
                 "category": "kitchen_wall",
                 "roomId": null,
                 "pos": {
-                  "x": -200,
-                  "y": 5200,
-                  "z": 0
+                  "x": 10750,
+                  "y": 4800
                 },
                 "rotY": 0,
                 "dimensions": {
-                  "W": 1200,
-                  "H": 600,
-                  "D": 300
+                  "W": 3000,
+                  "H": 700,
+                  "D": 350
                 },
                 "materials": {
                   "shutter": {
@@ -319,62 +1057,8 @@
                   }
                 },
                 "unitConfig": {
-                  "shutters": 2,
-                  "doorType": "hinged",
-                  "dstyle": "slab",
-                  "glassTint": "none",
-                  "profileColor": "none",
-                  "sections": 0,
-                  "shelves": 1,
-                  "drawers": 0,
-                  "loft": false,
-                  "loftH": 0,
-                  "counter": "none",
-                  "handle": "gprof",
-                  "hfinish": "black",
-                  "led": false,
-                  "carcass": "BWP_18mm",
-                  "shutterCol": "Absolute White"
-                },
-                "pricingOverrides": null,
-                "notes": ""
-              },
-              {
-                "id": "furn_5zzicyf2s",
-                "name": "FM 600 (Kitchen Base)",
-                "category": "kitchen_base",
-                "roomId": null,
-                "pos": {
-                  "x": 1200,
-                  "y": 2500,
-                  "z": 0
-                },
-                "rotY": 1.5707963267948966,
-                "dimensions": {
-                  "W": 600,
-                  "H": 750,
-                  "D": 550
-                },
-                "materials": {
-                  "shutter": {
-                    "material": "HDHMR_18MM",
-                    "finish": "Brazilian Horizontal Walnut"
-                  },
-                  "carcass": {
-                    "material": "BWP_18MM",
-                    "finish": "Absolute White"
-                  }
-                },
-                "unitConfig": {
-                  "shutters": 1,
-                  "shelves": 1,
-                  "drawers": 0,
-                  "dstyle": "slab",
-                  "counter": "black",
-                  "handle": "gprof",
-                  "hfinish": "black",
-                  "carcass": "BWP_18mm",
-                  "shutterCol": "HDHMR_18mm"
+                  "shutterCol": "MDF 1135",
+                  "carcass": "MDF 1135"
                 },
                 "pricingOverrides": null,
                 "notes": ""
@@ -729,7 +1413,7 @@
       "is_shared": false,
       "fork_count": 1,
       "created_at": "2026-10-31T07:03:12.104Z",
-      "updated_at": "2026-10-31T13:21:19.650Z"
+      "updated_at": "2026-11-01T06:18:20.804Z"
     },
     {
       "id": "proj_mvw2z6d1i4ur",
