@@ -449,13 +449,12 @@
         localStorage.removeItem('cupboard-cad');
       } catch (e) {}
 
-      // Reset 3D units to this project's units (empty for fresh new projects)
+      // Reset 3D units - will be strictly synchronized with project.plan.furniture
       if (window.S) {
-        window.S.units = (project.data && Array.isArray(project.data.units)) ? project.data.units : [];
+        window.S.units = [];
         window.S.active = 0;
-        if (typeof buildScene === 'function') buildScene();
         if (typeof renderRail === 'function') renderRail();
-        if (typeof renderAll === 'function') renderAll();
+        if (typeof buildScene === 'function') buildScene();
         if (typeof fit === 'function') fit();
         if (typeof camApply === 'function') camApply();
       }

@@ -779,9 +779,17 @@
     syncProjectUnitsTo3DStudio: function (selectFurnId) {
       if (!this.project || !this.project.plan) return;
       var furnList = this.project.plan.furniture || [];
-      if (!furnList.length) return;
 
       window.S = window.S || {};
+
+      // If no furniture is placed on the 2D floor plan, 3D Studio must have 0 units!
+      if (!furnList.length) {
+        window.S.units = [];
+        window.S.active = 0;
+        if (typeof window.renderRail === 'function') window.renderRail();
+        return;
+      }
+
       window.S.units = window.S.units || [];
 
       // Map existing units by _furnId
