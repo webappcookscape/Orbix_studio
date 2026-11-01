@@ -106,6 +106,7 @@
       <button class="btn" id="printBtn">Print</button>
       <button class="btn" id="csvBtn">CSV</button>
       <button class="btn" id="dxfBtn">DXF</button>
+      <button class="btn" id="exportSkpTopBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#fff;font-weight:600;border-color:#0284c7;">📐 Export .skp</button>
     </div>
   </header>
 
@@ -291,6 +292,7 @@
           <div class="legend" id="legend"></div>
           <div class="viewbtns">
             <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
+            <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
             <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
             <button class="minibtn" id="presentBtn" aria-pressed="false">Present</button>
             <button class="minibtn" id="openBtn" aria-pressed="false">Open all</button>
@@ -492,16 +494,6 @@
             <div class="plan-tool-divider"></div>
 
             <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen">🔍 Fit</button>
-            <button class="plan-tool-btn" id="planSampleHome" title="Load sample 2BHK floor plan">✨ Sample 2BHK</button>
-            <button class="plan-tool-btn" id="planClear" title="Clear all walls" style="color:#B91C1C;">🗑️ Clear</button>
-
-            <div class="plan-tool-divider"></div>
-
-            <button class="plan-tool-btn" id="planExportJson" title="Save Project JSON">💾 Export</button>
-            <button class="plan-tool-btn" id="planImportJson" title="Open Project JSON">📂 Import</button>
-            <button class="plan-tool-btn" id="planImportUnitsBtn" title="Import Modular Units CSV">📥 Import Units CSV</button>
-            <input type="file" id="planFileInput" accept=".json,.orbix" hidden>
-            <input type="file" id="planUnitsCsvInput" accept=".csv" hidden>
           </div>
         </div>
       </div>
@@ -876,6 +868,57 @@
         <button type="submit" class="btn primary" id="applyCalibrationBtn">Set 1:1 Scale</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ══════ MODAL: EXPORT TO TRIMBLE SKETCHUP (.SKP) ══════ -->
+<div class="orbix-modal" id="modalExportSkp" style="display:none;">
+  <div class="modal-backdrop" id="backdropExportSkp"></div>
+  <div class="modal-dialog" style="max-width:520px;">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title" style="display:flex;align-items:center;gap:8px;">
+          <span>📐 Export to Trimble SketchUp</span>
+          <span style="font-size:11px;background:#E0F2FE;color:#0284C7;padding:2px 8px;border-radius:10px;font-weight:600;">.skp / .dae</span>
+        </h3>
+        <p class="modal-sub">Export your entire 3D project with walls, doors, windows &amp; modular units for SketchUp</p>
+      </div>
+      <button class="modal-close-btn" type="button" id="closeExportSkpModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="skpExportSummaryBox" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 16px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Project 3D Assets Included</div>
+        <div id="skpExportStats" style="display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#0F172A;">
+          <span>🧱 Walls &amp; Cutouts</span>
+          <span>🚪 Doors &amp; Frames</span>
+          <span>🪟 Windows &amp; Glass</span>
+          <span>🪵 Modular Cabinetry</span>
+          <span>📐 Real mm Scale</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button type="button" class="btn primary big" id="skpDownloadDaeBtn" style="justify-content:center;background:#0284C7;border-color:#0284C7;padding:12px;">
+          <span style="font-size:14px;font-weight:600;">⬇️ Download SketchUp Model (.dae / .skp)</span>
+          <span style="font-size:11px;opacity:0.9;display:block;margin-top:2px;">(Native Trimble SketchUp 3D Exchange — Opens directly in SketchUp 2017–2026)</span>
+        </button>
+        <button type="button" class="btn big" id="skpDownloadSkpBtn" style="justify-content:center;padding:10px;">
+          <span>⬇️ Download as .skp</span>
+        </button>
+      </div>
+
+      <div style="margin-top:16px;padding:12px 14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;font-size:12px;color:#166534;line-height:1.5;">
+        <b>💡 How to open in Trimble SketchUp:</b>
+        <ol style="margin:6px 0 0 16px;padding:0;">
+          <li>Open SketchUp on your computer</li>
+          <li>Click <b>File ➔ Import...</b></li>
+          <li>Select the downloaded file — your whole home, 3D walls, openings, and modular cabinetry will appear instantly in 1:1 true millimeter scale!</li>
+        </ol>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn modal-close-btn" id="cancelExportSkpBtn">Close</button>
+    </div>
   </div>
 </div>
 

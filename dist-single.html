@@ -1203,12 +1203,52 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 .grand-row td{background:#FEF2F2;font-weight:800;border-top:2px solid #DC2626;border-bottom:3px double #DC2626}
 .grand-lbl{color:#DC2626;font-size:11.5px;text-align:right}
 .grand-val{color:#DC2626;font-size:13px}
+.text-red{color:#DC2626!important}
+
+.comm-input{
+  width:110px;
+  padding:3px 7px;
+  text-align:right;
+  font-family:var(--mono);
+  font-size:11.5px;
+  border:1px solid #CBD5E1;
+  border-radius:4px;
+  background:#FFFFFF;
+  font-weight:600;
+  color:#1E293B;
+  transition:border-color .15s, box-shadow .15s;
+}
+.comm-input:focus{
+  outline:none;
+  border-color:#2563EB;
+  background:#FFFFFF;
+  box-shadow:0 0 0 2px rgba(37,99,235,0.15);
+}
+.comm-input.is-discount{
+  color:#DC2626;
+  border-color:#FECACA;
+  background:#FFF5F5;
+}
+.comm-input.is-discount:focus{
+  border-color:#DC2626;
+  box-shadow:0 0 0 2px rgba(220,38,38,0.15);
+}
+.comm-input::-webkit-outer-spin-button,
+.comm-input::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+.comm-input[type=number]{
+  -moz-appearance:textfield;
+}
 
 @media print{
   header.topbar, .plan-toolbar, .boq-actions, .no-print, .rail, .topacts, .stagebar{display:none!important}
   #view-boq{display:block!important;padding:0!important;background:#fff!important}
   .boq-sheet, .quote-sheet-single{box-shadow:none!important;border:none!important;padding:0!important;max-width:100%!important}
   html, body, #app, #main{overflow:visible!important;position:static!important;height:auto!important;background:#fff!important}
+  .comm-input{border:none!important;background:transparent!important;box-shadow:none!important;padding:0!important;font-weight:700!important;color:#0F172A!important}
+  .comm-input.is-discount{color:#DC2626!important}
 }
 
 /* ══════════ TOPBAR USER & DB STATUS ══════════ */
@@ -1834,6 +1874,7 @@ body.role-employee #adminCreateEmpBox,
       <button class="btn" id="printBtn">Print</button>
       <button class="btn" id="csvBtn">CSV</button>
       <button class="btn" id="dxfBtn">DXF</button>
+      <button class="btn" id="exportSkpTopBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#fff;font-weight:600;border-color:#0284c7;">📐 Export .skp</button>
     </div>
   </header>
 
@@ -2019,6 +2060,7 @@ body.role-employee #adminCreateEmpBox,
           <div class="legend" id="legend"></div>
           <div class="viewbtns">
             <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
+            <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
             <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
             <button class="minibtn" id="presentBtn" aria-pressed="false">Present</button>
             <button class="minibtn" id="openBtn" aria-pressed="false">Open all</button>
@@ -2220,16 +2262,6 @@ body.role-employee #adminCreateEmpBox,
             <div class="plan-tool-divider"></div>
 
             <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen">🔍 Fit</button>
-            <button class="plan-tool-btn" id="planSampleHome" title="Load sample 2BHK floor plan">✨ Sample 2BHK</button>
-            <button class="plan-tool-btn" id="planClear" title="Clear all walls" style="color:#B91C1C;">🗑️ Clear</button>
-
-            <div class="plan-tool-divider"></div>
-
-            <button class="plan-tool-btn" id="planExportJson" title="Save Project JSON">💾 Export</button>
-            <button class="plan-tool-btn" id="planImportJson" title="Open Project JSON">📂 Import</button>
-            <button class="plan-tool-btn" id="planImportUnitsBtn" title="Import Modular Units CSV">📥 Import Units CSV</button>
-            <input type="file" id="planFileInput" accept=".json,.orbix" hidden>
-            <input type="file" id="planUnitsCsvInput" accept=".csv" hidden>
           </div>
         </div>
       </div>
@@ -2604,6 +2636,57 @@ body.role-employee #adminCreateEmpBox,
         <button type="submit" class="btn primary" id="applyCalibrationBtn">Set 1:1 Scale</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ══════ MODAL: EXPORT TO TRIMBLE SKETCHUP (.SKP) ══════ -->
+<div class="orbix-modal" id="modalExportSkp" style="display:none;">
+  <div class="modal-backdrop" id="backdropExportSkp"></div>
+  <div class="modal-dialog" style="max-width:520px;">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title" style="display:flex;align-items:center;gap:8px;">
+          <span>📐 Export to Trimble SketchUp</span>
+          <span style="font-size:11px;background:#E0F2FE;color:#0284C7;padding:2px 8px;border-radius:10px;font-weight:600;">.skp / .dae</span>
+        </h3>
+        <p class="modal-sub">Export your entire 3D project with walls, doors, windows &amp; modular units for SketchUp</p>
+      </div>
+      <button class="modal-close-btn" type="button" id="closeExportSkpModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="skpExportSummaryBox" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 16px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Project 3D Assets Included</div>
+        <div id="skpExportStats" style="display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#0F172A;">
+          <span>🧱 Walls &amp; Cutouts</span>
+          <span>🚪 Doors &amp; Frames</span>
+          <span>🪟 Windows &amp; Glass</span>
+          <span>🪵 Modular Cabinetry</span>
+          <span>📐 Real mm Scale</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button type="button" class="btn primary big" id="skpDownloadDaeBtn" style="justify-content:center;background:#0284C7;border-color:#0284C7;padding:12px;">
+          <span style="font-size:14px;font-weight:600;">⬇️ Download SketchUp Model (.dae / .skp)</span>
+          <span style="font-size:11px;opacity:0.9;display:block;margin-top:2px;">(Native Trimble SketchUp 3D Exchange — Opens directly in SketchUp 2017–2026)</span>
+        </button>
+        <button type="button" class="btn big" id="skpDownloadSkpBtn" style="justify-content:center;padding:10px;">
+          <span>⬇️ Download as .skp</span>
+        </button>
+      </div>
+
+      <div style="margin-top:16px;padding:12px 14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;font-size:12px;color:#166534;line-height:1.5;">
+        <b>💡 How to open in Trimble SketchUp:</b>
+        <ol style="margin:6px 0 0 16px;padding:0;">
+          <li>Open SketchUp on your computer</li>
+          <li>Click <b>File ➔ Import...</b></li>
+          <li>Select the downloaded file — your whole home, 3D walls, openings, and modular cabinetry will appear instantly in 1:1 true millimeter scale!</li>
+        </ol>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn modal-close-btn" id="cancelExportSkpBtn">Close</button>
+    </div>
   </div>
 </div>
 
@@ -5469,8 +5552,13 @@ body.role-employee #adminCreateEmpBox,
 
   function generateFullQuotation(project, selectedRoomIds) {
     var rateCard = project.rateCard || DEFAULT_RATE_CARD;
-    var furniture = project.plan.furniture || [];
-    var rooms = project.plan.rooms || [];
+    var plan = project;
+    while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {
+      plan = plan.plan;
+    }
+    plan = plan || {};
+    var furniture = plan.furniture || [];
+    var rooms = plan.rooms || [];
 
     var roomMap = {};
     for (var r = 0; r < rooms.length; r++) {
@@ -5566,8 +5654,8 @@ body.role-employee #adminCreateEmpBox,
       if (room.areaSqFt > 0) {
         var civilMatches = !isFiltered || filterMap[room.id] || filterMap[room.name];
 
-        // Flooring
-        if (rateCard.categories.flooring && rateCard.categories.flooring.baseRatePerSft) {
+        // Flooring (Opt-in only: room.includeFlooring)
+        if (room.includeFlooring && rateCard.categories.flooring && rateCard.categories.flooring.baseRatePerSft) {
           var floorCost = room.areaSqFt * rateCard.categories.flooring.baseRatePerSft;
           if (roomSummaries[room.id]) {
             roomSummaries[room.id].civilSubtotal += floorCost;
@@ -5630,9 +5718,35 @@ body.role-employee #adminCreateEmpBox,
 
     var grossBeforeTax = subtotal + laborTotal;
     var marginAmount = grossBeforeTax * ((rateCard.marginPercent || 15) / 100.0);
-    var netBeforeTax = grossBeforeTax + marginAmount;
-    var gstAmount = netBeforeTax * ((rateCard.gstPercent || 18) / 100.0);
-    var grandTotal = netBeforeTax + gstAmount;
+    var netBeforeTax;
+    var gstAmount;
+    var grandTotal;
+    var gstPercent = (rateCard.gstPercent || 18);
+    var commCharges = project.commercialCharges;
+
+    if (commCharges && typeof commCharges === 'object' && Object.keys(commCharges).length > 0) {
+      var commAdditions = 0;
+      var commDeductions = (parseFloat(commCharges.discount) || 0) + (parseFloat(commCharges.finalDiscount) || 0);
+      var commKeys = [
+        'transport', 'designCharges', 'accessories', 'floorMat', 'electrical',
+        'plumbing', 'wallpaper', 'falseCeiling', 'appliances', 'civilWorks',
+        'loadingUnloading', 'outstationTransport'
+      ];
+      for (var ck = 0; ck < commKeys.length; ck++) {
+        commAdditions += (parseFloat(commCharges[commKeys[ck]]) || 0);
+      }
+      netBeforeTax = Math.max(0, Math.round(subtotal + commAdditions - commDeductions));
+      if (commCharges.gstPercent !== undefined && commCharges.gstPercent !== null && commCharges.gstPercent !== '') {
+        var parsedGst = parseFloat(commCharges.gstPercent);
+        if (!isNaN(parsedGst)) gstPercent = parsedGst;
+      }
+      gstAmount = Math.round(netBeforeTax * (gstPercent / 100));
+      grandTotal = netBeforeTax + gstAmount;
+    } else {
+      netBeforeTax = grossBeforeTax + marginAmount;
+      gstAmount = netBeforeTax * (gstPercent / 100.0);
+      grandTotal = netBeforeTax + gstAmount;
+    }
 
     // Convert roomSummaries to array and compute % share
     var allRoomsSummary = [];
@@ -5693,6 +5807,7 @@ body.role-employee #adminCreateEmpBox,
     }
     if (!data.plan) data.plan = { walls: [], openings: [], rooms: [], furniture: [] };
     if (!data.rateCard) data.rateCard = JSON.parse(JSON.stringify(DEFAULT_RATE_CARD));
+    if (!data.commercialCharges) data.commercialCharges = {};
     return data;
   }
 
@@ -8155,7 +8270,11 @@ body.role-employee #adminCreateEmpBox,
     this.group = new THREE.Group();
     this.group.name = 'OrbixHome3D';
 
-    var plan = project.plan || {};
+    var plan = project;
+    while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {
+      plan = plan.plan;
+    }
+    plan = plan || {};
     var walls = plan.walls || [];
     var openings = plan.openings || [];
     var rooms = plan.rooms || [];
@@ -8597,6 +8716,279 @@ body.role-employee #adminCreateEmpBox,
     });
   };
 
+  /* ─────────────────────────────────────────────────────────────────────────────
+     TRIMBLE SKETCHUP (.SKP / COLLADA .DAE) EXPORT ENGINE
+     Serializes entire 3D project geometry (walls, cutouts, doors, windows,
+     room floors, and placed modular cabinetry units) into native SketchUp
+     compatible COLLADA XML schema with real-world millimeter scale.
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.exportToSketchUpCollada = function (project, scene, opts) {
+    opts = opts || {};
+    var title = (project && project.meta && project.meta.title) || 'Orbix-Project';
+    var safeTitle = title.replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+    var homeObj = null;
+    var tempHomeBuilt = false;
+
+    if (scene && typeof scene.getObjectByName === 'function') {
+      homeObj = scene.getObjectByName('OrbixHome3D');
+    }
+
+    // If 3D home is not in the scene, build it now
+    if (!homeObj && project && typeof THREE !== 'undefined') {
+      homeObj = this.buildHome(project);
+      tempHomeBuilt = true;
+    }
+
+    var meshes = [];
+    function harvestMeshes(node) {
+      if (!node) return;
+      if (typeof node.updateMatrixWorld === 'function') node.updateMatrixWorld(true);
+      node.traverse(function (obj) {
+        if (obj.isMesh && obj.visible !== false && obj.geometry) {
+          // Skip infinite ground background planes
+          var geoParams = obj.geometry.parameters;
+          if (geoParams && (geoParams.width > 50000 || geoParams.height > 50000)) return;
+          if (obj.name === 'infinite_floor' || obj.name === 'floor_grass') return;
+          meshes.push(obj);
+        }
+      });
+    }
+
+    if (homeObj) harvestMeshes(homeObj);
+
+    // Also include customizer units in 3D studio root if present
+    if (scene && scene.children) {
+      for (var c = 0; c < scene.children.length; c++) {
+        var child = scene.children[c];
+        if (child !== homeObj && child.type === 'Group') {
+          var hasCabinetParts = false;
+          child.traverse(function (o) {
+            if (o.isMesh && o.userData && (o.userData.role || o.userData.isFurniturePart || o.userData.role === 'box')) {
+              hasCabinetParts = true;
+            }
+          });
+          if (hasCabinetParts) harvestMeshes(child);
+        }
+      }
+    }
+
+    // Process Materials
+    var materials = {};
+    var matCounter = 1;
+
+    meshes.forEach(function (mesh) {
+      var mat = mesh.material;
+      if (Array.isArray(mat)) mat = mat[0];
+      var colorHex = 'CCCCCC';
+      var opacity = 1.0;
+      var isGlass = false;
+
+      if (mat && mat.color && typeof mat.color.getHexString === 'function') {
+        colorHex = mat.color.getHexString().toUpperCase();
+      }
+      if (mat && typeof mat.opacity === 'number') {
+        opacity = mat.opacity;
+      }
+      if (mat && (mat.transparent || opacity < 0.9 || (mesh.name && mesh.name.toLowerCase().indexOf('glass') !== -1))) {
+        isGlass = true;
+      }
+
+      var key = colorHex + '_' + (isGlass ? 'glass' : 'solid');
+      if (!materials[key]) {
+        var r = mat && mat.color ? (mat.color.r !== undefined ? mat.color.r : 0.8) : 0.8;
+        var g = mat && mat.color ? (mat.color.g !== undefined ? mat.color.g : 0.8) : 0.8;
+        var b = mat && mat.color ? (mat.color.b !== undefined ? mat.color.b : 0.8) : 0.8;
+        materials[key] = {
+          id: 'mat_' + matCounter++,
+          name: (mat && mat.name ? mat.name : 'Mat') + '_' + colorHex,
+          hex: colorHex,
+          r: Number(r).toFixed(4),
+          g: Number(g).toFixed(4),
+          b: Number(b).toFixed(4),
+          opacity: Number(opacity).toFixed(2),
+          isGlass: isGlass
+        };
+      }
+      mesh.userData._skpMat = materials[key];
+    });
+
+    // Build Effects and Materials XML
+    var effectsXml = [];
+    var matsXml = [];
+    Object.keys(materials).forEach(function (k) {
+      var m = materials[k];
+      effectsXml.push([
+        '    <effect id="' + m.id + '-effect">',
+        '      <profile_COMMON>',
+        '        <technique sid="common">',
+        '          <phong>',
+        '            <emission><color>0 0 0 1</color></emission>',
+        '            <ambient><color>0.08 0.08 0.08 1</color></ambient>',
+        '            <diffuse><color>' + m.r + ' ' + m.g + ' ' + m.b + ' 1</color></diffuse>',
+        '            <specular><color>0.25 0.25 0.25 1</color></specular>',
+        '            <shininess><float>20</float></shininess>',
+        '            <transparent opaque="A_ONE"><color>1 1 1 ' + m.opacity + '</color></transparent>',
+        '            <transparency><float>' + m.opacity + '</float></transparency>',
+        '          </phong>',
+        '        </technique>',
+        '      </profile_COMMON>',
+        '    </effect>'
+      ].join('\n'));
+
+      matsXml.push([
+        '    <material id="' + m.id + '" name="' + m.name + '">',
+        '      <instance_effect url="#' + m.id + '-effect"/>',
+        '    </material>'
+      ].join('\n'));
+    });
+
+    // Build Geometries & Nodes XML
+    var geomsXml = [];
+    var nodesXml = [];
+    var geomCounter = 1;
+    var totalTriangles = 0;
+
+    var Vec3 = (typeof THREE !== 'undefined' && THREE.Vector3) ? THREE.Vector3 : null;
+
+    meshes.forEach(function (mesh) {
+      var geom = mesh.geometry;
+      if (!geom || !geom.attributes || !geom.attributes.position) return;
+      var posAttr = geom.attributes.position;
+      if (posAttr.count < 3) return;
+
+      var geomId = 'geom_' + geomCounter++;
+      var meshName = mesh.name || (mesh.parent && mesh.parent.name) || ('Mesh_' + geomCounter);
+      meshName = meshName.replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+      var mWorld = mesh.matrixWorld;
+      var coords = [];
+      var v = Vec3 ? new Vec3() : { x: 0, y: 0, z: 0 };
+
+      for (var i = 0; i < posAttr.count; i++) {
+        if (Vec3) {
+          v.fromBufferAttribute(posAttr, i);
+          if (mWorld) v.applyMatrix4(mWorld);
+        } else {
+          v.x = posAttr.getX ? posAttr.getX(i) : posAttr.array[i * 3];
+          v.y = posAttr.getY ? posAttr.getY(i) : posAttr.array[i * 3 + 1];
+          v.z = posAttr.getZ ? posAttr.getZ(i) : posAttr.array[i * 3 + 2];
+        }
+        coords.push(v.x.toFixed(2) + ' ' + v.y.toFixed(2) + ' ' + v.z.toFixed(2));
+      }
+
+      var indexAttr = geom.index;
+      var indexList = [];
+      var triCount = 0;
+
+      if (indexAttr) {
+        triCount = Math.floor(indexAttr.count / 3);
+        for (var j = 0; j < indexAttr.count; j++) {
+          indexList.push(indexAttr.getX ? indexAttr.getX(j) : indexAttr.array[j]);
+        }
+      } else {
+        triCount = Math.floor(posAttr.count / 3);
+        for (var k = 0; k < posAttr.count; k++) {
+          indexList.push(k);
+        }
+      }
+      totalTriangles += triCount;
+
+      var matObj = mesh.userData._skpMat || { id: 'mat_default' };
+
+      geomsXml.push([
+        '    <geometry id="' + geomId + '" name="' + meshName + '">',
+        '      <mesh>',
+        '        <source id="' + geomId + '-positions">',
+        '          <float_array id="' + geomId + '-positions-array" count="' + (posAttr.count * 3) + '">' + coords.join(' ') + '</float_array>',
+        '          <technique_common>',
+        '            <accessor source="#' + geomId + '-positions-array" count="' + posAttr.count + '" stride="3">',
+        '              <param name="X" type="float"/>',
+        '              <param name="Y" type="float"/>',
+        '              <param name="Z" type="float"/>',
+        '            </accessor>',
+        '          </technique_common>',
+        '        </source>',
+        '        <vertices id="' + geomId + '-vertices">',
+        '          <input semantic="POSITION" source="#' + geomId + '-positions"/>',
+        '        </vertices>',
+        '        <triangles count="' + triCount + '" material="' + matObj.id + '">',
+        '          <input semantic="VERTEX" source="#' + geomId + '-vertices" offset="0"/>',
+        '          <p>' + indexList.join(' ') + '</p>',
+        '        </triangles>',
+        '      </mesh>',
+        '    </geometry>'
+      ].join('\n'));
+
+      nodesXml.push([
+        '      <node id="node_' + geomId + '" name="' + meshName + '">',
+        '        <instance_geometry url="#' + geomId + '">',
+        '          <bind_material>',
+        '            <technique_common>',
+        '              <instance_material symbol="' + matObj.id + '" target="#' + matObj.id + '"/>',
+        '            </technique_common>',
+        '          </bind_material>',
+        '        </instance_geometry>',
+        '      </node>'
+      ].join('\n'));
+    });
+
+    var now = new Date().toISOString();
+    var xml = [
+      '<?xml version="1.0" encoding="utf-8"?>',
+      '<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">',
+      '  <asset>',
+      '    <contributor>',
+      '      <author>Orbix Studio</author>',
+      '      <authoring_tool>Orbix Studio 3D CAD to Trimble SketchUp Exporter</authoring_tool>',
+      '    </contributor>',
+      '    <created>' + now + '</created>',
+      '    <modified>' + now + '</modified>',
+      '    <unit name="millimeter" meter="0.001"/>',
+      '    <up_axis>Y_UP</up_axis>',
+      '  </asset>',
+      '  <library_effects>',
+      effectsXml.join('\n'),
+      '  </library_effects>',
+      '  <library_materials>',
+      matsXml.join('\n'),
+      '  </library_materials>',
+      '  <library_geometries>',
+      geomsXml.join('\n'),
+      '  </library_geometries>',
+      '  <library_visual_scenes>',
+      '    <visual_scene id="Scene" name="' + safeTitle + '">',
+      nodesXml.join('\n'),
+      '    </visual_scene>',
+      '  </library_visual_scenes>',
+      '  <scene>',
+      '    <instance_visual_scene url="#Scene"/>',
+      '  </scene>',
+      '</COLLADA>'
+    ].join('\n');
+
+    return {
+      colladaXml: xml,
+      filename: safeTitle + '-sketchup.dae',
+      skpFilename: safeTitle + '.skp',
+      stats: {
+        title: title,
+        walls: (project && project.plan && project.plan.walls ? project.plan.walls.length : 0),
+        openings: (project && project.plan && project.plan.openings ? project.plan.openings.length : 0),
+        furniture: (project && project.plan && project.plan.furniture ? project.plan.furniture.length : 0),
+        rooms: (project && project.plan && project.plan.rooms ? project.plan.rooms.length : 0),
+        meshCount: meshes.length,
+        triangleCount: totalTriangles
+      }
+    };
+  };
+
+  // Static helper method
+  ArchitecturalRenderer.exportSketchUp = function (project, scene, opts) {
+    var renderer = new ArchitecturalRenderer(scene);
+    return renderer.exportToSketchUpCollada(project, scene, opts);
+  };
+
   return ArchitecturalRenderer;
 });
 
@@ -8757,6 +9149,18 @@ body.role-employee #adminCreateEmpBox,
         btnPlace3D.addEventListener('click', function () {
           self.openPlaceUnitModal3D();
         });
+      }
+
+      var handleExportSkp = function () {
+        self.exportSketchUp();
+      };
+      var btnExportSkp = document.getElementById('exportSkpBtn');
+      if (btnExportSkp) {
+        btnExportSkp.addEventListener('click', handleExportSkp);
+      }
+      var btnExportSkpTop = document.getElementById('exportSkpTopBtn');
+      if (btnExportSkpTop) {
+        btnExportSkpTop.addEventListener('click', handleExportSkp);
       }
 
       var btnExportJson = document.getElementById('planExportJson');
@@ -9632,6 +10036,7 @@ body.role-employee #adminCreateEmpBox,
           '<div class="insp-row"><label>Ceiling Ht (mm)</label><input type="number" id="inspRoomHeight" value="' + (rm.ceilingHeight || 2800) + '" step="100"></div>' +
           '<div class="insp-row"><label>Area (sq.ft)</label><input type="text" value="' + areaSqFt + ' sq ft (' + areaSqM + ' m²)" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
           '<div class="insp-row"><label>Perimeter (mm)</label><input type="text" value="' + Math.round(rm.perimeter || 0).toLocaleString() + ' mm" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
+          '<div class="insp-row" style="margin-top:6px;"><label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="inspRoomFlooringQuote"' + (rm.includeFlooring ? ' checked' : '') + '> Include Civil Flooring in Quote (₹' + (self.project && self.project.rateCard && self.project.rateCard.categories && self.project.rateCard.categories.flooring ? self.project.rateCard.categories.flooring.baseRatePerSft : 140) + '/SFT)</label></div>' +
           '<button class="btn primary full" id="inspFocusRoom3D" style="margin-top:12px">👁 View Room in 3D Studio</button>';
 
         var nameInput = document.getElementById('inspRoomName');
@@ -9664,6 +10069,17 @@ body.role-employee #adminCreateEmpBox,
           });
         }
 
+        var floorQuoteChk = document.getElementById('inspRoomFlooringQuote');
+        if (floorQuoteChk) {
+          floorQuoteChk.addEventListener('change', function (e) {
+            rm.includeFlooring = e.target.checked;
+            self.editor.pushHistory('Toggle Room Flooring in Quote');
+            self.saveToLocalStorage();
+            if (self.renderBOQ) self.renderBOQ();
+            self.updateUI();
+          });
+        }
+
         var htInput = document.getElementById('inspRoomHeight');
         if (htInput) {
           htInput.addEventListener('change', function (e) {
@@ -9684,9 +10100,30 @@ body.role-employee #adminCreateEmpBox,
       }
     },
 
+    getPlan: function (proj) {
+      var p = proj || this.project;
+      if (!p && this.editor) p = this.editor.project;
+      if (!p && root.OrbixProjects && root.OrbixProjects.currentUser && root.OrbixProjects.activeProjectId) {
+        var curP = (root.OrbixProjects.projects || []).find(function (item) { return item.id === root.OrbixProjects.activeProjectId; });
+        if (curP && curP.data) p = curP.data.plan || curP.data;
+      }
+      if (!p) return { walls: [], openings: [], rooms: [], furniture: [] };
+      var target = p;
+      while (target && target.plan && (target.plan.walls || target.plan.furniture || target.plan.rooms || target.plan.plan)) {
+        target = target.plan;
+      }
+      // If furniture list is missing from this target but present in editor.project, use editor.project
+      if ((!target.furniture || !target.furniture.length) && this.editor && this.editor.project && this.editor.project !== p) {
+        var ep = this.editor.project;
+        while (ep && ep.plan && (ep.plan.walls || ep.plan.furniture || ep.plan.rooms || ep.plan.plan)) ep = ep.plan;
+        if (ep && ep.furniture && ep.furniture.length) return ep;
+      }
+      return target;
+    },
+
     syncProjectUnitsTo3DStudio: function (selectFurnId) {
-      if (!this.project || !this.project.plan) return;
-      var furnList = this.project.plan.furniture || [];
+      var plan = this.getPlan();
+      var furnList = (plan && plan.furniture) || [];
 
       window.S = window.S || {};
 
@@ -9695,6 +10132,8 @@ body.role-employee #adminCreateEmpBox,
         window.S.units = [];
         window.S.active = 0;
         if (typeof window.renderRail === 'function') window.renderRail();
+        if (typeof window.renderLegend === 'function') window.renderLegend();
+        if (typeof window.renderFoot === 'function') window.renderFoot();
         return;
       }
 
@@ -9793,6 +10232,8 @@ body.role-employee #adminCreateEmpBox,
       }
       window.S.active = targetIdx;
       if (typeof window.renderRail === 'function') window.renderRail();
+      if (typeof window.renderLegend === 'function') window.renderLegend();
+      if (typeof window.renderFoot === 'function') window.renderFoot();
     },
 
     selectFurnitureIn3DStudio: function (furnId) {
@@ -9806,9 +10247,8 @@ body.role-employee #adminCreateEmpBox,
       }
       if (typeof window.renderRail === 'function') window.renderRail();
       if (typeof window.renderLegend === 'function') window.renderLegend();
-      if (typeof window.buildScene === 'function') window.buildScene();
+      if (typeof window.renderFoot === 'function') window.renderFoot();
       this.highlight3DFurniture(furnId);
-      if (typeof this.render3DHome === 'function') this.render3DHome();
     },
 
     highlight3DFurniture: function (furnId) {
@@ -9826,9 +10266,11 @@ body.role-employee #adminCreateEmpBox,
                 mats.forEach(function (m) {
                   if (m.emissive) {
                     if (isSel) {
-                      child.userData._origEmissive = (child.userData._origEmissive !== undefined) ? child.userData._origEmissive : m.emissive.getHex();
-                      m.emissive.setHex(0x2563eb);
-                      m.emissiveIntensity = 0.45;
+                      if (child.userData._origEmissive === undefined) {
+                        child.userData._origEmissive = m.emissive.getHex();
+                      }
+                      m.emissive.setHex(0x3B82F6);
+                      m.emissiveIntensity = 0.5;
                     } else if (child.userData._origEmissive !== undefined) {
                       m.emissive.setHex(child.userData._origEmissive);
                       m.emissiveIntensity = 0;
@@ -9844,8 +10286,10 @@ body.role-employee #adminCreateEmpBox,
     },
 
     sync3DStudioUnits: function () {
-      if (!window.S || !window.S.units || !this.project || !this.project.plan) return;
-      var furnList = this.project.plan.furniture = this.project.plan.furniture || [];
+      if (!window.S || !window.S.units) return;
+      var plan = this.getPlan();
+      if (!plan) return;
+      var furnList = plan.furniture = plan.furniture || [];
 
       for (var uIdx = 0; uIdx < window.S.units.length; uIdx++) {
         var u = window.S.units[uIdx];
@@ -9888,10 +10332,10 @@ body.role-employee #adminCreateEmpBox,
           }
         }
       }
-      this.project.units_count = furnList.length;
+      if (this.project) this.project.units_count = furnList.length;
       this.saveToLocalStorage();
       if (this.editor) this.editor.render();
-      if (this.render3DHome) this.render3DHome();
+      if (this.render3DHome) this.render3DHome(true);
       if (window.S && window.S.units && window.S.units[window.S.active]) {
         var curU = window.S.units[window.S.active];
         if (curU && curU._furnId) this.highlight3DFurniture(curU._furnId);
@@ -9899,8 +10343,8 @@ body.role-employee #adminCreateEmpBox,
     },
 
     placeModularUnitIn3D: function (preset) {
-      if (!this.project || !this.project.plan) return;
-      var plan = this.project.plan;
+      var plan = this.getPlan();
+      if (!plan) return;
       plan.furniture = plan.furniture || [];
 
       preset = preset || {
@@ -10028,6 +10472,168 @@ body.role-employee #adminCreateEmpBox,
       });
     },
 
+    exportSketchUp: function (format) {
+      format = format || 'dae';
+      var self = this;
+      var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+
+      if (!this.archRenderer && root.Orbix3D) {
+        this.archRenderer = new root.Orbix3D(scene);
+      }
+
+      var res;
+      try {
+        if (this.archRenderer && typeof this.archRenderer.exportToSketchUpCollada === 'function') {
+          res = this.archRenderer.exportToSketchUpCollada(this.project, scene);
+        } else if (root.Orbix3D && typeof root.Orbix3D.exportSketchUp === 'function') {
+          res = root.Orbix3D.exportSketchUp(this.project, scene);
+        }
+      } catch (err) {
+        console.error('SketchUp export error:', err);
+        alert('Could not export to SketchUp: ' + err.message);
+        return;
+      }
+
+      if (!res || !res.colladaXml) {
+        alert('No 3D geometry available to export. Please add walls or modular units first.');
+        return;
+      }
+
+      var filename = (format === 'skp') ? res.skpFilename : res.filename;
+      var mimeType = (format === 'skp') ? 'application/octet-stream' : 'model/vnd.collada+xml';
+
+      // Deliver file download to browser
+      var blob = new Blob([res.colladaXml], { type: mimeType });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+
+      if (typeof window.showToast === 'function') {
+        window.showToast('✨ Exported whole 3D project for Trimble SketchUp (' + filename + ')! In SketchUp: File ➔ Import to open.');
+      }
+
+      // Show SketchUp modal with stats and direct instructions
+      this.openExportSkpModal(res);
+    },
+
+    openExportSkpModal: function (res) {
+      var modal = document.getElementById('modalExportSkp');
+      if (!modal) return;
+
+      var statsEl = document.getElementById('skpExportStats');
+      if (statsEl && res && res.stats) {
+        var s = res.stats;
+        statsEl.innerHTML =
+          '<span style="background:#EEF2F6;padding:4px 8px;border-radius:4px;">🧱 <b>' + s.walls + '</b> Walls &amp; Cutouts</span>' +
+          '<span style="background:#EEF2F6;padding:4px 8px;border-radius:4px;">🚪 <b>' + s.openings + '</b> Openings</span>' +
+          '<span style="background:#EEF2F6;padding:4px 8px;border-radius:4px;">🪵 <b>' + s.furniture + '</b> Modular Units</span>' +
+          '<span style="background:#EEF2F6;padding:4px 8px;border-radius:4px;">📐 <b>' + (s.triangleCount ? s.triangleCount.toLocaleString() : 'Geometry') + '</b> 3D Triangles</span>' +
+          '<span style="background:#E0F2FE;color:#0284C7;padding:4px 8px;border-radius:4px;font-weight:600;">✅ 1:1 mm Scale</span>';
+      }
+
+      var self = this;
+      var btnDae = document.getElementById('skpDownloadDaeBtn');
+      if (btnDae) {
+        btnDae.onclick = function () {
+          self.exportSketchUp('dae');
+        };
+      }
+      var btnSkp = document.getElementById('skpDownloadSkpBtn');
+      if (btnSkp) {
+        btnSkp.onclick = function () {
+          self.exportSketchUp('skp');
+        };
+      }
+
+      modal.classList.add('is-open');
+      modal.style.display = 'flex';
+
+      function closeModal() {
+        modal.classList.remove('is-open');
+        modal.style.display = 'none';
+      }
+
+      modal.querySelectorAll('.modal-close-btn, #cancelExportSkpBtn, #backdropExportSkp, #closeExportSkpModal').forEach(function (b) {
+        b.onclick = closeModal;
+      });
+    },
+
+    COMMERCIAL_FIELDS: [
+      { key: 'transport', label: '1. Transport', isDeduction: false },
+      { key: 'designCharges', label: '2. Design charges', isDeduction: false },
+      { key: 'accessories', label: '3. Accessories', isDeduction: false },
+      { key: 'floorMat', label: '4. Floor protective mat', isDeduction: false },
+      { key: 'electrical', label: '5. Electrical', isDeduction: false },
+      { key: 'plumbing', label: '6. Plumbing', isDeduction: false },
+      { key: 'wallpaper', label: '7. Wallpaper', isDeduction: false },
+      { key: 'falseCeiling', label: '8. False ceiling', isDeduction: false },
+      { key: 'appliances', label: '9. Appliances', isDeduction: false },
+      { key: 'civilWorks', label: '10. Civil works', isDeduction: false },
+      { key: 'loadingUnloading', label: '11. Loading and unloading (material)', isDeduction: false },
+      { key: 'outstationTransport', label: '12. Out station transport charges', isDeduction: false },
+      { key: 'discount', label: '13. Discount', isDeduction: true },
+      { key: 'finalDiscount', label: '14. Final discount (check with sir)', isDeduction: true }
+    ],
+
+    getCommercialCharges: function () {
+      if (!this.project) return {};
+      if (!this.project.commercialCharges) {
+        this.project.commercialCharges = {
+          transport: 0,
+          designCharges: 0,
+          accessories: 0,
+          floorMat: 0,
+          electrical: 0,
+          plumbing: 0,
+          wallpaper: 0,
+          falseCeiling: 0,
+          appliances: 0,
+          civilWorks: 0,
+          loadingUnloading: 0,
+          outstationTransport: 0,
+          discount: 0,
+          finalDiscount: 0,
+          gstPercent: 18
+        };
+      }
+      return this.project.commercialCharges;
+    },
+
+    computeCommercialSummary: function (woodworkSubtotal, commCharges) {
+      var charges = commCharges || this.getCommercialCharges();
+      var additions = 0;
+      for (var i = 0; i < this.COMMERCIAL_FIELDS.length; i++) {
+        var f = this.COMMERCIAL_FIELDS[i];
+        var val = parseFloat(charges[f.key]) || 0;
+        if (!f.isDeduction) {
+          additions += val;
+        }
+      }
+      var disc = parseFloat(charges.discount) || 0;
+      var finalDisc = parseFloat(charges.finalDiscount) || 0;
+      var totalDeductions = disc + finalDisc;
+
+      var netTaxable = Math.max(0, Math.round(woodworkSubtotal + additions - totalDeductions));
+      var gstPercent = (charges.gstPercent !== undefined && charges.gstPercent !== null && charges.gstPercent !== '') ? parseFloat(charges.gstPercent) : 18;
+      if (isNaN(gstPercent)) gstPercent = 18;
+      var gstAmount = Math.round(netTaxable * (gstPercent / 100));
+      var grandTotal = netTaxable + gstAmount;
+
+      return {
+        woodworkSubtotal: Math.round(woodworkSubtotal),
+        additions: additions,
+        totalDeductions: totalDeductions,
+        netTaxable: netTaxable,
+        gstPercent: gstPercent,
+        gstAmount: gstAmount,
+        grandTotal: grandTotal
+      };
+    },
+
     renderBOQ: function () {
       var boqEl = document.getElementById('orbixBOQTable');
       if (!boqEl) return;
@@ -10041,6 +10647,9 @@ body.role-employee #adminCreateEmpBox,
       var sym = quote.currencySymbol;
       var rateCard = this.project.rateCard || Core.DEFAULT_RATE_CARD;
       var self = this;
+      var commCharges = this.getCommercialCharges();
+      var commSummary = this.computeCommercialSummary(quote.subtotalWoodwork, commCharges);
+
       if (!rateCard.selectedTier) {
         rateCard.selectedTier = 'PRICE 1';
         this.project.rateCard = rateCard;
@@ -10184,7 +10793,7 @@ body.role-employee #adminCreateEmpBox,
         '<div class="qh-row"><span class="qh-lbl">Quotation Date</span><span class="qh-val">' + (this.project.meta.dateCreated || '28 Oct, 2026') + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Price Expiry Date</span><span class="qh-val">' + (this.project.meta.validUntil || '27 Nov, 2026') + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Total No. of Items</span><span class="qh-val">' + quote.furnitureItems.length + (quote.isFiltered ? ' (Filtered Scope)' : '') + '</span></div>' +
-        '<div class="qh-row total"><span class="qh-lbl">Total Amount</span><span class="qh-val">INR ' + quote.grandTotal.toLocaleString('en-IN') + '.00</span></div>' +
+        '<div class="qh-row total"><span class="qh-lbl">Total Amount</span><span class="qh-val" id="boqHeaderTotalAmount">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</span></div>' +
         '</div>' +
         '</div>' +
 
@@ -10332,19 +10941,19 @@ body.role-employee #adminCreateEmpBox,
 
       var hwItems = [];
       if (totalHinges > 0) {
-        hwItems.push({ code: 'H-01', name: 'Auto Soft-Close Hinges', spec: 'Stainless Steel 304', qty: totalHinges, unit: 'nos', rate: 240, type: 'hinge' });
+        hwItems.push({ code: 'H-01', name: 'Auto Soft-Close Hinges', spec: 'Stainless Steel 304', qty: totalHinges, unit: 'nos', rate: 0, type: 'hinge' });
       }
       if (totalDrawers > 0) {
-        hwItems.push({ code: 'H-02', name: 'Telescopic Drawer Channels', spec: 'Triple Extension Heavy-Duty', qty: totalDrawers, unit: 'pair', rate: 700, type: 'runner' });
+        hwItems.push({ code: 'H-02', name: 'Telescopic Drawer Channels', spec: 'Triple Extension Heavy-Duty', qty: totalDrawers, unit: 'pair', rate: 0, type: 'runner' });
       }
       if (totalHandles > 0) {
-        hwItems.push({ code: 'H-03', name: 'Designer Edge Profile Handles', spec: 'Matte Charcoal Aluminum', qty: totalHandles, unit: 'nos', rate: 350, type: 'handle' });
+        hwItems.push({ code: 'H-03', name: 'Designer Edge Profile Handles', spec: 'Matte Charcoal Aluminum', qty: totalHandles, unit: 'nos', rate: 0, type: 'handle' });
       }
       if (totalWardrobeRails > 0) {
-        hwItems.push({ code: 'H-04', name: 'Wardrobe Hanging Oval Rails', spec: 'Chrome Plated Oval Rail', qty: totalWardrobeRails, unit: 'nos', rate: 450, type: 'rod' });
+        hwItems.push({ code: 'H-04', name: 'Wardrobe Hanging Oval Rails', spec: 'Chrome Plated Oval Rail', qty: totalWardrobeRails, unit: 'nos', rate: 0, type: 'rod' });
       }
       if (totalLocks > 0) {
-        hwItems.push({ code: 'H-05', name: 'Precision Cam Locks', spec: 'Brass Core with Dimple Keys', qty: totalLocks, unit: 'nos', rate: 280, type: 'lock' });
+        hwItems.push({ code: 'H-05', name: 'Precision Cam Locks', spec: 'Brass Core with Dimple Keys', qty: totalLocks, unit: 'nos', rate: 0, type: 'lock' });
       }
 
       var totalHw = 0;
@@ -10363,30 +10972,59 @@ body.role-employee #adminCreateEmpBox,
             '<td class="c-center">Hardware</td>' +
             '<td class="fin-cell"><div>Material : ' + hw.spec + '</div></td>' +
             '<td class="acc-cell">System Pack</td>' +
-            '<td class="c-num">' + hw.rate.toLocaleString('en-IN') + '</td>' +
+            '<td class="c-num">0.00</td>' +
             '<td class="c-num">' + hw.qty + ' ' + hw.unit + '</td>' +
-            '<td class="c-num bold">' + hwAmt.toLocaleString('en-IN') + '.00</td>' +
+            '<td class="c-num bold">0.00</td>' +
             '</tr>';
         }
-        html += '<tr class="subtotal-bar"><td colspan="10" style="text-align:right;padding-right:12px;font-weight:700">SUBTOTAL HARDWARE &amp; FITTINGS</td><td class="c-num bold">' + totalHw.toLocaleString('en-IN') + '.00</td></tr>';
+        html += '<tr class="subtotal-bar"><td colspan="10" style="text-align:right;padding-right:12px;font-weight:700">SUBTOTAL HARDWARE &amp; FITTINGS</td><td class="c-num bold">0.00</td></tr>';
       }
 
-      var grandWoodwork = quote.subtotalWoodwork;
-      var totalLabor = quote.installCharge;
-      var totalTransport = quote.transportCharge;
-      var netTaxable = Math.round(grandWoodwork + totalHw + totalLabor + totalTransport + quote.marginAmount);
-      var gst18 = Math.round(netTaxable * 0.18);
-      var allInclusiveTotal = netTaxable + gst18;
-
       html += '<tr class="sec-bar-row"><td colspan="11"><b>Commercial Estimate Summary (' + (quote.isFiltered ? 'Active Scope' : 'Entire Home') + ')</b></td></tr>' +
-        '<tr><td colspan="4"></td><td colspan="6" class="bold">Modular Woodwork Subtotal</td><td class="c-num">' + Math.round(grandWoodwork).toLocaleString('en-IN') + '.00</td></tr>' +
-        (totalHw > 0 ? ('<tr><td colspan="4"></td><td colspan="6" class="bold">Hardware &amp; Functional Fittings Subtotal</td><td class="c-num">' + Math.round(totalHw).toLocaleString('en-IN') + '.00</td></tr>') : '') +
-        '<tr><td colspan="4"></td><td colspan="6" class="bold">Installation &amp; Assembly Labor</td><td class="c-num">' + Math.round(totalLabor).toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr><td colspan="4"></td><td colspan="6" class="bold">Logistics &amp; Site Delivery</td><td class="c-num">' + Math.round(totalTransport).toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr><td colspan="4"></td><td colspan="6" class="bold">Company Overhead / Margin (' + quote.marginPercent + '%)</td><td class="c-num">' + Math.round(quote.marginAmount).toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr class="taxable-row"><td colspan="4"></td><td colspan="6" class="bold">NET TAXABLE VALUE</td><td class="c-num bold">' + netTaxable.toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr><td colspan="4"></td><td colspan="6" class="bold">GST @ 18% (CGST 9% + SGST 9%)</td><td class="c-num">' + gst18.toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr class="grand-row"><td colspan="4"></td><td colspan="6" class="bold grand-lbl">FINAL ALL-INCLUSIVE QUOTE</td><td class="c-num bold grand-val">INR ' + allInclusiveTotal.toLocaleString('en-IN') + '.00</td></tr>' +
+        '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
+        '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>';
+
+      for (var ci = 0; ci < self.COMMERCIAL_FIELDS.length; ci++) {
+        var cf = self.COMMERCIAL_FIELDS[ci];
+        var rawVal = commCharges[cf.key];
+        var displayVal = (rawVal !== undefined && rawVal !== null && rawVal !== 0 && rawVal !== '0') ? rawVal : '';
+
+        html += '<tr class="comm-charge-row">' +
+          '<td colspan="4"></td>' +
+          '<td colspan="4" class="bold' + (cf.isDeduction ? ' text-red' : '') + '">' + cf.label + '</td>' +
+          '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+          '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
+          '<span style="font-size:11px;color:' + (cf.isDeduction ? '#DC2626' : '#64748B') + ';font-weight:600">' + (cf.isDeduction ? '(-) ₹' : '₹') + '</span>' +
+          '<input type="number" min="0" step="any" class="comm-input' + (cf.isDeduction ? ' is-discount' : '') + '" data-key="' + cf.key + '" value="' + displayVal + '" placeholder="0">' +
+          '<span style="font-size:11px;color:#94A3B8">.00</span>' +
+          '</div>' +
+          '</td>' +
+          '</tr>';
+      }
+
+      var gstRateVal = (commCharges.gstPercent !== undefined && commCharges.gstPercent !== null) ? commCharges.gstPercent : 18;
+      html += '<tr class="comm-charge-row" style="background:#F8FAFC">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">15. GST</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
+        '<span style="font-size:11px;color:#64748B">Rate:</span>' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="gstPercent" value="' + gstRateVal + '" style="width:65px" placeholder="18">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
+        '<span id="commGstAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.gstAmount.toLocaleString('en-IN') + '.00</span>' +
+        '</div>' +
+        '</td>' +
+        '</tr>' +
+        '<tr class="taxable-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold" style="font-size:12px">NET TAXABLE VALUE</td>' +
+        '<td colspan="3" class="c-num bold" id="commNetTaxable" style="font-size:13px;color:#1E3A8A">₹ ' + commSummary.netTaxable.toLocaleString('en-IN') + '.00</td>' +
+        '</tr>' +
+        '<tr class="grand-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold grand-lbl" style="font-size:13px">FINAL ALL-INCLUSIVE QUOTE</td>' +
+        '<td colspan="3" class="c-num bold grand-val" id="commFinalTotal" style="font-size:14px">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</td>' +
+        '</tr>' +
         '</tbody></table></div>';
 
       // History Snapshots if available
@@ -10409,6 +11047,36 @@ body.role-employee #adminCreateEmpBox,
 
       html += '</div>';
       boqEl.innerHTML = html;
+
+      // Commercial Charges live input bindings
+      var commInputs = boqEl.querySelectorAll('.comm-input');
+      commInputs.forEach(function (inp) {
+        inp.addEventListener('input', function () {
+          var key = inp.getAttribute('data-key');
+          if (!key) return;
+          var val = parseFloat(inp.value);
+          if (isNaN(val)) val = 0;
+
+          self.project.commercialCharges = self.project.commercialCharges || {};
+          self.project.commercialCharges[key] = val;
+
+          var summary = self.computeCommercialSummary(quote.subtotalWoodwork, self.project.commercialCharges);
+
+          var netEl = document.getElementById('commNetTaxable');
+          if (netEl) netEl.textContent = '₹ ' + summary.netTaxable.toLocaleString('en-IN') + '.00';
+
+          var gstAmtEl = document.getElementById('commGstAmount');
+          if (gstAmtEl) gstAmtEl.textContent = summary.gstAmount.toLocaleString('en-IN') + '.00';
+
+          var finalEl = document.getElementById('commFinalTotal');
+          if (finalEl) finalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
+
+          var headerTotalEl = document.getElementById('boqHeaderTotalAmount');
+          if (headerTotalEl) headerTotalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
+
+          self.saveToLocalStorage();
+        });
+      });
 
       // Event bindings for BOQ
       var printBtn = document.getElementById('boqPrintBtn');
@@ -10530,7 +11198,7 @@ body.role-employee #adminCreateEmpBox,
       this.syncProjectUnitsTo3DStudio();
     },
 
-    render3DHome: function () {
+    render3DHome: function (keepCamera) {
       if (typeof THREE === 'undefined' || !window.__cc || !window.__cc.gl) return;
       var gl = window.__cc.gl;
       var scene = gl.getScene ? gl.getScene() : null;
@@ -10540,8 +11208,9 @@ body.role-employee #adminCreateEmpBox,
         this.archRenderer = new root.Orbix3D(scene);
       }
       if (this.archRenderer) {
-        this.archRenderer.buildHome(this.project);
-        if (gl.frame) gl.frame();
+        var proj = this.project || (this.editor && this.editor.project);
+        this.archRenderer.buildHome(proj);
+        if (!keepCamera && gl.frame) gl.frame();
         if (gl.apply) gl.apply();
         if (gl.settle) gl.settle();
       }
@@ -10658,11 +11327,11 @@ body.role-employee #adminCreateEmpBox,
       rows.push(['HARDWARE & FUNCTIONAL FITTINGS SPECIFICATIONS']);
 
       var hwItems = [
-        { code: 'H-01', name: 'Auto Soft-Close Hinges (35mm Cup SS)', spec: 'Stainless Steel 304 · Hydraulic Soft-Close', qty: Math.max(8, quote.furnitureItems.length * 4), unit: 'nos', rate: 240 },
-        { code: 'H-02', name: 'Telescopic Drawer Runners (Soft-Close)', spec: 'Triple Extension Heavy-Duty Ball Bearing (45kg)', qty: Math.max(2, quote.furnitureItems.length * 1), unit: 'pair', rate: 700 },
-        { code: 'H-03', name: 'Designer Edge Profile Pull Handles (200mm)', spec: 'Matte Charcoal Aluminum Edge Profile', qty: Math.max(4, quote.furnitureItems.length * 2), unit: 'nos', rate: 350 },
-        { code: 'H-04', name: 'Wardrobe Hanging Oval Rail + Flanges', spec: 'Chrome Plated Oval Rail with Cushioning Gaskets', qty: Math.max(2, quote.furnitureItems.length * 1), unit: 'nos', rate: 450 },
-        { code: 'H-05', name: 'Precision Deadbolt Wardrobe Locks', spec: 'Brass Core with Computerized Dimple Keys', qty: 2, unit: 'nos', rate: 280 }
+        { code: 'H-01', name: 'Auto Soft-Close Hinges (35mm Cup SS)', spec: 'Stainless Steel 304 · Hydraulic Soft-Close', qty: Math.max(8, quote.furnitureItems.length * 4), unit: 'nos', rate: 0 },
+        { code: 'H-02', name: 'Telescopic Drawer Runners (Soft-Close)', spec: 'Triple Extension Heavy-Duty Ball Bearing (45kg)', qty: Math.max(2, quote.furnitureItems.length * 1), unit: 'pair', rate: 0 },
+        { code: 'H-03', name: 'Designer Edge Profile Pull Handles (200mm)', spec: 'Matte Charcoal Aluminum Edge Profile', qty: Math.max(4, quote.furnitureItems.length * 2), unit: 'nos', rate: 0 },
+        { code: 'H-04', name: 'Wardrobe Hanging Oval Rail + Flanges', spec: 'Chrome Plated Oval Rail with Cushioning Gaskets', qty: Math.max(2, quote.furnitureItems.length * 1), unit: 'nos', rate: 0 },
+        { code: 'H-05', name: 'Precision Deadbolt Wardrobe Locks', spec: 'Brass Core with Computerized Dimple Keys', qty: 2, unit: 'nos', rate: 0 }
       ];
 
       var totalHw = 0;
@@ -10684,30 +11353,30 @@ body.role-employee #adminCreateEmpBox,
           '-',
           '-',
           hw.qty + ' ' + hw.unit,
-          hw.rate,
-          hwAmt
+          0,
+          0
         ]);
       }
 
-      rows.push(['', '', 'SUBTOTAL HARDWARE & ACCESSORIES', '', '', '', '', '', '', '', '', '', '', '', totalHw]);
+      rows.push(['', '', 'SUBTOTAL HARDWARE & ACCESSORIES', '', '', '', '', '', '', '', '', '', '', '', 0]);
       rows.push([]);
 
-      var grandWoodwork = quote.subtotalWoodwork;
-      var totalLabor = quote.installCharge;
-      var totalTransport = quote.transportCharge;
-      var netTaxable = grandWoodwork + totalHw + totalLabor + totalTransport + quote.marginAmount;
-      var gst18 = Math.round(netTaxable * 0.18);
-      var allInclusiveTotal = netTaxable + gst18;
+      var comm = this.computeCommercialSummary(quote.subtotalWoodwork, this.project.commercialCharges);
+      var commCharges = this.getCommercialCharges();
 
-      rows.push(['COMMERCIAL ESTIMATE SUMMARY']);
-      rows.push(['', '', 'Modular Woodwork Subtotal', '', '', '', '', '', '', '', '', '', '', '', Math.round(grandWoodwork)]);
-      rows.push(['', '', 'Hardware & Fittings Subtotal', '', '', '', '', '', '', '', '', '', '', '', totalHw]);
-      rows.push(['', '', 'Installation & Assembly Labor', '', '', '', '', '', '', '', '', '', '', '', Math.round(totalLabor)]);
-      rows.push(['', '', 'Logistics & Site Transport', '', '', '', '', '', '', '', '', '', '', '', Math.round(totalTransport)]);
-      rows.push(['', '', 'Company Overhead & Margin (' + quote.marginPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', Math.round(quote.marginAmount)]);
-      rows.push(['', '', 'NET TAXABLE AMOUNT BEFORE TAX', '', '', '', '', '', '', '', '', '', '', '', Math.round(netTaxable)]);
-      rows.push(['', '', 'GST @ 18% (CGST 9% + SGST 9%)', '', '', '', '', '', '', '', '', '', '', '', gst18]);
-      rows.push(['', '', 'FINAL ALL-INCLUSIVE ESTIMATE (INR)', '', '', '', '', '', '', '', '', '', '', '', allInclusiveTotal]);
+      rows.push(['COMMERCIAL ESTIMATE SUMMARY (' + (quote.isFiltered ? 'Active Scope' : 'Entire Home') + ')']);
+      rows.push(['', '', 'Modular Woodwork Subtotal', '', '', '', '', '', '', '', '', '', '', '', comm.woodworkSubtotal]);
+      rows.push(['', '', 'Hardware & Functional Fittings Subtotal (Included)', '', '', '', '', '', '', '', '', '', '', '', 0]);
+
+      for (var ci = 0; ci < this.COMMERCIAL_FIELDS.length; ci++) {
+        var cf = this.COMMERCIAL_FIELDS[ci];
+        var cfVal = parseFloat(commCharges[cf.key]) || 0;
+        rows.push(['', '', cf.label, '', '', '', '', '', '', '', '', '', '', '', (cf.isDeduction ? -cfVal : cfVal)]);
+      }
+
+      rows.push(['', '', 'NET TAXABLE VALUE', '', '', '', '', '', '', '', '', '', '', '', comm.netTaxable]);
+      rows.push(['', '', '15. GST @ ' + comm.gstPercent + '% (CGST + SGST)', '', '', '', '', '', '', '', '', '', '', '', comm.gstAmount]);
+      rows.push(['', '', 'FINAL ALL-INCLUSIVE ESTIMATE (INR)', '', '', '', '', '', '', '', '', '', '', '', comm.grandTotal]);
 
       var blob = this.buildXLSXBlob(rows);
       var filename = 'Residential-Interior-Estimation-' + (meta.quoteId || 'ORB-2026-089') + '.xlsx';
@@ -12331,10 +13000,10 @@ function sceneLayouts(uOpt){
 }
 function buildScene(){
   var u0=U();
-  var hasArchProject = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+  var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
 
-  if(hasArchProject){
-    var furnList = window.OrbixUI.project.plan.furniture || [];
+  if(plan){
+    var furnList = plan.furniture || [];
     if(furnList.length === 0 || !u0){
       MID=1200;
       if(GL.ok) GL.show([]);
@@ -12343,7 +13012,7 @@ function buildScene(){
       var L=sceneLayouts();
       if(GL.ok) GL.show(L); else cssRender(L,u0);
     }
-    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
     camApply();
     return;
   }
@@ -12933,7 +13602,8 @@ var GL=(function(){
     // all furniture units are rendered directly in their 3D room positions by ArchitecturalRenderer.
     // If OrbixHome3D has furniture, root is kept clear to avoid duplicate overlapping meshes.
     var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
-    if(homeObj && homeObj.children && homeObj.children.length > 0 && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.furniture && window.OrbixUI.project.plan.furniture.length > 0){
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    if(homeObj && homeObj.children && homeObj.children.length > 0 && plan && plan.furniture && plan.furniture.length > 0){
       root.position.set(0, 0, 0);
       root.rotation.y = 0;
       return;
@@ -12941,10 +13611,10 @@ var GL=(function(){
 
     // Position root to match active furniture unit's floor plan coordinates
     var furnPos = null, furnRot = 0;
-    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.furniture){
+    if(plan && plan.furniture){
       var activeU = U();
       if(activeU && activeU._furnId){
-        var match = window.OrbixUI.project.plan.furniture.find(function(f){ return f.id === activeU._furnId; });
+        var match = plan.furniture.find(function(f){ return f.id === activeU._furnId; });
         if(match && match.pos){
           furnPos = match.pos;
           furnRot = match.rotY || 0;
@@ -13829,12 +14499,12 @@ function camApply(){
 
   stage.addEventListener("contextmenu", function(e){ e.preventDefault(); });
 
-  // Hover feedback: show 'move' cursor over 3D furniture units
+  // Hover feedback: show 'pointer' cursor over 3D furniture units
   stage.addEventListener("pointermove", function(e){
     if(furnDrag || hDrag || Object.keys(pts).length > 0) return;
     if(GL.ok && GL.pickFurniture){
       var fHit = GL.pickFurniture(e.clientX, e.clientY);
-      stage.style.cursor = fHit ? "move" : "";
+      stage.style.cursor = fHit ? "pointer" : "";
     }
   });
 
@@ -13934,13 +14604,14 @@ function camApply(){
         GL.settle();
 
         // Sync with project data
-        if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-          var list = window.OrbixUI.project.plan.furniture || [];
+        var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+        if(plan){
+          var list = plan.furniture || [];
           for(var i = 0; i < list.length; i++){
             if(list[i].id === fd.id){
               list[i].pos.x = finalX;
               list[i].pos.y = finalZ;
-              var rms = window.OrbixUI.project.plan.rooms || [];
+              var rms = plan.rooms || [];
               for(var r = 0; r < rms.length; r++){
                 if(window.OrbixCore && window.OrbixCore.Vec2 && window.OrbixCore.Vec2.pointInPolygon(list[i].pos, rms[r].polygon)){
                   list[i].roomId = rms[r].id;
@@ -13950,18 +14621,19 @@ function camApply(){
               break;
             }
           }
-          window.OrbixUI.saveToLocalStorage();
-          if(window.OrbixUI.editor){
+          if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+          if(window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+          if(window.OrbixUI && window.OrbixUI.editor){
             window.OrbixUI.editor.pushHistory('Move Furniture (3D)');
             window.OrbixUI.editor.selected = [{ type: 'furniture', id: fd.id }];
             window.OrbixUI.editor.render();
           }
-          if(window.OrbixUI.renderBOQ) window.OrbixUI.renderBOQ();
-          if(window.OrbixUI.renderInspector) window.OrbixUI.renderInspector([{ type: 'furniture', id: fd.id }]);
+          if(window.OrbixUI && window.OrbixUI.renderBOQ) window.OrbixUI.renderBOQ();
+          if(window.OrbixUI && window.OrbixUI.renderInspector) window.OrbixUI.renderInspector([{ type: 'furniture', id: fd.id }]);
           if(window.OrbixUI && typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function'){
             window.OrbixUI.selectFurnitureIn3DStudio(fd.id);
           }
-          if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+          if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
         }
       } else {
         // Just clicked: select the furniture unit and show customize inspector
@@ -14117,8 +14789,8 @@ function renderRail(){
   add.addEventListener("click",function(){
     var nu=newUnit("UNIT "+(S.units.length+1));
     nu.W=1200; nu.H=2100; nu.D=600; nu.shutters=2;
-    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-      var plan=window.OrbixUI.project.plan;
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    if(plan){
       plan.furniture=plan.furniture||[];
       var fId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
       nu._furnId=fId;
@@ -14142,10 +14814,10 @@ function renderRail(){
         dimensions:{W:nu.W||1200,H:nu.H||2100,D:nu.D||600},
         unitConfig:{shutters:nu.shutters||2,handle:nu.handle||'bar'}
       });
-      if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+      if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
       if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
-      if(window.OrbixUI.editor) window.OrbixUI.editor.render();
-      if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+      if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+      if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
     }
     S.units.push(nu);
     S.active=S.units.length-1;
@@ -14439,15 +15111,15 @@ function renderRail(){
   var rotB=el("btn",g8,"button"); rotB.textContent="↻ Rotate 90° (R)"; rotB.style.marginRight="6px";
   rotB.title="Rotate unit 90 degrees in floor plan & 3D (shortcut: R)";
   rotB.addEventListener("click",function(){
-    if(u._furnId && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-      var plan=window.OrbixUI.project.plan;
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    if(u._furnId && plan){
       var f=plan.furniture && plan.furniture.find(function(it){ return it.id===u._furnId; });
       if(f){
         f.rotY = ((f.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
-        if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+        if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
         if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
-        if(window.OrbixUI.editor) window.OrbixUI.editor.render();
-        if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+        if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+        if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
         toast("Rotated to "+Math.round(f.rotY * 180 / Math.PI)+"°");
         return;
       }
@@ -14460,8 +15132,8 @@ function renderRail(){
     var c=JSON.parse(JSON.stringify(u)); c.label=(u.label||"UNIT")+" (Copy)";
     var newId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
     c._furnId=newId;
-    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-      var plan=window.OrbixUI.project.plan;
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    if(plan){
       plan.furniture=plan.furniture||[];
       var orig=u._furnId && plan.furniture.find(function(it){ return it.id===u._furnId; });
       var nPos = orig ? {x: orig.pos.x + (c.W||600) + 100, y: orig.pos.y} : {x: 2000, y: 2000};
@@ -14474,25 +15146,25 @@ function renderRail(){
         dimensions: {W: c.W||1200, H: c.H||2100, D: c.D||600},
         unitConfig: {shutters: c.shutters||2, handle: c.handle||'bar'}
       });
-      if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+      if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
       if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
-      if(window.OrbixUI.editor) window.OrbixUI.editor.render();
-      if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+      if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+      if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
     }
     S.units.push(c); S.active=S.units.length-1; renderRail(); renderAll();
   });
   if(S.units.length>1){
     var rb=el("btn danger",g8,"button"); rb.textContent="Remove";
     rb.addEventListener("click",function(){
-      if(u._furnId && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-        var plan=window.OrbixUI.project.plan;
+      var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+      if(u._furnId && plan){
         if(plan.furniture){
           plan.furniture=plan.furniture.filter(function(it){ return it.id!==u._furnId; });
         }
-        if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+        if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
         if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
-        if(window.OrbixUI.editor) window.OrbixUI.editor.render();
-        if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+        if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+        if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
       }
       S.units.splice(S.active,1); S.active=Math.max(0,S.active-1);
       renderRail(); renderAll();

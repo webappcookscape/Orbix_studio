@@ -122,7 +122,11 @@
     this.group = new THREE.Group();
     this.group.name = 'OrbixHome3D';
 
-    var plan = project.plan || {};
+    var plan = project;
+    while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {
+      plan = plan.plan;
+    }
+    plan = plan || {};
     var walls = plan.walls || [];
     var openings = plan.openings || [];
     var rooms = plan.rooms || [];
@@ -562,6 +566,279 @@
         }
       }
     });
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
+     TRIMBLE SKETCHUP (.SKP / COLLADA .DAE) EXPORT ENGINE
+     Serializes entire 3D project geometry (walls, cutouts, doors, windows,
+     room floors, and placed modular cabinetry units) into native SketchUp
+     compatible COLLADA XML schema with real-world millimeter scale.
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.exportToSketchUpCollada = function (project, scene, opts) {
+    opts = opts || {};
+    var title = (project && project.meta && project.meta.title) || 'Orbix-Project';
+    var safeTitle = title.replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+    var homeObj = null;
+    var tempHomeBuilt = false;
+
+    if (scene && typeof scene.getObjectByName === 'function') {
+      homeObj = scene.getObjectByName('OrbixHome3D');
+    }
+
+    // If 3D home is not in the scene, build it now
+    if (!homeObj && project && typeof THREE !== 'undefined') {
+      homeObj = this.buildHome(project);
+      tempHomeBuilt = true;
+    }
+
+    var meshes = [];
+    function harvestMeshes(node) {
+      if (!node) return;
+      if (typeof node.updateMatrixWorld === 'function') node.updateMatrixWorld(true);
+      node.traverse(function (obj) {
+        if (obj.isMesh && obj.visible !== false && obj.geometry) {
+          // Skip infinite ground background planes
+          var geoParams = obj.geometry.parameters;
+          if (geoParams && (geoParams.width > 50000 || geoParams.height > 50000)) return;
+          if (obj.name === 'infinite_floor' || obj.name === 'floor_grass') return;
+          meshes.push(obj);
+        }
+      });
+    }
+
+    if (homeObj) harvestMeshes(homeObj);
+
+    // Also include customizer units in 3D studio root if present
+    if (scene && scene.children) {
+      for (var c = 0; c < scene.children.length; c++) {
+        var child = scene.children[c];
+        if (child !== homeObj && child.type === 'Group') {
+          var hasCabinetParts = false;
+          child.traverse(function (o) {
+            if (o.isMesh && o.userData && (o.userData.role || o.userData.isFurniturePart || o.userData.role === 'box')) {
+              hasCabinetParts = true;
+            }
+          });
+          if (hasCabinetParts) harvestMeshes(child);
+        }
+      }
+    }
+
+    // Process Materials
+    var materials = {};
+    var matCounter = 1;
+
+    meshes.forEach(function (mesh) {
+      var mat = mesh.material;
+      if (Array.isArray(mat)) mat = mat[0];
+      var colorHex = 'CCCCCC';
+      var opacity = 1.0;
+      var isGlass = false;
+
+      if (mat && mat.color && typeof mat.color.getHexString === 'function') {
+        colorHex = mat.color.getHexString().toUpperCase();
+      }
+      if (mat && typeof mat.opacity === 'number') {
+        opacity = mat.opacity;
+      }
+      if (mat && (mat.transparent || opacity < 0.9 || (mesh.name && mesh.name.toLowerCase().indexOf('glass') !== -1))) {
+        isGlass = true;
+      }
+
+      var key = colorHex + '_' + (isGlass ? 'glass' : 'solid');
+      if (!materials[key]) {
+        var r = mat && mat.color ? (mat.color.r !== undefined ? mat.color.r : 0.8) : 0.8;
+        var g = mat && mat.color ? (mat.color.g !== undefined ? mat.color.g : 0.8) : 0.8;
+        var b = mat && mat.color ? (mat.color.b !== undefined ? mat.color.b : 0.8) : 0.8;
+        materials[key] = {
+          id: 'mat_' + matCounter++,
+          name: (mat && mat.name ? mat.name : 'Mat') + '_' + colorHex,
+          hex: colorHex,
+          r: Number(r).toFixed(4),
+          g: Number(g).toFixed(4),
+          b: Number(b).toFixed(4),
+          opacity: Number(opacity).toFixed(2),
+          isGlass: isGlass
+        };
+      }
+      mesh.userData._skpMat = materials[key];
+    });
+
+    // Build Effects and Materials XML
+    var effectsXml = [];
+    var matsXml = [];
+    Object.keys(materials).forEach(function (k) {
+      var m = materials[k];
+      effectsXml.push([
+        '    <effect id="' + m.id + '-effect">',
+        '      <profile_COMMON>',
+        '        <technique sid="common">',
+        '          <phong>',
+        '            <emission><color>0 0 0 1</color></emission>',
+        '            <ambient><color>0.08 0.08 0.08 1</color></ambient>',
+        '            <diffuse><color>' + m.r + ' ' + m.g + ' ' + m.b + ' 1</color></diffuse>',
+        '            <specular><color>0.25 0.25 0.25 1</color></specular>',
+        '            <shininess><float>20</float></shininess>',
+        '            <transparent opaque="A_ONE"><color>1 1 1 ' + m.opacity + '</color></transparent>',
+        '            <transparency><float>' + m.opacity + '</float></transparency>',
+        '          </phong>',
+        '        </technique>',
+        '      </profile_COMMON>',
+        '    </effect>'
+      ].join('\n'));
+
+      matsXml.push([
+        '    <material id="' + m.id + '" name="' + m.name + '">',
+        '      <instance_effect url="#' + m.id + '-effect"/>',
+        '    </material>'
+      ].join('\n'));
+    });
+
+    // Build Geometries & Nodes XML
+    var geomsXml = [];
+    var nodesXml = [];
+    var geomCounter = 1;
+    var totalTriangles = 0;
+
+    var Vec3 = (typeof THREE !== 'undefined' && THREE.Vector3) ? THREE.Vector3 : null;
+
+    meshes.forEach(function (mesh) {
+      var geom = mesh.geometry;
+      if (!geom || !geom.attributes || !geom.attributes.position) return;
+      var posAttr = geom.attributes.position;
+      if (posAttr.count < 3) return;
+
+      var geomId = 'geom_' + geomCounter++;
+      var meshName = mesh.name || (mesh.parent && mesh.parent.name) || ('Mesh_' + geomCounter);
+      meshName = meshName.replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+      var mWorld = mesh.matrixWorld;
+      var coords = [];
+      var v = Vec3 ? new Vec3() : { x: 0, y: 0, z: 0 };
+
+      for (var i = 0; i < posAttr.count; i++) {
+        if (Vec3) {
+          v.fromBufferAttribute(posAttr, i);
+          if (mWorld) v.applyMatrix4(mWorld);
+        } else {
+          v.x = posAttr.getX ? posAttr.getX(i) : posAttr.array[i * 3];
+          v.y = posAttr.getY ? posAttr.getY(i) : posAttr.array[i * 3 + 1];
+          v.z = posAttr.getZ ? posAttr.getZ(i) : posAttr.array[i * 3 + 2];
+        }
+        coords.push(v.x.toFixed(2) + ' ' + v.y.toFixed(2) + ' ' + v.z.toFixed(2));
+      }
+
+      var indexAttr = geom.index;
+      var indexList = [];
+      var triCount = 0;
+
+      if (indexAttr) {
+        triCount = Math.floor(indexAttr.count / 3);
+        for (var j = 0; j < indexAttr.count; j++) {
+          indexList.push(indexAttr.getX ? indexAttr.getX(j) : indexAttr.array[j]);
+        }
+      } else {
+        triCount = Math.floor(posAttr.count / 3);
+        for (var k = 0; k < posAttr.count; k++) {
+          indexList.push(k);
+        }
+      }
+      totalTriangles += triCount;
+
+      var matObj = mesh.userData._skpMat || { id: 'mat_default' };
+
+      geomsXml.push([
+        '    <geometry id="' + geomId + '" name="' + meshName + '">',
+        '      <mesh>',
+        '        <source id="' + geomId + '-positions">',
+        '          <float_array id="' + geomId + '-positions-array" count="' + (posAttr.count * 3) + '">' + coords.join(' ') + '</float_array>',
+        '          <technique_common>',
+        '            <accessor source="#' + geomId + '-positions-array" count="' + posAttr.count + '" stride="3">',
+        '              <param name="X" type="float"/>',
+        '              <param name="Y" type="float"/>',
+        '              <param name="Z" type="float"/>',
+        '            </accessor>',
+        '          </technique_common>',
+        '        </source>',
+        '        <vertices id="' + geomId + '-vertices">',
+        '          <input semantic="POSITION" source="#' + geomId + '-positions"/>',
+        '        </vertices>',
+        '        <triangles count="' + triCount + '" material="' + matObj.id + '">',
+        '          <input semantic="VERTEX" source="#' + geomId + '-vertices" offset="0"/>',
+        '          <p>' + indexList.join(' ') + '</p>',
+        '        </triangles>',
+        '      </mesh>',
+        '    </geometry>'
+      ].join('\n'));
+
+      nodesXml.push([
+        '      <node id="node_' + geomId + '" name="' + meshName + '">',
+        '        <instance_geometry url="#' + geomId + '">',
+        '          <bind_material>',
+        '            <technique_common>',
+        '              <instance_material symbol="' + matObj.id + '" target="#' + matObj.id + '"/>',
+        '            </technique_common>',
+        '          </bind_material>',
+        '        </instance_geometry>',
+        '      </node>'
+      ].join('\n'));
+    });
+
+    var now = new Date().toISOString();
+    var xml = [
+      '<?xml version="1.0" encoding="utf-8"?>',
+      '<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">',
+      '  <asset>',
+      '    <contributor>',
+      '      <author>Orbix Studio</author>',
+      '      <authoring_tool>Orbix Studio 3D CAD to Trimble SketchUp Exporter</authoring_tool>',
+      '    </contributor>',
+      '    <created>' + now + '</created>',
+      '    <modified>' + now + '</modified>',
+      '    <unit name="millimeter" meter="0.001"/>',
+      '    <up_axis>Y_UP</up_axis>',
+      '  </asset>',
+      '  <library_effects>',
+      effectsXml.join('\n'),
+      '  </library_effects>',
+      '  <library_materials>',
+      matsXml.join('\n'),
+      '  </library_materials>',
+      '  <library_geometries>',
+      geomsXml.join('\n'),
+      '  </library_geometries>',
+      '  <library_visual_scenes>',
+      '    <visual_scene id="Scene" name="' + safeTitle + '">',
+      nodesXml.join('\n'),
+      '    </visual_scene>',
+      '  </library_visual_scenes>',
+      '  <scene>',
+      '    <instance_visual_scene url="#Scene"/>',
+      '  </scene>',
+      '</COLLADA>'
+    ].join('\n');
+
+    return {
+      colladaXml: xml,
+      filename: safeTitle + '-sketchup.dae',
+      skpFilename: safeTitle + '.skp',
+      stats: {
+        title: title,
+        walls: (project && project.plan && project.plan.walls ? project.plan.walls.length : 0),
+        openings: (project && project.plan && project.plan.openings ? project.plan.openings.length : 0),
+        furniture: (project && project.plan && project.plan.furniture ? project.plan.furniture.length : 0),
+        rooms: (project && project.plan && project.plan.rooms ? project.plan.rooms.length : 0),
+        meshCount: meshes.length,
+        triangleCount: totalTriangles
+      }
+    };
+  };
+
+  // Static helper method
+  ArchitecturalRenderer.exportSketchUp = function (project, scene, opts) {
+    var renderer = new ArchitecturalRenderer(scene);
+    return renderer.exportToSketchUpCollada(project, scene, opts);
   };
 
   return ArchitecturalRenderer;

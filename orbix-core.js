@@ -957,8 +957,13 @@
 
   function generateFullQuotation(project, selectedRoomIds) {
     var rateCard = project.rateCard || DEFAULT_RATE_CARD;
-    var furniture = project.plan.furniture || [];
-    var rooms = project.plan.rooms || [];
+    var plan = project;
+    while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {
+      plan = plan.plan;
+    }
+    plan = plan || {};
+    var furniture = plan.furniture || [];
+    var rooms = plan.rooms || [];
 
     var roomMap = {};
     for (var r = 0; r < rooms.length; r++) {
@@ -1054,8 +1059,8 @@
       if (room.areaSqFt > 0) {
         var civilMatches = !isFiltered || filterMap[room.id] || filterMap[room.name];
 
-        // Flooring
-        if (rateCard.categories.flooring && rateCard.categories.flooring.baseRatePerSft) {
+        // Flooring (Opt-in only: room.includeFlooring)
+        if (room.includeFlooring && rateCard.categories.flooring && rateCard.categories.flooring.baseRatePerSft) {
           var floorCost = room.areaSqFt * rateCard.categories.flooring.baseRatePerSft;
           if (roomSummaries[room.id]) {
             roomSummaries[room.id].civilSubtotal += floorCost;
@@ -1118,9 +1123,35 @@
 
     var grossBeforeTax = subtotal + laborTotal;
     var marginAmount = grossBeforeTax * ((rateCard.marginPercent || 15) / 100.0);
-    var netBeforeTax = grossBeforeTax + marginAmount;
-    var gstAmount = netBeforeTax * ((rateCard.gstPercent || 18) / 100.0);
-    var grandTotal = netBeforeTax + gstAmount;
+    var netBeforeTax;
+    var gstAmount;
+    var grandTotal;
+    var gstPercent = (rateCard.gstPercent || 18);
+    var commCharges = project.commercialCharges;
+
+    if (commCharges && typeof commCharges === 'object' && Object.keys(commCharges).length > 0) {
+      var commAdditions = 0;
+      var commDeductions = (parseFloat(commCharges.discount) || 0) + (parseFloat(commCharges.finalDiscount) || 0);
+      var commKeys = [
+        'transport', 'designCharges', 'accessories', 'floorMat', 'electrical',
+        'plumbing', 'wallpaper', 'falseCeiling', 'appliances', 'civilWorks',
+        'loadingUnloading', 'outstationTransport'
+      ];
+      for (var ck = 0; ck < commKeys.length; ck++) {
+        commAdditions += (parseFloat(commCharges[commKeys[ck]]) || 0);
+      }
+      netBeforeTax = Math.max(0, Math.round(subtotal + commAdditions - commDeductions));
+      if (commCharges.gstPercent !== undefined && commCharges.gstPercent !== null && commCharges.gstPercent !== '') {
+        var parsedGst = parseFloat(commCharges.gstPercent);
+        if (!isNaN(parsedGst)) gstPercent = parsedGst;
+      }
+      gstAmount = Math.round(netBeforeTax * (gstPercent / 100));
+      grandTotal = netBeforeTax + gstAmount;
+    } else {
+      netBeforeTax = grossBeforeTax + marginAmount;
+      gstAmount = netBeforeTax * (gstPercent / 100.0);
+      grandTotal = netBeforeTax + gstAmount;
+    }
 
     // Convert roomSummaries to array and compute % share
     var allRoomsSummary = [];
@@ -1181,6 +1212,7 @@
     }
     if (!data.plan) data.plan = { walls: [], openings: [], rooms: [], furniture: [] };
     if (!data.rateCard) data.rateCard = JSON.parse(JSON.stringify(DEFAULT_RATE_CARD));
+    if (!data.commercialCharges) data.commercialCharges = {};
     return data;
   }
 
