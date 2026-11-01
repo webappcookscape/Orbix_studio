@@ -957,8 +957,13 @@
 
   function generateFullQuotation(project, selectedRoomIds) {
     var rateCard = project.rateCard || DEFAULT_RATE_CARD;
-    var furniture = project.plan.furniture || [];
-    var rooms = project.plan.rooms || [];
+    var plan = project;
+    while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {
+      plan = plan.plan;
+    }
+    plan = plan || {};
+    var furniture = plan.furniture || [];
+    var rooms = plan.rooms || [];
 
     var roomMap = {};
     for (var r = 0; r < rooms.length; r++) {
@@ -1054,8 +1059,8 @@
       if (room.areaSqFt > 0) {
         var civilMatches = !isFiltered || filterMap[room.id] || filterMap[room.name];
 
-        // Flooring
-        if (rateCard.categories.flooring && rateCard.categories.flooring.baseRatePerSft) {
+        // Flooring (Opt-in only: room.includeFlooring)
+        if (room.includeFlooring && rateCard.categories.flooring && rateCard.categories.flooring.baseRatePerSft) {
           var floorCost = room.areaSqFt * rateCard.categories.flooring.baseRatePerSft;
           if (roomSummaries[room.id]) {
             roomSummaries[room.id].civilSubtotal += floorCost;

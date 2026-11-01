@@ -1042,6 +1042,7 @@
           '<div class="insp-row"><label>Ceiling Ht (mm)</label><input type="number" id="inspRoomHeight" value="' + (rm.ceilingHeight || 2800) + '" step="100"></div>' +
           '<div class="insp-row"><label>Area (sq.ft)</label><input type="text" value="' + areaSqFt + ' sq ft (' + areaSqM + ' m²)" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
           '<div class="insp-row"><label>Perimeter (mm)</label><input type="text" value="' + Math.round(rm.perimeter || 0).toLocaleString() + ' mm" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
+          '<div class="insp-row" style="margin-top:6px;"><label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="inspRoomFlooringQuote"' + (rm.includeFlooring ? ' checked' : '') + '> Include Civil Flooring in Quote (₹' + (self.project && self.project.rateCard && self.project.rateCard.categories && self.project.rateCard.categories.flooring ? self.project.rateCard.categories.flooring.baseRatePerSft : 140) + '/SFT)</label></div>' +
           '<button class="btn primary full" id="inspFocusRoom3D" style="margin-top:12px">👁 View Room in 3D Studio</button>';
 
         var nameInput = document.getElementById('inspRoomName');
@@ -1071,6 +1072,17 @@
             self.editor.pushHistory('Change Floor Finish');
             self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome();
+          });
+        }
+
+        var floorQuoteChk = document.getElementById('inspRoomFlooringQuote');
+        if (floorQuoteChk) {
+          floorQuoteChk.addEventListener('change', function (e) {
+            rm.includeFlooring = e.target.checked;
+            self.editor.pushHistory('Toggle Room Flooring in Quote');
+            self.saveToLocalStorage();
+            if (self.renderBOQ) self.renderBOQ();
+            self.updateUI();
           });
         }
 

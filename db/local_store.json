@@ -66,7 +66,7 @@
             "dateCreated": "31 Oct 2026",
             "validUntil": "30 Nov 2026",
             "status": "approved",
-            "dateModified": "2026-11-01T11:26:36.906Z"
+            "dateModified": "2026-11-01T12:10:50.996Z"
           },
           "plan": {
             "gridSize": 100,
@@ -174,12 +174,12 @@
               {
                 "id": "wall_9e024del1",
                 "start": {
-                  "x": 9200,
-                  "y": 4000
+                  "x": 9254.27776646991,
+                  "y": 3999.999999999999
                 },
                 "end": {
-                  "x": 3500,
-                  "y": 7000
+                  "x": 3554.2777664699097,
+                  "y": 6999.999999999999
                 },
                 "thickness": 200,
                 "height": 2800,
@@ -333,8 +333,45 @@
                 "perimeter": 18000
               },
               {
-                "id": "room_mxk8ywc9q",
-                "name": "Master Bedroom",
+                "id": "room_x1cu561sx",
+                "name": "Bedroom 2",
+                "type": "bedroom",
+                "wallIds": [
+                  "wall_wyy5c0cqu",
+                  "wall_mqnqjdnpk",
+                  "wall_bv3uvw1j3",
+                  "wall_dk4qg8jxb"
+                ],
+                "polygon": [
+                  {
+                    "x": 0,
+                    "y": 4000
+                  },
+                  {
+                    "x": 3500,
+                    "y": 4000
+                  },
+                  {
+                    "x": 3554.2777664699097,
+                    "y": 6999.999999999999
+                  },
+                  {
+                    "x": 0,
+                    "y": 7000
+                  }
+                ],
+                "areaSqMm": 10581416.649704862,
+                "areaSqM": 10.581416649704863,
+                "areaSqFt": 113.89742089930387,
+                "floorFinish": "vitrified_tile",
+                "ceilingHeight": 2800,
+                "falseCeiling": false,
+                "color": "#E8F1F5",
+                "perimeter": 13054.76873894974
+              },
+              {
+                "id": "room_ceuxum8u3",
+                "name": "Bedroom 2",
                 "type": "bedroom",
                 "wallIds": [
                   "wall_j4mri8a44",
@@ -362,8 +399,8 @@
                     "y": 4000
                   },
                   {
-                    "x": 3500,
-                    "y": 7000
+                    "x": 3554.2777664699097,
+                    "y": 6999.999999999999
                   },
                   {
                     "x": 3500,
@@ -376,45 +413,7 @@
                 "floorFinish": "vitrified_tile",
                 "ceilingHeight": 2800,
                 "falseCeiling": false,
-                "color": "#E8F1F5",
-                "perimeter": 23141.273166075167
-              },
-              {
-                "id": "room_x1cu561sx",
-                "name": "Bedroom 2",
-                "type": "bedroom",
-                "wallIds": [
-                  "wall_wyy5c0cqu",
-                  "wall_mqnqjdnpk",
-                  "wall_bv3uvw1j3",
-                  "wall_dk4qg8jxb"
-                ],
-                "polygon": [
-                  {
-                    "x": 0,
-                    "y": 4000
-                  },
-                  {
-                    "x": 3500,
-                    "y": 4000
-                  },
-                  {
-                    "x": 3500,
-                    "y": 7000
-                  },
-                  {
-                    "x": 0,
-                    "y": 7000
-                  }
-                ],
-                "areaSqMm": 10500000,
-                "areaSqM": 10.5,
-                "areaSqFt": 113.0210593754521,
-                "floorFinish": "vitrified_tile",
-                "ceilingHeight": 2800,
-                "falseCeiling": false,
-                "color": "#E8F1F5",
-                "perimeter": 13000
+                "color": "#E8F1F5"
               }
             ],
             "furniture": [
@@ -424,8 +423,8 @@
                 "category": "kitchen_base",
                 "roomId": "room_cfjb9onkf",
                 "pos": {
-                  "x": 700,
-                  "y": 3500,
+                  "x": 2750,
+                  "y": 300,
                   "z": 0
                 },
                 "rotY": 0,
@@ -452,8 +451,13 @@
                   "counter": "black",
                   "handle": "gprof",
                   "hfinish": "black",
-                  "carcass": "BWP_18mm",
-                  "shutterCol": "HDHMR_18mm"
+                  "carcass": "Absolute White",
+                  "shutterCol": "Brazilian Horizontal Walnut",
+                  "ctype": "kbase",
+                  "type": "hinged",
+                  "loft": false,
+                  "loftH": 600,
+                  "back": 18
                 },
                 "pricingOverrides": null,
                 "notes": ""
@@ -466,7 +470,7 @@
             "currencySymbol": "₹",
             "gstPercent": 18,
             "marginPercent": 15,
-            "selectedTier": "PRICE 1",
+            "selectedTier": "PRICE 2",
             "priceTiers": [
               "PRICE 1",
               "PRICE 2",
@@ -809,7 +813,7 @@
       "is_shared": false,
       "fork_count": 0,
       "created_at": "2026-10-31T07:29:40.598Z",
-      "updated_at": "2026-11-01T12:04:10.499Z"
+      "updated_at": "2026-11-01T12:17:06.996Z"
     },
     {
       "id": "proj_mvxi3r42nieh",
