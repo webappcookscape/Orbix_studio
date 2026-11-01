@@ -26,6 +26,39 @@ const DEFAULT_USERS = [
     designation: 'System Administrator',
     company: 'Cookscape',
     avatar: 'CA'
+  },
+  {
+    id: 'usr_sangathamizh',
+    name: 'Sangathamizh',
+    username: 'sangathamizh',
+    email: 'sangathamizh@cookscape.com',
+    password: 'admin123',
+    role: 'admin',
+    designation: 'Business Head',
+    company: 'Cookscape',
+    avatar: 'S'
+  },
+  {
+    id: 'usr_elakkiya',
+    name: 'Elakkiya',
+    username: 'elakkiya',
+    email: 'elakkiya.sakthivelu3089@gmail.com',
+    password: '123456',
+    role: 'employee',
+    designation: 'Floor Architect / FA',
+    company: 'Cookscape',
+    avatar: 'E'
+  },
+  {
+    id: 'usr_aravind',
+    name: 'Aravind',
+    username: 'aravind',
+    email: 'webapp.cookscape@gmail.com',
+    password: '123456',
+    role: 'employee',
+    designation: 'Floor Architect / FA',
+    company: 'Cookscape',
+    avatar: 'A'
   }
 ];
 
@@ -36,9 +69,9 @@ const DEFAULT_PROJECTS = [
     client: 'Rajesh & Sunita Singhania',
     type: 'Wardrobe',
     status: 'In Review',
-    created_by: 'usr_dev',
-    owner_name: 'Dev Kancheti',
-    owner_email: 'dev@orbixstudio.io',
+    created_by: 'usr_admin',
+    owner_name: 'Cookscape Admin',
+    owner_email: 'admin@cookscape.com',
     units_count: 3,
     boards_est: 12,
     data: {
@@ -58,9 +91,9 @@ const DEFAULT_PROJECTS = [
     client: 'Vikram Mehta',
     type: 'Kitchen',
     status: 'CNC Ready',
-    created_by: 'usr_alex',
-    owner_name: 'Alex Mercer',
-    owner_email: 'alex@modularedge.com',
+    created_by: 'usr_elakkiya',
+    owner_name: 'Elakkiya',
+    owner_email: 'elakkiya.sakthivelu3089@gmail.com',
     units_count: 6,
     boards_est: 18,
     data: {
@@ -81,9 +114,9 @@ const DEFAULT_PROJECTS = [
     client: 'Ananya Deshmukh',
     type: 'TV Wall',
     status: 'Draft',
-    created_by: 'usr_priya',
-    owner_name: 'Priya Sharma',
-    owner_email: 'priya@archform.in',
+    created_by: 'usr_aravind',
+    owner_name: 'Aravind',
+    owner_email: 'webapp.cookscape@gmail.com',
     units_count: 2,
     boards_est: 8,
     data: {
@@ -120,9 +153,11 @@ class DBManager {
             u.email !== 'priya@orbixstudio.io' && u.email !== 'alex@modularedge.com' &&
             u.email !== 'priya@archform.in'
           );
-          if (!parsed.users.some(u => u.id === 'usr_admin')) {
-            parsed.users.unshift(DEFAULT_USERS[0]);
-          }
+          DEFAULT_USERS.forEach(defU => {
+            if (!parsed.users.some(u => u.id === defU.id || (u.email && u.email.toLowerCase() === defU.email.toLowerCase()))) {
+              parsed.users.push(defU);
+            }
+          });
         }
         return parsed;
       } catch (e) {
@@ -180,22 +215,28 @@ class DBManager {
         "DELETE FROM users WHERE id IN ('usr_dev', 'usr_alex', 'usr_priya') OR email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in')"
       );
 
-      // Check if we need to seed
-      const userRes = await client.query('SELECT count(*) FROM users');
-      if (parseInt(userRes.rows[0].count, 10) === 0) {
-        console.log('Seeding initial PostgreSQL records...');
-        for (const u of this.localStore.users || DEFAULT_USERS) {
-          await client.query(
-            `INSERT INTO users (id, name, username, email, password, role, designation, company, avatar)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-             ON CONFLICT (id) DO UPDATE SET
-               username = COALESCE(users.username, EXCLUDED.username),
-               password = COALESCE(users.password, EXCLUDED.password),
-               designation = COALESCE(users.designation, EXCLUDED.designation),
-               role = EXCLUDED.role`,
-            [u.id, u.name, u.username || u.id, u.email, u.password || '123456', u.role, u.designation || 'Modular Designer', u.company, u.avatar]
-          );
-        }
+      // Ensure all 4 Cookscape team accounts are always in PostgreSQL
+      for (const u of DEFAULT_USERS) {
+        await client.query(
+          `INSERT INTO users (id, name, username, email, password, role, designation, company, avatar)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+           ON CONFLICT (id) DO UPDATE SET
+             name = EXCLUDED.name,
+             username = COALESCE(users.username, EXCLUDED.username),
+             email = EXCLUDED.email,
+             password = COALESCE(users.password, EXCLUDED.password),
+             designation = COALESCE(users.designation, EXCLUDED.designation),
+             role = EXCLUDED.role,
+             company = EXCLUDED.company,
+             avatar = EXCLUDED.avatar`,
+          [u.id, u.name, u.username || u.id, u.email, u.password || '123456', u.role, u.designation || 'Modular Designer', u.company, u.avatar]
+        );
+      }
+
+      // Check if we need to seed projects
+      const projRes = await client.query('SELECT count(*) FROM projects');
+      if (parseInt(projRes.rows[0].count, 10) === 0) {
+        console.log('Seeding initial PostgreSQL project records...');
         for (const p of this.localStore.projects || DEFAULT_PROJECTS) {
           await client.query(
             `INSERT INTO projects (id, title, client, type, status, created_by, owner_name, owner_email, units_count, boards_est, data, is_shared, fork_count, created_at, updated_at)

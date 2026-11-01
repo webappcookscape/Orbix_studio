@@ -21,25 +21,22 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(64);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(128) DEFAULT '123456';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS designation VARCHAR(128) DEFAULT 'Modular Designer';
 
--- Upsert Cookscape Admin Account
+-- Upsert Cookscape Team Accounts
 INSERT INTO users (id, name, username, email, password, role, designation, company, avatar)
-VALUES (
-  'usr_admin',
-  'Cookscape Admin',
-  'admin',
-  'admin@cookscape.com',
-  'admin123',
-  'admin',
-  'System Administrator',
-  'Cookscape',
-  'CA'
-)
+VALUES 
+  ('usr_admin', 'Cookscape Admin', 'admin', 'admin@cookscape.com', 'admin123', 'admin', 'System Administrator', 'Cookscape', 'CA'),
+  ('usr_sangathamizh', 'Sangathamizh', 'sangathamizh', 'sangathamizh@cookscape.com', 'admin123', 'admin', 'Business Head', 'Cookscape', 'S'),
+  ('usr_elakkiya', 'Elakkiya', 'elakkiya', 'elakkiya.sakthivelu3089@gmail.com', '123456', 'employee', 'Floor Architect / FA', 'Cookscape', 'E'),
+  ('usr_aravind', 'Aravind', 'aravind', 'webapp.cookscape@gmail.com', '123456', 'employee', 'Floor Architect / FA', 'Cookscape', 'A')
 ON CONFLICT (id) DO UPDATE SET
-  name = 'Cookscape Admin',
-  username = 'admin',
-  email = 'admin@cookscape.com',
-  password = 'admin123',
-  role = 'admin';
+  name = EXCLUDED.name,
+  username = EXCLUDED.username,
+  email = EXCLUDED.email,
+  password = EXCLUDED.password,
+  role = EXCLUDED.role,
+  designation = EXCLUDED.designation,
+  company = EXCLUDED.company,
+  avatar = EXCLUDED.avatar;
 
 -- Projects Table
 CREATE TABLE IF NOT EXISTS projects (

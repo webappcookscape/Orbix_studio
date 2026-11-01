@@ -54,7 +54,7 @@
       'users': '/users'
     },
 
-    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report'],
+    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'boq'],
 
     isInitialized: false,
     _popstateHandling: false,
@@ -288,36 +288,27 @@
         var saved = localStorage.getItem('orbix_current_user');
         if (saved) {
           this.currentUser = JSON.parse(saved);
+          // If cached user is an obsolete demo account, clear session
+          if (this.currentUser.id === 'usr_dev' || this.currentUser.id === 'usr_alex' || this.currentUser.id === 'usr_priya' || (this.currentUser.email && this.currentUser.email.indexOf('@orbixstudio.io') !== -1)) {
+            localStorage.removeItem('orbix_current_user');
+            this.currentUser = null;
+            this.showLogin();
+            return;
+          }
+          if (this.currentUser.id === 'usr_admin') {
+            this.currentUser.role = 'admin';
+          } else if (!this.currentUser.role || (this.currentUser.role !== 'admin' && this.currentUser.role !== 'employee')) {
+            this.currentUser.role = 'employee';
+          }
+          this.showApp();
+          this.updateUserUI();
+        } else {
+          this.currentUser = null;
+          this.showLogin();
         }
-        if (!this.currentUser) {
-          this.currentUser = {
-            id: 'usr_admin',
-            username: 'admin',
-            name: 'Orbix Studio',
-            email: 'admin@orbixstudio.io',
-            role: 'admin',
-            avatar: 'OS'
-          };
-          try {
-            localStorage.setItem('orbix_current_user', JSON.stringify(this.currentUser));
-          } catch (e) {}
-        }
-        if (this.currentUser.id === 'usr_admin') {
-          this.currentUser.role = 'admin';
-        }
-        this.showApp();
-        this.updateUserUI();
       } catch (e) {
-        this.currentUser = {
-          id: 'usr_admin',
-          username: 'admin',
-          name: 'Orbix Studio',
-          email: 'admin@orbixstudio.io',
-          role: 'admin',
-          avatar: 'OS'
-        };
-        this.showApp();
-        this.updateUserUI();
+        this.currentUser = null;
+        this.showLogin();
       }
     },
 
@@ -331,7 +322,7 @@
     showLogin: function () {
       var appEl = document.getElementById('app');
       var authEl = document.getElementById('authScreen');
-      if (appEl) appEl.style.display = 'flex';
+      if (appEl) appEl.style.display = 'none';
       if (authEl) {
         authEl.style.display = 'flex';
         var errAlert = document.getElementById('authScreenError');
@@ -437,8 +428,10 @@
 
     applyRolePermissions: function () {
       var isAdm = this.isAdmin();
-      // Always allow all primary studio navigation views: Home, Floor Plan (2D), 3D Studio, Kitchens, Gallery, Pricing, and factory views
-      var allowedViews = ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report'];
+      // Admin has all access; Employee only has home, floor plan (2D), 3D Studio, Pricing (boq)
+      var allowedViews = isAdm 
+        ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
+        : ['home', 'plan', 'design', 'boq'];
 
       // 1. Control visibility of top navigation tabs
       var navTabs = document.querySelectorAll('.topbar .views .vtab');
