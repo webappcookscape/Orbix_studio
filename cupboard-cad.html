@@ -2067,7 +2067,21 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">Split</button>
         </div>
 
-        <div class="plan-toolgroup">
+          <button class="plan-tool-btn" id="planUnitToggleBtn" style="font-weight:700;color:#1B4F72;border-color:#1B4F72;" title="Switch 2D measurement unit between Millimeters (mm) and Feet & Inches (ft-in)">📐 Unit: mm</button>
+          <button class="plan-tool-btn" id="planImportImageBtn" title="Import floor plan image (PNG, JPG, WEBP) to trace walls">🖼 Import Plan</button>
+          <input type="file" id="planImageFileInput" accept="image/png,image/jpeg,image/webp" hidden>
+
+          <div class="plan-toolgroup" id="planUnderlayControls" style="display:none;align-items:center;gap:6px;padding:2px 8px;background:#eef5fb;border:1px solid #c2dbf0;border-radius:4px;">
+            <span style="font-size:11px;font-weight:700;color:#1B4F72;">Plan Image:</span>
+            <button class="plan-tool-btn" id="planCalibrateScaleBtn" style="padding:4px 8px;font-size:11px;background:#1B4F72;color:#fff;border-color:#1B4F72;" title="Calibrate Scale: Click 2 points on a known wall dimension">📏 Calibrate</button>
+            <label style="font-size:11px;color:#333;display:inline-flex;align-items:center;gap:3px;" title="Adjust Image Opacity">
+              Opacity
+              <input type="range" id="planUnderlayOpacity" min="0.1" max="1" step="0.05" value="0.45" style="width:50px;cursor:pointer;">
+            </label>
+            <button class="plan-tool-btn" id="planToggleUnderlayBtn" style="padding:4px 8px;font-size:11px;" title="Show / Hide Background Plan Image">👁 Show</button>
+            <button class="plan-tool-btn" id="planRemoveUnderlayBtn" style="padding:4px 8px;font-size:11px;color:#d9534f;" title="Remove Background Plan Image">✕</button>
+          </div>
+
           <button class="plan-tool-btn" id="planUndo" title="Undo (Ctrl+Z)">↶</button>
           <button class="plan-tool-btn" id="planRedo" title="Redo (Ctrl+Y)">↷</button>
           <button class="plan-tool-btn" id="planDelete" title="Delete Selected (Del)">✕</button>
@@ -2420,7 +2434,36 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     </div>
     <div class="modal-foot">
       <button type="button" class="btn modal-close-btn">Close</button>
+  </div>
+</div>
+
+<!-- ══════ MODAL: CALIBRATE FLOOR PLAN IMAGE SCALE ══════ -->
+<div class="orbix-modal" id="modalCalibrateScale">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog" style="max-width:440px;">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Calibrate Plan Scale</h3>
+        <p class="modal-sub">Set the true real-world dimension between your two calibration points</p>
+      </div>
+      <button class="modal-close-btn" type="button" id="closeCalibrateScaleModal">&times;</button>
     </div>
+    <form id="calibrateScaleForm">
+      <div class="modal-body">
+        <div style="background:#F0F7FF;border:1px solid #BAE6FD;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#0369A1;line-height:1.5;">
+          Distance measured on image: <b id="calibratePixelDistSpan">0</b> px (<span id="calibrateCurrentWorldDistSpan">0 mm</span>)
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="calibratePromptLabel">Real-World Dimension *</label>
+          <input type="text" id="calibrateRealDistInput" class="form-input" placeholder="e.g. 3000 mm or 10' 6&quot;" required autofocus>
+          <span style="font-size:11px;color:#64748B;margin-top:4px;display:block;">Type millimeters (e.g. <code>3000</code> or <code>3000mm</code>) or feet/inches (e.g. <code>10'</code> or <code>10' 6"</code> or <code>120"</code>).</span>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn modal-close-btn" id="cancelCalibrateScaleBtn">Cancel</button>
+        <button type="submit" class="btn primary" id="applyCalibrationBtn">Set 1:1 Scale</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -6012,6 +6055,23 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     this.cursorWorld = { x: 0, y: 0 };
     this.numericInputBuffer = '';
 
+    // 2D Measurement Unit System: 'mm' | 'imperial' (feet & inches)
+    this.unitSystem = 'mm';
+
+    // Underlay Floor Plan Image (Blueprint tracing)
+    this.underlay = {
+      img: null,
+      x: 0,
+      y: 0,
+      scale: 10, // mm per image pixel (e.g. 1000px image = 10,000mm home)
+      opacity: 0.45,
+      visible: true,
+      width: 0,
+      height: 0,
+      calibPoints: []
+    };
+    this.onCalibrateRequest = opts.onCalibrateRequest || null;
+
     // History for Undo/Redo
     this.history = [];
     this.historyIndex = -1;
@@ -6022,6 +6082,52 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     this.resize();
     this.render();
   }
+
+  // 2D Unit Formatting: mm or ft & in
+  PlanEditor.prototype.formatDim = function (mm) {
+    if (this.unitSystem === 'imperial') {
+      var totalInches = mm / 25.4;
+      var feet = Math.floor(totalInches / 12);
+      var remInches = Math.round(totalInches % 12);
+      if (remInches === 12) {
+        feet += 1;
+        remInches = 0;
+      }
+      if (feet === 0) return remInches + '"';
+      if (remInches === 0) return feet + '\'';
+      return feet + '\' ' + remInches + '"';
+    }
+    return Math.round(mm).toLocaleString() + ' mm';
+  };
+
+  // Parse user length input in either mm or imperial notation (e.g. 3000, 10', 10' 6", 120", 10ft)
+  PlanEditor.prototype.parseDimInput = function (str) {
+    if (!str) return 0;
+    str = String(str).trim();
+    // Feet & Inches e.g. 10' 6", 10ft 6in, 10'6", 10'
+    var ftInRegex = /^(\d+(?:\.\d+)?)\s*(?:'|ft)\s*(?:(\d+(?:\.\d+)?)\s*(?:"|in)?)?$/i;
+    var match = str.match(ftInRegex);
+    if (match) {
+      var feet = parseFloat(match[1]) || 0;
+      var inches = parseFloat(match[2]) || 0;
+      return Math.round((feet * 12 + inches) * 25.4);
+    }
+    // Pure inches e.g. 120", 120in
+    var inRegex = /^(\d+(?:\.\d+)?)\s*(?:"|in)$/i;
+    var inMatch = str.match(inRegex);
+    if (inMatch) {
+      return Math.round(parseFloat(inMatch[1]) * 25.4);
+    }
+    // Clean numeric or with mm
+    var clean = str.replace(/mm/i, '').trim();
+    var val = parseFloat(clean);
+    if (isNaN(val) || val <= 0) return 0;
+    // If in imperial mode and entered a small number without units (< 50), interpret as feet
+    if (this.unitSystem === 'imperial' && !str.toLowerCase().includes('mm') && val < 50) {
+      return Math.round(val * 304.8);
+    }
+    return Math.round(val);
+  };
 
   PlanEditor.prototype.initDOM = function () {
     this.container.innerHTML = '';
@@ -6093,7 +6199,8 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       var dy = worldPt.y - this.wallChainStart.y;
       var rawDist = Math.sqrt(dx * dx + dy * dy);
       var currentAngle = Math.atan2(dy, dx);
-      var targetDist = (this.numericInputBuffer && parseFloat(this.numericInputBuffer) > 0) ? parseFloat(this.numericInputBuffer) : rawDist;
+      var parsedTypedDist = this.parseDimInput(this.numericInputBuffer);
+      var targetDist = (this.numericInputBuffer && parsedTypedDist > 0) ? parsedTypedDist : rawDist;
 
       // 2a. Perpendicular & Parallel guides relative to existing walls
       for (var j = 0; j < walls.length; j++) {
@@ -6155,10 +6262,10 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       }
 
       // If numericInputBuffer is active on free angle:
-      if (this.numericInputBuffer && parseFloat(this.numericInputBuffer) > 0) {
+      if (this.numericInputBuffer && parsedTypedDist > 0) {
         snapped.x = this.wallChainStart.x + Math.cos(currentAngle) * targetDist;
         snapped.y = this.wallChainStart.y + Math.sin(currentAngle) * targetDist;
-        return { pt: snapped, type: 'typed', label: targetDist + ' mm' };
+        return { pt: snapped, type: 'typed', label: this.formatDim(targetDist) };
       }
     }
 
@@ -6307,6 +6414,16 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
       if (e.button !== 0) return; // Only left-click from here
 
+      // Alt-drag moves floor plan underlay image
+      if (e.altKey && self.underlay && self.underlay.img) {
+        self.dragState = {
+          type: 'move_underlay',
+          startScreen: mouseScreen,
+          origUnderlayPos: { x: self.underlay.x || 0, y: self.underlay.y || 0 }
+        };
+        return;
+      }
+
       if (self.activeTool === 'select') {
         self.handleSelectMouseDown(worldPt, e.shiftKey);
       } else if (self.activeTool === 'wall') {
@@ -6317,6 +6434,8 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         self.handleFurnitureMouseDown(worldPt);
       } else if (self.activeTool === 'split') {
         self.handleSplitMouseDown(worldPt);
+      } else if (self.activeTool === 'calibrate') {
+        self.handleCalibrateMouseDown(worldPt);
       }
     });
 
@@ -6324,6 +6443,15 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       var rect = self.canvas.getBoundingClientRect();
       var mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       self.cursorWorld = self.screenToWorld(mouseScreen);
+
+      if (self.dragState && self.dragState.type === 'move_underlay') {
+        var dxS = mouseScreen.x - self.dragState.startScreen.x;
+        var dyS = mouseScreen.y - self.dragState.startScreen.y;
+        self.underlay.x = self.dragState.origUnderlayPos.x + dxS / self.zoom;
+        self.underlay.y = self.dragState.origUnderlayPos.y + dyS / self.zoom;
+        self.render();
+        return;
+      }
 
       if (self.dragState && self.dragState.type === 'pan') {
         self.pan.x = self.dragState.startPan.x + (mouseScreen.x - self.dragState.startScreen.x);
@@ -6373,7 +6501,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         var w = self.dragState.wall;
         var op = self.dragState.opening;
         var wLen = Core.wallLength(w);
-        var proj = Core.projectPointToSegment(worldPt, w.start, w.end);
+        var proj = Core.projectPointToSegment(self.cursorWorld, w.start, w.end);
         var minO = Math.round(op.width / 2);
         var maxO = Math.max(minO, Math.round(wLen - op.width / 2));
         op.offset = Math.max(minO, Math.min(maxO, Math.round(proj.t * wLen)));
@@ -6383,7 +6511,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       }
 
       // Live drawing render
-      if (self.activeTool === 'wall' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.wallChainStart) {
+      if (self.activeTool === 'wall' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.wallChainStart) {
         self.render();
       }
     });
@@ -6402,6 +6530,21 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     window.addEventListener('keydown', function (e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
+      if (e.key === 'Escape') {
+        if (self.activeTool === 'calibrate') {
+          self.activeTool = 'select';
+          if (self.underlay) self.underlay.calibPoints = [];
+          self.render();
+          return;
+        }
+        if (self.wallChainStart) {
+          self.wallChainStart = null;
+          self.numericInputBuffer = '';
+          self.render();
+          return;
+        }
+      }
+
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         if (e.shiftKey) self.redo(); else self.undo();
@@ -6412,9 +6555,11 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         self.redo();
         return;
       }
-      // 1. Numeric typing for exact wall length (when drawing wall)
+      // 1. Numeric and Imperial typing for exact wall length (when drawing wall)
       if (self.wallChainStart) {
-        if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
+        var validKey = (e.key >= '0' && e.key <= '9') || e.key === '.' || e.key === '\'' || e.key === '"' || e.key === ' ' ||
+          e.key.toLowerCase() === 'f' || e.key.toLowerCase() === 't' || e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'n' || e.key.toLowerCase() === 'm';
+        if (validKey) {
           e.preventDefault();
           self.numericInputBuffer = (self.numericInputBuffer || '') + e.key;
           self.render();
@@ -6428,8 +6573,8 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         }
         if (e.key === 'Enter') {
           e.preventDefault();
-          if (self.numericInputBuffer && parseFloat(self.numericInputBuffer) > 0) {
-            var targetL = parseFloat(self.numericInputBuffer);
+          var targetL = self.parseDimInput(self.numericInputBuffer);
+          if (targetL > 50) {
             var snappedEnd = self.snapPoint(self.cursorWorld);
             var dx = snappedEnd.pt.x - self.wallChainStart.x;
             var dy = snappedEnd.pt.y - self.wallChainStart.y;
@@ -6446,7 +6591,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
                 height: self.wallPreset.height
               });
               self.project.plan.walls.push(newW);
-              self.pushHistory('Draw Wall (' + Math.round(targetL) + 'mm)');
+              self.pushHistory('Draw Wall (' + self.formatDim(targetL) + ')');
               self.wallChainStart = Vec2.clone(exactEndPt);
               self.numericInputBuffer = '';
               self.render();
@@ -6700,6 +6845,27 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     }
   };
 
+  PlanEditor.prototype.handleCalibrateMouseDown = function (worldPt) {
+    if (!this.underlay || !this.underlay.img) {
+      this.activeTool = 'select';
+      this.render();
+      return;
+    }
+    this.underlay.calibPoints = this.underlay.calibPoints || [];
+    this.underlay.calibPoints.push(Vec2.clone(worldPt));
+
+    if (this.underlay.calibPoints.length === 2) {
+      var p1 = this.underlay.calibPoints[0];
+      var p2 = this.underlay.calibPoints[1];
+      var worldDist = Vec2.dist(p1, p2);
+      var pixelDist = Math.max(1, Math.round(worldDist / this.underlay.scale));
+      if (typeof this.onCalibrateRequest === 'function') {
+        this.onCalibrateRequest(pixelDist, worldDist);
+      }
+    }
+    this.render();
+  };
+
   PlanEditor.prototype.getWall = function (id) {
     var walls = this.project.plan.walls;
     for (var i = 0; i < walls.length; i++) {
@@ -6723,6 +6889,17 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
   PlanEditor.prototype.zoomFit = function () {
     var walls = this.project.plan.walls;
     if (!walls.length) {
+      if (this.underlay && this.underlay.img) {
+        var uW = (this.underlay.width || this.underlay.img.naturalWidth || 1000) * (this.underlay.scale || 10);
+        var uH = (this.underlay.height || this.underlay.img.naturalHeight || 1000) * (this.underlay.scale || 10);
+        var sX = (this.width - 120) / uW;
+        var sY = (this.height - 120) / uH;
+        this.zoom = Math.max(0.02, Math.min(0.8, Math.min(sX, sY)));
+        this.pan.x = this.width / 2 - (this.underlay.x || 0) * this.zoom;
+        this.pan.y = this.height / 2 - (this.underlay.y || 0) * this.zoom;
+        this.render();
+        return;
+      }
       this.pan = { x: this.width / 2, y: this.height / 2 };
       this.zoom = 0.12;
       this.render();
@@ -6758,6 +6935,9 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     ctx.fillStyle = '#FBFAF8';
     ctx.fillRect(0, 0, w, h);
 
+    // 0. Floor Plan Underlay Image (tracing overlay)
+    this.renderUnderlay(ctx);
+
     // 1. Grid Lines
     this.renderGrid(ctx);
 
@@ -6775,6 +6955,32 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
     // 6. Active Tool / Drawing Preview
     this.renderPreview(ctx);
+  };
+
+  PlanEditor.prototype.renderUnderlay = function (ctx) {
+    if (!this.underlay || !this.underlay.img || !this.underlay.visible) return;
+    var u = this.underlay;
+    var wMm = (u.width || u.img.naturalWidth || 1000) * (u.scale || 10);
+    var hMm = (u.height || u.img.naturalHeight || 1000) * (u.scale || 10);
+    var halfWMm = wMm / 2;
+    var halfHMm = hMm / 2;
+
+    var topLeft = this.worldToScreen({ x: (u.x || 0) - halfWMm, y: (u.y || 0) - halfHMm });
+    var wPx = wMm * this.zoom;
+    var hPx = hMm * this.zoom;
+
+    ctx.save();
+    ctx.globalAlpha = (u.opacity !== undefined) ? u.opacity : 0.45;
+    try {
+      ctx.drawImage(u.img, topLeft.x, topLeft.y, wPx, hPx);
+    } catch (e) {}
+
+    // Subtle dashed blueprint boundary
+    ctx.strokeStyle = 'rgba(27, 79, 114, 0.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(topLeft.x, topLeft.y, wPx, hPx);
+    ctx.restore();
   };
 
   PlanEditor.prototype.renderGrid = function (ctx) {
@@ -6963,7 +7169,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         ctx.translate(midX, midY);
         ctx.rotate(textAngle);
 
-        var dimText = Math.round(lMm).toLocaleString() + ' mm';
+        var dimText = this.formatDim(lMm);
         ctx.font = isSelected ? '700 11px "IBM Plex Mono", monospace' : '600 10.5px "IBM Plex Mono", monospace';
         var tw = ctx.measureText(dimText).width;
         var th = 16;
@@ -7085,7 +7291,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       ctx.fillStyle = '#1B4F72';
       ctx.font = '600 10px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText((op.type === 'door' ? 'D ' : 'W ') + Math.round(op.width), sCenter.x, sCenter.y - 12);
+      ctx.fillText((op.type === 'door' ? 'D ' : 'W ') + this.formatDim(op.width), sCenter.x, sCenter.y - 12);
     }
   };
 
@@ -7243,7 +7449,9 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         // Floating keyboard input HUD
         ctx.save();
         ctx.font = '700 13px "IBM Plex Mono", monospace';
-        var hudText = '⌨ Length: [ ' + this.numericInputBuffer + ' ] mm  (↵ Enter to draw)';
+        var parsedLen = this.parseDimInput(this.numericInputBuffer);
+        var previewFormatted = parsedLen > 0 ? (' = ' + this.formatDim(parsedLen)) : '';
+        var hudText = '⌨ Length: [ ' + this.numericInputBuffer + ' ]' + previewFormatted + '  (↵ Enter to draw)';
         var htw = ctx.measureText(hudText).width;
         ctx.fillStyle = '#1e3a8a';
         ctx.strokeStyle = '#60a5fa';
@@ -7262,7 +7470,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         // Standard dimension indicator
         ctx.save();
         ctx.font = '600 12px "IBM Plex Mono", monospace';
-        var dText = distMm.toLocaleString() + ' mm';
+        var dText = this.formatDim(distMm);
         var dtw = ctx.measureText(dText).width;
         ctx.fillStyle = 'rgba(27, 79, 114, 0.95)';
         ctx.beginPath();
@@ -7352,6 +7560,74 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       ctx.fillText(this.furniturePreset.name, 0, 0);
 
       ctx.restore();
+    }
+
+    // 5. Calibration Tool preview (2-point reference line & pins)
+    if (this.activeTool === 'calibrate') {
+      var sCur = this.worldToScreen(this.cursorWorld);
+      var pts = (this.underlay && this.underlay.calibPoints) || [];
+
+      if (pts.length >= 1) {
+        var sP1 = this.worldToScreen(pts[0]);
+        // Point 1 pin
+        ctx.save();
+        ctx.strokeStyle = '#dc2626';
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(sP1.x, sP1.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(sP1.x - 14, sP1.y); ctx.lineTo(sP1.x + 14, sP1.y);
+        ctx.moveTo(sP1.x, sP1.y - 14); ctx.lineTo(sP1.x, sP1.y + 14);
+        ctx.stroke();
+
+        // Rubberband line to cursor
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(sP1.x, sP1.y);
+        ctx.lineTo(sCur.x, sCur.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Live span badge
+        var liveDistWorld = Vec2.dist(pts[0], this.cursorWorld);
+        var liveBadgeText = 'Span: ' + this.formatDim(liveDistWorld) + ' (Click Point 2 to Calibrate)';
+        ctx.font = '700 12px "IBM Plex Sans", sans-serif';
+        var lbw = ctx.measureText(liveBadgeText).width;
+        var mx = (sP1.x + sCur.x) / 2;
+        var my = (sP1.y + sCur.y) / 2 - 20;
+        ctx.fillStyle = '#b91c1c';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(mx - lbw / 2 - 10, my - 11, lbw + 20, 22, 4);
+        else ctx.rect(mx - lbw / 2 - 10, my - 11, lbw + 20, 22);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(liveBadgeText, mx, my);
+        ctx.restore();
+      } else {
+        // Point 1 guide badge near cursor
+        ctx.save();
+        ctx.font = '700 12px "IBM Plex Sans", sans-serif';
+        var guideTxt = '📏 Calibration: Click Point 1 on a known wall dimension';
+        var gbw = ctx.measureText(guideTxt).width;
+        ctx.fillStyle = '#1e3a8a';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(sCur.x + 16, sCur.y - 12, gbw + 18, 24, 4);
+        else ctx.rect(sCur.x + 16, sCur.y - 12, gbw + 18, 24);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(guideTxt, sCur.x + 25, sCur.y);
+        ctx.restore();
+      }
     }
   };
 
@@ -7983,6 +8259,9 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         },
         onSelectionChange: function (selected) {
           self.renderInspector(selected);
+        },
+        onCalibrateRequest: function (pixelDist, worldDist) {
+          self.openCalibrateModal(pixelDist, worldDist);
         }
       });
 
@@ -8243,6 +8522,185 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           unitsCsvInput.value = '';
         });
       }
+
+      // ── 2D Unit System Switch (mm ⇄ ft & in) ──
+      var btnUnitToggle = document.getElementById('planUnitToggleBtn');
+      if (btnUnitToggle) {
+        btnUnitToggle.addEventListener('click', function () {
+          if (self.editor.unitSystem === 'mm') {
+            self.editor.unitSystem = 'imperial';
+            btnUnitToggle.innerHTML = '📐 Unit: ft & in';
+            btnUnitToggle.style.color = '#0284c7';
+            btnUnitToggle.style.borderColor = '#0284c7';
+          } else {
+            self.editor.unitSystem = 'mm';
+            btnUnitToggle.innerHTML = '📐 Unit: mm';
+            btnUnitToggle.style.color = '#1B4F72';
+            btnUnitToggle.style.borderColor = '#1B4F72';
+          }
+          self.editor.render();
+          self.renderInspector(self.editor.selected);
+        });
+      }
+
+      // ── Import Floor Plan Image Underlay ──
+      var btnImportImg = document.getElementById('planImportImageBtn');
+      var planImgInput = document.getElementById('planImageFileInput');
+      if (btnImportImg && planImgInput) {
+        btnImportImg.addEventListener('click', function () {
+          planImgInput.click();
+        });
+        planImgInput.addEventListener('change', function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            var img = new Image();
+            img.onload = function () {
+              self.editor.underlay.img = img;
+              self.editor.underlay.width = img.naturalWidth;
+              self.editor.underlay.height = img.naturalHeight;
+              self.editor.underlay.scale = 10; // Default: 10 mm per pixel (1000px = 10m)
+              self.editor.underlay.x = 0;
+              self.editor.underlay.y = 0;
+              self.editor.underlay.visible = true;
+              self.editor.underlay.opacity = 0.45;
+              self.editor.underlay.calibPoints = [];
+
+              var controls = document.getElementById('planUnderlayControls');
+              if (controls) controls.style.display = 'inline-flex';
+
+              var opSlider = document.getElementById('planUnderlayOpacity');
+              if (opSlider) opSlider.value = '0.45';
+
+              self.editor.zoomFit();
+              self.editor.render();
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+          planImgInput.value = '';
+        });
+      }
+
+      // ── Underlay Controls (Calibrate, Opacity, Toggle, Remove) ──
+      var btnCalib = document.getElementById('planCalibrateScaleBtn');
+      if (btnCalib) {
+        btnCalib.addEventListener('click', function () {
+          if (!self.editor.underlay || !self.editor.underlay.img) {
+            alert('Please import a floor plan image first before calibrating.');
+            return;
+          }
+          self.editor.activeTool = 'calibrate';
+          self.editor.underlay.calibPoints = [];
+          var toolBtns = document.querySelectorAll('.plan-tool-btn');
+          toolBtns.forEach(function (b) { b.classList.remove('is-active'); });
+          btnCalib.classList.add('is-active');
+          self.editor.render();
+        });
+      }
+
+      var opSlider = document.getElementById('planUnderlayOpacity');
+      if (opSlider) {
+        opSlider.addEventListener('input', function (e) {
+          if (self.editor.underlay) {
+            self.editor.underlay.opacity = parseFloat(e.target.value);
+            self.editor.render();
+          }
+        });
+      }
+
+      var btnToggleUnderlay = document.getElementById('planToggleUnderlayBtn');
+      if (btnToggleUnderlay) {
+        btnToggleUnderlay.addEventListener('click', function () {
+          if (self.editor.underlay) {
+            self.editor.underlay.visible = !self.editor.underlay.visible;
+            btnToggleUnderlay.textContent = self.editor.underlay.visible ? '👁 Show' : '👁‍🗨 Hide';
+            self.editor.render();
+          }
+        });
+      }
+
+      var btnRemoveUnderlay = document.getElementById('planRemoveUnderlayBtn');
+      if (btnRemoveUnderlay) {
+        btnRemoveUnderlay.addEventListener('click', function () {
+          if (confirm('Remove the imported floor plan background image?')) {
+            if (self.editor.underlay) {
+              self.editor.underlay.img = null;
+              self.editor.underlay.calibPoints = [];
+            }
+            if (self.editor.activeTool === 'calibrate') {
+              self.editor.activeTool = 'select';
+              var selBtn = document.querySelector('.plan-tool-btn[data-tool="select"]');
+              if (selBtn) {
+                document.querySelectorAll('.plan-tool-btn').forEach(function (b) { b.classList.remove('is-active'); });
+                selBtn.classList.add('is-active');
+              }
+            }
+            var controls = document.getElementById('planUnderlayControls');
+            if (controls) controls.style.display = 'none';
+            self.editor.render();
+          }
+        });
+      }
+
+      // ── Calibrate Scale Modal Form Submission ──
+      var calibForm = document.getElementById('calibrateScaleForm');
+      if (calibForm) {
+        calibForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var input = document.getElementById('calibrateRealDistInput');
+          var realMm = self.editor.parseDimInput(input.value);
+          var pxSpan = document.getElementById('calibratePixelDistSpan');
+          var pixelDist = parseFloat(pxSpan ? pxSpan.textContent : '0');
+
+          if (realMm > 50 && pixelDist > 0) {
+            var newScale = realMm / pixelDist;
+            self.editor.underlay.scale = newScale;
+            self.closeCalibrateModal();
+            self.editor.zoomFit();
+            self.editor.render();
+          } else {
+            alert('Please enter a valid real dimension (e.g. 3000 mm or 10\').');
+          }
+        });
+      }
+
+      var closeCalibBtn = document.getElementById('closeCalibrateScaleModal');
+      var cancelCalibBtn = document.getElementById('cancelCalibrateScaleBtn');
+      if (closeCalibBtn) closeCalibBtn.addEventListener('click', function () { self.closeCalibrateModal(); });
+      if (cancelCalibBtn) cancelCalibBtn.addEventListener('click', function () { self.closeCalibrateModal(); });
+    },
+
+    openCalibrateModal: function (pixelDist, worldDist) {
+      var modal = document.getElementById('modalCalibrateScale');
+      if (!modal) return;
+      var pxSpan = document.getElementById('calibratePixelDistSpan');
+      if (pxSpan) pxSpan.textContent = pixelDist;
+      var worldSpan = document.getElementById('calibrateCurrentWorldDistSpan');
+      if (worldSpan) worldSpan.textContent = this.editor.formatDim(worldDist);
+
+      var input = document.getElementById('calibrateRealDistInput');
+      if (input) {
+        input.value = this.editor.unitSystem === 'imperial' ? '10\'' : Math.round(worldDist || 3000);
+        setTimeout(function () { input.select(); }, 50);
+      }
+      modal.classList.add('is-open');
+    },
+
+    closeCalibrateModal: function () {
+      var modal = document.getElementById('modalCalibrateScale');
+      if (modal) modal.classList.remove('is-open');
+      if (this.editor.activeTool === 'calibrate') {
+        this.editor.activeTool = 'select';
+        if (this.editor.underlay) this.editor.underlay.calibPoints = [];
+        var selBtn = document.querySelector('.plan-tool-btn[data-tool="select"]');
+        if (selBtn) {
+          document.querySelectorAll('.plan-tool-btn').forEach(function (b) { b.classList.remove('is-active'); });
+          selBtn.classList.add('is-active');
+        }
+        this.editor.render();
+      }
     },
 
     loadSampleHome: function () {
@@ -8412,21 +8870,24 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         var w = this.editor.getWall(sel.id);
         if (!w) return;
         var lenMm = Math.round(Core.wallLength(w));
+        var lenDisplay = self.editor.formatDim(lenMm);
         panel.innerHTML =
           '<div class="insp-title">Wall Properties</div>' +
-          '<div class="insp-row"><label>Length (mm)</label><input type="number" id="inspWallLen" value="' + lenMm + '" step="50"></div>' +
+          '<div class="insp-row"><label>Length ' + (self.editor.unitSystem === 'imperial' ? '(ft/in or mm)' : '(mm)') + '</label><input type="text" id="inspWallLen" value="' + (self.editor.unitSystem === 'imperial' ? lenDisplay : lenMm) + '">' +
+          '<span style="font-size:11px;color:#64748B;">Current: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
 
         document.getElementById('inspWallLen').addEventListener('change', function (e) {
-          var targetL = parseFloat(e.target.value);
+          var targetL = self.editor.parseDimInput(e.target.value);
           if (targetL > 100) {
             var dir = Core.wallDirection(w);
             w.end.x = w.start.x + dir.x * targetL;
             w.end.y = w.start.y + dir.y * targetL;
             self.editor.pushHistory('Resize Wall');
             self.editor.render();
+            self.renderInspector(self.editor.selected);
           }
         });
         document.getElementById('inspWallThick').addEventListener('change', function (e) {

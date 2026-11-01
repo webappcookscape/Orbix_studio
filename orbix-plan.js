@@ -41,6 +41,23 @@
     this.cursorWorld = { x: 0, y: 0 };
     this.numericInputBuffer = '';
 
+    // 2D Measurement Unit System: 'mm' | 'imperial' (feet & inches)
+    this.unitSystem = 'mm';
+
+    // Underlay Floor Plan Image (Blueprint tracing)
+    this.underlay = {
+      img: null,
+      x: 0,
+      y: 0,
+      scale: 10, // mm per image pixel (e.g. 1000px image = 10,000mm home)
+      opacity: 0.45,
+      visible: true,
+      width: 0,
+      height: 0,
+      calibPoints: []
+    };
+    this.onCalibrateRequest = opts.onCalibrateRequest || null;
+
     // History for Undo/Redo
     this.history = [];
     this.historyIndex = -1;
@@ -51,6 +68,52 @@
     this.resize();
     this.render();
   }
+
+  // 2D Unit Formatting: mm or ft & in
+  PlanEditor.prototype.formatDim = function (mm) {
+    if (this.unitSystem === 'imperial') {
+      var totalInches = mm / 25.4;
+      var feet = Math.floor(totalInches / 12);
+      var remInches = Math.round(totalInches % 12);
+      if (remInches === 12) {
+        feet += 1;
+        remInches = 0;
+      }
+      if (feet === 0) return remInches + '"';
+      if (remInches === 0) return feet + '\'';
+      return feet + '\' ' + remInches + '"';
+    }
+    return Math.round(mm).toLocaleString() + ' mm';
+  };
+
+  // Parse user length input in either mm or imperial notation (e.g. 3000, 10', 10' 6", 120", 10ft)
+  PlanEditor.prototype.parseDimInput = function (str) {
+    if (!str) return 0;
+    str = String(str).trim();
+    // Feet & Inches e.g. 10' 6", 10ft 6in, 10'6", 10'
+    var ftInRegex = /^(\d+(?:\.\d+)?)\s*(?:'|ft)\s*(?:(\d+(?:\.\d+)?)\s*(?:"|in)?)?$/i;
+    var match = str.match(ftInRegex);
+    if (match) {
+      var feet = parseFloat(match[1]) || 0;
+      var inches = parseFloat(match[2]) || 0;
+      return Math.round((feet * 12 + inches) * 25.4);
+    }
+    // Pure inches e.g. 120", 120in
+    var inRegex = /^(\d+(?:\.\d+)?)\s*(?:"|in)$/i;
+    var inMatch = str.match(inRegex);
+    if (inMatch) {
+      return Math.round(parseFloat(inMatch[1]) * 25.4);
+    }
+    // Clean numeric or with mm
+    var clean = str.replace(/mm/i, '').trim();
+    var val = parseFloat(clean);
+    if (isNaN(val) || val <= 0) return 0;
+    // If in imperial mode and entered a small number without units (< 50), interpret as feet
+    if (this.unitSystem === 'imperial' && !str.toLowerCase().includes('mm') && val < 50) {
+      return Math.round(val * 304.8);
+    }
+    return Math.round(val);
+  };
 
   PlanEditor.prototype.initDOM = function () {
     this.container.innerHTML = '';
@@ -122,7 +185,8 @@
       var dy = worldPt.y - this.wallChainStart.y;
       var rawDist = Math.sqrt(dx * dx + dy * dy);
       var currentAngle = Math.atan2(dy, dx);
-      var targetDist = (this.numericInputBuffer && parseFloat(this.numericInputBuffer) > 0) ? parseFloat(this.numericInputBuffer) : rawDist;
+      var parsedTypedDist = this.parseDimInput(this.numericInputBuffer);
+      var targetDist = (this.numericInputBuffer && parsedTypedDist > 0) ? parsedTypedDist : rawDist;
 
       // 2a. Perpendicular & Parallel guides relative to existing walls
       for (var j = 0; j < walls.length; j++) {
@@ -184,10 +248,10 @@
       }
 
       // If numericInputBuffer is active on free angle:
-      if (this.numericInputBuffer && parseFloat(this.numericInputBuffer) > 0) {
+      if (this.numericInputBuffer && parsedTypedDist > 0) {
         snapped.x = this.wallChainStart.x + Math.cos(currentAngle) * targetDist;
         snapped.y = this.wallChainStart.y + Math.sin(currentAngle) * targetDist;
-        return { pt: snapped, type: 'typed', label: targetDist + ' mm' };
+        return { pt: snapped, type: 'typed', label: this.formatDim(targetDist) };
       }
     }
 
@@ -336,6 +400,16 @@
 
       if (e.button !== 0) return; // Only left-click from here
 
+      // Alt-drag moves floor plan underlay image
+      if (e.altKey && self.underlay && self.underlay.img) {
+        self.dragState = {
+          type: 'move_underlay',
+          startScreen: mouseScreen,
+          origUnderlayPos: { x: self.underlay.x || 0, y: self.underlay.y || 0 }
+        };
+        return;
+      }
+
       if (self.activeTool === 'select') {
         self.handleSelectMouseDown(worldPt, e.shiftKey);
       } else if (self.activeTool === 'wall') {
@@ -346,6 +420,8 @@
         self.handleFurnitureMouseDown(worldPt);
       } else if (self.activeTool === 'split') {
         self.handleSplitMouseDown(worldPt);
+      } else if (self.activeTool === 'calibrate') {
+        self.handleCalibrateMouseDown(worldPt);
       }
     });
 
@@ -353,6 +429,15 @@
       var rect = self.canvas.getBoundingClientRect();
       var mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       self.cursorWorld = self.screenToWorld(mouseScreen);
+
+      if (self.dragState && self.dragState.type === 'move_underlay') {
+        var dxS = mouseScreen.x - self.dragState.startScreen.x;
+        var dyS = mouseScreen.y - self.dragState.startScreen.y;
+        self.underlay.x = self.dragState.origUnderlayPos.x + dxS / self.zoom;
+        self.underlay.y = self.dragState.origUnderlayPos.y + dyS / self.zoom;
+        self.render();
+        return;
+      }
 
       if (self.dragState && self.dragState.type === 'pan') {
         self.pan.x = self.dragState.startPan.x + (mouseScreen.x - self.dragState.startScreen.x);
@@ -402,7 +487,7 @@
         var w = self.dragState.wall;
         var op = self.dragState.opening;
         var wLen = Core.wallLength(w);
-        var proj = Core.projectPointToSegment(worldPt, w.start, w.end);
+        var proj = Core.projectPointToSegment(self.cursorWorld, w.start, w.end);
         var minO = Math.round(op.width / 2);
         var maxO = Math.max(minO, Math.round(wLen - op.width / 2));
         op.offset = Math.max(minO, Math.min(maxO, Math.round(proj.t * wLen)));
@@ -412,7 +497,7 @@
       }
 
       // Live drawing render
-      if (self.activeTool === 'wall' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.wallChainStart) {
+      if (self.activeTool === 'wall' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.wallChainStart) {
         self.render();
       }
     });
@@ -431,6 +516,21 @@
     window.addEventListener('keydown', function (e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
+      if (e.key === 'Escape') {
+        if (self.activeTool === 'calibrate') {
+          self.activeTool = 'select';
+          if (self.underlay) self.underlay.calibPoints = [];
+          self.render();
+          return;
+        }
+        if (self.wallChainStart) {
+          self.wallChainStart = null;
+          self.numericInputBuffer = '';
+          self.render();
+          return;
+        }
+      }
+
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         if (e.shiftKey) self.redo(); else self.undo();
@@ -441,9 +541,11 @@
         self.redo();
         return;
       }
-      // 1. Numeric typing for exact wall length (when drawing wall)
+      // 1. Numeric and Imperial typing for exact wall length (when drawing wall)
       if (self.wallChainStart) {
-        if ((e.key >= '0' && e.key <= '9') || e.key === '.') {
+        var validKey = (e.key >= '0' && e.key <= '9') || e.key === '.' || e.key === '\'' || e.key === '"' || e.key === ' ' ||
+          e.key.toLowerCase() === 'f' || e.key.toLowerCase() === 't' || e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'n' || e.key.toLowerCase() === 'm';
+        if (validKey) {
           e.preventDefault();
           self.numericInputBuffer = (self.numericInputBuffer || '') + e.key;
           self.render();
@@ -457,8 +559,8 @@
         }
         if (e.key === 'Enter') {
           e.preventDefault();
-          if (self.numericInputBuffer && parseFloat(self.numericInputBuffer) > 0) {
-            var targetL = parseFloat(self.numericInputBuffer);
+          var targetL = self.parseDimInput(self.numericInputBuffer);
+          if (targetL > 50) {
             var snappedEnd = self.snapPoint(self.cursorWorld);
             var dx = snappedEnd.pt.x - self.wallChainStart.x;
             var dy = snappedEnd.pt.y - self.wallChainStart.y;
@@ -475,7 +577,7 @@
                 height: self.wallPreset.height
               });
               self.project.plan.walls.push(newW);
-              self.pushHistory('Draw Wall (' + Math.round(targetL) + 'mm)');
+              self.pushHistory('Draw Wall (' + self.formatDim(targetL) + ')');
               self.wallChainStart = Vec2.clone(exactEndPt);
               self.numericInputBuffer = '';
               self.render();
@@ -729,6 +831,27 @@
     }
   };
 
+  PlanEditor.prototype.handleCalibrateMouseDown = function (worldPt) {
+    if (!this.underlay || !this.underlay.img) {
+      this.activeTool = 'select';
+      this.render();
+      return;
+    }
+    this.underlay.calibPoints = this.underlay.calibPoints || [];
+    this.underlay.calibPoints.push(Vec2.clone(worldPt));
+
+    if (this.underlay.calibPoints.length === 2) {
+      var p1 = this.underlay.calibPoints[0];
+      var p2 = this.underlay.calibPoints[1];
+      var worldDist = Vec2.dist(p1, p2);
+      var pixelDist = Math.max(1, Math.round(worldDist / this.underlay.scale));
+      if (typeof this.onCalibrateRequest === 'function') {
+        this.onCalibrateRequest(pixelDist, worldDist);
+      }
+    }
+    this.render();
+  };
+
   PlanEditor.prototype.getWall = function (id) {
     var walls = this.project.plan.walls;
     for (var i = 0; i < walls.length; i++) {
@@ -752,6 +875,17 @@
   PlanEditor.prototype.zoomFit = function () {
     var walls = this.project.plan.walls;
     if (!walls.length) {
+      if (this.underlay && this.underlay.img) {
+        var uW = (this.underlay.width || this.underlay.img.naturalWidth || 1000) * (this.underlay.scale || 10);
+        var uH = (this.underlay.height || this.underlay.img.naturalHeight || 1000) * (this.underlay.scale || 10);
+        var sX = (this.width - 120) / uW;
+        var sY = (this.height - 120) / uH;
+        this.zoom = Math.max(0.02, Math.min(0.8, Math.min(sX, sY)));
+        this.pan.x = this.width / 2 - (this.underlay.x || 0) * this.zoom;
+        this.pan.y = this.height / 2 - (this.underlay.y || 0) * this.zoom;
+        this.render();
+        return;
+      }
       this.pan = { x: this.width / 2, y: this.height / 2 };
       this.zoom = 0.12;
       this.render();
@@ -787,6 +921,9 @@
     ctx.fillStyle = '#FBFAF8';
     ctx.fillRect(0, 0, w, h);
 
+    // 0. Floor Plan Underlay Image (tracing overlay)
+    this.renderUnderlay(ctx);
+
     // 1. Grid Lines
     this.renderGrid(ctx);
 
@@ -804,6 +941,32 @@
 
     // 6. Active Tool / Drawing Preview
     this.renderPreview(ctx);
+  };
+
+  PlanEditor.prototype.renderUnderlay = function (ctx) {
+    if (!this.underlay || !this.underlay.img || !this.underlay.visible) return;
+    var u = this.underlay;
+    var wMm = (u.width || u.img.naturalWidth || 1000) * (u.scale || 10);
+    var hMm = (u.height || u.img.naturalHeight || 1000) * (u.scale || 10);
+    var halfWMm = wMm / 2;
+    var halfHMm = hMm / 2;
+
+    var topLeft = this.worldToScreen({ x: (u.x || 0) - halfWMm, y: (u.y || 0) - halfHMm });
+    var wPx = wMm * this.zoom;
+    var hPx = hMm * this.zoom;
+
+    ctx.save();
+    ctx.globalAlpha = (u.opacity !== undefined) ? u.opacity : 0.45;
+    try {
+      ctx.drawImage(u.img, topLeft.x, topLeft.y, wPx, hPx);
+    } catch (e) {}
+
+    // Subtle dashed blueprint boundary
+    ctx.strokeStyle = 'rgba(27, 79, 114, 0.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(topLeft.x, topLeft.y, wPx, hPx);
+    ctx.restore();
   };
 
   PlanEditor.prototype.renderGrid = function (ctx) {
@@ -992,7 +1155,7 @@
         ctx.translate(midX, midY);
         ctx.rotate(textAngle);
 
-        var dimText = Math.round(lMm).toLocaleString() + ' mm';
+        var dimText = this.formatDim(lMm);
         ctx.font = isSelected ? '700 11px "IBM Plex Mono", monospace' : '600 10.5px "IBM Plex Mono", monospace';
         var tw = ctx.measureText(dimText).width;
         var th = 16;
@@ -1114,7 +1277,7 @@
       ctx.fillStyle = '#1B4F72';
       ctx.font = '600 10px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText((op.type === 'door' ? 'D ' : 'W ') + Math.round(op.width), sCenter.x, sCenter.y - 12);
+      ctx.fillText((op.type === 'door' ? 'D ' : 'W ') + this.formatDim(op.width), sCenter.x, sCenter.y - 12);
     }
   };
 
@@ -1272,7 +1435,9 @@
         // Floating keyboard input HUD
         ctx.save();
         ctx.font = '700 13px "IBM Plex Mono", monospace';
-        var hudText = '⌨ Length: [ ' + this.numericInputBuffer + ' ] mm  (↵ Enter to draw)';
+        var parsedLen = this.parseDimInput(this.numericInputBuffer);
+        var previewFormatted = parsedLen > 0 ? (' = ' + this.formatDim(parsedLen)) : '';
+        var hudText = '⌨ Length: [ ' + this.numericInputBuffer + ' ]' + previewFormatted + '  (↵ Enter to draw)';
         var htw = ctx.measureText(hudText).width;
         ctx.fillStyle = '#1e3a8a';
         ctx.strokeStyle = '#60a5fa';
@@ -1291,7 +1456,7 @@
         // Standard dimension indicator
         ctx.save();
         ctx.font = '600 12px "IBM Plex Mono", monospace';
-        var dText = distMm.toLocaleString() + ' mm';
+        var dText = this.formatDim(distMm);
         var dtw = ctx.measureText(dText).width;
         ctx.fillStyle = 'rgba(27, 79, 114, 0.95)';
         ctx.beginPath();
@@ -1381,6 +1546,74 @@
       ctx.fillText(this.furniturePreset.name, 0, 0);
 
       ctx.restore();
+    }
+
+    // 5. Calibration Tool preview (2-point reference line & pins)
+    if (this.activeTool === 'calibrate') {
+      var sCur = this.worldToScreen(this.cursorWorld);
+      var pts = (this.underlay && this.underlay.calibPoints) || [];
+
+      if (pts.length >= 1) {
+        var sP1 = this.worldToScreen(pts[0]);
+        // Point 1 pin
+        ctx.save();
+        ctx.strokeStyle = '#dc2626';
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(sP1.x, sP1.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(sP1.x - 14, sP1.y); ctx.lineTo(sP1.x + 14, sP1.y);
+        ctx.moveTo(sP1.x, sP1.y - 14); ctx.lineTo(sP1.x, sP1.y + 14);
+        ctx.stroke();
+
+        // Rubberband line to cursor
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(sP1.x, sP1.y);
+        ctx.lineTo(sCur.x, sCur.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Live span badge
+        var liveDistWorld = Vec2.dist(pts[0], this.cursorWorld);
+        var liveBadgeText = 'Span: ' + this.formatDim(liveDistWorld) + ' (Click Point 2 to Calibrate)';
+        ctx.font = '700 12px "IBM Plex Sans", sans-serif';
+        var lbw = ctx.measureText(liveBadgeText).width;
+        var mx = (sP1.x + sCur.x) / 2;
+        var my = (sP1.y + sCur.y) / 2 - 20;
+        ctx.fillStyle = '#b91c1c';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(mx - lbw / 2 - 10, my - 11, lbw + 20, 22, 4);
+        else ctx.rect(mx - lbw / 2 - 10, my - 11, lbw + 20, 22);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(liveBadgeText, mx, my);
+        ctx.restore();
+      } else {
+        // Point 1 guide badge near cursor
+        ctx.save();
+        ctx.font = '700 12px "IBM Plex Sans", sans-serif';
+        var guideTxt = '📏 Calibration: Click Point 1 on a known wall dimension';
+        var gbw = ctx.measureText(guideTxt).width;
+        ctx.fillStyle = '#1e3a8a';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(sCur.x + 16, sCur.y - 12, gbw + 18, 24, 4);
+        else ctx.rect(sCur.x + 16, sCur.y - 12, gbw + 18, 24);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(guideTxt, sCur.x + 25, sCur.y);
+        ctx.restore();
+      }
     }
   };
 

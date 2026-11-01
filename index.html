@@ -453,7 +453,21 @@
           <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">Split</button>
         </div>
 
-        <div class="plan-toolgroup">
+          <button class="plan-tool-btn" id="planUnitToggleBtn" style="font-weight:700;color:#1B4F72;border-color:#1B4F72;" title="Switch 2D measurement unit between Millimeters (mm) and Feet & Inches (ft-in)">📐 Unit: mm</button>
+          <button class="plan-tool-btn" id="planImportImageBtn" title="Import floor plan image (PNG, JPG, WEBP) to trace walls">🖼 Import Plan</button>
+          <input type="file" id="planImageFileInput" accept="image/png,image/jpeg,image/webp" hidden>
+
+          <div class="plan-toolgroup" id="planUnderlayControls" style="display:none;align-items:center;gap:6px;padding:2px 8px;background:#eef5fb;border:1px solid #c2dbf0;border-radius:4px;">
+            <span style="font-size:11px;font-weight:700;color:#1B4F72;">Plan Image:</span>
+            <button class="plan-tool-btn" id="planCalibrateScaleBtn" style="padding:4px 8px;font-size:11px;background:#1B4F72;color:#fff;border-color:#1B4F72;" title="Calibrate Scale: Click 2 points on a known wall dimension">📏 Calibrate</button>
+            <label style="font-size:11px;color:#333;display:inline-flex;align-items:center;gap:3px;" title="Adjust Image Opacity">
+              Opacity
+              <input type="range" id="planUnderlayOpacity" min="0.1" max="1" step="0.05" value="0.45" style="width:50px;cursor:pointer;">
+            </label>
+            <button class="plan-tool-btn" id="planToggleUnderlayBtn" style="padding:4px 8px;font-size:11px;" title="Show / Hide Background Plan Image">👁 Show</button>
+            <button class="plan-tool-btn" id="planRemoveUnderlayBtn" style="padding:4px 8px;font-size:11px;color:#d9534f;" title="Remove Background Plan Image">✕</button>
+          </div>
+
           <button class="plan-tool-btn" id="planUndo" title="Undo (Ctrl+Z)">↶</button>
           <button class="plan-tool-btn" id="planRedo" title="Redo (Ctrl+Y)">↷</button>
           <button class="plan-tool-btn" id="planDelete" title="Delete Selected (Del)">✕</button>
@@ -806,7 +820,36 @@
     </div>
     <div class="modal-foot">
       <button type="button" class="btn modal-close-btn">Close</button>
+  </div>
+</div>
+
+<!-- ══════ MODAL: CALIBRATE FLOOR PLAN IMAGE SCALE ══════ -->
+<div class="orbix-modal" id="modalCalibrateScale">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog" style="max-width:440px;">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Calibrate Plan Scale</h3>
+        <p class="modal-sub">Set the true real-world dimension between your two calibration points</p>
+      </div>
+      <button class="modal-close-btn" type="button" id="closeCalibrateScaleModal">&times;</button>
     </div>
+    <form id="calibrateScaleForm">
+      <div class="modal-body">
+        <div style="background:#F0F7FF;border:1px solid #BAE6FD;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#0369A1;line-height:1.5;">
+          Distance measured on image: <b id="calibratePixelDistSpan">0</b> px (<span id="calibrateCurrentWorldDistSpan">0 mm</span>)
+        </div>
+        <div class="form-group">
+          <label class="form-label" id="calibratePromptLabel">Real-World Dimension *</label>
+          <input type="text" id="calibrateRealDistInput" class="form-input" placeholder="e.g. 3000 mm or 10' 6&quot;" required autofocus>
+          <span style="font-size:11px;color:#64748B;margin-top:4px;display:block;">Type millimeters (e.g. <code>3000</code> or <code>3000mm</code>) or feet/inches (e.g. <code>10'</code> or <code>10' 6"</code> or <code>120"</code>).</span>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn modal-close-btn" id="cancelCalibrateScaleBtn">Cancel</button>
+        <button type="submit" class="btn primary" id="applyCalibrationBtn">Set 1:1 Scale</button>
+      </div>
+    </form>
   </div>
 </div>
 

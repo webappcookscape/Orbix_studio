@@ -36,6 +36,9 @@
         },
         onSelectionChange: function (selected) {
           self.renderInspector(selected);
+        },
+        onCalibrateRequest: function (pixelDist, worldDist) {
+          self.openCalibrateModal(pixelDist, worldDist);
         }
       });
 
@@ -296,6 +299,185 @@
           unitsCsvInput.value = '';
         });
       }
+
+      // ── 2D Unit System Switch (mm ⇄ ft & in) ──
+      var btnUnitToggle = document.getElementById('planUnitToggleBtn');
+      if (btnUnitToggle) {
+        btnUnitToggle.addEventListener('click', function () {
+          if (self.editor.unitSystem === 'mm') {
+            self.editor.unitSystem = 'imperial';
+            btnUnitToggle.innerHTML = '📐 Unit: ft & in';
+            btnUnitToggle.style.color = '#0284c7';
+            btnUnitToggle.style.borderColor = '#0284c7';
+          } else {
+            self.editor.unitSystem = 'mm';
+            btnUnitToggle.innerHTML = '📐 Unit: mm';
+            btnUnitToggle.style.color = '#1B4F72';
+            btnUnitToggle.style.borderColor = '#1B4F72';
+          }
+          self.editor.render();
+          self.renderInspector(self.editor.selected);
+        });
+      }
+
+      // ── Import Floor Plan Image Underlay ──
+      var btnImportImg = document.getElementById('planImportImageBtn');
+      var planImgInput = document.getElementById('planImageFileInput');
+      if (btnImportImg && planImgInput) {
+        btnImportImg.addEventListener('click', function () {
+          planImgInput.click();
+        });
+        planImgInput.addEventListener('change', function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            var img = new Image();
+            img.onload = function () {
+              self.editor.underlay.img = img;
+              self.editor.underlay.width = img.naturalWidth;
+              self.editor.underlay.height = img.naturalHeight;
+              self.editor.underlay.scale = 10; // Default: 10 mm per pixel (1000px = 10m)
+              self.editor.underlay.x = 0;
+              self.editor.underlay.y = 0;
+              self.editor.underlay.visible = true;
+              self.editor.underlay.opacity = 0.45;
+              self.editor.underlay.calibPoints = [];
+
+              var controls = document.getElementById('planUnderlayControls');
+              if (controls) controls.style.display = 'inline-flex';
+
+              var opSlider = document.getElementById('planUnderlayOpacity');
+              if (opSlider) opSlider.value = '0.45';
+
+              self.editor.zoomFit();
+              self.editor.render();
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+          planImgInput.value = '';
+        });
+      }
+
+      // ── Underlay Controls (Calibrate, Opacity, Toggle, Remove) ──
+      var btnCalib = document.getElementById('planCalibrateScaleBtn');
+      if (btnCalib) {
+        btnCalib.addEventListener('click', function () {
+          if (!self.editor.underlay || !self.editor.underlay.img) {
+            alert('Please import a floor plan image first before calibrating.');
+            return;
+          }
+          self.editor.activeTool = 'calibrate';
+          self.editor.underlay.calibPoints = [];
+          var toolBtns = document.querySelectorAll('.plan-tool-btn');
+          toolBtns.forEach(function (b) { b.classList.remove('is-active'); });
+          btnCalib.classList.add('is-active');
+          self.editor.render();
+        });
+      }
+
+      var opSlider = document.getElementById('planUnderlayOpacity');
+      if (opSlider) {
+        opSlider.addEventListener('input', function (e) {
+          if (self.editor.underlay) {
+            self.editor.underlay.opacity = parseFloat(e.target.value);
+            self.editor.render();
+          }
+        });
+      }
+
+      var btnToggleUnderlay = document.getElementById('planToggleUnderlayBtn');
+      if (btnToggleUnderlay) {
+        btnToggleUnderlay.addEventListener('click', function () {
+          if (self.editor.underlay) {
+            self.editor.underlay.visible = !self.editor.underlay.visible;
+            btnToggleUnderlay.textContent = self.editor.underlay.visible ? '👁 Show' : '👁‍🗨 Hide';
+            self.editor.render();
+          }
+        });
+      }
+
+      var btnRemoveUnderlay = document.getElementById('planRemoveUnderlayBtn');
+      if (btnRemoveUnderlay) {
+        btnRemoveUnderlay.addEventListener('click', function () {
+          if (confirm('Remove the imported floor plan background image?')) {
+            if (self.editor.underlay) {
+              self.editor.underlay.img = null;
+              self.editor.underlay.calibPoints = [];
+            }
+            if (self.editor.activeTool === 'calibrate') {
+              self.editor.activeTool = 'select';
+              var selBtn = document.querySelector('.plan-tool-btn[data-tool="select"]');
+              if (selBtn) {
+                document.querySelectorAll('.plan-tool-btn').forEach(function (b) { b.classList.remove('is-active'); });
+                selBtn.classList.add('is-active');
+              }
+            }
+            var controls = document.getElementById('planUnderlayControls');
+            if (controls) controls.style.display = 'none';
+            self.editor.render();
+          }
+        });
+      }
+
+      // ── Calibrate Scale Modal Form Submission ──
+      var calibForm = document.getElementById('calibrateScaleForm');
+      if (calibForm) {
+        calibForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var input = document.getElementById('calibrateRealDistInput');
+          var realMm = self.editor.parseDimInput(input.value);
+          var pxSpan = document.getElementById('calibratePixelDistSpan');
+          var pixelDist = parseFloat(pxSpan ? pxSpan.textContent : '0');
+
+          if (realMm > 50 && pixelDist > 0) {
+            var newScale = realMm / pixelDist;
+            self.editor.underlay.scale = newScale;
+            self.closeCalibrateModal();
+            self.editor.zoomFit();
+            self.editor.render();
+          } else {
+            alert('Please enter a valid real dimension (e.g. 3000 mm or 10\').');
+          }
+        });
+      }
+
+      var closeCalibBtn = document.getElementById('closeCalibrateScaleModal');
+      var cancelCalibBtn = document.getElementById('cancelCalibrateScaleBtn');
+      if (closeCalibBtn) closeCalibBtn.addEventListener('click', function () { self.closeCalibrateModal(); });
+      if (cancelCalibBtn) cancelCalibBtn.addEventListener('click', function () { self.closeCalibrateModal(); });
+    },
+
+    openCalibrateModal: function (pixelDist, worldDist) {
+      var modal = document.getElementById('modalCalibrateScale');
+      if (!modal) return;
+      var pxSpan = document.getElementById('calibratePixelDistSpan');
+      if (pxSpan) pxSpan.textContent = pixelDist;
+      var worldSpan = document.getElementById('calibrateCurrentWorldDistSpan');
+      if (worldSpan) worldSpan.textContent = this.editor.formatDim(worldDist);
+
+      var input = document.getElementById('calibrateRealDistInput');
+      if (input) {
+        input.value = this.editor.unitSystem === 'imperial' ? '10\'' : Math.round(worldDist || 3000);
+        setTimeout(function () { input.select(); }, 50);
+      }
+      modal.classList.add('is-open');
+    },
+
+    closeCalibrateModal: function () {
+      var modal = document.getElementById('modalCalibrateScale');
+      if (modal) modal.classList.remove('is-open');
+      if (this.editor.activeTool === 'calibrate') {
+        this.editor.activeTool = 'select';
+        if (this.editor.underlay) this.editor.underlay.calibPoints = [];
+        var selBtn = document.querySelector('.plan-tool-btn[data-tool="select"]');
+        if (selBtn) {
+          document.querySelectorAll('.plan-tool-btn').forEach(function (b) { b.classList.remove('is-active'); });
+          selBtn.classList.add('is-active');
+        }
+        this.editor.render();
+      }
     },
 
     loadSampleHome: function () {
@@ -465,21 +647,24 @@
         var w = this.editor.getWall(sel.id);
         if (!w) return;
         var lenMm = Math.round(Core.wallLength(w));
+        var lenDisplay = self.editor.formatDim(lenMm);
         panel.innerHTML =
           '<div class="insp-title">Wall Properties</div>' +
-          '<div class="insp-row"><label>Length (mm)</label><input type="number" id="inspWallLen" value="' + lenMm + '" step="50"></div>' +
+          '<div class="insp-row"><label>Length ' + (self.editor.unitSystem === 'imperial' ? '(ft/in or mm)' : '(mm)') + '</label><input type="text" id="inspWallLen" value="' + (self.editor.unitSystem === 'imperial' ? lenDisplay : lenMm) + '">' +
+          '<span style="font-size:11px;color:#64748B;">Current: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
 
         document.getElementById('inspWallLen').addEventListener('change', function (e) {
-          var targetL = parseFloat(e.target.value);
+          var targetL = self.editor.parseDimInput(e.target.value);
           if (targetL > 100) {
             var dir = Core.wallDirection(w);
             w.end.x = w.start.x + dir.x * targetL;
             w.end.y = w.start.y + dir.y * targetL;
             self.editor.pushHistory('Resize Wall');
             self.editor.render();
+            self.renderInspector(self.editor.selected);
           }
         });
         document.getElementById('inspWallThick').addEventListener('change', function (e) {
