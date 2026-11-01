@@ -9,3 +9,5 @@ node_modules/
 .env
 *.env
 db/local_store.json
+server/db/local_store.json
+**/local_store.json
