@@ -397,96 +397,112 @@
     <!-- ══════ ORBIX FLOOR PLAN (2D) ══════ -->
     <section class="view" id="view-plan">
       <div class="plan-toolbar">
-        <div class="plan-toolgroup">
-          <button class="plan-tool-btn is-active" data-tool="select" title="Select & Move (S)">Select</button>
-          <button class="plan-tool-btn" data-tool="wall" title="Draw Wall (W)">+ Wall</button>
-          <select class="plan-select" id="planWallThickness" title="Wall Thickness">
-            <option value="100">100 mm (Drywall)</option>
-            <option value="150" selected>150 mm (Partition)</option>
-            <option value="200">200 mm (External)</option>
-            <option value="230">230 mm (Brick)</option>
-          </select>
-          <button class="plan-tool-btn" data-tool="door" title="Place Door (D)">+ Door</button>
-          <select class="plan-select" id="planDoorWidth" title="Door Width">
-            <option value="750">750 mm (Bath)</option>
-            <option value="900" selected>900 mm (Bed)</option>
-            <option value="1000">1000 mm (Main)</option>
-            <option value="1200">1200 mm (Wide)</option>
-          </select>
-          <button class="plan-tool-btn" data-tool="window" title="Place Window (Win)">+ Window</button>
-          <select class="plan-select" id="planWindowWidth" title="Window Width">
-            <option value="900">900 mm</option>
-            <option value="1200" selected>1200 mm</option>
-            <option value="1500">1500 mm</option>
-            <option value="1800">1800 mm</option>
-          </select>
-          <button class="plan-tool-btn" data-tool="furniture" title="Place Modular Furniture (F)">+ Furniture</button>
-          <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place">
-            <optgroup label="Imported Modular Units (Catalog)">
-              <option value="fm-rt-01" selected>fm-rt-01: FCM -RT Kitchen Base (1200x750)</option>
-              <option value="wm-01">wm-01: WM 1200 Kitchen Wall (1200x600)</option>
-              <option value="W-01">W-01: Master Bed 2-Door Wardrobe (1200x2100)</option>
-              <option value="W-02">W-02: Master Bed 3-Door + Loft (1800x2100+600)</option>
-              <option value="W-03">W-03: 2-Door Glass Profile Sliding (1800x2400)</option>
-              <option value="CR-01">CR-01: Fluted Glass Hutch · Walnut (900x2100)</option>
-              <option value="TV-01">TV-01: Living TV Media Entertainment (2400x1800)</option>
-              <option value="K-01">K-01: Kitchen Lower Base Run (3000x850)</option>
-              <option value="K-02">K-02: Kitchen Upper Wall Cabinets (3000x700)</option>
-            </optgroup>
-            <optgroup label="Standard Library">
-              <option value="w2d">2-Door Wardrobe (900mm)</option>
-              <option value="w3d">3-Door Wardrobe (1350mm)</option>
-              <option value="w4d">4-Door Master Wardrobe (1800mm)</option>
-              <option value="w_slide">2-Door Sliding Wardrobe (1800mm)</option>
-              <option value="fm-01">FM 600 Kitchen Base (600mm)</option>
-              <option value="k_base">Kitchen Base Run (3000mm)</option>
-              <option value="k_wall">Kitchen Wall Run (3000mm)</option>
-              <option value="k_tall">Kitchen Tall Pantry (600mm)</option>
-              <option value="k_island">Kitchen Island (1500mm)</option>
-              <option value="tv_media">TV Media Wall (2100mm)</option>
-              <option value="crockery">Crockery Unit (1200mm)</option>
-              <option value="vanity">Vanity / Dresser (1000mm)</option>
-              <option value="shoe_rack">Shoe Cabinet (1000mm)</option>
-              <option value="bed_queen">Queen Bed (1600mm)</option>
-              <option value="bed_king">King Bed (1900mm)</option>
-            </optgroup>
-          </select>
-          <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">Split</button>
-        </div>
-
-        <div class="plan-toolgroup">
-          <button class="plan-tool-btn" id="planUnitToggleBtn" style="font-weight:700;color:#1B4F72;border-color:#1B4F72;" title="Switch 2D measurement unit between Millimeters (mm) and Feet & Inches (ft-in)">📐 Unit: mm</button>
-          <button class="plan-tool-btn" id="planImportImageBtn" title="Import floor plan image (PNG, JPG, WEBP) to trace walls">🖼 Import Plan</button>
-          <input type="file" id="planImageFileInput" accept="image/png,image/jpeg,image/webp" hidden>
-
-          <div class="plan-toolgroup" id="planUnderlayControls" style="display:none;align-items:center;gap:6px;padding:2px 8px;background:#eef5fb;border:1px solid #c2dbf0;border-radius:4px;">
-            <span style="font-size:11px;font-weight:700;color:#1B4F72;">Plan Image:</span>
-            <button class="plan-tool-btn" id="planCalibrateScaleBtn" style="padding:4px 8px;font-size:11px;background:#1B4F72;color:#fff;border-color:#1B4F72;" title="Calibrate Scale: Click 2 points on a known wall dimension">📏 Calibrate</button>
-            <label style="font-size:11px;color:#333;display:inline-flex;align-items:center;gap:3px;" title="Adjust Image Opacity">
-              Opacity
-              <input type="range" id="planUnderlayOpacity" min="0.1" max="1" step="0.05" value="0.45" style="width:50px;cursor:pointer;">
-            </label>
-            <button class="plan-tool-btn" id="planToggleUnderlayBtn" style="padding:4px 8px;font-size:11px;" title="Show / Hide Background Plan Image">👁 Show</button>
-            <button class="plan-tool-btn" id="planRemoveUnderlayBtn" style="padding:4px 8px;font-size:11px;color:#d9534f;" title="Remove Background Plan Image">✕</button>
+        <!-- Row 1: Architectural Drawing Studio & Live Quote -->
+        <div class="plan-toolbar-row drawing-bar">
+          <div class="plan-toolgroup">
+            <button class="plan-tool-btn is-active" data-tool="select" title="Select & Move (S)">✋ Select</button>
+            <button class="plan-tool-btn" data-tool="wall" title="Draw Wall (W)">🧱 + Wall</button>
+            <select class="plan-select" id="planWallThickness" title="Wall Thickness">
+              <option value="100">100 mm (Drywall)</option>
+              <option value="150" selected>150 mm (Partition)</option>
+              <option value="200">200 mm (External)</option>
+              <option value="230">230 mm (Brick)</option>
+            </select>
+            <button class="plan-tool-btn" data-tool="door" title="Place Door (D)">🚪 + Door</button>
+            <select class="plan-select" id="planDoorWidth" title="Door Width">
+              <option value="750">750 mm (Bath)</option>
+              <option value="900" selected>900 mm (Bed)</option>
+              <option value="1000">1000 mm (Main)</option>
+              <option value="1200">1200 mm (Wide)</option>
+            </select>
+            <button class="plan-tool-btn" data-tool="window" title="Place Window (Win)">🪟 + Window</button>
+            <select class="plan-select" id="planWindowWidth" title="Window Width">
+              <option value="900">900 mm</option>
+              <option value="1200" selected>1200 mm</option>
+              <option value="1500">1500 mm</option>
+              <option value="1800">1800 mm</option>
+            </select>
+            <button class="plan-tool-btn" data-tool="furniture" title="Place Modular Furniture (F)">🗄️ + Furniture</button>
+            <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="max-width:240px">
+              <optgroup label="Imported Modular Units (Catalog)">
+                <option value="fm-rt-01" selected>fm-rt-01: FCM -RT Kitchen Base (1200x750)</option>
+                <option value="wm-01">wm-01: WM 1200 Kitchen Wall (1200x600)</option>
+                <option value="W-01">W-01: Master Bed 2-Door Wardrobe (1200x2100)</option>
+                <option value="W-02">W-02: Master Bed 3-Door + Loft (1800x2100+600)</option>
+                <option value="W-03">W-03: 2-Door Glass Profile Sliding (1800x2400)</option>
+                <option value="CR-01">CR-01: Fluted Glass Hutch · Walnut (900x2100)</option>
+                <option value="TV-01">TV-01: Living TV Media Entertainment (2400x1800)</option>
+                <option value="K-01">K-01: Kitchen Lower Base Run (3000x850)</option>
+                <option value="K-02">K-02: Kitchen Upper Wall Cabinets (3000x700)</option>
+              </optgroup>
+              <optgroup label="Standard Library">
+                <option value="w2d">2-Door Wardrobe (900mm)</option>
+                <option value="w3d">3-Door Wardrobe (1350mm)</option>
+                <option value="w4d">4-Door Master Wardrobe (1800mm)</option>
+                <option value="w_slide">2-Door Sliding Wardrobe (1800mm)</option>
+                <option value="fm-01">FM 600 Kitchen Base (600mm)</option>
+                <option value="k_base">Kitchen Base Run (3000mm)</option>
+                <option value="k_wall">Kitchen Wall Run (3000mm)</option>
+                <option value="k_tall">Kitchen Tall Pantry (600mm)</option>
+                <option value="k_island">Kitchen Island (1500mm)</option>
+                <option value="tv_media">TV Media Wall (2100mm)</option>
+                <option value="crockery">Crockery Unit (1200mm)</option>
+                <option value="vanity">Vanity / Dresser (1000mm)</option>
+                <option value="shoe_rack">Shoe Cabinet (1000mm)</option>
+                <option value="bed_queen">Queen Bed (1600mm)</option>
+                <option value="bed_king">King Bed (1900mm)</option>
+              </optgroup>
+            </select>
+            <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">✂️ Split</button>
           </div>
 
-          <button class="plan-tool-btn" id="planUndo" title="Undo (Ctrl+Z)">↶</button>
-          <button class="plan-tool-btn" id="planRedo" title="Redo (Ctrl+Y)">↷</button>
-          <button class="plan-tool-btn" id="planDelete" title="Delete Selected (Del)">✕</button>
-          <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen">Fit</button>
-          <button class="plan-tool-btn" id="planSampleHome" title="Load sample 2BHK floor plan">Sample 2BHK</button>
-          <button class="plan-tool-btn" id="planClear" title="Clear all walls">Clear</button>
-          <button class="plan-tool-btn" id="planExportJson" title="Save Project JSON">Export</button>
-          <button class="plan-tool-btn" id="planImportJson" title="Open Project JSON">Import</button>
-          <button class="plan-tool-btn" id="planImportUnitsBtn" title="Import Modular Units CSV">Import Units CSV</button>
-          <button class="plan-tool-btn" id="planView3D" style="background:#1B4F72;color:#fff;border-color:#1B4F72;" title="View Whole Home in 3D">View 3D Home ➔</button>
-          <input type="file" id="planFileInput" accept=".json,.orbix" hidden>
-          <input type="file" id="planUnitsCsvInput" accept=".csv" hidden>
+          <div class="plan-toolgroup" style="margin-left:auto;gap:10px;">
+            <button class="plan-tool-btn" id="planUnitToggleBtn" style="font-weight:700;color:#1B4F72;border-color:#1B4F72;background:#F0F7FF;" title="Switch 2D measurement unit between Millimeters (mm) and Feet & Inches (ft-in)">📐 Unit: mm</button>
+            <div class="live-quote-badge" id="liveQuotationBadge" style="margin:0;">
+              <span class="badge-label">Estimated:</span>
+              <span class="badge-amount">₹ 0</span>
+            </div>
+            <button class="plan-tool-btn" id="planView3D" style="background:#1B4F72;color:#fff;border-color:#1B4F72;font-weight:700;" title="View Whole Home in 3D">🏠 View 3D Home ➔</button>
+          </div>
         </div>
 
-        <div class="live-quote-badge" id="liveQuotationBadge">
-          <span class="badge-label">Estimated Total:</span>
-          <span class="badge-amount">₹ 0</span>
+        <!-- Row 2: Blueprint Image, Undo/Redo, Templates & File Actions -->
+        <div class="plan-toolbar-row action-bar">
+          <div class="plan-toolgroup">
+            <button class="plan-tool-btn" id="planImportImageBtn" title="Import floor plan blueprint (PNG, JPG, WEBP) to trace walls">🖼️ Import Blueprint</button>
+            <input type="file" id="planImageFileInput" accept="image/png,image/jpeg,image/webp" hidden>
+
+            <div class="plan-toolgroup" id="planUnderlayControls" style="display:none;align-items:center;gap:6px;padding:2px 8px;background:#EEF5FB;border:1px solid #C2DBF0;border-radius:4px;">
+              <span style="font-size:11px;font-weight:700;color:#1B4F72;">Blueprint:</span>
+              <button class="plan-tool-btn" id="planCalibrateScaleBtn" style="padding:3px 7px;font-size:11px;background:#1B4F72;color:#fff;border-color:#1B4F72;" title="Calibrate Scale: Click 2 points on a known wall dimension">📏 Calibrate</button>
+              <label style="font-size:11px;color:#333;display:inline-flex;align-items:center;gap:3px;" title="Adjust Image Opacity">
+                Opacity
+                <input type="range" id="planUnderlayOpacity" min="0.1" max="1" step="0.05" value="0.45" style="width:50px;cursor:pointer;">
+              </label>
+              <button class="plan-tool-btn" id="planToggleUnderlayBtn" style="padding:3px 7px;font-size:11px;" title="Show / Hide Background Plan Image">👁 Show</button>
+              <button class="plan-tool-btn" id="planRemoveUnderlayBtn" style="padding:3px 7px;font-size:11px;color:#d9534f;" title="Remove Background Plan Image">✕</button>
+            </div>
+
+            <div class="plan-tool-divider"></div>
+
+            <button class="plan-tool-btn" id="planUndo" title="Undo (Ctrl+Z)">↶ Undo</button>
+            <button class="plan-tool-btn" id="planRedo" title="Redo (Ctrl+Y)">↷ Redo</button>
+            <button class="plan-tool-btn" id="planDelete" title="Delete Selected (Del)" style="color:#DC2626;">✕ Delete</button>
+
+            <div class="plan-tool-divider"></div>
+
+            <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen">🔍 Fit</button>
+            <button class="plan-tool-btn" id="planSampleHome" title="Load sample 2BHK floor plan">✨ Sample 2BHK</button>
+            <button class="plan-tool-btn" id="planClear" title="Clear all walls" style="color:#B91C1C;">🗑️ Clear</button>
+
+            <div class="plan-tool-divider"></div>
+
+            <button class="plan-tool-btn" id="planExportJson" title="Save Project JSON">💾 Export</button>
+            <button class="plan-tool-btn" id="planImportJson" title="Open Project JSON">📂 Import</button>
+            <button class="plan-tool-btn" id="planImportUnitsBtn" title="Import Modular Units CSV">📥 Import Units CSV</button>
+            <input type="file" id="planFileInput" accept=".json,.orbix" hidden>
+            <input type="file" id="planUnitsCsvInput" accept=".csv" hidden>
+          </div>
         </div>
       </div>
 
