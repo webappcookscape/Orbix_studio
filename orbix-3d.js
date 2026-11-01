@@ -122,7 +122,11 @@
     this.group = new THREE.Group();
     this.group.name = 'OrbixHome3D';
 
-    var plan = project.plan || {};
+    var plan = project;
+    while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {
+      plan = plan.plan;
+    }
+    plan = plan || {};
     var walls = plan.walls || [];
     var openings = plan.openings || [];
     var rooms = plan.rooms || [];

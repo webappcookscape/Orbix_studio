@@ -1458,10 +1458,10 @@ function sceneLayouts(uOpt){
 }
 function buildScene(){
   var u0=U();
-  var hasArchProject = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+  var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
 
-  if(hasArchProject){
-    var furnList = window.OrbixUI.project.plan.furniture || [];
+  if(plan){
+    var furnList = plan.furniture || [];
     if(furnList.length === 0 || !u0){
       MID=1200;
       if(GL.ok) GL.show([]);
@@ -1470,7 +1470,7 @@ function buildScene(){
       var L=sceneLayouts();
       if(GL.ok) GL.show(L); else cssRender(L,u0);
     }
-    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
     camApply();
     return;
   }
@@ -2060,7 +2060,8 @@ var GL=(function(){
     // all furniture units are rendered directly in their 3D room positions by ArchitecturalRenderer.
     // If OrbixHome3D has furniture, root is kept clear to avoid duplicate overlapping meshes.
     var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
-    if(homeObj && homeObj.children && homeObj.children.length > 0 && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.furniture && window.OrbixUI.project.plan.furniture.length > 0){
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    if(homeObj && homeObj.children && homeObj.children.length > 0 && plan && plan.furniture && plan.furniture.length > 0){
       root.position.set(0, 0, 0);
       root.rotation.y = 0;
       return;
@@ -2068,10 +2069,10 @@ var GL=(function(){
 
     // Position root to match active furniture unit's floor plan coordinates
     var furnPos = null, furnRot = 0;
-    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.furniture){
+    if(plan && plan.furniture){
       var activeU = U();
       if(activeU && activeU._furnId){
-        var match = window.OrbixUI.project.plan.furniture.find(function(f){ return f.id === activeU._furnId; });
+        var match = plan.furniture.find(function(f){ return f.id === activeU._furnId; });
         if(match && match.pos){
           furnPos = match.pos;
           furnRot = match.rotY || 0;
@@ -2956,12 +2957,12 @@ function camApply(){
 
   stage.addEventListener("contextmenu", function(e){ e.preventDefault(); });
 
-  // Hover feedback: show 'move' cursor over 3D furniture units
+  // Hover feedback: show 'pointer' cursor over 3D furniture units
   stage.addEventListener("pointermove", function(e){
     if(furnDrag || hDrag || Object.keys(pts).length > 0) return;
     if(GL.ok && GL.pickFurniture){
       var fHit = GL.pickFurniture(e.clientX, e.clientY);
-      stage.style.cursor = fHit ? "move" : "";
+      stage.style.cursor = fHit ? "pointer" : "";
     }
   });
 
@@ -3061,13 +3062,14 @@ function camApply(){
         GL.settle();
 
         // Sync with project data
-        if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-          var list = window.OrbixUI.project.plan.furniture || [];
+        var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+        if(plan){
+          var list = plan.furniture || [];
           for(var i = 0; i < list.length; i++){
             if(list[i].id === fd.id){
               list[i].pos.x = finalX;
               list[i].pos.y = finalZ;
-              var rms = window.OrbixUI.project.plan.rooms || [];
+              var rms = plan.rooms || [];
               for(var r = 0; r < rms.length; r++){
                 if(window.OrbixCore && window.OrbixCore.Vec2 && window.OrbixCore.Vec2.pointInPolygon(list[i].pos, rms[r].polygon)){
                   list[i].roomId = rms[r].id;
@@ -3077,18 +3079,19 @@ function camApply(){
               break;
             }
           }
-          window.OrbixUI.saveToLocalStorage();
-          if(window.OrbixUI.editor){
+          if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+          if(window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+          if(window.OrbixUI && window.OrbixUI.editor){
             window.OrbixUI.editor.pushHistory('Move Furniture (3D)');
             window.OrbixUI.editor.selected = [{ type: 'furniture', id: fd.id }];
             window.OrbixUI.editor.render();
           }
-          if(window.OrbixUI.renderBOQ) window.OrbixUI.renderBOQ();
-          if(window.OrbixUI.renderInspector) window.OrbixUI.renderInspector([{ type: 'furniture', id: fd.id }]);
+          if(window.OrbixUI && window.OrbixUI.renderBOQ) window.OrbixUI.renderBOQ();
+          if(window.OrbixUI && window.OrbixUI.renderInspector) window.OrbixUI.renderInspector([{ type: 'furniture', id: fd.id }]);
           if(window.OrbixUI && typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function'){
             window.OrbixUI.selectFurnitureIn3DStudio(fd.id);
           }
-          if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+          if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
         }
       } else {
         // Just clicked: select the furniture unit and show customize inspector
@@ -3244,8 +3247,8 @@ function renderRail(){
   add.addEventListener("click",function(){
     var nu=newUnit("UNIT "+(S.units.length+1));
     nu.W=1200; nu.H=2100; nu.D=600; nu.shutters=2;
-    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-      var plan=window.OrbixUI.project.plan;
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    if(plan){
       plan.furniture=plan.furniture||[];
       var fId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
       nu._furnId=fId;
@@ -3269,10 +3272,10 @@ function renderRail(){
         dimensions:{W:nu.W||1200,H:nu.H||2100,D:nu.D||600},
         unitConfig:{shutters:nu.shutters||2,handle:nu.handle||'bar'}
       });
-      if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+      if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
       if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
-      if(window.OrbixUI.editor) window.OrbixUI.editor.render();
-      if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+      if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+      if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
     }
     S.units.push(nu);
     S.active=S.units.length-1;
@@ -3566,15 +3569,15 @@ function renderRail(){
   var rotB=el("btn",g8,"button"); rotB.textContent="↻ Rotate 90° (R)"; rotB.style.marginRight="6px";
   rotB.title="Rotate unit 90 degrees in floor plan & 3D (shortcut: R)";
   rotB.addEventListener("click",function(){
-    if(u._furnId && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-      var plan=window.OrbixUI.project.plan;
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    if(u._furnId && plan){
       var f=plan.furniture && plan.furniture.find(function(it){ return it.id===u._furnId; });
       if(f){
         f.rotY = ((f.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
-        if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+        if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
         if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
-        if(window.OrbixUI.editor) window.OrbixUI.editor.render();
-        if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+        if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+        if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
         toast("Rotated to "+Math.round(f.rotY * 180 / Math.PI)+"°");
         return;
       }
@@ -3587,8 +3590,8 @@ function renderRail(){
     var c=JSON.parse(JSON.stringify(u)); c.label=(u.label||"UNIT")+" (Copy)";
     var newId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
     c._furnId=newId;
-    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-      var plan=window.OrbixUI.project.plan;
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    if(plan){
       plan.furniture=plan.furniture||[];
       var orig=u._furnId && plan.furniture.find(function(it){ return it.id===u._furnId; });
       var nPos = orig ? {x: orig.pos.x + (c.W||600) + 100, y: orig.pos.y} : {x: 2000, y: 2000};
@@ -3601,25 +3604,25 @@ function renderRail(){
         dimensions: {W: c.W||1200, H: c.H||2100, D: c.D||600},
         unitConfig: {shutters: c.shutters||2, handle: c.handle||'bar'}
       });
-      if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+      if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
       if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
-      if(window.OrbixUI.editor) window.OrbixUI.editor.render();
-      if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+      if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+      if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
     }
     S.units.push(c); S.active=S.units.length-1; renderRail(); renderAll();
   });
   if(S.units.length>1){
     var rb=el("btn danger",g8,"button"); rb.textContent="Remove";
     rb.addEventListener("click",function(){
-      if(u._furnId && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-        var plan=window.OrbixUI.project.plan;
+      var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+      if(u._furnId && plan){
         if(plan.furniture){
           plan.furniture=plan.furniture.filter(function(it){ return it.id!==u._furnId; });
         }
-        if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+        if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
         if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
-        if(window.OrbixUI.editor) window.OrbixUI.editor.render();
-        if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+        if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+        if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
       }
       S.units.splice(S.active,1); S.active=Math.max(0,S.active-1);
       renderRail(); renderAll();
