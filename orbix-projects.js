@@ -1528,6 +1528,7 @@
               errAlert.textContent = 'Sign-in error: ' + err.message;
               errAlert.style.display = 'block';
             }
+          });
         });
       }
 
