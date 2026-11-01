@@ -242,195 +242,7 @@
 
   // ═══════════════════════════════════════════════════════════════════════════════
   // ORBIX ROUTER — Clean URL Routing, Browser History & Role-Based Navigation
-  // ═══════════════════════════════════════════════════════════════════════════════
-  var OrbixRouter = {
-    ROUTE_MAP: {
-      '/': 'home',
-      '/home': 'home',
-      '/plan': 'plan',
-      '/design': 'design',
-      '/3d-studio': 'design',
-      '/3dstudio': 'design',
-      '/pricing': 'boq',
-      '/boq': 'boq',
-      '/quote': 'quote',
-      '/gallery': 'gallery',
-      '/kitchen': 'kitchen',
-      '/sheet': 'sheet',
-      '/elev': 'elev',
-      '/panels': 'panels',
-      '/nest': 'nest',
-      '/upload': 'upload',
-      '/report': 'report',
-      '/users': 'users'
-    },
-
-    VIEW_TO_PATH: {
-      'home': '/home',
-      'plan': '/plan',
-      'design': '/3d-studio',
-      'boq': '/pricing',
-      'quote': '/quote',
-      'gallery': '/gallery',
-      'kitchen': '/kitchen',
-      'sheet': '/sheet',
-      'elev': '/elev',
-      'panels': '/panels',
-      'nest': '/nest',
-      'upload': '/upload',
-      'report': '/report',
-      'users': '/users'
-    },
-
-    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'boq'],
-
-    isInitialized: false,
-    _popstateHandling: false,
-
-    init: function () {
-      if (this.isInitialized) return;
-      var self = this;
-      this.isInitialized = true;
-
-      window.addEventListener('popstate', function () {
-        self._popstateHandling = true;
-        try {
-          var path = window.location.pathname.toLowerCase();
-          var v = self.ROUTE_MAP[path];
-          if (!v) {
-            var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
-            v = self.ROUTE_MAP['/' + h] || 'home';
-          }
-          self.navigateTo(v, true);
-        } finally {
-          self._popstateHandling = false;
-        }
-      });
-
-      this.hookSetView();
-
-      document.addEventListener('click', function (e) {
-        var a = e.target.closest('a');
-        if (a && a.getAttribute('href')) {
-          var href = a.getAttribute('href');
-          if (href.startsWith('/') && !href.startsWith('/api') && !href.startsWith('//')) {
-            e.preventDefault();
-            self.navigateByPath(href);
-          }
-        }
-      });
-    },
-
-    hookSetView: function () {
-      var self = this;
-      var hook = function () {
-        if (typeof window.setView === 'function' && !window.setView._isRouterHooked) {
-          var origSetView = window.setView;
-          window.setView = function (v) {
-            if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-              if (self.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-                if (typeof showToast === 'function') {
-                  showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-                }
-                if (window.location.pathname !== '/home') {
-                  self.updateUrl('home', false);
-                }
-                origSetView('home');
-                return;
-              }
-            }
-
-            origSetView(v);
-
-            if (!self._popstateHandling) {
-              self.updateUrl(v, false);
-            }
-          };
-          window.setView._isRouterHooked = true;
-        }
-      };
-
-      hook();
-      setTimeout(hook, 200);
-      setTimeout(hook, 1000);
-    },
-
-    updateUrl: function (view, replace) {
-      if (!window.history || !window.history.pushState) return;
-      var canonical = this.VIEW_TO_PATH[view] || ('/' + view);
-      if (window.location.pathname.toLowerCase() !== canonical.toLowerCase()) {
-        if (replace) {
-          window.history.replaceState({ view: view }, '', canonical);
-        } else {
-          window.history.pushState({ view: view }, '', canonical);
-        }
-      }
-    },
-
-    navigateTo: function (v, replace) {
-      if (v === 'users') {
-        if (!OrbixProjects.isAdmin()) {
-          if (typeof showToast === 'function') {
-            showToast('Access restricted: Only Admin accounts can access User Management.');
-          }
-          this.navigateTo('home', true);
-          return;
-        }
-        this.updateUrl('users', replace);
-        if (typeof OrbixProjects.openUserModal === 'function') {
-          OrbixProjects.openUserModal();
-        }
-        return;
-      }
-
-      if (v === 'kitchen') {
-        if (window.galState) window.galState.type = 'kitchen';
-        v = 'gallery';
-      }
-
-      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-          if (typeof showToast === 'function') {
-            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-          }
-          v = 'home';
-        }
-      }
-
-      if (typeof window.setView === 'function') {
-        window.setView(v);
-      }
-      this.updateUrl(v, replace);
-    },
-
-    navigateByPath: function (path, replace) {
-      var clean = path.toLowerCase().trim();
-      var v = this.ROUTE_MAP[clean] || 'home';
-      this.navigateTo(v, replace);
-    },
-
-    dispatchInitialRoute: function () {
-      var path = window.location.pathname.toLowerCase();
-      var v = this.ROUTE_MAP[path];
-      if (!v) {
-        var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
-        if (h) v = this.ROUTE_MAP['/' + h];
-      }
-      if (!v) v = 'home';
-
-      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-          if (typeof showToast === 'function') {
-            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-          }
-          v = 'home';
-        }
-      }
-
-      this.navigateTo(v, true);
-    }
-  };
-  root.OrbixRouter = OrbixRouter;
+  
 
   var OrbixProjects = {
     currentUser: null,
@@ -1845,7 +1657,23 @@
       var modal = document.getElementById('userModal');
       if (!modal) return;
 
+      var isAdm = self.isAdmin();
       this.applyRolePermissions();
+
+      var adminTeamSec = document.getElementById('adminTeamProfilesSection');
+      if (adminTeamSec) {
+        adminTeamSec.style.display = isAdm ? 'block' : 'none';
+      }
+      var adminBox = document.getElementById('adminCreateEmpBox');
+      if (adminBox) {
+        adminBox.style.display = isAdm ? 'block' : 'none';
+      }
+
+      if (!isAdm) {
+        var userListEl = document.getElementById('switchUsersList');
+        if (userListEl) userListEl.innerHTML = '';
+        return;
+      }
 
       var userListEl = document.getElementById('switchUsersList');
       if (userListEl) {

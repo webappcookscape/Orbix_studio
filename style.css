@@ -39,17 +39,17 @@ body{
   -webkit-font-smoothing:antialiased;
   overflow:hidden;
 }
-#app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--paper)}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--blue-2);outline-offset:2px}
 
 /* ══════════ TOP BAR ══════════ */
 .topbar{
-  flex:0 0 auto;display:flex;align-items:center;gap:14px;
+  flex:0 0 56px;display:flex;align-items:center;gap:14px;
   padding:0 16px;height:56px;
   background:var(--panel);border-bottom:1px solid var(--rule);
-  overflow:hidden;
+  overflow:hidden;position:relative;z-index:100;
 }
 .tool{
   display:flex;align-items:center;gap:12px;

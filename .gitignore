@@ -8,6 +8,4 @@ shots/
 node_modules/
 .env
 *.env
-
-.env
-*.env
+db/local_store.json

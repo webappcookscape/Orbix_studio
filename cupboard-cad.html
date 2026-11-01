@@ -44,17 +44,17 @@ body{
   -webkit-font-smoothing:antialiased;
   overflow:hidden;
 }
-#app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--paper)}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--blue-2);outline-offset:2px}
 
 /* ══════════ TOP BAR ══════════ */
 .topbar{
-  flex:0 0 auto;display:flex;align-items:center;gap:14px;
+  flex:0 0 56px;display:flex;align-items:center;gap:14px;
   padding:0 16px;height:56px;
   background:var(--panel);border-bottom:1px solid var(--rule);
-  overflow:hidden;
+  overflow:hidden;position:relative;z-index:100;
 }
 .tool{
   display:flex;align-items:center;gap:12px;
@@ -1689,13 +1689,13 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       <button class="vtab" data-view="kitchen" hidden style="display:none;">Kitchens</button>
       <button class="vtab" data-view="gallery" hidden style="display:none;">Gallery</button>
       <button class="vtab" data-view="boq">Pricing</button>
-      <button class="vtab" data-view="quote">Quote</button>
-      <button class="vtab" data-view="sheet">Process sheet</button>
-      <button class="vtab" data-view="elev">Elevation</button>
-      <button class="vtab" data-view="panels">Panels &amp; drilling</button>
-      <button class="vtab" data-view="nest">Nesting</button>
-      <button class="vtab" data-view="upload">Upload</button>
-      <button class="vtab" data-view="report">Report</button>
+      <button class="vtab admin-only-tab" data-view="quote" style="display:none;">Quote</button>
+      <button class="vtab admin-only-tab" data-view="sheet" style="display:none;">Process sheet</button>
+      <button class="vtab admin-only-tab" data-view="elev" style="display:none;">Elevation</button>
+      <button class="vtab admin-only-tab" data-view="panels" style="display:none;">Panels &amp; drilling</button>
+      <button class="vtab admin-only-tab" data-view="nest" style="display:none;">Nesting</button>
+      <button class="vtab admin-only-tab" data-view="upload" style="display:none;">Upload</button>
+      <button class="vtab admin-only-tab" data-view="report" style="display:none;">Report</button>
     </nav>
     <div class="topacts">
       <button class="btn pwa-install-btn" id="pwaInstallBtn" hidden title="Install Orbix Studio on your PC or Phone">
@@ -2067,6 +2067,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">Split</button>
         </div>
 
+        <div class="plan-toolgroup">
           <button class="plan-tool-btn" id="planUnitToggleBtn" style="font-weight:700;color:#1B4F72;border-color:#1B4F72;" title="Switch 2D measurement unit between Millimeters (mm) and Feet & Inches (ft-in)">📐 Unit: mm</button>
           <button class="plan-tool-btn" id="planImportImageBtn" title="Import floor plan image (PNG, JPG, WEBP) to trace walls">🖼 Import Plan</button>
           <input type="file" id="planImageFileInput" accept="image/png,image/jpeg,image/webp" hidden>
@@ -2320,7 +2321,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       </div>
 
       <!-- Admin Only: Team Profiles Switcher -->
-      <div id="adminTeamProfilesSection">
+      <div id="adminTeamProfilesSection" style="display:none;">
         <h4 class="modal-section-title" style="margin-top:20px;">Team Profiles</h4>
         <p class="modal-section-desc">Active studio team accounts:</p>
         <div class="switch-users-list" id="switchUsersList"></div>
@@ -2441,6 +2442,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     </div>
     <div class="modal-foot">
       <button type="button" class="btn modal-close-btn">Close</button>
+    </div>
   </div>
 </div>
 
@@ -2719,195 +2721,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
   // ═══════════════════════════════════════════════════════════════════════════════
   // ORBIX ROUTER — Clean URL Routing, Browser History & Role-Based Navigation
-  // ═══════════════════════════════════════════════════════════════════════════════
-  var OrbixRouter = {
-    ROUTE_MAP: {
-      '/': 'home',
-      '/home': 'home',
-      '/plan': 'plan',
-      '/design': 'design',
-      '/3d-studio': 'design',
-      '/3dstudio': 'design',
-      '/pricing': 'boq',
-      '/boq': 'boq',
-      '/quote': 'quote',
-      '/gallery': 'gallery',
-      '/kitchen': 'kitchen',
-      '/sheet': 'sheet',
-      '/elev': 'elev',
-      '/panels': 'panels',
-      '/nest': 'nest',
-      '/upload': 'upload',
-      '/report': 'report',
-      '/users': 'users'
-    },
-
-    VIEW_TO_PATH: {
-      'home': '/home',
-      'plan': '/plan',
-      'design': '/3d-studio',
-      'boq': '/pricing',
-      'quote': '/quote',
-      'gallery': '/gallery',
-      'kitchen': '/kitchen',
-      'sheet': '/sheet',
-      'elev': '/elev',
-      'panels': '/panels',
-      'nest': '/nest',
-      'upload': '/upload',
-      'report': '/report',
-      'users': '/users'
-    },
-
-    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'boq'],
-
-    isInitialized: false,
-    _popstateHandling: false,
-
-    init: function () {
-      if (this.isInitialized) return;
-      var self = this;
-      this.isInitialized = true;
-
-      window.addEventListener('popstate', function () {
-        self._popstateHandling = true;
-        try {
-          var path = window.location.pathname.toLowerCase();
-          var v = self.ROUTE_MAP[path];
-          if (!v) {
-            var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
-            v = self.ROUTE_MAP['/' + h] || 'home';
-          }
-          self.navigateTo(v, true);
-        } finally {
-          self._popstateHandling = false;
-        }
-      });
-
-      this.hookSetView();
-
-      document.addEventListener('click', function (e) {
-        var a = e.target.closest('a');
-        if (a && a.getAttribute('href')) {
-          var href = a.getAttribute('href');
-          if (href.startsWith('/') && !href.startsWith('/api') && !href.startsWith('//')) {
-            e.preventDefault();
-            self.navigateByPath(href);
-          }
-        }
-      });
-    },
-
-    hookSetView: function () {
-      var self = this;
-      var hook = function () {
-        if (typeof window.setView === 'function' && !window.setView._isRouterHooked) {
-          var origSetView = window.setView;
-          window.setView = function (v) {
-            if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-              if (self.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-                if (typeof showToast === 'function') {
-                  showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-                }
-                if (window.location.pathname !== '/home') {
-                  self.updateUrl('home', false);
-                }
-                origSetView('home');
-                return;
-              }
-            }
-
-            origSetView(v);
-
-            if (!self._popstateHandling) {
-              self.updateUrl(v, false);
-            }
-          };
-          window.setView._isRouterHooked = true;
-        }
-      };
-
-      hook();
-      setTimeout(hook, 200);
-      setTimeout(hook, 1000);
-    },
-
-    updateUrl: function (view, replace) {
-      if (!window.history || !window.history.pushState) return;
-      var canonical = this.VIEW_TO_PATH[view] || ('/' + view);
-      if (window.location.pathname.toLowerCase() !== canonical.toLowerCase()) {
-        if (replace) {
-          window.history.replaceState({ view: view }, '', canonical);
-        } else {
-          window.history.pushState({ view: view }, '', canonical);
-        }
-      }
-    },
-
-    navigateTo: function (v, replace) {
-      if (v === 'users') {
-        if (!OrbixProjects.isAdmin()) {
-          if (typeof showToast === 'function') {
-            showToast('Access restricted: Only Admin accounts can access User Management.');
-          }
-          this.navigateTo('home', true);
-          return;
-        }
-        this.updateUrl('users', replace);
-        if (typeof OrbixProjects.openUserModal === 'function') {
-          OrbixProjects.openUserModal();
-        }
-        return;
-      }
-
-      if (v === 'kitchen') {
-        if (window.galState) window.galState.type = 'kitchen';
-        v = 'gallery';
-      }
-
-      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-          if (typeof showToast === 'function') {
-            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-          }
-          v = 'home';
-        }
-      }
-
-      if (typeof window.setView === 'function') {
-        window.setView(v);
-      }
-      this.updateUrl(v, replace);
-    },
-
-    navigateByPath: function (path, replace) {
-      var clean = path.toLowerCase().trim();
-      var v = this.ROUTE_MAP[clean] || 'home';
-      this.navigateTo(v, replace);
-    },
-
-    dispatchInitialRoute: function () {
-      var path = window.location.pathname.toLowerCase();
-      var v = this.ROUTE_MAP[path];
-      if (!v) {
-        var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
-        if (h) v = this.ROUTE_MAP['/' + h];
-      }
-      if (!v) v = 'home';
-
-      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-          if (typeof showToast === 'function') {
-            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-          }
-          v = 'home';
-        }
-      }
-
-      this.navigateTo(v, true);
-    }
-  };
-  root.OrbixRouter = OrbixRouter;
+  
 
   var OrbixProjects = {
     currentUser: null,
@@ -4322,7 +4136,23 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       var modal = document.getElementById('userModal');
       if (!modal) return;
 
+      var isAdm = self.isAdmin();
       this.applyRolePermissions();
+
+      var adminTeamSec = document.getElementById('adminTeamProfilesSection');
+      if (adminTeamSec) {
+        adminTeamSec.style.display = isAdm ? 'block' : 'none';
+      }
+      var adminBox = document.getElementById('adminCreateEmpBox');
+      if (adminBox) {
+        adminBox.style.display = isAdm ? 'block' : 'none';
+      }
+
+      if (!isAdm) {
+        var userListEl = document.getElementById('switchUsersList');
+        if (userListEl) userListEl.innerHTML = '';
+        return;
+      }
 
       var userListEl = document.getElementById('switchUsersList');
       if (userListEl) {

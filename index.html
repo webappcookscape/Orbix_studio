@@ -75,13 +75,13 @@
       <button class="vtab" data-view="kitchen" hidden style="display:none;">Kitchens</button>
       <button class="vtab" data-view="gallery" hidden style="display:none;">Gallery</button>
       <button class="vtab" data-view="boq">Pricing</button>
-      <button class="vtab" data-view="quote">Quote</button>
-      <button class="vtab" data-view="sheet">Process sheet</button>
-      <button class="vtab" data-view="elev">Elevation</button>
-      <button class="vtab" data-view="panels">Panels &amp; drilling</button>
-      <button class="vtab" data-view="nest">Nesting</button>
-      <button class="vtab" data-view="upload">Upload</button>
-      <button class="vtab" data-view="report">Report</button>
+      <button class="vtab admin-only-tab" data-view="quote" style="display:none;">Quote</button>
+      <button class="vtab admin-only-tab" data-view="sheet" style="display:none;">Process sheet</button>
+      <button class="vtab admin-only-tab" data-view="elev" style="display:none;">Elevation</button>
+      <button class="vtab admin-only-tab" data-view="panels" style="display:none;">Panels &amp; drilling</button>
+      <button class="vtab admin-only-tab" data-view="nest" style="display:none;">Nesting</button>
+      <button class="vtab admin-only-tab" data-view="upload" style="display:none;">Upload</button>
+      <button class="vtab admin-only-tab" data-view="report" style="display:none;">Report</button>
     </nav>
     <div class="topacts">
       <button class="btn pwa-install-btn" id="pwaInstallBtn" hidden title="Install Orbix Studio on your PC or Phone">
@@ -453,6 +453,7 @@
           <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">Split</button>
         </div>
 
+        <div class="plan-toolgroup">
           <button class="plan-tool-btn" id="planUnitToggleBtn" style="font-weight:700;color:#1B4F72;border-color:#1B4F72;" title="Switch 2D measurement unit between Millimeters (mm) and Feet & Inches (ft-in)">📐 Unit: mm</button>
           <button class="plan-tool-btn" id="planImportImageBtn" title="Import floor plan image (PNG, JPG, WEBP) to trace walls">🖼 Import Plan</button>
           <input type="file" id="planImageFileInput" accept="image/png,image/jpeg,image/webp" hidden>
@@ -706,7 +707,7 @@
       </div>
 
       <!-- Admin Only: Team Profiles Switcher -->
-      <div id="adminTeamProfilesSection">
+      <div id="adminTeamProfilesSection" style="display:none;">
         <h4 class="modal-section-title" style="margin-top:20px;">Team Profiles</h4>
         <p class="modal-section-desc">Active studio team accounts:</p>
         <div class="switch-users-list" id="switchUsersList"></div>
@@ -827,6 +828,7 @@
     </div>
     <div class="modal-foot">
       <button type="button" class="btn modal-close-btn">Close</button>
+    </div>
   </div>
 </div>
 
