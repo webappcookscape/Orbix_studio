@@ -5172,7 +5172,10 @@ $all("[data-go]").forEach(function(b){ b.addEventListener("click",function(){
   });
 })();
 setTimeout(homeProof,500);
-setView(S.units.some(function(u){ return u.kind==="imported"; })?"design":"home");
+var initialView = (window.OrbixRouter && window.OrbixRouter.initialTargetView) 
+  ? window.OrbixRouter.initialTargetView 
+  : (S.units.some(function(u){ return u.kind==="imported"; }) ? "design" : "home");
+setView(initialView);
 window.addEventListener("resize",function(){
   clearTimeout(window.__rz);
   window.__rz=setTimeout(function(){ fit(); camApply(); },140);

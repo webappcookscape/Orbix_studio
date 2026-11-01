@@ -56,10 +56,47 @@
 
     EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'boq'],
 
+    initialTargetView: (function () {
+      var path = window.location.pathname.toLowerCase();
+      var map = {
+        '/': 'home',
+        '/home': 'home',
+        '/login': 'login',
+        '/2d-plan': 'plan',
+        '/floor-plan': 'plan',
+        '/plan': 'plan',
+        '/2dplan': 'plan',
+        '/3d-studio': 'design',
+        '/3dstudio': 'design',
+        '/design': 'design',
+        '/pricing': 'boq',
+        '/boq': 'boq',
+        '/quote': 'quote',
+        '/gallery': 'gallery',
+        '/kitchen': 'kitchen',
+        '/sheet': 'sheet',
+        '/elev': 'elev',
+        '/panels': 'panels',
+        '/nest': 'nest',
+        '/upload': 'upload',
+        '/report': 'report',
+        '/users': 'users'
+      };
+      var v = map[path];
+      if (!v) {
+        var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+        if (h) v = map['/' + h];
+      }
+      return v || 'home';
+    })(),
+
     isInitialized: false,
     _popstateHandling: false,
 
     init: function () {
+      if (!this.initialTargetView) {
+        this.initialTargetView = this.getInitialView();
+      }
       if (this.isInitialized) return;
       var self = this;
       this.isInitialized = true;
@@ -209,13 +246,18 @@
       this.navigateTo(v, replace);
     },
 
-    dispatchInitialRoute: function () {
+    getInitialView: function () {
       var path = window.location.pathname.toLowerCase();
       var v = this.ROUTE_MAP[path];
       if (!v) {
         var h = window.location.hash.replace(/^#\/?/, '').toLowerCase();
         if (h) v = this.ROUTE_MAP['/' + h];
       }
+      return v || 'home';
+    },
+
+    dispatchInitialRoute: function () {
+      var v = this.initialTargetView || this.getInitialView();
       if (v === 'login') {
         this.updateUrl('login', true);
         if (typeof OrbixProjects.showLogin === 'function') {
