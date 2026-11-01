@@ -143,6 +143,13 @@
         });
       }
 
+      var btnPlace3D = document.getElementById('placeUnit3DBtn');
+      if (btnPlace3D) {
+        btnPlace3D.addEventListener('click', function () {
+          self.openPlaceUnitModal3D();
+        });
+      }
+
       var btnExportJson = document.getElementById('planExportJson');
       if (btnExportJson) {
         btnExportJson.addEventListener('click', function () {
@@ -628,8 +635,30 @@
           '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (R)</button>' +
           '<button class="btn danger full" id="inspDelFurn" style="margin-top:8px">Delete Unit</button>';
 
+        function syncInspectorTo3D() {
+          if (window.S && window.S.units) {
+            for (var u = 0; u < window.S.units.length; u++) {
+              if (window.S.units[u]._furnId === fn.id) {
+                var eu = window.S.units[u];
+                eu.label = fn.name;
+                eu.W = fn.dimensions.W;
+                eu.H = fn.dimensions.H;
+                eu.D = fn.dimensions.D;
+                if (fn.unitConfig) {
+                  if (fn.unitConfig.shutters !== undefined) eu.shutters = fn.unitConfig.shutters;
+                  if (fn.unitConfig.drawers !== undefined) eu.drawers = fn.unitConfig.drawers;
+                  if (fn.unitConfig.shutterCol) eu.shutterCol = fn.unitConfig.shutterCol;
+                  if (fn.unitConfig.carcass) eu.carcass = fn.unitConfig.carcass;
+                }
+                break;
+              }
+            }
+          }
+        }
+
         document.getElementById('inspFurnName').addEventListener('change', function (e) {
           fn.name = e.target.value;
+          syncInspectorTo3D();
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
@@ -642,6 +671,7 @@
         });
         document.getElementById('inspFurnW').addEventListener('change', function (e) {
           fn.dimensions.W = parseFloat(e.target.value);
+          syncInspectorTo3D();
           self.editor.pushHistory('Resize Furniture');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -650,6 +680,7 @@
         });
         document.getElementById('inspFurnH').addEventListener('change', function (e) {
           fn.dimensions.H = parseFloat(e.target.value);
+          syncInspectorTo3D();
           self.editor.pushHistory('Resize Furniture');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -658,6 +689,7 @@
         });
         document.getElementById('inspFurnD').addEventListener('change', function (e) {
           fn.dimensions.D = parseFloat(e.target.value);
+          syncInspectorTo3D();
           self.editor.pushHistory('Resize Furniture');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -667,6 +699,7 @@
         document.getElementById('inspFurnShutters').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.shutters = parseInt(e.target.value) || 0;
+          syncInspectorTo3D();
           self.editor.pushHistory('Edit Shutters Count');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -676,6 +709,7 @@
         document.getElementById('inspFurnDrawers').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.drawers = parseInt(e.target.value) || 0;
+          syncInspectorTo3D();
           self.editor.pushHistory('Edit Drawers Count');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -688,6 +722,7 @@
           fn.materials.shutter.finish = e.target.value;
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.shutterCol = e.target.value;
+          syncInspectorTo3D();
           self.editor.pushHistory('Change Shutter Finish');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -700,6 +735,7 @@
           fn.materials.carcass.finish = e.target.value;
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.carcass = e.target.value;
+          syncInspectorTo3D();
           self.editor.pushHistory('Change Carcass Finish');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -770,6 +806,11 @@
         });
         document.getElementById('inspDelFurn').addEventListener('click', function () {
           self.editor.deleteSelected();
+          if (window.S && window.S.units) {
+            window.S.units = window.S.units.filter(function (u) { return u._furnId !== fn.id; });
+            window.S.active = Math.max(0, window.S.units.length - 1);
+            if (typeof window.renderRail === 'function') window.renderRail();
+          }
           if (self.render3DHome) self.render3DHome();
         });
       }
@@ -807,17 +848,22 @@
           if (fn.name) existing.label = fn.name;
           newUnits.push(existing);
         } else {
+          var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
+          var isWall = (fn.category === 'kitchen_wall');
+          var defH = isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 1800 : (fn.category === 'crockery' ? 2100 : 2100));
+          var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
+          var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 300 : isKitchen ? 550 : 600);
           var u = {
             label: fn.name,
-            ctype: isKitchen ? 'kbase' : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
+            ctype: isKitchen ? (isWall ? 'kwall' : 'kbase') : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
             _furnId: fn.id,
-            W: fn.dimensions.W || 600,
-            H: fn.dimensions.H || 750,
-            D: fn.dimensions.D || 550,
+            W: (fn.dimensions && fn.dimensions.W) || defW,
+            H: (fn.dimensions && fn.dimensions.H) || defH,
+            D: (fn.dimensions && fn.dimensions.D) || defD,
             T: 18,
             type: (fn.unitConfig && fn.unitConfig.type) || 'hinged',
-            shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1),
-            sections: (fn.unitConfig && fn.unitConfig.sections) || (fn.dimensions.W > 1200 ? 2 : 1),
+            shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (defW > 1200 ? 3 : defW > 600 ? 2 : 1),
+            sections: (fn.unitConfig && fn.unitConfig.sections) || (defW > 1200 ? 2 : 1),
             shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isKitchen ? 1 : 3),
             drawers: (fn.unitConfig && fn.unitConfig.drawers) || 0,
             drawerH: 180,
@@ -956,6 +1002,136 @@
       }
       this.project.units_count = furnList.length;
       this.saveToLocalStorage();
+    },
+
+    placeModularUnitIn3D: function (preset) {
+      if (!this.project || !this.project.plan) return;
+      var plan = this.project.plan;
+      plan.furniture = plan.furniture || [];
+
+      preset = preset || {
+        name: 'Master Bed Wardrobe',
+        category: 'wardrobe',
+        dimensions: { W: 1200, H: 2100, D: 600 },
+        unitConfig: { shutters: 2, handle: 'bar', shelves: 3, drawers: 0, dstyle: 'slab' },
+        materials: { shutter: { finish: 'Brazilian Horizontal Walnut' }, carcass: { finish: 'Absolute White' } }
+      };
+
+      var fId = 'f_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+      var cX = 2000, cY = 2000;
+      var matchedRoomId = null;
+
+      if (plan.rooms && plan.rooms.length > 0) {
+        var rm = plan.rooms[0];
+        if (root.OrbixCore && root.OrbixCore.Vec2 && rm.polygon && rm.polygon.length >= 3) {
+          var cent = root.OrbixCore.Vec2.polygonCentroid(rm.polygon);
+          cX = cent.x;
+          cY = cent.y;
+          matchedRoomId = rm.id;
+        }
+      } else if (plan.walls && plan.walls.length > 0) {
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        plan.walls.forEach(function (w) {
+          minX = Math.min(minX, w.start.x, w.end.x);
+          maxX = Math.max(maxX, w.start.x, w.end.x);
+          minY = Math.min(minY, w.start.y, w.end.y);
+          maxY = Math.max(maxY, w.start.y, w.end.y);
+        });
+        cX = (minX + maxX) / 2;
+        cY = (minY + maxY) / 2;
+      }
+
+      // Offset if units already exist so they don't stack
+      if (plan.furniture.length > 0) {
+        var offsetCount = plan.furniture.length % 5;
+        cX += (offsetCount * 300);
+      }
+
+      var newFurn = {
+        id: fId,
+        name: preset.name || 'Modular Unit',
+        category: preset.category || 'wardrobe',
+        roomId: matchedRoomId,
+        pos: { x: cX, y: cY, z: 0 },
+        rotY: 0,
+        dimensions: Object.assign({ W: 1200, H: 2100, D: 600 }, preset.dimensions || {}),
+        unitConfig: Object.assign({
+          shutters: 2,
+          handle: 'bar',
+          dstyle: 'slab',
+          shelves: 3,
+          drawers: 0,
+          carcass: 'Absolute White',
+          shutterCol: 'Brazilian Horizontal Walnut'
+        }, preset.unitConfig || {}),
+        materials: Object.assign({
+          shutter: { material: 'HDHMR_18mm', finish: 'Brazilian Horizontal Walnut' },
+          carcass: { material: 'BWP_18mm', finish: 'Absolute White' }
+        }, preset.materials || {})
+      };
+
+      plan.furniture.push(newFurn);
+      this.project.units_count = plan.furniture.length;
+      this.saveToLocalStorage();
+      if (root.OrbixProjects && root.OrbixProjects.saveActiveProject) {
+        root.OrbixProjects.saveActiveProject();
+      }
+      if (this.editor) {
+        this.editor.selected = [{ type: 'furniture', id: fId }];
+        this.editor.render();
+      }
+      this.selectFurnitureIn3DStudio(fId);
+      if (typeof window.showToast === 'function') {
+        window.showToast('Placed ' + newFurn.name + ' in 3D room');
+      }
+    },
+
+    openPlaceUnitModal3D: function () {
+      var modal = document.getElementById('modalPlaceUnit3D');
+      var grid = document.getElementById('placeUnitCatalogGrid');
+      if (!modal || !grid) return;
+
+      var catalog = [
+        { name: '2-Door Wardrobe', cat: 'wardrobe', dims: { W: 900, H: 2100, D: 600 }, shutters: 2, icon: '🚪', desc: 'Compact bedroom wardrobe' },
+        { name: '3-Door Wardrobe', cat: 'wardrobe', dims: { W: 1500, H: 2100, D: 600 }, shutters: 3, icon: '🚪', desc: 'Master bedroom with drawers' },
+        { name: 'Sliding Wardrobe', cat: 'wardrobe', dims: { W: 1800, H: 2100, D: 650 }, shutters: 2, icon: '🪟', type: 'sliding', desc: 'Smooth sliding shutters' },
+        { name: 'Kitchen Base Run', cat: 'kitchen_base', dims: { W: 1200, H: 750, D: 550 }, shutters: 2, icon: '🍳', desc: 'Countertop base storage' },
+        { name: 'Kitchen Wall Cabinets', cat: 'kitchen_wall', dims: { W: 1200, H: 600, D: 300 }, shutters: 2, icon: '🎛️', desc: 'Overhead wall mounted' },
+        { name: 'TV Entertainment Unit', cat: 'tv_unit', dims: { W: 1800, H: 1800, D: 400 }, shutters: 2, icon: '📺', desc: 'Media console + back panel' },
+        { name: 'Crockery Glass Display', cat: 'crockery', dims: { W: 900, H: 2100, D: 450 }, shutters: 2, icon: '🍷', desc: 'Glass frame crockery display' },
+        { name: 'Dresser with Mirror', cat: 'dresser', dims: { W: 900, H: 2100, D: 450 }, shutters: 1, icon: '🪞', desc: 'Vanity counter with mirror' },
+        { name: 'Shoe Rack Unit', cat: 'shoe_rack', dims: { W: 900, H: 1050, D: 350 }, shutters: 2, icon: '👠', desc: 'Foyer entryway shoe storage' }
+      ];
+
+      var self = this;
+      grid.innerHTML = '';
+      catalog.forEach(function (c) {
+        var card = document.createElement('div');
+        card.style.cssText = 'padding:14px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);cursor:pointer;transition:all .15s ease;display:flex;flex-direction:column;gap:6px;';
+        card.innerHTML =
+          '<div style="font-size:24px;">' + c.icon + '</div>' +
+          '<div style="font-weight:600;font-size:13px;color:var(--ink);">' + c.name + '</div>' +
+          '<div style="font-size:11px;color:var(--ink-2);">' + c.dims.W + ' × ' + c.dims.H + ' × ' + c.dims.D + ' mm</div>' +
+          '<div style="font-size:11px;color:var(--ink-2);margin-top:2px;">' + c.desc + '</div>' +
+          '<button class="btn primary small" style="margin-top:8px;">+ Place in 3D</button>';
+        card.addEventListener('mouseenter', function () { card.style.borderColor = 'var(--blue)'; card.style.transform = 'translateY(-2px)'; });
+        card.addEventListener('mouseleave', function () { card.style.borderColor = 'var(--rule)'; card.style.transform = 'none'; });
+        card.addEventListener('click', function () {
+          self.placeModularUnitIn3D({
+            name: c.name,
+            category: c.cat,
+            dimensions: c.dims,
+            unitConfig: { shutters: c.shutters, type: c.type || 'hinged' }
+          });
+          modal.classList.remove('is-open');
+        });
+        grid.appendChild(card);
+      });
+
+      modal.classList.add('is-open');
+      modal.querySelectorAll('.modal-close-btn, .modal-backdrop').forEach(function (b) {
+        b.onclick = function () { modal.classList.remove('is-open'); };
+      });
     },
 
     renderBOQ: function () {

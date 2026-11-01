@@ -22,14 +22,14 @@
       "created_by": "usr_dev",
       "owner_name": "Dev Kancheti",
       "owner_email": "dev@orbixstudio.io",
-      "units_count": 1,
+      "units_count": 2,
       "boards_est": 6,
       "data": {
         "units": [
           {
             "label": "FM 600 (Kitchen Base)",
             "ctype": "kbase",
-            "_furnId": "furn_ribjygkq4",
+            "_furnId": "furn_xcaaktug7",
             "W": 600,
             "H": 750,
             "D": 550,
@@ -48,8 +48,33 @@
             "handle": "gprof",
             "hfinish": "black",
             "counter": "black",
-            "carcass": "BWP_18mm",
-            "shutterCol": "HDHMR_18mm"
+            "carcass": "Absolute White",
+            "shutterCol": "MDF 7711"
+          },
+          {
+            "label": "UNIT 2",
+            "ctype": "wardrobe",
+            "_furnId": "f_mvxhlq3nxki2",
+            "W": 1800,
+            "H": 2100,
+            "D": 600,
+            "T": 18,
+            "type": "hinged",
+            "shutters": 3,
+            "sections": 2,
+            "shelves": 4,
+            "drawers": 2,
+            "drawerH": 180,
+            "loft": true,
+            "loftH": 600,
+            "loftShutters": 2,
+            "back": 18,
+            "dstyle": "slab",
+            "handle": "ibh10",
+            "hfinish": "chrome",
+            "counter": "none",
+            "carcass": "MDF 1135",
+            "shutterCol": "MDF 3410"
           }
         ],
         "plan": {
@@ -66,7 +91,7 @@
             "dateCreated": "31 Oct 2026",
             "validUntil": "30 Nov 2026",
             "status": "approved",
-            "dateModified": "2026-11-01T06:40:16.180Z"
+            "dateModified": "2026-11-01T07:07:32.807Z"
           },
           "plan": {
             "gridSize": 100,
@@ -366,13 +391,13 @@
             ],
             "furniture": [
               {
-                "id": "furn_ribjygkq4",
+                "id": "furn_xcaaktug7",
                 "name": "FM 600 (Kitchen Base)",
                 "category": "kitchen_base",
                 "roomId": "room_cfjb9onkf",
                 "pos": {
-                  "x": 2500,
-                  "y": 3200,
+                  "x": -150,
+                  "y": -200,
                   "z": 0
                 },
                 "rotY": 0,
@@ -384,7 +409,7 @@
                 "materials": {
                   "shutter": {
                     "material": "HDHMR_18MM",
-                    "finish": "Brazilian Horizontal Walnut"
+                    "finish": "MDF 7711"
                   },
                   "carcass": {
                     "material": "BWP_18MM",
@@ -399,11 +424,55 @@
                   "counter": "black",
                   "handle": "gprof",
                   "hfinish": "black",
-                  "carcass": "BWP_18mm",
-                  "shutterCol": "HDHMR_18mm"
+                  "carcass": "Absolute White",
+                  "shutterCol": "MDF 7711",
+                  "ctype": "kbase",
+                  "type": "hinged",
+                  "loft": false,
+                  "loftH": 600,
+                  "back": 18
                 },
                 "pricingOverrides": null,
                 "notes": ""
+              },
+              {
+                "id": "f_mvxhlq3nxki2",
+                "name": "UNIT 2",
+                "category": "wardrobe",
+                "pos": {
+                  "x": -1750,
+                  "y": 300
+                },
+                "rotY": 0,
+                "dimensions": {
+                  "W": 1800,
+                  "H": 2100,
+                  "D": 600
+                },
+                "unitConfig": {
+                  "shutters": 3,
+                  "handle": "ibh10",
+                  "dstyle": "slab",
+                  "drawers": 2,
+                  "shelves": 4,
+                  "ctype": "wardrobe",
+                  "type": "hinged",
+                  "loft": true,
+                  "loftH": 600,
+                  "back": 18,
+                  "hfinish": "chrome",
+                  "shutterCol": "MDF 3410",
+                  "carcass": "MDF 1135"
+                },
+                "materials": {
+                  "shutter": {
+                    "finish": "MDF 3410"
+                  },
+                  "carcass": {
+                    "finish": "MDF 1135"
+                  }
+                },
+                "roomId": "room_cfjb9onkf"
               }
             ]
           },
@@ -749,13 +818,14 @@
               "transportLumpSum": 4500
             }
           },
-          "quotationHistory": []
+          "quotationHistory": [],
+          "units_count": 2
         }
       },
       "is_shared": false,
       "fork_count": 0,
       "created_at": "2026-10-31T07:29:40.598Z",
-      "updated_at": "2026-11-01T07:04:10.473Z"
+      "updated_at": "2026-11-01T07:19:11.299Z"
     },
     {
       "id": "proj_mvw214o8gxdq",

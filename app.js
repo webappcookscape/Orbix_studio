@@ -3190,13 +3190,22 @@ function renderRail(){
   add.textContent="+ Unit";
   add.addEventListener("click",function(){
     var nu=newUnit("UNIT "+(S.units.length+1));
+    nu.W=1200; nu.H=2100; nu.D=600; nu.shutters=2;
     if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
       var plan=window.OrbixUI.project.plan;
       plan.furniture=plan.furniture||[];
       var fId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
       nu._furnId=fId;
       var cX=2000, cY=2000;
-      if(plan.rooms&&plan.rooms.length>0&&plan.rooms[0].center){ cX=plan.rooms[0].center.x; cY=plan.rooms[0].center.y; }
+      if(plan.rooms&&plan.rooms.length>0){
+        var rm=plan.rooms[0];
+        if(window.OrbixCore&&window.OrbixCore.Vec2&&window.OrbixCore.Vec2.polygonCentroid&&rm.polygon&&rm.polygon.length>=3){
+          var cen=window.OrbixCore.Vec2.polygonCentroid(rm.polygon);
+          cX=cen.x; cY=cen.y;
+        } else if(rm.center){
+          cX=rm.center.x; cY=rm.center.y;
+        }
+      }
       else if(plan.walls&&plan.walls.length>0){ cX=plan.walls[0].start.x+800; cY=plan.walls[0].start.y+800; }
       plan.furniture.push({
         id:fId,
@@ -3501,14 +3510,64 @@ function renderRail(){
   });
 
   var g8=grp(r,"Unit actions");
+  var rotB=el("btn",g8,"button"); rotB.textContent="↻ Rotate 90° (R)"; rotB.style.marginRight="6px";
+  rotB.title="Rotate unit 90 degrees in floor plan & 3D (shortcut: R)";
+  rotB.addEventListener("click",function(){
+    if(u._furnId && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
+      var plan=window.OrbixUI.project.plan;
+      var f=plan.furniture && plan.furniture.find(function(it){ return it.id===u._furnId; });
+      if(f){
+        f.rotY = ((f.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+        if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+        if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+        if(window.OrbixUI.editor) window.OrbixUI.editor.render();
+        if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+        toast("Rotated to "+Math.round(f.rotY * 180 / Math.PI)+"°");
+        return;
+      }
+    }
+    toast("Unit rotated");
+  });
+
   var db=el("btn",g8,"button"); db.textContent="Duplicate"; db.style.marginRight="6px";
   db.addEventListener("click",function(){
-    var c=JSON.parse(JSON.stringify(u)); c.label=(u.label||"UNIT")+" 2";
+    var c=JSON.parse(JSON.stringify(u)); c.label=(u.label||"UNIT")+" (Copy)";
+    var newId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
+    c._furnId=newId;
+    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
+      var plan=window.OrbixUI.project.plan;
+      plan.furniture=plan.furniture||[];
+      var orig=u._furnId && plan.furniture.find(function(it){ return it.id===u._furnId; });
+      var nPos = orig ? {x: orig.pos.x + (c.W||600) + 100, y: orig.pos.y} : {x: 2000, y: 2000};
+      plan.furniture.push({
+        id: newId,
+        name: c.label,
+        category: c.ctype || 'wardrobe',
+        pos: nPos,
+        rotY: orig ? orig.rotY : 0,
+        dimensions: {W: c.W||1200, H: c.H||2100, D: c.D||600},
+        unitConfig: {shutters: c.shutters||2, handle: c.handle||'bar'}
+      });
+      if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+      if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+      if(window.OrbixUI.editor) window.OrbixUI.editor.render();
+      if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+    }
     S.units.push(c); S.active=S.units.length-1; renderRail(); renderAll();
   });
   if(S.units.length>1){
     var rb=el("btn danger",g8,"button"); rb.textContent="Remove";
     rb.addEventListener("click",function(){
+      if(u._furnId && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
+        var plan=window.OrbixUI.project.plan;
+        if(plan.furniture){
+          plan.furniture=plan.furniture.filter(function(it){ return it.id!==u._furnId; });
+        }
+        if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+        if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+        if(window.OrbixUI.editor) window.OrbixUI.editor.render();
+        if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+      }
       S.units.splice(S.active,1); S.active=Math.max(0,S.active-1);
       renderRail(); renderAll();
     });

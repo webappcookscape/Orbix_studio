@@ -403,6 +403,23 @@
             }
           }
         }
+        // Fallback: rotate active 3D Studio unit if any
+        if (typeof window !== 'undefined' && window.S && window.S.units && window.S.units[window.S.active]) {
+          var actU = window.S.units[window.S.active];
+          if (actU && actU._furnId && self.project.plan.furniture) {
+            for (var f2 = 0; f2 < self.project.plan.furniture.length; f2++) {
+              if (self.project.plan.furniture[f2].id === actU._furnId) {
+                self.project.plan.furniture[f2].rotY = ((self.project.plan.furniture[f2].rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+                self.pushHistory('Rotate Furniture');
+                self.render();
+                if (window.OrbixUI && window.OrbixUI.render3DHome) {
+                  window.OrbixUI.render3DHome();
+                }
+                return;
+              }
+            }
+          }
+        }
       }
       if (e.key === 'Escape') {
         self.wallChainStart = null;
@@ -765,19 +782,83 @@
       ctx.lineWidth = isSelected ? 2 : 1;
       ctx.stroke();
 
-      // Dimension badge along wall
+      // Architectural Dimension line along wall
       var lMm = Core.wallLength(w);
-      if (lMm > 400 && this.zoom > 0.04) {
-        var midWorld = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
+      if (lMm > 150 && this.zoom > 0.03) {
         var norm = Core.wallNormal(w);
-        var offsetWorld = { x: midWorld.x + norm.x * 250, y: midWorld.y + norm.y * 250 };
-        var badgeScreen = this.worldToScreen(offsetWorld);
+        var halfT = (w.thickness || 150) / 2;
+        var dimOffset = halfT + 220; // offset in world mm from wall center
 
-        ctx.fillStyle = isSelected ? '#1B4F72' : '#6C6862';
-        ctx.font = '500 10px "IBM Plex Mono", monospace';
+        var dsWorld = { x: w.start.x + norm.x * dimOffset, y: w.start.y + norm.y * dimOffset };
+        var deWorld = { x: w.end.x + norm.x * dimOffset, y: w.end.y + norm.y * dimOffset };
+
+        var sDs = this.worldToScreen(dsWorld);
+        var sDe = this.worldToScreen(deWorld);
+
+        // Extension witness lines
+        var wsOff = this.worldToScreen({ x: w.start.x + norm.x * (halfT + 30), y: w.start.y + norm.y * (halfT + 30) });
+        var weOff = this.worldToScreen({ x: w.end.x + norm.x * (halfT + 30), y: w.end.y + norm.y * (halfT + 30) });
+        var dsExt = this.worldToScreen({ x: dsWorld.x + norm.x * 50, y: dsWorld.y + norm.y * 50 });
+        var deExt = this.worldToScreen({ x: deWorld.x + norm.x * 50, y: deWorld.y + norm.y * 50 });
+
+        ctx.strokeStyle = isSelected ? '#1B4F72' : 'rgba(108, 104, 98, 0.65)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(wsOff.x, wsOff.y); ctx.lineTo(dsExt.x, dsExt.y);
+        ctx.moveTo(weOff.x, weOff.y); ctx.lineTo(deExt.x, deExt.y);
+        ctx.stroke();
+
+        // Main dimension line
+        ctx.strokeStyle = isSelected ? '#1B4F72' : '#8C857B';
+        ctx.lineWidth = isSelected ? 1.5 : 1;
+        ctx.beginPath();
+        ctx.moveTo(sDs.x, sDs.y);
+        ctx.lineTo(sDe.x, sDe.y);
+        ctx.stroke();
+
+        // Architectural 45-degree ticks
+        var wallAngle = Math.atan2(w.end.y - w.start.y, w.end.x - w.start.x);
+        var tickAngle = wallAngle + Math.PI / 4;
+        var tickLen = 6;
+        ctx.strokeStyle = isSelected ? '#1B4F72' : '#33302B';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(sDs.x - Math.cos(tickAngle) * tickLen, sDs.y - Math.sin(tickAngle) * tickLen);
+        ctx.lineTo(sDs.x + Math.cos(tickAngle) * tickLen, sDs.y + Math.sin(tickAngle) * tickLen);
+        ctx.moveTo(sDe.x - Math.cos(tickAngle) * tickLen, sDe.y - Math.sin(tickAngle) * tickLen);
+        ctx.lineTo(sDe.x + Math.cos(tickAngle) * tickLen, sDe.y + Math.sin(tickAngle) * tickLen);
+        ctx.stroke();
+
+        // Dimension text pill badge
+        var midX = (sDs.x + sDe.x) / 2;
+        var midY = (sDs.y + sDe.y) / 2;
+        var textAngle = wallAngle;
+        if (textAngle > Math.PI / 2) textAngle -= Math.PI;
+        else if (textAngle < -Math.PI / 2) textAngle += Math.PI;
+
+        ctx.save();
+        ctx.translate(midX, midY);
+        ctx.rotate(textAngle);
+
+        var dimText = Math.round(lMm).toLocaleString() + ' mm';
+        ctx.font = isSelected ? '700 11px "IBM Plex Mono", monospace' : '600 10.5px "IBM Plex Mono", monospace';
+        var tw = ctx.measureText(dimText).width;
+        var th = 16;
+
+        ctx.fillStyle = isSelected ? '#1B4F72' : '#FFFFFF';
+        ctx.strokeStyle = isSelected ? '#2E7BB5' : '#8C857B';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(-tw / 2 - 5, -th / 2, tw + 10, th, 3);
+        else ctx.rect(-tw / 2 - 5, -th / 2, tw + 10, th);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = isSelected ? '#FFFFFF' : '#1A1816';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(Math.round(lMm) + ' mm', badgeScreen.x, badgeScreen.y);
+        ctx.fillText(dimText, 0, 0);
+        ctx.restore();
       }
 
       // If selected, draw handles at endpoints
@@ -890,28 +971,60 @@
     for (var i = 0; i < furnList.length; i++) {
       var f = furnList[i];
       var isSelected = this.isSelected('furniture', f.id);
-      var wPx = (f.dimensions.W || 1200) * this.zoom;
-      var dPx = (f.dimensions.D || 600) * this.zoom;
+      var wMm = (f.dimensions && f.dimensions.W) || 1200;
+      var dMm = (f.dimensions && f.dimensions.D) || 600;
+      var wPx = wMm * this.zoom;
+      var dPx = dMm * this.zoom;
       var sPos = this.worldToScreen(f.pos);
 
       ctx.save();
       ctx.translate(sPos.x, sPos.y);
       ctx.rotate(f.rotY || 0);
 
-      // Furniture boundary
-      ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.25)' : 'rgba(110, 78, 53, 0.15)';
+      // Furniture body boundary
+      ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
       ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
 
       ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
-      ctx.lineWidth = isSelected ? 2 : 1;
+      ctx.lineWidth = isSelected ? 2 : 1.2;
       ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
 
-      // Label
-      ctx.fillStyle = '#23211E';
-      ctx.font = '500 10px "IBM Plex Sans", sans-serif';
+      // Shutter dividers
+      var numShutters = (f.unitConfig && f.unitConfig.shutters) || (wMm > 1200 ? 3 : wMm > 600 ? 2 : 1);
+      if (numShutters > 1) {
+        ctx.strokeStyle = isSelected ? 'rgba(27, 79, 114, 0.35)' : 'rgba(110, 78, 53, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (var s = 1; s < numShutters; s++) {
+          var sx = -wPx / 2 + s * (wPx / numShutters);
+          ctx.moveTo(sx, -dPx / 2);
+          ctx.lineTo(sx, dPx / 2);
+        }
+        ctx.stroke();
+      }
+
+      // Front Shutter / Door edge (at +dPx/2) - clearly distinguishes front from back
+      ctx.strokeStyle = isSelected ? '#2563eb' : '#92400e';
+      ctx.lineWidth = isSelected ? 3.5 : 2.5;
+      ctx.beginPath();
+      ctx.moveTo(-wPx / 2, dPx / 2);
+      ctx.lineTo(wPx / 2, dPx / 2);
+      ctx.stroke();
+
+      // Front handle pill indicator
+      ctx.fillStyle = isSelected ? '#1d4ed8' : '#1f2937';
+      ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
+
+      // Labels: Name + Size
+      ctx.fillStyle = isSelected ? '#1e3a8a' : '#23211E';
+      ctx.font = '600 10.5px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(f.name, 0, 0);
+      ctx.fillText(f.name, 0, -6);
+
+      ctx.fillStyle = isSelected ? '#1d4ed8' : '#78716c';
+      ctx.font = '500 9px "IBM Plex Mono", monospace';
+      ctx.fillText(Math.round(wMm) + ' × ' + Math.round(dMm) + ' mm', 0, 8);
 
       ctx.restore();
     }

@@ -1804,6 +1804,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         <div class="stagebar">
           <div class="legend" id="legend"></div>
           <div class="viewbtns">
+            <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
             <button class="minibtn" id="presentBtn" aria-pressed="false">Present</button>
             <button class="minibtn" id="openBtn" aria-pressed="false">Open all</button>
             <button class="minibtn" id="frontBtn">Front</button>
@@ -2297,6 +2298,26 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         <button type="submit" class="btn primary" id="loginSubmitBtn">Sign In</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ══════ MODAL: PLACE UNIT IN 3D STUDIO ══════ -->
+<div class="orbix-modal" id="modalPlaceUnit3D">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog" style="max-width:680px;">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Place Modular Unit in 3D Studio</h3>
+        <p class="modal-sub">Choose a unit to place into the 3D room, customize, and calculate cutting list</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="unit-catalog-grid" id="placeUnitCatalogGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));gap:12px;"></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn modal-close-btn">Close</button>
+    </div>
   </div>
 </div>
 
@@ -6139,6 +6160,23 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
             }
           }
         }
+        // Fallback: rotate active 3D Studio unit if any
+        if (typeof window !== 'undefined' && window.S && window.S.units && window.S.units[window.S.active]) {
+          var actU = window.S.units[window.S.active];
+          if (actU && actU._furnId && self.project.plan.furniture) {
+            for (var f2 = 0; f2 < self.project.plan.furniture.length; f2++) {
+              if (self.project.plan.furniture[f2].id === actU._furnId) {
+                self.project.plan.furniture[f2].rotY = ((self.project.plan.furniture[f2].rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+                self.pushHistory('Rotate Furniture');
+                self.render();
+                if (window.OrbixUI && window.OrbixUI.render3DHome) {
+                  window.OrbixUI.render3DHome();
+                }
+                return;
+              }
+            }
+          }
+        }
       }
       if (e.key === 'Escape') {
         self.wallChainStart = null;
@@ -6501,19 +6539,83 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       ctx.lineWidth = isSelected ? 2 : 1;
       ctx.stroke();
 
-      // Dimension badge along wall
+      // Architectural Dimension line along wall
       var lMm = Core.wallLength(w);
-      if (lMm > 400 && this.zoom > 0.04) {
-        var midWorld = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
+      if (lMm > 150 && this.zoom > 0.03) {
         var norm = Core.wallNormal(w);
-        var offsetWorld = { x: midWorld.x + norm.x * 250, y: midWorld.y + norm.y * 250 };
-        var badgeScreen = this.worldToScreen(offsetWorld);
+        var halfT = (w.thickness || 150) / 2;
+        var dimOffset = halfT + 220; // offset in world mm from wall center
 
-        ctx.fillStyle = isSelected ? '#1B4F72' : '#6C6862';
-        ctx.font = '500 10px "IBM Plex Mono", monospace';
+        var dsWorld = { x: w.start.x + norm.x * dimOffset, y: w.start.y + norm.y * dimOffset };
+        var deWorld = { x: w.end.x + norm.x * dimOffset, y: w.end.y + norm.y * dimOffset };
+
+        var sDs = this.worldToScreen(dsWorld);
+        var sDe = this.worldToScreen(deWorld);
+
+        // Extension witness lines
+        var wsOff = this.worldToScreen({ x: w.start.x + norm.x * (halfT + 30), y: w.start.y + norm.y * (halfT + 30) });
+        var weOff = this.worldToScreen({ x: w.end.x + norm.x * (halfT + 30), y: w.end.y + norm.y * (halfT + 30) });
+        var dsExt = this.worldToScreen({ x: dsWorld.x + norm.x * 50, y: dsWorld.y + norm.y * 50 });
+        var deExt = this.worldToScreen({ x: deWorld.x + norm.x * 50, y: deWorld.y + norm.y * 50 });
+
+        ctx.strokeStyle = isSelected ? '#1B4F72' : 'rgba(108, 104, 98, 0.65)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(wsOff.x, wsOff.y); ctx.lineTo(dsExt.x, dsExt.y);
+        ctx.moveTo(weOff.x, weOff.y); ctx.lineTo(deExt.x, deExt.y);
+        ctx.stroke();
+
+        // Main dimension line
+        ctx.strokeStyle = isSelected ? '#1B4F72' : '#8C857B';
+        ctx.lineWidth = isSelected ? 1.5 : 1;
+        ctx.beginPath();
+        ctx.moveTo(sDs.x, sDs.y);
+        ctx.lineTo(sDe.x, sDe.y);
+        ctx.stroke();
+
+        // Architectural 45-degree ticks
+        var wallAngle = Math.atan2(w.end.y - w.start.y, w.end.x - w.start.x);
+        var tickAngle = wallAngle + Math.PI / 4;
+        var tickLen = 6;
+        ctx.strokeStyle = isSelected ? '#1B4F72' : '#33302B';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(sDs.x - Math.cos(tickAngle) * tickLen, sDs.y - Math.sin(tickAngle) * tickLen);
+        ctx.lineTo(sDs.x + Math.cos(tickAngle) * tickLen, sDs.y + Math.sin(tickAngle) * tickLen);
+        ctx.moveTo(sDe.x - Math.cos(tickAngle) * tickLen, sDe.y - Math.sin(tickAngle) * tickLen);
+        ctx.lineTo(sDe.x + Math.cos(tickAngle) * tickLen, sDe.y + Math.sin(tickAngle) * tickLen);
+        ctx.stroke();
+
+        // Dimension text pill badge
+        var midX = (sDs.x + sDe.x) / 2;
+        var midY = (sDs.y + sDe.y) / 2;
+        var textAngle = wallAngle;
+        if (textAngle > Math.PI / 2) textAngle -= Math.PI;
+        else if (textAngle < -Math.PI / 2) textAngle += Math.PI;
+
+        ctx.save();
+        ctx.translate(midX, midY);
+        ctx.rotate(textAngle);
+
+        var dimText = Math.round(lMm).toLocaleString() + ' mm';
+        ctx.font = isSelected ? '700 11px "IBM Plex Mono", monospace' : '600 10.5px "IBM Plex Mono", monospace';
+        var tw = ctx.measureText(dimText).width;
+        var th = 16;
+
+        ctx.fillStyle = isSelected ? '#1B4F72' : '#FFFFFF';
+        ctx.strokeStyle = isSelected ? '#2E7BB5' : '#8C857B';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(-tw / 2 - 5, -th / 2, tw + 10, th, 3);
+        else ctx.rect(-tw / 2 - 5, -th / 2, tw + 10, th);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = isSelected ? '#FFFFFF' : '#1A1816';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(Math.round(lMm) + ' mm', badgeScreen.x, badgeScreen.y);
+        ctx.fillText(dimText, 0, 0);
+        ctx.restore();
       }
 
       // If selected, draw handles at endpoints
@@ -6626,28 +6728,60 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
     for (var i = 0; i < furnList.length; i++) {
       var f = furnList[i];
       var isSelected = this.isSelected('furniture', f.id);
-      var wPx = (f.dimensions.W || 1200) * this.zoom;
-      var dPx = (f.dimensions.D || 600) * this.zoom;
+      var wMm = (f.dimensions && f.dimensions.W) || 1200;
+      var dMm = (f.dimensions && f.dimensions.D) || 600;
+      var wPx = wMm * this.zoom;
+      var dPx = dMm * this.zoom;
       var sPos = this.worldToScreen(f.pos);
 
       ctx.save();
       ctx.translate(sPos.x, sPos.y);
       ctx.rotate(f.rotY || 0);
 
-      // Furniture boundary
-      ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.25)' : 'rgba(110, 78, 53, 0.15)';
+      // Furniture body boundary
+      ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
       ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
 
       ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
-      ctx.lineWidth = isSelected ? 2 : 1;
+      ctx.lineWidth = isSelected ? 2 : 1.2;
       ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
 
-      // Label
-      ctx.fillStyle = '#23211E';
-      ctx.font = '500 10px "IBM Plex Sans", sans-serif';
+      // Shutter dividers
+      var numShutters = (f.unitConfig && f.unitConfig.shutters) || (wMm > 1200 ? 3 : wMm > 600 ? 2 : 1);
+      if (numShutters > 1) {
+        ctx.strokeStyle = isSelected ? 'rgba(27, 79, 114, 0.35)' : 'rgba(110, 78, 53, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (var s = 1; s < numShutters; s++) {
+          var sx = -wPx / 2 + s * (wPx / numShutters);
+          ctx.moveTo(sx, -dPx / 2);
+          ctx.lineTo(sx, dPx / 2);
+        }
+        ctx.stroke();
+      }
+
+      // Front Shutter / Door edge (at +dPx/2) - clearly distinguishes front from back
+      ctx.strokeStyle = isSelected ? '#2563eb' : '#92400e';
+      ctx.lineWidth = isSelected ? 3.5 : 2.5;
+      ctx.beginPath();
+      ctx.moveTo(-wPx / 2, dPx / 2);
+      ctx.lineTo(wPx / 2, dPx / 2);
+      ctx.stroke();
+
+      // Front handle pill indicator
+      ctx.fillStyle = isSelected ? '#1d4ed8' : '#1f2937';
+      ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
+
+      // Labels: Name + Size
+      ctx.fillStyle = isSelected ? '#1e3a8a' : '#23211E';
+      ctx.font = '600 10.5px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(f.name, 0, 0);
+      ctx.fillText(f.name, 0, -6);
+
+      ctx.fillStyle = isSelected ? '#1d4ed8' : '#78716c';
+      ctx.font = '500 9px "IBM Plex Mono", monospace';
+      ctx.fillText(Math.round(wMm) + ' × ' + Math.round(dMm) + ' mm', 0, 8);
 
       ctx.restore();
     }
@@ -7479,6 +7613,13 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         });
       }
 
+      var btnPlace3D = document.getElementById('placeUnit3DBtn');
+      if (btnPlace3D) {
+        btnPlace3D.addEventListener('click', function () {
+          self.openPlaceUnitModal3D();
+        });
+      }
+
       var btnExportJson = document.getElementById('planExportJson');
       if (btnExportJson) {
         btnExportJson.addEventListener('click', function () {
@@ -7964,8 +8105,30 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (R)</button>' +
           '<button class="btn danger full" id="inspDelFurn" style="margin-top:8px">Delete Unit</button>';
 
+        function syncInspectorTo3D() {
+          if (window.S && window.S.units) {
+            for (var u = 0; u < window.S.units.length; u++) {
+              if (window.S.units[u]._furnId === fn.id) {
+                var eu = window.S.units[u];
+                eu.label = fn.name;
+                eu.W = fn.dimensions.W;
+                eu.H = fn.dimensions.H;
+                eu.D = fn.dimensions.D;
+                if (fn.unitConfig) {
+                  if (fn.unitConfig.shutters !== undefined) eu.shutters = fn.unitConfig.shutters;
+                  if (fn.unitConfig.drawers !== undefined) eu.drawers = fn.unitConfig.drawers;
+                  if (fn.unitConfig.shutterCol) eu.shutterCol = fn.unitConfig.shutterCol;
+                  if (fn.unitConfig.carcass) eu.carcass = fn.unitConfig.carcass;
+                }
+                break;
+              }
+            }
+          }
+        }
+
         document.getElementById('inspFurnName').addEventListener('change', function (e) {
           fn.name = e.target.value;
+          syncInspectorTo3D();
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
@@ -7978,6 +8141,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         });
         document.getElementById('inspFurnW').addEventListener('change', function (e) {
           fn.dimensions.W = parseFloat(e.target.value);
+          syncInspectorTo3D();
           self.editor.pushHistory('Resize Furniture');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -7986,6 +8150,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         });
         document.getElementById('inspFurnH').addEventListener('change', function (e) {
           fn.dimensions.H = parseFloat(e.target.value);
+          syncInspectorTo3D();
           self.editor.pushHistory('Resize Furniture');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -7994,6 +8159,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         });
         document.getElementById('inspFurnD').addEventListener('change', function (e) {
           fn.dimensions.D = parseFloat(e.target.value);
+          syncInspectorTo3D();
           self.editor.pushHistory('Resize Furniture');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -8003,6 +8169,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         document.getElementById('inspFurnShutters').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.shutters = parseInt(e.target.value) || 0;
+          syncInspectorTo3D();
           self.editor.pushHistory('Edit Shutters Count');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -8012,6 +8179,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         document.getElementById('inspFurnDrawers').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.drawers = parseInt(e.target.value) || 0;
+          syncInspectorTo3D();
           self.editor.pushHistory('Edit Drawers Count');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -8024,6 +8192,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           fn.materials.shutter.finish = e.target.value;
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.shutterCol = e.target.value;
+          syncInspectorTo3D();
           self.editor.pushHistory('Change Shutter Finish');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -8036,6 +8205,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           fn.materials.carcass.finish = e.target.value;
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.carcass = e.target.value;
+          syncInspectorTo3D();
           self.editor.pushHistory('Change Carcass Finish');
           self.saveToLocalStorage();
           self.renderBOQ();
@@ -8106,6 +8276,11 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
         });
         document.getElementById('inspDelFurn').addEventListener('click', function () {
           self.editor.deleteSelected();
+          if (window.S && window.S.units) {
+            window.S.units = window.S.units.filter(function (u) { return u._furnId !== fn.id; });
+            window.S.active = Math.max(0, window.S.units.length - 1);
+            if (typeof window.renderRail === 'function') window.renderRail();
+          }
           if (self.render3DHome) self.render3DHome();
         });
       }
@@ -8143,17 +8318,22 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
           if (fn.name) existing.label = fn.name;
           newUnits.push(existing);
         } else {
+          var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
+          var isWall = (fn.category === 'kitchen_wall');
+          var defH = isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 1800 : (fn.category === 'crockery' ? 2100 : 2100));
+          var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
+          var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 300 : isKitchen ? 550 : 600);
           var u = {
             label: fn.name,
-            ctype: isKitchen ? 'kbase' : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
+            ctype: isKitchen ? (isWall ? 'kwall' : 'kbase') : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
             _furnId: fn.id,
-            W: fn.dimensions.W || 600,
-            H: fn.dimensions.H || 750,
-            D: fn.dimensions.D || 550,
+            W: (fn.dimensions && fn.dimensions.W) || defW,
+            H: (fn.dimensions && fn.dimensions.H) || defH,
+            D: (fn.dimensions && fn.dimensions.D) || defD,
             T: 18,
             type: (fn.unitConfig && fn.unitConfig.type) || 'hinged',
-            shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1),
-            sections: (fn.unitConfig && fn.unitConfig.sections) || (fn.dimensions.W > 1200 ? 2 : 1),
+            shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (defW > 1200 ? 3 : defW > 600 ? 2 : 1),
+            sections: (fn.unitConfig && fn.unitConfig.sections) || (defW > 1200 ? 2 : 1),
             shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isKitchen ? 1 : 3),
             drawers: (fn.unitConfig && fn.unitConfig.drawers) || 0,
             drawerH: 180,
@@ -8292,6 +8472,136 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
       }
       this.project.units_count = furnList.length;
       this.saveToLocalStorage();
+    },
+
+    placeModularUnitIn3D: function (preset) {
+      if (!this.project || !this.project.plan) return;
+      var plan = this.project.plan;
+      plan.furniture = plan.furniture || [];
+
+      preset = preset || {
+        name: 'Master Bed Wardrobe',
+        category: 'wardrobe',
+        dimensions: { W: 1200, H: 2100, D: 600 },
+        unitConfig: { shutters: 2, handle: 'bar', shelves: 3, drawers: 0, dstyle: 'slab' },
+        materials: { shutter: { finish: 'Brazilian Horizontal Walnut' }, carcass: { finish: 'Absolute White' } }
+      };
+
+      var fId = 'f_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+      var cX = 2000, cY = 2000;
+      var matchedRoomId = null;
+
+      if (plan.rooms && plan.rooms.length > 0) {
+        var rm = plan.rooms[0];
+        if (root.OrbixCore && root.OrbixCore.Vec2 && rm.polygon && rm.polygon.length >= 3) {
+          var cent = root.OrbixCore.Vec2.polygonCentroid(rm.polygon);
+          cX = cent.x;
+          cY = cent.y;
+          matchedRoomId = rm.id;
+        }
+      } else if (plan.walls && plan.walls.length > 0) {
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        plan.walls.forEach(function (w) {
+          minX = Math.min(minX, w.start.x, w.end.x);
+          maxX = Math.max(maxX, w.start.x, w.end.x);
+          minY = Math.min(minY, w.start.y, w.end.y);
+          maxY = Math.max(maxY, w.start.y, w.end.y);
+        });
+        cX = (minX + maxX) / 2;
+        cY = (minY + maxY) / 2;
+      }
+
+      // Offset if units already exist so they don't stack
+      if (plan.furniture.length > 0) {
+        var offsetCount = plan.furniture.length % 5;
+        cX += (offsetCount * 300);
+      }
+
+      var newFurn = {
+        id: fId,
+        name: preset.name || 'Modular Unit',
+        category: preset.category || 'wardrobe',
+        roomId: matchedRoomId,
+        pos: { x: cX, y: cY, z: 0 },
+        rotY: 0,
+        dimensions: Object.assign({ W: 1200, H: 2100, D: 600 }, preset.dimensions || {}),
+        unitConfig: Object.assign({
+          shutters: 2,
+          handle: 'bar',
+          dstyle: 'slab',
+          shelves: 3,
+          drawers: 0,
+          carcass: 'Absolute White',
+          shutterCol: 'Brazilian Horizontal Walnut'
+        }, preset.unitConfig || {}),
+        materials: Object.assign({
+          shutter: { material: 'HDHMR_18mm', finish: 'Brazilian Horizontal Walnut' },
+          carcass: { material: 'BWP_18mm', finish: 'Absolute White' }
+        }, preset.materials || {})
+      };
+
+      plan.furniture.push(newFurn);
+      this.project.units_count = plan.furniture.length;
+      this.saveToLocalStorage();
+      if (root.OrbixProjects && root.OrbixProjects.saveActiveProject) {
+        root.OrbixProjects.saveActiveProject();
+      }
+      if (this.editor) {
+        this.editor.selected = [{ type: 'furniture', id: fId }];
+        this.editor.render();
+      }
+      this.selectFurnitureIn3DStudio(fId);
+      if (typeof window.showToast === 'function') {
+        window.showToast('Placed ' + newFurn.name + ' in 3D room');
+      }
+    },
+
+    openPlaceUnitModal3D: function () {
+      var modal = document.getElementById('modalPlaceUnit3D');
+      var grid = document.getElementById('placeUnitCatalogGrid');
+      if (!modal || !grid) return;
+
+      var catalog = [
+        { name: '2-Door Wardrobe', cat: 'wardrobe', dims: { W: 900, H: 2100, D: 600 }, shutters: 2, icon: '🚪', desc: 'Compact bedroom wardrobe' },
+        { name: '3-Door Wardrobe', cat: 'wardrobe', dims: { W: 1500, H: 2100, D: 600 }, shutters: 3, icon: '🚪', desc: 'Master bedroom with drawers' },
+        { name: 'Sliding Wardrobe', cat: 'wardrobe', dims: { W: 1800, H: 2100, D: 650 }, shutters: 2, icon: '🪟', type: 'sliding', desc: 'Smooth sliding shutters' },
+        { name: 'Kitchen Base Run', cat: 'kitchen_base', dims: { W: 1200, H: 750, D: 550 }, shutters: 2, icon: '🍳', desc: 'Countertop base storage' },
+        { name: 'Kitchen Wall Cabinets', cat: 'kitchen_wall', dims: { W: 1200, H: 600, D: 300 }, shutters: 2, icon: '🎛️', desc: 'Overhead wall mounted' },
+        { name: 'TV Entertainment Unit', cat: 'tv_unit', dims: { W: 1800, H: 1800, D: 400 }, shutters: 2, icon: '📺', desc: 'Media console + back panel' },
+        { name: 'Crockery Glass Display', cat: 'crockery', dims: { W: 900, H: 2100, D: 450 }, shutters: 2, icon: '🍷', desc: 'Glass frame crockery display' },
+        { name: 'Dresser with Mirror', cat: 'dresser', dims: { W: 900, H: 2100, D: 450 }, shutters: 1, icon: '🪞', desc: 'Vanity counter with mirror' },
+        { name: 'Shoe Rack Unit', cat: 'shoe_rack', dims: { W: 900, H: 1050, D: 350 }, shutters: 2, icon: '👠', desc: 'Foyer entryway shoe storage' }
+      ];
+
+      var self = this;
+      grid.innerHTML = '';
+      catalog.forEach(function (c) {
+        var card = document.createElement('div');
+        card.style.cssText = 'padding:14px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);cursor:pointer;transition:all .15s ease;display:flex;flex-direction:column;gap:6px;';
+        card.innerHTML =
+          '<div style="font-size:24px;">' + c.icon + '</div>' +
+          '<div style="font-weight:600;font-size:13px;color:var(--ink);">' + c.name + '</div>' +
+          '<div style="font-size:11px;color:var(--ink-2);">' + c.dims.W + ' × ' + c.dims.H + ' × ' + c.dims.D + ' mm</div>' +
+          '<div style="font-size:11px;color:var(--ink-2);margin-top:2px;">' + c.desc + '</div>' +
+          '<button class="btn primary small" style="margin-top:8px;">+ Place in 3D</button>';
+        card.addEventListener('mouseenter', function () { card.style.borderColor = 'var(--blue)'; card.style.transform = 'translateY(-2px)'; });
+        card.addEventListener('mouseleave', function () { card.style.borderColor = 'var(--rule)'; card.style.transform = 'none'; });
+        card.addEventListener('click', function () {
+          self.placeModularUnitIn3D({
+            name: c.name,
+            category: c.cat,
+            dimensions: c.dims,
+            unitConfig: { shutters: c.shutters, type: c.type || 'hinged' }
+          });
+          modal.classList.remove('is-open');
+        });
+        grid.appendChild(card);
+      });
+
+      modal.classList.add('is-open');
+      modal.querySelectorAll('.modal-close-btn, .modal-backdrop').forEach(function (b) {
+        b.onclick = function () { modal.classList.remove('is-open'); };
+      });
     },
 
     renderBOQ: function () {
@@ -12183,13 +12493,22 @@ function renderRail(){
   add.textContent="+ Unit";
   add.addEventListener("click",function(){
     var nu=newUnit("UNIT "+(S.units.length+1));
+    nu.W=1200; nu.H=2100; nu.D=600; nu.shutters=2;
     if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
       var plan=window.OrbixUI.project.plan;
       plan.furniture=plan.furniture||[];
       var fId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
       nu._furnId=fId;
       var cX=2000, cY=2000;
-      if(plan.rooms&&plan.rooms.length>0&&plan.rooms[0].center){ cX=plan.rooms[0].center.x; cY=plan.rooms[0].center.y; }
+      if(plan.rooms&&plan.rooms.length>0){
+        var rm=plan.rooms[0];
+        if(window.OrbixCore&&window.OrbixCore.Vec2&&window.OrbixCore.Vec2.polygonCentroid&&rm.polygon&&rm.polygon.length>=3){
+          var cen=window.OrbixCore.Vec2.polygonCentroid(rm.polygon);
+          cX=cen.x; cY=cen.y;
+        } else if(rm.center){
+          cX=rm.center.x; cY=rm.center.y;
+        }
+      }
       else if(plan.walls&&plan.walls.length>0){ cX=plan.walls[0].start.x+800; cY=plan.walls[0].start.y+800; }
       plan.furniture.push({
         id:fId,
@@ -12494,14 +12813,64 @@ function renderRail(){
   });
 
   var g8=grp(r,"Unit actions");
+  var rotB=el("btn",g8,"button"); rotB.textContent="↻ Rotate 90° (R)"; rotB.style.marginRight="6px";
+  rotB.title="Rotate unit 90 degrees in floor plan & 3D (shortcut: R)";
+  rotB.addEventListener("click",function(){
+    if(u._furnId && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
+      var plan=window.OrbixUI.project.plan;
+      var f=plan.furniture && plan.furniture.find(function(it){ return it.id===u._furnId; });
+      if(f){
+        f.rotY = ((f.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+        if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+        if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+        if(window.OrbixUI.editor) window.OrbixUI.editor.render();
+        if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+        toast("Rotated to "+Math.round(f.rotY * 180 / Math.PI)+"°");
+        return;
+      }
+    }
+    toast("Unit rotated");
+  });
+
   var db=el("btn",g8,"button"); db.textContent="Duplicate"; db.style.marginRight="6px";
   db.addEventListener("click",function(){
-    var c=JSON.parse(JSON.stringify(u)); c.label=(u.label||"UNIT")+" 2";
+    var c=JSON.parse(JSON.stringify(u)); c.label=(u.label||"UNIT")+" (Copy)";
+    var newId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
+    c._furnId=newId;
+    if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
+      var plan=window.OrbixUI.project.plan;
+      plan.furniture=plan.furniture||[];
+      var orig=u._furnId && plan.furniture.find(function(it){ return it.id===u._furnId; });
+      var nPos = orig ? {x: orig.pos.x + (c.W||600) + 100, y: orig.pos.y} : {x: 2000, y: 2000};
+      plan.furniture.push({
+        id: newId,
+        name: c.label,
+        category: c.ctype || 'wardrobe',
+        pos: nPos,
+        rotY: orig ? orig.rotY : 0,
+        dimensions: {W: c.W||1200, H: c.H||2100, D: c.D||600},
+        unitConfig: {shutters: c.shutters||2, handle: c.handle||'bar'}
+      });
+      if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+      if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+      if(window.OrbixUI.editor) window.OrbixUI.editor.render();
+      if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+    }
     S.units.push(c); S.active=S.units.length-1; renderRail(); renderAll();
   });
   if(S.units.length>1){
     var rb=el("btn danger",g8,"button"); rb.textContent="Remove";
     rb.addEventListener("click",function(){
+      if(u._furnId && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
+        var plan=window.OrbixUI.project.plan;
+        if(plan.furniture){
+          plan.furniture=plan.furniture.filter(function(it){ return it.id!==u._furnId; });
+        }
+        if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+        if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+        if(window.OrbixUI.editor) window.OrbixUI.editor.render();
+        if(window.OrbixUI.render3DHome) window.OrbixUI.render3DHome();
+      }
       S.units.splice(S.active,1); S.active=Math.max(0,S.active-1);
       renderRail(); renderAll();
     });
