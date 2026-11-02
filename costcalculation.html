@@ -972,25 +972,18 @@
             <input type="number" id="inputValue" class="form-input mono" placeholder="e.g. 12.28282" step="any" required>
           </div>
 
-          <!-- Addons Checkboxes (from image annotations) -->
+          <!-- Addons Checkboxes -->
           <div class="addons-box">
             <div
               style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">
-              Optional Add-ons (Per Sheet Image)
+              Optional Add-on
             </div>
-            <label class="addon-item">
+            <label class="addon-item" style="border-bottom:none;padding-bottom:0;margin-bottom:0;">
               <div class="addon-label-wrap">
                 <input type="checkbox" id="addonGlass" class="addon-checkbox">
-                <span>Glass Shutter Option (As marked in image)</span>
+                <span>Glass Shutter Option</span>
               </div>
-              <span class="addon-badge">+ ₹80.00</span>
-            </label>
-            <label class="addon-item">
-              <div class="addon-label-wrap">
-                <input type="checkbox" id="addonCrockery" class="addon-checkbox">
-                <span>Crockery Drawer Fitting</span>
-              </div>
-              <span class="addon-badge">+ ₹150.00</span>
+              <span class="addon-badge">+ ₹50.00</span>
             </label>
           </div>
 
@@ -1313,11 +1306,10 @@
       return 0;
     }
 
-    // Get Addon Rate (Glass = 80, Crockery = 150)
+    // Get Addon Rate (Glass = 50)
     function getAddonRate() {
       let addon = 0;
-      if (document.getElementById('addonGlass').checked) addon += 80;
-      if (document.getElementById('addonCrockery').checked) addon += 150;
+      if (document.getElementById('addonGlass').checked) addon += 50;
       return addon;
     }
 
@@ -1489,8 +1481,7 @@
       const variant = document.getElementById('variantSelect').value;
 
       const addons = [];
-      if (document.getElementById('addonGlass').checked) addons.push('Glass (+₹80)');
-      if (document.getElementById('addonCrockery').checked) addons.push('Crockery (+₹150)');
+      if (document.getElementById('addonGlass').checked) addons.push('Glass (+₹50)');
       const addonText = addons.join(', ');
 
       const newRow = {
@@ -1521,7 +1512,6 @@
       // Reset input value for next item
       document.getElementById('inputValue').value = '';
       document.getElementById('addonGlass').checked = false;
-      document.getElementById('addonCrockery').checked = false;
       updateCalculation();
       document.getElementById('inputValue').focus();
     }
@@ -1707,7 +1697,6 @@
     document.getElementById('variantSelect').addEventListener('change', updateCalculation);
     document.getElementById('inputValue').addEventListener('input', updateCalculation);
     document.getElementById('addonGlass').addEventListener('change', updateCalculation);
-    document.getElementById('addonCrockery').addEventListener('change', updateCalculation);
     document.getElementById('calcForm').addEventListener('submit', handleAddRow);
 
     // Initial Boot
