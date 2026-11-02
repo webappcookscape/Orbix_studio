@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,7 +9,9 @@
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --bg: #0f172a;
@@ -33,7 +36,11 @@
       --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       background-color: var(--bg);
@@ -100,52 +107,50 @@
 
     .nav-btn {
       color: var(--text-muted);
-      background: transparent;
-      border: 1px solid transparent;
-      padding: 6px 14px;
-      border-radius: 6px;
+      text-decoration: none;
       font-size: 13px;
       font-weight: 500;
-      text-decoration: none;
-      transition: all 0.15s ease;
-      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s;
     }
 
     .nav-btn:hover {
       color: #fff;
-      background: var(--border);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .nav-btn.active {
       color: #fff;
-      background: var(--primary);
+      background: var(--primary-light);
+      font-weight: 600;
+      border: 1px solid rgba(230, 57, 70, 0.3);
     }
 
-    /* Container */
+    /* Main Container */
     .container {
       max-width: 1440px;
       width: 100%;
       margin: 0 auto;
-      padding: 24px 20px 60px;
+      padding: 24px;
       flex: 1;
     }
 
-    /* Header Title */
+    /* Page Header */
     .page-header {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
       margin-bottom: 24px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 16px;
     }
 
     .ph-title h1 {
       font-size: 24px;
       font-weight: 700;
       color: #fff;
+      letter-spacing: -0.02em;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -159,66 +164,109 @@
 
     .ph-actions {
       display: flex;
-      align-items: center;
       gap: 10px;
+      align-items: center;
     }
 
-    /* Button Styles */
+    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      background: #334155;
+      color: #fff;
+      border: 1px solid transparent;
       padding: 8px 16px;
+      border-radius: 6px;
       font-size: 13px;
       font-weight: 600;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text);
       cursor: pointer;
       transition: all 0.15s ease;
+      text-decoration: none;
       font-family: inherit;
     }
 
     .btn:hover {
-      background: var(--bg-card-hover);
-      border-color: #475569;
+      background: #475569;
     }
 
     .btn.primary {
       background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
     }
 
     .btn.primary:hover {
       background: var(--primary-hover);
-      border-color: var(--primary-hover);
-      box-shadow: 0 0 15px rgba(230, 57, 70, 0.4);
     }
 
     .btn.success {
       background: var(--success);
-      border-color: var(--success);
-      color: #fff;
     }
 
     .btn.success:hover {
       background: #059669;
     }
 
-    .btn.danger {
-      background: #dc2626;
-      border-color: #dc2626;
-      color: #fff;
-    }
-
     .btn.sm {
-      padding: 4px 10px;
+      padding: 5px 10px;
       font-size: 12px;
     }
 
-    /* Main Grid */
+    .btn.danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn.danger:hover {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    /* Top Summary Bar */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .summary-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-box.highlight {
+      border-color: rgba(230, 57, 70, 0.4);
+      background: linear-gradient(135deg, rgba(230, 57, 70, 0.08), var(--bg-card));
+    }
+
+    .sb-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .sb-val {
+      font-family: var(--mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .summary-box.highlight .sb-val {
+      color: #ff6b6b;
+    }
+
+    /* Two Column Layout */
     .calc-layout {
       display: grid;
       grid-template-columns: 460px 1fr;
@@ -226,18 +274,18 @@
       align-items: start;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1080px) {
       .calc-layout {
         grid-template-columns: 1fr;
       }
     }
 
-    /* Card */
+    /* Card Panels */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 20px;
+      padding: 22px;
       box-shadow: var(--shadow);
     }
 
@@ -292,7 +340,8 @@
       text-transform: none;
     }
 
-    .form-input, .form-select {
+    .form-input,
+    .form-select {
       width: 100%;
       background: var(--bg-input);
       border: 1px solid var(--border);
@@ -304,7 +353,8 @@
       transition: all 0.15s ease;
     }
 
-    .form-input:focus, .form-select:focus {
+    .form-input:focus,
+    .form-select:focus {
       outline: none;
       border-color: var(--border-focus);
       box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.2);
@@ -314,12 +364,6 @@
       font-family: var(--mono);
       font-size: 15px;
       letter-spacing: 0.02em;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
     }
 
     /* Addons / Options Box */
@@ -368,62 +412,6 @@
       border-radius: 4px;
     }
 
-    /* Live Output Box */
-    .output-card {
-      background: linear-gradient(135deg, rgba(230, 57, 70, 0.12), rgba(15, 23, 42, 0.7));
-      border: 1px solid rgba(230, 57, 70, 0.35);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 20px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .output-card::after {
-      content: '5 FLOAT PRECISION';
-      position: absolute;
-      top: 8px;
-      right: 10px;
-      font-size: 9px;
-      font-family: var(--mono);
-      font-weight: 700;
-      color: rgba(230, 57, 70, 0.7);
-      letter-spacing: 0.1em;
-    }
-
-    .output-metric-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 4px;
-    }
-
-    .output-result {
-      font-family: var(--mono);
-      font-size: 28px;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.2;
-      text-shadow: 0 0 15px rgba(230, 57, 70, 0.3);
-      word-break: break-all;
-    }
-
-    .output-formula {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px dashed rgba(255, 255, 255, 0.1);
-    }
-
-    .output-formula span.highlight {
-      color: var(--blue);
-      font-weight: 600;
-    }
-
     /* Rate Quick Info Grid */
     .rate-pills {
       display: grid;
@@ -442,8 +430,10 @@
 
     .rate-pill .label {
       font-size: 10px;
+      font-weight: 600;
       color: var(--text-dim);
       text-transform: uppercase;
+      margin-bottom: 2px;
     }
 
     .rate-pill .val {
@@ -451,59 +441,228 @@
       font-size: 13px;
       font-weight: 600;
       color: #fff;
-      margin-top: 2px;
     }
 
-    /* Form Actions */
+    /* PROMINENT OUTPUT CARD WITH 1-CLICK COPY-PASTE */
+    .output-card {
+      background: linear-gradient(135deg, rgba(230, 57, 70, 0.14), rgba(15, 23, 42, 0.85));
+      border: 1.5px solid rgba(230, 57, 70, 0.45);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+
+    .output-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .output-metric-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .output-badge {
+      font-size: 10px;
+      font-family: var(--mono);
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    /* Main Big Display Row (Clickable) */
+    .output-main-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgba(11, 17, 32, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .output-main-display:hover {
+      border-color: rgba(230, 57, 70, 0.6);
+      background: rgba(11, 17, 32, 0.95);
+      box-shadow: 0 0 12px rgba(230, 57, 70, 0.2);
+    }
+
+    .output-result {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.1;
+      text-shadow: 0 0 16px rgba(230, 57, 70, 0.4);
+      letter-spacing: -0.01em;
+      user-select: all;
+    }
+
+    .output-copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--sans);
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .output-copy-btn:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 4px 12px rgba(230, 57, 70, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .output-copy-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Quick Copy Action Chips */
+    .quick-copy-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .quick-chip {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-family: var(--mono);
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .quick-chip:hover {
+      color: #fff;
+      border-color: var(--blue);
+      background: rgba(56, 189, 248, 0.15);
+    }
+
+    /* Selectable / Copyable Readonly Input */
+    .copy-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .copy-input-field {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: #38bdf8;
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .copy-input-field:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+
+    /* Sub-Details & Precision Breakdown */
+    .output-details {
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.12);
+      font-family: var(--mono);
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .precision-line {
+      display: flex;
+      justify-content: space-between;
+      color: #e2e8f0;
+    }
+
+    .formula-line {
+      color: var(--text-muted);
+    }
+
+    .highlight {
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    /* Form Buttons */
     .form-actions {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
+      display: flex;
       gap: 10px;
     }
 
-    /* Summary Bar */
-    .summary-bar {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px;
-      margin-bottom: 20px;
+    .form-actions .btn {
+      flex: 1;
     }
 
-    .summary-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 14px 16px;
+    /* Sheet / Table Card */
+    .sheet-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .summary-box .sb-title {
+    .storage-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       font-size: 11px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-    }
-
-    .summary-box .sb-val {
+      color: var(--success);
+      background: var(--success-light);
+      padding: 3px 8px;
+      border-radius: 12px;
       font-family: var(--mono);
-      font-size: 20px;
-      font-weight: 700;
-      color: #fff;
-      margin-top: 4px;
     }
 
-    .summary-box.highlight {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(30, 41, 59, 0.9));
-      border-color: rgba(16, 185, 129, 0.4);
+    .storage-indicator .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      display: inline-block;
+      box-shadow: 0 0 6px var(--success);
     }
 
-    .summary-box.highlight .sb-val {
-      color: #34d399;
-    }
-
-    /* Sheet / Data Table */
     .table-container {
-      width: 100%;
       overflow-x: auto;
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -514,25 +673,26 @@
       width: 100%;
       border-collapse: collapse;
       text-align: left;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .sheet-table th {
       background: #111827;
       color: var(--text-muted);
       font-weight: 600;
+      padding: 10px 12px;
       text-transform: uppercase;
       font-size: 11px;
-      letter-spacing: 0.04em;
-      padding: 12px 14px;
+      letter-spacing: 0.05em;
       border-bottom: 1px solid var(--border);
       white-space: nowrap;
     }
 
     .sheet-table td {
-      padding: 12px 14px;
+      padding: 10px 12px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      color: var(--text);
+      color: #e2e8f0;
+      vertical-align: middle;
     }
 
     .sheet-table tr:hover td {
@@ -541,149 +701,128 @@
 
     .sheet-table td.mono {
       font-family: var(--mono);
-      font-size: 13px;
-    }
-
-    .sheet-table td.bold {
-      font-weight: 600;
-      color: #fff;
     }
 
     .sheet-table td.total-cost {
       font-family: var(--mono);
       font-weight: 700;
-      color: #38bdf8;
+      color: #ff6b6b;
+      font-size: 13px;
     }
 
-    .tag {
-      font-size: 11px;
+    .sheet-table .tag {
+      display: inline-block;
       padding: 2px 6px;
       border-radius: 4px;
+      font-size: 10px;
+      font-family: var(--mono);
       font-weight: 600;
-      display: inline-block;
+      text-transform: uppercase;
     }
 
     .tag.variant {
-      background: rgba(56, 189, 248, 0.12);
-      color: var(--blue);
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
       border: 1px solid rgba(56, 189, 248, 0.3);
     }
 
     .tag.addon {
-      background: rgba(245, 158, 11, 0.12);
-      color: var(--amber);
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
       border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
     .table-empty {
-      padding: 48px 16px;
+      padding: 40px 20px;
       text-align: center;
       color: var(--text-dim);
     }
 
     .table-empty svg {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       opacity: 0.4;
     }
 
-    /* Table Toolbar */
-    .sheet-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .storage-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--success);
-      font-family: var(--mono);
-    }
-
-    .storage-indicator .dot {
-      width: 8px;
-      height: 8px;
-      background: var(--success);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--success);
-    }
-
-    /* Modal for Rate Matrix Table */
+    /* Modal for Rate Matrix */
     .matrix-modal {
-      display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(4px);
-      z-index: 100;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
       align-items: center;
       justify-content: center;
+      z-index: 100;
       padding: 20px;
+      backdrop-filter: blur(4px);
     }
 
-    .matrix-modal.open {
+    .matrix-modal.active {
       display: flex;
     }
 
     .matrix-content {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      max-width: 1280px;
+      border-radius: var(--radius);
+      max-width: 1200px;
       width: 100%;
       max-height: 90vh;
-      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
       box-shadow: var(--shadow);
-      padding: 24px;
+      padding: 20px;
     }
 
     .matrix-head {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
     }
 
     .matrix-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 12px;
-      text-align: center;
+    }
+
+    .matrix-table th,
+    .matrix-table td {
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      text-align: right;
     }
 
     .matrix-table th {
       background: #111827;
-      padding: 10px 8px;
-      border: 1px solid var(--border);
       color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      position: sticky;
+      top: 0;
+    }
+
+    .matrix-table th:first-child,
+    .matrix-table td:first-child {
+      text-align: left;
       font-weight: 600;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.02);
+      position: sticky;
+      left: 0;
     }
 
     .matrix-table td {
-      padding: 8px 6px;
-      border: 1px solid var(--border);
       font-family: var(--mono);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: background 0.15s;
     }
 
-    .matrix-table td:hover {
+    .matrix-table td:hover:not(:first-child) {
       background: var(--primary-light);
       color: #fff;
-    }
-
-    .matrix-table td.cat-name {
-      text-align: left;
-      font-family: var(--sans);
-      font-weight: 600;
-      color: #fff;
-      cursor: default;
-      background: rgba(255, 255, 255, 0.02);
     }
 
     /* Toast Notification */
@@ -692,38 +831,34 @@
       bottom: 24px;
       right: 24px;
       background: #1e293b;
-      border: 1px solid var(--border);
+      border: 1px solid var(--primary);
       color: #fff;
       padding: 12px 18px;
       border-radius: 8px;
       font-size: 13px;
       font-weight: 500;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      z-index: 200;
+      z-index: 1000;
       display: flex;
       align-items: center;
       gap: 10px;
-      transform: translateY(100px);
       opacity: 0;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(20px);
+      transition: all 0.25s ease;
+      pointer-events: none;
     }
 
     .toast.show {
-      transform: translateY(0);
       opacity: 1;
+      transform: translateY(0);
     }
 
     .toast.success {
       border-color: var(--success);
-      border-left: 4px solid var(--success);
-    }
-
-    .toast.info {
-      border-color: var(--blue);
-      border-left: 4px solid var(--blue);
     }
   </style>
 </head>
+
 <body>
 
   <!-- Topbar -->
@@ -750,7 +885,7 @@
     <div class="page-header">
       <div class="ph-title">
         <h1>📊 Material Rate & Cost Calculation Sheet</h1>
-        <p>Interactive calculator form with 5-decimal float precision and persistent local sheet storage</p>
+        <p>Interactive calculator form with 1-click copy-paste & persistent local sheet storage</p>
       </div>
       <div class="ph-actions">
         <button type="button" class="btn" id="openMatrixBtn">
@@ -773,12 +908,12 @@
         <div class="sb-val" id="sbTotalValue">0.00000</div>
       </div>
       <div class="summary-box highlight">
-        <div class="sb-title">Total Sheet Cost (5 Decimals)</div>
-        <div class="sb-val" id="sbTotalCost">₹ 0.00000</div>
+        <div class="sb-title">Total Sheet Cost</div>
+        <div class="sb-val" id="sbTotalCost">₹ 0.00</div>
       </div>
       <div class="summary-box">
-        <div class="sb-title">Average Rate / Sq.Ft</div>
-        <div class="sb-val" id="sbAvgRate">₹ 0.00000</div>
+        <div class="sb-title">Average Rate / Unit</div>
+        <div class="sb-val" id="sbAvgRate">₹ 0.00</div>
       </div>
     </div>
 
@@ -789,20 +924,12 @@
       <section class="card">
         <div class="card-header">
           <h2 class="card-title">📐 Cost Calculator</h2>
-          <span class="card-badge">5-Float Output</span>
+          <span class="card-badge">Instant Copy-Paste</span>
         </div>
 
-        <form id="calcForm">
-          <!-- Item Description -->
-          <div class="form-group">
-            <label class="form-label" for="itemLabel">
-              Item Description / Note
-              <span class="hint">Optional identifier</span>
-            </label>
-            <input type="text" id="itemLabel" class="form-input" placeholder="e.g. Master Bedroom Sliding Wardrobe">
-          </div>
+        <form id="calcForm">          
 
-          <!-- Category Selection -->
+          <!-- Category Selection (1st Field) -->
           <div class="form-group">
             <label class="form-label" for="categorySelect">
               Category *
@@ -811,7 +938,7 @@
             <select id="categorySelect" class="form-select" required></select>
           </div>
 
-          <!-- Variant Selection -->
+          <!-- Variant Selection (2nd Field) -->
           <div class="form-group">
             <label class="form-label" for="variantSelect">
               Variant Grade *
@@ -824,15 +951,15 @@
           <div class="rate-pills">
             <div class="rate-pill">
               <div class="label">Base Rate</div>
-              <div class="val" id="pillBaseRate">₹ 0.00000</div>
+              <div class="val" id="pillBaseRate">₹ 0.00</div>
             </div>
             <div class="rate-pill">
               <div class="label">Addons</div>
-              <div class="val" id="pillAddonRate">+ ₹ 0.00000</div>
+              <div class="val" id="pillAddonRate">+ ₹ 0.00</div>
             </div>
             <div class="rate-pill" style="border-color: rgba(56, 189, 248, 0.4);">
               <div class="label">Effective Rate</div>
-              <div class="val" id="pillEffectiveRate" style="color: var(--blue);">₹ 0.00000</div>
+              <div class="val" id="pillEffectiveRate" style="color: var(--blue);">₹ 0.00</div>
             </div>
           </div>
 
@@ -842,12 +969,13 @@
               Enter Value (Area / Qty / Measure) *
               <span class="hint">Decimal allowed</span>
             </label>
-            <input type="number" id="inputValue" class="form-input mono" placeholder="e.g. 42.5" step="any" required>
+            <input type="number" id="inputValue" class="form-input mono" placeholder="e.g. 12.28282" step="any" required>
           </div>
 
           <!-- Addons Checkboxes (from image annotations) -->
           <div class="addons-box">
-            <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">
+            <div
+              style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">
               Optional Add-ons (Per Sheet Image)
             </div>
             <label class="addon-item">
@@ -855,23 +983,62 @@
                 <input type="checkbox" id="addonGlass" class="addon-checkbox">
                 <span>Glass Shutter Option (As marked in image)</span>
               </div>
-              <span class="addon-badge">+ ₹80.00000</span>
+              <span class="addon-badge">+ ₹80.00</span>
             </label>
             <label class="addon-item">
               <div class="addon-label-wrap">
                 <input type="checkbox" id="addonCrockery" class="addon-checkbox">
                 <span>Crockery Drawer Fitting</span>
               </div>
-              <span class="addon-badge">+ ₹150.00000</span>
+              <span class="addon-badge">+ ₹150.00</span>
             </label>
           </div>
 
-          <!-- Real-Time Calculated Result Box -->
+          <!-- Real-Time Calculated Result Box with 1-Click Copy -->
           <div class="output-card">
-            <div class="output-metric-label">Calculated Answer (5 Float Points)</div>
-            <div class="output-result" id="liveCalculatedOutput">₹ 0.00000</div>
-            <div class="output-formula" id="liveFormulaText">
-              Formula: <span class="highlight">0.00000</span> × <span class="highlight">₹0.00000</span> = <span class="highlight">₹0.00000</span>
+            <div class="output-top-row">
+              <div class="output-metric-label">Calculated Answer</div>
+              <span class="output-badge">Click to Copy</span>
+            </div>
+
+            <!-- Big Clickable Output Banner (e.g. ₹ 18976.96) -->
+            <div class="output-main-display" id="mainOutputBox" title="Click anywhere to copy ₹ 18976.96">
+              <div class="output-result" id="liveCalculatedOutput">₹ 0.00</div>
+              <button type="button" class="output-copy-btn" id="btnCopyMain">
+                📋 Copy
+              </button>
+            </div>
+
+            <!-- Quick Copy Shortcuts -->
+            <div class="quick-copy-bar">
+              <button type="button" class="quick-chip" id="btnCopyFormatted" title="Copy with Rupee symbol (e.g. ₹ 18976.96)">
+                📋 <span id="chipCopyFormatted">₹ 0.00</span>
+              </button>
+              <button type="button" class="quick-chip" id="btnCopyPlain" title="Copy clean number without symbol (e.g. 18976.96)">
+                📋 Copy Number (<span id="chipCopyPlain">0.00</span>)
+              </button>
+              <button type="button" class="quick-chip" id="btnCopy5Float" title="Copy exact 5-decimal float">
+                📋 5-Float (<span id="chipCopy5Float">0.00000</span>)
+              </button>
+            </div>
+
+            <!-- Selectable Readonly Input Field for Easy Ctrl+C -->
+            <div class="copy-input-row">
+              <input type="text" id="copyInputField" class="copy-input-field" readonly value="₹ 0.00" title="Click to select all & copy" onclick="this.select()">
+              <button type="button" class="btn sm" id="btnCopyInput" style="white-space:nowrap;">
+                📋 Copy Box
+              </button>
+            </div>
+
+            <!-- 5-Float Precision & Formula Details -->
+            <div class="output-details">
+              <div class="precision-line">
+                <span>Exact 5-Float Value:</span>
+                <strong id="live5FloatText" style="color:var(--text);">0.00000</strong>
+              </div>
+              <div class="formula-line" id="liveFormulaText">
+                Formula: <span class="highlight">0.00000</span> × <span class="highlight">₹0.00000</span> = <span class="highlight">₹0.00000</span>
+              </div>
             </div>
           </div>
 
@@ -899,8 +1066,8 @@
 
         <div class="sheet-toolbar">
           <div style="display:flex;align-items:center;gap:8px;">
-            <button type="button" class="btn sm" id="copySheetBtn" title="Copy to clipboard for Google Sheets / Excel">
-              📋 Copy Data
+            <button type="button" class="btn sm" id="copySheetBtn" title="Copy table to clipboard for Google Sheets / Excel">
+              📋 Copy Table (TSV)
             </button>
             <button type="button" class="btn sm" id="printSheetBtn" title="Print sheet">
               🖨️ Print
@@ -919,13 +1086,13 @@
             <thead>
               <tr>
                 <th>#</th>
-                <th>Item / Note</th>
                 <th>Category</th>
                 <th>Variant</th>
                 <th>Addon</th>
                 <th>Unit Rate (₹)</th>
-                <th>Entered Value</th>
-                <th>Calculated Total (₹)</th>
+                <th>Value</th>
+                <th>Total Cost (₹)</th>
+                <th>Copy</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -935,10 +1102,10 @@
           </table>
           <div id="tableEmptyState" class="table-empty">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M9 17h6M9 13h6M9 9h6M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+              <path d="M9 17h6M9 13h6M9 9h6M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
             </svg>
             <p>No calculations added to sheet yet.</p>
-            <p style="font-size:12px;margin-top:4px;">Fill the form on the left and click "Add to Sheet".</p>
+            <p style="font-size:12px;margin-top:4px;">Enter a value on the left and click "Add to Sheet".</p>
           </div>
         </div>
       </section>
@@ -971,7 +1138,7 @@
 
   <script>
     // ═══════════════════════════════════════════════════════════════════════════
-    // COST MATRIX DATA (Exact Values from Image)
+    // COST MATRIX DATA (Exact Values from Reference Image)
     // ═══════════════════════════════════════════════════════════════════════════
     const VARIANTS = [
       'PRICE 1',
@@ -1037,50 +1204,101 @@
     };
 
     const CATEGORIES = Object.keys(COST_MATRIX);
-
-    // LocalStorage Key
     const STORAGE_KEY = 'orbix_cost_calculation_sheet';
-
-    // State
     let sheetData = [];
+    let currentCalc = {
+      baseRate: 0,
+      addonRate: 0,
+      effectiveRate: 0,
+      inputValue: 0,
+      totalCost: 0,
+      formattedCurrency: '₹ 0.00',
+      plainNumber: '0.00',
+      float5: '0.00000'
+    };
 
-    // Helper: format to exact 5 float decimal points
+    // Helper: format 5 decimal floats
     function toFloat5(num) {
       const val = parseFloat(num);
-      if (isNaN(val)) return '0.00000';
-      return val.toFixed(5);
+      return isNaN(val) ? '0.00000' : val.toFixed(5);
     }
 
-    // Helper: format with currency symbol & 5 float decimals
-    function formatCurrency5(num) {
-      return '₹ ' + toFloat5(num);
+    // Helper: format currency e.g. ₹ 18976.96
+    function formatCurrency2(num) {
+      const val = parseFloat(num);
+      if (isNaN(val)) return '₹ 0.00';
+      return '₹ ' + val.toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     }
 
-    // Show Toast
-    function showToast(msg, type = 'success') {
+    // Helper: plain 2-decimal number e.g. 18976.96
+    function toPlainNumber(num) {
+      const val = parseFloat(num);
+      return isNaN(val) ? '0.00' : val.toFixed(2);
+    }
+
+    // Toast notification
+    function showToast(msg, type = 'info') {
       const toast = document.getElementById('toastBox');
       toast.textContent = msg;
       toast.className = 'toast show ' + type;
-      setTimeout(() => {
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
         toast.className = 'toast';
-      }, 3000);
+      }, 2500);
     }
 
-    // Populate Category & Variant Selects
+    // Copy to clipboard helper with robust fallback
+    function copyToClipboard(text, label = 'Value') {
+      if (!text) return;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('✓ Copied: ' + text, 'success');
+        }).catch(() => fallbackCopy(text, label));
+      } else {
+        fallbackCopy(text, label);
+      }
+    }
+
+    function fallbackCopy(text, label = 'Value') {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        if (successful) {
+          showToast('✓ Copied: ' + text, 'success');
+        } else {
+          showToast('Please manually copy: ' + text, 'info');
+        }
+      } catch (err) {
+        showToast('Copy error: ' + err.message, 'info');
+      }
+    }
+
+    // Populate Category & Variant dropdowns
     function initDropdowns() {
       const catSelect = document.getElementById('categorySelect');
       const varSelect = document.getElementById('variantSelect');
 
-      catSelect.innerHTML = CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
-      varSelect.innerHTML = VARIANTS.map(v => `<option value="${v}">${v}</option>`).join('');
+      catSelect.innerHTML = CATEGORIES.map(cat => '<option value="' + cat + '">' + cat + '</option>').join('');
+      varSelect.innerHTML = VARIANTS.map(v => '<option value="' + v + '">' + v + '</option>').join('');
 
-      // Restore last selected category & variant if saved
+      // Restore last picked category/variant if any
       try {
         const lastCat = localStorage.getItem('orbix_last_cat');
         const lastVar = localStorage.getItem('orbix_last_var');
         if (lastCat && COST_MATRIX[lastCat]) catSelect.value = lastCat;
         if (lastVar && VARIANTS.includes(lastVar)) varSelect.value = lastVar;
-      } catch (e) {}
+      } catch (e) { }
 
       updateCalculation();
     }
@@ -1095,7 +1313,7 @@
       return 0;
     }
 
-    // Get Addon Rate
+    // Get Addon Rate (Glass = 80, Crockery = 150)
     function getAddonRate() {
       let addon = 0;
       if (document.getElementById('addonGlass').checked) addon += 80;
@@ -1113,25 +1331,44 @@
       const inputValue = parseFloat(rawVal) || 0;
       const totalCost = inputValue * effectiveRate;
 
-      // Update pills
-      document.getElementById('pillBaseRate').textContent = formatCurrency5(baseRate);
-      document.getElementById('pillAddonRate').textContent = '+ ' + formatCurrency5(addonRate);
-      document.getElementById('pillEffectiveRate').textContent = formatCurrency5(effectiveRate);
+      // Rate pills
+      document.getElementById('pillBaseRate').textContent = formatCurrency2(baseRate);
+      document.getElementById('pillAddonRate').textContent = '+ ' + formatCurrency2(addonRate);
+      document.getElementById('pillEffectiveRate').textContent = formatCurrency2(effectiveRate);
 
-      // Update prominent live output (5 float points)
-      document.getElementById('liveCalculatedOutput').textContent = formatCurrency5(totalCost);
+      // Formatted representations
+      const formattedCurrency = formatCurrency2(totalCost);
+      const plainNumber = toPlainNumber(totalCost);
+      const float5 = toFloat5(totalCost);
 
-      // Update formula
-      document.getElementById('liveFormulaText').innerHTML =
-        `Formula: <span class="highlight">${toFloat5(inputValue)}</span> × <span class="highlight">₹${toFloat5(effectiveRate)}</span> = <span class="highlight">₹${toFloat5(totalCost)}</span>`;
-
-      return {
+      currentCalc = {
         baseRate,
         addonRate,
         effectiveRate,
         inputValue,
-        totalCost
+        totalCost,
+        formattedCurrency,
+        plainNumber,
+        float5
       };
+
+      // Update main output banner (e.g. ₹ 18976.96)
+      document.getElementById('liveCalculatedOutput').textContent = formattedCurrency;
+
+      // Update quick copy chips
+      document.getElementById('chipCopyFormatted').textContent = formattedCurrency;
+      document.getElementById('chipCopyPlain').textContent = plainNumber;
+      document.getElementById('chipCopy5Float').textContent = float5;
+
+      // Update copy input field
+      document.getElementById('copyInputField').value = formattedCurrency;
+
+      // Update 5-float text & formula
+      document.getElementById('live5FloatText').textContent = float5;
+      document.getElementById('liveFormulaText').innerHTML =
+        'Formula: <span class="highlight">' + toFloat5(inputValue) + '</span> × <span class="highlight">₹' + toFloat5(effectiveRate) + '</span> = <span class="highlight">₹' + float5 + '</span>';
+
+      return currentCalc;
     }
 
     // Load Sheet from LocalStorage
@@ -1160,6 +1397,17 @@
       }
     }
 
+    // Escape HTML
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     // Render Sheet Table
     function renderSheetTable() {
       const tbody = document.getElementById('sheetTableBody');
@@ -1175,16 +1423,26 @@
       emptyState.style.display = 'none';
 
       tbody.innerHTML = sheetData.map((row, idx) => {
+        const formattedTotal = formatCurrency2(row.totalCost);
+        const float5Total = toFloat5(row.totalCost);
+
         return `
           <tr>
             <td class="mono" style="color:var(--text-dim);">${idx + 1}</td>
-            <td class="bold">${escapeHtml(row.itemLabel || '—')}</td>
             <td><strong>${escapeHtml(row.category)}</strong></td>
             <td><span class="tag variant">${escapeHtml(row.variant)}</span></td>
             <td>${row.addonText ? `<span class="tag addon">${escapeHtml(row.addonText)}</span>` : '<span style="color:var(--text-dim);">None</span>'}</td>
             <td class="mono">₹ ${toFloat5(row.effectiveRate)}</td>
-            <td class="mono bold">${toFloat5(row.inputValue)}</td>
-            <td class="total-cost">₹ ${toFloat5(row.totalCost)}</td>
+            <td class="mono bold" style="color:#fff;">${toFloat5(row.inputValue)}</td>
+            <td class="total-cost" style="cursor:pointer;" onclick="copyToClipboard('${formattedTotal}', 'Total Cost')" title="Click to copy ${formattedTotal}">
+              ${formattedTotal}
+              <div style="font-size:10px;color:var(--text-dim);font-weight:normal;">5-fl: ${float5Total}</div>
+            </td>
+            <td>
+              <button type="button" class="btn sm" onclick="copyToClipboard('${formattedTotal}', 'Total Cost')" title="Copy ${formattedTotal} to clipboard">
+                📋 Copy
+              </button>
+            </td>
             <td>
               <button type="button" class="btn sm danger" onclick="deleteRow(${idx})" title="Delete row">
                 ✕
@@ -1212,8 +1470,8 @@
 
       document.getElementById('sbTotalItems').textContent = totalItems;
       document.getElementById('sbTotalValue').textContent = toFloat5(totalVal);
-      document.getElementById('sbTotalCost').textContent = formatCurrency5(totalCost);
-      document.getElementById('sbAvgRate').textContent = formatCurrency5(avgRate);
+      document.getElementById('sbTotalCost').textContent = formatCurrency2(totalCost);
+      document.getElementById('sbAvgRate').textContent = formatCurrency2(avgRate);
     }
 
     // Add Row to Sheet
@@ -1229,7 +1487,6 @@
 
       const category = document.getElementById('categorySelect').value;
       const variant = document.getElementById('variantSelect').value;
-      const itemLabel = document.getElementById('itemLabel').value.trim();
 
       const addons = [];
       if (document.getElementById('addonGlass').checked) addons.push('Glass (+₹80)');
@@ -1239,7 +1496,6 @@
       const newRow = {
         id: 'row_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
         timestamp: new Date().toISOString(),
-        itemLabel: itemLabel,
         category: category,
         variant: variant,
         addonText: addonText,
@@ -1258,12 +1514,11 @@
       try {
         localStorage.setItem('orbix_last_cat', category);
         localStorage.setItem('orbix_last_var', variant);
-      } catch (err) {}
+      } catch (err) { }
 
-      showToast(`✓ Added to sheet: ₹ ${toFloat5(calc.totalCost)} (5 floats)`, 'success');
+      showToast('✓ Added to sheet: ' + calc.formattedCurrency, 'success');
 
-      // Reset input value & label for next item
-      document.getElementById('itemLabel').value = '';
+      // Reset input value for next item
       document.getElementById('inputValue').value = '';
       document.getElementById('addonGlass').checked = false;
       document.getElementById('addonCrockery').checked = false;
@@ -1272,7 +1527,7 @@
     }
 
     // Delete Row
-    window.deleteRow = function(idx) {
+    window.deleteRow = function (idx) {
       if (confirm('Delete this calculation row from the sheet?')) {
         sheetData.splice(idx, 1);
         saveSheetToStorage();
@@ -1298,22 +1553,22 @@
       updateCalculation();
     });
 
-    // Copy Data to Clipboard
+    // Copy Data (TSV) for Excel / Google Sheets
     document.getElementById('copySheetBtn').addEventListener('click', () => {
       if (!sheetData.length) {
         showToast('Sheet is currently empty', 'info');
         return;
       }
 
-      const headers = ['S.No', 'Item', 'Category', 'Variant', 'Addons', 'Unit Rate (₹)', 'Entered Value', 'Calculated Total (₹)'];
+      const headers = ['S.No', 'Category', 'Variant', 'Addons', 'Unit Rate (₹)', 'Entered Value', 'Total Cost (₹)', '5-Float Cost'];
       const rows = sheetData.map((r, i) => [
         i + 1,
-        `"${(r.itemLabel || '').replace(/"/g, '""')}"`,
-        `"${r.category}"`,
-        `"${r.variant}"`,
-        `"${r.addonText || 'None'}"`,
+        '"' + r.category + '"',
+        '"' + r.variant + '"',
+        '"' + (r.addonText || 'None') + '"',
         toFloat5(r.effectiveRate),
         toFloat5(r.inputValue),
+        toPlainNumber(r.totalCost),
         toFloat5(r.totalCost)
       ]);
 
@@ -1322,7 +1577,7 @@
       navigator.clipboard.writeText(tsv).then(() => {
         showToast('✓ Sheet copied! Paste directly into Google Sheets / Excel', 'success');
       }).catch(err => {
-        alert('Could not copy to clipboard: ' + err.message);
+        fallbackCopy(tsv, 'Sheet TSV');
       });
     });
 
@@ -1333,16 +1588,16 @@
         return;
       }
 
-      const headers = ['S.No', 'Timestamp', 'Item Description', 'Category', 'Variant', 'Addons', 'Unit Rate (INR)', 'Entered Value (Sq.Ft/Units)', 'Calculated Total (INR)'];
+      const headers = ['S.No', 'Timestamp', 'Category', 'Variant', 'Addons', 'Unit Rate (INR)', 'Entered Value', 'Calculated Total (INR)', '5-Float Total'];
       const rows = sheetData.map((r, i) => [
         i + 1,
-        `"${r.timestamp}"`,
-        `"${(r.itemLabel || '').replace(/"/g, '""')}"`,
-        `"${r.category}"`,
-        `"${r.variant}"`,
-        `"${r.addonText || 'None'}"`,
+        '"' + r.timestamp + '"',
+        '"' + r.category + '"',
+        '"' + r.variant + '"',
+        '"' + (r.addonText || 'None') + '"',
         toFloat5(r.effectiveRate),
         toFloat5(r.inputValue),
+        toPlainNumber(r.totalCost),
         toFloat5(r.totalCost)
       ]);
 
@@ -1350,11 +1605,11 @@
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement('a');
       link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `orbix_cost_calculation_${new Date().toISOString().slice(0, 10)}.csv`);
+      link.setAttribute('download', 'orbix_cost_calculation_' + new Date().toISOString().slice(0, 10) + '.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      showToast('✓ CSV sheet downloaded with 5-float precision', 'success');
+      showToast('✓ CSV sheet downloaded', 'success');
     });
 
     // Print Sheet
@@ -1362,20 +1617,54 @@
       window.print();
     });
 
+    // COPY EVENT LISTENERS
+    // 1. Click main output banner -> copies formatted amount (e.g. ₹ 18976.96)
+    document.getElementById('mainOutputBox').addEventListener('click', () => {
+      copyToClipboard(currentCalc.formattedCurrency, 'Formatted Total');
+    });
+
+    // 2. Click main copy button
+    document.getElementById('btnCopyMain').addEventListener('click', (e) => {
+      e.stopPropagation();
+      copyToClipboard(currentCalc.formattedCurrency, 'Formatted Total');
+    });
+
+    // 3. Quick Copy Formatted (e.g. ₹ 18976.96)
+    document.getElementById('btnCopyFormatted').addEventListener('click', () => {
+      copyToClipboard(currentCalc.formattedCurrency, 'Formatted Amount');
+    });
+
+    // 4. Quick Copy Plain Number (e.g. 18976.96)
+    document.getElementById('btnCopyPlain').addEventListener('click', () => {
+      copyToClipboard(currentCalc.plainNumber, 'Number Only');
+    });
+
+    // 5. Quick Copy 5-Float (e.g. 18976.95690)
+    document.getElementById('btnCopy5Float').addEventListener('click', () => {
+      copyToClipboard(currentCalc.float5, '5-Float Value');
+    });
+
+    // 6. Copy Input Field Box
+    document.getElementById('btnCopyInput').addEventListener('click', () => {
+      const input = document.getElementById('copyInputField');
+      input.select();
+      copyToClipboard(input.value, 'Value');
+    });
+
     // Render Official Rate Matrix Modal Table
     function renderRateMatrixTable() {
       const table = document.getElementById('matrixTable');
-      let html = '<thead><tr><th style="text-align:left;">Category</th>';
+      let html = '<thead><tr><th>Category</th>';
       VARIANTS.forEach(v => {
-        html += `<th>${v}</th>`;
+        html += '<th>' + v + '</th>';
       });
       html += '</tr></thead><tbody>';
 
       CATEGORIES.forEach(cat => {
-        html += `<tr><td class="cat-name">${cat}</td>`;
-        VARIANTS.forEach(vr => {
-          const price = COST_MATRIX[cat][vr];
-          html += `<td data-cat="${cat}" data-var="${vr}" title="Click to use ₹${price}">₹ ${price}</td>`;
+        html += '<tr><td>' + cat + '</td>';
+        VARIANTS.forEach(v => {
+          const price = COST_MATRIX[cat] && COST_MATRIX[cat][v] ? COST_MATRIX[cat][v] : '-';
+          html += '<td data-cat="' + cat + '" data-var="' + v + '" title="Click to load ' + cat + ' & ' + v + '">₹ ' + price + '</td>';
         });
         html += '</tr>';
       });
@@ -1385,14 +1674,14 @@
 
       // Click cell to load into form
       table.querySelectorAll('td[data-cat]').forEach(td => {
-        td.addEventListener('click', function() {
+        td.addEventListener('click', function () {
           const cat = this.getAttribute('data-cat');
           const vr = this.getAttribute('data-var');
           document.getElementById('categorySelect').value = cat;
           document.getElementById('variantSelect').value = vr;
           updateCalculation();
-          document.getElementById('matrixModal').classList.remove('open');
-          showToast(`Loaded ${cat} • ${vr} (₹${COST_MATRIX[cat][vr]})`, 'info');
+          document.getElementById('matrixModal').classList.remove('active');
+          showToast('Loaded: ' + cat + ' • ' + vr, 'info');
           document.getElementById('inputValue').focus();
         });
       });
@@ -1400,31 +1689,20 @@
 
     // Modal Events
     document.getElementById('openMatrixBtn').addEventListener('click', () => {
-      document.getElementById('matrixModal').classList.add('open');
+      document.getElementById('matrixModal').classList.add('active');
     });
 
     document.getElementById('closeMatrixBtn').addEventListener('click', () => {
-      document.getElementById('matrixModal').classList.remove('open');
+      document.getElementById('matrixModal').classList.remove('active');
     });
 
     document.getElementById('matrixModal').addEventListener('click', (e) => {
       if (e.target.id === 'matrixModal') {
-        document.getElementById('matrixModal').classList.remove('open');
+        document.getElementById('matrixModal').classList.remove('active');
       }
     });
 
-    // Utility: HTML Escaping
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    // Event Listeners for real-time calculation
+    // Event Listeners for Live Update
     document.getElementById('categorySelect').addEventListener('change', updateCalculation);
     document.getElementById('variantSelect').addEventListener('change', updateCalculation);
     document.getElementById('inputValue').addEventListener('input', updateCalculation);
@@ -1432,12 +1710,13 @@
     document.getElementById('addonCrockery').addEventListener('change', updateCalculation);
     document.getElementById('calcForm').addEventListener('submit', handleAddRow);
 
-    // Initialize
-    window.addEventListener('DOMContentLoaded', () => {
+    // Initial Boot
+    document.addEventListener('DOMContentLoaded', () => {
       initDropdowns();
-      loadSheetFromStorage();
       renderRateMatrixTable();
+      loadSheetFromStorage();
     });
   </script>
 </body>
+
 </html>
