@@ -356,6 +356,11 @@ app.post('/api/projects/:id/fork', requireAuth, async (req, res) => {
   }
 });
 
+// Dedicated Cost Calculation Page (studio.orbixdesigns.com/costcalculation)
+app.get(['/costcalculation', '/cost-calculation', '/costcalc'], (req, res) => {
+  res.sendFile(path.join(ROOT_DIR, 'costcalculation.html'));
+});
+
 // SPA Routes: Explicit URL paths for all views & navbar links
 const SPA_VIEWS = [
   '/',
