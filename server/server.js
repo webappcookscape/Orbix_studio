@@ -39,19 +39,72 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// PostgreSQL-backed Session Store reusing existing db.pgPool
-const sessionStore = new pgSession({
-  pool: db.pgPool,
-  tableName: 'user_sessions',
-  createTableIfMissing: true
-});
+// Resilient Session Store: PostgreSQL-backed with in-memory fallback
+const memoryStore = new session.MemoryStore();
+let pgSessionStore = null;
+try {
+  pgSessionStore = new pgSession({
+    pool: db.pgPool,
+    tableName: 'user_sessions',
+    createTableIfMissing: true
+  });
+  pgSessionStore.on('error', (err) => {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('PostgreSQL session store error notice:', err.message);
+    }
+  });
+} catch (e) {
+  pgSessionStore = null;
+}
 
-sessionStore.on('error', (err) => {
-  console.error('Session store error notice:', err.message);
-});
+class ResilientSessionStore extends session.Store {
+  constructor() {
+    super();
+  }
+  get(sid, fn) {
+    if (db.isPgConnected && pgSessionStore) {
+      pgSessionStore.get(sid, (err, sess) => {
+        if (!err && sess) return fn(null, sess);
+        memoryStore.get(sid, fn);
+      });
+    } else {
+      memoryStore.get(sid, fn);
+    }
+  }
+  set(sid, sess, fn) {
+    memoryStore.set(sid, sess, () => {});
+    if (db.isPgConnected && pgSessionStore) {
+      pgSessionStore.set(sid, sess, (err) => {
+        if (fn) fn(null);
+      });
+    } else {
+      if (fn) fn(null);
+    }
+  }
+  destroy(sid, fn) {
+    memoryStore.destroy(sid, () => {});
+    if (db.isPgConnected && pgSessionStore) {
+      pgSessionStore.destroy(sid, () => {
+        if (fn) fn(null);
+      });
+    } else {
+      if (fn) fn(null);
+    }
+  }
+  touch(sid, sess, fn) {
+    memoryStore.touch(sid, sess, () => {});
+    if (db.isPgConnected && pgSessionStore && typeof pgSessionStore.touch === 'function') {
+      pgSessionStore.touch(sid, sess, () => {
+        if (fn) fn(null);
+      });
+    } else {
+      if (fn) fn(null);
+    }
+  }
+}
 
 app.use(session({
-  store: sessionStore,
+  store: new ResilientSessionStore(),
   secret: SESSION_SECRET,
   name: 'orbix.sid',
   resave: false,
