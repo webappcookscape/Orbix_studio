@@ -81,3 +81,4 @@ class ResilientSessionStore extends session.Store {
 }
 
 module.exports = ResilientSessionStore;
+

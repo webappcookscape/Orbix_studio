@@ -17,3 +17,4 @@ router.put('/:id', requireAdmin, userController.update);
 router.delete('/:id', requireAdmin, userController.delete);
 
 module.exports = router;
+

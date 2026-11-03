@@ -11,3 +11,4 @@ router.get('/:token', shareController.getShare);
 router.post('/:token/copy', shareController.copyShare);
 
 module.exports = router;
+
