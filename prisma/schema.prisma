@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(cuid()) @db.VarChar(64)
+  name        String    @db.VarChar(128)
+  username    String?   @unique @db.VarChar(64)
+  email       String    @unique @db.VarChar(128)
+  password    String?   @default("123456") @db.VarChar(128)
+  role        String?   @default("employee") @db.VarChar(64)
+  designation String?   @default("Modular Designer") @db.VarChar(128)
+  company     String?   @default("Orbix Studio") @db.VarChar(128)
+  avatar      String?   @db.VarChar(256)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  projects      Project[]
+  sharesSent    ProjectShare[] @relation("UserShares")
+  forksCreated  ProjectFork[]  @relation("UserForks")
+
+  @@map("users")
+}
+
+model Project {
+  id         String    @id @default(cuid()) @db.VarChar(64)
+  title      String    @db.VarChar(256)
+  client     String?   @default("") @db.VarChar(256)
+  type       String?   @default("Wardrobe") @db.VarChar(64)
+  status     String?   @default("Draft") @db.VarChar(32)
+  createdBy  String?   @map("created_by") @db.VarChar(64)
+  ownerName  String    @map("owner_name") @db.VarChar(128)
+  ownerEmail String    @map("owner_email") @db.VarChar(128)
+  unitsCount Int?      @default(0) @map("units_count")
+  boardsEst  Int?      @default(0) @map("boards_est")
+  data       Json      @default("{}")
+  isShared   Boolean?  @default(false) @map("is_shared")
+  forkCount  Int?      @default(0) @map("fork_count")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  creator       User?          @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  shares        ProjectShare[]
+  forksAsSource ProjectFork[]  @relation("OriginalProject")
+  forksAsFork   ProjectFork[]  @relation("ForkedProject")
+
+  @@map("projects")
+}
+
+model ProjectShare {
+  id            String    @id @default(cuid()) @db.VarChar(64)
+  projectId     String    @map("project_id") @db.VarChar(64)
+  sharedBy      String?   @map("shared_by") @db.VarChar(64)
+  sharedToEmail String?   @map("shared_to_email") @db.VarChar(128)
+  permission    String?   @default("copy") @db.VarChar(32)
+  shareToken    String    @unique @map("share_token") @db.VarChar(128)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sender  User?   @relation("UserShares", fields: [sharedBy], references: [id], onDelete: Cascade)
+
+  @@map("project_shares")
+}
+
+model ProjectFork {
+  id                String    @id @default(cuid()) @db.VarChar(64)
+  originalProjectId String?   @map("original_project_id") @db.VarChar(64)
+  forkedProjectId   String    @map("forked_project_id") @db.VarChar(64)
+  forkedBy          String?   @map("forked_by") @db.VarChar(64)
+  forkedToName      String?   @map("forked_to_name") @db.VarChar(128)
+  forkedToEmail     String?   @map("forked_to_email") @db.VarChar(128)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  originalProject Project? @relation("OriginalProject", fields: [originalProjectId], references: [id], onDelete: SetNull)
+  forkedProject   Project  @relation("ForkedProject", fields: [forkedProjectId], references: [id], onDelete: Cascade)
+  forker          User?    @relation("UserForks", fields: [forkedBy], references: [id], onDelete: Cascade)
+
+  @@map("project_forks")
+}
+

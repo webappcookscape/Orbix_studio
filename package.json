@@ -1,13 +1,16 @@
 {
   "name": "orbix-studio-cad",
   "version": "1.0.0",
-  "description": "Orbix Studio — 3D Interior Cupboard CAD & Production Planning with PostgreSQL",
+  "description": "Orbix Studio — 3D Interior Cupboard CAD & Production Planning with PostgreSQL and Prisma",
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
-    "dev": "node --watch server/server.js"
+    "dev": "node --watch server/server.js",
+    "prisma:generate": "prisma generate",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
@@ -15,5 +18,8 @@
     "express": "^4.21.2",
     "express-session": "^1.19.0",
     "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3"
   }
 }
