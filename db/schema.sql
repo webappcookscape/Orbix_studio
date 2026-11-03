@@ -13,13 +13,15 @@ CREATE TABLE IF NOT EXISTS users (
   designation VARCHAR(128) DEFAULT 'Modular Designer',
   company VARCHAR(128) DEFAULT 'Orbix Studio',
   avatar VARCHAR(256),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Ensure columns exist if table was created in an earlier migration
 ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(64);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(128) DEFAULT '123456';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS designation VARCHAR(128) DEFAULT 'Modular Designer';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
 
 -- Upsert Cookscape Team Accounts
 INSERT INTO users (id, name, username, email, password, role, designation, company, avatar)
@@ -65,7 +67,8 @@ CREATE TABLE IF NOT EXISTS project_shares (
   shared_to_email VARCHAR(128),
   permission VARCHAR(32) DEFAULT 'copy', -- 'copy' enforces that colleagues work in an isolated copy
   share_token VARCHAR(128) UNIQUE NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Project Forks Table (Tracks which copy was branched from which master project)
@@ -76,5 +79,6 @@ CREATE TABLE IF NOT EXISTS project_forks (
   forked_by VARCHAR(64) REFERENCES users(id) ON DELETE CASCADE,
   forked_to_name VARCHAR(128),
   forked_to_email VARCHAR(128),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

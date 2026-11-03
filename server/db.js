@@ -103,7 +103,7 @@ const DEFAULT_PROJECTS = [
     client: 'Vikram Mehta',
     type: 'Kitchen',
     status: 'CNC Ready',
-    created_by: 'usr_mvweb77exij0',
+    created_by: 'usr_elakkiya',
     owner_name: 'Elakkiya',
     owner_email: 'elakkiya.sakthivelu3089@gmail.com',
     units_count: 6,
@@ -126,7 +126,7 @@ const DEFAULT_PROJECTS = [
     client: 'Ananya Deshmukh',
     type: 'TV Wall',
     status: 'Draft',
-    created_by: 'usr_mvxh5at49a9d',
+    created_by: 'usr_aravind',
     owner_name: 'Aravind',
     owner_email: 'webapp.cookscape@gmail.com',
     units_count: 2,
@@ -263,34 +263,42 @@ class DBManager {
       const projRes = await client.query('SELECT COUNT(*) FROM projects');
       if (parseInt(projRes.rows[0].count, 10) === 0) {
         console.log('Seeding initial PostgreSQL projects...');
+        const userRes = await client.query('SELECT id FROM users');
+        const validUserIds = new Set(userRes.rows.map(r => r.id));
+
         for (const p of this.localStore.projects || DEFAULT_PROJECTS) {
-          await client.query(
-            `INSERT INTO projects
-              (id, title, client, type, status, created_by,
-               owner_name, owner_email, units_count, boards_est,
-               data, is_shared, fork_count, created_at, updated_at)
-             VALUES
-              ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-               $11, $12, $13, $14, $15)
-             ON CONFLICT (id) DO NOTHING`,
-            [
-              p.id,
-              p.title,
-              p.client,
-              p.type,
-              p.status,
-              p.created_by,
-              p.owner_name,
-              p.owner_email,
-              p.units_count,
-              p.boards_est,
-              JSON.stringify(p.data || {}),
-              p.is_shared || false,
-              p.fork_count || 0,
-              p.created_at || new Date().toISOString(),
-              p.updated_at || new Date().toISOString()
-            ]
-          );
+          const createdBy = validUserIds.has(p.created_by) ? p.created_by : (validUserIds.has('usr_admin') ? 'usr_admin' : null);
+          try {
+            await client.query(
+              `INSERT INTO projects
+                (id, title, client, type, status, created_by,
+                 owner_name, owner_email, units_count, boards_est,
+                 data, is_shared, fork_count, created_at, updated_at)
+               VALUES
+                ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+                 $11, $12, $13, $14, $15)
+               ON CONFLICT (id) DO NOTHING`,
+              [
+                p.id,
+                p.title,
+                p.client,
+                p.type,
+                p.status,
+                createdBy,
+                p.owner_name,
+                p.owner_email,
+                p.units_count,
+                p.boards_est,
+                JSON.stringify(p.data || {}),
+                p.is_shared || false,
+                p.fork_count || 0,
+                p.created_at || new Date().toISOString(),
+                p.updated_at || new Date().toISOString()
+              ]
+            );
+          } catch (seedErr) {
+            console.warn('Project seed warning for ' + p.id + ':', seedErr.message);
+          }
         }
         console.log('✓ Initial PostgreSQL project seed completed.');
       }
