@@ -665,8 +665,9 @@
           return r.json();
         })
         .then(function (data) {
-          if (Array.isArray(data.users)) {
-            self.users = data.users.filter(function (u) {
+          var userList = Array.isArray(data) ? data : (data && Array.isArray(data.users) ? data.users : null);
+          if (Array.isArray(userList)) {
+            self.users = userList.filter(function (u) {
               return u.id !== 'usr_dev' &&
                 u.id !== 'usr_alex' &&
                 u.id !== 'usr_priya' &&
@@ -1682,38 +1683,16 @@
               }
             })
             .catch(function (err) {
-              console.warn('Backend employee creation failed, adding locally:', err);
-              var localUser = {
-                id: 'usr_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
-                name: payload.name,
-                username: payload.username || ('user_' + Date.now().toString(36)),
-                email: payload.email,
-                role: payload.role,
-                designation: payload.designation,
-                company: payload.company || 'Cookscape',
-                avatar: payload.avatar
-              };
-              self.users = self.users || [];
-              self.users.push(localUser);
-              self.populateBhDropdown();
-              createEmpForm.reset();
-              var alertBox = document.getElementById('empCreatedAlert');
-              if (alertBox) {
-                var elName = document.getElementById('ecaName');
-                var elUser = document.getElementById('ecaUsername');
-                var elEmail = document.getElementById('ecaEmail');
-                var elPass = document.getElementById('ecaPassword');
-                var elRole = document.getElementById('ecaRole');
-                if (elName) elName.textContent = localUser.name;
-                if (elUser) elUser.textContent = localUser.username;
-                if (elEmail) elEmail.textContent = localUser.email;
-                if (elPass) elPass.textContent = password;
-                if (elRole) elRole.textContent = localUser.role === 'admin' ? 'Admin' : 'Employee';
-                alertBox.style.display = 'flex';
+              console.error('Backend employee creation failed:', err);
+              var errorMsg = err.message || 'Server error';
+              if (errorMsg.includes('401') || errorMsg.includes('Unauthorized') || errorMsg.includes('session required')) {
+                errorMsg = 'Session expired or not signed in. Please sign in as Admin (admin / admin123).';
+              } else if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+                errorMsg = 'Administrator privileges required to add employees.';
               }
-              self.openUserModal();
+              alert('Could not save user to PostgreSQL database:\n\n' + errorMsg);
               if (typeof showToast === 'function') {
-                showToast('✓ Employee account created: ' + localUser.name);
+                showToast('❌ Failed to create user in database: ' + errorMsg, 'error');
               }
             });
         });
@@ -2119,7 +2098,7 @@
         return;
       }
 
-      fetch('/api/users/' + encodeURIComponent(uid), {
+      OrbixProjects.apiFetch('/api/users/' + encodeURIComponent(uid), {
         method: 'DELETE'
       })
         .then(function (r) { return r.json(); })

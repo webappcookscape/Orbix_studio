@@ -9,7 +9,7 @@ class UserController {
   async getAll(req, res) {
     try {
       const users = await userService.getAllUsers();
-      res.json(users);
+      res.json({ success: true, users });
     } catch (err) {
       console.error('getUsers error:', err);
       res.status(500).json({ success: false, error: err.message });
@@ -28,7 +28,7 @@ class UserController {
       if (!user) {
         return res.status(404).json({ success: false, error: 'User not found' });
       }
-      res.json(user);
+      res.json({ success: true, user });
     } catch (err) {
       console.error('getUser error:', err);
       res.status(500).json({ success: false, error: err.message });
