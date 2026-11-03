@@ -888,6 +888,9 @@
         <p>Interactive calculator form with 1-click copy-paste & persistent local sheet storage</p>
       </div>
       <div class="ph-actions">
+        <a href="units_import_template.csv" download="units_import_template.csv" class="btn" id="btnDownloadTemplate" title="Download the 69 modular units CSV dataset">
+          📄 Download Units CSV
+        </a>
         <button type="button" class="btn" id="openMatrixBtn">
           📋 View Official Rate Matrix
         </button>
@@ -928,6 +931,23 @@
         </div>
 
         <form id="calcForm">          
+
+          <!-- Modular Unit Selection (Preset Auto-Fill) -->
+          <div class="form-group">
+            <label class="form-label" for="unitPresetSelect">
+              Select Modular Unit Preset
+              <span class="hint">69 Built-in Units (Auto-fills Category & Area)</span>
+            </label>
+            <div style="display:flex;gap:8px;">
+              <select id="unitPresetSelect" class="form-select" style="flex:1;">
+                <option value="">-- Manual / Custom Area Entry --</option>
+              </select>
+              <button type="button" class="btn sm" id="btnImportUnitsCsv" title="Import additional Units from CSV">
+                📂 Import CSV
+              </button>
+              <input type="file" id="unitsCsvInput" accept=".csv" style="display:none;">
+            </div>
+          </div>          
 
           <!-- Category Selection (1st Field) -->
           <div class="form-group">
@@ -1277,8 +1297,41 @@
       }
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // PRELOADED MODULAR UNITS (69 Units Dataset)
+    // ═══════════════════════════════════════════════════════════════════════════
+    let PRELOADED_UNITS = [{"id":"ctvb-1d-1dr","code":"ctvb-1d-1dr","name":"CROCKERY/TV BASE 1DOOR 1 DRAWER","category":"TV Unit Cabinet","cadCategory":"tv_unit","areaSqft":0.9687523546,"dimensions":{"W":450,"H":200,"D":450},"price1":1922,"modelType":"tv_unit_cabinet"},{"id":"ctvb-1dr","code":"ctvb-1dr","name":"CROCKERY/TV BASE 1 DRAWER","category":"TV Unit Cabinet","cadCategory":"tv_unit","areaSqft":1.291669806,"dimensions":{"W":600,"H":200,"D":350},"price1":2562.67,"modelType":"tv_unit_cabinet"},{"id":"ctvb-2d","code":"ctvb-2d","name":"CROCKERY /TV BASE 2 DOOR","category":"POOJA WITH CNC","cadCategory":"pooja","areaSqft":6.054702216,"dimensions":{"W":750,"H":750,"D":450},"price1":11921.71,"modelType":"pooja_with_cnc"},{"id":"ctvb-2d-2dr","code":"ctvb-2d-2dr","name":"CROCKERY/TV BASE 2 DOOR 2 DRAWER","category":"TV Unit Cabinet","cadCategory":"tv_unit","areaSqft":7.26564266,"dimensions":{"W":900,"H":750,"D":450},"price1":14415.04,"modelType":"tv_unit_cabinet"},{"id":"ctvb-2dr","code":"ctvb-2dr","name":"CROCKERY/TV BASE 2 DRAWER","category":"TV Unit Cabinet","cadCategory":"tv_unit","areaSqft":2.421880887,"dimensions":{"W":450,"H":500,"D":350},"price1":4805.01,"modelType":"tv_unit_cabinet"},{"id":"ctvw-2d","code":"ctvw-2d","name":"CROCKERY/TV WALL 2 DOOR","category":"POOJA WITH CNC","cadCategory":"pooja","areaSqft":5.812514128,"dimensions":{"W":900,"H":600,"D":300},"price1":11444.84,"modelType":"pooja_with_cnc"},{"id":"ctvw-obs-02","code":"ctvw-obs-02","name":"CROCKERY/TV WALL OPEN BOX STORAGE 2","category":"Spice Rack (OPEN BOXES)","cadCategory":"spice_rack","areaSqft":4.843761773,"dimensions":{"W":1500,"H":300,"D":200},"price1":11005.03,"modelType":"spice_rack"},{"id":"fm-rt-01","code":"fm-rt-01","name":"FCM -RT","category":"Kitchen - FM","cadCategory":"kitchen_base","areaSqft":9.687523546,"dimensions":{"W":1200,"H":750,"D":550},"price1":17398.79,"modelType":"kitchen_fm"},{"id":"fm-120","code":"fm-120","name":"FM 120","category":"Kitchen - FM","cadCategory":"kitchen_base","areaSqft":9.687523546,"dimensions":{"W":1200,"H":750,"D":550},"price1":17398.79,"modelType":"kitchen_fm"},{"id":"fm-45","code":"fm-45","name":"FM 45","category":"Kitchen - FM","cadCategory":"kitchen_base","areaSqft":3.63282133,"dimensions":{"W":450,"H":750,"D":550},"price1":6524.55,"modelType":"kitchen_fm"},{"id":"fm-60","code":"fm-60","name":"FM 60","category":"Kitchen - FM","cadCategory":"kitchen_base","areaSqft":4.843761773,"dimensions":{"W":600,"H":750,"D":550},"price1":8699.4,"modelType":"kitchen_fm"},{"id":"fm-75","code":"fm-75","name":"FM 75","category":"Kitchen - FM","cadCategory":"kitchen_base","areaSqft":6.054702216,"dimensions":{"W":750,"H":750,"D":550},"price1":10874.25,"modelType":"kitchen_fm"},{"id":"fm-90","code":"fm-90","name":"FM 90","category":"Kitchen - FM","cadCategory":"kitchen_base","areaSqft":7.26564266,"dimensions":{"W":900,"H":750,"D":550},"price1":13049.09,"modelType":"kitchen_fm"},{"id":"fm-d2-45","code":"fm-d2-45","name":"FM D2 - 45","category":"Kitchen - D2/D3","cadCategory":"kitchen_base","areaSqft":3.63282133,"dimensions":{"W":450,"H":750,"D":550},"price1":7163.92,"modelType":"kitchen_fm"},{"id":"fm-d2-75","code":"fm-d2-75","name":"FM D2 - 75","category":"Kitchen - D2/D3","cadCategory":"kitchen_base","areaSqft":6.054702216,"dimensions":{"W":750,"H":750,"D":550},"price1":11939.87,"modelType":"kitchen_fm"},{"id":"fm-d2-90","code":"fm-d2-90","name":"FM D2 - 90","category":"Kitchen - D2/D3","cadCategory":"kitchen_base","areaSqft":7.26564266,"dimensions":{"W":900,"H":750,"D":550},"price1":14327.85,"modelType":"kitchen_fm"},{"id":"fm-d3-45","code":"fm-d3-45","name":"FM D3 - 45","category":"Kitchen - D2/D3","cadCategory":"kitchen_base","areaSqft":3.63282133,"dimensions":{"W":450,"H":750,"D":550},"price1":7163.92,"modelType":"kitchen_fm"},{"id":"fm-d3-75","code":"fm-d3-75","name":"FM D3 - 75","category":"Kitchen - D2/D3","cadCategory":"kitchen_base","areaSqft":6.054702216,"dimensions":{"W":750,"H":750,"D":550},"price1":11939.87,"modelType":"kitchen_fm"},{"id":"fm-d3-90","code":"fm-d3-90","name":"FM D3 - 90","category":"Kitchen - D2/D3","cadCategory":"kitchen_base","areaSqft":7.26564266,"dimensions":{"W":900,"H":750,"D":550},"price1":14327.85,"modelType":"kitchen_fm"},{"id":"fm-ds-45","code":"fm-ds-45","name":"FM DS 45","category":"Kitchen - FM","cadCategory":"kitchen_base","areaSqft":3.63282133,"dimensions":{"W":450,"H":750,"D":550},"price1":6524.55,"modelType":"kitchen_fm"},{"id":"fm-ds-60","code":"fm-ds-60","name":"FM DS 60","category":"Kitchen - FM","cadCategory":"kitchen_base","areaSqft":4.843761773,"dimensions":{"W":600,"H":750,"D":550},"price1":8699.4,"modelType":"kitchen_fm"},{"id":"fm-ds-90","code":"fm-ds-90","name":"FM DS 90","category":"Kitchen - FM","cadCategory":"kitchen_base","areaSqft":7.26564266,"dimensions":{"W":900,"H":750,"D":550},"price1":13049.09,"modelType":"kitchen_fm"},{"id":"sr-45","code":"sr-45","name":"SR 45","category":"Spice Rack (OPEN BOXES)","cadCategory":"spice_rack","areaSqft":0.726564266,"dimensions":{"W":450,"H":150,"D":150},"price1":1650.75,"modelType":"spice_rack_open_box"},{"id":"sr-75","code":"sr-75","name":"SR 75","category":"Spice Rack (OPEN BOXES)","cadCategory":"spice_rack","areaSqft":1.210940443,"dimensions":{"W":750,"H":150,"D":150},"price1":2751.26,"modelType":"spice_rack_open_box"},{"id":"sr-90","code":"sr-90","name":"SR 90","category":"Spice Rack (OPEN BOXES)","cadCategory":"spice_rack","areaSqft":1.453128532,"dimensions":{"W":900,"H":150,"D":150},"price1":3301.51,"modelType":"spice_rack_open_box"},{"id":"tbm-60-oven","code":"tbm-60-oven","name":"TBM 60 OVEN","category":"Wr - Modular - 2 DRAWERS","cadCategory":"wardrobe","areaSqft":13.56253296,"dimensions":{"W":600,"H":2100,"D":550},"price1":23598.81,"modelType":"wardrobe_modular_drawers"},{"id":"wcm-lt-01","code":"wcm-lt-01","name":"WCM LEFT","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":3.875009418,"dimensions":{"W":600,"H":600,"D":300},"price1":5986.89,"modelType":"kitchen_wm"},{"id":"wcm-rt-01","code":"wcm-rt-01","name":"WCM RIGHT","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":3.875009418,"dimensions":{"W":600,"H":600,"D":300},"price1":5986.89,"modelType":"kitchen_wm"},{"id":"wm-30","code":"wm-30","name":"WM 30","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":1.937504709,"dimensions":{"W":300,"H":600,"D":300},"price1":2993.44,"modelType":"kitchen_wm"},{"id":"wm-45","code":"wm-45","name":"WM 45","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":2.906257064,"dimensions":{"W":450,"H":600,"D":300},"price1":4490.17,"modelType":"kitchen_wm"},{"id":"wm-60-gl","code":"wm-60-gl","name":"WM 60 GL","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":3.875009418,"dimensions":{"W":600,"H":600,"D":300},"price1":5986.89,"modelType":"kitchen_wm"},{"id":"wm-75","code":"wm-75","name":"WM 75","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":4.843761773,"dimensions":{"W":750,"H":600,"D":300},"price1":7483.61,"modelType":"kitchen_wm"},{"id":"wm-75-gl","code":"wm-75-gl","name":"WM 75 GL","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":4.843761773,"dimensions":{"W":750,"H":600,"D":300},"price1":7483.61,"modelType":"kitchen_wm"},{"id":"wm-90","code":"wm-90","name":"WM 90","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":5.812514128,"dimensions":{"W":900,"H":600,"D":300},"price1":8980.33,"modelType":"kitchen_wm"},{"id":"wm-90-gl","code":"wm-90-gl","name":"WM 90 GL","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":5.812514128,"dimensions":{"W":900,"H":600,"D":300},"price1":8980.33,"modelType":"kitchen_wm"},{"id":"loft-1d-mod","code":"loft-1d-mod","name":"LOFT 1 DOOR MODULAR","category":"Wr - Modular - ONLY SHELVES","cadCategory":"wardrobe","areaSqft":4.359385596,"dimensions":{"W":450,"H":900,"D":550},"price1":6735.25,"modelType":"wardrobe_modular_shelves"},{"id":"loft-1d-os","code":"loft-1d-os","name":"LOFT 1 DOOR O/S","category":"Loft - O/S","cadCategory":"loft","areaSqft":4.359385596,"dimensions":{"W":450,"H":900,"D":600},"price1":3901.65,"modelType":"loft_os"},{"id":"pnl-wall","code":"pnl-wall","name":"WALL PANEL","category":"Wall Paneling","cadCategory":"wall_paneling","areaSqft":15.50003767,"dimensions":{"W":1200,"H":1200,"D":600},"price1":12338.03,"modelType":"wall_paneling"},{"id":"ob-std","code":"ob-std","name":"OPEN BOX","category":"Spice Rack (OPEN BOXES)","cadCategory":"spice_rack","areaSqft":3.875009418,"dimensions":{"W":600,"H":600,"D":300},"price1":8804.02,"modelType":"spice_rack"},{"id":"ob-200-300","code":"ob-200-300","name":"OPEN BOX-200 - 300","category":"Spice Rack (OPEN BOXES)","cadCategory":"spice_rack","areaSqft":0.9687523546,"dimensions":{"W":300,"H":300,"D":200},"price1":2201.01,"modelType":"spice_rack"},{"id":"ob-300-600","code":"ob-300-600","name":"OPEN BOX 300 - 600","category":"Spice Rack (OPEN BOXES)","cadCategory":"spice_rack","areaSqft":3.875009418,"dimensions":{"W":600,"H":600,"D":300},"price1":8804.02,"modelType":"spice_rack"},{"id":"ledge-std","code":"ledge-std","name":"LEDGE","category":"Wall Paneling","cadCategory":"wall_paneling","areaSqft":0.2325005651,"dimensions":{"W":1200,"H":18,"D":200},"price1":185.07,"modelType":"wall_paneling"},{"id":"pnl-back","code":"pnl-back","name":"BACK PANEL","category":"Wall Paneling","cadCategory":"wall_paneling","areaSqft":19.37504709,"dimensions":{"W":1200,"H":1500,"D":18},"price1":15422.54,"modelType":"wall_paneling"},{"id":"ctvb-doors-only","code":"ctvb-doors-only","name":"CROCKERY / TV BASE ONLY DOORS","category":"Loft - O/S","cadCategory":"loft","areaSqft":6.054702216,"dimensions":{"W":750,"H":750,"D":600},"price1":5418.96,"modelType":"loft_os"},{"id":"ctvb-open-storage","code":"ctvb-open-storage","name":"CROCKERY/TV BASE OPEN STORAGE","category":"Spice Rack (OPEN BOXES)","cadCategory":"spice_rack","areaSqft":1.937504709,"dimensions":{"W":600,"H":300,"D":300},"price1":4402.01,"modelType":"spice_rack"},{"id":"ctvw-doors-only","code":"ctvw-doors-only","name":"CROCKERY/TV WALL UNIT ONLY DOOR","category":"Loft - O/S","cadCategory":"loft","areaSqft":1.937504709,"dimensions":{"W":300,"H":600,"D":600},"price1":1734.07,"modelType":"loft_os"},{"id":"ctvw-open-box","code":"ctvw-open-box","name":"CROCKERY/TV WALL OPEN BOX STORAGE","category":"Spice Rack (OPEN BOXES)","cadCategory":"spice_rack","areaSqft":1.291669806,"dimensions":{"W":600,"H":200,"D":300},"price1":2934.67,"modelType":"spice_rack"},{"id":"fm-lt-01","code":"fm-lt-01","name":"FCM -LT","category":"Kitchen - FM","cadCategory":"kitchen_base","areaSqft":9.687523546,"dimensions":{"W":1200,"H":750,"D":550},"price1":17398.79,"modelType":"kitchen_fm"},{"id":"fm-30-oil","code":"fm-30-oil","name":"FM30 -OIL PULLOUT","category":"Kitchen - D2/D3","cadCategory":"kitchen_base","areaSqft":2.421880887,"dimensions":{"W":300,"H":750,"D":550},"price1":4775.95,"modelType":"kitchen_fm"},{"id":"fm-d2-60","code":"fm-d2-60","name":"FM D2 - 60","category":"Kitchen - D2/D3","cadCategory":"kitchen_base","areaSqft":4.843761773,"dimensions":{"W":600,"H":750,"D":550},"price1":9551.9,"modelType":"kitchen_fm"},{"id":"fm-d3-60","code":"fm-d3-60","name":"FM D3 - 60","category":"Kitchen - D2/D3","cadCategory":"kitchen_base","areaSqft":4.843761773,"dimensions":{"W":600,"H":750,"D":550},"price1":9551.9,"modelType":"kitchen_fm"},{"id":"ledge-ctop","code":"ledge-ctop","name":"LEDGE COUNTERTOP","category":"Wall Paneling","cadCategory":"wall_paneling","areaSqft":0.1743754238,"dimensions":{"W":900,"H":18,"D":550},"price1":138.8,"modelType":"wall_paneling"},{"id":"sr-60","code":"sr-60","name":"SR 60","category":"Spice Rack (OPEN BOXES)","cadCategory":"spice_rack","areaSqft":0.9687523546,"dimensions":{"W":600,"H":150,"D":150},"price1":2201.01,"modelType":"spice_rack"},{"id":"wr-sliding","code":"wr-sliding","name":"SLIDING WARDROBE","category":"Wr - Modular - SLIDING","cadCategory":"wardrobe","areaSqft":40.68759889,"dimensions":{"W":1800,"H":2100,"D":550},"price1":73034.24,"modelType":"wardrobe_modular_sliding"},{"id":"tbm-60","code":"tbm-60","name":"TBM 60","category":"Wr - Modular - ONLY SHELVES","cadCategory":"wardrobe","areaSqft":13.56253296,"dimensions":{"W":600,"H":2100,"D":550},"price1":20954.11,"modelType":"wardrobe_modular_shelves"},{"id":"ledge-vert","code":"ledge-vert","name":"VERTICAL LEDGE","category":"Wall Paneling","cadCategory":"wall_paneling","areaSqft":1.291669806,"dimensions":{"W":600,"H":200,"D":200},"price1":1028.17,"modelType":"wall_paneling"},{"id":"wm-45-gl","code":"wm-45-gl","name":"WM 45 GL","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":2.906257064,"dimensions":{"W":450,"H":600,"D":300},"price1":4490.17,"modelType":"kitchen_wm"},{"id":"wm-60-dbl","code":"wm-60-dbl","name":"WM 60 DOUBLE","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":3.875009418,"dimensions":{"W":600,"H":600,"D":300},"price1":5986.89,"modelType":"kitchen_wm"},{"id":"wm-open-30","code":"wm-open-30","name":"WM OPEN 30","category":"Kitchen - WM","cadCategory":"kitchen_wall","areaSqft":1.937504709,"dimensions":{"W":300,"H":600,"D":300},"price1":2993.44,"modelType":"kitchen_wm"},{"id":"loft-2d-mod","code":"loft-2d-mod","name":"LOFT 2 DOOR MODULAR","category":"Wr - Modular - ONLY SHELVES","cadCategory":"wardrobe","areaSqft":8.718771191,"dimensions":{"W":900,"H":900,"D":550},"price1":13470.5,"modelType":"wardrobe_modular_shelves"},{"id":"loft-2d-os","code":"loft-2d-os","name":"LOFT 2 DOOR O/S","category":"Loft - O/S","cadCategory":"loft","areaSqft":7.26564266,"dimensions":{"W":750,"H":900,"D":18},"price1":6502.75,"modelType":"loft_os"},{"id":"wr-shelves","code":"wr-shelves","name":"WR 2 DOOR WITH SHELVBES","category":"Wr - Modular - ONLY SHELVES","cadCategory":"wardrobe","areaSqft":20.34379945,"dimensions":{"W":900,"H":2100,"D":550},"price1":31431.17,"modelType":"wardrobe_modular_shelves"},{"id":"wr-drawers","code":"wr-drawers","name":"WR 2 DOOR WITH DRAWERS","category":"Wr - Modular - 2 DRAWERS","cadCategory":"wardrobe","areaSqft":20.34379945,"dimensions":{"W":900,"H":2100,"D":550},"price1":35398.21,"modelType":"wardrobe_modular_drawers"},{"id":"wr-1-shelves","code":"wr-1-shelves","name":"WR 1 DOOR WITH SHELVBES","category":"Wr - Modular - ONLY SHELVES","cadCategory":"wardrobe","areaSqft":13.56253296,"dimensions":{"W":600,"H":2100,"D":550},"price1":20954.11,"modelType":"wardrobe_modular_shelves"},{"id":"wr-1-drawers","code":"wr-1-drawers","name":"WR 1 DOOR WITH DRAWERS","category":"Wr - Modular - 2 DRAWERS","cadCategory":"wardrobe","areaSqft":13.56253296,"dimensions":{"W":600,"H":2100,"D":550},"price1":23598.81,"modelType":"wardrobe_modular_drawers"},{"id":"fm-120 o/s","code":"fm-120 o/s","name":"FM 120 O/S","category":"Kitchen O/S","cadCategory":"kitchen_base","areaSqft":9.687523546,"dimensions":{"W":1200,"H":750,"D":600},"price1":8670.33,"modelType":"kitchen_o_s"},{"id":"fm-60 o/s","code":"fm-60 o/s","name":"FM 60 O/S","category":"Kitchen O/S","cadCategory":"kitchen_base","areaSqft":4.843761773,"dimensions":{"W":600,"H":750,"D":600},"price1":4335.17,"modelType":"kitchen_o_s"},{"id":"wm-60 o/s","code":"wm-60 o/s","name":"WM  60 O/S","category":"Kitchen O/S","cadCategory":"kitchen_base","areaSqft":3.875009418,"dimensions":{"W":600,"H":600,"D":600},"price1":3468.13,"modelType":"kitchen_o_s"},{"id":"wm-30 o/s","code":"wm-30 o/s","name":"WM 30 O/S","category":"Kitchen O/S","cadCategory":"kitchen_base","areaSqft":1.937504709,"dimensions":{"W":300,"H":600,"D":600},"price1":1734.07,"modelType":"kitchen_o_s"}];
+
+    // Populate Unit Preset Dropdown
+    function initUnitDropdown() {
+      const select = document.getElementById('unitPresetSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- Manual / Custom Area Entry --</option>';
+
+      // Group units by category for clean UX
+      const groups = {};
+      PRELOADED_UNITS.forEach(u => {
+        const cat = u.category || 'General';
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(u);
+      });
+
+      Object.keys(groups).sort().forEach(cat => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = cat + ' (' + groups[cat].length + ' units)';
+        groups[cat].forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.id;
+          opt.textContent = u.name + ' [' + u.areaSqft.toFixed(2) + ' sq.ft · ' + u.dimensions.W + '×' + u.dimensions.H + 'mm]';
+          optgroup.appendChild(opt);
+        });
+        select.appendChild(optgroup);
+      });
+    }
+
     // Populate Category & Variant dropdowns
     function initDropdowns() {
+      initUnitDropdown();
       const catSelect = document.getElementById('categorySelect');
       const varSelect = document.getElementById('variantSelect');
 
@@ -1691,6 +1744,83 @@
         document.getElementById('matrixModal').classList.remove('active');
       }
     });
+
+    // Unit Preset Selection Auto-fill
+    document.getElementById('unitPresetSelect').addEventListener('change', function () {
+      const uId = this.value;
+      if (!uId) return;
+      const u = PRELOADED_UNITS.find(item => item.id === uId);
+      if (u) {
+        if (u.category && COST_MATRIX[u.category]) {
+          document.getElementById('categorySelect').value = u.category;
+        }
+        if (u.areaSqft) {
+          document.getElementById('inputValue').value = u.areaSqft;
+        }
+        updateCalculation();
+        showToast('✓ Loaded Unit: ' + u.name + ' (' + u.areaSqft.toFixed(4) + ' sq.ft)', 'info');
+      }
+    });
+
+    // CSV File Import into Cost Calculator
+    const btnImportUnits = document.getElementById('btnImportUnitsCsv');
+    const unitsCsvInput = document.getElementById('unitsCsvInput');
+    if (btnImportUnits && unitsCsvInput) {
+      btnImportUnits.addEventListener('click', () => unitsCsvInput.click());
+      unitsCsvInput.addEventListener('change', function (e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          try {
+            const lines = ev.target.result.trim().split(/\r?\n/);
+            if (lines.length < 2) return;
+            const h = lines[0].split(',').map(x => x.trim());
+            let addedCount = 0;
+            for (let i = 1; i < lines.length; i++) {
+              if (!lines[i].trim()) continue;
+              const cols = lines[i].split(',').map(x => x.trim());
+              const row = {};
+              h.forEach((header, idx) => { row[header] = cols[idx] || ''; });
+              const code = row['Item_Code'] || ('unit_' + i);
+              const name = row['Item_Name'] || code;
+              const area = parseFloat(row['Area_Sqft']) || 0;
+              const rawCat = row['Category'] || '';
+              // Match category
+              let matchedCat = 'Kitchen - FM';
+              for (const k in COST_MATRIX) {
+                if (rawCat.toLowerCase().includes(k.toLowerCase().split(' ')[0])) {
+                  matchedCat = k;
+                  break;
+                }
+              }
+              const item = {
+                id: code,
+                code: code,
+                name: name,
+                category: matchedCat,
+                areaSqft: area,
+                dimensions: {
+                  W: parseFloat(row['Width_mm']) || 0,
+                  H: parseFloat(row['Height_mm']) || 0,
+                  D: parseFloat(row['Depth_mm']) || 0
+                }
+              };
+              const existing = PRELOADED_UNITS.findIndex(x => x.id === code);
+              if (existing >= 0) PRELOADED_UNITS[existing] = item;
+              else PRELOADED_UNITS.push(item);
+              addedCount++;
+            }
+            initUnitDropdown();
+            showToast('✓ Successfully imported ' + addedCount + ' units from CSV!', 'success');
+          } catch (err) {
+            showToast('Error importing CSV: ' + err.message, 'info');
+          }
+        };
+        reader.readAsText(file);
+        unitsCsvInput.value = '';
+      });
+    }
 
     // Event Listeners for Live Update
     document.getElementById('categorySelect').addEventListener('change', updateCalculation);

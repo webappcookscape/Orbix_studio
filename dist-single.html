@@ -1844,6 +1844,7 @@ body.role-employee #adminCreateEmpBox,
       <button class="vtab admin-only-tab" data-view="kitchen" style="display:none;">Kitchens</button>
       <button class="vtab admin-only-tab" data-view="gallery" style="display:none;">Gallery</button>
       <button class="vtab" data-view="boq">Pricing</button>
+      <a href="/costcalculation" class="vtab" style="text-decoration:none;display:inline-flex;align-items:center;" title="Material Rate & Cost Calculation Sheet">Cost Calc</a>
       <button class="vtab admin-only-tab" data-view="quote" style="display:none;">Quote</button>
       <button class="vtab admin-only-tab" data-view="sheet" style="display:none;">Process sheet</button>
       <button class="vtab admin-only-tab" data-view="elev" style="display:none;">Elevation</button>
@@ -2332,7 +2333,6 @@ body.role-employee #adminCreateEmpBox,
               <option value="Cookscape Admin">Cookscape Admin (System Head)</option>
               <option value="Aravind">Aravind (Floor Architect / FA)</option>
               <option value="Elakkiya">Elakkiya (Floor Architect / FA)</option>
-              <option value="Dev Kancheti">Dev Kancheti (Design Lead)</option>
             </select>
           </div>
         </div>
@@ -2977,7 +2977,7 @@ body.role-employee #adminCreateEmpBox,
 
   // ═══════════════════════════════════════════════════════════════════════════════
   // ORBIX ROUTER — Clean URL Routing, Browser History & Role-Based Navigation
-  
+
 
   var OrbixProjects = {
     currentUser: null,
@@ -3002,7 +3002,7 @@ body.role-employee #adminCreateEmpBox,
           if (self.projects && self.projects.length > 0) {
             var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
             var savedId = null;
-            try { savedId = localStorage.getItem(userActiveKey); } catch (e) {}
+            try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
             var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
             self.openProject(toOpen.id, false);
           }
@@ -3074,7 +3074,7 @@ body.role-employee #adminCreateEmpBox,
         localStorage.removeItem('orbix-project');
         localStorage.removeItem('orbix_active_project_id');
         localStorage.removeItem('cupboard-cad');
-      } catch (e) {}
+      } catch (e) { }
       this.currentUser = null;
       this.activeProjectId = null;
       this.projects = [];
@@ -3107,7 +3107,7 @@ body.role-employee #adminCreateEmpBox,
         localStorage.removeItem('orbix-project');
         localStorage.removeItem('orbix_active_project_id');
         localStorage.removeItem('cupboard-cad');
-      } catch (e) {}
+      } catch (e) { }
 
       // Reset workspace to clean project for the newly logged-in account
       if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
@@ -3129,7 +3129,7 @@ body.role-employee #adminCreateEmpBox,
         if (self.projects && self.projects.length > 0) {
           var userActiveKey = 'orbix_active_proj_' + user.id;
           var savedId = null;
-          try { savedId = localStorage.getItem(userActiveKey); } catch (e) {}
+          try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
           var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
           self.openProject(toOpen.id, false);
         }
@@ -3154,7 +3154,7 @@ body.role-employee #adminCreateEmpBox,
           var origSetView = window.setView;
           window.setView = function (v) {
             var isAdm = self.isAdmin();
-            var allowedViews = isAdm 
+            var allowedViews = isAdm
               ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
               : ['home', 'plan', 'design', 'boq'];
             if (!isAdm && allowedViews.indexOf(v) === -1) {
@@ -3184,7 +3184,7 @@ body.role-employee #adminCreateEmpBox,
         userModalEl.classList.toggle('role-admin', isAdm);
       }
       // Admin has all access; Employee only has home, floor plan (2D), 3D Studio, Pricing (boq)
-      var allowedViews = isAdm 
+      var allowedViews = isAdm
         ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
         : ['home', 'plan', 'design', 'boq'];
 
@@ -3215,7 +3215,7 @@ body.role-employee #adminCreateEmpBox,
       if (avatarEl && this.currentUser) {
         var roleLabel = isAdm ? 'Admin' : 'Employee';
         var roleClass = isAdm ? 'badge-admin' : 'badge-employee';
-        avatarEl.innerHTML = '<span class="u-avatar ' + (isAdm ? 'is-admin-avatar' : '') + '">' + 
+        avatarEl.innerHTML = '<span class="u-avatar ' + (isAdm ? 'is-admin-avatar' : '') + '">' +
           (this.currentUser.avatar || 'US') + '</span>' +
           '<span class="u-name">' + this.currentUser.name + '</span>' +
           '<span class="u-role-pill ' + roleClass + '">' + roleLabel + '</span>';
@@ -3298,24 +3298,59 @@ body.role-employee #adminCreateEmpBox,
 
     fetchUsers: function (cb) {
       var self = this;
-      fetch('/api/users')
-        .then(function (r) { return r.json(); })
+
+      this.apiFetch('/api/users')
+        .then(function (r) {
+          if (!r.ok) throw new Error('Unable to fetch users');
+          return r.json();
+        })
         .then(function (data) {
-          if (data.users && data.users.length) {
+          if (Array.isArray(data.users)) {
             self.users = data.users.filter(function (u) {
-              return u.id !== 'usr_dev' && u.id !== 'usr_alex' && u.id !== 'usr_priya' &&
-                     u.email !== 'dev@orbixstudio.io' && u.email !== 'alex@orbixstudio.io' &&
-                     u.email !== 'priya@orbixstudio.io' && u.email !== 'alex@modularedge.com' &&
-                     u.email !== 'priya@archform.in';
+              return u.id !== 'usr_dev' &&
+                u.id !== 'usr_alex' &&
+                u.id !== 'usr_priya' &&
+                u.email !== 'dev@orbixstudio.io' &&
+                u.email !== 'alex@orbixstudio.io' &&
+                u.email !== 'priya@orbixstudio.io' &&
+                u.email !== 'alex@modularedge.com' &&
+                u.email !== 'priya@archform.in';
             });
-            // Ensure currentUser matches one of the known users
-            var matched = self.users.find(function (u) { return u.id === self.currentUser.id; });
-            if (matched) self.currentUser = matched;
+
+            if (self.currentUser) {
+              var cachedEmail = (self.currentUser.email || '').trim().toLowerCase();
+
+              var matched = self.users.find(function (u) {
+                return u.id === self.currentUser.id;
+              });
+
+              if (!matched && cachedEmail) {
+                matched = self.users.find(function (u) {
+                  return (u.email || '').trim().toLowerCase() === cachedEmail;
+                });
+              }
+
+              if (matched) {
+                self.currentUser = matched;
+
+                try {
+                  localStorage.setItem(
+                    'orbix_current_user',
+                    JSON.stringify(matched)
+                  );
+                } catch (e) {
+                  console.warn('Unable to refresh cached user:', e);
+                }
+              }
+            }
+
             self.populateBhDropdown();
           }
+
           if (cb) cb();
         })
-        .catch(function () {
+        .catch(function (err) {
+          console.error('User synchronization failed:', err.message);
           if (cb) cb();
         });
     },
@@ -3340,7 +3375,7 @@ body.role-employee #adminCreateEmpBox,
         listContainer.innerHTML = '<div class="proj-loading">Loading live projects from PostgreSQL...</div>';
       }
 
-      fetch(url)
+      this.apiFetch(url)
         .then(function (r) { return r.json(); })
         .then(function (data) {
           self.projects = data.projects || [];
@@ -3378,7 +3413,7 @@ body.role-employee #adminCreateEmpBox,
         try {
           var dismissed = localStorage.getItem('orbix_dismissed_share_' + noticeKey);
           if (dismissed === 'true') return false;
-        } catch (e) {}
+        } catch (e) { }
         return true;
       });
 
@@ -3396,17 +3431,17 @@ body.role-employee #adminCreateEmpBox,
 
       container.innerHTML = '<div class="shared-copy-alert-banner" id="sharedAlert_' + noticeKey + '">' +
         '<div class="sca-left">' +
-          '<div class="sca-icon">⑂</div>' +
-          '<div class="sca-content">' +
-            '<div class="sca-title">' + sharedByName + ' (' + sharedByDesig + ') has shared their project copy with you</div>' +
-            '<div class="sca-desc">Project: "<strong>' + projectTitle + '</strong>". An isolated duplicate has been added to your projects.</div>' +
-          '</div>' +
+        '<div class="sca-icon">⑂</div>' +
+        '<div class="sca-content">' +
+        '<div class="sca-title">' + sharedByName + ' (' + sharedByDesig + ') has shared their project copy with you</div>' +
+        '<div class="sca-desc">Project: "<strong>' + projectTitle + '</strong>". An isolated duplicate has been added to your projects.</div>' +
+        '</div>' +
         '</div>' +
         '<div class="sca-actions">' +
-          '<button type="button" class="btn primary small sca-open-btn" data-pid="' + project.id + '">Open Project</button>' +
-          '<button type="button" class="btn small sca-cancel-btn" data-nid="' + noticeKey + '">Cancel</button>' +
+        '<button type="button" class="btn primary small sca-open-btn" data-pid="' + project.id + '">Open Project</button>' +
+        '<button type="button" class="btn small sca-cancel-btn" data-nid="' + noticeKey + '">Cancel</button>' +
         '</div>' +
-      '</div>';
+        '</div>';
 
       var cancelBtn = container.querySelector('.sca-cancel-btn');
       if (cancelBtn) {
@@ -3415,7 +3450,7 @@ body.role-employee #adminCreateEmpBox,
           var nid = this.getAttribute('data-nid');
           try {
             localStorage.setItem('orbix_dismissed_share_' + nid, 'true');
-          } catch (err) {}
+          } catch (err) { }
           container.innerHTML = '';
         });
       }
@@ -3442,12 +3477,12 @@ body.role-employee #adminCreateEmpBox,
       if (!this.projects.length) {
         container.innerHTML = '<div class="proj-empty">' +
           '<div class="proj-empty-icon">' +
-            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
+          '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
           '</div>' +
           '<h3>No projects found</h3>' +
           '<p>' + (this.searchQuery ? 'No projects matched "' + this.searchQuery + '". Try clearing filters.' : 'Create your first project or launch from a pre-set catalogue design.') + '</p>' +
           '<button class="btn primary big" id="emptyCreateBtn">+ Create New Project</button>' +
-        '</div>';
+          '</div>';
 
         var emptyBtn = document.getElementById('emptyCreateBtn');
         if (emptyBtn) {
@@ -3466,7 +3501,7 @@ body.role-employee #adminCreateEmpBox,
         try {
           var d = new Date(p.updated_at || p.created_at);
           dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-        } catch (e) {}
+        } catch (e) { }
 
         var details = p.data && p.data.details ? p.data.details : {};
         var contactStr = p.contact_number || details.contactNumber || '';
@@ -3479,50 +3514,50 @@ body.role-employee #adminCreateEmpBox,
 
         html += '<div class="proj-card' + (p.id === this.activeProjectId ? ' is-active-proj' : '') + '" data-id="' + p.id + '">' +
           '<div class="pcard-top">' +
-            '<div class="pcard-badges">' +
-              (bhStr ? '<span class="ptag bh-badge">BH: ' + bhStr + '</span>' : '<span class="ptag type-wardrobe">' + typeBadge + '</span>') +
-              (cpStr ? '<span class="ptag cp-code">CP: ' + cpStr + '</span>' : '') +
-              '<span class="pstatus ' + statusClass + '">' + (p.status || 'Draft') + '</span>' +
-              (p.is_shared ? '<span class="pshared-pill" title="Shared with colleagues">🔗 Shared</span>' : '') +
-              (p.fork_count ? '<span class="pfork-pill" title="' + p.fork_count + ' colleague copies created">⑂ ' + p.fork_count + ' copies</span>' : '') +
-            '</div>' +
-            '<div class="pcard-actions">' +
-              '<button class="pact-icon share-act" title="Share with colleague (they work in copy)" data-id="' + p.id + '">' +
-                '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
-              '</button>' +
-              '<button class="pact-icon fork-act" title="Work in a copy (duplicate for me)" data-id="' + p.id + '">' +
-                '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
-              '</button>' +
-              '<button class="pact-icon del-act" title="Delete project" data-id="' + p.id + '">' +
-                '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
-              '</button>' +
-            '</div>' +
+          '<div class="pcard-badges">' +
+          (bhStr ? '<span class="ptag bh-badge">BH: ' + bhStr + '</span>' : '<span class="ptag type-wardrobe">' + typeBadge + '</span>') +
+          (cpStr ? '<span class="ptag cp-code">CP: ' + cpStr + '</span>' : '') +
+          '<span class="pstatus ' + statusClass + '">' + (p.status || 'Draft') + '</span>' +
+          (p.is_shared ? '<span class="pshared-pill" title="Shared with colleagues">🔗 Shared</span>' : '') +
+          (p.fork_count ? '<span class="pfork-pill" title="' + p.fork_count + ' colleague copies created">⑂ ' + p.fork_count + ' copies</span>' : '') +
+          '</div>' +
+          '<div class="pcard-actions">' +
+          '<button class="pact-icon share-act" title="Share with colleague (they work in copy)" data-id="' + p.id + '">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
+          '</button>' +
+          '<button class="pact-icon fork-act" title="Work in a copy (duplicate for me)" data-id="' + p.id + '">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+          '</button>' +
+          '<button class="pact-icon del-act" title="Delete project" data-id="' + p.id + '">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+          '</button>' +
+          '</div>' +
           '</div>' +
 
           '<h3 class="pcard-title" data-open="' + p.id + '">' + (p.title || clientStr) + '</h3>' +
 
           '<div class="pcard-meta-grid">' +
-            '<div class="pmeta-item"><span class="pm-lbl">Client:</span> <strong class="pm-val">' + clientStr + '</strong>' + (contactStr ? ' (' + contactStr + ')' : '') + '</div>' +
-            (locationStr ? '<div class="pmeta-item"><span class="pm-lbl">Location:</span> <span class="pm-val">' + locationStr + '</span></div>' : '') +
-            (bhStr ? '<div class="pmeta-item"><span class="pm-lbl">BH Name:</span> <span class="pm-val">' + bhStr + '</span></div>' : '') +
+          '<div class="pmeta-item"><span class="pm-lbl">Client:</span> <strong class="pm-val">' + clientStr + '</strong>' + (contactStr ? ' (' + contactStr + ')' : '') + '</div>' +
+          (locationStr ? '<div class="pmeta-item"><span class="pm-lbl">Location:</span> <span class="pm-val">' + locationStr + '</span></div>' : '') +
+          (bhStr ? '<div class="pmeta-item"><span class="pm-lbl">BH Name:</span> <span class="pm-val">' + bhStr + '</span></div>' : '') +
           '</div>' +
 
           '<div class="pcard-foot">' +
-            '<div class="pcard-owner">' +
-              '<span class="powner-avatar">' + (p.owner_name ? p.owner_name.substring(0, 2).toUpperCase() : 'DK') + '</span>' +
-              '<div class="powner-details">' +
-                '<span class="powner-name">' + (isOwner ? 'You' : p.owner_name) + '</span>' +
-                '<span class="powner-date">' + dateStr + '</span>' +
-              '</div>' +
-            '</div>' +
-            '<div class="pcard-btns">' +
-              '<button class="btn open-proj-btn" data-open="' + p.id + '" title="Open project in 2D Floor Plan">' +
-                '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
-                '<span>Open 2D Plan</span>' +
-              '</button>' +
-            '</div>' +
+          '<div class="pcard-owner">' +
+          '<span class="powner-avatar">' + (p.owner_name ? p.owner_name.substring(0, 2).toUpperCase() : 'DK') + '</span>' +
+          '<div class="powner-details">' +
+          '<span class="powner-name">' + (isOwner ? 'You' : p.owner_name) + '</span>' +
+          '<span class="powner-date">' + dateStr + '</span>' +
           '</div>' +
-        '</div>';
+          '</div>' +
+          '<div class="pcard-btns">' +
+          '<button class="btn open-proj-btn" data-open="' + p.id + '" title="Open project in 2D Floor Plan">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
+          '<span>Open 2D Plan</span>' +
+          '</button>' +
+          '</div>' +
+          '</div>' +
+          '</div>';
       }
 
       container.innerHTML = html;
@@ -3587,7 +3622,7 @@ body.role-employee #adminCreateEmpBox,
       if (this.currentUser) {
         try {
           localStorage.setItem('orbix_active_proj_' + this.currentUser.id, id);
-        } catch (e) {}
+        } catch (e) { }
       }
 
       // Fetch fresh live project from PostgreSQL
@@ -3605,7 +3640,7 @@ body.role-employee #adminCreateEmpBox,
     _loadProjectIntoWorkspace: function (project, switchView) {
       try {
         localStorage.removeItem('cupboard-cad');
-      } catch (e) {}
+      } catch (e) { }
 
       // 1. Load 2D floor plan into OrbixUI first
       if (window.OrbixUI) {
@@ -3679,7 +3714,7 @@ body.role-employee #adminCreateEmpBox,
       if (!activeId) {
         try {
           activeId = localStorage.getItem('orbix_active_proj_' + this.currentUser.id);
-        } catch (e) {}
+        } catch (e) { }
       }
       if (!activeId) return;
 
@@ -3706,13 +3741,13 @@ body.role-employee #adminCreateEmpBox,
           localStorage.setItem('orbix_project_' + this.currentUser.id + '_' + activeId, JSON.stringify(project.data.plan));
         }
         localStorage.setItem('orbix_active_proj_' + this.currentUser.id, activeId);
-      } catch (e) {}
+      } catch (e) { }
 
       var self = this;
       self.setSaveIndicator('saving');
 
       // Sync live to PostgreSQL backend
-      fetch('/api/projects/' + activeId, {
+      this.apiFetch('/api/projects/' + activeId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3720,16 +3755,16 @@ body.role-employee #adminCreateEmpBox,
           units_count: project.units_count
         })
       })
-      .then(function (r) { return r.json(); })
-      .then(function () {
-        var now = new Date();
-        var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        self.setSaveIndicator('saved', timeStr);
-      })
-      .catch(function (err) {
-        console.warn('[AutoSave Live] PostgreSQL offline:', err);
-        self.setSaveIndicator('offline');
-      });
+        .then(function (r) { return r.json(); })
+        .then(function () {
+          var now = new Date();
+          var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          self.setSaveIndicator('saved', timeStr);
+        })
+        .catch(function (err) {
+          console.warn('[AutoSave Live] PostgreSQL offline:', err);
+          self.setSaveIndicator('offline');
+        });
     },
 
     setSaveIndicator: function (status, timeStr) {
@@ -3776,14 +3811,14 @@ body.role-employee #adminCreateEmpBox,
         if (project.data.plan && self.currentUser) {
           localStorage.setItem('orbix_project_' + self.currentUser.id + '_' + self.activeProjectId, JSON.stringify(project.data.plan));
         }
-      } catch (e) {}
+      } catch (e) { }
 
       self.setSaveIndicator('saving');
 
       // Debounced backend save to PostgreSQL
       clearTimeout(this._saveDebounce);
       this._saveDebounce = setTimeout(function () {
-        fetch('/api/projects/' + self.activeProjectId, {
+        this.apiFetch('/api/projects/' + self.activeProjectId, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3791,15 +3826,15 @@ body.role-employee #adminCreateEmpBox,
             units_count: project.units_count
           })
         })
-        .then(function () {
-          var now = new Date();
-          var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          self.setSaveIndicator('saved', timeStr);
-        })
-        .catch(function (e) {
-          console.warn('Auto-save to backend failed:', e);
-          self.setSaveIndicator('offline');
-        });
+          .then(function () {
+            var now = new Date();
+            var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            self.setSaveIndicator('saved', timeStr);
+          })
+          .catch(function (e) {
+            console.warn('Auto-save to backend failed:', e);
+            self.setSaveIndicator('offline');
+          });
       }, 500);
     },
 
@@ -3811,22 +3846,22 @@ body.role-employee #adminCreateEmpBox,
       var original = this.projects.find(function (p) { return p.id === originalId; });
       if (!original) return;
 
-      fetch('/api/projects/' + originalId + '/fork', {
+      this.apiFetch('/api/projects/' + originalId + '/fork', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ colleagueUser: self.currentUser })
       })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.success && data.project) {
-          self.fetchProjects();
-          self.openProject(data.project.id);
-          self.showCopyNotification(original.title, data.project.title);
-        }
-      })
-      .catch(function (err) {
-        alert('Failed to create copy: ' + err.message);
-      });
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.success && data.project) {
+            self.fetchProjects();
+            self.openProject(data.project.id);
+            self.showCopyNotification(original.title, data.project.title);
+          }
+        })
+        .catch(function (err) {
+          alert('Failed to create copy: ' + err.message);
+        });
     },
 
     forkProjectForColleague: function (originalId, colleagueUser) {
@@ -3834,21 +3869,21 @@ body.role-employee #adminCreateEmpBox,
       fetch('/api/projects/' + originalId + '/fork', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           colleagueUser: colleagueUser,
           senderUser: self.currentUser
         })
       })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.success && data.project) {
-          self.closeModal('shareModal');
-          self.fetchProjects();
-          if (typeof showToast === 'function') {
-            showToast('✓ Created copy for ' + colleagueUser.name + ': "' + data.project.title + '"');
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.success && data.project) {
+            self.closeModal('shareModal');
+            self.fetchProjects();
+            if (typeof showToast === 'function') {
+              showToast('✓ Created copy for ' + colleagueUser.name + ': "' + data.project.title + '"');
+            }
           }
-        }
-      });
+        });
     },
 
     showCopyNotification: function (originalTitle, copyTitle) {
@@ -3856,14 +3891,14 @@ body.role-employee #adminCreateEmpBox,
       if (!banner) return;
       banner.innerHTML = '<div class="cc-banner-inner">' +
         '<div class="cc-banner-left">' +
-          '<span class="cc-icon">⑂</span>' +
-          '<div>' +
-            '<strong>Working in an Isolated Copy</strong>' +
-            '<p>Branched from "<em>' + originalTitle + '</em>". Your edits will be saved to "<strong>' + copyTitle + '</strong>" and will never overwrite the original master file.</p>' +
-          '</div>' +
+        '<span class="cc-icon">⑂</span>' +
+        '<div>' +
+        '<strong>Working in an Isolated Copy</strong>' +
+        '<p>Branched from "<em>' + originalTitle + '</em>". Your edits will be saved to "<strong>' + copyTitle + '</strong>" and will never overwrite the original master file.</p>' +
+        '</div>' +
         '</div>' +
         '<button class="cc-close" onclick="this.parentElement.parentElement.classList.remove(\'is-shown\')">&times;</button>' +
-      '</div>';
+        '</div>';
       banner.classList.add('is-shown');
       setTimeout(function () {
         banner.classList.remove('is-shown');
@@ -3896,11 +3931,11 @@ body.role-employee #adminCreateEmpBox,
           otherUsers.forEach(function (u) {
             colleagueHtml += '<div class="colleague-row">' +
               '<div class="col-info">' +
-                '<span class="u-avatar small">' + (u.avatar || 'US') + '</span>' +
-                '<div><strong>' + u.name + '</strong><span>' + u.email + ' • ' + (u.role || 'Colleague') + '</span></div>' +
+              '<span class="u-avatar small">' + (u.avatar || 'US') + '</span>' +
+              '<div><strong>' + u.name + '</strong><span>' + u.email + ' • ' + (u.role || 'Colleague') + '</span></div>' +
               '</div>' +
               '<button class="btn send-copy-btn" data-uid="' + u.id + '">Send Copy ⑂</button>' +
-            '</div>';
+              '</div>';
           });
         }
         colContainer.innerHTML = colleagueHtml;
@@ -3927,13 +3962,13 @@ body.role-employee #adminCreateEmpBox,
       if (!confirm('Are you sure you want to delete "' + title + '"? This will remove it from PostgreSQL.')) return;
 
       var self = this;
-      fetch('/api/projects/' + id, { method: 'DELETE' })
+      this.apiFetch('/api/projects/' + id, { method: 'DELETE' })
         .then(function (r) { return r.json(); })
         .then(function () {
           if (self.activeProjectId === id) {
             self.activeProjectId = null;
             if (self.currentUser) {
-              try { localStorage.removeItem('orbix_active_proj_' + self.currentUser.id); } catch (e) {}
+              try { localStorage.removeItem('orbix_active_proj_' + self.currentUser.id); } catch (e) { }
             }
             if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
               window.OrbixUI.resetProject('New Project');
@@ -4080,10 +4115,10 @@ body.role-employee #adminCreateEmpBox,
           var freshPlan = (window.OrbixCore && typeof window.OrbixCore.createProject === 'function')
             ? window.OrbixCore.createProject(title)
             : {
-                schemaVersion: '1.0.0',
-                meta: { title: title, clientName: client, designerName: self.currentUser ? self.currentUser.name : '' },
-                plan: { gridSize: 100, walls: [], openings: [], rooms: [], furniture: [] }
-              };
+              schemaVersion: '1.0.0',
+              meta: { title: title, clientName: client, designerName: self.currentUser ? self.currentUser.name : '' },
+              plan: { gridSize: 100, walls: [], openings: [], rooms: [], furniture: [] }
+            };
           if (freshPlan.meta) {
             freshPlan.meta.clientName = client;
             freshPlan.meta.contactNumber = contact;
@@ -4119,20 +4154,20 @@ body.role-employee #adminCreateEmpBox,
             currentUser: self.currentUser
           };
 
-          fetch('/api/projects', {
+          this.apiFetch('/api/projects', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (data.project) {
-              self.closeModal('createProjectModal');
-              createForm.reset();
-              self.fetchProjects();
-              self.openProject(data.project.id);
-            }
-          });
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (data.project) {
+                self.closeModal('createProjectModal');
+                createForm.reset();
+                self.fetchProjects();
+                self.openProject(data.project.id);
+              }
+            });
         });
       }
 
@@ -4167,42 +4202,42 @@ body.role-employee #adminCreateEmpBox,
             avatar: initials
           };
 
-          fetch('/api/users', {
+          this.apiFetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (data.user) {
-              createEmpForm.reset();
-              // Show Success Alert with credentials
-              var alertBox = document.getElementById('empCreatedAlert');
-              if (alertBox) {
-                var elName = document.getElementById('ecaName');
-                var elUser = document.getElementById('ecaUsername');
-                var elEmail = document.getElementById('ecaEmail');
-                var elPass = document.getElementById('ecaPassword');
-                var elRole = document.getElementById('ecaRole');
-                if (elName) elName.textContent = data.user.name;
-                if (elUser) elUser.textContent = data.user.username || data.user.id;
-                if (elEmail) elEmail.textContent = data.user.email;
-                if (elPass) elPass.textContent = data.user.password || password;
-                if (elRole) elRole.textContent = data.user.role === 'admin' ? 'Admin' : 'Employee';
-                alertBox.style.display = 'flex';
-              }
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (data.user) {
+                createEmpForm.reset();
+                // Show Success Alert with credentials
+                var alertBox = document.getElementById('empCreatedAlert');
+                if (alertBox) {
+                  var elName = document.getElementById('ecaName');
+                  var elUser = document.getElementById('ecaUsername');
+                  var elEmail = document.getElementById('ecaEmail');
+                  var elPass = document.getElementById('ecaPassword');
+                  var elRole = document.getElementById('ecaRole');
+                  if (elName) elName.textContent = data.user.name;
+                  if (elUser) elUser.textContent = data.user.username || data.user.id;
+                  if (elEmail) elEmail.textContent = data.user.email;
+                  if (elPass) elPass.textContent = data.user.password || password;
+                  if (elRole) elRole.textContent = data.user.role === 'admin' ? 'Admin' : 'Employee';
+                  alertBox.style.display = 'flex';
+                }
 
-              self.fetchUsers(function () {
-                self.openUserModal();
-              });
-              if (typeof showToast === 'function') {
-                showToast('✓ Employee account created: ' + data.user.name);
+                self.fetchUsers(function () {
+                  self.openUserModal();
+                });
+                if (typeof showToast === 'function') {
+                  showToast('✓ Employee account created: ' + data.user.name);
+                }
               }
-            }
-          })
-          .catch(function (err) {
-            if (typeof showToast === 'function') showToast('Error creating employee: ' + err.message);
-          });
+            })
+            .catch(function (err) {
+              if (typeof showToast === 'function') showToast('Error creating employee: ' + err.message);
+            });
         });
       }
 
@@ -4241,7 +4276,7 @@ body.role-employee #adminCreateEmpBox,
           if (errAlert) errAlert.style.display = 'none';
 
           var identifier = document.getElementById('authIdentifier').value.trim();
-          var password = document.getElementById('authPassword').value.trim();
+          var password = document.getElementById('authPassword').value; // Never trim password
           if (!identifier || !password) return;
 
           var submitBtn = document.getElementById('authScreenSubmitBtn');
@@ -4250,40 +4285,40 @@ body.role-employee #adminCreateEmpBox,
             submitBtn.textContent = 'Signing In...';
           }
 
-          fetch('/api/login', {
+          this.apiFetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identifier: identifier, password: password })
           })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Sign In to Workspace';
-            }
-            if (data.success && data.user) {
-              authPageForm.reset();
-              self.setCurrentUser(data.user);
-              if (typeof showToast === 'function') {
-                showToast('✓ Welcome back, ' + data.user.name + ' (' + (data.user.role === 'admin' ? 'Admin' : 'Employee') + ')');
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In to Workspace';
               }
-            } else {
+              if (data.success && data.user) {
+                authPageForm.reset();
+                self.setCurrentUser(data.user);
+                if (typeof showToast === 'function') {
+                  showToast('✓ Welcome back, ' + data.user.name + ' (' + (data.user.role === 'admin' ? 'Admin' : 'Employee') + ')');
+                }
+              } else {
+                if (errAlert) {
+                  errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
+                  errAlert.style.display = 'block';
+                }
+              }
+            })
+            .catch(function (err) {
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In to Workspace';
+              }
               if (errAlert) {
-                errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
+                errAlert.textContent = 'Sign-in error: ' + err.message;
                 errAlert.style.display = 'block';
               }
-            }
-          })
-          .catch(function (err) {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Sign In to Workspace';
-            }
-            if (errAlert) {
-              errAlert.textContent = 'Sign-in error: ' + err.message;
-              errAlert.style.display = 'block';
-            }
-          });
+            });
         });
       }
 
@@ -4351,44 +4386,44 @@ body.role-employee #adminCreateEmpBox,
             saveBtn.textContent = 'Saving...';
           }
 
-          fetch('/api/users/' + encodeURIComponent(uid), {
+          this.apiFetch('/api/users/' + encodeURIComponent(uid), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           })
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (saveBtn) {
-              saveBtn.disabled = false;
-              saveBtn.textContent = 'Save Changes';
-            }
-            if (data.success && data.user) {
-              // If edited active user, update active session
-              if (self.currentUser && self.currentUser.id === uid) {
-                self.currentUser = Object.assign({}, self.currentUser, data.user);
-                try {
-                  localStorage.setItem('orbix_current_user', JSON.stringify(self.currentUser));
-                } catch (e) {}
-                self.updateUserUI();
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
               }
-              self.closeModal('editUserModal');
-              if (typeof showToast === 'function') {
-                showToast('✓ Account updated: ' + data.user.name);
+              if (data.success && data.user) {
+                // If edited active user, update active session
+                if (self.currentUser && self.currentUser.id === uid) {
+                  self.currentUser = Object.assign({}, self.currentUser, data.user);
+                  try {
+                    localStorage.setItem('orbix_current_user', JSON.stringify(self.currentUser));
+                  } catch (e) { }
+                  self.updateUserUI();
+                }
+                self.closeModal('editUserModal');
+                if (typeof showToast === 'function') {
+                  showToast('✓ Account updated: ' + data.user.name);
+                }
+                self.fetchUsers(function () {
+                  self.openUserModal();
+                });
+              } else {
+                alert('Failed to update account: ' + (data.error || 'Server error'));
               }
-              self.fetchUsers(function () {
-                self.openUserModal();
-              });
-            } else {
-              alert('Failed to update account: ' + (data.error || 'Server error'));
-            }
-          })
-          .catch(function (err) {
-            if (saveBtn) {
-              saveBtn.disabled = false;
-              saveBtn.textContent = 'Save Changes';
-            }
-            alert('Error updating user: ' + err.message);
-          });
+            })
+            .catch(function (err) {
+              if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+              }
+              alert('Error updating user: ' + err.message);
+            });
         });
       }
 
@@ -4422,14 +4457,27 @@ body.role-employee #adminCreateEmpBox,
       this.applyRolePermissions();
 
       var adminTeamSec = document.getElementById('adminTeamProfilesSection');
-      if (adminTeamSec) {
-        adminTeamSec.style.display = isAdm ? 'block' : 'none';
-      }
       var adminBox = document.getElementById('adminCreateEmpBox');
-      if (adminBox) {
-        adminBox.style.display = isAdm ? 'block' : 'none';
+
+      // Update current user profile card in modal
+      var curNameEl = document.getElementById('curUserName');
+      var curBadgeEl = document.getElementById('curUserBadge');
+      var curEmailEl = document.getElementById('curUserEmail');
+      var curRoleEl = document.getElementById('curUserRole');
+      var curAvatarEl = document.querySelector('#userModal .ucc-avatar .u-avatar');
+
+      if (self.currentUser) {
+        if (curNameEl) curNameEl.textContent = self.currentUser.name;
+        if (curBadgeEl) {
+          curBadgeEl.textContent = isAdm ? 'Admin' : 'Employee';
+          curBadgeEl.className = 'role-badge ' + (isAdm ? 'admin' : 'employee');
+        }
+        if (curEmailEl) curEmailEl.textContent = self.currentUser.email;
+        if (curRoleEl) curRoleEl.textContent = (self.currentUser.designation || (isAdm ? 'System Administrator' : 'Floor Architect / FA')) + ' • ' + (self.currentUser.company || 'Cookscape');
+        if (curAvatarEl) curAvatarEl.textContent = self.currentUser.avatar || 'US';
       }
 
+      // If user is Employee: Strictly show only their own profile and hide team switcher
       if (!isAdm) {
         if (adminTeamSec) adminTeamSec.style.display = 'none';
         if (adminBox) adminBox.style.display = 'none';
@@ -4439,9 +4487,12 @@ body.role-employee #adminCreateEmpBox,
         return;
       }
 
+      // If Admin: show employee creation box and team directory (with Edit/Delete, no password-less switch)
+      if (adminTeamSec) adminTeamSec.style.display = 'block';
+      if (adminBox) adminBox.style.display = 'block';
+
       var userListEl = document.getElementById('switchUsersList');
       if (userListEl) {
-        var isAdm = self.isAdmin();
         var html = '';
         this.users.forEach(function (u) {
           var isCurrent = self.currentUser && self.currentUser.id === u.id;
@@ -4450,17 +4501,12 @@ body.role-employee #adminCreateEmpBox,
           var isPrimaryAdmin = u.id === 'usr_admin' || (u.email && u.email.toLowerCase() === 'admin@cookscape.com');
 
           var actionsHtml = '<div class="u-switch-actions">';
-          if (!isCurrent) {
-            actionsHtml += '<button class="btn small switch-user-btn" data-uid="' + u.id + '" type="button">Switch</button>';
-          } else {
+          if (isCurrent) {
             actionsHtml += '<span class="current-tag">Current</span>';
           }
-
-          if (isAdm) {
-            actionsHtml += '<button class="btn small edit-user-btn" data-uid="' + u.id + '" type="button" title="Edit account">Edit</button>';
-            if (!isPrimaryAdmin && (!self.currentUser || u.id !== self.currentUser.id)) {
-              actionsHtml += '<button class="btn small danger del-user-btn" data-uid="' + u.id + '" data-uname="' + (u.name || u.username || 'User') + '" type="button" title="Delete account">Delete</button>';
-            }
+          actionsHtml += '<button class="btn small edit-user-btn" data-uid="' + u.id + '" type="button" title="Edit account">Edit</button>';
+          if (!isPrimaryAdmin && (!self.currentUser || u.id !== self.currentUser.id)) {
+            actionsHtml += '<button class="btn small danger del-user-btn" data-uid="' + u.id + '" data-uname="' + (u.name || u.username || 'User') + '" type="button" title="Delete account">Delete</button>';
           }
           actionsHtml += '</div>';
 
@@ -4470,49 +4516,37 @@ body.role-employee #adminCreateEmpBox,
 
           html += '<div class="u-switch-item' + (isCurrent ? ' is-current' : '') + '" data-uid="' + u.id + '">' +
             '<div class="u-info">' +
-              '<span class="u-avatar ' + (uIsAdmin ? 'is-admin-avatar' : '') + '">' + (u.avatar || 'US') + '</span>' +
-              '<div>' +
-                '<div style="display:flex;align-items:center;gap:6px;">' +
-                  '<strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong>' +
-                  roleBadgeHtml +
-                '</div>' +
-                '<span>' + userMeta + '</span>' +
-              '</div>' +
+            '<span class="u-avatar ' + (uIsAdmin ? 'is-admin-avatar' : '') + '">' + (u.avatar || 'US') + '</span>' +
+            '<div>' +
+            '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong>' +
+            roleBadgeHtml +
+            '</div>' +
+            '<span>' + userMeta + '</span>' +
+            '</div>' +
             '</div>' +
             actionsHtml +
-          '</div>';
+            '</div>';
         });
         userListEl.innerHTML = html;
 
-        // Switch user event
-        userListEl.querySelectorAll('.switch-user-btn').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var uid = this.getAttribute('data-uid');
-            var u = self.users.find(function (x) { return x.id === uid; });
-            if (u) {
-              self.setCurrentUser(u);
-              self.closeModal('userModal');
-            }
-          });
-        });
-
-        // Edit user event (Admin only)
+        // Edit user event
         userListEl.querySelectorAll('.edit-user-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var uid = this.getAttribute('data-uid');
             var u = self.users.find(function (x) { return x.id === uid; });
-            if (u) {
-              self.openEditUserModal(u);
-            }
+            if (u) self.openEditUserModal(u);
           });
         });
 
-        // Delete user event (Admin only)
+        // Delete user event
         userListEl.querySelectorAll('.del-user-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var uid = this.getAttribute('data-uid');
-            var uname = this.getAttribute('data-uname') || 'this user';
-            self.confirmAndDeleteUser(uid, uname);
+            var uname = this.getAttribute('data-uname');
+            if (confirm('Are you sure you want to delete employee "' + uname + '"?')) {
+              self.deleteUser(uid);
+            }
           });
         });
       }
@@ -4564,22 +4598,22 @@ body.role-employee #adminCreateEmpBox,
       fetch('/api/users/' + encodeURIComponent(uid), {
         method: 'DELETE'
       })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.success) {
-          if (typeof showToast === 'function') {
-            showToast('✓ Account deleted: ' + uname);
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.success) {
+            if (typeof showToast === 'function') {
+              showToast('✓ Account deleted: ' + uname);
+            }
+            self.fetchUsers(function () {
+              self.openUserModal();
+            });
+          } else {
+            alert('Failed to delete account: ' + (data.error || 'Server error'));
           }
-          self.fetchUsers(function () {
-            self.openUserModal();
-          });
-        } else {
-          alert('Failed to delete account: ' + (data.error || 'Server error'));
-        }
-      })
-      .catch(function (err) {
-        alert('Error deleting account: ' + err.message);
-      });
+        })
+        .catch(function (err) {
+          alert('Error deleting account: ' + err.message);
+        });
     }
   };
 
@@ -5815,306 +5849,2423 @@ body.role-employee #adminCreateEmpBox,
      Standard Modular Furniture Catalog
      ───────────────────────────────────────────────────────────────────────────── */
   var FURNITURE_CATALOG = [
-    // ─── Imported Modular Units from units_import_template (1).xlsx ───
+    // ─── Imported Modular Units Catalog (69 Units) ───
     {
-      id: 'fm-rt-01',
-      code: 'fm-rt-01',
-      name: 'FCM -RT (Kitchen Base)',
-      modelType: 'kitchen_fm',
-      category: 'kitchen_base',
-      icon: '🍳',
-      dimensions: { W: 1200, H: 750, D: 550 },
+      id: "ctvb-1d-1dr",
+      code: "ctvb-1d-1dr",
+      name: "CROCKERY/TV BASE 1DOOR 1 DRAWER",
+      modelType: "tv_unit_cabinet",
+      category: "tv_unit",
+      costCategory: "TV Unit Cabinet",
+      areaSqft: 0.9687523546,
+      icon: "📺",
+      dimensions: { W: 450, H: 200, D: 450 },
       materials: {
-        shutter: { material: 'HDHMR_18mm', finish: 'Absolute White' },
-        carcass: { material: 'BWP_18mm', finish: 'Absolute White' }
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 1,
+        loft: false,
+        loftH: 0,
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 1922 },
+      customRate: 1922
+    },
+    {
+      id: "ctvb-1dr",
+      code: "ctvb-1dr",
+      name: "CROCKERY/TV BASE 1 DRAWER",
+      modelType: "tv_unit_cabinet",
+      category: "tv_unit",
+      costCategory: "TV Unit Cabinet",
+      areaSqft: 1.291669806,
+      icon: "📺",
+      dimensions: { W: 600, H: 200, D: 350 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
         shutters: 1,
-        doorType: 'hinged',
-        dstyle: 'slab',
-        glassTint: 'none',
-        profileColor: 'none',
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 1,
+        loft: false,
+        loftH: 0,
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 2562.67 },
+      customRate: 2562.67
+    },
+    {
+      id: "ctvb-2d",
+      code: "ctvb-2d",
+      name: "CROCKERY /TV BASE 2 DOOR",
+      modelType: "pooja_with_cnc",
+      category: "pooja",
+      costCategory: "POOJA WITH CNC",
+      areaSqft: 6.054702216,
+      icon: "🛕",
+      dimensions: { W: 750, H: 750, D: 450 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
         sections: 0,
         shelves: 1,
         drawers: 0,
         loft: false,
         loftH: 0,
-        counter: 'none',
-        handle: 'gprof',
-        hfinish: 'black',
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
         led: false,
-        carcass: 'BWP_18mm',
-        shutterCol: 'Absolute White'
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 11921.71 },
+      customRate: 11921.71
+    },
+    {
+      id: "ctvb-2d-2dr",
+      code: "ctvb-2d-2dr",
+      name: "CROCKERY/TV BASE 2 DOOR 2 DRAWER",
+      modelType: "tv_unit_cabinet",
+      category: "tv_unit",
+      costCategory: "TV Unit Cabinet",
+      areaSqft: 7.26564266,
+      icon: "📺",
+      dimensions: { W: 900, H: 750, D: 450 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 4,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 2,
+        loft: false,
+        loftH: 0,
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 14415.04 },
+      customRate: 14415.04
+    },
+    {
+      id: "ctvb-2dr",
+      code: "ctvb-2dr",
+      name: "CROCKERY/TV BASE 2 DRAWER",
+      modelType: "tv_unit_cabinet",
+      category: "tv_unit",
+      costCategory: "TV Unit Cabinet",
+      areaSqft: 2.421880887,
+      icon: "📺",
+      dimensions: { W: 450, H: 500, D: 350 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 2,
+        loft: false,
+        loftH: 0,
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 4805.01 },
+      customRate: 4805.01
+    },
+    {
+      id: "ctvw-2d",
+      code: "ctvw-2d",
+      name: "CROCKERY/TV WALL 2 DOOR",
+      modelType: "pooja_with_cnc",
+      category: "pooja",
+      costCategory: "POOJA WITH CNC",
+      areaSqft: 5.812514128,
+      icon: "🛕",
+      dimensions: { W: 900, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 11444.84 },
+      customRate: 11444.84
+    },
+    {
+      id: "ctvw-obs-02",
+      code: "ctvw-obs-02",
+      name: "CROCKERY/TV WALL OPEN BOX STORAGE 2",
+      modelType: "spice_rack",
+      category: "spice_rack",
+      costCategory: "Spice Rack (OPEN BOXES)",
+      areaSqft: 4.843761773,
+      icon: "🧂",
+      dimensions: { W: 1500, H: 300, D: 200 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 11005.03 },
+      customRate: 11005.03
+    },
+    {
+      id: "fm-rt-01",
+      code: "fm-rt-01",
+      name: "FCM -RT",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 9.687523546,
+      icon: "🍳",
+      dimensions: { W: 1200, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
       },
       pricingOverrides: { baseRate: 17398.79 },
       customRate: 17398.79
     },
     {
-      id: 'wm-01',
-      code: 'wm-01',
-      name: 'WM 1200 (Kitchen Wall)',
-      modelType: 'kitchen_wm',
-      category: 'kitchen_wall',
-      icon: '🎛️',
-      dimensions: { W: 1200, H: 600, D: 300 },
+      id: "fm-120",
+      code: "fm-120",
+      name: "FM 120",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 9.687523546,
+      icon: "🍳",
+      dimensions: { W: 1200, H: 750, D: 550 },
       materials: {
-        shutter: { material: 'HDHMR_18mm', finish: 'Absolute White' },
-        carcass: { material: 'BWP_18mm', finish: 'Absolute White' }
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
         shutters: 2,
-        doorType: 'hinged',
-        dstyle: 'slab',
-        glassTint: 'none',
-        profileColor: 'none',
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
         sections: 0,
         shelves: 1,
         drawers: 0,
         loft: false,
         loftH: 0,
-        counter: 'none',
-        handle: 'gprof',
-        hfinish: 'black',
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
         led: false,
-        carcass: 'BWP_18mm',
-        shutterCol: 'Absolute White'
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
       },
-      pricingOverrides: { baseRate: 5986.88 },
-      customRate: 5986.88
+      pricingOverrides: { baseRate: 17398.79 },
+      customRate: 17398.79
     },
-    // ─── Imported Modular Units from units_import_template.csv ───
     {
-      id: 'W-01',
-      code: 'W-01',
-      name: 'Master Bed 2-Door Wardrobe (Shelves)',
-      modelType: 'wr_shelves',
-      category: 'wardrobe',
-      icon: '🚪',
-      dimensions: { W: 1200, H: 2100, D: 600 },
+      id: "fm-45",
+      code: "fm-45",
+      name: "FM 45",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 3.63282133,
+      icon: "🍳",
+      dimensions: { W: 450, H: 750, D: 550 },
       materials: {
-        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
-        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 2,
-        doorType: 'hinged',
-        dstyle: 'slab',
-        glassTint: 'none',
-        profileColor: 'none',
-        sections: 1,
-        shelves: 4,
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
         drawers: 0,
         loft: false,
         loftH: 0,
-        counter: 'none',
-        handle: 'gprof',
-        hfinish: 'black',
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
         led: false,
-        carcass: 'BWP_18MM',
-        shutterCol: 'Brazilian Horizontal Walnut'
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
       },
-      pricingOverrides: { baseRate: 1696 },
-      customRate: 1696
+      pricingOverrides: { baseRate: 6524.55 },
+      customRate: 6524.55
     },
     {
-      id: 'W-02',
-      code: 'W-02',
-      name: 'Master Bed 3-Door Wardrobe (Drawers + Loft)',
-      modelType: 'wr_drawers',
-      category: 'wardrobe',
-      icon: '🚪',
-      dimensions: { W: 1800, H: 2100, D: 600 },
+      id: "fm-60",
+      code: "fm-60",
+      name: "FM 60",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 4.843761773,
+      icon: "🍳",
+      dimensions: { W: 600, H: 750, D: 550 },
       materials: {
-        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
-        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 8699.4 },
+      customRate: 8699.4
+    },
+    {
+      id: "fm-75",
+      code: "fm-75",
+      name: "FM 75",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 6.054702216,
+      icon: "🍳",
+      dimensions: { W: 750, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 10874.25 },
+      customRate: 10874.25
+    },
+    {
+      id: "fm-90",
+      code: "fm-90",
+      name: "FM 90",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 7.26564266,
+      icon: "🍳",
+      dimensions: { W: 900, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 13049.09 },
+      customRate: 13049.09
+    },
+    {
+      id: "fm-d2-45",
+      code: "fm-d2-45",
+      name: "FM D2 - 45",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - D2/D3",
+      areaSqft: 3.63282133,
+      icon: "🍳",
+      dimensions: { W: 450, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 2,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 7163.92 },
+      customRate: 7163.92
+    },
+    {
+      id: "fm-d2-75",
+      code: "fm-d2-75",
+      name: "FM D2 - 75",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - D2/D3",
+      areaSqft: 6.054702216,
+      icon: "🍳",
+      dimensions: { W: 750, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 2,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 11939.87 },
+      customRate: 11939.87
+    },
+    {
+      id: "fm-d2-90",
+      code: "fm-d2-90",
+      name: "FM D2 - 90",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - D2/D3",
+      areaSqft: 7.26564266,
+      icon: "🍳",
+      dimensions: { W: 900, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 2,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 14327.85 },
+      customRate: 14327.85
+    },
+    {
+      id: "fm-d3-45",
+      code: "fm-d3-45",
+      name: "FM D3 - 45",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - D2/D3",
+      areaSqft: 3.63282133,
+      icon: "🍳",
+      dimensions: { W: 450, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
         shutters: 3,
-        doorType: 'hinged',
-        dstyle: 'slab',
-        glassTint: 'none',
-        profileColor: 'none',
-        sections: 2,
-        shelves: 4,
-        drawers: 2,
-        loft: true,
-        loftH: 600,
-        counter: 'none',
-        handle: 'gprof',
-        hfinish: 'black',
-        led: false,
-        carcass: 'BWP_18MM',
-        shutterCol: 'Brazilian Horizontal Walnut'
-      },
-      pricingOverrides: { baseRate: 1795 },
-      customRate: 1795
-    },
-    {
-      id: 'W-03',
-      code: 'W-03',
-      name: '2-Door Glass Profile Sliding Wardrobe',
-      modelType: 'wr_sliding',
-      category: 'wardrobe',
-      icon: '↔️',
-      dimensions: { W: 1800, H: 2400, D: 650 },
-      materials: {
-        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
-        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
-      },
-      unitConfig: {
-        type: 'sliding',
-        shutters: 2,
-        doorType: 'sliding',
-        dstyle: 'aluglass',
-        glassTint: 'fluted',
-        profileColor: 'black',
-        sections: 2,
-        shelves: 5,
-        drawers: 2,
-        loft: false,
-        loftH: 0,
-        counter: 'none',
-        handle: 'none',
-        hfinish: 'black',
-        led: true,
-        carcass: 'BWP_18MM',
-        shutterCol: 'Brazilian Horizontal Walnut'
-      },
-      pricingOverrides: { baseRate: 2150 },
-      customRate: 2150
-    },
-    {
-      id: 'CR-01',
-      code: 'CR-01',
-      name: 'Fluted Glass Hutch · Walnut',
-      modelType: 'crockery_tall',
-      category: 'crockery',
-      icon: '🍷',
-      dimensions: { W: 900, H: 2100, D: 450 },
-      materials: {
-        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
-        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
-      },
-      unitConfig: {
-        shutters: 2,
-        doorType: 'hinged',
-        dstyle: 'aluglass',
-        glassTint: 'fluted',
-        profileColor: 'black',
-        sections: 1,
-        shelves: 3,
-        drawers: 2,
-        loft: false,
-        loftH: 0,
-        counter: 'galaxy',
-        handle: 'gprof',
-        hfinish: 'black',
-        led: true,
-        carcass: 'BWP_18MM',
-        shutterCol: 'Brazilian Horizontal Walnut'
-      },
-      pricingOverrides: { baseRate: 2250 },
-      customRate: 2250
-    },
-    {
-      id: 'TV-01',
-      code: 'TV-01',
-      name: 'Living TV Media Entertainment Unit',
-      modelType: 'tv_console',
-      category: 'tv_unit',
-      icon: '📺',
-      dimensions: { W: 2400, H: 1800, D: 400 },
-      materials: {
-        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
-        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
-      },
-      unitConfig: {
-        shutters: 0,
-        doorType: 'open',
-        dstyle: 'slab',
-        glassTint: 'none',
-        profileColor: 'none',
-        sections: 3,
-        shelves: 2,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
         drawers: 3,
         loft: false,
         loftH: 0,
-        counter: 'none',
-        handle: 'gola',
-        hfinish: 'black',
-        led: true,
-        carcass: 'BWP_18MM',
-        shutterCol: 'Brazilian Horizontal Walnut'
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
       },
-      pricingOverrides: { baseRate: 1984 },
-      customRate: 1984
+      pricingOverrides: { baseRate: 7163.92 },
+      customRate: 7163.92
     },
     {
-      id: 'K-01',
-      code: 'K-01',
-      name: 'Kitchen Lower Base Run (3m)',
-      modelType: 'kitchen_base',
-      category: 'kitchen_base',
-      icon: '🍳',
-      dimensions: { W: 3000, H: 850, D: 600 },
+      id: "fm-d3-75",
+      code: "fm-d3-75",
+      name: "FM D3 - 75",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - D2/D3",
+      areaSqft: 6.054702216,
+      icon: "🍳",
+      dimensions: { W: 750, H: 750, D: 550 },
       materials: {
-        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
-        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 5,
-        doorType: 'hinged',
-        dstyle: 'slab',
-        glassTint: 'none',
-        profileColor: 'none',
-        sections: 4,
-        shelves: 3,
-        drawers: 4,
+        shutters: 3,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 3,
         loft: false,
         loftH: 0,
-        counter: 'black',
-        handle: 'gprof',
-        hfinish: 'black',
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
         led: false,
-        carcass: 'BWP_18MM',
-        shutterCol: 'Brazilian Horizontal Walnut'
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
       },
-      pricingOverrides: { baseRate: 1796 },
-      customRate: 1796
+      pricingOverrides: { baseRate: 11939.87 },
+      customRate: 11939.87
     },
     {
-      id: 'K-02',
-      code: 'K-02',
-      name: 'Kitchen Upper Wall Cabinets (3m)',
-      modelType: 'kitchen_wall',
-      category: 'kitchen_wall',
-      icon: '🎛️',
-      dimensions: { W: 3000, H: 700, D: 350 },
+      id: "fm-d3-90",
+      code: "fm-d3-90",
+      name: "FM D3 - 90",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - D2/D3",
+      areaSqft: 7.26564266,
+      icon: "🍳",
+      dimensions: { W: 900, H: 750, D: 550 },
       materials: {
-        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
-        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 5,
-        doorType: 'hinged',
-        dstyle: 'slab',
-        glassTint: 'none',
-        profileColor: 'none',
-        sections: 4,
-        shelves: 3,
+        shutters: 3,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 3,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 14327.85 },
+      customRate: 14327.85
+    },
+    {
+      id: "fm-ds-45",
+      code: "fm-ds-45",
+      name: "FM DS 45",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 3.63282133,
+      icon: "🍳",
+      dimensions: { W: 450, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 1,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 6524.55 },
+      customRate: 6524.55
+    },
+    {
+      id: "fm-ds-60",
+      code: "fm-ds-60",
+      name: "FM DS 60",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 4.843761773,
+      icon: "🍳",
+      dimensions: { W: 600, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 1,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 8699.4 },
+      customRate: 8699.4
+    },
+    {
+      id: "fm-ds-90",
+      code: "fm-ds-90",
+      name: "FM DS 90",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 7.26564266,
+      icon: "🍳",
+      dimensions: { W: 900, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 4,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 2,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 13049.09 },
+      customRate: 13049.09
+    },
+    {
+      id: "sr-45",
+      code: "sr-45",
+      name: "SR 45",
+      modelType: "spice_rack_open_box",
+      category: "spice_rack",
+      costCategory: "Spice Rack (OPEN BOXES)",
+      areaSqft: 0.726564266,
+      icon: "🧂",
+      dimensions: { W: 450, H: 150, D: 150 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_19mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
         drawers: 0,
         loft: false,
         loftH: 0,
-        counter: 'none',
-        handle: 'gprof',
-        hfinish: 'black',
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
         led: false,
-        carcass: 'BWP_18MM',
-        shutterCol: 'Brazilian Horizontal Walnut'
+        carcass: "BWP_19mm",
+        shutterCol: "none"
       },
-      pricingOverrides: { baseRate: 1545 },
-      customRate: 1545
+      pricingOverrides: { baseRate: 1650.75 },
+      customRate: 1650.75
     },
+    {
+      id: "sr-75",
+      code: "sr-75",
+      name: "SR 75",
+      modelType: "spice_rack_open_box",
+      category: "spice_rack",
+      costCategory: "Spice Rack (OPEN BOXES)",
+      areaSqft: 1.210940443,
+      icon: "🧂",
+      dimensions: { W: 750, H: 150, D: 150 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_20mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_20mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 2751.26 },
+      customRate: 2751.26
+    },
+    {
+      id: "sr-90",
+      code: "sr-90",
+      name: "SR 90",
+      modelType: "spice_rack_open_box",
+      category: "spice_rack",
+      costCategory: "Spice Rack (OPEN BOXES)",
+      areaSqft: 1.453128532,
+      icon: "🧂",
+      dimensions: { W: 900, H: 150, D: 150 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_21mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_21mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 3301.51 },
+      customRate: 3301.51
+    },
+    {
+      id: "tbm-60-oven",
+      code: "tbm-60-oven",
+      name: "TBM 60 OVEN",
+      modelType: "wardrobe_modular_drawers",
+      category: "wardrobe",
+      costCategory: "Wr - Modular - 2 DRAWERS",
+      areaSqft: 13.56253296,
+      icon: "🚪",
+      dimensions: { W: 600, H: 2100, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 4,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 23598.81 },
+      customRate: 23598.81
+    },
+    {
+      id: "wcm-lt-01",
+      code: "wcm-lt-01",
+      name: "WCM LEFT",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 3.875009418,
+      icon: "🎛️",
+      dimensions: { W: 600, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 5986.89 },
+      customRate: 5986.89
+    },
+    {
+      id: "wcm-rt-01",
+      code: "wcm-rt-01",
+      name: "WCM RIGHT",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 3.875009418,
+      icon: "🎛️",
+      dimensions: { W: 600, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 5986.89 },
+      customRate: 5986.89
+    },
+    {
+      id: "wm-30",
+      code: "wm-30",
+      name: "WM 30",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 1.937504709,
+      icon: "🎛️",
+      dimensions: { W: 300, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 2993.44 },
+      customRate: 2993.44
+    },
+    {
+      id: "wm-45",
+      code: "wm-45",
+      name: "WM 45",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 2.906257064,
+      icon: "🎛️",
+      dimensions: { W: 450, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 4490.17 },
+      customRate: 4490.17
+    },
+    {
+      id: "wm-60-gl",
+      code: "wm-60-gl",
+      name: "WM 60 GL",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 3.875009418,
+      icon: "🎛️",
+      dimensions: { W: 600, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 5986.89 },
+      customRate: 5986.89
+    },
+    {
+      id: "wm-75",
+      code: "wm-75",
+      name: "WM 75",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 4.843761773,
+      icon: "🎛️",
+      dimensions: { W: 750, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 7483.61 },
+      customRate: 7483.61
+    },
+    {
+      id: "wm-75-gl",
+      code: "wm-75-gl",
+      name: "WM 75 GL",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 4.843761773,
+      icon: "🎛️",
+      dimensions: { W: 750, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 7483.61 },
+      customRate: 7483.61
+    },
+    {
+      id: "wm-90",
+      code: "wm-90",
+      name: "WM 90",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 5.812514128,
+      icon: "🎛️",
+      dimensions: { W: 900, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 8980.33 },
+      customRate: 8980.33
+    },
+    {
+      id: "wm-90-gl",
+      code: "wm-90-gl",
+      name: "WM 90 GL",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 5.812514128,
+      icon: "🎛️",
+      dimensions: { W: 900, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 8980.33 },
+      customRate: 8980.33
+    },
+    {
+      id: "loft-1d-mod",
+      code: "loft-1d-mod",
+      name: "LOFT 1 DOOR MODULAR",
+      modelType: "wardrobe_modular_shelves",
+      category: "wardrobe",
+      costCategory: "Wr - Modular - ONLY SHELVES",
+      areaSqft: 4.359385596,
+      icon: "🚪",
+      dimensions: { W: 450, H: 900, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 6735.25 },
+      customRate: 6735.25
+    },
+    {
+      id: "loft-1d-os",
+      code: "loft-1d-os",
+      name: "LOFT 1 DOOR O/S",
+      modelType: "loft_os",
+      category: "loft",
+      costCategory: "Loft - O/S",
+      areaSqft: 4.359385596,
+      icon: "📦",
+      dimensions: { W: 450, H: 900, D: 600 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "none", finish: "none" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "none",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 3901.65 },
+      customRate: 3901.65
+    },
+    {
+      id: "pnl-wall",
+      code: "pnl-wall",
+      name: "WALL PANEL",
+      modelType: "wall_paneling",
+      category: "wall_paneling",
+      costCategory: "Wall Paneling",
+      areaSqft: 15.50003767,
+      icon: "🪵",
+      dimensions: { W: 1200, H: 1200, D: 600 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 12338.03 },
+      customRate: 12338.03
+    },
+    {
+      id: "ob-std",
+      code: "ob-std",
+      name: "OPEN BOX",
+      modelType: "spice_rack",
+      category: "spice_rack",
+      costCategory: "Spice Rack (OPEN BOXES)",
+      areaSqft: 3.875009418,
+      icon: "🧂",
+      dimensions: { W: 600, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 8804.02 },
+      customRate: 8804.02
+    },
+    {
+      id: "ob-200-300",
+      code: "ob-200-300",
+      name: "OPEN BOX-200 - 300",
+      modelType: "spice_rack",
+      category: "spice_rack",
+      costCategory: "Spice Rack (OPEN BOXES)",
+      areaSqft: 0.9687523546,
+      icon: "🧂",
+      dimensions: { W: 300, H: 300, D: 200 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 2201.01 },
+      customRate: 2201.01
+    },
+    {
+      id: "ob-300-600",
+      code: "ob-300-600",
+      name: "OPEN BOX 300 - 600",
+      modelType: "spice_rack",
+      category: "spice_rack",
+      costCategory: "Spice Rack (OPEN BOXES)",
+      areaSqft: 3.875009418,
+      icon: "🧂",
+      dimensions: { W: 600, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 8804.02 },
+      customRate: 8804.02
+    },
+    {
+      id: "ledge-std",
+      code: "ledge-std",
+      name: "LEDGE",
+      modelType: "wall_paneling",
+      category: "wall_paneling",
+      costCategory: "Wall Paneling",
+      areaSqft: 0.2325005651,
+      icon: "🪵",
+      dimensions: { W: 1200, H: 18, D: 200 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 185.07 },
+      customRate: 185.07
+    },
+    {
+      id: "pnl-back",
+      code: "pnl-back",
+      name: "BACK PANEL",
+      modelType: "wall_paneling",
+      category: "wall_paneling",
+      costCategory: "Wall Paneling",
+      areaSqft: 19.37504709,
+      icon: "🪵",
+      dimensions: { W: 1200, H: 1500, D: 18 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 15422.54 },
+      customRate: 15422.54
+    },
+    {
+      id: "ctvb-doors-only",
+      code: "ctvb-doors-only",
+      name: "CROCKERY / TV BASE ONLY DOORS",
+      modelType: "loft_os",
+      category: "loft",
+      costCategory: "Loft - O/S",
+      areaSqft: 6.054702216,
+      icon: "📦",
+      dimensions: { W: 750, H: 750, D: 600 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "none", finish: "none" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "none",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 5418.96 },
+      customRate: 5418.96
+    },
+    {
+      id: "ctvb-open-storage",
+      code: "ctvb-open-storage",
+      name: "CROCKERY/TV BASE OPEN STORAGE",
+      modelType: "spice_rack",
+      category: "spice_rack",
+      costCategory: "Spice Rack (OPEN BOXES)",
+      areaSqft: 1.937504709,
+      icon: "🧂",
+      dimensions: { W: 600, H: 300, D: 300 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 4402.01 },
+      customRate: 4402.01
+    },
+    {
+      id: "ctvw-doors-only",
+      code: "ctvw-doors-only",
+      name: "CROCKERY/TV WALL UNIT ONLY DOOR",
+      modelType: "loft_os",
+      category: "loft",
+      costCategory: "Loft - O/S",
+      areaSqft: 1.937504709,
+      icon: "📦",
+      dimensions: { W: 300, H: 600, D: 600 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "none", finish: "none" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "none",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 1734.07 },
+      customRate: 1734.07
+    },
+    {
+      id: "ctvw-open-box",
+      code: "ctvw-open-box",
+      name: "CROCKERY/TV WALL OPEN BOX STORAGE",
+      modelType: "spice_rack",
+      category: "spice_rack",
+      costCategory: "Spice Rack (OPEN BOXES)",
+      areaSqft: 1.291669806,
+      icon: "🧂",
+      dimensions: { W: 600, H: 200, D: 300 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 2934.67 },
+      customRate: 2934.67
+    },
+    {
+      id: "fm-lt-01",
+      code: "fm-lt-01",
+      name: "FCM -LT",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 9.687523546,
+      icon: "🍳",
+      dimensions: { W: 1200, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 17398.79 },
+      customRate: 17398.79
+    },
+    {
+      id: "fm-30-oil",
+      code: "fm-30-oil",
+      name: "FM30 -OIL PULLOUT",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - D2/D3",
+      areaSqft: 2.421880887,
+      icon: "🍳",
+      dimensions: { W: 300, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 1,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 4775.95 },
+      customRate: 4775.95
+    },
+    {
+      id: "fm-d2-60",
+      code: "fm-d2-60",
+      name: "FM D2 - 60",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - D2/D3",
+      areaSqft: 4.843761773,
+      icon: "🍳",
+      dimensions: { W: 600, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 2,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 9551.9 },
+      customRate: 9551.9
+    },
+    {
+      id: "fm-d3-60",
+      code: "fm-d3-60",
+      name: "FM D3 - 60",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - D2/D3",
+      areaSqft: 4.843761773,
+      icon: "🍳",
+      dimensions: { W: 600, H: 750, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 3,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 3,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 9551.9 },
+      customRate: 9551.9
+    },
+    {
+      id: "ledge-ctop",
+      code: "ledge-ctop",
+      name: "LEDGE COUNTERTOP",
+      modelType: "wall_paneling",
+      category: "wall_paneling",
+      costCategory: "Wall Paneling",
+      areaSqft: 0.1743754238,
+      icon: "🪵",
+      dimensions: { W: 900, H: 18, D: 550 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 138.8 },
+      customRate: 138.8
+    },
+    {
+      id: "sr-60",
+      code: "sr-60",
+      name: "SR 60",
+      modelType: "spice_rack",
+      category: "spice_rack",
+      costCategory: "Spice Rack (OPEN BOXES)",
+      areaSqft: 0.9687523546,
+      icon: "🧂",
+      dimensions: { W: 600, H: 150, D: 150 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 2201.01 },
+      customRate: 2201.01
+    },
+    {
+      id: "wr-sliding",
+      code: "wr-sliding",
+      name: "SLIDING WARDROBE",
+      modelType: "wardrobe_modular_sliding",
+      category: "wardrobe",
+      costCategory: "Wr - Modular - SLIDING",
+      areaSqft: 40.68759889,
+      icon: "🚪",
+      dimensions: { W: 1800, H: 2100, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "sliding",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 5,
+        drawers: 2,
+        loft: true,
+        loftH: 750,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 73034.24 },
+      customRate: 73034.24
+    },
+    {
+      id: "tbm-60",
+      code: "tbm-60",
+      name: "TBM 60",
+      modelType: "wardrobe_modular_shelves",
+      category: "wardrobe",
+      costCategory: "Wr - Modular - ONLY SHELVES",
+      areaSqft: 13.56253296,
+      icon: "🚪",
+      dimensions: { W: 600, H: 2100, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 5,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 20954.11 },
+      customRate: 20954.11
+    },
+    {
+      id: "ledge-vert",
+      code: "ledge-vert",
+      name: "VERTICAL LEDGE",
+      modelType: "wall_paneling",
+      category: "wall_paneling",
+      costCategory: "Wall Paneling",
+      areaSqft: 1.291669806,
+      icon: "🪵",
+      dimensions: { W: 600, H: 200, D: 200 },
+      materials: {
+        shutter: { material: "none", finish: "none" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "none",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "none"
+      },
+      pricingOverrides: { baseRate: 1028.17 },
+      customRate: 1028.17
+    },
+    {
+      id: "wm-45-gl",
+      code: "wm-45-gl",
+      name: "WM 45 GL",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 2.906257064,
+      icon: "🎛️",
+      dimensions: { W: 450, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 4490.17 },
+      customRate: 4490.17
+    },
+    {
+      id: "wm-60-dbl",
+      code: "wm-60-dbl",
+      name: "WM 60 DOUBLE",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 3.875009418,
+      icon: "🎛️",
+      dimensions: { W: 600, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "none",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 5986.89 },
+      customRate: 5986.89
+    },
+    {
+      id: "wm-open-30",
+      code: "wm-open-30",
+      name: "WM OPEN 30",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 1.937504709,
+      icon: "🎛️",
+      dimensions: { W: 300, H: 600, D: 300 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 0,
+        doorType: "none",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 2993.44 },
+      customRate: 2993.44
+    },
+    {
+      id: "loft-2d-mod",
+      code: "loft-2d-mod",
+      name: "LOFT 2 DOOR MODULAR",
+      modelType: "wardrobe_modular_shelves",
+      category: "wardrobe",
+      costCategory: "Wr - Modular - ONLY SHELVES",
+      areaSqft: 8.718771191,
+      icon: "🚪",
+      dimensions: { W: 900, H: 900, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 13470.5 },
+      customRate: 13470.5
+    },
+    {
+      id: "loft-2d-os",
+      code: "loft-2d-os",
+      name: "LOFT 2 DOOR O/S",
+      modelType: "loft_os",
+      category: "loft",
+      costCategory: "Loft - O/S",
+      areaSqft: 7.26564266,
+      icon: "📦",
+      dimensions: { W: 750, H: 900, D: 18 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 6502.75 },
+      customRate: 6502.75
+    },
+    {
+      id: "wr-shelves",
+      code: "wr-shelves",
+      name: "WR 2 DOOR WITH SHELVBES",
+      modelType: "wardrobe_modular_shelves",
+      category: "wardrobe",
+      costCategory: "Wr - Modular - ONLY SHELVES",
+      areaSqft: 20.34379945,
+      icon: "🚪",
+      dimensions: { W: 900, H: 2100, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: true,
+        loftH: 750,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 31431.17 },
+      customRate: 31431.17
+    },
+    {
+      id: "wr-drawers",
+      code: "wr-drawers",
+      name: "WR 2 DOOR WITH DRAWERS",
+      modelType: "wardrobe_modular_drawers",
+      category: "wardrobe",
+      costCategory: "Wr - Modular - 2 DRAWERS",
+      areaSqft: 20.34379945,
+      icon: "🚪",
+      dimensions: { W: 900, H: 2100, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 2,
+        loft: true,
+        loftH: 750,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 35398.21 },
+      customRate: 35398.21
+    },
+    {
+      id: "wr-1-shelves",
+      code: "wr-1-shelves",
+      name: "WR 1 DOOR WITH SHELVBES",
+      modelType: "wardrobe_modular_shelves",
+      category: "wardrobe",
+      costCategory: "Wr - Modular - ONLY SHELVES",
+      areaSqft: 13.56253296,
+      icon: "🚪",
+      dimensions: { W: 600, H: 2100, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: true,
+        loftH: 750,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 20954.11 },
+      customRate: 20954.11
+    },
+    {
+      id: "wr-1-drawers",
+      code: "wr-1-drawers",
+      name: "WR 1 DOOR WITH DRAWERS",
+      modelType: "wardrobe_modular_drawers",
+      category: "wardrobe",
+      costCategory: "Wr - Modular - 2 DRAWERS",
+      areaSqft: 13.56253296,
+      icon: "🚪",
+      dimensions: { W: 600, H: 2100, D: 550 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 1,
+        loft: true,
+        loftH: 750,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 23598.81 },
+      customRate: 23598.81
+    },
+    {
+      id: "fm-120 o/s",
+      code: "fm-120 o/s",
+      name: "FM 120 O/S",
+      modelType: "kitchen_o_s",
+      category: "kitchen_base",
+      costCategory: "Kitchen O/S",
+      areaSqft: 9.687523546,
+      icon: "🍳",
+      dimensions: { W: 1200, H: 750, D: 600 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "none", finish: "none" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "none",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 8670.33 },
+      customRate: 8670.33
+    },
+    {
+      id: "fm-60 o/s",
+      code: "fm-60 o/s",
+      name: "FM 60 O/S",
+      modelType: "kitchen_o_s",
+      category: "kitchen_base",
+      costCategory: "Kitchen O/S",
+      areaSqft: 4.843761773,
+      icon: "🍳",
+      dimensions: { W: 600, H: 750, D: 600 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "none", finish: "none" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "none",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 4335.17 },
+      customRate: 4335.17
+    },
+    {
+      id: "wm-60 o/s",
+      code: "wm-60 o/s",
+      name: "WM  60 O/S",
+      modelType: "kitchen_o_s",
+      category: "kitchen_base",
+      costCategory: "Kitchen O/S",
+      areaSqft: 3.875009418,
+      icon: "🍳",
+      dimensions: { W: 600, H: 600, D: 600 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "none", finish: "none" }
+      },
+      unitConfig: {
+        shutters: 2,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "none",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 3468.13 },
+      customRate: 3468.13
+    },
+    {
+      id: "wm-30 o/s",
+      code: "wm-30 o/s",
+      name: "WM 30 O/S",
+      modelType: "kitchen_o_s",
+      category: "kitchen_base",
+      costCategory: "Kitchen O/S",
+      areaSqft: 1.937504709,
+      icon: "🍳",
+      dimensions: { W: 300, H: 600, D: 600 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "none", finish: "none" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 0,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "none",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 1734.07 },
+      customRate: 1734.07
+    },
+
     // ─── Standard Library ───
     {
       id: 'fm-01',
