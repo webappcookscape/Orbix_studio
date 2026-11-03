@@ -1,70 +1,70 @@
-Item_Code,Item_Name,Category,Model_Type,Width_mm,Height_mm,Depth_mm,Shutters_Count,Door_Type,Door_Style,Glass_Tint,Profile_Color,Internal_Sections,Shelves_Count,Drawers_Count,Has_Loft,Loft_Height_mm,Shutter_Material,Shutter_Finish,Carcass_Material,Carcass_Finish,Countertop,Handle_Type,Handle_Finish,LED_Light,Unit_Rate_INR,Area_Sqft,Price 1
-ctvb-1d-1dr,CROCKERY/TV BASE 1DOOR 1 DRAWER,TV UNIT CABINET,TV UNIT CABINET,450,200,450,2,hinged,slab,none,none,0,1,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,1922.00,0.9687523546,1922.00
-ctvb-1dr,CROCKERY/TV BASE 1 DRAWER,TV UNIT CABINET,TV UNIT CABINET,600,200,350,1,sliding,slab,none,none,0,0,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,2562.67,1.291669806,2562.67
-ctvb-2d,CROCKERY /TV BASE 2 DOOR,POOJA WITH CNC,POOJA WITH CNC,750,750,450,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,11921.71,6.054702216,11921.71
-ctvb-2d-2dr,CROCKERY/TV BASE 2 DOOR 2 DRAWER,TV UNIT CABINET,TV UNIT CABINET,900,750,450,4,hinged,slab,none,none,0,1,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,14415.04,7.26564266,14415.04
-ctvb-2dr,CROCKERY/TV BASE 2 DRAWER,TV UNIT CABINET,TV UNIT CABINET,450,500,350,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,4805.01,2.421880887,4805.01
-ctvw-2d,CROCKERY/TV WALL 2 DOOR,POOJA WITH CNC,POOJA WITH CNC,900,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,11444.84,5.812514128,11444.84
-ctvw-obs-02,CROCKERY/TV WALL OPEN BOX STORAGE 2,Spice Rack,Spice Rack,1500,300,200,0,none,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,11005.03,4.843761773,11005.03
-fm-rt-01,FCM -RT,KITCHEN - FM,KITCHEN - FM,1200,750,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,17398.79,9.687523546,17398.79
-fm-120,FM 120,KITCHEN - FM,KITCHEN - FM,1200,750,550,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,17398.79,9.687523546,17398.79
-fm-45,FM 45,KITCHEN - FM,KITCHEN - FM,450,750,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,6524.55,3.63282133,6524.55
-fm-60,FM 60,KITCHEN - FM,KITCHEN - FM,600,750,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,8699.40,4.843761773,8699.40
-fm-75,FM 75,KITCHEN - FM,KITCHEN - FM,750,750,550,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,10874.25,6.054702216,10874.25
-fm-90,FM 90,KITCHEN - FM,KITCHEN - FM,900,750,550,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,13049.09,7.26564266,13049.09
-fm-d2-45,FM D2 - 45,KITCHEN - D2/D3,KITCHEN - FM,450,750,550,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,7163.92,3.63282133,7163.92
-fm-d2-75,FM D2 - 75,KITCHEN - D2/D3,KITCHEN - FM,750,750,550,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,11939.87,6.054702216,11939.87
-fm-d2-90,FM D2 - 90,KITCHEN - D2/D3,KITCHEN - FM,900,750,550,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,14327.85,7.26564266,14327.85
-fm-d3-45,FM D3 - 45,KITCHEN - D2/D3,KITCHEN - FM,450,750,550,3,sliding,slab,none,none,0,0,3,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,7163.92,3.63282133,7163.92
-fm-d3-75,FM D3 - 75,KITCHEN - D2/D3,KITCHEN - FM,750,750,550,3,sliding,slab,none,none,0,0,3,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,11939.87,6.054702216,11939.87
-fm-d3-90,FM D3 - 90,KITCHEN - D2/D3,KITCHEN - FM,900,750,550,3,sliding,slab,none,none,0,0,3,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,14327.85,7.26564266,14327.85
-fm-ds-45,FM DS 45,KITCHEN - FM,KITCHEN - FM,450,750,550,2,hinged,slab,none,none,0,1,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,6524.55,3.63282133,6524.55
-fm-ds-60,FM DS 60,KITCHEN - FM,KITCHEN - FM,600,750,550,2,hinged,slab,none,none,0,1,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,8699.40,4.843761773,8699.40
-fm-ds-90,FM DS 90,KITCHEN - FM,KITCHEN - FM,900,750,550,4,hinged,slab,none,none,0,1,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,13049.09,7.26564266,13049.09
-sr-45,SR 45,Spice Rack Open Box,Spice Rack Open Box,450,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_19mm,Absolute White,none,none,none,False,1650.75,0.726564266,1650.75
-sr-75,SR 75,Spice Rack Open Box,Spice Rack Open Box,750,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_20mm,Absolute White,none,none,none,False,2751.26,1.210940443,2751.26
-sr-90,SR 90,Spice Rack Open Box,Spice Rack Open Box,900,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_21mm,Absolute White,none,none,none,False,3301.51,1.453128532,3301.51
-tbm-60-oven,TBM 60 OVEN,Wardrobe modular drawers,Wardrobe modular drawers,600,2100,550,2,hinged,slab,none,none,0,4,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,23598.81,13.56253296,23598.81
-wcm-lt-01,WCM LEFT,KITCHEN - WM,KITCHEN - WM,600,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,5986.89,3.875009418,5986.89
-wcm-rt-01,WCM RIGHT,KITCHEN - WM,KITCHEN - WM,600,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,5986.89,3.875009418,5986.89
-wm-30,WM 30,KITCHEN - WM,KITCHEN - WM,300,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,2993.44,1.937504709,2993.44
-wm-45,WM 45,KITCHEN - WM,KITCHEN - WM,450,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,4490.17,2.906257064,4490.17
-wm-60-gl,WM 60 GL,KITCHEN - WM,KITCHEN - WM,600,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,5986.89,3.875009418,5986.89
-wm-75,WM 75,KITCHEN - WM,KITCHEN - WM,750,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,7483.61,4.843761773,7483.61
-wm-75-gl,WM 75 GL,KITCHEN - WM,KITCHEN - WM,750,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,7483.61,4.843761773,7483.61
-wm-90,WM 90,KITCHEN - WM,KITCHEN - WM,900,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,8980.33,5.812514128,8980.33
-wm-90-gl,WM 90 GL,KITCHEN - WM,KITCHEN - WM,900,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,8980.33,5.812514128,8980.33
-loft-1d-mod,LOFT 1 DOOR MODULAR,Wardrobe modular shelves,Wardrobe modular shelves,450,900,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,6735.25,4.359385596,6735.25
-loft-1d-os,LOFT 1 DOOR O/S,Loft-OS,Loft-OS,450,900,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,3901.65,4.359385596,3901.65
-pnl-wall,WALL PANEL,WALL PANELING,WALL PANELING,1200,1200,0,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,12338.03,15.50003767,12338.03
-ob-std,OPEN BOX,Spice Rack,Spice Rack,600,600,300,0,none,slab,none,none,0,1,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,8804.02,3.875009418,8804.02
-ob-200-300,OPEN BOX-200 - 300,Spice Rack,Spice Rack,300,300,200,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,2201.01,0.9687523546,2201.01
-ob-300-600,OPEN BOX 300 - 600,Spice Rack,Spice Rack,600,600,300,0,none,slab,none,none,0,1,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,8804.02,3.875009418,8804.02
-ledge-std,LEDGE,WALL PANELING,WALL PANELING,1200,18,200,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,185.07,0.2325005651,185.07
-pnl-back,BACK PANEL,WALL PANELING,WALL PANELING,1200,1500,18,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,15422.54,19.37504709,15422.54
-ctvb-doors-only,CROCKERY / TV BASE ONLY DOORS,Loft-OS,Loft-OS,750,750,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,5418.96,6.054702216,5418.96
-ctvb-open-storage,CROCKERY/TV BASE OPEN STORAGE,Spice Rack,Spice Rack,600,300,300,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,BLUE,g prof,black,False,4402.01,1.937504709,4402.01
-ctvw-doors-only,CROCKERY/TV WALL UNIT ONLY DOOR,Loft-OS,Loft-OS,300,600,0,1,none,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,BLUE,g prof,black,False,1734.07,1.937504709,1734.07
-ctvw-open-box,CROCKERY/TV WALL OPEN BOX STORAGE,Spice Rack,Spice Rack,600,200,300,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,2934.67,1.291669806,2934.67
-fm-lt-01,FCM -LT,KITCHEN - FM,KITCHEN - FM,1200,750,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,17398.79,9.687523546,17398.79
-fm-30-oil,FM30 -OIL PULLOUT,KITCHEN - D2/D3,KITCHEN - FM,300,750,550,1,sliding,slab,none,none,0,0,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,4775.95,2.421880887,4775.95
-fm-d2-60,FM D2 - 60,KITCHEN - D2/D3,KITCHEN - FM,600,750,550,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,9551.90,4.843761773,9551.90
-fm-d3-60,FM D3 - 60,KITCHEN - D2/D3,KITCHEN - FM,600,750,550,3,sliding,slab,none,none,0,0,3,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,9551.90,4.843761773,9551.90
-ledge-ctop,LEDGE COUNTERTOP,WALL PANELING,WALL PANELING,900,18,550,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,138.80,0.1743754238,138.80
-sr-60,SR 60,Spice Rack,Spice Rack,600,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,2201.01,0.9687523546,2201.01
-wr-sliding,SLIDING WARDROBE,Wardrobe modular sliding,Wardrobe modular sliding,1800,2100,550,2,sliding,slab,none,none,0,5,2,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,73034.24,40.68759889,73034.24
-tbm-60,TBM 60,Wardrobe modular shelves,Wardrobe modular shelves,600,2100,550,1,hinged,slab,none,none,0,5,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,none,False,20954.11,13.56253296,20954.11
-ledge-vert,VERTICAL LEDGE,WALL PANELING,WALL PANELING,600,200,200,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,1028.17,1.291669806,1028.17
-wm-45-gl,WM 45 GL,KITCHEN - WM,KITCHEN - WM,450,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,none,False,4490.17,2.906257064,4490.17
-wm-60-dbl,WM 60 DOUBLE,KITCHEN - WM,KITCHEN - WM,600,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,none,False,5986.89,3.875009418,5986.89
-wm-open-30,WM OPEN 30,KITCHEN - WM,KITCHEN - WM,300,600,300,0,none,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,2993.44,1.937504709,2993.44
-loft-2d-mod,LOFT 2 DOOR MODULAR,Wardrobe modular shelves,Wardrobe modular shelves,900,900,550,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,13470.50,8.718771191,13470.50
-loft-2d-os,LOFT 2 DOOR O/S,Loft - OS,Loft - OS,750,900,18,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,6502.75,7.26564266,6502.75
-wr-shelves,WR 2 DOOR WITH SHELVBES,Wardrobe modular shelves,Wardrobe modular shelves,900,2100,550,2,hinged,slab,none,none,0,1,0,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,31431.17,20.34379945,31431.17
-wr-drawers,WR 2 DOOR WITH DRAWERS,Wardrobe modular drawers,Wardrobe modular drawers,900,2100,550,2,hinged,slab,none,none,0,1,2,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,35398.21,20.34379945,35398.21
-wr-1-shelves,WR 1 DOOR WITH SHELVBES,Wardrobe modular shelves,Wardrobe modular shelves,600,2100,550,1,hinged,slab,none,none,0,1,0,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,20954.11,13.56253296,20954.11
-wr-1-drawers,WR 1 DOOR WITH DRAWERS,Wardrobe modular drawers,Wardrobe modular drawers,600,2100,550,1,hinged,slab,none,none,0,1,1,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,23598.81,13.56253296,23598.81
-fm-120 o/s,FM 120 O/S,KITCHEN O/S,KITCHEN O/S,1200,750,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,black,g prof,black,False,8670.33,9.687523546,8670.33
-fm-60 o/s,FM 60 O/S,KITCHEN O/S,KITCHEN O/S,600,750,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,black,g prof,black,False,4335.17,4.843761773,4335.17
-wm-60 o/s,WM  60 O/S,KITCHEN O/S,KITCHEN O/S,600,600,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,3468.13,3.875009418,3468.13
-wm-30 o/s,WM 30 O/S,KITCHEN O/S,KITCHEN O/S,300,600,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,1734.07,1.937504709,1734.07
+Item_Code,Item_Name,Category,Model_Type,Width_mm,Height_mm,Depth_mm,Shutters_Count,Door_Type,Door_Style,Glass_Tint,Profile_Color,Internal_Sections,Shelves_Count,Drawers_Count,Has_Loft,Loft_Height_mm,Shutter_Material,Shutter_Finish,Carcass_Material,Carcass_Finish,Countertop,Handle_Type,Handle_Finish,LED_Light,Unit_Rate_INR,Area_Sqft
+ctvb-1d-1dr,CROCKERY/TV BASE 1DOOR 1 DRAWER,TV UNIT CABINET,TV UNIT CABINET,450,200,450,2,hinged,slab,none,none,0,1,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,0.9687523546
+ctvb-1dr,CROCKERY/TV BASE 1 DRAWER,TV UNIT CABINET,TV UNIT CABINET,600,200,350,1,sliding,slab,none,none,0,0,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,1.291669806
+ctvb-2d,CROCKERY /TV BASE 2 DOOR,POOJA WITH CNC,POOJA WITH CNC,750,750,450,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,6.054702216
+ctvb-2d-2dr,CROCKERY/TV BASE 2 DOOR 2 DRAWER,TV UNIT CABINET,TV UNIT CABINET,900,750,450,4,hinged,slab,none,none,0,1,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,7.26564266
+ctvb-2dr,CROCKERY/TV BASE 2 DRAWER,TV UNIT CABINET,TV UNIT CABINET,450,500,350,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,2.421880887
+ctvw-2d,CROCKERY/TV WALL 2 DOOR,POOJA WITH CNC,POOJA WITH CNC,900,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,5.812514128
+ctvw-obs-02,CROCKERY/TV WALL OPEN BOX STORAGE 2,Spice Rack,Spice Rack,1500,300,200,0,none,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,4.843761773
+fm-rt-01,FCM -RT,KITCHEN - FM,KITCHEN - FM,1200,750,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,17398.79,9.687523546
+fm-120,FM 120,KITCHEN - FM,KITCHEN - FM,1200,750,550,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,9.687523546
+fm-45,FM 45,KITCHEN - FM,KITCHEN - FM,450,750,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,3.63282133
+fm-60,FM 60,KITCHEN - FM,KITCHEN - FM,600,750,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,4.843761773
+fm-75,FM 75,KITCHEN - FM,KITCHEN - FM,750,750,550,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,6.054702216
+fm-90,FM 90,KITCHEN - FM,KITCHEN - FM,900,750,550,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,7.26564266
+fm-d2-45,FM D2 - 45,KITCHEN - D2/D3,KITCHEN - FM,450,750,550,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,3.63282133
+fm-d2-75,FM D2 - 75,KITCHEN - D2/D3,KITCHEN - FM,750,750,550,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,6.054702216
+fm-d2-90,FM D2 - 90,KITCHEN - D2/D3,KITCHEN - FM,900,750,550,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,7.26564266
+fm-d3-45,FM D3 - 45,KITCHEN - D2/D3,KITCHEN - FM,450,750,550,3,sliding,slab,none,none,0,0,3,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,3.63282133
+fm-d3-75,FM D3 - 75,KITCHEN - D2/D3,KITCHEN - FM,750,750,550,3,sliding,slab,none,none,0,0,3,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,6.054702216
+fm-d3-90,FM D3 - 90,KITCHEN - D2/D3,KITCHEN - FM,900,750,550,3,sliding,slab,none,none,0,0,3,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,7.26564266
+fm-ds-45,FM DS 45,KITCHEN - FM,KITCHEN - FM,450,750,550,2,hinged,slab,none,none,0,1,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,3.63282133
+fm-ds-60,FM DS 60,KITCHEN - FM,KITCHEN - FM,600,750,550,2,hinged,slab,none,none,0,1,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,4.843761773
+fm-ds-90,FM DS 90,KITCHEN - FM,KITCHEN - FM,900,750,550,4,hinged,slab,none,none,0,1,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,7.26564266
+sr-45,SR 45,Spice Rack Open Box,Spice Rack Open Box,450,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_19mm,Absolute White,none,none,none,False,,0.726564266
+sr-75,SR 75,Spice Rack Open Box,Spice Rack Open Box,750,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_20mm,Absolute White,none,none,none,False,,1.210940443
+sr-90,SR 90,Spice Rack Open Box,Spice Rack Open Box,900,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_21mm,Absolute White,none,none,none,False,,1.453128532
+tbm-60-oven,TBM 60 OVEN,Wardrobe modular drawers,Wardrobe modular drawers,600,2100,550,2,hinged,slab,none,none,0,4,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,13.56253296
+wcm-lt-01,WCM LEFT,KITCHEN - WM,KITCHEN - WM,600,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,3.875009418
+wcm-rt-01,WCM RIGHT,KITCHEN - WM,KITCHEN - WM,600,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,3.875009418
+wm-30,WM 30,KITCHEN - WM,KITCHEN - WM,300,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,1.937504709
+wm-45,WM 45,KITCHEN - WM,KITCHEN - WM,450,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,2.906257064
+wm-60-gl,WM 60 GL,KITCHEN - WM,KITCHEN - WM,600,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,3.875009418
+wm-75,WM 75,KITCHEN - WM,KITCHEN - WM,750,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,4.843761773
+wm-75-gl,WM 75 GL,KITCHEN - WM,KITCHEN - WM,750,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,4.843761773
+wm-90,WM 90,KITCHEN - WM,KITCHEN - WM,900,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,5.812514128
+wm-90-gl,WM 90 GL,KITCHEN - WM,KITCHEN - WM,900,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,5.812514128
+loft-1d-mod,LOFT 1 DOOR MODULAR,Wardrobe modular shelves,Wardrobe modular shelves,450,900,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,4.359385596
+loft-1d-os,LOFT 1 DOOR O/S,Loft-OS,Loft-OS,450,900,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,4.359385596
+pnl-wall,WALL PANEL,WALL PANELING,WALL PANELING,1200,1200,0,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,15.50003767
+ob-std,OPEN BOX,Spice Rack,Spice Rack,600,600,300,0,none,slab,none,none,0,1,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,3.875009418
+ob-200-300,OPEN BOX-200 - 300,Spice Rack,Spice Rack,300,300,200,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,0.9687523546
+ob-300-600,OPEN BOX 300 - 600,Spice Rack,Spice Rack,600,600,300,0,none,slab,none,none,0,1,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,3.875009418
+ledge-std,LEDGE,WALL PANELING,WALL PANELING,1200,18,200,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,0.2325005651
+pnl-back,BACK PANEL,WALL PANELING,WALL PANELING,1200,1500,18,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,19.37504709
+ctvb-doors-only,CROCKERY / TV BASE ONLY DOORS,Loft-OS,Loft-OS,750,750,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,6.054702216
+ctvb-open-storage,CROCKERY/TV BASE OPEN STORAGE,Spice Rack,Spice Rack,600,300,300,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,BLUE,g prof,black,False,,1.937504709
+ctvw-doors-only,CROCKERY/TV WALL UNIT ONLY DOOR,Loft-OS,Loft-OS,300,600,0,1,none,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,BLUE,g prof,black,False,,1.937504709
+ctvw-open-box,CROCKERY/TV WALL OPEN BOX STORAGE,Spice Rack,Spice Rack,600,200,300,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,1.291669806
+fm-lt-01,FCM -LT,KITCHEN - FM,KITCHEN - FM,1200,750,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,9.687523546
+fm-30-oil,FM30 -OIL PULLOUT,KITCHEN - D2/D3,KITCHEN - FM,300,750,550,1,sliding,slab,none,none,0,0,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,2.421880887
+fm-d2-60,FM D2 - 60,KITCHEN - D2/D3,KITCHEN - FM,600,750,550,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,4.843761773
+fm-d3-60,FM D3 - 60,KITCHEN - D2/D3,KITCHEN - FM,600,750,550,3,sliding,slab,none,none,0,0,3,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,4.843761773
+ledge-ctop,LEDGE COUNTERTOP,WALL PANELING,WALL PANELING,900,18,550,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,0.1743754238
+sr-60,SR 60,Spice Rack,Spice Rack,600,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,0.9687523546
+wr-sliding,SLIDING WARDROBE,Wardrobe modular sliding,Wardrobe modular sliding,1800,2100,550,2,sliding,slab,none,none,0,5,2,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,40.68759889
+tbm-60,TBM 60,Wardrobe modular shelves,Wardrobe modular shelves,600,2100,550,1,hinged,slab,none,none,0,5,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,none,False,,13.56253296
+ledge-vert,VERTICAL LEDGE,WALL PANELING,WALL PANELING,600,200,200,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,1.291669806
+wm-45-gl,WM 45 GL,KITCHEN - WM,KITCHEN - WM,450,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,none,False,,2.906257064
+wm-60-dbl,WM 60 DOUBLE,KITCHEN - WM,KITCHEN - WM,600,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,none,False,,3.875009418
+wm-open-30,WM OPEN 30,KITCHEN - WM,KITCHEN - WM,300,600,300,0,none,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,1.937504709
+loft-2d-mod,LOFT 2 DOOR MODULAR,Wardrobe modular shelves,Wardrobe modular shelves,900,900,550,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,8.718771191
+loft-2d-os,LOFT 2 DOOR O/S,Loft - OS,Loft - OS,750,900,18,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,7.26564266
+wr-shelves,WR 2 DOOR WITH SHELVBES,Wardrobe modular shelves,Wardrobe modular shelves,900,2100,550,2,hinged,slab,none,none,0,1,0,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,20.34379945
+wr-drawers,WR 2 DOOR WITH DRAWERS,Wardrobe modular drawers,Wardrobe modular drawers,900,2100,550,2,hinged,slab,none,none,0,1,2,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,20.34379945
+wr-1-shelves,WR 1 DOOR WITH SHELVBES,Wardrobe modular shelves,Wardrobe modular shelves,600,2100,550,1,hinged,slab,none,none,0,1,0,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,13.56253296
+wr-1-drawers,WR 1 DOOR WITH DRAWERS,Wardrobe modular drawers,Wardrobe modular drawers,600,2100,550,1,hinged,slab,none,none,0,1,1,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,13.56253296
+fm-120 o/s,FM 120 O/S,KITCHEN O/S,KITCHEN O/S,1200,750,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,black,g prof,black,False,,9.687523546
+fm-60 o/s,FM 60 O/S,KITCHEN O/S,KITCHEN O/S,600,750,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,black,g prof,black,False,,4.843761773
+wm-60 o/s,WM  60 O/S,KITCHEN O/S,KITCHEN O/S,600,600,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,3.875009418
+wm-30 o/s,WM 30 O/S,KITCHEN O/S,KITCHEN O/S,300,600,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,1.937504709
