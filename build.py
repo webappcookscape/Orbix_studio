@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the single-file version of the site (for Claude Artifacts or
 any host that wants one file). Usage: python3 build.py [out.html]"""
-import sys, os, base64
+import sys, os, base64, re
 
 here = os.path.dirname(os.path.abspath(__file__))
 src = open(os.path.join(here, 'index.html'), encoding='utf-8').read()
@@ -22,7 +22,8 @@ if os.path.exists(logo_path):
 
 frag = frag.replace('<link rel="stylesheet" href="style.css">', '<style>\n' + css + '\n</style>')
 all_js = '<script>\n' + orbix_projects + '\n' + orbix_core + '\n' + orbix_plan + '\n' + orbix_3d + '\n' + orbix_ui + '\n' + js + '\n' + pwa_js + '\n</script>'
-frag = frag.replace('<script src="orbix-projects.js"></script>\n<script src="orbix-core.js"></script>\n<script src="orbix-plan.js"></script>\n<script src="orbix-3d.js"></script>\n<script src="orbix-ui.js"></script>\n<script src="app.js"></script>\n<script src="pwa.js"></script>', all_js)
+pattern = r'<script src="orbix-projects\.js[^"]*"></script>\s*<script src="orbix-core\.js[^"]*"></script>\s*<script src="orbix-plan\.js[^"]*"></script>\s*<script src="orbix-3d\.js[^"]*"></script>\s*<script src="orbix-ui\.js[^"]*"></script>\s*<script src="app\.js[^"]*"></script>\s*<script src="pwa\.js[^"]*"></script>'
+frag = re.sub(pattern, lambda m: all_js, frag, flags=re.DOTALL)
 out = frag.strip() + '\n'
 dest = sys.argv[1] if len(sys.argv) > 1 else os.path.join(here, 'dist-single.html')
 open(dest, 'w', encoding='utf-8').write(out)
