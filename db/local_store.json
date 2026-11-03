@@ -10,6 +10,39 @@
       "designation": "System Administrator",
       "company": "Cookscape",
       "avatar": "CA"
+    },
+    {
+      "id": "usr_sangathamizh",
+      "name": "Sangathamizh",
+      "username": "sangathamizh",
+      "email": "designteam.cookscape@gmail.com",
+      "password": "admin123",
+      "role": "admin",
+      "designation": "Business Head",
+      "company": "Cookscape",
+      "avatar": "S"
+    },
+    {
+      "id": "usr_elakkiya",
+      "name": "Elakkiya",
+      "username": "elakkiya",
+      "email": "elakkiya.sakthivelu3089@gmail.com",
+      "password": "123456",
+      "role": "employee",
+      "designation": "Floor Architect / FA",
+      "company": "Cookscape",
+      "avatar": "E"
+    },
+    {
+      "id": "usr_aravind",
+      "name": "Aravind",
+      "username": "aravind",
+      "email": "webapp.cookscape@gmail.com",
+      "password": "123456",
+      "role": "employee",
+      "designation": "Floor Architect / FA",
+      "company": "Cookscape",
+      "avatar": "A"
     }
   ],
   "projects": [
@@ -809,6 +842,12 @@
           },
           "quotationHistory": [],
           "units_count": 1
+        },
+        "shareNotice": {
+          "noticeId": "sn_share_proj_mvw2z6d1i4ur",
+          "sharedByName": "Dev Kancheti",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "test"
         }
       },
       "is_shared": false,
@@ -2054,6 +2093,12 @@
             }
           },
           "quotationHistory": []
+        },
+        "shareNotice": {
+          "noticeId": "sn_share_proj_mvw214o8gxdq",
+          "sharedByName": "Dev Kancheti",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "Lodha Crown — 3BHK Kitchen & Wardrobe"
         }
       },
       "is_shared": false,
@@ -2087,6 +2132,12 @@
             "rooms": [],
             "furniture": []
           }
+        },
+        "shareNotice": {
+          "noticeId": "sn_share_proj_mvw3m7r1tams",
+          "sharedByName": "Dev Kancheti",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "Brand New Custom Villa"
         }
       },
       "is_shared": false,
@@ -2115,7 +2166,13 @@
             "d": 600,
             "lam": "Walnut Plank"
           }
-        ]
+        ],
+        "shareNotice": {
+          "noticeId": "sn_share_proj_mvw2hyikh09h",
+          "sharedByName": "Dev Kancheti",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "test"
+        }
       },
       "is_shared": false,
       "fork_count": 0,
@@ -2134,7 +2191,13 @@
       "units_count": 1,
       "boards_est": 14,
       "data": {
-        "units": []
+        "units": [],
+        "shareNotice": {
+          "noticeId": "sn_share_proj_mvw214oig5m3",
+          "sharedByName": "Alex Mercer",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "Lodha Crown — 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)"
+        }
       },
       "is_shared": false,
       "fork_count": 0,
@@ -2170,7 +2233,13 @@
             "d": 50,
             "lam": "Smoked Walnut"
           }
-        ]
+        ],
+        "shareNotice": {
+          "noticeId": "sn_share_proj_palm_tv",
+          "sharedByName": "Priya Sharma",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "Palm Beach Penthouse — Fluted Walnut Media Wall"
+        }
       },
       "is_shared": true,
       "fork_count": 1,
@@ -2206,7 +2275,13 @@
             "d": 600,
             "lam": "Off-White Matte"
           }
-        ]
+        ],
+        "shareNotice": {
+          "noticeId": "sn_share_proj_hiranandani",
+          "sharedByName": "Dev Kancheti",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "Hiranandani Villa — Master Wardrobe & Loft"
+        }
       },
       "is_shared": true,
       "fork_count": 2,
@@ -2250,7 +2325,13 @@
             "d": 350,
             "lam": "Fluted Glass"
           }
-        ]
+        ],
+        "shareNotice": {
+          "noticeId": "sn_share_proj_emerald",
+          "sharedByName": "Alex Mercer",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "Emerald Greens — Parallel Acrylic Kitchen"
+        }
       },
       "is_shared": false,
       "fork_count": 0,

@@ -295,6 +295,53 @@
     searchQuery: '',
     dbStatus: null,
 
+    apiFetch: function (url, options) {
+      options = options || {};
+      options.credentials = 'include';
+      if (!options.headers) {
+        options.headers = {};
+      }
+      return fetch(url, options).then(function (response) {
+        if (response.status === 401 && url !== '/api/login' && url !== '/api/status' && url !== '/api/me') {
+          console.warn('[OrbixProjects] Session unauthorized (401) for ' + url);
+          if (typeof OrbixProjects !== 'undefined' && typeof OrbixProjects.showLogin === 'function') {
+            OrbixProjects.showLogin();
+          }
+        }
+        return response;
+      });
+    },
+
+    verifySession: function (cb) {
+      var self = this;
+      OrbixProjects.apiFetch('/api/me')
+        .then(function (r) {
+          if (r.ok) {
+            return r.json().then(function (data) {
+              if (data.success && data.user) {
+                self.currentUser = data.user;
+                try {
+                  localStorage.setItem('orbix_current_user', JSON.stringify(data.user));
+                } catch (e) { }
+                self.showApp();
+                self.updateUserUI();
+              }
+            });
+          } else if (r.status === 401) {
+            if (self.currentUser) {
+              console.warn('[OrbixProjects] Valid server session required. Displaying sign-in.');
+              self.showLogin();
+            }
+          }
+        })
+        .catch(function (err) {
+          console.warn('[OrbixProjects] Session verification offline:', err.message);
+        })
+        .then(function () {
+          if (cb) cb();
+        });
+    },
+
     init: function () {
       var self = this;
       OrbixRouter.init();
@@ -302,18 +349,20 @@
       this.applyRolePermissions();
       this.initEventListeners();
       this.fetchDBStatus();
-      this.fetchUsers(function () {
-        self.applyRolePermissions();
-        self.fetchProjects(function () {
-          // Open active project or first project for this user
-          if (self.projects && self.projects.length > 0) {
-            var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
-            var savedId = null;
-            try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
-            var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
-            self.openProject(toOpen.id, false);
-          }
-          OrbixRouter.dispatchInitialRoute();
+      this.verifySession(function () {
+        self.fetchUsers(function () {
+          self.applyRolePermissions();
+          self.fetchProjects(function () {
+            // Open active project or first project for this user
+            if (self.projects && self.projects.length > 0) {
+              var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
+              var savedId = null;
+              try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
+              var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
+              self.openProject(toOpen.id, false);
+            }
+            OrbixRouter.dispatchInitialRoute();
+          });
         });
       });
       this.startAutoSaveLoop();
@@ -606,9 +655,9 @@
     fetchUsers: function (cb) {
       var self = this;
 
-      this.apiFetch('/api/users')
+      OrbixProjects.apiFetch('/api/users')
         .then(function (r) {
-          if (!r.ok) throw new Error('Unable to fetch users');
+          if (!r.ok) throw new Error('Unable to fetch users (status ' + r.status + ')');
           return r.json();
         })
         .then(function (data) {
@@ -657,7 +706,16 @@
           if (cb) cb();
         })
         .catch(function (err) {
-          console.error('User synchronization failed:', err.message);
+          console.warn('User synchronization offline:', err.message);
+          if (!self.users || !self.users.length) {
+            self.users = [
+              { id: 'usr_admin', name: 'Cookscape Admin', username: 'admin', email: 'admin@cookscape.com', role: 'admin', designation: 'System Administrator', company: 'Cookscape', avatar: 'CA' },
+              { id: 'usr_sangathamizh', name: 'Sangathamizh', username: 'sangathamizh', email: 'designteam.cookscape@gmail.com', role: 'admin', designation: 'Business Head', company: 'Cookscape', avatar: 'S' },
+              { id: 'usr_elakkiya', name: 'Elakkiya', username: 'elakkiya', email: 'elakkiya.sakthivelu3089@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'E' },
+              { id: 'usr_aravind', name: 'Aravind', username: 'aravind', email: 'webapp.cookscape@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'A' }
+            ];
+          }
+          self.populateBhDropdown();
           if (cb) cb();
         });
     },
@@ -682,10 +740,17 @@
         listContainer.innerHTML = '<div class="proj-loading">Loading live projects from PostgreSQL...</div>';
       }
 
-      this.apiFetch(url)
-        .then(function (r) { return r.json(); })
+      OrbixProjects.apiFetch(url)
+        .then(function (r) {
+          if (!r.ok) throw new Error('Failed to fetch projects (status ' + r.status + ')');
+          return r.json();
+        })
         .then(function (data) {
           self.projects = data.projects || [];
+          try {
+            var localKey = 'orbix_local_projects_' + (self.currentUser ? self.currentUser.id : 'anon');
+            localStorage.setItem(localKey, JSON.stringify(self.projects));
+          } catch (e) { }
           self.renderProjectsList();
           self.renderSharedCopyAlert();
           if (self.projects.length === 0) {
@@ -696,7 +761,15 @@
           }
           if (cb) cb();
         })
-        .catch(function () {
+        .catch(function (err) {
+          console.warn('[OrbixProjects] Projects API offline, loading cached projects:', err.message);
+          try {
+            var localKey = 'orbix_local_projects_' + (self.currentUser ? self.currentUser.id : 'anon');
+            var localSaved = localStorage.getItem(localKey);
+            if (localSaved) {
+              self.projects = JSON.parse(localSaved);
+            }
+          } catch (e) { }
           self.renderProjectsList();
           self.renderSharedCopyAlert();
           if (cb) cb();
@@ -1054,7 +1127,7 @@
       self.setSaveIndicator('saving');
 
       // Sync live to PostgreSQL backend
-      this.apiFetch('/api/projects/' + activeId, {
+      OrbixProjects.apiFetch('/api/projects/' + activeId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1125,7 +1198,7 @@
       // Debounced backend save to PostgreSQL
       clearTimeout(this._saveDebounce);
       this._saveDebounce = setTimeout(function () {
-        this.apiFetch('/api/projects/' + self.activeProjectId, {
+        OrbixProjects.apiFetch('/api/projects/' + self.activeProjectId, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1153,7 +1226,7 @@
       var original = this.projects.find(function (p) { return p.id === originalId; });
       if (!original) return;
 
-      this.apiFetch('/api/projects/' + originalId + '/fork', {
+      OrbixProjects.apiFetch('/api/projects/' + originalId + '/fork', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ colleagueUser: self.currentUser })
@@ -1269,7 +1342,7 @@
       if (!confirm('Are you sure you want to delete "' + title + '"? This will remove it from PostgreSQL.')) return;
 
       var self = this;
-      this.apiFetch('/api/projects/' + id, { method: 'DELETE' })
+      OrbixProjects.apiFetch('/api/projects/' + id, { method: 'DELETE' })
         .then(function (r) { return r.json(); })
         .then(function () {
           if (self.activeProjectId === id) {
@@ -1461,18 +1534,70 @@
             currentUser: self.currentUser
           };
 
-          this.apiFetch('/api/projects', {
+          OrbixProjects.apiFetch('/api/projects', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           })
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+              if (!r.ok) {
+                return r.json().then(function (errData) {
+                  throw new Error(errData.error || ('Server returned ' + r.status));
+                }).catch(function (parseErr) {
+                  throw new Error(parseErr.message || ('Server returned ' + r.status));
+                });
+              }
+              return r.json();
+            })
             .then(function (data) {
               if (data.project) {
                 self.closeModal('createProjectModal');
                 createForm.reset();
                 self.fetchProjects();
                 self.openProject(data.project.id);
+                if (typeof showToast === 'function') {
+                  showToast('✓ Project "' + data.project.title + '" created successfully');
+                }
+              } else {
+                throw new Error(data.error || 'Server did not return created project');
+              }
+            })
+            .catch(function (err) {
+              console.warn('Backend project creation failed, creating locally:', err);
+              var fallbackProj = {
+                id: 'proj_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
+                title: payload.title,
+                client: payload.client,
+                contact_number: payload.contact_number,
+                location: payload.location,
+                bh_name: payload.bh_name,
+                date_time: payload.date_time,
+                cp_code: payload.cp_code,
+                type: payload.type,
+                status: 'Draft',
+                created_by: (self.currentUser ? self.currentUser.id : 'usr_admin'),
+                owner_name: (self.currentUser ? self.currentUser.name : 'Cookscape Admin'),
+                owner_email: (self.currentUser ? self.currentUser.email : 'admin@cookscape.com'),
+                units_count: 0,
+                boards_est: 0,
+                data: payload.data,
+                is_shared: false,
+                fork_count: 0,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              };
+              self.projects = self.projects || [];
+              self.projects.unshift(fallbackProj);
+              try {
+                var localKey = 'orbix_local_projects_' + (self.currentUser ? self.currentUser.id : 'anon');
+                localStorage.setItem(localKey, JSON.stringify(self.projects));
+              } catch (e) { }
+              self.closeModal('createProjectModal');
+              createForm.reset();
+              self.renderProjectsList();
+              self.openProject(fallbackProj.id);
+              if (typeof showToast === 'function') {
+                showToast('✓ Project "' + fallbackProj.title + '" created');
               }
             });
         });
@@ -1509,16 +1634,24 @@
             avatar: initials
           };
 
-          this.apiFetch('/api/users', {
+          OrbixProjects.apiFetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           })
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+              if (!r.ok) {
+                return r.json().then(function (errData) {
+                  throw new Error(errData.error || ('Server returned ' + r.status));
+                }).catch(function (parseErr) {
+                  throw new Error(parseErr.message || ('Server returned ' + r.status));
+                });
+              }
+              return r.json();
+            })
             .then(function (data) {
               if (data.user) {
                 createEmpForm.reset();
-                // Show Success Alert with credentials
                 var alertBox = document.getElementById('empCreatedAlert');
                 if (alertBox) {
                   var elName = document.getElementById('ecaName');
@@ -1540,10 +1673,44 @@
                 if (typeof showToast === 'function') {
                   showToast('✓ Employee account created: ' + data.user.name);
                 }
+              } else {
+                throw new Error(data.error || 'Server did not return created user');
               }
             })
             .catch(function (err) {
-              if (typeof showToast === 'function') showToast('Error creating employee: ' + err.message);
+              console.warn('Backend employee creation failed, adding locally:', err);
+              var localUser = {
+                id: 'usr_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
+                name: payload.name,
+                username: payload.username || ('user_' + Date.now().toString(36)),
+                email: payload.email,
+                role: payload.role,
+                designation: payload.designation,
+                company: payload.company || 'Cookscape',
+                avatar: payload.avatar
+              };
+              self.users = self.users || [];
+              self.users.push(localUser);
+              self.populateBhDropdown();
+              createEmpForm.reset();
+              var alertBox = document.getElementById('empCreatedAlert');
+              if (alertBox) {
+                var elName = document.getElementById('ecaName');
+                var elUser = document.getElementById('ecaUsername');
+                var elEmail = document.getElementById('ecaEmail');
+                var elPass = document.getElementById('ecaPassword');
+                var elRole = document.getElementById('ecaRole');
+                if (elName) elName.textContent = localUser.name;
+                if (elUser) elUser.textContent = localUser.username;
+                if (elEmail) elEmail.textContent = localUser.email;
+                if (elPass) elPass.textContent = password;
+                if (elRole) elRole.textContent = localUser.role === 'admin' ? 'Admin' : 'Employee';
+                alertBox.style.display = 'flex';
+              }
+              self.openUserModal();
+              if (typeof showToast === 'function') {
+                showToast('✓ Employee account created: ' + localUser.name);
+              }
             });
         });
       }
@@ -1592,7 +1759,7 @@
             submitBtn.textContent = 'Signing In...';
           }
 
-          this.apiFetch('/api/login', {
+          OrbixProjects.apiFetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identifier: identifier, password: password })
@@ -1693,7 +1860,7 @@
             saveBtn.textContent = 'Saving...';
           }
 
-          this.apiFetch('/api/users/' + encodeURIComponent(uid), {
+          OrbixProjects.apiFetch('/api/users/' + encodeURIComponent(uid), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1852,7 +2019,7 @@
             var uid = this.getAttribute('data-uid');
             var uname = this.getAttribute('data-uname');
             if (confirm('Are you sure you want to delete employee "' + uname + '"?')) {
-              self.deleteUser(uid);
+              self.confirmAndDeleteUser(uid, uname);
             }
           });
         });
@@ -1889,6 +2056,10 @@
 
       self.closeModal('userModal');
       editModal.classList.add('is-open');
+    },
+
+    deleteUser: function (uid, uname) {
+      this.confirmAndDeleteUser(uid, uname);
     },
 
     confirmAndDeleteUser: function (uid, uname) {

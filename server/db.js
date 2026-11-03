@@ -33,36 +33,40 @@ const DEFAULT_USERS = [
     name: 'Cookscape Admin',
     username: 'admin',
     email: 'admin@cookscape.com',
+    password: 'admin123',
     role: 'admin',
     designation: 'System Administrator',
     company: 'Cookscape',
     avatar: 'CA'
   },
   {
-    id: 'usr_mvwe6obve1ks',
+    id: 'usr_sangathamizh',
     name: 'Sangathamizh',
-    username: 'ST',
+    username: 'sangathamizh',
     email: 'designteam.cookscape@gmail.com',
+    password: 'admin123',
     role: 'admin',
     designation: 'Business Head',
     company: 'Cookscape',
     avatar: 'S'
   },
   {
-    id: 'usr_mvweb77exij0',
+    id: 'usr_elakkiya',
     name: 'Elakkiya',
     username: 'elakkiya',
     email: 'elakkiya.sakthivelu3089@gmail.com',
+    password: '123456',
     role: 'employee',
     designation: 'Floor Architect / FA',
     company: 'Cookscape',
     avatar: 'E'
   },
   {
-    id: 'usr_mvxh5at49a9d',
+    id: 'usr_aravind',
     name: 'Aravind',
     username: 'aravind',
     email: 'webapp.cookscape@gmail.com',
+    password: '123456',
     role: 'employee',
     designation: 'Floor Architect / FA',
     company: 'Cookscape',
@@ -225,6 +229,34 @@ class DBManager {
           await client.query(schemaSql);
         }
         console.log('✓ PostgreSQL schema verified/applied.');
+      }
+
+      // Ensure Cookscape team users exist in PostgreSQL
+      for (const u of DEFAULT_USERS) {
+        await client.query(
+          `INSERT INTO users
+            (id, name, username, email, password, role, designation, company, avatar)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+           ON CONFLICT (id) DO UPDATE SET
+            name = EXCLUDED.name,
+            username = EXCLUDED.username,
+            email = EXCLUDED.email,
+            role = EXCLUDED.role,
+            designation = EXCLUDED.designation,
+            company = EXCLUDED.company,
+            avatar = EXCLUDED.avatar`,
+          [
+            u.id,
+            u.name,
+            u.username || u.id,
+            u.email,
+            u.password || '123456',
+            u.role,
+            u.designation || 'Modular Designer',
+            u.company,
+            u.avatar
+          ]
+        );
       }
 
       // Seed projects ONLY when the PostgreSQL database has zero projects
