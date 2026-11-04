@@ -138,7 +138,7 @@ const server = app.listen(PORT, () => {
   console.log(`\n═════════════════════════════════════════════════════════════`);
   console.log(`  ORBIX STUDIO — Express + Prisma Layered CAD Architecture`);
   console.log(`  Local URL: http://localhost:${PORT}`);
-  console.log(`  Database: PostgreSQL on port ${process.env.PGPORT || 5433}`);
+  console.log(`  Database: PostgreSQL on port ${process.env.PGPORT || 5432}`);
   console.log(`═════════════════════════════════════════════════════════════\n`);
 });
 

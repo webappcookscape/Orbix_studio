@@ -921,11 +921,19 @@
       }
     }
 
+    var isWall = (Core.isWallUnit) ?
+      Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name) :
+      ((this.furniturePreset.category && this.furniturePreset.category.toLowerCase().indexOf('wall') !== -1) ||
+       (this.furniturePreset.name && this.furniturePreset.name.toLowerCase().indexOf('wall') !== -1));
+    var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null) ?
+      this.furniturePreset.elevation : (isWall ? 1500 : 0);
+
     var furn = Core.createFurniturePlacement({
       name: this.furniturePreset.name,
       category: this.furniturePreset.category,
       roomId: matchedRoomId,
-      pos: { x: snapped.pt.x, y: snapped.pt.y, z: 0 },
+      elevation: presetElev,
+      pos: { x: snapped.pt.x, y: snapped.pt.y, z: presetElev },
       rotY: this.furnitureRotY || 0,
       dimensions: Object.assign({}, this.furniturePreset.dimensions),
       unitConfig: Object.assign({}, this.furniturePreset.unitConfig || {})
@@ -1015,11 +1023,20 @@
         var newFurn = JSON.parse(JSON.stringify(orig));
         newFurn.id = newId;
         newFurn.name = (orig.name || 'Unit') + ' (Copy)';
+        var isWall = (Core.isWallUnit) ?
+          Core.isWallUnit(orig.category, orig.name) :
+          ((orig.category && orig.category.toLowerCase().indexOf('wall') !== -1) ||
+           (orig.name && orig.name.toLowerCase().indexOf('wall') !== -1));
+        var origElev = (orig.elevation !== undefined && orig.elevation !== null) ?
+          orig.elevation : ((orig.pos && orig.pos.z !== 0) ? orig.pos.z : (isWall ? 1500 : 0));
+        newFurn.elevation = origElev;
         newFurn.pos = {
           x: Math.round((orig.pos.x + offsetDist) / 50) * 50,
           y: Math.round((orig.pos.y + offsetDist) / 50) * 50,
-          z: orig.pos.z || 0
+          z: origElev
         };
+        newFurn.shutterStates = orig.shutterStates ? orig.shutterStates.slice() : [];
+        newFurn.drawerStates = orig.drawerStates ? orig.drawerStates.slice() : [];
         var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
         for (var rm = 0; rm < rooms.length; rm++) {
           if (rooms[rm].polygon && Core.Vec2.pointInPolygon(newFurn.pos, rooms[rm].polygon)) {

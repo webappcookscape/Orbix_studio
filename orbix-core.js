@@ -364,23 +364,43 @@
     };
   }
 
+  function isWallUnitCategory(category, name) {
+    var cat = (category || '').toLowerCase();
+    var nm = (name || '').toLowerCase();
+    return cat.indexOf('wall') !== -1 || cat.indexOf('overhead') !== -1 || cat.indexOf('spice') !== -1 ||
+           cat.indexOf('loft') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'kitchen_wall' ||
+           cat === 'crockery_wall' || cat === 'spice_rack' || cat === 'loft_os' || cat === 'kitchen_os' ||
+           nm.indexOf('wall') !== -1 || nm.indexOf('overhead') !== -1 || nm.indexOf('spice rack') !== -1 ||
+           nm.indexOf('spice_rack') !== -1 || nm.indexOf('loft') !== -1;
+  }
+
   function createFurniturePlacement(opts) {
     opts = opts || {};
     var cat = (opts.category || 'wardrobe').toLowerCase();
-    var isWallUnit = (cat.indexOf('wall') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'crockery_wall');
+    var isWallUnit = isWallUnitCategory(opts.category, opts.name);
     var defElev = isWallUnit ? 1500 : 0;
-    var elev = opts.elevation !== undefined ? opts.elevation : ((opts.pos && opts.pos.z !== undefined) ? opts.pos.z : defElev);
-    var numShutters = (opts.unitConfig && opts.unitConfig.shutters) || (opts.dimensions && opts.dimensions.W > 1200 ? 3 : 2);
+    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
+      parseFloat(opts.elevation) :
+      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && opts.pos.z !== 0) ?
+        parseFloat(opts.pos.z) : defElev);
 
-    var initColors = opts.shutterColors || [];
-    var initMats = opts.shutterMaterials || [];
-    var initStates = opts.shutterStates || [];
+    var numShutters = (opts.unitConfig && opts.unitConfig.shutters !== undefined) ?
+      parseInt(opts.unitConfig.shutters) :
+      ((opts.dimensions && opts.dimensions.W > 1200) ? 3 : 2);
+    var numDrawers = (opts.unitConfig && opts.unitConfig.drawers !== undefined) ?
+      parseInt(opts.unitConfig.drawers) : 0;
+
+    var initColors = opts.shutterColors ? opts.shutterColors.slice() : [];
+    var initMats = opts.shutterMaterials ? opts.shutterMaterials.slice() : [];
+    var initStates = opts.shutterStates ? opts.shutterStates.slice() : [];
+    var initDrawerStates = opts.drawerStates ? opts.drawerStates.slice() : [];
     var defColor = (opts.shutter && opts.shutter.finish) || opts.shutterFinish || '#6E4E35';
     var defMat = (opts.shutter && opts.shutter.material) || opts.shutterMaterial || 'laminate';
 
     while (initColors.length < numShutters) initColors.push(defColor);
     while (initMats.length < numShutters) initMats.push(defMat);
     while (initStates.length < numShutters) initStates.push(false);
+    while (initDrawerStates.length < numDrawers) initDrawerStates.push(false);
 
     return {
       id: opts.id || uid('furn'),
@@ -398,6 +418,7 @@
       shutterColors: initColors,
       shutterMaterials: initMats,
       shutterStates: initStates,
+      drawerStates: initDrawerStates,
       materials: opts.materials || {
         shutter: {
           material: defMat,
@@ -4152,6 +4173,7 @@
     calculateCornerAngle: calculateCornerAngle,
     getFurniturePolygon: getFurniturePolygon,
     polygonsIntersect: polygonsIntersect,
-    checkFurnitureCollision: checkFurnitureCollision
+    checkFurnitureCollision: checkFurnitureCollision,
+    isWallUnit: isWallUnitCategory
   };
 });

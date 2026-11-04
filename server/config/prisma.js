@@ -9,10 +9,25 @@ require('dotenv').config();
 
 const { PrismaClient } = require('@prisma/client');
 
-// Singleton Prisma instance across the application lifecycle
-const prisma = new PrismaClient({
+let currentUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/cupboard_cad';
+
+// Active Prisma Client instance
+let activePrisma = new PrismaClient({
+  datasources: { db: { url: currentUrl } },
   log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   errorFormat: 'minimal'
+});
+
+// Dynamic proxy so existing imports (`const { prisma } = require('./config/prisma')`)
+// always route methods to the active connected client even after auto-recovery/fallback
+const prismaProxy = new Proxy({}, {
+  get(target, prop) {
+    const val = activePrisma[prop];
+    if (typeof val === 'function') {
+      return val.bind(activePrisma);
+    }
+    return val;
+  }
 });
 
 let isConnected = false;
@@ -20,11 +35,11 @@ let lastError = null;
 
 async function checkDatabaseConnection() {
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await activePrisma.$queryRaw`SELECT 1`;
 
     // Auto-migration: ensure required columns exist in PostgreSQL
     try {
-      await prisma.$executeRawUnsafe(`
+      await activePrisma.$executeRawUnsafe(`
         ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
         ALTER TABLE project_shares ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
         ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
@@ -37,6 +52,40 @@ async function checkDatabaseConnection() {
     lastError = null;
     return true;
   } catch (err) {
+    // Intelligent auto-recovery: if connection failed on 5433 or 5432, try the alternative port!
+    const is5433 = currentUrl.includes(':5433');
+    const is5432 = currentUrl.includes(':5432');
+    if (is5433 || is5432) {
+      const altUrl = is5433 ? currentUrl.replace(':5433', ':5432') : currentUrl.replace(':5432', ':5433');
+      try {
+        const altPrisma = new PrismaClient({
+          datasources: { db: { url: altUrl } },
+          log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
+          errorFormat: 'minimal'
+        });
+        await altPrisma.$queryRaw`SELECT 1`;
+        try {
+          await altPrisma.$executeRawUnsafe(`
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+            ALTER TABLE project_shares ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+            ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+          `);
+        } catch (_) {}
+
+        try { await activePrisma.$disconnect(); } catch (_) {}
+        activePrisma = altPrisma;
+        currentUrl = altUrl;
+        process.env.DATABASE_URL = altUrl;
+        process.env.PGPORT = is5433 ? '5432' : '5433';
+        isConnected = true;
+        lastError = null;
+        console.log(`✓ Prisma auto-recovered and connected to PostgreSQL live database on port ${process.env.PGPORT}.`);
+        return true;
+      } catch (altErr) {
+        // Fallback also failed
+      }
+    }
+
     isConnected = false;
     lastError = err.message || String(err);
     return false;
@@ -53,9 +102,9 @@ checkDatabaseConnection().then(ok => {
 });
 
 function getDatabaseStatus() {
-  const url = process.env.DATABASE_URL || '';
+  const url = process.env.DATABASE_URL || currentUrl || '';
   let host = 'localhost';
-  let port = '5433';
+  let port = '5432';
   let database = 'cupboard_cad';
 
   try {
@@ -80,7 +129,7 @@ function getDatabaseStatus() {
 }
 
 module.exports = {
-  prisma,
+  prisma: prismaProxy,
   checkDatabaseConnection,
   getDatabaseStatus,
   get isConnected() { return isConnected; },

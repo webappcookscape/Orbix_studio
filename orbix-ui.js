@@ -879,7 +879,15 @@
         if (!fn.shutterMaterials) fn.shutterMaterials = [];
         if (!fn.shutterStates) fn.shutterStates = [];
 
-        var curElev = (fn.elevation !== undefined) ? fn.elevation : (fn.pos.z || (fn.category === 'kitchen_wall' ? 1500 : 0));
+        var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+          window.OrbixCore.isWallUnit(fn.category, fn.name) :
+          ((fn.category && fn.category.toLowerCase().indexOf('wall') !== -1) ||
+           (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1) ||
+           fn.category === 'kitchen_wall');
+
+        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
+          fn.elevation :
+          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
 
         var shutterItemsHtml = '';
         for (var s = 0; s < shuttersCount; s++) {
@@ -903,6 +911,33 @@
             '<option value="Concrete Look"' + (sMat.indexOf('Concrete') !== -1 ? ' selected' : '') + '>Concrete Look</option>' +
             '</select>' +
             '</div>' +
+            '</div>';
+        }
+
+        var drawerItemsHtml = '';
+        if (drawersCount > 0) {
+          if (!fn.drawerStates) fn.drawerStates = [];
+          for (var d = 0; d < drawersCount; d++) {
+            var dOpen = !!(fn.drawerStates && fn.drawerStates[d]);
+            drawerItemsHtml +=
+              '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">' +
+              '<span style="font-weight:600;font-size:11px;color:#334155;">Drawer ' + (d + 1) + '</span>' +
+              '<button class="btn small inspDrawerToggle" data-didx="' + d + '" style="font-size:10px;padding:2px 8px;background:' + (dOpen ? '#10b981' : '#f1f5f9') + ';color:' + (dOpen ? '#ffffff' : '#334155') + ';border-color:' + (dOpen ? '#059669' : '#cbd5e1') + '">' + (dOpen ? 'Open 🗄' : 'Closed') + '</button>' +
+              '</div>';
+          }
+        }
+
+        var drawerSectionHtml = '';
+        if (drawersCount > 0) {
+          drawerSectionHtml =
+            '<div style="margin:8px 0 8px 0;padding:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+            '<span style="font-weight:700;font-size:11.5px;color:#166534;">🗄 Drawers</span>' +
+            '<div style="display:flex;gap:4px;">' +
+            '<button class="btn small" id="inspDrawerOpenAll" style="font-size:10px;padding:2px 6px;">Open All</button>' +
+            '<button class="btn small" id="inspDrawerCloseAll" style="font-size:10px;padding:2px 6px;">Close All</button>' +
+            '</div></div>' +
+            drawerItemsHtml +
             '</div>';
         }
 
@@ -932,6 +967,7 @@
           '</div></div>' +
           shutterItemsHtml +
           '</div>' +
+          drawerSectionHtml +
           '<button class="btn primary full" id="inspOpen3DStudio" style="margin-top:8px">📐 Open &amp; Customize in 3D Studio</button>' +
           '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (Space)</button>' +
           '<button class="btn danger full" id="inspDelFurn" style="margin-top:8px">Delete Unit</button>';
@@ -1011,21 +1047,27 @@
         document.getElementById('inspFurnShutters').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.shutters = parseInt(e.target.value) || 0;
+          if (!fn.shutterStates) fn.shutterStates = [];
+          while (fn.shutterStates.length < fn.unitConfig.shutters) fn.shutterStates.push(false);
           syncInspectorTo3D();
           self.editor.pushHistory('Edit Shutters Count');
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
+          self.renderInspector(self.editor.selected);
           if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnDrawers').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.drawers = parseInt(e.target.value) || 0;
+          if (!fn.drawerStates) fn.drawerStates = [];
+          while (fn.drawerStates.length < fn.unitConfig.drawers) fn.drawerStates.push(false);
           syncInspectorTo3D();
           self.editor.pushHistory('Edit Drawers Count');
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
+          self.renderInspector(self.editor.selected);
           if (self.render3DHome) self.render3DHome(true);
         });
 
@@ -1069,6 +1111,43 @@
             if (self.render3DHome) self.render3DHome(true);
           });
         }
+
+        // Bulk & Individual Drawer Controls
+        var btnDrawerOpenAll = document.getElementById('inspDrawerOpenAll');
+        if (btnDrawerOpenAll) {
+          btnDrawerOpenAll.addEventListener('click', function () {
+            if (!fn.drawerStates) fn.drawerStates = [];
+            for (var i = 0; i < drawersCount; i++) fn.drawerStates[i] = true;
+            self.editor.pushHistory('Open All Drawers');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var btnDrawerCloseAll = document.getElementById('inspDrawerCloseAll');
+        if (btnDrawerCloseAll) {
+          btnDrawerCloseAll.addEventListener('click', function () {
+            if (!fn.drawerStates) fn.drawerStates = [];
+            for (var i = 0; i < drawersCount; i++) fn.drawerStates[i] = false;
+            self.editor.pushHistory('Close All Drawers');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        var drawerToggles = panel.querySelectorAll('.inspDrawerToggle');
+        drawerToggles.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var idx = parseInt(btn.getAttribute('data-didx'));
+            if (!fn.drawerStates) fn.drawerStates = [];
+            fn.drawerStates[idx] = !fn.drawerStates[idx];
+            self.editor.pushHistory('Toggle Drawer ' + (idx + 1));
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        });
 
         // Individual Shutter Controls
         var toggles = panel.querySelectorAll('.inspShutterToggle');
@@ -1334,8 +1413,15 @@
         var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
         var existing = existingMap[fn.id];
 
+        var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+          window.OrbixCore.isWallUnit(fn.category, fn.name) :
+          (fn.category === 'kitchen_wall' || (fn.category && fn.category.indexOf('wall') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1));
+        var unitElev = (fn.elevation !== undefined && fn.elevation !== null) ?
+          fn.elevation : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
+
         if (existing) {
           if (fn.name) existing.label = fn.name;
+          existing.elev = unitElev;
           if (fn.dimensions) {
             if (fn.dimensions.W) existing.W = fn.dimensions.W;
             if (fn.dimensions.H) existing.H = fn.dimensions.H;
@@ -1358,14 +1444,14 @@
           }
           newUnits.push(existing);
         } else {
-          var isWall = (fn.category === 'kitchen_wall');
           var defH = isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 1800 : (fn.category === 'crockery' ? 2100 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
-          var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 300 : isKitchen ? 550 : 600);
+          var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 600);
           var u = {
             label: fn.name,
             ctype: isKitchen ? (isWall ? 'kwall' : 'kbase') : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
             _furnId: fn.id,
+            elev: unitElev,
             W: (fn.dimensions && fn.dimensions.W) || defW,
             H: (fn.dimensions && fn.dimensions.H) || defH,
             D: (fn.dimensions && fn.dimensions.D) || defD,
@@ -1501,6 +1587,20 @@
           if (u.loftH !== undefined) match.unitConfig.loftH = u.loftH;
           if (u.back !== undefined) match.unitConfig.back = u.back;
           if (u.hfinish) match.unitConfig.hfinish = u.hfinish;
+          if (u.elev !== undefined) {
+            match.elevation = u.elev;
+            if (match.pos) match.pos.z = u.elev;
+          }
+          if (u.drawers !== undefined) {
+            match.unitConfig.drawers = u.drawers;
+            match.drawerStates = match.drawerStates || [];
+            while (match.drawerStates.length < u.drawers) match.drawerStates.push(false);
+          }
+          if (u.shutters !== undefined) {
+            match.unitConfig.shutters = u.shutters;
+            match.shutterStates = match.shutterStates || [];
+            while (match.shutterStates.length < u.shutters) match.shutterStates.push(false);
+          }
           if (u.shutterCol) {
             match.unitConfig.shutterCol = u.shutterCol;
             match.materials = match.materials || {};
@@ -1568,19 +1668,27 @@
         cX += (offsetCount * 300);
       }
 
-      var newFurn = {
+      var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+        window.OrbixCore.isWallUnit(preset.category, preset.name) :
+        ((preset.category && preset.category.toLowerCase().indexOf('wall') !== -1) ||
+         (preset.name && preset.name.toLowerCase().indexOf('wall') !== -1));
+      var initElev = (preset.elevation !== undefined && preset.elevation !== null) ?
+        preset.elevation : (isWall ? 1500 : 0);
+
+      var newFurn = Core.createFurniturePlacement({
         id: fId,
         name: preset.name || 'Modular Unit',
         category: preset.category || 'wardrobe',
         roomId: matchedRoomId,
-        pos: { x: cX, y: cY, z: 0 },
+        elevation: initElev,
+        pos: { x: cX, y: cY, z: initElev },
         rotY: 0,
-        dimensions: Object.assign({ W: 1200, H: 2100, D: 600 }, preset.dimensions || {}),
+        dimensions: Object.assign({ W: 1200, H: isWall ? 600 : 2100, D: isWall ? 350 : 600 }, preset.dimensions || {}),
         unitConfig: Object.assign({
-          shutters: 2,
+          shutters: isWall ? 2 : 2,
           handle: 'bar',
           dstyle: 'slab',
-          shelves: 3,
+          shelves: isWall ? 1 : 3,
           drawers: 0,
           carcass: 'Absolute White',
           shutterCol: 'Brazilian Horizontal Walnut'
@@ -1589,7 +1697,7 @@
           shutter: { material: 'HDHMR_18mm', finish: 'Brazilian Horizontal Walnut' },
           carcass: { material: 'BWP_18mm', finish: 'Absolute White' }
         }, preset.materials || {})
-      };
+      });
 
       plan.furniture.push(newFurn);
       this.project.units_count = plan.furniture.length;
