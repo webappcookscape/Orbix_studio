@@ -566,10 +566,12 @@
             break;
           }
         }
-        // Collision check with other furniture units (SAT OBB + Elevation)
-        var colCheck = Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
-        self.dragState.hasCollision = colCheck.collided;
-        self.dragState.collidedWith = colCheck.other;
+        // Comprehensive overlap check against adjacent furniture, wall cores, and openings
+        var colCheck = Core.checkPlacementOverlap ?
+          Core.checkPlacementOverlap(self.dragState.furniture, self.project.plan, self.dragState.furniture.id) :
+          Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
+        self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
+        self.dragState.collidedWith = colCheck.target || colCheck.other;
         self.render();
         return;
       }

@@ -1840,17 +1840,18 @@
       var scene = gl.getScene ? gl.getScene() : null;
       var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
       if (homeObj) {
+        var selGroup = null;
         homeObj.traverse(function (obj) {
           if (obj.userData && obj.userData.isFurnitureGroup) {
-            var isSel = (obj.userData.furnitureId === furnId);
-            // Hide the selected unit inside OrbixHome3D when in unit mode so root's live parametric model is displayed
-            if (isSel) {
-              obj.visible = (window.Orbix3DViewMode === 'home');
-            } else {
-              obj.visible = true;
+            obj.visible = true;
+            if (obj.userData.furnitureId === furnId) {
+              selGroup = obj;
             }
           }
         });
+        if (gl.gizmoSet && furnId && selGroup) {
+          gl.gizmoSet(selGroup, furnId);
+        }
       }
       if (gl.settle) gl.settle();
     },
@@ -3217,6 +3218,25 @@
       if (this.archRenderer) {
         var proj = this.project || (this.editor && this.editor.project);
         this.archRenderer.buildHome(proj);
+        var homeObj = scene.getObjectByName('OrbixHome3D');
+        var selFurnId = null;
+        if (this.editor && this.editor.selected && this.editor.selected.length > 0) {
+          var selItem = this.editor.selected.find(function (it) { return it.type === 'furniture'; });
+          if (selItem) selFurnId = selItem.id;
+        } else if (gl.getGizmoFurnId) {
+          selFurnId = gl.getGizmoFurnId();
+        }
+        if (selFurnId && homeObj && gl.gizmoSet) {
+          var foundMesh = null;
+          homeObj.traverse(function (c) {
+            if (c.userData && c.userData.isFurnitureGroup && c.userData.furnitureId === selFurnId) {
+              foundMesh = c;
+            }
+          });
+          if (foundMesh) {
+            gl.gizmoSet(foundMesh, selFurnId);
+          }
+        }
         if (!keepCamera && gl.frame) gl.frame();
         if (gl.apply) gl.apply();
         if (gl.settle) gl.settle();

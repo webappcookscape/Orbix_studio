@@ -1,0 +1,90 @@
+const fs = require('fs');
+let code = fs.readFileSync('orbix-core.js', 'utf8');
+const eol = code.includes('\r\n') ? '\r\n' : '\n';
+
+const fnToAdd = [
+  '  // Comprehensive placement overlap detector against adjacent furniture, wall cores, and openings',
+  '  function checkPlacementOverlap(f, plan, ignoreId) {',
+  '    if (!f || !plan) return { hasOverlap: false };',
+  '    var fId = ignoreId || f.id;',
+  '',
+  '    // 1. Check collision with other furniture units (OBB + 3D elevation)',
+  '    var furnList = plan.furniture || [];',
+  '    var furnCol = checkFurnitureCollision(f, furnList, fId);',
+  '    if (furnCol.collided) {',
+  '      return { hasOverlap: true, type: "furniture", target: furnCol.other };',
+  '    }',
+  '',
+  '    // 2. Check collision / penetration into walls',
+  '    var walls = plan.walls || [];',
+  '    var polyF = getFurniturePolygon(f);',
+  '    var elev1 = (f.elevation !== undefined && f.elevation !== null && f.elevation !== "") ?',
+  '      parseFloat(f.elevation) :',
+  '      ((f.pos && f.pos.z !== undefined) ? parseFloat(f.pos.z) : 0);',
+  '    var h1 = (f.dimensions && f.dimensions.H) || 2100;',
+  '    var top1 = elev1 + h1;',
+  '',
+  '    for (var i = 0; i < walls.length; i++) {',
+  '      var w = walls[i];',
+  '      var wallH = w.height || 2800;',
+  '      if (top1 <= 0 || elev1 >= wallH) continue;',
+  '',
+  '      var wallPoly = wallPolygon(w);',
+  '      // Tolerance = 25mm: touching the wall surface (intentional contact) does NOT collide;',
+  '      // penetration deeper than 25mm into the wall core triggers overlap',
+  '      if (polygonsIntersect(polyF, wallPoly, 25)) {',
+  '        return { hasOverlap: true, type: "wall", target: w };',
+  '      }',
+  '    }',
+  '',
+  '    // 3. Check collision with door & window openings',
+  '    var openings = plan.openings || [];',
+  '    for (var j = 0; j < openings.length; j++) {',
+  '      var op = openings[j];',
+  '      var opWall = null;',
+  '      for (var k = 0; k < walls.length; k++) {',
+  '        if (walls[k].id === op.wallId) { opWall = walls[k]; break; }',
+  '      }',
+  '      if (!opWall) continue;',
+  '',
+  '      var opElev = op.elevation !== undefined ? op.elevation : (op.type === "door" ? 0 : 900);',
+  '      var opH = op.height || (op.type === "door" ? 2100 : 1200);',
+  '      var opTop = opElev + opH;',
+  '      if (top1 <= opElev + 10 || opTop <= elev1 + 10) continue;',
+  '',
+  '      var dir = wallDirection(opWall);',
+  '      var norm = wallNormal(opWall);',
+  '      var halfT = ((opWall.thickness || 150) / 2.0) + 15;',
+  '      var opStart = {',
+  '        x: opWall.start.x + dir.x * (op.offset || 0),',
+  '        y: opWall.start.y + dir.y * (op.offset || 0)',
+  '      };',
+  '      var opEnd = {',
+  '        x: opStart.x + dir.x * (op.width || 900),',
+  '        y: opStart.y + dir.y * (op.width || 900)',
+  '      };',
+  '      var opPoly = [',
+  '        { x: opStart.x + norm.x * halfT, y: opStart.y + norm.y * halfT },',
+  '        { x: opEnd.x + norm.x * halfT, y: opEnd.y + norm.y * halfT },',
+  '        { x: opEnd.x - norm.x * halfT, y: opEnd.y - norm.y * halfT },',
+  '        { x: opStart.x - norm.x * halfT, y: opStart.y - norm.y * halfT }',
+  '      ];',
+  '      if (polygonsIntersect(polyF, opPoly, 15)) {',
+  '        return { hasOverlap: true, type: "opening", target: op };',
+  '      }',
+  '    }',
+  '',
+  '    return { hasOverlap: false };',
+  '  }',
+  ''
+].join(eol);
+
+const targetAnchor = '  // Splits a wall at a given point';
+if (code.includes(targetAnchor)) {
+  code = code.replace(targetAnchor, fnToAdd + targetAnchor);
+  code = code.replace('isWallUnit: isWallUnitCategory', 'isWallUnit: isWallUnitCategory,' + eol + '    checkPlacementOverlap: checkPlacementOverlap');
+  fs.writeFileSync('orbix-core.js', code, 'utf8');
+  console.log('Successfully updated orbix-core.js with checkPlacementOverlap!');
+} else {
+  console.error('Target anchor not found in orbix-core.js');
+}
