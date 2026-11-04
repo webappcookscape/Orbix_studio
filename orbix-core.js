@@ -322,7 +322,9 @@
       height: opts.height !== undefined ? opts.height : 2800, // 2.8m ceiling height
       material: opts.material || 'plaster_white',
       openings: opts.openings ? opts.openings.slice() : [],
-      pinned: !!opts.pinned
+      pinned: !!opts.pinned,
+      startLocked: opts.startLocked !== undefined ? !!opts.startLocked : true,
+      endLocked: opts.endLocked !== undefined ? !!opts.endLocked : true
     };
   }
 
@@ -364,22 +366,42 @@
 
   function createFurniturePlacement(opts) {
     opts = opts || {};
+    var cat = (opts.category || 'wardrobe').toLowerCase();
+    var isWallUnit = (cat.indexOf('wall') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'crockery_wall');
+    var defElev = isWallUnit ? 1500 : 0;
+    var elev = opts.elevation !== undefined ? opts.elevation : ((opts.pos && opts.pos.z !== undefined) ? opts.pos.z : defElev);
+    var numShutters = (opts.unitConfig && opts.unitConfig.shutters) || (opts.dimensions && opts.dimensions.W > 1200 ? 3 : 2);
+
+    var initColors = opts.shutterColors || [];
+    var initMats = opts.shutterMaterials || [];
+    var initStates = opts.shutterStates || [];
+    var defColor = (opts.shutter && opts.shutter.finish) || opts.shutterFinish || '#6E4E35';
+    var defMat = (opts.shutter && opts.shutter.material) || opts.shutterMaterial || 'laminate';
+
+    while (initColors.length < numShutters) initColors.push(defColor);
+    while (initMats.length < numShutters) initMats.push(defMat);
+    while (initStates.length < numShutters) initStates.push(false);
+
     return {
       id: opts.id || uid('furn'),
       name: opts.name || 'Modular Unit',
       category: opts.category || 'wardrobe',
       roomId: opts.roomId || null,
-      pos: { x: opts.pos ? opts.pos.x : 0, y: opts.pos ? opts.pos.y : 0, z: opts.pos ? opts.pos.z : 0 },
+      pos: { x: opts.pos ? opts.pos.x : 0, y: opts.pos ? opts.pos.y : 0, z: elev },
+      elevation: elev,
       rotY: opts.rotY || 0,
       dimensions: {
-        W: opts.dimensions ? opts.dimensions.W : 1200,
-        H: opts.dimensions ? opts.dimensions.H : 2100,
-        D: opts.dimensions ? opts.dimensions.D : 600
+        W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
+        H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : 2100),
+        D: opts.dimensions ? opts.dimensions.D : (isWallUnit ? 350 : 600)
       },
+      shutterColors: initColors,
+      shutterMaterials: initMats,
+      shutterStates: initStates,
       materials: opts.materials || {
         shutter: {
-          material: (opts.shutter && opts.shutter.material) || opts.shutterMaterial || 'HDHMR_18MM',
-          finish: (opts.shutter && opts.shutter.finish) || opts.shutterFinish || 'Brazilian Horizontal Walnut'
+          material: defMat,
+          finish: defColor
         },
         carcass: {
           material: (opts.carcass && opts.carcass.material) || opts.carcassMaterial || 'BWP_18MM',
@@ -391,6 +413,108 @@
       pricingOverrides: opts.pricingOverrides || null,
       notes: opts.notes || ''
     };
+  }
+
+  // Calculates corner angle in degrees between two walls meeting at jointPt
+  function calculateCornerAngle(w1, w2, jointPt) {
+    if (!w1 || !w2 || !jointPt) return 90;
+    var d1s = Vec2.dist(w1.start, jointPt);
+    var p1 = d1s < 25 ? w1.end : w1.start;
+    var v1 = { x: p1.x - jointPt.x, y: p1.y - jointPt.y };
+    var l1 = Math.hypot(v1.x, v1.y);
+    if (l1 < 1e-6) return 90;
+    v1.x /= l1; v1.y /= l1;
+
+    var d2s = Vec2.dist(w2.start, jointPt);
+    var p2 = d2s < 25 ? w2.end : w2.start;
+    var v2 = { x: p2.x - jointPt.x, y: p2.y - jointPt.y };
+    var l2 = Math.hypot(v2.x, v2.y);
+    if (l2 < 1e-6) return 90;
+    v2.x /= l2; v2.y /= l2;
+
+    var dot = Math.max(-1, Math.min(1, v1.x * v2.x + v1.y * v2.y));
+    var rad = Math.acos(dot);
+    return Math.round(rad * (180 / Math.PI));
+  }
+
+  // Returns 4 2D corner vertices of rotated furniture rectangle (Oriented Bounding Box)
+  function getFurniturePolygon(f) {
+    var w = (f.dimensions && f.dimensions.W) || 1200;
+    var d = (f.dimensions && f.dimensions.D) || 600;
+    var ang = f.rotY || 0;
+    var cosA = Math.cos(ang), sinA = Math.sin(ang);
+    var ux = cosA * (w / 2), uy = sinA * (w / 2);
+    var vx = -sinA * (d / 2), vy = cosA * (d / 2);
+    var cx = f.pos.x, cy = f.pos.y;
+    return [
+      { x: cx - ux - vx, y: cy - uy - vy },
+      { x: cx + ux - vx, y: cy + uy - vy },
+      { x: cx + ux + vx, y: cy + uy + vy },
+      { x: cx - ux + vx, y: cy - uy + vy }
+    ];
+  }
+
+  // SAT (Separating Axis Theorem) collision test between two convex 2D polygons
+  function polygonsIntersect(poly1, poly2, tolerance) {
+    tolerance = tolerance !== undefined ? tolerance : 5;
+    var polys = [poly1, poly2];
+    for (var p = 0; p < polys.length; p++) {
+      var poly = polys[p];
+      for (var i = 0; i < poly.length; i++) {
+        var p1 = poly[i];
+        var p2 = poly[(i + 1) % poly.length];
+        var edge = { x: p2.x - p1.x, y: p2.y - p1.y };
+        var normal = { x: -edge.y, y: edge.x };
+        var len = Math.hypot(normal.x, normal.y);
+        if (len < 1e-6) continue;
+        normal.x /= len; normal.y /= len;
+
+        var min1 = Infinity, max1 = -Infinity;
+        for (var a = 0; a < poly1.length; a++) {
+          var dot1 = poly1[a].x * normal.x + poly1[a].y * normal.y;
+          if (dot1 < min1) min1 = dot1;
+          if (dot1 > max1) max1 = dot1;
+        }
+
+        var min2 = Infinity, max2 = -Infinity;
+        for (var b = 0; b < poly2.length; b++) {
+          var dot2 = poly2[b].x * normal.x + poly2[b].y * normal.y;
+          if (dot2 < min2) min2 = dot2;
+          if (dot2 > max2) max2 = dot2;
+        }
+
+        if (max1 - tolerance < min2 || max2 - tolerance < min1) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  // Checks if furniture unit f collides with any other unit in allFurn
+  function checkFurnitureCollision(f, allFurn, ignoreId) {
+    if (!f || !allFurn || !allFurn.length) return { collided: false };
+    var polyF = getFurniturePolygon(f);
+    var elev1 = f.elevation !== undefined ? f.elevation : ((f.pos && f.pos.z) || 0);
+    var h1 = (f.dimensions && f.dimensions.H) || 2100;
+    var top1 = elev1 + h1;
+
+    for (var i = 0; i < allFurn.length; i++) {
+      var other = allFurn[i];
+      if (other.id === f.id || (ignoreId && other.id === ignoreId)) continue;
+      var elev2 = other.elevation !== undefined ? other.elevation : ((other.pos && other.pos.z) || 0);
+      var h2 = (other.dimensions && other.dimensions.H) || 2100;
+      var top2 = elev2 + h2;
+
+      // If vertical elevation ranges do not overlap (e.g. wall cabinet above floor base unit), allow
+      if (top1 <= elev2 + 5 || top2 <= elev1 + 5) continue;
+
+      var polyOther = getFurniturePolygon(other);
+      if (polygonsIntersect(polyF, polyOther, 5)) {
+        return { collided: true, other: other };
+      }
+    }
+    return { collided: false };
   }
 
   /* ─────────────────────────────────────────────────────────────────────────────
@@ -4024,6 +4148,10 @@
     MODEL_RATES_MATRIX: MODEL_RATES_MATRIX,
     resolveModelType: resolveModelType,
     parseUnitsCSV: parseUnitsCSV,
-    importUnitsFromCSV: importUnitsFromCSV
+    importUnitsFromCSV: importUnitsFromCSV,
+    calculateCornerAngle: calculateCornerAngle,
+    getFurniturePolygon: getFurniturePolygon,
+    polygonsIntersect: polygonsIntersect,
+    checkFurnitureCollision: checkFurnitureCollision
   };
 });

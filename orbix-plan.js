@@ -40,6 +40,8 @@
     this.wallChainStart = null;
     this.cursorWorld = { x: 0, y: 0 };
     this.numericInputBuffer = '';
+    this.clipboard = [];
+    this.pasteCount = 0;
 
     // 2D Measurement Unit System: 'mm' | 'imperial' (feet & inches)
     this.unitSystem = 'mm';
@@ -448,8 +450,11 @@
 
       if (self.dragState && self.dragState.type === 'move_vertex') {
         var snapped = self.snapPoint(self.cursorWorld, self.dragState.wallId);
-        self.dragState.vertexRef.x = snapped.pt.x;
-        self.dragState.vertexRef.y = snapped.pt.y;
+        var refs = self.dragState.connectedRefs || [self.dragState.vertexRef];
+        for (var cr = 0; cr < refs.length; cr++) {
+          refs[cr].x = snapped.pt.x;
+          refs[cr].y = snapped.pt.y;
+        }
         self.render();
         return;
       }
@@ -461,6 +466,18 @@
         self.dragState.wall.start.y = self.dragState.origStart.y + dy;
         self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
         self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
+        if (self.dragState.connectedStart) {
+          for (var cs = 0; cs < self.dragState.connectedStart.length; cs++) {
+            self.dragState.connectedStart[cs].ref.x = self.dragState.connectedStart[cs].orig.x + dx;
+            self.dragState.connectedStart[cs].ref.y = self.dragState.connectedStart[cs].orig.y + dy;
+          }
+        }
+        if (self.dragState.connectedEnd) {
+          for (var ce = 0; ce < self.dragState.connectedEnd.length; ce++) {
+            self.dragState.connectedEnd[ce].ref.x = self.dragState.connectedEnd[ce].orig.x + dx;
+            self.dragState.connectedEnd[ce].ref.y = self.dragState.connectedEnd[ce].orig.y + dy;
+          }
+        }
         self.render();
         return;
       }
@@ -479,6 +496,10 @@
             break;
           }
         }
+        // Collision check with other furniture units (SAT OBB + Elevation)
+        var colCheck = Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
+        self.dragState.hasCollision = colCheck.collided;
+        self.dragState.collidedWith = colCheck.other;
         self.render();
         return;
       }
@@ -504,11 +525,29 @@
 
     window.addEventListener('mouseup', function () {
       if (self.dragState) {
-        if (self.dragState.type === 'move_vertex' || self.dragState.type === 'move_wall' || self.dragState.type === 'move_furniture' || self.dragState.type === 'move_opening') {
-          self.pushHistory('Move ' + (self.dragState.type === 'move_furniture' ? 'Furniture' : 'Wall'));
+        if (self.dragState.type === 'move_furniture') {
+          if (self.dragState.hasCollision) {
+            // Revert invalid overlapping placement!
+            self.dragState.furniture.pos.x = self.dragState.origPos.x;
+            self.dragState.furniture.pos.y = self.dragState.origPos.y;
+            self.dragState.hasCollision = false;
+            self.dragState = null;
+            self.render();
+            if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.showToast) {
+              window.OrbixUI.showToast('Overlap detected! Placement reverted.', 'warning');
+            }
+            return;
+          }
+          self.pushHistory('Move Furniture');
+        } else if (self.dragState.type === 'move_vertex' || self.dragState.type === 'move_wall' || self.dragState.type === 'move_opening') {
+          self.pushHistory('Move Wall');
         }
         self.dragState = null;
         self.render();
+        if (typeof window !== 'undefined' && window.OrbixUI) {
+          if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
+          if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+        }
       }
     });
 
@@ -539,6 +578,16 @@
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
         e.preventDefault();
         self.redo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        self.copySelected();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        self.pasteClipboard();
         return;
       }
       // 1. Numeric and Imperial typing for exact wall length (when drawing wall)
@@ -592,21 +641,31 @@
         self.deleteSelected();
         return;
       }
-      if (e.key === 'r' || e.key === 'R') {
+      if (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        var rotated = false;
         for (var s = 0; s < self.selected.length; s++) {
           if (self.selected[s].type === 'furniture') {
-            for (var f = 0; f < self.project.plan.furniture.length; f++) {
-              if (self.project.plan.furniture[f].id === self.selected[s].id) {
-                self.project.plan.furniture[f].rotY = ((self.project.plan.furniture[f].rotY || 0) + Math.PI / 2) % (Math.PI * 2);
-                self.pushHistory('Rotate Furniture');
-                self.render();
-                if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.render3DHome) {
-                  window.OrbixUI.render3DHome();
-                }
-                return;
+            var fn = self.getFurniture ? self.getFurniture(self.selected[s].id) : null;
+            if (!fn) {
+              for (var f = 0; f < self.project.plan.furniture.length; f++) {
+                if (self.project.plan.furniture[f].id === self.selected[s].id) { fn = self.project.plan.furniture[f]; break; }
               }
             }
+            if (fn) {
+              fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+              rotated = true;
+            }
           }
+        }
+        if (rotated) {
+          self.pushHistory('Rotate Furniture');
+          self.render();
+          if (typeof window !== 'undefined' && window.OrbixUI) {
+            if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
+            if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+          }
+          return;
         }
         // Fallback: rotate active 3D Studio unit if any
         if (typeof window !== 'undefined' && window.S && window.S.units && window.S.units[window.S.active]) {
@@ -617,8 +676,9 @@
                 self.project.plan.furniture[f2].rotY = ((self.project.plan.furniture[f2].rotY || 0) + Math.PI / 2) % (Math.PI * 2);
                 self.pushHistory('Rotate Furniture');
                 self.render();
-                if (window.OrbixUI && window.OrbixUI.render3DHome) {
-                  window.OrbixUI.render3DHome();
+                if (window.OrbixUI) {
+                  if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
+                  if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
                 }
                 return;
               }
@@ -648,11 +708,41 @@
         var w = this.getWall(this.selected[s].id);
         if (w) {
           if (Vec2.dist(worldPt, w.start) < 200) {
-            this.dragState = { type: 'move_vertex', wallId: w.id, vertexRef: w.start };
+            var connected = [w.start];
+            if (w.startLocked !== false) {
+              var allW = (this.project && this.project.plan && this.project.plan.walls) || [];
+              for (var ci = 0; ci < allW.length; ci++) {
+                var ow = allW[ci];
+                if (ow.id === w.id) continue;
+                if (Vec2.dist(ow.start, w.start) < 30 && ow.startLocked !== false) connected.push(ow.start);
+                if (Vec2.dist(ow.end, w.start) < 30 && ow.endLocked !== false) connected.push(ow.end);
+              }
+            }
+            this.dragState = {
+              type: 'move_vertex',
+              wallId: w.id,
+              vertexRef: w.start,
+              connectedRefs: connected
+            };
             return;
           }
           if (Vec2.dist(worldPt, w.end) < 200) {
-            this.dragState = { type: 'move_vertex', wallId: w.id, vertexRef: w.end };
+            var connected = [w.end];
+            if (w.endLocked !== false) {
+              var allW = (this.project && this.project.plan && this.project.plan.walls) || [];
+              for (var ci2 = 0; ci2 < allW.length; ci2++) {
+                var ow2 = allW[ci2];
+                if (ow2.id === w.id) continue;
+                if (Vec2.dist(ow2.start, w.end) < 30 && ow2.startLocked !== false) connected.push(ow2.start);
+                if (Vec2.dist(ow2.end, w.end) < 30 && ow2.endLocked !== false) connected.push(ow2.end);
+              }
+            }
+            this.dragState = {
+              type: 'move_vertex',
+              wallId: w.id,
+              vertexRef: w.end,
+              connectedRefs: connected
+            };
             return;
           }
         }
@@ -660,7 +750,7 @@
     }
 
     // Check if clicked an opening
-    var openings = this.project.plan.openings;
+    var openings = this.project.plan.openings || [];
     for (var o = 0; o < openings.length; o++) {
       var op = openings[o];
       var ow = this.getWall(op.wallId);
@@ -684,13 +774,12 @@
       }
     }
 
-    // Check if clicked a furniture unit
+    // Check if clicked a furniture unit (Supports rotated OBBs!)
     var furnList = this.project.plan.furniture || [];
-    for (var f = 0; f < furnList.length; f++) {
+    for (var f = furnList.length - 1; f >= 0; f--) {
       var fn = furnList[f];
-      var halfW = (fn.dimensions.W || 1200) / 2;
-      var halfD = (fn.dimensions.D || 600) / 2;
-      if (Math.abs(worldPt.x - fn.pos.x) < halfW && Math.abs(worldPt.y - fn.pos.y) < halfD) {
+      var poly = Core.getFurniturePolygon(fn);
+      if (Core.Vec2.pointInPolygon(worldPt, poly)) {
         this.selected = [{ type: 'furniture', id: fn.id }];
         this.dragState = {
           type: 'move_furniture',
@@ -709,12 +798,41 @@
     if (near) {
       if (!isShift) this.selected = [];
       this.selected.push({ type: 'wall', id: near.wall.id });
+      var connStart = [];
+      var connEnd = [];
+      var allWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
+      if (near.wall.startLocked !== false) {
+        for (var i = 0; i < allWalls.length; i++) {
+          var cw = allWalls[i];
+          if (cw.id === near.wall.id) continue;
+          if (Vec2.dist(cw.start, near.wall.start) < 30 && cw.startLocked !== false) {
+            connStart.push({ ref: cw.start, orig: Vec2.clone(cw.start) });
+          }
+          if (Vec2.dist(cw.end, near.wall.start) < 30 && cw.endLocked !== false) {
+            connStart.push({ ref: cw.end, orig: Vec2.clone(cw.end) });
+          }
+        }
+      }
+      if (near.wall.endLocked !== false) {
+        for (var j = 0; j < allWalls.length; j++) {
+          var dw = allWalls[j];
+          if (dw.id === near.wall.id) continue;
+          if (Vec2.dist(dw.start, near.wall.end) < 30 && dw.startLocked !== false) {
+            connEnd.push({ ref: dw.start, orig: Vec2.clone(dw.start) });
+          }
+          if (Vec2.dist(dw.end, near.wall.end) < 30 && dw.endLocked !== false) {
+            connEnd.push({ ref: dw.end, orig: Vec2.clone(dw.end) });
+          }
+        }
+      }
       this.dragState = {
         type: 'move_wall',
         wall: near.wall,
         startWorld: Vec2.clone(worldPt),
         origStart: Vec2.clone(near.wall.start),
-        origEnd: Vec2.clone(near.wall.end)
+        origEnd: Vec2.clone(near.wall.end),
+        connectedStart: connStart,
+        connectedEnd: connEnd
       };
       this.onSelectionChange(this.selected);
       this.render();
@@ -860,6 +978,73 @@
     return null;
   };
 
+  PlanEditor.prototype.getFurniture = function (id) {
+    var list = (this.project && this.project.plan && this.project.plan.furniture) || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) return list[i];
+    }
+    return null;
+  };
+
+  PlanEditor.prototype.copySelected = function () {
+    if (!this.selected || this.selected.length === 0) return;
+    this.clipboard = [];
+    this.pasteCount = 0;
+    for (var s = 0; s < this.selected.length; s++) {
+      var item = this.selected[s];
+      if (item.type === 'furniture') {
+        var fn = this.getFurniture(item.id);
+        if (fn) {
+          this.clipboard.push({ type: 'furniture', data: JSON.parse(JSON.stringify(fn)) });
+        }
+      }
+    }
+  };
+
+  PlanEditor.prototype.pasteClipboard = function () {
+    if (!this.clipboard || this.clipboard.length === 0) return;
+    this.pasteCount = (this.pasteCount || 0) + 1;
+    var offsetDist = 120 * this.pasteCount;
+    var newSelected = [];
+
+    for (var i = 0; i < this.clipboard.length; i++) {
+      var entry = this.clipboard[i];
+      if (entry.type === 'furniture') {
+        var orig = entry.data;
+        var newId = 'furn_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
+        var newFurn = JSON.parse(JSON.stringify(orig));
+        newFurn.id = newId;
+        newFurn.name = (orig.name || 'Unit') + ' (Copy)';
+        newFurn.pos = {
+          x: Math.round((orig.pos.x + offsetDist) / 50) * 50,
+          y: Math.round((orig.pos.y + offsetDist) / 50) * 50,
+          z: orig.pos.z || 0
+        };
+        var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
+        for (var rm = 0; rm < rooms.length; rm++) {
+          if (rooms[rm].polygon && Core.Vec2.pointInPolygon(newFurn.pos, rooms[rm].polygon)) {
+            newFurn.roomId = rooms[rm].id;
+            break;
+          }
+        }
+        if (!this.project.plan.furniture) this.project.plan.furniture = [];
+        this.project.plan.furniture.push(newFurn);
+        newSelected.push({ type: 'furniture', id: newId });
+      }
+    }
+
+    if (newSelected.length > 0) {
+      this.selected = newSelected;
+      this.pushHistory('Paste Object(s)');
+      this.onSelectionChange(this.selected);
+      this.render();
+      if (typeof window !== 'undefined' && window.OrbixUI) {
+        if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
+        if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+      }
+    }
+  };
+
   PlanEditor.prototype.resize = function () {
     var dpr = window.devicePixelRatio || 1;
     var w = this.container.clientWidth || 800;
@@ -935,6 +1120,12 @@
 
     // 4. Openings (Doors & Windows)
     this.renderOpenings(ctx);
+
+    // 4b. Architectural Segmented Dimensions & Witness Lines (A, B, 1, 2)
+    this.renderAllWallDimensions(ctx);
+
+    // 4c. Wall Corner Angles (90°, 45°, 135°, arbitrary)
+    this.renderCornerAngles(ctx);
 
     // 5. Furniture Units (2D footprints)
     this.renderFurniture(ctx);
@@ -1097,187 +1288,564 @@
       ctx.lineWidth = isSelected ? 2 : 1;
       ctx.stroke();
 
-      // Architectural Dimension line along wall
-      var lMm = Core.wallLength(w);
-      if (lMm > 150 && this.zoom > 0.03) {
-        var norm = Core.wallNormal(w);
-        var halfT = (w.thickness || 150) / 2;
-        var dimOffset = halfT + 220; // offset in world mm from wall center
-
-        var dsWorld = { x: w.start.x + norm.x * dimOffset, y: w.start.y + norm.y * dimOffset };
-        var deWorld = { x: w.end.x + norm.x * dimOffset, y: w.end.y + norm.y * dimOffset };
-
-        var sDs = this.worldToScreen(dsWorld);
-        var sDe = this.worldToScreen(deWorld);
-
-        // Extension witness lines
-        var wsOff = this.worldToScreen({ x: w.start.x + norm.x * (halfT + 30), y: w.start.y + norm.y * (halfT + 30) });
-        var weOff = this.worldToScreen({ x: w.end.x + norm.x * (halfT + 30), y: w.end.y + norm.y * (halfT + 30) });
-        var dsExt = this.worldToScreen({ x: dsWorld.x + norm.x * 50, y: dsWorld.y + norm.y * 50 });
-        var deExt = this.worldToScreen({ x: deWorld.x + norm.x * 50, y: deWorld.y + norm.y * 50 });
-
-        ctx.strokeStyle = isSelected ? '#1B4F72' : 'rgba(108, 104, 98, 0.65)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(wsOff.x, wsOff.y); ctx.lineTo(dsExt.x, dsExt.y);
-        ctx.moveTo(weOff.x, weOff.y); ctx.lineTo(deExt.x, deExt.y);
-        ctx.stroke();
-
-        // Main dimension line
-        ctx.strokeStyle = isSelected ? '#1B4F72' : '#8C857B';
-        ctx.lineWidth = isSelected ? 1.5 : 1;
-        ctx.beginPath();
-        ctx.moveTo(sDs.x, sDs.y);
-        ctx.lineTo(sDe.x, sDe.y);
-        ctx.stroke();
-
-        // Architectural 45-degree ticks
-        var wallAngle = Math.atan2(w.end.y - w.start.y, w.end.x - w.start.x);
-        var tickAngle = wallAngle + Math.PI / 4;
-        var tickLen = 6;
-        ctx.strokeStyle = isSelected ? '#1B4F72' : '#33302B';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(sDs.x - Math.cos(tickAngle) * tickLen, sDs.y - Math.sin(tickAngle) * tickLen);
-        ctx.lineTo(sDs.x + Math.cos(tickAngle) * tickLen, sDs.y + Math.sin(tickAngle) * tickLen);
-        ctx.moveTo(sDe.x - Math.cos(tickAngle) * tickLen, sDe.y - Math.sin(tickAngle) * tickLen);
-        ctx.lineTo(sDe.x + Math.cos(tickAngle) * tickLen, sDe.y + Math.sin(tickAngle) * tickLen);
-        ctx.stroke();
-
-        // Dimension text pill badge
-        var midX = (sDs.x + sDe.x) / 2;
-        var midY = (sDs.y + sDe.y) / 2;
-        var textAngle = wallAngle;
-        if (textAngle > Math.PI / 2) textAngle -= Math.PI;
-        else if (textAngle < -Math.PI / 2) textAngle += Math.PI;
-
-        ctx.save();
-        ctx.translate(midX, midY);
-        ctx.rotate(textAngle);
-
-        var dimText = this.formatDim(lMm);
-        ctx.font = isSelected ? '700 11px "IBM Plex Mono", monospace' : '600 10.5px "IBM Plex Mono", monospace';
-        var tw = ctx.measureText(dimText).width;
-        var th = 16;
-
-        ctx.fillStyle = isSelected ? '#1B4F72' : '#FFFFFF';
-        ctx.strokeStyle = isSelected ? '#2E7BB5' : '#8C857B';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(-tw / 2 - 5, -th / 2, tw + 10, th, 3);
-        else ctx.rect(-tw / 2 - 5, -th / 2, tw + 10, th);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = isSelected ? '#FFFFFF' : '#1A1816';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(dimText, 0, 0);
-        ctx.restore();
-      }
-
-      // If selected, draw handles at endpoints
+      // If selected, draw handles at endpoints and joint locks
       if (isSelected) {
         this.renderHandle(ctx, w.start);
         this.renderHandle(ctx, w.end);
+        this.renderLockBadge(ctx, w.start, w.startLocked !== false);
+        this.renderLockBadge(ctx, w.end, w.endLocked !== false);
       }
     }
   };
 
+  PlanEditor.prototype.renderLockBadge = function (ctx, pt, isLocked) {
+    var s = this.worldToScreen(pt);
+    ctx.save();
+    ctx.font = '12px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = isLocked ? '#eff6ff' : '#fef2f2';
+    ctx.strokeStyle = isLocked ? '#2563eb' : '#dc2626';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = isLocked ? '#1e40af' : '#b91c1c';
+    ctx.fillText(isLocked ? '🔒' : '🔓', s.x, s.y);
+    ctx.restore();
+  };
+
+  PlanEditor.prototype.renderCornerAngles = function (ctx) {
+    var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    if (walls.length < 2 || this.zoom < 0.03) return;
+
+    var joints = [];
+    for (var i = 0; i < walls.length; i++) {
+      var w = walls[i];
+      var ends = [w.start, w.end];
+      for (var e = 0; e < 2; e++) {
+        var pt = ends[e];
+        var found = null;
+        for (var j = 0; j < joints.length; j++) {
+          if (Vec2.dist(pt, joints[j].pt) < 30) {
+            found = joints[j];
+            break;
+          }
+        }
+        if (!found) {
+          found = { pt: pt, walls: [] };
+          joints.push(found);
+        }
+        if (found.walls.indexOf(w) === -1) {
+          found.walls.push(w);
+        }
+      }
+    }
+
+    for (var k = 0; k < joints.length; k++) {
+      var jnt = joints[k];
+      if (jnt.walls.length >= 2) {
+        for (var a = 0; a < jnt.walls.length; a++) {
+          for (var b = a + 1; b < jnt.walls.length; b++) {
+            var w1 = jnt.walls[a];
+            var w2 = jnt.walls[b];
+            var deg = Core.calculateCornerAngle(w1, w2, jnt.pt);
+            if (deg >= 20 && deg <= 165) {
+              this.renderCornerAngleBadge(ctx, w1, w2, jnt.pt, deg);
+            }
+          }
+        }
+      }
+    }
+  };
+
+  PlanEditor.prototype.renderCornerAngleBadge = function (ctx, w1, w2, jointPt, deg) {
+    var sJnt = this.worldToScreen(jointPt);
+
+    var d1s = Vec2.dist(w1.start, jointPt);
+    var p1 = d1s < 25 ? w1.end : w1.start;
+    var v1 = { x: p1.x - jointPt.x, y: p1.y - jointPt.y };
+    var l1 = Math.hypot(v1.x, v1.y) || 1;
+    v1.x /= l1; v1.y /= l1;
+
+    var d2s = Vec2.dist(w2.start, jointPt);
+    var p2 = d2s < 25 ? w2.end : w2.start;
+    var v2 = { x: p2.x - jointPt.x, y: p2.y - jointPt.y };
+    var l2 = Math.hypot(v2.x, v2.y) || 1;
+    v2.x /= l2; v2.y /= l2;
+
+    var a1 = Math.atan2(v1.y, v1.x);
+    var a2 = Math.atan2(v2.y, v2.x);
+
+    var midV = { x: v1.x + v2.x, y: v1.y + v2.y };
+    var midL = Math.hypot(midV.x, midV.y);
+    if (midL > 1e-4) {
+      midV.x /= midL; midV.y /= midL;
+    } else {
+      midV = { x: -v1.y, y: v1.x };
+    }
+
+    ctx.save();
+    var arcR = Math.max(16, 280 * this.zoom);
+
+    if (Math.abs(deg - 90) <= 2) {
+      var sqSize = Math.max(12, 180 * this.zoom);
+      var sP1 = { x: sJnt.x + v1.x * sqSize, y: sJnt.y + v1.y * sqSize };
+      var sP2 = { x: sJnt.x + (v1.x + v2.x) * sqSize, y: sJnt.y + (v1.y + v2.y) * sqSize };
+      var sP3 = { x: sJnt.x + v2.x * sqSize, y: sJnt.y + v2.y * sqSize };
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(sP1.x, sP1.y);
+      ctx.lineTo(sP2.x, sP2.y);
+      ctx.lineTo(sP3.x, sP3.y);
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      var diff = a2 - a1;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      ctx.arc(sJnt.x, sJnt.y, arcR, a1, a2, diff < 0);
+      ctx.stroke();
+    }
+
+    var badgeDist = arcR + 14;
+    var sBadge = { x: sJnt.x + midV.x * badgeDist, y: sJnt.y + midV.y * badgeDist };
+    var degTxt = deg + '°';
+    ctx.font = '700 10.5px "IBM Plex Sans", monospace';
+    var tw = ctx.measureText(degTxt).width;
+    ctx.fillStyle = '#eff6ff';
+    ctx.strokeStyle = '#bfdbfe';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(sBadge.x - tw / 2 - 4, sBadge.y - 7, tw + 8, 14, 3);
+    else ctx.rect(sBadge.x - tw / 2 - 4, sBadge.y - 7, tw + 8, 14);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#1e40af';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(degTxt, sBadge.x, sBadge.y);
+    ctx.restore();
+  };
+
+  PlanEditor.prototype.renderSingleOpening = function (ctx, op, w, isGhost) {
+    var isSelected = !isGhost && this.isSelected('opening', op.id);
+    var wDir = Core.wallDirection(w);
+    var wNorm = Core.wallNormal(w);
+    var halfW = op.width / 2;
+
+    var wLen = Core.wallLength(w);
+    var safeOffset = Math.max(halfW, Math.min(wLen - halfW, op.offset));
+    var centerPt = { x: w.start.x + wDir.x * safeOffset, y: w.start.y + wDir.y * safeOffset };
+    var opStart = { x: centerPt.x - wDir.x * halfW, y: centerPt.y - wDir.y * halfW };
+    var opEnd = { x: centerPt.x + wDir.x * halfW, y: centerPt.y + wDir.y * halfW };
+
+    var sStart = this.worldToScreen(opStart);
+    var sEnd = this.worldToScreen(opEnd);
+    var sCenter = this.worldToScreen(centerPt);
+
+    // Clear the wall thickness cutout for opening
+    ctx.fillStyle = '#FBFAF8';
+    var halfT = (w.thickness || 150) / 2;
+    var c1 = this.worldToScreen({ x: opStart.x + wNorm.x * halfT, y: opStart.y + wNorm.y * halfT });
+    var c2 = this.worldToScreen({ x: opEnd.x + wNorm.x * halfT, y: opEnd.y + wNorm.y * halfT });
+    var c3 = this.worldToScreen({ x: opEnd.x - wNorm.x * halfT, y: opEnd.y - wNorm.y * halfT });
+    var c4 = this.worldToScreen({ x: opStart.x - wNorm.x * halfT, y: opStart.y - wNorm.y * halfT });
+
+    ctx.beginPath();
+    ctx.moveTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(c3.x, c3.y); ctx.lineTo(c4.x, c4.y);
+    ctx.closePath();
+    ctx.fill();
+
+    if (isGhost) {
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    if (op.type === 'door') {
+      // Draw Door Swing Arc (Inward Left, Inward Right, Outward Left, Outward Right)
+      var swing = op.swing || 'in-left';
+      var isRight = swing.indexOf('right') !== -1;
+      var isOut = swing.indexOf('out') !== -1;
+
+      var hingePt = isRight ? opEnd : opStart;
+      var sHinge = isRight ? sEnd : sStart;
+      var swingRadiusPx = op.width * this.zoom;
+
+      var normDir = isOut ? { x: -wNorm.x, y: -wNorm.y } : { x: wNorm.x, y: wNorm.y };
+      var leafDir = isRight ? { x: -wDir.x, y: -wDir.y } : { x: wDir.x, y: wDir.y };
+
+      var leafEndWorld = { x: hingePt.x + normDir.x * op.width, y: hingePt.y + normDir.y * op.width };
+      var sLeaf = this.worldToScreen(leafEndWorld);
+
+      ctx.strokeStyle = isSelected ? '#1B4F72' : (isGhost ? '#0284c7' : '#2E7BB5');
+      ctx.lineWidth = isSelected ? 2 : 1.5;
+
+      // Swing leaf line (door slab)
+      ctx.beginPath();
+      ctx.moveTo(sHinge.x, sHinge.y);
+      ctx.lineTo(sLeaf.x, sLeaf.y);
+      ctx.stroke();
+
+      // Dotted quarter arc from closed position along wall to open leaf
+      var startAngle = Math.atan2(leafDir.y, leafDir.x);
+      var endAngle = Math.atan2(normDir.y, normDir.x);
+      var diff = endAngle - startAngle;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.arc(sHinge.x, sHinge.y, swingRadiusPx, startAngle, endAngle, diff < 0);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      // Draw Window Double Line Symbol
+      ctx.strokeStyle = isSelected ? '#1B4F72' : (isGhost ? '#0284c7' : '#2E7BB5');
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(sStart.x, sStart.y); ctx.lineTo(sEnd.x, sEnd.y);
+      ctx.stroke();
+
+      var g1 = this.worldToScreen({ x: opStart.x + wNorm.x * (halfT / 2), y: opStart.y + wNorm.y * (halfT / 2) });
+      var g2 = this.worldToScreen({ x: opEnd.x + wNorm.x * (halfT / 2), y: opEnd.y + wNorm.y * (halfT / 2) });
+      ctx.strokeStyle = isGhost ? '#0284c7' : '#8EADC4';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y);
+      ctx.stroke();
+    }
+
+    // Label
+    ctx.fillStyle = isSelected ? '#1B4F72' : (isGhost ? '#0284c7' : '#2E7BB5');
+    ctx.font = '600 10px "IBM Plex Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText((op.type === 'door' ? 'D ' : 'W ') + this.formatDim(op.width), sCenter.x, sCenter.y - 12);
+  };
+
   PlanEditor.prototype.renderOpenings = function (ctx) {
-    var openings = this.project.plan.openings;
+    var openings = this.project.plan.openings || [];
     for (var i = 0; i < openings.length; i++) {
       var op = openings[i];
       var w = this.getWall(op.wallId);
       if (!w) continue;
+      this.renderSingleOpening(ctx, op, w, false);
+    }
+  };
 
-      var isSelected = this.isSelected('opening', op.id);
-      var wDir = Core.wallDirection(w);
-      var wNorm = Core.wallNormal(w);
-      var halfW = op.width / 2;
+  // Architectural Segmented Dimensions & Extension Witness Lines (Corners A & B, Direction Arrows 1 & 2)
+  PlanEditor.prototype.renderWallDimensions = function (ctx, w, isSelected, options) {
+    options = options || {};
+    var lMm = Core.wallLength(w);
+    if (lMm < 150 || this.zoom < 0.03) return;
 
-      var wLen = Core.wallLength(w);
-      var safeOffset = Math.max(halfW, Math.min(wLen - halfW, op.offset));
-      var centerPt = { x: w.start.x + wDir.x * safeOffset, y: w.start.y + wDir.y * safeOffset };
-      var opStart = { x: centerPt.x - wDir.x * halfW, y: centerPt.y - wDir.y * halfW };
-      var opEnd = { x: centerPt.x + wDir.x * halfW, y: centerPt.y + wDir.y * halfW };
+    var wDir = Core.wallDirection(w);
+    var baseNorm = Core.wallNormal(w);
+    var norm = baseNorm;
 
-      var sStart = this.worldToScreen(opStart);
-      var sEnd = this.worldToScreen(opEnd);
-      var sCenter = this.worldToScreen(centerPt);
+    // Detect exterior normal side away from room interior so dimensions sit outside
+    var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
+    if (rooms.length > 0) {
+      var midW = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
+      var testPos = { x: midW.x + baseNorm.x * 120, y: midW.y + baseNorm.y * 120 };
+      var testNeg = { x: midW.x - baseNorm.x * 120, y: midW.y - baseNorm.y * 120 };
+      var posInside = false, negInside = false;
+      for (var r = 0; r < rooms.length; r++) {
+        if (rooms[r].polygon && Core.Vec2.pointInPolygon(testPos, rooms[r].polygon)) posInside = true;
+        if (rooms[r].polygon && Core.Vec2.pointInPolygon(testNeg, rooms[r].polygon)) negInside = true;
+      }
+      if (posInside && !negInside) {
+        norm = { x: -baseNorm.x, y: -baseNorm.y };
+      }
+    }
 
-      // Clear the wall thickness cutout for opening
-      ctx.fillStyle = '#FBFAF8';
-      var halfT = (w.thickness || 150) / 2;
-      var c1 = this.worldToScreen({ x: opStart.x + wNorm.x * halfT, y: opStart.y + wNorm.y * halfT });
-      var c2 = this.worldToScreen({ x: opEnd.x + wNorm.x * halfT, y: opEnd.y + wNorm.y * halfT });
-      var c3 = this.worldToScreen({ x: opEnd.x - wNorm.x * halfT, y: opEnd.y - wNorm.y * halfT });
-      var c4 = this.worldToScreen({ x: opStart.x - wNorm.x * halfT, y: opStart.y - wNorm.y * halfT });
+    // Collect openings on this wall
+    var wallOpenings = [];
+    var allOpenings = (this.project && this.project.plan && this.project.plan.openings) || [];
+    for (var oi = 0; oi < allOpenings.length; oi++) {
+      if (allOpenings[oi].wallId === w.id) {
+        if (options.previewOpening && options.previewOpening.id === allOpenings[oi].id) {
+          wallOpenings.push(options.previewOpening);
+        } else {
+          wallOpenings.push(allOpenings[oi]);
+        }
+      }
+    }
+    if (options.previewOpening && (!options.previewOpening.id || !wallOpenings.some(function (o) { return o.id === options.previewOpening.id; }))) {
+      wallOpenings.push(options.previewOpening);
+    }
 
+    var hasSelectedOpening = false;
+    for (var so = 0; so < wallOpenings.length; so++) {
+      if (this.isSelected('opening', wallOpenings[so].id) || (options.activeOpeningId === wallOpenings[so].id)) {
+        hasSelectedOpening = true;
+        break;
+      }
+    }
+    var isActive = isSelected || hasSelectedOpening || !!options.previewOpening;
+
+    var halfT = (w.thickness || 150) / 2;
+    var dimOffset = halfT + 220; // offset in world mm from wall center
+
+    var wallAngle = Math.atan2(w.end.y - w.start.y, w.end.x - w.start.x);
+    var textAngle = wallAngle;
+    if (textAngle > Math.PI / 2) textAngle -= Math.PI;
+    else if (textAngle < -Math.PI / 2) textAngle += Math.PI;
+
+    var strokeColor = isActive ? '#2563eb' : '#64748b';
+    var textColor = isActive ? '#1d4ed8' : '#334155';
+    var dotColor = isActive ? '#1d4ed8' : '#64748b';
+
+    var self = this;
+
+    // Helper: Draw bold endpoint letter A or B near corners
+    var drawCornerLabel = function (worldPt, label, alongSign) {
+      var sPos = self.worldToScreen({
+        x: worldPt.x + alongSign * wDir.x * 60 + norm.x * (halfT + 40),
+        y: worldPt.y + alongSign * wDir.y * 60 + norm.y * (halfT + 40)
+      });
+      ctx.save();
+      ctx.font = '700 15px "IBM Plex Sans", -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeText(label, sPos.x, sPos.y);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillText(label, sPos.x, sPos.y);
+      ctx.restore();
+    };
+
+    // Helper: Draw directional arrow inside wall core with segment digit 1 or 2
+    var drawCoreArrow = function (startT, endT, dirToward, digitLabel) {
+      var segLen = Math.abs(endT - startT);
+      if (segLen < 160) return;
+      var midT = (startT + endT) / 2;
+      var midW = { x: w.start.x + wDir.x * midT, y: w.start.y + wDir.y * midT };
+
+      // Unit direction along wall: toward A (-wDir) or toward B (+wDir)
+      var ax = dirToward === 'A' ? -wDir.x : wDir.x;
+      var ay = dirToward === 'A' ? -wDir.y : wDir.y;
+      var anX = -ay, anY = ax;
+
+      ctx.save();
+      // Arrow centerline along wall core
+      var pStart = self.worldToScreen({ x: midW.x - ax * 60, y: midW.y - ay * 60 });
+      var pTip = self.worldToScreen({ x: midW.x + ax * 60, y: midW.y + ay * 60 });
+      ctx.strokeStyle = isActive ? '#2563eb' : 'rgba(100, 116, 139, 0.7)';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(c3.x, c3.y); ctx.lineTo(c4.x, c4.y);
+      ctx.moveTo(pStart.x, pStart.y);
+      ctx.lineTo(pTip.x, pTip.y);
+      ctx.stroke();
+
+      // Arrowhead at pTip
+      var arrowHeadSize = 8;
+      ctx.fillStyle = isActive ? '#2563eb' : '#64748b';
+      ctx.beginPath();
+      ctx.moveTo(pTip.x, pTip.y);
+      ctx.lineTo(pTip.x - ax * arrowHeadSize + anX * (arrowHeadSize * 0.6), pTip.y - ay * arrowHeadSize + anY * (arrowHeadSize * 0.6));
+      ctx.lineTo(pTip.x - ax * (arrowHeadSize * 0.6), pTip.y - ay * (arrowHeadSize * 0.6));
+      ctx.lineTo(pTip.x - ax * arrowHeadSize - anX * (arrowHeadSize * 0.6), pTip.y - ay * arrowHeadSize - anY * (arrowHeadSize * 0.6));
       ctx.closePath();
       ctx.fill();
 
-      if (op.type === 'door') {
-        // Draw Door Swing Arc (Inward Left, Inward Right, Outward Left, Outward Right)
-        var swing = op.swing || 'in-left';
-        var isRight = swing.indexOf('right') !== -1;
-        var isOut = swing.indexOf('out') !== -1;
-
-        var hingePt = isRight ? opEnd : opStart;
-        var sHinge = isRight ? sEnd : sStart;
-        var swingRadiusPx = op.width * this.zoom;
-
-        var normDir = isOut ? { x: -wNorm.x, y: -wNorm.y } : { x: wNorm.x, y: wNorm.y };
-        var leafDir = isRight ? { x: -wDir.x, y: -wDir.y } : { x: wDir.x, y: wDir.y };
-
-        var leafEndWorld = { x: hingePt.x + normDir.x * op.width, y: hingePt.y + normDir.y * op.width };
-        var sLeaf = this.worldToScreen(leafEndWorld);
-
-        ctx.strokeStyle = isSelected ? '#1B4F72' : '#2E7BB5';
-        ctx.lineWidth = isSelected ? 2 : 1.5;
-
-        // Swing leaf line (door slab)
-        ctx.beginPath();
-        ctx.moveTo(sHinge.x, sHinge.y);
-        ctx.lineTo(sLeaf.x, sLeaf.y);
-        ctx.stroke();
-
-        // Dotted quarter arc from closed position along wall to open leaf
-        var startAngle = Math.atan2(leafDir.y, leafDir.x);
-        var endAngle = Math.atan2(normDir.y, normDir.x);
-        var diff = endAngle - startAngle;
-        while (diff < -Math.PI) diff += Math.PI * 2;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-
-        ctx.setLineDash([3, 3]);
-        ctx.beginPath();
-        ctx.arc(sHinge.x, sHinge.y, swingRadiusPx, startAngle, endAngle, diff < 0);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      } else {
-        // Draw Window Double Line Symbol
-        ctx.strokeStyle = isSelected ? '#1B4F72' : '#2E7BB5';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(sStart.x, sStart.y); ctx.lineTo(sEnd.x, sEnd.y);
-        ctx.stroke();
-
-        var g1 = this.worldToScreen({ x: opStart.x + wNorm.x * (halfT / 2), y: opStart.y + wNorm.y * (halfT / 2) });
-        var g2 = this.worldToScreen({ x: opEnd.x + wNorm.x * (halfT / 2), y: opEnd.y + wNorm.y * (halfT / 2) });
-        ctx.strokeStyle = '#8EADC4';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y);
-        ctx.stroke();
-      }
-
-      // Label
-      ctx.fillStyle = '#1B4F72';
-      ctx.font = '600 10px "IBM Plex Sans", sans-serif';
+      // Digit label (1 or 2)
+      var digitScreen = self.worldToScreen({ x: midW.x - ax * 20, y: midW.y - ay * 20 });
+      ctx.font = '700 13px "IBM Plex Sans", -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText((op.type === 'door' ? 'D ' : 'W ') + this.formatDim(op.width), sCenter.x, sCenter.y - 12);
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeText(digitLabel, digitScreen.x, digitScreen.y);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillText(digitLabel, digitScreen.x, digitScreen.y);
+      ctx.restore();
+    };
+
+    // Helper: Draw dimension text pill on screen
+    var drawDimPill = function (midX, midY, text) {
+      ctx.save();
+      ctx.translate(midX, midY);
+      ctx.rotate(textAngle);
+      ctx.font = isActive ? '700 11px "IBM Plex Mono", monospace' : '600 10.5px "IBM Plex Mono", monospace';
+      var tw = ctx.measureText(text).width;
+      var th = 16;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(-tw / 2 - 4, -th / 2, tw + 8, th);
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 0, 0);
+      ctx.restore();
+    };
+
+    // Case 1: Wall with NO openings
+    if (wallOpenings.length === 0) {
+      var dsWorld = { x: w.start.x + norm.x * dimOffset, y: w.start.y + norm.y * dimOffset };
+      var deWorld = { x: w.end.x + norm.x * dimOffset, y: w.end.y + norm.y * dimOffset };
+      var sDs = this.worldToScreen(dsWorld);
+      var sDe = this.worldToScreen(deWorld);
+
+      // Extension witness lines
+      var wsOff = this.worldToScreen({ x: w.start.x + norm.x * (halfT + 15), y: w.start.y + norm.y * (halfT + 15) });
+      var weOff = this.worldToScreen({ x: w.end.x + norm.x * (halfT + 15), y: w.end.y + norm.y * (halfT + 15) });
+      var dsExt = this.worldToScreen({ x: dsWorld.x + norm.x * 45, y: dsWorld.y + norm.y * 45 });
+      var deExt = this.worldToScreen({ x: deWorld.x + norm.x * 45, y: deWorld.y + norm.y * 45 });
+
+      ctx.save();
+      ctx.strokeStyle = isActive ? '#2563eb' : 'rgba(100, 116, 139, 0.6)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(wsOff.x, wsOff.y); ctx.lineTo(dsExt.x, dsExt.y);
+      ctx.moveTo(weOff.x, weOff.y); ctx.lineTo(deExt.x, deExt.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Main dimension line
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = isActive ? 1.5 : 1;
+      ctx.beginPath();
+      ctx.moveTo(sDs.x, sDs.y);
+      ctx.lineTo(sDe.x, sDe.y);
+      ctx.stroke();
+
+      // Circular dots at endpoints
+      ctx.fillStyle = dotColor;
+      ctx.beginPath();
+      ctx.arc(sDs.x, sDs.y, 3.5, 0, Math.PI * 2);
+      ctx.arc(sDe.x, sDe.y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dimension text pill
+      var midX = (sDs.x + sDe.x) / 2;
+      var midY = (sDs.y + sDe.y) / 2;
+      var dimText = this.formatDim(lMm);
+      drawDimPill(midX, midY, dimText);
+
+      // If active, show Corner A, Corner B, and Arrow 1
+      if (isActive) {
+        drawCornerLabel(w.start, 'A', -1);
+        drawCornerLabel(w.end, 'B', 1);
+        drawCoreArrow(0, lMm, 'A', '1');
+      }
+      ctx.restore();
+      return;
+    }
+
+    // Case 2: Wall WITH openings — Segmented architectural dimension chain
+    wallOpenings.sort(function (a, b) { return a.offset - b.offset; });
+
+    // Build ordered list of division offsets: 0 (Corner A), [start, end for each opening], lMm (Corner B)
+    var divs = [0];
+    for (var o = 0; o < wallOpenings.length; o++) {
+      var op = wallOpenings[o];
+      var halfW = op.width / 2;
+      var safeOff = Math.max(halfW, Math.min(lMm - halfW, op.offset));
+      var tStart = Math.max(0, safeOff - halfW);
+      var tEnd = Math.min(lMm, safeOff + halfW);
+      divs.push(tStart);
+      divs.push(tEnd);
+    }
+    divs.push(lMm);
+
+    // Sort and remove duplicates / near duplicates
+    divs.sort(function (a, b) { return a - b; });
+    var cleanDivs = [divs[0]];
+    for (var d = 1; d < divs.length; d++) {
+      if (divs[d] - cleanDivs[cleanDivs.length - 1] > 1) {
+        cleanDivs.push(divs[d]);
+      }
+    }
+
+    ctx.save();
+
+    // 1. Extension lines and dimension points
+    var sDimPts = [];
+    ctx.strokeStyle = isActive ? '#2563eb' : 'rgba(100, 116, 139, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+
+    for (var i = 0; i < cleanDivs.length; i++) {
+      var t = cleanDivs[i];
+      var ptWall = { x: w.start.x + wDir.x * t, y: w.start.y + wDir.y * t };
+      var ptDim = { x: ptWall.x + norm.x * dimOffset, y: ptWall.y + norm.y * dimOffset };
+      var ptExtStart = { x: ptWall.x + norm.x * (halfT + 15), y: ptWall.y + norm.y * (halfT + 15) };
+      var ptExtEnd = { x: ptDim.x + norm.x * 45, y: ptDim.y + norm.y * 45 };
+
+      var sStart = this.worldToScreen(ptExtStart);
+      var sEnd = this.worldToScreen(ptExtEnd);
+      var sDim = this.worldToScreen(ptDim);
+      sDimPts.push(sDim);
+
+      ctx.moveTo(sStart.x, sStart.y);
+      ctx.lineTo(sEnd.x, sEnd.y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 2. Continuous dimension line connecting all points
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = isActive ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.moveTo(sDimPts[0].x, sDimPts[0].y);
+    for (var j = 1; j < sDimPts.length; j++) {
+      ctx.lineTo(sDimPts[j].x, sDimPts[j].y);
+    }
+    ctx.stroke();
+
+    // 3. Circular dots at all witness intersections
+    ctx.fillStyle = dotColor;
+    ctx.beginPath();
+    for (var k = 0; k < sDimPts.length; k++) {
+      ctx.moveTo(sDimPts[k].x + 3.5, sDimPts[k].y);
+      ctx.arc(sDimPts[k].x, sDimPts[k].y, 3.5, 0, Math.PI * 2);
+    }
+    ctx.fill();
+
+    // 4. Segment dimension numbers
+    for (var s = 0; s < cleanDivs.length - 1; s++) {
+      var segLen = cleanDivs[s + 1] - cleanDivs[s];
+      if (segLen > 40) {
+        var p1 = sDimPts[s];
+        var p2 = sDimPts[s + 1];
+        var segMidX = (p1.x + p2.x) / 2;
+        var segMidY = (p1.y + p2.y) / 2;
+        var segText = (this.unitSystem === 'imperial') ? this.formatDim(segLen) : String(Math.round(segLen));
+        drawDimPill(segMidX, segMidY, segText);
+      }
+    }
+
+    // 5. Corner Labels A and B, plus Direction Arrows 1 and 2
+    drawCornerLabel(w.start, 'A', -1);
+    drawCornerLabel(w.end, 'B', 1);
+
+    // Direction arrow 1 in Segment 1 (start to first opening start)
+    var firstOpStartT = cleanDivs.length > 2 ? cleanDivs[1] : 0;
+    drawCoreArrow(0, firstOpStartT, 'A', '1');
+
+    // Direction arrow 2 in Segment 2 (last opening end to end B)
+    var lastOpEndT = cleanDivs.length > 2 ? cleanDivs[cleanDivs.length - 2] : lMm;
+    drawCoreArrow(lastOpEndT, lMm, 'B', '2');
+
+    ctx.restore();
+  };
+
+  PlanEditor.prototype.renderAllWallDimensions = function (ctx) {
+    var walls = this.project.plan.walls || [];
+    for (var i = 0; i < walls.length; i++) {
+      var w = walls[i];
+      var isSelected = this.isSelected('wall', w.id);
+      this.renderWallDimensions(ctx, w, isSelected);
     }
   };
 
@@ -1292,22 +1860,32 @@
       var dPx = dMm * this.zoom;
       var sPos = this.worldToScreen(f.pos);
 
+      var isColliding = (this.dragState && this.dragState.type === 'move_furniture' && this.dragState.hasCollision &&
+        (this.dragState.furniture.id === f.id || (this.dragState.collidedWith && this.dragState.collidedWith.id === f.id)));
+
       ctx.save();
       ctx.translate(sPos.x, sPos.y);
       ctx.rotate(f.rotY || 0);
 
-      // Furniture body boundary
-      ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
-      ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
-
-      ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
-      ctx.lineWidth = isSelected ? 2 : 1.2;
-      ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+      // Furniture body boundary (Red if colliding!)
+      if (isColliding) {
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
+        ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+      } else {
+        ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
+        ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
+        ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
+        ctx.lineWidth = isSelected ? 2 : 1.2;
+        ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+      }
 
       // Shutter dividers
       var numShutters = (f.unitConfig && f.unitConfig.shutters) || (wMm > 1200 ? 3 : wMm > 600 ? 2 : 1);
       if (numShutters > 1) {
-        ctx.strokeStyle = isSelected ? 'rgba(27, 79, 114, 0.35)' : 'rgba(110, 78, 53, 0.25)';
+        ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? 'rgba(27, 79, 114, 0.35)' : 'rgba(110, 78, 53, 0.25)');
         ctx.lineWidth = 1;
         ctx.beginPath();
         for (var s = 1; s < numShutters; s++) {
@@ -1319,27 +1897,49 @@
       }
 
       // Front Shutter / Door edge (at +dPx/2) - clearly distinguishes front from back
-      ctx.strokeStyle = isSelected ? '#2563eb' : '#92400e';
-      ctx.lineWidth = isSelected ? 3.5 : 2.5;
+      ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? '#2563eb' : '#92400e');
+      ctx.lineWidth = isSelected || isColliding ? 3.5 : 2.5;
       ctx.beginPath();
       ctx.moveTo(-wPx / 2, dPx / 2);
       ctx.lineTo(wPx / 2, dPx / 2);
       ctx.stroke();
 
       // Front handle pill indicator
-      ctx.fillStyle = isSelected ? '#1d4ed8' : '#1f2937';
+      ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
       ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
 
       // Labels: Name + Size
-      ctx.fillStyle = isSelected ? '#1e3a8a' : '#23211E';
+      ctx.fillStyle = isColliding ? '#991b1b' : (isSelected ? '#1e3a8a' : '#23211E');
       ctx.font = '600 10.5px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(f.name, 0, -6);
 
-      ctx.fillStyle = isSelected ? '#1d4ed8' : '#78716c';
+      ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#78716c');
       ctx.font = '500 9px "IBM Plex Mono", monospace';
       ctx.fillText(Math.round(wMm) + ' × ' + Math.round(dMm) + ' mm', 0, 8);
+
+      // Elevation badge if wall mounted (Elevation > 0)
+      var elevMm = f.elevation !== undefined ? f.elevation : ((f.pos && f.pos.z) || 0);
+      if (elevMm > 0) {
+        ctx.fillStyle = '#0284c7';
+        ctx.font = '700 8.5px "IBM Plex Mono", monospace';
+        ctx.fillText('▲ ' + Math.round(elevMm) + ' mm AFFL', 0, 21);
+      }
+
+      // If colliding, draw prominent Overlap Detected warning pill badge
+      if (isColliding) {
+        var warnTxt = '⚠️ Overlap Detected';
+        ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
+        var tw = ctx.measureText(warnTxt).width;
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(-tw / 2 - 6, -dPx / 2 - 22, tw + 12, 17, 4);
+        else ctx.rect(-tw / 2 - 6, -dPx / 2 - 22, tw + 12, 17);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(warnTxt, 0, -dPx / 2 - 13);
+      }
 
       ctx.restore();
     }
@@ -1427,6 +2027,97 @@
       ctx.lineTo(sEnd.x, sEnd.y);
       ctx.stroke();
 
+      // Corner A & B labels and parallel dimension line with witness lines
+      if (distMm > 60) {
+        var gDx = snap.pt.x - this.wallChainStart.x;
+        var gDy = snap.pt.y - this.wallChainStart.y;
+        var gLen = Math.hypot(gDx, gDy) || 1;
+        var gDirX = gDx / gLen, gDirY = gDy / gLen;
+        var gNormX = -gDirY, gNormY = gDirX;
+        var gDimOff = (this.wallPreset.thickness / 2) + 220;
+
+        var gDsWorld = { x: this.wallChainStart.x + gNormX * gDimOff, y: this.wallChainStart.y + gNormY * gDimOff };
+        var gDeWorld = { x: snap.pt.x + gNormX * gDimOff, y: snap.pt.y + gNormY * gDimOff };
+        var sGDs = this.worldToScreen(gDsWorld);
+        var sGDe = this.worldToScreen(gDeWorld);
+
+        // Witness lines
+        var sExtS = this.worldToScreen({ x: this.wallChainStart.x + gNormX * (this.wallPreset.thickness / 2 + 15), y: this.wallChainStart.y + gNormY * (this.wallPreset.thickness / 2 + 15) });
+        var sExtE = this.worldToScreen({ x: snap.pt.x + gNormX * (this.wallPreset.thickness / 2 + 15), y: snap.pt.y + gNormY * (this.wallPreset.thickness / 2 + 15) });
+        var sExtSTip = this.worldToScreen({ x: gDsWorld.x + gNormX * 45, y: gDsWorld.y + gNormY * 45 });
+        var sExtETip = this.worldToScreen({ x: gDeWorld.x + gNormX * 45, y: gDeWorld.y + gNormY * 45 });
+
+        ctx.save();
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(sExtS.x, sExtS.y); ctx.lineTo(sExtSTip.x, sExtSTip.y);
+        ctx.moveTo(sExtE.x, sExtE.y); ctx.lineTo(sExtETip.x, sExtETip.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Main dimension line
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(sGDs.x, sGDs.y); ctx.lineTo(sGDe.x, sGDe.y);
+        ctx.stroke();
+
+        // Dots at endpoints
+        ctx.fillStyle = '#1d4ed8';
+        ctx.beginPath();
+        ctx.arc(sGDs.x, sGDs.y, 3.5, 0, Math.PI * 2);
+        ctx.arc(sGDe.x, sGDe.y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Direction arrow 1 inside ghost wall pointing towards Corner A
+        var sGMidX = (sStart.x + sEnd.x) / 2;
+        var sGMidY = (sStart.y + sEnd.y) / 2;
+        var ax = -gDirX, ay = -gDirY;
+        var anX = -ay, anY = ax;
+        ctx.fillStyle = '#2563eb';
+        ctx.beginPath();
+        ctx.moveTo(sGMidX + ax * 12, sGMidY + ay * 12);
+        ctx.lineTo(sGMidX + ax * 3 + anX * 5, sGMidY + ay * 3 + anY * 5);
+        ctx.lineTo(sGMidX + ax * 3 - anX * 5, sGMidY + ay * 3 - anY * 5);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.font = '700 13px "IBM Plex Sans", -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeText('1', sGMidX - ax * 14, sGMidY - ay * 14);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillText('1', sGMidX - ax * 14, sGMidY - ay * 14);
+
+        // Corner A label
+        var sALabel = this.worldToScreen({
+          x: this.wallChainStart.x - gDirX * 50 + gNormX * (this.wallPreset.thickness / 2 + 35),
+          y: this.wallChainStart.y - gDirY * 50 + gNormY * (this.wallPreset.thickness / 2 + 35)
+        });
+        ctx.font = '700 15px "IBM Plex Sans", -apple-system, sans-serif';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeText('A', sALabel.x, sALabel.y);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillText('A', sALabel.x, sALabel.y);
+
+        // Corner B label
+        var sBLabel = this.worldToScreen({
+          x: snap.pt.x + gDirX * 50 + gNormX * (this.wallPreset.thickness / 2 + 35),
+          y: snap.pt.y + gDirY * 50 + gNormY * (this.wallPreset.thickness / 2 + 35)
+        });
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeText('B', sBLabel.x, sBLabel.y);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillText('B', sBLabel.x, sBLabel.y);
+        ctx.restore();
+      }
+
       // Dimension & Typing HUD Pill
       var midX = (sStart.x + sEnd.x) / 2;
       var midY = (sStart.y + sEnd.y) / 2 - 14;
@@ -1505,19 +2196,32 @@
       }
     }
 
-    // 3. Opening hover placement preview
+    // 3. Opening hover placement preview with live segmented architectural dimensions
     if (this.activeTool === 'door' || this.activeTool === 'window') {
       var near = this.findNearestWall(this.cursorWorld, 400);
       if (near) {
         var w = near.wall;
+        var wLen = Core.wallLength(w);
         var opWidth = this.activeTool === 'door' ? this.doorPreset.width : this.windowPreset.width;
-        var sProj = this.worldToScreen(near.proj.pt);
+        var halfW = opWidth / 2;
+        var safeOffset = Math.max(halfW + 30, Math.min(wLen - halfW - 30, near.proj.t * wLen));
 
-        ctx.strokeStyle = '#00B4D8';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(sProj.x, sProj.y, (opWidth / 2) * this.zoom, 0, Math.PI * 2);
-        ctx.stroke();
+        var ghostOp = {
+          id: '__preview_opening__',
+          wallId: w.id,
+          type: this.activeTool,
+          width: opWidth,
+          height: this.activeTool === 'door' ? this.doorPreset.height : this.windowPreset.height,
+          sillHeight: this.windowPreset.sillHeight,
+          offset: safeOffset,
+          swing: this.doorPreset.swing
+        };
+
+        // Render ghost opening on wall
+        this.renderSingleOpening(ctx, ghostOp, w, true);
+
+        // Render live segmented dimensions with Corners A & B, Direction Arrows 1 & 2!
+        this.renderWallDimensions(ctx, w, true, { previewOpening: ghostOp, activeOpeningId: '__preview_opening__' });
       }
     }
 

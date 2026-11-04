@@ -27,6 +27,8 @@
           self.saveToLocalStorage();
           self.updateUI();
           self.renderBOQ();
+          if (self.syncProjectUnitsTo3DStudio) self.syncProjectUnitsTo3DStudio();
+          if (self.render3DHome) self.render3DHome(true);
           if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
             window.OrbixProjects.saveActiveProject({
               plan: proj,
@@ -670,7 +672,32 @@
           '<span style="font-size:11px;color:#64748B;">Current: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
+          '<div style="margin:10px 0;padding:8px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">' +
+          '<div style="font-size:11px;font-weight:700;color:#1e293b;margin-bottom:6px;">🔒 Joint Connection Locks</div>' +
+          '<div style="display:flex;gap:8px;">' +
+          '<button class="btn small full" id="inspWallLockA" style="font-size:11px;">' + (w.startLocked !== false ? '🔒 Corner A Locked' : '🔓 Corner A Unlocked') + '</button>' +
+          '<button class="btn small full" id="inspWallLockB" style="font-size:11px;">' + (w.endLocked !== false ? '🔒 Corner B Locked' : '🔓 Corner B Unlocked') + '</button>' +
+          '</div></div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
+
+        var btnLockA = document.getElementById('inspWallLockA');
+        if (btnLockA) {
+          btnLockA.addEventListener('click', function () {
+            w.startLocked = (w.startLocked === false ? true : false);
+            self.editor.pushHistory('Toggle Corner A Lock');
+            self.editor.render();
+            self.renderInspector(self.editor.selected);
+          });
+        }
+        var btnLockB = document.getElementById('inspWallLockB');
+        if (btnLockB) {
+          btnLockB.addEventListener('click', function () {
+            w.endLocked = (w.endLocked === false ? true : false);
+            self.editor.pushHistory('Toggle Corner B Lock');
+            self.editor.render();
+            self.renderInspector(self.editor.selected);
+          });
+        }
 
         document.getElementById('inspWallLen').addEventListener('change', function (e) {
           var targetL = self.editor.parseDimInput(e.target.value);
@@ -712,12 +739,24 @@
           op.offset = Math.max(minOff, Math.min(maxOff, op.offset));
         }
 
+        var distA = Math.round(op.offset - op.width / 2);
+        var distB = Math.round(wallL - (op.offset + op.width / 2));
+
         panel.innerHTML =
           '<div class="insp-title">' + (op.type === 'door' ? 'Door' : 'Window') + ' Properties</div>' +
-          '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspOpW" value="' + op.width + '" min="400" max="3000" step="50"></div>' +
+          '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px;margin-bottom:12px;font-size:11px;font-family:monospace;color:#1e40af;line-height:1.4;">' +
+          '<div style="font-weight:700;margin-bottom:4px;color:#1e3a8a;">📐 Segmented Measurements</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span><b>Corner A (1):</b> ' + distA + ' mm</span>' +
+          '<span><b>Width:</b> ' + Math.round(op.width) + ' mm</span>' +
+          '<span><b>(2) Corner B:</b> ' + distB + ' mm</span>' +
+          '</div></div>' +
+          '<div class="insp-row"><label>Distance from Corner A (1) [mm]</label><input type="number" id="inspOpDistA" value="' + distA + '" min="0" max="' + (wallL - op.width) + '" step="10"></div>' +
+          '<div class="insp-row"><label>Opening Width (mm)</label><input type="number" id="inspOpW" value="' + Math.round(op.width) + '" min="400" max="3000" step="50"></div>' +
+          '<div class="insp-row"><label>Distance to Corner B (2) [mm]</label><input type="number" id="inspOpDistB" value="' + distB + '" min="0" max="' + (wallL - op.width) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspOpH" value="' + op.height + '" min="500" max="3500" step="50"></div>' +
           '<div class="insp-row"><label>Offset along wall (mm)</label><input type="number" id="inspOpOff" value="' + Math.round(op.offset) + '" min="' + minOff + '" max="' + maxOff + '" step="50"></div>' +
-          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Allowed: ' + minOff + ' mm – ' + maxOff + ' mm (Wall: ' + wallL + ' mm)</div>' +
+          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Total Wall Length: ' + wallL + ' mm</div>' +
           (op.type === 'door' ?
             '<div class="insp-row"><label>Swing</label><select id="inspOpSwing">' +
             '<option value="in-left"' + ((op.swing || 'in-left') === 'in-left' ? ' selected' : '') + '>Inward Left</option>' +
@@ -768,6 +807,31 @@
           }
         };
 
+        var elDistA = document.getElementById('inspOpDistA');
+        if (elDistA) {
+          elDistA.addEventListener('change', function (e) {
+            var val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+              var curW = op.width || 800;
+              op.offset = Math.max(curW / 2, Math.min(wallL - curW / 2, Math.round(val + curW / 2)));
+              updateOp();
+              self.renderInspector(self.editor.selected);
+            }
+          });
+        }
+        var elDistB = document.getElementById('inspOpDistB');
+        if (elDistB) {
+          elDistB.addEventListener('change', function (e) {
+            var val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+              var curW = op.width || 800;
+              op.offset = Math.max(curW / 2, Math.min(wallL - curW / 2, Math.round(wallL - val - curW / 2)));
+              updateOp();
+              self.renderInspector(self.editor.selected);
+            }
+          });
+        }
+
         ['input', 'change'].forEach(function (evt) {
           var elW = document.getElementById('inspOpW');
           if (elW) elW.addEventListener(evt, updateOp);
@@ -811,29 +875,65 @@
         var shuttersCount = (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1);
         var drawersCount = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? fn.unitConfig.drawers : 0;
 
+        if (!fn.shutterColors) fn.shutterColors = [];
+        if (!fn.shutterMaterials) fn.shutterMaterials = [];
+        if (!fn.shutterStates) fn.shutterStates = [];
+
+        var curElev = (fn.elevation !== undefined) ? fn.elevation : (fn.pos.z || (fn.category === 'kitchen_wall' ? 1500 : 0));
+
+        var shutterItemsHtml = '';
+        for (var s = 0; s < shuttersCount; s++) {
+          var sColor = fn.shutterColors[s] || (shutterFinish.indexOf('White') !== -1 ? '#edebe4' : shutterFinish.indexOf('Sage') !== -1 ? '#7a8875' : shutterFinish.indexOf('Oak') !== -1 ? '#c8b293' : '#6e4e35');
+          var sMat = fn.shutterMaterials[s] || shutterFinish;
+          var sOpen = !!(fn.shutterStates && fn.shutterStates[s]);
+
+          shutterItemsHtml +=
+            '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;margin-bottom:6px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+            '<span style="font-weight:600;font-size:11px;color:#334155;">Shutter ' + (s + 1) + ' (' + (s % 2 === 0 ? 'Left' : 'Right') + ')</span>' +
+            '<button class="btn small inspShutterToggle" data-sidx="' + s + '" style="font-size:10px;padding:2px 8px;background:' + (sOpen ? '#10b981' : '#f1f5f9') + ';color:' + (sOpen ? '#ffffff' : '#334155') + ';border-color:' + (sOpen ? '#059669' : '#cbd5e1') + '">' + (sOpen ? 'Open 🚪' : 'Closed') + '</button>' +
+            '</div>' +
+            '<div style="display:flex;gap:6px;align-items:center;">' +
+            '<input type="color" class="inspShutterColorInput" data-sidx="' + s + '" value="' + sColor + '" style="width:28px;height:24px;padding:0;border:1px solid #cbd5e1;border-radius:4px;cursor:pointer;">' +
+            '<select class="inspShutterMatSelect" data-sidx="' + s + '" style="flex:1;font-size:11px;padding:3px 4px;border:1px solid #cbd5e1;border-radius:4px;">' +
+            '<option value="Brazilian Horizontal Walnut"' + (sMat.indexOf('Walnut') !== -1 ? ' selected' : '') + '>Brazilian Walnut</option>' +
+            '<option value="Absolute White"' + (sMat.indexOf('White') !== -1 || sMat.indexOf('Gloss') !== -1 ? ' selected' : '') + '>Absolute White Gloss</option>' +
+            '<option value="Sage Green Matte"' + (sMat.indexOf('Sage') !== -1 ? ' selected' : '') + '>Sage Green Matte</option>' +
+            '<option value="Sonoma Oak"' + (sMat.indexOf('Oak') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
+            '<option value="Concrete Look"' + (sMat.indexOf('Concrete') !== -1 ? ' selected' : '') + '>Concrete Look</option>' +
+            '</select>' +
+            '</div>' +
+            '</div>';
+        }
+
         panel.innerHTML =
           '<div class="insp-title">Modular Unit Properties</div>' +
           '<div class="insp-row"><label>Item Name</label><input type="text" id="inspFurnName" value="' + fn.name + '"></div>' +
           '<div class="insp-row"><label>Room Assignment</label><select id="inspFurnRoom">' + roomOptions + '</select></div>' +
+          '<div class="insp-row"><label>Elevation from Floor (mm)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
+          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Standard: 0 mm (Base) / 1500 mm (Wall-Mounted)</div>' +
           '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspFurnW" value="' + fn.dimensions.W + '" step="50"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspFurnH" value="' + fn.dimensions.H + '" step="50"></div>' +
           '<div class="insp-row"><label>Depth (mm)</label><input type="number" id="inspFurnD" value="' + fn.dimensions.D + '" step="50"></div>' +
           '<div class="insp-row"><label>Shutters</label><input type="number" id="inspFurnShutters" value="' + shuttersCount + '" min="0" max="8"></div>' +
           '<div class="insp-row"><label>Drawers</label><input type="number" id="inspFurnDrawers" value="' + drawersCount + '" min="0" max="6"></div>' +
-          '<div class="insp-row"><label>Shutter Finish</label><select id="inspFurnShutterCol">' +
-            '<option value="Brazilian Horizontal Walnut"' + (shutterFinish.indexOf('Walnut') !== -1 ? ' selected' : '') + '>Brazilian Walnut</option>' +
-            '<option value="Absolute White"' + (shutterFinish.indexOf('White') !== -1 || shutterFinish.indexOf('Gloss') !== -1 ? ' selected' : '') + '>Absolute White Gloss</option>' +
-            '<option value="Sage Green Matte"' + (shutterFinish.indexOf('Sage') !== -1 ? ' selected' : '') + '>Sage Green Matte</option>' +
-            '<option value="Sonoma Oak"' + (shutterFinish.indexOf('Oak') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
-            '<option value="Concrete Look"' + (shutterFinish.indexOf('Concrete') !== -1 ? ' selected' : '') + '>Concrete Look</option>' +
-          '</select></div>' +
           '<div class="insp-row"><label>Carcass</label><select id="inspFurnCarcass">' +
             '<option value="Absolute White"' + (carcassFinish.indexOf('White') !== -1 ? ' selected' : '') + '>Absolute White (BWP)</option>' +
             '<option value="Brazilian Horizontal Walnut"' + (carcassFinish.indexOf('Walnut') !== -1 ? ' selected' : '') + '>Walnut Woodgrain</option>' +
             '<option value="Sonoma Oak"' + (carcassFinish.indexOf('Oak') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
           '</select></div>' +
+          '<div style="margin:12px 0 8px 0;padding:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+          '<span style="font-weight:700;font-size:11.5px;color:#1e3a8a;">🚪 Shutters & Hinges</span>' +
+          '<div style="display:flex;gap:4px;">' +
+          '<button class="btn small" id="inspShutterOpenAll" style="font-size:10px;padding:2px 6px;">Open All</button>' +
+          '<button class="btn small" id="inspShutterCloseAll" style="font-size:10px;padding:2px 6px;">Close All</button>' +
+          '<button class="btn small" id="inspShutterApplyAll" style="font-size:10px;padding:2px 6px;">Apply to All</button>' +
+          '</div></div>' +
+          shutterItemsHtml +
+          '</div>' +
           '<button class="btn primary full" id="inspOpen3DStudio" style="margin-top:8px">📐 Open &amp; Customize in 3D Studio</button>' +
-          '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (R)</button>' +
+          '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (Space)</button>' +
           '<button class="btn danger full" id="inspDelFurn" style="margin-top:8px">Delete Unit</button>';
 
         function syncInspectorTo3D() {
@@ -870,6 +970,17 @@
           self.renderBOQ();
           self.editor.render();
         });
+        var elElev = document.getElementById('inspFurnElev');
+        if (elElev) {
+          elElev.addEventListener('change', function (e) {
+            fn.elevation = parseFloat(e.target.value) || 0;
+            if (fn.pos) fn.pos.z = fn.elevation;
+            self.editor.pushHistory('Change Unit Elevation');
+            self.saveToLocalStorage();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
         document.getElementById('inspFurnW').addEventListener('change', function (e) {
           fn.dimensions.W = parseFloat(e.target.value);
           syncInspectorTo3D();
@@ -877,7 +988,7 @@
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnH').addEventListener('change', function (e) {
           fn.dimensions.H = parseFloat(e.target.value);
@@ -886,7 +997,7 @@
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnD').addEventListener('change', function (e) {
           fn.dimensions.D = parseFloat(e.target.value);
@@ -895,7 +1006,7 @@
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnShutters').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
@@ -905,7 +1016,7 @@
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnDrawers').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
@@ -915,20 +1026,86 @@
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
-        document.getElementById('inspFurnShutterCol').addEventListener('change', function (e) {
-          if (!fn.materials) fn.materials = {};
-          if (!fn.materials.shutter) fn.materials.shutter = { material: 'HDHMR_18MM' };
-          fn.materials.shutter.finish = e.target.value;
-          if (!fn.unitConfig) fn.unitConfig = {};
-          fn.unitConfig.shutterCol = e.target.value;
-          syncInspectorTo3D();
-          self.editor.pushHistory('Change Shutter Finish');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+
+        // Bulk Shutter Controls
+        var btnOpenAll = document.getElementById('inspShutterOpenAll');
+        if (btnOpenAll) {
+          btnOpenAll.addEventListener('click', function () {
+            if (!fn.shutterStates) fn.shutterStates = [];
+            for (var i = 0; i < shuttersCount; i++) fn.shutterStates[i] = true;
+            self.editor.pushHistory('Open All Shutters');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var btnCloseAll = document.getElementById('inspShutterCloseAll');
+        if (btnCloseAll) {
+          btnCloseAll.addEventListener('click', function () {
+            if (!fn.shutterStates) fn.shutterStates = [];
+            for (var i = 0; i < shuttersCount; i++) fn.shutterStates[i] = false;
+            self.editor.pushHistory('Close All Shutters');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var btnApplyAll = document.getElementById('inspShutterApplyAll');
+        if (btnApplyAll) {
+          btnApplyAll.addEventListener('click', function () {
+            var col0 = (fn.shutterColors && fn.shutterColors[0]) || '#6e4e35';
+            var mat0 = (fn.shutterMaterials && fn.shutterMaterials[0]) || shutterFinish;
+            if (!fn.shutterColors) fn.shutterColors = [];
+            if (!fn.shutterMaterials) fn.shutterMaterials = [];
+            for (var i = 0; i < shuttersCount; i++) {
+              fn.shutterColors[i] = col0;
+              fn.shutterMaterials[i] = mat0;
+            }
+            self.editor.pushHistory('Apply Shutter Style to All');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        // Individual Shutter Controls
+        var toggles = panel.querySelectorAll('.inspShutterToggle');
+        toggles.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var idx = parseInt(btn.getAttribute('data-sidx'));
+            if (!fn.shutterStates) fn.shutterStates = [];
+            fn.shutterStates[idx] = !fn.shutterStates[idx];
+            self.editor.pushHistory('Toggle Shutter ' + (idx + 1));
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        });
+
+        var colorInputs = panel.querySelectorAll('.inspShutterColorInput');
+        colorInputs.forEach(function (inp) {
+          inp.addEventListener('change', function () {
+            var idx = parseInt(inp.getAttribute('data-sidx'));
+            if (!fn.shutterColors) fn.shutterColors = [];
+            fn.shutterColors[idx] = inp.value;
+            self.editor.pushHistory('Change Shutter ' + (idx + 1) + ' Color');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        });
+
+        var matSelects = panel.querySelectorAll('.inspShutterMatSelect');
+        matSelects.forEach(function (sel) {
+          sel.addEventListener('change', function () {
+            var idx = parseInt(sel.getAttribute('data-sidx'));
+            if (!fn.shutterMaterials) fn.shutterMaterials = [];
+            fn.shutterMaterials[idx] = sel.value;
+            self.editor.pushHistory('Change Shutter ' + (idx + 1) + ' Material');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+          });
         });
         document.getElementById('inspFurnCarcass').addEventListener('change', function (e) {
           if (!fn.materials) fn.materials = {};

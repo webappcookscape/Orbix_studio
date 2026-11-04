@@ -2954,24 +2954,30 @@ function camApply(){
 (function(){
   var pts={}, lastD=0;
   var downAt=null, hDrag=null, furnDrag=null;
+  var studioCamMode = 'rotate'; // 'rotate' (orbit) | 'pan' (move centre) | 'interact' (move furniture)
 
   stage.addEventListener("contextmenu", function(e){ e.preventDefault(); });
 
-  // Hover feedback: show 'pointer' cursor over 3D furniture units
+  // Hover feedback: show 'pointer' cursor over 3D furniture units when in interact mode
   stage.addEventListener("pointermove", function(e){
     if(furnDrag || hDrag || Object.keys(pts).length > 0) return;
-    if(GL.ok && GL.pickFurniture){
+    if(studioCamMode === 'interact' && GL.ok && GL.pickFurniture){
       var fHit = GL.pickFurniture(e.clientX, e.clientY);
       stage.style.cursor = fHit ? "pointer" : "";
+    } else if(studioCamMode === 'pan'){
+      stage.style.cursor = "move";
+    } else {
+      stage.style.cursor = "";
     }
   });
 
-  // Capture phase: Handle furniture and room resize handles first
+  // Capture phase: Handle furniture only when in interact mode, or room resize handles
   stage.addEventListener("pointerdown", function(e){
     downAt={ x: e.clientX, y: e.clientY, t: Date.now() };
 
-    // 1. Check if clicking on a 3D furniture unit to drag or select
-    if(GL.ok && GL.pickFurniture && e.button === 0){
+    // 1. Only drag furniture if explicitly in 'interact' mode!
+    // In 'rotate' or 'pan' mode, clicking/dragging operates strictly on camera!
+    if(studioCamMode === 'interact' && GL.ok && GL.pickFurniture && e.button === 0){
       var fHit = GL.pickFurniture(e.clientX, e.clientY);
       if(fHit){
         var homeObj = (GL.getScene && GL.getScene()) ? GL.getScene().getObjectByName('OrbixHome3D') : null;
@@ -3154,7 +3160,7 @@ function camApply(){
     } else {
       var dx = e.clientX - prev.clientX;
       var dy = e.clientY - prev.clientY;
-      if(prev.button === 2 || prev.button === 1 || e.shiftKey){
+      if(prev.button === 2 || prev.button === 1 || e.shiftKey || studioCamMode === 'pan'){
         // Pan camera target across floor plane
         var yawRad = cam.yaw * Math.PI / 180;
         var cosY = Math.cos(yawRad), sinY = Math.sin(yawRad);
@@ -3189,6 +3195,33 @@ function camApply(){
     cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom - e.deltaY * 0.0016));
     camApply();
   }, { passive: false });
+
+  // Wire 3D Camera Controls: Rotate View, Move Centre, Move Unit, Re-Centre
+  var btnCamRot = document.getElementById('camRotateModeBtn');
+  var btnCamPan = document.getElementById('camPanModeBtn');
+  var btnCamInt = document.getElementById('camInteractModeBtn');
+  var btnCamReset = document.getElementById('camResetCentreBtn');
+
+  function setStudioCamMode(mode){
+    studioCamMode = mode;
+    if(btnCamRot) btnCamRot.classList.toggle('is-on', mode === 'rotate');
+    if(btnCamPan) btnCamPan.classList.toggle('is-on', mode === 'pan');
+    if(btnCamInt) btnCamInt.classList.toggle('is-on', mode === 'interact');
+    stage.style.cursor = mode === 'pan' ? 'move' : '';
+  }
+
+  if(btnCamRot) btnCamRot.addEventListener('click', function(){ setStudioCamMode('rotate'); });
+  if(btnCamPan) btnCamPan.addEventListener('click', function(){ setStudioCamMode('pan'); });
+  if(btnCamInt) btnCamInt.addEventListener('click', function(){ setStudioCamMode('interact'); });
+  if(btnCamReset) btnCamReset.addEventListener('click', function(){
+    cam.yaw = 35;
+    cam.pitch = 28;
+    cam.zoom = 0;
+    var tgt = GL.getTarget ? GL.getTarget() : null;
+    if(tgt){ tgt.x = 0; tgt.z = 0; }
+    camApply();
+    if(GL.ok) GL.settle();
+  });
 })();
 
 /* ══════════ RAIL ══════════ */
