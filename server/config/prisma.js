@@ -21,6 +21,18 @@ let lastError = null;
 async function checkDatabaseConnection() {
   try {
     await prisma.$queryRaw`SELECT 1`;
+
+    // Auto-migration: ensure required columns exist in PostgreSQL
+    try {
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+        ALTER TABLE project_shares ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+        ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+      `);
+    } catch (migErr) {
+      console.warn('Auto-migration column check notice:', migErr.message);
+    }
+
     isConnected = true;
     lastError = null;
     return true;
@@ -31,7 +43,7 @@ async function checkDatabaseConnection() {
   }
 }
 
-// Initial connection check
+// Initial connection check on module load
 checkDatabaseConnection().then(ok => {
   if (ok) {
     console.log('✓ Prisma connected to PostgreSQL live database.');
@@ -74,4 +86,3 @@ module.exports = {
   get isConnected() { return isConnected; },
   get lastError() { return lastError; }
 };
-

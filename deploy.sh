@@ -86,6 +86,10 @@ if command -v psql &> /dev/null; then
     sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';" 2>/dev/null || true
     # Create cupboard_cad database if it doesn't exist
     sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = 'cupboard_cad'" 2>/dev/null | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE cupboard_cad OWNER postgres;" 2>/dev/null || true
+    # Ensure all required schema columns exist in PostgreSQL
+    sudo -u postgres psql -d cupboard_cad -c "ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;" 2>/dev/null || true
+    sudo -u postgres psql -d cupboard_cad -c "ALTER TABLE project_shares ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;" 2>/dev/null || true
+    sudo -u postgres psql -d cupboard_cad -c "ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;" 2>/dev/null || true
     # Purge legacy demo accounts from PostgreSQL
     sudo -u postgres psql -d cupboard_cad -c "DELETE FROM users WHERE id IN ('usr_dev', 'usr_alex', 'usr_priya') OR email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in');" 2>/dev/null || true
 fi
