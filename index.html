@@ -292,6 +292,7 @@
         <div class="stagebar">
           <div class="legend" id="legend"></div>
           <div class="viewbtns">
+            <button class="minibtn is-on" id="viewFocusUnitBtn" title="Toggle between focusing on the active modular unit or viewing the full architectural home" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus Unit</button>
             <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
             <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
             <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
@@ -425,37 +426,51 @@
               <option value="1500">1500 mm</option>
               <option value="1800">1800 mm</option>
             </select>
-            <button class="plan-tool-btn" data-tool="furniture" title="Place Modular Furniture (F)">🗄️ + Furniture</button>
-            <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="max-width:240px">
-              <optgroup label="Imported Modular Units (Catalog)">
-                <option value="fm-rt-01" selected>fm-rt-01: FCM -RT Kitchen Base (1200x750)</option>
-                <option value="wm-01">wm-01: WM 1200 Kitchen Wall (1200x600)</option>
-                <option value="W-01">W-01: Master Bed 2-Door Wardrobe (1200x2100)</option>
-                <option value="W-02">W-02: Master Bed 3-Door + Loft (1800x2100+600)</option>
-                <option value="W-03">W-03: 2-Door Glass Profile Sliding (1800x2400)</option>
-                <option value="CR-01">CR-01: Fluted Glass Hutch · Walnut (900x2100)</option>
-                <option value="TV-01">TV-01: Living TV Media Entertainment (2400x1800)</option>
-                <option value="K-01">K-01: Kitchen Lower Base Run (3000x850)</option>
-                <option value="K-02">K-02: Kitchen Upper Wall Cabinets (3000x700)</option>
-              </optgroup>
-              <optgroup label="Standard Library">
-                <option value="w2d">2-Door Wardrobe (900mm)</option>
-                <option value="w3d">3-Door Wardrobe (1350mm)</option>
-                <option value="w4d">4-Door Master Wardrobe (1800mm)</option>
-                <option value="w_slide">2-Door Sliding Wardrobe (1800mm)</option>
-                <option value="fm-01">FM 600 Kitchen Base (600mm)</option>
-                <option value="k_base">Kitchen Base Run (3000mm)</option>
-                <option value="k_wall">Kitchen Wall Run (3000mm)</option>
-                <option value="k_tall">Kitchen Tall Pantry (600mm)</option>
-                <option value="k_island">Kitchen Island (1500mm)</option>
-                <option value="tv_media">TV Media Wall (2100mm)</option>
-                <option value="crockery">Crockery Unit (1200mm)</option>
-                <option value="vanity">Vanity / Dresser (1000mm)</option>
-                <option value="shoe_rack">Shoe Cabinet (1000mm)</option>
-                <option value="bed_queen">Queen Bed (1600mm)</option>
-                <option value="bed_king">King Bed (1900mm)</option>
-              </optgroup>
-            </select>
+            <!-- Restyled Modular Furniture Selector & Catalog Trigger -->
+            <div class="furn-picker-toolbar-widget" id="furnPickerWidget">
+              <button class="plan-tool-btn furn-place-btn" data-tool="furniture" id="planFurnitureBtn" title="Place Modular Furniture on Floor Plan (Hotkey F)">
+                <span class="furn-tool-icon">🗄️</span>
+                <span class="furn-tool-text">+ Furniture</span>
+              </button>
+              <button class="furn-active-badge-btn" id="openFurnCatalogBtn" type="button" title="Browse full modular furniture catalog & search">
+                <span class="furn-badge-icon" id="planFurnActiveIcon">🍳</span>
+                <span class="furn-badge-info">
+                  <span class="furn-badge-title" id="planFurnActiveName">FCM -RT (Kitchen Base)</span>
+                  <span class="furn-badge-dims" id="planFurnActiveDims">1200×750</span>
+                </span>
+                <span class="furn-badge-chevron">▾</span>
+              </button>
+              <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="display:none;" aria-hidden="true">
+                <optgroup label="Imported Modular Units (Catalog)">
+                  <option value="fm-rt-01" selected>fm-rt-01: FCM -RT Kitchen Base (1200x750)</option>
+                  <option value="wm-01">wm-01: WM 1200 Kitchen Wall (1200x600)</option>
+                  <option value="W-01">W-01: Master Bed 2-Door Wardrobe (1200x2100)</option>
+                  <option value="W-02">W-02: Master Bed 3-Door + Loft (1800x2100+600)</option>
+                  <option value="W-03">W-03: 2-Door Glass Profile Sliding (1800x2400)</option>
+                  <option value="CR-01">CR-01: Fluted Glass Hutch · Walnut (900x2100)</option>
+                  <option value="TV-01">TV-01: Living TV Media Entertainment (2400x1800)</option>
+                  <option value="K-01">K-01: Kitchen Lower Base Run (3000x850)</option>
+                  <option value="K-02">K-02: Kitchen Upper Wall Cabinets (3000x700)</option>
+                </optgroup>
+                <optgroup label="Standard Library">
+                  <option value="w2d">2-Door Wardrobe (900mm)</option>
+                  <option value="w3d">3-Door Wardrobe (1350mm)</option>
+                  <option value="w4d">4-Door Master Wardrobe (1800mm)</option>
+                  <option value="w_slide">2-Door Sliding Wardrobe (1800mm)</option>
+                  <option value="fm-01">FM 600 Kitchen Base (600mm)</option>
+                  <option value="k_base">Kitchen Base Run (3000mm)</option>
+                  <option value="k_wall">Kitchen Wall Run (3000mm)</option>
+                  <option value="k_tall">Kitchen Tall Pantry (600mm)</option>
+                  <option value="k_island">Kitchen Island (1500mm)</option>
+                  <option value="tv_media">TV Media Wall (2100mm)</option>
+                  <option value="crockery">Crockery Unit (1200mm)</option>
+                  <option value="vanity">Vanity / Dresser (1000mm)</option>
+                  <option value="shoe_rack">Shoe Cabinet (1000mm)</option>
+                  <option value="bed_queen">Queen Bed (1600mm)</option>
+                  <option value="bed_king">King Bed (1900mm)</option>
+                </optgroup>
+              </select>
+            </div>
             <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">✂️ Split</button>
           </div>
 
@@ -818,6 +833,93 @@
         <button type="submit" class="btn primary" id="loginSubmitBtn">Sign In</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ══════ MODAL: MODULAR FURNITURE CATALOG & LIVE SEARCH ══════ -->
+<div class="orbix-modal" id="modalFurnitureCatalog">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog furn-catalog-dialog">
+    <div class="modal-head furn-modal-head">
+      <div class="furn-modal-title-area">
+        <div class="furn-modal-tag"><span class="pulse-dot"></span> Modular Units Library</div>
+        <h3 class="modal-title">Modular Furniture Catalog</h3>
+        <p class="modal-sub">Browse standard &amp; imported units with parametric 3D CAD customization &amp; real-time costing</p>
+      </div>
+      <button class="modal-close-btn" type="button" id="closeFurnCatalogModal" title="Close (Esc)">&times;</button>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="furn-catalog-filter-bar">
+      <div class="furn-search-input-wrap">
+        <span class="furn-search-icon">🔍</span>
+        <input type="text" id="furnCatalogSearch" class="furn-search-input" placeholder="Search by unit name, code, category, or dimensions (e.g. FCM, FM 600, 1200, Wardrobe, Kitchen, TV)..." autocomplete="off" spellcheck="false">
+        <button type="button" class="furn-search-clear-btn" id="furnSearchClearBtn" title="Clear search" style="display:none;">✕</button>
+      </div>
+      <div class="furn-category-pills" id="furnCategoryPills">
+        <button type="button" class="furn-cat-pill is-active" data-cat="all">All Units <span class="pill-count" id="furnCountAll">25</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="kitchen_base">🍳 Kitchen Base <span class="pill-count" id="furnCountKBase">4</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="kitchen_wall">🎛️ Kitchen Wall <span class="pill-count" id="furnCountKWall">2</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="wardrobe">🚪 Wardrobes &amp; Lofts <span class="pill-count" id="furnCountWardrobe">6</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="tv_unit">📺 TV Media Walls <span class="pill-count" id="furnCountTV">2</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="crockery">🍷 Crockery &amp; Hutch <span class="pill-count" id="furnCountCrockery">2</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="vanity">🪞 Vanity &amp; Shoes <span class="pill-count" id="furnCountVanity">2</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="bed">🛏️ Beds <span class="pill-count" id="furnCountBed">2</span></button>
+      </div>
+    </div>
+
+    <div class="modal-body furn-catalog-body">
+      <!-- Featured Spotlight Card: FCM -RT (Kitchen Base) (1200×750) -->
+      <div class="furn-spotlight-card" id="furnSpotlightCard">
+        <div class="spotlight-left">
+          <div class="spotlight-icon">🍳</div>
+          <div class="spotlight-info">
+            <div class="spotlight-badge-row">
+              <span class="spotlight-pill">⭐ FEATURED KITCHEN BASE</span>
+              <span class="spotlight-code">code: fm-rt-01</span>
+            </div>
+            <h4 class="spotlight-title">FCM -RT (Kitchen Base)</h4>
+            <div class="spotlight-dims">
+              <span class="dim-chip"><b>W</b> 1200 mm</span>
+              <span class="dim-chip"><b>H</b> 750 mm</span>
+              <span class="dim-chip"><b>D</b> 550 mm</span>
+              <span class="spec-chip">1 Shutter · Slab · G-Profile Black Handle</span>
+            </div>
+            <div class="spotlight-materials">
+              <span>Shutter: <b>HDHMR 18mm (Absolute White)</b></span>
+              <span>Carcass: <b>BWP 18mm Waterproof</b></span>
+            </div>
+          </div>
+        </div>
+        <div class="spotlight-action">
+          <div class="spotlight-price">₹ 17,398.79 <small>Est. base</small></div>
+          <button type="button" class="btn primary furn-select-btn" id="spotlightSelectFCMBtn" data-furn-id="fm-rt-01">🎯 Select &amp; Place</button>
+        </div>
+      </div>
+
+      <!-- Live Units Count & Search Status -->
+      <div class="furn-results-status" id="furnResultsStatus">
+        Showing <b id="furnShowingCount">25</b> units in catalog
+      </div>
+
+      <!-- Dynamic Cards Grid -->
+      <div class="furn-catalog-grid" id="furnCatalogGrid"></div>
+
+      <!-- Empty Results State -->
+      <div class="furn-empty-state" id="furnEmptyState" style="display:none;">
+        <div class="empty-icon">🔍</div>
+        <h4>No modular units found</h4>
+        <p>No units matched your query "<span id="furnSearchQueryTerm"></span>". Try searching for "FCM", "FM 600", "Wardrobe", "1200", or "Kitchen".</p>
+        <button type="button" class="btn small" id="furnResetSearchBtn">Reset Search Filters</button>
+      </div>
+    </div>
+
+    <div class="modal-foot furn-modal-foot">
+      <div class="furn-modal-foot-hint">
+        💡 <b>Tip:</b> Click any unit to select it for 2D floor plan drawing or 3D CAD customization.
+      </div>
+      <button type="button" class="btn modal-close-btn-foot" id="closeFurnCatalogFootBtn">Close</button>
+    </div>
   </div>
 </div>
 

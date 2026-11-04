@@ -114,7 +114,42 @@ function toast(m){
   clearTimeout(toast._t); toast._t=setTimeout(function(){ t.classList.remove("show"); },2400);
 }
 function lam(code){
-  for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code===code) return LAMINATES[i];
+  if(!code) return LAMINATES[0];
+  var c = String(code).trim();
+  var cLower = c.toLowerCase();
+  // 1. Exact match on code
+  for(var i=0;i<LAMINATES.length;i++){
+    if(LAMINATES[i].code === c || LAMINATES[i].code.toLowerCase() === cLower) return LAMINATES[i];
+  }
+  // 2. Exact match on name
+  for(var i=0;i<LAMINATES.length;i++){
+    if(LAMINATES[i].name.toLowerCase() === cLower) return LAMINATES[i];
+  }
+  // 3. Keyword / alias mapping for imported & catalog finish names
+  if(cLower.indexOf('walnut') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 3410' || LAMINATES[i].name.toLowerCase().indexOf('walnut') !== -1) return LAMINATES[i];
+  }
+  if(cLower.indexOf('white') !== -1 || cLower.indexOf('bw_') !== -1 || cLower.indexOf('hdhmr') !== -1 || cLower.indexOf('bwp') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 1135') return LAMINATES[i];
+  }
+  if(cLower.indexOf('gloss') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 6601' || LAMINATES[i].kind === 'gloss') return LAMINATES[i];
+  }
+  if(cLower.indexOf('sage') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 7701') return LAMINATES[i];
+  }
+  if(cLower.indexOf('oak') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 2204') return LAMINATES[i];
+  }
+  if(cLower.indexOf('wenge') !== -1 || cLower.indexOf('dark') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 3411') return LAMINATES[i];
+  }
+  if(cLower.indexOf('concrete') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 5501' || LAMINATES[i].code === 'MDF 8801') return LAMINATES[i];
+  }
+  if(cLower.indexOf('teak') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 2210') return LAMINATES[i];
+  }
   return LAMINATES[0];
 }
 
@@ -1470,7 +1505,6 @@ function buildScene(){
       var L=sceneLayouts();
       if(GL.ok) GL.show(L); else cssRender(L,u0);
     }
-    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
     camApply();
     return;
   }
@@ -2056,22 +2090,15 @@ var GL=(function(){
   }
   function show(L){
     clear();
-    // When OrbixHome3D is rendering the 3D floor plan with placed furniture,
-    // all furniture units are rendered directly in their 3D room positions by ArchitecturalRenderer.
-    // If OrbixHome3D has furniture, root is kept clear to avoid duplicate overlapping meshes.
     var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
     var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
-    if(homeObj && homeObj.children && homeObj.children.length > 0 && plan && plan.furniture && plan.furniture.length > 0){
-      root.position.set(0, 0, 0);
-      root.rotation.y = 0;
-      return;
-    }
 
     // Position root to match active furniture unit's floor plan coordinates
-    var furnPos = null, furnRot = 0;
-    if(plan && plan.furniture){
-      var activeU = U();
-      if(activeU && activeU._furnId){
+    var furnPos = null, furnRot = 0, activeFurnId = null;
+    var activeU = U();
+    if(activeU && activeU._furnId){
+      activeFurnId = activeU._furnId;
+      if(plan && plan.furniture){
         var match = plan.furniture.find(function(f){ return f.id === activeU._furnId; });
         if(match && match.pos){
           furnPos = match.pos;
@@ -2079,6 +2106,22 @@ var GL=(function(){
         }
       }
     }
+
+    // When OrbixHome3D is rendering the 3D floor plan with placed furniture,
+    // hide the active unit's static mesh in homeObj so root (which has full parametric
+    // textures, door styles, handles, hinges, and animations) renders it seamlessly!
+    if(homeObj && homeObj.children && homeObj.children.length > 0){
+      homeObj.traverse(function(obj){
+        if(obj.userData && obj.userData.isFurnitureGroup){
+          if(activeFurnId && obj.userData.furnitureId === activeFurnId){
+            obj.visible = false;
+          } else {
+            obj.visible = true;
+          }
+        }
+      });
+    }
+
     if(furnPos){
       root.position.set(furnPos.x, furnPos.z || 0, furnPos.y);
       root.rotation.y = -furnRot;
@@ -2289,22 +2332,33 @@ var GL=(function(){
     }
     return null;
   }
-  function frame(){
+  function frame(forceMode){
     if(!ok) return;
-    /* bounds of the home or furniture */
-    var box=new THREE.Box3();
-    var homeObj=scene ? scene.getObjectByName('OrbixHome3D') : null;
-    if(homeObj && homeObj.children.length>0){
+    var mode = forceMode || window.Orbix3DViewMode || 'unit';
+    var box = new THREE.Box3();
+    var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+
+    // 1. In 'unit' mode, frame the active unit's parametric model in root
+    if (mode === 'unit' && root && root.children.length > 0) {
+      root.updateMatrixWorld(true);
+      root.traverse(function(o){ if(o.isMesh && !o.userData.noFrame) box.expandByObject(o); });
+    }
+
+    // 2. In 'home' mode, or if root was empty, frame the full architectural house
+    if (box.isEmpty() && homeObj && homeObj.children.length > 0) {
       homeObj.updateMatrixWorld(true);
       homeObj.traverse(function(o){ if(o.isMesh && o.visible) box.expandByObject(o); });
       if(box.isEmpty()){
         homeObj.traverse(function(o){ if(o.isMesh) box.expandByObject(o); });
       }
     }
-    if(box.isEmpty()){
+
+    // 3. Fallback to root
+    if (box.isEmpty() && root && root.children.length > 0) {
       root.updateMatrixWorld(true);
       root.traverse(function(o){ if(o.isMesh && !o.userData.noFrame) box.expandByObject(o); });
     }
+
     if(box.isEmpty()) return;
     if(box.max.y-box.min.y<100) box.max.y=box.min.y+1500;
     var size=box.getSize(new THREE.Vector3()), c=box.getCenter(new THREE.Vector3());
@@ -2318,7 +2372,7 @@ var GL=(function(){
     var r=stage.getBoundingClientRect(), aspect=(r.width&&r.height)?r.width/r.height:1.6;
     var t=Math.tan(camera.fov*Math.PI/360);
     var dH=(size.y*1.06)/(2*t), dW=(Math.hypot(size.x,size.z)*0.78)/(2*t*aspect);
-    var k = homeObj ? 1.25 : (ROOM.id ? 1.16 : (U().ctype==="kitchen") ? 1.34 : /^(tv|crockery|dresser)$/.test(U().ctype||"") ? 1.18 : 1.12);
+    var k = (mode === 'home' && homeObj) ? 1.25 : (ROOM.id ? 1.16 : 1.22);
     dist=Math.max(dH,dW)*k+size.z*0.5;
   }
   function updateWallCutaway(){
@@ -3237,6 +3291,15 @@ function renderRail(){
       S.active=i;
       renderRail();
       renderAll();
+      var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+      var rot = 0;
+      if(u && u._furnId && plan && plan.furniture){
+        var f = plan.furniture.find(function(it){ return it.id === u._furnId; });
+        if(f) rot = f.rotY || 0;
+      }
+      cam.yaw = -(rot * 180 / Math.PI) - 24;
+      cam.pitch = -10;
+      if(GL.ok){ GL.frame('unit'); camApply(); }
       if(u._furnId && window.OrbixUI && window.OrbixUI.highlight3DFurniture){
         window.OrbixUI.highlight3DFurniture(u._furnId);
       }
@@ -4051,7 +4114,17 @@ function setView(v){
       window.OrbixUI.syncProjectUnitsTo3DStudio();
     }
     if(typeof buildScene === 'function') buildScene();
-    if(window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') window.OrbixUI.render3DHome();
+    if(window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') window.OrbixUI.render3DHome(true);
+
+    // Frame camera on the active unit
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    var actU = U(), rot = 0;
+    if(actU && actU._furnId && plan && plan.furniture){
+      var f = plan.furniture.find(function(it){ return it.id === actU._furnId; });
+      if(f) rot = f.rotY || 0;
+    }
+    cam.yaw = -(rot * 180 / Math.PI) - 24;
+    cam.pitch = -10;
     fit(); camApply();
   }
   if(v==="panels") renderPanels();
@@ -4073,7 +4146,47 @@ $all(".vtab").forEach(function(b){ b.addEventListener("click",function(e){
     setView(target);
   }
 }); });
-$("#frontBtn").addEventListener("click",function(){ cam.yaw=0; cam.pitch=-2; camApply(); });
+
+function getActiveUnitRotation(){
+  var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+  var actU = U();
+  if(actU && actU._furnId && plan && plan.furniture){
+    var f = plan.furniture.find(function(it){ return it.id === actU._furnId; });
+    if(f) return f.rotY || 0;
+  }
+  return 0;
+}
+
+$("#frontBtn").addEventListener("click",function(){
+  var rot = getActiveUnitRotation();
+  cam.yaw = -(rot * 180 / Math.PI);
+  cam.pitch = -2;
+  camApply();
+});
+
+(function(){
+  var b=$("#viewFocusUnitBtn"); if(!b) return;
+  window.Orbix3DViewMode = 'unit';
+  b.addEventListener("click",function(){
+    if(window.Orbix3DViewMode === 'unit'){
+      window.Orbix3DViewMode = 'home';
+      b.textContent = '🏠 Full House';
+      b.classList.remove('is-on');
+      b.style.background = '#2563eb';
+      b.style.borderColor = '#1d4ed8';
+      toast("3D View: Framing full architectural home");
+    } else {
+      window.Orbix3DViewMode = 'unit';
+      b.textContent = '🎯 Focus Unit';
+      b.classList.add('is-on');
+      b.style.background = '#059669';
+      b.style.borderColor = '#047857';
+      toast("3D View: Framing active unit for customization");
+    }
+    if(GL.ok){ GL.frame(); camApply(); }
+  });
+})();
+
 (function(){
   var b=$("#openBtn"); if(!b) return;
   b.addEventListener("click",function(){
@@ -4108,8 +4221,18 @@ $("#frontBtn").addEventListener("click",function(){ cam.yaw=0; cam.pitch=-2; cam
     }
   });
 })();
-$("#isoBtn").addEventListener("click",function(){ var u=U(); if(u && u.ctype==="kitchen"){ cam.yaw=-34; cam.pitch=-17; cam.zoom=-0.12; } else { cam.yaw=-26; cam.pitch=-7; } camApply(); });
-$("#sideBtn").addEventListener("click",function(){ cam.yaw=-62; cam.pitch=-4; camApply(); });
+$("#isoBtn").addEventListener("click",function(){
+  var rot = getActiveUnitRotation();
+  cam.yaw = -(rot * 180 / Math.PI) - 28;
+  cam.pitch = -12;
+  camApply();
+});
+$("#sideBtn").addEventListener("click",function(){
+  var rot = getActiveUnitRotation();
+  cam.yaw = -(rot * 180 / Math.PI) - 90;
+  cam.pitch = -2;
+  camApply();
+});
 
 /* ═══════════════════════════════════════════════════════════════
    DRILLING — System 32 boring positions

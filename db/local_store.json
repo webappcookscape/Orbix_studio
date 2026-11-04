@@ -15,7 +15,11 @@
       "id": "usr_sangathamizh",
       "name": "Sangathamizh",
       "username": "sangathamizh",
+<<<<<<< Updated upstream
       "email": "designteam.cookscape@gmail.com",
+=======
+      "email": "sangathamizh@cookscape.com",
+>>>>>>> Stashed changes
       "password": "admin123",
       "role": "admin",
       "designation": "Business Head",
@@ -74,7 +78,7 @@
       "created_by": "usr_dev",
       "owner_name": "Dev Kancheti",
       "owner_email": "dev@orbixstudio.io",
-      "units_count": 1,
+      "units_count": 2,
       "boards_est": 6,
       "data": {
         "units": [
@@ -102,6 +106,31 @@
             "counter": "black",
             "carcass": "Absolute White",
             "shutterCol": "Brazilian Horizontal Walnut"
+          },
+          {
+            "label": "FM 600 (Kitchen Base)",
+            "ctype": "kbase",
+            "_furnId": "furn_xg0fejmbg",
+            "W": 600,
+            "H": 750,
+            "D": 550,
+            "T": 18,
+            "type": "hinged",
+            "shutters": 1,
+            "sections": 1,
+            "shelves": 1,
+            "drawers": 0,
+            "drawerH": 180,
+            "loft": false,
+            "loftH": 600,
+            "loftShutters": 2,
+            "back": 18,
+            "dstyle": "slab",
+            "handle": "gprof",
+            "hfinish": "black",
+            "counter": "black",
+            "carcass": "BWP_18mm",
+            "shutterCol": "HDHMR_18mm"
           }
         ],
         "plan": {
@@ -118,7 +147,11 @@
             "dateCreated": "31 Oct 2026",
             "validUntil": "30 Nov 2026",
             "status": "approved",
+<<<<<<< Updated upstream
             "dateModified": "2026-11-03T11:53:58.217Z"
+=======
+            "dateModified": "2026-11-02T14:29:49.167Z"
+>>>>>>> Stashed changes
           },
           "plan": {
             "gridSize": 100,
@@ -345,7 +378,7 @@
             "rooms": [
               {
                 "id": "room_cfjb9onkf",
-                "name": "Living Room",
+                "name": "Modular Kitchen",
                 "type": "bedroom",
                 "wallIds": [
                   "wall_irfoc18jb",
@@ -476,8 +509,8 @@
                 "category": "kitchen_base",
                 "roomId": "room_cfjb9onkf",
                 "pos": {
-                  "x": 2850,
-                  "y": 900,
+                  "x": -33450,
+                  "y": 350,
                   "z": 0
                 },
                 "rotY": 0,
@@ -506,6 +539,51 @@
                   "hfinish": "black",
                   "carcass": "Absolute White",
                   "shutterCol": "Brazilian Horizontal Walnut",
+                  "ctype": "kbase",
+                  "type": "hinged",
+                  "loft": false,
+                  "loftH": 600,
+                  "back": 18
+                },
+                "pricingOverrides": null,
+                "notes": ""
+              },
+              {
+                "id": "furn_xg0fejmbg",
+                "name": "FM 600 (Kitchen Base)",
+                "category": "kitchen_base",
+                "roomId": "room_cfjb9onkf",
+                "pos": {
+                  "x": 2100,
+                  "y": 3400,
+                  "z": 0
+                },
+                "rotY": 0,
+                "dimensions": {
+                  "W": 600,
+                  "H": 750,
+                  "D": 550
+                },
+                "materials": {
+                  "shutter": {
+                    "material": "HDHMR_18MM",
+                    "finish": "HDHMR_18mm"
+                  },
+                  "carcass": {
+                    "material": "BWP_18MM",
+                    "finish": "BWP_18mm"
+                  }
+                },
+                "unitConfig": {
+                  "shutters": 1,
+                  "shelves": 1,
+                  "drawers": 0,
+                  "dstyle": "slab",
+                  "counter": "black",
+                  "handle": "gprof",
+                  "hfinish": "black",
+                  "carcass": "BWP_18mm",
+                  "shutterCol": "HDHMR_18mm",
                   "ctype": "kbase",
                   "type": "hinged",
                   "loft": false,
@@ -860,9 +938,15 @@
             }
           },
           "quotationHistory": [],
+<<<<<<< Updated upstream
           "units_count": 1,
           "commercialCharges": {
             "transport": 0,
+=======
+          "units_count": 2,
+          "commercialCharges": {
+            "transport": 2,
+>>>>>>> Stashed changes
             "designCharges": 0,
             "accessories": 0,
             "floorMat": 0,
@@ -873,9 +957,15 @@
             "appliances": 0,
             "civilWorks": 0,
             "loadingUnloading": 0,
+<<<<<<< Updated upstream
             "outstationTransport": 0,
             "discount": 0,
             "finalDiscount": 0,
+=======
+            "outstationTransport": 810,
+            "discount": 150,
+            "finalDiscount": 15,
+>>>>>>> Stashed changes
             "gstPercent": 18
           }
         },
@@ -889,7 +979,11 @@
       "is_shared": false,
       "fork_count": 0,
       "created_at": "2026-10-31T07:29:40.598Z",
+<<<<<<< Updated upstream
       "updated_at": "2026-11-03T12:38:06.130Z"
+=======
+      "updated_at": "2026-11-02T15:06:04.577Z"
+>>>>>>> Stashed changes
     },
     {
       "id": "proj_mvxi3r42nieh",
@@ -1302,6 +1396,12 @@
           "bhName": "tamil",
           "dateTime": "2026-11-01T12:50",
           "cpCode": "CP-741"
+        },
+        "shareNotice": {
+          "noticeId": "sn_share_proj_mvxi3r42nieh",
+          "sharedByName": "Cookscape Admin",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "test — tamil (chennai)"
         }
       },
       "is_shared": false,
@@ -2485,6 +2585,7 @@
           "sharedByName": "Alex Mercer",
           "sharedByDesignation": "Modular Designer",
           "originalTitle": "Lodha Crown — 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)"
+<<<<<<< Updated upstream
         },
         "plan": {
           "schemaVersion": "1.0.0",
@@ -2871,6 +2972,8 @@
             "finalDiscount": 0,
             "gstPercent": 18
           }
+=======
+>>>>>>> Stashed changes
         }
       },
       "is_shared": false,
@@ -3282,6 +3385,15 @@
             "finalDiscount": 0,
             "gstPercent": 18
           }
+<<<<<<< Updated upstream
+=======
+        ],
+        "shareNotice": {
+          "noticeId": "sn_share_proj_palm_tv",
+          "sharedByName": "Priya Sharma",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "Palm Beach Penthouse — Fluted Walnut Media Wall"
+>>>>>>> Stashed changes
         }
       },
       "is_shared": true,
@@ -3693,6 +3805,15 @@
             "finalDiscount": 0,
             "gstPercent": 18
           }
+<<<<<<< Updated upstream
+=======
+        ],
+        "shareNotice": {
+          "noticeId": "sn_share_proj_hiranandani",
+          "sharedByName": "Dev Kancheti",
+          "sharedByDesignation": "Modular Designer",
+          "originalTitle": "Hiranandani Villa — Master Wardrobe & Loft"
+>>>>>>> Stashed changes
         }
       },
       "is_shared": true,

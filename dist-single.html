@@ -1798,6 +1798,641 @@ body.role-employee #adminCreateEmpBox,
   display: none !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   RESTYLED FURNITURE UI: TOOLBAR PICKER & CATALOG MODAL
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. Plan Toolbar Furniture Widget ── */
+.furn-picker-toolbar-widget {
+  display: inline-flex;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  transition: all 0.2s ease;
+}
+.furn-picker-toolbar-widget:hover {
+  border-color: #94A3B8;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+.furn-picker-toolbar-widget.is-tool-active {
+  border-color: #1B4F72;
+  box-shadow: 0 0 0 2px rgba(27, 79, 114, 0.2);
+}
+
+.furn-place-btn {
+  border: none !important;
+  border-radius: 0 !important;
+  background: #F8FAFC !important;
+  color: #1E293B !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  padding: 5px 10px !important;
+  border-right: 1px solid #E2E8F0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.furn-place-btn:hover {
+  background: #EEF2F6 !important;
+  color: #0F172A !important;
+}
+.furn-place-btn.is-active,
+.furn-picker-toolbar-widget.is-tool-active .furn-place-btn {
+  background: #1B4F72 !important;
+  color: #FFFFFF !important;
+}
+
+.furn-active-badge-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px 4px 8px;
+  background: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  font-family: var(--sans);
+  text-align: left;
+  transition: background 0.15s ease;
+  max-width: 250px;
+}
+.furn-active-badge-btn:hover {
+  background: #F1F5F9;
+}
+.furn-badge-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.furn-badge-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.furn-badge-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+.furn-badge-dims {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: #64748B;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.furn-badge-chevron {
+  font-size: 11px;
+  color: #64748B;
+  margin-left: 2px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.furn-active-badge-btn:hover .furn-badge-chevron {
+  color: #1B4F72;
+  transform: translateY(1px);
+}
+
+/* ── 2. Furniture Catalog Modal ── */
+.furn-catalog-dialog {
+  max-width: 980px !important;
+  width: 95vw !important;
+  height: 90vh !important;
+  max-height: 860px !important;
+  background: #F8FAFC !important;
+}
+
+.furn-modal-head {
+  padding: 16px 24px !important;
+  background: #FFFFFF !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+.furn-modal-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.furn-modal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #0284C7;
+}
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #0284C7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
+  display: inline-block;
+}
+
+/* ── Filter Bar ── */
+.furn-catalog-filter-bar {
+  background: #FFFFFF;
+  padding: 14px 24px 12px;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.furn-search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.furn-search-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 15px;
+  color: #94A3B8;
+  pointer-events: none;
+}
+.furn-search-input {
+  width: 100%;
+  padding: 11px 40px 11px 42px;
+  font-size: 13.5px;
+  font-family: var(--sans);
+  color: #0F172A;
+  background: #F1F5F9;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 9px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.furn-search-input:focus {
+  background: #FFFFFF;
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.furn-search-clear-btn {
+  position: absolute;
+  right: 12px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #CBD5E1;
+  color: #334155;
+  border-radius: 50%;
+  border: none;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.furn-search-clear-btn:hover {
+  background: #94A3B8;
+  color: #0F172A;
+}
+
+.furn-category-pills {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.furn-cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.furn-cat-pill:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+.furn-cat-pill.is-active {
+  background: #1B4F72;
+  border-color: #1B4F72;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(27, 79, 114, 0.25);
+}
+.furn-cat-pill .pill-count {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.08);
+  color: inherit;
+}
+.furn-cat-pill.is-active .pill-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+/* ── Modal Body ── */
+.furn-catalog-body {
+  padding: 20px 24px !important;
+  background: #F8FAFC !important;
+  gap: 16px !important;
+}
+
+/* ── Featured Spotlight Card (FCM -RT) ── */
+.furn-spotlight-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #EFF6FF 0%, #FAF5FF 100%);
+  border: 1.5px solid #BFDBFE;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06);
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.furn-spotlight-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.1);
+}
+.spotlight-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+.spotlight-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1.5px solid #DBEAFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+  flex-shrink: 0;
+}
+.spotlight-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.spotlight-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.spotlight-pill {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #2563EB;
+  color: #FFFFFF;
+}
+.spotlight-code {
+  font-size: 11px;
+  font-family: var(--mono);
+  font-weight: 600;
+  color: #475569;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #E2E8F0;
+}
+.spotlight-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+}
+.spotlight-dims {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dim-chip {
+  font-size: 11px;
+  font-family: var(--mono);
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #1E293B;
+}
+.dim-chip b {
+  color: #2563EB;
+}
+.spec-chip {
+  font-size: 11px;
+  color: #475569;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.spotlight-materials {
+  font-size: 11px;
+  color: #475569;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.spotlight-materials span b {
+  color: #0F172A;
+}
+
+.spotlight-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.spotlight-price {
+  font-size: 16px;
+  font-family: var(--mono);
+  font-weight: 800;
+  color: #15803D;
+  text-align: right;
+}
+.spotlight-price small {
+  display: block;
+  font-size: 10px;
+  font-family: var(--sans);
+  color: #64748B;
+  font-weight: 500;
+}
+.furn-select-btn {
+  padding: 8px 16px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  background: #1B4F72 !important;
+  border-color: #1B4F72 !important;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(27, 79, 114, 0.25);
+  transition: all 0.15s ease;
+}
+.furn-select-btn:hover {
+  background: #153E5B !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(27, 79, 114, 0.35);
+}
+
+/* ── Results Status ── */
+.furn-results-status {
+  font-size: 12px;
+  color: #64748B;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.furn-results-status b {
+  color: #0F172A;
+}
+
+/* ── Cards Grid ── */
+.furn-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.furn-unit-card {
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+}
+.furn-unit-card:hover {
+  border-color: #2563EB;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
+  transform: translateY(-2px);
+}
+.furn-unit-card.is-selected {
+  border-color: #15803D;
+  background: #F0FDF4;
+  box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.2);
+}
+.furn-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.furn-card-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.furn-card-icon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.furn-card-name-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.furn-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.3;
+}
+.furn-card-code {
+  font-size: 10.5px;
+  font-family: var(--mono);
+  color: #64748B;
+}
+.furn-card-category-pill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: #F1F5F9;
+  color: #475569;
+  flex-shrink: 0;
+}
+.furn-unit-card.is-selected .furn-card-category-pill {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.furn-card-mid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.furn-card-dims-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.furn-card-dims-row .dim-chip {
+  font-size: 10.5px;
+  padding: 2px 5px;
+}
+.furn-card-specs {
+  font-size: 11px;
+  color: #64748B;
+  line-height: 1.35;
+}
+
+.furn-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #F1F5F9;
+  padding-top: 10px;
+  margin-top: 4px;
+}
+.furn-card-price {
+  font-size: 13px;
+  font-family: var(--mono);
+  font-weight: 700;
+  color: #15803D;
+}
+.furn-card-select-btn {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  background: #F1F5F9;
+  color: #1E293B;
+  border: 1px solid #CBD5E1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.furn-unit-card:hover .furn-card-select-btn {
+  background: #1B4F72;
+  color: #FFFFFF;
+  border-color: #1B4F72;
+}
+.furn-unit-card.is-selected .furn-card-select-btn {
+  background: #15803D;
+  color: #FFFFFF;
+  border-color: #15803D;
+}
+
+/* ── Empty State ── */
+.furn-empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  background: #FFFFFF;
+  border: 1.5px dashed #CBD5E1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.furn-empty-state .empty-icon {
+  font-size: 36px;
+  margin-bottom: 4px;
+}
+.furn-empty-state h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+}
+.furn-empty-state p {
+  font-size: 13px;
+  color: #64748B;
+  max-width: 400px;
+}
+
+/* ── Modal Foot ── */
+.furn-modal-foot {
+  padding: 12px 24px !important;
+  background: #FFFFFF !important;
+  border-top: 1px solid #E2E8F0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.furn-modal-foot-hint {
+  font-size: 12px;
+  color: #64748B;
+}
+.furn-modal-foot-hint b {
+  color: #0F172A;
+}
+.modal-close-btn-foot {
+  padding: 6px 16px;
+  background: #F1F5F9;
+  color: #334155;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.modal-close-btn-foot:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+@media (max-width: 768px) {
+  .furn-spotlight-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .spotlight-action {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .furn-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 </style>
 
 <!-- ══════ FULL AUTH / LOGIN SCREEN ══════ -->
@@ -2060,6 +2695,7 @@ body.role-employee #adminCreateEmpBox,
         <div class="stagebar">
           <div class="legend" id="legend"></div>
           <div class="viewbtns">
+            <button class="minibtn is-on" id="viewFocusUnitBtn" title="Toggle between focusing on the active modular unit or viewing the full architectural home" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus Unit</button>
             <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
             <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
             <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
@@ -2193,37 +2829,51 @@ body.role-employee #adminCreateEmpBox,
               <option value="1500">1500 mm</option>
               <option value="1800">1800 mm</option>
             </select>
-            <button class="plan-tool-btn" data-tool="furniture" title="Place Modular Furniture (F)">🗄️ + Furniture</button>
-            <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="max-width:240px">
-              <optgroup label="Imported Modular Units (Catalog)">
-                <option value="fm-rt-01" selected>fm-rt-01: FCM -RT Kitchen Base (1200x750)</option>
-                <option value="wm-01">wm-01: WM 1200 Kitchen Wall (1200x600)</option>
-                <option value="W-01">W-01: Master Bed 2-Door Wardrobe (1200x2100)</option>
-                <option value="W-02">W-02: Master Bed 3-Door + Loft (1800x2100+600)</option>
-                <option value="W-03">W-03: 2-Door Glass Profile Sliding (1800x2400)</option>
-                <option value="CR-01">CR-01: Fluted Glass Hutch · Walnut (900x2100)</option>
-                <option value="TV-01">TV-01: Living TV Media Entertainment (2400x1800)</option>
-                <option value="K-01">K-01: Kitchen Lower Base Run (3000x850)</option>
-                <option value="K-02">K-02: Kitchen Upper Wall Cabinets (3000x700)</option>
-              </optgroup>
-              <optgroup label="Standard Library">
-                <option value="w2d">2-Door Wardrobe (900mm)</option>
-                <option value="w3d">3-Door Wardrobe (1350mm)</option>
-                <option value="w4d">4-Door Master Wardrobe (1800mm)</option>
-                <option value="w_slide">2-Door Sliding Wardrobe (1800mm)</option>
-                <option value="fm-01">FM 600 Kitchen Base (600mm)</option>
-                <option value="k_base">Kitchen Base Run (3000mm)</option>
-                <option value="k_wall">Kitchen Wall Run (3000mm)</option>
-                <option value="k_tall">Kitchen Tall Pantry (600mm)</option>
-                <option value="k_island">Kitchen Island (1500mm)</option>
-                <option value="tv_media">TV Media Wall (2100mm)</option>
-                <option value="crockery">Crockery Unit (1200mm)</option>
-                <option value="vanity">Vanity / Dresser (1000mm)</option>
-                <option value="shoe_rack">Shoe Cabinet (1000mm)</option>
-                <option value="bed_queen">Queen Bed (1600mm)</option>
-                <option value="bed_king">King Bed (1900mm)</option>
-              </optgroup>
-            </select>
+            <!-- Restyled Modular Furniture Selector & Catalog Trigger -->
+            <div class="furn-picker-toolbar-widget" id="furnPickerWidget">
+              <button class="plan-tool-btn furn-place-btn" data-tool="furniture" id="planFurnitureBtn" title="Place Modular Furniture on Floor Plan (Hotkey F)">
+                <span class="furn-tool-icon">🗄️</span>
+                <span class="furn-tool-text">+ Furniture</span>
+              </button>
+              <button class="furn-active-badge-btn" id="openFurnCatalogBtn" type="button" title="Browse full modular furniture catalog & search">
+                <span class="furn-badge-icon" id="planFurnActiveIcon">🍳</span>
+                <span class="furn-badge-info">
+                  <span class="furn-badge-title" id="planFurnActiveName">FCM -RT (Kitchen Base)</span>
+                  <span class="furn-badge-dims" id="planFurnActiveDims">1200×750</span>
+                </span>
+                <span class="furn-badge-chevron">▾</span>
+              </button>
+              <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="display:none;" aria-hidden="true">
+                <optgroup label="Imported Modular Units (Catalog)">
+                  <option value="fm-rt-01" selected>fm-rt-01: FCM -RT Kitchen Base (1200x750)</option>
+                  <option value="wm-01">wm-01: WM 1200 Kitchen Wall (1200x600)</option>
+                  <option value="W-01">W-01: Master Bed 2-Door Wardrobe (1200x2100)</option>
+                  <option value="W-02">W-02: Master Bed 3-Door + Loft (1800x2100+600)</option>
+                  <option value="W-03">W-03: 2-Door Glass Profile Sliding (1800x2400)</option>
+                  <option value="CR-01">CR-01: Fluted Glass Hutch · Walnut (900x2100)</option>
+                  <option value="TV-01">TV-01: Living TV Media Entertainment (2400x1800)</option>
+                  <option value="K-01">K-01: Kitchen Lower Base Run (3000x850)</option>
+                  <option value="K-02">K-02: Kitchen Upper Wall Cabinets (3000x700)</option>
+                </optgroup>
+                <optgroup label="Standard Library">
+                  <option value="w2d">2-Door Wardrobe (900mm)</option>
+                  <option value="w3d">3-Door Wardrobe (1350mm)</option>
+                  <option value="w4d">4-Door Master Wardrobe (1800mm)</option>
+                  <option value="w_slide">2-Door Sliding Wardrobe (1800mm)</option>
+                  <option value="fm-01">FM 600 Kitchen Base (600mm)</option>
+                  <option value="k_base">Kitchen Base Run (3000mm)</option>
+                  <option value="k_wall">Kitchen Wall Run (3000mm)</option>
+                  <option value="k_tall">Kitchen Tall Pantry (600mm)</option>
+                  <option value="k_island">Kitchen Island (1500mm)</option>
+                  <option value="tv_media">TV Media Wall (2100mm)</option>
+                  <option value="crockery">Crockery Unit (1200mm)</option>
+                  <option value="vanity">Vanity / Dresser (1000mm)</option>
+                  <option value="shoe_rack">Shoe Cabinet (1000mm)</option>
+                  <option value="bed_queen">Queen Bed (1600mm)</option>
+                  <option value="bed_king">King Bed (1900mm)</option>
+                </optgroup>
+              </select>
+            </div>
             <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">✂️ Split</button>
           </div>
 
@@ -2586,6 +3236,93 @@ body.role-employee #adminCreateEmpBox,
         <button type="submit" class="btn primary" id="loginSubmitBtn">Sign In</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ══════ MODAL: MODULAR FURNITURE CATALOG & LIVE SEARCH ══════ -->
+<div class="orbix-modal" id="modalFurnitureCatalog">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog furn-catalog-dialog">
+    <div class="modal-head furn-modal-head">
+      <div class="furn-modal-title-area">
+        <div class="furn-modal-tag"><span class="pulse-dot"></span> Modular Units Library</div>
+        <h3 class="modal-title">Modular Furniture Catalog</h3>
+        <p class="modal-sub">Browse standard &amp; imported units with parametric 3D CAD customization &amp; real-time costing</p>
+      </div>
+      <button class="modal-close-btn" type="button" id="closeFurnCatalogModal" title="Close (Esc)">&times;</button>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="furn-catalog-filter-bar">
+      <div class="furn-search-input-wrap">
+        <span class="furn-search-icon">🔍</span>
+        <input type="text" id="furnCatalogSearch" class="furn-search-input" placeholder="Search by unit name, code, category, or dimensions (e.g. FCM, FM 600, 1200, Wardrobe, Kitchen, TV)..." autocomplete="off" spellcheck="false">
+        <button type="button" class="furn-search-clear-btn" id="furnSearchClearBtn" title="Clear search" style="display:none;">✕</button>
+      </div>
+      <div class="furn-category-pills" id="furnCategoryPills">
+        <button type="button" class="furn-cat-pill is-active" data-cat="all">All Units <span class="pill-count" id="furnCountAll">25</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="kitchen_base">🍳 Kitchen Base <span class="pill-count" id="furnCountKBase">4</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="kitchen_wall">🎛️ Kitchen Wall <span class="pill-count" id="furnCountKWall">2</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="wardrobe">🚪 Wardrobes &amp; Lofts <span class="pill-count" id="furnCountWardrobe">6</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="tv_unit">📺 TV Media Walls <span class="pill-count" id="furnCountTV">2</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="crockery">🍷 Crockery &amp; Hutch <span class="pill-count" id="furnCountCrockery">2</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="vanity">🪞 Vanity &amp; Shoes <span class="pill-count" id="furnCountVanity">2</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="bed">🛏️ Beds <span class="pill-count" id="furnCountBed">2</span></button>
+      </div>
+    </div>
+
+    <div class="modal-body furn-catalog-body">
+      <!-- Featured Spotlight Card: FCM -RT (Kitchen Base) (1200×750) -->
+      <div class="furn-spotlight-card" id="furnSpotlightCard">
+        <div class="spotlight-left">
+          <div class="spotlight-icon">🍳</div>
+          <div class="spotlight-info">
+            <div class="spotlight-badge-row">
+              <span class="spotlight-pill">⭐ FEATURED KITCHEN BASE</span>
+              <span class="spotlight-code">code: fm-rt-01</span>
+            </div>
+            <h4 class="spotlight-title">FCM -RT (Kitchen Base)</h4>
+            <div class="spotlight-dims">
+              <span class="dim-chip"><b>W</b> 1200 mm</span>
+              <span class="dim-chip"><b>H</b> 750 mm</span>
+              <span class="dim-chip"><b>D</b> 550 mm</span>
+              <span class="spec-chip">1 Shutter · Slab · G-Profile Black Handle</span>
+            </div>
+            <div class="spotlight-materials">
+              <span>Shutter: <b>HDHMR 18mm (Absolute White)</b></span>
+              <span>Carcass: <b>BWP 18mm Waterproof</b></span>
+            </div>
+          </div>
+        </div>
+        <div class="spotlight-action">
+          <div class="spotlight-price">₹ 17,398.79 <small>Est. base</small></div>
+          <button type="button" class="btn primary furn-select-btn" id="spotlightSelectFCMBtn" data-furn-id="fm-rt-01">🎯 Select &amp; Place</button>
+        </div>
+      </div>
+
+      <!-- Live Units Count & Search Status -->
+      <div class="furn-results-status" id="furnResultsStatus">
+        Showing <b id="furnShowingCount">25</b> units in catalog
+      </div>
+
+      <!-- Dynamic Cards Grid -->
+      <div class="furn-catalog-grid" id="furnCatalogGrid"></div>
+
+      <!-- Empty Results State -->
+      <div class="furn-empty-state" id="furnEmptyState" style="display:none;">
+        <div class="empty-icon">🔍</div>
+        <h4>No modular units found</h4>
+        <p>No units matched your query "<span id="furnSearchQueryTerm"></span>". Try searching for "FCM", "FM 600", "Wardrobe", "1200", or "Kitchen".</p>
+        <button type="button" class="btn small" id="furnResetSearchBtn">Reset Search Filters</button>
+      </div>
+    </div>
+
+    <div class="modal-foot furn-modal-foot">
+      <div class="furn-modal-foot-hint">
+        💡 <b>Tip:</b> Click any unit to select it for 2D floor plan drawing or 3D CAD customization.
+      </div>
+      <button type="button" class="btn modal-close-btn-foot" id="closeFurnCatalogFootBtn">Close</button>
+    </div>
   </div>
 </div>
 
@@ -10980,25 +11717,63 @@ body.role-employee #adminCreateEmpBox,
     var cat = furn.category || 'wardrobe';
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
     var isBase = (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity');
+    var isWall = (cat === 'kitchen_wall');
 
-    // Carcass Body
-    var carcassColor = 0xFAF8F5; // Absolute white / light interior
-    var shutterColor = 0x6E4E35; // Brazilian Walnut
-    if (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) {
-      var fin = furn.materials.shutter.finish.toLowerCase();
-      if (fin.indexOf('gloss') !== -1 || fin.indexOf('white') !== -1) shutterColor = 0xEDEBE4;
-      else if (fin.indexOf('walnut') !== -1) shutterColor = 0x5D3E27;
-      else if (fin.indexOf('sage') !== -1) shutterColor = 0x7A8875;
+    // Resolve Carcass & Shutter finishes using lam() if available
+    var shutterFinish = (furn.unitConfig && furn.unitConfig.shutterCol) ||
+                        (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) ||
+                        'MDF 1135';
+    var carcassFinish = (furn.unitConfig && furn.unitConfig.carcass) ||
+                        (furn.materials && furn.materials.carcass && furn.materials.carcass.finish) ||
+                        'MDF 1135';
+
+    function hexStringToNum(hexStr, defaultNum) {
+      if (!hexStr) return defaultNum;
+      var clean = String(hexStr).replace('#', '').trim();
+      var num = parseInt(clean, 16);
+      return isNaN(num) ? defaultNum : num;
     }
 
-    var carcassMat = new THREE.MeshStandardMaterial({ color: carcassColor, roughness: 0.6, metalness: 0.05 });
-    var shutterMat = new THREE.MeshStandardMaterial({ color: shutterColor, roughness: 0.45, metalness: 0.05 });
-    var counterMat = new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.25, metalness: 0.1 }); // Black galaxy
-    var handleMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.8 }); // Black metal
+    var shutterHex = 0x6E4E35; // Default walnut
+    var carcassHex = 0xFAF8F5; // Default white
+
+    if (typeof window !== 'undefined' && typeof window.lam === 'function') {
+      var sLam = window.lam(shutterFinish);
+      if (sLam && sLam.hex) shutterHex = hexStringToNum(sLam.hex, 0x6E4E35);
+      var cLam = window.lam(carcassFinish);
+      if (cLam && cLam.hex) carcassHex = hexStringToNum(cLam.hex, 0xFAF8F5);
+    } else {
+      var sLower = String(shutterFinish).toLowerCase();
+      if (sLower.indexOf('white') !== -1 || sLower.indexOf('gloss') !== -1) shutterHex = 0xEDEBE4;
+      else if (sLower.indexOf('walnut') !== -1) shutterHex = 0x5D3E27;
+      else if (sLower.indexOf('sage') !== -1) shutterHex = 0x7A8875;
+      else if (sLower.indexOf('oak') !== -1) shutterHex = 0xC4A173;
+      else if (sLower.indexOf('wenge') !== -1) shutterHex = 0x38281F;
+      else if (sLower.indexOf('concrete') !== -1) shutterHex = 0x8A8E91;
+    }
+
+    var carcassMat = new THREE.MeshStandardMaterial({ color: carcassHex, roughness: 0.55, metalness: 0.05 });
+    var shutterMat = new THREE.MeshStandardMaterial({ color: shutterHex, roughness: 0.45, metalness: 0.05 });
+
+    // Door style
+    var dstyle = (furn.unitConfig && furn.unitConfig.dstyle) || 'slab';
+    var doorType = (furn.unitConfig && (furn.unitConfig.doorType || furn.unitConfig.type)) || 'hinged';
+
+    // Handle Finish
+    var hfin = (furn.unitConfig && furn.unitConfig.hfinish) || 'black';
+    var handleHex = (hfin === 'brass' || hfin === 'gold') ? 0xD4AF37 : (hfin === 'chrome' || hfin === 'nickel') ? 0xCCCCCC : 0x1A1A1A;
+    var handleMat = new THREE.MeshStandardMaterial({ color: handleHex, roughness: 0.25, metalness: 0.85 });
+
+    // Countertop
+    var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'black' : 'none');
+    var counterHex = 0x1A1A1D;
+    if (counterColorName === 'white' || counterColorName === 'marble') counterHex = 0xF5F5F7;
+    else if (counterColorName === 'quartz' || counterColorName === 'greyq') counterHex = 0x8E9297;
+    var counterMat = new THREE.MeshStandardMaterial({ color: counterHex, roughness: 0.2, metalness: 0.1 });
 
     var plinthH = isBase ? 75 : 0;
-    var counterH = isBase ? 30 : 0;
-    var bodyH = dims.H - plinthH - counterH;
+    var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
+    var bodyH = Math.max(100, dims.H - plinthH - counterH);
 
     // Main Carcass Body
     var bodyGeo = new THREE.BoxGeometry(dims.W, bodyH, dims.D - 20);
@@ -11009,7 +11784,7 @@ body.role-employee #adminCreateEmpBox,
     bodyMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(bodyMesh);
 
-    // Countertop Stone (if kitchen/crockery/vanity)
+    // Countertop Stone (if kitchen base / vanity / crockery)
     if (counterH > 0) {
       var cGeo = new THREE.BoxGeometry(dims.W + 20, counterH, dims.D + 25);
       var cMesh = new THREE.Mesh(cGeo, counterMat);
@@ -11021,35 +11796,133 @@ body.role-employee #adminCreateEmpBox,
     }
 
     // Front Shutters
-    var numShutters = (furn.unitConfig && furn.unitConfig.shutters) || (dims.W > 1200 ? 3 : dims.W > 600 ? 2 : 1);
-    var shW = (dims.W - (numShutters + 1) * 3) / numShutters;
-    var shH = bodyH - 6;
+    var numShutters = (furn.unitConfig && furn.unitConfig.shutters !== undefined) ? furn.unitConfig.shutters : (dims.W > 1200 ? 3 : dims.W > 600 ? 2 : 1);
+    if (numShutters > 0) {
+      var shW = (dims.W - (numShutters + 1) * 3) / numShutters;
+      var shH = bodyH - 6;
 
-    for (var s = 0; s < numShutters; s++) {
-      var sGeo = new THREE.BoxGeometry(shW, shH, 18);
-      var sMesh = new THREE.Mesh(sGeo, shutterMat);
-      var sX = -dims.W / 2 + 3 + shW / 2 + s * (shW + 3);
-      var sY = plinthH + 3 + shH / 2;
-      var sZ = dims.D / 2 - 9;
-      sMesh.position.set(sX, sY, sZ);
-      sMesh.castShadow = true;
-      sMesh.receiveShadow = true;
-      sMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-      fg.add(sMesh);
+      for (var s = 0; s < numShutters; s++) {
+        var sX = -dims.W / 2 + 3 + shW / 2 + s * (shW + 3);
+        var sY = plinthH + 3 + shH / 2;
+        var sZ = dims.D / 2 - 9;
 
-      // Handle pull
-      var hGeo = new THREE.BoxGeometry(16, Math.min(180, shH * 0.4), 16);
-      var hMesh = new THREE.Mesh(hGeo, handleMat);
-      var hX = (s % 2 === 0) ? sX + shW / 2 - 25 : sX - shW / 2 + 25;
-      var hY = isBase ? sY + shH * 0.25 : sY;
-      hMesh.position.set(hX, hY, sZ + 14);
-      hMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-      fg.add(hMesh);
+        if (dstyle === 'aluglass' || dstyle === 'glass') {
+          // Aluminium Profile Glass Shutter: Dark border frame + tinted glass
+          var frameThickness = 45;
+          var borderMat = new THREE.MeshStandardMaterial({ color: 0x1E293B, roughness: 0.3, metalness: 0.8 });
+          var glassMat = new THREE.MeshPhysicalMaterial({
+            color: (furn.unitConfig && furn.unitConfig.glassTint === 'bronze') ? 0x8C6239 : 0xA0B4C8,
+            transparent: true,
+            opacity: 0.45,
+            roughness: 0.1,
+            metalness: 0.1,
+            transmission: 0.8
+          });
+
+          // Outer frame group
+          var frameGroup = new THREE.Group();
+          frameGroup.position.set(sX, sY, sZ);
+
+          var glassGeo = new THREE.BoxGeometry(shW - frameThickness * 2, shH - frameThickness * 2, 6);
+          var glassMesh = new THREE.Mesh(glassGeo, glassMat);
+          glassMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          frameGroup.add(glassMesh);
+
+          // Top, bottom, left, right frame borders
+          var topBorder = new THREE.Mesh(new THREE.BoxGeometry(shW, frameThickness, 18), borderMat);
+          topBorder.position.set(0, shH / 2 - frameThickness / 2, 0);
+          frameGroup.add(topBorder);
+          var botBorder = new THREE.Mesh(new THREE.BoxGeometry(shW, frameThickness, 18), borderMat);
+          botBorder.position.set(0, -shH / 2 + frameThickness / 2, 0);
+          frameGroup.add(botBorder);
+          var lBorder = new THREE.Mesh(new THREE.BoxGeometry(frameThickness, shH - frameThickness * 2, 18), borderMat);
+          lBorder.position.set(-shW / 2 + frameThickness / 2, 0, 0);
+          frameGroup.add(lBorder);
+          var rBorder = new THREE.Mesh(new THREE.BoxGeometry(frameThickness, shH - frameThickness * 2, 18), borderMat);
+          rBorder.position.set(shW / 2 - frameThickness / 2, 0, 0);
+          frameGroup.add(rBorder);
+
+          frameGroup.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(frameGroup);
+        } else if (dstyle === 'shaker') {
+          // Shaker Door: Frame with recessed inner panel
+          var sGroup = new THREE.Group();
+          sGroup.position.set(sX, sY, sZ);
+          var fW2 = 60;
+          var innerP = new THREE.Mesh(new THREE.BoxGeometry(shW - fW2 * 2, shH - fW2 * 2, 10), shutterMat);
+          innerP.position.set(0, 0, -4);
+          sGroup.add(innerP);
+
+          var tRail = new THREE.Mesh(new THREE.BoxGeometry(shW, fW2, 18), shutterMat);
+          tRail.position.set(0, shH / 2 - fW2 / 2, 0);
+          sGroup.add(tRail);
+          var bRail = new THREE.Mesh(new THREE.BoxGeometry(shW, fW2, 18), shutterMat);
+          bRail.position.set(0, -shH / 2 + fW2 / 2, 0);
+          sGroup.add(bRail);
+          var lStile = new THREE.Mesh(new THREE.BoxGeometry(fW2, shH - fW2 * 2, 18), shutterMat);
+          lStile.position.set(-shW / 2 + fW2 / 2, 0, 0);
+          sGroup.add(lStile);
+          var rStile = new THREE.Mesh(new THREE.BoxGeometry(fW2, shH - fW2 * 2, 18), shutterMat);
+          rStile.position.set(shW / 2 - fW2 / 2, 0, 0);
+          sGroup.add(rStile);
+
+          sGroup.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(sGroup);
+        } else {
+          // Slab front or standard shutter
+          var sGeo = new THREE.BoxGeometry(shW, shH, 18);
+          var sMesh = new THREE.Mesh(sGeo, shutterMat);
+          sMesh.position.set(sX, sY, sZ);
+          sMesh.castShadow = true;
+          sMesh.receiveShadow = true;
+          sMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(sMesh);
+        }
+
+        // Handle
+        var handleType = (furn.unitConfig && furn.unitConfig.handle) || 'gprof';
+        if (handleType !== 'none') {
+          var hMesh;
+          if (handleType === 'gprof' || handleType === 'jprof') {
+            // Profile handle on top edge of base unit or side
+            var hLen = Math.min(160, shW * 0.7);
+            var hGeo = new THREE.BoxGeometry(hLen, 16, 22);
+            hMesh = new THREE.Mesh(hGeo, handleMat);
+            hMesh.position.set(sX, isBase ? plinthH + shH - 8 : sY, sZ + 12);
+          } else if (handleType === 'knob') {
+            var kGeo = new THREE.CylinderGeometry(12, 8, 20, 16);
+            hMesh = new THREE.Mesh(kGeo, handleMat);
+            hMesh.rotation.x = Math.PI / 2;
+            var hXk = (s % 2 === 0) ? sX + shW / 2 - 35 : sX - shW / 2 + 35;
+            hMesh.position.set(hXk, isBase ? plinthH + shH - 60 : sY, sZ + 14);
+          } else {
+            // Bar handle
+            var hGeo = new THREE.BoxGeometry(16, Math.min(220, shH * 0.35), 18);
+            hMesh = new THREE.Mesh(hGeo, handleMat);
+            var hX = (s % 2 === 0) ? sX + shW / 2 - 25 : sX - shW / 2 + 25;
+            var hY = isBase ? sY + shH * 0.25 : sY;
+            hMesh.position.set(hX, hY, sZ + 14);
+          }
+          if (hMesh) {
+            hMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+            fg.add(hMesh);
+          }
+        }
+      }
     }
 
     // Position and rotate unit
     fg.position.set(furn.pos.x, furn.pos.z || 0, furn.pos.y);
     fg.rotation.y = -(furn.rotY || 0);
+
+    // If this unit is currently the active unit in 3D Studio, keep its static mesh hidden
+    // so the live parametric model (root) renders in its place
+    if (typeof window !== 'undefined' && window.S && Array.isArray(window.S.units) && typeof window.S.active === 'number') {
+      var actU = window.S.units[window.S.active];
+      if (actU && actU._furnId === furn.id) {
+        fg.visible = (window.Orbix3DViewMode === 'home');
+      }
+    }
 
     return fg;
   };
@@ -11619,6 +12492,7 @@ body.role-employee #adminCreateEmpBox,
       }
 
       syncFurnDropdown();
+      self.initFurnitureCatalogModal();
 
       if (furnSel && Core.FURNITURE_CATALOG) {
         furnSel.addEventListener('change', function () {
@@ -11626,6 +12500,12 @@ body.role-employee #adminCreateEmpBox,
           for (var i = 0; i < Core.FURNITURE_CATALOG.length; i++) {
             if (Core.FURNITURE_CATALOG[i].id === fId) {
               self.editor.furniturePreset = Core.FURNITURE_CATALOG[i];
+              var iconEl = document.getElementById('planFurnActiveIcon');
+              var nameEl = document.getElementById('planFurnActiveName');
+              var dimsEl = document.getElementById('planFurnActiveDims');
+              if (iconEl) iconEl.textContent = Core.FURNITURE_CATALOG[i].icon || '🗄️';
+              if (nameEl) nameEl.textContent = Core.FURNITURE_CATALOG[i].name;
+              if (dimsEl && Core.FURNITURE_CATALOG[i].dimensions) dimsEl.textContent = Core.FURNITURE_CATALOG[i].dimensions.W + '×' + Core.FURNITURE_CATALOG[i].dimensions.H;
               break;
             }
           }
@@ -12150,12 +13030,19 @@ body.role-employee #adminCreateEmpBox,
           roomOptions += '<option value="' + rooms[r].id + '"' + (fn.roomId === rooms[r].id ? ' selected' : '') + '>' + rooms[r].name + '</option>';
         }
 
-        var shutterFinish = (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) ||
-                            (fn.unitConfig && fn.unitConfig.shutterCol) || 'Brazilian Horizontal Walnut';
-        var carcassFinish = (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) ||
-                            (fn.unitConfig && fn.unitConfig.carcass) || 'Absolute White';
+        var shutterFinish = (fn.unitConfig && fn.unitConfig.shutterCol) ||
+                            (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) ||
+                            'Brazilian Horizontal Walnut';
+        var carcassFinish = (fn.unitConfig && fn.unitConfig.carcass) ||
+                            (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) ||
+                            'Absolute White';
         var shuttersCount = (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1);
         var drawersCount = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? fn.unitConfig.drawers : 0;
+        var doorStyle = (fn.unitConfig && fn.unitConfig.dstyle) || 'slab';
+        var handleType = (fn.unitConfig && fn.unitConfig.handle) || 'gprof';
+        var counterType = (fn.unitConfig && fn.unitConfig.counter) || ((fn.category && fn.category.indexOf('kitchen') !== -1) ? 'black' : 'none');
+
+        var isBaseUnit = (fn.category && (fn.category === 'kitchen_base' || fn.category === 'crockery' || fn.category === 'vanity'));
 
         panel.innerHTML =
           '<div class="insp-title">Modular Unit Properties</div>' +
@@ -12164,19 +13051,50 @@ body.role-employee #adminCreateEmpBox,
           '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspFurnW" value="' + fn.dimensions.W + '" step="50"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspFurnH" value="' + fn.dimensions.H + '" step="50"></div>' +
           '<div class="insp-row"><label>Depth (mm)</label><input type="number" id="inspFurnD" value="' + fn.dimensions.D + '" step="50"></div>' +
+          '<div class="insp-row"><label>Door Style</label><select id="inspFurnDoorStyle">' +
+            '<option value="slab"' + (doorStyle === 'slab' ? ' selected' : '') + '>Slab · Flat</option>' +
+            '<option value="shaker"' + (doorStyle === 'shaker' ? ' selected' : '') + '>Shaker · Frame</option>' +
+            '<option value="aluglass"' + (doorStyle === 'aluglass' ? ' selected' : '') + '>Aluminium Profile Glass</option>' +
+            '<option value="fluted"' + (doorStyle === 'fluted' ? ' selected' : '') + '>Fluted / Reeded</option>' +
+            '<option value="louvered"' + (doorStyle === 'louvered' ? ' selected' : '') + '>Louvered Slats</option>' +
+            '<option value="cane"' + (doorStyle === 'cane' ? ' selected' : '') + '>Cane / Rattan</option>' +
+            '<option value="glass"' + (doorStyle === 'glass' ? ' selected' : '') + '>Glass Frame</option>' +
+            '<option value="mirror"' + (doorStyle === 'mirror' ? ' selected' : '') + '>Mirror Front</option>' +
+          '</select></div>' +
           '<div class="insp-row"><label>Shutters</label><input type="number" id="inspFurnShutters" value="' + shuttersCount + '" min="0" max="8"></div>' +
           '<div class="insp-row"><label>Drawers</label><input type="number" id="inspFurnDrawers" value="' + drawersCount + '" min="0" max="6"></div>' +
-          '<div class="insp-row"><label>Shutter Finish</label><select id="inspFurnShutterCol">' +
-            '<option value="Brazilian Horizontal Walnut"' + (shutterFinish.indexOf('Walnut') !== -1 ? ' selected' : '') + '>Brazilian Walnut</option>' +
-            '<option value="Absolute White"' + (shutterFinish.indexOf('White') !== -1 || shutterFinish.indexOf('Gloss') !== -1 ? ' selected' : '') + '>Absolute White Gloss</option>' +
-            '<option value="Sage Green Matte"' + (shutterFinish.indexOf('Sage') !== -1 ? ' selected' : '') + '>Sage Green Matte</option>' +
-            '<option value="Sonoma Oak"' + (shutterFinish.indexOf('Oak') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
-            '<option value="Concrete Look"' + (shutterFinish.indexOf('Concrete') !== -1 ? ' selected' : '') + '>Concrete Look</option>' +
+          '<div class="insp-row"><label>Handle Type</label><select id="inspFurnHandle">' +
+            '<option value="gprof"' + (handleType === 'gprof' ? ' selected' : '') + '>G-Profile (Continuous)</option>' +
+            '<option value="jprof"' + (handleType === 'jprof' ? ' selected' : '') + '>J-Profile</option>' +
+            '<option value="edge"' + (handleType === 'edge' ? ' selected' : '') + '>Edge Pull</option>' +
+            '<option value="bar"' + (handleType === 'bar' || handleType === 'bar128' || handleType === 'bar224' ? ' selected' : '') + '>Bar Handle</option>' +
+            '<option value="knob"' + (handleType === 'knob' ? ' selected' : '') + '>Round Knob</option>' +
+            '<option value="gola"' + (handleType === 'gola' ? ' selected' : '') + '>Gola Profile</option>' +
+            '<option value="none"' + (handleType === 'none' ? ' selected' : '') + '>None (Push-to-open)</option>' +
+          '</select></div>' +
+          (isBaseUnit ? ('<div class="insp-row"><label>Countertop</label><select id="inspFurnCounter">' +
+            '<option value="black"' + (counterType === 'black' ? ' selected' : '') + '>Black Galaxy Granite</option>' +
+            '<option value="white"' + (counterType === 'white' || counterType === 'marble' ? ' selected' : '') + '>White Marble</option>' +
+            '<option value="quartz"' + (counterType === 'quartz' ? ' selected' : '') + '>Pure White Quartz</option>' +
+            '<option value="greyq"' + (counterType === 'greyq' ? ' selected' : '') + '>Grey Quartz</option>' +
+            '<option value="none"' + (counterType === 'none' ? ' selected' : '') + '>None (Carcass Top)</option>' +
+          '</select></div>') : '') +
+          '<div class="insp-row"><label>Shutter Finish (Laminate)</label><select id="inspFurnShutterCol">' +
+            '<option value="MDF 1135"' + (shutterFinish.indexOf('White') !== -1 || shutterFinish.indexOf('1135') !== -1 ? ' selected' : '') + '>MDF 1135 · Absolute White</option>' +
+            '<option value="MDF 3410"' + (shutterFinish.indexOf('Walnut') !== -1 || shutterFinish.indexOf('3410') !== -1 ? ' selected' : '') + '>MDF 3410 · Brazilian Walnut</option>' +
+            '<option value="MDF 2204"' + (shutterFinish.indexOf('Oak') !== -1 || shutterFinish.indexOf('2204') !== -1 ? ' selected' : '') + '>MDF 2204 · Sonoma Oak</option>' +
+            '<option value="MDF 7701"' + (shutterFinish.indexOf('Sage') !== -1 || shutterFinish.indexOf('7701') !== -1 ? ' selected' : '') + '>MDF 7701 · Sage Green Matte</option>' +
+            '<option value="MDF 6601"' + (shutterFinish.indexOf('Gloss') !== -1 || shutterFinish.indexOf('6601') !== -1 ? ' selected' : '') + '>MDF 6601 · 4x Tuff Gloss White</option>' +
+            '<option value="MDF 3411"' + (shutterFinish.indexOf('Wenge') !== -1 || shutterFinish.indexOf('3411') !== -1 ? ' selected' : '') + '>MDF 3411 · Wenge Woodgrain</option>' +
+            '<option value="MDF 5501"' + (shutterFinish.indexOf('Concrete') !== -1 || shutterFinish.indexOf('5501') !== -1 ? ' selected' : '') + '>MDF 5501 · Concrete Stone</option>' +
+            '<option value="MDF 2210"' + (shutterFinish.indexOf('Teak') !== -1 || shutterFinish.indexOf('2210') !== -1 ? ' selected' : '') + '>MDF 2210 · Burma Teak</option>' +
+            '<option value="MDF 7702"' + (shutterFinish.indexOf('Charcoal') !== -1 || shutterFinish.indexOf('7702') !== -1 ? ' selected' : '') + '>MDF 7702 · Charcoal Grey Matte</option>' +
+            '<option value="MDF 7707"' + (shutterFinish.indexOf('Navy') !== -1 || shutterFinish.indexOf('7707') !== -1 ? ' selected' : '') + '>MDF 7707 · Navy Matte</option>' +
           '</select></div>' +
           '<div class="insp-row"><label>Carcass</label><select id="inspFurnCarcass">' +
-            '<option value="Absolute White"' + (carcassFinish.indexOf('White') !== -1 ? ' selected' : '') + '>Absolute White (BWP)</option>' +
-            '<option value="Brazilian Horizontal Walnut"' + (carcassFinish.indexOf('Walnut') !== -1 ? ' selected' : '') + '>Walnut Woodgrain</option>' +
-            '<option value="Sonoma Oak"' + (carcassFinish.indexOf('Oak') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
+            '<option value="MDF 1135"' + (carcassFinish.indexOf('White') !== -1 || carcassFinish.indexOf('1135') !== -1 ? ' selected' : '') + '>Absolute White (BWP / HDHMR)</option>' +
+            '<option value="MDF 3410"' + (carcassFinish.indexOf('Walnut') !== -1 || carcassFinish.indexOf('3410') !== -1 ? ' selected' : '') + '>Walnut Woodgrain</option>' +
+            '<option value="MDF 2204"' + (carcassFinish.indexOf('Oak') !== -1 || carcassFinish.indexOf('2204') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
           '</select></div>' +
           '<button class="btn primary full" id="inspOpen3DStudio" style="margin-top:8px">📐 Open &amp; Customize in 3D Studio</button>' +
           '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (R)</button>' +
@@ -12194,6 +13112,9 @@ body.role-employee #adminCreateEmpBox,
                 if (fn.unitConfig) {
                   if (fn.unitConfig.shutters !== undefined) eu.shutters = fn.unitConfig.shutters;
                   if (fn.unitConfig.drawers !== undefined) eu.drawers = fn.unitConfig.drawers;
+                  if (fn.unitConfig.dstyle) eu.dstyle = fn.unitConfig.dstyle;
+                  if (fn.unitConfig.handle) eu.handle = fn.unitConfig.handle;
+                  if (fn.unitConfig.counter) eu.counter = fn.unitConfig.counter;
                   if (fn.unitConfig.shutterCol) eu.shutterCol = fn.unitConfig.shutterCol;
                   if (fn.unitConfig.carcass) eu.carcass = fn.unitConfig.carcass;
                 }
@@ -12201,6 +13122,8 @@ body.role-employee #adminCreateEmpBox,
               }
             }
           }
+          if (typeof window.renderRail === 'function') window.renderRail();
+          if (typeof window.renderAll === 'function') window.renderAll();
         }
 
         document.getElementById('inspFurnName').addEventListener('change', function (e) {
@@ -12263,6 +13186,45 @@ body.role-employee #adminCreateEmpBox,
           self.editor.render();
           if (self.render3DHome) self.render3DHome();
         });
+        var doorStyleSelect = document.getElementById('inspFurnDoorStyle');
+        if (doorStyleSelect) {
+          doorStyleSelect.addEventListener('change', function (e) {
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.dstyle = e.target.value;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Change Door Style');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome();
+          });
+        }
+        var handleSelect = document.getElementById('inspFurnHandle');
+        if (handleSelect) {
+          handleSelect.addEventListener('change', function (e) {
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.handle = e.target.value;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Change Handle');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome();
+          });
+        }
+        var counterSelect = document.getElementById('inspFurnCounter');
+        if (counterSelect) {
+          counterSelect.addEventListener('change', function (e) {
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.counter = e.target.value;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Change Countertop');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome();
+          });
+        }
         document.getElementById('inspFurnShutterCol').addEventListener('change', function (e) {
           if (!fn.materials) fn.materials = {};
           if (!fn.materials.shutter) fn.materials.shutter = { material: 'HDHMR_18MM' };
@@ -12304,12 +13266,23 @@ body.role-employee #adminCreateEmpBox,
               activeUnit.W = fn.dimensions.W;
               activeUnit.H = fn.dimensions.H;
               activeUnit.D = fn.dimensions.D;
-              if (fn.unitConfig && fn.unitConfig.shutters !== undefined) activeUnit.shutters = fn.unitConfig.shutters;
-              if (fn.unitConfig && fn.unitConfig.drawers !== undefined) activeUnit.drawers = fn.unitConfig.drawers;
-              if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) activeUnit.shutterCol = fn.materials.shutter.finish;
-              if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) activeUnit.carcass = fn.materials.carcass.finish;
+              if (fn.unitConfig) {
+                if (fn.unitConfig.shutters !== undefined) activeUnit.shutters = fn.unitConfig.shutters;
+                if (fn.unitConfig.drawers !== undefined) activeUnit.drawers = fn.unitConfig.drawers;
+                if (fn.unitConfig.shelves !== undefined) activeUnit.shelves = fn.unitConfig.shelves;
+                if (fn.unitConfig.dstyle) activeUnit.dstyle = fn.unitConfig.dstyle;
+                if (fn.unitConfig.handle) activeUnit.handle = fn.unitConfig.handle;
+                if (fn.unitConfig.hfinish) activeUnit.hfinish = fn.unitConfig.hfinish;
+                if (fn.unitConfig.counter) activeUnit.counter = fn.unitConfig.counter;
+                if (fn.unitConfig.shutterCol) activeUnit.shutterCol = fn.unitConfig.shutterCol;
+                else if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) activeUnit.shutterCol = fn.materials.shutter.finish;
+                if (fn.unitConfig.carcass) activeUnit.carcass = fn.unitConfig.carcass;
+                else if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) activeUnit.carcass = fn.materials.carcass.finish;
+              }
             } else {
               var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
+              var sFinish = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
+              var cFinish = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
               var newU = {
                 label: fn.name,
                 ctype: isKitchen ? 'kbase' : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
@@ -12318,7 +13291,7 @@ body.role-employee #adminCreateEmpBox,
                 H: fn.dimensions.H,
                 D: fn.dimensions.D,
                 T: 18,
-                type: (fn.unitConfig && fn.unitConfig.type) || 'hinged',
+                type: (fn.unitConfig && (fn.unitConfig.type || fn.unitConfig.doorType)) || 'hinged',
                 shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1),
                 sections: (fn.unitConfig && fn.unitConfig.sections) || (fn.dimensions.W > 1200 ? 2 : 1),
                 shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isKitchen ? 1 : 3),
@@ -12332,8 +13305,8 @@ body.role-employee #adminCreateEmpBox,
                 handle: (fn.unitConfig && fn.unitConfig.handle) || 'gprof',
                 hfinish: (fn.unitConfig && fn.unitConfig.hfinish) || 'black',
                 counter: (fn.unitConfig && fn.unitConfig.counter) || (isKitchen ? 'black' : 'none'),
-                carcass: (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'Absolute White',
-                shutterCol: (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'Brazilian Horizontal Walnut'
+                carcass: cFinish,
+                shutterCol: sFinish
               };
               window.S.units.push(newU);
               window.S.active = window.S.units.length - 1;
@@ -12517,20 +13490,23 @@ body.role-employee #adminCreateEmpBox,
             if (fn.unitConfig.dstyle) existing.dstyle = fn.unitConfig.dstyle;
             if (fn.unitConfig.handle) existing.handle = fn.unitConfig.handle;
             if (fn.unitConfig.hfinish) existing.hfinish = fn.unitConfig.hfinish;
+            if (fn.unitConfig.counter) existing.counter = fn.unitConfig.counter;
             if (fn.unitConfig.type) existing.type = fn.unitConfig.type;
             if (fn.unitConfig.loft !== undefined) existing.loft = fn.unitConfig.loft;
             if (fn.unitConfig.loftH !== undefined) existing.loftH = fn.unitConfig.loftH;
           }
-          if (fn.materials) {
-            if (fn.materials.shutter && fn.materials.shutter.finish) existing.shutterCol = fn.materials.shutter.finish;
-            if (fn.materials.carcass && fn.materials.carcass.finish) existing.carcass = fn.materials.carcass.finish;
-          }
+          var sColExisting = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish);
+          if (sColExisting) existing.shutterCol = sColExisting;
+          var cColExisting = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish);
+          if (cColExisting) existing.carcass = cColExisting;
           newUnits.push(existing);
         } else {
           var isWall = (fn.category === 'kitchen_wall');
           var defH = isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 1800 : (fn.category === 'crockery' ? 2100 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
           var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 300 : isKitchen ? 550 : 600);
+          var sColNew = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
+          var cColNew = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
           var u = {
             label: fn.name,
             ctype: isKitchen ? (isWall ? 'kwall' : 'kbase') : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
@@ -12539,7 +13515,7 @@ body.role-employee #adminCreateEmpBox,
             H: (fn.dimensions && fn.dimensions.H) || defH,
             D: (fn.dimensions && fn.dimensions.D) || defD,
             T: 18,
-            type: (fn.unitConfig && fn.unitConfig.type) || 'hinged',
+            type: (fn.unitConfig && (fn.unitConfig.type || fn.unitConfig.doorType)) || 'hinged',
             shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (defW > 1200 ? 3 : defW > 600 ? 2 : 1),
             sections: (fn.unitConfig && fn.unitConfig.sections) || (defW > 1200 ? 2 : 1),
             shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isKitchen ? 1 : 3),
@@ -12553,8 +13529,8 @@ body.role-employee #adminCreateEmpBox,
             handle: (fn.unitConfig && fn.unitConfig.handle) || 'gprof',
             hfinish: (fn.unitConfig && fn.unitConfig.hfinish) || 'black',
             counter: (fn.unitConfig && fn.unitConfig.counter) || (isKitchen ? 'black' : 'none'),
-            carcass: (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135',
-            shutterCol: (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701'
+            carcass: cColNew,
+            shutterCol: sColNew
           };
           newUnits.push(u);
         }
@@ -12600,6 +13576,23 @@ body.role-employee #adminCreateEmpBox,
       if (typeof window.renderRail === 'function') window.renderRail();
       if (typeof window.renderLegend === 'function') window.renderLegend();
       if (typeof window.renderFoot === 'function') window.renderFoot();
+      if (typeof window.buildScene === 'function') window.buildScene();
+
+      // Focus camera on selected unit in 3D
+      var plan = this.getPlan();
+      var rot = 0;
+      if (plan && plan.furniture) {
+        var f = plan.furniture.find(function (it) { return it.id === furnId; });
+        if (f) rot = f.rotY || 0;
+      }
+      if (window.cam) {
+        window.cam.yaw = -(rot * 180 / Math.PI) - 24;
+        window.cam.pitch = -10;
+      }
+      if (window.__cc && window.__cc.gl && window.__cc.gl.frame) {
+        window.__cc.gl.frame('unit');
+      }
+      if (typeof window.camApply === 'function') window.camApply();
       this.highlight3DFurniture(furnId);
     },
 
@@ -12612,25 +13605,12 @@ body.role-employee #adminCreateEmpBox,
         homeObj.traverse(function (obj) {
           if (obj.userData && obj.userData.isFurnitureGroup) {
             var isSel = (obj.userData.furnitureId === furnId);
-            obj.traverse(function (child) {
-              if (child.isMesh && child.material) {
-                var mats = Array.isArray(child.material) ? child.material : [child.material];
-                mats.forEach(function (m) {
-                  if (m.emissive) {
-                    if (isSel) {
-                      if (child.userData._origEmissive === undefined) {
-                        child.userData._origEmissive = m.emissive.getHex();
-                      }
-                      m.emissive.setHex(0x3B82F6);
-                      m.emissiveIntensity = 0.5;
-                    } else if (child.userData._origEmissive !== undefined) {
-                      m.emissive.setHex(child.userData._origEmissive);
-                      m.emissiveIntensity = 0;
-                    }
-                  }
-                });
-              }
-            });
+            // Hide the selected unit inside OrbixHome3D when in unit mode so root's live parametric model is displayed
+            if (isSel) {
+              obj.visible = (window.Orbix3DViewMode === 'home');
+            } else {
+              obj.visible = true;
+            }
           }
         });
       }
@@ -12666,6 +13646,7 @@ body.role-employee #adminCreateEmpBox,
           if (u.shelves !== undefined) match.unitConfig.shelves = u.shelves;
           if (u.ctype) match.unitConfig.ctype = u.ctype;
           if (u.type) match.unitConfig.type = u.type;
+          if (u.counter) match.unitConfig.counter = u.counter;
           if (u.loft !== undefined) match.unitConfig.loft = u.loft;
           if (u.loftH !== undefined) match.unitConfig.loftH = u.loftH;
           if (u.back !== undefined) match.unitConfig.back = u.back;
@@ -12777,51 +13758,297 @@ body.role-employee #adminCreateEmpBox,
     },
 
     openPlaceUnitModal3D: function () {
-      var modal = document.getElementById('modalPlaceUnit3D');
-      var grid = document.getElementById('placeUnitCatalogGrid');
+      this.openFurnitureCatalogModal();
+    },
+
+    openFurnitureCatalogModal: function () {
+      var modal = document.getElementById('modalFurnitureCatalog');
+      if (modal) {
+        modal.classList.add('is-open');
+        if (typeof this._renderFurnCatalog === 'function') {
+          this._renderFurnCatalog();
+        }
+        var searchInput = document.getElementById('furnCatalogSearch');
+        if (searchInput) {
+          setTimeout(function () { searchInput.focus(); }, 120);
+        }
+      }
+    },
+
+    initFurnitureCatalogModal: function () {
+      var self = this;
+      var modal = document.getElementById('modalFurnitureCatalog');
+      var openBtn = document.getElementById('openFurnCatalogBtn');
+      var planFurnBtn = document.getElementById('planFurnitureBtn');
+      var closeBtn = document.getElementById('closeFurnCatalogModal');
+      var closeFootBtn = document.getElementById('closeFurnCatalogFootBtn');
+      var backdrop = modal ? modal.querySelector('.modal-backdrop') : null;
+      var searchInput = document.getElementById('furnCatalogSearch');
+      var clearSearchBtn = document.getElementById('furnSearchClearBtn');
+      var grid = document.getElementById('furnCatalogGrid');
+      var pills = document.querySelectorAll('.furn-cat-pill');
+      var spotlightBtn = document.getElementById('spotlightSelectFCMBtn');
+
       if (!modal || !grid) return;
 
-      var catalog = [
-        { name: '2-Door Wardrobe', cat: 'wardrobe', dims: { W: 900, H: 2100, D: 600 }, shutters: 2, icon: '🚪', desc: 'Compact bedroom wardrobe' },
-        { name: '3-Door Wardrobe', cat: 'wardrobe', dims: { W: 1500, H: 2100, D: 600 }, shutters: 3, icon: '🚪', desc: 'Master bedroom with drawers' },
-        { name: 'Sliding Wardrobe', cat: 'wardrobe', dims: { W: 1800, H: 2100, D: 650 }, shutters: 2, icon: '🪟', type: 'sliding', desc: 'Smooth sliding shutters' },
-        { name: 'Kitchen Base Run', cat: 'kitchen_base', dims: { W: 1200, H: 750, D: 550 }, shutters: 2, icon: '🍳', desc: 'Countertop base storage' },
-        { name: 'Kitchen Wall Cabinets', cat: 'kitchen_wall', dims: { W: 1200, H: 600, D: 300 }, shutters: 2, icon: '🎛️', desc: 'Overhead wall mounted' },
-        { name: 'TV Entertainment Unit', cat: 'tv_unit', dims: { W: 1800, H: 1800, D: 400 }, shutters: 2, icon: '📺', desc: 'Media console + back panel' },
-        { name: 'Crockery Glass Display', cat: 'crockery', dims: { W: 900, H: 2100, D: 450 }, shutters: 2, icon: '🍷', desc: 'Glass frame crockery display' },
-        { name: 'Dresser with Mirror', cat: 'dresser', dims: { W: 900, H: 2100, D: 450 }, shutters: 1, icon: '🪞', desc: 'Vanity counter with mirror' },
-        { name: 'Shoe Rack Unit', cat: 'shoe_rack', dims: { W: 900, H: 1050, D: 350 }, shutters: 2, icon: '👠', desc: 'Foyer entryway shoe storage' }
-      ];
+      var currentCat = 'all';
+      var currentSearch = '';
 
-      var self = this;
-      grid.innerHTML = '';
-      catalog.forEach(function (c) {
-        var card = document.createElement('div');
-        card.style.cssText = 'padding:14px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);cursor:pointer;transition:all .15s ease;display:flex;flex-direction:column;gap:6px;';
-        card.innerHTML =
-          '<div style="font-size:24px;">' + c.icon + '</div>' +
-          '<div style="font-weight:600;font-size:13px;color:var(--ink);">' + c.name + '</div>' +
-          '<div style="font-size:11px;color:var(--ink-2);">' + c.dims.W + ' × ' + c.dims.H + ' × ' + c.dims.D + ' mm</div>' +
-          '<div style="font-size:11px;color:var(--ink-2);margin-top:2px;">' + c.desc + '</div>' +
-          '<button class="btn primary small" style="margin-top:8px;">+ Place in 3D</button>';
-        card.addEventListener('mouseenter', function () { card.style.borderColor = 'var(--blue)'; card.style.transform = 'translateY(-2px)'; });
-        card.addEventListener('mouseleave', function () { card.style.borderColor = 'var(--rule)'; card.style.transform = 'none'; });
-        card.addEventListener('click', function () {
-          self.placeModularUnitIn3D({
-            name: c.name,
-            category: c.cat,
-            dimensions: c.dims,
-            unitConfig: { shutters: c.shutters, type: c.type || 'hinged' }
-          });
-          modal.classList.remove('is-open');
+      function openModal() {
+        modal.classList.add('is-open');
+        renderCatalog();
+        if (searchInput) {
+          setTimeout(function () { searchInput.focus(); }, 120);
+        }
+      }
+
+      function closeModal() {
+        modal.classList.remove('is-open');
+      }
+
+      if (openBtn) openBtn.addEventListener('click', openModal);
+      if (planFurnBtn) {
+        planFurnBtn.addEventListener('click', function (e) {
+          // If tool is already furniture, clicking + Furniture again opens the catalog
+          if (self.editor && self.editor.activeTool === 'furniture') {
+            openModal();
+          }
         });
-        grid.appendChild(card);
+      }
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      if (closeFootBtn) closeFootBtn.addEventListener('click', closeModal);
+      if (backdrop) backdrop.addEventListener('click', closeModal);
+
+      // ESC key to close
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+          closeModal();
+        }
       });
 
-      modal.classList.add('is-open');
-      modal.querySelectorAll('.modal-close-btn, .modal-backdrop').forEach(function (b) {
-        b.onclick = function () { modal.classList.remove('is-open'); };
+      function updateCategoryCounts() {
+        var catalog = Core.FURNITURE_CATALOG || [];
+        var counts = { all: catalog.length, kitchen_base: 0, kitchen_wall: 0, wardrobe: 0, tv_unit: 0, crockery: 0, vanity: 0, bed: 0 };
+        catalog.forEach(function (it) {
+          var cat = (it.category || '').toLowerCase();
+          if (cat === 'kitchen_base') counts.kitchen_base++;
+          else if (cat === 'kitchen_wall') counts.kitchen_wall++;
+          else if (cat.indexOf('wardrobe') !== -1 || cat.indexOf('loft') !== -1) counts.wardrobe++;
+          else if (cat.indexOf('tv') !== -1) counts.tv_unit++;
+          else if (cat.indexOf('crockery') !== -1) counts.crockery++;
+          else if (cat.indexOf('vanity') !== -1 || cat.indexOf('shoe') !== -1 || cat.indexOf('dresser') !== -1) counts.vanity++;
+          else if (cat.indexOf('bed') !== -1) counts.bed++;
+        });
+        var elAll = document.getElementById('furnCountAll'); if (elAll) elAll.textContent = counts.all;
+        var elKb = document.getElementById('furnCountKBase'); if (elKb) elKb.textContent = counts.kitchen_base;
+        var elKw = document.getElementById('furnCountKWall'); if (elKw) elKw.textContent = counts.kitchen_wall;
+        var elWr = document.getElementById('furnCountWardrobe'); if (elWr) elWr.textContent = counts.wardrobe;
+        var elTv = document.getElementById('furnCountTV'); if (elTv) elTv.textContent = counts.tv_unit;
+        var elCr = document.getElementById('furnCountCrockery'); if (elCr) elCr.textContent = counts.crockery;
+        var elVn = document.getElementById('furnCountVanity'); if (elVn) elVn.textContent = counts.vanity;
+        var elBd = document.getElementById('furnCountBed'); if (elBd) elBd.textContent = counts.bed;
+      }
+
+      function selectUnitPreset(item) {
+        if (!item) return;
+        if (self.editor) {
+          self.editor.furniturePreset = item;
+          self.editor.activeTool = 'furniture';
+        }
+
+        // Update toolbar widget active status
+        var widget = document.getElementById('furnPickerWidget');
+        if (widget) widget.classList.add('is-tool-active');
+        document.querySelectorAll('.plan-tool-btn').forEach(function (b) {
+          b.classList.toggle('is-active', b.dataset.tool === 'furniture');
+        });
+
+        // Update active badge display in toolbar
+        var iconEl = document.getElementById('planFurnActiveIcon');
+        var nameEl = document.getElementById('planFurnActiveName');
+        var dimsEl = document.getElementById('planFurnActiveDims');
+        if (iconEl) iconEl.textContent = item.icon || '🗄️';
+        if (nameEl) nameEl.textContent = item.name;
+        if (dimsEl && item.dimensions) dimsEl.textContent = item.dimensions.W + '×' + item.dimensions.H;
+
+        // Sync hidden select
+        var furnSel = document.getElementById('planFurnSelect');
+        if (furnSel) furnSel.value = item.id;
+
+        closeModal();
+
+        // Check if currently viewing 3D Studio
+        var is3DView = document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+        if (is3DView && typeof self.placeModularUnitIn3D === 'function') {
+          self.placeModularUnitIn3D({
+            name: item.name,
+            category: item.category,
+            dimensions: item.dimensions,
+            unitConfig: Object.assign({}, item.unitConfig || {})
+          });
+        } else {
+          if (typeof window.toast === 'function') {
+            window.toast('Ready to place: ' + item.name + ' (' + (item.dimensions ? item.dimensions.W + '×' + item.dimensions.H : '') + '). Click floor plan to position.');
+          }
+          if (self.editor && self.editor.render) self.editor.render();
+        }
+      }
+
+      if (spotlightBtn) {
+        spotlightBtn.addEventListener('click', function () {
+          var catalog = Core.FURNITURE_CATALOG || [];
+          var fcm = catalog.find(function (it) { return it.id === 'fm-rt-01'; }) || catalog[0];
+          selectUnitPreset(fcm);
+        });
+      }
+
+      function renderCatalog() {
+        updateCategoryCounts();
+        var catalog = Core.FURNITURE_CATALOG || [];
+        var activePresetId = (self.editor && self.editor.furniturePreset && self.editor.furniturePreset.id) || 'fm-rt-01';
+
+        var query = currentSearch.trim().toLowerCase();
+        var filtered = catalog.filter(function (it) {
+          // Category filter
+          if (currentCat !== 'all') {
+            var c = (it.category || '').toLowerCase();
+            if (currentCat === 'kitchen_base' && c !== 'kitchen_base') return false;
+            if (currentCat === 'kitchen_wall' && c !== 'kitchen_wall') return false;
+            if (currentCat === 'wardrobe' && c.indexOf('wardrobe') === -1 && c.indexOf('loft') === -1) return false;
+            if (currentCat === 'tv_unit' && c.indexOf('tv') === -1) return false;
+            if (currentCat === 'crockery' && c.indexOf('crockery') === -1) return false;
+            if (currentCat === 'vanity' && c.indexOf('vanity') === -1 && c.indexOf('shoe') === -1 && c.indexOf('dresser') === -1) return false;
+            if (currentCat === 'bed' && c.indexOf('bed') === -1) return false;
+          }
+
+          // Search query filter
+          if (!query) return true;
+          var nameMatch = (it.name || '').toLowerCase().indexOf(query) !== -1;
+          var codeMatch = (it.code || it.id || '').toLowerCase().indexOf(query) !== -1;
+          var catMatch = (it.category || '').toLowerCase().indexOf(query) !== -1;
+          var dimsMatch = it.dimensions ? (String(it.dimensions.W).indexOf(query) !== -1 || String(it.dimensions.H).indexOf(query) !== -1 || String(it.dimensions.D).indexOf(query) !== -1) : false;
+          var matMatch = (it.materials && it.materials.shutter && it.materials.shutter.finish && it.materials.shutter.finish.toLowerCase().indexOf(query) !== -1);
+          return nameMatch || codeMatch || catMatch || dimsMatch || matMatch;
+        });
+
+        var countEl = document.getElementById('furnShowingCount');
+        if (countEl) countEl.textContent = filtered.length;
+
+        var emptyEl = document.getElementById('furnEmptyState');
+        var termSpan = document.getElementById('furnSearchQueryTerm');
+        if (emptyEl) {
+          if (filtered.length === 0) {
+            emptyEl.style.display = 'flex';
+            grid.style.display = 'none';
+            if (termSpan) termSpan.textContent = query;
+          } else {
+            emptyEl.style.display = 'none';
+            grid.style.display = 'grid';
+          }
+        }
+
+        grid.innerHTML = '';
+        filtered.forEach(function (item) {
+          var isSelected = (item.id === activePresetId);
+          var card = document.createElement('div');
+          card.className = 'furn-unit-card' + (isSelected ? ' is-selected' : '');
+
+          var dims = item.dimensions || { W: 1200, H: 2100, D: 600 };
+          var catLabel = (item.category || 'Unit').replace('_', ' ');
+          var rateText = item.customRate ? ('₹ ' + Number(item.customRate).toLocaleString('en-IN')) : (item.pricingOverrides && item.pricingOverrides.baseRate ? ('₹ ' + Number(item.pricingOverrides.baseRate).toLocaleString('en-IN')) : '');
+
+          var shutterText = (item.unitConfig && item.unitConfig.shutters !== undefined) ? (item.unitConfig.shutters + ' Shutter' + (item.unitConfig.shutters !== 1 ? 's' : '')) : '';
+          var doorStyle = (item.unitConfig && item.unitConfig.dstyle) ? item.unitConfig.dstyle.toUpperCase() : 'SLAB';
+          var handleText = (item.unitConfig && item.unitConfig.handle) ? (' · ' + item.unitConfig.handle) : '';
+          var specLine = (shutterText ? (shutterText + ' · ' + doorStyle) : doorStyle) + handleText;
+
+          card.innerHTML =
+            '<div class="furn-card-top">' +
+              '<div class="furn-card-icon-title">' +
+                '<div class="furn-card-icon">' + (item.icon || '🗄️') + '</div>' +
+                '<div class="furn-card-name-wrap">' +
+                  '<div class="furn-card-name">' + item.name + '</div>' +
+                  '<div class="furn-card-code">code: ' + (item.code || item.id) + '</div>' +
+                '</div>' +
+              '</div>' +
+              '<span class="furn-card-category-pill">' + (isSelected ? '✓ Active' : catLabel) + '</span>' +
+            '</div>' +
+            '<div class="furn-card-mid">' +
+              '<div class="furn-card-dims-row">' +
+                '<span class="dim-chip"><b>W</b> ' + dims.W + '</span>' +
+                '<span class="dim-chip"><b>H</b> ' + dims.H + '</span>' +
+                '<span class="dim-chip"><b>D</b> ' + dims.D + ' mm</span>' +
+              '</div>' +
+              '<div class="furn-card-specs">' + specLine + '</div>' +
+            '</div>' +
+            '<div class="furn-card-bottom">' +
+              '<div class="furn-card-price">' + (rateText || '—') + '</div>' +
+              '<button type="button" class="furn-card-select-btn">' + (isSelected ? '✓ Selected' : 'Select & Place ➔') + '</button>' +
+            '</div>';
+
+          card.addEventListener('click', function () {
+            selectUnitPreset(item);
+          });
+
+          grid.appendChild(card);
+        });
+      }
+
+      self._renderFurnCatalog = renderCatalog;
+
+      // Search event
+      if (searchInput) {
+        searchInput.addEventListener('input', function (e) {
+          currentSearch = e.target.value;
+          if (clearSearchBtn) {
+            clearSearchBtn.style.display = currentSearch.length > 0 ? 'flex' : 'none';
+          }
+          renderCatalog();
+        });
+      }
+      if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', function () {
+          currentSearch = '';
+          if (searchInput) { searchInput.value = ''; searchInput.focus(); }
+          clearSearchBtn.style.display = 'none';
+          renderCatalog();
+        });
+      }
+
+      var resetBtn = document.getElementById('furnResetSearchBtn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+          currentSearch = '';
+          currentCat = 'all';
+          if (searchInput) { searchInput.value = ''; }
+          if (clearSearchBtn) clearSearchBtn.style.display = 'none';
+          pills.forEach(function (p) {
+            p.classList.toggle('is-active', p.dataset.cat === 'all');
+          });
+          renderCatalog();
+        });
+      }
+
+      // Category filter pills
+      pills.forEach(function (pill) {
+        pill.addEventListener('click', function () {
+          pills.forEach(function (p) { p.classList.remove('is-active'); });
+          pill.classList.add('is-active');
+          currentCat = pill.dataset.cat || 'all';
+          renderCatalog();
+        });
       });
+
+      // Update initial active badge to FCM -RT (Kitchen Base)
+      var defaultItem = Core.FURNITURE_CATALOG && Core.FURNITURE_CATALOG[0];
+      if (defaultItem) {
+        var iconEl = document.getElementById('planFurnActiveIcon');
+        var nameEl = document.getElementById('planFurnActiveName');
+        var dimsEl = document.getElementById('planFurnActiveDims');
+        if (iconEl) iconEl.textContent = defaultItem.icon || '🍳';
+        if (nameEl) nameEl.textContent = defaultItem.name;
+        if (dimsEl && defaultItem.dimensions) dimsEl.textContent = defaultItem.dimensions.W + '×' + defaultItem.dimensions.H;
+      }
     },
 
     exportSketchUp: function (format) {
@@ -14008,7 +15235,42 @@ function toast(m){
   clearTimeout(toast._t); toast._t=setTimeout(function(){ t.classList.remove("show"); },2400);
 }
 function lam(code){
-  for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code===code) return LAMINATES[i];
+  if(!code) return LAMINATES[0];
+  var c = String(code).trim();
+  var cLower = c.toLowerCase();
+  // 1. Exact match on code
+  for(var i=0;i<LAMINATES.length;i++){
+    if(LAMINATES[i].code === c || LAMINATES[i].code.toLowerCase() === cLower) return LAMINATES[i];
+  }
+  // 2. Exact match on name
+  for(var i=0;i<LAMINATES.length;i++){
+    if(LAMINATES[i].name.toLowerCase() === cLower) return LAMINATES[i];
+  }
+  // 3. Keyword / alias mapping for imported & catalog finish names
+  if(cLower.indexOf('walnut') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 3410' || LAMINATES[i].name.toLowerCase().indexOf('walnut') !== -1) return LAMINATES[i];
+  }
+  if(cLower.indexOf('white') !== -1 || cLower.indexOf('bw_') !== -1 || cLower.indexOf('hdhmr') !== -1 || cLower.indexOf('bwp') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 1135') return LAMINATES[i];
+  }
+  if(cLower.indexOf('gloss') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 6601' || LAMINATES[i].kind === 'gloss') return LAMINATES[i];
+  }
+  if(cLower.indexOf('sage') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 7701') return LAMINATES[i];
+  }
+  if(cLower.indexOf('oak') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 2204') return LAMINATES[i];
+  }
+  if(cLower.indexOf('wenge') !== -1 || cLower.indexOf('dark') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 3411') return LAMINATES[i];
+  }
+  if(cLower.indexOf('concrete') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 5501' || LAMINATES[i].code === 'MDF 8801') return LAMINATES[i];
+  }
+  if(cLower.indexOf('teak') !== -1) {
+    for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 2210') return LAMINATES[i];
+  }
   return LAMINATES[0];
 }
 
@@ -15364,7 +16626,6 @@ function buildScene(){
       var L=sceneLayouts();
       if(GL.ok) GL.show(L); else cssRender(L,u0);
     }
-    if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
     camApply();
     return;
   }
@@ -15950,22 +17211,15 @@ var GL=(function(){
   }
   function show(L){
     clear();
-    // When OrbixHome3D is rendering the 3D floor plan with placed furniture,
-    // all furniture units are rendered directly in their 3D room positions by ArchitecturalRenderer.
-    // If OrbixHome3D has furniture, root is kept clear to avoid duplicate overlapping meshes.
     var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
     var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
-    if(homeObj && homeObj.children && homeObj.children.length > 0 && plan && plan.furniture && plan.furniture.length > 0){
-      root.position.set(0, 0, 0);
-      root.rotation.y = 0;
-      return;
-    }
 
     // Position root to match active furniture unit's floor plan coordinates
-    var furnPos = null, furnRot = 0;
-    if(plan && plan.furniture){
-      var activeU = U();
-      if(activeU && activeU._furnId){
+    var furnPos = null, furnRot = 0, activeFurnId = null;
+    var activeU = U();
+    if(activeU && activeU._furnId){
+      activeFurnId = activeU._furnId;
+      if(plan && plan.furniture){
         var match = plan.furniture.find(function(f){ return f.id === activeU._furnId; });
         if(match && match.pos){
           furnPos = match.pos;
@@ -15973,6 +17227,22 @@ var GL=(function(){
         }
       }
     }
+
+    // When OrbixHome3D is rendering the 3D floor plan with placed furniture,
+    // hide the active unit's static mesh in homeObj so root (which has full parametric
+    // textures, door styles, handles, hinges, and animations) renders it seamlessly!
+    if(homeObj && homeObj.children && homeObj.children.length > 0){
+      homeObj.traverse(function(obj){
+        if(obj.userData && obj.userData.isFurnitureGroup){
+          if(activeFurnId && obj.userData.furnitureId === activeFurnId){
+            obj.visible = false;
+          } else {
+            obj.visible = true;
+          }
+        }
+      });
+    }
+
     if(furnPos){
       root.position.set(furnPos.x, furnPos.z || 0, furnPos.y);
       root.rotation.y = -furnRot;
@@ -16183,22 +17453,33 @@ var GL=(function(){
     }
     return null;
   }
-  function frame(){
+  function frame(forceMode){
     if(!ok) return;
-    /* bounds of the home or furniture */
-    var box=new THREE.Box3();
-    var homeObj=scene ? scene.getObjectByName('OrbixHome3D') : null;
-    if(homeObj && homeObj.children.length>0){
+    var mode = forceMode || window.Orbix3DViewMode || 'unit';
+    var box = new THREE.Box3();
+    var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+
+    // 1. In 'unit' mode, frame the active unit's parametric model in root
+    if (mode === 'unit' && root && root.children.length > 0) {
+      root.updateMatrixWorld(true);
+      root.traverse(function(o){ if(o.isMesh && !o.userData.noFrame) box.expandByObject(o); });
+    }
+
+    // 2. In 'home' mode, or if root was empty, frame the full architectural house
+    if (box.isEmpty() && homeObj && homeObj.children.length > 0) {
       homeObj.updateMatrixWorld(true);
       homeObj.traverse(function(o){ if(o.isMesh && o.visible) box.expandByObject(o); });
       if(box.isEmpty()){
         homeObj.traverse(function(o){ if(o.isMesh) box.expandByObject(o); });
       }
     }
-    if(box.isEmpty()){
+
+    // 3. Fallback to root
+    if (box.isEmpty() && root && root.children.length > 0) {
       root.updateMatrixWorld(true);
       root.traverse(function(o){ if(o.isMesh && !o.userData.noFrame) box.expandByObject(o); });
     }
+
     if(box.isEmpty()) return;
     if(box.max.y-box.min.y<100) box.max.y=box.min.y+1500;
     var size=box.getSize(new THREE.Vector3()), c=box.getCenter(new THREE.Vector3());
@@ -16212,7 +17493,7 @@ var GL=(function(){
     var r=stage.getBoundingClientRect(), aspect=(r.width&&r.height)?r.width/r.height:1.6;
     var t=Math.tan(camera.fov*Math.PI/360);
     var dH=(size.y*1.06)/(2*t), dW=(Math.hypot(size.x,size.z)*0.78)/(2*t*aspect);
-    var k = homeObj ? 1.25 : (ROOM.id ? 1.16 : (U().ctype==="kitchen") ? 1.34 : /^(tv|crockery|dresser)$/.test(U().ctype||"") ? 1.18 : 1.12);
+    var k = (mode === 'home' && homeObj) ? 1.25 : (ROOM.id ? 1.16 : 1.22);
     dist=Math.max(dH,dW)*k+size.z*0.5;
   }
   function updateWallCutaway(){
@@ -17131,6 +18412,15 @@ function renderRail(){
       S.active=i;
       renderRail();
       renderAll();
+      var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+      var rot = 0;
+      if(u && u._furnId && plan && plan.furniture){
+        var f = plan.furniture.find(function(it){ return it.id === u._furnId; });
+        if(f) rot = f.rotY || 0;
+      }
+      cam.yaw = -(rot * 180 / Math.PI) - 24;
+      cam.pitch = -10;
+      if(GL.ok){ GL.frame('unit'); camApply(); }
       if(u._furnId && window.OrbixUI && window.OrbixUI.highlight3DFurniture){
         window.OrbixUI.highlight3DFurniture(u._furnId);
       }
@@ -17945,7 +19235,17 @@ function setView(v){
       window.OrbixUI.syncProjectUnitsTo3DStudio();
     }
     if(typeof buildScene === 'function') buildScene();
-    if(window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') window.OrbixUI.render3DHome();
+    if(window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') window.OrbixUI.render3DHome(true);
+
+    // Frame camera on the active unit
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    var actU = U(), rot = 0;
+    if(actU && actU._furnId && plan && plan.furniture){
+      var f = plan.furniture.find(function(it){ return it.id === actU._furnId; });
+      if(f) rot = f.rotY || 0;
+    }
+    cam.yaw = -(rot * 180 / Math.PI) - 24;
+    cam.pitch = -10;
     fit(); camApply();
   }
   if(v==="panels") renderPanels();
@@ -17967,7 +19267,47 @@ $all(".vtab").forEach(function(b){ b.addEventListener("click",function(e){
     setView(target);
   }
 }); });
-$("#frontBtn").addEventListener("click",function(){ cam.yaw=0; cam.pitch=-2; camApply(); });
+
+function getActiveUnitRotation(){
+  var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+  var actU = U();
+  if(actU && actU._furnId && plan && plan.furniture){
+    var f = plan.furniture.find(function(it){ return it.id === actU._furnId; });
+    if(f) return f.rotY || 0;
+  }
+  return 0;
+}
+
+$("#frontBtn").addEventListener("click",function(){
+  var rot = getActiveUnitRotation();
+  cam.yaw = -(rot * 180 / Math.PI);
+  cam.pitch = -2;
+  camApply();
+});
+
+(function(){
+  var b=$("#viewFocusUnitBtn"); if(!b) return;
+  window.Orbix3DViewMode = 'unit';
+  b.addEventListener("click",function(){
+    if(window.Orbix3DViewMode === 'unit'){
+      window.Orbix3DViewMode = 'home';
+      b.textContent = '🏠 Full House';
+      b.classList.remove('is-on');
+      b.style.background = '#2563eb';
+      b.style.borderColor = '#1d4ed8';
+      toast("3D View: Framing full architectural home");
+    } else {
+      window.Orbix3DViewMode = 'unit';
+      b.textContent = '🎯 Focus Unit';
+      b.classList.add('is-on');
+      b.style.background = '#059669';
+      b.style.borderColor = '#047857';
+      toast("3D View: Framing active unit for customization");
+    }
+    if(GL.ok){ GL.frame(); camApply(); }
+  });
+})();
+
 (function(){
   var b=$("#openBtn"); if(!b) return;
   b.addEventListener("click",function(){
@@ -18002,8 +19342,18 @@ $("#frontBtn").addEventListener("click",function(){ cam.yaw=0; cam.pitch=-2; cam
     }
   });
 })();
-$("#isoBtn").addEventListener("click",function(){ var u=U(); if(u && u.ctype==="kitchen"){ cam.yaw=-34; cam.pitch=-17; cam.zoom=-0.12; } else { cam.yaw=-26; cam.pitch=-7; } camApply(); });
-$("#sideBtn").addEventListener("click",function(){ cam.yaw=-62; cam.pitch=-4; camApply(); });
+$("#isoBtn").addEventListener("click",function(){
+  var rot = getActiveUnitRotation();
+  cam.yaw = -(rot * 180 / Math.PI) - 28;
+  cam.pitch = -12;
+  camApply();
+});
+$("#sideBtn").addEventListener("click",function(){
+  var rot = getActiveUnitRotation();
+  cam.yaw = -(rot * 180 / Math.PI) - 90;
+  cam.pitch = -2;
+  camApply();
+});
 
 /* ═══════════════════════════════════════════════════════════════
    DRILLING — System 32 boring positions

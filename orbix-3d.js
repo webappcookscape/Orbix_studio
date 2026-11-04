@@ -480,25 +480,63 @@
     var cat = furn.category || 'wardrobe';
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
     var isBase = (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity');
+    var isWall = (cat === 'kitchen_wall');
 
-    // Carcass Body
-    var carcassColor = 0xFAF8F5; // Absolute white / light interior
-    var shutterColor = 0x6E4E35; // Brazilian Walnut
-    if (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) {
-      var fin = furn.materials.shutter.finish.toLowerCase();
-      if (fin.indexOf('gloss') !== -1 || fin.indexOf('white') !== -1) shutterColor = 0xEDEBE4;
-      else if (fin.indexOf('walnut') !== -1) shutterColor = 0x5D3E27;
-      else if (fin.indexOf('sage') !== -1) shutterColor = 0x7A8875;
+    // Resolve Carcass & Shutter finishes using lam() if available
+    var shutterFinish = (furn.unitConfig && furn.unitConfig.shutterCol) ||
+                        (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) ||
+                        'MDF 1135';
+    var carcassFinish = (furn.unitConfig && furn.unitConfig.carcass) ||
+                        (furn.materials && furn.materials.carcass && furn.materials.carcass.finish) ||
+                        'MDF 1135';
+
+    function hexStringToNum(hexStr, defaultNum) {
+      if (!hexStr) return defaultNum;
+      var clean = String(hexStr).replace('#', '').trim();
+      var num = parseInt(clean, 16);
+      return isNaN(num) ? defaultNum : num;
     }
 
-    var carcassMat = new THREE.MeshStandardMaterial({ color: carcassColor, roughness: 0.6, metalness: 0.05 });
-    var shutterMat = new THREE.MeshStandardMaterial({ color: shutterColor, roughness: 0.45, metalness: 0.05 });
-    var counterMat = new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.25, metalness: 0.1 }); // Black galaxy
-    var handleMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.8 }); // Black metal
+    var shutterHex = 0x6E4E35; // Default walnut
+    var carcassHex = 0xFAF8F5; // Default white
+
+    if (typeof window !== 'undefined' && typeof window.lam === 'function') {
+      var sLam = window.lam(shutterFinish);
+      if (sLam && sLam.hex) shutterHex = hexStringToNum(sLam.hex, 0x6E4E35);
+      var cLam = window.lam(carcassFinish);
+      if (cLam && cLam.hex) carcassHex = hexStringToNum(cLam.hex, 0xFAF8F5);
+    } else {
+      var sLower = String(shutterFinish).toLowerCase();
+      if (sLower.indexOf('white') !== -1 || sLower.indexOf('gloss') !== -1) shutterHex = 0xEDEBE4;
+      else if (sLower.indexOf('walnut') !== -1) shutterHex = 0x5D3E27;
+      else if (sLower.indexOf('sage') !== -1) shutterHex = 0x7A8875;
+      else if (sLower.indexOf('oak') !== -1) shutterHex = 0xC4A173;
+      else if (sLower.indexOf('wenge') !== -1) shutterHex = 0x38281F;
+      else if (sLower.indexOf('concrete') !== -1) shutterHex = 0x8A8E91;
+    }
+
+    var carcassMat = new THREE.MeshStandardMaterial({ color: carcassHex, roughness: 0.55, metalness: 0.05 });
+    var shutterMat = new THREE.MeshStandardMaterial({ color: shutterHex, roughness: 0.45, metalness: 0.05 });
+
+    // Door style
+    var dstyle = (furn.unitConfig && furn.unitConfig.dstyle) || 'slab';
+    var doorType = (furn.unitConfig && (furn.unitConfig.doorType || furn.unitConfig.type)) || 'hinged';
+
+    // Handle Finish
+    var hfin = (furn.unitConfig && furn.unitConfig.hfinish) || 'black';
+    var handleHex = (hfin === 'brass' || hfin === 'gold') ? 0xD4AF37 : (hfin === 'chrome' || hfin === 'nickel') ? 0xCCCCCC : 0x1A1A1A;
+    var handleMat = new THREE.MeshStandardMaterial({ color: handleHex, roughness: 0.25, metalness: 0.85 });
+
+    // Countertop
+    var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'black' : 'none');
+    var counterHex = 0x1A1A1D;
+    if (counterColorName === 'white' || counterColorName === 'marble') counterHex = 0xF5F5F7;
+    else if (counterColorName === 'quartz' || counterColorName === 'greyq') counterHex = 0x8E9297;
+    var counterMat = new THREE.MeshStandardMaterial({ color: counterHex, roughness: 0.2, metalness: 0.1 });
 
     var plinthH = isBase ? 75 : 0;
-    var counterH = isBase ? 30 : 0;
-    var bodyH = dims.H - plinthH - counterH;
+    var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
+    var bodyH = Math.max(100, dims.H - plinthH - counterH);
 
     // Main Carcass Body
     var bodyGeo = new THREE.BoxGeometry(dims.W, bodyH, dims.D - 20);
@@ -509,7 +547,7 @@
     bodyMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(bodyMesh);
 
-    // Countertop Stone (if kitchen/crockery/vanity)
+    // Countertop Stone (if kitchen base / vanity / crockery)
     if (counterH > 0) {
       var cGeo = new THREE.BoxGeometry(dims.W + 20, counterH, dims.D + 25);
       var cMesh = new THREE.Mesh(cGeo, counterMat);
@@ -521,35 +559,133 @@
     }
 
     // Front Shutters
-    var numShutters = (furn.unitConfig && furn.unitConfig.shutters) || (dims.W > 1200 ? 3 : dims.W > 600 ? 2 : 1);
-    var shW = (dims.W - (numShutters + 1) * 3) / numShutters;
-    var shH = bodyH - 6;
+    var numShutters = (furn.unitConfig && furn.unitConfig.shutters !== undefined) ? furn.unitConfig.shutters : (dims.W > 1200 ? 3 : dims.W > 600 ? 2 : 1);
+    if (numShutters > 0) {
+      var shW = (dims.W - (numShutters + 1) * 3) / numShutters;
+      var shH = bodyH - 6;
 
-    for (var s = 0; s < numShutters; s++) {
-      var sGeo = new THREE.BoxGeometry(shW, shH, 18);
-      var sMesh = new THREE.Mesh(sGeo, shutterMat);
-      var sX = -dims.W / 2 + 3 + shW / 2 + s * (shW + 3);
-      var sY = plinthH + 3 + shH / 2;
-      var sZ = dims.D / 2 - 9;
-      sMesh.position.set(sX, sY, sZ);
-      sMesh.castShadow = true;
-      sMesh.receiveShadow = true;
-      sMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-      fg.add(sMesh);
+      for (var s = 0; s < numShutters; s++) {
+        var sX = -dims.W / 2 + 3 + shW / 2 + s * (shW + 3);
+        var sY = plinthH + 3 + shH / 2;
+        var sZ = dims.D / 2 - 9;
 
-      // Handle pull
-      var hGeo = new THREE.BoxGeometry(16, Math.min(180, shH * 0.4), 16);
-      var hMesh = new THREE.Mesh(hGeo, handleMat);
-      var hX = (s % 2 === 0) ? sX + shW / 2 - 25 : sX - shW / 2 + 25;
-      var hY = isBase ? sY + shH * 0.25 : sY;
-      hMesh.position.set(hX, hY, sZ + 14);
-      hMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-      fg.add(hMesh);
+        if (dstyle === 'aluglass' || dstyle === 'glass') {
+          // Aluminium Profile Glass Shutter: Dark border frame + tinted glass
+          var frameThickness = 45;
+          var borderMat = new THREE.MeshStandardMaterial({ color: 0x1E293B, roughness: 0.3, metalness: 0.8 });
+          var glassMat = new THREE.MeshPhysicalMaterial({
+            color: (furn.unitConfig && furn.unitConfig.glassTint === 'bronze') ? 0x8C6239 : 0xA0B4C8,
+            transparent: true,
+            opacity: 0.45,
+            roughness: 0.1,
+            metalness: 0.1,
+            transmission: 0.8
+          });
+
+          // Outer frame group
+          var frameGroup = new THREE.Group();
+          frameGroup.position.set(sX, sY, sZ);
+
+          var glassGeo = new THREE.BoxGeometry(shW - frameThickness * 2, shH - frameThickness * 2, 6);
+          var glassMesh = new THREE.Mesh(glassGeo, glassMat);
+          glassMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          frameGroup.add(glassMesh);
+
+          // Top, bottom, left, right frame borders
+          var topBorder = new THREE.Mesh(new THREE.BoxGeometry(shW, frameThickness, 18), borderMat);
+          topBorder.position.set(0, shH / 2 - frameThickness / 2, 0);
+          frameGroup.add(topBorder);
+          var botBorder = new THREE.Mesh(new THREE.BoxGeometry(shW, frameThickness, 18), borderMat);
+          botBorder.position.set(0, -shH / 2 + frameThickness / 2, 0);
+          frameGroup.add(botBorder);
+          var lBorder = new THREE.Mesh(new THREE.BoxGeometry(frameThickness, shH - frameThickness * 2, 18), borderMat);
+          lBorder.position.set(-shW / 2 + frameThickness / 2, 0, 0);
+          frameGroup.add(lBorder);
+          var rBorder = new THREE.Mesh(new THREE.BoxGeometry(frameThickness, shH - frameThickness * 2, 18), borderMat);
+          rBorder.position.set(shW / 2 - frameThickness / 2, 0, 0);
+          frameGroup.add(rBorder);
+
+          frameGroup.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(frameGroup);
+        } else if (dstyle === 'shaker') {
+          // Shaker Door: Frame with recessed inner panel
+          var sGroup = new THREE.Group();
+          sGroup.position.set(sX, sY, sZ);
+          var fW2 = 60;
+          var innerP = new THREE.Mesh(new THREE.BoxGeometry(shW - fW2 * 2, shH - fW2 * 2, 10), shutterMat);
+          innerP.position.set(0, 0, -4);
+          sGroup.add(innerP);
+
+          var tRail = new THREE.Mesh(new THREE.BoxGeometry(shW, fW2, 18), shutterMat);
+          tRail.position.set(0, shH / 2 - fW2 / 2, 0);
+          sGroup.add(tRail);
+          var bRail = new THREE.Mesh(new THREE.BoxGeometry(shW, fW2, 18), shutterMat);
+          bRail.position.set(0, -shH / 2 + fW2 / 2, 0);
+          sGroup.add(bRail);
+          var lStile = new THREE.Mesh(new THREE.BoxGeometry(fW2, shH - fW2 * 2, 18), shutterMat);
+          lStile.position.set(-shW / 2 + fW2 / 2, 0, 0);
+          sGroup.add(lStile);
+          var rStile = new THREE.Mesh(new THREE.BoxGeometry(fW2, shH - fW2 * 2, 18), shutterMat);
+          rStile.position.set(shW / 2 - fW2 / 2, 0, 0);
+          sGroup.add(rStile);
+
+          sGroup.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(sGroup);
+        } else {
+          // Slab front or standard shutter
+          var sGeo = new THREE.BoxGeometry(shW, shH, 18);
+          var sMesh = new THREE.Mesh(sGeo, shutterMat);
+          sMesh.position.set(sX, sY, sZ);
+          sMesh.castShadow = true;
+          sMesh.receiveShadow = true;
+          sMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(sMesh);
+        }
+
+        // Handle
+        var handleType = (furn.unitConfig && furn.unitConfig.handle) || 'gprof';
+        if (handleType !== 'none') {
+          var hMesh;
+          if (handleType === 'gprof' || handleType === 'jprof') {
+            // Profile handle on top edge of base unit or side
+            var hLen = Math.min(160, shW * 0.7);
+            var hGeo = new THREE.BoxGeometry(hLen, 16, 22);
+            hMesh = new THREE.Mesh(hGeo, handleMat);
+            hMesh.position.set(sX, isBase ? plinthH + shH - 8 : sY, sZ + 12);
+          } else if (handleType === 'knob') {
+            var kGeo = new THREE.CylinderGeometry(12, 8, 20, 16);
+            hMesh = new THREE.Mesh(kGeo, handleMat);
+            hMesh.rotation.x = Math.PI / 2;
+            var hXk = (s % 2 === 0) ? sX + shW / 2 - 35 : sX - shW / 2 + 35;
+            hMesh.position.set(hXk, isBase ? plinthH + shH - 60 : sY, sZ + 14);
+          } else {
+            // Bar handle
+            var hGeo = new THREE.BoxGeometry(16, Math.min(220, shH * 0.35), 18);
+            hMesh = new THREE.Mesh(hGeo, handleMat);
+            var hX = (s % 2 === 0) ? sX + shW / 2 - 25 : sX - shW / 2 + 25;
+            var hY = isBase ? sY + shH * 0.25 : sY;
+            hMesh.position.set(hX, hY, sZ + 14);
+          }
+          if (hMesh) {
+            hMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+            fg.add(hMesh);
+          }
+        }
+      }
     }
 
     // Position and rotate unit
     fg.position.set(furn.pos.x, furn.pos.z || 0, furn.pos.y);
     fg.rotation.y = -(furn.rotY || 0);
+
+    // If this unit is currently the active unit in 3D Studio, keep its static mesh hidden
+    // so the live parametric model (root) renders in its place
+    if (typeof window !== 'undefined' && window.S && Array.isArray(window.S.units) && typeof window.S.active === 'number') {
+      var actU = window.S.units[window.S.active];
+      if (actU && actU._furnId === furn.id) {
+        fg.visible = (window.Orbix3DViewMode === 'home');
+      }
+    }
 
     return fg;
   };
