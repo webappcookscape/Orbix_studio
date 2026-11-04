@@ -2351,13 +2351,23 @@ var GL=(function(){
               fn.shutterStates = fn.shutterStates || [];
               fn.shutterStates[sIdx] = !fn.shutterStates[sIdx];
               var isOpen = fn.shutterStates[sIdx];
-              var hingeGroup = part.userData.hingeGroup || (part.parent && part.parent.userData && part.parent.userData.isShutterHinge ? part.parent : null);
-              if(hingeGroup){
-                var hingeLeft = (sIdx % 2 === 0);
-                hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.6) : 0;
-                render();
-              } else if(window.OrbixUI && window.OrbixUI.render3DHome){
-                window.OrbixUI.render3DHome(true);
+              if(part.userData.isSliding){
+                var sGroup = part.userData.shutterGroup || (part.parent && part.parent.userData && part.parent.userData.isSliding ? part.parent : null);
+                if(sGroup && sGroup.userData && sGroup.userData.openX !== undefined){
+                  sGroup.position.x = isOpen ? sGroup.userData.openX : sGroup.userData.closedX;
+                  render();
+                } else if(window.OrbixUI && window.OrbixUI.render3DHome){
+                  window.OrbixUI.render3DHome(true);
+                }
+              } else {
+                var hingeGroup = part.userData.hingeGroup || (part.parent && part.parent.userData && part.parent.userData.isShutterHinge ? part.parent : null);
+                if(hingeGroup){
+                  var hingeLeft = (sIdx % 2 === 0);
+                  hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.6) : 0;
+                  render();
+                } else if(window.OrbixUI && window.OrbixUI.render3DHome){
+                  window.OrbixUI.render3DHome(true);
+                }
               }
               if(window.OrbixUI && window.OrbixUI.editor){
                 window.OrbixUI.editor.selected = [{ type: 'furniture', id: fId }];
@@ -2576,6 +2586,94 @@ var GL=(function(){
     try{ return tR.domElement.toDataURL("image/jpeg",0.82); }catch(e){ return null; }
   }
 
+  /* ── 3D Translation Gizmo Arrows: X (Red), Z (Blue), Center (Yellow) ── */
+  var gizmoGroup = null, gizmoMeshes = [];
+  function gizmoInit(){
+    if(gizmoGroup || !scene) return;
+    gizmoGroup = new THREE.Group();
+    gizmoGroup.name = "OrbixGizmo3D";
+    gizmoGroup.visible = false;
+    scene.add(gizmoGroup);
+
+    // X Axis (Red) - Width / along wall translation
+    var xGroup = new THREE.Group();
+    var xShaft = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 260, 16), new THREE.MeshBasicMaterial({ color: 0xef4444, depthTest: false }));
+    xShaft.rotation.z = -Math.PI / 2;
+    xShaft.position.x = 130;
+    var xCone = new THREE.Mesh(new THREE.ConeGeometry(22, 60, 20), new THREE.MeshBasicMaterial({ color: 0xdc2626, depthTest: false }));
+    xCone.rotation.z = -Math.PI / 2;
+    xCone.position.x = 290;
+    xGroup.add(xShaft);
+    xGroup.add(xCone);
+    xGroup.userData = { isGizmo: true, axis: 'x' };
+    xShaft.userData = { isGizmo: true, axis: 'x' };
+    xCone.userData = { isGizmo: true, axis: 'x' };
+    xShaft.renderOrder = 9999;
+    xCone.renderOrder = 9999;
+    gizmoGroup.add(xGroup);
+    gizmoMeshes.push(xShaft, xCone);
+
+    // Z Axis (Blue) - Depth / perpendicular translation
+    var zGroup = new THREE.Group();
+    var zShaft = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 260, 16), new THREE.MeshBasicMaterial({ color: 0x3b82f6, depthTest: false }));
+    zShaft.rotation.x = Math.PI / 2;
+    zShaft.position.z = 130;
+    var zCone = new THREE.Mesh(new THREE.ConeGeometry(22, 60, 20), new THREE.MeshBasicMaterial({ color: 0x2563eb, depthTest: false }));
+    zCone.rotation.x = Math.PI / 2;
+    zCone.position.z = 290;
+    zGroup.add(zShaft);
+    zGroup.add(zCone);
+    zGroup.userData = { isGizmo: true, axis: 'z' };
+    zShaft.userData = { isGizmo: true, axis: 'z' };
+    zCone.userData = { isGizmo: true, axis: 'z' };
+    zShaft.renderOrder = 9999;
+    zCone.renderOrder = 9999;
+    gizmoGroup.add(zGroup);
+    gizmoMeshes.push(zShaft, zCone);
+
+    // Center handle (Gold/Amber) - Free floor translation
+    var centerRing = new THREE.Mesh(new THREE.TorusGeometry(32, 6, 12, 32), new THREE.MeshBasicMaterial({ color: 0xf59e0b, depthTest: false }));
+    centerRing.rotation.x = Math.PI / 2;
+    centerRing.position.y = 8;
+    centerRing.userData = { isGizmo: true, axis: 'xz' };
+    centerRing.renderOrder = 9999;
+    gizmoGroup.add(centerRing);
+    gizmoMeshes.push(centerRing);
+  }
+
+  function gizmoSet(furnObj, furnId){
+    gizmoInit();
+    if(!gizmoGroup) return;
+    if(furnObj && furnId){
+      gizmoGroup.position.set(furnObj.position.x, (furnObj.position.y || 0) + 15, furnObj.position.z);
+      gizmoGroup.userData.furnId = furnId;
+      gizmoGroup.userData.targetObj = furnObj;
+      gizmoGroup.visible = true;
+    } else {
+      gizmoGroup.visible = false;
+      gizmoGroup.userData.furnId = null;
+      gizmoGroup.userData.targetObj = null;
+    }
+    render();
+  }
+
+  function gizmoPick(clientX, clientY){
+    if(!gizmoGroup || !gizmoGroup.visible) return null;
+    if(!ray){ ray = new THREE.Raycaster(); ndc = new THREE.Vector2(); }
+    var r = stage.getBoundingClientRect();
+    ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    var hits = ray.intersectObjects(gizmoMeshes, true);
+    for(var i = 0; i < hits.length; i++){
+      var o = hits[i].object;
+      while(o && !o.userData.axis && o !== gizmoGroup) o = o.parent;
+      if(o && o.userData && o.userData.axis){
+        return { axis: o.userData.axis, point: hits[i].point, mesh: o };
+      }
+    }
+    return null;
+  }
+
   /* test hook: which material kind sits on each thin face, per role */
   function debug(){
     var out={};
@@ -2587,7 +2685,7 @@ var GL=(function(){
     });
     return out;
   }
-  return {init:init,show:show,frame:frame,apply:apply,updateWallCutaway:updateWallCutaway,debug:debug,toggleAll:toggleAll,settle:settle,pick:pick,pickFurniture:pickFurniture,pickPanel:pickPanel,clearSelect:function(){ clearSelect(); render(); },fxInit:fxInit,fxToggle:fxToggle,setDoors:function(t){ for(var id in doors){ var d=doors[id]; d.t=Math.max(0,Math.min(1,t))*(d.target||1); if(!d.target){ d.req=1; resolve(); d.t=Math.max(0,Math.min(1,t))*d.target; } applyDoor(d); } render(); },setExplode:function(t){ if(!xItems) explodeSetup(); xT=t; xSet(t); },handlesSet:handlesSet,plateSet:plateSet,handleAt:handleAt,floorPoint:floorPoint,thumb:thumb,snapshot:snapshot,explode:explode,assemble:assemble,get exploded(){ return xT>0.5; },get fx(){ return !!composer; },lights:function(){ var n=[]; if(scene) scene.traverse(function(o){ if(o.isLight) n.push(o.type+":"+o.intensity); }); return n; },get ok(){ return ok; },getScene:function(){ return scene; },getTarget:function(){ return target; },setTarget:function(x,y,z){ if(target) target.set(x,y,z); }};
+  return {init:init,show:show,frame:frame,apply:apply,updateWallCutaway:updateWallCutaway,debug:debug,toggleAll:toggleAll,settle:settle,pick:pick,pickFurniture:pickFurniture,pickPanel:pickPanel,clearSelect:function(){ clearSelect(); render(); },fxInit:fxInit,fxToggle:fxToggle,setDoors:function(t){ for(var id in doors){ var d=doors[id]; d.t=Math.max(0,Math.min(1,t))*(d.target||1); if(!d.target){ d.req=1; resolve(); d.t=Math.max(0,Math.min(1,t))*d.target; } applyDoor(d); } render(); },setExplode:function(t){ if(!xItems) explodeSetup(); xT=t; xSet(t); },handlesSet:handlesSet,plateSet:plateSet,handleAt:handleAt,floorPoint:floorPoint,thumb:thumb,snapshot:snapshot,explode:explode,assemble:assemble,get exploded(){ return xT>0.5; },get fx(){ return !!composer; },lights:function(){ var n=[]; if(scene) scene.traverse(function(o){ if(o.isLight) n.push(o.type+":"+o.intensity); }); return n; },get ok(){ return ok; },getScene:function(){ return scene; },getTarget:function(){ return target; },setTarget:function(x,y,z){ if(target) target.set(x,y,z); },gizmoSet:gizmoSet,gizmoPick:gizmoPick,getGizmoTarget:function(){ return gizmoGroup?gizmoGroup.userData.targetObj:null; },getGizmoFurnId:function(){ return gizmoGroup?gizmoGroup.userData.furnId:null; }};
 })();
 
 /* ═══════════════════════════════════════════════════════════════
@@ -3118,13 +3216,41 @@ function camApply(){
     }
   });
 
-  // Capture phase: Handle furniture only when in interact mode, or room resize handles
+  var gizmoDrag = null;
+  // Capture phase: Handle 3D Gizmo arrows and furniture selection
   stage.addEventListener("pointerdown", function(e){
     downAt={ x: e.clientX, y: e.clientY, t: Date.now() };
 
-    // 1. Only drag furniture if explicitly in 'interact' mode!
-    // In 'rotate' or 'pan' mode, clicking/dragging operates strictly on camera!
-    if(studioCamMode === 'interact' && GL.ok && GL.pickFurniture && e.button === 0){
+    // 0. Check 3D Gizmo translation arrows FIRST!
+    // "on clicking unit it should show arrow like this then only it should be movable"
+    if(GL.ok && GL.gizmoPick && e.button === 0){
+      var gHit = GL.gizmoPick(e.clientX, e.clientY);
+      if(gHit){
+        var gObj = GL.getGizmoTarget();
+        var gId = GL.getGizmoFurnId();
+        if(gObj && gId){
+          var fp = GL.floorPoint(e.clientX, e.clientY) || { x: gObj.position.x, z: gObj.position.z };
+          gizmoDrag = {
+            axis: gHit.axis,
+            id: gId,
+            obj: gObj,
+            startX: e.clientX,
+            startY: e.clientY,
+            startPos: { x: gObj.position.x, z: gObj.position.z },
+            startFloor: fp,
+            moved: false
+          };
+          stage.setPointerCapture(e.pointerId);
+          stage.classList.add("grab");
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          return;
+        }
+      }
+    }
+
+    // 1. Click unit: Show translation arrow gizmo, DO NOT drag unit
+    if(GL.ok && GL.pickFurniture && e.button === 0){
       var fHit = GL.pickFurniture(e.clientX, e.clientY);
       if(fHit){
         var homeObj = (GL.getScene && GL.getScene()) ? GL.getScene().getObjectByName('OrbixHome3D') : null;
@@ -3134,23 +3260,20 @@ function camApply(){
         }
         if(!groupObj) groupObj = fHit.object;
 
-        furnDrag = {
-          id: fHit.id,
-          obj: groupObj,
-          startX: e.clientX,
-          startY: e.clientY,
-          moved: false,
-          offset: { x: 0, z: 0 }
-        };
-        var p = GL.floorPoint(e.clientX, e.clientY);
-        if(p){
-          furnDrag.offset = { x: groupObj.position.x - p.x, z: groupObj.position.z - p.z };
+        // Show Gizmo Arrows for this unit!
+        GL.gizmoSet(groupObj, fHit.id);
+
+        if(window.OrbixUI && window.OrbixUI.editor){
+          window.OrbixUI.editor.selected = [{ type: 'furniture', id: fHit.id }];
+          if(window.OrbixUI.editor.render) window.OrbixUI.editor.render();
+          if(window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
         }
-        stage.setPointerCapture(e.pointerId);
-        stage.classList.add("grab");
-        e.stopImmediatePropagation();
-        e.preventDefault();
-        return;
+        if(window.OrbixUI && typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function'){
+          window.OrbixUI.selectFurnitureIn3DStudio(fHit.id);
+        }
+      } else {
+        // Clicked background: hide gizmo
+        if(!hDrag && GL.gizmoSet) GL.gizmoSet(null);
       }
     }
 
@@ -3168,7 +3291,33 @@ function camApply(){
   }, true);
 
   stage.addEventListener("pointermove", function(e){
-    // Furniture drag in 3D
+    // 3D Gizmo Arrow Drag: move unit strictly along selected axis
+    if(gizmoDrag){
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      var curF = GL.floorPoint(e.clientX, e.clientY);
+      if(curF){
+        var dx = curF.x - gizmoDrag.startFloor.x;
+        var dz = curF.z - gizmoDrag.startFloor.z;
+        if(Math.hypot(e.clientX - gizmoDrag.startX, e.clientY - gizmoDrag.startY) > 3){
+          gizmoDrag.moved = true;
+          stage.style.cursor = "grabbing";
+        }
+        if(gizmoDrag.axis === 'x'){
+          gizmoDrag.obj.position.x = gizmoDrag.startPos.x + dx;
+        } else if(gizmoDrag.axis === 'z'){
+          gizmoDrag.obj.position.z = gizmoDrag.startPos.z + dz;
+        } else {
+          gizmoDrag.obj.position.x = gizmoDrag.startPos.x + dx;
+          gizmoDrag.obj.position.z = gizmoDrag.startPos.z + dz;
+        }
+        GL.gizmoSet(gizmoDrag.obj, gizmoDrag.id);
+        GL.settle();
+      }
+      return;
+    }
+
+    // Furniture drag in 3D (legacy fallback)
     if(furnDrag){
       e.stopImmediatePropagation();
       e.preventDefault();
@@ -3198,6 +3347,52 @@ function camApply(){
   }, true);
 
   stage.addEventListener("pointerup", function(e){
+    if(gizmoDrag){
+      var gd = gizmoDrag;
+      gizmoDrag = null;
+      e.stopImmediatePropagation();
+      stage.classList.remove("grab");
+      stage.style.cursor = "";
+      try{ stage.releasePointerCapture(e.pointerId); }catch(err){}
+
+      if(gd.moved){
+        var finalX = Math.round(gd.obj.position.x / 50) * 50;
+        var finalZ = Math.round(gd.obj.position.z / 50) * 50;
+        gd.obj.position.x = finalX;
+        gd.obj.position.z = finalZ;
+        GL.gizmoSet(gd.obj, gd.id);
+        GL.settle();
+
+        var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+        if(plan){
+          var list = plan.furniture || [];
+          for(var i = 0; i < list.length; i++){
+            if(list[i].id === gd.id){
+              list[i].pos.x = finalX;
+              list[i].pos.y = finalZ;
+              var rms = plan.rooms || [];
+              for(var r = 0; r < rms.length; r++){
+                if(window.OrbixCore && window.OrbixCore.Vec2 && window.OrbixCore.Vec2.pointInPolygon(list[i].pos, rms[r].polygon)){
+                  list[i].roomId = rms[r].id;
+                  break;
+                }
+              }
+              break;
+            }
+          }
+          if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+          if(window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+          if(window.OrbixUI && window.OrbixUI.editor){
+            window.OrbixUI.editor.pushHistory('Move Furniture (3D Gizmo)');
+            window.OrbixUI.editor.render();
+          }
+          if(window.OrbixUI && window.OrbixUI.renderBOQ) window.OrbixUI.renderBOQ();
+          if(window.OrbixUI && window.OrbixUI.renderInspector) window.OrbixUI.renderInspector([{ type: 'furniture', id: gd.id }]);
+        }
+      }
+      return;
+    }
+
     if(furnDrag){
       var fd = furnDrag;
       furnDrag = null;
@@ -3208,24 +3403,24 @@ function camApply(){
 
       if(fd.moved){
         // Snap to 50mm grid
-        var finalX = Math.round(fd.obj.position.x / 50) * 50;
-        var finalZ = Math.round(fd.obj.position.z / 50) * 50;
-        fd.obj.position.x = finalX;
-        fd.obj.position.z = finalZ;
+        var finalX2 = Math.round(fd.obj.position.x / 50) * 50;
+        var finalZ2 = Math.round(fd.obj.position.z / 50) * 50;
+        fd.obj.position.x = finalX2;
+        fd.obj.position.z = finalZ2;
         GL.settle();
 
         // Sync with project data
-        var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
-        if(plan){
-          var list = plan.furniture || [];
-          for(var i = 0; i < list.length; i++){
-            if(list[i].id === fd.id){
-              list[i].pos.x = finalX;
-              list[i].pos.y = finalZ;
-              var rms = plan.rooms || [];
-              for(var r = 0; r < rms.length; r++){
-                if(window.OrbixCore && window.OrbixCore.Vec2 && window.OrbixCore.Vec2.pointInPolygon(list[i].pos, rms[r].polygon)){
-                  list[i].roomId = rms[r].id;
+        var plan2 = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+        if(plan2){
+          var list2 = plan2.furniture || [];
+          for(var i2 = 0; i2 < list2.length; i2++){
+            if(list2[i2].id === fd.id){
+              list2[i2].pos.x = finalX2;
+              list2[i2].pos.y = finalZ2;
+              var rms2 = plan2.rooms || [];
+              for(var r2 = 0; r2 < rms2.length; r2++){
+                if(window.OrbixCore && window.OrbixCore.Vec2 && window.OrbixCore.Vec2.pointInPolygon(list2[i2].pos, rms2[r2].polygon)){
+                  list2[i2].roomId = rms2[r2].id;
                   break;
                 }
               }

@@ -861,57 +861,129 @@
       }
     }
 
-    // 8. Front Hinged Shutters with Opening Pivots
+    // 8. Front Shutters (Hinged or Sliding Mechanisms)
     if (numShutters > 0) {
-      var shW = (dims.W - (numShutters + 1) * 3) / numShutters;
-      var shH = Math.max(150, bodyH - totalDrawersH - 6);
+      var isSliding = (furn.unitConfig && (furn.unitConfig.doorType === "sliding" || furn.unitConfig.type === "sliding")) ||
+                      furn.doorType === "sliding" ||
+                      furn.type === "sliding" ||
+                      (furn.modelType && /sliding/i.test(furn.modelType)) ||
+                      (furn.id && /sliding/i.test(furn.id)) ||
+                      (furn.name && /sliding/i.test(furn.name));
+
       var shutterBaseY = plinthH + totalDrawersH + 3;
-      var hingeY = shutterBaseY + shH / 2;
 
-      for (var s = 0; s < numShutters; s++) {
-        var hingeLeft = (s % 2 === 0);
-        var sLeftX = -dims.W / 2 + 3 + s * (shW + 3);
-        var hingeX = hingeLeft ? sLeftX : (sLeftX + shW);
-        var hingeZ = dims.D / 2 - 9;
+      if (isSliding) {
+        // Sliding Doors on Dual Tracks
+        var slideCount = Math.max(2, numShutters);
+        var slideW = (dims.W / slideCount) + 30; // Overlapping center margin
+        var slideH = Math.max(150, bodyH - totalDrawersH - 8);
+        var slideCenterY = shutterBaseY + slideH / 2;
 
-        var hingeGroup = new THREE.Group();
-        hingeGroup.name = 'ShutterHinge_' + s;
-        hingeGroup.position.set(hingeX, hingeY, hingeZ);
-        hingeGroup.userData = { isShutterHinge: true, shutterIdx: s, furnitureId: furn.id };
+        for (var sl = 0; sl < slideCount; sl++) {
+          var isFrontTrack = (sl % 2 === 0);
+          var trackZ = dims.D / 2 - (isFrontTrack ? 4 : 22);
+          var closedX = -dims.W / 2 + slideW / 2 + sl * ((dims.W - slideW) / Math.max(1, slideCount - 1));
+          var slideDir = isFrontTrack ? 1 : -1;
+          var openOffset = slideDir * (slideW * 0.85);
+          var openX = closedX + openOffset;
 
-        var sGeo = new THREE.BoxGeometry(shW, shH, 18);
-        var sMesh = new THREE.Mesh(sGeo, getShutterMaterial(s));
-        var localX = hingeLeft ? (shW / 2) : (-shW / 2);
-        sMesh.position.set(localX, 0, 0);
-        sMesh.castShadow = true;
-        sMesh.receiveShadow = true;
-        sMesh.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-        hingeGroup.add(sMesh);
+          var slideGroup = new THREE.Group();
+          slideGroup.name = "ShutterSlide_" + sl;
+          slideGroup.userData = {
+            isShutterGroup: true,
+            isSliding: true,
+            shutterIdx: sl,
+            furnitureId: furn.id,
+            closedX: closedX,
+            openX: openX,
+            slideDir: slideDir
+          };
 
-        // Shutter Pull Handle (Vertical)
-        var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
-        if (hGroup) {
-          var handleX = hingeLeft ? (shW - 25) : (-shW + 25);
-          var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
-          hGroup.position.set(handleX, handleY, 9);
-          hGroup.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-          hGroup.traverse(function (c) {
-            if (c.isMesh) {
-              c.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-            }
-          });
-          hingeGroup.add(hGroup);
+          var isOpenSlide = !!(furn.shutterStates && furn.shutterStates[sl]);
+          slideGroup.position.set(isOpenSlide ? openX : closedX, slideCenterY, trackZ);
+
+          var slGeo = new THREE.BoxGeometry(slideW, slideH, 18);
+          var slMesh = new THREE.Mesh(slGeo, getShutterMaterial(sl));
+          slMesh.castShadow = true;
+          slMesh.receiveShadow = true;
+          slMesh.userData = {
+            isFurniturePart: true,
+            isShutter: true,
+            isSliding: true,
+            shutterIdx: sl,
+            shutterGroup: slideGroup,
+            parentGroup: fg,
+            furnitureId: furn.id
+          };
+          slideGroup.add(slMesh);
+
+          // Handle for sliding door (placed near outer edge)
+          var slHGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, slideH * 0.35));
+          if (slHGroup) {
+            var handleOffset = isFrontTrack ? (-slideW / 2 + 25) : (slideW / 2 - 25);
+            slHGroup.position.set(handleOffset, (isBase || drawersCount > 0) ? slideH * 0.25 : 0, 9);
+            slHGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: true, shutterIdx: sl, shutterGroup: slideGroup, parentGroup: fg, furnitureId: furn.id };
+            slHGroup.traverse(function (c) {
+              if (c.isMesh) {
+                c.userData = { isFurniturePart: true, isShutter: true, isSliding: true, shutterIdx: sl, shutterGroup: slideGroup, parentGroup: fg, furnitureId: furn.id };
+              }
+            });
+            slideGroup.add(slHGroup);
+          }
+
+          fg.add(slideGroup);
         }
+      } else {
+        // Standard Hinged Shutters
+        var shW = (dims.W - (numShutters + 1) * 3) / numShutters;
+        var shH = Math.max(150, bodyH - totalDrawersH - 6);
+        var hingeY = shutterBaseY + shH / 2;
 
-        // Shutter Open / Close rotation (~108 degrees)
-        var isOpen = !!(furn.shutterStates && furn.shutterStates[s]);
-        if (isOpen) {
-          hingeGroup.rotation.y = hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.6;
-        } else {
-          hingeGroup.rotation.y = 0;
+        for (var s = 0; s < numShutters; s++) {
+          var hingeLeft = (s % 2 === 0);
+          var sLeftX = -dims.W / 2 + 3 + s * (shW + 3);
+          var hingeX = hingeLeft ? sLeftX : (sLeftX + shW);
+          var hingeZ = dims.D / 2 - 9;
+
+          var hingeGroup = new THREE.Group();
+          hingeGroup.name = "ShutterHinge_" + s;
+          hingeGroup.position.set(hingeX, hingeY, hingeZ);
+          hingeGroup.userData = { isShutterHinge: true, shutterIdx: s, furnitureId: furn.id };
+
+          var sGeo = new THREE.BoxGeometry(shW, shH, 18);
+          var sMesh = new THREE.Mesh(sGeo, getShutterMaterial(s));
+          var localX = hingeLeft ? (shW / 2) : (-shW / 2);
+          sMesh.position.set(localX, 0, 0);
+          sMesh.castShadow = true;
+          sMesh.receiveShadow = true;
+          sMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+          hingeGroup.add(sMesh);
+
+          // Shutter Pull Handle (Vertical)
+          var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
+          if (hGroup) {
+            var handleX = hingeLeft ? (shW - 25) : (-shW + 25);
+            var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
+            hGroup.position.set(handleX, handleY, 9);
+            hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hGroup.traverse(function (c) {
+              if (c.isMesh) {
+                c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+              }
+            });
+            hingeGroup.add(hGroup);
+          }
+
+          // Shutter Open / Close rotation (~108 degrees)
+          var isOpen = !!(furn.shutterStates && furn.shutterStates[s]);
+          if (isOpen) {
+            hingeGroup.rotation.y = hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.6;
+          } else {
+            hingeGroup.rotation.y = 0;
+          }
+
+          fg.add(hingeGroup);
         }
-
-        fg.add(hingeGroup);
       }
     }
 

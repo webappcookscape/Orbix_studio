@@ -329,10 +329,18 @@
               }
             });
           } else if (r.status === 401) {
-            console.warn('[OrbixProjects] Session unauthenticated on server. Prompting login.');
-            self.currentUser = null;
-            try { localStorage.removeItem('orbix_current_user'); } catch (e) { }
-            self.showLogin();
+            // Server updated or session temporarily unauthenticated: retain local user and projects
+            var cached = null;
+            try { cached = JSON.parse(localStorage.getItem('orbix_current_user')); } catch (e) { }
+            if (cached && cached.id) {
+              console.log('[OrbixProjects] Retaining session for ' + cached.name + ' across server update.');
+              self.currentUser = cached;
+              self.showApp();
+              self.updateUserUI();
+            } else {
+              self.currentUser = null;
+              self.showLogin();
+            }
           }
         })
         .catch(function (err) {
@@ -733,10 +741,18 @@
     fetchProjects: function (cb) {
       var self = this;
       if (!this.currentUser) {
-        self.projects = [];
-        self.renderProjectsList();
-        if (cb) cb();
-        return;
+        try {
+          var savedUser = JSON.parse(localStorage.getItem('orbix_current_user'));
+          if (savedUser && savedUser.id) {
+            self.currentUser = savedUser;
+          }
+        } catch (e) { }
+        if (!this.currentUser) {
+          self.projects = [];
+          self.renderProjectsList();
+          if (cb) cb();
+          return;
+        }
       }
 
       var roleParam = this.isAdmin() ? 'admin' : 'employee';
@@ -1016,7 +1032,7 @@
       }
 
       // Fetch fresh live project from PostgreSQL
-      fetch('/api/projects/' + id)
+      OrbixProjects.apiFetch('/api/projects/' + id)
         .then(function (r) { return r.json(); })
         .then(function (data) {
           var liveProj = data.project || project;

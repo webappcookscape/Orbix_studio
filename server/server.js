@@ -58,7 +58,7 @@ app.use(async (req, res, next) => {
       if (user) {
         req.user = user;
       } else {
-        req.session.destroy(() => {});
+        // Do not immediately destroy session on transient server updates; retain session
         req.user = null;
       }
     } catch (err) {

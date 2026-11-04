@@ -735,7 +735,7 @@
         self.deleteSelected();
         return;
       }
-      if (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R') {
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R')) {
         e.preventDefault();
         var rotated = false;
         for (var s = 0; s < self.selected.length; s++) {

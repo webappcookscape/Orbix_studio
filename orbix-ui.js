@@ -963,112 +963,144 @@
             '</div>';
         }
 
+        var isSliding = (fn.unitConfig && (fn.unitConfig.doorType === "sliding" || fn.unitConfig.type === "sliding")) ||
+                        fn.doorType === "sliding" ||
+                        fn.type === "sliding" ||
+                        (fn.modelType && /sliding/i.test(fn.modelType)) ||
+                        (fn.name && /sliding/i.test(fn.name));
+
         panel.innerHTML =
-          '<div class="insp-title">Modular Unit Properties</div>' +
-          '<div class="insp-row"><label>Item Name</label><input type="text" id="inspFurnName" value="' + fn.name + '"></div>' +
-          '<div class="insp-row"><label>Room Assignment</label><select id="inspFurnRoom">' + roomOptions + '</select></div>' +
-          '<div class="insp-row"><label>Elevation from Floor (mm)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
-          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Standard: 0 mm (Base) / 1500 mm (Wall-Mounted)</div>' +
-          '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspFurnW" value="' + fn.dimensions.W + '" step="50"></div>' +
-          '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspFurnH" value="' + fn.dimensions.H + '" step="50"></div>' +
-          '<div class="insp-row"><label>Depth (mm)</label><input type="number" id="inspFurnD" value="' + fn.dimensions.D + '" step="50"></div>' +
-          '<div class="insp-row"><label>Door Style</label><select id="inspFurnDoorStyle">' +
-            '<option value="slab"' + (doorStyle === 'slab' ? ' selected' : '') + '>Slab · Flat</option>' +
-            '<option value="shaker"' + (doorStyle === 'shaker' ? ' selected' : '') + '>Shaker · Frame</option>' +
-            '<option value="aluglass"' + (doorStyle === 'aluglass' ? ' selected' : '') + '>Aluminium Profile Glass</option>' +
-            '<option value="fluted"' + (doorStyle === 'fluted' ? ' selected' : '') + '>Fluted / Reeded</option>' +
-            '<option value="louvered"' + (doorStyle === 'louvered' ? ' selected' : '') + '>Louvered Slats</option>' +
-            '<option value="cane"' + (doorStyle === 'cane' ? ' selected' : '') + '>Cane / Rattan</option>' +
-            '<option value="glass"' + (doorStyle === 'glass' ? ' selected' : '') + '>Glass Frame</option>' +
-            '<option value="mirror"' + (doorStyle === 'mirror' ? ' selected' : '') + '>Mirror Front</option>' +
-          '</select></div>' +
-          '<div class="insp-row"><label>Shutters</label><input type="number" id="inspFurnShutters" value="' + shuttersCount + '" min="0" max="8"></div>' +
-          '<div class="insp-row"><label>Drawers</label><input type="number" id="inspFurnDrawers" value="' + drawersCount + '" min="0" max="6"></div>' +
-          '<div class="insp-row"><label>Handle Type</label><select id="inspFurnHandle">' +
-            '<option value="gprof"' + (handleType === 'gprof' ? ' selected' : '') + '>G-Profile (Continuous)</option>' +
-            '<option value="jprof"' + (handleType === 'jprof' ? ' selected' : '') + '>J-Profile</option>' +
-            '<option value="edge"' + (handleType === 'edge' ? ' selected' : '') + '>Edge Pull</option>' +
-            '<option value="bar"' + (handleType === 'bar' || handleType === 'bar128' || handleType === 'bar224' ? ' selected' : '') + '>Bar Handle</option>' +
-            '<option value="knob"' + (handleType === 'knob' ? ' selected' : '') + '>Round Knob</option>' +
-            '<option value="gola"' + (handleType === 'gola' ? ' selected' : '') + '>Gola Profile</option>' +
-            '<option value="none"' + (handleType === 'none' ? ' selected' : '') + '>None (Push-to-open)</option>' +
-          '</select></div>' +
-          (isBaseUnit ? ('<div class="insp-row"><label>Countertop</label><select id="inspFurnCounter">' +
-            '<option value="black"' + (counterType === 'black' ? ' selected' : '') + '>Black Galaxy Granite</option>' +
-            '<option value="white"' + (counterType === 'white' || counterType === 'marble' ? ' selected' : '') + '>White Marble</option>' +
-            '<option value="quartz"' + (counterType === 'quartz' ? ' selected' : '') + '>Pure White Quartz</option>' +
-            '<option value="greyq"' + (counterType === 'greyq' ? ' selected' : '') + '>Grey Quartz</option>' +
-            '<option value="none"' + (counterType === 'none' ? ' selected' : '') + '>None (Carcass Top)</option>' +
-          '</select></div>') : '') +
-          '<div class="insp-row"><label>Shutter Finish (Laminate)</label><select id="inspFurnShutterCol">' +
-            '<option value="MDF 1135"' + (shutterFinish.indexOf('White') !== -1 || shutterFinish.indexOf('1135') !== -1 ? ' selected' : '') + '>MDF 1135 · Absolute White</option>' +
-            '<option value="MDF 3410"' + (shutterFinish.indexOf('Walnut') !== -1 || shutterFinish.indexOf('3410') !== -1 ? ' selected' : '') + '>MDF 3410 · Brazilian Walnut</option>' +
-            '<option value="MDF 2204"' + (shutterFinish.indexOf('Oak') !== -1 || shutterFinish.indexOf('2204') !== -1 ? ' selected' : '') + '>MDF 2204 · Sonoma Oak</option>' +
-            '<option value="MDF 7701"' + (shutterFinish.indexOf('Sage') !== -1 || shutterFinish.indexOf('7701') !== -1 ? ' selected' : '') + '>MDF 7701 · Sage Green Matte</option>' +
-            '<option value="MDF 6601"' + (shutterFinish.indexOf('Gloss') !== -1 || shutterFinish.indexOf('6601') !== -1 ? ' selected' : '') + '>MDF 6601 · 4x Tuff Gloss White</option>' +
-            '<option value="MDF 3411"' + (shutterFinish.indexOf('Wenge') !== -1 || shutterFinish.indexOf('3411') !== -1 ? ' selected' : '') + '>MDF 3411 · Wenge Woodgrain</option>' +
-            '<option value="MDF 5501"' + (shutterFinish.indexOf('Concrete') !== -1 || shutterFinish.indexOf('5501') !== -1 ? ' selected' : '') + '>MDF 5501 · Concrete Stone</option>' +
-            '<option value="MDF 2210"' + (shutterFinish.indexOf('Teak') !== -1 || shutterFinish.indexOf('2210') !== -1 ? ' selected' : '') + '>MDF 2210 · Burma Teak</option>' +
-            '<option value="MDF 7702"' + (shutterFinish.indexOf('Charcoal') !== -1 || shutterFinish.indexOf('7702') !== -1 ? ' selected' : '') + '>MDF 7702 · Charcoal Grey Matte</option>' +
-            '<option value="MDF 7707"' + (shutterFinish.indexOf('Navy') !== -1 || shutterFinish.indexOf('7707') !== -1 ? ' selected' : '') + '>MDF 7707 · Navy Matte</option>' +
-          '</select></div>' +
-          '<div class="insp-row"><label>Carcass</label><select id="inspFurnCarcass">' +
-            '<option value="Absolute White"' + (carcassFinish.indexOf('White') !== -1 || carcassFinish === 'MDF 1135' ? ' selected' : '') + '>Absolute White (MDF 1135)</option>' +
-            '<option value="Brazilian Horizontal Walnut"' + (carcassFinish.indexOf('Walnut') !== -1 || carcassFinish === 'MDF 3410' ? ' selected' : '') + '>Walnut Woodgrain (MDF 3410)</option>' +
-            '<option value="Sonoma Oak"' + (carcassFinish.indexOf('Oak') !== -1 || carcassFinish === 'MDF 2204' ? ' selected' : '') + '>Sonoma Oak (MDF 2204)</option>' +
-            '<option value="Dark Wenge"' + (carcassFinish.indexOf('Wenge') !== -1 || carcassFinish === 'MDF 3411' ? ' selected' : '') + '>Dark Wenge (MDF 3411)</option>' +
-            '<option value="Natural Teak"' + (carcassFinish.indexOf('Teak') !== -1 || carcassFinish === 'MDF 2210' ? ' selected' : '') + '>Natural Teak (MDF 2210)</option>' +
-            '<option value="Grey Oak Scandi"' + (carcassFinish.indexOf('Grey') !== -1 || carcassFinish === 'MDF 4402' ? ' selected' : '') + '>Grey Oak (MDF 4402)</option>' +
-            '<option value="Graphite Grey"' + (carcassFinish.indexOf('Graphite') !== -1 || carcassFinish === 'MDF 5501' ? ' selected' : '') + '>Graphite Grey (MDF 5501)</option>' +
-            '<option value="Sage Green Matte"' + (carcassFinish.indexOf('Sage') !== -1 || carcassFinish === 'MDF 7701' ? ' selected' : '') + '>Sage Green Matte (MDF 7701)</option>' +
-            '<option value="Charcoal Matte"' + (carcassFinish.indexOf('Charcoal') !== -1 || carcassFinish === 'MDF 7702' ? ' selected' : '') + '>Charcoal Matte (MDF 7702)</option>' +
-            '<option value="Concrete Look"' + (carcassFinish.indexOf('Concrete') !== -1 || carcassFinish === 'MDF 8801' ? ' selected' : '') + '>Concrete Look (MDF 8801)</option>' +
-            '<option value="Ivory Cream"' + (carcassFinish.indexOf('Ivory') !== -1 || carcassFinish === 'MDF 1101' ? ' selected' : '') + '>Ivory Cream (MDF 1101)</option>' +
-          '</select></div>' +
-          '<div class="insp-row"><label>Shutter Finish</label><select id="inspFurnShutter">' +
-            '<option value="Brazilian Horizontal Walnut"' + (shutterFinish.indexOf('Walnut') !== -1 || shutterFinish === 'MDF 3410' ? ' selected' : '') + '>Brazilian Walnut (MDF 3410)</option>' +
-            '<option value="Absolute White Gloss"' + (shutterFinish.indexOf('Gloss') !== -1 || shutterFinish === 'MDF 6601' ? ' selected' : '') + '>Absolute White Gloss (MDF 6601)</option>' +
-            '<option value="Absolute White Matte"' + (shutterFinish.indexOf('White') !== -1 && shutterFinish.indexOf('Gloss') === -1 || shutterFinish === 'MDF 1135' ? ' selected' : '') + '>White Matte (MDF 1135)</option>' +
-            '<option value="Sonoma Oak"' + (shutterFinish.indexOf('Oak') !== -1 || shutterFinish === 'MDF 2204' ? ' selected' : '') + '>Sonoma Oak (MDF 2204)</option>' +
-            '<option value="Sage Green Matte"' + (shutterFinish.indexOf('Sage') !== -1 || shutterFinish === 'MDF 7701' ? ' selected' : '') + '>Sage Green Matte (MDF 7701)</option>' +
-            '<option value="Dark Wenge"' + (shutterFinish.indexOf('Wenge') !== -1 || shutterFinish === 'MDF 3411' ? ' selected' : '') + '>Dark Wenge (MDF 3411)</option>' +
-            '<option value="Natural Teak"' + (shutterFinish.indexOf('Teak') !== -1 || shutterFinish === 'MDF 2210' ? ' selected' : '') + '>Natural Teak (MDF 2210)</option>' +
-            '<option value="Grey Oak Scandi"' + (shutterFinish.indexOf('Grey Oak') !== -1 || shutterFinish === 'MDF 4402' ? ' selected' : '') + '>Grey Oak (MDF 4402)</option>' +
-            '<option value="Graphite Grey"' + (shutterFinish.indexOf('Graphite') !== -1 || shutterFinish === 'MDF 5501' ? ' selected' : '') + '>Graphite Grey (MDF 5501)</option>' +
-            '<option value="Navy Blue Matte"' + (shutterFinish.indexOf('Navy') !== -1 || shutterFinish === 'MDF 7707' ? ' selected' : '') + '>Navy Blue Matte (MDF 7707)</option>' +
-            '<option value="Charcoal Matte"' + (shutterFinish.indexOf('Charcoal') !== -1 || shutterFinish === 'MDF 7702' ? ' selected' : '') + '>Charcoal Matte (MDF 7702)</option>' +
-            '<option value="Concrete Look"' + (shutterFinish.indexOf('Concrete') !== -1 || shutterFinish === 'MDF 8801' ? ' selected' : '') + '>Concrete Look (MDF 8801)</option>' +
-          '</select></div>' +
-          '<div class="insp-row"><label>Handle Style</label><select id="inspFurnHandle">' +
-            '<option value="bar"' + (curHandle === 'bar' ? ' selected' : '') + '>Bar Pull (Straight)</option>' +
-            '<option value="ibh10"' + (curHandle === 'ibh10' ? ' selected' : '') + '>Indian Bow Handle 10" (IBH)</option>' +
-            '<option value="ibh8"' + (curHandle === 'ibh8' ? ' selected' : '') + '>Indian Bow Handle 8" (IBH)</option>' +
-            '<option value="tbar"' + (curHandle === 'tbar' ? ' selected' : '') + '>T-Bar Modern</option>' +
-            '<option value="knob"' + (curHandle === 'knob' ? ' selected' : '') + '>Round Knob</option>' +
-            '<option value="edge"' + (curHandle === 'edge' ? ' selected' : '') + '>Edge Lip Pull</option>' +
-            '<option value="cup"' + (curHandle === 'cup' ? ' selected' : '') + '>Cup Pull (Traditional)</option>' +
-            '<option value="gprof"' + (curHandle === 'gprof' ? ' selected' : '') + '>Gola Profile (Recessed)</option>' +
-            '<option value="jprof"' + (curHandle === 'jprof' ? ' selected' : '') + '>J Profile Channel</option>' +
-            '<option value="none"' + (curHandle === 'none' ? ' selected' : '') + '>Handleless / Push-to-Open</option>' +
-          '</select></div>' +
-          '<div class="insp-row"><label>Handle Finish</label><select id="inspFurnHFinish">' +
-            '<option value="black"' + (curHFinish === 'black' ? ' selected' : '') + '>Matte Black</option>' +
-            '<option value="chrome"' + (curHFinish === 'chrome' ? ' selected' : '') + '>Polished Chrome</option>' +
-            '<option value="nickel"' + (curHFinish === 'nickel' ? ' selected' : '') + '>Satin Nickel / Steel</option>' +
-            '<option value="brass"' + (curHFinish === 'brass' ? ' selected' : '') + '>Warm Brass / Gold</option>' +
-            '<option value="rose_gold"' + (curHFinish === 'rose_gold' ? ' selected' : '') + '>Rose Gold / Copper</option>'
-          '</select></div>' +
-          '<div style="margin:12px 0 8px 0;padding:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;">' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
-          '<span style="font-weight:700;font-size:11.5px;color:#1e3a8a;">🚪 Shutters & Hinges</span>' +
-          '<div style="display:flex;gap:4px;">' +
-          '<button class="btn small" id="inspShutterOpenAll" style="font-size:10px;padding:2px 6px;">Open All</button>' +
-          '<button class="btn small" id="inspShutterCloseAll" style="font-size:10px;padding:2px 6px;">Close All</button>' +
-          '<button class="btn small" id="inspShutterApplyAll" style="font-size:10px;padding:2px 6px;">Apply to All</button>' +
-          '</div></div>' +
-          shutterItemsHtml +
+          '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding-bottom:8px;margin-bottom:12px;">' +
+            '<div><div style="font-size:13px;font-weight:700;color:#0f172a;">Unit Properties</div><div style="font-size:11px;color:#64748b;">' + (fn.name || "Modular Cabinet") + '</div></div>' +
+            '<span style="font-size:10.5px;font-weight:600;background:' + (isWall ? "#fef3c7;color:#b45309;border:1px solid #fde68a;" : isSliding ? "#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff;" : "#e0f2fe;color:#0369a1;border:1px solid #bae6fd;") + ';padding:2px 8px;border-radius:12px;">' +
+              (isWall ? "Wall-Mounted (1500mm)" : isSliding ? "Sliding Wardrobe" : "Floor Unit (0mm)") + '</span>' +
           '</div>' +
-          drawerSectionHtml +
+
+          // ── Card 1: Identity & Room ──
+          '<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">' +
+            '<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">🏷️ Identity & Room</div>' +
+            '<div class="insp-row" style="margin-bottom:6px;"><label>Item Name</label><input type="text" id="inspFurnName" value="' + fn.name + '"></div>' +
+            '<div class="insp-row"><label>Room Assignment</label><select id="inspFurnRoom">' + roomOptions + '</select></div>' +
+          '</div>' +
+
+          // ── Card 2: Dimensions & Mounting Elevation ──
+          '<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+              '<span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.5px;">📐 Dimensions (mm)</span>' +
+              '<span style="font-size:10px;color:#94a3b8;">W × H × D</span>' +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;">' +
+              '<div><label style="font-size:10px;font-weight:600;color:#64748b;display:block;margin-bottom:2px;">Width</label><input type="number" id="inspFurnW" value="' + fn.dimensions.W + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;"></div>' +
+              '<div><label style="font-size:10px;font-weight:600;color:#64748b;display:block;margin-bottom:2px;">Height</label><input type="number" id="inspFurnH" value="' + fn.dimensions.H + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;"></div>' +
+              '<div><label style="font-size:10px;font-weight:600;color:#64748b;display:block;margin-bottom:2px;">Depth</label><input type="number" id="inspFurnD" value="' + fn.dimensions.D + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;"></div>' +
+            '</div>' +
+            '<div class="insp-row" style="margin-bottom:4px;"><label>Floor Elevation (AFFL)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
+            '<div style="display:flex;gap:4px;margin-top:6px;">' +
+              '<button type="button" class="btn small" id="btnPresetFloor" style="flex:1;font-size:10px;padding:3px;background:#f8fafc;border:1px solid #cbd5e1;">Floor (0 mm)</button>' +
+              '<button type="button" class="btn small" id="btnPresetWall" style="flex:1;font-size:10px;padding:3px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;">Wall Mount (1500 mm)</button>' +
+            '</div>' +
+          '</div>' +
+
+          // ── Card 3: Door Style & Mechanisms ──
+          '<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">' +
+            '<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">🚪 Doors & Mechanism</div>' +
+            '<div class="insp-row" style="margin-bottom:6px;"><label>Mechanism</label><select id="inspFurnDoorMech">' +
+              '<option value="hinged"' + (!isSliding ? " selected" : "") + '>Hinged Doors (Pivot Swing)</option>' +
+              '<option value="sliding"' + (isSliding ? " selected" : "") + '>Sliding Doors (Dual Track)</option>' +
+            '</select></div>' +
+            '<div class="insp-row" style="margin-bottom:6px;"><label>Door Style</label><select id="inspFurnDoorStyle">' +
+              '<option value="slab"' + (doorStyle === "slab" ? " selected" : "") + '>Slab · Flat</option>' +
+              '<option value="shaker"' + (doorStyle === "shaker" ? " selected" : "") + '>Shaker · Frame</option>' +
+              '<option value="aluglass"' + (doorStyle === "aluglass" ? " selected" : "") + '>Aluminium Profile Glass</option>' +
+              '<option value="fluted"' + (doorStyle === "fluted" ? " selected" : "") + '>Fluted / Reeded</option>' +
+              '<option value="louvered"' + (doorStyle === "louvered" ? " selected" : "") + '>Louvered Slats</option>' +
+              '<option value="cane"' + (doorStyle === "cane" ? " selected" : "") + '>Cane / Rattan</option>' +
+              '<option value="glass"' + (doorStyle === "glass" ? " selected" : "") + '>Glass Frame</option>' +
+              '<option value="mirror"' + (doorStyle === "mirror" ? " selected" : "") + '>Mirror Front</option>' +
+            '</select></div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">' +
+              '<div><label style="font-size:10px;font-weight:600;color:#64748b;display:block;margin-bottom:2px;">Shutters</label><input type="number" id="inspFurnShutters" value="' + shuttersCount + '" min="0" max="8" style="width:100%;font-size:11.5px;padding:4px 6px;"></div>' +
+              '<div><label style="font-size:10px;font-weight:600;color:#64748b;display:block;margin-bottom:2px;">Drawers</label><input type="number" id="inspFurnDrawers" value="' + drawersCount + '" min="0" max="6" style="width:100%;font-size:11.5px;padding:4px 6px;"></div>' +
+            '</div>' +
+            (isBaseUnit ? ('<div class="insp-row"><label>Countertop</label><select id="inspFurnCounter">' +
+              '<option value="black"' + (counterType === "black" ? " selected" : "") + '>Black Galaxy Granite</option>' +
+              '<option value="white"' + (counterType === "white" || counterType === "marble" ? " selected" : "") + '>White Marble</option>' +
+              '<option value="quartz"' + (counterType === "quartz" ? " selected" : "") + '>Pure White Quartz</option>' +
+              '<option value="greyq"' + (counterType === "greyq" ? " selected" : "") + '>Grey Quartz</option>' +
+              '<option value="none"' + (counterType === "none" ? " selected" : "") + '>None (Carcass Top)</option>' +
+            '</select></div>') : "") +
+          '</div>' +
+
+          // ── Card 4: Materials & Laminate Finishes ──
+          '<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">' +
+            '<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">🎨 Materials & Finishes</div>' +
+            '<div class="insp-row" style="margin-bottom:6px;"><label>Carcass</label><select id="inspFurnCarcass">' +
+              '<option value="Absolute White"' + (carcassFinish.indexOf("White") !== -1 || carcassFinish === "MDF 1135" ? " selected" : "") + '>Absolute White (MDF 1135)</option>' +
+              '<option value="Brazilian Horizontal Walnut"' + (carcassFinish.indexOf("Walnut") !== -1 || carcassFinish === "MDF 3410" ? " selected" : "") + '>Walnut Woodgrain (MDF 3410)</option>' +
+              '<option value="Sonoma Oak"' + (carcassFinish.indexOf("Oak") !== -1 || carcassFinish === "MDF 2204" ? " selected" : "") + '>Sonoma Oak (MDF 2204)</option>' +
+              '<option value="Dark Wenge"' + (carcassFinish.indexOf("Wenge") !== -1 || carcassFinish === "MDF 3411" ? " selected" : "") + '>Dark Wenge (MDF 3411)</option>' +
+              '<option value="Natural Teak"' + (carcassFinish.indexOf("Teak") !== -1 || carcassFinish === "MDF 2210" ? " selected" : "") + '>Natural Teak (MDF 2210)</option>' +
+              '<option value="Grey Oak Scandi"' + (carcassFinish.indexOf("Grey") !== -1 || carcassFinish === "MDF 4402" ? " selected" : "") + '>Grey Oak (MDF 4402)</option>' +
+              '<option value="Graphite Grey"' + (carcassFinish.indexOf("Graphite") !== -1 || carcassFinish === "MDF 5501" ? " selected" : "") + '>Graphite Grey (MDF 5501)</option>' +
+              '<option value="Sage Green Matte"' + (carcassFinish.indexOf("Sage") !== -1 || carcassFinish === "MDF 7701" ? " selected" : "") + '>Sage Green Matte (MDF 7701)</option>' +
+              '<option value="Charcoal Matte"' + (carcassFinish.indexOf("Charcoal") !== -1 || carcassFinish === "MDF 7702" ? " selected" : "") + '>Charcoal Matte (MDF 7702)</option>' +
+              '<option value="Concrete Look"' + (carcassFinish.indexOf("Concrete") !== -1 || carcassFinish === "MDF 8801" ? " selected" : "") + '>Concrete Look (MDF 8801)</option>' +
+              '<option value="Ivory Cream"' + (carcassFinish.indexOf("Ivory") !== -1 || carcassFinish === "MDF 1101" ? " selected" : "") + '>Ivory Cream (MDF 1101)</option>' +
+            '</select></div>' +
+            '<div class="insp-row"><label>Shutter Finish</label><select id="inspFurnShutter">' +
+              '<option value="Brazilian Horizontal Walnut"' + (shutterFinish.indexOf("Walnut") !== -1 || shutterFinish === "MDF 3410" ? " selected" : "") + '>Brazilian Walnut (MDF 3410)</option>' +
+              '<option value="Absolute White Gloss"' + (shutterFinish.indexOf("Gloss") !== -1 || shutterFinish === "MDF 6601" ? " selected" : "") + '>Absolute White Gloss (MDF 6601)</option>' +
+              '<option value="Absolute White Matte"' + (shutterFinish.indexOf("White") !== -1 && shutterFinish.indexOf("Gloss") === -1 || shutterFinish === "MDF 1135" ? " selected" : "") + '>White Matte (MDF 1135)</option>' +
+              '<option value="Sonoma Oak"' + (shutterFinish.indexOf("Oak") !== -1 || shutterFinish === "MDF 2204" ? " selected" : "") + '>Sonoma Oak (MDF 2204)</option>' +
+              '<option value="Sage Green Matte"' + (shutterFinish.indexOf("Sage") !== -1 || shutterFinish === "MDF 7701" ? " selected" : "") + '>Sage Green Matte (MDF 7701)</option>' +
+              '<option value="Dark Wenge"' + (shutterFinish.indexOf("Wenge") !== -1 || shutterFinish === "MDF 3411" ? " selected" : "") + '>Dark Wenge (MDF 3411)</option>' +
+              '<option value="Natural Teak"' + (shutterFinish.indexOf("Teak") !== -1 || shutterFinish === "MDF 2210" ? " selected" : "") + '>Natural Teak (MDF 2210)</option>' +
+              '<option value="Grey Oak Scandi"' + (shutterFinish.indexOf("Grey Oak") !== -1 || shutterFinish === "MDF 4402" ? " selected" : "") + '>Grey Oak (MDF 4402)</option>' +
+              '<option value="Graphite Grey"' + (shutterFinish.indexOf("Graphite") !== -1 || shutterFinish === "MDF 5501" ? " selected" : "") + '>Graphite Grey (MDF 5501)</option>' +
+              '<option value="Navy Blue Matte"' + (shutterFinish.indexOf("Navy") !== -1 || shutterFinish === "MDF 7707" ? " selected" : "") + '>Navy Blue Matte (MDF 7707)</option>' +
+              '<option value="Charcoal Matte"' + (shutterFinish.indexOf("Charcoal") !== -1 || shutterFinish === "MDF 7702" ? " selected" : "") + '>Charcoal Matte (MDF 7702)</option>' +
+              '<option value="Concrete Look"' + (shutterFinish.indexOf("Concrete") !== -1 || shutterFinish === "MDF 8801" ? " selected" : "") + '>Concrete Look (MDF 8801)</option>' +
+            '</select></div>' +
+          '</div>' +
+
+          // ── Card 5: Handles & Hardware ──
+          '<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">' +
+            '<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">✨ Handles & Hardware</div>' +
+            '<div class="insp-row" style="margin-bottom:6px;"><label>Handle Style</label><select id="inspFurnHandle">' +
+              '<option value="bar"' + (curHandle === "bar" || curHandle === "bar128" || curHandle === "bar224" ? " selected" : "") + '>Bar Pull (Straight)</option>' +
+              '<option value="ibh10"' + (curHandle === "ibh10" ? " selected" : "") + '>Indian Bow Handle 10" (IBH)</option>' +
+              '<option value="ibh8"' + (curHandle === "ibh8" ? " selected" : "") + '>Indian Bow Handle 8" (IBH)</option>' +
+              '<option value="tbar"' + (curHandle === "tbar" ? " selected" : "") + '>T-Bar Modern</option>' +
+              '<option value="knob"' + (curHandle === "knob" ? " selected" : "") + '>Round Knob</option>' +
+              '<option value="edge"' + (curHandle === "edge" ? " selected" : "") + '>Edge Lip Pull</option>' +
+              '<option value="cup"' + (curHandle === "cup" ? " selected" : "") + '>Cup Pull (Traditional)</option>' +
+              '<option value="gprof"' + (curHandle === "gprof" ? " selected" : "") + '>Gola Profile (Recessed)</option>' +
+              '<option value="jprof"' + (curHandle === "jprof" ? " selected" : "") + '>J Profile Channel</option>' +
+              '<option value="none"' + (curHandle === "none" ? " selected" : "") + '>Handleless / Push-to-Open</option>' +
+            '</select></div>' +
+            '<div class="insp-row"><label>Handle Finish</label><select id="inspFurnHFinish">' +
+              '<option value="black"' + (curHFinish === "black" ? " selected" : "") + '>Matte Black</option>' +
+              '<option value="chrome"' + (curHFinish === "chrome" ? " selected" : "") + '>Polished Chrome</option>' +
+              '<option value="nickel"' + (curHFinish === "nickel" ? " selected" : "") + '>Satin Nickel / Steel</option>' +
+              '<option value="brass"' + (curHFinish === "brass" ? " selected" : "") + '>Warm Brass / Gold</option>' +
+              '<option value="rose_gold"' + (curHFinish === "rose_gold" ? " selected" : "") + '>Rose Gold / Copper</option>' +
+            '</select></div>' +
+          '</div>' +
+
+          // ── Card 6: Interactive 3D Open / Close Controls ──
+          '<div style="margin:12px 0 8px 0;padding:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+              '<span style="font-weight:700;font-size:11.5px;color:#166534;">🎛️ Interactive 3D Controls</span>' +
+              '<div style="display:flex;gap:4px;">' +
+                '<button class="btn small" id="inspShutterOpenAll" style="font-size:10px;padding:2px 8px;">Open All 🚪</button>' +
+                '<button class="btn small" id="inspShutterCloseAll" style="font-size:10px;padding:2px 8px;">Close All</button>' +
+              '</div>' +
+            '</div>' +
+            drawerSectionHtml +
+            '<div style="font-size:11px;font-weight:600;color:#334155;margin:8px 0 4px 0;">Individual Shutters:</div>' +
+            shutterItemsHtml +
+          '</div>' +
+
           '<button class="btn primary full" id="inspOpen3DStudio" style="margin-top:8px">📐 Open &amp; Customize in 3D Studio</button>' +
           '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (Space)</button>' +
           '<button class="btn danger full" id="inspDelFurn" style="margin-top:8px">Delete Unit</button>';
@@ -1232,6 +1264,51 @@
         });
 
         // Bulk Shutter Controls
+        // Elevation Presets
+        var btnFloor = document.getElementById('btnPresetFloor');
+        if (btnFloor) {
+          btnFloor.addEventListener('click', function () {
+            fn.elevation = 0;
+            if (fn.pos) fn.pos.z = 0;
+            document.getElementById('inspFurnElev').value = 0;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Set Elevation: 0mm (Floor)');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+            self.renderInspector(self.editor.selected);
+          });
+        }
+        var btnWall = document.getElementById('btnPresetWall');
+        if (btnWall) {
+          btnWall.addEventListener('click', function () {
+            fn.elevation = 1500;
+            if (fn.pos) fn.pos.z = 1500;
+            document.getElementById('inspFurnElev').value = 1500;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Set Elevation: 1500mm (Wall)');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+            self.renderInspector(self.editor.selected);
+          });
+        }
+
+        // Door Mechanism Toggle (Hinged vs Sliding)
+        var elMech = document.getElementById('inspFurnDoorMech');
+        if (elMech) {
+          elMech.addEventListener('change', function (e) {
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.doorType = e.target.value;
+            fn.unitConfig.type = e.target.value;
+            fn.doorType = e.target.value;
+            fn.type = e.target.value;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Change Door Mechanism: ' + e.target.value);
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+            self.renderInspector(self.editor.selected);
+          });
+        }
+
         var btnOpenAll = document.getElementById('inspShutterOpenAll');
         if (btnOpenAll) {
           btnOpenAll.addEventListener('click', function () {
