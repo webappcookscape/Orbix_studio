@@ -469,6 +469,165 @@
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Color & Finish Resolvers & Handle Generators
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.resolveFinishColor = function (codeOrName, defaultColor) {
+    if (codeOrName === undefined || codeOrName === null || codeOrName === '') return defaultColor || 0xEDEBE4;
+    if (typeof codeOrName === 'number') return codeOrName;
+
+    var str = String(codeOrName).trim();
+    if (str.startsWith('#')) {
+      return parseInt(str.slice(1), 16) || defaultColor || 0xEDEBE4;
+    }
+    if (str.startsWith('0x')) {
+      return parseInt(str.slice(2), 16) || defaultColor || 0xEDEBE4;
+    }
+
+    if (typeof window !== 'undefined' && Array.isArray(window.LAMINATES)) {
+      var l = window.LAMINATES.find(function (item) {
+        return item.code === str || (item.name && item.name.toLowerCase() === str.toLowerCase());
+      });
+      if (l && l.hex) {
+        return parseInt(l.hex.replace('#', ''), 16);
+      }
+    }
+
+    var lower = str.toLowerCase();
+    if (lower.indexOf('1135') !== -1 || lower.indexOf('white') !== -1 || lower.indexOf('bwp') !== -1 || lower.indexOf('frost') !== -1) return 0xEDEBE4;
+    if (lower.indexOf('3410') !== -1 || lower.indexOf('walnut') !== -1) return 0x6E4E35;
+    if (lower.indexOf('3411') !== -1 || lower.indexOf('wenge') !== -1) return 0x4A3A2E;
+    if (lower.indexOf('1101') !== -1 || lower.indexOf('ivory') !== -1 || lower.indexOf('cream') !== -1) return 0xE4DCC8;
+    if (lower.indexOf('2204') !== -1 || lower.indexOf('oak') !== -1) return 0xC4A173;
+    if (lower.indexOf('2210') !== -1 || lower.indexOf('teak') !== -1) return 0xA9743F;
+    if (lower.indexOf('4402') !== -1 || lower.indexOf('grey oak') !== -1) return 0x9C9891;
+    if (lower.indexOf('5501') !== -1 || lower.indexOf('graphite') !== -1) return 0x585B5E;
+    if (lower.indexOf('6601') !== -1 || lower.indexOf('gloss white') !== -1) return 0xF4F3EF;
+    if (lower.indexOf('6620') !== -1 || lower.indexOf('gloss grey') !== -1) return 0x8D9296;
+    if (lower.indexOf('6630') !== -1 || lower.indexOf('gloss red') !== -1) return 0xB2231F;
+    if (lower.indexOf('6640') !== -1 || lower.indexOf('gloss black') !== -1) return 0x1C1C1E;
+    if (lower.indexOf('7701') !== -1 || lower.indexOf('sage') !== -1) return 0x8E9C86;
+    if (lower.indexOf('7702') !== -1 || lower.indexOf('charcoal') !== -1) return 0x3B3D40;
+    if (lower.indexOf('7703') !== -1 || lower.indexOf('sand') !== -1 || lower.indexOf('beige') !== -1) return 0xD3C4A9;
+    if (lower.indexOf('7704') !== -1 || lower.indexOf('taupe') !== -1) return 0x9A9188;
+    if (lower.indexOf('7706') !== -1 || lower.indexOf('coffee') !== -1 || lower.indexOf('brown') !== -1) return 0x5A4232;
+    if (lower.indexOf('7707') !== -1 || lower.indexOf('navy') !== -1 || lower.indexOf('blue') !== -1) return 0x2E3F5C;
+    if (lower.indexOf('7708') !== -1 || lower.indexOf('terracotta') !== -1) return 0xB5654A;
+    if (lower.indexOf('7709') !== -1 || lower.indexOf('olive') !== -1) return 0x6B6E45;
+    if (lower.indexOf('8801') !== -1 || lower.indexOf('concrete') !== -1) return 0xA8A5A0;
+    if (lower.indexOf('7710') !== -1 || lower.indexOf('powder blue') !== -1) return 0xA9BED2;
+    if (lower.indexOf('7711') !== -1 || lower.indexOf('blush') !== -1) return 0xD9B4A6;
+    if (lower.indexOf('grey') !== -1 || lower.indexOf('gray') !== -1) return 0x8D9296;
+    if (lower.indexOf('black') !== -1) return 0x1A1A1A;
+
+    return defaultColor || 0xEDEBE4;
+  };
+
+  ArchitecturalRenderer.getHandleMaterial = function (hFinish) {
+    var fin = String(hFinish || 'black').toLowerCase();
+    if (fin.indexOf('chrome') !== -1) {
+      return new THREE.MeshStandardMaterial({ color: 0xE2E8F0, roughness: 0.1, metalness: 0.95 });
+    }
+    if (fin.indexOf('nickel') !== -1 || fin.indexOf('silver') !== -1 || fin.indexOf('steel') !== -1 || fin.indexOf('stainless') !== -1 || fin === 'ss') {
+      return new THREE.MeshStandardMaterial({ color: 0xCBD5E1, roughness: 0.35, metalness: 0.85 });
+    }
+    if (fin.indexOf('brass') !== -1 || fin.indexOf('gold') !== -1 || fin.indexOf('champagne') !== -1) {
+      return new THREE.MeshStandardMaterial({ color: 0xD4AF37, roughness: 0.25, metalness: 0.9 });
+    }
+    if (fin.indexOf('rose') !== -1 || fin.indexOf('copper') !== -1) {
+      return new THREE.MeshStandardMaterial({ color: 0xB76E79, roughness: 0.25, metalness: 0.9 });
+    }
+    // Default: Matte Black
+    return new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.4, metalness: 0.7 });
+  };
+
+  ArchitecturalRenderer.createHandleMesh = function (handleType, handleMat, isVertical, maxLen) {
+    var ht = String(handleType || 'bar').toLowerCase();
+    if (ht === 'none' || ht === 'handleless' || ht === 'push' || ht === 'touch') {
+      return null;
+    }
+
+    var hGroup = new THREE.Group();
+    var len = Math.min(maxLen || 160, 220);
+
+    if (ht === 'knob') {
+      var knobGeo = new THREE.CylinderGeometry(12, 10, 16, 16);
+      var knobMesh = new THREE.Mesh(knobGeo, handleMat);
+      knobMesh.rotation.x = Math.PI / 2;
+      knobMesh.position.z = 8;
+      knobMesh.castShadow = true;
+      hGroup.add(knobMesh);
+
+      var stemGeo = new THREE.CylinderGeometry(4.5, 4.5, 8, 12);
+      var stemMesh = new THREE.Mesh(stemGeo, handleMat);
+      stemMesh.rotation.x = Math.PI / 2;
+      stemMesh.position.z = 2;
+      hGroup.add(stemMesh);
+    } else if (ht === 'tbar') {
+      var barGeo = new THREE.CylinderGeometry(5.5, 5.5, 50, 12);
+      var barMesh = new THREE.Mesh(barGeo, handleMat);
+      if (!isVertical) barMesh.rotation.z = Math.PI / 2;
+      barMesh.position.z = 15;
+      barMesh.castShadow = true;
+      hGroup.add(barMesh);
+
+      var stemGeo2 = new THREE.CylinderGeometry(4.5, 4.5, 14, 12);
+      var stemMesh2 = new THREE.Mesh(stemGeo2, handleMat);
+      stemMesh2.rotation.x = Math.PI / 2;
+      stemMesh2.position.z = 7;
+      hGroup.add(stemMesh2);
+    } else if (ht === 'edge') {
+      var ew = isVertical ? 10 : len;
+      var eh = isVertical ? len : 8;
+      var edgeGeo = new THREE.BoxGeometry(ew, eh, 22);
+      var edgeMesh = new THREE.Mesh(edgeGeo, handleMat);
+      edgeMesh.position.z = 4;
+      edgeMesh.castShadow = true;
+      hGroup.add(edgeMesh);
+    } else if (ht === 'gprof' || ht === 'jprof' || ht === 'gola' || ht === 'profile') {
+      var pw = isVertical ? 8 : (len * 1.5);
+      var ph = isVertical ? (len * 1.5) : 8;
+      var profGeo = new THREE.BoxGeometry(pw, ph, 14);
+      var profMesh = new THREE.Mesh(profGeo, handleMat);
+      profMesh.position.z = 2;
+      hGroup.add(profMesh);
+    } else if (ht === 'cup') {
+      var cupGeo = new THREE.CylinderGeometry(18, 18, 12, 16, 1, false, 0, Math.PI);
+      var cupMesh = new THREE.Mesh(cupGeo, handleMat);
+      cupMesh.rotation.x = Math.PI / 2;
+      cupMesh.position.z = 8;
+      cupMesh.castShadow = true;
+      hGroup.add(cupMesh);
+    } else {
+      // Standard Bar Pull / IBH
+      var bw = isVertical ? 12 : len;
+      var bh = isVertical ? len : 12;
+      var mainBarGeo = new THREE.BoxGeometry(bw, bh, 12);
+      var mainBarMesh = new THREE.Mesh(mainBarGeo, handleMat);
+      mainBarMesh.position.z = 14;
+      mainBarMesh.castShadow = true;
+      hGroup.add(mainBarMesh);
+
+      var footGeo = new THREE.CylinderGeometry(4, 4, 12, 10);
+      var foot1 = new THREE.Mesh(footGeo, handleMat);
+      foot1.rotation.x = Math.PI / 2;
+      var foot2 = new THREE.Mesh(footGeo, handleMat);
+      foot2.rotation.x = Math.PI / 2;
+
+      if (isVertical) {
+        foot1.position.set(0, len * 0.38, 6);
+        foot2.position.set(0, -len * 0.38, 6);
+      } else {
+        foot1.position.set(len * 0.38, 0, 6);
+        foot2.position.set(-len * 0.38, 0, 6);
+      }
+      hGroup.add(foot1);
+      hGroup.add(foot2);
+    }
+
+    return hGroup;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build Placed 3D Furniture Unit
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
@@ -488,50 +647,27 @@
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
     var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity');
 
-    // Resolve Carcass & Shutter finishes using lam() if available
-    var shutterFinish = (furn.unitConfig && furn.unitConfig.shutterCol) ||
-                        (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) ||
-                        'MDF 1135';
-    var carcassFinish = (furn.unitConfig && furn.unitConfig.carcass) ||
-                        (furn.materials && furn.materials.carcass && furn.materials.carcass.finish) ||
-                        'MDF 1135';
+    // Carcass Materials (Resolves finish name, laminate code, or hex)
+    var carcassRaw = (furn.materials && furn.materials.carcass && furn.materials.carcass.finish) ||
+                     (furn.unitConfig && furn.unitConfig.carcass) ||
+                     furn.carcassColor ||
+                     'MDF 1135';
+    var carcassColor = ArchitecturalRenderer.resolveFinishColor(carcassRaw, 0xEDEBE4);
+    var carcassIsGloss = String(carcassRaw).toLowerCase().indexOf('gloss') !== -1;
+    var carcassMat = new THREE.MeshStandardMaterial({
+      color: carcassColor,
+      roughness: carcassIsGloss ? 0.2 : 0.6,
+      metalness: 0.05
+    });
 
-    function hexStringToNum(hexStr, defaultNum) {
-      if (!hexStr) return defaultNum;
-      var clean = String(hexStr).replace('#', '').trim();
-      var num = parseInt(clean, 16);
-      return isNaN(num) ? defaultNum : num;
-    }
-
-    var shutterHex = 0x6E4E35; // Default walnut
-    var carcassHex = 0xFAF8F5; // Default white
-
-    if (typeof window !== 'undefined' && typeof window.lam === 'function') {
-      var sLam = window.lam(shutterFinish);
-      if (sLam && sLam.hex) shutterHex = hexStringToNum(sLam.hex, 0x6E4E35);
-      var cLam = window.lam(carcassFinish);
-      if (cLam && cLam.hex) carcassHex = hexStringToNum(cLam.hex, 0xFAF8F5);
-    } else {
-      var sLower = String(shutterFinish).toLowerCase();
-      if (sLower.indexOf('white') !== -1 || sLower.indexOf('gloss') !== -1) shutterHex = 0xEDEBE4;
-      else if (sLower.indexOf('walnut') !== -1) shutterHex = 0x5D3E27;
-      else if (sLower.indexOf('sage') !== -1) shutterHex = 0x7A8875;
-      else if (sLower.indexOf('oak') !== -1) shutterHex = 0xC4A173;
-      else if (sLower.indexOf('wenge') !== -1) shutterHex = 0x38281F;
-      else if (sLower.indexOf('concrete') !== -1) shutterHex = 0x8A8E91;
-    }
-
-    var carcassMat = new THREE.MeshStandardMaterial({ color: carcassHex, roughness: 0.55, metalness: 0.05 });
-    var shutterMat = new THREE.MeshStandardMaterial({ color: shutterHex, roughness: 0.45, metalness: 0.05 });
-
-    // Door style
+    // Door style & type
     var dstyle = (furn.unitConfig && furn.unitConfig.dstyle) || 'slab';
     var doorType = (furn.unitConfig && (furn.unitConfig.doorType || furn.unitConfig.type)) || 'hinged';
 
-    // Handle Finish
-    var hfin = (furn.unitConfig && furn.unitConfig.hfinish) || 'black';
-    var handleHex = (hfin === 'brass' || hfin === 'gold') ? 0xD4AF37 : (hfin === 'chrome' || hfin === 'nickel') ? 0xCCCCCC : 0x1A1A1A;
-    var handleMat = new THREE.MeshStandardMaterial({ color: handleHex, roughness: 0.25, metalness: 0.85 });
+    // Handle Configuration & Material
+    var handleType = (furn.unitConfig && furn.unitConfig.handle) || furn.handleType || 'bar';
+    var handleFinish = (furn.unitConfig && (furn.unitConfig.hfinish || furn.unitConfig.handleFinish)) || furn.handleFinish || 'black';
+    var handleMat = ArchitecturalRenderer.getHandleMaterial(handleFinish);
 
     // Countertop
     var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'black' : 'none');
@@ -550,27 +686,22 @@
     function getShutterMaterial(sIdx) {
       var col = (furn.shutterColors && furn.shutterColors[sIdx]) || null;
       var matFin = (furn.shutterMaterials && furn.shutterMaterials[sIdx]) ||
-                   (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) || 'Brazilian Walnut';
-      var threeCol = 0x6E4E35;
-      var roughness = 0.45;
-      var metalness = 0.05;
+                   (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) ||
+                   (furn.unitConfig && furn.unitConfig.shutterCol) ||
+                   'MDF 3410';
 
+      var threeCol = 0x6E4E35;
       if (col) {
-        if (typeof col === 'string') {
-          var cleanHex = col.replace('#', '');
-          threeCol = parseInt(cleanHex, 16);
-        } else if (typeof col === 'number') {
-          threeCol = col;
-        }
+        threeCol = ArchitecturalRenderer.resolveFinishColor(col, 0x6E4E35);
       } else {
-        var fin = matFin.toLowerCase();
-        if (fin.indexOf('gloss') !== -1 || fin.indexOf('white') !== -1) { threeCol = 0xEDEBE4; roughness = 0.15; }
-        else if (fin.indexOf('walnut') !== -1) { threeCol = 0x5D3E27; roughness = 0.5; }
-        else if (fin.indexOf('sage') !== -1) { threeCol = 0x7A8875; roughness = 0.6; }
-        else if (fin.indexOf('oak') !== -1) { threeCol = 0xC8B293; roughness = 0.55; }
-        else if (fin.indexOf('concrete') !== -1) { threeCol = 0x8C8885; roughness = 0.8; }
+        threeCol = ArchitecturalRenderer.resolveFinishColor(matFin, 0x6E4E35);
       }
-      return new THREE.MeshStandardMaterial({ color: threeCol, roughness: roughness, metalness: metalness });
+      var isGloss = String(matFin).toLowerCase().indexOf('gloss') !== -1;
+      return new THREE.MeshStandardMaterial({
+        color: threeCol,
+        roughness: isGloss ? 0.15 : 0.45,
+        metalness: 0.05
+      });
     }
 
     // Realistic Open Carcass with Interior Panels
@@ -689,11 +820,17 @@
         drawerGroup.add(faciaMesh);
 
         // Drawer Pull Handle (Horizontal)
-        var dhGeo = new THREE.BoxGeometry(Math.min(180, (dims.W - 30) * 0.4), 14, 16);
-        var dhMesh = new THREE.Mesh(dhGeo, handleMat);
-        dhMesh.position.set(0, 0, dims.D / 2 + 5);
-        dhMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
-        drawerGroup.add(dhMesh);
+        var dhGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, false, Math.min(180, (dims.W - 30) * 0.45));
+        if (dhGroup) {
+          dhGroup.position.set(0, 0, dims.D / 2);
+          dhGroup.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
+          dhGroup.traverse(function (c) {
+            if (c.isMesh) {
+              c.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
+            }
+          });
+          drawerGroup.add(dhGroup);
+        }
 
         // Drawer Interior Box
         var dbGeo = new THREE.BoxGeometry(innerW - 20, 12, innerD - 30);
@@ -751,14 +888,20 @@
         sMesh.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
         hingeGroup.add(sMesh);
 
-        // Handle pull
-        var hGeo = new THREE.BoxGeometry(16, Math.min(180, shH * 0.4), 16);
-        var hMesh = new THREE.Mesh(hGeo, handleMat);
-        var handleX = hingeLeft ? (shW - 25) : (-shW + 25);
-        var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
-        hMesh.position.set(handleX, handleY, 14);
-        hMesh.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-        hingeGroup.add(hMesh);
+        // Shutter Pull Handle (Vertical)
+        var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
+        if (hGroup) {
+          var handleX = hingeLeft ? (shW - 25) : (-shW + 25);
+          var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
+          hGroup.position.set(handleX, handleY, 9);
+          hGroup.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+          hGroup.traverse(function (c) {
+            if (c.isMesh) {
+              c.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            }
+          });
+          hingeGroup.add(hGroup);
+        }
 
         // Shutter Open / Close rotation (~108 degrees)
         var isOpen = !!(furn.shutterStates && furn.shutterStates[s]);

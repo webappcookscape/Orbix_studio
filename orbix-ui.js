@@ -883,12 +883,12 @@
           roomOptions += '<option value="' + rooms[r].id + '"' + (fn.roomId === rooms[r].id ? ' selected' : '') + '>' + rooms[r].name + '</option>';
         }
 
-        var shutterFinish = (fn.unitConfig && fn.unitConfig.shutterCol) ||
-                            (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) ||
-                            'Brazilian Horizontal Walnut';
-        var carcassFinish = (fn.unitConfig && fn.unitConfig.carcass) ||
-                            (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) ||
-                            'Absolute White';
+        var shutterFinish = (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) ||
+                            (fn.unitConfig && fn.unitConfig.shutterCol) || 'Brazilian Horizontal Walnut';
+        var carcassFinish = (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) ||
+                            (fn.unitConfig && fn.unitConfig.carcass) || 'Absolute White';
+        var curHandle = (fn.unitConfig && fn.unitConfig.handle) || fn.handleType || 'bar';
+        var curHFinish = (fn.unitConfig && (fn.unitConfig.hfinish || fn.unitConfig.handleFinish)) || fn.handleFinish || 'black';
         var shuttersCount = (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1);
         var drawersCount = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? fn.unitConfig.drawers : 0;
         var doorStyle = (fn.unitConfig && fn.unitConfig.dstyle) || 'slab';
@@ -1013,9 +1013,50 @@
             '<option value="MDF 7707"' + (shutterFinish.indexOf('Navy') !== -1 || shutterFinish.indexOf('7707') !== -1 ? ' selected' : '') + '>MDF 7707 · Navy Matte</option>' +
           '</select></div>' +
           '<div class="insp-row"><label>Carcass</label><select id="inspFurnCarcass">' +
-            '<option value="MDF 1135"' + (carcassFinish.indexOf('White') !== -1 || carcassFinish.indexOf('1135') !== -1 ? ' selected' : '') + '>Absolute White (BWP / HDHMR)</option>' +
-            '<option value="MDF 3410"' + (carcassFinish.indexOf('Walnut') !== -1 || carcassFinish.indexOf('3410') !== -1 ? ' selected' : '') + '>Walnut Woodgrain</option>' +
-            '<option value="MDF 2204"' + (carcassFinish.indexOf('Oak') !== -1 || carcassFinish.indexOf('2204') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
+            '<option value="Absolute White"' + (carcassFinish.indexOf('White') !== -1 || carcassFinish === 'MDF 1135' ? ' selected' : '') + '>Absolute White (MDF 1135)</option>' +
+            '<option value="Brazilian Horizontal Walnut"' + (carcassFinish.indexOf('Walnut') !== -1 || carcassFinish === 'MDF 3410' ? ' selected' : '') + '>Walnut Woodgrain (MDF 3410)</option>' +
+            '<option value="Sonoma Oak"' + (carcassFinish.indexOf('Oak') !== -1 || carcassFinish === 'MDF 2204' ? ' selected' : '') + '>Sonoma Oak (MDF 2204)</option>' +
+            '<option value="Dark Wenge"' + (carcassFinish.indexOf('Wenge') !== -1 || carcassFinish === 'MDF 3411' ? ' selected' : '') + '>Dark Wenge (MDF 3411)</option>' +
+            '<option value="Natural Teak"' + (carcassFinish.indexOf('Teak') !== -1 || carcassFinish === 'MDF 2210' ? ' selected' : '') + '>Natural Teak (MDF 2210)</option>' +
+            '<option value="Grey Oak Scandi"' + (carcassFinish.indexOf('Grey') !== -1 || carcassFinish === 'MDF 4402' ? ' selected' : '') + '>Grey Oak (MDF 4402)</option>' +
+            '<option value="Graphite Grey"' + (carcassFinish.indexOf('Graphite') !== -1 || carcassFinish === 'MDF 5501' ? ' selected' : '') + '>Graphite Grey (MDF 5501)</option>' +
+            '<option value="Sage Green Matte"' + (carcassFinish.indexOf('Sage') !== -1 || carcassFinish === 'MDF 7701' ? ' selected' : '') + '>Sage Green Matte (MDF 7701)</option>' +
+            '<option value="Charcoal Matte"' + (carcassFinish.indexOf('Charcoal') !== -1 || carcassFinish === 'MDF 7702' ? ' selected' : '') + '>Charcoal Matte (MDF 7702)</option>' +
+            '<option value="Concrete Look"' + (carcassFinish.indexOf('Concrete') !== -1 || carcassFinish === 'MDF 8801' ? ' selected' : '') + '>Concrete Look (MDF 8801)</option>' +
+            '<option value="Ivory Cream"' + (carcassFinish.indexOf('Ivory') !== -1 || carcassFinish === 'MDF 1101' ? ' selected' : '') + '>Ivory Cream (MDF 1101)</option>' +
+          '</select></div>' +
+          '<div class="insp-row"><label>Shutter Finish</label><select id="inspFurnShutter">' +
+            '<option value="Brazilian Horizontal Walnut"' + (shutterFinish.indexOf('Walnut') !== -1 || shutterFinish === 'MDF 3410' ? ' selected' : '') + '>Brazilian Walnut (MDF 3410)</option>' +
+            '<option value="Absolute White Gloss"' + (shutterFinish.indexOf('Gloss') !== -1 || shutterFinish === 'MDF 6601' ? ' selected' : '') + '>Absolute White Gloss (MDF 6601)</option>' +
+            '<option value="Absolute White Matte"' + (shutterFinish.indexOf('White') !== -1 && shutterFinish.indexOf('Gloss') === -1 || shutterFinish === 'MDF 1135' ? ' selected' : '') + '>White Matte (MDF 1135)</option>' +
+            '<option value="Sonoma Oak"' + (shutterFinish.indexOf('Oak') !== -1 || shutterFinish === 'MDF 2204' ? ' selected' : '') + '>Sonoma Oak (MDF 2204)</option>' +
+            '<option value="Sage Green Matte"' + (shutterFinish.indexOf('Sage') !== -1 || shutterFinish === 'MDF 7701' ? ' selected' : '') + '>Sage Green Matte (MDF 7701)</option>' +
+            '<option value="Dark Wenge"' + (shutterFinish.indexOf('Wenge') !== -1 || shutterFinish === 'MDF 3411' ? ' selected' : '') + '>Dark Wenge (MDF 3411)</option>' +
+            '<option value="Natural Teak"' + (shutterFinish.indexOf('Teak') !== -1 || shutterFinish === 'MDF 2210' ? ' selected' : '') + '>Natural Teak (MDF 2210)</option>' +
+            '<option value="Grey Oak Scandi"' + (shutterFinish.indexOf('Grey Oak') !== -1 || shutterFinish === 'MDF 4402' ? ' selected' : '') + '>Grey Oak (MDF 4402)</option>' +
+            '<option value="Graphite Grey"' + (shutterFinish.indexOf('Graphite') !== -1 || shutterFinish === 'MDF 5501' ? ' selected' : '') + '>Graphite Grey (MDF 5501)</option>' +
+            '<option value="Navy Blue Matte"' + (shutterFinish.indexOf('Navy') !== -1 || shutterFinish === 'MDF 7707' ? ' selected' : '') + '>Navy Blue Matte (MDF 7707)</option>' +
+            '<option value="Charcoal Matte"' + (shutterFinish.indexOf('Charcoal') !== -1 || shutterFinish === 'MDF 7702' ? ' selected' : '') + '>Charcoal Matte (MDF 7702)</option>' +
+            '<option value="Concrete Look"' + (shutterFinish.indexOf('Concrete') !== -1 || shutterFinish === 'MDF 8801' ? ' selected' : '') + '>Concrete Look (MDF 8801)</option>' +
+          '</select></div>' +
+          '<div class="insp-row"><label>Handle Style</label><select id="inspFurnHandle">' +
+            '<option value="bar"' + (curHandle === 'bar' ? ' selected' : '') + '>Bar Pull (Straight)</option>' +
+            '<option value="ibh10"' + (curHandle === 'ibh10' ? ' selected' : '') + '>Indian Bow Handle 10" (IBH)</option>' +
+            '<option value="ibh8"' + (curHandle === 'ibh8' ? ' selected' : '') + '>Indian Bow Handle 8" (IBH)</option>' +
+            '<option value="tbar"' + (curHandle === 'tbar' ? ' selected' : '') + '>T-Bar Modern</option>' +
+            '<option value="knob"' + (curHandle === 'knob' ? ' selected' : '') + '>Round Knob</option>' +
+            '<option value="edge"' + (curHandle === 'edge' ? ' selected' : '') + '>Edge Lip Pull</option>' +
+            '<option value="cup"' + (curHandle === 'cup' ? ' selected' : '') + '>Cup Pull (Traditional)</option>' +
+            '<option value="gprof"' + (curHandle === 'gprof' ? ' selected' : '') + '>Gola Profile (Recessed)</option>' +
+            '<option value="jprof"' + (curHandle === 'jprof' ? ' selected' : '') + '>J Profile Channel</option>' +
+            '<option value="none"' + (curHandle === 'none' ? ' selected' : '') + '>Handleless / Push-to-Open</option>' +
+          '</select></div>' +
+          '<div class="insp-row"><label>Handle Finish</label><select id="inspFurnHFinish">' +
+            '<option value="black"' + (curHFinish === 'black' ? ' selected' : '') + '>Matte Black</option>' +
+            '<option value="chrome"' + (curHFinish === 'chrome' ? ' selected' : '') + '>Polished Chrome</option>' +
+            '<option value="nickel"' + (curHFinish === 'nickel' ? ' selected' : '') + '>Satin Nickel / Steel</option>' +
+            '<option value="brass"' + (curHFinish === 'brass' ? ' selected' : '') + '>Warm Brass / Gold</option>' +
+            '<option value="rose_gold"' + (curHFinish === 'rose_gold' ? ' selected' : '') + '>Rose Gold / Copper</option>'
           '</select></div>' +
           '<div style="margin:12px 0 8px 0;padding:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
@@ -1049,6 +1090,8 @@
                   if (fn.unitConfig.counter) eu.counter = fn.unitConfig.counter;
                   if (fn.unitConfig.shutterCol) eu.shutterCol = fn.unitConfig.shutterCol;
                   if (fn.unitConfig.carcass) eu.carcass = fn.unitConfig.carcass;
+                  if (fn.unitConfig.handle) eu.handle = fn.unitConfig.handle;
+                  if (fn.unitConfig.hfinish) eu.hfinish = fn.unitConfig.hfinish;
                 }
                 break;
               }
@@ -1222,6 +1265,12 @@
               fn.shutterColors[i] = col0;
               fn.shutterMaterials[i] = mat0;
             }
+            if (!fn.materials) fn.materials = {};
+            if (!fn.materials.shutter) fn.materials.shutter = {};
+            fn.materials.shutter.finish = mat0;
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.shutterCol = mat0;
+            syncInspectorTo3D();
             self.editor.pushHistory('Apply Shutter Style to All');
             self.saveToLocalStorage();
             self.renderInspector(self.editor.selected);
@@ -1314,7 +1363,47 @@
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
+        });
+
+        document.getElementById('inspFurnShutter').addEventListener('change', function (e) {
+          if (!fn.materials) fn.materials = {};
+          if (!fn.materials.shutter) fn.materials.shutter = { material: 'HDHMR_18MM' };
+          fn.materials.shutter.finish = e.target.value;
+          if (!fn.unitConfig) fn.unitConfig = {};
+          fn.unitConfig.shutterCol = e.target.value;
+          if (!fn.shutterMaterials) fn.shutterMaterials = [];
+          for (var sm = 0; sm < shuttersCount; sm++) {
+            fn.shutterMaterials[sm] = e.target.value;
+          }
+          syncInspectorTo3D();
+          self.editor.pushHistory('Change Shutter Finish');
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          self.renderInspector(self.editor.selected);
+          if (self.render3DHome) self.render3DHome(true);
+        });
+
+        document.getElementById('inspFurnHandle').addEventListener('change', function (e) {
+          if (!fn.unitConfig) fn.unitConfig = {};
+          fn.unitConfig.handle = e.target.value;
+          fn.handleType = e.target.value;
+          syncInspectorTo3D();
+          self.editor.pushHistory('Change Handle Style');
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          if (self.render3DHome) self.render3DHome(true);
+        });
+
+        document.getElementById('inspFurnHFinish').addEventListener('change', function (e) {
+          if (!fn.unitConfig) fn.unitConfig = {};
+          fn.unitConfig.hfinish = e.target.value;
+          fn.handleFinish = e.target.value;
+          syncInspectorTo3D();
+          self.editor.pushHistory('Change Handle Finish');
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspOpen3DStudio').addEventListener('click', function () {
           if (window.S && window.S.units) {
