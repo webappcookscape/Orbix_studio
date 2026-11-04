@@ -1,0 +1,638 @@
+================================================================================
+ORBIX STUDIO (CUPBOARD CAD) — COMPREHENSIVE ARCHITECTURAL & CODEBASE GUIDE
+"INCH BY INCH" COMPLETE TECHNICAL & ARCHITECTURAL REFERENCE MANUAL
+Generated: November 2026
+================================================================================
+
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. EXECUTIVE OVERVIEW & SYSTEM ARCHITECTURE
+2. PROJECT FILE & DIRECTORY MAP
+3. FRONTEND ARCHITECTURE (INCH BY INCH)
+   3.1 orbix-core.js (Geometry Engine, Pricing Formulas & BOQ Calculations)
+   3.2 orbix-plan.js (2D Floor Plan Canvas Editor & Architectural Dimensioning)
+   3.3 orbix-3d.js (Three.js 3D Cabinetry Visualization & Parametric Generation)
+   3.4 orbix-ui.js (State Coordinator, Inspector Panels & Commercial Workflows)
+   3.5 orbix-projects.js (Cloud Projects, Role-Based Access & Authentication)
+   3.6 app.js (Bootstrap, State Bus & Global Event Binding)
+   3.7 build.py (Single-File Compiler & Asset Bundler)
+4. BACKEND ARCHITECTURE & DATABASE (INCH BY INCH)
+   4.1 server/server.js (Express Application & Middlewares)
+   4.2 server/config/prisma.js (Prisma ORM Client & Auto-Migration Self-Healing)
+   4.3 server/config/session.js (PostgreSQL Session Store)
+   4.4 Router-Controller-Service Layer Breakdown
+       - Auth (Login, Session, Me, Logout)
+       - Users (Admin User Management, Bcrypt)
+       - Projects (CRUD, Versioning, JSONB Plan Data)
+       - Sharing & Forking (Viewer, Editor, Admin Permissions)
+   4.5 Database Schema (prisma/schema.prisma & db/schema.sql)
+5. MATHEMATICAL FORMULAS & ALGORITHMIC ENGINES
+   5.1 SFT Area Calculation Formula
+   5.2 Commercial Quotation, Taxes, Markups & Labor Matrices
+   5.3 Room Polygon Detection (Face Finding & Shoelace Formula)
+   5.4 Segmented Architectural Dimensions & Exterior Normal Selection
+   5.5 Snapping Engine (Joints, Orthogonal, Perpendicular, Parallel)
+6. DEPLOYMENT & PRODUCTION INFRASTRUCTURE
+   6.1 Production Server Topology (studio.orbixdesigns.com)
+   6.2 PM2 Process Manager & Systemd
+   6.3 Nginx Reverse Proxy & SSL Setup
+   6.4 deploy.sh CI/CD Script
+7. TEST SUITES & VERIFICATION PROCEDURES
+================================================================================
+
+
+================================================================================
+1. EXECUTIVE OVERVIEW & SYSTEM ARCHITECTURE
+================================================================================
+Orbix Studio (internally referred to as Cupboard CAD) is an enterprise-grade,
+browser-based interior design CAD and commercial quotation platform tailored for
+custom residential cabinetry, modular kitchens, wardrobes, and space planning.
+
+The platform bridges three critical domains in real time:
+1. 2D Floor Plan Design:
+   High-precision interactive canvas drafting tool with millimeter snapping,
+   wall creation, room polygon discovery, door/window placement, blueprint
+   underlay calibration, and architectural segmented dimension chains.
+2. 3D Parametric Cabinetry & Interior Studio:
+   Real-time WebGL rendering via Three.js. Automatically extrudes 3D walls and
+   rooms from 2D floor plans, parametric carcass generation, door swings,
+   internal shelving, drawer boxes, PBR materials (woodgrains, laminates,
+   fluted glass, brass/matte hardware), and lighting.
+3. Commercial BOQ (Bill of Quantities) & Quotation Engine:
+   Instant calculation of square footage (SFT), carcass materials, shutter
+   finishes, hardware components, factory labor, installation, freight, margin,
+   and 18% GST with locked versions and SketchUp / CSV export capabilities.
+4. Cloud Collaboration & Multi-User Management:
+   PostgreSQL-backed layered Express + Prisma ORM backend with cookie-based
+   persistent sessions, role-based project sharing (Viewer/Editor/Admin),
+   project cloning (forking), and admin employee management.
+
+HIGH-LEVEL DATA FLOW:
+---------------------
+[User Inputs 2D Wall / Opening]
+         │
+         ▼
+[orbix-plan.js] ────► [orbix-core.js: Geometric & Pricing Math]
+         │                          │
+         ▼                          ▼
+[orbix-3d.js: Three.js WebGL]   [orbix-ui.js: Inspector & Live BOQ]
+         │                          │
+         └──────────┬───────────────┘
+                    │
+                    ▼
+          [orbix-projects.js]
+                    │  (HTTPS JSON REST API)
+                    ▼
+       [Nginx Reverse Proxy :443]
+                    │
+                    ▼
+     [Node.js / Express Server :4180]
+                    │
+        [Prisma Client v6 ORM]
+                    │
+                    ▼
+     [PostgreSQL Database: cupboard_cad]
+
+
+================================================================================
+2. PROJECT FILE & DIRECTORY MAP
+================================================================================
+Orbix_studio/
+├── index.html                   Primary multi-file web app container
+├── dist-single.html             Single-file standalone bundle compiled by build.py
+├── build.py                     Python script compiling all JS/CSS/assets into dist-single.html
+├── style.css                    Global design system, dark/light themes, modal & canvas styling
+├── orbix-core.js                Pure mathematical calculations, Vec2, BOQ pricing engine
+├── orbix-plan.js                2D canvas editor, snapping, wall drawing, segmented dimensions
+├── orbix-3d.js                  Three.js 3D renderer, parametric unit generation, room extrusion
+├── orbix-ui.js                  UI state coordinator, toolbar manager, inspector panel, BOQ view
+├── orbix-projects.js            Client-side cloud project manager, auth state, project sharing
+├── app.js                       Application entry point, global bus & initialization
+├── pwa.js / sw.js / manifest    Progressive Web App offline support and service worker
+├── logo.jpeg / icon.svg         Branding assets
+│
+├── server/                      Layered Express Backend
+│   ├── server.js                Express app initialization, session config, reverse-proxy trust
+│   ├── config/
+│   │   ├── prisma.js            Prisma ORM client instance with auto-migration query hooks
+│   │   └── session.js           connect-pg-simple session store config
+│   ├── middlewares/
+│   │   ├── authMiddleware.js    requireAuth and requireAdmin route guards
+│   │   └── errorHandler.js      Centralized JSON error handling
+│   ├── routes/
+│   │   ├── index.js             Central route aggregator (/api)
+│   │   ├── authRoutes.js        /api/auth (login, logout, me)
+│   │   ├── userRoutes.js        /api/users (user CRUD for admins)
+│   │   ├── projectRoutes.js     /api/projects (project CRUD, auto-save)
+│   │   └── shareRoutes.js       /api/projects/:id/share (collaboration, forking)
+│   ├── controllers/
+│   │   ├── authController.js    HTTP request handling for authentication
+│   │   ├── userController.js    HTTP request handling for employee management
+│   │   ├── projectController.js HTTP request handling for projects
+│   │   └── shareController.js   HTTP request handling for sharing and forks
+│   └── services/
+│       ├── userService.js       Business logic for users & bcrypt hashing
+│       ├── projectService.js    Business logic for project serialization & ownership
+│       └── shareService.js      Business logic for permission checks & clone forks
+│
+├── prisma/
+│   └── schema.prisma            Prisma schema model definitions & PostgreSQL provider
+│
+├── db/
+│   └── schema.sql               PostgreSQL raw relational DDL schema
+│
+├── tests/                       Automated verification test suites
+│   ├── test-orbix-core.js               Core geometry & SFT pricing formula verification
+│   ├── test-orbix-plan-dimensions.js   Segmented dimensions (855 | 800 | 855) verification
+│   ├── test-orbix-plan-underlay.js     Scale calibration & unit conversion tests
+│   ├── test-orbix-room-pricing.js      Room detection & area pricing tests
+│   ├── test-orbix-price-matrix.js      Commercial tier & material matrix tests
+│   ├── test-orbix-commercial-charges.js Labor, freight, and markup tests
+│   ├── test-orbix-3d.js                Three.js parametric generation tests
+│   └── test-sketchup-exporter.js       SketchUp 3D geometry exporter tests
+│
+├── deploy.sh                    Production bash script for automated server updates
+└── .env                         Environment secrets (DATABASE_URL, SESSION_SECRET, PORT)
+
+
+================================================================================
+3. FRONTEND ARCHITECTURE (INCH BY INCH)
+================================================================================
+
+--------------------------------------------------------------------------------
+3.1 orbix-core.js — The Geometric and Commercial Heart
+--------------------------------------------------------------------------------
+Location: d:\CookScape workspace\Project_files\Orbix_studio\orbix-core.js
+Lines of Code: ~4,000+
+Dependencies: Independent (works in both Browser and Node.js via UMD module wrapper).
+
+KEY RESPONSIBILITIES:
+1. 2D Vector Mathematics (`Core.Vec2`):
+   - `dist(a, b)`: Euclidean distance $\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}$.
+   - `add(a, b)`, `sub(a, b)`, `scale(a, s)`, `normalize(v)`.
+   - `dot(a, b)`: Scalar dot product $a_x b_x + a_y b_y$.
+   - `cross(a, b)`: 2D determinant $a_x b_y - a_y b_x$.
+   - `pointInPolygon(pt, poly)`: Ray-casting winding algorithm checking if a point
+     lies inside an arbitrary 2D room boundary.
+   - `polygonCentroid(poly)`: Geometric center calculation used for room labeling.
+   - `polygonArea(poly)`: Shoelace theorem computing exact square millimeters.
+
+2. Wall & Geometry Modeling:
+   - `createWall(options)`: Instantiates a wall with start {x,y}, end {x,y},
+     thickness (default 150mm), height (default 2800mm), and unique ID (`wall_...`).
+   - `wallLength(w)`: Length of wall vector.
+   - `wallDirection(w)`: Normalized unit vector $(end - start) / length$.
+   - `wallNormal(w)`: Perpendicular vector $(-dir_y, dir_x)$.
+   - `wallPolygon(w)`: Returns 4 corners in counter-clockwise order forming the
+     2D rectangular wall body with specified thickness.
+   - `splitWall(project, wallId, splitPt)`: Splits a wall into two connected wall
+     segments while recalculating and reassigning existing doors and windows.
+
+3. Openings Model (Doors & Windows):
+   - `createOpening(options)`: Manages doors and windows. Tracks `wallId`, `offset`
+     (distance from wall.start to opening center), `width` (e.g. 800mm, 900mm),
+     `height` (e.g. 2100mm), `swing` ('in-left', 'in-right', 'out-left', 'out-right'),
+     and `sillHeight` (for windows, default 900mm).
+
+4. Room Detection Algorithm (`detectRooms(walls)`):
+   - Converts the undirected wall graph into a planar planar straight-line graph (PSLG).
+   - Detects all minimal counter-clockwise closed cycles (faces).
+   - Filters out the infinite exterior outer boundary.
+   - Computes square meters and square feet for each detected interior room.
+
+5. Commercial Quotation & BOQ Engine:
+   - SFT Formula: $\text{Width (mm)} \times \text{Height (mm)} / 92,903.04$.
+   - Applies the configured rate per SFT (e.g. ₹1,700/SFT for Essential,
+     ₹2,200/SFT for Premium, ₹2,800/SFT for Luxury).
+   - Computes:
+     * Woodwork Base Subtotal
+     * Hardware & Accessories
+     * Factory Labor Charges (~8.41%)
+     * Installation Charges
+     * Freight & Logistics
+     * Commercial Margin
+     * GST (18% Goods & Services Tax)
+     * Grand Total (Rounded to nearest rupee)
+
+--------------------------------------------------------------------------------
+3.2 orbix-plan.js — 2D Floor Plan Canvas Editor
+--------------------------------------------------------------------------------
+Location: d:\CookScape workspace\Project_files\Orbix_studio\orbix-plan.js
+Lines of Code: ~1,900+
+
+KEY RESPONSIBILITIES:
+1. Viewport & Coordinate Space:
+   - `worldToScreen(pt)`: Transforms world millimeter coordinates into HTML5 Canvas pixels
+     accounting for dynamic pan $(pan.x, pan.y)$ and zoom level ($zoom$).
+   - `screenToWorld(pt)`: Converts mouse event coordinates back into exact CAD world millimeters.
+
+2. Snapping & Guideline Engine (`snapPoint(cursor)`):
+   - Magnetic Joint Snapping: Attaches cursor to existing wall endpoints within 200mm radius.
+   - Orthogonal Lock: Snaps to 0°, 90°, 180°, and 270° with dynamic sky-blue guidelines.
+   - Perpendicular ($\perp$ 90°) & Parallel ($\parallel$) Snapping: Snaps relative to any
+     nearby wall with emerald-green dashed guide lines.
+   - Direct Numeric Keyboard HUD: Designers can type numbers (e.g. "2500" or "10' 6\"")
+     while drawing; pressing Enter creates the wall at that exact length.
+
+3. Architectural Segmented Dimensioning Engine:
+   - Evaluates walls and openings to produce continuous dimension chains matching
+     architectural drafting standards.
+   - `renderWallDimensions(ctx, w, isSelected, options)`:
+     * Room Exterior Normal Detection: Determines which side of the wall faces outside
+       the room so dimension lines never clutter room interiors.
+     * Division Points: Partitions wall into segments: Corner A $\rightarrow$ Opening 1 Start
+       $\rightarrow$ Opening 1 End $\rightarrow$ ... $\rightarrow$ Corner B.
+     * Corner A & B Labels: Draws bold "A" and "B" markers at wall joints.
+     * Direction Arrows 1 & 2: Draws internal centerline arrows inside the wall core:
+       Arrow 1 pointing toward Corner A with badge "1", and Arrow 2 pointing toward Corner B
+       with badge "2".
+     * Witness Lines & Dots: Perpendicular dashed lines with solid circular dots (radius 3.5px)
+       at every segment boundary.
+     * Dimension Pills: Crisp, legible millimeter text badges centered on each segment.
+   - Real-time Interactive Placement Preview:
+     * Moving a door/window along a wall live-renders the exact segment distances to Corner A
+       and Corner B before clicking to confirm placement.
+
+4. Floor Plan Blueprint Underlay & Scale Calibration:
+   - Supports uploading architectural JPG/PNG blueprint floor plans.
+   - Interactive 2-point calibration tool: Designer clicks two points of a known dimension
+     (e.g. a 3000mm wall), enters the real-world distance, and the editor automatically
+     scales the entire underlay image to exact 1:1 real-world millimeters.
+
+--------------------------------------------------------------------------------
+3.3 orbix-3d.js — Three.js 3D Cabinetry Visualization
+--------------------------------------------------------------------------------
+Location: d:\CookScape workspace\Project_files\Orbix_studio\orbix-3d.js
+Lines of Code: ~1,500+
+Dependencies: Three.js (r128+), OrbitControls.
+
+KEY RESPONSIBILITIES:
+1. Scene Graph & Environment:
+   - Manages Three.Scene, WebGLRenderer with antialiasing and shadow maps.
+   - PerspectiveCamera with OrbitControls (damping, min/max polar angle constraints).
+   - Realistic multi-source lighting: Warm ambient light, directional sunlight casting
+     soft shadow maps, and ceiling downlights for interior warmth.
+
+2. 3D Architectural Shell Extrusion:
+   - Takes 2D wall polygons and extrudes them vertically to `wall.height` (default 2800mm).
+   - Automatically cuts out door and window openings in 3D wall geometry.
+   - Builds floor slabs with realistic wood parquet, stone, or tile textures.
+   - Renders 3D door frames, door slabs with open/close swing angles, and glass window panes.
+
+3. Parametric Cabinetry Generator:
+   - Generates true 3D models for furniture units (Wardrobes, Kitchen base/wall units, TV consoles, Dressers).
+   - Generates realistic carcass panels: 18mm plywood side panels, top/bottom shelves,
+     back panel (9mm), internal vertical dividers, and adjustable horizontal shelves.
+   - Shutter Doors: Generates realistic cabinet doors with realistic clearance gaps (2mm)
+     and interactive door opening/closing animations.
+   - Drawer Boxes: Parametric drawer fronts, internal wooden boxes, and telescopic runners.
+   - Hardware: Extrudes edge-profile J-pulls, brass knobs, and modern concealed handles.
+   - PBR Materials: Woodgrain textures, high-gloss laminates, matte acrylics, and fluted glass.
+
+--------------------------------------------------------------------------------
+3.4 orbix-ui.js — State Coordinator & Inspector Controller
+--------------------------------------------------------------------------------
+Location: d:\CookScape workspace\Project_files\Orbix_studio\orbix-ui.js
+Lines of Code: ~2,500+
+
+KEY RESPONSIBILITIES:
+1. Toolbar Management:
+   - Controls active tool mode: Select, Wall, Door, Window, Furniture, Split, Calibrate, 3D Mode.
+   - Toggles Imperial vs. Metric measurement units (mm $\leftrightarrow$ feet/inches).
+   - Manages Undo/Redo button states linked to canvas history.
+
+2. Inspector Panel (`renderInspector`):
+   - Wall Inspector: Shows wall length, thickness, and height with direct numeric inputs.
+   - Opening Inspector (Enhanced):
+     * Visual segmented badge: `[ Corner A (1): X mm ] ── [ Width: Y mm ] ── [ (2) Corner B: Z mm ]`.
+     * Direct editable input for `Distance from Corner A (1) [mm]`.
+     * Direct editable input for `Distance to Corner B (2) [mm]`.
+     * Changing either distance immediately shifts the opening and re-renders both 2D and 3D!
+   - Furniture Inspector: Allows customization of width, depth, height, shutter count,
+     internal drawer counts, carcass finishes, and shutter materials.
+
+3. Commercial Quotation View (BOQ Modal):
+   - Renders full itemized breakdown of all cabinets across every detected room.
+   - Displays pricing formulas, subtotal, hardware, labor, taxes, and grand total.
+   - Export options: SketchUp 3D file generator, CSV export, and Print/PDF quotation.
+
+--------------------------------------------------------------------------------
+3.5 orbix-projects.js — Cloud Project Management & Client Auth
+--------------------------------------------------------------------------------
+Location: d:\CookScape workspace\Project_files\Orbix_studio\orbix-projects.js
+Lines of Code: ~1,700+
+
+KEY RESPONSIBILITIES:
+1. Session Verification & Auth State:
+   - Calls `/api/auth/me` on startup.
+   - Displays Login / Sign-In modal if unauthenticated.
+   - Tracks current user identity, name, role (`admin` vs `employee`).
+
+2. Project Cloud Synchronization:
+   - Automatic debounced project saving to PostgreSQL live database.
+   - Project List UI: Shows thumbnails, project names, owner, and last modified date.
+   - Role-Based Project Sharing UI:
+     * Invite collaborators via email address.
+     * Assign permissions: Viewer (read-only), Editor (read/write), Admin (full control).
+   - Project Forking UI: Allows editors or viewers to clone any shared project into their
+     own account without modifying the original.
+   - User Management UI (Admins only):
+     * Create new employees, update credentials, assign roles.
+
+--------------------------------------------------------------------------------
+3.6 app.js — Bootstrap, State Bus & Global Event Binding
+--------------------------------------------------------------------------------
+Location: d:\CookScape workspace\Project_files\Orbix_studio\app.js
+- Coordinates the lifecycle between `OrbixCore`, `OrbixPlan`, `Orbix3D`, `OrbixUI`, and `OrbixProjects`.
+- Initializes canvas sizing, binds keyboard shortcuts, and triggers 3D re-renders whenever
+  2D floor plan modifications occur.
+
+--------------------------------------------------------------------------------
+3.7 build.py — Single-File Standalone Compiler
+--------------------------------------------------------------------------------
+Location: d:\CookScape workspace\Project_files\Orbix_studio\build.py
+- Reads `index.html`, `style.css`, and all JS modules (`orbix-core.js`, `orbix-plan.js`,
+  `orbix-3d.js`, `orbix-ui.js`, `orbix-projects.js`, `app.js`).
+- Inlines all stylesheets and scripts.
+- Converts binary assets (e.g. `logo.jpeg`) into Base64 data URIs.
+- Outputs `dist-single.html` (~1.05 MB standalone file) that can run offline in any browser
+  or within Claude Artifacts without needing a web server.
+
+
+================================================================================
+4. BACKEND ARCHITECTURE & DATABASE (INCH BY INCH)
+================================================================================
+The backend is an enterprise Node.js & Express application using Prisma ORM (v6.19.3)
+connected to a live PostgreSQL relational database (`cupboard_cad`). It follows a strict
+Layered Architecture: Route $\rightarrow$ Middleware $\rightarrow$ Controller $\rightarrow$ Service $\rightarrow$ Prisma Model.
+
+--------------------------------------------------------------------------------
+4.1 server/server.js — Entry Point & Middleware Pipeline
+--------------------------------------------------------------------------------
+Location: d:\CookScape workspace\Project_files\Orbix_studio\server\server.js
+Port: 4180 (bound to `127.0.0.1:4180` behind Nginx reverse proxy).
+
+KEY MIDDLEWARE CONFIGURATION:
+- `app.set('trust proxy', 1)`:
+  Critical for Nginx reverse-proxied production deployment. Ensures secure cookie handling
+  and client IP resolution over HTTPS (`studio.orbixdesigns.com`).
+- CORS Configuration:
+  Configured with `origin: true` and `credentials: true` to support cross-origin sessions
+  and secure cookie transmission.
+- `express-session` with `connect-pg-simple`:
+  Persistent database sessions saved in PostgreSQL `session` table with 7-day TTL.
+  Cookie configuration: `{ httpOnly: true, secure: 'auto', maxAge: 7 * 86400000 }`.
+- Static Serving:
+  Serves project root directory files (`index.html`, `orbix-plan.js`, etc.) while delegating
+  all `/api/*` endpoints to the Express router.
+
+--------------------------------------------------------------------------------
+4.2 server/config/prisma.js — Prisma ORM & Self-Healing Auto-Migrations
+--------------------------------------------------------------------------------
+Location: d:\CookScape workspace\Project_files\Orbix_studio\server\config\prisma.js
+- Creates a singleton `PrismaClient` instance.
+- Boots with a connection verification hook executing `SELECT 1`.
+- Self-Healing Auto-Migration:
+  Executes `ALTER TABLE ... ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();`
+  on `users`, `project_shares`, and `project_forks` during application startup to prevent
+  runtime P2022 column errors on existing live databases without requiring destructive table drops.
+
+--------------------------------------------------------------------------------
+4.3 Router-Controller-Service Layer Breakdown
+--------------------------------------------------------------------------------
+1. Authentication (`server/routes/authRoutes.js`):
+   - POST `/api/auth/login`:
+     * Controller: `authController.login`
+     * Service: `userService.authenticateUser(usernameOrEmail, password)`
+     * Verifies password using `bcryptjs.compare`.
+     * Regenerates session on successful login and stores `{ id, username, email, role }` in `req.session.user`.
+   - GET `/api/auth/me`: Returns active session identity or 401 Unauthorized.
+   - POST `/api/auth/logout`: Destroys PostgreSQL session and clears cookie.
+
+2. User Management (`server/routes/userRoutes.js`):
+   - GET `/api/users`: Returns list of all system users (guarded by `requireAdmin`).
+   - POST `/api/users`: Creates employee user with hashed password (guarded by `requireAdmin`).
+   - PUT `/api/users/:id`: Updates username, email, role, or resets password.
+   - DELETE `/api/users/:id`: Removes user account.
+
+3. Project Management (`server/routes/projectRoutes.js`):
+   - GET `/api/projects`:
+     * Returns all projects owned by the user, PLUS all projects shared with the user.
+     * Includes share permission tags (`canEdit: true/false`, `role: 'viewer'|'editor'`).
+   - POST `/api/projects`: Creates a new project in PostgreSQL with JSONB `plan` column.
+   - GET `/api/projects/:id`: Loads full project data (enforces ownership or share access).
+   - PUT `/api/projects/:id`: Auto-saves project geometry, rooms, and units (requires edit permission).
+   - DELETE `/api/projects/:id`: Deletes project (owner only).
+
+4. Project Sharing & Forking (`server/routes/shareRoutes.js`):
+   - GET `/api/projects/:id/shares`: Lists all collaborators for a project.
+   - POST `/api/projects/:id/share`: Invites user by email with `viewer` or `editor` role.
+   - DELETE `/api/projects/:id/share/:shareId`: Revokes shared access.
+   - POST `/api/projects/:id/fork`: Clones a shared project into a new independent project
+     owned by the requesting user, recording the clone lineage in `project_forks`.
+
+5. System Status (`GET /api/status`):
+   - Validates live PostgreSQL connection, returns active database name, host, port,
+     and Prisma Client version.
+
+--------------------------------------------------------------------------------
+4.4 Database Schema (PostgreSQL Relational Structure)
+--------------------------------------------------------------------------------
+The relational schema is defined in both `prisma/schema.prisma` and `db/schema.sql`:
+
+1. `users`:
+   - `id`: VARCHAR(64) PRIMARY KEY (e.g. `usr_admin`, `usr_mvwe6obve1ks`)
+   - `name`: VARCHAR(255)
+   - `username`: VARCHAR(100) UNIQUE
+   - `email`: VARCHAR(255) UNIQUE
+   - `password_hash`: VARCHAR(255)
+   - `role`: VARCHAR(50) (e.g. `admin`, `employee`)
+   - `created_at`, `updated_at`: TIMESTAMP WITH TIME ZONE
+
+2. `projects`:
+   - `id`: VARCHAR(64) PRIMARY KEY (e.g. `proj_mvwebghgfoe5`)
+   - `user_id`: VARCHAR(64) REFERENCES users(id) ON DELETE CASCADE
+   - `name`: VARCHAR(255) NOT NULL
+   - `description`: TEXT
+   - `thumbnail`: TEXT
+   - `plan`: JSONB NOT NULL (Stores 2D walls, openings, rooms, furniture)
+   - `units`: JSONB (Stores custom parametric cabinetry list)
+   - `created_at`, `updated_at`: TIMESTAMP WITH TIME ZONE
+
+3. `project_shares`:
+   - `id`: VARCHAR(64) PRIMARY KEY
+   - `project_id`: VARCHAR(64) REFERENCES projects(id) ON DELETE CASCADE
+   - `user_id`: VARCHAR(64) REFERENCES users(id) ON DELETE CASCADE
+   - `role`: VARCHAR(32) ('viewer' | 'editor' | 'admin')
+   - `created_at`, `updated_at`: TIMESTAMP WITH TIME ZONE
+   - UNIQUE(project_id, user_id)
+
+4. `project_forks`:
+   - `id`: VARCHAR(64) PRIMARY KEY
+   - `original_project_id`: VARCHAR(64) REFERENCES projects(id) ON DELETE SET NULL
+   - `forked_project_id`: VARCHAR(64) REFERENCES projects(id) ON DELETE CASCADE
+   - `user_id`: VARCHAR(64) REFERENCES users(id) ON DELETE CASCADE
+   - `created_at`, `updated_at`: TIMESTAMP WITH TIME ZONE
+
+5. `session`:
+   - `sid`: VARCHAR PRIMARY KEY (PostgreSQL session key used by connect-pg-simple)
+   - `sess`: JSON NOT NULL
+   - `expire`: TIMESTAMP(6) NOT NULL (Indexed for automatic expiration sweeps)
+
+
+================================================================================
+5. MATHEMATICAL FORMULAS & ALGORITHMIC ENGINES
+================================================================================
+
+--------------------------------------------------------------------------------
+5.1 Square Footage (SFT) & Dimensional Conversion Formula
+--------------------------------------------------------------------------------
+In the interior design and modular cabinetry industry in India, furniture units are
+quoted in square feet (SFT) based on their frontal elevation dimensions:
+
+$$\text{Area}_{\text{SFT}} = \frac{\text{Width (mm)} \times \text{Height (mm)}}{92,903.04}$$
+
+*Why 92,903.04?*
+- 1 foot = 304.8 mm
+- 1 square foot = $304.8 \times 304.8 = 92,903.04 \text{ mm}^2$
+
+Example Verification:
+A wardrobe measuring 1200 mm width by 2000 mm height:
+$$\text{Area} = \frac{1200 \times 2000}{92903.04} = \frac{2,400,000}{92903.04} \approx 25.8334 \text{ SFT}$$
+
+At ₹1,700/SFT:
+$$\text{Cost} = 25.83337 \times 1700 = \text{₹}43,916.75$$
+
+--------------------------------------------------------------------------------
+5.2 Commercial Quotation & Labor Matrices
+--------------------------------------------------------------------------------
+Orbix Studio calculates the full bill of quantities through an eight-stage commercial formula:
+1. `Woodwork Subtotal` = $\sum (\text{Unit SFT} \times \text{Material Rate})$
+2. `Hardware Subtotal` = Hinges, telescopic drawer channels, handles, hanging rods.
+3. `Net Base Amount` = $\text{Woodwork Subtotal} + \text{Hardware Subtotal}$
+4. `Factory Labor & Fabrication` = $\text{Net Base Amount} \times 8.41\%$
+5. `Installation Charges` = $\text{Net Base Amount} \times 5.00\%$
+6. `Freight & Logistics` = Fixed or distance-weighted charge (~₹1,500)
+7. `Net Commercial Subtotal` = $\text{Net Base} + \text{Labor} + \text{Installation} + \text{Freight}$
+8. `GST (18%)` = $\text{Net Commercial Subtotal} \times 0.18$
+9. `Grand Total` = $\text{Math.round}(\text{Net Commercial Subtotal} + \text{GST})$
+
+--------------------------------------------------------------------------------
+5.3 Room Polygon Detection (Face Finding & Shoelace Formula)
+--------------------------------------------------------------------------------
+When walls are drawn, `Core.detectRooms()` discovers closed spaces automatically:
+1. Build adjacency list of all connected wall vertices.
+2. Sort adjacent edges counter-clockwise around every vertex by angle $\theta = \text{atan2}(dy, dx)$.
+3. Trace smallest counter-clockwise cycles (left-hand rule).
+4. Compute signed area using the Shoelace Formula:
+   $$\text{Area} = \frac{1}{2} \left| \sum_{i=0}^{n-1} (x_i y_{i+1} - x_{i+1} y_i) \right|$$
+5. Discard negative/clockwise outer hulls; keep all positive interior cycles as rooms.
+6. Compute room centroid for 2D badge placement:
+   $$C_x = \frac{1}{6A} \sum (x_i + x_{i+1})(x_i y_{i+1} - x_{i+1} y_i)$$
+   $$C_y = \frac{1}{6A} \sum (y_i + y_{i+1})(x_i y_{i+1} - x_{i+1} y_i)$$
+
+--------------------------------------------------------------------------------
+5.4 Segmented Architectural Dimensions & Exterior Normal Selection
+--------------------------------------------------------------------------------
+To place dimension lines on the OUTSIDE of rooms:
+1. For any wall $W$ with direction $\vec{d} = (end - start) / L$, compute normal $\vec{n} = (-d_y, d_x)$.
+2. Sample test points $P_{\text{pos}} = \text{mid} + \vec{n} \times 120\text{mm}$ and $P_{\text{neg}} = \text{mid} - \vec{n} \times 120\text{mm}$.
+3. If $P_{\text{pos}}$ is inside a detected room and $P_{\text{neg}}$ is outside, invert normal $\vec{n} = -\vec{n}$.
+4. Partition wall $0 \dots L$ into ordered divisions $[0, t_{\text{start}}, t_{\text{end}}, L]$.
+5. Segment 1: from $0 \dots t_{\text{start}}$ (labeled with Arrow 1 $\uparrow$ toward Corner A).
+6. Opening: width $t_{\text{end}} - t_{\text{start}}$ (e.g. 800 mm).
+7. Segment 2: from $t_{\text{end}} \dots L$ (labeled with Arrow 2 $\downarrow$ toward Corner B).
+8. Draw perpendicular dashed witness lines from wall face out to dimension line, with
+   solid circular dots at intersections and dimension pill badges.
+
+
+================================================================================
+6. DEPLOYMENT & PRODUCTION INFRASTRUCTURE
+================================================================================
+
+--------------------------------------------------------------------------------
+6.1 Production Server Topology
+--------------------------------------------------------------------------------
+- Public URL: https://studio.orbixdesigns.com
+- Hosting: Ubuntu 22.04 LTS VPS
+- User Account: `deploy@projects`
+- Application Directory: `/home/deploy/orbix_studio`
+- Process Manager: PM2 (Process name: `orbix-studio`, internal port: `4180`)
+- Web Server / Reverse Proxy: Nginx (Port 80/443 with Let's Encrypt SSL)
+- Database: PostgreSQL (Database name: `cupboard_cad`, user: `postgres`, port: `5432`)
+
+--------------------------------------------------------------------------------
+6.2 Nginx Configuration
+--------------------------------------------------------------------------------
+```nginx
+server {
+    server_name studio.orbixdesigns.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:4180;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    listen 443 ssl;
+    ssl_certificate /etc/letsencrypt/live/studio.orbixdesigns.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/studio.orbixdesigns.com/privkey.pem;
+}
+```
+
+--------------------------------------------------------------------------------
+6.3 Automated CI/CD Script (deploy.sh)
+--------------------------------------------------------------------------------
+Location: `/home/deploy/orbix_studio/deploy.sh`
+Execution:
+```bash
+#!/bin/bash
+set -e
+echo "🚀 Deploying Orbix Studio..."
+cd /home/deploy/orbix_studio
+git pull origin main
+npm install --production=false
+npx prisma generate
+pm2 reload orbix-studio --update-env
+echo "✅ Deployment completed successfully!"
+```
+
+
+================================================================================
+7. TEST SUITES & VERIFICATION PROCEDURES
+================================================================================
+The project includes automated regression test suites located in `tests/`:
+
+1. `tests/test-orbix-core.js`:
+   - Verifies project creation, room detection, wall splitting, and SFT pricing formulas.
+2. `tests/test-orbix-plan-dimensions.js`:
+   - Verifies segmented architectural dimensions ($855 \text{ mm} \mid 800 \text{ mm} \mid 855 \text{ mm}$).
+   - Verifies bidirectional numeric input from Corner A and Corner B.
+   - Verifies room exterior normal disambiguation.
+3. `tests/test-orbix-plan-underlay.js`:
+   - Verifies 2-point scale calibration mathematics and imperial/metric string parsing.
+4. `tests/test-orbix-room-pricing.js`:
+   - Verifies room polygon bounding boxes and room-specific unit cost rollups.
+5. `tests/test-orbix-price-matrix.js`:
+   - Verifies Essential, Premium, and Luxury price tier matrix calculations.
+6. `tests/test-sketchup-exporter.js`:
+   - Verifies 3D Ruby-compatible geometry script generation for SketchUp import.
+
+To execute all tests simultaneously:
+```bash
+node tests/test-orbix-core.js
+node tests/test-orbix-plan-dimensions.js
+node tests/test-orbix-plan-underlay.js
+node tests/test-orbix-price-matrix.js
+```
+
+================================================================================
+END OF ARCHITECTURAL REFERENCE MANUAL
+================================================================================
+

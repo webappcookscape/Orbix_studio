@@ -2432,6 +2432,47 @@ body.role-employee #adminCreateEmpBox,
   }
 }
 
+.comm-badge-neutral {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #CBD5E1;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.comm-badge-success {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.room-tier-select {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #1E3A8A;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.room-tier-select:hover, .room-tier-select:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+
 
 </style>
 
@@ -2696,6 +2737,10 @@ body.role-employee #adminCreateEmpBox,
           <div class="legend" id="legend"></div>
           <div class="viewbtns">
             <button class="minibtn is-on" id="viewFocusUnitBtn" title="Toggle between focusing on the active modular unit or viewing the full architectural home" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus Unit</button>
+            <button class="minibtn is-on" id="camRotateModeBtn" title="Rotate View: Left-click and drag anywhere to orbit 3D view smoothly" style="font-weight:600;">🔄 Rotate View</button>
+            <button class="minibtn" id="camPanModeBtn" title="Move Centre: Left-click and drag to pan / move camera floor centre" style="font-weight:600;">✋ Move Centre</button>
+            <button class="minibtn" id="camInteractModeBtn" title="Move Unit: Left-click and drag to reposition furniture units" style="font-weight:600;">📦 Move Unit</button>
+            <button class="minibtn" id="camResetCentreBtn" title="Re-centre 3D camera on room centre" style="font-weight:600;">🎯 Re-Centre</button>
             <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
             <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
             <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
@@ -5889,7 +5934,9 @@ body.role-employee #adminCreateEmpBox,
       height: opts.height !== undefined ? opts.height : 2800, // 2.8m ceiling height
       material: opts.material || 'plaster_white',
       openings: opts.openings ? opts.openings.slice() : [],
-      pinned: !!opts.pinned
+      pinned: !!opts.pinned,
+      startLocked: opts.startLocked !== undefined ? !!opts.startLocked : true,
+      endLocked: opts.endLocked !== undefined ? !!opts.endLocked : true
     };
   }
 
@@ -5929,24 +5976,65 @@ body.role-employee #adminCreateEmpBox,
     };
   }
 
+  function isWallUnitCategory(category, name) {
+    var cat = (category || '').toLowerCase();
+    var nm = (name || '').toLowerCase();
+    return cat.indexOf('wall') !== -1 || cat.indexOf('overhead') !== -1 || cat.indexOf('spice') !== -1 ||
+           cat.indexOf('loft') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'kitchen_wall' ||
+           cat === 'crockery_wall' || cat === 'spice_rack' || cat === 'loft_os' || cat === 'kitchen_os' ||
+           nm.indexOf('wall') !== -1 || nm.indexOf('overhead') !== -1 || nm.indexOf('spice rack') !== -1 ||
+           nm.indexOf('spice_rack') !== -1 || nm.indexOf('loft') !== -1;
+  }
+
   function createFurniturePlacement(opts) {
     opts = opts || {};
+    var cat = (opts.category || 'wardrobe').toLowerCase();
+    var isWallUnit = isWallUnitCategory(opts.category, opts.name);
+    var defElev = isWallUnit ? 1500 : 0;
+    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
+      parseFloat(opts.elevation) :
+      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && opts.pos.z !== 0) ?
+        parseFloat(opts.pos.z) : defElev);
+
+    var numShutters = (opts.unitConfig && opts.unitConfig.shutters !== undefined) ?
+      parseInt(opts.unitConfig.shutters) :
+      ((opts.dimensions && opts.dimensions.W > 1200) ? 3 : 2);
+    var numDrawers = (opts.unitConfig && opts.unitConfig.drawers !== undefined) ?
+      parseInt(opts.unitConfig.drawers) : 0;
+
+    var initColors = opts.shutterColors ? opts.shutterColors.slice() : [];
+    var initMats = opts.shutterMaterials ? opts.shutterMaterials.slice() : [];
+    var initStates = opts.shutterStates ? opts.shutterStates.slice() : [];
+    var initDrawerStates = opts.drawerStates ? opts.drawerStates.slice() : [];
+    var defColor = (opts.shutter && opts.shutter.finish) || opts.shutterFinish || '#6E4E35';
+    var defMat = (opts.shutter && opts.shutter.material) || opts.shutterMaterial || 'laminate';
+
+    while (initColors.length < numShutters) initColors.push(defColor);
+    while (initMats.length < numShutters) initMats.push(defMat);
+    while (initStates.length < numShutters) initStates.push(false);
+    while (initDrawerStates.length < numDrawers) initDrawerStates.push(false);
+
     return {
       id: opts.id || uid('furn'),
       name: opts.name || 'Modular Unit',
       category: opts.category || 'wardrobe',
       roomId: opts.roomId || null,
-      pos: { x: opts.pos ? opts.pos.x : 0, y: opts.pos ? opts.pos.y : 0, z: opts.pos ? opts.pos.z : 0 },
+      pos: { x: opts.pos ? opts.pos.x : 0, y: opts.pos ? opts.pos.y : 0, z: elev },
+      elevation: elev,
       rotY: opts.rotY || 0,
       dimensions: {
-        W: opts.dimensions ? opts.dimensions.W : 1200,
-        H: opts.dimensions ? opts.dimensions.H : 2100,
-        D: opts.dimensions ? opts.dimensions.D : 600
+        W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
+        H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : 2100),
+        D: opts.dimensions ? opts.dimensions.D : (isWallUnit ? 350 : 600)
       },
+      shutterColors: initColors,
+      shutterMaterials: initMats,
+      shutterStates: initStates,
+      drawerStates: initDrawerStates,
       materials: opts.materials || {
         shutter: {
-          material: (opts.shutter && opts.shutter.material) || opts.shutterMaterial || 'HDHMR_18MM',
-          finish: (opts.shutter && opts.shutter.finish) || opts.shutterFinish || 'Brazilian Horizontal Walnut'
+          material: defMat,
+          finish: defColor
         },
         carcass: {
           material: (opts.carcass && opts.carcass.material) || opts.carcassMaterial || 'BWP_18MM',
@@ -5958,6 +6046,108 @@ body.role-employee #adminCreateEmpBox,
       pricingOverrides: opts.pricingOverrides || null,
       notes: opts.notes || ''
     };
+  }
+
+  // Calculates corner angle in degrees between two walls meeting at jointPt
+  function calculateCornerAngle(w1, w2, jointPt) {
+    if (!w1 || !w2 || !jointPt) return 90;
+    var d1s = Vec2.dist(w1.start, jointPt);
+    var p1 = d1s < 25 ? w1.end : w1.start;
+    var v1 = { x: p1.x - jointPt.x, y: p1.y - jointPt.y };
+    var l1 = Math.hypot(v1.x, v1.y);
+    if (l1 < 1e-6) return 90;
+    v1.x /= l1; v1.y /= l1;
+
+    var d2s = Vec2.dist(w2.start, jointPt);
+    var p2 = d2s < 25 ? w2.end : w2.start;
+    var v2 = { x: p2.x - jointPt.x, y: p2.y - jointPt.y };
+    var l2 = Math.hypot(v2.x, v2.y);
+    if (l2 < 1e-6) return 90;
+    v2.x /= l2; v2.y /= l2;
+
+    var dot = Math.max(-1, Math.min(1, v1.x * v2.x + v1.y * v2.y));
+    var rad = Math.acos(dot);
+    return Math.round(rad * (180 / Math.PI));
+  }
+
+  // Returns 4 2D corner vertices of rotated furniture rectangle (Oriented Bounding Box)
+  function getFurniturePolygon(f) {
+    var w = (f.dimensions && f.dimensions.W) || 1200;
+    var d = (f.dimensions && f.dimensions.D) || 600;
+    var ang = f.rotY || 0;
+    var cosA = Math.cos(ang), sinA = Math.sin(ang);
+    var ux = cosA * (w / 2), uy = sinA * (w / 2);
+    var vx = -sinA * (d / 2), vy = cosA * (d / 2);
+    var cx = f.pos.x, cy = f.pos.y;
+    return [
+      { x: cx - ux - vx, y: cy - uy - vy },
+      { x: cx + ux - vx, y: cy + uy - vy },
+      { x: cx + ux + vx, y: cy + uy + vy },
+      { x: cx - ux + vx, y: cy - uy + vy }
+    ];
+  }
+
+  // SAT (Separating Axis Theorem) collision test between two convex 2D polygons
+  function polygonsIntersect(poly1, poly2, tolerance) {
+    tolerance = tolerance !== undefined ? tolerance : 5;
+    var polys = [poly1, poly2];
+    for (var p = 0; p < polys.length; p++) {
+      var poly = polys[p];
+      for (var i = 0; i < poly.length; i++) {
+        var p1 = poly[i];
+        var p2 = poly[(i + 1) % poly.length];
+        var edge = { x: p2.x - p1.x, y: p2.y - p1.y };
+        var normal = { x: -edge.y, y: edge.x };
+        var len = Math.hypot(normal.x, normal.y);
+        if (len < 1e-6) continue;
+        normal.x /= len; normal.y /= len;
+
+        var min1 = Infinity, max1 = -Infinity;
+        for (var a = 0; a < poly1.length; a++) {
+          var dot1 = poly1[a].x * normal.x + poly1[a].y * normal.y;
+          if (dot1 < min1) min1 = dot1;
+          if (dot1 > max1) max1 = dot1;
+        }
+
+        var min2 = Infinity, max2 = -Infinity;
+        for (var b = 0; b < poly2.length; b++) {
+          var dot2 = poly2[b].x * normal.x + poly2[b].y * normal.y;
+          if (dot2 < min2) min2 = dot2;
+          if (dot2 > max2) max2 = dot2;
+        }
+
+        if (max1 - tolerance < min2 || max2 - tolerance < min1) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  // Checks if furniture unit f collides with any other unit in allFurn
+  function checkFurnitureCollision(f, allFurn, ignoreId) {
+    if (!f || !allFurn || !allFurn.length) return { collided: false };
+    var polyF = getFurniturePolygon(f);
+    var elev1 = f.elevation !== undefined ? f.elevation : ((f.pos && f.pos.z) || 0);
+    var h1 = (f.dimensions && f.dimensions.H) || 2100;
+    var top1 = elev1 + h1;
+
+    for (var i = 0; i < allFurn.length; i++) {
+      var other = allFurn[i];
+      if (other.id === f.id || (ignoreId && other.id === ignoreId)) continue;
+      var elev2 = other.elevation !== undefined ? other.elevation : ((other.pos && other.pos.z) || 0);
+      var h2 = (other.dimensions && other.dimensions.H) || 2100;
+      var top2 = elev2 + h2;
+
+      // If vertical elevation ranges do not overlap (e.g. wall cabinet above floor base unit), allow
+      if (top1 <= elev2 + 5 || top2 <= elev1 + 5) continue;
+
+      var polyOther = getFurniturePolygon(other);
+      if (polygonsIntersect(polyF, polyOther, 5)) {
+        return { collided: true, other: other };
+      }
+    }
+    return { collided: false };
   }
 
   /* ─────────────────────────────────────────────────────────────────────────────
@@ -6436,7 +6626,7 @@ body.role-employee #adminCreateEmpBox,
     return 'wr_shelves';
   }
 
-  function calculateItemCost(item, rateCard) {
+  function calculateItemCost(item, rateCard, roomTier) {
     rateCard = rateCard || DEFAULT_RATE_CARD;
     var catKey = item.category || 'wardrobe';
     var catConfig = rateCard.categories[catKey] || rateCard.categories.wardrobe;
@@ -6447,7 +6637,7 @@ body.role-employee #adminCreateEmpBox,
 
     var modelType = resolveModelType(item);
     var modelDef = (rateCard.modelRates && rateCard.modelRates[modelType]) || MODEL_RATES_MATRIX[modelType];
-    var activeTier = item.tierOverride || rateCard.selectedTier || null;
+    var activeTier = item.tierOverride || roomTier || (rateCard.roomTiers && item.roomId && rateCard.roomTiers[item.roomId]) || rateCard.selectedTier || null;
 
     var baseRate = (item.pricingOverrides && item.pricingOverrides.baseRate);
     if (!baseRate && activeTier && modelDef && modelDef.rates && modelDef.rates[activeTier]) {
@@ -6564,9 +6754,11 @@ body.role-employee #adminCreateEmpBox,
     var roomSummaries = {};
     for (var rj = 0; rj < rooms.length; rj++) {
       var rObj = rooms[rj];
+      var rmTier = (rateCard.roomTiers && rateCard.roomTiers[rObj.id]) || rObj.variant || rateCard.selectedTier || 'PRICE 1';
       roomSummaries[rObj.id] = {
         id: rObj.id,
         name: rObj.name || ('Room ' + (rj + 1)),
+        variant: rmTier,
         areaSqFt: rObj.areaSqFt || 0,
         areaSqM: rObj.areaSqM || 0,
         itemCount: 0,
@@ -6579,6 +6771,7 @@ body.role-employee #adminCreateEmpBox,
     roomSummaries['_general'] = {
       id: '_general',
       name: 'General / Unassigned',
+      variant: (rateCard.roomTiers && rateCard.roomTiers['_general']) || rateCard.selectedTier || 'PRICE 1',
       areaSqFt: 0,
       areaSqM: 0,
       itemCount: 0,
@@ -6597,8 +6790,10 @@ body.role-employee #adminCreateEmpBox,
     // 1. Modular Furniture & Cabinetry Line Items
     for (var i = 0; i < furniture.length; i++) {
       var f = furniture[i];
-      var cost = calculateItemCost(f, rateCard);
-      cost.roomId = f.roomId || '_general';
+      var fRoomId = f.roomId || '_general';
+      var rTier = (rateCard.roomTiers && rateCard.roomTiers[fRoomId]) || (roomMap[fRoomId] && roomMap[fRoomId].variant) || null;
+      var cost = calculateItemCost(f, rateCard, rTier);
+      cost.roomId = fRoomId;
       cost.roomName = (f.roomId && roomMap[f.roomId]) ? roomMap[f.roomId].name : 'General';
 
       allItemsTotalWoodwork += cost.totalAmount;
@@ -6697,17 +6892,23 @@ body.role-employee #adminCreateEmpBox,
     var commCharges = project.commercialCharges;
 
     if (commCharges && typeof commCharges === 'object' && Object.keys(commCharges).length > 0) {
-      var commAdditions = 0;
-      var commDeductions = (parseFloat(commCharges.discount) || 0) + (parseFloat(commCharges.finalDiscount) || 0);
-      var commKeys = [
-        'transport', 'designCharges', 'accessories', 'floorMat', 'electrical',
-        'plumbing', 'wallpaper', 'falseCeiling', 'appliances', 'civilWorks',
-        'loadingUnloading', 'outstationTransport'
-      ];
-      for (var ck = 0; ck < commKeys.length; ck++) {
-        commAdditions += (parseFloat(commCharges[commKeys[ck]]) || 0);
-      }
-      netBeforeTax = Math.max(0, Math.round(subtotal + commAdditions - commDeductions));
+      var addAccessories = parseFloat(commCharges.additionalAccessories || commCharges.accessories) || 0;
+      var appliances = parseFloat(commCharges.appliances) || 0;
+      var designPct = (commCharges.designPercent !== undefined && commCharges.designPercent !== null && commCharges.designPercent !== '') ? parseFloat(commCharges.designPercent) : 9;
+      if (isNaN(designPct)) designPct = 9;
+      var designAmount = Math.round(subtotal * (designPct / 100));
+      var freightPct = (commCharges.freightPercent !== undefined && commCharges.freightPercent !== null && commCharges.freightPercent !== '') ? parseFloat(commCharges.freightPercent) : 2.5;
+      if (isNaN(freightPct)) freightPct = 2.5;
+      var freightAmount = Math.round(subtotal * (freightPct / 100));
+
+      var discPct = parseFloat(commCharges.discountPercent || commCharges.discount) || 0;
+      var discAmount = Math.round(subtotal * (discPct / 100));
+      var adpPct = parseFloat(commCharges.adpPercent || commCharges.adp) || 0;
+      var adpAmount = Math.round(subtotal * (adpPct / 100));
+      var totalDeductions = discAmount + adpAmount;
+
+      var additions = addAccessories + appliances + designAmount + freightAmount;
+      netBeforeTax = Math.max(0, Math.round(subtotal + additions - totalDeductions));
       if (commCharges.gstPercent !== undefined && commCharges.gstPercent !== null && commCharges.gstPercent !== '') {
         var parsedGst = parseFloat(commCharges.gstPercent);
         if (!isNaN(parsedGst)) gstPercent = parsedGst;
@@ -9591,7 +9792,12 @@ body.role-employee #adminCreateEmpBox,
     MODEL_RATES_MATRIX: MODEL_RATES_MATRIX,
     resolveModelType: resolveModelType,
     parseUnitsCSV: parseUnitsCSV,
-    importUnitsFromCSV: importUnitsFromCSV
+    importUnitsFromCSV: importUnitsFromCSV,
+    calculateCornerAngle: calculateCornerAngle,
+    getFurniturePolygon: getFurniturePolygon,
+    polygonsIntersect: polygonsIntersect,
+    checkFurnitureCollision: checkFurnitureCollision,
+    isWallUnit: isWallUnitCategory
   };
 });
 
@@ -9637,6 +9843,8 @@ body.role-employee #adminCreateEmpBox,
     this.wallChainStart = null;
     this.cursorWorld = { x: 0, y: 0 };
     this.numericInputBuffer = '';
+    this.clipboard = [];
+    this.pasteCount = 0;
 
     // 2D Measurement Unit System: 'mm' | 'imperial' (feet & inches)
     this.unitSystem = 'mm';
@@ -9979,6 +10187,7 @@ body.role-employee #adminCreateEmpBox,
     this.canvas.addEventListener('mousedown', function (e) {
       var rect = self.canvas.getBoundingClientRect();
       var mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      self.lastMouseScreen = mouseScreen;
       var worldPt = self.screenToWorld(mouseScreen);
 
       // Middle mouse button or Spacebar held -> Pan
@@ -10025,6 +10234,7 @@ body.role-employee #adminCreateEmpBox,
     window.addEventListener('mousemove', function (e) {
       var rect = self.canvas.getBoundingClientRect();
       var mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      self.lastMouseScreen = mouseScreen;
       self.cursorWorld = self.screenToWorld(mouseScreen);
 
       if (self.dragState && self.dragState.type === 'move_underlay') {
@@ -10045,8 +10255,11 @@ body.role-employee #adminCreateEmpBox,
 
       if (self.dragState && self.dragState.type === 'move_vertex') {
         var snapped = self.snapPoint(self.cursorWorld, self.dragState.wallId);
-        self.dragState.vertexRef.x = snapped.pt.x;
-        self.dragState.vertexRef.y = snapped.pt.y;
+        var refs = self.dragState.connectedRefs || [self.dragState.vertexRef];
+        for (var cr = 0; cr < refs.length; cr++) {
+          refs[cr].x = snapped.pt.x;
+          refs[cr].y = snapped.pt.y;
+        }
         self.render();
         return;
       }
@@ -10054,10 +10267,90 @@ body.role-employee #adminCreateEmpBox,
       if (self.dragState && self.dragState.type === 'move_wall') {
         var dx = self.cursorWorld.x - self.dragState.startWorld.x;
         var dy = self.cursorWorld.y - self.dragState.startWorld.y;
-        self.dragState.wall.start.x = self.dragState.origStart.x + dx;
-        self.dragState.wall.start.y = self.dragState.origStart.y + dy;
-        self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
-        self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
+        var startLocked = self.dragState.wall.startLocked !== false;
+        var endLocked = self.dragState.wall.endLocked !== false;
+
+        if (startLocked && endLocked) {
+          // Both locked: Translate wall rigidly, extending both connected side walls
+          self.dragState.wall.start.x = self.dragState.origStart.x + dx;
+          self.dragState.wall.start.y = self.dragState.origStart.y + dy;
+          self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
+          self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
+          if (self.dragState.connectedStart) {
+            for (var cs = 0; cs < self.dragState.connectedStart.length; cs++) {
+              self.dragState.connectedStart[cs].ref.x = self.dragState.connectedStart[cs].orig.x + dx;
+              self.dragState.connectedStart[cs].ref.y = self.dragState.connectedStart[cs].orig.y + dy;
+            }
+          }
+          if (self.dragState.connectedEnd) {
+            for (var ce = 0; ce < self.dragState.connectedEnd.length; ce++) {
+              self.dragState.connectedEnd[ce].ref.x = self.dragState.connectedEnd[ce].orig.x + dx;
+              self.dragState.connectedEnd[ce].ref.y = self.dragState.connectedEnd[ce].orig.y + dy;
+            }
+          }
+        } else if (!startLocked && endLocked) {
+          // Corner A RELEASED, Corner B LOCKED:
+          // Corner B stays pinned at origEnd! Corner A moves, extending the wall from B.
+          self.dragState.wall.end.x = self.dragState.origEnd.x;
+          self.dragState.wall.end.y = self.dragState.origEnd.y;
+          self.dragState.wall.start.x = self.dragState.origStart.x + dx;
+          self.dragState.wall.start.y = self.dragState.origStart.y + dy;
+          if (self.dragState.connectedStart) {
+            for (var cs2 = 0; cs2 < self.dragState.connectedStart.length; cs2++) {
+              self.dragState.connectedStart[cs2].ref.x = self.dragState.connectedStart[cs2].orig.x + dx;
+              self.dragState.connectedStart[cs2].ref.y = self.dragState.connectedStart[cs2].orig.y + dy;
+            }
+          }
+          if (self.dragState.connectedEnd) {
+            for (var ce2 = 0; ce2 < self.dragState.connectedEnd.length; ce2++) {
+              self.dragState.connectedEnd[ce2].ref.x = self.dragState.connectedEnd[ce2].orig.x;
+              self.dragState.connectedEnd[ce2].ref.y = self.dragState.connectedEnd[ce2].orig.y;
+            }
+          }
+          if (self.dragState.openings && self.dragState.origLen) {
+            var curLenA = Core.wallLength(self.dragState.wall);
+            for (var oi = 0; oi < self.dragState.openings.length; oi++) {
+              var opItem = self.dragState.openings[oi];
+              var distFromEnd = self.dragState.origLen - opItem.origOffset;
+              var halfW = opItem.op.width / 2;
+              opItem.op.offset = Math.max(halfW, Math.min(curLenA - halfW, curLenA - distFromEnd));
+            }
+          }
+        } else if (startLocked && !endLocked) {
+          // Corner A LOCKED, Corner B RELEASED:
+          // Corner A stays pinned at origStart! Corner B moves, extending the wall from A.
+          self.dragState.wall.start.x = self.dragState.origStart.x;
+          self.dragState.wall.start.y = self.dragState.origStart.y;
+          self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
+          self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
+          if (self.dragState.connectedStart) {
+            for (var cs3 = 0; cs3 < self.dragState.connectedStart.length; cs3++) {
+              self.dragState.connectedStart[cs3].ref.x = self.dragState.connectedStart[cs3].orig.x;
+              self.dragState.connectedStart[cs3].ref.y = self.dragState.connectedStart[cs3].orig.y;
+            }
+          }
+          if (self.dragState.connectedEnd) {
+            for (var ce3 = 0; ce3 < self.dragState.connectedEnd.length; ce3++) {
+              self.dragState.connectedEnd[ce3].ref.x = self.dragState.connectedEnd[ce3].orig.x + dx;
+              self.dragState.connectedEnd[ce3].ref.y = self.dragState.connectedEnd[ce3].orig.y + dy;
+            }
+          }
+          if (self.dragState.openings && self.dragState.origLen) {
+            var curLenB = Core.wallLength(self.dragState.wall);
+            for (var oi2 = 0; oi2 < self.dragState.openings.length; oi2++) {
+              var opItem2 = self.dragState.openings[oi2];
+              var halfW2 = opItem2.op.width / 2;
+              opItem2.op.offset = Math.max(halfW2, Math.min(curLenB - halfW2, opItem2.origOffset));
+            }
+          }
+        } else {
+          // Both released: translate wall freely without dragging connected corners
+          self.dragState.wall.start.x = self.dragState.origStart.x + dx;
+          self.dragState.wall.start.y = self.dragState.origStart.y + dy;
+          self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
+          self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
+        }
+
         self.render();
         return;
       }
@@ -10076,6 +10369,10 @@ body.role-employee #adminCreateEmpBox,
             break;
           }
         }
+        // Collision check with other furniture units (SAT OBB + Elevation)
+        var colCheck = Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
+        self.dragState.hasCollision = colCheck.collided;
+        self.dragState.collidedWith = colCheck.other;
         self.render();
         return;
       }
@@ -10093,6 +10390,29 @@ body.role-employee #adminCreateEmpBox,
         return;
       }
 
+      // Check hover over corner lock badges of selected walls
+      var overLockBadge = false;
+      if (!self.dragState && self.selected && self.selected.length > 0) {
+        for (var sIdx = 0; sIdx < self.selected.length; sIdx++) {
+          if (self.selected[sIdx].type === 'wall') {
+            var sw = self.getWall(self.selected[sIdx].id);
+            if (sw && sw._badgeBounds) {
+              if (sw._badgeBounds['A'] && Math.hypot(mouseScreen.x - sw._badgeBounds['A'].x, mouseScreen.y - sw._badgeBounds['A'].y) < 24) {
+                overLockBadge = true; break;
+              }
+              if (sw._badgeBounds['B'] && Math.hypot(mouseScreen.x - sw._badgeBounds['B'].x, mouseScreen.y - sw._badgeBounds['B'].y) < 24) {
+                overLockBadge = true; break;
+              }
+            }
+          }
+        }
+      }
+      if (overLockBadge) {
+        self.canvas.style.cursor = 'pointer';
+      } else if (!self.dragState && self.activeTool === 'select') {
+        self.canvas.style.cursor = 'default';
+      }
+
       // Live drawing render
       if (self.activeTool === 'wall' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.wallChainStart) {
         self.render();
@@ -10101,11 +10421,30 @@ body.role-employee #adminCreateEmpBox,
 
     window.addEventListener('mouseup', function () {
       if (self.dragState) {
-        if (self.dragState.type === 'move_vertex' || self.dragState.type === 'move_wall' || self.dragState.type === 'move_furniture' || self.dragState.type === 'move_opening') {
-          self.pushHistory('Move ' + (self.dragState.type === 'move_furniture' ? 'Furniture' : 'Wall'));
+        if (self.dragState.type === 'move_furniture') {
+          if (self.dragState.hasCollision) {
+            // Revert invalid overlapping placement!
+            self.dragState.furniture.pos.x = self.dragState.origPos.x;
+            self.dragState.furniture.pos.y = self.dragState.origPos.y;
+            self.dragState.hasCollision = false;
+            self.dragState = null;
+            self.render();
+            if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.showToast) {
+              window.OrbixUI.showToast('Overlap detected! Placement reverted.', 'warning');
+            }
+            return;
+          }
+          self.pushHistory('Move Furniture');
+        } else if (self.dragState.type === 'move_vertex' || self.dragState.type === 'move_wall' || self.dragState.type === 'move_opening') {
+          Core.detectRooms(self.project);
+          self.pushHistory('Move Wall');
         }
         self.dragState = null;
         self.render();
+        if (typeof window !== 'undefined' && window.OrbixUI) {
+          if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
+          if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+        }
       }
     });
 
@@ -10136,6 +10475,16 @@ body.role-employee #adminCreateEmpBox,
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
         e.preventDefault();
         self.redo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        self.copySelected();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        self.pasteClipboard();
         return;
       }
       // 1. Numeric and Imperial typing for exact wall length (when drawing wall)
@@ -10189,21 +10538,31 @@ body.role-employee #adminCreateEmpBox,
         self.deleteSelected();
         return;
       }
-      if (e.key === 'r' || e.key === 'R') {
+      if (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        var rotated = false;
         for (var s = 0; s < self.selected.length; s++) {
           if (self.selected[s].type === 'furniture') {
-            for (var f = 0; f < self.project.plan.furniture.length; f++) {
-              if (self.project.plan.furniture[f].id === self.selected[s].id) {
-                self.project.plan.furniture[f].rotY = ((self.project.plan.furniture[f].rotY || 0) + Math.PI / 2) % (Math.PI * 2);
-                self.pushHistory('Rotate Furniture');
-                self.render();
-                if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.render3DHome) {
-                  window.OrbixUI.render3DHome();
-                }
-                return;
+            var fn = self.getFurniture ? self.getFurniture(self.selected[s].id) : null;
+            if (!fn) {
+              for (var f = 0; f < self.project.plan.furniture.length; f++) {
+                if (self.project.plan.furniture[f].id === self.selected[s].id) { fn = self.project.plan.furniture[f]; break; }
               }
             }
+            if (fn) {
+              fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+              rotated = true;
+            }
           }
+        }
+        if (rotated) {
+          self.pushHistory('Rotate Furniture');
+          self.render();
+          if (typeof window !== 'undefined' && window.OrbixUI) {
+            if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
+            if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+          }
+          return;
         }
         // Fallback: rotate active 3D Studio unit if any
         if (typeof window !== 'undefined' && window.S && window.S.units && window.S.units[window.S.active]) {
@@ -10214,8 +10573,9 @@ body.role-employee #adminCreateEmpBox,
                 self.project.plan.furniture[f2].rotY = ((self.project.plan.furniture[f2].rotY || 0) + Math.PI / 2) % (Math.PI * 2);
                 self.pushHistory('Rotate Furniture');
                 self.render();
-                if (window.OrbixUI && window.OrbixUI.render3DHome) {
-                  window.OrbixUI.render3DHome();
+                if (window.OrbixUI) {
+                  if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
+                  if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
                 }
                 return;
               }
@@ -10239,17 +10599,86 @@ body.role-employee #adminCreateEmpBox,
   };
 
   PlanEditor.prototype.handleSelectMouseDown = function (worldPt, isShift) {
+    // 0. Check if clicked a Lock Badge (A or B) of any selected wall
+    for (var s0 = 0; s0 < this.selected.length; s0++) {
+      if (this.selected[s0].type === 'wall') {
+        var sw = this.getWall(this.selected[s0].id);
+        if (sw && sw._badgeBounds) {
+          var ms = this.lastMouseScreen;
+          var corners = ['A', 'B'];
+          for (var ci = 0; ci < corners.length; ci++) {
+            var cKey = corners[ci];
+            var bb = sw._badgeBounds[cKey];
+            if (bb) {
+              var hit = false;
+              if (ms && Math.hypot(ms.x - bb.x, ms.y - bb.y) < 24) hit = true;
+              else if (bb.world && Vec2.dist(worldPt, bb.world) < 250) hit = true;
+
+              if (hit) {
+                if (cKey === 'A') {
+                  sw.startLocked = (sw.startLocked === false ? true : false);
+                  var msgA = (sw.startLocked !== false) ? 'Corner A Locked 🔒' : 'Corner A Released 🔓';
+                  if (typeof window !== 'undefined' && typeof window.toast === 'function') window.toast(msgA);
+                  this.pushHistory(sw.startLocked !== false ? 'Lock Corner A' : 'Unlock Corner A');
+                } else {
+                  sw.endLocked = (sw.endLocked === false ? true : false);
+                  var msgB = (sw.endLocked !== false) ? 'Corner B Locked 🔒' : 'Corner B Released 🔓';
+                  if (typeof window !== 'undefined' && typeof window.toast === 'function') window.toast(msgB);
+                  this.pushHistory(sw.endLocked !== false ? 'Lock Corner B' : 'Unlock Corner B');
+                }
+                this.render();
+                if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.renderInspector) {
+                  window.OrbixUI.renderInspector(this.selected);
+                }
+                return;
+              }
+            }
+          }
+        }
+      }
+    }
+
     // Check if clicked an endpoint handle of a selected wall
     for (var s = 0; s < this.selected.length; s++) {
       if (this.selected[s].type === 'wall') {
         var w = this.getWall(this.selected[s].id);
         if (w) {
-          if (Vec2.dist(worldPt, w.start) < 200) {
-            this.dragState = { type: 'move_vertex', wallId: w.id, vertexRef: w.start };
+          if (Vec2.dist(worldPt, w.start) < 140) {
+            var connected = [w.start];
+            if (w.startLocked !== false) {
+              var allW = (this.project && this.project.plan && this.project.plan.walls) || [];
+              for (var ci = 0; ci < allW.length; ci++) {
+                var ow = allW[ci];
+                if (ow.id === w.id) continue;
+                if (Vec2.dist(ow.start, w.start) < 30 && ow.startLocked !== false) connected.push(ow.start);
+                if (Vec2.dist(ow.end, w.start) < 30 && ow.endLocked !== false) connected.push(ow.end);
+              }
+            }
+            this.dragState = {
+              type: 'move_vertex',
+              wallId: w.id,
+              vertexRef: w.start,
+              connectedRefs: connected
+            };
             return;
           }
-          if (Vec2.dist(worldPt, w.end) < 200) {
-            this.dragState = { type: 'move_vertex', wallId: w.id, vertexRef: w.end };
+          if (Vec2.dist(worldPt, w.end) < 140) {
+            var connected = [w.end];
+            if (w.endLocked !== false) {
+              var allW = (this.project && this.project.plan && this.project.plan.walls) || [];
+              for (var ci2 = 0; ci2 < allW.length; ci2++) {
+                var ow2 = allW[ci2];
+                if (ow2.id === w.id) continue;
+                if (Vec2.dist(ow2.start, w.end) < 30 && ow2.startLocked !== false) connected.push(ow2.start);
+                if (Vec2.dist(ow2.end, w.end) < 30 && ow2.endLocked !== false) connected.push(ow2.end);
+              }
+            }
+            this.dragState = {
+              type: 'move_vertex',
+              wallId: w.id,
+              vertexRef: w.end,
+              connectedRefs: connected
+            };
             return;
           }
         }
@@ -10257,7 +10686,7 @@ body.role-employee #adminCreateEmpBox,
     }
 
     // Check if clicked an opening
-    var openings = this.project.plan.openings;
+    var openings = this.project.plan.openings || [];
     for (var o = 0; o < openings.length; o++) {
       var op = openings[o];
       var ow = this.getWall(op.wallId);
@@ -10281,13 +10710,12 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // Check if clicked a furniture unit
+    // Check if clicked a furniture unit (Supports rotated OBBs!)
     var furnList = this.project.plan.furniture || [];
-    for (var f = 0; f < furnList.length; f++) {
+    for (var f = furnList.length - 1; f >= 0; f--) {
       var fn = furnList[f];
-      var halfW = (fn.dimensions.W || 1200) / 2;
-      var halfD = (fn.dimensions.D || 600) / 2;
-      if (Math.abs(worldPt.x - fn.pos.x) < halfW && Math.abs(worldPt.y - fn.pos.y) < halfD) {
+      var poly = Core.getFurniturePolygon(fn);
+      if (Core.Vec2.pointInPolygon(worldPt, poly)) {
         this.selected = [{ type: 'furniture', id: fn.id }];
         this.dragState = {
           type: 'move_furniture',
@@ -10306,12 +10734,44 @@ body.role-employee #adminCreateEmpBox,
     if (near) {
       if (!isShift) this.selected = [];
       this.selected.push({ type: 'wall', id: near.wall.id });
+      var connStart = [];
+      var connEnd = [];
+      var allWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
+      for (var i = 0; i < allWalls.length; i++) {
+        var cw = allWalls[i];
+        if (cw.id === near.wall.id) continue;
+        if (Vec2.dist(cw.start, near.wall.start) < 30) {
+          connStart.push({ ref: cw.start, orig: Vec2.clone(cw.start) });
+        }
+        if (Vec2.dist(cw.end, near.wall.start) < 30) {
+          connStart.push({ ref: cw.end, orig: Vec2.clone(cw.end) });
+        }
+        if (Vec2.dist(cw.start, near.wall.end) < 30) {
+          connEnd.push({ ref: cw.start, orig: Vec2.clone(cw.start) });
+        }
+        if (Vec2.dist(cw.end, near.wall.end) < 30) {
+          connEnd.push({ ref: cw.end, orig: Vec2.clone(cw.end) });
+        }
+      }
+
+      var wallOpenings = [];
+      var allOps = (this.project && this.project.plan && this.project.plan.openings) || [];
+      for (var opIdx = 0; opIdx < allOps.length; opIdx++) {
+        if (allOps[opIdx].wallId === near.wall.id) {
+          wallOpenings.push({ op: allOps[opIdx], origOffset: allOps[opIdx].offset });
+        }
+      }
+
       this.dragState = {
         type: 'move_wall',
         wall: near.wall,
         startWorld: Vec2.clone(worldPt),
         origStart: Vec2.clone(near.wall.start),
-        origEnd: Vec2.clone(near.wall.end)
+        origEnd: Vec2.clone(near.wall.end),
+        origLen: Core.wallLength(near.wall),
+        openings: wallOpenings,
+        connectedStart: connStart,
+        connectedEnd: connEnd
       };
       this.onSelectionChange(this.selected);
       this.render();
@@ -10400,11 +10860,19 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
+    var isWall = (Core.isWallUnit) ?
+      Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name) :
+      ((this.furniturePreset.category && this.furniturePreset.category.toLowerCase().indexOf('wall') !== -1) ||
+       (this.furniturePreset.name && this.furniturePreset.name.toLowerCase().indexOf('wall') !== -1));
+    var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null) ?
+      this.furniturePreset.elevation : (isWall ? 1500 : 0);
+
     var furn = Core.createFurniturePlacement({
       name: this.furniturePreset.name,
       category: this.furniturePreset.category,
       roomId: matchedRoomId,
-      pos: { x: snapped.pt.x, y: snapped.pt.y, z: 0 },
+      elevation: presetElev,
+      pos: { x: snapped.pt.x, y: snapped.pt.y, z: presetElev },
       rotY: this.furnitureRotY || 0,
       dimensions: Object.assign({}, this.furniturePreset.dimensions),
       unitConfig: Object.assign({}, this.furniturePreset.unitConfig || {})
@@ -10455,6 +10923,82 @@ body.role-employee #adminCreateEmpBox,
       if (walls[i].id === id) return walls[i];
     }
     return null;
+  };
+
+  PlanEditor.prototype.getFurniture = function (id) {
+    var list = (this.project && this.project.plan && this.project.plan.furniture) || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) return list[i];
+    }
+    return null;
+  };
+
+  PlanEditor.prototype.copySelected = function () {
+    if (!this.selected || this.selected.length === 0) return;
+    this.clipboard = [];
+    this.pasteCount = 0;
+    for (var s = 0; s < this.selected.length; s++) {
+      var item = this.selected[s];
+      if (item.type === 'furniture') {
+        var fn = this.getFurniture(item.id);
+        if (fn) {
+          this.clipboard.push({ type: 'furniture', data: JSON.parse(JSON.stringify(fn)) });
+        }
+      }
+    }
+  };
+
+  PlanEditor.prototype.pasteClipboard = function () {
+    if (!this.clipboard || this.clipboard.length === 0) return;
+    this.pasteCount = (this.pasteCount || 0) + 1;
+    var offsetDist = 120 * this.pasteCount;
+    var newSelected = [];
+
+    for (var i = 0; i < this.clipboard.length; i++) {
+      var entry = this.clipboard[i];
+      if (entry.type === 'furniture') {
+        var orig = entry.data;
+        var newId = 'furn_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
+        var newFurn = JSON.parse(JSON.stringify(orig));
+        newFurn.id = newId;
+        newFurn.name = (orig.name || 'Unit') + ' (Copy)';
+        var isWall = (Core.isWallUnit) ?
+          Core.isWallUnit(orig.category, orig.name) :
+          ((orig.category && orig.category.toLowerCase().indexOf('wall') !== -1) ||
+           (orig.name && orig.name.toLowerCase().indexOf('wall') !== -1));
+        var origElev = (orig.elevation !== undefined && orig.elevation !== null) ?
+          orig.elevation : ((orig.pos && orig.pos.z !== 0) ? orig.pos.z : (isWall ? 1500 : 0));
+        newFurn.elevation = origElev;
+        newFurn.pos = {
+          x: Math.round((orig.pos.x + offsetDist) / 50) * 50,
+          y: Math.round((orig.pos.y + offsetDist) / 50) * 50,
+          z: origElev
+        };
+        newFurn.shutterStates = orig.shutterStates ? orig.shutterStates.slice() : [];
+        newFurn.drawerStates = orig.drawerStates ? orig.drawerStates.slice() : [];
+        var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
+        for (var rm = 0; rm < rooms.length; rm++) {
+          if (rooms[rm].polygon && Core.Vec2.pointInPolygon(newFurn.pos, rooms[rm].polygon)) {
+            newFurn.roomId = rooms[rm].id;
+            break;
+          }
+        }
+        if (!this.project.plan.furniture) this.project.plan.furniture = [];
+        this.project.plan.furniture.push(newFurn);
+        newSelected.push({ type: 'furniture', id: newId });
+      }
+    }
+
+    if (newSelected.length > 0) {
+      this.selected = newSelected;
+      this.pushHistory('Paste Object(s)');
+      this.onSelectionChange(this.selected);
+      this.render();
+      if (typeof window !== 'undefined' && window.OrbixUI) {
+        if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
+        if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+      }
+    }
   };
 
   PlanEditor.prototype.resize = function () {
@@ -10532,6 +11076,12 @@ body.role-employee #adminCreateEmpBox,
 
     // 4. Openings (Doors & Windows)
     this.renderOpenings(ctx);
+
+    // 4b. Architectural Segmented Dimensions & Witness Lines (A, B, 1, 2)
+    this.renderAllWallDimensions(ctx);
+
+    // 4c. Wall Corner Angles (90°, 45°, 135°, arbitrary)
+    this.renderCornerAngles(ctx);
 
     // 5. Furniture Units (2D footprints)
     this.renderFurniture(ctx);
@@ -10694,187 +11244,779 @@ body.role-employee #adminCreateEmpBox,
       ctx.lineWidth = isSelected ? 2 : 1;
       ctx.stroke();
 
-      // Architectural Dimension line along wall
-      var lMm = Core.wallLength(w);
-      if (lMm > 150 && this.zoom > 0.03) {
-        var norm = Core.wallNormal(w);
-        var halfT = (w.thickness || 150) / 2;
-        var dimOffset = halfT + 220; // offset in world mm from wall center
-
-        var dsWorld = { x: w.start.x + norm.x * dimOffset, y: w.start.y + norm.y * dimOffset };
-        var deWorld = { x: w.end.x + norm.x * dimOffset, y: w.end.y + norm.y * dimOffset };
-
-        var sDs = this.worldToScreen(dsWorld);
-        var sDe = this.worldToScreen(deWorld);
-
-        // Extension witness lines
-        var wsOff = this.worldToScreen({ x: w.start.x + norm.x * (halfT + 30), y: w.start.y + norm.y * (halfT + 30) });
-        var weOff = this.worldToScreen({ x: w.end.x + norm.x * (halfT + 30), y: w.end.y + norm.y * (halfT + 30) });
-        var dsExt = this.worldToScreen({ x: dsWorld.x + norm.x * 50, y: dsWorld.y + norm.y * 50 });
-        var deExt = this.worldToScreen({ x: deWorld.x + norm.x * 50, y: deWorld.y + norm.y * 50 });
-
-        ctx.strokeStyle = isSelected ? '#1B4F72' : 'rgba(108, 104, 98, 0.65)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(wsOff.x, wsOff.y); ctx.lineTo(dsExt.x, dsExt.y);
-        ctx.moveTo(weOff.x, weOff.y); ctx.lineTo(deExt.x, deExt.y);
-        ctx.stroke();
-
-        // Main dimension line
-        ctx.strokeStyle = isSelected ? '#1B4F72' : '#8C857B';
-        ctx.lineWidth = isSelected ? 1.5 : 1;
-        ctx.beginPath();
-        ctx.moveTo(sDs.x, sDs.y);
-        ctx.lineTo(sDe.x, sDe.y);
-        ctx.stroke();
-
-        // Architectural 45-degree ticks
-        var wallAngle = Math.atan2(w.end.y - w.start.y, w.end.x - w.start.x);
-        var tickAngle = wallAngle + Math.PI / 4;
-        var tickLen = 6;
-        ctx.strokeStyle = isSelected ? '#1B4F72' : '#33302B';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(sDs.x - Math.cos(tickAngle) * tickLen, sDs.y - Math.sin(tickAngle) * tickLen);
-        ctx.lineTo(sDs.x + Math.cos(tickAngle) * tickLen, sDs.y + Math.sin(tickAngle) * tickLen);
-        ctx.moveTo(sDe.x - Math.cos(tickAngle) * tickLen, sDe.y - Math.sin(tickAngle) * tickLen);
-        ctx.lineTo(sDe.x + Math.cos(tickAngle) * tickLen, sDe.y + Math.sin(tickAngle) * tickLen);
-        ctx.stroke();
-
-        // Dimension text pill badge
-        var midX = (sDs.x + sDe.x) / 2;
-        var midY = (sDs.y + sDe.y) / 2;
-        var textAngle = wallAngle;
-        if (textAngle > Math.PI / 2) textAngle -= Math.PI;
-        else if (textAngle < -Math.PI / 2) textAngle += Math.PI;
-
-        ctx.save();
-        ctx.translate(midX, midY);
-        ctx.rotate(textAngle);
-
-        var dimText = this.formatDim(lMm);
-        ctx.font = isSelected ? '700 11px "IBM Plex Mono", monospace' : '600 10.5px "IBM Plex Mono", monospace';
-        var tw = ctx.measureText(dimText).width;
-        var th = 16;
-
-        ctx.fillStyle = isSelected ? '#1B4F72' : '#FFFFFF';
-        ctx.strokeStyle = isSelected ? '#2E7BB5' : '#8C857B';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(-tw / 2 - 5, -th / 2, tw + 10, th, 3);
-        else ctx.rect(-tw / 2 - 5, -th / 2, tw + 10, th);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = isSelected ? '#FFFFFF' : '#1A1816';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(dimText, 0, 0);
-        ctx.restore();
+      // If selected or hovered, draw distance to parallel walls
+      if (isSelected || (this.hoveredWallId === w.id && (!this.selected || !this.selected.some(function(s){ return s.type === 'wall'; })))) {
+        this.renderParallelWallDimensions(ctx, w);
       }
 
-      // If selected, draw handles at endpoints
+      // If selected, draw handles at endpoints and joint locks
       if (isSelected) {
         this.renderHandle(ctx, w.start);
         this.renderHandle(ctx, w.end);
+        this.renderLockBadge(ctx, w, 'A');
+        this.renderLockBadge(ctx, w, 'B');
       }
     }
   };
 
+  PlanEditor.prototype.renderLockBadge = function (ctx, w, cornerLabel) {
+    var dir = Core.wallDirection(w);
+    var baseNorm = Core.wallNormal(w);
+    var halfT = (w.thickness || 150) / 2;
+
+    // Detect exterior normal away from room interior so badge sits outside
+    var extNorm = baseNorm;
+    var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
+    if (rooms.length > 0) {
+      var midW = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
+      var testPos = { x: midW.x + baseNorm.x * 120, y: midW.y + baseNorm.y * 120 };
+      var inside = false;
+      for (var r = 0; r < rooms.length; r++) {
+        if (rooms[r].polygon && Core.Vec2.pointInPolygon(testPos, rooms[r].polygon)) {
+          inside = true;
+          break;
+        }
+      }
+      if (inside) extNorm = { x: -baseNorm.x, y: -baseNorm.y };
+    }
+
+    var isCornerA = (cornerLabel === 'A');
+    var isLocked = isCornerA ? (w.startLocked !== false) : (w.endLocked !== false);
+    var pt = isCornerA ? w.start : w.end;
+    var alongSign = isCornerA ? -1 : 1;
+
+    // Screen-space placement offset so badge stays readable and clear of vertex handle at any zoom
+    var sPt = this.worldToScreen(pt);
+    var badgeScreenX = sPt.x + extNorm.x * 32 + alongSign * dir.x * 12;
+    var badgeScreenY = sPt.y + extNorm.y * 32 + alongSign * dir.y * 12;
+    var badgeWorld = this.screenToWorld({ x: badgeScreenX, y: badgeScreenY });
+
+    w._badgeBounds = w._badgeBounds || {};
+    var isHovered = false;
+    if (this.lastMouseScreen) {
+      isHovered = (Math.hypot(this.lastMouseScreen.x - badgeScreenX, this.lastMouseScreen.y - badgeScreenY) < 24);
+    }
+    w._badgeBounds[cornerLabel] = {
+      x: badgeScreenX,
+      y: badgeScreenY,
+      world: badgeWorld,
+      r: 22,
+      isLocked: isLocked,
+      isHovered: isHovered
+    };
+
+    ctx.save();
+    var bw = 46, bh = 24;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(badgeScreenX - bw / 2, badgeScreenY - bh / 2, bw, bh, 12);
+    else ctx.rect(badgeScreenX - bw / 2, badgeScreenY - bh / 2, bw, bh);
+
+    if (isHovered) {
+      ctx.fillStyle = isLocked ? '#dbeafe' : '#ffe4e6';
+      ctx.strokeStyle = isLocked ? '#1d4ed8' : '#be123c';
+      ctx.lineWidth = 2;
+    } else {
+      ctx.fillStyle = isLocked ? '#ffffff' : '#fff1f2';
+      ctx.strokeStyle = isLocked ? '#64748b' : '#f43f5e';
+      ctx.lineWidth = 1.5;
+    }
+    ctx.fill();
+    ctx.stroke();
+
+    // Vector CAD Padlock at (badgeScreenX - 9, badgeScreenY)
+    var lcx = badgeScreenX - 9;
+    var lcy = badgeScreenY + 1;
+    var bodyW = 11, bodyH = 8;
+    var shackleW = 7, shackleH = 6;
+    var lockStroke = isLocked ? (isHovered ? '#1d4ed8' : '#334155') : (isHovered ? '#be123c' : '#e11d48');
+    var lockFill = isLocked ? (isHovered ? '#2563eb' : '#475569') : (isHovered ? '#dc2626' : '#ef4444');
+
+    // Draw Shackle
+    ctx.strokeStyle = lockStroke;
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    if (isLocked) {
+      // Closed arched shackle
+      var lx = lcx - shackleW / 2;
+      var rx = lcx + shackleW / 2;
+      var by = lcy - bodyH / 2;
+      var ty = by - shackleH;
+      ctx.moveTo(lx, by);
+      ctx.lineTo(lx, ty + 3);
+      ctx.arc(lcx, ty + 3, shackleW / 2, Math.PI, 0, false);
+      ctx.lineTo(rx, by);
+    } else {
+      // Open shackle swinging open to the left (matching CAD reference)
+      var rx2 = lcx + shackleW / 2;
+      var by2 = lcy - bodyH / 2;
+      var ty2 = by2 - shackleH - 1;
+      ctx.moveTo(rx2, by2);
+      ctx.lineTo(rx2, ty2 + 3);
+      ctx.arc(lcx + 1.5, ty2 + 3, shackleW / 2, 0, Math.PI, true);
+      ctx.lineTo(lcx - shackleW / 2 - 3, ty2);
+    }
+    ctx.stroke();
+
+    // Draw Lock Body
+    ctx.fillStyle = lockFill;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(lcx - bodyW / 2, lcy - bodyH / 2, bodyW, bodyH, 2);
+    else ctx.rect(lcx - bodyW / 2, lcy - bodyH / 2, bodyW, bodyH);
+    ctx.fill();
+
+    // Keyhole
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(lcx, lcy - 1, 0.9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(lcx - 0.5, lcy - 1, 1, 2.5);
+
+    // Letter A or B
+    ctx.font = '700 13px "IBM Plex Sans", -apple-system, sans-serif';
+    ctx.fillStyle = isLocked ? (isHovered ? '#1d4ed8' : '#0f172a') : (isHovered ? '#be123c' : '#9f1239');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(cornerLabel, badgeScreenX + 11, badgeScreenY);
+    ctx.restore();
+  };
+
+  PlanEditor.prototype.renderParallelWallDimensions = function (ctx, w) {
+    var allWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    if (allWalls.length < 2 || this.zoom < 0.03) return;
+
+    var wDir = Core.wallDirection(w);
+    var wNorm = Core.wallNormal(w);
+    var wLen = Core.wallLength(w);
+    var halfT = (w.thickness || 150) / 2;
+
+    var candidatesPos = [];
+    var candidatesNeg = [];
+
+    for (var i = 0; i < allWalls.length; i++) {
+      var ow = allWalls[i];
+      if (ow.id === w.id) continue;
+
+      var owDir = Core.wallDirection(ow);
+      // Parallel cross product check
+      var cross = Math.abs(wDir.x * owDir.y - wDir.y * owDir.x);
+      if (cross > 0.08) continue;
+
+      // Project ow onto wDir
+      var tStart = (ow.start.x - w.start.x) * wDir.x + (ow.start.y - w.start.y) * wDir.y;
+      var tEnd = (ow.end.x - w.start.x) * wDir.x + (ow.end.y - w.start.y) * wDir.y;
+      var tMin = Math.min(tStart, tEnd);
+      var tMax = Math.max(tStart, tEnd);
+
+      var overlapStart = Math.max(0, tMin);
+      var overlapEnd = Math.min(wLen, tMax);
+      if (overlapEnd - overlapStart < 80) continue;
+
+      // Perpendicular signed distance
+      var perp = (ow.start.x - w.start.x) * wNorm.x + (ow.start.y - w.start.y) * wNorm.y;
+      if (Math.abs(perp) < 25) continue;
+
+      var owHalfT = (ow.thickness || 150) / 2;
+      var clearDist = Math.abs(perp) - halfT - owHalfT;
+      if (clearDist < 10) continue;
+
+      var item = {
+        wall: ow,
+        perp: perp,
+        clearDist: clearDist,
+        overlapStart: overlapStart,
+        overlapEnd: overlapEnd
+      };
+
+      if (perp > 0) candidatesPos.push(item);
+      else candidatesNeg.push(item);
+    }
+
+    var targets = [];
+    if (candidatesPos.length > 0) {
+      candidatesPos.sort(function (a, b) { return a.clearDist - b.clearDist; });
+      targets.push(candidatesPos[0]);
+    }
+    if (candidatesNeg.length > 0) {
+      candidatesNeg.sort(function (a, b) { return a.clearDist - b.clearDist; });
+      targets.push(candidatesNeg[0]);
+    }
+
+    for (var t = 0; t < targets.length; t++) {
+      var cand = targets[t];
+      var sideSign = cand.perp > 0 ? 1 : -1;
+      var midT = (cand.overlapStart + cand.overlapEnd) / 2;
+
+      var pStartWorld = {
+        x: w.start.x + wDir.x * midT + wNorm.x * (sideSign * halfT),
+        y: w.start.y + wDir.y * midT + wNorm.y * (sideSign * halfT)
+      };
+      var pEndWorld = {
+        x: pStartWorld.x + wNorm.x * (sideSign * cand.clearDist),
+        y: pStartWorld.y + wNorm.y * (sideSign * cand.clearDist)
+      };
+
+      var sStart = this.worldToScreen(pStartWorld);
+      var sEnd = this.worldToScreen(pEndWorld);
+
+      ctx.save();
+      // Perpendicular dimension line
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(sStart.x, sStart.y);
+      ctx.lineTo(sEnd.x, sEnd.y);
+      ctx.stroke();
+
+      // Circular terminal dots on wall faces
+      ctx.fillStyle = '#1d4ed8';
+      ctx.beginPath();
+      ctx.arc(sStart.x, sStart.y, 4, 0, Math.PI * 2);
+      ctx.arc(sEnd.x, sEnd.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dimension text pill
+      var midScreen = { x: (sStart.x + sEnd.x) / 2, y: (sStart.y + sEnd.y) / 2 };
+      var distText = Math.round(cand.clearDist).toString();
+      var angle = Math.atan2(sEnd.y - sStart.y, sEnd.x - sStart.x);
+      if (angle > Math.PI / 2) angle -= Math.PI;
+      else if (angle < -Math.PI / 2) angle += Math.PI;
+
+      ctx.translate(midScreen.x, midScreen.y);
+      ctx.rotate(angle);
+      ctx.font = '700 12px "IBM Plex Mono", monospace';
+      var tw = ctx.measureText(distText).width;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(-tw / 2 - 5, -9, tw + 10, 18);
+      ctx.fillStyle = '#1d4ed8';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(distText, 0, 0);
+      ctx.restore();
+    }
+  };
+
+  PlanEditor.prototype.renderCornerAngles = function (ctx) {
+    var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    if (walls.length < 2 || this.zoom < 0.03) return;
+
+    var joints = [];
+    for (var i = 0; i < walls.length; i++) {
+      var w = walls[i];
+      var ends = [w.start, w.end];
+      for (var e = 0; e < 2; e++) {
+        var pt = ends[e];
+        var found = null;
+        for (var j = 0; j < joints.length; j++) {
+          if (Vec2.dist(pt, joints[j].pt) < 30) {
+            found = joints[j];
+            break;
+          }
+        }
+        if (!found) {
+          found = { pt: pt, walls: [] };
+          joints.push(found);
+        }
+        if (found.walls.indexOf(w) === -1) {
+          found.walls.push(w);
+        }
+      }
+    }
+
+    for (var k = 0; k < joints.length; k++) {
+      var jnt = joints[k];
+      if (jnt.walls.length >= 2) {
+        for (var a = 0; a < jnt.walls.length; a++) {
+          for (var b = a + 1; b < jnt.walls.length; b++) {
+            var w1 = jnt.walls[a];
+            var w2 = jnt.walls[b];
+            var deg = Core.calculateCornerAngle(w1, w2, jnt.pt);
+            if (deg >= 20 && deg <= 165) {
+              this.renderCornerAngleBadge(ctx, w1, w2, jnt.pt, deg);
+            }
+          }
+        }
+      }
+    }
+  };
+
+  PlanEditor.prototype.renderCornerAngleBadge = function (ctx, w1, w2, jointPt, deg) {
+    var sJnt = this.worldToScreen(jointPt);
+
+    var d1s = Vec2.dist(w1.start, jointPt);
+    var p1 = d1s < 25 ? w1.end : w1.start;
+    var v1 = { x: p1.x - jointPt.x, y: p1.y - jointPt.y };
+    var l1 = Math.hypot(v1.x, v1.y) || 1;
+    v1.x /= l1; v1.y /= l1;
+
+    var d2s = Vec2.dist(w2.start, jointPt);
+    var p2 = d2s < 25 ? w2.end : w2.start;
+    var v2 = { x: p2.x - jointPt.x, y: p2.y - jointPt.y };
+    var l2 = Math.hypot(v2.x, v2.y) || 1;
+    v2.x /= l2; v2.y /= l2;
+
+    var a1 = Math.atan2(v1.y, v1.x);
+    var a2 = Math.atan2(v2.y, v2.x);
+
+    var midV = { x: v1.x + v2.x, y: v1.y + v2.y };
+    var midL = Math.hypot(midV.x, midV.y);
+    if (midL > 1e-4) {
+      midV.x /= midL; midV.y /= midL;
+    } else {
+      midV = { x: -v1.y, y: v1.x };
+    }
+
+    ctx.save();
+    var arcR = Math.max(16, 260 * this.zoom);
+
+    // Terminal dots on the wall inner faces
+    var pDot1 = { x: sJnt.x + v1.x * arcR, y: sJnt.y + v1.y * arcR };
+    var pDot2 = { x: sJnt.x + v2.x * arcR, y: sJnt.y + v2.y * arcR };
+
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.arc(pDot1.x, pDot1.y, 2.5, 0, Math.PI * 2);
+    ctx.arc(pDot2.x, pDot2.y, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Arc connecting the dots
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    var diff = a2 - a1;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    ctx.arc(sJnt.x, sJnt.y, arcR, a1, a2, diff < 0);
+    ctx.stroke();
+
+    var badgeDist = arcR * 0.72 + 8;
+    var sBadge = { x: sJnt.x + midV.x * badgeDist, y: sJnt.y + midV.y * badgeDist };
+    var degTxt = deg + '°';
+    ctx.font = '700 11px "IBM Plex Sans", monospace';
+    ctx.fillStyle = '#1e3a8a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(degTxt, sBadge.x, sBadge.y);
+    ctx.restore();
+  };
+
+  PlanEditor.prototype.renderSingleOpening = function (ctx, op, w, isGhost) {
+    var isSelected = !isGhost && this.isSelected('opening', op.id);
+    var wDir = Core.wallDirection(w);
+    var wNorm = Core.wallNormal(w);
+    var halfW = op.width / 2;
+
+    var wLen = Core.wallLength(w);
+    var safeOffset = Math.max(halfW, Math.min(wLen - halfW, op.offset));
+    var centerPt = { x: w.start.x + wDir.x * safeOffset, y: w.start.y + wDir.y * safeOffset };
+    var opStart = { x: centerPt.x - wDir.x * halfW, y: centerPt.y - wDir.y * halfW };
+    var opEnd = { x: centerPt.x + wDir.x * halfW, y: centerPt.y + wDir.y * halfW };
+
+    var sStart = this.worldToScreen(opStart);
+    var sEnd = this.worldToScreen(opEnd);
+    var sCenter = this.worldToScreen(centerPt);
+
+    // Clear the wall thickness cutout for opening
+    ctx.fillStyle = '#FBFAF8';
+    var halfT = (w.thickness || 150) / 2;
+    var c1 = this.worldToScreen({ x: opStart.x + wNorm.x * halfT, y: opStart.y + wNorm.y * halfT });
+    var c2 = this.worldToScreen({ x: opEnd.x + wNorm.x * halfT, y: opEnd.y + wNorm.y * halfT });
+    var c3 = this.worldToScreen({ x: opEnd.x - wNorm.x * halfT, y: opEnd.y - wNorm.y * halfT });
+    var c4 = this.worldToScreen({ x: opStart.x - wNorm.x * halfT, y: opStart.y - wNorm.y * halfT });
+
+    ctx.beginPath();
+    ctx.moveTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(c3.x, c3.y); ctx.lineTo(c4.x, c4.y);
+    ctx.closePath();
+    ctx.fill();
+
+    if (isGhost) {
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    if (op.type === 'door') {
+      // Draw Door Swing Arc (Inward Left, Inward Right, Outward Left, Outward Right)
+      var swing = op.swing || 'in-left';
+      var isRight = swing.indexOf('right') !== -1;
+      var isOut = swing.indexOf('out') !== -1;
+
+      var hingePt = isRight ? opEnd : opStart;
+      var sHinge = isRight ? sEnd : sStart;
+      var swingRadiusPx = op.width * this.zoom;
+
+      var normDir = isOut ? { x: -wNorm.x, y: -wNorm.y } : { x: wNorm.x, y: wNorm.y };
+      var leafDir = isRight ? { x: -wDir.x, y: -wDir.y } : { x: wDir.x, y: wDir.y };
+
+      var leafEndWorld = { x: hingePt.x + normDir.x * op.width, y: hingePt.y + normDir.y * op.width };
+      var sLeaf = this.worldToScreen(leafEndWorld);
+
+      ctx.strokeStyle = isSelected ? '#1B4F72' : (isGhost ? '#0284c7' : '#2E7BB5');
+      ctx.lineWidth = isSelected ? 2 : 1.5;
+
+      // Swing leaf line (door slab)
+      ctx.beginPath();
+      ctx.moveTo(sHinge.x, sHinge.y);
+      ctx.lineTo(sLeaf.x, sLeaf.y);
+      ctx.stroke();
+
+      // Dotted quarter arc from closed position along wall to open leaf
+      var startAngle = Math.atan2(leafDir.y, leafDir.x);
+      var endAngle = Math.atan2(normDir.y, normDir.x);
+      var diff = endAngle - startAngle;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.arc(sHinge.x, sHinge.y, swingRadiusPx, startAngle, endAngle, diff < 0);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      // Draw Window Double Line Symbol
+      ctx.strokeStyle = isSelected ? '#1B4F72' : (isGhost ? '#0284c7' : '#2E7BB5');
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(sStart.x, sStart.y); ctx.lineTo(sEnd.x, sEnd.y);
+      ctx.stroke();
+
+      var g1 = this.worldToScreen({ x: opStart.x + wNorm.x * (halfT / 2), y: opStart.y + wNorm.y * (halfT / 2) });
+      var g2 = this.worldToScreen({ x: opEnd.x + wNorm.x * (halfT / 2), y: opEnd.y + wNorm.y * (halfT / 2) });
+      ctx.strokeStyle = isGhost ? '#0284c7' : '#8EADC4';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y);
+      ctx.stroke();
+    }
+
+    // Label
+    ctx.fillStyle = isSelected ? '#1B4F72' : (isGhost ? '#0284c7' : '#2E7BB5');
+    ctx.font = '600 10px "IBM Plex Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText((op.type === 'door' ? 'D ' : 'W ') + this.formatDim(op.width), sCenter.x, sCenter.y - 12);
+  };
+
   PlanEditor.prototype.renderOpenings = function (ctx) {
-    var openings = this.project.plan.openings;
+    var openings = this.project.plan.openings || [];
     for (var i = 0; i < openings.length; i++) {
       var op = openings[i];
       var w = this.getWall(op.wallId);
       if (!w) continue;
+      this.renderSingleOpening(ctx, op, w, false);
+    }
+  };
 
-      var isSelected = this.isSelected('opening', op.id);
-      var wDir = Core.wallDirection(w);
-      var wNorm = Core.wallNormal(w);
-      var halfW = op.width / 2;
+  // Architectural Segmented Dimensions & Extension Witness Lines (Corners A & B, Direction Arrows 1 & 2)
+  PlanEditor.prototype.renderWallDimensions = function (ctx, w, isSelected, options) {
+    options = options || {};
+    var lMm = Core.wallLength(w);
+    if (lMm < 150 || this.zoom < 0.03) return;
 
-      var wLen = Core.wallLength(w);
-      var safeOffset = Math.max(halfW, Math.min(wLen - halfW, op.offset));
-      var centerPt = { x: w.start.x + wDir.x * safeOffset, y: w.start.y + wDir.y * safeOffset };
-      var opStart = { x: centerPt.x - wDir.x * halfW, y: centerPt.y - wDir.y * halfW };
-      var opEnd = { x: centerPt.x + wDir.x * halfW, y: centerPt.y + wDir.y * halfW };
+    var wDir = Core.wallDirection(w);
+    var baseNorm = Core.wallNormal(w);
+    var norm = baseNorm;
 
-      var sStart = this.worldToScreen(opStart);
-      var sEnd = this.worldToScreen(opEnd);
-      var sCenter = this.worldToScreen(centerPt);
+    // Detect exterior normal side away from room interior so dimensions sit outside
+    var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
+    if (rooms.length > 0) {
+      var midW = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
+      var testPos = { x: midW.x + baseNorm.x * 120, y: midW.y + baseNorm.y * 120 };
+      var testNeg = { x: midW.x - baseNorm.x * 120, y: midW.y - baseNorm.y * 120 };
+      var posInside = false, negInside = false;
+      for (var r = 0; r < rooms.length; r++) {
+        if (rooms[r].polygon && Core.Vec2.pointInPolygon(testPos, rooms[r].polygon)) posInside = true;
+        if (rooms[r].polygon && Core.Vec2.pointInPolygon(testNeg, rooms[r].polygon)) negInside = true;
+      }
+      if (posInside && !negInside) {
+        norm = { x: -baseNorm.x, y: -baseNorm.y };
+      }
+    }
 
-      // Clear the wall thickness cutout for opening
-      ctx.fillStyle = '#FBFAF8';
-      var halfT = (w.thickness || 150) / 2;
-      var c1 = this.worldToScreen({ x: opStart.x + wNorm.x * halfT, y: opStart.y + wNorm.y * halfT });
-      var c2 = this.worldToScreen({ x: opEnd.x + wNorm.x * halfT, y: opEnd.y + wNorm.y * halfT });
-      var c3 = this.worldToScreen({ x: opEnd.x - wNorm.x * halfT, y: opEnd.y - wNorm.y * halfT });
-      var c4 = this.worldToScreen({ x: opStart.x - wNorm.x * halfT, y: opStart.y - wNorm.y * halfT });
+    // Collect openings on this wall
+    var wallOpenings = [];
+    var allOpenings = (this.project && this.project.plan && this.project.plan.openings) || [];
+    for (var oi = 0; oi < allOpenings.length; oi++) {
+      if (allOpenings[oi].wallId === w.id) {
+        if (options.previewOpening && options.previewOpening.id === allOpenings[oi].id) {
+          wallOpenings.push(options.previewOpening);
+        } else {
+          wallOpenings.push(allOpenings[oi]);
+        }
+      }
+    }
+    if (options.previewOpening && (!options.previewOpening.id || !wallOpenings.some(function (o) { return o.id === options.previewOpening.id; }))) {
+      wallOpenings.push(options.previewOpening);
+    }
 
+    var hasSelectedOpening = false;
+    for (var so = 0; so < wallOpenings.length; so++) {
+      if (this.isSelected('opening', wallOpenings[so].id) || (options.activeOpeningId === wallOpenings[so].id)) {
+        hasSelectedOpening = true;
+        break;
+      }
+    }
+    var isActive = isSelected || hasSelectedOpening || !!options.previewOpening;
+
+    var halfT = (w.thickness || 150) / 2;
+    var dimOffset = halfT + 220; // offset in world mm from wall center
+
+    var wallAngle = Math.atan2(w.end.y - w.start.y, w.end.x - w.start.x);
+    var textAngle = wallAngle;
+    if (textAngle > Math.PI / 2) textAngle -= Math.PI;
+    else if (textAngle < -Math.PI / 2) textAngle += Math.PI;
+
+    var strokeColor = isActive ? '#2563eb' : '#64748b';
+    var textColor = isActive ? '#1d4ed8' : '#334155';
+    var dotColor = isActive ? '#1d4ed8' : '#64748b';
+
+    var self = this;
+
+    // Helper: Draw bold endpoint letter A or B near corners
+    var drawCornerLabel = function (worldPt, label, alongSign) {
+      var sPos = self.worldToScreen({
+        x: worldPt.x + alongSign * wDir.x * 60 + norm.x * (halfT + 40),
+        y: worldPt.y + alongSign * wDir.y * 60 + norm.y * (halfT + 40)
+      });
+      ctx.save();
+      ctx.font = '700 15px "IBM Plex Sans", -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeText(label, sPos.x, sPos.y);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillText(label, sPos.x, sPos.y);
+      ctx.restore();
+    };
+
+    // Helper: Draw directional arrow inside wall core with segment digit 1 or 2
+    var drawCoreArrow = function (startT, endT, dirToward, digitLabel) {
+      var segLen = Math.abs(endT - startT);
+      if (segLen < 160) return;
+      var midT = (startT + endT) / 2;
+      var midW = { x: w.start.x + wDir.x * midT, y: w.start.y + wDir.y * midT };
+
+      // Unit direction along wall: toward A (-wDir) or toward B (+wDir)
+      var ax = dirToward === 'A' ? -wDir.x : wDir.x;
+      var ay = dirToward === 'A' ? -wDir.y : wDir.y;
+      var anX = -ay, anY = ax;
+
+      ctx.save();
+      // Arrow centerline along wall core
+      var pStart = self.worldToScreen({ x: midW.x - ax * 60, y: midW.y - ay * 60 });
+      var pTip = self.worldToScreen({ x: midW.x + ax * 60, y: midW.y + ay * 60 });
+      ctx.strokeStyle = isActive ? '#2563eb' : 'rgba(100, 116, 139, 0.7)';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(c3.x, c3.y); ctx.lineTo(c4.x, c4.y);
+      ctx.moveTo(pStart.x, pStart.y);
+      ctx.lineTo(pTip.x, pTip.y);
+      ctx.stroke();
+
+      // Arrowhead at pTip
+      var arrowHeadSize = 8;
+      ctx.fillStyle = isActive ? '#2563eb' : '#64748b';
+      ctx.beginPath();
+      ctx.moveTo(pTip.x, pTip.y);
+      ctx.lineTo(pTip.x - ax * arrowHeadSize + anX * (arrowHeadSize * 0.6), pTip.y - ay * arrowHeadSize + anY * (arrowHeadSize * 0.6));
+      ctx.lineTo(pTip.x - ax * (arrowHeadSize * 0.6), pTip.y - ay * (arrowHeadSize * 0.6));
+      ctx.lineTo(pTip.x - ax * arrowHeadSize - anX * (arrowHeadSize * 0.6), pTip.y - ay * arrowHeadSize - anY * (arrowHeadSize * 0.6));
       ctx.closePath();
       ctx.fill();
 
-      if (op.type === 'door') {
-        // Draw Door Swing Arc (Inward Left, Inward Right, Outward Left, Outward Right)
-        var swing = op.swing || 'in-left';
-        var isRight = swing.indexOf('right') !== -1;
-        var isOut = swing.indexOf('out') !== -1;
-
-        var hingePt = isRight ? opEnd : opStart;
-        var sHinge = isRight ? sEnd : sStart;
-        var swingRadiusPx = op.width * this.zoom;
-
-        var normDir = isOut ? { x: -wNorm.x, y: -wNorm.y } : { x: wNorm.x, y: wNorm.y };
-        var leafDir = isRight ? { x: -wDir.x, y: -wDir.y } : { x: wDir.x, y: wDir.y };
-
-        var leafEndWorld = { x: hingePt.x + normDir.x * op.width, y: hingePt.y + normDir.y * op.width };
-        var sLeaf = this.worldToScreen(leafEndWorld);
-
-        ctx.strokeStyle = isSelected ? '#1B4F72' : '#2E7BB5';
-        ctx.lineWidth = isSelected ? 2 : 1.5;
-
-        // Swing leaf line (door slab)
-        ctx.beginPath();
-        ctx.moveTo(sHinge.x, sHinge.y);
-        ctx.lineTo(sLeaf.x, sLeaf.y);
-        ctx.stroke();
-
-        // Dotted quarter arc from closed position along wall to open leaf
-        var startAngle = Math.atan2(leafDir.y, leafDir.x);
-        var endAngle = Math.atan2(normDir.y, normDir.x);
-        var diff = endAngle - startAngle;
-        while (diff < -Math.PI) diff += Math.PI * 2;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-
-        ctx.setLineDash([3, 3]);
-        ctx.beginPath();
-        ctx.arc(sHinge.x, sHinge.y, swingRadiusPx, startAngle, endAngle, diff < 0);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      } else {
-        // Draw Window Double Line Symbol
-        ctx.strokeStyle = isSelected ? '#1B4F72' : '#2E7BB5';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(sStart.x, sStart.y); ctx.lineTo(sEnd.x, sEnd.y);
-        ctx.stroke();
-
-        var g1 = this.worldToScreen({ x: opStart.x + wNorm.x * (halfT / 2), y: opStart.y + wNorm.y * (halfT / 2) });
-        var g2 = this.worldToScreen({ x: opEnd.x + wNorm.x * (halfT / 2), y: opEnd.y + wNorm.y * (halfT / 2) });
-        ctx.strokeStyle = '#8EADC4';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y);
-        ctx.stroke();
-      }
-
-      // Label
-      ctx.fillStyle = '#1B4F72';
-      ctx.font = '600 10px "IBM Plex Sans", sans-serif';
+      // Digit label (1 or 2)
+      var digitScreen = self.worldToScreen({ x: midW.x - ax * 20, y: midW.y - ay * 20 });
+      ctx.font = '700 13px "IBM Plex Sans", -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText((op.type === 'door' ? 'D ' : 'W ') + this.formatDim(op.width), sCenter.x, sCenter.y - 12);
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeText(digitLabel, digitScreen.x, digitScreen.y);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillText(digitLabel, digitScreen.x, digitScreen.y);
+      ctx.restore();
+    };
+
+    // Helper: Draw dimension text pill on screen
+    var drawDimPill = function (midX, midY, text) {
+      ctx.save();
+      ctx.translate(midX, midY);
+      ctx.rotate(textAngle);
+      ctx.font = isActive ? '700 11px "IBM Plex Mono", monospace' : '600 10.5px "IBM Plex Mono", monospace';
+      var tw = ctx.measureText(text).width;
+      var th = 16;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(-tw / 2 - 4, -th / 2, tw + 8, th);
+      ctx.fillStyle = textColor;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 0, 0);
+      ctx.restore();
+    };
+
+    // Case 1: Wall with NO openings
+    if (wallOpenings.length === 0) {
+      var dsWorld = { x: w.start.x + norm.x * dimOffset, y: w.start.y + norm.y * dimOffset };
+      var deWorld = { x: w.end.x + norm.x * dimOffset, y: w.end.y + norm.y * dimOffset };
+      var sDs = this.worldToScreen(dsWorld);
+      var sDe = this.worldToScreen(deWorld);
+
+      // Extension witness lines
+      var wsOff = this.worldToScreen({ x: w.start.x + norm.x * (halfT + 15), y: w.start.y + norm.y * (halfT + 15) });
+      var weOff = this.worldToScreen({ x: w.end.x + norm.x * (halfT + 15), y: w.end.y + norm.y * (halfT + 15) });
+      var dsExt = this.worldToScreen({ x: dsWorld.x + norm.x * 45, y: dsWorld.y + norm.y * 45 });
+      var deExt = this.worldToScreen({ x: deWorld.x + norm.x * 45, y: deWorld.y + norm.y * 45 });
+
+      ctx.save();
+      ctx.strokeStyle = isActive ? '#2563eb' : 'rgba(100, 116, 139, 0.6)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(wsOff.x, wsOff.y); ctx.lineTo(dsExt.x, dsExt.y);
+      ctx.moveTo(weOff.x, weOff.y); ctx.lineTo(deExt.x, deExt.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Main dimension line
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = isActive ? 1.5 : 1;
+      ctx.beginPath();
+      ctx.moveTo(sDs.x, sDs.y);
+      ctx.lineTo(sDe.x, sDe.y);
+      ctx.stroke();
+
+      // Circular dots at endpoints
+      ctx.fillStyle = dotColor;
+      ctx.beginPath();
+      ctx.arc(sDs.x, sDs.y, 3.5, 0, Math.PI * 2);
+      ctx.arc(sDe.x, sDe.y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dimension text pill
+      var midX = (sDs.x + sDe.x) / 2;
+      var midY = (sDs.y + sDe.y) / 2;
+      var dimText = this.formatDim(lMm);
+      drawDimPill(midX, midY, dimText);
+
+      // If active, show Corner A, Corner B, and Arrow 1
+      if (isActive) {
+        if (!isSelected) {
+          drawCornerLabel(w.start, 'A', -1);
+          drawCornerLabel(w.end, 'B', 1);
+        }
+        drawCoreArrow(0, lMm, 'A', '1');
+      }
+      ctx.restore();
+      return;
+    }
+
+    // Case 2: Wall WITH openings — Segmented architectural dimension chain
+    wallOpenings.sort(function (a, b) { return a.offset - b.offset; });
+
+    // Build ordered list of division offsets: 0 (Corner A), [start, end for each opening], lMm (Corner B)
+    var divs = [0];
+    for (var o = 0; o < wallOpenings.length; o++) {
+      var op = wallOpenings[o];
+      var halfW = op.width / 2;
+      var safeOff = Math.max(halfW, Math.min(lMm - halfW, op.offset));
+      var tStart = Math.max(0, safeOff - halfW);
+      var tEnd = Math.min(lMm, safeOff + halfW);
+      divs.push(tStart);
+      divs.push(tEnd);
+    }
+    divs.push(lMm);
+
+    // Sort and remove duplicates / near duplicates
+    divs.sort(function (a, b) { return a - b; });
+    var cleanDivs = [divs[0]];
+    for (var d = 1; d < divs.length; d++) {
+      if (divs[d] - cleanDivs[cleanDivs.length - 1] > 1) {
+        cleanDivs.push(divs[d]);
+      }
+    }
+
+    ctx.save();
+
+    // 1. Extension lines and dimension points
+    var sDimPts = [];
+    ctx.strokeStyle = isActive ? '#2563eb' : 'rgba(100, 116, 139, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+
+    for (var i = 0; i < cleanDivs.length; i++) {
+      var t = cleanDivs[i];
+      var ptWall = { x: w.start.x + wDir.x * t, y: w.start.y + wDir.y * t };
+      var ptDim = { x: ptWall.x + norm.x * dimOffset, y: ptWall.y + norm.y * dimOffset };
+      var ptExtStart = { x: ptWall.x + norm.x * (halfT + 15), y: ptWall.y + norm.y * (halfT + 15) };
+      var ptExtEnd = { x: ptDim.x + norm.x * 45, y: ptDim.y + norm.y * 45 };
+
+      var sStart = this.worldToScreen(ptExtStart);
+      var sEnd = this.worldToScreen(ptExtEnd);
+      var sDim = this.worldToScreen(ptDim);
+      sDimPts.push(sDim);
+
+      ctx.moveTo(sStart.x, sStart.y);
+      ctx.lineTo(sEnd.x, sEnd.y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 2. Continuous dimension line connecting all points
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = isActive ? 1.5 : 1;
+    ctx.beginPath();
+    ctx.moveTo(sDimPts[0].x, sDimPts[0].y);
+    for (var j = 1; j < sDimPts.length; j++) {
+      ctx.lineTo(sDimPts[j].x, sDimPts[j].y);
+    }
+    ctx.stroke();
+
+    // 3. Circular dots at all witness intersections
+    ctx.fillStyle = dotColor;
+    ctx.beginPath();
+    for (var k = 0; k < sDimPts.length; k++) {
+      ctx.moveTo(sDimPts[k].x + 3.5, sDimPts[k].y);
+      ctx.arc(sDimPts[k].x, sDimPts[k].y, 3.5, 0, Math.PI * 2);
+    }
+    ctx.fill();
+
+    // 4. Segment dimension numbers
+    for (var s = 0; s < cleanDivs.length - 1; s++) {
+      var segLen = cleanDivs[s + 1] - cleanDivs[s];
+      if (segLen > 40) {
+        var p1 = sDimPts[s];
+        var p2 = sDimPts[s + 1];
+        var segMidX = (p1.x + p2.x) / 2;
+        var segMidY = (p1.y + p2.y) / 2;
+        var segText = (this.unitSystem === 'imperial') ? this.formatDim(segLen) : String(Math.round(segLen));
+        drawDimPill(segMidX, segMidY, segText);
+      }
+    }
+
+    // 5. Corner Labels A and B, plus Direction Arrows 1 and 2
+    if (isActive) {
+      if (!isSelected) {
+        drawCornerLabel(w.start, 'A', -1);
+        drawCornerLabel(w.end, 'B', 1);
+      }
+      // Direction arrow 1 in Segment 1 (start to first opening start)
+      var firstOpStartT = cleanDivs.length > 2 ? cleanDivs[1] : 0;
+      drawCoreArrow(0, firstOpStartT, 'A', '1');
+
+      // Direction arrow 2 in Segment 2 (last opening end to end B)
+      var lastOpEndT = cleanDivs.length > 2 ? cleanDivs[cleanDivs.length - 2] : lMm;
+      drawCoreArrow(lastOpEndT, lMm, 'B', '2');
+    }
+
+    ctx.restore();
+  };
+
+  PlanEditor.prototype.renderAllWallDimensions = function (ctx) {
+    var walls = this.project.plan.walls || [];
+    for (var i = 0; i < walls.length; i++) {
+      var w = walls[i];
+      var isSelected = this.isSelected('wall', w.id);
+      this.renderWallDimensions(ctx, w, isSelected);
     }
   };
 
@@ -10889,22 +12031,32 @@ body.role-employee #adminCreateEmpBox,
       var dPx = dMm * this.zoom;
       var sPos = this.worldToScreen(f.pos);
 
+      var isColliding = (this.dragState && this.dragState.type === 'move_furniture' && this.dragState.hasCollision &&
+        (this.dragState.furniture.id === f.id || (this.dragState.collidedWith && this.dragState.collidedWith.id === f.id)));
+
       ctx.save();
       ctx.translate(sPos.x, sPos.y);
       ctx.rotate(f.rotY || 0);
 
-      // Furniture body boundary
-      ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
-      ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
-
-      ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
-      ctx.lineWidth = isSelected ? 2 : 1.2;
-      ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+      // Furniture body boundary (Red if colliding!)
+      if (isColliding) {
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
+        ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+      } else {
+        ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
+        ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
+        ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
+        ctx.lineWidth = isSelected ? 2 : 1.2;
+        ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+      }
 
       // Shutter dividers
       var numShutters = (f.unitConfig && f.unitConfig.shutters) || (wMm > 1200 ? 3 : wMm > 600 ? 2 : 1);
       if (numShutters > 1) {
-        ctx.strokeStyle = isSelected ? 'rgba(27, 79, 114, 0.35)' : 'rgba(110, 78, 53, 0.25)';
+        ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? 'rgba(27, 79, 114, 0.35)' : 'rgba(110, 78, 53, 0.25)');
         ctx.lineWidth = 1;
         ctx.beginPath();
         for (var s = 1; s < numShutters; s++) {
@@ -10916,27 +12068,49 @@ body.role-employee #adminCreateEmpBox,
       }
 
       // Front Shutter / Door edge (at +dPx/2) - clearly distinguishes front from back
-      ctx.strokeStyle = isSelected ? '#2563eb' : '#92400e';
-      ctx.lineWidth = isSelected ? 3.5 : 2.5;
+      ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? '#2563eb' : '#92400e');
+      ctx.lineWidth = isSelected || isColliding ? 3.5 : 2.5;
       ctx.beginPath();
       ctx.moveTo(-wPx / 2, dPx / 2);
       ctx.lineTo(wPx / 2, dPx / 2);
       ctx.stroke();
 
       // Front handle pill indicator
-      ctx.fillStyle = isSelected ? '#1d4ed8' : '#1f2937';
+      ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
       ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
 
       // Labels: Name + Size
-      ctx.fillStyle = isSelected ? '#1e3a8a' : '#23211E';
+      ctx.fillStyle = isColliding ? '#991b1b' : (isSelected ? '#1e3a8a' : '#23211E');
       ctx.font = '600 10.5px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(f.name, 0, -6);
 
-      ctx.fillStyle = isSelected ? '#1d4ed8' : '#78716c';
+      ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#78716c');
       ctx.font = '500 9px "IBM Plex Mono", monospace';
       ctx.fillText(Math.round(wMm) + ' × ' + Math.round(dMm) + ' mm', 0, 8);
+
+      // Elevation badge if wall mounted (Elevation > 0)
+      var elevMm = f.elevation !== undefined ? f.elevation : ((f.pos && f.pos.z) || 0);
+      if (elevMm > 0) {
+        ctx.fillStyle = '#0284c7';
+        ctx.font = '700 8.5px "IBM Plex Mono", monospace';
+        ctx.fillText('▲ ' + Math.round(elevMm) + ' mm AFFL', 0, 21);
+      }
+
+      // If colliding, draw prominent Overlap Detected warning pill badge
+      if (isColliding) {
+        var warnTxt = '⚠️ Overlap Detected';
+        ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
+        var tw = ctx.measureText(warnTxt).width;
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(-tw / 2 - 6, -dPx / 2 - 22, tw + 12, 17, 4);
+        else ctx.rect(-tw / 2 - 6, -dPx / 2 - 22, tw + 12, 17);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(warnTxt, 0, -dPx / 2 - 13);
+      }
 
       ctx.restore();
     }
@@ -11024,6 +12198,97 @@ body.role-employee #adminCreateEmpBox,
       ctx.lineTo(sEnd.x, sEnd.y);
       ctx.stroke();
 
+      // Corner A & B labels and parallel dimension line with witness lines
+      if (distMm > 60) {
+        var gDx = snap.pt.x - this.wallChainStart.x;
+        var gDy = snap.pt.y - this.wallChainStart.y;
+        var gLen = Math.hypot(gDx, gDy) || 1;
+        var gDirX = gDx / gLen, gDirY = gDy / gLen;
+        var gNormX = -gDirY, gNormY = gDirX;
+        var gDimOff = (this.wallPreset.thickness / 2) + 220;
+
+        var gDsWorld = { x: this.wallChainStart.x + gNormX * gDimOff, y: this.wallChainStart.y + gNormY * gDimOff };
+        var gDeWorld = { x: snap.pt.x + gNormX * gDimOff, y: snap.pt.y + gNormY * gDimOff };
+        var sGDs = this.worldToScreen(gDsWorld);
+        var sGDe = this.worldToScreen(gDeWorld);
+
+        // Witness lines
+        var sExtS = this.worldToScreen({ x: this.wallChainStart.x + gNormX * (this.wallPreset.thickness / 2 + 15), y: this.wallChainStart.y + gNormY * (this.wallPreset.thickness / 2 + 15) });
+        var sExtE = this.worldToScreen({ x: snap.pt.x + gNormX * (this.wallPreset.thickness / 2 + 15), y: snap.pt.y + gNormY * (this.wallPreset.thickness / 2 + 15) });
+        var sExtSTip = this.worldToScreen({ x: gDsWorld.x + gNormX * 45, y: gDsWorld.y + gNormY * 45 });
+        var sExtETip = this.worldToScreen({ x: gDeWorld.x + gNormX * 45, y: gDeWorld.y + gNormY * 45 });
+
+        ctx.save();
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(sExtS.x, sExtS.y); ctx.lineTo(sExtSTip.x, sExtSTip.y);
+        ctx.moveTo(sExtE.x, sExtE.y); ctx.lineTo(sExtETip.x, sExtETip.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Main dimension line
+        ctx.strokeStyle = '#2563eb';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(sGDs.x, sGDs.y); ctx.lineTo(sGDe.x, sGDe.y);
+        ctx.stroke();
+
+        // Dots at endpoints
+        ctx.fillStyle = '#1d4ed8';
+        ctx.beginPath();
+        ctx.arc(sGDs.x, sGDs.y, 3.5, 0, Math.PI * 2);
+        ctx.arc(sGDe.x, sGDe.y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Direction arrow 1 inside ghost wall pointing towards Corner A
+        var sGMidX = (sStart.x + sEnd.x) / 2;
+        var sGMidY = (sStart.y + sEnd.y) / 2;
+        var ax = -gDirX, ay = -gDirY;
+        var anX = -ay, anY = ax;
+        ctx.fillStyle = '#2563eb';
+        ctx.beginPath();
+        ctx.moveTo(sGMidX + ax * 12, sGMidY + ay * 12);
+        ctx.lineTo(sGMidX + ax * 3 + anX * 5, sGMidY + ay * 3 + anY * 5);
+        ctx.lineTo(sGMidX + ax * 3 - anX * 5, sGMidY + ay * 3 - anY * 5);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.font = '700 13px "IBM Plex Sans", -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeText('1', sGMidX - ax * 14, sGMidY - ay * 14);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillText('1', sGMidX - ax * 14, sGMidY - ay * 14);
+
+        // Corner A label
+        var sALabel = this.worldToScreen({
+          x: this.wallChainStart.x - gDirX * 50 + gNormX * (this.wallPreset.thickness / 2 + 35),
+          y: this.wallChainStart.y - gDirY * 50 + gNormY * (this.wallPreset.thickness / 2 + 35)
+        });
+        ctx.font = '700 15px "IBM Plex Sans", -apple-system, sans-serif';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeText('A', sALabel.x, sALabel.y);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillText('A', sALabel.x, sALabel.y);
+
+        // Corner B label
+        var sBLabel = this.worldToScreen({
+          x: snap.pt.x + gDirX * 50 + gNormX * (this.wallPreset.thickness / 2 + 35),
+          y: snap.pt.y + gDirY * 50 + gNormY * (this.wallPreset.thickness / 2 + 35)
+        });
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeText('B', sBLabel.x, sBLabel.y);
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillText('B', sBLabel.x, sBLabel.y);
+        ctx.restore();
+      }
+
       // Dimension & Typing HUD Pill
       var midX = (sStart.x + sEnd.x) / 2;
       var midY = (sStart.y + sEnd.y) / 2 - 14;
@@ -11102,19 +12367,32 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // 3. Opening hover placement preview
+    // 3. Opening hover placement preview with live segmented architectural dimensions
     if (this.activeTool === 'door' || this.activeTool === 'window') {
       var near = this.findNearestWall(this.cursorWorld, 400);
       if (near) {
         var w = near.wall;
+        var wLen = Core.wallLength(w);
         var opWidth = this.activeTool === 'door' ? this.doorPreset.width : this.windowPreset.width;
-        var sProj = this.worldToScreen(near.proj.pt);
+        var halfW = opWidth / 2;
+        var safeOffset = Math.max(halfW + 30, Math.min(wLen - halfW - 30, near.proj.t * wLen));
 
-        ctx.strokeStyle = '#00B4D8';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(sProj.x, sProj.y, (opWidth / 2) * this.zoom, 0, Math.PI * 2);
-        ctx.stroke();
+        var ghostOp = {
+          id: '__preview_opening__',
+          wallId: w.id,
+          type: this.activeTool,
+          width: opWidth,
+          height: this.activeTool === 'door' ? this.doorPreset.height : this.windowPreset.height,
+          sillHeight: this.windowPreset.sillHeight,
+          offset: safeOffset,
+          swing: this.doorPreset.swing
+        };
+
+        // Render ghost opening on wall
+        this.renderSingleOpening(ctx, ghostOp, w, true);
+
+        // Render live segmented dimensions with Corners A & B, Direction Arrows 1 & 2!
+        this.renderWallDimensions(ctx, w, true, { previewOpening: ghostOp, activeOpeningId: '__preview_opening__' });
       }
     }
 
@@ -11714,10 +12992,16 @@ body.role-employee #adminCreateEmpBox,
     fg.userData = { isFurniture: true, isFurnitureGroup: true, furnitureId: furn.id, furniture: furn };
 
     var dims = furn.dimensions || { W: 1200, H: 2100, D: 600 };
-    var cat = furn.category || 'wardrobe';
+    var cat = (furn.category || 'wardrobe').toLowerCase();
+    var name = (furn.name || '').toLowerCase();
+    var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+      window.OrbixCore.isWallUnit(cat, name) :
+      (cat.indexOf('wall') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'kitchen_wall' ||
+       cat === 'crockery_wall' || cat === 'spice_rack' || cat.indexOf('overhead') !== -1 ||
+       cat.indexOf('loft') !== -1 || name.indexOf('wall') !== -1 || name.indexOf('overhead') !== -1 ||
+       name.indexOf('spice rack') !== -1 || name.indexOf('loft') !== -1);
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
-    var isBase = (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity');
-    var isWall = (cat === 'kitchen_wall');
+    var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity');
 
     // Resolve Carcass & Shutter finishes using lam() if available
     var shutterFinish = (furn.unitConfig && furn.unitConfig.shutterCol) ||
@@ -11774,15 +13058,101 @@ body.role-employee #adminCreateEmpBox,
     var plinthH = isBase ? 75 : 0;
     var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
     var bodyH = Math.max(100, dims.H - plinthH - counterH);
+    var innerW = dims.W - 36;
+    var innerD = dims.D - 20;
 
-    // Main Carcass Body
-    var bodyGeo = new THREE.BoxGeometry(dims.W, bodyH, dims.D - 20);
-    var bodyMesh = new THREE.Mesh(bodyGeo, carcassMat);
-    bodyMesh.position.set(0, plinthH + bodyH / 2, -10);
-    bodyMesh.castShadow = true;
-    bodyMesh.receiveShadow = true;
-    bodyMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-    fg.add(bodyMesh);
+    // Helper: Material for individual shutter s
+    function getShutterMaterial(sIdx) {
+      var col = (furn.shutterColors && furn.shutterColors[sIdx]) || null;
+      var matFin = (furn.shutterMaterials && furn.shutterMaterials[sIdx]) ||
+                   (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) || 'Brazilian Walnut';
+      var threeCol = 0x6E4E35;
+      var roughness = 0.45;
+      var metalness = 0.05;
+
+      if (col) {
+        if (typeof col === 'string') {
+          var cleanHex = col.replace('#', '');
+          threeCol = parseInt(cleanHex, 16);
+        } else if (typeof col === 'number') {
+          threeCol = col;
+        }
+      } else {
+        var fin = matFin.toLowerCase();
+        if (fin.indexOf('gloss') !== -1 || fin.indexOf('white') !== -1) { threeCol = 0xEDEBE4; roughness = 0.15; }
+        else if (fin.indexOf('walnut') !== -1) { threeCol = 0x5D3E27; roughness = 0.5; }
+        else if (fin.indexOf('sage') !== -1) { threeCol = 0x7A8875; roughness = 0.6; }
+        else if (fin.indexOf('oak') !== -1) { threeCol = 0xC8B293; roughness = 0.55; }
+        else if (fin.indexOf('concrete') !== -1) { threeCol = 0x8C8885; roughness = 0.8; }
+      }
+      return new THREE.MeshStandardMaterial({ color: threeCol, roughness: roughness, metalness: metalness });
+    }
+
+    // Realistic Open Carcass with Interior Panels
+    // 1. Left side panel
+    var leftGeo = new THREE.BoxGeometry(18, bodyH, innerD);
+    var leftMesh = new THREE.Mesh(leftGeo, carcassMat);
+    leftMesh.position.set(-dims.W / 2 + 9, plinthH + bodyH / 2, -10);
+    leftMesh.castShadow = true; leftMesh.receiveShadow = true;
+    leftMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(leftMesh);
+
+    // 2. Right side panel
+    var rightGeo = new THREE.BoxGeometry(18, bodyH, innerD);
+    var rightMesh = new THREE.Mesh(rightGeo, carcassMat);
+    rightMesh.position.set(dims.W / 2 - 9, plinthH + bodyH / 2, -10);
+    rightMesh.castShadow = true; rightMesh.receiveShadow = true;
+    rightMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(rightMesh);
+
+    // 3. Bottom panel
+    var botGeo = new THREE.BoxGeometry(innerW, 18, innerD);
+    var botMesh = new THREE.Mesh(botGeo, carcassMat);
+    botMesh.position.set(0, plinthH + 9, -10);
+    botMesh.castShadow = true; botMesh.receiveShadow = true;
+    botMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(botMesh);
+
+    // 4. Top panel
+    var topGeo = new THREE.BoxGeometry(innerW, 18, innerD);
+    var topMesh = new THREE.Mesh(topGeo, carcassMat);
+    topMesh.position.set(0, plinthH + bodyH - 9, -10);
+    topMesh.castShadow = true; topMesh.receiveShadow = true;
+    topMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(topMesh);
+
+    // 5. Back panel
+    var backGeo = new THREE.BoxGeometry(innerW, bodyH - 36, 12);
+    var backMesh = new THREE.Mesh(backGeo, carcassMat);
+    backMesh.position.set(0, plinthH + bodyH / 2, -dims.D / 2 + 6);
+    backMesh.castShadow = true; backMesh.receiveShadow = true;
+    backMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(backMesh);
+
+    // 6. Internal Shelves
+    if (bodyH > 700) {
+      var numShelves = bodyH > 1400 ? 3 : 1;
+      for (var sh = 1; sh <= numShelves; sh++) {
+        var shelfY = plinthH + (sh * bodyH) / (numShelves + 1);
+        var shelfGeo = new THREE.BoxGeometry(innerW, 18, innerD - 20);
+        var shelfMesh = new THREE.Mesh(shelfGeo, carcassMat);
+        shelfMesh.position.set(0, shelfY, -10);
+        shelfMesh.castShadow = true; shelfMesh.receiveShadow = true;
+        shelfMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+        fg.add(shelfMesh);
+      }
+    }
+
+    // Plinth Base (for base units)
+    if (plinthH > 0) {
+      var pGeo = new THREE.BoxGeometry(dims.W - 30, plinthH, dims.D - 50);
+      var pMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8 });
+      var pMesh = new THREE.Mesh(pGeo, pMat);
+      pMesh.position.set(0, plinthH / 2, -15);
+      pMesh.castShadow = true; pMesh.receiveShadow = true;
+      pMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(pMesh);
+    }
 
     // Countertop Stone (if kitchen base / vanity / crockery)
     if (counterH > 0) {
@@ -11795,124 +13165,135 @@ body.role-employee #adminCreateEmpBox,
       fg.add(cMesh);
     }
 
-    // Front Shutters
-    var numShutters = (furn.unitConfig && furn.unitConfig.shutters !== undefined) ? furn.unitConfig.shutters : (dims.W > 1200 ? 3 : dims.W > 600 ? 2 : 1);
-    if (numShutters > 0) {
-      var shW = (dims.W - (numShutters + 1) * 3) / numShutters;
-      var shH = bodyH - 6;
+// Realistic Drawers & Hinged Shutters with Interactive Open/Close & Individual Finishes
+    var drawersCount = (furn.unitConfig && furn.unitConfig.drawers !== undefined) ? parseInt(furn.unitConfig.drawers) : 0;
+    var numShutters = (furn.unitConfig && furn.unitConfig.shutters !== undefined) ?
+      parseInt(furn.unitConfig.shutters) :
+      ((drawersCount > 0 && dims.H < 1000) ? 0 : (dims.W > 1200 ? 3 : dims.W > 600 ? 2 : 1));
 
-      for (var s = 0; s < numShutters; s++) {
-        var sX = -dims.W / 2 + 3 + shW / 2 + s * (shW + 3);
-        var sY = plinthH + 3 + shH / 2;
-        var sZ = dims.D / 2 - 9;
+    var totalDrawersH = 0;
+    var drawerH = 0;
 
-        if (dstyle === 'aluglass' || dstyle === 'glass') {
-          // Aluminium Profile Glass Shutter: Dark border frame + tinted glass
-          var frameThickness = 45;
-          var borderMat = new THREE.MeshStandardMaterial({ color: 0x1E293B, roughness: 0.3, metalness: 0.8 });
-          var glassMat = new THREE.MeshPhysicalMaterial({
-            color: (furn.unitConfig && furn.unitConfig.glassTint === 'bronze') ? 0x8C6239 : 0xA0B4C8,
-            transparent: true,
-            opacity: 0.45,
-            roughness: 0.1,
-            metalness: 0.1,
-            transmission: 0.8
-          });
+    // 7. Drawers Geometry & Sliding Groups
+    if (drawersCount > 0) {
+      if (numShutters === 0) {
+        // Pure drawers unit (e.g. bedside unit, 3-pot drawer kitchen base)
+        drawerH = Math.max(120, Math.floor((bodyH - (drawersCount + 1) * 3) / drawersCount));
+        totalDrawersH = bodyH;
+      } else {
+        // Mixed unit: drawers at bottom, shutters above
+        drawerH = Math.min(220, Math.max(140, Math.floor((bodyH * 0.42) / drawersCount)));
+        totalDrawersH = drawersCount * (drawerH + 3);
+      }
 
-          // Outer frame group
-          var frameGroup = new THREE.Group();
-          frameGroup.position.set(sX, sY, sZ);
+      for (var d = 0; d < drawersCount; d++) {
+        var dY = plinthH + 3 + d * (drawerH + 3) + drawerH / 2;
+        var isDOpen = !!(furn.drawerStates && furn.drawerStates[d]);
+        var drawerGroup = new THREE.Group();
+        drawerGroup.name = 'DrawerSlide_' + d;
+        drawerGroup.position.set(0, dY, isDOpen ? 350 : 0);
+        drawerGroup.userData = { isDrawerGroup: true, drawerIdx: d, furnitureId: furn.id, isOpen: isDOpen };
 
-          var glassGeo = new THREE.BoxGeometry(shW - frameThickness * 2, shH - frameThickness * 2, 6);
-          var glassMesh = new THREE.Mesh(glassGeo, glassMat);
-          glassMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-          frameGroup.add(glassMesh);
+        // Drawer Front Facia
+        var faciaGeo = new THREE.BoxGeometry(dims.W - 6, drawerH, 18);
+        var faciaMat = getShutterMaterial(d % Math.max(1, numShutters));
+        var faciaMesh = new THREE.Mesh(faciaGeo, faciaMat);
+        faciaMesh.position.set(0, 0, dims.D / 2 - 9);
+        faciaMesh.castShadow = true; faciaMesh.receiveShadow = true;
+        faciaMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
+        drawerGroup.add(faciaMesh);
 
-          // Top, bottom, left, right frame borders
-          var topBorder = new THREE.Mesh(new THREE.BoxGeometry(shW, frameThickness, 18), borderMat);
-          topBorder.position.set(0, shH / 2 - frameThickness / 2, 0);
-          frameGroup.add(topBorder);
-          var botBorder = new THREE.Mesh(new THREE.BoxGeometry(shW, frameThickness, 18), borderMat);
-          botBorder.position.set(0, -shH / 2 + frameThickness / 2, 0);
-          frameGroup.add(botBorder);
-          var lBorder = new THREE.Mesh(new THREE.BoxGeometry(frameThickness, shH - frameThickness * 2, 18), borderMat);
-          lBorder.position.set(-shW / 2 + frameThickness / 2, 0, 0);
-          frameGroup.add(lBorder);
-          var rBorder = new THREE.Mesh(new THREE.BoxGeometry(frameThickness, shH - frameThickness * 2, 18), borderMat);
-          rBorder.position.set(shW / 2 - frameThickness / 2, 0, 0);
-          frameGroup.add(rBorder);
+        // Drawer Pull Handle (Horizontal)
+        var dhGeo = new THREE.BoxGeometry(Math.min(180, (dims.W - 30) * 0.4), 14, 16);
+        var dhMesh = new THREE.Mesh(dhGeo, handleMat);
+        dhMesh.position.set(0, 0, dims.D / 2 + 5);
+        dhMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
+        drawerGroup.add(dhMesh);
 
-          frameGroup.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-          fg.add(frameGroup);
-        } else if (dstyle === 'shaker') {
-          // Shaker Door: Frame with recessed inner panel
-          var sGroup = new THREE.Group();
-          sGroup.position.set(sX, sY, sZ);
-          var fW2 = 60;
-          var innerP = new THREE.Mesh(new THREE.BoxGeometry(shW - fW2 * 2, shH - fW2 * 2, 10), shutterMat);
-          innerP.position.set(0, 0, -4);
-          sGroup.add(innerP);
+        // Drawer Interior Box
+        var dbGeo = new THREE.BoxGeometry(innerW - 20, 12, innerD - 30);
+        var dbMesh = new THREE.Mesh(dbGeo, carcassMat);
+        dbMesh.position.set(0, -drawerH / 2 + 6, -15);
+        dbMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
+        drawerGroup.add(dbMesh);
 
-          var tRail = new THREE.Mesh(new THREE.BoxGeometry(shW, fW2, 18), shutterMat);
-          tRail.position.set(0, shH / 2 - fW2 / 2, 0);
-          sGroup.add(tRail);
-          var bRail = new THREE.Mesh(new THREE.BoxGeometry(shW, fW2, 18), shutterMat);
-          bRail.position.set(0, -shH / 2 + fW2 / 2, 0);
-          sGroup.add(bRail);
-          var lStile = new THREE.Mesh(new THREE.BoxGeometry(fW2, shH - fW2 * 2, 18), shutterMat);
-          lStile.position.set(-shW / 2 + fW2 / 2, 0, 0);
-          sGroup.add(lStile);
-          var rStile = new THREE.Mesh(new THREE.BoxGeometry(fW2, shH - fW2 * 2, 18), shutterMat);
-          rStile.position.set(shW / 2 - fW2 / 2, 0, 0);
-          sGroup.add(rStile);
+        var dlGeo = new THREE.BoxGeometry(12, drawerH - 24, innerD - 30);
+        var dlMesh = new THREE.Mesh(dlGeo, carcassMat);
+        dlMesh.position.set(-(innerW - 20) / 2 + 6, 0, -15);
+        dlMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
+        drawerGroup.add(dlMesh);
 
-          sGroup.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-          fg.add(sGroup);
-        } else {
-          // Slab front or standard shutter
-          var sGeo = new THREE.BoxGeometry(shW, shH, 18);
-          var sMesh = new THREE.Mesh(sGeo, shutterMat);
-          sMesh.position.set(sX, sY, sZ);
-          sMesh.castShadow = true;
-          sMesh.receiveShadow = true;
-          sMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-          fg.add(sMesh);
-        }
+        var drGeo = new THREE.BoxGeometry(12, drawerH - 24, innerD - 30);
+        var drMesh = new THREE.Mesh(drGeo, carcassMat);
+        drMesh.position.set((innerW - 20) / 2 - 6, 0, -15);
+        drMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
+        drawerGroup.add(drMesh);
 
-        // Handle
-        var handleType = (furn.unitConfig && furn.unitConfig.handle) || 'gprof';
-        if (handleType !== 'none') {
-          var hMesh;
-          if (handleType === 'gprof' || handleType === 'jprof') {
-            // Profile handle on top edge of base unit or side
-            var hLen = Math.min(160, shW * 0.7);
-            var hGeo = new THREE.BoxGeometry(hLen, 16, 22);
-            hMesh = new THREE.Mesh(hGeo, handleMat);
-            hMesh.position.set(sX, isBase ? plinthH + shH - 8 : sY, sZ + 12);
-          } else if (handleType === 'knob') {
-            var kGeo = new THREE.CylinderGeometry(12, 8, 20, 16);
-            hMesh = new THREE.Mesh(kGeo, handleMat);
-            hMesh.rotation.x = Math.PI / 2;
-            var hXk = (s % 2 === 0) ? sX + shW / 2 - 35 : sX - shW / 2 + 35;
-            hMesh.position.set(hXk, isBase ? plinthH + shH - 60 : sY, sZ + 14);
-          } else {
-            // Bar handle
-            var hGeo = new THREE.BoxGeometry(16, Math.min(220, shH * 0.35), 18);
-            hMesh = new THREE.Mesh(hGeo, handleMat);
-            var hX = (s % 2 === 0) ? sX + shW / 2 - 25 : sX - shW / 2 + 25;
-            var hY = isBase ? sY + shH * 0.25 : sY;
-            hMesh.position.set(hX, hY, sZ + 14);
-          }
-          if (hMesh) {
-            hMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-            fg.add(hMesh);
-          }
-        }
+        var dbkGeo = new THREE.BoxGeometry(innerW - 44, drawerH - 24, 12);
+        var dbkMesh = new THREE.Mesh(dbkGeo, carcassMat);
+        dbkMesh.position.set(0, 0, -(innerD - 30) / 2 - 15 + 6);
+        dbkMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
+        drawerGroup.add(dbkMesh);
+
+        fg.add(drawerGroup);
       }
     }
 
-    // Position and rotate unit
-    fg.position.set(furn.pos.x, furn.pos.z || 0, furn.pos.y);
+    // 8. Front Hinged Shutters with Opening Pivots
+    if (numShutters > 0) {
+      var shW = (dims.W - (numShutters + 1) * 3) / numShutters;
+      var shH = Math.max(150, bodyH - totalDrawersH - 6);
+      var shutterBaseY = plinthH + totalDrawersH + 3;
+      var hingeY = shutterBaseY + shH / 2;
+
+      for (var s = 0; s < numShutters; s++) {
+        var hingeLeft = (s % 2 === 0);
+        var sLeftX = -dims.W / 2 + 3 + s * (shW + 3);
+        var hingeX = hingeLeft ? sLeftX : (sLeftX + shW);
+        var hingeZ = dims.D / 2 - 9;
+
+        var hingeGroup = new THREE.Group();
+        hingeGroup.name = 'ShutterHinge_' + s;
+        hingeGroup.position.set(hingeX, hingeY, hingeZ);
+        hingeGroup.userData = { isShutterHinge: true, shutterIdx: s, furnitureId: furn.id };
+
+        var sGeo = new THREE.BoxGeometry(shW, shH, 18);
+        var sMesh = new THREE.Mesh(sGeo, getShutterMaterial(s));
+        var localX = hingeLeft ? (shW / 2) : (-shW / 2);
+        sMesh.position.set(localX, 0, 0);
+        sMesh.castShadow = true;
+        sMesh.receiveShadow = true;
+        sMesh.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+        hingeGroup.add(sMesh);
+
+        // Handle pull
+        var hGeo = new THREE.BoxGeometry(16, Math.min(180, shH * 0.4), 16);
+        var hMesh = new THREE.Mesh(hGeo, handleMat);
+        var handleX = hingeLeft ? (shW - 25) : (-shW + 25);
+        var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
+        hMesh.position.set(handleX, handleY, 14);
+        hMesh.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+        hingeGroup.add(hMesh);
+
+        // Shutter Open / Close rotation (~108 degrees)
+        var isOpen = !!(furn.shutterStates && furn.shutterStates[s]);
+        if (isOpen) {
+          hingeGroup.rotation.y = hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.6;
+        } else {
+          hingeGroup.rotation.y = 0;
+        }
+
+        fg.add(hingeGroup);
+      }
+    }
+
+    // Position and rotate unit (with elevation from finished floor level!)
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+      parseFloat(furn.elevation) :
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+        parseFloat(furn.pos.z) :
+        (isWall ? 1500 : 0));
+    fg.position.set(furn.pos.x, elev, furn.pos.y);
     fg.rotation.y = -(furn.rotY || 0);
 
     // If this unit is currently the active unit in 3D Studio, keep its static mesh hidden
@@ -12246,6 +13627,8 @@ body.role-employee #adminCreateEmpBox,
           self.saveToLocalStorage();
           self.updateUI();
           self.renderBOQ();
+          if (self.syncProjectUnitsTo3DStudio) self.syncProjectUnitsTo3DStudio();
+          if (self.render3DHome) self.render3DHome(true);
           if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
             window.OrbixProjects.saveActiveProject({
               plan: proj,
@@ -12896,14 +14279,47 @@ body.role-employee #adminCreateEmpBox,
           '<span style="font-size:11px;color:#64748B;">Current: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
+          '<div style="margin:10px 0;padding:8px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">' +
+          '<div style="font-size:11px;font-weight:700;color:#1e293b;margin-bottom:6px;">🔒 Joint Connection Locks</div>' +
+          '<div style="display:flex;gap:8px;">' +
+          '<button class="btn small full" id="inspWallLockA" style="font-size:11px;">' + (w.startLocked !== false ? '🔒 Corner A Locked' : '🔓 Corner A Unlocked') + '</button>' +
+          '<button class="btn small full" id="inspWallLockB" style="font-size:11px;">' + (w.endLocked !== false ? '🔒 Corner B Locked' : '🔓 Corner B Unlocked') + '</button>' +
+          '</div></div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
+
+        var btnLockA = document.getElementById('inspWallLockA');
+        if (btnLockA) {
+          btnLockA.addEventListener('click', function () {
+            w.startLocked = (w.startLocked === false ? true : false);
+            self.editor.pushHistory('Toggle Corner A Lock');
+            self.editor.render();
+            self.renderInspector(self.editor.selected);
+          });
+        }
+        var btnLockB = document.getElementById('inspWallLockB');
+        if (btnLockB) {
+          btnLockB.addEventListener('click', function () {
+            w.endLocked = (w.endLocked === false ? true : false);
+            self.editor.pushHistory('Toggle Corner B Lock');
+            self.editor.render();
+            self.renderInspector(self.editor.selected);
+          });
+        }
 
         document.getElementById('inspWallLen').addEventListener('change', function (e) {
           var targetL = self.editor.parseDimInput(e.target.value);
           if (targetL > 100) {
             var dir = Core.wallDirection(w);
-            w.end.x = w.start.x + dir.x * targetL;
-            w.end.y = w.start.y + dir.y * targetL;
+            if (w.startLocked === false && w.endLocked !== false) {
+              // Corner B is locked, Corner A released: resize wall anchored from Corner B
+              w.start.x = w.end.x - dir.x * targetL;
+              w.start.y = w.end.y - dir.y * targetL;
+            } else {
+              // Corner A is locked (or both locked): resize wall anchored from Corner A
+              w.end.x = w.start.x + dir.x * targetL;
+              w.end.y = w.start.y + dir.y * targetL;
+            }
+            Core.detectRooms(self.editor.project);
             self.editor.pushHistory('Resize Wall');
             self.editor.render();
             self.renderInspector(self.editor.selected);
@@ -12938,12 +14354,24 @@ body.role-employee #adminCreateEmpBox,
           op.offset = Math.max(minOff, Math.min(maxOff, op.offset));
         }
 
+        var distA = Math.round(op.offset - op.width / 2);
+        var distB = Math.round(wallL - (op.offset + op.width / 2));
+
         panel.innerHTML =
           '<div class="insp-title">' + (op.type === 'door' ? 'Door' : 'Window') + ' Properties</div>' +
-          '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspOpW" value="' + op.width + '" min="400" max="3000" step="50"></div>' +
+          '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px;margin-bottom:12px;font-size:11px;font-family:monospace;color:#1e40af;line-height:1.4;">' +
+          '<div style="font-weight:700;margin-bottom:4px;color:#1e3a8a;">📐 Segmented Measurements</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span><b>Corner A (1):</b> ' + distA + ' mm</span>' +
+          '<span><b>Width:</b> ' + Math.round(op.width) + ' mm</span>' +
+          '<span><b>(2) Corner B:</b> ' + distB + ' mm</span>' +
+          '</div></div>' +
+          '<div class="insp-row"><label>Distance from Corner A (1) [mm]</label><input type="number" id="inspOpDistA" value="' + distA + '" min="0" max="' + (wallL - op.width) + '" step="10"></div>' +
+          '<div class="insp-row"><label>Opening Width (mm)</label><input type="number" id="inspOpW" value="' + Math.round(op.width) + '" min="400" max="3000" step="50"></div>' +
+          '<div class="insp-row"><label>Distance to Corner B (2) [mm]</label><input type="number" id="inspOpDistB" value="' + distB + '" min="0" max="' + (wallL - op.width) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspOpH" value="' + op.height + '" min="500" max="3500" step="50"></div>' +
           '<div class="insp-row"><label>Offset along wall (mm)</label><input type="number" id="inspOpOff" value="' + Math.round(op.offset) + '" min="' + minOff + '" max="' + maxOff + '" step="50"></div>' +
-          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Allowed: ' + minOff + ' mm – ' + maxOff + ' mm (Wall: ' + wallL + ' mm)</div>' +
+          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Total Wall Length: ' + wallL + ' mm</div>' +
           (op.type === 'door' ?
             '<div class="insp-row"><label>Swing</label><select id="inspOpSwing">' +
             '<option value="in-left"' + ((op.swing || 'in-left') === 'in-left' ? ' selected' : '') + '>Inward Left</option>' +
@@ -12993,6 +14421,31 @@ body.role-employee #adminCreateEmpBox,
             self.render3DHome();
           }
         };
+
+        var elDistA = document.getElementById('inspOpDistA');
+        if (elDistA) {
+          elDistA.addEventListener('change', function (e) {
+            var val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+              var curW = op.width || 800;
+              op.offset = Math.max(curW / 2, Math.min(wallL - curW / 2, Math.round(val + curW / 2)));
+              updateOp();
+              self.renderInspector(self.editor.selected);
+            }
+          });
+        }
+        var elDistB = document.getElementById('inspOpDistB');
+        if (elDistB) {
+          elDistB.addEventListener('change', function (e) {
+            var val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+              var curW = op.width || 800;
+              op.offset = Math.max(curW / 2, Math.min(wallL - curW / 2, Math.round(wallL - val - curW / 2)));
+              updateOp();
+              self.renderInspector(self.editor.selected);
+            }
+          });
+        }
 
         ['input', 'change'].forEach(function (evt) {
           var elW = document.getElementById('inspOpW');
@@ -13044,10 +14497,78 @@ body.role-employee #adminCreateEmpBox,
 
         var isBaseUnit = (fn.category && (fn.category === 'kitchen_base' || fn.category === 'crockery' || fn.category === 'vanity'));
 
+        if (!fn.shutterColors) fn.shutterColors = [];
+        if (!fn.shutterMaterials) fn.shutterMaterials = [];
+        if (!fn.shutterStates) fn.shutterStates = [];
+
+        var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+          window.OrbixCore.isWallUnit(fn.category, fn.name) :
+          ((fn.category && fn.category.toLowerCase().indexOf('wall') !== -1) ||
+           (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1) ||
+           fn.category === 'kitchen_wall');
+
+        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
+          fn.elevation :
+          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
+
+        var shutterItemsHtml = '';
+        for (var s = 0; s < shuttersCount; s++) {
+          var sColor = fn.shutterColors[s] || (shutterFinish.indexOf('White') !== -1 ? '#edebe4' : shutterFinish.indexOf('Sage') !== -1 ? '#7a8875' : shutterFinish.indexOf('Oak') !== -1 ? '#c8b293' : '#6e4e35');
+          var sMat = fn.shutterMaterials[s] || shutterFinish;
+          var sOpen = !!(fn.shutterStates && fn.shutterStates[s]);
+
+          shutterItemsHtml +=
+            '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;margin-bottom:6px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+            '<span style="font-weight:600;font-size:11px;color:#334155;">Shutter ' + (s + 1) + ' (' + (s % 2 === 0 ? 'Left' : 'Right') + ')</span>' +
+            '<button class="btn small inspShutterToggle" data-sidx="' + s + '" style="font-size:10px;padding:2px 8px;background:' + (sOpen ? '#10b981' : '#f1f5f9') + ';color:' + (sOpen ? '#ffffff' : '#334155') + ';border-color:' + (sOpen ? '#059669' : '#cbd5e1') + '">' + (sOpen ? 'Open 🚪' : 'Closed') + '</button>' +
+            '</div>' +
+            '<div style="display:flex;gap:6px;align-items:center;">' +
+            '<input type="color" class="inspShutterColorInput" data-sidx="' + s + '" value="' + sColor + '" style="width:28px;height:24px;padding:0;border:1px solid #cbd5e1;border-radius:4px;cursor:pointer;">' +
+            '<select class="inspShutterMatSelect" data-sidx="' + s + '" style="flex:1;font-size:11px;padding:3px 4px;border:1px solid #cbd5e1;border-radius:4px;">' +
+            '<option value="Brazilian Horizontal Walnut"' + (sMat.indexOf('Walnut') !== -1 ? ' selected' : '') + '>Brazilian Walnut</option>' +
+            '<option value="Absolute White"' + (sMat.indexOf('White') !== -1 || sMat.indexOf('Gloss') !== -1 ? ' selected' : '') + '>Absolute White Gloss</option>' +
+            '<option value="Sage Green Matte"' + (sMat.indexOf('Sage') !== -1 ? ' selected' : '') + '>Sage Green Matte</option>' +
+            '<option value="Sonoma Oak"' + (sMat.indexOf('Oak') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
+            '<option value="Concrete Look"' + (sMat.indexOf('Concrete') !== -1 ? ' selected' : '') + '>Concrete Look</option>' +
+            '</select>' +
+            '</div>' +
+            '</div>';
+        }
+
+        var drawerItemsHtml = '';
+        if (drawersCount > 0) {
+          if (!fn.drawerStates) fn.drawerStates = [];
+          for (var d = 0; d < drawersCount; d++) {
+            var dOpen = !!(fn.drawerStates && fn.drawerStates[d]);
+            drawerItemsHtml +=
+              '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">' +
+              '<span style="font-weight:600;font-size:11px;color:#334155;">Drawer ' + (d + 1) + '</span>' +
+              '<button class="btn small inspDrawerToggle" data-didx="' + d + '" style="font-size:10px;padding:2px 8px;background:' + (dOpen ? '#10b981' : '#f1f5f9') + ';color:' + (dOpen ? '#ffffff' : '#334155') + ';border-color:' + (dOpen ? '#059669' : '#cbd5e1') + '">' + (dOpen ? 'Open 🗄' : 'Closed') + '</button>' +
+              '</div>';
+          }
+        }
+
+        var drawerSectionHtml = '';
+        if (drawersCount > 0) {
+          drawerSectionHtml =
+            '<div style="margin:8px 0 8px 0;padding:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+            '<span style="font-weight:700;font-size:11.5px;color:#166534;">🗄 Drawers</span>' +
+            '<div style="display:flex;gap:4px;">' +
+            '<button class="btn small" id="inspDrawerOpenAll" style="font-size:10px;padding:2px 6px;">Open All</button>' +
+            '<button class="btn small" id="inspDrawerCloseAll" style="font-size:10px;padding:2px 6px;">Close All</button>' +
+            '</div></div>' +
+            drawerItemsHtml +
+            '</div>';
+        }
+
         panel.innerHTML =
           '<div class="insp-title">Modular Unit Properties</div>' +
           '<div class="insp-row"><label>Item Name</label><input type="text" id="inspFurnName" value="' + fn.name + '"></div>' +
           '<div class="insp-row"><label>Room Assignment</label><select id="inspFurnRoom">' + roomOptions + '</select></div>' +
+          '<div class="insp-row"><label>Elevation from Floor (mm)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
+          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Standard: 0 mm (Base) / 1500 mm (Wall-Mounted)</div>' +
           '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspFurnW" value="' + fn.dimensions.W + '" step="50"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspFurnH" value="' + fn.dimensions.H + '" step="50"></div>' +
           '<div class="insp-row"><label>Depth (mm)</label><input type="number" id="inspFurnD" value="' + fn.dimensions.D + '" step="50"></div>' +
@@ -13096,8 +14617,19 @@ body.role-employee #adminCreateEmpBox,
             '<option value="MDF 3410"' + (carcassFinish.indexOf('Walnut') !== -1 || carcassFinish.indexOf('3410') !== -1 ? ' selected' : '') + '>Walnut Woodgrain</option>' +
             '<option value="MDF 2204"' + (carcassFinish.indexOf('Oak') !== -1 || carcassFinish.indexOf('2204') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
           '</select></div>' +
+          '<div style="margin:12px 0 8px 0;padding:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+          '<span style="font-weight:700;font-size:11.5px;color:#1e3a8a;">🚪 Shutters & Hinges</span>' +
+          '<div style="display:flex;gap:4px;">' +
+          '<button class="btn small" id="inspShutterOpenAll" style="font-size:10px;padding:2px 6px;">Open All</button>' +
+          '<button class="btn small" id="inspShutterCloseAll" style="font-size:10px;padding:2px 6px;">Close All</button>' +
+          '<button class="btn small" id="inspShutterApplyAll" style="font-size:10px;padding:2px 6px;">Apply to All</button>' +
+          '</div></div>' +
+          shutterItemsHtml +
+          '</div>' +
+          drawerSectionHtml +
           '<button class="btn primary full" id="inspOpen3DStudio" style="margin-top:8px">📐 Open &amp; Customize in 3D Studio</button>' +
-          '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (R)</button>' +
+          '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (Space)</button>' +
           '<button class="btn danger full" id="inspDelFurn" style="margin-top:8px">Delete Unit</button>';
 
         function syncInspectorTo3D() {
@@ -13139,6 +14671,17 @@ body.role-employee #adminCreateEmpBox,
           self.renderBOQ();
           self.editor.render();
         });
+        var elElev = document.getElementById('inspFurnElev');
+        if (elElev) {
+          elElev.addEventListener('change', function (e) {
+            fn.elevation = parseFloat(e.target.value) || 0;
+            if (fn.pos) fn.pos.z = fn.elevation;
+            self.editor.pushHistory('Change Unit Elevation');
+            self.saveToLocalStorage();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
         document.getElementById('inspFurnW').addEventListener('change', function (e) {
           fn.dimensions.W = parseFloat(e.target.value);
           syncInspectorTo3D();
@@ -13146,7 +14689,7 @@ body.role-employee #adminCreateEmpBox,
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnH').addEventListener('change', function (e) {
           fn.dimensions.H = parseFloat(e.target.value);
@@ -13155,7 +14698,7 @@ body.role-employee #adminCreateEmpBox,
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnD').addEventListener('change', function (e) {
           fn.dimensions.D = parseFloat(e.target.value);
@@ -13164,27 +14707,33 @@ body.role-employee #adminCreateEmpBox,
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnShutters').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.shutters = parseInt(e.target.value) || 0;
+          if (!fn.shutterStates) fn.shutterStates = [];
+          while (fn.shutterStates.length < fn.unitConfig.shutters) fn.shutterStates.push(false);
           syncInspectorTo3D();
           self.editor.pushHistory('Edit Shutters Count');
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          self.renderInspector(self.editor.selected);
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnDrawers').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.drawers = parseInt(e.target.value) || 0;
+          if (!fn.drawerStates) fn.drawerStates = [];
+          while (fn.drawerStates.length < fn.unitConfig.drawers) fn.drawerStates.push(false);
           syncInspectorTo3D();
           self.editor.pushHistory('Edit Drawers Count');
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          self.renderInspector(self.editor.selected);
+          if (self.render3DHome) self.render3DHome(true);
         });
         var doorStyleSelect = document.getElementById('inspFurnDoorStyle');
         if (doorStyleSelect) {
@@ -13237,6 +14786,122 @@ body.role-employee #adminCreateEmpBox,
           self.renderBOQ();
           self.editor.render();
           if (self.render3DHome) self.render3DHome();
+        });
+
+        // Bulk Shutter Controls
+        var btnOpenAll = document.getElementById('inspShutterOpenAll');
+        if (btnOpenAll) {
+          btnOpenAll.addEventListener('click', function () {
+            if (!fn.shutterStates) fn.shutterStates = [];
+            for (var i = 0; i < shuttersCount; i++) fn.shutterStates[i] = true;
+            self.editor.pushHistory('Open All Shutters');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var btnCloseAll = document.getElementById('inspShutterCloseAll');
+        if (btnCloseAll) {
+          btnCloseAll.addEventListener('click', function () {
+            if (!fn.shutterStates) fn.shutterStates = [];
+            for (var i = 0; i < shuttersCount; i++) fn.shutterStates[i] = false;
+            self.editor.pushHistory('Close All Shutters');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var btnApplyAll = document.getElementById('inspShutterApplyAll');
+        if (btnApplyAll) {
+          btnApplyAll.addEventListener('click', function () {
+            var col0 = (fn.shutterColors && fn.shutterColors[0]) || '#6e4e35';
+            var mat0 = (fn.shutterMaterials && fn.shutterMaterials[0]) || shutterFinish;
+            if (!fn.shutterColors) fn.shutterColors = [];
+            if (!fn.shutterMaterials) fn.shutterMaterials = [];
+            for (var i = 0; i < shuttersCount; i++) {
+              fn.shutterColors[i] = col0;
+              fn.shutterMaterials[i] = mat0;
+            }
+            self.editor.pushHistory('Apply Shutter Style to All');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        // Bulk & Individual Drawer Controls
+        var btnDrawerOpenAll = document.getElementById('inspDrawerOpenAll');
+        if (btnDrawerOpenAll) {
+          btnDrawerOpenAll.addEventListener('click', function () {
+            if (!fn.drawerStates) fn.drawerStates = [];
+            for (var i = 0; i < drawersCount; i++) fn.drawerStates[i] = true;
+            self.editor.pushHistory('Open All Drawers');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var btnDrawerCloseAll = document.getElementById('inspDrawerCloseAll');
+        if (btnDrawerCloseAll) {
+          btnDrawerCloseAll.addEventListener('click', function () {
+            if (!fn.drawerStates) fn.drawerStates = [];
+            for (var i = 0; i < drawersCount; i++) fn.drawerStates[i] = false;
+            self.editor.pushHistory('Close All Drawers');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        var drawerToggles = panel.querySelectorAll('.inspDrawerToggle');
+        drawerToggles.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var idx = parseInt(btn.getAttribute('data-didx'));
+            if (!fn.drawerStates) fn.drawerStates = [];
+            fn.drawerStates[idx] = !fn.drawerStates[idx];
+            self.editor.pushHistory('Toggle Drawer ' + (idx + 1));
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        });
+
+        // Individual Shutter Controls
+        var toggles = panel.querySelectorAll('.inspShutterToggle');
+        toggles.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var idx = parseInt(btn.getAttribute('data-sidx'));
+            if (!fn.shutterStates) fn.shutterStates = [];
+            fn.shutterStates[idx] = !fn.shutterStates[idx];
+            self.editor.pushHistory('Toggle Shutter ' + (idx + 1));
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        });
+
+        var colorInputs = panel.querySelectorAll('.inspShutterColorInput');
+        colorInputs.forEach(function (inp) {
+          inp.addEventListener('change', function () {
+            var idx = parseInt(inp.getAttribute('data-sidx'));
+            if (!fn.shutterColors) fn.shutterColors = [];
+            fn.shutterColors[idx] = inp.value;
+            self.editor.pushHistory('Change Shutter ' + (idx + 1) + ' Color');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        });
+
+        var matSelects = panel.querySelectorAll('.inspShutterMatSelect');
+        matSelects.forEach(function (sel) {
+          sel.addEventListener('change', function () {
+            var idx = parseInt(sel.getAttribute('data-sidx'));
+            if (!fn.shutterMaterials) fn.shutterMaterials = [];
+            fn.shutterMaterials[idx] = sel.value;
+            self.editor.pushHistory('Change Shutter ' + (idx + 1) + ' Material');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+          });
         });
         document.getElementById('inspFurnCarcass').addEventListener('change', function (e) {
           if (!fn.materials) fn.materials = {};
@@ -13476,8 +15141,15 @@ body.role-employee #adminCreateEmpBox,
         var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
         var existing = existingMap[fn.id];
 
+        var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+          window.OrbixCore.isWallUnit(fn.category, fn.name) :
+          (fn.category === 'kitchen_wall' || (fn.category && fn.category.indexOf('wall') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1));
+        var unitElev = (fn.elevation !== undefined && fn.elevation !== null) ?
+          fn.elevation : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
+
         if (existing) {
           if (fn.name) existing.label = fn.name;
+          existing.elev = unitElev;
           if (fn.dimensions) {
             if (fn.dimensions.W) existing.W = fn.dimensions.W;
             if (fn.dimensions.H) existing.H = fn.dimensions.H;
@@ -13501,16 +15173,16 @@ body.role-employee #adminCreateEmpBox,
           if (cColExisting) existing.carcass = cColExisting;
           newUnits.push(existing);
         } else {
-          var isWall = (fn.category === 'kitchen_wall');
           var defH = isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 1800 : (fn.category === 'crockery' ? 2100 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
-          var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 300 : isKitchen ? 550 : 600);
+          var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 600);
           var sColNew = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
           var cColNew = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
           var u = {
             label: fn.name,
             ctype: isKitchen ? (isWall ? 'kwall' : 'kbase') : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
             _furnId: fn.id,
+            elev: unitElev,
             W: (fn.dimensions && fn.dimensions.W) || defW,
             H: (fn.dimensions && fn.dimensions.H) || defH,
             D: (fn.dimensions && fn.dimensions.D) || defD,
@@ -13651,6 +15323,20 @@ body.role-employee #adminCreateEmpBox,
           if (u.loftH !== undefined) match.unitConfig.loftH = u.loftH;
           if (u.back !== undefined) match.unitConfig.back = u.back;
           if (u.hfinish) match.unitConfig.hfinish = u.hfinish;
+          if (u.elev !== undefined) {
+            match.elevation = u.elev;
+            if (match.pos) match.pos.z = u.elev;
+          }
+          if (u.drawers !== undefined) {
+            match.unitConfig.drawers = u.drawers;
+            match.drawerStates = match.drawerStates || [];
+            while (match.drawerStates.length < u.drawers) match.drawerStates.push(false);
+          }
+          if (u.shutters !== undefined) {
+            match.unitConfig.shutters = u.shutters;
+            match.shutterStates = match.shutterStates || [];
+            while (match.shutterStates.length < u.shutters) match.shutterStates.push(false);
+          }
           if (u.shutterCol) {
             match.unitConfig.shutterCol = u.shutterCol;
             match.materials = match.materials || {};
@@ -13718,19 +15404,27 @@ body.role-employee #adminCreateEmpBox,
         cX += (offsetCount * 300);
       }
 
-      var newFurn = {
+      var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+        window.OrbixCore.isWallUnit(preset.category, preset.name) :
+        ((preset.category && preset.category.toLowerCase().indexOf('wall') !== -1) ||
+         (preset.name && preset.name.toLowerCase().indexOf('wall') !== -1));
+      var initElev = (preset.elevation !== undefined && preset.elevation !== null) ?
+        preset.elevation : (isWall ? 1500 : 0);
+
+      var newFurn = Core.createFurniturePlacement({
         id: fId,
         name: preset.name || 'Modular Unit',
         category: preset.category || 'wardrobe',
         roomId: matchedRoomId,
-        pos: { x: cX, y: cY, z: 0 },
+        elevation: initElev,
+        pos: { x: cX, y: cY, z: initElev },
         rotY: 0,
-        dimensions: Object.assign({ W: 1200, H: 2100, D: 600 }, preset.dimensions || {}),
+        dimensions: Object.assign({ W: 1200, H: isWall ? 600 : 2100, D: isWall ? 350 : 600 }, preset.dimensions || {}),
         unitConfig: Object.assign({
-          shutters: 2,
+          shutters: isWall ? 2 : 2,
           handle: 'bar',
           dstyle: 'slab',
-          shelves: 3,
+          shelves: isWall ? 1 : 3,
           drawers: 0,
           carcass: 'Absolute White',
           shutterCol: 'Brazilian Horizontal Walnut'
@@ -13739,7 +15433,7 @@ body.role-employee #adminCreateEmpBox,
           shutter: { material: 'HDHMR_18mm', finish: 'Brazilian Horizontal Walnut' },
           carcass: { material: 'BWP_18mm', finish: 'Absolute White' }
         }, preset.materials || {})
-      };
+      });
 
       plan.furniture.push(newFurn);
       this.project.units_count = plan.furniture.length;
@@ -14142,71 +15836,88 @@ body.role-employee #adminCreateEmpBox,
     },
 
     COMMERCIAL_FIELDS: [
-      { key: 'transport', label: '1. Transport', isDeduction: false },
-      { key: 'designCharges', label: '2. Design charges', isDeduction: false },
-      { key: 'accessories', label: '3. Accessories', isDeduction: false },
-      { key: 'floorMat', label: '4. Floor protective mat', isDeduction: false },
-      { key: 'electrical', label: '5. Electrical', isDeduction: false },
-      { key: 'plumbing', label: '6. Plumbing', isDeduction: false },
-      { key: 'wallpaper', label: '7. Wallpaper', isDeduction: false },
-      { key: 'falseCeiling', label: '8. False ceiling', isDeduction: false },
-      { key: 'appliances', label: '9. Appliances', isDeduction: false },
-      { key: 'civilWorks', label: '10. Civil works', isDeduction: false },
-      { key: 'loadingUnloading', label: '11. Loading and unloading (material)', isDeduction: false },
-      { key: 'outstationTransport', label: '12. Out station transport charges', isDeduction: false },
-      { key: 'discount', label: '13. Discount', isDeduction: true },
-      { key: 'finalDiscount', label: '14. Final discount (check with sir)', isDeduction: true }
+      { key: 'additionalAccessories', label: 'Additional Accessories', type: 'amount', isDeduction: false },
+      { key: 'appliances', label: 'Appliances', type: 'amount', isDeduction: false },
+      { key: 'designCharges', label: 'Design charges & Handling Fee', type: 'percent', defaultPercent: 9, isDeduction: false },
+      { key: 'freightCharges', label: 'Freight Charges', type: 'percent', defaultPercent: 2.5, isDeduction: false },
+      { key: 'loadingUnloading', label: 'Loading and unloading (material)', type: 'info', infoText: 'Additional' },
+      { key: 'floorMat', label: 'Floor protective mat', type: 'info', infoText: 'Not Included in Quote' },
+      { key: 'civilWorks', label: 'Civil works', type: 'info', infoText: 'As per actuals' },
+      { key: 'electricalPlumbing', label: 'Electrical & Plumbing Works', type: 'info', infoText: 'Additional' },
+      { key: 'falseCeiling', label: 'False ceiling', type: 'info', infoText: 'Not Included' },
+      { key: 'wallpaper', label: 'Wallpaper', type: 'info', infoText: 'Complementary' },
+      { key: 'discount', label: 'Discount', type: 'percent', isDeduction: true },
+      { key: 'adp', label: 'ADP', type: 'percent', isDeduction: true }
     ],
 
     getCommercialCharges: function () {
       if (!this.project) return {};
       if (!this.project.commercialCharges) {
         this.project.commercialCharges = {
-          transport: 0,
-          designCharges: 0,
-          accessories: 0,
-          floorMat: 0,
-          electrical: 0,
-          plumbing: 0,
-          wallpaper: 0,
-          falseCeiling: 0,
+          additionalAccessories: 0,
           appliances: 0,
-          civilWorks: 0,
-          loadingUnloading: 0,
-          outstationTransport: 0,
-          discount: 0,
-          finalDiscount: 0,
+          designPercent: 9,
+          freightPercent: 2.5,
+          discountPercent: 0,
+          adpPercent: 0,
           gstPercent: 18
         };
       }
+      var c = this.project.commercialCharges;
+      if (c.accessories && !c.additionalAccessories) c.additionalAccessories = c.accessories;
+      if (c.discount && !c.discountPercent) c.discountPercent = c.discount;
+      if (c.designPercent === undefined) c.designPercent = 9;
+      if (c.freightPercent === undefined) c.freightPercent = 2.5;
+      if (c.discountPercent === undefined) c.discountPercent = 0;
+      if (c.adpPercent === undefined) c.adpPercent = 0;
+      if (c.gstPercent === undefined) c.gstPercent = 18;
       return this.project.commercialCharges;
     },
 
     computeCommercialSummary: function (woodworkSubtotal, commCharges) {
       var charges = commCharges || this.getCommercialCharges();
-      var additions = 0;
-      for (var i = 0; i < this.COMMERCIAL_FIELDS.length; i++) {
-        var f = this.COMMERCIAL_FIELDS[i];
-        var val = parseFloat(charges[f.key]) || 0;
-        if (!f.isDeduction) {
-          additions += val;
-        }
-      }
-      var disc = parseFloat(charges.discount) || 0;
-      var finalDisc = parseFloat(charges.finalDiscount) || 0;
-      var totalDeductions = disc + finalDisc;
+      var addAccessories = parseFloat(charges.additionalAccessories || charges.accessories) || 0;
+      var appliances = parseFloat(charges.appliances) || 0;
 
-      var netTaxable = Math.max(0, Math.round(woodworkSubtotal + additions - totalDeductions));
+      var designPercent = (charges.designPercent !== undefined && charges.designPercent !== null && charges.designPercent !== '') ? parseFloat(charges.designPercent) : 9;
+      if (isNaN(designPercent)) designPercent = 9;
+      var designAmount = Math.round(woodworkSubtotal * (designPercent / 100));
+
+      var freightPercent = (charges.freightPercent !== undefined && charges.freightPercent !== null && charges.freightPercent !== '') ? parseFloat(charges.freightPercent) : 2.5;
+      if (isNaN(freightPercent)) freightPercent = 2.5;
+      var freightAmount = Math.round(woodworkSubtotal * (freightPercent / 100));
+
+      var discountPercent = parseFloat(charges.discountPercent || charges.discount) || 0;
+      var discountAmount = Math.round(woodworkSubtotal * (discountPercent / 100));
+
+      var adpPercent = parseFloat(charges.adpPercent || charges.adp) || 0;
+      var adpAmount = Math.round(woodworkSubtotal * (adpPercent / 100));
+
+      var totalDeductions = discountAmount + adpAmount;
+      var grossAdditions = addAccessories + appliances + designAmount + freightAmount;
+
+      var netValue = Math.max(0, Math.round(woodworkSubtotal + grossAdditions - totalDeductions));
       var gstPercent = (charges.gstPercent !== undefined && charges.gstPercent !== null && charges.gstPercent !== '') ? parseFloat(charges.gstPercent) : 18;
       if (isNaN(gstPercent)) gstPercent = 18;
-      var gstAmount = Math.round(netTaxable * (gstPercent / 100));
-      var grandTotal = netTaxable + gstAmount;
+      var gstAmount = Math.round(netValue * (gstPercent / 100));
+      var grandTotal = netValue + gstAmount;
 
       return {
         woodworkSubtotal: Math.round(woodworkSubtotal),
-        additions: additions,
+        additionalAccessories: addAccessories,
+        appliances: appliances,
+        designPercent: designPercent,
+        designAmount: designAmount,
+        freightPercent: freightPercent,
+        freightAmount: freightAmount,
+        discountPercent: discountPercent,
+        discountAmount: discountAmount,
+        adpPercent: adpPercent,
+        adpAmount: adpAmount,
+        grossAdditions: grossAdditions,
         totalDeductions: totalDeductions,
-        netTaxable: netTaxable,
+        netValue: netValue,
+        netTaxable: netValue,
         gstPercent: gstPercent,
         gstAmount: gstAmount,
         grandTotal: grandTotal
@@ -14294,11 +16005,18 @@ body.role-employee #adminCreateEmpBox,
           '<div class="boq-room-grid">' +
           quote.allRoomsSummary.map(function (rs) {
             var isCardSelected = (!quote.isFiltered) || (self.selectedBOQRooms && self.selectedBOQRooms.indexOf(rs.id) !== -1);
+            var rsTier = rs.variant || (rateCard.roomTiers && rateCard.roomTiers[rs.id]) || currentTier;
             return '<div class="boq-room-stat-card' + (isCardSelected ? ' is-selected' : '') + '">' +
               '<div class="boq-room-stat-title">' + rs.name + '</div>' +
               '<div class="boq-room-stat-area">' + (rs.areaSqFt > 0 ? (Math.round(rs.areaSqFt) + ' sq ft (' + rs.areaSqM.toFixed(1) + ' m²)') : 'Modular Units Only') + '</div>' +
               '<div class="boq-room-stat-cost">₹ ' + Math.round(rs.roomSubtotal).toLocaleString('en-IN') + '.00</div>' +
               '<div class="boq-room-stat-items">' + rs.itemCount + ' unit' + (rs.itemCount === 1 ? '' : 's') + ' · ' + rs.percentShare + '% share</div>' +
+              '<div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0 4px 0;gap:4px;">' +
+              '<span style="font-size:10px;color:#64748B;font-weight:700;text-transform:uppercase;">Variant:</span>' +
+              '<select class="room-tier-select no-print" data-room-id="' + rs.id + '" style="font-size:11px;font-weight:700;padding:2px 4px;border-radius:4px;border:1px solid #CBD5E1;background:#FFFFFF;color:#1E3A8A;cursor:pointer;flex:1;">' +
+              tiers.map(function (t) { return '<option value="' + t + '"' + (rsTier === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') +
+              '</select>' +
+              '</div>' +
               '<div class="boq-room-bar"><div class="boq-room-bar-fill" style="width:' + Math.min(100, Math.max(5, rs.percentShare)) + '%"></div></div>' +
               '<button class="btn small boq-room-select-btn" data-room="' + rs.id + '" style="margin-top:6px;width:100%;font-size:11px;padding:3px 6px;">' +
               (isCardSelected && quote.isFiltered ? '✓ Active in Quote' : 'Filter this Room') +
@@ -14310,7 +16028,7 @@ body.role-employee #adminCreateEmpBox,
 
         // ── Finish Tier Selector Bar ──
         '<div class="boq-tier-bar no-print">' +
-        '<div class="boq-tier-label"><span class="tier-icon">🏷️</span> <b>Price Variant & Finish Tier:</b></div>' +
+        '<div class="boq-tier-label"><span class="tier-icon">🏷️</span> <b>Global Price Variant &amp; Finish Tier:</b></div>' +
         '<div class="tier-pill-group">';
 
       for (var t = 0; t < tiers.length; t++) {
@@ -14359,8 +16077,21 @@ body.role-employee #adminCreateEmpBox,
       html += '</tbody></table></div>' +
         '</div>' +
 
-        '<div class="quote-sheet-single">' +
-        '<div class="quote-header-split">' +
+        '<div class="quote-sheet-single">';
+
+      // Format clean Quotation Date
+      var rawDate = this.project.meta && this.project.meta.dateCreated;
+      var formattedDate = '28 Oct, 2026';
+      if (rawDate) {
+        var dObj = new Date(rawDate);
+        if (!isNaN(dObj.getTime())) {
+          formattedDate = dObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        } else {
+          formattedDate = rawDate;
+        }
+      }
+
+      html += '<div class="quote-header-split">' +
         '<div class="qh-left">' +
         '<div class="qh-row"><span class="qh-lbl">Project ID</span><span class="qh-val">' + (this.project.meta.quoteId || '5754') + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Customer</span><span class="qh-val">' + (this.project.meta.clientName || 'Dhanesh') + '</span></div>' +
@@ -14369,8 +16100,9 @@ body.role-employee #adminCreateEmpBox,
         '<div class="qh-row"><span class="qh-lbl">Scope</span><span class="qh-val">' + (quote.isFiltered ? ('Selected Rooms: ' + quote.furnitureItems.map(function (it) { return it.roomName; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) : (this.project.meta.scope || 'Complete Interior Design')) + '</span></div>' +
         '</div>' +
         '<div class="qh-right">' +
-        '<div class="qh-row"><span class="qh-lbl">Quotation Date</span><span class="qh-val">' + (this.project.meta.dateCreated || '28 Oct, 2026') + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Quotation Date</span><span class="qh-val">' + formattedDate + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Price Expiry Date</span><span class="qh-val">' + (this.project.meta.validUntil || '27 Nov, 2026') + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Price Variant</span><span class="qh-val bold" id="boqHeaderVariant" style="color:#2563EB;font-weight:700;">' + currentTier + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Total No. of Items</span><span class="qh-val">' + quote.furnitureItems.length + (quote.isFiltered ? ' (Filtered Scope)' : '') + '</span></div>' +
         '<div class="qh-row total"><span class="qh-lbl">Total Amount</span><span class="qh-val" id="boqHeaderTotalAmount">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</span></div>' +
         '</div>' +
@@ -14425,12 +16157,22 @@ body.role-employee #adminCreateEmpBox,
 
           var rFound = (self.project.plan.rooms || []).filter(function (rm) { return rm.name === rName || rm.id === (rItems[0] && rItems[0].roomId); })[0];
           var rAreaStr = rFound && rFound.areaSqFt > 0 ? (Math.round(rFound.areaSqFt) + ' sq ft · ' + rFound.areaSqM.toFixed(1) + ' m²') : '';
+          var rRoomId = (rFound ? rFound.id : (rItems[0] && rItems[0].roomId) || '_general');
+          var rActiveTier = (rateCard.roomTiers && rateCard.roomTiers[rRoomId]) || (rFound && rFound.variant) || currentTier;
 
           html += '<tr class="room-sec-row"><td colspan="11">' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-            '<div><span style="font-size:15px;margin-right:6px">🏠</span><b>Room: ' + rName + '</b>' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
+            '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+            '<span style="font-size:15px">🏠</span><b>Room: ' + rName + '</b>' +
             (rAreaStr ? (' &nbsp;<span style="color:#64748B;font-size:11px">(' + rAreaStr + ')</span>') : '') +
-            ' &nbsp;·&nbsp; <span style="color:#2563EB;font-weight:600">' + rItems.length + ' Unit' + (rItems.length === 1 ? '' : 's') + '</span></div>' +
+            ' &nbsp;·&nbsp; <span style="color:#2563EB;font-weight:600">' + rItems.length + ' Unit' + (rItems.length === 1 ? '' : 's') + '</span>' +
+            ' &nbsp;·&nbsp; <span style="font-size:12px;color:#475569;font-weight:600;">Variant:</span>' +
+            '<select class="room-tier-select no-print" data-room-id="' + rRoomId + '" style="font-size:11px;font-weight:700;padding:2px 6px;border-radius:4px;border:1px solid #CBD5E1;background:#FFFFFF;color:#1E3A8A;cursor:pointer;">' +
+            tiers.map(function (t) {
+              return '<option value="' + t + '"' + (rActiveTier === t ? ' selected' : '') + '>' + t + '</option>';
+            }).join('') +
+            '</select>' +
+            '</div>' +
             '<div>Room Subtotal: <b style="font-family:var(--mono);color:#1E3A8A">₹ ' + Math.round(rSubtotal).toLocaleString('en-IN') + '.00</b></div>' +
             '</div></td></tr>';
 
@@ -14561,47 +16303,124 @@ body.role-employee #adminCreateEmpBox,
 
       html += '<tr class="sec-bar-row"><td colspan="11"><b>Commercial Estimate Summary (' + (quote.isFiltered ? 'Active Scope' : 'Entire Home') + ')</b></td></tr>' +
         '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>';
+        '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>' +
 
-      for (var ci = 0; ci < self.COMMERCIAL_FIELDS.length; ci++) {
-        var cf = self.COMMERCIAL_FIELDS[ci];
-        var rawVal = commCharges[cf.key];
-        var displayVal = (rawVal !== undefined && rawVal !== null && rawVal !== 0 && rawVal !== '0') ? rawVal : '';
-
-        html += '<tr class="comm-charge-row">' +
-          '<td colspan="4"></td>' +
-          '<td colspan="4" class="bold' + (cf.isDeduction ? ' text-red' : '') + '">' + cf.label + '</td>' +
-          '<td colspan="3" style="text-align:right;white-space:nowrap">' +
-          '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
-          '<span style="font-size:11px;color:' + (cf.isDeduction ? '#DC2626' : '#64748B') + ';font-weight:600">' + (cf.isDeduction ? '(-) ₹' : '₹') + '</span>' +
-          '<input type="number" min="0" step="any" class="comm-input' + (cf.isDeduction ? ' is-discount' : '') + '" data-key="' + cf.key + '" value="' + displayVal + '" placeholder="0">' +
-          '<span style="font-size:11px;color:#94A3B8">.00</span>' +
-          '</div>' +
-          '</td>' +
-          '</tr>';
-      }
-
-      var gstRateVal = (commCharges.gstPercent !== undefined && commCharges.gstPercent !== null) ? commCharges.gstPercent : 18;
-      html += '<tr class="comm-charge-row" style="background:#F8FAFC">' +
+        // Additional Accessories (enter amount)
+        '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">15. GST</td>' +
+        '<td colspan="4" class="bold">Additional Accessories</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
+        '<input type="number" min="0" step="any" class="comm-input" data-key="additionalAccessories" value="' + (commCharges.additionalAccessories || '') + '" placeholder="enter amount">' +
+        '<span style="font-size:11px;color:#94A3B8">.00</span>' +
+        '</div></td></tr>' +
+
+        // Appliances (enter amount)
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">Appliances</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
+        '<input type="number" min="0" step="any" class="comm-input" data-key="appliances" value="' + (commCharges.appliances || '') + '" placeholder="enter amount">' +
+        '<span style="font-size:11px;color:#94A3B8">.00</span>' +
+        '</div></td></tr>' +
+
+        // Design charges & Handling Fee (9%)
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">Design charges &amp; Handling Fee</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="designPercent" value="' + commSummary.designPercent + '" style="width:55px" placeholder="9">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
+        '<span id="commDesignAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.designAmount.toLocaleString('en-IN') + '.00</span>' +
+        '</div></td></tr>' +
+
+        // Freight Charges (2.50%)
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">Freight Charges</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="freightPercent" value="' + commSummary.freightPercent + '" style="width:55px" placeholder="2.5">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
+        '<span id="commFreightAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.freightAmount.toLocaleString('en-IN') + '.00</span>' +
+        '</div></td></tr>' +
+
+        // Informational rows
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">Loading and unloading (material)</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Additional</span></td></tr>' +
+
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">Floor protective mat</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Not Included in Quote</span></td></tr>' +
+
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">Civil works</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">As per actuals</span></td></tr>' +
+
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">Electrical &amp; Plumbing Works</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Additional</span></td></tr>' +
+
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">False ceiling</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Not Included</span></td></tr>' +
+
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">Wallpaper</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-success">Complementary</span></td></tr>' +
+
+        // Discount (enter %)
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold text-red">Discount</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
+        '<span style="font-size:11px;color:#DC2626;font-weight:600">(-)</span>' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input is-discount" data-key="discountPercent" value="' + (commSummary.discountPercent || '') + '" style="width:55px" placeholder="enter %">' +
+        '<span style="font-size:11px;color:#DC2626;font-weight:600">% &nbsp;=&nbsp; (-) ₹</span>' +
+        '<span id="commDiscountAmount" class="bold text-red" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.discountAmount.toLocaleString('en-IN') + '.00</span>' +
+        '</div></td></tr>' +
+
+        // ADP (enter %)
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold text-red">ADP</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
+        '<span style="font-size:11px;color:#DC2626;font-weight:600">(-)</span>' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input is-discount" data-key="adpPercent" value="' + (commSummary.adpPercent || '') + '" style="width:55px" placeholder="enter %">' +
+        '<span style="font-size:11px;color:#DC2626;font-weight:600">% &nbsp;=&nbsp; (-) ₹</span>' +
+        '<span id="commAdpAmount" class="bold text-red" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.adpAmount.toLocaleString('en-IN') + '.00</span>' +
+        '</div></td></tr>' +
+
+        // NET VALUE (renamed from NET TAXABLE VALUE)
+        '<tr class="taxable-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold" style="font-size:12px">NET VALUE</td>' +
+        '<td colspan="3" class="c-num bold" id="commNetTaxable" style="font-size:13px;color:#1E3A8A">₹ ' + commSummary.netValue.toLocaleString('en-IN') + '.00</td>' +
+        '</tr>' +
+
+        // GST (Additional)
+        '<tr class="comm-charge-row" style="background:#F8FAFC">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">GST <span style="font-size:11px;color:#64748B;font-weight:normal;">(Additional)</span></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
         '<span style="font-size:11px;color:#64748B">Rate:</span>' +
-        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="gstPercent" value="' + gstRateVal + '" style="width:65px" placeholder="18">' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="gstPercent" value="' + commSummary.gstPercent + '" style="width:55px" placeholder="18">' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
         '<span id="commGstAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.gstAmount.toLocaleString('en-IN') + '.00</span>' +
-        '</div>' +
-        '</td>' +
-        '</tr>' +
-        '<tr class="taxable-row">' +
-        '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold" style="font-size:12px">NET TAXABLE VALUE</td>' +
-        '<td colspan="3" class="c-num bold" id="commNetTaxable" style="font-size:13px;color:#1E3A8A">₹ ' + commSummary.netTaxable.toLocaleString('en-IN') + '.00</td>' +
-        '</tr>' +
+        '</div></td></tr>' +
+
+        // Grand Total (Give total)
         '<tr class="grand-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold grand-lbl" style="font-size:13px">FINAL ALL-INCLUSIVE QUOTE</td>' +
+        '<td colspan="4" class="bold grand-lbl" style="font-size:13px">GRAND TOTAL</td>' +
         '<td colspan="3" class="c-num bold grand-val" id="commFinalTotal" style="font-size:14px">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
         '</tbody></table></div>';
@@ -14641,8 +16460,20 @@ body.role-employee #adminCreateEmpBox,
 
           var summary = self.computeCommercialSummary(quote.subtotalWoodwork, self.project.commercialCharges);
 
+          var designAmtEl = document.getElementById('commDesignAmount');
+          if (designAmtEl) designAmtEl.textContent = summary.designAmount.toLocaleString('en-IN') + '.00';
+
+          var freightAmtEl = document.getElementById('commFreightAmount');
+          if (freightAmtEl) freightAmtEl.textContent = summary.freightAmount.toLocaleString('en-IN') + '.00';
+
+          var discAmtEl = document.getElementById('commDiscountAmount');
+          if (discAmtEl) discAmtEl.textContent = summary.discountAmount.toLocaleString('en-IN') + '.00';
+
+          var adpAmtEl = document.getElementById('commAdpAmount');
+          if (adpAmtEl) adpAmtEl.textContent = summary.adpAmount.toLocaleString('en-IN') + '.00';
+
           var netEl = document.getElementById('commNetTaxable');
-          if (netEl) netEl.textContent = '₹ ' + summary.netTaxable.toLocaleString('en-IN') + '.00';
+          if (netEl) netEl.textContent = '₹ ' + summary.netValue.toLocaleString('en-IN') + '.00';
 
           var gstAmtEl = document.getElementById('commGstAmount');
           if (gstAmtEl) gstAmtEl.textContent = summary.gstAmount.toLocaleString('en-IN') + '.00';
@@ -14725,12 +16556,43 @@ body.role-employee #adminCreateEmpBox,
         });
       }
 
-      // Tier selector button clicks
+      // Tier selector button clicks (Global Working: synchronizes all rooms)
       var pills = boqEl.querySelectorAll('.tier-pill, .matrix-th-btn');
       pills.forEach(function (pill) {
         pill.addEventListener('click', function () {
           var t = pill.getAttribute('data-tier') || 'PRICE 1';
+          self.project.rateCard = self.project.rateCard || Core.DEFAULT_RATE_CARD;
           self.project.rateCard.selectedTier = t;
+          self.project.rateCard.roomTiers = self.project.rateCard.roomTiers || {};
+          var pRooms = (self.project.plan && self.project.plan.rooms) || [];
+          for (var pr = 0; pr < pRooms.length; pr++) {
+            self.project.rateCard.roomTiers[pRooms[pr].id] = t;
+            pRooms[pr].variant = t;
+          }
+          self.project.rateCard.roomTiers['_general'] = t;
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          self.updateUI();
+        });
+      });
+
+      // Room-wise tier dropdown change
+      var roomTierSelects = boqEl.querySelectorAll('.room-tier-select');
+      roomTierSelects.forEach(function (sel) {
+        sel.addEventListener('change', function (e) {
+          e.stopPropagation();
+          var rId = sel.getAttribute('data-room-id');
+          var chosenTier = sel.value;
+          self.project.rateCard = self.project.rateCard || Core.DEFAULT_RATE_CARD;
+          self.project.rateCard.roomTiers = self.project.rateCard.roomTiers || {};
+          self.project.rateCard.roomTiers[rId] = chosenTier;
+          var pRooms = (self.project.plan && self.project.plan.rooms) || [];
+          for (var pr = 0; pr < pRooms.length; pr++) {
+            if (pRooms[pr].id === rId) {
+              pRooms[pr].variant = chosenTier;
+              break;
+            }
+          }
           self.saveToLocalStorage();
           self.renderBOQ();
           self.updateUI();
@@ -14946,16 +16808,21 @@ body.role-employee #adminCreateEmpBox,
       rows.push(['COMMERCIAL ESTIMATE SUMMARY (' + (quote.isFiltered ? 'Active Scope' : 'Entire Home') + ')']);
       rows.push(['', '', 'Modular Woodwork Subtotal', '', '', '', '', '', '', '', '', '', '', '', comm.woodworkSubtotal]);
       rows.push(['', '', 'Hardware & Functional Fittings Subtotal (Included)', '', '', '', '', '', '', '', '', '', '', '', 0]);
-
-      for (var ci = 0; ci < this.COMMERCIAL_FIELDS.length; ci++) {
-        var cf = this.COMMERCIAL_FIELDS[ci];
-        var cfVal = parseFloat(commCharges[cf.key]) || 0;
-        rows.push(['', '', cf.label, '', '', '', '', '', '', '', '', '', '', '', (cf.isDeduction ? -cfVal : cfVal)]);
-      }
-
-      rows.push(['', '', 'NET TAXABLE VALUE', '', '', '', '', '', '', '', '', '', '', '', comm.netTaxable]);
-      rows.push(['', '', '15. GST @ ' + comm.gstPercent + '% (CGST + SGST)', '', '', '', '', '', '', '', '', '', '', '', comm.gstAmount]);
-      rows.push(['', '', 'FINAL ALL-INCLUSIVE ESTIMATE (INR)', '', '', '', '', '', '', '', '', '', '', '', comm.grandTotal]);
+      rows.push(['', '', 'Additional Accessories', '', '', '', '', '', '', '', '', '', '', '', comm.additionalAccessories]);
+      rows.push(['', '', 'Appliances', '', '', '', '', '', '', '', '', '', '', '', comm.appliances]);
+      rows.push(['', '', 'Design charges & Handling Fee (' + comm.designPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', comm.designAmount]);
+      rows.push(['', '', 'Freight Charges (' + comm.freightPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', comm.freightAmount]);
+      rows.push(['', '', 'Loading and unloading (material)', '', '', '', '', '', '', '', '', '', '', '', 'Additional']);
+      rows.push(['', '', 'Floor protective mat', '', '', '', '', '', '', '', '', '', '', '', 'Not Included in Quote']);
+      rows.push(['', '', 'Civil works', '', '', '', '', '', '', '', '', '', '', '', 'As per actuals']);
+      rows.push(['', '', 'Electrical & Plumbing Works', '', '', '', '', '', '', '', '', '', '', '', 'Additional']);
+      rows.push(['', '', 'False ceiling', '', '', '', '', '', '', '', '', '', '', '', 'Not Included']);
+      rows.push(['', '', 'Wallpaper', '', '', '', '', '', '', '', '', '', '', '', 'Complementary']);
+      rows.push(['', '', 'Discount (' + comm.discountPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', -comm.discountAmount]);
+      rows.push(['', '', 'ADP (' + comm.adpPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', -comm.adpAmount]);
+      rows.push(['', '', 'NET VALUE', '', '', '', '', '', '', '', '', '', '', '', comm.netValue]);
+      rows.push(['', '', 'GST @ ' + comm.gstPercent + '% (Additional)', '', '', '', '', '', '', '', '', '', '', '', comm.gstAmount]);
+      rows.push(['', '', 'GRAND TOTAL (INR)', '', '', '', '', '', '', '', '', '', '', '', comm.grandTotal]);
 
       var blob = this.buildXLSXBlob(rows);
       var filename = 'Residential-Interior-Estimation-' + (meta.quoteId || 'ORB-2026-089') + '.xlsx';
@@ -17310,6 +19177,29 @@ var GL=(function(){
       if(s.kind==="slide" && !s.drawer && !s.primary) { doors[id].req=0; continue; }
       doors[id].req=allOpen?1:0;
     }
+
+    // Also toggle all shutters and drawers in placed 3D furniture (OrbixHome3D)
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    if(plan && plan.furniture && plan.furniture.length > 0){
+      plan.furniture.forEach(function(fn){
+        var numShutters = (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? parseInt(fn.unitConfig.shutters) : ((fn.dimensions && fn.dimensions.W > 1200) ? 3 : 2);
+        var numDrawers = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? parseInt(fn.unitConfig.drawers) : 0;
+        fn.shutterStates = fn.shutterStates || [];
+        for(var s = 0; s < numShutters; s++) fn.shutterStates[s] = allOpen;
+        fn.drawerStates = fn.drawerStates || [];
+        for(var d = 0; d < numDrawers; d++) fn.drawerStates[d] = allOpen;
+      });
+      if(window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function'){
+        window.OrbixUI.render3DHome(true);
+      }
+      if(window.OrbixUI && window.OrbixUI.editor && window.OrbixUI.editor.selected && typeof window.OrbixUI.renderInspector === 'function'){
+        window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
+      }
+      if(window.OrbixUI && typeof window.OrbixUI.saveToLocalStorage === 'function'){
+        window.OrbixUI.saveToLocalStorage();
+      }
+    }
+
     resolve(); kick(); return allOpen;
   }
   var ray=null, ndc=null, selected=null, selectedMats=null;
@@ -17412,13 +19302,83 @@ var GL=(function(){
     var r=stage.getBoundingClientRect();
     ndc.set(((clientX-r.left)/r.width)*2-1, -((clientY-r.top)/r.height)*2+1);
     ray.setFromCamera(ndc,camera);
-    var hits=ray.intersectObjects(root.children,true);
-    for(var i=0;i<hits.length;i++){
-      var o=hits[i].object;
-      while(o && !o.userData.door) o=o.parent;
-      if(o){ toggleDoor(o.userData.door); return true; }
-      if(hits[i].object.userData.role && hits[i].object.userData.role!=="reveal") return false;
+
+    // 1. Check single unit preview in root (if active)
+    if(root && root.children.length > 0){
+      var hits=ray.intersectObjects(root.children,true);
+      for(var i=0;i<hits.length;i++){
+        var o=hits[i].object;
+        while(o && !o.userData.door) o=o.parent;
+        if(o){ toggleDoor(o.userData.door); return true; }
+        if(hits[i].object.userData.role && hits[i].object.userData.role!=="reveal") return false;
+      }
     }
+
+    // 2. Check placed modular units in 3D Home (OrbixHome3D)
+    var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+    if(homeObj && homeObj.children && homeObj.children.length > 0){
+      var homeHits = ray.intersectObjects(homeObj.children, true);
+      for(var j=0; j<homeHits.length; j++){
+        var ho = homeHits[j].object;
+        var part = ho;
+        while(part && part !== homeObj){
+          if(part.userData && (part.userData.isShutter || part.userData.isDrawer)){
+            break;
+          }
+          part = part.parent;
+        }
+
+        if(part && part.userData && part.userData.furnitureId){
+          var fId = part.userData.furnitureId;
+          var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+          var fn = plan && plan.furniture && plan.furniture.find(function(it){ return it.id === fId; });
+
+          if(fn){
+            if(part.userData.isShutter){
+              var sIdx = part.userData.shutterIdx !== undefined ? part.userData.shutterIdx : 0;
+              fn.shutterStates = fn.shutterStates || [];
+              fn.shutterStates[sIdx] = !fn.shutterStates[sIdx];
+              var isOpen = fn.shutterStates[sIdx];
+              var hingeGroup = part.userData.hingeGroup || (part.parent && part.parent.userData && part.parent.userData.isShutterHinge ? part.parent : null);
+              if(hingeGroup){
+                var hingeLeft = (sIdx % 2 === 0);
+                hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.6) : 0;
+                render();
+              } else if(window.OrbixUI && window.OrbixUI.render3DHome){
+                window.OrbixUI.render3DHome(true);
+              }
+              if(window.OrbixUI && window.OrbixUI.editor){
+                window.OrbixUI.editor.selected = [{ type: 'furniture', id: fId }];
+                if(window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
+              }
+              if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+              if(window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+              return true;
+            } else if(part.userData.isDrawer){
+              var dIdx = part.userData.drawerIdx !== undefined ? part.userData.drawerIdx : 0;
+              fn.drawerStates = fn.drawerStates || [];
+              fn.drawerStates[dIdx] = !fn.drawerStates[dIdx];
+              var isDOpen = fn.drawerStates[dIdx];
+              var drawerGroup = part.userData.drawerGroup || (part.parent && part.parent.userData && part.parent.userData.isDrawerGroup ? part.parent : null);
+              if(drawerGroup){
+                drawerGroup.position.z = isDOpen ? 350 : 0;
+                render();
+              } else if(window.OrbixUI && window.OrbixUI.render3DHome){
+                window.OrbixUI.render3DHome(true);
+              }
+              if(window.OrbixUI && window.OrbixUI.editor){
+                window.OrbixUI.editor.selected = [{ type: 'furniture', id: fId }];
+                if(window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
+              }
+              if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+              if(window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+              return true;
+            }
+          }
+        }
+      }
+    }
+
     return false;
   }
   function pickFurniture(clientX,clientY){
@@ -18129,24 +20089,30 @@ function camApply(){
 (function(){
   var pts={}, lastD=0;
   var downAt=null, hDrag=null, furnDrag=null;
+  var studioCamMode = 'rotate'; // 'rotate' (orbit) | 'pan' (move centre) | 'interact' (move furniture)
 
   stage.addEventListener("contextmenu", function(e){ e.preventDefault(); });
 
-  // Hover feedback: show 'pointer' cursor over 3D furniture units
+  // Hover feedback: show 'pointer' cursor over 3D furniture units when in interact mode
   stage.addEventListener("pointermove", function(e){
     if(furnDrag || hDrag || Object.keys(pts).length > 0) return;
-    if(GL.ok && GL.pickFurniture){
+    if(studioCamMode === 'interact' && GL.ok && GL.pickFurniture){
       var fHit = GL.pickFurniture(e.clientX, e.clientY);
       stage.style.cursor = fHit ? "pointer" : "";
+    } else if(studioCamMode === 'pan'){
+      stage.style.cursor = "move";
+    } else {
+      stage.style.cursor = "";
     }
   });
 
-  // Capture phase: Handle furniture and room resize handles first
+  // Capture phase: Handle furniture only when in interact mode, or room resize handles
   stage.addEventListener("pointerdown", function(e){
     downAt={ x: e.clientX, y: e.clientY, t: Date.now() };
 
-    // 1. Check if clicking on a 3D furniture unit to drag or select
-    if(GL.ok && GL.pickFurniture && e.button === 0){
+    // 1. Only drag furniture if explicitly in 'interact' mode!
+    // In 'rotate' or 'pan' mode, clicking/dragging operates strictly on camera!
+    if(studioCamMode === 'interact' && GL.ok && GL.pickFurniture && e.button === 0){
       var fHit = GL.pickFurniture(e.clientX, e.clientY);
       if(fHit){
         var homeObj = (GL.getScene && GL.getScene()) ? GL.getScene().getObjectByName('OrbixHome3D') : null;
@@ -18329,7 +20295,7 @@ function camApply(){
     } else {
       var dx = e.clientX - prev.clientX;
       var dy = e.clientY - prev.clientY;
-      if(prev.button === 2 || prev.button === 1 || e.shiftKey){
+      if(prev.button === 2 || prev.button === 1 || e.shiftKey || studioCamMode === 'pan'){
         // Pan camera target across floor plane
         var yawRad = cam.yaw * Math.PI / 180;
         var cosY = Math.cos(yawRad), sinY = Math.sin(yawRad);
@@ -18364,6 +20330,33 @@ function camApply(){
     cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom - e.deltaY * 0.0016));
     camApply();
   }, { passive: false });
+
+  // Wire 3D Camera Controls: Rotate View, Move Centre, Move Unit, Re-Centre
+  var btnCamRot = document.getElementById('camRotateModeBtn');
+  var btnCamPan = document.getElementById('camPanModeBtn');
+  var btnCamInt = document.getElementById('camInteractModeBtn');
+  var btnCamReset = document.getElementById('camResetCentreBtn');
+
+  function setStudioCamMode(mode){
+    studioCamMode = mode;
+    if(btnCamRot) btnCamRot.classList.toggle('is-on', mode === 'rotate');
+    if(btnCamPan) btnCamPan.classList.toggle('is-on', mode === 'pan');
+    if(btnCamInt) btnCamInt.classList.toggle('is-on', mode === 'interact');
+    stage.style.cursor = mode === 'pan' ? 'move' : '';
+  }
+
+  if(btnCamRot) btnCamRot.addEventListener('click', function(){ setStudioCamMode('rotate'); });
+  if(btnCamPan) btnCamPan.addEventListener('click', function(){ setStudioCamMode('pan'); });
+  if(btnCamInt) btnCamInt.addEventListener('click', function(){ setStudioCamMode('interact'); });
+  if(btnCamReset) btnCamReset.addEventListener('click', function(){
+    cam.yaw = 35;
+    cam.pitch = 28;
+    cam.zoom = 0;
+    var tgt = GL.getTarget ? GL.getTarget() : null;
+    if(tgt){ tgt.x = 0; tgt.z = 0; }
+    camApply();
+    if(GL.ok) GL.settle();
+  });
 })();
 
 /* ══════════ RAIL ══════════ */
@@ -18447,15 +20440,34 @@ function renderRail(){
         }
       }
       else if(plan.walls&&plan.walls.length>0){ cX=plan.walls[0].start.x+800; cY=plan.walls[0].start.y+800; }
-      plan.furniture.push({
-        id:fId,
-        name:nu.label,
-        category:nu.ctype||'wardrobe',
-        pos:{x:cX,y:cY},
-        rotY:0,
-        dimensions:{W:nu.W||1200,H:nu.H||2100,D:nu.D||600},
-        unitConfig:{shutters:nu.shutters||2,handle:nu.handle||'bar'}
-      });
+      var isW = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+        window.OrbixCore.isWallUnit(nu.ctype, nu.label) :
+        (nu.ctype === 'kwall' || (nu.label && nu.label.toLowerCase().indexOf('wall') !== -1));
+      var uElev = nu.elev !== undefined ? nu.elev : (isW ? 1500 : 0);
+      nu.elev = uElev;
+      if(window.OrbixCore && window.OrbixCore.createFurniturePlacement){
+        plan.furniture.push(window.OrbixCore.createFurniturePlacement({
+          id: fId,
+          name: nu.label,
+          category: nu.ctype || 'wardrobe',
+          elevation: uElev,
+          pos: { x: cX, y: cY, z: uElev },
+          rotY: 0,
+          dimensions: { W: nu.W || 1200, H: nu.H || (isW ? 600 : 2100), D: nu.D || (isW ? 350 : 600) },
+          unitConfig: { shutters: nu.shutters || 2, handle: nu.handle || 'bar', drawers: nu.drawers || 0 }
+        }));
+      } else {
+        plan.furniture.push({
+          id: fId,
+          name: nu.label,
+          category: nu.ctype || 'wardrobe',
+          elevation: uElev,
+          pos: { x: cX, y: cY, z: uElev },
+          rotY: 0,
+          dimensions: { W: nu.W || 1200, H: nu.H || (isW ? 600 : 2100), D: nu.D || (isW ? 350 : 600) },
+          unitConfig: { shutters: nu.shutters || 2, handle: nu.handle || 'bar', drawers: nu.drawers || 0 }
+        });
+      }
       if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
       if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
       if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
@@ -18777,17 +20789,35 @@ function renderRail(){
     var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
     if(plan){
       plan.furniture=plan.furniture||[];
-      var orig=u._furnId && plan.furniture.find(function(it){ return it.id===u._furnId; });
-      var nPos = orig ? {x: orig.pos.x + (c.W||600) + 100, y: orig.pos.y} : {x: 2000, y: 2000};
-      plan.furniture.push({
-        id: newId,
-        name: c.label,
-        category: c.ctype || 'wardrobe',
-        pos: nPos,
-        rotY: orig ? orig.rotY : 0,
-        dimensions: {W: c.W||1200, H: c.H||2100, D: c.D||600},
-        unitConfig: {shutters: c.shutters||2, handle: c.handle||'bar'}
-      });
+      var isW = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+        window.OrbixCore.isWallUnit(c.ctype, c.label) :
+        (c.ctype === 'kwall' || (c.label && c.label.toLowerCase().indexOf('wall') !== -1));
+      var uElev = orig ? ((orig.elevation !== undefined && orig.elevation !== null) ? orig.elevation : (orig.pos ? orig.pos.z : 0)) : (c.elev !== undefined ? c.elev : (isW ? 1500 : 0));
+      c.elev = uElev;
+      var nPos = orig ? { x: orig.pos.x + (c.W || 600) + 100, y: orig.pos.y, z: uElev } : { x: 2000, y: 2000, z: uElev };
+      if(window.OrbixCore && window.OrbixCore.createFurniturePlacement){
+        plan.furniture.push(window.OrbixCore.createFurniturePlacement({
+          id: newId,
+          name: c.label,
+          category: c.ctype || 'wardrobe',
+          elevation: uElev,
+          pos: nPos,
+          rotY: orig ? orig.rotY : 0,
+          dimensions: { W: c.W || 1200, H: c.H || 2100, D: c.D || 600 },
+          unitConfig: { shutters: c.shutters || 2, handle: c.handle || 'bar', drawers: c.drawers || 0 }
+        }));
+      } else {
+        plan.furniture.push({
+          id: newId,
+          name: c.label,
+          category: c.ctype || 'wardrobe',
+          elevation: uElev,
+          pos: nPos,
+          rotY: orig ? orig.rotY : 0,
+          dimensions: { W: c.W || 1200, H: c.H || 2100, D: c.D || 600 },
+          unitConfig: { shutters: c.shutters || 2, handle: c.handle || 'bar', drawers: c.drawers || 0 }
+        });
+      }
       if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
       if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
       if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();

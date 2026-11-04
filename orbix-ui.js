@@ -27,6 +27,8 @@
           self.saveToLocalStorage();
           self.updateUI();
           self.renderBOQ();
+          if (self.syncProjectUnitsTo3DStudio) self.syncProjectUnitsTo3DStudio();
+          if (self.render3DHome) self.render3DHome(true);
           if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
             window.OrbixProjects.saveActiveProject({
               plan: proj,
@@ -677,14 +679,47 @@
           '<span style="font-size:11px;color:#64748B;">Current: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
+          '<div style="margin:10px 0;padding:8px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">' +
+          '<div style="font-size:11px;font-weight:700;color:#1e293b;margin-bottom:6px;">🔒 Joint Connection Locks</div>' +
+          '<div style="display:flex;gap:8px;">' +
+          '<button class="btn small full" id="inspWallLockA" style="font-size:11px;">' + (w.startLocked !== false ? '🔒 Corner A Locked' : '🔓 Corner A Unlocked') + '</button>' +
+          '<button class="btn small full" id="inspWallLockB" style="font-size:11px;">' + (w.endLocked !== false ? '🔒 Corner B Locked' : '🔓 Corner B Unlocked') + '</button>' +
+          '</div></div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
+
+        var btnLockA = document.getElementById('inspWallLockA');
+        if (btnLockA) {
+          btnLockA.addEventListener('click', function () {
+            w.startLocked = (w.startLocked === false ? true : false);
+            self.editor.pushHistory('Toggle Corner A Lock');
+            self.editor.render();
+            self.renderInspector(self.editor.selected);
+          });
+        }
+        var btnLockB = document.getElementById('inspWallLockB');
+        if (btnLockB) {
+          btnLockB.addEventListener('click', function () {
+            w.endLocked = (w.endLocked === false ? true : false);
+            self.editor.pushHistory('Toggle Corner B Lock');
+            self.editor.render();
+            self.renderInspector(self.editor.selected);
+          });
+        }
 
         document.getElementById('inspWallLen').addEventListener('change', function (e) {
           var targetL = self.editor.parseDimInput(e.target.value);
           if (targetL > 100) {
             var dir = Core.wallDirection(w);
-            w.end.x = w.start.x + dir.x * targetL;
-            w.end.y = w.start.y + dir.y * targetL;
+            if (w.startLocked === false && w.endLocked !== false) {
+              // Corner B is locked, Corner A released: resize wall anchored from Corner B
+              w.start.x = w.end.x - dir.x * targetL;
+              w.start.y = w.end.y - dir.y * targetL;
+            } else {
+              // Corner A is locked (or both locked): resize wall anchored from Corner A
+              w.end.x = w.start.x + dir.x * targetL;
+              w.end.y = w.start.y + dir.y * targetL;
+            }
+            Core.detectRooms(self.editor.project);
             self.editor.pushHistory('Resize Wall');
             self.editor.render();
             self.renderInspector(self.editor.selected);
@@ -719,12 +754,24 @@
           op.offset = Math.max(minOff, Math.min(maxOff, op.offset));
         }
 
+        var distA = Math.round(op.offset - op.width / 2);
+        var distB = Math.round(wallL - (op.offset + op.width / 2));
+
         panel.innerHTML =
           '<div class="insp-title">' + (op.type === 'door' ? 'Door' : 'Window') + ' Properties</div>' +
-          '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspOpW" value="' + op.width + '" min="400" max="3000" step="50"></div>' +
+          '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px;margin-bottom:12px;font-size:11px;font-family:monospace;color:#1e40af;line-height:1.4;">' +
+          '<div style="font-weight:700;margin-bottom:4px;color:#1e3a8a;">📐 Segmented Measurements</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span><b>Corner A (1):</b> ' + distA + ' mm</span>' +
+          '<span><b>Width:</b> ' + Math.round(op.width) + ' mm</span>' +
+          '<span><b>(2) Corner B:</b> ' + distB + ' mm</span>' +
+          '</div></div>' +
+          '<div class="insp-row"><label>Distance from Corner A (1) [mm]</label><input type="number" id="inspOpDistA" value="' + distA + '" min="0" max="' + (wallL - op.width) + '" step="10"></div>' +
+          '<div class="insp-row"><label>Opening Width (mm)</label><input type="number" id="inspOpW" value="' + Math.round(op.width) + '" min="400" max="3000" step="50"></div>' +
+          '<div class="insp-row"><label>Distance to Corner B (2) [mm]</label><input type="number" id="inspOpDistB" value="' + distB + '" min="0" max="' + (wallL - op.width) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspOpH" value="' + op.height + '" min="500" max="3500" step="50"></div>' +
           '<div class="insp-row"><label>Offset along wall (mm)</label><input type="number" id="inspOpOff" value="' + Math.round(op.offset) + '" min="' + minOff + '" max="' + maxOff + '" step="50"></div>' +
-          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Allowed: ' + minOff + ' mm – ' + maxOff + ' mm (Wall: ' + wallL + ' mm)</div>' +
+          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Total Wall Length: ' + wallL + ' mm</div>' +
           (op.type === 'door' ?
             '<div class="insp-row"><label>Swing</label><select id="inspOpSwing">' +
             '<option value="in-left"' + ((op.swing || 'in-left') === 'in-left' ? ' selected' : '') + '>Inward Left</option>' +
@@ -774,6 +821,31 @@
             self.render3DHome();
           }
         };
+
+        var elDistA = document.getElementById('inspOpDistA');
+        if (elDistA) {
+          elDistA.addEventListener('change', function (e) {
+            var val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+              var curW = op.width || 800;
+              op.offset = Math.max(curW / 2, Math.min(wallL - curW / 2, Math.round(val + curW / 2)));
+              updateOp();
+              self.renderInspector(self.editor.selected);
+            }
+          });
+        }
+        var elDistB = document.getElementById('inspOpDistB');
+        if (elDistB) {
+          elDistB.addEventListener('change', function (e) {
+            var val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+              var curW = op.width || 800;
+              op.offset = Math.max(curW / 2, Math.min(wallL - curW / 2, Math.round(wallL - val - curW / 2)));
+              updateOp();
+              self.renderInspector(self.editor.selected);
+            }
+          });
+        }
 
         ['input', 'change'].forEach(function (evt) {
           var elW = document.getElementById('inspOpW');
@@ -825,10 +897,78 @@
 
         var isBaseUnit = (fn.category && (fn.category === 'kitchen_base' || fn.category === 'crockery' || fn.category === 'vanity'));
 
+        if (!fn.shutterColors) fn.shutterColors = [];
+        if (!fn.shutterMaterials) fn.shutterMaterials = [];
+        if (!fn.shutterStates) fn.shutterStates = [];
+
+        var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+          window.OrbixCore.isWallUnit(fn.category, fn.name) :
+          ((fn.category && fn.category.toLowerCase().indexOf('wall') !== -1) ||
+           (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1) ||
+           fn.category === 'kitchen_wall');
+
+        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
+          fn.elevation :
+          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
+
+        var shutterItemsHtml = '';
+        for (var s = 0; s < shuttersCount; s++) {
+          var sColor = fn.shutterColors[s] || (shutterFinish.indexOf('White') !== -1 ? '#edebe4' : shutterFinish.indexOf('Sage') !== -1 ? '#7a8875' : shutterFinish.indexOf('Oak') !== -1 ? '#c8b293' : '#6e4e35');
+          var sMat = fn.shutterMaterials[s] || shutterFinish;
+          var sOpen = !!(fn.shutterStates && fn.shutterStates[s]);
+
+          shutterItemsHtml +=
+            '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;margin-bottom:6px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+            '<span style="font-weight:600;font-size:11px;color:#334155;">Shutter ' + (s + 1) + ' (' + (s % 2 === 0 ? 'Left' : 'Right') + ')</span>' +
+            '<button class="btn small inspShutterToggle" data-sidx="' + s + '" style="font-size:10px;padding:2px 8px;background:' + (sOpen ? '#10b981' : '#f1f5f9') + ';color:' + (sOpen ? '#ffffff' : '#334155') + ';border-color:' + (sOpen ? '#059669' : '#cbd5e1') + '">' + (sOpen ? 'Open 🚪' : 'Closed') + '</button>' +
+            '</div>' +
+            '<div style="display:flex;gap:6px;align-items:center;">' +
+            '<input type="color" class="inspShutterColorInput" data-sidx="' + s + '" value="' + sColor + '" style="width:28px;height:24px;padding:0;border:1px solid #cbd5e1;border-radius:4px;cursor:pointer;">' +
+            '<select class="inspShutterMatSelect" data-sidx="' + s + '" style="flex:1;font-size:11px;padding:3px 4px;border:1px solid #cbd5e1;border-radius:4px;">' +
+            '<option value="Brazilian Horizontal Walnut"' + (sMat.indexOf('Walnut') !== -1 ? ' selected' : '') + '>Brazilian Walnut</option>' +
+            '<option value="Absolute White"' + (sMat.indexOf('White') !== -1 || sMat.indexOf('Gloss') !== -1 ? ' selected' : '') + '>Absolute White Gloss</option>' +
+            '<option value="Sage Green Matte"' + (sMat.indexOf('Sage') !== -1 ? ' selected' : '') + '>Sage Green Matte</option>' +
+            '<option value="Sonoma Oak"' + (sMat.indexOf('Oak') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
+            '<option value="Concrete Look"' + (sMat.indexOf('Concrete') !== -1 ? ' selected' : '') + '>Concrete Look</option>' +
+            '</select>' +
+            '</div>' +
+            '</div>';
+        }
+
+        var drawerItemsHtml = '';
+        if (drawersCount > 0) {
+          if (!fn.drawerStates) fn.drawerStates = [];
+          for (var d = 0; d < drawersCount; d++) {
+            var dOpen = !!(fn.drawerStates && fn.drawerStates[d]);
+            drawerItemsHtml +=
+              '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:6px 8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">' +
+              '<span style="font-weight:600;font-size:11px;color:#334155;">Drawer ' + (d + 1) + '</span>' +
+              '<button class="btn small inspDrawerToggle" data-didx="' + d + '" style="font-size:10px;padding:2px 8px;background:' + (dOpen ? '#10b981' : '#f1f5f9') + ';color:' + (dOpen ? '#ffffff' : '#334155') + ';border-color:' + (dOpen ? '#059669' : '#cbd5e1') + '">' + (dOpen ? 'Open 🗄' : 'Closed') + '</button>' +
+              '</div>';
+          }
+        }
+
+        var drawerSectionHtml = '';
+        if (drawersCount > 0) {
+          drawerSectionHtml =
+            '<div style="margin:8px 0 8px 0;padding:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+            '<span style="font-weight:700;font-size:11.5px;color:#166534;">🗄 Drawers</span>' +
+            '<div style="display:flex;gap:4px;">' +
+            '<button class="btn small" id="inspDrawerOpenAll" style="font-size:10px;padding:2px 6px;">Open All</button>' +
+            '<button class="btn small" id="inspDrawerCloseAll" style="font-size:10px;padding:2px 6px;">Close All</button>' +
+            '</div></div>' +
+            drawerItemsHtml +
+            '</div>';
+        }
+
         panel.innerHTML =
           '<div class="insp-title">Modular Unit Properties</div>' +
           '<div class="insp-row"><label>Item Name</label><input type="text" id="inspFurnName" value="' + fn.name + '"></div>' +
           '<div class="insp-row"><label>Room Assignment</label><select id="inspFurnRoom">' + roomOptions + '</select></div>' +
+          '<div class="insp-row"><label>Elevation from Floor (mm)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
+          '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Standard: 0 mm (Base) / 1500 mm (Wall-Mounted)</div>' +
           '<div class="insp-row"><label>Width (mm)</label><input type="number" id="inspFurnW" value="' + fn.dimensions.W + '" step="50"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspFurnH" value="' + fn.dimensions.H + '" step="50"></div>' +
           '<div class="insp-row"><label>Depth (mm)</label><input type="number" id="inspFurnD" value="' + fn.dimensions.D + '" step="50"></div>' +
@@ -877,8 +1017,19 @@
             '<option value="MDF 3410"' + (carcassFinish.indexOf('Walnut') !== -1 || carcassFinish.indexOf('3410') !== -1 ? ' selected' : '') + '>Walnut Woodgrain</option>' +
             '<option value="MDF 2204"' + (carcassFinish.indexOf('Oak') !== -1 || carcassFinish.indexOf('2204') !== -1 ? ' selected' : '') + '>Sonoma Oak</option>' +
           '</select></div>' +
+          '<div style="margin:12px 0 8px 0;padding:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+          '<span style="font-weight:700;font-size:11.5px;color:#1e3a8a;">🚪 Shutters & Hinges</span>' +
+          '<div style="display:flex;gap:4px;">' +
+          '<button class="btn small" id="inspShutterOpenAll" style="font-size:10px;padding:2px 6px;">Open All</button>' +
+          '<button class="btn small" id="inspShutterCloseAll" style="font-size:10px;padding:2px 6px;">Close All</button>' +
+          '<button class="btn small" id="inspShutterApplyAll" style="font-size:10px;padding:2px 6px;">Apply to All</button>' +
+          '</div></div>' +
+          shutterItemsHtml +
+          '</div>' +
+          drawerSectionHtml +
           '<button class="btn primary full" id="inspOpen3DStudio" style="margin-top:8px">📐 Open &amp; Customize in 3D Studio</button>' +
-          '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (R)</button>' +
+          '<button class="btn full" id="inspRotateFurn" style="margin-top:8px">Rotate 90° (Space)</button>' +
           '<button class="btn danger full" id="inspDelFurn" style="margin-top:8px">Delete Unit</button>';
 
         function syncInspectorTo3D() {
@@ -920,6 +1071,17 @@
           self.renderBOQ();
           self.editor.render();
         });
+        var elElev = document.getElementById('inspFurnElev');
+        if (elElev) {
+          elElev.addEventListener('change', function (e) {
+            fn.elevation = parseFloat(e.target.value) || 0;
+            if (fn.pos) fn.pos.z = fn.elevation;
+            self.editor.pushHistory('Change Unit Elevation');
+            self.saveToLocalStorage();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
         document.getElementById('inspFurnW').addEventListener('change', function (e) {
           fn.dimensions.W = parseFloat(e.target.value);
           syncInspectorTo3D();
@@ -927,7 +1089,7 @@
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnH').addEventListener('change', function (e) {
           fn.dimensions.H = parseFloat(e.target.value);
@@ -936,7 +1098,7 @@
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnD').addEventListener('change', function (e) {
           fn.dimensions.D = parseFloat(e.target.value);
@@ -945,27 +1107,33 @@
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnShutters').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.shutters = parseInt(e.target.value) || 0;
+          if (!fn.shutterStates) fn.shutterStates = [];
+          while (fn.shutterStates.length < fn.unitConfig.shutters) fn.shutterStates.push(false);
           syncInspectorTo3D();
           self.editor.pushHistory('Edit Shutters Count');
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          self.renderInspector(self.editor.selected);
+          if (self.render3DHome) self.render3DHome(true);
         });
         document.getElementById('inspFurnDrawers').addEventListener('change', function (e) {
           if (!fn.unitConfig) fn.unitConfig = {};
           fn.unitConfig.drawers = parseInt(e.target.value) || 0;
+          if (!fn.drawerStates) fn.drawerStates = [];
+          while (fn.drawerStates.length < fn.unitConfig.drawers) fn.drawerStates.push(false);
           syncInspectorTo3D();
           self.editor.pushHistory('Edit Drawers Count');
           self.saveToLocalStorage();
           self.renderBOQ();
           self.editor.render();
-          if (self.render3DHome) self.render3DHome();
+          self.renderInspector(self.editor.selected);
+          if (self.render3DHome) self.render3DHome(true);
         });
         var doorStyleSelect = document.getElementById('inspFurnDoorStyle');
         if (doorStyleSelect) {
@@ -1018,6 +1186,122 @@
           self.renderBOQ();
           self.editor.render();
           if (self.render3DHome) self.render3DHome();
+        });
+
+        // Bulk Shutter Controls
+        var btnOpenAll = document.getElementById('inspShutterOpenAll');
+        if (btnOpenAll) {
+          btnOpenAll.addEventListener('click', function () {
+            if (!fn.shutterStates) fn.shutterStates = [];
+            for (var i = 0; i < shuttersCount; i++) fn.shutterStates[i] = true;
+            self.editor.pushHistory('Open All Shutters');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var btnCloseAll = document.getElementById('inspShutterCloseAll');
+        if (btnCloseAll) {
+          btnCloseAll.addEventListener('click', function () {
+            if (!fn.shutterStates) fn.shutterStates = [];
+            for (var i = 0; i < shuttersCount; i++) fn.shutterStates[i] = false;
+            self.editor.pushHistory('Close All Shutters');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var btnApplyAll = document.getElementById('inspShutterApplyAll');
+        if (btnApplyAll) {
+          btnApplyAll.addEventListener('click', function () {
+            var col0 = (fn.shutterColors && fn.shutterColors[0]) || '#6e4e35';
+            var mat0 = (fn.shutterMaterials && fn.shutterMaterials[0]) || shutterFinish;
+            if (!fn.shutterColors) fn.shutterColors = [];
+            if (!fn.shutterMaterials) fn.shutterMaterials = [];
+            for (var i = 0; i < shuttersCount; i++) {
+              fn.shutterColors[i] = col0;
+              fn.shutterMaterials[i] = mat0;
+            }
+            self.editor.pushHistory('Apply Shutter Style to All');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        // Bulk & Individual Drawer Controls
+        var btnDrawerOpenAll = document.getElementById('inspDrawerOpenAll');
+        if (btnDrawerOpenAll) {
+          btnDrawerOpenAll.addEventListener('click', function () {
+            if (!fn.drawerStates) fn.drawerStates = [];
+            for (var i = 0; i < drawersCount; i++) fn.drawerStates[i] = true;
+            self.editor.pushHistory('Open All Drawers');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var btnDrawerCloseAll = document.getElementById('inspDrawerCloseAll');
+        if (btnDrawerCloseAll) {
+          btnDrawerCloseAll.addEventListener('click', function () {
+            if (!fn.drawerStates) fn.drawerStates = [];
+            for (var i = 0; i < drawersCount; i++) fn.drawerStates[i] = false;
+            self.editor.pushHistory('Close All Drawers');
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        var drawerToggles = panel.querySelectorAll('.inspDrawerToggle');
+        drawerToggles.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var idx = parseInt(btn.getAttribute('data-didx'));
+            if (!fn.drawerStates) fn.drawerStates = [];
+            fn.drawerStates[idx] = !fn.drawerStates[idx];
+            self.editor.pushHistory('Toggle Drawer ' + (idx + 1));
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        });
+
+        // Individual Shutter Controls
+        var toggles = panel.querySelectorAll('.inspShutterToggle');
+        toggles.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var idx = parseInt(btn.getAttribute('data-sidx'));
+            if (!fn.shutterStates) fn.shutterStates = [];
+            fn.shutterStates[idx] = !fn.shutterStates[idx];
+            self.editor.pushHistory('Toggle Shutter ' + (idx + 1));
+            self.saveToLocalStorage();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        });
+
+        var colorInputs = panel.querySelectorAll('.inspShutterColorInput');
+        colorInputs.forEach(function (inp) {
+          inp.addEventListener('change', function () {
+            var idx = parseInt(inp.getAttribute('data-sidx'));
+            if (!fn.shutterColors) fn.shutterColors = [];
+            fn.shutterColors[idx] = inp.value;
+            self.editor.pushHistory('Change Shutter ' + (idx + 1) + ' Color');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        });
+
+        var matSelects = panel.querySelectorAll('.inspShutterMatSelect');
+        matSelects.forEach(function (sel) {
+          sel.addEventListener('change', function () {
+            var idx = parseInt(sel.getAttribute('data-sidx'));
+            if (!fn.shutterMaterials) fn.shutterMaterials = [];
+            fn.shutterMaterials[idx] = sel.value;
+            self.editor.pushHistory('Change Shutter ' + (idx + 1) + ' Material');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+          });
         });
         document.getElementById('inspFurnCarcass').addEventListener('change', function (e) {
           if (!fn.materials) fn.materials = {};
@@ -1257,8 +1541,15 @@
         var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
         var existing = existingMap[fn.id];
 
+        var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+          window.OrbixCore.isWallUnit(fn.category, fn.name) :
+          (fn.category === 'kitchen_wall' || (fn.category && fn.category.indexOf('wall') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1));
+        var unitElev = (fn.elevation !== undefined && fn.elevation !== null) ?
+          fn.elevation : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
+
         if (existing) {
           if (fn.name) existing.label = fn.name;
+          existing.elev = unitElev;
           if (fn.dimensions) {
             if (fn.dimensions.W) existing.W = fn.dimensions.W;
             if (fn.dimensions.H) existing.H = fn.dimensions.H;
@@ -1282,16 +1573,16 @@
           if (cColExisting) existing.carcass = cColExisting;
           newUnits.push(existing);
         } else {
-          var isWall = (fn.category === 'kitchen_wall');
           var defH = isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 1800 : (fn.category === 'crockery' ? 2100 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
-          var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 300 : isKitchen ? 550 : 600);
+          var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 600);
           var sColNew = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
           var cColNew = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
           var u = {
             label: fn.name,
             ctype: isKitchen ? (isWall ? 'kwall' : 'kbase') : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
             _furnId: fn.id,
+            elev: unitElev,
             W: (fn.dimensions && fn.dimensions.W) || defW,
             H: (fn.dimensions && fn.dimensions.H) || defH,
             D: (fn.dimensions && fn.dimensions.D) || defD,
@@ -1432,6 +1723,20 @@
           if (u.loftH !== undefined) match.unitConfig.loftH = u.loftH;
           if (u.back !== undefined) match.unitConfig.back = u.back;
           if (u.hfinish) match.unitConfig.hfinish = u.hfinish;
+          if (u.elev !== undefined) {
+            match.elevation = u.elev;
+            if (match.pos) match.pos.z = u.elev;
+          }
+          if (u.drawers !== undefined) {
+            match.unitConfig.drawers = u.drawers;
+            match.drawerStates = match.drawerStates || [];
+            while (match.drawerStates.length < u.drawers) match.drawerStates.push(false);
+          }
+          if (u.shutters !== undefined) {
+            match.unitConfig.shutters = u.shutters;
+            match.shutterStates = match.shutterStates || [];
+            while (match.shutterStates.length < u.shutters) match.shutterStates.push(false);
+          }
           if (u.shutterCol) {
             match.unitConfig.shutterCol = u.shutterCol;
             match.materials = match.materials || {};
@@ -1499,19 +1804,27 @@
         cX += (offsetCount * 300);
       }
 
-      var newFurn = {
+      var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+        window.OrbixCore.isWallUnit(preset.category, preset.name) :
+        ((preset.category && preset.category.toLowerCase().indexOf('wall') !== -1) ||
+         (preset.name && preset.name.toLowerCase().indexOf('wall') !== -1));
+      var initElev = (preset.elevation !== undefined && preset.elevation !== null) ?
+        preset.elevation : (isWall ? 1500 : 0);
+
+      var newFurn = Core.createFurniturePlacement({
         id: fId,
         name: preset.name || 'Modular Unit',
         category: preset.category || 'wardrobe',
         roomId: matchedRoomId,
-        pos: { x: cX, y: cY, z: 0 },
+        elevation: initElev,
+        pos: { x: cX, y: cY, z: initElev },
         rotY: 0,
-        dimensions: Object.assign({ W: 1200, H: 2100, D: 600 }, preset.dimensions || {}),
+        dimensions: Object.assign({ W: 1200, H: isWall ? 600 : 2100, D: isWall ? 350 : 600 }, preset.dimensions || {}),
         unitConfig: Object.assign({
-          shutters: 2,
+          shutters: isWall ? 2 : 2,
           handle: 'bar',
           dstyle: 'slab',
-          shelves: 3,
+          shelves: isWall ? 1 : 3,
           drawers: 0,
           carcass: 'Absolute White',
           shutterCol: 'Brazilian Horizontal Walnut'
@@ -1520,7 +1833,7 @@
           shutter: { material: 'HDHMR_18mm', finish: 'Brazilian Horizontal Walnut' },
           carcass: { material: 'BWP_18mm', finish: 'Absolute White' }
         }, preset.materials || {})
-      };
+      });
 
       plan.furniture.push(newFurn);
       this.project.units_count = plan.furniture.length;
@@ -1923,71 +2236,88 @@
     },
 
     COMMERCIAL_FIELDS: [
-      { key: 'transport', label: '1. Transport', isDeduction: false },
-      { key: 'designCharges', label: '2. Design charges', isDeduction: false },
-      { key: 'accessories', label: '3. Accessories', isDeduction: false },
-      { key: 'floorMat', label: '4. Floor protective mat', isDeduction: false },
-      { key: 'electrical', label: '5. Electrical', isDeduction: false },
-      { key: 'plumbing', label: '6. Plumbing', isDeduction: false },
-      { key: 'wallpaper', label: '7. Wallpaper', isDeduction: false },
-      { key: 'falseCeiling', label: '8. False ceiling', isDeduction: false },
-      { key: 'appliances', label: '9. Appliances', isDeduction: false },
-      { key: 'civilWorks', label: '10. Civil works', isDeduction: false },
-      { key: 'loadingUnloading', label: '11. Loading and unloading (material)', isDeduction: false },
-      { key: 'outstationTransport', label: '12. Out station transport charges', isDeduction: false },
-      { key: 'discount', label: '13. Discount', isDeduction: true },
-      { key: 'finalDiscount', label: '14. Final discount (check with sir)', isDeduction: true }
+      { key: 'additionalAccessories', label: 'Additional Accessories', type: 'amount', isDeduction: false },
+      { key: 'appliances', label: 'Appliances', type: 'amount', isDeduction: false },
+      { key: 'designCharges', label: 'Design charges & Handling Fee', type: 'percent', defaultPercent: 9, isDeduction: false },
+      { key: 'freightCharges', label: 'Freight Charges', type: 'percent', defaultPercent: 2.5, isDeduction: false },
+      { key: 'loadingUnloading', label: 'Loading and unloading (material)', type: 'info', infoText: 'Additional' },
+      { key: 'floorMat', label: 'Floor protective mat', type: 'info', infoText: 'Not Included in Quote' },
+      { key: 'civilWorks', label: 'Civil works', type: 'info', infoText: 'As per actuals' },
+      { key: 'electricalPlumbing', label: 'Electrical & Plumbing Works', type: 'info', infoText: 'Additional' },
+      { key: 'falseCeiling', label: 'False ceiling', type: 'info', infoText: 'Not Included' },
+      { key: 'wallpaper', label: 'Wallpaper', type: 'info', infoText: 'Complementary' },
+      { key: 'discount', label: 'Discount', type: 'percent', isDeduction: true },
+      { key: 'adp', label: 'ADP', type: 'percent', isDeduction: true }
     ],
 
     getCommercialCharges: function () {
       if (!this.project) return {};
       if (!this.project.commercialCharges) {
         this.project.commercialCharges = {
-          transport: 0,
-          designCharges: 0,
-          accessories: 0,
-          floorMat: 0,
-          electrical: 0,
-          plumbing: 0,
-          wallpaper: 0,
-          falseCeiling: 0,
+          additionalAccessories: 0,
           appliances: 0,
-          civilWorks: 0,
-          loadingUnloading: 0,
-          outstationTransport: 0,
-          discount: 0,
-          finalDiscount: 0,
+          designPercent: 9,
+          freightPercent: 2.5,
+          discountPercent: 0,
+          adpPercent: 0,
           gstPercent: 18
         };
       }
+      var c = this.project.commercialCharges;
+      if (c.accessories && !c.additionalAccessories) c.additionalAccessories = c.accessories;
+      if (c.discount && !c.discountPercent) c.discountPercent = c.discount;
+      if (c.designPercent === undefined) c.designPercent = 9;
+      if (c.freightPercent === undefined) c.freightPercent = 2.5;
+      if (c.discountPercent === undefined) c.discountPercent = 0;
+      if (c.adpPercent === undefined) c.adpPercent = 0;
+      if (c.gstPercent === undefined) c.gstPercent = 18;
       return this.project.commercialCharges;
     },
 
     computeCommercialSummary: function (woodworkSubtotal, commCharges) {
       var charges = commCharges || this.getCommercialCharges();
-      var additions = 0;
-      for (var i = 0; i < this.COMMERCIAL_FIELDS.length; i++) {
-        var f = this.COMMERCIAL_FIELDS[i];
-        var val = parseFloat(charges[f.key]) || 0;
-        if (!f.isDeduction) {
-          additions += val;
-        }
-      }
-      var disc = parseFloat(charges.discount) || 0;
-      var finalDisc = parseFloat(charges.finalDiscount) || 0;
-      var totalDeductions = disc + finalDisc;
+      var addAccessories = parseFloat(charges.additionalAccessories || charges.accessories) || 0;
+      var appliances = parseFloat(charges.appliances) || 0;
 
-      var netTaxable = Math.max(0, Math.round(woodworkSubtotal + additions - totalDeductions));
+      var designPercent = (charges.designPercent !== undefined && charges.designPercent !== null && charges.designPercent !== '') ? parseFloat(charges.designPercent) : 9;
+      if (isNaN(designPercent)) designPercent = 9;
+      var designAmount = Math.round(woodworkSubtotal * (designPercent / 100));
+
+      var freightPercent = (charges.freightPercent !== undefined && charges.freightPercent !== null && charges.freightPercent !== '') ? parseFloat(charges.freightPercent) : 2.5;
+      if (isNaN(freightPercent)) freightPercent = 2.5;
+      var freightAmount = Math.round(woodworkSubtotal * (freightPercent / 100));
+
+      var discountPercent = parseFloat(charges.discountPercent || charges.discount) || 0;
+      var discountAmount = Math.round(woodworkSubtotal * (discountPercent / 100));
+
+      var adpPercent = parseFloat(charges.adpPercent || charges.adp) || 0;
+      var adpAmount = Math.round(woodworkSubtotal * (adpPercent / 100));
+
+      var totalDeductions = discountAmount + adpAmount;
+      var grossAdditions = addAccessories + appliances + designAmount + freightAmount;
+
+      var netValue = Math.max(0, Math.round(woodworkSubtotal + grossAdditions - totalDeductions));
       var gstPercent = (charges.gstPercent !== undefined && charges.gstPercent !== null && charges.gstPercent !== '') ? parseFloat(charges.gstPercent) : 18;
       if (isNaN(gstPercent)) gstPercent = 18;
-      var gstAmount = Math.round(netTaxable * (gstPercent / 100));
-      var grandTotal = netTaxable + gstAmount;
+      var gstAmount = Math.round(netValue * (gstPercent / 100));
+      var grandTotal = netValue + gstAmount;
 
       return {
         woodworkSubtotal: Math.round(woodworkSubtotal),
-        additions: additions,
+        additionalAccessories: addAccessories,
+        appliances: appliances,
+        designPercent: designPercent,
+        designAmount: designAmount,
+        freightPercent: freightPercent,
+        freightAmount: freightAmount,
+        discountPercent: discountPercent,
+        discountAmount: discountAmount,
+        adpPercent: adpPercent,
+        adpAmount: adpAmount,
+        grossAdditions: grossAdditions,
         totalDeductions: totalDeductions,
-        netTaxable: netTaxable,
+        netValue: netValue,
+        netTaxable: netValue,
         gstPercent: gstPercent,
         gstAmount: gstAmount,
         grandTotal: grandTotal
@@ -2075,11 +2405,18 @@
           '<div class="boq-room-grid">' +
           quote.allRoomsSummary.map(function (rs) {
             var isCardSelected = (!quote.isFiltered) || (self.selectedBOQRooms && self.selectedBOQRooms.indexOf(rs.id) !== -1);
+            var rsTier = rs.variant || (rateCard.roomTiers && rateCard.roomTiers[rs.id]) || currentTier;
             return '<div class="boq-room-stat-card' + (isCardSelected ? ' is-selected' : '') + '">' +
               '<div class="boq-room-stat-title">' + rs.name + '</div>' +
               '<div class="boq-room-stat-area">' + (rs.areaSqFt > 0 ? (Math.round(rs.areaSqFt) + ' sq ft (' + rs.areaSqM.toFixed(1) + ' m²)') : 'Modular Units Only') + '</div>' +
               '<div class="boq-room-stat-cost">₹ ' + Math.round(rs.roomSubtotal).toLocaleString('en-IN') + '.00</div>' +
               '<div class="boq-room-stat-items">' + rs.itemCount + ' unit' + (rs.itemCount === 1 ? '' : 's') + ' · ' + rs.percentShare + '% share</div>' +
+              '<div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0 4px 0;gap:4px;">' +
+              '<span style="font-size:10px;color:#64748B;font-weight:700;text-transform:uppercase;">Variant:</span>' +
+              '<select class="room-tier-select no-print" data-room-id="' + rs.id + '" style="font-size:11px;font-weight:700;padding:2px 4px;border-radius:4px;border:1px solid #CBD5E1;background:#FFFFFF;color:#1E3A8A;cursor:pointer;flex:1;">' +
+              tiers.map(function (t) { return '<option value="' + t + '"' + (rsTier === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') +
+              '</select>' +
+              '</div>' +
               '<div class="boq-room-bar"><div class="boq-room-bar-fill" style="width:' + Math.min(100, Math.max(5, rs.percentShare)) + '%"></div></div>' +
               '<button class="btn small boq-room-select-btn" data-room="' + rs.id + '" style="margin-top:6px;width:100%;font-size:11px;padding:3px 6px;">' +
               (isCardSelected && quote.isFiltered ? '✓ Active in Quote' : 'Filter this Room') +
@@ -2091,7 +2428,7 @@
 
         // ── Finish Tier Selector Bar ──
         '<div class="boq-tier-bar no-print">' +
-        '<div class="boq-tier-label"><span class="tier-icon">🏷️</span> <b>Price Variant & Finish Tier:</b></div>' +
+        '<div class="boq-tier-label"><span class="tier-icon">🏷️</span> <b>Global Price Variant &amp; Finish Tier:</b></div>' +
         '<div class="tier-pill-group">';
 
       for (var t = 0; t < tiers.length; t++) {
@@ -2140,8 +2477,21 @@
       html += '</tbody></table></div>' +
         '</div>' +
 
-        '<div class="quote-sheet-single">' +
-        '<div class="quote-header-split">' +
+        '<div class="quote-sheet-single">';
+
+      // Format clean Quotation Date
+      var rawDate = this.project.meta && this.project.meta.dateCreated;
+      var formattedDate = '28 Oct, 2026';
+      if (rawDate) {
+        var dObj = new Date(rawDate);
+        if (!isNaN(dObj.getTime())) {
+          formattedDate = dObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        } else {
+          formattedDate = rawDate;
+        }
+      }
+
+      html += '<div class="quote-header-split">' +
         '<div class="qh-left">' +
         '<div class="qh-row"><span class="qh-lbl">Project ID</span><span class="qh-val">' + (this.project.meta.quoteId || '5754') + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Customer</span><span class="qh-val">' + (this.project.meta.clientName || 'Dhanesh') + '</span></div>' +
@@ -2150,8 +2500,9 @@
         '<div class="qh-row"><span class="qh-lbl">Scope</span><span class="qh-val">' + (quote.isFiltered ? ('Selected Rooms: ' + quote.furnitureItems.map(function (it) { return it.roomName; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) : (this.project.meta.scope || 'Complete Interior Design')) + '</span></div>' +
         '</div>' +
         '<div class="qh-right">' +
-        '<div class="qh-row"><span class="qh-lbl">Quotation Date</span><span class="qh-val">' + (this.project.meta.dateCreated || '28 Oct, 2026') + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Quotation Date</span><span class="qh-val">' + formattedDate + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Price Expiry Date</span><span class="qh-val">' + (this.project.meta.validUntil || '27 Nov, 2026') + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Price Variant</span><span class="qh-val bold" id="boqHeaderVariant" style="color:#2563EB;font-weight:700;">' + currentTier + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Total No. of Items</span><span class="qh-val">' + quote.furnitureItems.length + (quote.isFiltered ? ' (Filtered Scope)' : '') + '</span></div>' +
         '<div class="qh-row total"><span class="qh-lbl">Total Amount</span><span class="qh-val" id="boqHeaderTotalAmount">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</span></div>' +
         '</div>' +
@@ -2206,12 +2557,22 @@
 
           var rFound = (self.project.plan.rooms || []).filter(function (rm) { return rm.name === rName || rm.id === (rItems[0] && rItems[0].roomId); })[0];
           var rAreaStr = rFound && rFound.areaSqFt > 0 ? (Math.round(rFound.areaSqFt) + ' sq ft · ' + rFound.areaSqM.toFixed(1) + ' m²') : '';
+          var rRoomId = (rFound ? rFound.id : (rItems[0] && rItems[0].roomId) || '_general');
+          var rActiveTier = (rateCard.roomTiers && rateCard.roomTiers[rRoomId]) || (rFound && rFound.variant) || currentTier;
 
           html += '<tr class="room-sec-row"><td colspan="11">' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-            '<div><span style="font-size:15px;margin-right:6px">🏠</span><b>Room: ' + rName + '</b>' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
+            '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+            '<span style="font-size:15px">🏠</span><b>Room: ' + rName + '</b>' +
             (rAreaStr ? (' &nbsp;<span style="color:#64748B;font-size:11px">(' + rAreaStr + ')</span>') : '') +
-            ' &nbsp;·&nbsp; <span style="color:#2563EB;font-weight:600">' + rItems.length + ' Unit' + (rItems.length === 1 ? '' : 's') + '</span></div>' +
+            ' &nbsp;·&nbsp; <span style="color:#2563EB;font-weight:600">' + rItems.length + ' Unit' + (rItems.length === 1 ? '' : 's') + '</span>' +
+            ' &nbsp;·&nbsp; <span style="font-size:12px;color:#475569;font-weight:600;">Variant:</span>' +
+            '<select class="room-tier-select no-print" data-room-id="' + rRoomId + '" style="font-size:11px;font-weight:700;padding:2px 6px;border-radius:4px;border:1px solid #CBD5E1;background:#FFFFFF;color:#1E3A8A;cursor:pointer;">' +
+            tiers.map(function (t) {
+              return '<option value="' + t + '"' + (rActiveTier === t ? ' selected' : '') + '>' + t + '</option>';
+            }).join('') +
+            '</select>' +
+            '</div>' +
             '<div>Room Subtotal: <b style="font-family:var(--mono);color:#1E3A8A">₹ ' + Math.round(rSubtotal).toLocaleString('en-IN') + '.00</b></div>' +
             '</div></td></tr>';
 
@@ -2342,47 +2703,124 @@
 
       html += '<tr class="sec-bar-row"><td colspan="11"><b>Commercial Estimate Summary (' + (quote.isFiltered ? 'Active Scope' : 'Entire Home') + ')</b></td></tr>' +
         '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
-        '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>';
+        '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>' +
 
-      for (var ci = 0; ci < self.COMMERCIAL_FIELDS.length; ci++) {
-        var cf = self.COMMERCIAL_FIELDS[ci];
-        var rawVal = commCharges[cf.key];
-        var displayVal = (rawVal !== undefined && rawVal !== null && rawVal !== 0 && rawVal !== '0') ? rawVal : '';
-
-        html += '<tr class="comm-charge-row">' +
-          '<td colspan="4"></td>' +
-          '<td colspan="4" class="bold' + (cf.isDeduction ? ' text-red' : '') + '">' + cf.label + '</td>' +
-          '<td colspan="3" style="text-align:right;white-space:nowrap">' +
-          '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
-          '<span style="font-size:11px;color:' + (cf.isDeduction ? '#DC2626' : '#64748B') + ';font-weight:600">' + (cf.isDeduction ? '(-) ₹' : '₹') + '</span>' +
-          '<input type="number" min="0" step="any" class="comm-input' + (cf.isDeduction ? ' is-discount' : '') + '" data-key="' + cf.key + '" value="' + displayVal + '" placeholder="0">' +
-          '<span style="font-size:11px;color:#94A3B8">.00</span>' +
-          '</div>' +
-          '</td>' +
-          '</tr>';
-      }
-
-      var gstRateVal = (commCharges.gstPercent !== undefined && commCharges.gstPercent !== null) ? commCharges.gstPercent : 18;
-      html += '<tr class="comm-charge-row" style="background:#F8FAFC">' +
+        // Additional Accessories (enter amount)
+        '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">15. GST</td>' +
+        '<td colspan="4" class="bold">Additional Accessories</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
+        '<input type="number" min="0" step="any" class="comm-input" data-key="additionalAccessories" value="' + (commCharges.additionalAccessories || '') + '" placeholder="enter amount">' +
+        '<span style="font-size:11px;color:#94A3B8">.00</span>' +
+        '</div></td></tr>' +
+
+        // Appliances (enter amount)
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">Appliances</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
+        '<input type="number" min="0" step="any" class="comm-input" data-key="appliances" value="' + (commCharges.appliances || '') + '" placeholder="enter amount">' +
+        '<span style="font-size:11px;color:#94A3B8">.00</span>' +
+        '</div></td></tr>' +
+
+        // Design charges & Handling Fee (9%)
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">Design charges &amp; Handling Fee</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="designPercent" value="' + commSummary.designPercent + '" style="width:55px" placeholder="9">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
+        '<span id="commDesignAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.designAmount.toLocaleString('en-IN') + '.00</span>' +
+        '</div></td></tr>' +
+
+        // Freight Charges (2.50%)
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">Freight Charges</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="freightPercent" value="' + commSummary.freightPercent + '" style="width:55px" placeholder="2.5">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
+        '<span id="commFreightAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.freightAmount.toLocaleString('en-IN') + '.00</span>' +
+        '</div></td></tr>' +
+
+        // Informational rows
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">Loading and unloading (material)</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Additional</span></td></tr>' +
+
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">Floor protective mat</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Not Included in Quote</span></td></tr>' +
+
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">Civil works</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">As per actuals</span></td></tr>' +
+
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">Electrical &amp; Plumbing Works</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Additional</span></td></tr>' +
+
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">False ceiling</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Not Included</span></td></tr>' +
+
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td><td colspan="4" class="bold">Wallpaper</td>' +
+        '<td colspan="3" style="text-align:right"><span class="comm-badge-success">Complementary</span></td></tr>' +
+
+        // Discount (enter %)
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold text-red">Discount</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
+        '<span style="font-size:11px;color:#DC2626;font-weight:600">(-)</span>' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input is-discount" data-key="discountPercent" value="' + (commSummary.discountPercent || '') + '" style="width:55px" placeholder="enter %">' +
+        '<span style="font-size:11px;color:#DC2626;font-weight:600">% &nbsp;=&nbsp; (-) ₹</span>' +
+        '<span id="commDiscountAmount" class="bold text-red" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.discountAmount.toLocaleString('en-IN') + '.00</span>' +
+        '</div></td></tr>' +
+
+        // ADP (enter %)
+        '<tr class="comm-charge-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold text-red">ADP</td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
+        '<span style="font-size:11px;color:#DC2626;font-weight:600">(-)</span>' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input is-discount" data-key="adpPercent" value="' + (commSummary.adpPercent || '') + '" style="width:55px" placeholder="enter %">' +
+        '<span style="font-size:11px;color:#DC2626;font-weight:600">% &nbsp;=&nbsp; (-) ₹</span>' +
+        '<span id="commAdpAmount" class="bold text-red" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.adpAmount.toLocaleString('en-IN') + '.00</span>' +
+        '</div></td></tr>' +
+
+        // NET VALUE (renamed from NET TAXABLE VALUE)
+        '<tr class="taxable-row">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold" style="font-size:12px">NET VALUE</td>' +
+        '<td colspan="3" class="c-num bold" id="commNetTaxable" style="font-size:13px;color:#1E3A8A">₹ ' + commSummary.netValue.toLocaleString('en-IN') + '.00</td>' +
+        '</tr>' +
+
+        // GST (Additional)
+        '<tr class="comm-charge-row" style="background:#F8FAFC">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">GST <span style="font-size:11px;color:#64748B;font-weight:normal;">(Additional)</span></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
         '<span style="font-size:11px;color:#64748B">Rate:</span>' +
-        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="gstPercent" value="' + gstRateVal + '" style="width:65px" placeholder="18">' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="gstPercent" value="' + commSummary.gstPercent + '" style="width:55px" placeholder="18">' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
         '<span id="commGstAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.gstAmount.toLocaleString('en-IN') + '.00</span>' +
-        '</div>' +
-        '</td>' +
-        '</tr>' +
-        '<tr class="taxable-row">' +
-        '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold" style="font-size:12px">NET TAXABLE VALUE</td>' +
-        '<td colspan="3" class="c-num bold" id="commNetTaxable" style="font-size:13px;color:#1E3A8A">₹ ' + commSummary.netTaxable.toLocaleString('en-IN') + '.00</td>' +
-        '</tr>' +
+        '</div></td></tr>' +
+
+        // Grand Total (Give total)
         '<tr class="grand-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold grand-lbl" style="font-size:13px">FINAL ALL-INCLUSIVE QUOTE</td>' +
+        '<td colspan="4" class="bold grand-lbl" style="font-size:13px">GRAND TOTAL</td>' +
         '<td colspan="3" class="c-num bold grand-val" id="commFinalTotal" style="font-size:14px">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
         '</tbody></table></div>';
@@ -2422,8 +2860,20 @@
 
           var summary = self.computeCommercialSummary(quote.subtotalWoodwork, self.project.commercialCharges);
 
+          var designAmtEl = document.getElementById('commDesignAmount');
+          if (designAmtEl) designAmtEl.textContent = summary.designAmount.toLocaleString('en-IN') + '.00';
+
+          var freightAmtEl = document.getElementById('commFreightAmount');
+          if (freightAmtEl) freightAmtEl.textContent = summary.freightAmount.toLocaleString('en-IN') + '.00';
+
+          var discAmtEl = document.getElementById('commDiscountAmount');
+          if (discAmtEl) discAmtEl.textContent = summary.discountAmount.toLocaleString('en-IN') + '.00';
+
+          var adpAmtEl = document.getElementById('commAdpAmount');
+          if (adpAmtEl) adpAmtEl.textContent = summary.adpAmount.toLocaleString('en-IN') + '.00';
+
           var netEl = document.getElementById('commNetTaxable');
-          if (netEl) netEl.textContent = '₹ ' + summary.netTaxable.toLocaleString('en-IN') + '.00';
+          if (netEl) netEl.textContent = '₹ ' + summary.netValue.toLocaleString('en-IN') + '.00';
 
           var gstAmtEl = document.getElementById('commGstAmount');
           if (gstAmtEl) gstAmtEl.textContent = summary.gstAmount.toLocaleString('en-IN') + '.00';
@@ -2506,12 +2956,43 @@
         });
       }
 
-      // Tier selector button clicks
+      // Tier selector button clicks (Global Working: synchronizes all rooms)
       var pills = boqEl.querySelectorAll('.tier-pill, .matrix-th-btn');
       pills.forEach(function (pill) {
         pill.addEventListener('click', function () {
           var t = pill.getAttribute('data-tier') || 'PRICE 1';
+          self.project.rateCard = self.project.rateCard || Core.DEFAULT_RATE_CARD;
           self.project.rateCard.selectedTier = t;
+          self.project.rateCard.roomTiers = self.project.rateCard.roomTiers || {};
+          var pRooms = (self.project.plan && self.project.plan.rooms) || [];
+          for (var pr = 0; pr < pRooms.length; pr++) {
+            self.project.rateCard.roomTiers[pRooms[pr].id] = t;
+            pRooms[pr].variant = t;
+          }
+          self.project.rateCard.roomTiers['_general'] = t;
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          self.updateUI();
+        });
+      });
+
+      // Room-wise tier dropdown change
+      var roomTierSelects = boqEl.querySelectorAll('.room-tier-select');
+      roomTierSelects.forEach(function (sel) {
+        sel.addEventListener('change', function (e) {
+          e.stopPropagation();
+          var rId = sel.getAttribute('data-room-id');
+          var chosenTier = sel.value;
+          self.project.rateCard = self.project.rateCard || Core.DEFAULT_RATE_CARD;
+          self.project.rateCard.roomTiers = self.project.rateCard.roomTiers || {};
+          self.project.rateCard.roomTiers[rId] = chosenTier;
+          var pRooms = (self.project.plan && self.project.plan.rooms) || [];
+          for (var pr = 0; pr < pRooms.length; pr++) {
+            if (pRooms[pr].id === rId) {
+              pRooms[pr].variant = chosenTier;
+              break;
+            }
+          }
           self.saveToLocalStorage();
           self.renderBOQ();
           self.updateUI();
@@ -2727,16 +3208,21 @@
       rows.push(['COMMERCIAL ESTIMATE SUMMARY (' + (quote.isFiltered ? 'Active Scope' : 'Entire Home') + ')']);
       rows.push(['', '', 'Modular Woodwork Subtotal', '', '', '', '', '', '', '', '', '', '', '', comm.woodworkSubtotal]);
       rows.push(['', '', 'Hardware & Functional Fittings Subtotal (Included)', '', '', '', '', '', '', '', '', '', '', '', 0]);
-
-      for (var ci = 0; ci < this.COMMERCIAL_FIELDS.length; ci++) {
-        var cf = this.COMMERCIAL_FIELDS[ci];
-        var cfVal = parseFloat(commCharges[cf.key]) || 0;
-        rows.push(['', '', cf.label, '', '', '', '', '', '', '', '', '', '', '', (cf.isDeduction ? -cfVal : cfVal)]);
-      }
-
-      rows.push(['', '', 'NET TAXABLE VALUE', '', '', '', '', '', '', '', '', '', '', '', comm.netTaxable]);
-      rows.push(['', '', '15. GST @ ' + comm.gstPercent + '% (CGST + SGST)', '', '', '', '', '', '', '', '', '', '', '', comm.gstAmount]);
-      rows.push(['', '', 'FINAL ALL-INCLUSIVE ESTIMATE (INR)', '', '', '', '', '', '', '', '', '', '', '', comm.grandTotal]);
+      rows.push(['', '', 'Additional Accessories', '', '', '', '', '', '', '', '', '', '', '', comm.additionalAccessories]);
+      rows.push(['', '', 'Appliances', '', '', '', '', '', '', '', '', '', '', '', comm.appliances]);
+      rows.push(['', '', 'Design charges & Handling Fee (' + comm.designPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', comm.designAmount]);
+      rows.push(['', '', 'Freight Charges (' + comm.freightPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', comm.freightAmount]);
+      rows.push(['', '', 'Loading and unloading (material)', '', '', '', '', '', '', '', '', '', '', '', 'Additional']);
+      rows.push(['', '', 'Floor protective mat', '', '', '', '', '', '', '', '', '', '', '', 'Not Included in Quote']);
+      rows.push(['', '', 'Civil works', '', '', '', '', '', '', '', '', '', '', '', 'As per actuals']);
+      rows.push(['', '', 'Electrical & Plumbing Works', '', '', '', '', '', '', '', '', '', '', '', 'Additional']);
+      rows.push(['', '', 'False ceiling', '', '', '', '', '', '', '', '', '', '', '', 'Not Included']);
+      rows.push(['', '', 'Wallpaper', '', '', '', '', '', '', '', '', '', '', '', 'Complementary']);
+      rows.push(['', '', 'Discount (' + comm.discountPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', -comm.discountAmount]);
+      rows.push(['', '', 'ADP (' + comm.adpPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', -comm.adpAmount]);
+      rows.push(['', '', 'NET VALUE', '', '', '', '', '', '', '', '', '', '', '', comm.netValue]);
+      rows.push(['', '', 'GST @ ' + comm.gstPercent + '% (Additional)', '', '', '', '', '', '', '', '', '', '', '', comm.gstAmount]);
+      rows.push(['', '', 'GRAND TOTAL (INR)', '', '', '', '', '', '', '', '', '', '', '', comm.grandTotal]);
 
       var blob = this.buildXLSXBlob(rows);
       var filename = 'Residential-Interior-Estimation-' + (meta.quoteId || 'ORB-2026-089') + '.xlsx';

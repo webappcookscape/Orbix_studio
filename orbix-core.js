@@ -322,7 +322,9 @@
       height: opts.height !== undefined ? opts.height : 2800, // 2.8m ceiling height
       material: opts.material || 'plaster_white',
       openings: opts.openings ? opts.openings.slice() : [],
-      pinned: !!opts.pinned
+      pinned: !!opts.pinned,
+      startLocked: opts.startLocked !== undefined ? !!opts.startLocked : true,
+      endLocked: opts.endLocked !== undefined ? !!opts.endLocked : true
     };
   }
 
@@ -362,24 +364,65 @@
     };
   }
 
+  function isWallUnitCategory(category, name) {
+    var cat = (category || '').toLowerCase();
+    var nm = (name || '').toLowerCase();
+    return cat.indexOf('wall') !== -1 || cat.indexOf('overhead') !== -1 || cat.indexOf('spice') !== -1 ||
+           cat.indexOf('loft') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'kitchen_wall' ||
+           cat === 'crockery_wall' || cat === 'spice_rack' || cat === 'loft_os' || cat === 'kitchen_os' ||
+           nm.indexOf('wall') !== -1 || nm.indexOf('overhead') !== -1 || nm.indexOf('spice rack') !== -1 ||
+           nm.indexOf('spice_rack') !== -1 || nm.indexOf('loft') !== -1;
+  }
+
   function createFurniturePlacement(opts) {
     opts = opts || {};
+    var cat = (opts.category || 'wardrobe').toLowerCase();
+    var isWallUnit = isWallUnitCategory(opts.category, opts.name);
+    var defElev = isWallUnit ? 1500 : 0;
+    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
+      parseFloat(opts.elevation) :
+      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && opts.pos.z !== 0) ?
+        parseFloat(opts.pos.z) : defElev);
+
+    var numShutters = (opts.unitConfig && opts.unitConfig.shutters !== undefined) ?
+      parseInt(opts.unitConfig.shutters) :
+      ((opts.dimensions && opts.dimensions.W > 1200) ? 3 : 2);
+    var numDrawers = (opts.unitConfig && opts.unitConfig.drawers !== undefined) ?
+      parseInt(opts.unitConfig.drawers) : 0;
+
+    var initColors = opts.shutterColors ? opts.shutterColors.slice() : [];
+    var initMats = opts.shutterMaterials ? opts.shutterMaterials.slice() : [];
+    var initStates = opts.shutterStates ? opts.shutterStates.slice() : [];
+    var initDrawerStates = opts.drawerStates ? opts.drawerStates.slice() : [];
+    var defColor = (opts.shutter && opts.shutter.finish) || opts.shutterFinish || '#6E4E35';
+    var defMat = (opts.shutter && opts.shutter.material) || opts.shutterMaterial || 'laminate';
+
+    while (initColors.length < numShutters) initColors.push(defColor);
+    while (initMats.length < numShutters) initMats.push(defMat);
+    while (initStates.length < numShutters) initStates.push(false);
+    while (initDrawerStates.length < numDrawers) initDrawerStates.push(false);
+
     return {
       id: opts.id || uid('furn'),
       name: opts.name || 'Modular Unit',
       category: opts.category || 'wardrobe',
       roomId: opts.roomId || null,
-      pos: { x: opts.pos ? opts.pos.x : 0, y: opts.pos ? opts.pos.y : 0, z: opts.pos ? opts.pos.z : 0 },
+      pos: { x: opts.pos ? opts.pos.x : 0, y: opts.pos ? opts.pos.y : 0, z: elev },
+      elevation: elev,
       rotY: opts.rotY || 0,
       dimensions: {
-        W: opts.dimensions ? opts.dimensions.W : 1200,
-        H: opts.dimensions ? opts.dimensions.H : 2100,
-        D: opts.dimensions ? opts.dimensions.D : 600
+        W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
+        H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : 2100),
+        D: opts.dimensions ? opts.dimensions.D : (isWallUnit ? 350 : 600)
       },
+      shutterColors: initColors,
+      shutterMaterials: initMats,
+      shutterStates: initStates,
+      drawerStates: initDrawerStates,
       materials: opts.materials || {
         shutter: {
-          material: (opts.shutter && opts.shutter.material) || opts.shutterMaterial || 'HDHMR_18MM',
-          finish: (opts.shutter && opts.shutter.finish) || opts.shutterFinish || 'Brazilian Horizontal Walnut'
+          material: defMat,
+          finish: defColor
         },
         carcass: {
           material: (opts.carcass && opts.carcass.material) || opts.carcassMaterial || 'BWP_18MM',
@@ -391,6 +434,108 @@
       pricingOverrides: opts.pricingOverrides || null,
       notes: opts.notes || ''
     };
+  }
+
+  // Calculates corner angle in degrees between two walls meeting at jointPt
+  function calculateCornerAngle(w1, w2, jointPt) {
+    if (!w1 || !w2 || !jointPt) return 90;
+    var d1s = Vec2.dist(w1.start, jointPt);
+    var p1 = d1s < 25 ? w1.end : w1.start;
+    var v1 = { x: p1.x - jointPt.x, y: p1.y - jointPt.y };
+    var l1 = Math.hypot(v1.x, v1.y);
+    if (l1 < 1e-6) return 90;
+    v1.x /= l1; v1.y /= l1;
+
+    var d2s = Vec2.dist(w2.start, jointPt);
+    var p2 = d2s < 25 ? w2.end : w2.start;
+    var v2 = { x: p2.x - jointPt.x, y: p2.y - jointPt.y };
+    var l2 = Math.hypot(v2.x, v2.y);
+    if (l2 < 1e-6) return 90;
+    v2.x /= l2; v2.y /= l2;
+
+    var dot = Math.max(-1, Math.min(1, v1.x * v2.x + v1.y * v2.y));
+    var rad = Math.acos(dot);
+    return Math.round(rad * (180 / Math.PI));
+  }
+
+  // Returns 4 2D corner vertices of rotated furniture rectangle (Oriented Bounding Box)
+  function getFurniturePolygon(f) {
+    var w = (f.dimensions && f.dimensions.W) || 1200;
+    var d = (f.dimensions && f.dimensions.D) || 600;
+    var ang = f.rotY || 0;
+    var cosA = Math.cos(ang), sinA = Math.sin(ang);
+    var ux = cosA * (w / 2), uy = sinA * (w / 2);
+    var vx = -sinA * (d / 2), vy = cosA * (d / 2);
+    var cx = f.pos.x, cy = f.pos.y;
+    return [
+      { x: cx - ux - vx, y: cy - uy - vy },
+      { x: cx + ux - vx, y: cy + uy - vy },
+      { x: cx + ux + vx, y: cy + uy + vy },
+      { x: cx - ux + vx, y: cy - uy + vy }
+    ];
+  }
+
+  // SAT (Separating Axis Theorem) collision test between two convex 2D polygons
+  function polygonsIntersect(poly1, poly2, tolerance) {
+    tolerance = tolerance !== undefined ? tolerance : 5;
+    var polys = [poly1, poly2];
+    for (var p = 0; p < polys.length; p++) {
+      var poly = polys[p];
+      for (var i = 0; i < poly.length; i++) {
+        var p1 = poly[i];
+        var p2 = poly[(i + 1) % poly.length];
+        var edge = { x: p2.x - p1.x, y: p2.y - p1.y };
+        var normal = { x: -edge.y, y: edge.x };
+        var len = Math.hypot(normal.x, normal.y);
+        if (len < 1e-6) continue;
+        normal.x /= len; normal.y /= len;
+
+        var min1 = Infinity, max1 = -Infinity;
+        for (var a = 0; a < poly1.length; a++) {
+          var dot1 = poly1[a].x * normal.x + poly1[a].y * normal.y;
+          if (dot1 < min1) min1 = dot1;
+          if (dot1 > max1) max1 = dot1;
+        }
+
+        var min2 = Infinity, max2 = -Infinity;
+        for (var b = 0; b < poly2.length; b++) {
+          var dot2 = poly2[b].x * normal.x + poly2[b].y * normal.y;
+          if (dot2 < min2) min2 = dot2;
+          if (dot2 > max2) max2 = dot2;
+        }
+
+        if (max1 - tolerance < min2 || max2 - tolerance < min1) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  // Checks if furniture unit f collides with any other unit in allFurn
+  function checkFurnitureCollision(f, allFurn, ignoreId) {
+    if (!f || !allFurn || !allFurn.length) return { collided: false };
+    var polyF = getFurniturePolygon(f);
+    var elev1 = f.elevation !== undefined ? f.elevation : ((f.pos && f.pos.z) || 0);
+    var h1 = (f.dimensions && f.dimensions.H) || 2100;
+    var top1 = elev1 + h1;
+
+    for (var i = 0; i < allFurn.length; i++) {
+      var other = allFurn[i];
+      if (other.id === f.id || (ignoreId && other.id === ignoreId)) continue;
+      var elev2 = other.elevation !== undefined ? other.elevation : ((other.pos && other.pos.z) || 0);
+      var h2 = (other.dimensions && other.dimensions.H) || 2100;
+      var top2 = elev2 + h2;
+
+      // If vertical elevation ranges do not overlap (e.g. wall cabinet above floor base unit), allow
+      if (top1 <= elev2 + 5 || top2 <= elev1 + 5) continue;
+
+      var polyOther = getFurniturePolygon(other);
+      if (polygonsIntersect(polyF, polyOther, 5)) {
+        return { collided: true, other: other };
+      }
+    }
+    return { collided: false };
   }
 
   /* ─────────────────────────────────────────────────────────────────────────────
@@ -869,7 +1014,7 @@
     return 'wr_shelves';
   }
 
-  function calculateItemCost(item, rateCard) {
+  function calculateItemCost(item, rateCard, roomTier) {
     rateCard = rateCard || DEFAULT_RATE_CARD;
     var catKey = item.category || 'wardrobe';
     var catConfig = rateCard.categories[catKey] || rateCard.categories.wardrobe;
@@ -880,7 +1025,7 @@
 
     var modelType = resolveModelType(item);
     var modelDef = (rateCard.modelRates && rateCard.modelRates[modelType]) || MODEL_RATES_MATRIX[modelType];
-    var activeTier = item.tierOverride || rateCard.selectedTier || null;
+    var activeTier = item.tierOverride || roomTier || (rateCard.roomTiers && item.roomId && rateCard.roomTiers[item.roomId]) || rateCard.selectedTier || null;
 
     var baseRate = (item.pricingOverrides && item.pricingOverrides.baseRate);
     if (!baseRate && activeTier && modelDef && modelDef.rates && modelDef.rates[activeTier]) {
@@ -997,9 +1142,11 @@
     var roomSummaries = {};
     for (var rj = 0; rj < rooms.length; rj++) {
       var rObj = rooms[rj];
+      var rmTier = (rateCard.roomTiers && rateCard.roomTiers[rObj.id]) || rObj.variant || rateCard.selectedTier || 'PRICE 1';
       roomSummaries[rObj.id] = {
         id: rObj.id,
         name: rObj.name || ('Room ' + (rj + 1)),
+        variant: rmTier,
         areaSqFt: rObj.areaSqFt || 0,
         areaSqM: rObj.areaSqM || 0,
         itemCount: 0,
@@ -1012,6 +1159,7 @@
     roomSummaries['_general'] = {
       id: '_general',
       name: 'General / Unassigned',
+      variant: (rateCard.roomTiers && rateCard.roomTiers['_general']) || rateCard.selectedTier || 'PRICE 1',
       areaSqFt: 0,
       areaSqM: 0,
       itemCount: 0,
@@ -1030,8 +1178,10 @@
     // 1. Modular Furniture & Cabinetry Line Items
     for (var i = 0; i < furniture.length; i++) {
       var f = furniture[i];
-      var cost = calculateItemCost(f, rateCard);
-      cost.roomId = f.roomId || '_general';
+      var fRoomId = f.roomId || '_general';
+      var rTier = (rateCard.roomTiers && rateCard.roomTiers[fRoomId]) || (roomMap[fRoomId] && roomMap[fRoomId].variant) || null;
+      var cost = calculateItemCost(f, rateCard, rTier);
+      cost.roomId = fRoomId;
       cost.roomName = (f.roomId && roomMap[f.roomId]) ? roomMap[f.roomId].name : 'General';
 
       allItemsTotalWoodwork += cost.totalAmount;
@@ -1130,17 +1280,23 @@
     var commCharges = project.commercialCharges;
 
     if (commCharges && typeof commCharges === 'object' && Object.keys(commCharges).length > 0) {
-      var commAdditions = 0;
-      var commDeductions = (parseFloat(commCharges.discount) || 0) + (parseFloat(commCharges.finalDiscount) || 0);
-      var commKeys = [
-        'transport', 'designCharges', 'accessories', 'floorMat', 'electrical',
-        'plumbing', 'wallpaper', 'falseCeiling', 'appliances', 'civilWorks',
-        'loadingUnloading', 'outstationTransport'
-      ];
-      for (var ck = 0; ck < commKeys.length; ck++) {
-        commAdditions += (parseFloat(commCharges[commKeys[ck]]) || 0);
-      }
-      netBeforeTax = Math.max(0, Math.round(subtotal + commAdditions - commDeductions));
+      var addAccessories = parseFloat(commCharges.additionalAccessories || commCharges.accessories) || 0;
+      var appliances = parseFloat(commCharges.appliances) || 0;
+      var designPct = (commCharges.designPercent !== undefined && commCharges.designPercent !== null && commCharges.designPercent !== '') ? parseFloat(commCharges.designPercent) : 9;
+      if (isNaN(designPct)) designPct = 9;
+      var designAmount = Math.round(subtotal * (designPct / 100));
+      var freightPct = (commCharges.freightPercent !== undefined && commCharges.freightPercent !== null && commCharges.freightPercent !== '') ? parseFloat(commCharges.freightPercent) : 2.5;
+      if (isNaN(freightPct)) freightPct = 2.5;
+      var freightAmount = Math.round(subtotal * (freightPct / 100));
+
+      var discPct = parseFloat(commCharges.discountPercent || commCharges.discount) || 0;
+      var discAmount = Math.round(subtotal * (discPct / 100));
+      var adpPct = parseFloat(commCharges.adpPercent || commCharges.adp) || 0;
+      var adpAmount = Math.round(subtotal * (adpPct / 100));
+      var totalDeductions = discAmount + adpAmount;
+
+      var additions = addAccessories + appliances + designAmount + freightAmount;
+      netBeforeTax = Math.max(0, Math.round(subtotal + additions - totalDeductions));
       if (commCharges.gstPercent !== undefined && commCharges.gstPercent !== null && commCharges.gstPercent !== '') {
         var parsedGst = parseFloat(commCharges.gstPercent);
         if (!isNaN(parsedGst)) gstPercent = parsedGst;
@@ -4024,6 +4180,11 @@
     MODEL_RATES_MATRIX: MODEL_RATES_MATRIX,
     resolveModelType: resolveModelType,
     parseUnitsCSV: parseUnitsCSV,
-    importUnitsFromCSV: importUnitsFromCSV
+    importUnitsFromCSV: importUnitsFromCSV,
+    calculateCornerAngle: calculateCornerAngle,
+    getFurniturePolygon: getFurniturePolygon,
+    polygonsIntersect: polygonsIntersect,
+    checkFurnitureCollision: checkFurnitureCollision,
+    isWallUnit: isWallUnitCategory
   };
 });
