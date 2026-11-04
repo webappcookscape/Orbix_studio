@@ -19971,74 +19971,158 @@ var GL=(function(){
     try{ return tR.domElement.toDataURL("image/jpeg",0.82); }catch(e){ return null; }
   }
 
-  /* ── 3D Translation Gizmo Arrows: X (Red), Z (Blue), Center (Yellow) ── */
+  /* ── 3D Translation & Rotation CAD Gizmo (Exact match to reference diagram) ── */
   var gizmoGroup = null, gizmoMeshes = [];
-  function gizmoInit(){
-    if(gizmoGroup || !scene) return;
-    gizmoGroup = new THREE.Group();
-    gizmoGroup.name = "OrbixGizmo3D";
-    gizmoGroup.visible = false;
-    scene.add(gizmoGroup);
 
-    // X Axis (Red) - Width / along wall translation
-    var xGroup = new THREE.Group();
-    var xShaft = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 260, 16), new THREE.MeshBasicMaterial({ color: 0xef4444, depthTest: false }));
-    xShaft.rotation.z = -Math.PI / 2;
-    xShaft.position.x = 130;
-    var xCone = new THREE.Mesh(new THREE.ConeGeometry(22, 60, 20), new THREE.MeshBasicMaterial({ color: 0xdc2626, depthTest: false }));
-    xCone.rotation.z = -Math.PI / 2;
-    xCone.position.x = 290;
-    xGroup.add(xShaft);
-    xGroup.add(xCone);
-    xGroup.userData = { isGizmo: true, axis: 'x' };
-    xShaft.userData = { isGizmo: true, axis: 'x' };
-    xCone.userData = { isGizmo: true, axis: 'x' };
-    xShaft.renderOrder = 9999;
-    xCone.renderOrder = 9999;
-    gizmoGroup.add(xGroup);
-    gizmoMeshes.push(xShaft, xCone);
+  function makeFlatArrowMesh(color, shaftW, shaftL, headW, headL) {
+    var shape = new THREE.Shape();
+    shape.moveTo(-shaftW / 2, 0);
+    shape.lineTo(shaftW / 2, 0);
+    shape.lineTo(shaftW / 2, shaftL);
+    shape.lineTo(headW / 2, shaftL);
+    shape.lineTo(0, shaftL + headL);
+    shape.lineTo(-headW / 2, shaftL);
+    shape.lineTo(-shaftW / 2, shaftL);
+    shape.closePath();
+    var geo = new THREE.ShapeGeometry(shape);
+    var mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, depthTest: false, transparent: true, opacity: 0.95 });
+    var m = new THREE.Mesh(geo, mat);
+    m.renderOrder = 9999;
+    return m;
+  }
 
-    // Z Axis (Blue) - Depth / perpendicular translation
-    var zGroup = new THREE.Group();
-    var zShaft = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 260, 16), new THREE.MeshBasicMaterial({ color: 0x3b82f6, depthTest: false }));
-    zShaft.rotation.x = Math.PI / 2;
-    zShaft.position.z = 130;
-    var zCone = new THREE.Mesh(new THREE.ConeGeometry(22, 60, 20), new THREE.MeshBasicMaterial({ color: 0x2563eb, depthTest: false }));
-    zCone.rotation.x = Math.PI / 2;
-    zCone.position.z = 290;
-    zGroup.add(zShaft);
-    zGroup.add(zCone);
-    zGroup.userData = { isGizmo: true, axis: 'z' };
-    zShaft.userData = { isGizmo: true, axis: 'z' };
-    zCone.userData = { isGizmo: true, axis: 'z' };
-    zShaft.renderOrder = 9999;
-    zCone.renderOrder = 9999;
-    gizmoGroup.add(zGroup);
-    gizmoMeshes.push(zShaft, zCone);
+  function makeCurvedArrowMesh(color, radius, arcAngle, width) {
+    var shape = new THREE.Shape();
+    var segs = 18;
+    var rIn = radius - width / 2;
+    var rOut = radius + width / 2;
+    for (var i = 0; i <= segs; i++) {
+      var a = (i / segs) * arcAngle;
+      var x = Math.cos(a) * rOut, y = Math.sin(a) * rOut;
+      if (i === 0) shape.moveTo(x, y); else shape.lineTo(x, y);
+    }
+    // Arrowhead tip at end
+    shape.lineTo(Math.cos(arcAngle) * (rOut + 16), Math.sin(arcAngle) * (rOut + 16));
+    shape.lineTo(Math.cos(arcAngle + 0.28) * radius, Math.sin(arcAngle + 0.28) * radius);
+    shape.lineTo(Math.cos(arcAngle) * (rIn - 16), Math.sin(arcAngle) * (rIn - 16));
+    for (var j = segs; j >= 0; j--) {
+      var a2 = (j / segs) * arcAngle;
+      shape.lineTo(Math.cos(a2) * rIn, Math.sin(a2) * rIn);
+    }
+    // Arrowhead tip at start
+    shape.lineTo(Math.cos(0) * (rIn - 16), Math.sin(0) * (rIn - 16));
+    shape.lineTo(Math.cos(-0.28) * radius, Math.sin(-0.28) * radius);
+    shape.lineTo(Math.cos(0) * (rOut + 16), Math.sin(0) * (rOut + 16));
+    shape.closePath();
 
-    // Center handle (Gold/Amber) - Free floor translation
-    var centerRing = new THREE.Mesh(new THREE.TorusGeometry(32, 6, 12, 32), new THREE.MeshBasicMaterial({ color: 0xf59e0b, depthTest: false }));
-    centerRing.rotation.x = Math.PI / 2;
-    centerRing.position.y = 8;
-    centerRing.userData = { isGizmo: true, axis: 'xz' };
-    centerRing.renderOrder = 9999;
-    gizmoGroup.add(centerRing);
-    gizmoMeshes.push(centerRing);
+    var geo = new THREE.ShapeGeometry(shape);
+    var mat = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, depthTest: false, transparent: true, opacity: 0.95 });
+    var m = new THREE.Mesh(geo, mat);
+    m.renderOrder = 9999;
+    return m;
   }
 
   function gizmoSet(furnObj, furnId){
-    gizmoInit();
-    if(!gizmoGroup) return;
-    if(furnObj && furnId){
-      gizmoGroup.position.set(furnObj.position.x, (furnObj.position.y || 0) + 15, furnObj.position.z);
-      gizmoGroup.userData.furnId = furnId;
-      gizmoGroup.userData.targetObj = furnObj;
-      gizmoGroup.visible = true;
-    } else {
+    if(!scene) return;
+    if(!gizmoGroup){
+      gizmoGroup = new THREE.Group();
+      gizmoGroup.name = "OrbixGizmo3D";
+      scene.add(gizmoGroup);
+    }
+
+    // Clear old elements
+    while(gizmoGroup.children.length){
+      var ch = gizmoGroup.children[0];
+      gizmoGroup.remove(ch);
+      if(ch.geometry) ch.geometry.dispose();
+    }
+    gizmoMeshes = [];
+
+    if(!furnObj || !furnId){
       gizmoGroup.visible = false;
       gizmoGroup.userData.furnId = null;
       gizmoGroup.userData.targetObj = null;
+      render();
+      return;
     }
+
+    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    var furn = plan && plan.furniture && plan.furniture.find(function(it){ return it.id === furnId; });
+    var dims = (furn && furn.dimensions) ? furn.dimensions : { W: 900, H: 850, D: 600 };
+    var hw = dims.W / 2;
+    var hh = dims.H;
+    var hd = dims.D / 2;
+
+    gizmoGroup.position.set(furnObj.position.x, furnObj.position.y || 0, furnObj.position.z);
+    gizmoGroup.rotation.y = furnObj.rotation.y || 0;
+    gizmoGroup.userData.furnId = furnId;
+    gizmoGroup.userData.targetObj = furnObj;
+    gizmoGroup.userData.dims = dims;
+    gizmoGroup.visible = true;
+
+    // 1. Orange 3D Bounding Box Lines (#F59E0B)
+    var boxPts = [
+      new THREE.Vector3(-hw, 1, -hd), new THREE.Vector3(hw, 1, -hd),
+      new THREE.Vector3(hw, 1, -hd), new THREE.Vector3(hw, 1, hd),
+      new THREE.Vector3(hw, 1, hd), new THREE.Vector3(-hw, 1, hd),
+      new THREE.Vector3(-hw, 1, hd), new THREE.Vector3(-hw, 1, -hd),
+      new THREE.Vector3(-hw, 1, -hd), new THREE.Vector3(-hw, hh, -hd),
+      new THREE.Vector3(hw, 1, -hd), new THREE.Vector3(hw, hh, -hd),
+      new THREE.Vector3(hw, 1, hd), new THREE.Vector3(hw, hh, hd),
+      new THREE.Vector3(-hw, 1, hd), new THREE.Vector3(-hw, hh, hd)
+    ];
+    var boxGeo = new THREE.BufferGeometry().setFromPoints(boxPts);
+    var boxLines = new THREE.LineSegments(boxGeo, new THREE.LineBasicMaterial({ color: 0xF59E0B, linewidth: 2, depthTest: false }));
+    boxLines.renderOrder = 9998;
+    gizmoGroup.add(boxLines);
+
+    // 2. Cyan / Blue Top Face Border (#38BDF8)
+    var topPts = [
+      new THREE.Vector3(-hw, hh + 2, -hd), new THREE.Vector3(hw, hh + 2, -hd),
+      new THREE.Vector3(hw, hh + 2, -hd), new THREE.Vector3(hw, hh + 2, hd),
+      new THREE.Vector3(hw, hh + 2, hd), new THREE.Vector3(-hw, hh + 2, hd),
+      new THREE.Vector3(-hw, hh + 2, hd), new THREE.Vector3(-hw, hh + 2, -hd)
+    ];
+    var topGeo = new THREE.BufferGeometry().setFromPoints(topPts);
+    var topLines = new THREE.LineSegments(topGeo, new THREE.LineBasicMaterial({ color: 0x38BDF8, linewidth: 3, depthTest: false }));
+    topLines.renderOrder = 9998;
+    gizmoGroup.add(topLines);
+
+    // 3. Flat Red Arrow (Right) - Translates unit along +X (width / along wall)
+    var redArrow = makeFlatArrowMesh(0xF87171, 35, 110, 80, 80);
+    redArrow.rotation.x = -Math.PI / 2;
+    redArrow.rotation.z = -Math.PI / 2; // Points right along +X
+    redArrow.position.set(hw + 25, 4, 0);
+    redArrow.userData = { isGizmo: true, axis: 'x', dir: 1, name: 'arrowRight' };
+    gizmoGroup.add(redArrow);
+    gizmoMeshes.push(redArrow);
+
+    // 4. Flat Blue Arrow (Front) - Pulls unit forward along +Z (depth / into room)
+    var blueArrow = makeFlatArrowMesh(0x60A5FA, 35, 110, 80, 80);
+    blueArrow.rotation.x = -Math.PI / 2; // Points forward along +Z
+    blueArrow.position.set(0, 4, hd + 25);
+    blueArrow.userData = { isGizmo: true, axis: 'z', dir: 1, name: 'arrowFront' };
+    gizmoGroup.add(blueArrow);
+    gizmoMeshes.push(blueArrow);
+
+    // 5. Flat Green Arrow (Back) - On countertop, points backward along -Z (towards wall)
+    var greenArrow = makeFlatArrowMesh(0x10B981, 35, 100, 75, 75);
+    greenArrow.rotation.x = -Math.PI / 2;
+    greenArrow.rotation.z = Math.PI; // Points backward along -Z
+    greenArrow.position.set(0, hh + 4, -hd * 0.1);
+    greenArrow.userData = { isGizmo: true, axis: 'z', dir: -1, name: 'arrowBack' };
+    gizmoGroup.add(greenArrow);
+    gizmoMeshes.push(greenArrow);
+
+    // 6. Curved Green Rotation Arc Arrow - At front-right corner
+    var rotArc = makeCurvedArrowMesh(0x34D399, 90, Math.PI / 2, 22);
+    rotArc.rotation.x = -Math.PI / 2;
+    rotArc.rotation.z = -Math.PI / 4;
+    rotArc.position.set(hw + 25, 4, hd + 25);
+    rotArc.userData = { isGizmo: true, axis: 'rot', name: 'arrowRotate' };
+    gizmoGroup.add(rotArc);
+    gizmoMeshes.push(rotArc);
+
     render();
   }
 
@@ -20053,7 +20137,7 @@ var GL=(function(){
       var o = hits[i].object;
       while(o && !o.userData.axis && o !== gizmoGroup) o = o.parent;
       if(o && o.userData && o.userData.axis){
-        return { axis: o.userData.axis, point: hits[i].point, mesh: o };
+        return { axis: o.userData.axis, dir: o.userData.dir || 1, name: o.userData.name, point: hits[i].point, mesh: o };
       }
     }
     return null;
@@ -20688,10 +20772,22 @@ function camApply(){
           gizmoDrag.moved = true;
           stage.style.cursor = "grabbing";
         }
+        var theta = (gizmoDrag.obj.rotation ? gizmoDrag.obj.rotation.y : 0);
         if(gizmoDrag.axis === 'x'){
-          gizmoDrag.obj.position.x = gizmoDrag.startPos.x + dx;
+          // Movement along local X (length / wall direction)
+          var deltaLocalX = dx * Math.cos(theta) - dz * Math.sin(theta);
+          gizmoDrag.obj.position.x = gizmoDrag.startPos.x + deltaLocalX * Math.cos(theta);
+          gizmoDrag.obj.position.z = gizmoDrag.startPos.z - deltaLocalX * Math.sin(theta);
         } else if(gizmoDrag.axis === 'z'){
-          gizmoDrag.obj.position.z = gizmoDrag.startPos.z + dz;
+          // Movement along local Z (depth / perpendicular to wall)
+          var deltaLocalZ = dx * Math.sin(theta) + dz * Math.cos(theta);
+          gizmoDrag.obj.position.x = gizmoDrag.startPos.x + deltaLocalZ * Math.sin(theta);
+          gizmoDrag.obj.position.z = gizmoDrag.startPos.z + deltaLocalZ * Math.cos(theta);
+        } else if(gizmoDrag.axis === 'rot'){
+          // Free rotation around vertical axis
+          var cx = gizmoDrag.startPos.x, cz = gizmoDrag.startPos.z;
+          var angle = Math.atan2(curF.x - cx, curF.z - cz);
+          gizmoDrag.obj.rotation.y = angle;
         } else {
           gizmoDrag.obj.position.x = gizmoDrag.startPos.x + dx;
           gizmoDrag.obj.position.z = gizmoDrag.startPos.z + dz;
@@ -20740,7 +20836,22 @@ function camApply(){
       stage.style.cursor = "";
       try{ stage.releasePointerCapture(e.pointerId); }catch(err){}
 
-      if(gd.moved){
+      if(gd.axis === 'rot' && !gd.moved){
+        // Clicking rotation arc directly turns 90 degrees
+        gd.obj.rotation.y = ((gd.obj.rotation.y || 0) + Math.PI / 2) % (Math.PI * 2);
+        GL.gizmoSet(gd.obj, gd.id);
+        GL.settle();
+        var planR = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+        if(planR && planR.furniture){
+          var fR = planR.furniture.find(function(it){ return it.id === gd.id; });
+          if(fR){
+            fR.rotY = gd.obj.rotation.y;
+            if(window.OrbixUI.editor) window.OrbixUI.editor.pushHistory('Rotate Furniture (Gizmo)');
+            if(window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+            if(window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+          }
+        }
+      } else if(gd.moved){
         var finalX = Math.round(gd.obj.position.x / 50) * 50;
         var finalZ = Math.round(gd.obj.position.z / 50) * 50;
         gd.obj.position.x = finalX;
