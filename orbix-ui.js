@@ -703,8 +703,16 @@
           var targetL = self.editor.parseDimInput(e.target.value);
           if (targetL > 100) {
             var dir = Core.wallDirection(w);
-            w.end.x = w.start.x + dir.x * targetL;
-            w.end.y = w.start.y + dir.y * targetL;
+            if (w.startLocked === false && w.endLocked !== false) {
+              // Corner B is locked, Corner A released: resize wall anchored from Corner B
+              w.start.x = w.end.x - dir.x * targetL;
+              w.start.y = w.end.y - dir.y * targetL;
+            } else {
+              // Corner A is locked (or both locked): resize wall anchored from Corner A
+              w.end.x = w.start.x + dir.x * targetL;
+              w.end.y = w.start.y + dir.y * targetL;
+            }
+            Core.detectRooms(self.editor.project);
             self.editor.pushHistory('Resize Wall');
             self.editor.render();
             self.renderInspector(self.editor.selected);

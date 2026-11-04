@@ -82,7 +82,10 @@ async function checkDatabaseConnection() {
         console.log(`✓ Prisma auto-recovered and connected to PostgreSQL live database on port ${process.env.PGPORT}.`);
         return true;
       } catch (altErr) {
-        // Fallback also failed
+        // Fallback also failed: retain default port 5432
+        currentUrl = currentUrl.replace(':5433', ':5432');
+        process.env.DATABASE_URL = currentUrl;
+        process.env.PGPORT = '5432';
       }
     }
 

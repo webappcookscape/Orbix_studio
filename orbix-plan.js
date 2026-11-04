@@ -384,6 +384,7 @@
     this.canvas.addEventListener('mousedown', function (e) {
       var rect = self.canvas.getBoundingClientRect();
       var mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      self.lastMouseScreen = mouseScreen;
       var worldPt = self.screenToWorld(mouseScreen);
 
       // Middle mouse button or Spacebar held -> Pan
@@ -430,6 +431,7 @@
     window.addEventListener('mousemove', function (e) {
       var rect = self.canvas.getBoundingClientRect();
       var mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      self.lastMouseScreen = mouseScreen;
       self.cursorWorld = self.screenToWorld(mouseScreen);
 
       if (self.dragState && self.dragState.type === 'move_underlay') {
@@ -462,22 +464,90 @@
       if (self.dragState && self.dragState.type === 'move_wall') {
         var dx = self.cursorWorld.x - self.dragState.startWorld.x;
         var dy = self.cursorWorld.y - self.dragState.startWorld.y;
-        self.dragState.wall.start.x = self.dragState.origStart.x + dx;
-        self.dragState.wall.start.y = self.dragState.origStart.y + dy;
-        self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
-        self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
-        if (self.dragState.connectedStart) {
-          for (var cs = 0; cs < self.dragState.connectedStart.length; cs++) {
-            self.dragState.connectedStart[cs].ref.x = self.dragState.connectedStart[cs].orig.x + dx;
-            self.dragState.connectedStart[cs].ref.y = self.dragState.connectedStart[cs].orig.y + dy;
+        var startLocked = self.dragState.wall.startLocked !== false;
+        var endLocked = self.dragState.wall.endLocked !== false;
+
+        if (startLocked && endLocked) {
+          // Both locked: Translate wall rigidly, extending both connected side walls
+          self.dragState.wall.start.x = self.dragState.origStart.x + dx;
+          self.dragState.wall.start.y = self.dragState.origStart.y + dy;
+          self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
+          self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
+          if (self.dragState.connectedStart) {
+            for (var cs = 0; cs < self.dragState.connectedStart.length; cs++) {
+              self.dragState.connectedStart[cs].ref.x = self.dragState.connectedStart[cs].orig.x + dx;
+              self.dragState.connectedStart[cs].ref.y = self.dragState.connectedStart[cs].orig.y + dy;
+            }
           }
-        }
-        if (self.dragState.connectedEnd) {
-          for (var ce = 0; ce < self.dragState.connectedEnd.length; ce++) {
-            self.dragState.connectedEnd[ce].ref.x = self.dragState.connectedEnd[ce].orig.x + dx;
-            self.dragState.connectedEnd[ce].ref.y = self.dragState.connectedEnd[ce].orig.y + dy;
+          if (self.dragState.connectedEnd) {
+            for (var ce = 0; ce < self.dragState.connectedEnd.length; ce++) {
+              self.dragState.connectedEnd[ce].ref.x = self.dragState.connectedEnd[ce].orig.x + dx;
+              self.dragState.connectedEnd[ce].ref.y = self.dragState.connectedEnd[ce].orig.y + dy;
+            }
           }
+        } else if (!startLocked && endLocked) {
+          // Corner A RELEASED, Corner B LOCKED:
+          // Corner B stays pinned at origEnd! Corner A moves, extending the wall from B.
+          self.dragState.wall.end.x = self.dragState.origEnd.x;
+          self.dragState.wall.end.y = self.dragState.origEnd.y;
+          self.dragState.wall.start.x = self.dragState.origStart.x + dx;
+          self.dragState.wall.start.y = self.dragState.origStart.y + dy;
+          if (self.dragState.connectedStart) {
+            for (var cs2 = 0; cs2 < self.dragState.connectedStart.length; cs2++) {
+              self.dragState.connectedStart[cs2].ref.x = self.dragState.connectedStart[cs2].orig.x + dx;
+              self.dragState.connectedStart[cs2].ref.y = self.dragState.connectedStart[cs2].orig.y + dy;
+            }
+          }
+          if (self.dragState.connectedEnd) {
+            for (var ce2 = 0; ce2 < self.dragState.connectedEnd.length; ce2++) {
+              self.dragState.connectedEnd[ce2].ref.x = self.dragState.connectedEnd[ce2].orig.x;
+              self.dragState.connectedEnd[ce2].ref.y = self.dragState.connectedEnd[ce2].orig.y;
+            }
+          }
+          if (self.dragState.openings && self.dragState.origLen) {
+            var curLenA = Core.wallLength(self.dragState.wall);
+            for (var oi = 0; oi < self.dragState.openings.length; oi++) {
+              var opItem = self.dragState.openings[oi];
+              var distFromEnd = self.dragState.origLen - opItem.origOffset;
+              var halfW = opItem.op.width / 2;
+              opItem.op.offset = Math.max(halfW, Math.min(curLenA - halfW, curLenA - distFromEnd));
+            }
+          }
+        } else if (startLocked && !endLocked) {
+          // Corner A LOCKED, Corner B RELEASED:
+          // Corner A stays pinned at origStart! Corner B moves, extending the wall from A.
+          self.dragState.wall.start.x = self.dragState.origStart.x;
+          self.dragState.wall.start.y = self.dragState.origStart.y;
+          self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
+          self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
+          if (self.dragState.connectedStart) {
+            for (var cs3 = 0; cs3 < self.dragState.connectedStart.length; cs3++) {
+              self.dragState.connectedStart[cs3].ref.x = self.dragState.connectedStart[cs3].orig.x;
+              self.dragState.connectedStart[cs3].ref.y = self.dragState.connectedStart[cs3].orig.y;
+            }
+          }
+          if (self.dragState.connectedEnd) {
+            for (var ce3 = 0; ce3 < self.dragState.connectedEnd.length; ce3++) {
+              self.dragState.connectedEnd[ce3].ref.x = self.dragState.connectedEnd[ce3].orig.x + dx;
+              self.dragState.connectedEnd[ce3].ref.y = self.dragState.connectedEnd[ce3].orig.y + dy;
+            }
+          }
+          if (self.dragState.openings && self.dragState.origLen) {
+            var curLenB = Core.wallLength(self.dragState.wall);
+            for (var oi2 = 0; oi2 < self.dragState.openings.length; oi2++) {
+              var opItem2 = self.dragState.openings[oi2];
+              var halfW2 = opItem2.op.width / 2;
+              opItem2.op.offset = Math.max(halfW2, Math.min(curLenB - halfW2, opItem2.origOffset));
+            }
+          }
+        } else {
+          // Both released: translate wall freely without dragging connected corners
+          self.dragState.wall.start.x = self.dragState.origStart.x + dx;
+          self.dragState.wall.start.y = self.dragState.origStart.y + dy;
+          self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
+          self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
         }
+
         self.render();
         return;
       }
@@ -517,6 +587,29 @@
         return;
       }
 
+      // Check hover over corner lock badges of selected walls
+      var overLockBadge = false;
+      if (!self.dragState && self.selected && self.selected.length > 0) {
+        for (var sIdx = 0; sIdx < self.selected.length; sIdx++) {
+          if (self.selected[sIdx].type === 'wall') {
+            var sw = self.getWall(self.selected[sIdx].id);
+            if (sw && sw._badgeBounds) {
+              if (sw._badgeBounds['A'] && Math.hypot(mouseScreen.x - sw._badgeBounds['A'].x, mouseScreen.y - sw._badgeBounds['A'].y) < 24) {
+                overLockBadge = true; break;
+              }
+              if (sw._badgeBounds['B'] && Math.hypot(mouseScreen.x - sw._badgeBounds['B'].x, mouseScreen.y - sw._badgeBounds['B'].y) < 24) {
+                overLockBadge = true; break;
+              }
+            }
+          }
+        }
+      }
+      if (overLockBadge) {
+        self.canvas.style.cursor = 'pointer';
+      } else if (!self.dragState && self.activeTool === 'select') {
+        self.canvas.style.cursor = 'default';
+      }
+
       // Live drawing render
       if (self.activeTool === 'wall' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.wallChainStart) {
         self.render();
@@ -540,6 +633,7 @@
           }
           self.pushHistory('Move Furniture');
         } else if (self.dragState.type === 'move_vertex' || self.dragState.type === 'move_wall' || self.dragState.type === 'move_opening') {
+          Core.detectRooms(self.project);
           self.pushHistory('Move Wall');
         }
         self.dragState = null;
@@ -702,12 +796,51 @@
   };
 
   PlanEditor.prototype.handleSelectMouseDown = function (worldPt, isShift) {
+    // 0. Check if clicked a Lock Badge (A or B) of any selected wall
+    for (var s0 = 0; s0 < this.selected.length; s0++) {
+      if (this.selected[s0].type === 'wall') {
+        var sw = this.getWall(this.selected[s0].id);
+        if (sw && sw._badgeBounds) {
+          var ms = this.lastMouseScreen;
+          var corners = ['A', 'B'];
+          for (var ci = 0; ci < corners.length; ci++) {
+            var cKey = corners[ci];
+            var bb = sw._badgeBounds[cKey];
+            if (bb) {
+              var hit = false;
+              if (ms && Math.hypot(ms.x - bb.x, ms.y - bb.y) < 24) hit = true;
+              else if (bb.world && Vec2.dist(worldPt, bb.world) < 250) hit = true;
+
+              if (hit) {
+                if (cKey === 'A') {
+                  sw.startLocked = (sw.startLocked === false ? true : false);
+                  var msgA = (sw.startLocked !== false) ? 'Corner A Locked 🔒' : 'Corner A Released 🔓';
+                  if (typeof window !== 'undefined' && typeof window.toast === 'function') window.toast(msgA);
+                  this.pushHistory(sw.startLocked !== false ? 'Lock Corner A' : 'Unlock Corner A');
+                } else {
+                  sw.endLocked = (sw.endLocked === false ? true : false);
+                  var msgB = (sw.endLocked !== false) ? 'Corner B Locked 🔒' : 'Corner B Released 🔓';
+                  if (typeof window !== 'undefined' && typeof window.toast === 'function') window.toast(msgB);
+                  this.pushHistory(sw.endLocked !== false ? 'Lock Corner B' : 'Unlock Corner B');
+                }
+                this.render();
+                if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.renderInspector) {
+                  window.OrbixUI.renderInspector(this.selected);
+                }
+                return;
+              }
+            }
+          }
+        }
+      }
+    }
+
     // Check if clicked an endpoint handle of a selected wall
     for (var s = 0; s < this.selected.length; s++) {
       if (this.selected[s].type === 'wall') {
         var w = this.getWall(this.selected[s].id);
         if (w) {
-          if (Vec2.dist(worldPt, w.start) < 200) {
+          if (Vec2.dist(worldPt, w.start) < 140) {
             var connected = [w.start];
             if (w.startLocked !== false) {
               var allW = (this.project && this.project.plan && this.project.plan.walls) || [];
@@ -726,7 +859,7 @@
             };
             return;
           }
-          if (Vec2.dist(worldPt, w.end) < 200) {
+          if (Vec2.dist(worldPt, w.end) < 140) {
             var connected = [w.end];
             if (w.endLocked !== false) {
               var allW = (this.project && this.project.plan && this.project.plan.walls) || [];
@@ -801,36 +934,39 @@
       var connStart = [];
       var connEnd = [];
       var allWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
-      if (near.wall.startLocked !== false) {
-        for (var i = 0; i < allWalls.length; i++) {
-          var cw = allWalls[i];
-          if (cw.id === near.wall.id) continue;
-          if (Vec2.dist(cw.start, near.wall.start) < 30 && cw.startLocked !== false) {
-            connStart.push({ ref: cw.start, orig: Vec2.clone(cw.start) });
-          }
-          if (Vec2.dist(cw.end, near.wall.start) < 30 && cw.endLocked !== false) {
-            connStart.push({ ref: cw.end, orig: Vec2.clone(cw.end) });
-          }
+      for (var i = 0; i < allWalls.length; i++) {
+        var cw = allWalls[i];
+        if (cw.id === near.wall.id) continue;
+        if (Vec2.dist(cw.start, near.wall.start) < 30) {
+          connStart.push({ ref: cw.start, orig: Vec2.clone(cw.start) });
+        }
+        if (Vec2.dist(cw.end, near.wall.start) < 30) {
+          connStart.push({ ref: cw.end, orig: Vec2.clone(cw.end) });
+        }
+        if (Vec2.dist(cw.start, near.wall.end) < 30) {
+          connEnd.push({ ref: cw.start, orig: Vec2.clone(cw.start) });
+        }
+        if (Vec2.dist(cw.end, near.wall.end) < 30) {
+          connEnd.push({ ref: cw.end, orig: Vec2.clone(cw.end) });
         }
       }
-      if (near.wall.endLocked !== false) {
-        for (var j = 0; j < allWalls.length; j++) {
-          var dw = allWalls[j];
-          if (dw.id === near.wall.id) continue;
-          if (Vec2.dist(dw.start, near.wall.end) < 30 && dw.startLocked !== false) {
-            connEnd.push({ ref: dw.start, orig: Vec2.clone(dw.start) });
-          }
-          if (Vec2.dist(dw.end, near.wall.end) < 30 && dw.endLocked !== false) {
-            connEnd.push({ ref: dw.end, orig: Vec2.clone(dw.end) });
-          }
+
+      var wallOpenings = [];
+      var allOps = (this.project && this.project.plan && this.project.plan.openings) || [];
+      for (var opIdx = 0; opIdx < allOps.length; opIdx++) {
+        if (allOps[opIdx].wallId === near.wall.id) {
+          wallOpenings.push({ op: allOps[opIdx], origOffset: allOps[opIdx].offset });
         }
       }
+
       this.dragState = {
         type: 'move_wall',
         wall: near.wall,
         startWorld: Vec2.clone(worldPt),
         origStart: Vec2.clone(near.wall.start),
         origEnd: Vec2.clone(near.wall.end),
+        origLen: Core.wallLength(near.wall),
+        openings: wallOpenings,
         connectedStart: connStart,
         connectedEnd: connEnd
       };
@@ -1305,33 +1441,256 @@
       ctx.lineWidth = isSelected ? 2 : 1;
       ctx.stroke();
 
+      // If selected or hovered, draw distance to parallel walls
+      if (isSelected || (this.hoveredWallId === w.id && (!this.selected || !this.selected.some(function(s){ return s.type === 'wall'; })))) {
+        this.renderParallelWallDimensions(ctx, w);
+      }
+
       // If selected, draw handles at endpoints and joint locks
       if (isSelected) {
         this.renderHandle(ctx, w.start);
         this.renderHandle(ctx, w.end);
-        this.renderLockBadge(ctx, w.start, w.startLocked !== false);
-        this.renderLockBadge(ctx, w.end, w.endLocked !== false);
+        this.renderLockBadge(ctx, w, 'A');
+        this.renderLockBadge(ctx, w, 'B');
       }
     }
   };
 
-  PlanEditor.prototype.renderLockBadge = function (ctx, pt, isLocked) {
-    var s = this.worldToScreen(pt);
+  PlanEditor.prototype.renderLockBadge = function (ctx, w, cornerLabel) {
+    var dir = Core.wallDirection(w);
+    var baseNorm = Core.wallNormal(w);
+    var halfT = (w.thickness || 150) / 2;
+
+    // Detect exterior normal away from room interior so badge sits outside
+    var extNorm = baseNorm;
+    var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
+    if (rooms.length > 0) {
+      var midW = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
+      var testPos = { x: midW.x + baseNorm.x * 120, y: midW.y + baseNorm.y * 120 };
+      var inside = false;
+      for (var r = 0; r < rooms.length; r++) {
+        if (rooms[r].polygon && Core.Vec2.pointInPolygon(testPos, rooms[r].polygon)) {
+          inside = true;
+          break;
+        }
+      }
+      if (inside) extNorm = { x: -baseNorm.x, y: -baseNorm.y };
+    }
+
+    var isCornerA = (cornerLabel === 'A');
+    var isLocked = isCornerA ? (w.startLocked !== false) : (w.endLocked !== false);
+    var pt = isCornerA ? w.start : w.end;
+    var alongSign = isCornerA ? -1 : 1;
+
+    // Screen-space placement offset so badge stays readable and clear of vertex handle at any zoom
+    var sPt = this.worldToScreen(pt);
+    var badgeScreenX = sPt.x + extNorm.x * 32 + alongSign * dir.x * 12;
+    var badgeScreenY = sPt.y + extNorm.y * 32 + alongSign * dir.y * 12;
+    var badgeWorld = this.screenToWorld({ x: badgeScreenX, y: badgeScreenY });
+
+    w._badgeBounds = w._badgeBounds || {};
+    var isHovered = false;
+    if (this.lastMouseScreen) {
+      isHovered = (Math.hypot(this.lastMouseScreen.x - badgeScreenX, this.lastMouseScreen.y - badgeScreenY) < 24);
+    }
+    w._badgeBounds[cornerLabel] = {
+      x: badgeScreenX,
+      y: badgeScreenY,
+      world: badgeWorld,
+      r: 22,
+      isLocked: isLocked,
+      isHovered: isHovered
+    };
+
     ctx.save();
-    ctx.font = '12px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = isLocked ? '#eff6ff' : '#fef2f2';
-    ctx.strokeStyle = isLocked ? '#2563eb' : '#dc2626';
-    ctx.lineWidth = 1.2;
+    var bw = 46, bh = 24;
     ctx.beginPath();
-    ctx.arc(s.x, s.y, 9, 0, Math.PI * 2);
+    if (ctx.roundRect) ctx.roundRect(badgeScreenX - bw / 2, badgeScreenY - bh / 2, bw, bh, 12);
+    else ctx.rect(badgeScreenX - bw / 2, badgeScreenY - bh / 2, bw, bh);
+
+    if (isHovered) {
+      ctx.fillStyle = isLocked ? '#dbeafe' : '#ffe4e6';
+      ctx.strokeStyle = isLocked ? '#1d4ed8' : '#be123c';
+      ctx.lineWidth = 2;
+    } else {
+      ctx.fillStyle = isLocked ? '#ffffff' : '#fff1f2';
+      ctx.strokeStyle = isLocked ? '#64748b' : '#f43f5e';
+      ctx.lineWidth = 1.5;
+    }
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = isLocked ? '#1e40af' : '#b91c1c';
-    ctx.fillText(isLocked ? '🔒' : '🔓', s.x, s.y);
+    // Vector CAD Padlock at (badgeScreenX - 9, badgeScreenY)
+    var lcx = badgeScreenX - 9;
+    var lcy = badgeScreenY + 1;
+    var bodyW = 11, bodyH = 8;
+    var shackleW = 7, shackleH = 6;
+    var lockStroke = isLocked ? (isHovered ? '#1d4ed8' : '#334155') : (isHovered ? '#be123c' : '#e11d48');
+    var lockFill = isLocked ? (isHovered ? '#2563eb' : '#475569') : (isHovered ? '#dc2626' : '#ef4444');
+
+    // Draw Shackle
+    ctx.strokeStyle = lockStroke;
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    if (isLocked) {
+      // Closed arched shackle
+      var lx = lcx - shackleW / 2;
+      var rx = lcx + shackleW / 2;
+      var by = lcy - bodyH / 2;
+      var ty = by - shackleH;
+      ctx.moveTo(lx, by);
+      ctx.lineTo(lx, ty + 3);
+      ctx.arc(lcx, ty + 3, shackleW / 2, Math.PI, 0, false);
+      ctx.lineTo(rx, by);
+    } else {
+      // Open shackle swinging open to the left (matching CAD reference)
+      var rx2 = lcx + shackleW / 2;
+      var by2 = lcy - bodyH / 2;
+      var ty2 = by2 - shackleH - 1;
+      ctx.moveTo(rx2, by2);
+      ctx.lineTo(rx2, ty2 + 3);
+      ctx.arc(lcx + 1.5, ty2 + 3, shackleW / 2, 0, Math.PI, true);
+      ctx.lineTo(lcx - shackleW / 2 - 3, ty2);
+    }
+    ctx.stroke();
+
+    // Draw Lock Body
+    ctx.fillStyle = lockFill;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(lcx - bodyW / 2, lcy - bodyH / 2, bodyW, bodyH, 2);
+    else ctx.rect(lcx - bodyW / 2, lcy - bodyH / 2, bodyW, bodyH);
+    ctx.fill();
+
+    // Keyhole
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(lcx, lcy - 1, 0.9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(lcx - 0.5, lcy - 1, 1, 2.5);
+
+    // Letter A or B
+    ctx.font = '700 13px "IBM Plex Sans", -apple-system, sans-serif';
+    ctx.fillStyle = isLocked ? (isHovered ? '#1d4ed8' : '#0f172a') : (isHovered ? '#be123c' : '#9f1239');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(cornerLabel, badgeScreenX + 11, badgeScreenY);
     ctx.restore();
+  };
+
+  PlanEditor.prototype.renderParallelWallDimensions = function (ctx, w) {
+    var allWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    if (allWalls.length < 2 || this.zoom < 0.03) return;
+
+    var wDir = Core.wallDirection(w);
+    var wNorm = Core.wallNormal(w);
+    var wLen = Core.wallLength(w);
+    var halfT = (w.thickness || 150) / 2;
+
+    var candidatesPos = [];
+    var candidatesNeg = [];
+
+    for (var i = 0; i < allWalls.length; i++) {
+      var ow = allWalls[i];
+      if (ow.id === w.id) continue;
+
+      var owDir = Core.wallDirection(ow);
+      // Parallel cross product check
+      var cross = Math.abs(wDir.x * owDir.y - wDir.y * owDir.x);
+      if (cross > 0.08) continue;
+
+      // Project ow onto wDir
+      var tStart = (ow.start.x - w.start.x) * wDir.x + (ow.start.y - w.start.y) * wDir.y;
+      var tEnd = (ow.end.x - w.start.x) * wDir.x + (ow.end.y - w.start.y) * wDir.y;
+      var tMin = Math.min(tStart, tEnd);
+      var tMax = Math.max(tStart, tEnd);
+
+      var overlapStart = Math.max(0, tMin);
+      var overlapEnd = Math.min(wLen, tMax);
+      if (overlapEnd - overlapStart < 80) continue;
+
+      // Perpendicular signed distance
+      var perp = (ow.start.x - w.start.x) * wNorm.x + (ow.start.y - w.start.y) * wNorm.y;
+      if (Math.abs(perp) < 25) continue;
+
+      var owHalfT = (ow.thickness || 150) / 2;
+      var clearDist = Math.abs(perp) - halfT - owHalfT;
+      if (clearDist < 10) continue;
+
+      var item = {
+        wall: ow,
+        perp: perp,
+        clearDist: clearDist,
+        overlapStart: overlapStart,
+        overlapEnd: overlapEnd
+      };
+
+      if (perp > 0) candidatesPos.push(item);
+      else candidatesNeg.push(item);
+    }
+
+    var targets = [];
+    if (candidatesPos.length > 0) {
+      candidatesPos.sort(function (a, b) { return a.clearDist - b.clearDist; });
+      targets.push(candidatesPos[0]);
+    }
+    if (candidatesNeg.length > 0) {
+      candidatesNeg.sort(function (a, b) { return a.clearDist - b.clearDist; });
+      targets.push(candidatesNeg[0]);
+    }
+
+    for (var t = 0; t < targets.length; t++) {
+      var cand = targets[t];
+      var sideSign = cand.perp > 0 ? 1 : -1;
+      var midT = (cand.overlapStart + cand.overlapEnd) / 2;
+
+      var pStartWorld = {
+        x: w.start.x + wDir.x * midT + wNorm.x * (sideSign * halfT),
+        y: w.start.y + wDir.y * midT + wNorm.y * (sideSign * halfT)
+      };
+      var pEndWorld = {
+        x: pStartWorld.x + wNorm.x * (sideSign * cand.clearDist),
+        y: pStartWorld.y + wNorm.y * (sideSign * cand.clearDist)
+      };
+
+      var sStart = this.worldToScreen(pStartWorld);
+      var sEnd = this.worldToScreen(pEndWorld);
+
+      ctx.save();
+      // Perpendicular dimension line
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(sStart.x, sStart.y);
+      ctx.lineTo(sEnd.x, sEnd.y);
+      ctx.stroke();
+
+      // Circular terminal dots on wall faces
+      ctx.fillStyle = '#1d4ed8';
+      ctx.beginPath();
+      ctx.arc(sStart.x, sStart.y, 4, 0, Math.PI * 2);
+      ctx.arc(sEnd.x, sEnd.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dimension text pill
+      var midScreen = { x: (sStart.x + sEnd.x) / 2, y: (sStart.y + sEnd.y) / 2 };
+      var distText = Math.round(cand.clearDist).toString();
+      var angle = Math.atan2(sEnd.y - sStart.y, sEnd.x - sStart.x);
+      if (angle > Math.PI / 2) angle -= Math.PI;
+      else if (angle < -Math.PI / 2) angle += Math.PI;
+
+      ctx.translate(midScreen.x, midScreen.y);
+      ctx.rotate(angle);
+      ctx.font = '700 12px "IBM Plex Mono", monospace';
+      var tw = ctx.measureText(distText).width;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(-tw / 2 - 5, -9, tw + 10, 18);
+      ctx.fillStyle = '#1d4ed8';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(distText, 0, 0);
+      ctx.restore();
+    }
   };
 
   PlanEditor.prototype.renderCornerAngles = function (ctx) {
@@ -1405,46 +1764,33 @@
     }
 
     ctx.save();
-    var arcR = Math.max(16, 280 * this.zoom);
+    var arcR = Math.max(16, 260 * this.zoom);
 
-    if (Math.abs(deg - 90) <= 2) {
-      var sqSize = Math.max(12, 180 * this.zoom);
-      var sP1 = { x: sJnt.x + v1.x * sqSize, y: sJnt.y + v1.y * sqSize };
-      var sP2 = { x: sJnt.x + (v1.x + v2.x) * sqSize, y: sJnt.y + (v1.y + v2.y) * sqSize };
-      var sP3 = { x: sJnt.x + v2.x * sqSize, y: sJnt.y + v2.y * sqSize };
-      ctx.strokeStyle = '#2563eb';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(sP1.x, sP1.y);
-      ctx.lineTo(sP2.x, sP2.y);
-      ctx.lineTo(sP3.x, sP3.y);
-      ctx.stroke();
-    } else {
-      ctx.strokeStyle = '#2563eb';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      var diff = a2 - a1;
-      while (diff < -Math.PI) diff += Math.PI * 2;
-      while (diff > Math.PI) diff -= Math.PI * 2;
-      ctx.arc(sJnt.x, sJnt.y, arcR, a1, a2, diff < 0);
-      ctx.stroke();
-    }
+    // Terminal dots on the wall inner faces
+    var pDot1 = { x: sJnt.x + v1.x * arcR, y: sJnt.y + v1.y * arcR };
+    var pDot2 = { x: sJnt.x + v2.x * arcR, y: sJnt.y + v2.y * arcR };
 
-    var badgeDist = arcR + 14;
-    var sBadge = { x: sJnt.x + midV.x * badgeDist, y: sJnt.y + midV.y * badgeDist };
-    var degTxt = deg + '°';
-    ctx.font = '700 10.5px "IBM Plex Sans", monospace';
-    var tw = ctx.measureText(degTxt).width;
-    ctx.fillStyle = '#eff6ff';
-    ctx.strokeStyle = '#bfdbfe';
-    ctx.lineWidth = 1;
+    ctx.fillStyle = '#0f172a';
     ctx.beginPath();
-    if (ctx.roundRect) ctx.roundRect(sBadge.x - tw / 2 - 4, sBadge.y - 7, tw + 8, 14, 3);
-    else ctx.rect(sBadge.x - tw / 2 - 4, sBadge.y - 7, tw + 8, 14);
+    ctx.arc(pDot1.x, pDot1.y, 2.5, 0, Math.PI * 2);
+    ctx.arc(pDot2.x, pDot2.y, 2.5, 0, Math.PI * 2);
     ctx.fill();
+
+    // Arc connecting the dots
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    var diff = a2 - a1;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    ctx.arc(sJnt.x, sJnt.y, arcR, a1, a2, diff < 0);
     ctx.stroke();
 
-    ctx.fillStyle = '#1e40af';
+    var badgeDist = arcR * 0.72 + 8;
+    var sBadge = { x: sJnt.x + midV.x * badgeDist, y: sJnt.y + midV.y * badgeDist };
+    var degTxt = deg + '°';
+    ctx.font = '700 11px "IBM Plex Sans", monospace';
+    ctx.fillStyle = '#1e3a8a';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(degTxt, sBadge.x, sBadge.y);
@@ -1750,8 +2096,10 @@
 
       // If active, show Corner A, Corner B, and Arrow 1
       if (isActive) {
-        drawCornerLabel(w.start, 'A', -1);
-        drawCornerLabel(w.end, 'B', 1);
+        if (!isSelected) {
+          drawCornerLabel(w.start, 'A', -1);
+          drawCornerLabel(w.end, 'B', 1);
+        }
         drawCoreArrow(0, lMm, 'A', '1');
       }
       ctx.restore();
@@ -1843,16 +2191,19 @@
     }
 
     // 5. Corner Labels A and B, plus Direction Arrows 1 and 2
-    drawCornerLabel(w.start, 'A', -1);
-    drawCornerLabel(w.end, 'B', 1);
+    if (isActive) {
+      if (!isSelected) {
+        drawCornerLabel(w.start, 'A', -1);
+        drawCornerLabel(w.end, 'B', 1);
+      }
+      // Direction arrow 1 in Segment 1 (start to first opening start)
+      var firstOpStartT = cleanDivs.length > 2 ? cleanDivs[1] : 0;
+      drawCoreArrow(0, firstOpStartT, 'A', '1');
 
-    // Direction arrow 1 in Segment 1 (start to first opening start)
-    var firstOpStartT = cleanDivs.length > 2 ? cleanDivs[1] : 0;
-    drawCoreArrow(0, firstOpStartT, 'A', '1');
-
-    // Direction arrow 2 in Segment 2 (last opening end to end B)
-    var lastOpEndT = cleanDivs.length > 2 ? cleanDivs[cleanDivs.length - 2] : lMm;
-    drawCoreArrow(lastOpEndT, lMm, 'B', '2');
+      // Direction arrow 2 in Segment 2 (last opening end to end B)
+      var lastOpEndT = cleanDivs.length > 2 ? cleanDivs[cleanDivs.length - 2] : lMm;
+      drawCoreArrow(lastOpEndT, lMm, 'B', '2');
+    }
 
     ctx.restore();
   };
