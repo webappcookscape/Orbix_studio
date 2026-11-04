@@ -22,6 +22,9 @@ const app = express();
 const PORT = process.env.PORT || 4180;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'orbix-studio-super-secret-key-2026';
 
+// ── Trust Reverse Proxy (Nginx on production server studio.orbixdesigns.com) ──
+app.set('trust proxy', 1);
+
 // ── Security & Body Parsers ──
 app.use(cors({
   origin: true,
@@ -41,7 +44,7 @@ app.use(session({
   rolling: true,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: 'auto',
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   }

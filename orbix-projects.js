@@ -328,6 +328,11 @@
                 self.updateUserUI();
               }
             });
+          } else if (r.status === 401) {
+            console.warn('[OrbixProjects] Session unauthenticated on server. Prompting login.');
+            self.currentUser = null;
+            try { localStorage.removeItem('orbix_current_user'); } catch (e) { }
+            self.showLogin();
           }
         })
         .catch(function (err) {
