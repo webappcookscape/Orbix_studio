@@ -55,9 +55,9 @@ const itemsToTest = [
   { name: 'FM 120', category: 'kitchen_base' },
   { name: 'FM D3 - 45', category: 'kitchen_base' },
   { name: 'CROCKERY/TV BASE 1DOOR 1 DRAWER', category: 'tv_unit' },
-  { name: '2-Door Wardrobe', category: 'wardrobe' },
-  { name: 'Pooja Mandir with CNC Jali', category: 'crockery' },
-  { name: 'TV Media Entertainment Wall', category: 'tv_unit' },
+  { name: 'CROCKERY /TV BASE 2 DOOR', category: 'pooja' },
+  { name: 'CROCKERY/TV WALL 2 DOOR', category: 'pooja' },
+  { name: 'SLIDING WARDROBE', category: 'wardrobe' },
   { name: 'SR 45', category: 'spice_rack' }
 ];
 

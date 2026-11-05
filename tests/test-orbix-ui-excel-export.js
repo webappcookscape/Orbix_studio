@@ -46,7 +46,7 @@ project.plan.furniture = [
   Core.createFurniturePlacement('fm-120', 100, 100, 0, 'r_kitchen'),
   Core.createFurniturePlacement('fm-60', 200, 100, 0, 'r_kitchen'),
   Core.createFurniturePlacement('ctvb-1d-1dr', 100, 200, 0, 'r_living'),
-  Core.createFurniturePlacement('w2d', 200, 200, 0, 'r_bed')
+  Core.createFurniturePlacement('wr-shelves', 200, 200, 0, 'r_bed')
 ];
 
 project.plan.rooms = [

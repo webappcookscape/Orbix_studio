@@ -6,8 +6,8 @@ console.log('--- RUNNING ORBIX PHASE 3 AUTOMATED TESTS ---');
 // 1. Verify Catalog
 assert(Array.isArray(OrbixCore.FURNITURE_CATALOG), 'Catalog must be an array');
 assert(OrbixCore.FURNITURE_CATALOG.length >= 10, 'Catalog should contain at least 10 modular units');
-const wardrobeItem = OrbixCore.FURNITURE_CATALOG.find(i => i.id === 'w3d');
-assert(wardrobeItem, '3-door wardrobe must exist in catalog');
+const wardrobeItem = OrbixCore.FURNITURE_CATALOG.find(i => i.id === 'wr-sliding');
+assert(wardrobeItem, 'Sliding wardrobe must exist in catalog');
 console.log('✓ Furniture Catalog verified (' + OrbixCore.FURNITURE_CATALOG.length + ' items)');
 
 // 2. Test Project with Placed Furniture
@@ -24,7 +24,7 @@ const rooms = OrbixCore.detectRooms(proj);
 assert.strictEqual(rooms.length, 1);
 rooms[0].name = 'Master Bedroom';
 
-// Place 3-Door Wardrobe inside the room (pos: 2000, 500)
+// Place Sliding Wardrobe inside the room (pos: 2000, 500)
 const placedWardrobe = OrbixCore.createFurniturePlacement({
   name: wardrobeItem.name,
   category: wardrobeItem.category,
@@ -43,16 +43,16 @@ console.log('Initial Quote 1 (Rate: ₹1700/SFT):', {
   grandTotal: q1.grandTotal
 });
 
-// Area = 1350 * 2100 / 92903.04 = 30.51568 SFT
-// Base = 30.51568 * 1700 = ₹51,876.67
-const expectedBase1 = (1350 * 2100 / 92903.04) * 1700;
+// Area = 1800 * 2100 / 92903.04 = 40.68759889 SFT
+// Base = 40.68759889 * 1700
+const expectedBase1 = (1800 * 2100 / 92903.04) * 1700;
 assert(Math.abs(q1.furnitureItems[0].baseAmount - expectedBase1) < 0.5);
 console.log('✓ Initial wardrobe costing verified: ₹' + q1.furnitureItems[0].baseAmount.toFixed(2));
 
 // 3. Test Live Rate Card Adjustment (Update to ₹1900 / SFT)
 proj.rateCard.categories.wardrobe.baseRatePerSft = 1900;
 const q2 = OrbixCore.generateFullQuotation(proj);
-const expectedBase2 = (1350 * 2100 / 92903.04) * 1900;
+const expectedBase2 = (1800 * 2100 / 92903.04) * 1900;
 assert(Math.abs(q2.furnitureItems[0].baseAmount - expectedBase2) < 0.5);
 assert(q2.grandTotal > q1.grandTotal, 'Updated rate card must increase grand total');
 console.log('✓ Live rate card update verified (₹1700 -> ₹1900): New Total = ₹' + q2.grandTotal);

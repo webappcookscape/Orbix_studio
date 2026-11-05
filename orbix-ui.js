@@ -325,10 +325,8 @@
         var currentVal = furnSel.value;
         furnSel.innerHTML = '';
 
-        var importedGroup = document.createElement('optgroup');
-        importedGroup.label = 'Imported Modular Units (Catalog)';
-        var standardGroup = document.createElement('optgroup');
-        standardGroup.label = 'Standard Library';
+        var group = document.createElement('optgroup');
+        group.label = 'Cookscape Modular Units (' + Core.FURNITURE_CATALOG.length + ' Units)';
 
         for (var i = 0; i < Core.FURNITURE_CATALOG.length; i++) {
           var item = Core.FURNITURE_CATALOG[i];
@@ -336,14 +334,9 @@
           opt.value = item.id;
           var dimsText = item.dimensions ? (' (' + item.dimensions.W + '×' + item.dimensions.H + ')') : '';
           opt.textContent = (item.icon ? item.icon + ' ' : '') + item.name + dimsText;
-          if (item.id.indexOf('-') !== -1 || ['W-01', 'W-02', 'W-03', 'CR-01', 'TV-01', 'K-01', 'K-02', 'fm-rt-01', 'wm-01'].indexOf(item.id) !== -1) {
-            importedGroup.appendChild(opt);
-          } else {
-            standardGroup.appendChild(opt);
-          }
+          group.appendChild(opt);
         }
-        if (importedGroup.children.length > 0) furnSel.appendChild(importedGroup);
-        if (standardGroup.children.length > 0) furnSel.appendChild(standardGroup);
+        furnSel.appendChild(group);
 
         if (currentVal && furnSel.querySelector('option[value="' + currentVal + '"]')) {
           furnSel.value = currentVal;
@@ -682,13 +675,13 @@
         materials: defaultMats
       }));
 
-      // 4. Kitchen FM 600 Modular Base Unit
+      // 4. Kitchen FM 60 Modular Base Unit
       p.plan.furniture.push(Core.createFurniturePlacement({
-        id: 'fm-01',
-        name: 'FM 600',
+        id: 'fm-60',
+        name: 'FM 60',
         category: 'kitchen_base',
         modelType: 'kitchen_fm',
-        refCode: 'FM-01',
+        refCode: 'fm-60',
         pos: { x: 2400, y: 6600 },
         dimensions: { W: 600, H: 750, D: 550 },
         unitConfig: { shutterCol: 'MDF 7701', carcass: 'MDF 1135', shutters: 1, handle: 'gprof' },
