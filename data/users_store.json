@@ -1,0 +1,67 @@
+[
+  {
+    "id": "usr_admin",
+    "name": "Cookscape Admin",
+    "username": "admin",
+    "email": "admin@cookscape.com",
+    "password": "password123",
+    "role": "admin",
+    "designation": "System Head",
+    "company": "Cookscape",
+    "avatar": "CA",
+    "createdAt": "2026-11-05T19:33:54.494Z",
+    "updatedAt": "2026-11-05T19:33:54.494Z"
+  },
+  {
+    "id": "usr_sangathamizh",
+    "name": "Sangathamizh",
+    "username": "sangathamizh",
+    "email": "sangathamizh@cookscape.com",
+    "password": "password123",
+    "role": "admin",
+    "designation": "Business Head",
+    "company": "Cookscape",
+    "avatar": "SG",
+    "createdAt": "2026-11-05T19:33:54.494Z",
+    "updatedAt": "2026-11-05T19:33:54.494Z"
+  },
+  {
+    "id": "usr_aravind",
+    "name": "Aravind",
+    "username": "aravind",
+    "email": "aravind@cookscape.com",
+    "password": "password123",
+    "role": "employee",
+    "designation": "Floor Architect / FA",
+    "company": "Cookscape",
+    "avatar": "AK",
+    "createdAt": "2026-11-05T19:33:54.494Z",
+    "updatedAt": "2026-11-05T19:33:54.494Z"
+  },
+  {
+    "id": "usr_elakkiya",
+    "name": "Elakkiya",
+    "username": "elakkiya",
+    "email": "elakkiya@cookscape.com",
+    "password": "password123",
+    "role": "employee",
+    "designation": "Floor Architect / FA",
+    "company": "Cookscape",
+    "avatar": "EK",
+    "createdAt": "2026-11-05T19:33:54.494Z",
+    "updatedAt": "2026-11-05T19:33:54.494Z"
+  },
+  {
+    "id": "usr_dev",
+    "name": "Dev Kancheti",
+    "username": "dev",
+    "email": "dev@cookscape.com",
+    "password": "password123",
+    "role": "employee",
+    "designation": "Design Lead",
+    "company": "Cookscape",
+    "avatar": "DK",
+    "createdAt": "2026-11-05T19:33:54.494Z",
+    "updatedAt": "2026-11-05T19:33:54.494Z"
+  }
+]

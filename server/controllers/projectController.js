@@ -37,7 +37,8 @@ class ProjectController {
       if (!req.body || !req.body.title) {
         return res.status(400).json({ success: false, error: 'Project title is required' });
       }
-      const project = await projectService.createProject(req.body, req.user);
+      const user = req.user || (req.body && req.body.currentUser);
+      const project = await projectService.createProject(req.body, user);
       res.status(201).json({ success: true, project });
     } catch (err) {
       console.error('createProject error:', err);

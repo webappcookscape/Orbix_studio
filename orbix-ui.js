@@ -113,7 +113,8 @@
     loadProject: function (proj) {
       if (!proj) return;
       this.project = proj;
-      this.saveToLocalStorage();
+      this.syncProjectUnitsTo3DStudio(); // Synchronize units FIRST so window.S.units reflects project
+      this.saveToLocalStorage();         // THEN save clean state to local storage
       if (this.editor) {
         this.editor.project = proj;
         this.editor.selected = [];
@@ -129,7 +130,6 @@
       }
       this.updateUI();
       this.renderBOQ();
-      this.syncProjectUnitsTo3DStudio();
       if (typeof window.buildScene === 'function') window.buildScene();
       if (typeof this.render3DHome === 'function') this.render3DHome();
       if (typeof window.fit === 'function') window.fit();

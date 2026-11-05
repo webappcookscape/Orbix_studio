@@ -4,6 +4,20 @@
 
 const { prisma } = require('../config/prisma');
 
+// Helper: Format project with top-level metadata accessors from project.data.details
+function formatProject(p) {
+  if (!p) return null;
+  const d = (p.data && p.data.details) ? p.data.details : {};
+  return {
+    ...p,
+    contact_number: p.contact_number || d.contactNumber || d.phone || '',
+    location: p.location || d.location || d.siteAddress || '',
+    bh_name: p.bh_name || d.bhName || d.designerName || '',
+    date_time: p.date_time || d.dateTime || d.dateCreated || (p.createdAt ? p.createdAt.toISOString() : ''),
+    cp_code: p.cp_code || d.cpCode || d.quoteId || ''
+  };
+}
+
 class ProjectService {
   // 1. Get all accessible projects for user
   async getProjects(user) {
@@ -17,10 +31,11 @@ class ProjectService {
       };
     }
 
-    return prisma.project.findMany({
+    const projects = await prisma.project.findMany({
       where,
       orderBy: { updatedAt: 'desc' }
     });
+    return projects.map(formatProject);
   }
 
   // 2. Get project by ID
@@ -42,7 +57,7 @@ class ProjectService {
       }
     }
 
-    return project;
+    return formatProject(project);
   }
 
   // 3. Create new project
@@ -55,13 +70,27 @@ class ProjectService {
 
     const ownerName = user ? user.name : (projectData.owner_name || projectData.ownerName || 'Modular Designer');
     const ownerEmail = user ? user.email : (projectData.owner_email || projectData.ownerEmail || 'designer@orbixstudio.io');
-    const createdBy = user ? user.id : (projectData.created_by || projectData.createdBy || null);
+    const rawCreatedBy = user ? user.id : (projectData.created_by || projectData.createdBy || null);
+
+    // Verify rawCreatedBy exists in PostgreSQL users table to prevent FK constraint failure
+    let createdBy = null;
+    if (rawCreatedBy) {
+      try {
+        const userExists = await prisma.user.findUnique({
+          where: { id: rawCreatedBy },
+          select: { id: true }
+        });
+        if (userExists) createdBy = rawCreatedBy;
+      } catch (_) {
+        createdBy = null;
+      }
+    }
 
     const unitsCount = parseInt(projectData.units_count ?? projectData.unitsCount ?? 0, 10);
     const boardsEst = parseInt(projectData.boards_est ?? projectData.boardsEst ?? 0, 10);
     const data = projectData.data || {};
 
-    return prisma.project.create({
+    const created = await prisma.project.create({
       data: {
         id,
         title,
@@ -78,6 +107,8 @@ class ProjectService {
         forkCount: projectData.fork_count ?? projectData.forkCount ?? 0
       }
     });
+
+    return formatProject(created);
   }
 
   // 4. Update existing project
