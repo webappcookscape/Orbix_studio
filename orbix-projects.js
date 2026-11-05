@@ -156,17 +156,13 @@
         if (typeof window.setView === 'function' && !window.setView._isRouterHooked) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-              if (self.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-                if (typeof showToast === 'function') {
-                  showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-                }
-                if (window.location.pathname !== '/home') {
-                  self.updateUrl('home', false);
-                }
-                origSetView('home');
-                return;
+            var allowed = ['home', 'plan', 'design', 'boq'];
+            if (allowed.indexOf(v) === -1) {
+              if (window.location.pathname !== '/home') {
+                self.updateUrl('home', false);
               }
+              origSetView('home');
+              return;
             }
 
             origSetView(v);
@@ -220,18 +216,9 @@
         return;
       }
 
-      if (v === 'kitchen') {
-        if (window.galState) window.galState.type = 'kitchen';
-        v = 'gallery';
-      }
-
-      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-          if (typeof showToast === 'function') {
-            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-          }
-          v = 'home';
-        }
+      var allowed = ['home', 'plan', 'design', 'boq'];
+      if (allowed.indexOf(v) === -1) {
+        v = 'home';
       }
 
       if (typeof window.setView === 'function') {
@@ -270,15 +257,9 @@
         return;
       }
 
-      if (!v) v = 'home';
-
-      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-          if (typeof showToast === 'function') {
-            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-          }
-          v = 'home';
-        }
+      var allowed = ['home', 'plan', 'design', 'boq'];
+      if (!v || allowed.indexOf(v) === -1) {
+        v = 'home';
       }
 
       this.navigateTo(v, true);
@@ -544,14 +525,8 @@
         if (typeof window.setView === 'function' && !window.setView._isGuarded) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            var isAdm = self.isAdmin();
-            var allowedViews = isAdm
-              ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
-              : ['home', 'plan', 'design', 'boq'];
-            if (!isAdm && allowedViews.indexOf(v) === -1) {
-              if (typeof showToast === 'function') {
-                showToast('Restricted: Employee accounts have access to Home, Floor Plan (2D), 3D Studio & Pricing.');
-              }
+            var allowedViews = ['home', 'plan', 'design', 'boq'];
+            if (allowedViews.indexOf(v) === -1) {
               origSetView('home');
               if (root.OrbixRouter) root.OrbixRouter.updateUrl('home', true);
               return;
@@ -574,10 +549,8 @@
         userModalEl.classList.toggle('role-employee', !isAdm);
         userModalEl.classList.toggle('role-admin', isAdm);
       }
-      // Admin has all access; Employee only has home, floor plan (2D), 3D Studio, Pricing (boq)
-      var allowedViews = isAdm
-        ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
-        : ['home', 'plan', 'design', 'boq'];
+      // Only these 4 pages are visible for all users: Home, Floor Plan (2D), 3D Studio, Pricing
+      var allowedViews = ['home', 'plan', 'design', 'boq'];
 
       // 1. Control visibility of top navigation tabs
       var navTabs = document.querySelectorAll('.topbar .views .vtab');
@@ -592,7 +565,7 @@
         }
       });
 
-      // 2. If employee is currently on an unauthorized view, redirect to home
+      // 2. If currently on an unauthorized view, redirect to home
       var activeTab = document.querySelector('.topbar .views .vtab.is-on');
       var activeView = activeTab ? activeTab.getAttribute('data-view') : 'home';
       if (allowedViews.indexOf(activeView) === -1) {

@@ -1,3 +1,4 @@
+
 const fs = require('fs');
 const path = require('path');
 const Core = require('../orbix-core.js');
@@ -14,7 +15,7 @@ global.localStorage = {
 // Mock browser globals
 global.document = {
   readyState: 'complete',
-  addEventListener: () => {},
+  addEventListener: () => { },
   querySelector: () => null,
   getElementById: () => null
 };

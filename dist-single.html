@@ -2595,17 +2595,7 @@ body.role-employee #adminCreateEmpBox,
       <button class="vtab is-on" data-view="home">Home</button>
       <button class="vtab" data-view="plan">Floor Plan (2D)</button>
       <button class="vtab" data-view="design">3D Studio</button>
-      <button class="vtab admin-only-tab" data-view="kitchen" style="display:none;">Kitchens</button>
-      <button class="vtab admin-only-tab" data-view="gallery" style="display:none;">Gallery</button>
       <button class="vtab" data-view="boq">Pricing</button>
-      <a href="/costcalculation" class="vtab" style="text-decoration:none;display:inline-flex;align-items:center;" title="Material Rate & Cost Calculation Sheet">Cost Calc</a>
-      <button class="vtab admin-only-tab" data-view="quote" style="display:none;">Quote</button>
-      <button class="vtab admin-only-tab" data-view="sheet" style="display:none;">Process sheet</button>
-      <button class="vtab admin-only-tab" data-view="elev" style="display:none;">Elevation</button>
-      <button class="vtab admin-only-tab" data-view="panels" style="display:none;">Panels &amp; drilling</button>
-      <button class="vtab admin-only-tab" data-view="nest" style="display:none;">Nesting</button>
-      <button class="vtab admin-only-tab" data-view="upload" style="display:none;">Upload</button>
-      <button class="vtab admin-only-tab" data-view="report" style="display:none;">Report</button>
     </nav>
     <div class="topacts">
       <button class="btn pwa-install-btn" id="pwaInstallBtn" hidden title="Install Orbix Studio on your PC or Phone">
@@ -3930,17 +3920,13 @@ body.role-employee #adminCreateEmpBox,
         if (typeof window.setView === 'function' && !window.setView._isRouterHooked) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-              if (self.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-                if (typeof showToast === 'function') {
-                  showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-                }
-                if (window.location.pathname !== '/home') {
-                  self.updateUrl('home', false);
-                }
-                origSetView('home');
-                return;
+            var allowed = ['home', 'plan', 'design', 'boq'];
+            if (allowed.indexOf(v) === -1) {
+              if (window.location.pathname !== '/home') {
+                self.updateUrl('home', false);
               }
+              origSetView('home');
+              return;
             }
 
             origSetView(v);
@@ -3994,18 +3980,9 @@ body.role-employee #adminCreateEmpBox,
         return;
       }
 
-      if (v === 'kitchen') {
-        if (window.galState) window.galState.type = 'kitchen';
-        v = 'gallery';
-      }
-
-      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-          if (typeof showToast === 'function') {
-            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-          }
-          v = 'home';
-        }
+      var allowed = ['home', 'plan', 'design', 'boq'];
+      if (allowed.indexOf(v) === -1) {
+        v = 'home';
       }
 
       if (typeof window.setView === 'function') {
@@ -4044,15 +4021,9 @@ body.role-employee #adminCreateEmpBox,
         return;
       }
 
-      if (!v) v = 'home';
-
-      if (OrbixProjects.currentUser && !OrbixProjects.isAdmin()) {
-        if (this.EMPLOYEE_ALLOWED.indexOf(v) === -1) {
-          if (typeof showToast === 'function') {
-            showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
-          }
-          v = 'home';
-        }
+      var allowed = ['home', 'plan', 'design', 'boq'];
+      if (!v || allowed.indexOf(v) === -1) {
+        v = 'home';
       }
 
       this.navigateTo(v, true);
@@ -4318,14 +4289,8 @@ body.role-employee #adminCreateEmpBox,
         if (typeof window.setView === 'function' && !window.setView._isGuarded) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            var isAdm = self.isAdmin();
-            var allowedViews = isAdm
-              ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
-              : ['home', 'plan', 'design', 'boq'];
-            if (!isAdm && allowedViews.indexOf(v) === -1) {
-              if (typeof showToast === 'function') {
-                showToast('Restricted: Employee accounts have access to Home, Floor Plan (2D), 3D Studio & Pricing.');
-              }
+            var allowedViews = ['home', 'plan', 'design', 'boq'];
+            if (allowedViews.indexOf(v) === -1) {
               origSetView('home');
               if (root.OrbixRouter) root.OrbixRouter.updateUrl('home', true);
               return;
@@ -4348,10 +4313,8 @@ body.role-employee #adminCreateEmpBox,
         userModalEl.classList.toggle('role-employee', !isAdm);
         userModalEl.classList.toggle('role-admin', isAdm);
       }
-      // Admin has all access; Employee only has home, floor plan (2D), 3D Studio, Pricing (boq)
-      var allowedViews = isAdm
-        ? ['home', 'plan', 'design', 'kitchen', 'gallery', 'boq', 'quote', 'sheet', 'elev', 'panels', 'nest', 'upload', 'report']
-        : ['home', 'plan', 'design', 'boq'];
+      // Only these 4 pages are visible for all users: Home, Floor Plan (2D), 3D Studio, Pricing
+      var allowedViews = ['home', 'plan', 'design', 'boq'];
 
       // 1. Control visibility of top navigation tabs
       var navTabs = document.querySelectorAll('.topbar .views .vtab');
@@ -4366,7 +4329,7 @@ body.role-employee #adminCreateEmpBox,
         }
       });
 
-      // 2. If employee is currently on an unauthorized view, redirect to home
+      // 2. If currently on an unauthorized view, redirect to home
       var activeTab = document.querySelector('.topbar .views .vtab.is-on');
       var activeView = activeTab ? activeTab.getAttribute('data-view') : 'home';
       if (allowedViews.indexOf(activeView) === -1) {
