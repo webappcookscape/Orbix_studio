@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  
+  <defs>
+    <filter id="dropBlur" x="-20%" y="-20%" width="150%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" />
+    </filter>
+    <linearGradient id="topGraniteGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+  </defs>
+  <polygon points="33,95 81,92.12 101.03999999999999,84.44 85.03999999999999,86.44 27,97" fill="rgba(15, 23, 42, 0.16)" filter="url(#dropBlur)" />
+  <polygon points="77,40.12 95.03999999999999,30.439999999999998 95.03999999999999,78.44 77,88.12" fill="#D8E2EC" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="29,43 47.04,33.32 95.03999999999999,30.439999999999998 77,40.12" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="29,43 77,40.12 77,88.12 29,91" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="38,42.5 80,39.62 80,81.62 38,84.5" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="0.8" />
+  <polygon points="32,46 38,42.5 80,39.62 74,43.12" fill="#94A3B8" />
+  <polygon points="32,46 38,42.5 38,84.5 32,88" fill="#CBD5E1" />
+  <polygon points="32,67 74,64.12 80,60.620000000000005 38,63.5" fill="#F8FAFC" stroke="#1E293B" stroke-width="1" />
+</svg>

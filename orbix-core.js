@@ -4248,6 +4248,25 @@
     return { added: added, total: FURNITURE_CATALOG.length, items: parsed };
   }
 
+  function sanitizeIconId(id) {
+    return String(id || '').replace(/[\/\\:\*\?"<>\|\s]+/g, '-').toLowerCase();
+  }
+
+  function getUnitIcon(item) {
+    if (!item) return 'icon-cookscape-unit.png';
+    if (typeof OrbixUnitIcons !== 'undefined' && OrbixUnitIcons.getIcon) {
+      return OrbixUnitIcons.getIcon(item);
+    }
+    try {
+      var mod = require('./orbix-unit-icons.js');
+      if (mod && mod.getIcon) return mod.getIcon(item);
+    } catch (_) {}
+    var id = typeof item === 'string' ? item : (item.id || '');
+    if (id === 'w2d' || id === 'W-01') return 'icon-furniture.png';
+    if (id === 'ctvb-1d-1dr') return 'icon-cookscape-unit.png';
+    return 'unit-icons/' + sanitizeIconId(id) + '.svg';
+  }
+
   return {
     SFT_FACTOR: SFT_FACTOR,
     SQM_FACTOR: SQM_FACTOR,
@@ -4282,6 +4301,8 @@
     polygonsIntersect: polygonsIntersect,
     checkFurnitureCollision: checkFurnitureCollision,
     isWallUnit: isWallUnitCategory,
-    checkPlacementOverlap: checkPlacementOverlap
+    checkPlacementOverlap: checkPlacementOverlap,
+    getUnitIcon: getUnitIcon,
+    sanitizeIconId: sanitizeIconId
   };
 });

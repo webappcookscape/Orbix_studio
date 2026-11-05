@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  
+  <defs>
+    <filter id="dropBlur" x="-20%" y="-20%" width="150%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" />
+    </filter>
+    <linearGradient id="topGraniteGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+  </defs>
+  <polygon points="29,88 89,84.4 105.76,78.48 89.76,80.48 23,90" fill="rgba(15, 23, 42, 0.16)" filter="url(#dropBlur)" />
+  <polygon points="85,37.4 99.76,29.479999999999997 99.76,72.48 85,80.4" fill="#D8E2EC" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="25,41 39.76,33.08 99.76,29.479999999999997 85,37.4" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="25,41 85,37.4 85,80.4 25,84" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="28,44 54,42.2 54,79.2 28,81" fill="#BAE6FD" stroke="#1E293B" stroke-width="1.2" />
+  <line x1="37" y1="52.5" x2="45" y2="64.5" stroke="rgba(255,255,255,0.7)" stroke-width="1.4" stroke-linecap="round" />
+  <line x1="39" y1="68.5" x2="43" y2="74.5" stroke="rgba(255,255,255,0.7)" stroke-width="1.4" stroke-linecap="round" />
+  <line x1="50" y1="59.54" x2="50" y2="68.53999999999999" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" />
+  <line x1="50" y1="59.54" x2="50" y2="68.53999999999999" stroke="#475569" stroke-width="0.8" stroke-linecap="round" />
+  <polygon points="55,42.2 82,40.4 82,77.4 55,79.2" fill="#BAE6FD" stroke="#1E293B" stroke-width="1.2" />
+  <line x1="64.5" y1="50.7" x2="72.5" y2="62.7" stroke="rgba(255,255,255,0.7)" stroke-width="1.4" stroke-linecap="round" />
+  <line x1="66.5" y1="66.7" x2="70.5" y2="72.7" stroke="rgba(255,255,255,0.7)" stroke-width="1.4" stroke-linecap="round" />
+  <line x1="59" y1="57.74" x2="59" y2="66.74000000000001" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" />
+  <line x1="59" y1="57.74" x2="59" y2="66.74000000000001" stroke="#475569" stroke-width="0.8" stroke-linecap="round" />
+</svg>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  
+  <defs>
+    <filter id="dropBlur" x="-20%" y="-20%" width="150%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" />
+    </filter>
+    <linearGradient id="topGraniteGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+  </defs>
+  <polygon points="39,88 78,85.66 94.76,79.74 78.76,81.74 33,90" fill="rgba(15, 23, 42, 0.16)" filter="url(#dropBlur)" />
+  <polygon points="74,38.66 88.76,30.739999999999995 88.76,73.74 74,81.66" fill="#D8E2EC" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="35,41 49.76,33.08 88.76,30.739999999999995 74,38.66" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="35,41 74,38.66 74,81.66 35,84" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.5" stroke-linejoin="round" />
+  <polygon points="38,44 71,41.66 71,78.66 38,81" fill="#00B894" stroke="#1E293B" stroke-width="1.2" />
+  <line x1="66.5" y1="59.54" x2="66.5" y2="68.53999999999999" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" />
+  <line x1="66.5" y1="59.54" x2="66.5" y2="68.53999999999999" stroke="#475569" stroke-width="0.8" stroke-linecap="round" />
+</svg>

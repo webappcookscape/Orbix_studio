@@ -287,8 +287,7 @@
               var nameEl = document.getElementById('planFurnActiveName');
               var dimsEl = document.getElementById('planFurnActiveDims');
               var catEl = document.getElementById('planFurnActiveCat');
-              var isW = Core.FURNITURE_CATALOG[i].category === 'wardrobe' || (Core.FURNITURE_CATALOG[i].name && Core.FURNITURE_CATALOG[i].name.toLowerCase().indexOf('wardrobe') !== -1);
-              if (imgEl) imgEl.src = isW ? 'icon-furniture.png' : 'icon-cookscape-unit.png';
+              if (imgEl) imgEl.src = Core.getUnitIcon ? Core.getUnitIcon(Core.FURNITURE_CATALOG[i]) : 'icon-cookscape-unit.png';
               if (nameEl) nameEl.textContent = Core.FURNITURE_CATALOG[i].name;
               if (dimsEl && Core.FURNITURE_CATALOG[i].dimensions) dimsEl.textContent = Core.FURNITURE_CATALOG[i].dimensions.W + '×' + Core.FURNITURE_CATALOG[i].dimensions.H;
               if (catEl) catEl.textContent = 'Cookscape Units';
@@ -2132,8 +2131,7 @@
         var nameEl = document.getElementById('planFurnActiveName');
         var dimsEl = document.getElementById('planFurnActiveDims');
         var catEl = document.getElementById('planFurnActiveCat');
-        var isW = item.category === 'wardrobe' || (item.name && item.name.toLowerCase().indexOf('wardrobe') !== -1);
-        if (imgEl) imgEl.src = isW ? 'icon-furniture.png' : 'icon-cookscape-unit.png';
+        if (imgEl) imgEl.src = Core.getUnitIcon ? Core.getUnitIcon(item) : 'icon-cookscape-unit.png';
         if (nameEl) nameEl.textContent = item.name;
         if (dimsEl && item.dimensions) dimsEl.textContent = item.dimensions.W + '×' + item.dimensions.H;
         if (catEl) catEl.textContent = 'Cookscape Units';
@@ -2230,7 +2228,7 @@
           var specLine = (shutterText ? (shutterText + ' · ' + doorStyle) : doorStyle) + handleText;
 
           var isWardrobeItem = (item.category === 'wardrobe' || (item.name && item.name.toLowerCase().indexOf('wardrobe') !== -1));
-          var cardImgSrc = isWardrobeItem ? 'icon-furniture.png' : 'icon-cookscape-unit.png';
+          var cardImgSrc = Core.getUnitIcon ? Core.getUnitIcon(item) : (isWardrobeItem ? 'icon-furniture.png' : 'icon-cookscape-unit.png');
           var cardIconHtml = '<img src="' + cardImgSrc + '" alt="' + item.name + '" class="furn-card-img-thumb">';
 
           card.innerHTML =
@@ -2317,7 +2315,7 @@
         var nameEl = document.getElementById('planFurnActiveName');
         var dimsEl = document.getElementById('planFurnActiveDims');
         var catEl = document.getElementById('planFurnActiveCat');
-        if (imgEl) imgEl.src = 'icon-cookscape-unit.png';
+        if (imgEl) imgEl.src = Core.getUnitIcon ? Core.getUnitIcon(defaultItem) : 'icon-cookscape-unit.png';
         if (nameEl) nameEl.textContent = defaultItem.name;
         if (dimsEl && defaultItem.dimensions) dimsEl.textContent = defaultItem.dimensions.W + '×' + defaultItem.dimensions.H;
         if (catEl) catEl.textContent = 'Cookscape Units';
