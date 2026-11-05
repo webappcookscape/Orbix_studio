@@ -694,13 +694,13 @@
     // Helper: Material for individual shutter s
     function getShutterMaterial(sIdx) {
       var col = (furn.shutterColors && furn.shutterColors[sIdx]) || null;
-      var matFin = (furn.shutterMaterials && furn.shutterMaterials[sIdx]) ||
+      var matFin = (furn.unitConfig && furn.unitConfig.shutterCol) ||
                    (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) ||
-                   (furn.unitConfig && furn.unitConfig.shutterCol) ||
+                   (furn.shutterMaterials && furn.shutterMaterials[sIdx]) ||
                    'MDF 3410';
 
       var threeCol = 0x6E4E35;
-      if (col) {
+      if (col && (!furn.unitConfig || !furn.unitConfig.shutterCol || col === furn.unitConfig.shutterCol)) {
         threeCol = ArchitecturalRenderer.resolveFinishColor(col, 0x6E4E35);
       } else {
         threeCol = ArchitecturalRenderer.resolveFinishColor(matFin, 0x6E4E35);

@@ -286,7 +286,7 @@ function load(){
         var validIds = (window.OrbixUI.project.plan.furniture || []).map(function(f){ return f.id; });
         S.units = d.units.filter(function(u){ return u._furnId && validIds.indexOf(u._furnId) !== -1; });
       } else {
-        S.units=d.units;
+        S.units = [];
       }
     }
     if(d.head) S.head=d.head;
@@ -3897,6 +3897,9 @@ function renderRail(){
     var c=el("uchip"+(i===S.active?" is-on":""),uw,"button");
     c.textContent=u.label||("Unit "+(i+1));
     c.addEventListener("click",function(){
+      if(window.OrbixUI && typeof window.OrbixUI.sync3DStudioUnits === 'function'){
+        window.OrbixUI.sync3DStudioUnits();
+      }
       S.active=i;
       renderRail();
       renderAll();
@@ -3916,61 +3919,14 @@ function renderRail(){
   });
   var add=el("uchip add",uw,"button");
   add.textContent="+ Unit";
+  add.title="Add Cookscape Modular Unit to 3D";
   add.addEventListener("click",function(){
-    var nu=newUnit("UNIT "+(S.units.length+1));
-    nu.W=1200; nu.H=2100; nu.D=600; nu.shutters=2;
-    var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
-    if(plan){
-      plan.furniture=plan.furniture||[];
-      var fId='f_'+Date.now().toString(36)+Math.random().toString(36).substr(2,4);
-      nu._furnId=fId;
-      var cX=2000, cY=2000;
-      if(plan.rooms&&plan.rooms.length>0){
-        var rm=plan.rooms[0];
-        if(window.OrbixCore&&window.OrbixCore.Vec2&&window.OrbixCore.Vec2.polygonCentroid&&rm.polygon&&rm.polygon.length>=3){
-          var cen=window.OrbixCore.Vec2.polygonCentroid(rm.polygon);
-          cX=cen.x; cY=cen.y;
-        } else if(rm.center){
-          cX=rm.center.x; cY=rm.center.y;
-        }
-      }
-      else if(plan.walls&&plan.walls.length>0){ cX=plan.walls[0].start.x+800; cY=plan.walls[0].start.y+800; }
-      var isW = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
-        window.OrbixCore.isWallUnit(nu.ctype, nu.label) :
-        (nu.ctype === 'kwall' || (nu.label && nu.label.toLowerCase().indexOf('wall') !== -1));
-      var uElev = nu.elev !== undefined ? nu.elev : (isW ? 1500 : 0);
-      nu.elev = uElev;
-      if(window.OrbixCore && window.OrbixCore.createFurniturePlacement){
-        plan.furniture.push(window.OrbixCore.createFurniturePlacement({
-          id: fId,
-          name: nu.label,
-          category: nu.ctype || 'wardrobe',
-          elevation: uElev,
-          pos: { x: cX, y: cY, z: uElev },
-          rotY: 0,
-          dimensions: { W: nu.W || 1200, H: nu.H || (isW ? 600 : 2100), D: nu.D || (isW ? 350 : 600) },
-          unitConfig: { shutters: nu.shutters || 2, handle: nu.handle || 'bar', drawers: nu.drawers || 0 }
-        }));
-      } else {
-        plan.furniture.push({
-          id: fId,
-          name: nu.label,
-          category: nu.ctype || 'wardrobe',
-          elevation: uElev,
-          pos: { x: cX, y: cY, z: uElev },
-          rotY: 0,
-          dimensions: { W: nu.W || 1200, H: nu.H || (isW ? 600 : 2100), D: nu.D || (isW ? 350 : 600) },
-          unitConfig: { shutters: nu.shutters || 2, handle: nu.handle || 'bar', drawers: nu.drawers || 0 }
-        });
-      }
-      if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
-      if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
-      if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
-      if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+    if(window.OrbixUI && typeof window.OrbixUI.openPlaceUnitModal3D === 'function'){
+      window.OrbixUI.openPlaceUnitModal3D();
+    } else {
+      var m = document.getElementById('modalFurnitureCatalog');
+      if(m) m.classList.add('is-open');
     }
-    S.units.push(nu);
-    S.active=S.units.length-1;
-    renderRail(); renderAll();
   });
 
   var r=$("#railScroll"); r.innerHTML="";
@@ -4320,21 +4276,22 @@ function renderRail(){
     }
     S.units.push(c); S.active=S.units.length-1; renderRail(); renderAll();
   });
-  if(S.units.length>1){
-    var rb=el("btn danger",g8,"button"); rb.textContent="Remove";
+  if(S.units.length >= 1){
+    var rb=el("btn danger",g8,"button"); rb.textContent="🗑 Remove Unit";
+    rb.title="Remove this unit from 3D Studio & 2D Floor Plan";
     rb.addEventListener("click",function(){
+      var remU = S.units[S.active];
       var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
-      if(u._furnId && plan){
-        if(plan.furniture){
-          plan.furniture=plan.furniture.filter(function(it){ return it.id!==u._furnId; });
-        }
+      if(remU && remU._furnId && plan && plan.furniture){
+        plan.furniture = plan.furniture.filter(function(it){ return it.id !== remU._furnId; });
         if(window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
-        if(window.OrbixProjects&&window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+        if(window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
         if(window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
-        if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
       }
       S.units.splice(S.active,1); S.active=Math.max(0,S.active-1);
+      if(window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
       renderRail(); renderAll();
+      toast("Unit removed");
     });
   }
 }

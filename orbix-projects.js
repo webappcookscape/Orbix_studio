@@ -1054,21 +1054,40 @@
         self.activeProjectId = activeId;
         try {
           var uId = self.currentUser ? self.currentUser.id : 'anon';
-          localStorage.setItem('orbix_active_proj_' + uId, activeId);
+          localStorage.setItem('orbix_active_proj_' + uId, String(activeId));
+          localStorage.setItem('orbix_active_project_id', String(activeId));
         } catch (e) { }
       }
 
+      function countFurn(obj) {
+        if (!obj) return 0;
+        if (obj.plan && Array.isArray(obj.plan.furniture)) return obj.plan.furniture.length;
+        if (obj.data && obj.data.plan) {
+          if (obj.data.plan.plan && Array.isArray(obj.data.plan.plan.furniture)) return obj.data.plan.plan.furniture.length;
+          if (Array.isArray(obj.data.plan.furniture)) return obj.data.plan.furniture.length;
+        }
+        if (Array.isArray(obj.furniture)) return obj.furniture.length;
+        return 0;
+      }
+
       // 1. Check if we have a newer local storage draft for this specific project (retains units across hard refresh & offline)
-      var userKey = 'orbix_project_' + (this.currentUser ? this.currentUser.id : 'anon') + '_' + activeId;
+      var uIdKey = self.currentUser ? self.currentUser.id : 'anon';
+      var userKey = 'orbix_project_' + uIdKey + '_' + activeId;
       var localPlanRaw = null;
       try {
         localPlanRaw = localStorage.getItem(userKey);
         if (!localPlanRaw) {
+          localPlanRaw = localStorage.getItem('orbix_project_anon_' + activeId) ||
+                         localStorage.getItem('orbix_project_default_' + activeId);
+        }
+        if (!localPlanRaw) {
           var draftRaw = localStorage.getItem('orbix_working_project_draft');
           if (draftRaw) {
             var draftObj = JSON.parse(draftRaw);
-            // Strict match: Only load working draft if it actually belongs to this project ID!
-            if (draftObj && draftObj.projectId === activeId) {
+            var draftMatches = !draftObj.projectId ||
+                               String(draftObj.projectId) === String(activeId) ||
+                               (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project === draftObj.plan);
+            if (draftObj && draftMatches && draftObj.plan) {
               localPlanRaw = JSON.stringify(draftObj.plan);
             }
           }
@@ -1076,12 +1095,13 @@
       } catch (e) { }
 
       var planToLoad = null;
+      var curInMemoryCount = (window.OrbixUI && window.OrbixUI.project) ? countFurn(window.OrbixUI.project) : 0;
+
       if (localPlanRaw) {
         try {
           var parsedLocal = JSON.parse(localPlanRaw);
-          var localCount = (parsedLocal.plan && parsedLocal.plan.furniture) ? parsedLocal.plan.furniture.length : 0;
-          var serverCount = (project.data && project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
-            ? project.data.plan.plan.furniture.length : 0;
+          var localCount = countFurn(parsedLocal);
+          var serverCount = countFurn(project);
           
           if (localCount >= serverCount || (parsedLocal._lastModified && (!project.updatedAt || parsedLocal._lastModified > new Date(project.updatedAt).getTime()))) {
             planToLoad = parsedLocal;
@@ -1090,8 +1110,17 @@
         } catch (e) { }
       }
 
+      // If in-memory OrbixUI.project already restored units from init() and server copy has 0 units, PRESERVE in-memory units!
+      if (!planToLoad && curInMemoryCount > 0) {
+        var serverCount2 = countFurn(project);
+        if (curInMemoryCount >= serverCount2) {
+          planToLoad = window.OrbixUI.project;
+          console.log('[Orbix Studio] Preserved in-memory restored units across server load (' + curInMemoryCount + ' units).');
+        }
+      }
+
       if (!planToLoad) {
-        if (project.data && project.data.plan && (project.data.plan.plan || project.data.plan.walls)) {
+        if (project.data && project.data.plan && (project.data.plan.plan || project.data.plan.walls || project.data.plan.furniture)) {
           planToLoad = project.data.plan;
         } else if (window.OrbixCore && typeof window.OrbixCore.createProject === 'function') {
           planToLoad = window.OrbixCore.createProject(project.title);
@@ -1287,16 +1316,18 @@
       // 1. Instant Synchronous LocalStorage Save (0ms delay - 100% hard refresh & offline safe)
       try {
         localStorage.setItem('orbix_working_project_draft', JSON.stringify({
-          projectId: activeId,
+          projectId: activeId ? String(activeId) : '',
           userId: self.currentUser ? self.currentUser.id : 'anon',
           timestamp: now,
           plan: currentPlan,
           units: currentUnits
         }));
         if (activeId) {
-          var userKey = 'orbix_project_' + (self.currentUser ? self.currentUser.id : 'anon') + '_' + activeId;
+          var uKey = self.currentUser ? self.currentUser.id : 'anon';
+          var userKey = 'orbix_project_' + uKey + '_' + activeId;
           localStorage.setItem(userKey, JSON.stringify(currentPlan));
-          localStorage.setItem('orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon'), activeId);
+          localStorage.setItem('orbix_active_proj_' + uKey, String(activeId));
+          localStorage.setItem('orbix_active_project_id', String(activeId));
         }
       } catch (e) { }
 

@@ -154,12 +154,15 @@
       try {
         var now = Date.now();
         var currentUnits = (window.S && window.S.units) ? window.S.units : [];
-        var activeId = (window.OrbixProjects && window.OrbixProjects.activeProjectId) || '';
+        var activeId = (window.OrbixProjects && window.OrbixProjects.activeProjectId) ||
+                       localStorage.getItem('orbix_active_project_id') ||
+                       (this.project && this.project.meta && this.project.meta.id) ||
+                       (this.project && this.project.id) || '';
         var uId = (window.OrbixProjects && window.OrbixProjects.currentUser) ? window.OrbixProjects.currentUser.id : 'anon';
 
         // 1. Synchronously persist full working draft (guarantees survival across hard refresh & network drop)
         localStorage.setItem('orbix_working_project_draft', JSON.stringify({
-          projectId: activeId,
+          projectId: activeId ? String(activeId) : '',
           userId: uId,
           timestamp: now,
           plan: this.project,
@@ -171,7 +174,8 @@
           var key = 'orbix_project_' + uId + '_' + activeId;
           var serialized = (Core && typeof Core.serializeProject === 'function') ? Core.serializeProject(this.project) : JSON.stringify(this.project);
           localStorage.setItem(key, serialized);
-          localStorage.setItem('orbix_active_proj_' + uId, activeId);
+          localStorage.setItem('orbix_active_proj_' + uId, String(activeId));
+          localStorage.setItem('orbix_active_project_id', String(activeId));
         }
       } catch (e) {}
     },
@@ -1789,27 +1793,101 @@
         if (existing) {
           if (fn.name) existing.label = fn.name;
           existing.elev = unitElev;
+          
+          // Bidirectional preservation: preserve active 3D edits and sync to fn.unitConfig
+          if (existing.shutterCol) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.shutterCol = existing.shutterCol;
+            fn.materials = fn.materials || {};
+            fn.materials.shutter = fn.materials.shutter || {};
+            fn.materials.shutter.finish = existing.shutterCol;
+          } else {
+            var sColExisting = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish);
+            if (sColExisting) existing.shutterCol = sColExisting;
+          }
+
+          if (existing.carcass) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.carcass = existing.carcass;
+            fn.materials = fn.materials || {};
+            fn.materials.carcass = fn.materials.carcass || {};
+            fn.materials.carcass.finish = existing.carcass;
+          } else {
+            var cColExisting = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish);
+            if (cColExisting) existing.carcass = cColExisting;
+          }
+
+          if (existing.dstyle) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.dstyle = existing.dstyle;
+          } else if (fn.unitConfig && fn.unitConfig.dstyle) {
+            existing.dstyle = fn.unitConfig.dstyle;
+          }
+
+          if (existing.handle) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.handle = existing.handle;
+          } else if (fn.unitConfig && fn.unitConfig.handle) {
+            existing.handle = fn.unitConfig.handle;
+          }
+
+          if (existing.hfinish) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.hfinish = existing.hfinish;
+          } else if (fn.unitConfig && fn.unitConfig.hfinish) {
+            existing.hfinish = fn.unitConfig.hfinish;
+          }
+
+          if (existing.type) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.type = existing.type;
+          } else if (fn.unitConfig && fn.unitConfig.type) {
+            existing.type = fn.unitConfig.type;
+          }
+
+          if (existing.shutters !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.shutters = existing.shutters;
+          } else if (fn.unitConfig && fn.unitConfig.shutters !== undefined) {
+            existing.shutters = fn.unitConfig.shutters;
+          }
+
+          if (existing.drawers !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.drawers = existing.drawers;
+          } else if (fn.unitConfig && fn.unitConfig.drawers !== undefined) {
+            existing.drawers = fn.unitConfig.drawers;
+          }
+
+          if (existing.shelves !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.shelves = existing.shelves;
+          } else if (fn.unitConfig && fn.unitConfig.shelves !== undefined) {
+            existing.shelves = fn.unitConfig.shelves;
+          }
+
+          if (existing.loft !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.loft = existing.loft;
+          } else if (fn.unitConfig && fn.unitConfig.loft !== undefined) {
+            existing.loft = fn.unitConfig.loft;
+          }
+
+          if (existing.loftH !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.loftH = existing.loftH;
+          } else if (fn.unitConfig && fn.unitConfig.loftH !== undefined) {
+            existing.loftH = fn.unitConfig.loftH;
+          }
+
           if (fn.dimensions) {
-            if (fn.dimensions.W) existing.W = fn.dimensions.W;
-            if (fn.dimensions.H) existing.H = fn.dimensions.H;
-            if (fn.dimensions.D) existing.D = fn.dimensions.D;
+            if (existing.W && !fn.dimensions.W) fn.dimensions.W = existing.W;
+            else if (fn.dimensions.W) existing.W = fn.dimensions.W;
+            if (existing.H && !fn.dimensions.H) fn.dimensions.H = existing.H;
+            else if (fn.dimensions.H) existing.H = fn.dimensions.H;
+            if (existing.D && !fn.dimensions.D) fn.dimensions.D = existing.D;
+            else if (fn.dimensions.D) existing.D = fn.dimensions.D;
           }
-          if (fn.unitConfig) {
-            if (fn.unitConfig.shutters !== undefined) existing.shutters = fn.unitConfig.shutters;
-            if (fn.unitConfig.drawers !== undefined) existing.drawers = fn.unitConfig.drawers;
-            if (fn.unitConfig.shelves !== undefined) existing.shelves = fn.unitConfig.shelves;
-            if (fn.unitConfig.dstyle) existing.dstyle = fn.unitConfig.dstyle;
-            if (fn.unitConfig.handle) existing.handle = fn.unitConfig.handle;
-            if (fn.unitConfig.hfinish) existing.hfinish = fn.unitConfig.hfinish;
-            if (fn.unitConfig.counter) existing.counter = fn.unitConfig.counter;
-            if (fn.unitConfig.type) existing.type = fn.unitConfig.type;
-            if (fn.unitConfig.loft !== undefined) existing.loft = fn.unitConfig.loft;
-            if (fn.unitConfig.loftH !== undefined) existing.loftH = fn.unitConfig.loftH;
-          }
-          var sColExisting = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish);
-          if (sColExisting) existing.shutterCol = sColExisting;
-          var cColExisting = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish);
-          if (cColExisting) existing.carcass = cColExisting;
           newUnits.push(existing);
         } else {
           var defH = isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 1800 : (fn.category === 'crockery' ? 2100 : 2100));
@@ -1877,6 +1955,9 @@
 
     selectFurnitureIn3DStudio: function (furnId) {
       if (!furnId) return;
+      if (typeof this.sync3DStudioUnits === 'function') {
+        this.sync3DStudioUnits();
+      }
       this.syncProjectUnitsTo3DStudio(furnId);
       for (var i = 0; i < window.S.units.length; i++) {
         if (window.S.units[i]._furnId === furnId) {
@@ -1982,6 +2063,12 @@
             match.materials = match.materials || {};
             match.materials.shutter = match.materials.shutter || {};
             match.materials.shutter.finish = u.shutterCol;
+            match.shutterColors = [];
+            match.shutterMaterials = [];
+            var scCount = match.unitConfig.shutters || 2;
+            for (var sc = 0; sc < scCount; sc++) {
+              match.shutterMaterials[sc] = u.shutterCol;
+            }
           }
           if (u.carcass) {
             match.unitConfig.carcass = u.carcass;
