@@ -122,16 +122,39 @@
         if (ICONS[cleanKey]) {
           return 'data:image/svg+xml;utf8,' + encodeURIComponent(ICONS[cleanKey]);
         }
+        var strippedStr = cleanKey.replace(/[^a-z0-9]/g, '');
+        for (var sk in ICONS) {
+          if (sk.replace(/[^a-z0-9]/g, '') === strippedStr) {
+            return 'data:image/svg+xml;utf8,' + encodeURIComponent(ICONS[sk]);
+          }
+        }
         return 'unit-icons/' + cleanKey + '.svg';
       }
-      var id = item.id || '';
-      var clean = sanitizeIconId(id);
-      if (id === 'w2d' || id === 'W-01') return 'icon-furniture.png';
-      if (id === 'ctvb-1d-1dr') return 'icon-cookscape-unit.png';
-      if (ICONS[clean]) {
+      var id = item.catalogId || item.modelId || item.presetId || item.code || '';
+      if (!id && item.name) id = item.name;
+      if (!id && item.id && !String(item.id).startsWith('furn_') && !String(item.id).startsWith('unit_')) {
+        id = item.id;
+      }
+      var clean = sanitizeIconId(id || '');
+      if (clean === 'w2d' || clean === 'w-01') return 'icon-furniture.png';
+      if (clean === 'ctvb-1d-1dr') return 'icon-cookscape-unit.png';
+      if (clean && ICONS[clean]) {
         return 'data:image/svg+xml;utf8,' + encodeURIComponent(ICONS[clean]);
       }
-      return 'unit-icons/' + clean + '.svg';
+      if (clean) {
+        var stripped = clean.replace(/[^a-z0-9]/g, '');
+        for (var k in ICONS) {
+          if (k.replace(/[^a-z0-9]/g, '') === stripped) {
+            return 'data:image/svg+xml;utf8,' + encodeURIComponent(ICONS[k]);
+          }
+        }
+      }
+      // If category fallback
+      var cat = sanitizeIconId(item.category || '');
+      if (cat && ICONS[cat]) {
+        return 'data:image/svg+xml;utf8,' + encodeURIComponent(ICONS[cat]);
+      }
+      return (item.category === 'wardrobe') ? 'icon-furniture.png' : 'icon-cookscape-unit.png';
     }
   };
 }));

@@ -612,6 +612,64 @@
   </div>
 </div>
 
+<!-- ══════ MODAL: EDIT PROJECT & CLIENT DETAILS ══════ -->
+<div class="orbix-modal" id="editProjectMetaModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Edit Client &amp; Project Details</h3>
+        <p class="modal-sub">Updates commercial quotation header &amp; exported spreadsheets</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <form id="editProjectMetaForm">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="editProjClient">Client Name <span class="req">*</span></label>
+            <input type="text" id="editProjClient" class="form-input" placeholder="e.g. Vikram Singhania" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editProjContact">Contact Number <span class="req">*</span></label>
+            <input type="tel" id="editProjContact" class="form-input" placeholder="e.g. +91 98765 43210" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="editProjLocation">Location <span class="req">*</span></label>
+            <input type="text" id="editProjLocation" class="form-input" placeholder="e.g. Whitefield, Bengaluru" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editProjBhName">BH Name <span class="req">*</span></label>
+            <select id="editProjBhName" class="form-input" required>
+              <option value="" disabled selected>-- Select Business Head (BH) --</option>
+              <option value="Sangathamizh">Sangathamizh (Business Head)</option>
+              <option value="Cookscape Admin">Cookscape Admin (System Head)</option>
+              <option value="Aravind">Aravind (Floor Architect / FA)</option>
+              <option value="Elakkiya">Elakkiya (Floor Architect / FA)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="editProjDateTime">Date &amp; Time <span class="req">*</span></label>
+            <input type="text" id="editProjDateTime" class="form-input" placeholder="e.g. 05-11-2026 23:36" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="editProjCpCode">CP Code / Quote Ref</label>
+            <input type="text" id="editProjCpCode" class="form-input" placeholder="e.g. CP-9042">
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn modal-close-btn">Cancel</button>
+        <button type="submit" class="btn primary big">Save Changes &rarr;</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- ══════ MODAL: SHARE WITH COLLEAGUE ══════ -->
 <div class="orbix-modal" id="shareModal">
   <div class="modal-backdrop"></div>

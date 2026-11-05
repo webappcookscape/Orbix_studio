@@ -376,6 +376,24 @@
       });
       this.startAutoSaveLoop();
       this.guardViews();
+
+      if (typeof window !== 'undefined') {
+        window.addEventListener('beforeunload', function () {
+          self.flushImmediateSave();
+        });
+        window.addEventListener('pagehide', function () {
+          self.flushImmediateSave();
+        });
+        window.addEventListener('online', function () {
+          self.setSaveIndicator('saved', 'Online');
+          if (self._hasPendingOfflineSave) {
+            self.saveActiveProject();
+          }
+        });
+        window.addEventListener('offline', function () {
+          self.setSaveIndicator('offline');
+        });
+      }
     },
 
     isAdmin: function () {
@@ -1044,23 +1062,75 @@
     },
 
     _loadProjectIntoWorkspace: function (project, switchView) {
+      var self = this;
+      var activeId = project.id || self.activeProjectId;
+      if (activeId) {
+        self.activeProjectId = activeId;
+        try {
+          var uId = self.currentUser ? self.currentUser.id : 'anon';
+          localStorage.setItem('orbix_active_proj_' + uId, activeId);
+        } catch (e) { }
+      }
+
+      // 1. Check if we have a newer local storage draft for this project (retains units across hard refresh & offline)
+      var userKey = 'orbix_project_' + (this.currentUser ? this.currentUser.id : 'anon') + '_' + activeId;
+      var localPlanRaw = null;
       try {
-        localStorage.removeItem('cupboard-cad');
+        localPlanRaw = localStorage.getItem(userKey);
+        if (!localPlanRaw) {
+          var draftRaw = localStorage.getItem('orbix_working_project_draft');
+          if (draftRaw) {
+            var draftObj = JSON.parse(draftRaw);
+            if (draftObj && (draftObj.projectId === activeId || !draftObj.projectId)) {
+              localPlanRaw = JSON.stringify(draftObj.plan);
+            }
+          }
+        }
       } catch (e) { }
 
-      // 1. Load 2D floor plan into OrbixUI first
-      if (window.OrbixUI) {
-        var planToLoad = null;
+      var planToLoad = null;
+      if (localPlanRaw) {
+        try {
+          var parsedLocal = JSON.parse(localPlanRaw);
+          var localCount = (parsedLocal.plan && parsedLocal.plan.furniture) ? parsedLocal.plan.furniture.length : 0;
+          var serverCount = (project.data && project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
+            ? project.data.plan.plan.furniture.length : 0;
+          
+          if (localCount >= serverCount || (parsedLocal._lastModified && (!project.updatedAt || parsedLocal._lastModified > new Date(project.updatedAt).getTime()))) {
+            planToLoad = parsedLocal;
+            console.log('[Orbix Studio] Retained latest local draft across refresh/offline (' + localCount + ' units).');
+          }
+        } catch (e) { }
+      }
+
+      if (!planToLoad) {
         if (project.data && project.data.plan && (project.data.plan.plan || project.data.plan.walls)) {
           planToLoad = project.data.plan;
         } else if (window.OrbixCore && typeof window.OrbixCore.createProject === 'function') {
           planToLoad = window.OrbixCore.createProject(project.title);
-          if (planToLoad.meta) planToLoad.meta.clientName = project.client || '';
         }
+      }
 
-        if (planToLoad && typeof window.OrbixUI.loadProject === 'function') {
-          window.OrbixUI.loadProject(planToLoad);
-        }
+      // Normalize client and quote metadata into planToLoad.meta
+      if (planToLoad) {
+        planToLoad.meta = planToLoad.meta || {};
+        var details = (project.data && project.data.details) || {};
+        if (!planToLoad.meta.clientName) planToLoad.meta.clientName = project.client || details.clientName || 'Vikram Singhania';
+        if (!planToLoad.meta.phone) planToLoad.meta.phone = project.contact_number || details.contactNumber || details.phone || '';
+        if (!planToLoad.meta.contactNumber) planToLoad.meta.contactNumber = planToLoad.meta.phone;
+        if (!planToLoad.meta.siteAddress) planToLoad.meta.siteAddress = project.location || details.location || details.siteAddress || '';
+        if (!planToLoad.meta.siteLocation) planToLoad.meta.siteLocation = planToLoad.meta.siteAddress;
+        if (!planToLoad.meta.quoteId) planToLoad.meta.quoteId = project.cp_code || details.cpCode || details.quoteId || ('ORB-' + (activeId ? String(activeId).slice(-6) : '089'));
+        if (!planToLoad.meta.cpCode) planToLoad.meta.cpCode = planToLoad.meta.quoteId;
+        if (!planToLoad.meta.designerName) planToLoad.meta.designerName = project.bh_name || details.bhName || (self.currentUser ? self.currentUser.name : 'Sangathamizh');
+        if (!planToLoad.meta.bhName) planToLoad.meta.bhName = planToLoad.meta.designerName;
+        if (!planToLoad.meta.dateCreated) planToLoad.meta.dateCreated = project.date_time || details.dateTime || details.dateCreated || new Date().toISOString();
+        if (!planToLoad.meta.status) planToLoad.meta.status = 'Approved Estimate';
+      }
+
+      // Load 2D floor plan into OrbixUI
+      if (window.OrbixUI && planToLoad && typeof window.OrbixUI.loadProject === 'function') {
+        window.OrbixUI.loadProject(planToLoad);
       }
 
       // 2. Synchronize 3D units strictly synchronized with live project
@@ -1189,59 +1259,107 @@
       }
     },
 
-    saveActiveProject: function (dataUpdates) {
-      if (!this.activeProjectId) return;
-      var self = this;
-      var project = this.projects.find(function (p) { return p.id === self.activeProjectId; });
-      if (!project) return;
+    flushImmediateSave: function () {
+      var currentPlan = (window.OrbixUI && window.OrbixUI.project) ? window.OrbixUI.project : null;
+      if (!currentPlan) return;
+      var currentUnits = (window.S && Array.isArray(window.S.units)) ? window.S.units : [];
+      var activeId = this.activeProjectId || (this.currentUser ? localStorage.getItem('orbix_active_proj_' + this.currentUser.id) : null);
+      var now = Date.now();
+      currentPlan._lastModified = now;
 
-      project.data = project.data || {};
-      dataUpdates = dataUpdates || {};
-      if (dataUpdates.plan) {
-        project.data.plan = dataUpdates.plan;
-      } else if (window.OrbixUI && window.OrbixUI.project) {
-        project.data.plan = window.OrbixUI.project;
-      }
-      if (dataUpdates.units) {
-        project.data.units = dataUpdates.units;
-      } else if (window.S && window.S.units) {
-        project.data.units = window.S.units;
-      }
-
-      var planFurn = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
-        || (project.data.plan && project.data.plan.furniture) || [];
-      project.units_count = planFurn.length || (project.data.units ? project.data.units.length : 0);
-
-      // Save user-scoped localStorage backup
       try {
-        if (project.data.plan && self.currentUser) {
-          localStorage.setItem('orbix_project_' + self.currentUser.id + '_' + self.activeProjectId, JSON.stringify(project.data.plan));
+        var draft = {
+          projectId: activeId,
+          userId: this.currentUser ? this.currentUser.id : 'anon',
+          timestamp: now,
+          plan: currentPlan,
+          units: currentUnits
+        };
+        localStorage.setItem('orbix_working_project_draft', JSON.stringify(draft));
+        if (activeId) {
+          var userKey = 'orbix_project_' + (this.currentUser ? this.currentUser.id : 'anon') + '_' + activeId;
+          localStorage.setItem(userKey, JSON.stringify(currentPlan));
+        }
+      } catch (e) {
+        console.warn('Flush immediate save error:', e);
+      }
+    },
+
+    saveActiveProject: function (dataUpdates) {
+      var self = this;
+      var activeId = this.activeProjectId || (this.currentUser ? localStorage.getItem('orbix_active_proj_' + this.currentUser.id) : null);
+      var project = activeId ? this.projects.find(function (p) { return p.id === activeId; }) : null;
+
+      var currentPlan = (dataUpdates && dataUpdates.plan) || (window.OrbixUI && window.OrbixUI.project);
+      var currentUnits = (dataUpdates && dataUpdates.units) || (window.S && window.S.units) || [];
+      if (!currentPlan) return;
+
+      var now = Date.now();
+      currentPlan._lastModified = now;
+
+      // 1. Instant Synchronous LocalStorage Save (0ms delay - 100% hard refresh & offline safe)
+      try {
+        localStorage.setItem('orbix_working_project_draft', JSON.stringify({
+          projectId: activeId,
+          userId: self.currentUser ? self.currentUser.id : 'anon',
+          timestamp: now,
+          plan: currentPlan,
+          units: currentUnits
+        }));
+        if (activeId) {
+          var userKey = 'orbix_project_' + (self.currentUser ? self.currentUser.id : 'anon') + '_' + activeId;
+          localStorage.setItem(userKey, JSON.stringify(currentPlan));
+          localStorage.setItem('orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon'), activeId);
         }
       } catch (e) { }
 
+      if (project) {
+        project.data = project.data || {};
+        project.data.plan = currentPlan;
+        project.data.units = currentUnits;
+        var planFurn = (currentPlan.plan && currentPlan.plan.furniture) || (currentPlan.furniture) || [];
+        project.units_count = planFurn.length || (currentUnits ? currentUnits.length : 0);
+      }
+
+      // 2. Check offline status
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        self.setSaveIndicator('offline');
+        self._hasPendingOfflineSave = true;
+        return;
+      }
+
       self.setSaveIndicator('saving');
 
-      // Debounced backend save to PostgreSQL
+      // 3. Debounced backend save to PostgreSQL
       clearTimeout(this._saveDebounce);
       this._saveDebounce = setTimeout(function () {
-        OrbixProjects.apiFetch('/api/projects/' + self.activeProjectId, {
+        if (!activeId) {
+          self.setSaveIndicator('offline');
+          return;
+        }
+        var pData = project ? project.data : { plan: currentPlan, units: currentUnits };
+        var pUnitsCount = project ? project.units_count : ((currentPlan.plan && currentPlan.plan.furniture) ? currentPlan.plan.furniture.length : 0);
+
+        OrbixProjects.apiFetch('/api/projects/' + activeId, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            data: project.data,
-            units_count: project.units_count
+            data: pData,
+            units_count: pUnitsCount
           })
         })
           .then(function () {
-            var now = new Date();
-            var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            var d = new Date();
+            var timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             self.setSaveIndicator('saved', timeStr);
+            self._hasPendingOfflineSave = false;
           })
           .catch(function (e) {
-            console.warn('Auto-save to backend failed:', e);
+            console.warn('Auto-save to backend failed (retained locally):', e);
             self.setSaveIndicator('offline');
+            self._hasPendingOfflineSave = true;
           });
-      }, 500);
+      }, 400);
     },
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -1527,11 +1645,17 @@
             };
           if (freshPlan.meta) {
             freshPlan.meta.clientName = client;
+            freshPlan.meta.phone = contact;
             freshPlan.meta.contactNumber = contact;
+            freshPlan.meta.siteAddress = location;
             freshPlan.meta.siteLocation = location;
+            freshPlan.meta.designerName = bhName || (self.currentUser ? self.currentUser.name : 'Sangathamizh');
             freshPlan.meta.bhName = bhName;
             freshPlan.meta.dateTime = dateTime;
+            freshPlan.meta.dateCreated = dateTime || new Date().toISOString();
             freshPlan.meta.cpCode = cpCode;
+            freshPlan.meta.quoteId = cpCode || ('ORB-' + Date.now().toString().slice(-6));
+            freshPlan.meta.status = 'Approved Estimate';
           }
 
           var payload = {
@@ -1551,10 +1675,15 @@
               details: {
                 clientName: client,
                 contactNumber: contact,
+                phone: contact,
                 location: location,
+                siteAddress: location,
                 bhName: bhName,
+                designerName: bhName || (self.currentUser ? self.currentUser.name : 'Sangathamizh'),
                 dateTime: dateTime,
-                cpCode: cpCode
+                dateCreated: dateTime || new Date().toISOString(),
+                cpCode: cpCode,
+                quoteId: cpCode || ('ORB-' + Date.now().toString().slice(-6))
               }
             },
             currentUser: self.currentUser

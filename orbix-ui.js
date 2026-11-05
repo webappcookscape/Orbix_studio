@@ -12,12 +12,73 @@
     editor: null,
     project: null,
 
+    formatDisplayDate: function (dStr, includeTime) {
+      if (!dStr) return '';
+      if (/^\d{2}[-/]\d{2}[-/]\d{4}/.test(dStr)) return dStr;
+      var d = new Date(dStr);
+      if (isNaN(d.getTime())) return dStr;
+      var day = ('0' + d.getDate()).slice(-2);
+      var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      var month = months[d.getMonth()];
+      var year = d.getFullYear();
+      if (includeTime) {
+        var hours = ('0' + d.getHours()).slice(-2);
+        var mins = ('0' + d.getMinutes()).slice(-2);
+        return day + '-' + month + '-' + year + ' ' + hours + ':' + mins;
+      }
+      return day + '-' + month + '-' + year;
+    },
+
     init: function () {
       var planContainer = document.getElementById('planCanvasContainer');
       if (!planContainer) return;
 
-      // Initialize with clean project; live project is loaded dynamically from PostgreSQL per account
-      this.project = Core.createProject('Untitled Project');
+      // Restore from local draft immediately if available so units are NEVER lost on refresh or offline
+      var restored = false;
+      try {
+        var draftRaw = localStorage.getItem('orbix_working_project_draft');
+        if (draftRaw) {
+          var draftObj = JSON.parse(draftRaw);
+          var draftPlan = draftObj.plan || draftObj;
+          if (draftPlan && (draftPlan.plan || draftPlan.walls || draftPlan.furniture || draftPlan.meta)) {
+            this.project = draftPlan;
+            restored = true;
+            if (draftObj.units && window.S) {
+              window.S.units = draftObj.units;
+            }
+          }
+        }
+        if (!restored) {
+          var activeId = localStorage.getItem('orbix_active_proj_default') || localStorage.getItem('orbix_active_proj_anon');
+          if (!activeId) {
+            for (var k = 0; k < localStorage.length; k++) {
+              var key = localStorage.key(k);
+              if (key && key.indexOf('orbix_active_proj_') === 0) {
+                activeId = localStorage.getItem(key);
+                break;
+              }
+            }
+          }
+          if (activeId) {
+            for (var k2 = 0; k2 < localStorage.length; k2++) {
+              var key2 = localStorage.key(k2);
+              if (key2 && key2.indexOf('orbix_project_') === 0 && key2.indexOf('_' + activeId) !== -1) {
+                var pRaw = localStorage.getItem(key2);
+                if (pRaw) {
+                  this.project = JSON.parse(pRaw);
+                  restored = true;
+                  break;
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Failed restoring local project draft on init:', e);
+      }
+      if (!restored || !this.project) {
+        this.project = Core.createProject('Untitled Project');
+      }
 
       var self = this;
       this.editor = new PlanEditor(planContainer, {
@@ -91,9 +152,26 @@
     saveToLocalStorage: function () {
       if (!this.project) return;
       try {
-        if (window.OrbixProjects && window.OrbixProjects.currentUser && window.OrbixProjects.activeProjectId) {
-          var key = 'orbix_project_' + window.OrbixProjects.currentUser.id + '_' + window.OrbixProjects.activeProjectId;
-          localStorage.setItem(key, Core.serializeProject(this.project));
+        var now = Date.now();
+        var currentUnits = (window.S && window.S.units) ? window.S.units : [];
+        var activeId = (window.OrbixProjects && window.OrbixProjects.activeProjectId) || '';
+        var uId = (window.OrbixProjects && window.OrbixProjects.currentUser) ? window.OrbixProjects.currentUser.id : 'anon';
+
+        // 1. Synchronously persist full working draft (guarantees survival across hard refresh & network drop)
+        localStorage.setItem('orbix_working_project_draft', JSON.stringify({
+          projectId: activeId,
+          userId: uId,
+          timestamp: now,
+          plan: this.project,
+          units: currentUnits
+        }));
+
+        // 2. Persist to active project key if ID is known
+        if (activeId) {
+          var key = 'orbix_project_' + uId + '_' + activeId;
+          var serialized = (Core && typeof Core.serializeProject === 'function') ? Core.serializeProject(this.project) : JSON.stringify(this.project);
+          localStorage.setItem(key, serialized);
+          localStorage.setItem('orbix_active_proj_' + uId, activeId);
         }
       } catch (e) {}
     },
@@ -2547,6 +2625,7 @@
         '<div class="boq-actions no-print">' +
         '<button class="btn primary" id="boqPrintBtn">📄 Download PDF</button>' +
         '<button class="btn" id="boqXlsxBtn" style="background:#107C41;color:#fff;border-color:#107C41;font-weight:600">📊 Download Excel (.xlsx)</button>' +
+        '<button class="btn" id="boqEditDetailsBtn" style="font-weight:600;border-color:#2563EB;color:#2563EB">✏️ Edit Client Details</button>' +
         '<button class="btn" id="boqLockVersionBtn">Issue Quotation Snapshot</button>' +
         '<button class="btn" id="boqToggleRateCardBtn">Configure Company Rates</button>' +
         '</div>' +
@@ -2676,28 +2755,28 @@
         '<div class="quote-sheet-single">';
 
       // Format clean Quotation Date
-      var rawDate = this.project.meta && this.project.meta.dateCreated;
-      var formattedDate = '28 Oct, 2026';
-      if (rawDate) {
-        var dObj = new Date(rawDate);
-        if (!isNaN(dObj.getTime())) {
-          formattedDate = dObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-        } else {
-          formattedDate = rawDate;
-        }
-      }
+      var formattedDate = self.formatDisplayDate(this.project.meta && (this.project.meta.dateTime || this.project.meta.dateCreated), true);
+      if (!formattedDate) formattedDate = '05-Nov-2026 23:36';
+
+      var meta = this.project.meta || {};
+      var clientDisp = meta.clientName || 'Vikram Singhania';
+      var contactDisp = meta.phone || meta.contactNumber || '+91 98765 43210';
+      var locDisp = meta.siteAddress || meta.siteLocation || meta.location || 'Whitefield, Bengaluru';
+      var bhDisp = meta.bhName || meta.designerName || 'Sangathamizh';
+      var cpDisp = meta.cpCode || meta.quoteId || 'CP-9042';
 
       html += '<div class="quote-header-split">' +
         '<div class="qh-left">' +
-        '<div class="qh-row"><span class="qh-lbl">Project ID</span><span class="qh-val">' + (this.project.meta.quoteId || '5754') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Customer</span><span class="qh-val">' + (this.project.meta.clientName || 'Dhanesh') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Design ID</span><span class="qh-val">' + (this.project.meta.designId || 'Design1') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Designer</span><span class="qh-val">' + (this.project.meta.designerName || 'Abishek Kumar') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Scope</span><span class="qh-val">' + (quote.isFiltered ? ('Selected Rooms: ' + quote.furnitureItems.map(function (it) { return it.roomName; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) : (this.project.meta.scope || 'Complete Interior Design')) + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">CP Code / Quote Ref</span><span class="qh-val bold" style="color:#2563EB;">' + cpDisp + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Client Name</span><span class="qh-val bold">' + clientDisp + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Contact Number</span><span class="qh-val">' + contactDisp + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Location</span><span class="qh-val">' + locDisp + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">BH Name</span><span class="qh-val">' + bhDisp + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Scope</span><span class="qh-val">' + (quote.isFiltered ? ('Selected Rooms: ' + quote.furnitureItems.map(function (it) { return it.roomName; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) : (meta.scope || 'All Rooms (Entire Home)')) + '</span></div>' +
         '</div>' +
         '<div class="qh-right">' +
         '<div class="qh-row"><span class="qh-lbl">Quotation Date</span><span class="qh-val">' + formattedDate + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Price Expiry Date</span><span class="qh-val">' + (this.project.meta.validUntil || '27 Nov, 2026') + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Status</span><span class="qh-val" style="color:#16A34A;font-weight:700;">' + (meta.status || 'Approved Estimate') + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Price Variant</span><span class="qh-val bold" id="boqHeaderVariant" style="color:#2563EB;font-weight:700;">' + currentTier + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Total No. of Items</span><span class="qh-val">' + quote.furnitureItems.length + (quote.isFiltered ? ' (Filtered Scope)' : '') + '</span></div>' +
         '<div class="qh-row total"><span class="qh-lbl">Total Amount</span><span class="qh-val" id="boqHeaderTotalAmount">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</span></div>' +
@@ -3145,6 +3224,98 @@
         xlsxBtn.addEventListener('click', function () {
           self.exportXLSX();
         });
+      }
+
+      var editDetailsBtn = document.getElementById('boqEditDetailsBtn');
+      if (editDetailsBtn) {
+        editDetailsBtn.addEventListener('click', function () {
+          var modal = document.getElementById('editProjectMetaModal');
+          if (!modal) return;
+          var m = self.project.meta || {};
+          var clientInput = document.getElementById('editProjClient');
+          var contactInput = document.getElementById('editProjContact');
+          var locInput = document.getElementById('editProjLocation');
+          var bhSelect = document.getElementById('editProjBhName');
+          var dtInput = document.getElementById('editProjDateTime');
+          var cpInput = document.getElementById('editProjCpCode');
+
+          if (clientInput) clientInput.value = m.clientName || 'Vikram Singhania';
+          if (contactInput) contactInput.value = m.phone || m.contactNumber || '+91 98765 43210';
+          if (locInput) locInput.value = m.siteAddress || m.siteLocation || m.location || 'Whitefield, Bengaluru';
+          if (bhSelect) bhSelect.value = m.bhName || m.designerName || 'Sangathamizh';
+          if (dtInput) dtInput.value = m.dateTime || (m.dateCreated ? self.formatDisplayDate(m.dateCreated, true) : '05-11-2026 23:36');
+          if (cpInput) cpInput.value = m.cpCode || m.quoteId || 'CP-9042';
+
+          modal.classList.add('is-open');
+        });
+      }
+
+      var editForm = document.getElementById('editProjectMetaForm');
+      if (editForm && !editForm._hasBoundListener) {
+        editForm._hasBoundListener = true;
+        editForm.onsubmit = function (e) {
+          e.preventDefault();
+          var clientVal = (document.getElementById('editProjClient').value || '').trim();
+          var contactVal = (document.getElementById('editProjContact').value || '').trim();
+          var locVal = (document.getElementById('editProjLocation').value || '').trim();
+          var bhVal = (document.getElementById('editProjBhName').value || '').trim();
+          var dtVal = (document.getElementById('editProjDateTime').value || '').trim();
+          var cpVal = (document.getElementById('editProjCpCode').value || '').trim();
+
+          self.project.meta = self.project.meta || {};
+          self.project.meta.clientName = clientVal;
+          self.project.meta.phone = contactVal;
+          self.project.meta.contactNumber = contactVal;
+          self.project.meta.siteAddress = locVal;
+          self.project.meta.siteLocation = locVal;
+          self.project.meta.location = locVal;
+          self.project.meta.bhName = bhVal;
+          self.project.meta.designerName = bhVal;
+          self.project.meta.dateTime = dtVal;
+          self.project.meta.dateCreated = dtVal;
+          self.project.meta.cpCode = cpVal;
+          self.project.meta.quoteId = cpVal || self.project.meta.quoteId || 'CP-9042';
+
+          // Sync with active project in OrbixProjects
+          if (window.OrbixProjects) {
+            var actId = window.OrbixProjects.activeProjectId;
+            var curProj = (window.OrbixProjects.projects || []).find(function (p) { return p.id === actId; });
+            if (curProj) {
+              curProj.client = clientVal;
+              curProj.contact_number = contactVal;
+              curProj.location = locVal;
+              curProj.bh_name = bhVal;
+              curProj.date_time = dtVal;
+              curProj.cp_code = cpVal;
+              curProj.data = curProj.data || {};
+              curProj.data.details = {
+                clientName: clientVal,
+                contactNumber: contactVal,
+                phone: contactVal,
+                location: locVal,
+                siteAddress: locVal,
+                bhName: bhVal,
+                designerName: bhVal,
+                dateTime: dtVal,
+                dateCreated: dtVal,
+                cpCode: cpVal,
+                quoteId: cpVal
+              };
+            }
+            window.OrbixProjects.saveActiveProject({
+              plan: self.project,
+              units: window.S ? window.S.units : []
+            });
+          }
+
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          var modal = document.getElementById('editProjectMetaModal');
+          if (modal) modal.classList.remove('is-open');
+          if (window.OrbixProjects && window.OrbixProjects.showToast) {
+            window.OrbixProjects.showToast('Client details updated & saved!', 'success');
+          }
+        };
       }
 
       var resetFilterBtn = document.getElementById('boqResetFilterBtn');
@@ -3718,19 +3889,19 @@
 
       // Meta Box Row 3
       setCell(3, 4, 'Quote Ref #:', 3);
-      setCell(3, 5, meta.quoteId || 'ORB-2026-089', 4);
+      setCell(3, 5, meta.cpCode || meta.quoteId || 'CP-9042', 4);
       setCell(3, 6, 'Date:', 3);
-      setCell(3, 7, meta.dateCreated || new Date().toLocaleDateString('en-IN'), 4);
+      setCell(3, 7, OrbixUI.formatDisplayDate(meta.dateTime || meta.dateCreated, true) || '05-Nov-2026 23:36', 4);
       setCell(3, 8, 'Status:', 3);
-      setCell(3, 9, 'Approved Estimate', 4);
+      setCell(3, 9, meta.status || 'Approved Estimate', 4);
       setCell(3, 10, '', 4);
       addMerge(9, 3, 10, 3);
 
       // Meta Box Row 4
       setCell(4, 4, 'Client Name:', 3);
-      setCell(4, 5, meta.clientName || 'Aravind K.', 4);
+      setCell(4, 5, meta.clientName || 'Vikram Singhania', 4);
       setCell(4, 6, 'Contact:', 3);
-      setCell(4, 7, meta.phone || '+91 98450 12345', 4);
+      setCell(4, 7, meta.phone || meta.contactNumber || '+91 98765 43210', 4);
       setCell(4, 8, 'Active Tier:', 3);
       setCell(4, 9, currentTier, 4);
       setCell(4, 10, '', 4);
@@ -3738,12 +3909,12 @@
 
       // Meta Box Row 5
       setCell(5, 4, 'Site Address:', 3);
-      setCell(5, 5, meta.siteAddress || 'Flat 402, Skyline Residency, Bangalore', 4);
+      setCell(5, 5, meta.siteAddress || meta.siteLocation || meta.location || 'Whitefield, Bengaluru', 4);
       setCell(5, 6, '', 4);
       setCell(5, 7, '', 4);
       addMerge(5, 5, 7, 5);
-      setCell(5, 8, 'Scope:', 3);
-      setCell(5, 9, roomScopeText, 4);
+      setCell(5, 8, 'BH Name:', 3);
+      setCell(5, 9, meta.bhName || meta.designerName || 'Sangathamizh', 4);
       setCell(5, 10, '', 4);
       addMerge(9, 5, 10, 5);
 
