@@ -2778,7 +2778,7 @@
             var d = item.dimensions || { W: 1200, H: 2100, D: 600 };
             var codePrefix = item.category === 'wardrobe' ? 'W' : item.category.indexOf('kitchen') !== -1 ? 'K' : item.category.indexOf('bed') !== -1 ? 'B' : item.category === 'tv_unit' ? 'TV' : 'U';
             var refCode = item.refCode || ('C' + (12 + globalItemIndex));
-            var svgThumb = self.getUnitSVG(item.category);
+            var svgThumb = self.getUnitSVG(item);
 
             var smat = (item.materials && item.materials.shutter) ? item.materials.shutter : { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' };
             var cmat = (item.materials && item.materials.carcass) ? item.materials.carcass : { material: 'BWP_18MM', finish: 'Absolute White' };
@@ -3320,8 +3320,74 @@
       }
     },
 
-    getUnitSVG: function (cat) {
-      cat = (cat || '').toLowerCase();
+    getUnitSVG: function (itemOrCat) {
+      var item = itemOrCat;
+      var cat = '';
+      if (typeof itemOrCat === 'string') {
+        cat = itemOrCat.toLowerCase();
+        item = { category: cat, name: cat };
+      } else if (itemOrCat && typeof itemOrCat === 'object') {
+        cat = (itemOrCat.category || '').toLowerCase();
+      } else {
+        item = {};
+      }
+
+      // 1. Try to match exact catalog item from Core.FURNITURE_CATALOG
+      var catalogItem = null;
+      var catalog = (typeof Core !== 'undefined' && Core.FURNITURE_CATALOG) ? Core.FURNITURE_CATALOG : [];
+      var targetId = (item.catalogId || item.id || item.code || '').toLowerCase();
+      var targetName = (item.name || '').trim().toLowerCase();
+
+      // Direct ID / code match
+      if (targetId) {
+        for (var i = 0; i < catalog.length; i++) {
+          var cId = (catalog[i].id || '').toLowerCase();
+          var cCode = (catalog[i].code || '').toLowerCase();
+          if (cId === targetId || cCode === targetId) {
+            catalogItem = catalog[i];
+            break;
+          }
+        }
+      }
+
+      // Exact name match
+      if (!catalogItem && targetName) {
+        for (var j = 0; j < catalog.length; j++) {
+          if ((catalog[j].name || '').trim().toLowerCase() === targetName) {
+            catalogItem = catalog[j];
+            break;
+          }
+        }
+      }
+
+      // Flexible normalized name matching (e.g. "FM 120" matches id "fm-120")
+      if (!catalogItem && targetName) {
+        var normTarget = targetName.replace(/[\s\-_]+/g, '');
+        for (var k = 0; k < catalog.length; k++) {
+          var normCatName = (catalog[k].name || '').toLowerCase().replace(/[\s\-_]+/g, '');
+          var normCatId = (catalog[k].id || '').toLowerCase().replace(/[\s\-_]+/g, '');
+          if (normCatName === normTarget || normCatId === normTarget ||
+              normCatName.indexOf(normTarget) !== -1 || normTarget.indexOf(normCatName) !== -1) {
+            catalogItem = catalog[k];
+            break;
+          }
+        }
+      }
+
+      var matchedItem = catalogItem || item;
+
+      // 2. Resolve unique high-res 2.5D illustration
+      var iconSrc = '';
+      if (typeof Core !== 'undefined' && typeof Core.getUnitIcon === 'function') {
+        iconSrc = Core.getUnitIcon(matchedItem);
+      } else if (typeof OrbixUnitIcons !== 'undefined' && typeof OrbixUnitIcons.getIcon === 'function') {
+        iconSrc = OrbixUnitIcons.getIcon(matchedItem);
+      }
+
+      if (iconSrc) {
+        return '<img src="' + iconSrc + '" alt="' + (matchedItem.name || 'Unit') + '" class="quote-iso-thumb" style="width:58px;height:58px;object-fit:contain;display:block;margin:0 auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.08));">';
+      }
+
       var svg = '<svg width="68" height="68" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="quote-iso-thumb">';
       if (cat.indexOf('wardrobe') !== -1 || cat === 'w2d' || cat === 'w3d' || cat === 'w4d' || cat === 'w_slide') {
         svg += '<polygon points="50,14 84,27 84,82 50,69" fill="#5EBAAA" stroke="#2F756B" stroke-width="1.5"/>';
