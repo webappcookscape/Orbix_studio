@@ -14,12 +14,16 @@
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 
+          // Proactively check for new service worker on every page load
+          reg.update();
+
           reg.addEventListener('updatefound', function () {
             var newWorker = reg.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', function () {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                   console.log('[PWA] New update available. Refreshing for latest version.');
+                  window.location.reload();
                 }
               });
             }
