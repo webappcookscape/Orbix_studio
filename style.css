@@ -2467,4 +2467,44 @@ body.role-employee #adminCreateEmpBox,
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
+.comm-status-select {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #CBD5E1;
+  background: #F1F5F9;
+  color: #475569;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+.comm-status-select:hover, .comm-status-select:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+.comm-status-select.is-included {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #93C5FD;
+}
+.comm-status-select.is-complementary {
+  background: #ECFDF5;
+  color: #047857;
+  border-color: #A7F3D0;
+}
+@media print {
+  .comm-status-select {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    font-weight: 700 !important;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    color: #1E293B !important;
+  }
+}
+
 

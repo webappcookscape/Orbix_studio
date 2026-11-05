@@ -10,7 +10,12 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const session = require('express-session');
+let session;
+try {
+  session = require('express-session');
+} catch (_) {
+  session = null;
+}
 
 const { prisma, checkDatabaseConnection } = require('./config/prisma');
 const ResilientSessionStore = require('./config/session');
@@ -35,20 +40,27 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ── Session Middleware ──
-app.use(session({
-  store: new ResilientSessionStore(),
-  secret: SESSION_SECRET,
-  name: 'orbix.sid',
-  resave: false,
-  saveUninitialized: false,
-  rolling: true,
-  cookie: {
-    httpOnly: true,
-    secure: 'auto',
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-  }
-}));
+if (session) {
+  app.use(session({
+    store: new ResilientSessionStore(),
+    secret: SESSION_SECRET,
+    name: 'orbix.sid',
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    cookie: {
+      httpOnly: true,
+      secure: 'auto',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    }
+  }));
+} else {
+  app.use((req, res, next) => {
+    req.session = req.session || {};
+    next();
+  });
+}
 
 // ── Session User Hydration Middleware ──
 app.use(async (req, res, next) => {

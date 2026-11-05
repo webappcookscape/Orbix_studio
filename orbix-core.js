@@ -135,7 +135,7 @@
       description: 'Kitchen 2-Drawer / 3-Drawer Tandem Units',
       category: 'kitchen_base',
       pricingModel: 'front_area',
-      rates: { 'PRICE 1': 1972, 'PRICE 2': 2196, 'PRICE 3': 2714, 'PRICE 4': 2527, 'LIVE LANE': 3600, 'CC MATTE': 3945, 'CC GLOSSY': 4172, 'SURABHI': 4369, 'MR+': 5127 }
+      rates: { 'PRICE 1': 1972, 'PRICE 2': 2196, 'PRICE 3': 2714, 'PRICE 4': 2527, 'LIVE LANE': 3600, 'CC MATTE': 3945, 'CC GLOSSY': 4172, 'SURABHI': 4469, 'MR+': 5227 }
     },
     kitchen_os: {
       id: 'kitchen_os',
@@ -167,7 +167,7 @@
       description: 'Modular Wardrobe with 2 Internal Drawers',
       category: 'wardrobe',
       pricingModel: 'front_area',
-      rates: { 'PRICE 1': 1740, 'PRICE 2': 1891, 'PRICE 3': 2067, 'PRICE 4': 2191, 'LIVE LANE': 2022, 'CC MATTE': 2179, 'CC GLOSSY': 2267, 'SURABHI': 2400, 'MR+': 2909 }
+      rates: { 'PRICE 1': 1740, 'PRICE 2': 1891, 'PRICE 3': 2067, 'PRICE 4': 2191, 'LIVE LANE': 2022, 'CC MATTE': 2179, 'CC GLOSSY': 2267, 'SURABHI': 2600, 'MR+': 3109 }
     },
     wr_sliding: {
       id: 'wr_sliding',
@@ -191,7 +191,7 @@
       description: 'Mandir / Pooja Unit with CNC Jali',
       category: 'crockery',
       pricingModel: 'front_area',
-      rates: { 'PRICE 1': 1969, 'PRICE 2': 2196, 'PRICE 3': 2725, 'PRICE 4': 3169, 'LIVE LANE': 2100, 'CC MATTE': 2260, 'CC GLOSSY': 2433, 'SURABHI': 2648, 'MR+': 2929 }
+      rates: { 'PRICE 1': 1969, 'PRICE 2': 2196, 'PRICE 3': 2725, 'PRICE 4': 3169, 'LIVE LANE': 2100, 'CC MATTE': 2260, 'CC GLOSSY': 2433, 'SURABHI': 2848, 'MR+': 3129 }
     },
     tv_cabinet: {
       id: 'tv_cabinet',
@@ -1422,7 +1422,30 @@
       gstPercent: rateCard.gstPercent || 18,
       gstAmount: gstAmount,
       grandTotal: Math.round(grandTotal),
-      grandTotalExact: grandTotal
+      grandTotalExact: grandTotal,
+      commercial: {
+        woodworkSubtotal: Math.round(subtotal),
+        additionalAccessories: addAccessories,
+        appliances: appliances,
+        designPercent: designPct,
+        designAmount: designAmount,
+        freightPercent: freightPct,
+        freightAmount: freightAmount,
+        loadingUnloadingStatus: (commCharges && commCharges.loadingUnloadingStatus) || 'Additional',
+        floorMatStatus: (commCharges && commCharges.floorMatStatus) || 'Not Included in Quote',
+        civilWorksStatus: (commCharges && commCharges.civilWorksStatus) || 'As per actuals',
+        electricalPlumbingStatus: (commCharges && commCharges.electricalPlumbingStatus) || 'Additional',
+        falseCeilingStatus: (commCharges && commCharges.falseCeilingStatus) || 'Not Included',
+        wallpaperStatus: (commCharges && commCharges.wallpaperStatus) || 'Complementary',
+        discountPercent: discPct,
+        discountAmount: discAmount,
+        adpPercent: adpPct,
+        adpAmount: adpAmount,
+        netValue: netBeforeTax,
+        gstPercent: gstPercent,
+        gstAmount: gstAmount,
+        grandTotal: grandTotal
+      }
     };
   }
 

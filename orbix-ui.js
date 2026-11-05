@@ -2407,12 +2407,12 @@
       { key: 'appliances', label: 'Appliances', type: 'amount', isDeduction: false },
       { key: 'designCharges', label: 'Design charges & Handling Fee', type: 'percent', defaultPercent: 9, isDeduction: false },
       { key: 'freightCharges', label: 'Freight Charges', type: 'percent', defaultPercent: 2.5, isDeduction: false },
-      { key: 'loadingUnloading', label: 'Loading and unloading (material)', type: 'info', infoText: 'Additional' },
-      { key: 'floorMat', label: 'Floor protective mat', type: 'info', infoText: 'Not Included in Quote' },
-      { key: 'civilWorks', label: 'Civil works', type: 'info', infoText: 'As per actuals' },
-      { key: 'electricalPlumbing', label: 'Electrical & Plumbing Works', type: 'info', infoText: 'Additional' },
-      { key: 'falseCeiling', label: 'False ceiling', type: 'info', infoText: 'Not Included' },
-      { key: 'wallpaper', label: 'Wallpaper', type: 'info', infoText: 'Complementary' },
+      { key: 'loadingUnloading', label: 'Loading and unloading (material)', type: 'select', options: ['Additional', 'Included'], defaultVal: 'Additional' },
+      { key: 'floorMat', label: 'Floor protective mat', type: 'select', options: ['Not Included in Quote', 'Included'], defaultVal: 'Not Included in Quote' },
+      { key: 'civilWorks', label: 'Civil works', type: 'select', options: ['As per actuals', 'Included'], defaultVal: 'As per actuals' },
+      { key: 'electricalPlumbing', label: 'Electrical & Plumbing Works', type: 'select', options: ['Additional', 'Included'], defaultVal: 'Additional' },
+      { key: 'falseCeiling', label: 'False ceiling', type: 'select', options: ['Not Included', 'Included'], defaultVal: 'Not Included' },
+      { key: 'wallpaper', label: 'Wallpaper', type: 'select', options: ['Complementary', 'Not Included'], defaultVal: 'Complementary' },
       { key: 'discount', label: 'Discount', type: 'percent', isDeduction: true },
       { key: 'adp', label: 'ADP', type: 'percent', isDeduction: true }
     ],
@@ -2425,6 +2425,12 @@
           appliances: 0,
           designPercent: 9,
           freightPercent: 2.5,
+          loadingUnloadingStatus: 'Additional',
+          floorMatStatus: 'Not Included in Quote',
+          civilWorksStatus: 'As per actuals',
+          electricalPlumbingStatus: 'Additional',
+          falseCeilingStatus: 'Not Included',
+          wallpaperStatus: 'Complementary',
           discountPercent: 0,
           adpPercent: 0,
           gstPercent: 18
@@ -2435,6 +2441,12 @@
       if (c.discount && !c.discountPercent) c.discountPercent = c.discount;
       if (c.designPercent === undefined) c.designPercent = 9;
       if (c.freightPercent === undefined) c.freightPercent = 2.5;
+      if (!c.loadingUnloadingStatus) c.loadingUnloadingStatus = 'Additional';
+      if (!c.floorMatStatus) c.floorMatStatus = 'Not Included in Quote';
+      if (!c.civilWorksStatus) c.civilWorksStatus = 'As per actuals';
+      if (!c.electricalPlumbingStatus) c.electricalPlumbingStatus = 'Additional';
+      if (!c.falseCeilingStatus) c.falseCeilingStatus = 'Not Included';
+      if (!c.wallpaperStatus) c.wallpaperStatus = 'Complementary';
       if (c.discountPercent === undefined) c.discountPercent = 0;
       if (c.adpPercent === undefined) c.adpPercent = 0;
       if (c.gstPercent === undefined) c.gstPercent = 18;
@@ -2477,6 +2489,12 @@
         designAmount: designAmount,
         freightPercent: freightPercent,
         freightAmount: freightAmount,
+        loadingUnloadingStatus: charges.loadingUnloadingStatus || 'Additional',
+        floorMatStatus: charges.floorMatStatus || 'Not Included in Quote',
+        civilWorksStatus: charges.civilWorksStatus || 'As per actuals',
+        electricalPlumbingStatus: charges.electricalPlumbingStatus || 'Additional',
+        falseCeilingStatus: charges.falseCeilingStatus || 'Not Included',
+        wallpaperStatus: charges.wallpaperStatus || 'Complementary',
         discountPercent: discountPercent,
         discountAmount: discountAmount,
         adpPercent: adpPercent,
@@ -2916,30 +2934,59 @@
         '<span id="commFreightAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.freightAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
-        // Informational rows
+        // 7. Loading and unloading (material) [Additional / Included]
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td><td colspan="4" class="bold">Loading and unloading (material)</td>' +
-        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Additional</span></td></tr>' +
+        '<td colspan="3" style="text-align:right">' +
+        '<select class="comm-status-select' + (commSummary.loadingUnloadingStatus === 'Included' ? ' is-included' : '') + '" data-key="loadingUnloadingStatus">' +
+        '<option value="Additional"' + (commSummary.loadingUnloadingStatus === 'Additional' ? ' selected' : '') + '>Additional</option>' +
+        '<option value="Included"' + (commSummary.loadingUnloadingStatus === 'Included' ? ' selected' : '') + '>Included</option>' +
+        '</select></td></tr>' +
 
+        // 8. Floor protective mat [Included / Not Included]
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td><td colspan="4" class="bold">Floor protective mat</td>' +
-        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Not Included in Quote</span></td></tr>' +
+        '<td colspan="3" style="text-align:right">' +
+        '<select class="comm-status-select' + (commSummary.floorMatStatus === 'Included' ? ' is-included' : '') + '" data-key="floorMatStatus">' +
+        '<option value="Not Included in Quote"' + (commSummary.floorMatStatus !== 'Included' ? ' selected' : '') + '>Not Included in Quote</option>' +
+        '<option value="Included"' + (commSummary.floorMatStatus === 'Included' ? ' selected' : '') + '>Included</option>' +
+        '</select></td></tr>' +
 
+        // 9. Civil works [As per actuals / Included]
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td><td colspan="4" class="bold">Civil works</td>' +
-        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">As per actuals</span></td></tr>' +
+        '<td colspan="3" style="text-align:right">' +
+        '<select class="comm-status-select' + (commSummary.civilWorksStatus === 'Included' ? ' is-included' : '') + '" data-key="civilWorksStatus">' +
+        '<option value="As per actuals"' + (commSummary.civilWorksStatus !== 'Included' ? ' selected' : '') + '>As per actuals</option>' +
+        '<option value="Included"' + (commSummary.civilWorksStatus === 'Included' ? ' selected' : '') + '>Included</option>' +
+        '</select></td></tr>' +
 
+        // 10. Electrical & Plumbing Works [Additional / Included]
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td><td colspan="4" class="bold">Electrical &amp; Plumbing Works</td>' +
-        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Additional</span></td></tr>' +
+        '<td colspan="3" style="text-align:right">' +
+        '<select class="comm-status-select' + (commSummary.electricalPlumbingStatus === 'Included' ? ' is-included' : '') + '" data-key="electricalPlumbingStatus">' +
+        '<option value="Additional"' + (commSummary.electricalPlumbingStatus !== 'Included' ? ' selected' : '') + '>Additional</option>' +
+        '<option value="Included"' + (commSummary.electricalPlumbingStatus === 'Included' ? ' selected' : '') + '>Included</option>' +
+        '</select></td></tr>' +
 
+        // 11. False ceiling [Not Included / Included]
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td><td colspan="4" class="bold">False ceiling</td>' +
-        '<td colspan="3" style="text-align:right"><span class="comm-badge-neutral">Not Included</span></td></tr>' +
+        '<td colspan="3" style="text-align:right">' +
+        '<select class="comm-status-select' + (commSummary.falseCeilingStatus === 'Included' ? ' is-included' : '') + '" data-key="falseCeilingStatus">' +
+        '<option value="Not Included"' + (commSummary.falseCeilingStatus !== 'Included' ? ' selected' : '') + '>Not Included</option>' +
+        '<option value="Included"' + (commSummary.falseCeilingStatus === 'Included' ? ' selected' : '') + '>Included</option>' +
+        '</select></td></tr>' +
 
+        // 12. Wallpaper [Complementary / Not Included]
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td><td colspan="4" class="bold">Wallpaper</td>' +
-        '<td colspan="3" style="text-align:right"><span class="comm-badge-success">Complementary</span></td></tr>' +
+        '<td colspan="3" style="text-align:right">' +
+        '<select class="comm-status-select' + (commSummary.wallpaperStatus === 'Complementary' ? ' is-complementary' : '') + '" data-key="wallpaperStatus">' +
+        '<option value="Complementary"' + (commSummary.wallpaperStatus !== 'Not Included' ? ' selected' : '') + '>Complementary</option>' +
+        '<option value="Not Included"' + (commSummary.wallpaperStatus === 'Not Included' ? ' selected' : '') + '>Not Included</option>' +
+        '</select></td></tr>' +
 
         // Discount (enter %)
         '<tr class="comm-charge-row">' +
@@ -3051,6 +3098,25 @@
           var headerTotalEl = document.getElementById('boqHeaderTotalAmount');
           if (headerTotalEl) headerTotalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
 
+          self.saveToLocalStorage();
+        });
+      });
+
+      // Commercial Status dropdown bindings (Rows 7-12)
+      var commStatusSelects = boqEl.querySelectorAll('.comm-status-select');
+      commStatusSelects.forEach(function (sel) {
+        sel.addEventListener('change', function () {
+          var key = sel.getAttribute('data-key');
+          if (!key) return;
+          self.project.commercialCharges = self.project.commercialCharges || {};
+          self.project.commercialCharges[key] = sel.value;
+          if (sel.value === 'Included') {
+            sel.className = 'comm-status-select is-included';
+          } else if (sel.value === 'Complementary') {
+            sel.className = 'comm-status-select is-complementary';
+          } else {
+            sel.className = 'comm-status-select';
+          }
           self.saveToLocalStorage();
         });
       });
@@ -3398,12 +3464,12 @@
       rows.push(['', '', 'Appliances', '', '', '', '', '', '', '', '', '', '', '', comm.appliances]);
       rows.push(['', '', 'Design charges & Handling Fee (' + comm.designPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', comm.designAmount]);
       rows.push(['', '', 'Freight Charges (' + comm.freightPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', comm.freightAmount]);
-      rows.push(['', '', 'Loading and unloading (material)', '', '', '', '', '', '', '', '', '', '', '', 'Additional']);
-      rows.push(['', '', 'Floor protective mat', '', '', '', '', '', '', '', '', '', '', '', 'Not Included in Quote']);
-      rows.push(['', '', 'Civil works', '', '', '', '', '', '', '', '', '', '', '', 'As per actuals']);
-      rows.push(['', '', 'Electrical & Plumbing Works', '', '', '', '', '', '', '', '', '', '', '', 'Additional']);
-      rows.push(['', '', 'False ceiling', '', '', '', '', '', '', '', '', '', '', '', 'Not Included']);
-      rows.push(['', '', 'Wallpaper', '', '', '', '', '', '', '', '', '', '', '', 'Complementary']);
+      rows.push(['', '', 'Loading and unloading (material)', '', '', '', '', '', '', '', '', '', '', '', comm.loadingUnloadingStatus || 'Additional']);
+      rows.push(['', '', 'Floor protective mat', '', '', '', '', '', '', '', '', '', '', '', comm.floorMatStatus || 'Not Included in Quote']);
+      rows.push(['', '', 'Civil works', '', '', '', '', '', '', '', '', '', '', '', comm.civilWorksStatus || 'As per actuals']);
+      rows.push(['', '', 'Electrical & Plumbing Works', '', '', '', '', '', '', '', '', '', '', '', comm.electricalPlumbingStatus || 'Additional']);
+      rows.push(['', '', 'False ceiling', '', '', '', '', '', '', '', '', '', '', '', comm.falseCeilingStatus || 'Not Included']);
+      rows.push(['', '', 'Wallpaper', '', '', '', '', '', '', '', '', '', '', '', comm.wallpaperStatus || 'Complementary']);
       rows.push(['', '', 'Discount (' + comm.discountPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', -comm.discountAmount]);
       rows.push(['', '', 'ADP (' + comm.adpPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', -comm.adpAmount]);
       rows.push(['', '', 'NET VALUE', '', '', '', '', '', '', '', '', '', '', '', comm.netValue]);

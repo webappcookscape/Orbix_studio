@@ -15,11 +15,7 @@
       "id": "usr_sangathamizh",
       "name": "Sangathamizh",
       "username": "sangathamizh",
-<<<<<<< Updated upstream
       "email": "designteam.cookscape@gmail.com",
-=======
-      "email": "sangathamizh@cookscape.com",
->>>>>>> Stashed changes
       "password": "admin123",
       "role": "admin",
       "designation": "Business Head",
@@ -147,11 +143,7 @@
             "dateCreated": "31 Oct 2026",
             "validUntil": "30 Nov 2026",
             "status": "approved",
-<<<<<<< Updated upstream
             "dateModified": "2026-11-03T11:53:58.217Z"
-=======
-            "dateModified": "2026-11-02T14:29:49.167Z"
->>>>>>> Stashed changes
           },
           "plan": {
             "gridSize": 100,
@@ -598,7 +590,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "₹",
+            "currencySymbol": "Ôé╣",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -664,8 +656,8 @@
                   "LIVE LANE": 3600,
                   "CC MATTE": 3945,
                   "CC GLOSSY": 4172,
-                  "SURABHI": 4369,
-                  "MR+": 5127
+                  "SURABHI": 4469,
+                  "MR+": 5227
                 }
               },
               "kitchen_os": {
@@ -736,8 +728,8 @@
                   "LIVE LANE": 2022,
                   "CC MATTE": 2179,
                   "CC GLOSSY": 2267,
-                  "SURABHI": 2400,
-                  "MR+": 2909
+                  "SURABHI": 2600,
+                  "MR+": 3109
                 }
               },
               "wr_sliding": {
@@ -790,8 +782,8 @@
                   "LIVE LANE": 2100,
                   "CC MATTE": 2260,
                   "CC GLOSSY": 2433,
-                  "SURABHI": 2648,
-                  "MR+": 2929
+                  "SURABHI": 2848,
+                  "MR+": 3129
                 }
               },
               "tv_cabinet": {
@@ -938,15 +930,9 @@
             }
           },
           "quotationHistory": [],
-<<<<<<< Updated upstream
           "units_count": 1,
           "commercialCharges": {
             "transport": 0,
-=======
-          "units_count": 2,
-          "commercialCharges": {
-            "transport": 2,
->>>>>>> Stashed changes
             "designCharges": 0,
             "accessories": 0,
             "floorMat": 0,
@@ -957,15 +943,9 @@
             "appliances": 0,
             "civilWorks": 0,
             "loadingUnloading": 0,
-<<<<<<< Updated upstream
             "outstationTransport": 0,
             "discount": 0,
             "finalDiscount": 0,
-=======
-            "outstationTransport": 810,
-            "discount": 150,
-            "finalDiscount": 15,
->>>>>>> Stashed changes
             "gstPercent": 18
           }
         },
@@ -979,15 +959,11 @@
       "is_shared": false,
       "fork_count": 0,
       "created_at": "2026-10-31T07:29:40.598Z",
-<<<<<<< Updated upstream
       "updated_at": "2026-11-03T12:38:06.130Z"
-=======
-      "updated_at": "2026-11-02T15:06:04.577Z"
->>>>>>> Stashed changes
     },
     {
       "id": "proj_mvxi3r42nieh",
-      "title": "test — tamil (chennai)",
+      "title": "test ÔÇö tamil (chennai)",
       "client": "test",
       "type": "tamil",
       "status": "Draft",
@@ -1002,7 +978,7 @@
           "schemaVersion": "1.0.0",
           "id": "proj_4vrm4aye1",
           "meta": {
-            "title": "test — tamil (chennai)",
+            "title": "test ÔÇö tamil (chennai)",
             "clientName": "test",
             "siteAddress": "",
             "designerName": "",
@@ -1030,7 +1006,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "₹",
+            "currencySymbol": "Ôé╣",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -1096,8 +1072,8 @@
                   "LIVE LANE": 3600,
                   "CC MATTE": 3945,
                   "CC GLOSSY": 4172,
-                  "SURABHI": 4369,
-                  "MR+": 5127
+                  "SURABHI": 4469,
+                  "MR+": 5227
                 }
               },
               "kitchen_os": {
@@ -1168,8 +1144,8 @@
                   "LIVE LANE": 2022,
                   "CC MATTE": 2179,
                   "CC GLOSSY": 2267,
-                  "SURABHI": 2400,
-                  "MR+": 2909
+                  "SURABHI": 2600,
+                  "MR+": 3109
                 }
               },
               "wr_sliding": {
@@ -1222,8 +1198,8 @@
                   "LIVE LANE": 2100,
                   "CC MATTE": 2260,
                   "CC GLOSSY": 2433,
-                  "SURABHI": 2648,
-                  "MR+": 2929
+                  "SURABHI": 2848,
+                  "MR+": 3129
                 }
               },
               "tv_cabinet": {
@@ -1401,7 +1377,7 @@
           "noticeId": "sn_share_proj_mvxi3r42nieh",
           "sharedByName": "Cookscape Admin",
           "sharedByDesignation": "Modular Designer",
-          "originalTitle": "test — tamil (chennai)"
+          "originalTitle": "test ÔÇö tamil (chennai)"
         }
       },
       "is_shared": false,
@@ -1411,7 +1387,7 @@
     },
     {
       "id": "proj_mvw214o8gxdq",
-      "title": "Lodha Crown — 3BHK Kitchen & Wardrobe",
+      "title": "Lodha Crown ÔÇö 3BHK Kitchen & Wardrobe",
       "client": "Sanjay Kapoor",
       "type": "Kitchen",
       "status": "Draft",
@@ -1780,7 +1756,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "₹",
+            "currencySymbol": "Ôé╣",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -1846,8 +1822,8 @@
                   "LIVE LANE": 3600,
                   "CC MATTE": 3945,
                   "CC GLOSSY": 4172,
-                  "SURABHI": 4369,
-                  "MR+": 5127
+                  "SURABHI": 4469,
+                  "MR+": 5227
                 }
               },
               "kitchen_os": {
@@ -1918,8 +1894,8 @@
                   "LIVE LANE": 2022,
                   "CC MATTE": 2179,
                   "CC GLOSSY": 2267,
-                  "SURABHI": 2400,
-                  "MR+": 2909
+                  "SURABHI": 2600,
+                  "MR+": 3109
                 }
               },
               "wr_sliding": {
@@ -1972,8 +1948,8 @@
                   "LIVE LANE": 2100,
                   "CC MATTE": 2260,
                   "CC GLOSSY": 2433,
-                  "SURABHI": 2648,
-                  "MR+": 2929
+                  "SURABHI": 2848,
+                  "MR+": 3129
                 }
               },
               "tv_cabinet": {
@@ -2125,7 +2101,7 @@
           "noticeId": "sn_share_proj_mvw214o8gxdq",
           "sharedByName": "Dev Kancheti",
           "sharedByDesignation": "Modular Designer",
-          "originalTitle": "Lodha Crown — 3BHK Kitchen & Wardrobe"
+          "originalTitle": "Lodha Crown ÔÇö 3BHK Kitchen & Wardrobe"
         }
       },
       "is_shared": false,
@@ -2181,7 +2157,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "₹",
+            "currencySymbol": "Ôé╣",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -2247,8 +2223,8 @@
                   "LIVE LANE": 3600,
                   "CC MATTE": 3945,
                   "CC GLOSSY": 4172,
-                  "SURABHI": 4369,
-                  "MR+": 5127
+                  "SURABHI": 4469,
+                  "MR+": 5227
                 }
               },
               "kitchen_os": {
@@ -2319,8 +2295,8 @@
                   "LIVE LANE": 2022,
                   "CC MATTE": 2179,
                   "CC GLOSSY": 2267,
-                  "SURABHI": 2400,
-                  "MR+": 2909
+                  "SURABHI": 2600,
+                  "MR+": 3109
                 }
               },
               "wr_sliding": {
@@ -2373,8 +2349,8 @@
                   "LIVE LANE": 2100,
                   "CC MATTE": 2260,
                   "CC GLOSSY": 2433,
-                  "SURABHI": 2648,
-                  "MR+": 2929
+                  "SURABHI": 2848,
+                  "MR+": 3129
                 }
               },
               "tv_cabinet": {
@@ -2569,7 +2545,7 @@
     },
     {
       "id": "proj_mvw214oig5m3",
-      "title": "Lodha Crown — 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)",
+      "title": "Lodha Crown ÔÇö 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)",
       "client": "Sanjay Kapoor",
       "type": "Kitchen",
       "status": "Draft",
@@ -2584,14 +2560,13 @@
           "noticeId": "sn_share_proj_mvw214oig5m3",
           "sharedByName": "Alex Mercer",
           "sharedByDesignation": "Modular Designer",
-          "originalTitle": "Lodha Crown — 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)"
-<<<<<<< Updated upstream
+          "originalTitle": "Lodha Crown ÔÇö 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)"
         },
         "plan": {
           "schemaVersion": "1.0.0",
           "id": "proj_9vsfkzonr",
           "meta": {
-            "title": "Lodha Crown — 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)",
+            "title": "Lodha Crown ÔÇö 3BHK Kitchen & Wardrobe (Copy - Alex Mercer)",
             "clientName": "Sanjay Kapoor",
             "siteAddress": "",
             "designerName": "",
@@ -2614,7 +2589,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "₹",
+            "currencySymbol": "Ôé╣",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -2680,8 +2655,8 @@
                   "LIVE LANE": 3600,
                   "CC MATTE": 3945,
                   "CC GLOSSY": 4172,
-                  "SURABHI": 4369,
-                  "MR+": 5127
+                  "SURABHI": 4469,
+                  "MR+": 5227
                 }
               },
               "kitchen_os": {
@@ -2752,8 +2727,8 @@
                   "LIVE LANE": 2022,
                   "CC MATTE": 2179,
                   "CC GLOSSY": 2267,
-                  "SURABHI": 2400,
-                  "MR+": 2909
+                  "SURABHI": 2600,
+                  "MR+": 3109
                 }
               },
               "wr_sliding": {
@@ -2806,8 +2781,8 @@
                   "LIVE LANE": 2100,
                   "CC MATTE": 2260,
                   "CC GLOSSY": 2433,
-                  "SURABHI": 2648,
-                  "MR+": 2929
+                  "SURABHI": 2848,
+                  "MR+": 3129
                 }
               },
               "tv_cabinet": {
@@ -2972,8 +2947,6 @@
             "finalDiscount": 0,
             "gstPercent": 18
           }
-=======
->>>>>>> Stashed changes
         }
       },
       "is_shared": false,
@@ -2983,7 +2956,7 @@
     },
     {
       "id": "proj_palm_tv",
-      "title": "Palm Beach Penthouse — Fluted Walnut Media Wall",
+      "title": "Palm Beach Penthouse ÔÇö Fluted Walnut Media Wall",
       "client": "Ananya Deshmukh",
       "type": "TV Wall",
       "status": "Draft",
@@ -2998,13 +2971,13 @@
           "noticeId": "sn_share_proj_palm_tv",
           "sharedByName": "Priya Sharma",
           "sharedByDesignation": "Modular Designer",
-          "originalTitle": "Palm Beach Penthouse — Fluted Walnut Media Wall"
+          "originalTitle": "Palm Beach Penthouse ÔÇö Fluted Walnut Media Wall"
         },
         "plan": {
           "schemaVersion": "1.0.0",
           "id": "proj_fo9vom1xh",
           "meta": {
-            "title": "Palm Beach Penthouse — Fluted Walnut Media Wall",
+            "title": "Palm Beach Penthouse ÔÇö Fluted Walnut Media Wall",
             "clientName": "Ananya Deshmukh",
             "siteAddress": "",
             "designerName": "",
@@ -3027,7 +3000,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "₹",
+            "currencySymbol": "Ôé╣",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -3093,8 +3066,8 @@
                   "LIVE LANE": 3600,
                   "CC MATTE": 3945,
                   "CC GLOSSY": 4172,
-                  "SURABHI": 4369,
-                  "MR+": 5127
+                  "SURABHI": 4469,
+                  "MR+": 5227
                 }
               },
               "kitchen_os": {
@@ -3165,8 +3138,8 @@
                   "LIVE LANE": 2022,
                   "CC MATTE": 2179,
                   "CC GLOSSY": 2267,
-                  "SURABHI": 2400,
-                  "MR+": 2909
+                  "SURABHI": 2600,
+                  "MR+": 3109
                 }
               },
               "wr_sliding": {
@@ -3219,8 +3192,8 @@
                   "LIVE LANE": 2100,
                   "CC MATTE": 2260,
                   "CC GLOSSY": 2433,
-                  "SURABHI": 2648,
-                  "MR+": 2929
+                  "SURABHI": 2848,
+                  "MR+": 3129
                 }
               },
               "tv_cabinet": {
@@ -3385,15 +3358,6 @@
             "finalDiscount": 0,
             "gstPercent": 18
           }
-<<<<<<< Updated upstream
-=======
-        ],
-        "shareNotice": {
-          "noticeId": "sn_share_proj_palm_tv",
-          "sharedByName": "Priya Sharma",
-          "sharedByDesignation": "Modular Designer",
-          "originalTitle": "Palm Beach Penthouse — Fluted Walnut Media Wall"
->>>>>>> Stashed changes
         }
       },
       "is_shared": true,
@@ -3403,7 +3367,7 @@
     },
     {
       "id": "proj_hiranandani",
-      "title": "Hiranandani Villa — Master Wardrobe & Loft",
+      "title": "Hiranandani Villa ÔÇö Master Wardrobe & Loft",
       "client": "Rajesh & Sunita Singhania",
       "type": "Wardrobe",
       "status": "In Review",
@@ -3418,13 +3382,13 @@
           "noticeId": "sn_share_proj_hiranandani",
           "sharedByName": "Dev Kancheti",
           "sharedByDesignation": "Modular Designer",
-          "originalTitle": "Hiranandani Villa — Master Wardrobe & Loft"
+          "originalTitle": "Hiranandani Villa ÔÇö Master Wardrobe & Loft"
         },
         "plan": {
           "schemaVersion": "1.0.0",
           "id": "proj_ro012jn4w",
           "meta": {
-            "title": "Hiranandani Villa — Master Wardrobe & Loft",
+            "title": "Hiranandani Villa ÔÇö Master Wardrobe & Loft",
             "clientName": "Rajesh & Sunita Singhania",
             "siteAddress": "",
             "designerName": "",
@@ -3447,7 +3411,7 @@
           "rateCard": {
             "version": "1.0",
             "currency": "INR",
-            "currencySymbol": "₹",
+            "currencySymbol": "Ôé╣",
             "gstPercent": 18,
             "marginPercent": 15,
             "selectedTier": "PRICE 1",
@@ -3513,8 +3477,8 @@
                   "LIVE LANE": 3600,
                   "CC MATTE": 3945,
                   "CC GLOSSY": 4172,
-                  "SURABHI": 4369,
-                  "MR+": 5127
+                  "SURABHI": 4469,
+                  "MR+": 5227
                 }
               },
               "kitchen_os": {
@@ -3585,8 +3549,8 @@
                   "LIVE LANE": 2022,
                   "CC MATTE": 2179,
                   "CC GLOSSY": 2267,
-                  "SURABHI": 2400,
-                  "MR+": 2909
+                  "SURABHI": 2600,
+                  "MR+": 3109
                 }
               },
               "wr_sliding": {
@@ -3639,8 +3603,8 @@
                   "LIVE LANE": 2100,
                   "CC MATTE": 2260,
                   "CC GLOSSY": 2433,
-                  "SURABHI": 2648,
-                  "MR+": 2929
+                  "SURABHI": 2848,
+                  "MR+": 3129
                 }
               },
               "tv_cabinet": {
@@ -3805,15 +3769,6 @@
             "finalDiscount": 0,
             "gstPercent": 18
           }
-<<<<<<< Updated upstream
-=======
-        ],
-        "shareNotice": {
-          "noticeId": "sn_share_proj_hiranandani",
-          "sharedByName": "Dev Kancheti",
-          "sharedByDesignation": "Modular Designer",
-          "originalTitle": "Hiranandani Villa — Master Wardrobe & Loft"
->>>>>>> Stashed changes
         }
       },
       "is_shared": true,
@@ -3823,7 +3778,7 @@
     },
     {
       "id": "proj_emerald",
-      "title": "Emerald Greens — Parallel Acrylic Kitchen",
+      "title": "Emerald Greens ÔÇö Parallel Acrylic Kitchen",
       "client": "Vikram Mehta",
       "type": "Kitchen",
       "status": "CNC Ready",
@@ -3863,7 +3818,7 @@
           "noticeId": "sn_share_proj_emerald",
           "sharedByName": "Alex Mercer",
           "sharedByDesignation": "Modular Designer",
-          "originalTitle": "Emerald Greens — Parallel Acrylic Kitchen"
+          "originalTitle": "Emerald Greens ÔÇö Parallel Acrylic Kitchen"
         }
       },
       "is_shared": false,

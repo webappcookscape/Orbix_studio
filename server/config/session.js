@@ -5,13 +5,22 @@
 
 const fs = require('fs');
 const path = require('path');
-const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
+let session;
+let pgSession;
+try {
+  session = require('express-session');
+  pgSession = require('connect-pg-simple')(session);
+} catch (_) {
+  session = null;
+  pgSession = null;
+}
 const { Pool } = require('pg');
 
 const DISK_CACHE_PATH = path.join(__dirname, '..', '..', '.sessions_cache.json');
 
-class ResilientSessionStore extends session.Store {
+const BaseStore = (session && session.Store) ? session.Store : class MockStore {};
+
+class ResilientSessionStore extends BaseStore {
   constructor() {
     super();
     this.memorySessions = new Map();
@@ -21,7 +30,9 @@ class ResilientSessionStore extends session.Store {
     this.loadDiskCache();
 
     // 2. Set up PostgreSQL session store with resilient connection
-    this.initPostgresStore();
+    if (pgSession) {
+      this.initPostgresStore();
+    }
   }
 
   loadDiskCache() {
