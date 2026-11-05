@@ -364,7 +364,14 @@ class MockPrismaClient {
         const projs = self._read(self._projectsFile, []);
         const idx = projs.findIndex(p => p.id === args.where.id);
         if (idx === -1) throw new Error('Project not found');
-        projs[idx] = { ...projs[idx], ...args.data, updatedAt: new Date() };
+        const updateData = { ...args.data };
+        if (updateData.forkCount && typeof updateData.forkCount === 'object') {
+          if (updateData.forkCount.increment) {
+            const current = typeof projs[idx].forkCount === 'number' ? projs[idx].forkCount : 0;
+            updateData.forkCount = current + updateData.forkCount.increment;
+          }
+        }
+        projs[idx] = { ...projs[idx], ...updateData, updatedAt: new Date() };
         self._write(self._projectsFile, projs);
         return projs[idx];
       },

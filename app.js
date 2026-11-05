@@ -44,6 +44,7 @@
     { code: "MDF 7711", name: "Blush matte", hex: "#D9B4A6", kind: "solid", rate: 64 },
     { code: "MDF 6660", name: "Gloss Sage", hex: "#9FB29A", kind: "gloss", rate: 95 }
   ];
+  window.LAMINATES = LAMINATES;
   /* grain-locked materials cannot be rotated when nesting */
   function hasGrain(l) { return l.kind === "wood"; }
 
@@ -307,6 +308,7 @@
           if (!b) merged.push(l); else if (l.rate) b.rate = l.rate;
         });
         LAMINATES = merged;
+        window.LAMINATES = LAMINATES;
       }
       if (d.imported) S.imported = d.imported;
       S.units.forEach(function (u) { if (!H(u.handle)) u.handle = "ibh10"; });
@@ -2191,7 +2193,8 @@
       }
 
       if (furnPos) {
-        root.position.set(furnPos.x, furnPos.z || 0, furnPos.y);
+        var baseElev = (activeU && activeU.elev) ? activeU.elev : 0;
+        root.position.set(furnPos.x, (furnPos.z || 0) - baseElev, furnPos.y);
         root.rotation.y = -furnRot;
       } else {
         root.position.set(0, 0, 0);
@@ -4021,6 +4024,9 @@
         S.active = i;
         renderRail();
         renderAll();
+        if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
+          window.OrbixUI.render3DHome(true);
+        }
         var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
         var rot = 0;
         if (u && u._furnId && plan && plan.furniture) {
@@ -4044,6 +4050,18 @@
       } else {
         var m = document.getElementById('modalFurnitureCatalog');
         if (m) m.classList.add('is-open');
+      }
+    });
+
+    var addDecor = el("uchip decor", uw, "button");
+    addDecor.textContent = "🌿 + Decor";
+    addDecor.title = "Import Decor or Appliance (.skp, Fridge, Ice Box, Plant — Excluded from BOQ Pricing)";
+    addDecor.style.borderColor = "#10b981";
+    addDecor.style.color = "#047857";
+    addDecor.style.background = "#f0fdf4";
+    addDecor.addEventListener("click", function () {
+      if (window.OrbixUI && typeof window.OrbixUI.openDecorModal === 'function') {
+        window.OrbixUI.openDecorModal();
       }
     });
 
@@ -4326,6 +4344,7 @@
       var code = (i1.value || "").trim();
       if (!code) { toast("Enter a laminate code"); return; }
       LAMINATES.push({ code: code, name: (i2.value || "").trim() || code, hex: i3.value, kind: s4.value });
+      window.LAMINATES = LAMINATES;
       i1.value = ""; i2.value = "";
       renderRail(); renderAll(); toast("Added " + code);
     });

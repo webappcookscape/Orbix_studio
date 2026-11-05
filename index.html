@@ -365,6 +365,11 @@
               </select>
             </div>
             <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">✂️ Split</button>
+            <!-- Import Custom 3D Decors & .skp (Excluded from Woodwork Pricing) -->
+            <button class="plan-tool-btn" id="openDecorModalBtn" type="button" title="Import Decors, Appliances &amp; .skp 3D Models (Excluded from Woodwork Pricing: Fridge, Ice Box, Plants, Microwave, Chimney, TV, etc.)" style="background:#f0fdf4;color:#166534;border-color:#86efac;font-weight:600;display:inline-flex;align-items:center;gap:5px;">
+              <span>🌿 + Decors / .skp</span>
+              <span style="font-size:9.5px;font-weight:700;background:#dcfce7;color:#15803d;padding:1px 5px;border-radius:10px;border:1px solid #bbf7d0;">₹0 BOQ</span>
+            </button>
           </div>
 
           <div class="plan-toolgroup" style="margin-left:auto;gap:10px;">
@@ -1015,6 +1020,240 @@
     </div>
     <div class="modal-foot">
       <button type="button" class="btn modal-close-btn" id="cancelExportSkpBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MODAL: IMPORT CUSTOM .SKP & DECORS (EXCLUDED FROM PRICING) ══════ -->
+<div class="orbix-modal" id="modalImportDecor" style="display:none;">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog decor-modal-dialog" style="max-width:760px;width:95vw;">
+    <div class="modal-head" style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;padding:14px 20px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <h3 class="modal-title" style="color:#166534;margin:0;font-size:16px;">🌿 Import 3D Decors &amp; .skp Models</h3>
+          <span style="font-size:11px;font-weight:700;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;border:1px solid #86efac;">
+            Excluded from Pricing (₹0 BOQ)
+          </span>
+        </div>
+        <p class="modal-sub" style="margin:0;color:#15803d;font-size:12px;">
+          Add appliances, styling decors, and custom SketchUp 3D models (Fridge, Ice Box, Plants, TV, Oven) without affecting woodwork quotation or cutting lists.
+        </p>
+      </div>
+      <button class="modal-close-btn" type="button" id="closeDecorModalBtn" title="Close (Esc)">&times;</button>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div style="display:flex;gap:8px;padding:12px 20px;border-bottom:1px solid #e2e8f0;background:#fafafa;">
+      <button type="button" class="btn decor-tab-btn is-active" data-tab="presets" style="font-size:12px;font-weight:600;padding:6px 14px;">
+        🏛️ Built-in Decor Catalog (10 Presets)
+      </button>
+      <button type="button" class="btn decor-tab-btn" data-tab="custom" style="font-size:12px;font-weight:600;padding:6px 14px;">
+        📁 Import Custom .skp / .obj / 3D Model
+      </button>
+    </div>
+
+    <div class="modal-body" style="padding:16px 20px;max-height:68vh;overflow-y:auto;">
+      <!-- Tab 1: Built-in Catalog -->
+      <div id="decorTabPresets">
+        <div style="font-size:11.5px;font-weight:600;color:#64748b;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">
+          Click any preset to place directly onto your plan (100% ₹0.00 Woodwork BOQ):
+        </div>
+        <div class="decor-preset-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(210px, 1fr));gap:12px;">
+          <!-- 1. Fridge Double Door -->
+          <div class="decor-preset-card" data-name="Refrigerator (Double Door)" data-type="fridge" data-w="900" data-h="1800" data-d="700" data-elev="0">
+            <div class="decor-card-icon">❄️</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Refrigerator Double Door</div>
+              <div class="decor-card-dims">900 × 1800 × 700 mm</div>
+              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 2. Fridge Single Door -->
+          <div class="decor-preset-card" data-name="Refrigerator (Single Door)" data-type="fridge" data-w="600" data-h="1650" data-d="650" data-elev="0">
+            <div class="decor-card-icon">❄️</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Refrigerator Single Door</div>
+              <div class="decor-card-dims">600 × 1650 × 650 mm</div>
+              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 3. Ice Box / Chiller -->
+          <div class="decor-preset-card" data-name="Ice Box / Beverage Chiller" data-type="ice_box" data-w="500" data-h="850" data-d="550" data-elev="0">
+            <div class="decor-card-icon">🧊</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Ice Box / Beverage Chiller</div>
+              <div class="decor-card-dims">500 × 850 × 550 mm</div>
+              <div class="decor-card-elev">Glass Door · 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 4. Floor Plant -->
+          <div class="decor-preset-card" data-name="Indoor Floor Plant" data-type="plant" data-w="500" data-h="1200" data-d="500" data-elev="0">
+            <div class="decor-card-icon">🌿</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Indoor Floor Plant</div>
+              <div class="decor-card-dims">500 × 1200 × 500 mm</div>
+              <div class="decor-card-elev">Monstera / Fiddle · 0 mm</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 5. Tabletop Plant -->
+          <div class="decor-preset-card" data-name="Tabletop Planter" data-type="plant" data-w="300" data-h="400" data-d="300" data-elev="850">
+            <div class="decor-card-icon">🪴</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Tabletop Planter</div>
+              <div class="decor-card-dims">300 × 400 × 300 mm</div>
+              <div class="decor-card-elev">Elevation: 850 mm (Counter)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 6. Microwave / Oven -->
+          <div class="decor-preset-card" data-name="Microwave / Built-in Oven" data-type="microwave" data-w="600" data-h="450" data-d="500" data-elev="850">
+            <div class="decor-card-icon">🍲</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Microwave / Built-in Oven</div>
+              <div class="decor-card-dims">600 × 450 × 500 mm</div>
+              <div class="decor-card-elev">Elevation: 850 mm (Mid)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 7. Chimney / Hood -->
+          <div class="decor-preset-card" data-name="Kitchen Chimney" data-type="chimney" data-w="600" data-h="750" data-d="500" data-elev="1500">
+            <div class="decor-card-icon">💨</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Kitchen Chimney / Hood</div>
+              <div class="decor-card-dims">600 × 750 × 500 mm</div>
+              <div class="decor-card-elev">Elevation: 1500 mm (Wall)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 8. Wall-Mounted TV -->
+          <div class="decor-preset-card" data-name="Wall-Mounted OLED TV" data-type="tv" data-w="1200" data-h="720" data-d="80" data-elev="1100">
+            <div class="decor-card-icon">📺</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Wall-Mounted OLED TV</div>
+              <div class="decor-card-dims">1200 × 720 × 80 mm</div>
+              <div class="decor-card-elev">Elevation: 1100 mm (Wall)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 9. Living Room Sofa -->
+          <div class="decor-preset-card" data-name="Living Room Sofa" data-type="sofa" data-w="1800" data-h="850" data-d="850" data-elev="0">
+            <div class="decor-card-icon">🛋️</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Living Room Sofa</div>
+              <div class="decor-card-dims">1800 × 850 × 850 mm</div>
+              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 10. Washing Machine -->
+          <div class="decor-preset-card" data-name="Washing Machine" data-type="fridge" data-w="600" data-h="850" data-d="600" data-elev="0">
+            <div class="decor-card-icon">🧺</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Front-Load Washer</div>
+              <div class="decor-card-dims">600 × 850 × 600 mm</div>
+              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Custom 3D Model Upload -->
+      <div id="decorTabCustom" style="display:none;">
+        <!-- File Drop Zone -->
+        <div id="customDecorDropZone" class="decor-dropzone" style="border:2px dashed #94a3b8;border-radius:8px;padding:20px;text-align:center;background:#f8fafc;cursor:pointer;margin-bottom:14px;transition:all 0.2s;">
+          <div style="font-size:28px;margin-bottom:6px;">📁</div>
+          <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:4px;">Drag &amp; Drop custom .skp, .dae, .obj, or .glb 3D model here</div>
+          <div style="font-size:11.5px;color:#64748b;">or click to browse from your computer</div>
+          <input type="file" id="customDecorFileInput" accept=".skp,.dae,.obj,.glb,.gltf" style="display:none;">
+        </div>
+
+        <div id="customDecorFileStatus" style="display:none;padding:8px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:12px;color:#166534;margin-bottom:12px;"></div>
+
+        <!-- Parameters Card -->
+        <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">📐 Decor Dimensions &amp; Mounting Height</div>
+
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px;">
+            <div>
+              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Item Name / Label</label>
+              <input type="text" id="customDecorName" value="Custom Decor Item" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Decor Visual Style</label>
+              <select id="customDecorType" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+                <option value="fridge">❄️ Refrigerator / Chiller</option>
+                <option value="ice_box">🧊 Ice Box / Wine Cooler</option>
+                <option value="plant">🌿 Indoor Plant / Foliage</option>
+                <option value="microwave">🍲 Microwave / Oven</option>
+                <option value="chimney">💨 Kitchen Chimney</option>
+                <option value="tv">📺 TV Display</option>
+                <option value="sofa">🛋️ Sofa / Furniture</option>
+                <option value="general" selected>📦 General 3D Model</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dimensions W x H x D -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+            <div>
+              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Width (mm)</label>
+              <input type="number" id="customDecorW" value="900" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Height (mm)</label>
+              <input type="number" id="customDecorH" value="1800" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Depth (mm)</label>
+              <input type="number" id="customDecorD" value="700" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+            </div>
+          </div>
+
+          <!-- Elevation AFFL -->
+          <div style="margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <label style="font-size:11px;font-weight:600;color:#475569;">Elevation off Floor (mm AFFL)</label>
+              <span style="font-size:10px;color:#64748b;">Height above finished floor level</span>
+            </div>
+            <input type="number" id="customDecorElev" value="0" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;margin-bottom:6px;">
+            
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button type="button" class="btn small decor-elev-preset-btn is-active" data-elev="0" style="font-size:10.5px;padding:3px 8px;">0 mm (Floor level)</button>
+              <button type="button" class="btn small decor-elev-preset-btn" data-elev="850" style="font-size:10.5px;padding:3px 8px;">850 mm (Countertop)</button>
+              <button type="button" class="btn small decor-elev-preset-btn" data-elev="1100" style="font-size:10.5px;padding:3px 8px;">1100 mm (Eye level / TV)</button>
+              <button type="button" class="btn small decor-elev-preset-btn" data-elev="1500" style="font-size:10.5px;padding:3px 8px;">1500 mm (Wall unit)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOQ Notice & Place Button -->
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:11.5px;color:#166534;line-height:1.4;">
+          <b>✅ 100% Excluded from Woodwork Pricing:</b> This item will be placed on your 2D Floor Plan and 3D Studio for realistic visualization and styling, but will contribute <b>₹0.00</b> to your woodwork BOQ and will NOT be cut on beam saw machines.
+        </div>
+
+        <button type="button" class="btn primary big full" id="customDecorPlaceBtn" style="background:#166534;border-color:#166534;justify-content:center;padding:10px;font-size:13px;font-weight:700;">
+          🌿 Place Custom 3D Decor on Plan (₹0 BOQ)
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-foot" style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:10px 20px;">
+      <button type="button" class="btn modal-close-btn">Close</button>
     </div>
   </div>
 </div>

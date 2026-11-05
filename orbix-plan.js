@@ -2525,11 +2525,18 @@
       ctx.rotate(f.rotY || 0);
 
       // Furniture body boundary (Red if colliding!)
+      var isDecor = !!(f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor');
       if (isColliding) {
         ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
         ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
         ctx.strokeStyle = '#dc2626';
         ctx.lineWidth = 2.5;
+        ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+      } else if (isDecor) {
+        ctx.fillStyle = isSelected ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.14)';
+        ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
+        ctx.strokeStyle = isSelected ? '#047857' : '#059669';
+        ctx.lineWidth = isSelected ? 2.5 : 1.5;
         ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
       } else {
         ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
@@ -2566,20 +2573,20 @@
       ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
 
       // Labels: Name + Size
-      ctx.fillStyle = isColliding ? '#991b1b' : (isSelected ? '#1e3a8a' : '#23211E');
+      ctx.fillStyle = isColliding ? '#991b1b' : (isDecor ? '#065f46' : (isSelected ? '#1e3a8a' : '#23211E'));
       ctx.font = '600 10.5px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(f.name, 0, -6);
+      ctx.fillText(f.name + (isDecor ? ' (₹0)' : ''), 0, -6);
 
-      ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#78716c');
+      ctx.fillStyle = isColliding ? '#dc2626' : (isDecor ? '#047857' : (isSelected ? '#1d4ed8' : '#78716c'));
       ctx.font = '500 9px "IBM Plex Mono", monospace';
       ctx.fillText(Math.round(wMm) + ' × ' + Math.round(dMm) + ' mm', 0, 8);
 
-      // Elevation badge if wall mounted (Elevation > 0)
+      // Elevation badge if wall mounted or elevated (Elevation > 0)
       var elevMm = f.elevation !== undefined ? f.elevation : ((f.pos && f.pos.z) || 0);
       if (elevMm > 0) {
-        ctx.fillStyle = '#0284c7';
+        ctx.fillStyle = isDecor ? '#059669' : '#0284c7';
         ctx.font = '700 8.5px "IBM Plex Mono", monospace';
         ctx.fillText('▲ ' + Math.round(elevMm) + ' mm AFFL', 0, 21);
       }

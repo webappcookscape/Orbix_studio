@@ -2572,4 +2572,134 @@ body.role-employee #adminCreateEmpBox,
   }
 }
 
+/* ══════════ DECOR & CUSTOM 3D MODEL MODAL ══════════ */
+.decor-tab-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.decor-tab-btn:hover {
+  border-color: #166534;
+  color: #166534;
+  background: #f0fdf4;
+}
+.decor-tab-btn.is-active {
+  background: #166534 !important;
+  color: #ffffff !important;
+  border-color: #166534 !important;
+  box-shadow: 0 2px 4px rgba(22, 101, 52, 0.2);
+}
+
+.decor-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+.decor-preset-card {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
+}
+.decor-preset-card:hover {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.12);
+}
+.decor-preset-card:active {
+  transform: scale(0.98);
+}
+.decor-card-icon {
+  font-size: 26px;
+  margin-bottom: 6px;
+  line-height: 1;
+}
+.decor-card-info {
+  flex: 1 1 auto;
+}
+.decor-card-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #1e293b;
+  margin-bottom: 3px;
+  line-height: 1.25;
+}
+.decor-card-dims {
+  font-family: var(--mono, monospace);
+  font-size: 11px;
+  color: #15803d;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.decor-card-elev {
+  font-size: 10.5px;
+  color: #64748b;
+}
+.decor-card-badge {
+  margin-top: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #166534;
+  background: #dcfce7;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid #bbf7d0;
+  transition: all 0.15s ease;
+}
+.decor-preset-card:hover .decor-card-badge {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+
+.decor-dropzone {
+  border: 2px dashed #94a3b8;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  margin-bottom: 14px;
+  transition: all 0.2s ease;
+}
+.decor-dropzone:hover {
+  border-color: #16a34a;
+  background: #f0fdf4;
+}
+.decor-dropzone.is-dragover {
+  border-color: #15803d;
+  background: #dcfce7;
+  transform: scale(1.01);
+}
+
+.decor-elev-preset-btn {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.decor-elev-preset-btn:hover {
+  border-color: #16a34a;
+  color: #166534;
+}
+.decor-elev-preset-btn.is-active {
+  background: #166534 !important;
+  color: #ffffff !important;
+  border-color: #166534 !important;
+}
+
+
 

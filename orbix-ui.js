@@ -351,6 +351,7 @@
 
       syncFurnDropdown();
       self.initFurnitureCatalogModal();
+      if (typeof self.initDecorModal === 'function') self.initDecorModal();
 
       if (furnSel && Core.FURNITURE_CATALOG) {
         furnSel.addEventListener('change', function () {
@@ -1781,6 +1782,10 @@
       var newUnits = [];
       for (var f = 0; f < furnList.length; f++) {
         var fn = furnList[f];
+        // Exclude decor and appliance styling items from modular woodwork cutting list!
+        if (fn.isDecor || fn.excludeFromPricing || fn.category === 'decor' || fn.category === 'appliance_decor') {
+          continue;
+        }
         var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
         var existing = existingMap[fn.id];
 
@@ -1801,6 +1806,13 @@
             fn.materials = fn.materials || {};
             fn.materials.shutter = fn.materials.shutter || {};
             fn.materials.shutter.finish = existing.shutterCol;
+            fn.shutterColors = fn.shutterColors || [];
+            fn.shutterMaterials = fn.shutterMaterials || [];
+            var sCnt = (fn.unitConfig && fn.unitConfig.shutters) || 2;
+            for (var sc = 0; sc < sCnt; sc++) {
+              fn.shutterColors[sc] = existing.shutterCol;
+              fn.shutterMaterials[sc] = existing.shutterCol;
+            }
           } else {
             var sColExisting = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish);
             if (sColExisting) existing.shutterCol = sColExisting;
@@ -2006,13 +2018,17 @@
     },
 
     selectFurnitureIn3DStudio: function (furnId) {
-      if (!furnId) return;
+      if (furnId === undefined || furnId === null) return;
+      if (typeof furnId === 'number' && window.S && window.S.units && window.S.units[furnId]) {
+        furnId = window.S.units[furnId]._furnId || furnId;
+      }
+      if (!furnId && typeof furnId !== 'number') return;
       if (typeof this.sync3DStudioUnits === 'function') {
         this.sync3DStudioUnits();
       }
       this.syncProjectUnitsTo3DStudio(furnId);
       for (var i = 0; i < window.S.units.length; i++) {
-        if (window.S.units[i]._furnId === furnId) {
+        if (window.S.units[i]._furnId === furnId || (typeof furnId === 'number' && i === furnId)) {
           window.S.active = i;
           break;
         }
@@ -2021,6 +2037,7 @@
       if (typeof window.renderLegend === 'function') window.renderLegend();
       if (typeof window.renderFoot === 'function') window.renderFoot();
       if (typeof window.buildScene === 'function') window.buildScene();
+      if (typeof this.render3DHome === 'function') this.render3DHome(true);
 
       // Focus camera on selected unit in 3D
       var plan = this.getPlan();
@@ -2248,6 +2265,260 @@
         if (searchInput) {
           setTimeout(function () { searchInput.focus(); }, 120);
         }
+      }
+    },
+
+    openDecorModal: function () {
+      var modal = document.getElementById('modalImportDecor');
+      if (modal) {
+        modal.classList.add('is-open');
+        modal.style.display = 'flex';
+      }
+    },
+
+    closeDecorModal: function () {
+      var modal = document.getElementById('modalImportDecor');
+      if (modal) {
+        modal.classList.remove('is-open');
+        modal.style.display = 'none';
+      }
+    },
+
+    placeDecorItem: function (preset) {
+      var plan = this.getPlan();
+      if (!plan) return;
+      plan.furniture = plan.furniture || [];
+
+      preset = preset || {
+        name: 'Refrigerator Double Door',
+        category: 'decor',
+        decorType: 'fridge',
+        dimensions: { W: 900, H: 1800, D: 700 },
+        elevation: 0
+      };
+
+      var fId = 'decor_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+      var cX = 2200, cY = 2200;
+
+      // Center in room or canvas
+      var planRooms = plan.rooms || (this.editor && this.editor.project && this.editor.project.plan && this.editor.project.plan.rooms) || [];
+      if (planRooms.length > 0) {
+        var firstRoom = planRooms[0];
+        if (firstRoom.polygon && firstRoom.polygon.length > 0) {
+          var pts = firstRoom.polygon;
+          var sx = 0, sy = 0;
+          for (var p = 0; p < pts.length; p++) { sx += pts[p].x; sy += pts[p].y; }
+          cX = Math.round((sx / pts.length) / 50) * 50;
+          cY = Math.round((sy / pts.length) / 50) * 50;
+        }
+      }
+
+      var Core = window.OrbixCore || root.OrbixCore;
+      var initElev = (preset.elevation !== undefined && preset.elevation !== null) ? parseFloat(preset.elevation) :
+                     ((preset.elev !== undefined && preset.elev !== null) ? parseFloat(preset.elev) : 0);
+
+      var dims = Object.assign({ W: 900, H: 1800, D: 700 }, preset.dimensions || {});
+      if (preset.w !== undefined) dims.W = parseFloat(preset.w);
+      if (preset.h !== undefined) dims.H = parseFloat(preset.h);
+      if (preset.d !== undefined) dims.D = parseFloat(preset.d);
+
+      var newDecor = Core.createFurniturePlacement({
+        id: fId,
+        name: preset.name || 'Decor Item',
+        category: 'decor',
+        isDecor: true,
+        excludeFromPricing: true,
+        decorType: preset.decorType || 'general',
+        modelUrl: preset.modelUrl || null,
+        modelFormat: preset.modelFormat || null,
+        elevation: initElev,
+        pos: { x: cX, y: cY, z: initElev },
+        rotY: 0,
+        dimensions: dims,
+        unitConfig: { shutters: 0, drawers: 0, dstyle: 'none', handle: 'none' }
+      });
+
+      plan.furniture.push(newDecor);
+      this.saveToLocalStorage();
+      if (root.OrbixProjects && root.OrbixProjects.saveActiveProject) {
+        root.OrbixProjects.saveActiveProject();
+      }
+      if (this.editor) {
+        this.editor.selected = [{ type: 'furniture', id: fId }];
+        this.editor.render();
+      }
+      if (this.render3DHome) this.render3DHome(true);
+      if (typeof window.showToast === 'function') {
+        window.showToast('🌿 Placed ' + newDecor.name + ' (Excluded from Woodwork Pricing)');
+      }
+    },
+
+    initDecorModal: function () {
+      var self = this;
+      var modal = document.getElementById('modalImportDecor');
+      var openBtn = document.getElementById('openDecorModalBtn');
+      if (!modal) return;
+
+      if (openBtn) {
+        openBtn.addEventListener('click', function () {
+          self.openDecorModal();
+        });
+      }
+
+      modal.querySelectorAll('.modal-close-btn, .modal-backdrop, #closeDecorModalBtn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          self.closeDecorModal();
+        });
+      });
+
+      // Tab switching: Built-in Catalog vs Custom 3D Model
+      var tabBtns = modal.querySelectorAll('.decor-tab-btn');
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          tabBtns.forEach(function (t) { t.classList.remove('is-active'); });
+          btn.classList.add('is-active');
+          var targetTab = btn.getAttribute('data-tab');
+          var tabPresets = document.getElementById('decorTabPresets');
+          var tabCustom = document.getElementById('decorTabCustom');
+          if (targetTab === 'presets') {
+            if (tabPresets) tabPresets.style.display = 'block';
+            if (tabCustom) tabCustom.style.display = 'none';
+          } else {
+            if (tabPresets) tabPresets.style.display = 'none';
+            if (tabCustom) tabCustom.style.display = 'block';
+          }
+        });
+      });
+
+      // Built-in decor card selection
+      modal.querySelectorAll('.decor-preset-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+          var name = card.getAttribute('data-name');
+          var decorType = card.getAttribute('data-type');
+          var w = parseFloat(card.getAttribute('data-w')) || 900;
+          var h = parseFloat(card.getAttribute('data-h')) || 1800;
+          var d = parseFloat(card.getAttribute('data-d')) || 700;
+          var elev = parseFloat(card.getAttribute('data-elev')) || 0;
+
+          self.placeDecorItem({
+            name: name,
+            decorType: decorType,
+            dimensions: { W: w, H: h, D: d },
+            elevation: elev
+          });
+          self.closeDecorModal();
+        });
+      });
+
+      // Elevation presets in custom tab
+      modal.querySelectorAll('.decor-elev-preset-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var val = btn.getAttribute('data-elev');
+          var inp = document.getElementById('customDecorElev');
+          if (inp) inp.value = val;
+          modal.querySelectorAll('.decor-elev-preset-btn').forEach(function (b) { b.classList.remove('is-active'); });
+          btn.classList.add('is-active');
+        });
+      });
+
+      // Custom file input & drop zone
+      var fileInput = document.getElementById('customDecorFileInput');
+      var dropZone = document.getElementById('customDecorDropZone');
+      var nameInput = document.getElementById('customDecorName');
+      var wInput = document.getElementById('customDecorW');
+      var hInput = document.getElementById('customDecorH');
+      var dInput = document.getElementById('customDecorD');
+      var elevInput = document.getElementById('customDecorElev');
+      var typeSelect = document.getElementById('customDecorType');
+
+      function handleFiles(files) {
+        if (!files || !files.length) return;
+        var file = files[0];
+        var fileName = file.name;
+        var ext = fileName.split('.').pop().toLowerCase();
+
+        if (nameInput) {
+          nameInput.value = fileName.replace(/\.[^/.]+$/, "");
+        }
+
+        var lower = fileName.toLowerCase();
+        if (typeSelect) {
+          if (lower.indexOf('fridge') !== -1 || lower.indexOf('refrigerator') !== -1) {
+            typeSelect.value = 'fridge';
+            if (wInput) wInput.value = 900; if (hInput) hInput.value = 1800; if (dInput) dInput.value = 700;
+          } else if (lower.indexOf('ice') !== -1 || lower.indexOf('chiller') !== -1 || lower.indexOf('side') !== -1) {
+            typeSelect.value = 'ice_box';
+            if (wInput) wInput.value = 500; if (hInput) hInput.value = 850; if (dInput) dInput.value = 550;
+          } else if (lower.indexOf('plant') !== -1 || lower.indexOf('pot') !== -1 || lower.indexOf('tree') !== -1) {
+            typeSelect.value = 'plant';
+            if (wInput) wInput.value = 500; if (hInput) hInput.value = 1200; if (dInput) dInput.value = 500;
+          } else if (lower.indexOf('microwave') !== -1 || lower.indexOf('oven') !== -1) {
+            typeSelect.value = 'microwave';
+            if (wInput) wInput.value = 600; if (hInput) hInput.value = 450; if (dInput) dInput.value = 500;
+            if (elevInput) elevInput.value = 850;
+          } else if (lower.indexOf('chimney') !== -1 || lower.indexOf('hood') !== -1) {
+            typeSelect.value = 'chimney';
+            if (wInput) wInput.value = 600; if (hInput) hInput.value = 750; if (dInput) dInput.value = 500;
+            if (elevInput) elevInput.value = 1500;
+          } else if (lower.indexOf('tv') !== -1) {
+            typeSelect.value = 'tv';
+            if (wInput) wInput.value = 1200; if (hInput) hInput.value = 720; if (dInput) dInput.value = 80;
+            if (elevInput) elevInput.value = 1100;
+          } else if (lower.indexOf('sofa') !== -1 || lower.indexOf('couch') !== -1) {
+            typeSelect.value = 'sofa';
+            if (wInput) wInput.value = 1800; if (hInput) hInput.value = 850; if (dInput) dInput.value = 850;
+          }
+        }
+
+        var statusEl = document.getElementById('customDecorFileStatus');
+        if (statusEl) {
+          statusEl.innerHTML = '✅ Loaded <b>' + fileName + '</b> (' + (ext.toUpperCase()) + ') — Dimensions and elevation configured!';
+          statusEl.style.display = 'block';
+        }
+      }
+
+      if (fileInput) {
+        fileInput.addEventListener('change', function () {
+          handleFiles(fileInput.files);
+        });
+      }
+
+      if (dropZone) {
+        dropZone.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          dropZone.classList.add('is-dragover');
+        });
+        dropZone.addEventListener('dragleave', function () {
+          dropZone.classList.remove('is-dragover');
+        });
+        dropZone.addEventListener('drop', function (e) {
+          e.preventDefault();
+          dropZone.classList.remove('is-dragover');
+          handleFiles(e.dataTransfer.files);
+        });
+        dropZone.addEventListener('click', function () {
+          if (fileInput) fileInput.click();
+        });
+      }
+
+      var submitCustomBtn = document.getElementById('customDecorPlaceBtn');
+      if (submitCustomBtn) {
+        submitCustomBtn.addEventListener('click', function () {
+          var name = (nameInput && nameInput.value.trim()) || 'Custom 3D Decor';
+          var w = parseFloat(wInput ? wInput.value : 900) || 900;
+          var h = parseFloat(hInput ? hInput.value : 1800) || 1800;
+          var d = parseFloat(dInput ? dInput.value : 700) || 700;
+          var elev = parseFloat(elevInput ? elevInput.value : 0) || 0;
+          var decType = (typeSelect && typeSelect.value) || 'general';
+
+          self.placeDecorItem({
+            name: name,
+            decorType: decType,
+            dimensions: { W: w, H: h, D: d },
+            elevation: elev
+          });
+          self.closeDecorModal();
+        });
       }
     },
 

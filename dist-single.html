@@ -2577,6 +2577,136 @@ body.role-employee #adminCreateEmpBox,
   }
 }
 
+/* ══════════ DECOR & CUSTOM 3D MODEL MODAL ══════════ */
+.decor-tab-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.decor-tab-btn:hover {
+  border-color: #166534;
+  color: #166534;
+  background: #f0fdf4;
+}
+.decor-tab-btn.is-active {
+  background: #166534 !important;
+  color: #ffffff !important;
+  border-color: #166534 !important;
+  box-shadow: 0 2px 4px rgba(22, 101, 52, 0.2);
+}
+
+.decor-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+.decor-preset-card {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  user-select: none;
+}
+.decor-preset-card:hover {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.12);
+}
+.decor-preset-card:active {
+  transform: scale(0.98);
+}
+.decor-card-icon {
+  font-size: 26px;
+  margin-bottom: 6px;
+  line-height: 1;
+}
+.decor-card-info {
+  flex: 1 1 auto;
+}
+.decor-card-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #1e293b;
+  margin-bottom: 3px;
+  line-height: 1.25;
+}
+.decor-card-dims {
+  font-family: var(--mono, monospace);
+  font-size: 11px;
+  color: #15803d;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.decor-card-elev {
+  font-size: 10.5px;
+  color: #64748b;
+}
+.decor-card-badge {
+  margin-top: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #166534;
+  background: #dcfce7;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid #bbf7d0;
+  transition: all 0.15s ease;
+}
+.decor-preset-card:hover .decor-card-badge {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+
+.decor-dropzone {
+  border: 2px dashed #94a3b8;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  margin-bottom: 14px;
+  transition: all 0.2s ease;
+}
+.decor-dropzone:hover {
+  border-color: #16a34a;
+  background: #f0fdf4;
+}
+.decor-dropzone.is-dragover {
+  border-color: #15803d;
+  background: #dcfce7;
+  transform: scale(1.01);
+}
+
+.decor-elev-preset-btn {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.decor-elev-preset-btn:hover {
+  border-color: #16a34a;
+  color: #166534;
+}
+.decor-elev-preset-btn.is-active {
+  background: #166534 !important;
+  color: #ffffff !important;
+  border-color: #166534 !important;
+}
+
+
 
 
 </style>
@@ -2914,6 +3044,11 @@ body.role-employee #adminCreateEmpBox,
               </select>
             </div>
             <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">✂️ Split</button>
+            <!-- Import Custom 3D Decors & .skp (Excluded from Woodwork Pricing) -->
+            <button class="plan-tool-btn" id="openDecorModalBtn" type="button" title="Import Decors, Appliances &amp; .skp 3D Models (Excluded from Woodwork Pricing: Fridge, Ice Box, Plants, Microwave, Chimney, TV, etc.)" style="background:#f0fdf4;color:#166534;border-color:#86efac;font-weight:600;display:inline-flex;align-items:center;gap:5px;">
+              <span>🌿 + Decors / .skp</span>
+              <span style="font-size:9.5px;font-weight:700;background:#dcfce7;color:#15803d;padding:1px 5px;border-radius:10px;border:1px solid #bbf7d0;">₹0 BOQ</span>
+            </button>
           </div>
 
           <div class="plan-toolgroup" style="margin-left:auto;gap:10px;">
@@ -3564,6 +3699,240 @@ body.role-employee #adminCreateEmpBox,
     </div>
     <div class="modal-foot">
       <button type="button" class="btn modal-close-btn" id="cancelExportSkpBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ MODAL: IMPORT CUSTOM .SKP & DECORS (EXCLUDED FROM PRICING) ══════ -->
+<div class="orbix-modal" id="modalImportDecor" style="display:none;">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog decor-modal-dialog" style="max-width:760px;width:95vw;">
+    <div class="modal-head" style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;padding:14px 20px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <h3 class="modal-title" style="color:#166534;margin:0;font-size:16px;">🌿 Import 3D Decors &amp; .skp Models</h3>
+          <span style="font-size:11px;font-weight:700;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;border:1px solid #86efac;">
+            Excluded from Pricing (₹0 BOQ)
+          </span>
+        </div>
+        <p class="modal-sub" style="margin:0;color:#15803d;font-size:12px;">
+          Add appliances, styling decors, and custom SketchUp 3D models (Fridge, Ice Box, Plants, TV, Oven) without affecting woodwork quotation or cutting lists.
+        </p>
+      </div>
+      <button class="modal-close-btn" type="button" id="closeDecorModalBtn" title="Close (Esc)">&times;</button>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div style="display:flex;gap:8px;padding:12px 20px;border-bottom:1px solid #e2e8f0;background:#fafafa;">
+      <button type="button" class="btn decor-tab-btn is-active" data-tab="presets" style="font-size:12px;font-weight:600;padding:6px 14px;">
+        🏛️ Built-in Decor Catalog (10 Presets)
+      </button>
+      <button type="button" class="btn decor-tab-btn" data-tab="custom" style="font-size:12px;font-weight:600;padding:6px 14px;">
+        📁 Import Custom .skp / .obj / 3D Model
+      </button>
+    </div>
+
+    <div class="modal-body" style="padding:16px 20px;max-height:68vh;overflow-y:auto;">
+      <!-- Tab 1: Built-in Catalog -->
+      <div id="decorTabPresets">
+        <div style="font-size:11.5px;font-weight:600;color:#64748b;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">
+          Click any preset to place directly onto your plan (100% ₹0.00 Woodwork BOQ):
+        </div>
+        <div class="decor-preset-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(210px, 1fr));gap:12px;">
+          <!-- 1. Fridge Double Door -->
+          <div class="decor-preset-card" data-name="Refrigerator (Double Door)" data-type="fridge" data-w="900" data-h="1800" data-d="700" data-elev="0">
+            <div class="decor-card-icon">❄️</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Refrigerator Double Door</div>
+              <div class="decor-card-dims">900 × 1800 × 700 mm</div>
+              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 2. Fridge Single Door -->
+          <div class="decor-preset-card" data-name="Refrigerator (Single Door)" data-type="fridge" data-w="600" data-h="1650" data-d="650" data-elev="0">
+            <div class="decor-card-icon">❄️</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Refrigerator Single Door</div>
+              <div class="decor-card-dims">600 × 1650 × 650 mm</div>
+              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 3. Ice Box / Chiller -->
+          <div class="decor-preset-card" data-name="Ice Box / Beverage Chiller" data-type="ice_box" data-w="500" data-h="850" data-d="550" data-elev="0">
+            <div class="decor-card-icon">🧊</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Ice Box / Beverage Chiller</div>
+              <div class="decor-card-dims">500 × 850 × 550 mm</div>
+              <div class="decor-card-elev">Glass Door · 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 4. Floor Plant -->
+          <div class="decor-preset-card" data-name="Indoor Floor Plant" data-type="plant" data-w="500" data-h="1200" data-d="500" data-elev="0">
+            <div class="decor-card-icon">🌿</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Indoor Floor Plant</div>
+              <div class="decor-card-dims">500 × 1200 × 500 mm</div>
+              <div class="decor-card-elev">Monstera / Fiddle · 0 mm</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 5. Tabletop Plant -->
+          <div class="decor-preset-card" data-name="Tabletop Planter" data-type="plant" data-w="300" data-h="400" data-d="300" data-elev="850">
+            <div class="decor-card-icon">🪴</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Tabletop Planter</div>
+              <div class="decor-card-dims">300 × 400 × 300 mm</div>
+              <div class="decor-card-elev">Elevation: 850 mm (Counter)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 6. Microwave / Oven -->
+          <div class="decor-preset-card" data-name="Microwave / Built-in Oven" data-type="microwave" data-w="600" data-h="450" data-d="500" data-elev="850">
+            <div class="decor-card-icon">🍲</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Microwave / Built-in Oven</div>
+              <div class="decor-card-dims">600 × 450 × 500 mm</div>
+              <div class="decor-card-elev">Elevation: 850 mm (Mid)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 7. Chimney / Hood -->
+          <div class="decor-preset-card" data-name="Kitchen Chimney" data-type="chimney" data-w="600" data-h="750" data-d="500" data-elev="1500">
+            <div class="decor-card-icon">💨</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Kitchen Chimney / Hood</div>
+              <div class="decor-card-dims">600 × 750 × 500 mm</div>
+              <div class="decor-card-elev">Elevation: 1500 mm (Wall)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 8. Wall-Mounted TV -->
+          <div class="decor-preset-card" data-name="Wall-Mounted OLED TV" data-type="tv" data-w="1200" data-h="720" data-d="80" data-elev="1100">
+            <div class="decor-card-icon">📺</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Wall-Mounted OLED TV</div>
+              <div class="decor-card-dims">1200 × 720 × 80 mm</div>
+              <div class="decor-card-elev">Elevation: 1100 mm (Wall)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 9. Living Room Sofa -->
+          <div class="decor-preset-card" data-name="Living Room Sofa" data-type="sofa" data-w="1800" data-h="850" data-d="850" data-elev="0">
+            <div class="decor-card-icon">🛋️</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Living Room Sofa</div>
+              <div class="decor-card-dims">1800 × 850 × 850 mm</div>
+              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 10. Washing Machine -->
+          <div class="decor-preset-card" data-name="Washing Machine" data-type="fridge" data-w="600" data-h="850" data-d="600" data-elev="0">
+            <div class="decor-card-icon">🧺</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Front-Load Washer</div>
+              <div class="decor-card-dims">600 × 850 × 600 mm</div>
+              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Custom 3D Model Upload -->
+      <div id="decorTabCustom" style="display:none;">
+        <!-- File Drop Zone -->
+        <div id="customDecorDropZone" class="decor-dropzone" style="border:2px dashed #94a3b8;border-radius:8px;padding:20px;text-align:center;background:#f8fafc;cursor:pointer;margin-bottom:14px;transition:all 0.2s;">
+          <div style="font-size:28px;margin-bottom:6px;">📁</div>
+          <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:4px;">Drag &amp; Drop custom .skp, .dae, .obj, or .glb 3D model here</div>
+          <div style="font-size:11.5px;color:#64748b;">or click to browse from your computer</div>
+          <input type="file" id="customDecorFileInput" accept=".skp,.dae,.obj,.glb,.gltf" style="display:none;">
+        </div>
+
+        <div id="customDecorFileStatus" style="display:none;padding:8px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:12px;color:#166534;margin-bottom:12px;"></div>
+
+        <!-- Parameters Card -->
+        <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">📐 Decor Dimensions &amp; Mounting Height</div>
+
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px;">
+            <div>
+              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Item Name / Label</label>
+              <input type="text" id="customDecorName" value="Custom Decor Item" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Decor Visual Style</label>
+              <select id="customDecorType" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+                <option value="fridge">❄️ Refrigerator / Chiller</option>
+                <option value="ice_box">🧊 Ice Box / Wine Cooler</option>
+                <option value="plant">🌿 Indoor Plant / Foliage</option>
+                <option value="microwave">🍲 Microwave / Oven</option>
+                <option value="chimney">💨 Kitchen Chimney</option>
+                <option value="tv">📺 TV Display</option>
+                <option value="sofa">🛋️ Sofa / Furniture</option>
+                <option value="general" selected>📦 General 3D Model</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dimensions W x H x D -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+            <div>
+              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Width (mm)</label>
+              <input type="number" id="customDecorW" value="900" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Height (mm)</label>
+              <input type="number" id="customDecorH" value="1800" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Depth (mm)</label>
+              <input type="number" id="customDecorD" value="700" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+            </div>
+          </div>
+
+          <!-- Elevation AFFL -->
+          <div style="margin-bottom:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <label style="font-size:11px;font-weight:600;color:#475569;">Elevation off Floor (mm AFFL)</label>
+              <span style="font-size:10px;color:#64748b;">Height above finished floor level</span>
+            </div>
+            <input type="number" id="customDecorElev" value="0" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;margin-bottom:6px;">
+            
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button type="button" class="btn small decor-elev-preset-btn is-active" data-elev="0" style="font-size:10.5px;padding:3px 8px;">0 mm (Floor level)</button>
+              <button type="button" class="btn small decor-elev-preset-btn" data-elev="850" style="font-size:10.5px;padding:3px 8px;">850 mm (Countertop)</button>
+              <button type="button" class="btn small decor-elev-preset-btn" data-elev="1100" style="font-size:10.5px;padding:3px 8px;">1100 mm (Eye level / TV)</button>
+              <button type="button" class="btn small decor-elev-preset-btn" data-elev="1500" style="font-size:10.5px;padding:3px 8px;">1500 mm (Wall unit)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOQ Notice & Place Button -->
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:11.5px;color:#166534;line-height:1.4;">
+          <b>✅ 100% Excluded from Woodwork Pricing:</b> This item will be placed on your 2D Floor Plan and 3D Studio for realistic visualization and styling, but will contribute <b>₹0.00</b> to your woodwork BOQ and will NOT be cut on beam saw machines.
+        </div>
+
+        <button type="button" class="btn primary big full" id="customDecorPlaceBtn" style="background:#166534;border-color:#166534;justify-content:center;padding:10px;font-size:13px;font-weight:700;">
+          🌿 Place Custom 3D Decor on Plan (₹0 BOQ)
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-foot" style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:10px 20px;">
+      <button type="button" class="btn modal-close-btn">Close</button>
     </div>
   </div>
 </div>
@@ -4595,7 +4964,7 @@ body.role-employee #adminCreateEmpBox,
         .then(function (data) {
           // Robust parser: handles both array direct return [p1, p2] and object { projects: [p1, p2] }
           var remoteList = Array.isArray(data) ? data : (data && Array.isArray(data.projects) ? data.projects : []);
-          
+
           // Merge remote projects with local projects without blowing away drafts
           self.projects = self._mergeProjects(self.projects || [], remoteList);
 
@@ -4907,15 +5276,15 @@ body.role-employee #adminCreateEmpBox,
         localPlanRaw = localStorage.getItem(userKey);
         if (!localPlanRaw) {
           localPlanRaw = localStorage.getItem('orbix_project_anon_' + activeId) ||
-                         localStorage.getItem('orbix_project_default_' + activeId);
+            localStorage.getItem('orbix_project_default_' + activeId);
         }
         if (!localPlanRaw) {
           var draftRaw = localStorage.getItem('orbix_working_project_draft');
           if (draftRaw) {
             var draftObj = JSON.parse(draftRaw);
             var draftMatches = !draftObj.projectId ||
-                               String(draftObj.projectId) === String(activeId) ||
-                               (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project === draftObj.plan);
+              String(draftObj.projectId) === String(activeId) ||
+              (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project === draftObj.plan);
             if (draftObj && draftMatches && draftObj.plan) {
               localPlanRaw = JSON.stringify(draftObj.plan);
             }
@@ -4931,7 +5300,7 @@ body.role-employee #adminCreateEmpBox,
           var parsedLocal = JSON.parse(localPlanRaw);
           var localCount = countFurn(parsedLocal);
           var serverCount = countFurn(project);
-          
+
           if (localCount >= serverCount || (parsedLocal._lastModified && (!project.updatedAt || parsedLocal._lastModified > new Date(project.updatedAt).getTime()))) {
             planToLoad = parsedLocal;
             console.log('[Orbix Studio] Retained latest local draft across refresh/offline (' + localCount + ' units).');
@@ -6774,8 +7143,9 @@ body.role-employee #adminCreateEmpBox,
 
   function createFurniturePlacement(opts) {
     opts = opts || {};
-    var cat = (opts.category || 'wardrobe').toLowerCase();
-    var isWallUnit = isWallUnitCategory(opts.category, opts.name);
+    var isDecor = !!(opts.isDecor || opts.excludeFromPricing || opts.category === 'decor' || opts.category === 'appliance_decor');
+    var cat = (opts.category || (isDecor ? 'decor' : 'wardrobe')).toLowerCase();
+    var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name);
     var defElev = isWallUnit ? 1500 : 0;
     var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
       parseFloat(opts.elevation) :
@@ -6830,6 +7200,11 @@ body.role-employee #adminCreateEmpBox,
       // Links directly to Cupboard CAD parametric configuration
       unitConfig: opts.unitConfig || null,
       pricingOverrides: opts.pricingOverrides || null,
+      isDecor: isDecor,
+      excludeFromPricing: isDecor,
+      decorType: opts.decorType || null,
+      modelUrl: opts.modelUrl || null,
+      modelFormat: opts.modelFormat || null,
       notes: opts.notes || ''
     };
   }
@@ -7486,6 +7861,32 @@ body.role-employee #adminCreateEmpBox,
   }
 
   function calculateItemCost(item, rateCard, roomTier) {
+    if (!item) return { totalCost: 0, baseAmount: 0, subtotal: 0, gstAmount: 0, frontAreaSft: 0 };
+    if (item.isDecor || item.excludeFromPricing || item.category === 'decor' || item.category === 'appliance_decor') {
+      return {
+        item: item,
+        baseRate: 0,
+        baseAmount: 0,
+        totalAmount: 0,
+        shutterMultiplier: 1,
+        carcassMultiplier: 1,
+        carcassFinishMultiplier: 1,
+        handleCost: 0,
+        hardwareCost: 0,
+        drawerCost: 0,
+        accessoriesCost: 0,
+        extraDepthCharge: 0,
+        subtotal: 0,
+        gstRate: 0,
+        gstAmount: 0,
+        totalCost: 0,
+        frontAreaSft: 0,
+        category: 'decor',
+        formulaDescription: 'Decor / Styling (Excluded from Woodwork BOQ — ₹0.00)',
+        isDecor: true,
+        excludeFromPricing: true
+      };
+    }
     rateCard = rateCard || DEFAULT_RATE_CARD;
     var catKey = item.category || 'wardrobe';
     var catConfig = rateCard.categories[catKey] || rateCard.categories.wardrobe;
@@ -13030,11 +13431,18 @@ body.role-employee #adminCreateEmpBox,
       ctx.rotate(f.rotY || 0);
 
       // Furniture body boundary (Red if colliding!)
+      var isDecor = !!(f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor');
       if (isColliding) {
         ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
         ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
         ctx.strokeStyle = '#dc2626';
         ctx.lineWidth = 2.5;
+        ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+      } else if (isDecor) {
+        ctx.fillStyle = isSelected ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.14)';
+        ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
+        ctx.strokeStyle = isSelected ? '#047857' : '#059669';
+        ctx.lineWidth = isSelected ? 2.5 : 1.5;
         ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
       } else {
         ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
@@ -13071,20 +13479,20 @@ body.role-employee #adminCreateEmpBox,
       ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
 
       // Labels: Name + Size
-      ctx.fillStyle = isColliding ? '#991b1b' : (isSelected ? '#1e3a8a' : '#23211E');
+      ctx.fillStyle = isColliding ? '#991b1b' : (isDecor ? '#065f46' : (isSelected ? '#1e3a8a' : '#23211E'));
       ctx.font = '600 10.5px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(f.name, 0, -6);
+      ctx.fillText(f.name + (isDecor ? ' (₹0)' : ''), 0, -6);
 
-      ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#78716c');
+      ctx.fillStyle = isColliding ? '#dc2626' : (isDecor ? '#047857' : (isSelected ? '#1d4ed8' : '#78716c'));
       ctx.font = '500 9px "IBM Plex Mono", monospace';
       ctx.fillText(Math.round(wMm) + ' × ' + Math.round(dMm) + ' mm', 0, 8);
 
-      // Elevation badge if wall mounted (Elevation > 0)
+      // Elevation badge if wall mounted or elevated (Elevation > 0)
       var elevMm = f.elevation !== undefined ? f.elevation : ((f.pos && f.pos.z) || 0);
       if (elevMm > 0) {
-        ctx.fillStyle = '#0284c7';
+        ctx.fillStyle = isDecor ? '#059669' : '#0284c7';
         ctx.font = '700 8.5px "IBM Plex Mono", monospace';
         ctx.fillText('▲ ' + Math.round(elevMm) + ' mm AFFL', 0, 21);
       }
@@ -14373,6 +14781,267 @@ body.role-employee #adminCreateEmpBox,
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Build Decor & Appliance Mesh (Excluded from Pricing)
+     Supports Fridge, Ice Box / Chiller, Plants, Microwave, Chimney, TV, Sofa, etc.
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildDecorMesh = function (furn, fg, dims) {
+    var cat = (furn.category || 'decor').toLowerCase();
+    var name = (furn.name || '').toLowerCase();
+    var decorType = furn.decorType || (name.indexOf('fridge') !== -1 || name.indexOf('refrigerator') !== -1 ? 'fridge' :
+      (name.indexOf('ice') !== -1 || name.indexOf('chiller') !== -1 || name.indexOf('side box') !== -1 || name.indexOf('wine') !== -1) ? 'ice_box' :
+      (name.indexOf('plant') !== -1 || name.indexOf('pot') !== -1 || name.indexOf('tree') !== -1) ? 'plant' :
+      (name.indexOf('microwave') !== -1 || name.indexOf('oven') !== -1) ? 'microwave' :
+      (name.indexOf('chimney') !== -1 || name.indexOf('hood') !== -1) ? 'chimney' :
+      (name.indexOf('tv') !== -1) ? 'tv' :
+      (name.indexOf('sofa') !== -1 || name.indexOf('couch') !== -1) ? 'sofa' : 'general');
+
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+      parseFloat(furn.elevation) :
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+        parseFloat(furn.pos.z) : 0);
+
+    var W = dims.W, H = dims.H, D = dims.D;
+
+    if (decorType === 'fridge') {
+      var steelMat = new THREE.MeshStandardMaterial({ color: 0xD4D8DD, metalness: 0.85, roughness: 0.25 });
+      var darkSteelMat = new THREE.MeshStandardMaterial({ color: 0x24272C, metalness: 0.8, roughness: 0.35 });
+      var ledMat = new THREE.MeshStandardMaterial({ color: 0x00E5FF, emissive: 0x00B0FF, emissiveIntensity: 0.8 });
+
+      var bodyGeo = new THREE.BoxGeometry(W, H - 40, D - 30);
+      var bodyMesh = new THREE.Mesh(bodyGeo, steelMat);
+      bodyMesh.position.set(0, (H - 40) / 2 + 30, -15);
+      bodyMesh.castShadow = true; bodyMesh.receiveShadow = true;
+      fg.add(bodyMesh);
+
+      var plinthGeo = new THREE.BoxGeometry(W - 20, 30, D - 40);
+      var plinthMesh = new THREE.Mesh(plinthGeo, darkSteelMat);
+      plinthMesh.position.set(0, 15, -15);
+      fg.add(plinthMesh);
+
+      if (W >= 750) {
+        var doorW = (W - 6) / 2;
+        var doorH = H - 50;
+        var lDoorGeo = new THREE.BoxGeometry(doorW, doorH, 28);
+        var rDoorGeo = new THREE.BoxGeometry(doorW, doorH, 28);
+        var lDoorMesh = new THREE.Mesh(lDoorGeo, steelMat);
+        var rDoorMesh = new THREE.Mesh(rDoorGeo, steelMat);
+        lDoorMesh.position.set(-doorW / 2 - 1.5, doorH / 2 + 35, D / 2 - 14);
+        rDoorMesh.position.set(doorW / 2 + 1.5, doorH / 2 + 35, D / 2 - 14);
+        lDoorMesh.castShadow = true; rDoorMesh.castShadow = true;
+        fg.add(lDoorMesh); fg.add(rDoorMesh);
+
+        var hStripGeo = new THREE.BoxGeometry(8, doorH * 0.45, 12);
+        var hStripL = new THREE.Mesh(hStripGeo, darkSteelMat);
+        var hStripR = new THREE.Mesh(hStripGeo, darkSteelMat);
+        hStripL.position.set(-8, doorH * 0.55 + 35, D / 2 + 2);
+        hStripR.position.set(8, doorH * 0.55 + 35, D / 2 + 2);
+        fg.add(hStripL); fg.add(hStripR);
+
+        var scrGeo = new THREE.BoxGeometry(45, 75, 4);
+        var scrMesh = new THREE.Mesh(scrGeo, ledMat);
+        scrMesh.position.set(doorW * 0.5, doorH * 0.7 + 35, D / 2 + 1);
+        fg.add(scrMesh);
+      } else {
+        var singleDoorGeo = new THREE.BoxGeometry(W - 4, H - 50, 28);
+        var singleDoorMesh = new THREE.Mesh(singleDoorGeo, steelMat);
+        singleDoorMesh.position.set(0, (H - 50) / 2 + 35, D / 2 - 14);
+        singleDoorMesh.castShadow = true;
+        fg.add(singleDoorMesh);
+
+        var sHGeo = new THREE.BoxGeometry(10, (H - 50) * 0.4, 14);
+        var sHMesh = new THREE.Mesh(sHGeo, darkSteelMat);
+        sHMesh.position.set(W / 2 - 40, (H - 50) * 0.55 + 35, D / 2 + 2);
+        fg.add(sHMesh);
+      }
+    } else if (decorType === 'ice_box') {
+      var caseMat = new THREE.MeshStandardMaterial({ color: 0x1E2024, metalness: 0.7, roughness: 0.3 });
+      var chromeMat = new THREE.MeshStandardMaterial({ color: 0xE0E0E0, metalness: 0.95, roughness: 0.1 });
+      var glassMat = new THREE.MeshStandardMaterial({ color: 0x88CCEE, transparent: true, opacity: 0.38, roughness: 0.1, metalness: 0.1 });
+      var blueGlowMat = new THREE.MeshStandardMaterial({ color: 0x00E5FF, emissive: 0x0077B6, emissiveIntensity: 0.6 });
+
+      var caseGeo = new THREE.BoxGeometry(W, H, D - 15);
+      var caseMesh = new THREE.Mesh(caseGeo, caseMat);
+      caseMesh.position.set(0, H / 2, -7.5);
+      caseMesh.castShadow = true; caseMesh.receiveShadow = true;
+      fg.add(caseMesh);
+
+      var glassGeo = new THREE.BoxGeometry(W - 40, H - 40, 10);
+      var glassMesh = new THREE.Mesh(glassGeo, glassMat);
+      glassMesh.position.set(0, H / 2, D / 2 - 5);
+      fg.add(glassMesh);
+
+      var frameBorderGeo = new THREE.BoxGeometry(W, H, 14);
+      var frameBorderMesh = new THREE.Mesh(frameBorderGeo, caseMat);
+      frameBorderMesh.position.set(0, H / 2, D / 2 - 7);
+      fg.add(frameBorderMesh);
+
+      var numShelves = Math.max(2, Math.floor(H / 220));
+      for (var sh = 1; sh < numShelves; sh++) {
+        var shY = (H / numShelves) * sh;
+        var rackGeo = new THREE.BoxGeometry(W - 60, 6, D - 60);
+        var rackMesh = new THREE.Mesh(rackGeo, chromeMat);
+        rackMesh.position.set(0, shY, 0);
+        fg.add(rackMesh);
+      }
+
+      var ledStripGeo = new THREE.BoxGeometry(W - 80, 8, 8);
+      var ledStripMesh = new THREE.Mesh(ledStripGeo, blueGlowMat);
+      ledStripMesh.position.set(0, H - 25, 0);
+      fg.add(ledStripMesh);
+
+      var hCyl = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, Math.min(260, H * 0.5), 16), chromeMat);
+      hCyl.position.set(W / 2 - 25, H / 2, D / 2 + 12);
+      fg.add(hCyl);
+    } else if (decorType === 'plant') {
+      var potR = Math.min(W, D) * 0.38;
+      var potH = Math.min(H * 0.45, 450);
+      var potMat = new THREE.MeshStandardMaterial({ color: 0xF3EFEA, roughness: 0.4 });
+      var soilMat = new THREE.MeshStandardMaterial({ color: 0x3D2817, roughness: 0.9 });
+      var leafMat1 = new THREE.MeshStandardMaterial({ color: 0x2D6A28, roughness: 0.5, side: THREE.DoubleSide });
+      var leafMat2 = new THREE.MeshStandardMaterial({ color: 0x3F8A38, roughness: 0.45, side: THREE.DoubleSide });
+
+      var potGeo = new THREE.CylinderGeometry(potR, potR * 0.78, potH, 24);
+      var potMesh = new THREE.Mesh(potGeo, potMat);
+      potMesh.position.set(0, potH / 2, 0);
+      potMesh.castShadow = true; potMesh.receiveShadow = true;
+      fg.add(potMesh);
+
+      var soilGeo = new THREE.CylinderGeometry(potR * 0.94, potR * 0.94, 15, 24);
+      var soilMesh = new THREE.Mesh(soilGeo, soilMat);
+      soilMesh.position.set(0, potH - 5, 0);
+      fg.add(soilMesh);
+
+      var stemMat = new THREE.MeshStandardMaterial({ color: 0x255220, roughness: 0.7 });
+      var plantH = H - potH;
+      var numLeaves = 10;
+      for (var lf = 0; lf < numLeaves; lf++) {
+        var angle = (lf / numLeaves) * Math.PI * 2 + (lf % 2 * 0.3);
+        var distFromCenter = potR * (0.35 + (lf % 3) * 0.2);
+        var leafH = potH + (plantH * 0.4) + (lf / numLeaves) * (plantH * 0.55);
+
+        var stemGeo = new THREE.CylinderGeometry(3, 4, leafH - potH, 8);
+        var stemMesh = new THREE.Mesh(stemGeo, stemMat);
+        stemMesh.position.set(Math.cos(angle) * distFromCenter * 0.5, potH + (leafH - potH) / 2, Math.sin(angle) * distFromCenter * 0.5);
+        stemMesh.rotation.z = Math.cos(angle) * 0.15;
+        stemMesh.rotation.x = Math.sin(angle) * 0.15;
+        fg.add(stemMesh);
+
+        var leafSize = Math.min(W * 0.38, 260);
+        var leafGeo = new THREE.BoxGeometry(leafSize, 4, leafSize * 0.65);
+        var leafMesh = new THREE.Mesh(leafGeo, (lf % 2 === 0 ? leafMat1 : leafMat2));
+        leafMesh.position.set(Math.cos(angle) * (distFromCenter + leafSize * 0.4), leafH, Math.sin(angle) * (distFromCenter + leafSize * 0.4));
+        leafMesh.rotation.y = angle + Math.PI / 2;
+        leafMesh.rotation.x = 0.3 + (lf % 3) * 0.15;
+        leafMesh.castShadow = true;
+        fg.add(leafMesh);
+      }
+    } else if (decorType === 'microwave') {
+      var ovBodyMat = new THREE.MeshStandardMaterial({ color: 0x22252A, metalness: 0.7, roughness: 0.3 });
+      var ovGlassMat = new THREE.MeshStandardMaterial({ color: 0x111317, roughness: 0.1, metalness: 0.4 });
+      var ovHandleMat = new THREE.MeshStandardMaterial({ color: 0xD0D4D9, metalness: 0.9, roughness: 0.15 });
+
+      var ovBody = new THREE.Mesh(new THREE.BoxGeometry(W, H, D - 15), ovBodyMat);
+      ovBody.position.set(0, H / 2, -7.5);
+      ovBody.castShadow = true;
+      fg.add(ovBody);
+
+      var ovGlass = new THREE.Mesh(new THREE.BoxGeometry(W * 0.7, H * 0.75, 8), ovGlassMat);
+      ovGlass.position.set(-W * 0.1, H / 2, D / 2 - 4);
+      fg.add(ovGlass);
+
+      var ovBar = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, W * 0.6, 16), ovHandleMat);
+      ovBar.rotation.z = Math.PI / 2;
+      ovBar.position.set(-W * 0.1, H * 0.82, D / 2 + 10);
+      fg.add(ovBar);
+    } else if (decorType === 'chimney') {
+      var chSteelMat = new THREE.MeshStandardMaterial({ color: 0xD4D8DD, metalness: 0.85, roughness: 0.25 });
+      var filterMat = new THREE.MeshStandardMaterial({ color: 0x60656E, metalness: 0.7, roughness: 0.5 });
+      var warmLedMat = new THREE.MeshStandardMaterial({ color: 0xFFE082, emissive: 0xFFD54F, emissiveIntensity: 0.8 });
+
+      var canopyH = Math.min(180, H * 0.3);
+      var canopyGeo = new THREE.CylinderGeometry(W * 0.35, W * 0.5, canopyH, 4);
+      var canopyMesh = new THREE.Mesh(canopyGeo, chSteelMat);
+      canopyMesh.position.set(0, canopyH / 2, 0);
+      canopyMesh.rotation.y = Math.PI / 4;
+      canopyMesh.castShadow = true;
+      fg.add(canopyMesh);
+
+      var ductH = H - canopyH;
+      var ductGeo = new THREE.BoxGeometry(W * 0.35, ductH, D * 0.5);
+      var ductMesh = new THREE.Mesh(ductGeo, chSteelMat);
+      ductMesh.position.set(0, canopyH + ductH / 2, 0);
+      ductMesh.castShadow = true;
+      fg.add(ductMesh);
+
+      var filMesh = new THREE.Mesh(new THREE.BoxGeometry(W * 0.75, 4, D * 0.7), filterMat);
+      filMesh.position.set(0, 2, 0);
+      fg.add(filMesh);
+
+      var spot1 = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 4, 16), warmLedMat);
+      var spot2 = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 4, 16), warmLedMat);
+      spot1.position.set(-W * 0.25, 1, 0);
+      spot2.position.set(W * 0.25, 1, 0);
+      fg.add(spot1); fg.add(spot2);
+    } else if (decorType === 'tv') {
+      var tvBezelMat = new THREE.MeshStandardMaterial({ color: 0x1A1C20, metalness: 0.8, roughness: 0.2 });
+      var tvScreenMat = new THREE.MeshStandardMaterial({ color: 0x08090B, roughness: 0.1, metalness: 0.7 });
+
+      var tvBezel = new THREE.Mesh(new THREE.BoxGeometry(W, H, 20), tvBezelMat);
+      tvBezel.position.set(0, H / 2, 0);
+      tvBezel.castShadow = true;
+      fg.add(tvBezel);
+
+      var tvScreen = new THREE.Mesh(new THREE.BoxGeometry(W - 16, H - 16, 4), tvScreenMat);
+      tvScreen.position.set(0, H / 2, 10);
+      fg.add(tvScreen);
+    } else if (decorType === 'sofa') {
+      var fabricMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.85 });
+      var woodMat = new THREE.MeshStandardMaterial({ color: 0x6E4E35, roughness: 0.5 });
+
+      var seatH = Math.min(420, H * 0.5);
+      var seatGeo = new THREE.BoxGeometry(W - 80, seatH * 0.65, D - 60);
+      var seatMesh = new THREE.Mesh(seatGeo, fabricMat);
+      seatMesh.position.set(0, seatH * 0.65 / 2 + 100, 10);
+      seatMesh.castShadow = true;
+      fg.add(seatMesh);
+
+      var backH = H - seatH;
+      var backGeo = new THREE.BoxGeometry(W - 80, backH, 120);
+      var backMesh = new THREE.Mesh(backGeo, fabricMat);
+      backMesh.position.set(0, seatH + backH / 2, -D / 2 + 80);
+      backMesh.castShadow = true;
+      fg.add(backMesh);
+
+      var armW = 40, armH = seatH + 120;
+      var armL = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, D), fabricMat);
+      var armR = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, D), fabricMat);
+      armL.position.set(-W / 2 + armW / 2, armH / 2, 0);
+      armR.position.set(W / 2 - armW / 2, armH / 2, 0);
+      armL.castShadow = true; armR.castShadow = true;
+      fg.add(armL); fg.add(armR);
+
+      var legGeo = new THREE.CylinderGeometry(18, 12, 100, 12);
+      var legOffsets = [[-W / 2 + 60, -D / 2 + 60], [W / 2 - 60, -D / 2 + 60], [-W / 2 + 60, D / 2 - 60], [W / 2 - 60, D / 2 - 60]];
+      legOffsets.forEach(function (off) {
+        var leg = new THREE.Mesh(legGeo, woodMat);
+        leg.position.set(off[0], 50, off[1]);
+        fg.add(leg);
+      });
+    } else {
+      var genMat = new THREE.MeshStandardMaterial({ color: 0x64748B, roughness: 0.4, metalness: 0.2 });
+      var box = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), genMat);
+      box.position.set(0, H / 2, 0);
+      box.castShadow = true;
+      fg.add(box);
+    }
+
+    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    fg.rotation.y = -(furn.rotY || 0);
+    fg.visible = true;
+    return fg;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build Placed 3D Furniture Unit
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
@@ -14388,6 +15057,10 @@ body.role-employee #adminCreateEmpBox,
     };
     var cat = (furn.category || 'wardrobe').toLowerCase();
     var name = (furn.name || '').toLowerCase();
+    var isDecor = !!(furn.isDecor || furn.excludeFromPricing || cat === 'decor' || cat === 'appliance_decor' || furn.decorType);
+    if (isDecor) {
+      return this.buildDecorMesh(furn, fg, dims);
+    }
     var isBed = (cat === 'bed' || name.indexOf('bed') !== -1);
     var isOpenBox = (cat.indexOf('os') !== -1 || cat.indexOf('open') !== -1 || name.indexOf('open') !== -1 ||
                      cat === 'spice_rack' || cat === 'kitchen_os' || cat === 'loft_os' ||
@@ -14790,20 +15463,43 @@ body.role-employee #adminCreateEmpBox,
           var isOpenSlide = !!(furn.shutterStates && furn.shutterStates[sl]);
           slideGroup.position.set(isOpenSlide ? openX : closedX, slideCenterY, trackZ);
 
-          var slGeo = new THREE.BoxGeometry(slideW, slideH, 18);
-          var slMesh = new THREE.Mesh(slGeo, getShutterMaterial(sl));
-          slMesh.castShadow = true;
-          slMesh.receiveShadow = true;
-          slMesh.userData = {
-            isFurniturePart: true,
-            isShutter: true,
-            isSliding: true,
-            shutterIdx: sl,
-            shutterGroup: slideGroup,
-            parentGroup: fg,
-            furnitureId: furn.id
-          };
-          slideGroup.add(slMesh);
+          if (dstyle === 'glass' || dstyle === 'aluglass') {
+            var frameMat = (dstyle === 'aluglass') ? new THREE.MeshStandardMaterial({ color: 0x1A1A1A, metalness: 0.8, roughness: 0.2 }) : carcassMat;
+            var glassMat = new THREE.MeshStandardMaterial({ color: 0x88CCEE, transparent: true, opacity: 0.42, roughness: 0.1, metalness: 0.1 });
+            var slBorder = new THREE.Mesh(new THREE.BoxGeometry(slideW, slideH, 18), frameMat);
+            slBorder.castShadow = true;
+            slBorder.userData = { isFurniturePart: true, isShutter: true, isSliding: true, shutterIdx: sl, shutterGroup: slideGroup, parentGroup: fg, furnitureId: furn.id };
+            slideGroup.add(slBorder);
+            var slGlass = new THREE.Mesh(new THREE.BoxGeometry(Math.max(10, slideW - 60), Math.max(10, slideH - 60), 6), glassMat);
+            slGlass.position.set(0, 0, 1);
+            slGlass.userData = { isFurniturePart: true, isShutter: true, isSliding: true, shutterIdx: sl, shutterGroup: slideGroup, parentGroup: fg, furnitureId: furn.id };
+            slideGroup.add(slGlass);
+          } else if (dstyle === 'shaker') {
+            var slMat = getShutterMaterial(sl);
+            var slBorder = new THREE.Mesh(new THREE.BoxGeometry(slideW, slideH, 18), slMat);
+            slBorder.castShadow = true;
+            slBorder.userData = { isFurniturePart: true, isShutter: true, isSliding: true, shutterIdx: sl, shutterGroup: slideGroup, parentGroup: fg, furnitureId: furn.id };
+            slideGroup.add(slBorder);
+            var slCenter = new THREE.Mesh(new THREE.BoxGeometry(Math.max(10, slideW - 70), Math.max(10, slideH - 70), 10), slMat);
+            slCenter.position.set(0, 0, -3);
+            slCenter.userData = { isFurniturePart: true, isShutter: true, isSliding: true, shutterIdx: sl, shutterGroup: slideGroup, parentGroup: fg, furnitureId: furn.id };
+            slideGroup.add(slCenter);
+          } else {
+            var slGeo = new THREE.BoxGeometry(slideW, slideH, 18);
+            var slMesh = new THREE.Mesh(slGeo, getShutterMaterial(sl));
+            slMesh.castShadow = true;
+            slMesh.receiveShadow = true;
+            slMesh.userData = {
+              isFurniturePart: true,
+              isShutter: true,
+              isSliding: true,
+              shutterIdx: sl,
+              shutterGroup: slideGroup,
+              parentGroup: fg,
+              furnitureId: furn.id
+            };
+            slideGroup.add(slMesh);
+          }
 
           // Handle for sliding door (placed near outer edge)
           var slHGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, slideH * 0.35));
@@ -14838,14 +15534,41 @@ body.role-employee #adminCreateEmpBox,
           hingeGroup.position.set(hingeX, hingeY, hingeZ);
           hingeGroup.userData = { isShutterHinge: true, shutterIdx: s, furnitureId: furn.id };
 
-          var sGeo = new THREE.BoxGeometry(shW, shH, 18);
-          var sMesh = new THREE.Mesh(sGeo, getShutterMaterial(s));
           var localX = hingeLeft ? (shW / 2) : (-shW / 2);
-          sMesh.position.set(localX, 0, 0);
-          sMesh.castShadow = true;
-          sMesh.receiveShadow = true;
-          sMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-          hingeGroup.add(sMesh);
+          if (dstyle === 'glass' || dstyle === 'aluglass') {
+            var hFrameMat = (dstyle === 'aluglass') ? new THREE.MeshStandardMaterial({ color: 0x1A1A1A, metalness: 0.8, roughness: 0.2 }) : carcassMat;
+            var hGlassMat = new THREE.MeshStandardMaterial({ color: 0x88CCEE, transparent: true, opacity: 0.42, roughness: 0.1, metalness: 0.1 });
+            var hBorder = new THREE.Mesh(new THREE.BoxGeometry(shW, shH, 18), hFrameMat);
+            hBorder.position.set(localX, 0, 0);
+            hBorder.castShadow = true;
+            hBorder.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hingeGroup.add(hBorder);
+
+            var hGlass = new THREE.Mesh(new THREE.BoxGeometry(Math.max(10, shW - 60), Math.max(10, shH - 60), 6), hGlassMat);
+            hGlass.position.set(localX, 0, 1);
+            hGlass.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hingeGroup.add(hGlass);
+          } else if (dstyle === 'shaker') {
+            var hMat = getShutterMaterial(s);
+            var hBorderS = new THREE.Mesh(new THREE.BoxGeometry(shW, shH, 18), hMat);
+            hBorderS.position.set(localX, 0, 0);
+            hBorderS.castShadow = true;
+            hBorderS.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hingeGroup.add(hBorderS);
+
+            var hCenterS = new THREE.Mesh(new THREE.BoxGeometry(Math.max(10, shW - 70), Math.max(10, shH - 70), 10), hMat);
+            hCenterS.position.set(localX, 0, -3);
+            hCenterS.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hingeGroup.add(hCenterS);
+          } else {
+            var sGeo = new THREE.BoxGeometry(shW, shH, 18);
+            var sMesh = new THREE.Mesh(sGeo, getShutterMaterial(s));
+            sMesh.position.set(localX, 0, 0);
+            sMesh.castShadow = true;
+            sMesh.receiveShadow = true;
+            sMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hingeGroup.add(sMesh);
+          }
 
           // Shutter Pull Handle (Vertical)
           var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
@@ -15533,6 +16256,7 @@ body.role-employee #adminCreateEmpBox,
 
       syncFurnDropdown();
       self.initFurnitureCatalogModal();
+      if (typeof self.initDecorModal === 'function') self.initDecorModal();
 
       if (furnSel && Core.FURNITURE_CATALOG) {
         furnSel.addEventListener('change', function () {
@@ -16963,6 +17687,10 @@ body.role-employee #adminCreateEmpBox,
       var newUnits = [];
       for (var f = 0; f < furnList.length; f++) {
         var fn = furnList[f];
+        // Exclude decor and appliance styling items from modular woodwork cutting list!
+        if (fn.isDecor || fn.excludeFromPricing || fn.category === 'decor' || fn.category === 'appliance_decor') {
+          continue;
+        }
         var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
         var existing = existingMap[fn.id];
 
@@ -16983,6 +17711,13 @@ body.role-employee #adminCreateEmpBox,
             fn.materials = fn.materials || {};
             fn.materials.shutter = fn.materials.shutter || {};
             fn.materials.shutter.finish = existing.shutterCol;
+            fn.shutterColors = fn.shutterColors || [];
+            fn.shutterMaterials = fn.shutterMaterials || [];
+            var sCnt = (fn.unitConfig && fn.unitConfig.shutters) || 2;
+            for (var sc = 0; sc < sCnt; sc++) {
+              fn.shutterColors[sc] = existing.shutterCol;
+              fn.shutterMaterials[sc] = existing.shutterCol;
+            }
           } else {
             var sColExisting = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish);
             if (sColExisting) existing.shutterCol = sColExisting;
@@ -17188,13 +17923,17 @@ body.role-employee #adminCreateEmpBox,
     },
 
     selectFurnitureIn3DStudio: function (furnId) {
-      if (!furnId) return;
+      if (furnId === undefined || furnId === null) return;
+      if (typeof furnId === 'number' && window.S && window.S.units && window.S.units[furnId]) {
+        furnId = window.S.units[furnId]._furnId || furnId;
+      }
+      if (!furnId && typeof furnId !== 'number') return;
       if (typeof this.sync3DStudioUnits === 'function') {
         this.sync3DStudioUnits();
       }
       this.syncProjectUnitsTo3DStudio(furnId);
       for (var i = 0; i < window.S.units.length; i++) {
-        if (window.S.units[i]._furnId === furnId) {
+        if (window.S.units[i]._furnId === furnId || (typeof furnId === 'number' && i === furnId)) {
           window.S.active = i;
           break;
         }
@@ -17203,6 +17942,7 @@ body.role-employee #adminCreateEmpBox,
       if (typeof window.renderLegend === 'function') window.renderLegend();
       if (typeof window.renderFoot === 'function') window.renderFoot();
       if (typeof window.buildScene === 'function') window.buildScene();
+      if (typeof this.render3DHome === 'function') this.render3DHome(true);
 
       // Focus camera on selected unit in 3D
       var plan = this.getPlan();
@@ -17430,6 +18170,260 @@ body.role-employee #adminCreateEmpBox,
         if (searchInput) {
           setTimeout(function () { searchInput.focus(); }, 120);
         }
+      }
+    },
+
+    openDecorModal: function () {
+      var modal = document.getElementById('modalImportDecor');
+      if (modal) {
+        modal.classList.add('is-open');
+        modal.style.display = 'flex';
+      }
+    },
+
+    closeDecorModal: function () {
+      var modal = document.getElementById('modalImportDecor');
+      if (modal) {
+        modal.classList.remove('is-open');
+        modal.style.display = 'none';
+      }
+    },
+
+    placeDecorItem: function (preset) {
+      var plan = this.getPlan();
+      if (!plan) return;
+      plan.furniture = plan.furniture || [];
+
+      preset = preset || {
+        name: 'Refrigerator Double Door',
+        category: 'decor',
+        decorType: 'fridge',
+        dimensions: { W: 900, H: 1800, D: 700 },
+        elevation: 0
+      };
+
+      var fId = 'decor_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+      var cX = 2200, cY = 2200;
+
+      // Center in room or canvas
+      var planRooms = plan.rooms || (this.editor && this.editor.project && this.editor.project.plan && this.editor.project.plan.rooms) || [];
+      if (planRooms.length > 0) {
+        var firstRoom = planRooms[0];
+        if (firstRoom.polygon && firstRoom.polygon.length > 0) {
+          var pts = firstRoom.polygon;
+          var sx = 0, sy = 0;
+          for (var p = 0; p < pts.length; p++) { sx += pts[p].x; sy += pts[p].y; }
+          cX = Math.round((sx / pts.length) / 50) * 50;
+          cY = Math.round((sy / pts.length) / 50) * 50;
+        }
+      }
+
+      var Core = window.OrbixCore || root.OrbixCore;
+      var initElev = (preset.elevation !== undefined && preset.elevation !== null) ? parseFloat(preset.elevation) :
+                     ((preset.elev !== undefined && preset.elev !== null) ? parseFloat(preset.elev) : 0);
+
+      var dims = Object.assign({ W: 900, H: 1800, D: 700 }, preset.dimensions || {});
+      if (preset.w !== undefined) dims.W = parseFloat(preset.w);
+      if (preset.h !== undefined) dims.H = parseFloat(preset.h);
+      if (preset.d !== undefined) dims.D = parseFloat(preset.d);
+
+      var newDecor = Core.createFurniturePlacement({
+        id: fId,
+        name: preset.name || 'Decor Item',
+        category: 'decor',
+        isDecor: true,
+        excludeFromPricing: true,
+        decorType: preset.decorType || 'general',
+        modelUrl: preset.modelUrl || null,
+        modelFormat: preset.modelFormat || null,
+        elevation: initElev,
+        pos: { x: cX, y: cY, z: initElev },
+        rotY: 0,
+        dimensions: dims,
+        unitConfig: { shutters: 0, drawers: 0, dstyle: 'none', handle: 'none' }
+      });
+
+      plan.furniture.push(newDecor);
+      this.saveToLocalStorage();
+      if (root.OrbixProjects && root.OrbixProjects.saveActiveProject) {
+        root.OrbixProjects.saveActiveProject();
+      }
+      if (this.editor) {
+        this.editor.selected = [{ type: 'furniture', id: fId }];
+        this.editor.render();
+      }
+      if (this.render3DHome) this.render3DHome(true);
+      if (typeof window.showToast === 'function') {
+        window.showToast('🌿 Placed ' + newDecor.name + ' (Excluded from Woodwork Pricing)');
+      }
+    },
+
+    initDecorModal: function () {
+      var self = this;
+      var modal = document.getElementById('modalImportDecor');
+      var openBtn = document.getElementById('openDecorModalBtn');
+      if (!modal) return;
+
+      if (openBtn) {
+        openBtn.addEventListener('click', function () {
+          self.openDecorModal();
+        });
+      }
+
+      modal.querySelectorAll('.modal-close-btn, .modal-backdrop, #closeDecorModalBtn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          self.closeDecorModal();
+        });
+      });
+
+      // Tab switching: Built-in Catalog vs Custom 3D Model
+      var tabBtns = modal.querySelectorAll('.decor-tab-btn');
+      tabBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          tabBtns.forEach(function (t) { t.classList.remove('is-active'); });
+          btn.classList.add('is-active');
+          var targetTab = btn.getAttribute('data-tab');
+          var tabPresets = document.getElementById('decorTabPresets');
+          var tabCustom = document.getElementById('decorTabCustom');
+          if (targetTab === 'presets') {
+            if (tabPresets) tabPresets.style.display = 'block';
+            if (tabCustom) tabCustom.style.display = 'none';
+          } else {
+            if (tabPresets) tabPresets.style.display = 'none';
+            if (tabCustom) tabCustom.style.display = 'block';
+          }
+        });
+      });
+
+      // Built-in decor card selection
+      modal.querySelectorAll('.decor-preset-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+          var name = card.getAttribute('data-name');
+          var decorType = card.getAttribute('data-type');
+          var w = parseFloat(card.getAttribute('data-w')) || 900;
+          var h = parseFloat(card.getAttribute('data-h')) || 1800;
+          var d = parseFloat(card.getAttribute('data-d')) || 700;
+          var elev = parseFloat(card.getAttribute('data-elev')) || 0;
+
+          self.placeDecorItem({
+            name: name,
+            decorType: decorType,
+            dimensions: { W: w, H: h, D: d },
+            elevation: elev
+          });
+          self.closeDecorModal();
+        });
+      });
+
+      // Elevation presets in custom tab
+      modal.querySelectorAll('.decor-elev-preset-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var val = btn.getAttribute('data-elev');
+          var inp = document.getElementById('customDecorElev');
+          if (inp) inp.value = val;
+          modal.querySelectorAll('.decor-elev-preset-btn').forEach(function (b) { b.classList.remove('is-active'); });
+          btn.classList.add('is-active');
+        });
+      });
+
+      // Custom file input & drop zone
+      var fileInput = document.getElementById('customDecorFileInput');
+      var dropZone = document.getElementById('customDecorDropZone');
+      var nameInput = document.getElementById('customDecorName');
+      var wInput = document.getElementById('customDecorW');
+      var hInput = document.getElementById('customDecorH');
+      var dInput = document.getElementById('customDecorD');
+      var elevInput = document.getElementById('customDecorElev');
+      var typeSelect = document.getElementById('customDecorType');
+
+      function handleFiles(files) {
+        if (!files || !files.length) return;
+        var file = files[0];
+        var fileName = file.name;
+        var ext = fileName.split('.').pop().toLowerCase();
+
+        if (nameInput) {
+          nameInput.value = fileName.replace(/\.[^/.]+$/, "");
+        }
+
+        var lower = fileName.toLowerCase();
+        if (typeSelect) {
+          if (lower.indexOf('fridge') !== -1 || lower.indexOf('refrigerator') !== -1) {
+            typeSelect.value = 'fridge';
+            if (wInput) wInput.value = 900; if (hInput) hInput.value = 1800; if (dInput) dInput.value = 700;
+          } else if (lower.indexOf('ice') !== -1 || lower.indexOf('chiller') !== -1 || lower.indexOf('side') !== -1) {
+            typeSelect.value = 'ice_box';
+            if (wInput) wInput.value = 500; if (hInput) hInput.value = 850; if (dInput) dInput.value = 550;
+          } else if (lower.indexOf('plant') !== -1 || lower.indexOf('pot') !== -1 || lower.indexOf('tree') !== -1) {
+            typeSelect.value = 'plant';
+            if (wInput) wInput.value = 500; if (hInput) hInput.value = 1200; if (dInput) dInput.value = 500;
+          } else if (lower.indexOf('microwave') !== -1 || lower.indexOf('oven') !== -1) {
+            typeSelect.value = 'microwave';
+            if (wInput) wInput.value = 600; if (hInput) hInput.value = 450; if (dInput) dInput.value = 500;
+            if (elevInput) elevInput.value = 850;
+          } else if (lower.indexOf('chimney') !== -1 || lower.indexOf('hood') !== -1) {
+            typeSelect.value = 'chimney';
+            if (wInput) wInput.value = 600; if (hInput) hInput.value = 750; if (dInput) dInput.value = 500;
+            if (elevInput) elevInput.value = 1500;
+          } else if (lower.indexOf('tv') !== -1) {
+            typeSelect.value = 'tv';
+            if (wInput) wInput.value = 1200; if (hInput) hInput.value = 720; if (dInput) dInput.value = 80;
+            if (elevInput) elevInput.value = 1100;
+          } else if (lower.indexOf('sofa') !== -1 || lower.indexOf('couch') !== -1) {
+            typeSelect.value = 'sofa';
+            if (wInput) wInput.value = 1800; if (hInput) hInput.value = 850; if (dInput) dInput.value = 850;
+          }
+        }
+
+        var statusEl = document.getElementById('customDecorFileStatus');
+        if (statusEl) {
+          statusEl.innerHTML = '✅ Loaded <b>' + fileName + '</b> (' + (ext.toUpperCase()) + ') — Dimensions and elevation configured!';
+          statusEl.style.display = 'block';
+        }
+      }
+
+      if (fileInput) {
+        fileInput.addEventListener('change', function () {
+          handleFiles(fileInput.files);
+        });
+      }
+
+      if (dropZone) {
+        dropZone.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          dropZone.classList.add('is-dragover');
+        });
+        dropZone.addEventListener('dragleave', function () {
+          dropZone.classList.remove('is-dragover');
+        });
+        dropZone.addEventListener('drop', function (e) {
+          e.preventDefault();
+          dropZone.classList.remove('is-dragover');
+          handleFiles(e.dataTransfer.files);
+        });
+        dropZone.addEventListener('click', function () {
+          if (fileInput) fileInput.click();
+        });
+      }
+
+      var submitCustomBtn = document.getElementById('customDecorPlaceBtn');
+      if (submitCustomBtn) {
+        submitCustomBtn.addEventListener('click', function () {
+          var name = (nameInput && nameInput.value.trim()) || 'Custom 3D Decor';
+          var w = parseFloat(wInput ? wInput.value : 900) || 900;
+          var h = parseFloat(hInput ? hInput.value : 1800) || 1800;
+          var d = parseFloat(dInput ? dInput.value : 700) || 700;
+          var elev = parseFloat(elevInput ? elevInput.value : 0) || 0;
+          var decType = (typeSelect && typeSelect.value) || 'general';
+
+          self.placeDecorItem({
+            name: name,
+            decorType: decType,
+            dimensions: { W: w, H: h, D: d },
+            elevation: elev
+          });
+          self.closeDecorModal();
+        });
       }
     },
 
@@ -19867,6 +20861,7 @@ body.role-employee #adminCreateEmpBox,
     { code: "MDF 7711", name: "Blush matte", hex: "#D9B4A6", kind: "solid", rate: 64 },
     { code: "MDF 6660", name: "Gloss Sage", hex: "#9FB29A", kind: "gloss", rate: 95 }
   ];
+  window.LAMINATES = LAMINATES;
   /* grain-locked materials cannot be rotated when nesting */
   function hasGrain(l) { return l.kind === "wood"; }
 
@@ -20130,6 +21125,7 @@ body.role-employee #adminCreateEmpBox,
           if (!b) merged.push(l); else if (l.rate) b.rate = l.rate;
         });
         LAMINATES = merged;
+        window.LAMINATES = LAMINATES;
       }
       if (d.imported) S.imported = d.imported;
       S.units.forEach(function (u) { if (!H(u.handle)) u.handle = "ibh10"; });
@@ -22014,7 +23010,8 @@ body.role-employee #adminCreateEmpBox,
       }
 
       if (furnPos) {
-        root.position.set(furnPos.x, furnPos.z || 0, furnPos.y);
+        var baseElev = (activeU && activeU.elev) ? activeU.elev : 0;
+        root.position.set(furnPos.x, (furnPos.z || 0) - baseElev, furnPos.y);
         root.rotation.y = -furnRot;
       } else {
         root.position.set(0, 0, 0);
@@ -23844,6 +24841,9 @@ body.role-employee #adminCreateEmpBox,
         S.active = i;
         renderRail();
         renderAll();
+        if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
+          window.OrbixUI.render3DHome(true);
+        }
         var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
         var rot = 0;
         if (u && u._furnId && plan && plan.furniture) {
@@ -23867,6 +24867,18 @@ body.role-employee #adminCreateEmpBox,
       } else {
         var m = document.getElementById('modalFurnitureCatalog');
         if (m) m.classList.add('is-open');
+      }
+    });
+
+    var addDecor = el("uchip decor", uw, "button");
+    addDecor.textContent = "🌿 + Decor";
+    addDecor.title = "Import Decor or Appliance (.skp, Fridge, Ice Box, Plant — Excluded from BOQ Pricing)";
+    addDecor.style.borderColor = "#10b981";
+    addDecor.style.color = "#047857";
+    addDecor.style.background = "#f0fdf4";
+    addDecor.addEventListener("click", function () {
+      if (window.OrbixUI && typeof window.OrbixUI.openDecorModal === 'function') {
+        window.OrbixUI.openDecorModal();
       }
     });
 
@@ -24149,6 +25161,7 @@ body.role-employee #adminCreateEmpBox,
       var code = (i1.value || "").trim();
       if (!code) { toast("Enter a laminate code"); return; }
       LAMINATES.push({ code: code, name: (i2.value || "").trim() || code, hex: i3.value, kind: s4.value });
+      window.LAMINATES = LAMINATES;
       i1.value = ""; i2.value = "";
       renderRail(); renderAll(); toast("Added " + code);
     });

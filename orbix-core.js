@@ -376,8 +376,9 @@
 
   function createFurniturePlacement(opts) {
     opts = opts || {};
-    var cat = (opts.category || 'wardrobe').toLowerCase();
-    var isWallUnit = isWallUnitCategory(opts.category, opts.name);
+    var isDecor = !!(opts.isDecor || opts.excludeFromPricing || opts.category === 'decor' || opts.category === 'appliance_decor');
+    var cat = (opts.category || (isDecor ? 'decor' : 'wardrobe')).toLowerCase();
+    var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name);
     var defElev = isWallUnit ? 1500 : 0;
     var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
       parseFloat(opts.elevation) :
@@ -432,6 +433,11 @@
       // Links directly to Cupboard CAD parametric configuration
       unitConfig: opts.unitConfig || null,
       pricingOverrides: opts.pricingOverrides || null,
+      isDecor: isDecor,
+      excludeFromPricing: isDecor,
+      decorType: opts.decorType || null,
+      modelUrl: opts.modelUrl || null,
+      modelFormat: opts.modelFormat || null,
       notes: opts.notes || ''
     };
   }
@@ -1088,6 +1094,32 @@
   }
 
   function calculateItemCost(item, rateCard, roomTier) {
+    if (!item) return { totalCost: 0, baseAmount: 0, subtotal: 0, gstAmount: 0, frontAreaSft: 0 };
+    if (item.isDecor || item.excludeFromPricing || item.category === 'decor' || item.category === 'appliance_decor') {
+      return {
+        item: item,
+        baseRate: 0,
+        baseAmount: 0,
+        totalAmount: 0,
+        shutterMultiplier: 1,
+        carcassMultiplier: 1,
+        carcassFinishMultiplier: 1,
+        handleCost: 0,
+        hardwareCost: 0,
+        drawerCost: 0,
+        accessoriesCost: 0,
+        extraDepthCharge: 0,
+        subtotal: 0,
+        gstRate: 0,
+        gstAmount: 0,
+        totalCost: 0,
+        frontAreaSft: 0,
+        category: 'decor',
+        formulaDescription: 'Decor / Styling (Excluded from Woodwork BOQ — ₹0.00)',
+        isDecor: true,
+        excludeFromPricing: true
+      };
+    }
     rateCard = rateCard || DEFAULT_RATE_CARD;
     var catKey = item.category || 'wardrobe';
     var catConfig = rateCard.categories[catKey] || rateCard.categories.wardrobe;

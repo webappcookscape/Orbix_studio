@@ -628,6 +628,267 @@
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Build Decor & Appliance Mesh (Excluded from Pricing)
+     Supports Fridge, Ice Box / Chiller, Plants, Microwave, Chimney, TV, Sofa, etc.
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildDecorMesh = function (furn, fg, dims) {
+    var cat = (furn.category || 'decor').toLowerCase();
+    var name = (furn.name || '').toLowerCase();
+    var decorType = furn.decorType || (name.indexOf('fridge') !== -1 || name.indexOf('refrigerator') !== -1 ? 'fridge' :
+      (name.indexOf('ice') !== -1 || name.indexOf('chiller') !== -1 || name.indexOf('side box') !== -1 || name.indexOf('wine') !== -1) ? 'ice_box' :
+      (name.indexOf('plant') !== -1 || name.indexOf('pot') !== -1 || name.indexOf('tree') !== -1) ? 'plant' :
+      (name.indexOf('microwave') !== -1 || name.indexOf('oven') !== -1) ? 'microwave' :
+      (name.indexOf('chimney') !== -1 || name.indexOf('hood') !== -1) ? 'chimney' :
+      (name.indexOf('tv') !== -1) ? 'tv' :
+      (name.indexOf('sofa') !== -1 || name.indexOf('couch') !== -1) ? 'sofa' : 'general');
+
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+      parseFloat(furn.elevation) :
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+        parseFloat(furn.pos.z) : 0);
+
+    var W = dims.W, H = dims.H, D = dims.D;
+
+    if (decorType === 'fridge') {
+      var steelMat = new THREE.MeshStandardMaterial({ color: 0xD4D8DD, metalness: 0.85, roughness: 0.25 });
+      var darkSteelMat = new THREE.MeshStandardMaterial({ color: 0x24272C, metalness: 0.8, roughness: 0.35 });
+      var ledMat = new THREE.MeshStandardMaterial({ color: 0x00E5FF, emissive: 0x00B0FF, emissiveIntensity: 0.8 });
+
+      var bodyGeo = new THREE.BoxGeometry(W, H - 40, D - 30);
+      var bodyMesh = new THREE.Mesh(bodyGeo, steelMat);
+      bodyMesh.position.set(0, (H - 40) / 2 + 30, -15);
+      bodyMesh.castShadow = true; bodyMesh.receiveShadow = true;
+      fg.add(bodyMesh);
+
+      var plinthGeo = new THREE.BoxGeometry(W - 20, 30, D - 40);
+      var plinthMesh = new THREE.Mesh(plinthGeo, darkSteelMat);
+      plinthMesh.position.set(0, 15, -15);
+      fg.add(plinthMesh);
+
+      if (W >= 750) {
+        var doorW = (W - 6) / 2;
+        var doorH = H - 50;
+        var lDoorGeo = new THREE.BoxGeometry(doorW, doorH, 28);
+        var rDoorGeo = new THREE.BoxGeometry(doorW, doorH, 28);
+        var lDoorMesh = new THREE.Mesh(lDoorGeo, steelMat);
+        var rDoorMesh = new THREE.Mesh(rDoorGeo, steelMat);
+        lDoorMesh.position.set(-doorW / 2 - 1.5, doorH / 2 + 35, D / 2 - 14);
+        rDoorMesh.position.set(doorW / 2 + 1.5, doorH / 2 + 35, D / 2 - 14);
+        lDoorMesh.castShadow = true; rDoorMesh.castShadow = true;
+        fg.add(lDoorMesh); fg.add(rDoorMesh);
+
+        var hStripGeo = new THREE.BoxGeometry(8, doorH * 0.45, 12);
+        var hStripL = new THREE.Mesh(hStripGeo, darkSteelMat);
+        var hStripR = new THREE.Mesh(hStripGeo, darkSteelMat);
+        hStripL.position.set(-8, doorH * 0.55 + 35, D / 2 + 2);
+        hStripR.position.set(8, doorH * 0.55 + 35, D / 2 + 2);
+        fg.add(hStripL); fg.add(hStripR);
+
+        var scrGeo = new THREE.BoxGeometry(45, 75, 4);
+        var scrMesh = new THREE.Mesh(scrGeo, ledMat);
+        scrMesh.position.set(doorW * 0.5, doorH * 0.7 + 35, D / 2 + 1);
+        fg.add(scrMesh);
+      } else {
+        var singleDoorGeo = new THREE.BoxGeometry(W - 4, H - 50, 28);
+        var singleDoorMesh = new THREE.Mesh(singleDoorGeo, steelMat);
+        singleDoorMesh.position.set(0, (H - 50) / 2 + 35, D / 2 - 14);
+        singleDoorMesh.castShadow = true;
+        fg.add(singleDoorMesh);
+
+        var sHGeo = new THREE.BoxGeometry(10, (H - 50) * 0.4, 14);
+        var sHMesh = new THREE.Mesh(sHGeo, darkSteelMat);
+        sHMesh.position.set(W / 2 - 40, (H - 50) * 0.55 + 35, D / 2 + 2);
+        fg.add(sHMesh);
+      }
+    } else if (decorType === 'ice_box') {
+      var caseMat = new THREE.MeshStandardMaterial({ color: 0x1E2024, metalness: 0.7, roughness: 0.3 });
+      var chromeMat = new THREE.MeshStandardMaterial({ color: 0xE0E0E0, metalness: 0.95, roughness: 0.1 });
+      var glassMat = new THREE.MeshStandardMaterial({ color: 0x88CCEE, transparent: true, opacity: 0.38, roughness: 0.1, metalness: 0.1 });
+      var blueGlowMat = new THREE.MeshStandardMaterial({ color: 0x00E5FF, emissive: 0x0077B6, emissiveIntensity: 0.6 });
+
+      var caseGeo = new THREE.BoxGeometry(W, H, D - 15);
+      var caseMesh = new THREE.Mesh(caseGeo, caseMat);
+      caseMesh.position.set(0, H / 2, -7.5);
+      caseMesh.castShadow = true; caseMesh.receiveShadow = true;
+      fg.add(caseMesh);
+
+      var glassGeo = new THREE.BoxGeometry(W - 40, H - 40, 10);
+      var glassMesh = new THREE.Mesh(glassGeo, glassMat);
+      glassMesh.position.set(0, H / 2, D / 2 - 5);
+      fg.add(glassMesh);
+
+      var frameBorderGeo = new THREE.BoxGeometry(W, H, 14);
+      var frameBorderMesh = new THREE.Mesh(frameBorderGeo, caseMat);
+      frameBorderMesh.position.set(0, H / 2, D / 2 - 7);
+      fg.add(frameBorderMesh);
+
+      var numShelves = Math.max(2, Math.floor(H / 220));
+      for (var sh = 1; sh < numShelves; sh++) {
+        var shY = (H / numShelves) * sh;
+        var rackGeo = new THREE.BoxGeometry(W - 60, 6, D - 60);
+        var rackMesh = new THREE.Mesh(rackGeo, chromeMat);
+        rackMesh.position.set(0, shY, 0);
+        fg.add(rackMesh);
+      }
+
+      var ledStripGeo = new THREE.BoxGeometry(W - 80, 8, 8);
+      var ledStripMesh = new THREE.Mesh(ledStripGeo, blueGlowMat);
+      ledStripMesh.position.set(0, H - 25, 0);
+      fg.add(ledStripMesh);
+
+      var hCyl = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, Math.min(260, H * 0.5), 16), chromeMat);
+      hCyl.position.set(W / 2 - 25, H / 2, D / 2 + 12);
+      fg.add(hCyl);
+    } else if (decorType === 'plant') {
+      var potR = Math.min(W, D) * 0.38;
+      var potH = Math.min(H * 0.45, 450);
+      var potMat = new THREE.MeshStandardMaterial({ color: 0xF3EFEA, roughness: 0.4 });
+      var soilMat = new THREE.MeshStandardMaterial({ color: 0x3D2817, roughness: 0.9 });
+      var leafMat1 = new THREE.MeshStandardMaterial({ color: 0x2D6A28, roughness: 0.5, side: THREE.DoubleSide });
+      var leafMat2 = new THREE.MeshStandardMaterial({ color: 0x3F8A38, roughness: 0.45, side: THREE.DoubleSide });
+
+      var potGeo = new THREE.CylinderGeometry(potR, potR * 0.78, potH, 24);
+      var potMesh = new THREE.Mesh(potGeo, potMat);
+      potMesh.position.set(0, potH / 2, 0);
+      potMesh.castShadow = true; potMesh.receiveShadow = true;
+      fg.add(potMesh);
+
+      var soilGeo = new THREE.CylinderGeometry(potR * 0.94, potR * 0.94, 15, 24);
+      var soilMesh = new THREE.Mesh(soilGeo, soilMat);
+      soilMesh.position.set(0, potH - 5, 0);
+      fg.add(soilMesh);
+
+      var stemMat = new THREE.MeshStandardMaterial({ color: 0x255220, roughness: 0.7 });
+      var plantH = H - potH;
+      var numLeaves = 10;
+      for (var lf = 0; lf < numLeaves; lf++) {
+        var angle = (lf / numLeaves) * Math.PI * 2 + (lf % 2 * 0.3);
+        var distFromCenter = potR * (0.35 + (lf % 3) * 0.2);
+        var leafH = potH + (plantH * 0.4) + (lf / numLeaves) * (plantH * 0.55);
+
+        var stemGeo = new THREE.CylinderGeometry(3, 4, leafH - potH, 8);
+        var stemMesh = new THREE.Mesh(stemGeo, stemMat);
+        stemMesh.position.set(Math.cos(angle) * distFromCenter * 0.5, potH + (leafH - potH) / 2, Math.sin(angle) * distFromCenter * 0.5);
+        stemMesh.rotation.z = Math.cos(angle) * 0.15;
+        stemMesh.rotation.x = Math.sin(angle) * 0.15;
+        fg.add(stemMesh);
+
+        var leafSize = Math.min(W * 0.38, 260);
+        var leafGeo = new THREE.BoxGeometry(leafSize, 4, leafSize * 0.65);
+        var leafMesh = new THREE.Mesh(leafGeo, (lf % 2 === 0 ? leafMat1 : leafMat2));
+        leafMesh.position.set(Math.cos(angle) * (distFromCenter + leafSize * 0.4), leafH, Math.sin(angle) * (distFromCenter + leafSize * 0.4));
+        leafMesh.rotation.y = angle + Math.PI / 2;
+        leafMesh.rotation.x = 0.3 + (lf % 3) * 0.15;
+        leafMesh.castShadow = true;
+        fg.add(leafMesh);
+      }
+    } else if (decorType === 'microwave') {
+      var ovBodyMat = new THREE.MeshStandardMaterial({ color: 0x22252A, metalness: 0.7, roughness: 0.3 });
+      var ovGlassMat = new THREE.MeshStandardMaterial({ color: 0x111317, roughness: 0.1, metalness: 0.4 });
+      var ovHandleMat = new THREE.MeshStandardMaterial({ color: 0xD0D4D9, metalness: 0.9, roughness: 0.15 });
+
+      var ovBody = new THREE.Mesh(new THREE.BoxGeometry(W, H, D - 15), ovBodyMat);
+      ovBody.position.set(0, H / 2, -7.5);
+      ovBody.castShadow = true;
+      fg.add(ovBody);
+
+      var ovGlass = new THREE.Mesh(new THREE.BoxGeometry(W * 0.7, H * 0.75, 8), ovGlassMat);
+      ovGlass.position.set(-W * 0.1, H / 2, D / 2 - 4);
+      fg.add(ovGlass);
+
+      var ovBar = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, W * 0.6, 16), ovHandleMat);
+      ovBar.rotation.z = Math.PI / 2;
+      ovBar.position.set(-W * 0.1, H * 0.82, D / 2 + 10);
+      fg.add(ovBar);
+    } else if (decorType === 'chimney') {
+      var chSteelMat = new THREE.MeshStandardMaterial({ color: 0xD4D8DD, metalness: 0.85, roughness: 0.25 });
+      var filterMat = new THREE.MeshStandardMaterial({ color: 0x60656E, metalness: 0.7, roughness: 0.5 });
+      var warmLedMat = new THREE.MeshStandardMaterial({ color: 0xFFE082, emissive: 0xFFD54F, emissiveIntensity: 0.8 });
+
+      var canopyH = Math.min(180, H * 0.3);
+      var canopyGeo = new THREE.CylinderGeometry(W * 0.35, W * 0.5, canopyH, 4);
+      var canopyMesh = new THREE.Mesh(canopyGeo, chSteelMat);
+      canopyMesh.position.set(0, canopyH / 2, 0);
+      canopyMesh.rotation.y = Math.PI / 4;
+      canopyMesh.castShadow = true;
+      fg.add(canopyMesh);
+
+      var ductH = H - canopyH;
+      var ductGeo = new THREE.BoxGeometry(W * 0.35, ductH, D * 0.5);
+      var ductMesh = new THREE.Mesh(ductGeo, chSteelMat);
+      ductMesh.position.set(0, canopyH + ductH / 2, 0);
+      ductMesh.castShadow = true;
+      fg.add(ductMesh);
+
+      var filMesh = new THREE.Mesh(new THREE.BoxGeometry(W * 0.75, 4, D * 0.7), filterMat);
+      filMesh.position.set(0, 2, 0);
+      fg.add(filMesh);
+
+      var spot1 = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 4, 16), warmLedMat);
+      var spot2 = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 4, 16), warmLedMat);
+      spot1.position.set(-W * 0.25, 1, 0);
+      spot2.position.set(W * 0.25, 1, 0);
+      fg.add(spot1); fg.add(spot2);
+    } else if (decorType === 'tv') {
+      var tvBezelMat = new THREE.MeshStandardMaterial({ color: 0x1A1C20, metalness: 0.8, roughness: 0.2 });
+      var tvScreenMat = new THREE.MeshStandardMaterial({ color: 0x08090B, roughness: 0.1, metalness: 0.7 });
+
+      var tvBezel = new THREE.Mesh(new THREE.BoxGeometry(W, H, 20), tvBezelMat);
+      tvBezel.position.set(0, H / 2, 0);
+      tvBezel.castShadow = true;
+      fg.add(tvBezel);
+
+      var tvScreen = new THREE.Mesh(new THREE.BoxGeometry(W - 16, H - 16, 4), tvScreenMat);
+      tvScreen.position.set(0, H / 2, 10);
+      fg.add(tvScreen);
+    } else if (decorType === 'sofa') {
+      var fabricMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.85 });
+      var woodMat = new THREE.MeshStandardMaterial({ color: 0x6E4E35, roughness: 0.5 });
+
+      var seatH = Math.min(420, H * 0.5);
+      var seatGeo = new THREE.BoxGeometry(W - 80, seatH * 0.65, D - 60);
+      var seatMesh = new THREE.Mesh(seatGeo, fabricMat);
+      seatMesh.position.set(0, seatH * 0.65 / 2 + 100, 10);
+      seatMesh.castShadow = true;
+      fg.add(seatMesh);
+
+      var backH = H - seatH;
+      var backGeo = new THREE.BoxGeometry(W - 80, backH, 120);
+      var backMesh = new THREE.Mesh(backGeo, fabricMat);
+      backMesh.position.set(0, seatH + backH / 2, -D / 2 + 80);
+      backMesh.castShadow = true;
+      fg.add(backMesh);
+
+      var armW = 40, armH = seatH + 120;
+      var armL = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, D), fabricMat);
+      var armR = new THREE.Mesh(new THREE.BoxGeometry(armW, armH, D), fabricMat);
+      armL.position.set(-W / 2 + armW / 2, armH / 2, 0);
+      armR.position.set(W / 2 - armW / 2, armH / 2, 0);
+      armL.castShadow = true; armR.castShadow = true;
+      fg.add(armL); fg.add(armR);
+
+      var legGeo = new THREE.CylinderGeometry(18, 12, 100, 12);
+      var legOffsets = [[-W / 2 + 60, -D / 2 + 60], [W / 2 - 60, -D / 2 + 60], [-W / 2 + 60, D / 2 - 60], [W / 2 - 60, D / 2 - 60]];
+      legOffsets.forEach(function (off) {
+        var leg = new THREE.Mesh(legGeo, woodMat);
+        leg.position.set(off[0], 50, off[1]);
+        fg.add(leg);
+      });
+    } else {
+      var genMat = new THREE.MeshStandardMaterial({ color: 0x64748B, roughness: 0.4, metalness: 0.2 });
+      var box = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), genMat);
+      box.position.set(0, H / 2, 0);
+      box.castShadow = true;
+      fg.add(box);
+    }
+
+    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    fg.rotation.y = -(furn.rotY || 0);
+    fg.visible = true;
+    return fg;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build Placed 3D Furniture Unit
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
@@ -643,6 +904,10 @@
     };
     var cat = (furn.category || 'wardrobe').toLowerCase();
     var name = (furn.name || '').toLowerCase();
+    var isDecor = !!(furn.isDecor || furn.excludeFromPricing || cat === 'decor' || cat === 'appliance_decor' || furn.decorType);
+    if (isDecor) {
+      return this.buildDecorMesh(furn, fg, dims);
+    }
     var isBed = (cat === 'bed' || name.indexOf('bed') !== -1);
     var isOpenBox = (cat.indexOf('os') !== -1 || cat.indexOf('open') !== -1 || name.indexOf('open') !== -1 ||
                      cat === 'spice_rack' || cat === 'kitchen_os' || cat === 'loft_os' ||
@@ -978,20 +1243,43 @@
           var isOpenSlide = !!(furn.shutterStates && furn.shutterStates[sl]);
           slideGroup.position.set(isOpenSlide ? openX : closedX, slideCenterY, trackZ);
 
-          var slGeo = new THREE.BoxGeometry(slideW, slideH, 18);
-          var slMesh = new THREE.Mesh(slGeo, getShutterMaterial(sl));
-          slMesh.castShadow = true;
-          slMesh.receiveShadow = true;
-          slMesh.userData = {
-            isFurniturePart: true,
-            isShutter: true,
-            isSliding: true,
-            shutterIdx: sl,
-            shutterGroup: slideGroup,
-            parentGroup: fg,
-            furnitureId: furn.id
-          };
-          slideGroup.add(slMesh);
+          if (dstyle === 'glass' || dstyle === 'aluglass') {
+            var frameMat = (dstyle === 'aluglass') ? new THREE.MeshStandardMaterial({ color: 0x1A1A1A, metalness: 0.8, roughness: 0.2 }) : carcassMat;
+            var glassMat = new THREE.MeshStandardMaterial({ color: 0x88CCEE, transparent: true, opacity: 0.42, roughness: 0.1, metalness: 0.1 });
+            var slBorder = new THREE.Mesh(new THREE.BoxGeometry(slideW, slideH, 18), frameMat);
+            slBorder.castShadow = true;
+            slBorder.userData = { isFurniturePart: true, isShutter: true, isSliding: true, shutterIdx: sl, shutterGroup: slideGroup, parentGroup: fg, furnitureId: furn.id };
+            slideGroup.add(slBorder);
+            var slGlass = new THREE.Mesh(new THREE.BoxGeometry(Math.max(10, slideW - 60), Math.max(10, slideH - 60), 6), glassMat);
+            slGlass.position.set(0, 0, 1);
+            slGlass.userData = { isFurniturePart: true, isShutter: true, isSliding: true, shutterIdx: sl, shutterGroup: slideGroup, parentGroup: fg, furnitureId: furn.id };
+            slideGroup.add(slGlass);
+          } else if (dstyle === 'shaker') {
+            var slMat = getShutterMaterial(sl);
+            var slBorder = new THREE.Mesh(new THREE.BoxGeometry(slideW, slideH, 18), slMat);
+            slBorder.castShadow = true;
+            slBorder.userData = { isFurniturePart: true, isShutter: true, isSliding: true, shutterIdx: sl, shutterGroup: slideGroup, parentGroup: fg, furnitureId: furn.id };
+            slideGroup.add(slBorder);
+            var slCenter = new THREE.Mesh(new THREE.BoxGeometry(Math.max(10, slideW - 70), Math.max(10, slideH - 70), 10), slMat);
+            slCenter.position.set(0, 0, -3);
+            slCenter.userData = { isFurniturePart: true, isShutter: true, isSliding: true, shutterIdx: sl, shutterGroup: slideGroup, parentGroup: fg, furnitureId: furn.id };
+            slideGroup.add(slCenter);
+          } else {
+            var slGeo = new THREE.BoxGeometry(slideW, slideH, 18);
+            var slMesh = new THREE.Mesh(slGeo, getShutterMaterial(sl));
+            slMesh.castShadow = true;
+            slMesh.receiveShadow = true;
+            slMesh.userData = {
+              isFurniturePart: true,
+              isShutter: true,
+              isSliding: true,
+              shutterIdx: sl,
+              shutterGroup: slideGroup,
+              parentGroup: fg,
+              furnitureId: furn.id
+            };
+            slideGroup.add(slMesh);
+          }
 
           // Handle for sliding door (placed near outer edge)
           var slHGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, slideH * 0.35));
@@ -1026,14 +1314,41 @@
           hingeGroup.position.set(hingeX, hingeY, hingeZ);
           hingeGroup.userData = { isShutterHinge: true, shutterIdx: s, furnitureId: furn.id };
 
-          var sGeo = new THREE.BoxGeometry(shW, shH, 18);
-          var sMesh = new THREE.Mesh(sGeo, getShutterMaterial(s));
           var localX = hingeLeft ? (shW / 2) : (-shW / 2);
-          sMesh.position.set(localX, 0, 0);
-          sMesh.castShadow = true;
-          sMesh.receiveShadow = true;
-          sMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-          hingeGroup.add(sMesh);
+          if (dstyle === 'glass' || dstyle === 'aluglass') {
+            var hFrameMat = (dstyle === 'aluglass') ? new THREE.MeshStandardMaterial({ color: 0x1A1A1A, metalness: 0.8, roughness: 0.2 }) : carcassMat;
+            var hGlassMat = new THREE.MeshStandardMaterial({ color: 0x88CCEE, transparent: true, opacity: 0.42, roughness: 0.1, metalness: 0.1 });
+            var hBorder = new THREE.Mesh(new THREE.BoxGeometry(shW, shH, 18), hFrameMat);
+            hBorder.position.set(localX, 0, 0);
+            hBorder.castShadow = true;
+            hBorder.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hingeGroup.add(hBorder);
+
+            var hGlass = new THREE.Mesh(new THREE.BoxGeometry(Math.max(10, shW - 60), Math.max(10, shH - 60), 6), hGlassMat);
+            hGlass.position.set(localX, 0, 1);
+            hGlass.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hingeGroup.add(hGlass);
+          } else if (dstyle === 'shaker') {
+            var hMat = getShutterMaterial(s);
+            var hBorderS = new THREE.Mesh(new THREE.BoxGeometry(shW, shH, 18), hMat);
+            hBorderS.position.set(localX, 0, 0);
+            hBorderS.castShadow = true;
+            hBorderS.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hingeGroup.add(hBorderS);
+
+            var hCenterS = new THREE.Mesh(new THREE.BoxGeometry(Math.max(10, shW - 70), Math.max(10, shH - 70), 10), hMat);
+            hCenterS.position.set(localX, 0, -3);
+            hCenterS.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hingeGroup.add(hCenterS);
+          } else {
+            var sGeo = new THREE.BoxGeometry(shW, shH, 18);
+            var sMesh = new THREE.Mesh(sGeo, getShutterMaterial(s));
+            sMesh.position.set(localX, 0, 0);
+            sMesh.castShadow = true;
+            sMesh.receiveShadow = true;
+            sMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hingeGroup.add(sMesh);
+          }
 
           // Shutter Pull Handle (Vertical)
           var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));

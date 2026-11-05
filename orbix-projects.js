@@ -908,7 +908,7 @@
         .then(function (data) {
           // Robust parser: handles both array direct return [p1, p2] and object { projects: [p1, p2] }
           var remoteList = Array.isArray(data) ? data : (data && Array.isArray(data.projects) ? data.projects : []);
-          
+
           // Merge remote projects with local projects without blowing away drafts
           self.projects = self._mergeProjects(self.projects || [], remoteList);
 
@@ -1220,15 +1220,15 @@
         localPlanRaw = localStorage.getItem(userKey);
         if (!localPlanRaw) {
           localPlanRaw = localStorage.getItem('orbix_project_anon_' + activeId) ||
-                         localStorage.getItem('orbix_project_default_' + activeId);
+            localStorage.getItem('orbix_project_default_' + activeId);
         }
         if (!localPlanRaw) {
           var draftRaw = localStorage.getItem('orbix_working_project_draft');
           if (draftRaw) {
             var draftObj = JSON.parse(draftRaw);
             var draftMatches = !draftObj.projectId ||
-                               String(draftObj.projectId) === String(activeId) ||
-                               (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project === draftObj.plan);
+              String(draftObj.projectId) === String(activeId) ||
+              (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project === draftObj.plan);
             if (draftObj && draftMatches && draftObj.plan) {
               localPlanRaw = JSON.stringify(draftObj.plan);
             }
@@ -1244,7 +1244,7 @@
           var parsedLocal = JSON.parse(localPlanRaw);
           var localCount = countFurn(parsedLocal);
           var serverCount = countFurn(project);
-          
+
           if (localCount >= serverCount || (parsedLocal._lastModified && (!project.updatedAt || parsedLocal._lastModified > new Date(project.updatedAt).getTime()))) {
             planToLoad = parsedLocal;
             console.log('[Orbix Studio] Retained latest local draft across refresh/offline (' + localCount + ' units).');
