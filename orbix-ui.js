@@ -283,12 +283,15 @@
           for (var i = 0; i < Core.FURNITURE_CATALOG.length; i++) {
             if (Core.FURNITURE_CATALOG[i].id === fId) {
               self.editor.furniturePreset = Core.FURNITURE_CATALOG[i];
-              var iconEl = document.getElementById('planFurnActiveIcon');
+              var imgEl = document.getElementById('planFurnActiveImg');
               var nameEl = document.getElementById('planFurnActiveName');
               var dimsEl = document.getElementById('planFurnActiveDims');
-              if (iconEl) iconEl.textContent = Core.FURNITURE_CATALOG[i].icon || '🗄️';
+              var catEl = document.getElementById('planFurnActiveCat');
+              var isW = Core.FURNITURE_CATALOG[i].category === 'wardrobe' || (Core.FURNITURE_CATALOG[i].name && Core.FURNITURE_CATALOG[i].name.toLowerCase().indexOf('wardrobe') !== -1);
+              if (imgEl) imgEl.src = isW ? 'icon-furniture.png' : 'icon-cookscape-unit.png';
               if (nameEl) nameEl.textContent = Core.FURNITURE_CATALOG[i].name;
               if (dimsEl && Core.FURNITURE_CATALOG[i].dimensions) dimsEl.textContent = Core.FURNITURE_CATALOG[i].dimensions.W + '×' + Core.FURNITURE_CATALOG[i].dimensions.H;
+              if (catEl) catEl.textContent = 'Cookscape Units';
               break;
             }
           }
@@ -2125,12 +2128,15 @@
         });
 
         // Update active badge display in toolbar
-        var iconEl = document.getElementById('planFurnActiveIcon');
+        var imgEl = document.getElementById('planFurnActiveImg');
         var nameEl = document.getElementById('planFurnActiveName');
         var dimsEl = document.getElementById('planFurnActiveDims');
-        if (iconEl) iconEl.textContent = item.icon || '🗄️';
+        var catEl = document.getElementById('planFurnActiveCat');
+        var isW = item.category === 'wardrobe' || (item.name && item.name.toLowerCase().indexOf('wardrobe') !== -1);
+        if (imgEl) imgEl.src = isW ? 'icon-furniture.png' : 'icon-cookscape-unit.png';
         if (nameEl) nameEl.textContent = item.name;
         if (dimsEl && item.dimensions) dimsEl.textContent = item.dimensions.W + '×' + item.dimensions.H;
+        if (catEl) catEl.textContent = 'Cookscape Units';
 
         // Sync hidden select
         var furnSel = document.getElementById('planFurnSelect');
@@ -2223,10 +2229,14 @@
           var handleText = (item.unitConfig && item.unitConfig.handle) ? (' · ' + item.unitConfig.handle) : '';
           var specLine = (shutterText ? (shutterText + ' · ' + doorStyle) : doorStyle) + handleText;
 
+          var isWardrobeItem = (item.category === 'wardrobe' || (item.name && item.name.toLowerCase().indexOf('wardrobe') !== -1));
+          var cardImgSrc = isWardrobeItem ? 'icon-furniture.png' : 'icon-cookscape-unit.png';
+          var cardIconHtml = '<img src="' + cardImgSrc + '" alt="' + item.name + '" class="furn-card-img-thumb">';
+
           card.innerHTML =
             '<div class="furn-card-top">' +
               '<div class="furn-card-icon-title">' +
-                '<div class="furn-card-icon">' + (item.icon || '🗄️') + '</div>' +
+                '<div class="furn-card-icon" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;padding:3px;display:flex;align-items:center;justify-content:center;">' + cardIconHtml + '</div>' +
                 '<div class="furn-card-name-wrap">' +
                   '<div class="furn-card-name">' + item.name + '</div>' +
                   '<div class="furn-card-code">code: ' + (item.code || item.id) + '</div>' +
@@ -2300,15 +2310,18 @@
         });
       });
 
-      // Update initial active badge to FCM -RT (Kitchen Base)
+      // Update initial active badge to Cookscape Units: CROCKERY/TV BASE 1DOOR 1 DRAWER
       var defaultItem = Core.FURNITURE_CATALOG && Core.FURNITURE_CATALOG[0];
       if (defaultItem) {
-        var iconEl = document.getElementById('planFurnActiveIcon');
+        var imgEl = document.getElementById('planFurnActiveImg');
         var nameEl = document.getElementById('planFurnActiveName');
         var dimsEl = document.getElementById('planFurnActiveDims');
-        if (iconEl) iconEl.textContent = defaultItem.icon || '🍳';
+        var catEl = document.getElementById('planFurnActiveCat');
+        if (imgEl) imgEl.src = 'icon-cookscape-unit.png';
         if (nameEl) nameEl.textContent = defaultItem.name;
         if (dimsEl && defaultItem.dimensions) dimsEl.textContent = defaultItem.dimensions.W + '×' + defaultItem.dimensions.H;
+        if (catEl) catEl.textContent = 'Cookscape Units';
+        if (self.editor) self.editor.furniturePreset = defaultItem;
       }
     },
 

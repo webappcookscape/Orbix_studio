@@ -5,7 +5,9 @@
 
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
-    module.exports = factory(require('./orbix-core.js'));
+    var coreLib;
+    try { coreLib = require('./orbix-core.js'); } catch (_) { coreLib = require('../orbix-core.js'); }
+    module.exports = factory(coreLib);
   } else {
     root.OrbixPlan = factory(root.OrbixCore);
   }
@@ -86,6 +88,24 @@
       return feet + '\' ' + remInches + '"';
     }
     return Math.round(mm).toLocaleString() + ' mm';
+  };
+
+  // Comprehensive dimension formatter: millimeters (mm), centimeters (cm), and feet & inches (ft-in)
+  PlanEditor.prototype.formatAllDims = function (mm) {
+    var mmVal = Math.round(mm);
+    var cmVal = (mm / 10).toFixed(1).replace(/\.0$/, '');
+    var totalInches = mm / 25.4;
+    var feet = Math.floor(totalInches / 12);
+    var remInches = Math.round(totalInches % 12);
+    if (remInches === 12) { feet += 1; remInches = 0; }
+    var ftInVal = (feet === 0) ? (remInches + '"') : (remInches === 0 ? (feet + "'") : (feet + "' " + remInches + '"'));
+
+    return {
+      mm: mmVal + ' mm',
+      cm: cmVal + ' cm',
+      ftIn: ftInVal,
+      combined: mmVal + ' mm · ' + cmVal + ' cm · ' + ftInVal
+    };
   };
 
   // Parse user length input in either mm or imperial notation (e.g. 3000, 10', 10' 6", 120", 10ft)
@@ -178,6 +198,17 @@
       }
       if (Vec2.dist(worldPt, w.end) < snapDistMm) {
         return { pt: Vec2.clone(w.end), type: 'joint', target: w.end, label: 'Wall Joint' };
+      }
+    }
+
+    // 1b. Magnetic snap to furniture corner joint points
+    var furnList = (this.project && this.project.plan && this.project.plan.furniture) || [];
+    for (var fi = 0; fi < furnList.length; fi++) {
+      var fJoints = this.getFurnitureJointPoints(furnList[fi]);
+      for (var fji = 0; fji < fJoints.length; fji++) {
+        if (Vec2.dist(worldPt, fJoints[fji]) < snapDistMm) {
+          return { pt: { x: fJoints[fji].x, y: fJoints[fji].y }, type: 'joint', target: fJoints[fji], label: 'Unit Joint' };
+        }
       }
     }
 
@@ -344,6 +375,9 @@
       } else if (item.type === 'furniture') {
         this.project.plan.furniture = furniture.filter(function (f) { return f.id !== item.id; });
         deletedSomething = true;
+      } else if (item.type === 'dimension') {
+        this.project.plan.dimensions = (this.project.plan.dimensions || []).filter(function (d) { return d.id !== item.id; });
+        deletedSomething = true;
       }
     }
 
@@ -425,6 +459,8 @@
         self.handleSplitMouseDown(worldPt);
       } else if (self.activeTool === 'calibrate') {
         self.handleCalibrateMouseDown(worldPt);
+      } else if (self.activeTool === 'dimension') {
+        self.handleDimensionMouseDown(worldPt);
       }
     });
 
@@ -555,10 +591,19 @@
       if (self.dragState && self.dragState.type === 'move_furniture') {
         var dx = self.cursorWorld.x - self.dragState.startWorld.x;
         var dy = self.cursorWorld.y - self.dragState.startWorld.y;
-        var newX = Math.round((self.dragState.origPos.x + dx) / 50) * 50;
-        var newY = Math.round((self.dragState.origPos.y + dy) / 50) * 50;
-        self.dragState.furniture.pos.x = newX;
-        self.dragState.furniture.pos.y = newY;
+        var newX = Math.round((self.dragState.origPos.x + dx) / 25) * 25;
+        var newY = Math.round((self.dragState.origPos.y + dy) / 25) * 25;
+        var currentRot = self.dragState.origRotY !== undefined ? self.dragState.origRotY : (self.dragState.furniture.rotY || 0);
+
+        // Smart snap to adjacent units (jointing) & walls (snatching + overlap prevention)
+        var snapRes = self.snapFurniture(self.dragState.furniture, { x: newX, y: newY }, currentRot);
+        self.dragState.furniture.pos.x = snapRes.pos.x;
+        self.dragState.furniture.pos.y = snapRes.pos.y;
+        if (snapRes.rotY !== undefined) {
+          self.dragState.furniture.rotY = snapRes.rotY;
+        }
+        self.dragState.snapInfo = snapRes;
+
         var rooms = self.project.plan.rooms || [];
         for (var rm = 0; rm < rooms.length; rm++) {
           if (Core.Vec2.pointInPolygon(self.dragState.furniture.pos, rooms[rm].polygon)) {
@@ -570,8 +615,14 @@
         var colCheck = Core.checkPlacementOverlap ?
           Core.checkPlacementOverlap(self.dragState.furniture, self.project.plan, self.dragState.furniture.id) :
           Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
-        self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
-        self.dragState.collidedWith = colCheck.target || colCheck.other;
+
+        if (snapRes.type === 'unit_joint') {
+          self.dragState.hasCollision = false;
+          self.dragState.collidedWith = null;
+        } else {
+          self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
+          self.dragState.collidedWith = colCheck.target || colCheck.other;
+        }
         self.render();
         return;
       }
@@ -652,6 +703,11 @@
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       if (e.key === 'Escape') {
+        if (self.activeTool === 'dimension') {
+          self.dimensionStart = null;
+          self.render();
+          return;
+        }
         if (self.activeTool === 'calibrate') {
           self.activeTool = 'select';
           if (self.underlay) self.underlay.calibPoints = [];
@@ -664,6 +720,12 @@
           self.render();
           return;
         }
+      }
+
+      if (e.key.toLowerCase() === 'm' && !e.ctrlKey && !e.metaKey) {
+        var dimBtn = document.getElementById('planDimensionBtn');
+        if (dimBtn) dimBtn.click();
+        return;
       }
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
@@ -920,11 +982,28 @@
           type: 'move_furniture',
           furniture: fn,
           startWorld: Vec2.clone(worldPt),
-          origPos: Vec2.clone(fn.pos)
+          origPos: Vec2.clone(fn.pos),
+          origRotY: fn.rotY || 0
         };
         this.onSelectionChange(this.selected);
         this.render();
         return;
+      }
+    }
+
+    // Check if clicked a dimension line
+    var dims = (this.project && this.project.plan && this.project.plan.dimensions) || [];
+    for (var di = dims.length - 1; di >= 0; di--) {
+      var dm = dims[di];
+      var dProj = Core.projectPointToSegment(worldPt, dm.p1, dm.p2);
+      if (dProj && dProj.t >= 0 && dProj.t <= 1) {
+        var dDist = Math.hypot(worldPt.x - dProj.pt.x, worldPt.y - dProj.pt.y);
+        if (dDist < 150) {
+          this.selected = [{ type: 'dimension', id: dm.id }];
+          this.onSelectionChange(this.selected);
+          this.render();
+          return;
+        }
       }
     }
 
@@ -1046,14 +1125,189 @@
     }
   };
 
+  // Computes the 4 corner jointing points of a modular furniture unit
+  PlanEditor.prototype.getFurnitureJointPoints = function (furn) {
+    if (!furn) return [];
+    var pos = furn.pos || { x: 0, y: 0 };
+    var theta = furn.rotY || 0;
+    var u = { x: Math.cos(theta), y: Math.sin(theta) };
+    var v = { x: -Math.sin(theta), y: Math.cos(theta) };
+    var dims = furn.dimensions || { W: 1200, D: 600 };
+    var halfW = (dims.W || 1200) / 2;
+    var halfD = (dims.D || 600) / 2;
+
+    return [
+      { name: 'BL', x: pos.x - halfW * u.x - halfD * v.x, y: pos.y - halfW * u.y - halfD * v.y },
+      { name: 'BR', x: pos.x + halfW * u.x - halfD * v.x, y: pos.y + halfW * u.y - halfD * v.y },
+      { name: 'FR', x: pos.x + halfW * u.x + halfD * v.x, y: pos.y + halfW * u.y + halfD * v.y },
+      { name: 'FL', x: pos.x - halfW * u.x + halfD * v.x, y: pos.y - halfW * u.y + halfD * v.y }
+    ];
+  };
+
+  // Smart Modular Snapping: 1) Adjacent Unit Jointing, 2) Wall Snatching & Overlap Prevention
+  PlanEditor.prototype.snapFurniture = function (furn, candidatePos, candidateRotY) {
+    var pos = { x: candidatePos.x, y: candidatePos.y };
+    var rotY = candidateRotY !== undefined ? candidateRotY : (furn.rotY || 0);
+    var fDims = furn.dimensions || { W: 1200, D: 600, H: 2100 };
+    var fW = fDims.W || 1200;
+    var fD = fDims.D || 600;
+    var plan = this.project && this.project.plan;
+    if (!plan) return { pos: pos, rotY: rotY };
+
+    var furnList = plan.furniture || [];
+    var activeId = furn.id;
+
+    // 1. UNIT-TO-UNIT 4-CORNER / EDGE JOINTING SNAP
+    var bestJoint = null;
+    var minJointDist = 140; // mm magnetic snap threshold for jointing
+
+    for (var i = 0; i < furnList.length; i++) {
+      var other = furnList[i];
+      if (activeId && other.id === activeId) continue;
+      var oDims = other.dimensions || { W: 1200, D: 600 };
+      var oW = oDims.W || 1200;
+      var oD = oDims.D || 600;
+      var oRot = other.rotY || 0;
+      var oPos = other.pos || { x: 0, y: 0 };
+
+      var uO = { x: Math.cos(oRot), y: Math.sin(oRot) };
+      var vO = { x: -Math.sin(oRot), y: Math.cos(oRot) };
+
+      // Candidate joint positions:
+      // A. Side-by-Side: Active unit Left joints to Other unit Right
+      var rightJointPos = {
+        x: oPos.x + ((oW + fW) / 2) * uO.x,
+        y: oPos.y + ((oW + fW) / 2) * uO.y
+      };
+      var dRight = Math.hypot(pos.x - rightJointPos.x, pos.y - rightJointPos.y);
+      if (dRight < minJointDist) {
+        minJointDist = dRight;
+        bestJoint = {
+          pos: rightJointPos,
+          rotY: oRot,
+          type: 'unit_joint',
+          side: 'right',
+          target: other
+        };
+      }
+
+      // B. Side-by-Side: Active unit Right joints to Other unit Left
+      var leftJointPos = {
+        x: oPos.x - ((oW + fW) / 2) * uO.x,
+        y: oPos.y - ((oW + fW) / 2) * uO.y
+      };
+      var dLeft = Math.hypot(pos.x - leftJointPos.x, pos.y - leftJointPos.y);
+      if (dLeft < minJointDist) {
+        minJointDist = dLeft;
+        bestJoint = {
+          pos: leftJointPos,
+          rotY: oRot,
+          type: 'unit_joint',
+          side: 'left',
+          target: other
+        };
+      }
+
+      // C. Back-to-Back Island Joint
+      var backJointPos = {
+        x: oPos.x - ((oD + fD) / 2) * vO.x,
+        y: oPos.y - ((oD + fD) / 2) * vO.y
+      };
+      var dBack = Math.hypot(pos.x - backJointPos.x, pos.y - backJointPos.y);
+      if (dBack < minJointDist) {
+        minJointDist = dBack;
+        bestJoint = {
+          pos: backJointPos,
+          rotY: (oRot + Math.PI) % (Math.PI * 2),
+          type: 'unit_joint',
+          side: 'back',
+          target: other
+        };
+      }
+    }
+
+    if (bestJoint) {
+      return bestJoint;
+    }
+
+    // 2. WALL SNATCHING (FLUSH SNAP TO WALL FACE) & WALL OVERLAP PREVENTION
+    var walls = plan.walls || [];
+    var bestWallSnap = null;
+    var minWallDist = 260; // snap zone (mm)
+    var halfD = fD / 2;
+    var halfW = fW / 2;
+
+    for (var wIdx = 0; wIdx < walls.length; wIdx++) {
+      var w = walls[wIdx];
+      var dx = w.end.x - w.start.x;
+      var dy = w.end.y - w.start.y;
+      var wLen = Math.hypot(dx, dy);
+      if (wLen < 1) continue;
+      var wDir = { x: dx / wLen, y: dy / wLen };
+      var wNorm = { x: -wDir.y, y: wDir.x };
+      var halfT = (w.thickness || 150) / 2;
+      var flushDist = halfT + halfD;
+
+      // Project unit position onto wall segment
+      var toCur = { x: pos.x - w.start.x, y: pos.y - w.start.y };
+      var t = (toCur.x * wDir.x + toCur.y * wDir.y) / wLen;
+      var tClamped = Math.max(halfW / wLen, Math.min(1 - halfW / wLen, t));
+      var proj = { x: w.start.x + tClamped * dx, y: w.start.y + tClamped * dy };
+
+      var toCurProj = { x: pos.x - proj.x, y: pos.y - proj.y };
+      var sDist = toCurProj.x * wNorm.x + toCurProj.y * wNorm.y;
+      var sign = sDist >= 0 ? 1 : -1;
+      var normOut = { x: sign * wNorm.x, y: sign * wNorm.y };
+      var perpDist = Math.abs(sDist);
+
+      // Wall Snatching: when within 260mm of flush contact
+      if (perpDist < flushDist + minWallDist && t >= -0.1 && t <= 1.1) {
+        var snapDist = Math.abs(perpDist - flushDist);
+        if (snapDist < minWallDist) {
+          minWallDist = snapDist;
+          var wallSnapPos = {
+            x: proj.x + normOut.x * flushDist,
+            y: proj.y + normOut.y * flushDist
+          };
+          var normAngle = Math.atan2(normOut.y, normOut.x);
+          var cabinetRotY = normAngle - Math.PI / 2;
+
+          bestWallSnap = {
+            pos: wallSnapPos,
+            rotY: cabinetRotY,
+            type: 'wall_snap',
+            wall: w,
+            proj: proj,
+            norm: normOut
+          };
+        }
+      } else if (perpDist < flushDist && t >= 0 && t <= 1) {
+        // Overlap Prevention: if not in snap zone but penetrated wall core, clamp outward so it never overlaps
+        pos.x = proj.x + normOut.x * flushDist;
+        pos.y = proj.y + normOut.y * flushDist;
+      }
+    }
+
+    if (bestWallSnap) {
+      return bestWallSnap;
+    }
+
+    return { pos: pos, rotY: rotY };
+  };
+
   PlanEditor.prototype.handleFurnitureMouseDown = function (worldPt) {
     if (!this.furniturePreset) return;
     var snapped = this.snapPoint(worldPt);
 
+    // Apply smart snapping (jointing to adjacent units or snatching to wall face)
+    var snapRes = this.snapFurniture(this.furniturePreset, snapped.pt, this.furnitureRotY || 0);
+    var finalPos = snapRes.pos;
+    var finalRotY = snapRes.rotY !== undefined ? snapRes.rotY : (this.furnitureRotY || 0);
+
     var matchedRoomId = null;
     var rooms = this.project.plan.rooms || [];
     for (var r = 0; r < rooms.length; r++) {
-      if (Core.Vec2.pointInPolygon(snapped.pt, rooms[r].polygon)) {
+      if (Core.Vec2.pointInPolygon(finalPos, rooms[r].polygon)) {
         matchedRoomId = rooms[r].id;
         break;
       }
@@ -1071,8 +1325,8 @@
       category: this.furniturePreset.category,
       roomId: matchedRoomId,
       elevation: presetElev,
-      pos: { x: snapped.pt.x, y: snapped.pt.y, z: presetElev },
-      rotY: this.furnitureRotY || 0,
+      pos: { x: finalPos.x, y: finalPos.y, z: presetElev },
+      rotY: finalRotY,
       dimensions: Object.assign({}, this.furniturePreset.dimensions),
       unitConfig: Object.assign({}, this.furniturePreset.unitConfig || {})
     });
@@ -1113,6 +1367,36 @@
         this.onCalibrateRequest(pixelDist, worldDist);
       }
     }
+    this.render();
+  };
+
+  PlanEditor.prototype.handleDimensionMouseDown = function (worldPt) {
+    var snapped = this.snapPoint(worldPt);
+    var pt = snapped.pt;
+
+    if (!this.dimensionStart) {
+      this.dimensionStart = { x: pt.x, y: pt.y };
+      this.render();
+      return;
+    }
+
+    var p1 = this.dimensionStart;
+    var p2 = { x: pt.x, y: pt.y };
+    var dist = Math.round(Math.hypot(p2.x - p1.x, p2.y - p1.y));
+
+    if (dist >= 10) {
+      if (!this.project.plan.dimensions) this.project.plan.dimensions = [];
+      var newDim = {
+        id: 'dim-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        p1: p1,
+        p2: p2,
+        distMm: dist
+      };
+      this.project.plan.dimensions.push(newDim);
+      this.pushHistory('Measure Dimension (' + dist + ' mm)');
+    }
+
+    this.dimensionStart = null;
     this.render();
   };
 
@@ -1284,6 +1568,9 @@
 
     // 5. Furniture Units (2D footprints)
     this.renderFurniture(ctx);
+
+    // 5b. Placed CAD Dimension Lines (mm / cm / ft & in)
+    this.renderDimensions(ctx);
 
     // 6. Active Tool / Drawing Preview
     this.renderPreview(ctx);
@@ -2311,6 +2598,124 @@
         ctx.fillText(warnTxt, 0, -dPx / 2 - 13);
       }
 
+      // 4 Corner Jointing Points (for jointing two units together)
+      var cornerPts = [
+        { x: -wPx / 2, y: -dPx / 2 },
+        { x: wPx / 2, y: -dPx / 2 },
+        { x: wPx / 2, y: dPx / 2 },
+        { x: -wPx / 2, y: dPx / 2 }
+      ];
+      for (var cpi = 0; cpi < cornerPts.length; cpi++) {
+        var cp = cornerPts[cpi];
+        ctx.fillStyle = isSelected ? '#0284c7' : '#64748b';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, isSelected ? 3.5 : 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // If actively dragging and snapped/jointed, display snap feedback badge
+      if (this.dragState && this.dragState.type === 'move_furniture' && this.dragState.furniture.id === f.id && this.dragState.snapInfo) {
+        var sInfo = this.dragState.snapInfo;
+        if (sInfo.type === 'unit_joint') {
+          var jTxt = '✓ Jointed with Unit';
+          ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
+          var jw = ctx.measureText(jTxt).width;
+          ctx.fillStyle = '#059669';
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(-jw / 2 - 6, -dPx / 2 - 22, jw + 12, 17, 4);
+          else ctx.rect(-jw / 2 - 6, -dPx / 2 - 22, jw + 12, 17);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(jTxt, 0, -dPx / 2 - 13);
+        } else if (sInfo.type === 'wall_snap') {
+          var wTxt = '✓ Snapped Flush to Wall';
+          ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
+          var ww = ctx.measureText(wTxt).width;
+          ctx.fillStyle = '#0284c7';
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(-ww / 2 - 6, -dPx / 2 - 22, ww + 12, 17, 4);
+          else ctx.rect(-ww / 2 - 6, -dPx / 2 - 22, ww + 12, 17);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(wTxt, 0, -dPx / 2 - 13);
+        }
+      }
+
+      ctx.restore();
+    }
+  };
+
+  // Render placed CAD Dimension lines (mm / cm / feet & inches)
+  PlanEditor.prototype.renderDimensions = function (ctx) {
+    var dims = (this.project && this.project.plan && this.project.plan.dimensions) || [];
+    if (!dims.length) return;
+
+    for (var i = 0; i < dims.length; i++) {
+      var d = dims[i];
+      var isSelected = this.isSelected('dimension', d.id);
+      var sP1 = this.worldToScreen(d.p1);
+      var sP2 = this.worldToScreen(d.p2);
+      var dx = sP2.x - sP1.x;
+      var dy = sP2.y - sP1.y;
+      var len = Math.hypot(dx, dy);
+      if (len < 4) continue;
+
+      var ux = dx / len;
+      var uy = dy / len;
+      var nx = -uy;
+      var ny = ux;
+
+      var distMm = d.distMm || Math.round(Vec2.dist(d.p1, d.p2));
+      var dimsFmt = this.formatAllDims(distMm);
+
+      ctx.save();
+      // Dimension main line
+      ctx.strokeStyle = isSelected ? '#2563EB' : '#475569';
+      ctx.lineWidth = isSelected ? 2.5 : 1.5;
+      ctx.beginPath();
+      ctx.moveTo(sP1.x, sP1.y);
+      ctx.lineTo(sP2.x, sP2.y);
+      ctx.stroke();
+
+      // CAD Architectural 45-degree ticks at both ends
+      var tickLen = 6;
+      [sP1, sP2].forEach(function (pt) {
+        ctx.beginPath();
+        ctx.moveTo(pt.x - (ux + nx) * tickLen, pt.y - (uy + ny) * tickLen);
+        ctx.lineTo(pt.x + (ux + nx) * tickLen, pt.y + (uy + ny) * tickLen);
+        ctx.stroke();
+
+        // Terminal dot
+        ctx.fillStyle = isSelected ? '#1D4ED8' : '#334155';
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Dimension text pill centered at midpoint
+      var midX = (sP1.x + sP2.x) / 2;
+      var midY = (sP1.y + sP2.y) / 2;
+      var txt = dimsFmt.combined; // e.g. "1200 mm · 120 cm · 3' 11\""
+      ctx.font = isSelected ? '700 11px "IBM Plex Mono", monospace' : '600 10px "IBM Plex Mono", monospace';
+      var tw = ctx.measureText(txt).width;
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = isSelected ? '#2563EB' : '#CBD5E1';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(midX - tw / 2 - 6, midY - 9, tw + 12, 18, 4);
+      else ctx.rect(midX - tw / 2 - 6, midY - 9, tw + 12, 18);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = isSelected ? '#1D4ED8' : '#0F172A';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(txt, midX, midY);
+
       ctx.restore();
     }
   };
@@ -2595,29 +3000,71 @@
       }
     }
 
-    // 4. Furniture placement ghost preview
+    // 4. Furniture placement ghost preview (with live snapping to walls & jointing to adjacent units)
     if (this.activeTool === 'furniture' && this.furniturePreset) {
+      var candidatePos = this.cursorWorld;
+      var snapRes = this.snapFurniture(this.furniturePreset, candidatePos, this.furnitureRotY || 0);
+      var gPos = snapRes.pos;
+      var gRot = snapRes.rotY !== undefined ? snapRes.rotY : (this.furnitureRotY || 0);
+
       var fW = (this.furniturePreset.dimensions.W || 1200) * this.zoom;
       var fD = (this.furniturePreset.dimensions.D || 600) * this.zoom;
-      var sCursor = this.worldToScreen(this.cursorWorld);
+      var sGhost = this.worldToScreen(gPos);
 
       ctx.save();
-      ctx.translate(sCursor.x, sCursor.y);
-      ctx.rotate(this.furnitureRotY || 0);
+      ctx.translate(sGhost.x, sGhost.y);
+      ctx.rotate(gRot);
 
-      ctx.strokeStyle = '#2E7BB5';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 4]);
-      ctx.fillStyle = 'rgba(46, 123, 181, 0.15)';
+      var isSnap = (snapRes.type === 'unit_joint' || snapRes.type === 'wall_snap');
+      ctx.strokeStyle = (snapRes.type === 'unit_joint') ? '#10b981' : ((snapRes.type === 'wall_snap') ? '#0284c7' : '#2E7BB5');
+      ctx.lineWidth = isSnap ? 2.2 : 1.5;
+      ctx.setLineDash(isSnap ? [] : [4, 4]);
+      ctx.fillStyle = (snapRes.type === 'unit_joint') ? 'rgba(16, 185, 129, 0.2)' : ((snapRes.type === 'wall_snap') ? 'rgba(2, 132, 199, 0.2)' : 'rgba(46, 123, 181, 0.15)');
       ctx.fillRect(-fW / 2, -fD / 2, fW, fD);
       ctx.strokeRect(-fW / 2, -fD / 2, fW, fD);
       ctx.setLineDash([]);
 
-      ctx.fillStyle = '#1B4F72';
+      // 4 Corner Jointing Points on Ghost
+      var gCorners = [
+        { x: -fW / 2, y: -fD / 2 },
+        { x: fW / 2, y: -fD / 2 },
+        { x: fW / 2, y: fD / 2 },
+        { x: -fW / 2, y: fD / 2 }
+      ];
+      for (var gci = 0; gci < gCorners.length; gci++) {
+        ctx.fillStyle = (snapRes.type === 'unit_joint') ? '#10b981' : '#0284c7';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(gCorners[gci].x, gCorners[gci].y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // Shutter front edge indicator
+      ctx.strokeStyle = (snapRes.type === 'unit_joint') ? '#059669' : '#0369a1';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-fW / 2, fD / 2);
+      ctx.lineTo(fW / 2, fD / 2);
+      ctx.stroke();
+
+      ctx.fillStyle = (snapRes.type === 'unit_joint') ? '#065f46' : '#1B4F72';
       ctx.font = '600 11px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(this.furniturePreset.name, 0, 0);
+      ctx.fillText(this.furniturePreset.name, 0, -6);
+
+      // Snap feedback text
+      if (snapRes.type === 'unit_joint') {
+        ctx.fillStyle = '#10b981';
+        ctx.font = '700 9.5px "IBM Plex Sans", sans-serif';
+        ctx.fillText('✓ Snapped & Jointed to Unit', 0, 9);
+      } else if (snapRes.type === 'wall_snap') {
+        ctx.fillStyle = '#0284c7';
+        ctx.font = '700 9.5px "IBM Plex Sans", sans-serif';
+        ctx.fillText('✓ Snapped Flush to Wall', 0, 9);
+      }
 
       ctx.restore();
     }
@@ -2686,6 +3133,85 @@
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         ctx.fillText(guideTxt, sCur.x + 25, sCur.y);
+        ctx.restore();
+      }
+    }
+
+    // 6. Dimension Tool live rubberband preview
+    if (this.activeTool === 'dimension') {
+      var sCur = this.worldToScreen(this.cursorWorld);
+      var snapped = this.snapPoint(this.cursorWorld);
+      var sSnap = this.worldToScreen(snapped.pt);
+
+      if (this.dimensionStart) {
+        var sP1 = this.worldToScreen(this.dimensionStart);
+        var sP2 = sSnap;
+        var distMm = Math.round(Vec2.dist(this.dimensionStart, snapped.pt));
+        var dimsFmt = this.formatAllDims(distMm);
+
+        ctx.save();
+        // Rubberband line
+        ctx.strokeStyle = '#2563EB';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(sP1.x, sP1.y);
+        ctx.lineTo(sP2.x, sP2.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Crosshairs at points
+        [sP1, sP2].forEach(function (pt) {
+          ctx.strokeStyle = '#1D4ED8';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fill();
+          ctx.stroke();
+        });
+
+        // Midpoint measurement badge showing mm, cm, and feet & inches
+        var midX = (sP1.x + sP2.x) / 2;
+        var midY = (sP1.y + sP2.y) / 2 - 14;
+        var badgeText = dimsFmt.combined;
+        ctx.font = '700 11px "IBM Plex Mono", monospace';
+        var tw = ctx.measureText(badgeText).width;
+        ctx.fillStyle = '#0F172A';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(midX - tw / 2 - 8, midY - 10, tw + 16, 20, 4);
+        else ctx.rect(midX - tw / 2 - 8, midY - 10, tw + 16, 20);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badgeText, midX, midY);
+        ctx.restore();
+      } else {
+        // Draw crosshair cursor indicator
+        ctx.save();
+        ctx.strokeStyle = '#2563EB';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(sSnap.x, sSnap.y, 6, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(sSnap.x - 12, sSnap.y); ctx.lineTo(sSnap.x + 12, sSnap.y);
+        ctx.moveTo(sSnap.x, sSnap.y - 12); ctx.lineTo(sSnap.x, sSnap.y + 12);
+        ctx.stroke();
+
+        ctx.font = '600 11px "IBM Plex Sans", sans-serif';
+        var tipTxt = '📏 Click point 1 to measure (mm / cm / ft-in)';
+        var ttw = ctx.measureText(tipTxt).width;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(sSnap.x + 14, sSnap.y - 12, ttw + 16, 22, 4);
+        else ctx.rect(sSnap.x + 14, sSnap.y - 12, ttw + 16, 22);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(tipTxt, sSnap.x + 22, sSnap.y);
         ctx.restore();
       }
     }

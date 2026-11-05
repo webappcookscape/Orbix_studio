@@ -20,7 +20,17 @@ if os.path.exists(logo_path):
     b64_logo = 'data:image/jpeg;base64,' + base64.b64encode(open(logo_path, 'rb').read()).decode('utf-8')
     frag = frag.replace('src="logo.jpeg"', 'src="' + b64_logo + '"')
 
-frag = frag.replace('<link rel="stylesheet" href="style.css">', '<style>\n' + css + '\n</style>')
+furn_icon_path = os.path.join(here, 'icon-furniture.png')
+if os.path.exists(furn_icon_path):
+    b64_furn = 'data:image/png;base64,' + base64.b64encode(open(furn_icon_path, 'rb').read()).decode('utf-8')
+    frag = frag.replace('src="icon-furniture.png"', 'src="' + b64_furn + '"')
+
+cook_icon_path = os.path.join(here, 'icon-cookscape-unit.png')
+if os.path.exists(cook_icon_path):
+    b64_cook = 'data:image/png;base64,' + base64.b64encode(open(cook_icon_path, 'rb').read()).decode('utf-8')
+    frag = frag.replace('src="icon-cookscape-unit.png"', 'src="' + b64_cook + '"')
+
+frag = re.sub(r'<link rel="stylesheet" href="style\.css[^"]*">', '<style>\n' + css + '\n</style>', frag)
 all_js = '<script>\n' + orbix_projects + '\n' + orbix_core + '\n' + orbix_plan + '\n' + orbix_3d + '\n' + orbix_ui + '\n' + js + '\n' + pwa_js + '\n</script>'
 pattern = r'<script src="orbix-projects\.js[^"]*"></script>\s*<script src="orbix-core\.js[^"]*"></script>\s*<script src="orbix-plan\.js[^"]*"></script>\s*<script src="orbix-3d\.js[^"]*"></script>\s*<script src="orbix-ui\.js[^"]*"></script>\s*<script src="app\.js[^"]*"></script>\s*<script src="pwa\.js[^"]*"></script>'
 frag = re.sub(pattern, lambda m: all_js, frag, flags=re.DOTALL)
