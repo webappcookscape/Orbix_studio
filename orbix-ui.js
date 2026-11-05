@@ -3448,126 +3448,779 @@
       }, 1000);
     },
 
-    exportXLSX: function () {
+    exportXLSX: async function () {
+      var self = this;
       this.sync3DStudioUnits();
       var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms);
       var currentTier = (this.project.rateCard && this.project.rateCard.selectedTier) || 'PRICE 1';
       var meta = (this.project && this.project.meta) || {};
       var roomScopeText = quote.isFiltered ? ('Filtered: ' + (self.selectedBOQRooms || []).join(', ')) : 'All Rooms (Entire Home)';
 
-      var rows = [
-        ['ORBIX STUDIO — RESIDENTIAL INTERIOR ESTIMATION & QUOTATION'],
-        ['Quote Ref #:', meta.quoteId || 'ORB-2026-089', 'Date:', meta.dateCreated || new Date().toLocaleDateString('en-IN'), 'Status:', 'Approved Estimate', 'Active Tier:', currentTier, 'Scope:', roomScopeText],
-        ['Client Name:', meta.clientName || 'Aravind K.', 'Contact:', meta.phone || '+91 98450 12345', 'Email:', meta.email || 'aravind@example.com'],
-        ['Site Address:', meta.siteAddress || 'Flat 402, Skyline Residency, Bangalore', 'Designer:', meta.designerName || 'Orbix Studio Design Team'],
-        [],
-        ['Sl.No', 'Item Code', 'Item Description', 'Room / Zone', 'Width (mm)', 'Height (mm)', 'Depth (mm)', 'Area (SFT)', 'Shutter Material', 'Shutter Finish', 'Carcass Material', 'Carcass Finish', 'Qty', 'Unit Rate (INR)', 'Total Amount (INR)']
-      ];
-
-      for (var f = 0; f < quote.furnitureItems.length; f++) {
-        var it = quote.furnitureItems[f];
-        var d = it.dimensions || { W: 1200, H: 2100, D: 600 };
-        var codePrefix = it.category === 'wardrobe' ? 'W' : it.category.indexOf('kitchen') !== -1 ? 'K' : it.category.indexOf('bed') !== -1 ? 'B' : it.category === 'tv_unit' ? 'TV' : 'U';
-        var itemCode = codePrefix + '-0' + (f + 1);
-
-        var smat = (it.materials && it.materials.shutter) ? it.materials.shutter : { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' };
-        var cmat = (it.materials && it.materials.carcass) ? it.materials.carcass : { material: 'BWP_18MM', finish: 'Absolute White' };
-
-        rows.push([
-          f + 1,
-          itemCode,
-          it.name + ' (' + (it.modelLabel || it.modelType) + ')',
-          it.roomName,
-          d.W,
-          d.H,
-          d.D,
-          parseFloat(it.areaSft.toFixed(2)),
-          smat.material,
-          smat.finish,
-          cmat.material,
-          cmat.finish,
-          1,
-          it.baseRate,
-          Math.round(it.totalAmount)
-        ]);
+      // UI Button feedback
+      var xlsxBtn = document.getElementById('boqXlsxBtn');
+      var oldBtnText = xlsxBtn ? xlsxBtn.innerHTML : '';
+      if (xlsxBtn) {
+        xlsxBtn.innerHTML = '⏳ Generating Excel (.xlsx)...';
+        xlsxBtn.style.opacity = '0.7';
+        xlsxBtn.style.pointerEvents = 'none';
       }
 
-      rows.push(['', '', 'SUBTOTAL WOODWORK & MODULAR UNITS', '', '', '', '', '', '', '', '', '', '', '', Math.round(quote.subtotalWoodwork)]);
-      rows.push([]);
-      rows.push(['HARDWARE & FUNCTIONAL FITTINGS SPECIFICATIONS']);
+      try {
+        // 1. Resolve Logo Bytes
+        var logoBytes = null;
+        if (typeof OrbixUnitIcons !== 'undefined' && OrbixUnitIcons.LOGO_BASE64) {
+          try {
+            var b64Logo = OrbixUnitIcons.LOGO_BASE64;
+            var binLogo = atob(b64Logo);
+            logoBytes = new Uint8Array(binLogo.length);
+            for (var lb = 0; lb < binLogo.length; lb++) logoBytes[lb] = binLogo.charCodeAt(lb);
+          } catch (_) {}
+        }
+        if (!logoBytes && typeof document !== 'undefined') {
+          var logoEl = document.querySelector('img.tool-logo') || document.querySelector('img.auth-logo') || document.querySelector('img[src*="logo"]');
+          if (logoEl && logoEl.src && logoEl.src.indexOf('data:image/') === 0) {
+            try {
+              var spl = logoEl.src.split(',')[1];
+              var bstr = atob(spl);
+              logoBytes = new Uint8Array(bstr.length);
+              for (var li = 0; li < bstr.length; li++) logoBytes[li] = bstr.charCodeAt(li);
+            } catch (_) {}
+          }
+        }
+        if (!logoBytes && typeof fetch === 'function') {
+          try {
+            var res = await fetch('logo.jpeg');
+            if (res.ok) {
+              var buf = await res.arrayBuffer();
+              logoBytes = new Uint8Array(buf);
+            }
+          } catch (_) {}
+        }
 
-      var hwItems = [
-        { code: 'H-01', name: 'Auto Soft-Close Hinges (35mm Cup SS)', spec: 'Stainless Steel 304 · Hydraulic Soft-Close', qty: Math.max(8, quote.furnitureItems.length * 4), unit: 'nos', rate: 0 },
-        { code: 'H-02', name: 'Telescopic Drawer Runners (Soft-Close)', spec: 'Triple Extension Heavy-Duty Ball Bearing (45kg)', qty: Math.max(2, quote.furnitureItems.length * 1), unit: 'pair', rate: 0 },
-        { code: 'H-03', name: 'Designer Edge Profile Pull Handles (200mm)', spec: 'Matte Charcoal Aluminum Edge Profile', qty: Math.max(4, quote.furnitureItems.length * 2), unit: 'nos', rate: 0 },
-        { code: 'H-04', name: 'Wardrobe Hanging Oval Rail + Flanges', spec: 'Chrome Plated Oval Rail with Cushioning Gaskets', qty: Math.max(2, quote.furnitureItems.length * 1), unit: 'nos', rate: 0 },
-        { code: 'H-05', name: 'Precision Deadbolt Wardrobe Locks', spec: 'Brass Core with Computerized Dimple Keys', qty: 2, unit: 'nos', rate: 0 }
-      ];
+        // 2. Helper to rasterize SVG into PNG bytes via Canvas
+        var rasterizeCache = {};
+        function rasterizeSvgToPng(svgDataUriOrString) {
+          return new Promise(function (resolve) {
+            if (!svgDataUriOrString) { resolve(null); return; }
+            var src = svgDataUriOrString;
+            if (typeof src === 'string' && src.indexOf('<img') !== -1) {
+              var m = src.match(/src=["']([^"']+)["']/);
+              if (m) src = m[1];
+            }
+            if (typeof src === 'string' && src.indexOf('<svg') !== -1 && src.indexOf('data:image') === -1) {
+              src = 'data:image/svg+xml;utf8,' + encodeURIComponent(src);
+            }
+            if (rasterizeCache[src]) {
+              resolve(rasterizeCache[src]);
+              return;
+            }
+            if (typeof document === 'undefined' || typeof Image === 'undefined') {
+              resolve(null);
+              return;
+            }
+            try {
+              var img = new Image();
+              img.crossOrigin = 'anonymous';
+              img.onload = function () {
+                try {
+                  var canvas = document.createElement('canvas');
+                  canvas.width = 120;
+                  canvas.height = 120;
+                  var ctx = canvas.getContext('2d');
+                  ctx.clearRect(0, 0, 120, 120);
+                  ctx.drawImage(img, 0, 0, 120, 120);
+                  var dataUrl = canvas.toDataURL('image/png');
+                  var b64 = dataUrl.split(',')[1];
+                  var bin = atob(b64);
+                  var arr = new Uint8Array(bin.length);
+                  for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+                  rasterizeCache[src] = arr;
+                  resolve(arr);
+                } catch (e) {
+                  resolve(null);
+                }
+              };
+              img.onerror = function () {
+                resolve(null);
+              };
+              img.src = src;
+            } catch (err) {
+              resolve(null);
+            }
+          });
+        }
 
-      var totalHw = 0;
-      for (var h = 0; h < hwItems.length; h++) {
-        var hw = hwItems[h];
-        var hwAmt = hw.qty * hw.rate;
-        totalHw += hwAmt;
-        rows.push([
-          quote.furnitureItems.length + h + 1,
-          hw.code,
-          hw.name,
-          'All Rooms',
-          '-',
-          '-',
-          '-',
-          '-',
-          hw.spec,
-          '-',
-          '-',
-          '-',
-          hw.qty + ' ' + hw.unit,
-          0,
-          0
-        ]);
+        // 3. Pre-rasterize unit preview illustrations in parallel
+        var unitThumbnails = [];
+        for (var fIdx = 0; fIdx < quote.furnitureItems.length; fIdx++) {
+          var item = quote.furnitureItems[fIdx];
+          var svgThumb = self.getUnitSVG(item);
+          unitThumbnails.push(rasterizeSvgToPng(svgThumb));
+        }
+        var thumbResults = await Promise.all(unitThumbnails);
+
+        // 4. Commercial estimate values
+        var comm = self.computeCommercialSummary(quote.subtotalWoodwork, self.project.commercialCharges);
+        var commCharges = self.getCommercialCharges();
+
+        // 5. Build OpenXML Workbook structure
+        var blob = self.buildExecutivePricingXLSX({
+          project: self.project,
+          quote: quote,
+          currentTier: currentTier,
+          roomScopeText: roomScopeText,
+          meta: meta,
+          comm: comm,
+          commCharges: commCharges,
+          logoBytes: logoBytes,
+          thumbResults: thumbResults
+        });
+
+        // 6. Trigger download
+        var filename = 'Residential-Interior-Estimation-' + (meta.quoteId || 'ORB-2026-089') + '.xlsx';
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(function () {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(link.href);
+        }, 500);
+
+      } catch (err) {
+        console.error('Error generating Excel workbook:', err);
+        alert('Could not generate Excel file: ' + (err.message || err));
+      } finally {
+        if (xlsxBtn) {
+          xlsxBtn.innerHTML = oldBtnText || '📊 Download Excel (.xlsx)';
+          xlsxBtn.style.opacity = '1';
+          xlsxBtn.style.pointerEvents = 'auto';
+        }
       }
-
-      rows.push(['', '', 'SUBTOTAL HARDWARE & ACCESSORIES', '', '', '', '', '', '', '', '', '', '', '', 0]);
-      rows.push([]);
-
-      var comm = this.computeCommercialSummary(quote.subtotalWoodwork, this.project.commercialCharges);
-      var commCharges = this.getCommercialCharges();
-
-      rows.push(['COMMERCIAL ESTIMATE SUMMARY (' + (quote.isFiltered ? 'Active Scope' : 'Entire Home') + ')']);
-      rows.push(['', '', 'Modular Woodwork Subtotal', '', '', '', '', '', '', '', '', '', '', '', comm.woodworkSubtotal]);
-      rows.push(['', '', 'Hardware & Functional Fittings Subtotal (Included)', '', '', '', '', '', '', '', '', '', '', '', 0]);
-      rows.push(['', '', 'Additional Accessories', '', '', '', '', '', '', '', '', '', '', '', comm.additionalAccessories]);
-      rows.push(['', '', 'Appliances', '', '', '', '', '', '', '', '', '', '', '', comm.appliances]);
-      rows.push(['', '', 'Design charges & Handling Fee (' + comm.designPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', comm.designAmount]);
-      rows.push(['', '', 'Freight Charges (' + comm.freightPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', comm.freightAmount]);
-      rows.push(['', '', 'Loading and unloading (material)', '', '', '', '', '', '', '', '', '', '', '', comm.loadingUnloadingStatus || 'Additional']);
-      rows.push(['', '', 'Floor protective mat', '', '', '', '', '', '', '', '', '', '', '', comm.floorMatStatus || 'Not Included in Quote']);
-      rows.push(['', '', 'Civil works', '', '', '', '', '', '', '', '', '', '', '', comm.civilWorksStatus || 'As per actuals']);
-      rows.push(['', '', 'Electrical & Plumbing Works', '', '', '', '', '', '', '', '', '', '', '', comm.electricalPlumbingStatus || 'Additional']);
-      rows.push(['', '', 'False ceiling', '', '', '', '', '', '', '', '', '', '', '', comm.falseCeilingStatus || 'Not Included']);
-      rows.push(['', '', 'Wallpaper', '', '', '', '', '', '', '', '', '', '', '', comm.wallpaperStatus || 'Complementary']);
-      rows.push(['', '', 'Discount (' + comm.discountPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', -comm.discountAmount]);
-      rows.push(['', '', 'ADP (' + comm.adpPercent + '%)', '', '', '', '', '', '', '', '', '', '', '', -comm.adpAmount]);
-      rows.push(['', '', 'NET VALUE', '', '', '', '', '', '', '', '', '', '', '', comm.netValue]);
-      rows.push(['', '', 'GST @ ' + comm.gstPercent + '% (Additional)', '', '', '', '', '', '', '', '', '', '', '', comm.gstAmount]);
-      rows.push(['', '', 'GRAND TOTAL (INR)', '', '', '', '', '', '', '', '', '', '', '', comm.grandTotal]);
-
-      var blob = this.buildXLSXBlob(rows);
-      var filename = 'Residential-Interior-Estimation-' + (meta.quoteId || 'ORB-2026-089') + '.xlsx';
-
-      var link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(function () {
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
-      }, 500);
     },
 
-    buildXLSXBlob: function (rows) {
+    buildExecutivePricingXLSX: function (params) {
+      var project = params.project;
+      var quote = params.quote;
+      var currentTier = params.currentTier;
+      var roomScopeText = params.roomScopeText;
+      var meta = params.meta;
+      var comm = params.comm;
+      var commCharges = params.commCharges;
+      var logoBytes = params.logoBytes;
+      var thumbResults = params.thumbResults || [];
+
+      function colLetter(colIdx) {
+        var s = '';
+        colIdx++;
+        while (colIdx > 0) {
+          var m = (colIdx - 1) % 26;
+          s = String.fromCharCode(65 + m) + s;
+          colIdx = Math.floor((colIdx - m) / 26);
+        }
+        return s;
+      }
+
+      function escapeXml(str) {
+        return String(str === undefined || str === null ? '' : str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      var cells = [];
+      var rowHeights = {};
+      var mergeCells = [];
+      var drawings = [];
+      var mediaFiles = [];
+      var drawingRelIndex = 1;
+
+      // Embed Logo Drawing Anchor
+      if (logoBytes && logoBytes.length > 0) {
+        var logoRId = 'rId' + (drawingRelIndex++);
+        mediaFiles.push({ name: 'logo.jpeg', data: logoBytes, rId: logoRId, ext: 'jpeg' });
+        drawings.push({
+          type: 'logo',
+          rId: logoRId,
+          fromCol: 0, fromColOff: 80000, fromRow: 0, fromRowOff: 60000,
+          toCol: 3, toColOff: 200000, toRow: 3, toRowOff: 120000
+        });
+      }
+
+      function setCell(r, c, val, styleId, type) {
+        cells.push({ r: r, c: c, val: val, s: styleId || 0, t: type });
+      }
+
+      function addMerge(fromCol, fromRow, toCol, toRow) {
+        mergeCells.push(colLetter(fromCol) + fromRow + ':' + colLetter(toCol) + toRow);
+      }
+
+      // Group units by room
+      var itemsByRoom = {};
+      var roomNamesOrder = [];
+      for (var f = 0; f < quote.furnitureItems.length; f++) {
+        var it = quote.furnitureItems[f];
+        var rmName = it.roomName || 'General';
+        if (!itemsByRoom[rmName]) {
+          itemsByRoom[rmName] = [];
+          roomNamesOrder.push(rmName);
+        }
+        itemsByRoom[rmName].push(it);
+      }
+
+      // Dynamic Hardware Calculation
+      var totalHinges = 0;
+      var totalDrawers = 0;
+      var totalHandles = 0;
+      var totalWardrobeRails = 0;
+      var totalLocks = 0;
+      for (var fi = 0; fi < quote.furnitureItems.length; fi++) {
+        var uItem = quote.furnitureItems[fi];
+        var uCfg = uItem.unitConfig || {};
+        var uDims = uItem.dimensions || {};
+        var isWardrobe = (uItem.category === 'wardrobe');
+        var isSliding = (uItem.modelType === 'wr_sliding' || (uItem.name && uItem.name.toLowerCase().indexOf('sliding') !== -1));
+        var numShutters = (uCfg.shutters !== undefined) ? uCfg.shutters : 1;
+        var numDrawers = uCfg.drawers || 0;
+        if (!isSliding && numShutters > 0) {
+          var hPerShutter = (uDims.H > 2100) ? 4 : (uDims.H > 1500) ? 3 : 2;
+          totalHinges += numShutters * hPerShutter;
+        }
+        totalDrawers += numDrawers;
+        totalHandles += (numShutters + numDrawers);
+        if (isWardrobe) {
+          totalWardrobeRails += Math.max(1, Math.round((uDims.W || 1200) / 900));
+          if (numDrawers > 0) totalLocks += 1;
+        }
+      }
+
+      var hwItems = [];
+      if (totalHinges > 0) hwItems.push({ code: 'H-01', name: 'Auto Soft-Close Hinges', spec: 'Stainless Steel 304', qty: totalHinges, unit: 'nos', rate: 0 });
+      if (totalDrawers > 0) hwItems.push({ code: 'H-02', name: 'Telescopic Drawer Channels', spec: 'Triple Extension Heavy-Duty', qty: totalDrawers, unit: 'pair', rate: 0 });
+      if (totalHandles > 0) hwItems.push({ code: 'H-03', name: 'Designer Edge Profile Handles', spec: 'Matte Charcoal Aluminum', qty: totalHandles, unit: 'nos', rate: 0 });
+      if (totalWardrobeRails > 0) hwItems.push({ code: 'H-04', name: 'Wardrobe Hanging Oval Rails', spec: 'Chrome Plated Oval Rail', qty: totalWardrobeRails, unit: 'nos', rate: 0 });
+      if (totalLocks > 0) hwItems.push({ code: 'H-05', name: 'Precision Cam Locks', spec: 'Brass Core with Dimple Keys', qty: totalLocks, unit: 'nos', rate: 0 });
+
+      // --- ROW 1-5: TOP BANNER ---
+      rowHeights[1] = 26;
+      rowHeights[2] = 20;
+      rowHeights[3] = 18;
+      rowHeights[4] = 18;
+      rowHeights[5] = 18;
+
+      setCell(1, 4, 'COOKSCAPE — INTERIORS AND BEYOND', 1);
+      addMerge(4, 1, 10, 1);
+
+      setCell(2, 4, 'ORBIX STUDIO — RESIDENTIAL INTERIOR ESTIMATION & QUOTATION', 2);
+      addMerge(4, 2, 10, 2);
+
+      // Meta Box Row 3
+      setCell(3, 4, 'Quote Ref #:', 3);
+      setCell(3, 5, meta.quoteId || 'ORB-2026-089', 4);
+      setCell(3, 6, 'Date:', 3);
+      setCell(3, 7, meta.dateCreated || new Date().toLocaleDateString('en-IN'), 4);
+      setCell(3, 8, 'Status:', 3);
+      setCell(3, 9, 'Approved Estimate', 4);
+      setCell(3, 10, '', 4);
+      addMerge(9, 3, 10, 3);
+
+      // Meta Box Row 4
+      setCell(4, 4, 'Client Name:', 3);
+      setCell(4, 5, meta.clientName || 'Aravind K.', 4);
+      setCell(4, 6, 'Contact:', 3);
+      setCell(4, 7, meta.phone || '+91 98450 12345', 4);
+      setCell(4, 8, 'Active Tier:', 3);
+      setCell(4, 9, currentTier, 4);
+      setCell(4, 10, '', 4);
+      addMerge(9, 4, 10, 4);
+
+      // Meta Box Row 5
+      setCell(5, 4, 'Site Address:', 3);
+      setCell(5, 5, meta.siteAddress || 'Flat 402, Skyline Residency, Bangalore', 4);
+      setCell(5, 6, '', 4);
+      setCell(5, 7, '', 4);
+      addMerge(5, 5, 7, 5);
+      setCell(5, 8, 'Scope:', 3);
+      setCell(5, 9, roomScopeText, 4);
+      setCell(5, 10, '', 4);
+      addMerge(9, 5, 10, 5);
+
+      var currRow = 6;
+      rowHeights[currRow] = 10;
+      currRow++;
+
+      // --- SECTION 1: PRODUCTS & MODULAR WOODWORK ---
+      setCell(currRow, 0, '1. Products & Modular Woodwork (All Rooms)', 5);
+      for (var c1 = 1; c1 <= 10; c1++) setCell(currRow, c1, '', 5);
+      addMerge(0, currRow, 10, currRow);
+      rowHeights[currRow] = 26;
+      currRow++;
+
+      var colHeaders1 = [
+        'No', 'Reference', 'Preview', 'Item Description',
+        'Dimensions (mm)', 'Category', 'Finishes (Shutter & Carcass)',
+        'Accessories', 'Unit Price (INR)', 'Quantity', 'Price (INR)'
+      ];
+      for (var ch = 0; ch < colHeaders1.length; ch++) {
+        setCell(currRow, ch, colHeaders1[ch], 6);
+      }
+      rowHeights[currRow] = 24;
+      currRow++;
+
+      var globalItemIdx = 0;
+      for (var rOrd = 0; rOrd < roomNamesOrder.length; rOrd++) {
+        var rName = roomNamesOrder[rOrd];
+        var rItems = itemsByRoom[rName];
+        var rSubtotal = 0;
+        for (var ri = 0; ri < rItems.length; ri++) rSubtotal += rItems[ri].totalAmount;
+
+        var rFound = (project.plan && project.plan.rooms ? project.plan.rooms : []).filter(function (rm) {
+          return rm.name === rName || rm.id === (rItems[0] && rItems[0].roomId);
+        })[0];
+        var rActiveTier = (rFound && rFound.variant) || currentTier;
+
+        // Room Header Bar
+        var roomTitleText = '🏠 Room: ' + rName + ' · ' + rItems.length + ' Units · Variant: ' + rActiveTier;
+        setCell(currRow, 0, roomTitleText, 7);
+        for (var rc = 1; rc <= 7; rc++) setCell(currRow, rc, '', 7);
+        addMerge(0, currRow, 7, currRow);
+
+        setCell(currRow, 8, 'Room Subtotal:', 8);
+        setCell(currRow, 9, '', 8);
+        addMerge(8, currRow, 9, currRow);
+        setCell(currRow, 10, Math.round(rSubtotal), 8, 'n');
+        rowHeights[currRow] = 22;
+        currRow++;
+
+        for (var fi = 0; fi < rItems.length; fi++) {
+          var it = rItems[fi];
+          globalItemIdx++;
+          var isZebra = (globalItemIdx % 2 === 0);
+          var sLeft = isZebra ? 13 : 9;
+          var sCenter = isZebra ? 14 : 10;
+          var sNum = isZebra ? 15 : 11;
+          var sCur = isZebra ? 16 : 12;
+
+          var d = it.dimensions || { W: 1200, H: 2100, D: 600 };
+          var refCode = it.refCode || ('C' + (12 + globalItemIdx));
+          var smat = (it.materials && it.materials.shutter) ? it.materials.shutter : { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' };
+          var cmat = (it.materials && it.materials.carcass) ? it.materials.carcass : { material: 'BWP_18MM', finish: 'Absolute White' };
+
+          // Embed Unit Preview Thumbnail
+          var thumbPng = thumbResults[globalItemIdx - 1];
+          if (thumbPng && thumbPng.length > 0) {
+            var imgRId = 'rId' + (drawingRelIndex++);
+            var imgFileName = 'unit_' + globalItemIdx + '.png';
+            mediaFiles.push({ name: imgFileName, data: thumbPng, rId: imgRId, ext: 'png' });
+            drawings.push({
+              type: 'preview',
+              rId: imgRId,
+              fromCol: 2, fromColOff: 120000, fromRow: currRow - 1, fromRowOff: 50000,
+              toCol: 2, toColOff: 900000, toRow: currRow, toRowOff: -50000
+            });
+          }
+
+          setCell(currRow, 0, globalItemIdx, sCenter, 'n');
+          setCell(currRow, 1, refCode, sCenter);
+          setCell(currRow, 2, '', sCenter);
+          setCell(currRow, 3, it.name + '\nGroup: ' + (it.modelLabel || it.modelType || 'Cabinet') + '\nModel: ' + it.name, sLeft);
+          setCell(currRow, 4, 'Width: ' + d.W + '\nDepth: ' + d.D + '\nHeight: ' + d.H, sLeft);
+          setCell(currRow, 5, it.categoryName || 'Wardrobe', sCenter);
+          setCell(currRow, 6, 'Shutter: ' + smat.material + ' (' + smat.finish + ')\nCarcass: ' + cmat.material + ' (' + cmat.finish + ')', sLeft);
+          setCell(currRow, 7, 'Auto Soft-Close Hinges\nCam Connectors', sLeft);
+          setCell(currRow, 8, it.baseRate, sNum, 'n');
+          setCell(currRow, 9, it.areaSft.toFixed(2) + ' sq foot', sNum);
+          setCell(currRow, 10, Math.round(it.totalAmount), sCur, 'n');
+
+          rowHeights[currRow] = 58; // High row height for thumbnail
+          currRow++;
+        }
+      }
+
+      // Subtotal Woodwork Row
+      setCell(currRow, 0, 'SUBTOTAL PRODUCTS (ALL ROOMS)', 17);
+      for (var sc = 1; sc <= 9; sc++) setCell(currRow, sc, '', 17);
+      addMerge(0, currRow, 9, currRow);
+      setCell(currRow, 10, Math.round(quote.subtotalWoodwork), 18, 'n');
+      rowHeights[currRow] = 24;
+      currRow++;
+
+      currRow++; // Spacing row
+
+      // --- SECTION 2: HARDWARE & FUNCTIONAL FITTINGS ---
+      if (hwItems.length > 0) {
+        setCell(currRow, 0, '2. Hardware & Functional Fittings Specifications', 5);
+        for (var hwc = 1; hwc <= 10; hwc++) setCell(currRow, hwc, '', 5);
+        addMerge(0, currRow, 10, currRow);
+        rowHeights[currRow] = 24;
+        currRow++;
+
+        var colHeaders2 = [
+          'No', 'Reference', 'Preview', 'Specification',
+          'Fitment', 'Category', 'Material Spec',
+          'Package', 'Unit Rate (INR)', 'Quantity', 'Price (INR)'
+        ];
+        for (var hc = 0; hc < colHeaders2.length; hc++) {
+          setCell(currRow, hc, colHeaders2[hc], 6);
+        }
+        rowHeights[currRow] = 22;
+        currRow++;
+
+        for (var h = 0; h < hwItems.length; h++) {
+          var hw = hwItems[h];
+          var isHwZebra = (h % 2 === 1);
+          var sHwLeft = isHwZebra ? 13 : 9;
+          var sHwCenter = isHwZebra ? 14 : 10;
+          var sHwNum = isHwZebra ? 15 : 11;
+          var sHwCur = isHwZebra ? 16 : 12;
+
+          setCell(currRow, 0, quote.furnitureItems.length + h + 1, sHwCenter, 'n');
+          setCell(currRow, 1, hw.code, sHwCenter);
+          setCell(currRow, 2, '⚙️', sHwCenter);
+          setCell(currRow, 3, hw.name, sHwLeft);
+          setCell(currRow, 4, 'Standard Fit', sHwCenter);
+          setCell(currRow, 5, 'Hardware', sHwCenter);
+          setCell(currRow, 6, hw.spec, sHwLeft);
+          setCell(currRow, 7, 'System Pack', sHwCenter);
+          setCell(currRow, 8, 0, sHwNum, 'n');
+          setCell(currRow, 9, hw.qty + ' ' + hw.unit, sHwNum);
+          setCell(currRow, 10, 0, sHwCur, 'n');
+
+          rowHeights[currRow] = 22;
+          currRow++;
+        }
+
+        setCell(currRow, 0, 'SUBTOTAL HARDWARE & FUNCTIONAL FITTINGS', 17);
+        for (var sh = 1; sh <= 9; sh++) setCell(currRow, sh, '', 17);
+        addMerge(0, currRow, 9, currRow);
+        setCell(currRow, 10, 0, 18, 'n');
+        rowHeights[currRow] = 24;
+        currRow++;
+
+        currRow++; // Spacing row
+      }
+
+      // --- SECTION 3: COMMERCIAL ESTIMATE SUMMARY ---
+      setCell(currRow, 0, '3. Commercial Estimate Summary (Entire Home)', 5);
+      for (var cc = 1; cc <= 10; cc++) setCell(currRow, cc, '', 5);
+      addMerge(0, currRow, 10, currRow);
+      rowHeights[currRow] = 24;
+      currRow++;
+
+      // Subheaders
+      setCell(currRow, 0, 'Commercial Parameter & Scope of Work', 6);
+      for (var cp = 1; cp <= 4; cp++) setCell(currRow, cp, '', 6);
+      addMerge(0, currRow, 4, currRow);
+
+      setCell(currRow, 5, 'Inclusion Status / Parameter', 6);
+      for (var cs = 6; cs <= 7; cs++) setCell(currRow, cs, '', 6);
+      addMerge(5, currRow, 7, currRow);
+
+      setCell(currRow, 8, 'Amount (INR)', 6);
+      for (var ca = 9; ca <= 10; ca++) setCell(currRow, ca, '', 6);
+      addMerge(8, currRow, 10, currRow);
+      rowHeights[currRow] = 22;
+      currRow++;
+
+      var addAccVal = Number(commCharges.additionalAccessories) || 0;
+      var appliancesVal = Number(commCharges.appliances) || 0;
+
+      var commRows = [
+        { label: 'Modular Woodwork Subtotal', status: 'Active Scope', amt: comm.woodworkSubtotal, style: 12 },
+        { label: 'Hardware & Functional Fittings Subtotal', status: 'Included in Base Package', amt: 0, style: 12 },
+        { label: 'Additional Accessories', status: addAccVal > 0 ? 'Specified' : 'Standard', amt: comm.additionalAccessories, style: 12 },
+        { label: 'Appliances', status: appliancesVal > 0 ? 'Specified' : 'Standard', amt: comm.appliances, style: 12 },
+        { label: 'Design charges & Handling Fee', status: comm.designPercent + '%', amt: comm.designAmount, style: 12 },
+        { label: 'Freight Charges', status: comm.freightPercent + '%', amt: comm.freightAmount, style: 12 },
+        { label: 'Loading and unloading (material)', status: comm.loadingUnloadingStatus || 'Additional', amt: comm.loadingUnloadingStatus === 'Included' ? 0 : 'Additional', style: 10 },
+        { label: 'Floor protective mat', status: comm.floorMatStatus || 'Not Included in Quote', amt: comm.floorMatStatus === 'Included' ? 0 : 'Not Included', style: 10 },
+        { label: 'Civil works', status: comm.civilWorksStatus || 'As per actuals', amt: comm.civilWorksStatus === 'Included' ? 0 : 'As per actuals', style: 10 },
+        { label: 'Electrical & Plumbing Works', status: comm.electricalPlumbingStatus || 'Additional', amt: comm.electricalPlumbingStatus === 'Included' ? 0 : 'Additional', style: 10 },
+        { label: 'False ceiling', status: comm.falseCeilingStatus || 'Not Included', amt: comm.falseCeilingStatus === 'Included' ? 0 : 'Not Included', style: 10 },
+        { label: 'Wallpaper', status: comm.wallpaperStatus || 'Complementary', amt: comm.wallpaperStatus === 'Complementary' ? 'Complementary' : 'Not Included', style: 10 },
+        { label: 'Discount', status: '(-) ' + comm.discountPercent + '%', amt: -comm.discountAmount, style: 19 },
+        { label: 'ADP', status: '(-) ' + comm.adpPercent + '%', amt: -comm.adpAmount, style: 19 },
+        { label: 'NET VALUE', status: 'Taxable Amount', amt: comm.netValue, style: 20, isNet: true },
+        { label: 'GST (Additional)', status: 'Rate: ' + comm.gstPercent + '%', amt: comm.gstAmount, style: 12 },
+        { label: 'GRAND TOTAL', status: 'Net Payable', amt: comm.grandTotal, style: 22, isGrand: true }
+      ];
+
+      for (var cr = 0; cr < commRows.length; cr++) {
+        var rowData = commRows[cr];
+        var isNet = rowData.isNet;
+        var isGrand = rowData.isGrand;
+
+        var lblStyle = isGrand ? 21 : isNet ? 7 : 9;
+        var statStyle = isGrand ? 21 : isNet ? 7 : 10;
+        var amtStyle = rowData.style;
+
+        setCell(currRow, 0, rowData.label, lblStyle);
+        for (var c2 = 1; c2 <= 4; c2++) setCell(currRow, c2, '', lblStyle);
+        addMerge(0, currRow, 4, currRow);
+
+        setCell(currRow, 5, rowData.status, statStyle);
+        for (var c3 = 6; c3 <= 7; c3++) setCell(currRow, c3, '', statStyle);
+        addMerge(5, currRow, 7, currRow);
+
+        if (typeof rowData.amt === 'number') {
+          setCell(currRow, 8, rowData.amt, amtStyle, 'n');
+        } else {
+          setCell(currRow, 8, rowData.amt, amtStyle);
+        }
+        for (var c4 = 9; c4 <= 10; c4++) setCell(currRow, c4, '', amtStyle);
+        addMerge(8, currRow, 10, currRow);
+
+        rowHeights[currRow] = isGrand ? 28 : isNet ? 24 : 20;
+        currRow++;
+      }
+
+      // Footnote
+      currRow++;
+      setCell(currRow, 0, 'Generated by Orbix Studio CAD System · https://studio.orbixdesigns.com · All rights reserved.', 23);
+      for (var fnc = 1; fnc <= 10; fnc++) setCell(currRow, fnc, '', 23);
+      addMerge(0, currRow, 10, currRow);
+      rowHeights[currRow] = 18;
+
+      // Group cells by row
+      var rowMap = {};
+      for (var ci = 0; ci < cells.length; ci++) {
+        var cell = cells[ci];
+        if (!rowMap[cell.r]) rowMap[cell.r] = [];
+        rowMap[cell.r].push(cell);
+      }
+
+      var sortedRowKeys = Object.keys(rowMap).map(Number).sort(function (a, b) { return a - b; });
+      var sheetDataXml = '';
+      for (var rk = 0; rk < sortedRowKeys.length; rk++) {
+        var rNum = sortedRowKeys[rk];
+        var rCells = rowMap[rNum].sort(function (a, b) { return a.c - b.c; });
+        var rHeightAttr = rowHeights[rNum] ? (' ht="' + rowHeights[rNum] + '" customHeight="1"') : '';
+        sheetDataXml += '<row r="' + rNum + '"' + rHeightAttr + '>';
+        for (var colIdx = 0; colIdx < rCells.length; colIdx++) {
+          var cObj = rCells[colIdx];
+          var cellRef = colLetter(cObj.c) + cObj.r;
+          var styleAttr = cObj.s ? (' s="' + cObj.s + '"') : '';
+          if (cObj.t === 'n' && typeof cObj.val === 'number') {
+            sheetDataXml += '<c r="' + cellRef + '"' + styleAttr + '><v>' + cObj.val + '</v></c>';
+          } else {
+            var valStr = escapeXml(cObj.val);
+            sheetDataXml += '<c r="' + cellRef + '"' + styleAttr + ' t="inlineStr"><is><t>' + valStr + '</t></is></c>';
+          }
+        }
+        sheetDataXml += '</row>';
+      }
+
+      var colWidths = [
+        { min: 1, max: 1, width: 7 },
+        { min: 2, max: 2, width: 14 },
+        { min: 3, max: 3, width: 15 },
+        { min: 4, max: 4, width: 34 },
+        { min: 5, max: 5, width: 18 },
+        { min: 6, max: 6, width: 22 },
+        { min: 7, max: 7, width: 30 },
+        { min: 8, max: 8, width: 24 },
+        { min: 9, max: 9, width: 16 },
+        { min: 10, max: 10, width: 16 },
+        { min: 11, max: 11, width: 20 }
+      ];
+      var colsXml = '<cols>';
+      for (var cw = 0; cw < colWidths.length; cw++) {
+        var cDef = colWidths[cw];
+        colsXml += '<col min="' + cDef.min + '" max="' + cDef.max + '" width="' + cDef.width + '" customWidth="1"/>';
+      }
+      colsXml += '</cols>';
+
+      var mergeXml = '';
+      if (mergeCells.length > 0) {
+        mergeXml = '<mergeCells count="' + mergeCells.length + '">';
+        for (var mi = 0; mi < mergeCells.length; mi++) {
+          mergeXml += '<mergeCell ref="' + mergeCells[mi] + '"/>';
+        }
+        mergeXml += '</mergeCells>';
+      }
+
+      var contentTypesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+        '<Default Extension="xml" ContentType="application/xml"/>' +
+        '<Default Extension="jpeg" ContentType="image/jpeg"/>' +
+        '<Default Extension="jpg" ContentType="image/jpeg"/>' +
+        '<Default Extension="png" ContentType="image/png"/>' +
+        '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+        '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+        '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+        '<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>' +
+        '</Types>';
+
+      var rootRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+        '</Relationships>';
+
+      var workbookXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+        '<sheets><sheet name="Estimation &amp; Pricing" sheetId="1" r:id="rId1"/></sheets>' +
+        '</workbook>';
+
+      var workbookRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+        '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+        '</Relationships>';
+
+      var stylesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+        '<numFmts count="3">' +
+        '<numFmt numFmtId="164" formatCode="&quot;₹&quot;\ #,##0.00;[Red](&quot;₹&quot;\ #,##0.00);&quot;₹&quot;\ 0.00"/>' +
+        '<numFmt numFmtId="165" formatCode="#,##0.00"/>' +
+        '<numFmt numFmtId="166" formatCode="0.00"/>' +
+        '</numFmts>' +
+        '<fonts count="10">' +
+        '<font><sz val="10"/><color rgb="FF000000"/><name val="Calibri"/></font>' +
+        '<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>' +
+        '<font><b/><sz val="15"/><color rgb="FF1B4F72"/><name val="Calibri"/></font>' +
+        '<font><b/><sz val="11"/><color rgb="FF334155"/><name val="Calibri"/></font>' +
+        '<font><b/><sz val="10"/><color rgb="FF1E3A8A"/><name val="Calibri"/></font>' +
+        '<font><b/><sz val="10"/><color rgb="FF1E293B"/><name val="Calibri"/></font>' +
+        '<font><sz val="9"/><color rgb="FF475569"/><name val="Calibri"/></font>' +
+        '<font><b/><sz val="10"/><color rgb="FFDC2626"/><name val="Calibri"/></font>' +
+        '<font><b/><sz val="13"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>' +
+        '<font><i/><sz val="9"/><color rgb="FF64748B"/><name val="Calibri"/></font>' +
+        '</fonts>' +
+        '<fills count="9">' +
+        '<fill><patternFill patternType="none"/></fill>' +
+        '<fill><patternFill patternType="gray125"/></fill>' +
+        '<fill><patternFill patternType="solid"><fgColor rgb="FF1B4F72"/></patternFill></fill>' +
+        '<fill><patternFill patternType="solid"><fgColor rgb="FFEFF6FF"/></patternFill></fill>' +
+        '<fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/></patternFill></fill>' +
+        '<fill><patternFill patternType="solid"><fgColor rgb="FFFEF3C7"/></patternFill></fill>' +
+        '<fill><patternFill patternType="solid"><fgColor rgb="FFE2E8F0"/></patternFill></fill>' +
+        '<fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/></patternFill></fill>' +
+        '<fill><patternFill patternType="solid"><fgColor rgb="FFFFFFFF"/></patternFill></fill>' +
+        '</fills>' +
+        '<borders count="4">' +
+        '<border><left/><right/><top/><bottom/><diagonal/></border>' +
+        '<border><left style="thin"><color rgb="FFCBD5E1"/></left><right style="thin"><color rgb="FFCBD5E1"/></right><top style="thin"><color rgb="FFCBD5E1"/></top><bottom style="thin"><color rgb="FFCBD5E1"/></bottom></border>' +
+        '<border><left style="thin"><color rgb="FFCBD5E1"/></left><right style="thin"><color rgb="FFCBD5E1"/></right><top style="thin"><color rgb="FFCBD5E1"/></top><bottom style="double"><color rgb="FF1E293B"/></bottom></border>' +
+        '<border><left style="medium"><color rgb="FF1B4F72"/></left><right style="medium"><color rgb="FF1B4F72"/></right><top style="medium"><color rgb="FF1B4F72"/></top><bottom style="medium"><color rgb="FF1B4F72"/></bottom></border>' +
+        '</borders>' +
+        '<cellStyleXfs count="1">' +
+        '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>' +
+        '</cellStyleXfs>' +
+        '<cellXfs count="24">' +
+        '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+        '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0"><alignment vertical="center"/></xf>' +
+        '<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0"><alignment vertical="center"/></xf>' +
+        '<xf numFmtId="0" fontId="5" fillId="7" borderId="1" xfId="0"><alignment vertical="center"/></xf>' +
+        '<xf numFmtId="0" fontId="0" fillId="7" borderId="1" xfId="0"><alignment vertical="center"/></xf>' +
+        '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0"><alignment vertical="center" indent="1"/></xf>' +
+        '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +
+        '<xf numFmtId="0" fontId="4" fillId="3" borderId="1" xfId="0"><alignment vertical="center" indent="1"/></xf>' +
+        '<xf numFmtId="164" fontId="4" fillId="3" borderId="1" xfId="0"><alignment horizontal="right" vertical="center"/></xf>' +
+        '<xf numFmtId="0" fontId="0" fillId="8" borderId="1" xfId="0"><alignment vertical="center" wrapText="1"/></xf>' +
+        '<xf numFmtId="0" fontId="0" fillId="8" borderId="1" xfId="0"><alignment horizontal="center" vertical="center"/></xf>' +
+        '<xf numFmtId="165" fontId="0" fillId="8" borderId="1" xfId="0"><alignment horizontal="right" vertical="center"/></xf>' +
+        '<xf numFmtId="164" fontId="5" fillId="8" borderId="1" xfId="0"><alignment horizontal="right" vertical="center"/></xf>' +
+        '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0"><alignment vertical="center" wrapText="1"/></xf>' +
+        '<xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0"><alignment horizontal="center" vertical="center"/></xf>' +
+        '<xf numFmtId="165" fontId="0" fillId="4" borderId="1" xfId="0"><alignment horizontal="right" vertical="center"/></xf>' +
+        '<xf numFmtId="164" fontId="5" fillId="4" borderId="1" xfId="0"><alignment horizontal="right" vertical="center"/></xf>' +
+        '<xf numFmtId="0" fontId="5" fillId="5" borderId="2" xfId="0"><alignment horizontal="right" vertical="center"/></xf>' +
+        '<xf numFmtId="164" fontId="5" fillId="5" borderId="2" xfId="0"><alignment horizontal="right" vertical="center"/></xf>' +
+        '<xf numFmtId="164" fontId="7" fillId="8" borderId="1" xfId="0"><alignment horizontal="right" vertical="center"/></xf>' +
+        '<xf numFmtId="164" fontId="4" fillId="3" borderId="1" xfId="0"><alignment horizontal="right" vertical="center"/></xf>' +
+        '<xf numFmtId="0" fontId="8" fillId="2" borderId="3" xfId="0"><alignment vertical="center" indent="1"/></xf>' +
+        '<xf numFmtId="164" fontId="8" fillId="2" borderId="3" xfId="0"><alignment horizontal="right" vertical="center"/></xf>' +
+        '<xf numFmtId="0" fontId="9" fillId="0" borderId="0" xfId="0"><alignment vertical="center"/></xf>' +
+        '</cellXfs>' +
+        '</styleSheet>';
+
+      var sheetRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        '<Relationship Id="rIdDrawing1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/>' +
+        '</Relationships>';
+
+      var drawingRelsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+      for (var mr = 0; mr < mediaFiles.length; mr++) {
+        var mf = mediaFiles[mr];
+        drawingRelsXml += '<Relationship Id="' + mf.rId + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/' + mf.name + '"/>';
+      }
+      drawingRelsXml += '</Relationships>';
+
+      var drawingXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" ' +
+        'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">';
+
+      for (var drIdx = 0; drIdx < drawings.length; drIdx++) {
+        var dr = drawings[drIdx];
+        drawingXml += '<xdr:twoCellAnchor editAs="oneCell">' +
+          '<xdr:from>' +
+          '<xdr:col>' + dr.fromCol + '</xdr:col>' +
+          '<xdr:colOff>' + dr.fromColOff + '</xdr:colOff>' +
+          '<xdr:row>' + dr.fromRow + '</xdr:row>' +
+          '<xdr:rowOff>' + dr.fromRowOff + '</xdr:rowOff>' +
+          '</xdr:from>' +
+          '<xdr:to>' +
+          '<xdr:col>' + dr.toCol + '</xdr:col>' +
+          '<xdr:colOff>' + dr.toColOff + '</xdr:colOff>' +
+          '<xdr:row>' + dr.toRow + '</xdr:row>' +
+          '<xdr:rowOff>' + dr.toRowOff + '</xdr:rowOff>' +
+          '</xdr:to>' +
+          '<xdr:pic>' +
+          '<xdr:nvPicPr>' +
+          '<xdr:cNvPr id="' + (drIdx + 1) + '" name="Picture ' + (drIdx + 1) + '"/>' +
+          '<xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr>' +
+          '</xdr:nvPicPr>' +
+          '<xdr:blipFill>' +
+          '<a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="' + dr.rId + '"/>' +
+          '<a:stretch><a:fillRect/></a:stretch>' +
+          '</xdr:blipFill>' +
+          '<xdr:spPr>' +
+          '<a:xfrm><a:off x="0" y="0"/><a:ext cx="100000" cy="100000"/></a:xfrm>' +
+          '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>' +
+          '</xdr:spPr>' +
+          '</xdr:pic>' +
+          '<xdr:clientData/>' +
+          '</xdr:twoCellAnchor>';
+      }
+      drawingXml += '</xdr:wsDr>';
+
+      var sheetXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
+        'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+        '<sheetViews>' +
+        '<sheetView tabSelected="1" workbookViewId="0">' +
+        '<pane ySplit="7" topLeftCell="A8" activePane="bottomLeft" state="frozen"/>' +
+        '</sheetView>' +
+        '</sheetViews>' +
+        '<sheetFormatPr defaultRowHeight="18"/>' + colsXml +
+        '<sheetData>' + sheetDataXml + '</sheetData>' + mergeXml +
+        '<drawing r:id="rIdDrawing1"/>' +
+        '</worksheet>';
+
+      var zipEntries = [
+        { name: '[Content_Types].xml', data: contentTypesXml },
+        { name: '_rels/.rels', data: rootRelsXml },
+        { name: 'xl/workbook.xml', data: workbookXml },
+        { name: 'xl/_rels/workbook.xml.rels', data: workbookRelsXml },
+        { name: 'xl/styles.xml', data: stylesXml },
+        { name: 'xl/worksheets/sheet1.xml', data: sheetXml },
+        { name: 'xl/worksheets/_rels/sheet1.xml.rels', data: sheetRelsXml },
+        { name: 'xl/drawings/drawing1.xml', data: drawingXml },
+        { name: 'xl/drawings/_rels/drawing1.xml.rels', data: drawingRelsXml }
+      ];
+
+      for (var med = 0; med < mediaFiles.length; med++) {
+        zipEntries.push({ name: 'xl/media/' + mediaFiles[med].name, data: mediaFiles[med].data });
+      }
+
+      return this.buildZipBlob(zipEntries);
+    },
+
+    buildZipBlob: function (files) {
       function makeCRC32Table() {
         var c, t = [];
         for (var n = 0; n < 256; n++) {
@@ -3584,127 +4237,85 @@
         return (crc ^ -1) >>> 0;
       }
 
-      function colName(c) {
-        var s = '';
-        c++;
-        while (c > 0) {
-          var m = (c - 1) % 26;
-          s = String.fromCharCode(65 + m) + s;
-          c = Math.floor((c - m) / 26);
+      var encoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : {
+        encode: function (str) {
+          var arr = new Uint8Array(str.length);
+          for (var i = 0; i < str.length; i++) arr[i] = str.charCodeAt(i);
+          return arr;
         }
-        return s;
+      };
+
+      var localChunks = [];
+      var centralChunks = [];
+      var offset = 0;
+
+      for (var f = 0; f < files.length; f++) {
+        var file = files[f];
+        var nameBuf = encoder.encode(file.name);
+        var dataBuf = (file.data instanceof Uint8Array) ? file.data : encoder.encode(file.data);
+        var crc = getCrc32(dataBuf);
+        var size = dataBuf.length;
+
+        var localHeader = new Uint8Array(30);
+        var v = new DataView(localHeader.buffer);
+        v.setUint32(0, 0x04034b50, true);
+        v.setUint16(4, 20, true);
+        v.setUint32(14, crc, true);
+        v.setUint32(18, size, true);
+        v.setUint32(22, size, true);
+        v.setUint16(26, nameBuf.length, true);
+
+        localChunks.push(localHeader, nameBuf, dataBuf);
+
+        var centralHeader = new Uint8Array(46);
+        var cv = new DataView(centralHeader.buffer);
+        cv.setUint32(0, 0x02014b50, true);
+        cv.setUint16(4, 20, true);
+        cv.setUint16(6, 20, true);
+        cv.setUint32(16, crc, true);
+        cv.setUint32(20, size, true);
+        cv.setUint32(24, size, true);
+        cv.setUint16(28, nameBuf.length, true);
+        cv.setUint32(42, offset, true);
+
+        centralChunks.push(centralHeader, nameBuf);
+        offset += localHeader.length + nameBuf.length + dataBuf.length;
       }
 
-      var encoder = new TextEncoder();
-      function makeZip(files) {
-        var localChunks = [];
-        var centralChunks = [];
-        var offset = 0;
+      var centralDirOffset = offset;
+      var centralDirSize = centralChunks.reduce(function (acc, c) { return acc + c.length; }, 0);
 
-        for (var f = 0; f < files.length; f++) {
-          var file = files[f];
-          var nameBuf = encoder.encode(file.name);
-          var dataBuf = (file.data instanceof Uint8Array) ? file.data : encoder.encode(file.data);
-          var crc = getCrc32(dataBuf);
-          var size = dataBuf.length;
+      var endOfCentralDir = new Uint8Array(22);
+      var ev = new DataView(endOfCentralDir.buffer);
+      ev.setUint32(0, 0x06054b50, true);
+      ev.setUint16(8, files.length, true);
+      ev.setUint16(10, files.length, true);
+      ev.setUint32(12, centralDirSize, true);
+      ev.setUint32(16, centralDirOffset, true);
 
-          var localHeader = new Uint8Array(30);
-          var v = new DataView(localHeader.buffer);
-          v.setUint32(0, 0x04034b50, true);
-          v.setUint16(4, 20, true);
-          v.setUint32(14, crc, true);
-          v.setUint32(18, size, true);
-          v.setUint32(22, size, true);
-          v.setUint16(26, nameBuf.length, true);
+      var allParts = localChunks.concat(centralChunks).concat([endOfCentralDir]);
+      return new Blob(allParts, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    },
 
-          localChunks.push(localHeader, nameBuf, dataBuf);
-
-          var centralHeader = new Uint8Array(46);
-          var cv = new DataView(centralHeader.buffer);
-          cv.setUint32(0, 0x02014b50, true);
-          cv.setUint16(4, 20, true);
-          cv.setUint16(6, 20, true);
-          cv.setUint32(16, crc, true);
-          cv.setUint32(20, size, true);
-          cv.setUint32(24, size, true);
-          cv.setUint16(28, nameBuf.length, true);
-          cv.setUint32(42, offset, true);
-
-          centralChunks.push(centralHeader, nameBuf);
-          offset += localHeader.length + nameBuf.length + dataBuf.length;
-        }
-
-        var centralDirOffset = offset;
-        var centralDirSize = centralChunks.reduce(function (acc, c) { return acc + c.length; }, 0);
-
-        var endOfCentralDir = new Uint8Array(22);
-        var ev = new DataView(endOfCentralDir.buffer);
-        ev.setUint32(0, 0x06054b50, true);
-        ev.setUint16(8, files.length, true);
-        ev.setUint16(10, files.length, true);
-        ev.setUint32(12, centralDirSize, true);
-        ev.setUint32(16, centralDirOffset, true);
-
-        var allParts = localChunks.concat(centralChunks).concat([endOfCentralDir]);
-        return new Blob(allParts, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    buildXLSXBlob: function (rowsOrConfig) {
+      if (rowsOrConfig && typeof rowsOrConfig === 'object' && rowsOrConfig.quote !== undefined) {
+        return this.buildExecutivePricingXLSX(rowsOrConfig);
       }
-
-      var contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
-        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
-        '<Default Extension="xml" ContentType="application/xml"/>' +
-        '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
-        '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
-        '</Types>';
-
-      var rootRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
-        '</Relationships>';
-
-      var wb = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-        '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
-        '<sheets><sheet name="Quotation" sheetId="1" r:id="rId1"/></sheets>' +
-        '</workbook>';
-
-      var wbRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
-        '</Relationships>';
-
-      var sheetData = '';
-      for (var r = 0; r < rows.length; r++) {
-        sheetData += '<row r="' + (r + 1) + '">';
-        for (var c = 0; c < rows[r].length; c++) {
-          var cn = colName(c);
-          var val = rows[r][c];
-          if (val === null || val === undefined) val = '';
-          if (typeof val === 'number') {
-            sheetData += '<c r="' + cn + (r + 1) + '"><v>' + val + '</v></c>';
-          } else {
-            var str = String(val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-            sheetData += '<c r="' + cn + (r + 1) + '" t="inlineStr"><is><t>' + str + '</t></is></c>';
-          }
-        }
-        sheetData += '</row>';
-      }
-
-      var ws = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-        '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
-        '<sheetData>' + sheetData + '</sheetData>' +
-        '</worksheet>';
-
-      return makeZip([
-        { name: '[Content_Types].xml', data: contentTypes },
-        { name: '_rels/.rels', data: rootRels },
-        { name: 'xl/workbook.xml', data: wb },
-        { name: 'xl/_rels/workbook.xml.rels', data: wbRels },
-        { name: 'xl/worksheets/sheet1.xml', data: ws }
+      // Backwards compatible basic row exporter
+      return this.buildZipBlob([
+        { name: '[Content_Types].xml', data: '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>' },
+        { name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+        { name: 'xl/workbook.xml', data: '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Quotation" sheetId="1" r:id="rId1"/></sheets></workbook>' },
+        { name: 'xl/_rels/workbook.xml.rels', data: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>' },
+        { name: 'xl/worksheets/sheet1.xml', data: '<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData></sheetData></worksheet>' }
       ]);
     }
   };
 
   root.OrbixUI = OrbixUI;
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = OrbixUI;
+  }
 
   // Auto initialize on DOM ready
   if (document.readyState === 'loading') {
