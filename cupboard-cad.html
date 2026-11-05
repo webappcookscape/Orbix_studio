@@ -12897,18 +12897,40 @@ body.role-employee #adminCreateEmpBox,
       html += '</tbody></table></div>' +
         '</div>' +
 
-        '<div class="quote-sheet-single">' +
-        '<div class="quote-header-split">' +
+        '<div class="quote-sheet-single">';
+
+      var meta = this.project.meta || {};
+      var clientDisp = meta.clientName || 'Vikram Singhania';
+      var contactDisp = meta.phone || meta.contactNumber || '+91 98765 43210';
+      var locDisp = meta.siteAddress || meta.siteLocation || meta.location || 'Whitefield, Bengaluru';
+      var bhDisp = meta.bhName || meta.designerName || 'Sangathamizh';
+      var cpDisp = meta.cpCode || meta.quoteId || 'CP-9042';
+
+      var formattedDate = (meta.dateTime || meta.dateCreated);
+      if (formattedDate) {
+        var dObj = new Date(formattedDate);
+        if (!isNaN(dObj.getTime())) {
+          var day = ('0' + dObj.getDate()).slice(-2);
+          var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          formattedDate = day + '-' + months[dObj.getMonth()] + '-' + dObj.getFullYear() + ' ' + ('0' + dObj.getHours()).slice(-2) + ':' + ('0' + dObj.getMinutes()).slice(-2);
+        }
+      } else {
+        formattedDate = '05-Nov-2026 23:36';
+      }
+
+      html += '<div class="quote-header-split">' +
         '<div class="qh-left">' +
-        '<div class="qh-row"><span class="qh-lbl">Project ID</span><span class="qh-val">' + (this.project.meta.quoteId || '5754') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Customer</span><span class="qh-val">' + (this.project.meta.clientName || 'Dhanesh') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Design ID</span><span class="qh-val">' + (this.project.meta.designId || 'Design1') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Designer</span><span class="qh-val">' + (this.project.meta.designerName || 'Abishek Kumar') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Scope</span><span class="qh-val">' + (quote.isFiltered ? ('Selected Rooms: ' + quote.furnitureItems.map(function (it) { return it.roomName; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) : (this.project.meta.scope || 'Complete Interior Design')) + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">CP Code / Quote Ref</span><span class="qh-val bold" style="color:#2563EB;">' + cpDisp + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Client Name</span><span class="qh-val bold">' + clientDisp + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Contact Number</span><span class="qh-val">' + contactDisp + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Location</span><span class="qh-val">' + locDisp + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">BH Name</span><span class="qh-val">' + bhDisp + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Scope</span><span class="qh-val">' + (quote.isFiltered ? ('Selected Rooms: ' + quote.furnitureItems.map(function (it) { return it.roomName; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) : (meta.scope || 'All Rooms (Entire Home)')) + '</span></div>' +
         '</div>' +
         '<div class="qh-right">' +
-        '<div class="qh-row"><span class="qh-lbl">Quotation Date</span><span class="qh-val">' + (this.project.meta.dateCreated || '28 Oct, 2026') + '</span></div>' +
-        '<div class="qh-row"><span class="qh-lbl">Price Expiry Date</span><span class="qh-val">' + (this.project.meta.validUntil || '27 Nov, 2026') + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Quotation Date</span><span class="qh-val">' + formattedDate + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Status</span><span class="qh-val" style="color:#16A34A;font-weight:700;">' + (meta.status || 'Approved Estimate') + '</span></div>' +
+        '<div class="qh-row"><span class="qh-lbl">Price Variant</span><span class="qh-val bold" id="boqHeaderVariant" style="color:#2563EB;font-weight:700;">' + currentTier + '</span></div>' +
         '<div class="qh-row"><span class="qh-lbl">Total No. of Items</span><span class="qh-val">' + quote.furnitureItems.length + (quote.isFiltered ? ' (Filtered Scope)' : '') + '</span></div>' +
         '<div class="qh-row total"><span class="qh-lbl">Total Amount</span><span class="qh-val" id="boqHeaderTotalAmount">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</span></div>' +
         '</div>' +
