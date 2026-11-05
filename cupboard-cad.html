@@ -5675,10 +5675,13 @@
       <div id="dbStatusBadge" class="db-badge" title="Database connection status">
         <span class="db-dot"></span> PostgreSQL
       </div>
+      <div id="vpsSyncBadge" class="vps-badge connected" title="VPS Cloud Synchronization status. Click to sync or configure.">
+        <span class="vps-dot"></span> <span class="vps-text">VPS: studio.orbixdesigns.com</span>
+      </div>
       <div class="topbar-auth-group">
         <button class="user-avatar-btn" id="userAvatarBtn" title="Current User & Profile">
-          <span class="u-avatar">DK</span>
-          <span class="u-name">Dev Kancheti</span>
+          <span class="u-avatar">CA</span>
+          <span class="u-name">Cookscape Admin</span>
         </button>
         <button class="auth-logout-btn" id="userLogoutBtn" title="Sign out of this session">Logout</button>
       </div>
@@ -6171,6 +6174,50 @@
 
 <!-- Colleague Copy Notification Banner -->
 <div id="colleagueCopyBanner" class="colleague-copy-banner"></div>
+
+<!-- ══════ MODAL: VPS CLOUD SYNCHRONIZATION ══════ -->
+<div class="orbix-modal" id="vpsSyncModal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">☁️ VPS Cloud Synchronization</h3>
+        <p class="modal-sub">Projects, drawings, quotes and colleague copies are synchronized with your production VPS</p>
+      </div>
+      <button class="modal-close-btn" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="vps-status-card" id="vpsStatusCard">
+        <div class="vsc-row">
+          <span class="vsc-label">Server Target:</span>
+          <strong class="vsc-val" id="vpsServerDisplay">https://studio.orbixdesigns.com</strong>
+        </div>
+        <div class="vsc-row">
+          <span class="vsc-label">Connection Status:</span>
+          <span class="vsc-status-pill connected" id="vpsStatusPill">Connected (Live Sync)</span>
+        </div>
+        <div class="vsc-row">
+          <span class="vsc-label">Active Team:</span>
+          <span class="vsc-val">18 Accounts (3 Admins + 15 Designers)</span>
+        </div>
+        <div class="vsc-row">
+          <span class="vsc-label">Last Cloud Sync:</span>
+          <span class="vsc-val" id="vpsLastSyncTime">Just now</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:14px;">
+        <label class="form-label" for="vpsServerUrlInput">Custom VPS Server URL (optional):</label>
+        <input type="url" id="vpsServerUrlInput" class="form-input" placeholder="https://studio.orbixdesigns.com" value="">
+        <span class="form-hint" style="font-size:11px;color:#64748b;margin-top:4px;display:block;">Default: <code>https://studio.orbixdesigns.com</code>. Change only if your VPS IP or domain changes.</span>
+      </div>
+    </div>
+    <div class="modal-foot" style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid #e2e8f0;">
+      <button type="button" class="btn" id="vpsTestConnBtn">⚡ Test Connection</button>
+      <button type="button" class="btn primary" id="vpsSyncNowBtn">🔄 Sync All Projects Now</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════ MODAL: CREATE NEW PROJECT ══════ -->
 <div class="orbix-modal" id="createProjectModal">

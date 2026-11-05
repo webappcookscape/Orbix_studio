@@ -64,7 +64,9 @@ if (session) {
 
 // ── Session User Hydration Middleware ──
 app.use(async (req, res, next) => {
-  let userId = (req.session && req.session.userId) || req.headers['x-user-id'];
+  let userId = (req.session && req.session.userId) || 
+               req.headers['x-user-id'] || 
+               (req.query && (req.query.userId || req.query.user_id));
   if (!userId && req.body && req.body.currentUser && req.body.currentUser.id) {
     userId = req.body.currentUser.id;
   }

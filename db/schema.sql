@@ -23,13 +23,27 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(128) DEFAULT '123456
 ALTER TABLE users ADD COLUMN IF NOT EXISTS designation VARCHAR(128) DEFAULT 'Modular Designer';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
 
--- Upsert Cookscape Team Accounts
+-- Upsert Cookscape Team Accounts (3 Admins + 15 Users = 18 Members)
 INSERT INTO users (id, name, username, email, password, role, designation, company, avatar)
 VALUES 
-  ('usr_admin', 'Cookscape Admin', 'admin', 'admin@cookscape.com', 'admin123', 'admin', 'System Administrator', 'Cookscape', 'CA'),
-  ('usr_sangathamizh', 'Sangathamizh', 'sangathamizh', 'sangathamizh@cookscape.com', 'admin123', 'admin', 'Business Head', 'Cookscape', 'S'),
-  ('usr_elakkiya', 'Elakkiya', 'elakkiya', 'elakkiya.sakthivelu3089@gmail.com', '123456', 'employee', 'Floor Architect / FA', 'Cookscape', 'E'),
-  ('usr_aravind', 'Aravind', 'aravind', 'webapp.cookscape@gmail.com', '123456', 'employee', 'Floor Architect / FA', 'Cookscape', 'A')
+  ('usr_admin', 'Cookscape Admin', 'admin', 'admin@cookscape.com', 'password123', 'admin', 'System Administrator', 'Cookscape', 'CA'),
+  ('usr_sangathamizh', 'Sangathamizh', 'sangathamizh', 'designteam.cookscape@gmail.com', 'password123', 'admin', 'Business Head', 'Cookscape', 'S'),
+  ('usr_dinesh', 'Dinesh Kumar', 'dinesh', 'dinesh@cookscape.com', 'password123', 'admin', 'Managing Director', 'Cookscape', 'DK'),
+  ('usr_elakkiya', 'Elakkiya', 'elakkiya', 'elakkiya.sakthivelu3089@gmail.com', 'password123', 'employee', 'Floor Architect / FA', 'Cookscape', 'E'),
+  ('usr_aravind', 'Aravind', 'aravind', 'webapp.cookscape@gmail.com', 'password123', 'employee', 'Floor Architect / FA', 'Cookscape', 'A'),
+  ('usr_dev', 'Dev Kancheti', 'dev', 'dev@cookscape.com', 'password123', 'employee', 'Design Lead', 'Cookscape', 'DK'),
+  ('usr_priya', 'Priya Sharma', 'priya', 'priya@cookscape.com', 'password123', 'employee', 'Senior Modular Designer', 'Cookscape', 'PS'),
+  ('usr_rahul', 'Rahul Verma', 'rahul', 'rahul@cookscape.com', 'password123', 'employee', 'Kitchen Specialist', 'Cookscape', 'RV'),
+  ('usr_karthik', 'Karthik Raman', 'karthik', 'karthik@cookscape.com', 'password123', 'employee', 'Wardrobe CAD Engineer', 'Cookscape', 'KR'),
+  ('usr_sneha', 'Sneha Patel', 'sneha', 'sneha@cookscape.com', 'password123', 'employee', 'Interior Architect', 'Cookscape', 'SP'),
+  ('usr_vikram', 'Vikram Singhania', 'vikram', 'vikram@cookscape.com', 'password123', 'employee', 'Floor Architect / FA', 'Cookscape', 'VS'),
+  ('usr_ananya', 'Ananya Iyer', 'ananya', 'ananya@cookscape.com', 'password123', 'employee', 'Space Planner', 'Cookscape', 'AI'),
+  ('usr_rajesh', 'Rajesh Nair', 'rajesh', 'rajesh@cookscape.com', 'password123', 'employee', 'Modular Kitchen Designer', 'Cookscape', 'RN'),
+  ('usr_deepa', 'Deepa Menon', 'deepa', 'deepa@cookscape.com', 'password123', 'employee', 'Floor Architect / FA', 'Cookscape', 'DM'),
+  ('usr_suresh', 'Suresh Babu', 'suresh', 'suresh@cookscape.com', 'password123', 'employee', 'Cabinetry Drafter', 'Cookscape', 'SB'),
+  ('usr_meera', 'Meera Krishnan', 'meera', 'meera@cookscape.com', 'password123', 'employee', '3D Visualizer & Designer', 'Cookscape', 'MK'),
+  ('usr_pooja', 'Pooja Hegde', 'pooja', 'pooja@cookscape.com', 'password123', 'employee', 'Floor Architect / FA', 'Cookscape', 'PH'),
+  ('usr_naveen', 'Naveen Prasad', 'naveen', 'naveen@cookscape.com', 'password123', 'employee', 'Modular CAD Specialist', 'Cookscape', 'NP')
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name,
   username = EXCLUDED.username,

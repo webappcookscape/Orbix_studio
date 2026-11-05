@@ -8,12 +8,16 @@ const { prisma } = require('../config/prisma');
 function formatProject(p) {
   if (!p) return null;
   const d = (p.data && p.data.details) ? p.data.details : {};
+  let dateVal = p.date_time || d.dateTime || d.dateCreated || '';
+  if (!dateVal && p.createdAt) {
+    dateVal = typeof p.createdAt.toISOString === 'function' ? p.createdAt.toISOString() : String(p.createdAt);
+  }
   return {
     ...p,
     contact_number: p.contact_number || d.contactNumber || d.phone || '',
     location: p.location || d.location || d.siteAddress || '',
     bh_name: p.bh_name || d.bhName || d.designerName || '',
-    date_time: p.date_time || d.dateTime || d.dateCreated || (p.createdAt ? p.createdAt.toISOString() : ''),
+    date_time: dateVal,
     cp_code: p.cp_code || d.cpCode || d.quoteId || ''
   };
 }
@@ -165,13 +169,28 @@ class ProjectService {
     return { success: true, id };
   }
 
-  // 6. Fork / Duplicate Project
-  async forkProject(id, user) {
-    const original = await this.getProjectById(id, user);
+  // 6. Fork / Duplicate Project (Supports self copy or colleague copy-on-share)
+  async forkProject(id, targetUser, senderUser) {
+    const original = await this.getProjectById(id, senderUser || targetUser);
     if (!original) throw new Error('Original project not found');
 
+    const assignedUser = targetUser || senderUser;
     const newId = 'proj_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
-    const newTitle = `${original.title} (Copy)`;
+    const isColleagueCopy = senderUser && targetUser && senderUser.id !== targetUser.id;
+    const newTitle = isColleagueCopy 
+      ? `${original.title} (Copy from ${senderUser.name || 'Colleague'})` 
+      : `${original.title} (Copy)`;
+
+    const projectData = JSON.parse(JSON.stringify(original.data || {}));
+    if (isColleagueCopy) {
+      projectData.shareNotice = {
+        noticeId: 'sn_' + newId,
+        originalTitle: original.title,
+        sharedByName: senderUser.name,
+        sharedByDesignation: senderUser.designation || 'Modular Designer',
+        sharedAt: new Date().toISOString()
+      };
+    }
 
     const forked = await prisma.project.create({
       data: {
@@ -180,35 +199,39 @@ class ProjectService {
         client: original.client,
         type: original.type,
         status: 'Draft',
-        createdBy: user ? user.id : null,
-        ownerName: user ? user.name : 'Modular Designer',
-        ownerEmail: user ? user.email : 'designer@orbixstudio.io',
+        createdBy: assignedUser ? assignedUser.id : null,
+        ownerName: assignedUser ? assignedUser.name : 'Cookscape Designer',
+        ownerEmail: assignedUser ? assignedUser.email : 'designer@cookscape.com',
         unitsCount: original.unitsCount,
         boardsEst: original.boardsEst,
-        data: original.data,
+        data: projectData,
         isShared: false,
         forkCount: 0
       }
     });
 
     // Record fork relationship
-    await prisma.projectFork.create({
-      data: {
-        originalProjectId: original.id,
-        forkedProjectId: forked.id,
-        forkedBy: user ? user.id : null,
-        forkedToName: user ? user.name : 'Modular Designer',
-        forkedToEmail: user ? user.email : 'designer@orbixstudio.io'
-      }
-    });
+    try {
+      await prisma.projectFork.create({
+        data: {
+          originalProjectId: original.id,
+          forkedProjectId: forked.id,
+          forkedBy: senderUser ? senderUser.id : null,
+          forkedToName: assignedUser ? assignedUser.name : 'Cookscape Designer',
+          forkedToEmail: assignedUser ? assignedUser.email : 'designer@cookscape.com'
+        }
+      });
+    } catch (_) {}
 
     // Increment original fork count
-    await prisma.project.update({
-      where: { id: original.id },
-      data: { forkCount: { increment: 1 } }
-    });
+    try {
+      await prisma.project.update({
+        where: { id: original.id },
+        data: { forkCount: { increment: 1 } }
+      });
+    } catch (_) {}
 
-    return forked;
+    return formatProject(forked);
   }
 }
 

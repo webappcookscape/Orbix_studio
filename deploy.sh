@@ -90,8 +90,12 @@ if command -v psql &> /dev/null; then
     sudo -u postgres psql -d cupboard_cad -c "ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;" 2>/dev/null || true
     sudo -u postgres psql -d cupboard_cad -c "ALTER TABLE project_shares ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;" 2>/dev/null || true
     sudo -u postgres psql -d cupboard_cad -c "ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;" 2>/dev/null || true
-    # Purge legacy demo accounts from PostgreSQL
-    sudo -u postgres psql -d cupboard_cad -c "DELETE FROM users WHERE id IN ('usr_dev', 'usr_alex', 'usr_priya') OR email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in');" 2>/dev/null || true
+    # Apply latest schema & ensure all 18 Cookscape team accounts (3 Admins + 15 Users) exist in PostgreSQL
+    if [ -f "db/schema.sql" ]; then
+        sudo -u postgres psql -d cupboard_cad -f db/schema.sql 2>/dev/null || true
+    fi
+    # Purge legacy demo accounts from PostgreSQL (only outdated @orbixstudio.io domains)
+    sudo -u postgres psql -d cupboard_cad -c "DELETE FROM users WHERE email IN ('dev@orbixstudio.io', 'alex@orbixstudio.io', 'priya@orbixstudio.io', 'alex@modularedge.com', 'priya@archform.in');" 2>/dev/null || true
 fi
 
 # 5. Check / Restart Node server with PM2

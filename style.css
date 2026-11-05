@@ -1258,6 +1258,33 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 .db-badge.is-local{background:#EFF6FF;border-color:#BFDBFE;color:#1D4ED8}
 .db-badge.is-local .db-dot{background:#3B82F6}
 
+.vps-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;
+  border-radius:999px;font-family:var(--mono);font-size:11px;font-weight:600;
+  border:1px solid #E0E7FF;background:#EEF2FF;color:#4338CA;cursor:pointer;
+  transition:all .15s ease;
+}
+.vps-badge:hover{background:#E0E7FF;border-color:#C7D2FE}
+.vps-badge .vps-dot{width:7px;height:7px;border-radius:50%;background:#6366F1}
+.vps-badge.connected{background:#EEF2FF;border-color:#C7D2FE;color:#4338CA}
+.vps-badge.connected .vps-dot{background:#4F46E5;box-shadow:0 0 0 2px rgba(79,70,229,.25)}
+.vps-badge.offline{background:#FEF2F2;border-color:#FECACA;color:#B91C1C}
+.vps-badge.offline .vps-dot{background:#EF4444}
+
+.vps-status-card{
+  background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 14px;
+  display:flex;flex-direction:column;gap:8px;margin-top:10px;font-size:12px;
+}
+.vsc-row{display:flex;justify-content:space-between;align-items:center}
+.vsc-label{color:#64748B;font-weight:500}
+.vsc-val{color:#0F172A;font-weight:600;font-family:var(--mono)}
+.vsc-status-pill{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;
+  font-size:11px;font-weight:700;
+}
+.vsc-status-pill.connected{background:#DCFCE7;color:#15803D}
+.vsc-status-pill.offline{background:#FEE2E2;color:#B91C1C}
+
 .user-avatar-btn{
   display:inline-flex;align-items:center;gap:8px;padding:4px 10px 4px 6px;
   background:#F8FAFC;border:1px solid #CBD5E1;border-radius:999px;cursor:pointer;

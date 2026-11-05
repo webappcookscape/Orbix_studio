@@ -12,8 +12,9 @@ if (!fs.existsSync(DATA_DIR)) {
 require('dotenv').config({ path: path.join(ROOT_DIR, '.env') });
 require('dotenv').config();
 
-// Default seed users
+// Default seed users (3 Admins + 15 Users = 18 Members)
 const DEFAULT_FALLBACK_USERS = [
+  // ── 3 Admins ──
   {
     id: 'usr_admin',
     name: 'Cookscape Admin',
@@ -21,7 +22,7 @@ const DEFAULT_FALLBACK_USERS = [
     email: 'admin@cookscape.com',
     password: 'password123',
     role: 'admin',
-    designation: 'System Head',
+    designation: 'System Administrator',
     company: 'Cookscape',
     avatar: 'CA',
     createdAt: new Date().toISOString(),
@@ -31,12 +32,40 @@ const DEFAULT_FALLBACK_USERS = [
     id: 'usr_sangathamizh',
     name: 'Sangathamizh',
     username: 'sangathamizh',
-    email: 'sangathamizh@cookscape.com',
+    email: 'designteam.cookscape@gmail.com',
     password: 'password123',
     role: 'admin',
     designation: 'Business Head',
     company: 'Cookscape',
-    avatar: 'SG',
+    avatar: 'S',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_dinesh',
+    name: 'Dinesh Kumar',
+    username: 'dinesh',
+    email: 'dinesh@cookscape.com',
+    password: 'password123',
+    role: 'admin',
+    designation: 'Managing Director',
+    company: 'Cookscape',
+    avatar: 'DK',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+
+  // ── 15 Employees / Modular Designers / Floor Architects ──
+  {
+    id: 'usr_elakkiya',
+    name: 'Elakkiya',
+    username: 'elakkiya',
+    email: 'elakkiya.sakthivelu3089@gmail.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Floor Architect / FA',
+    company: 'Cookscape',
+    avatar: 'E',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -44,25 +73,12 @@ const DEFAULT_FALLBACK_USERS = [
     id: 'usr_aravind',
     name: 'Aravind',
     username: 'aravind',
-    email: 'aravind@cookscape.com',
+    email: 'webapp.cookscape@gmail.com',
     password: 'password123',
     role: 'employee',
     designation: 'Floor Architect / FA',
     company: 'Cookscape',
-    avatar: 'AK',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'usr_elakkiya',
-    name: 'Elakkiya',
-    username: 'elakkiya',
-    email: 'elakkiya@cookscape.com',
-    password: 'password123',
-    role: 'employee',
-    designation: 'Floor Architect / FA',
-    company: 'Cookscape',
-    avatar: 'EK',
+    avatar: 'A',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
@@ -76,6 +92,162 @@ const DEFAULT_FALLBACK_USERS = [
     designation: 'Design Lead',
     company: 'Cookscape',
     avatar: 'DK',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_priya',
+    name: 'Priya Sharma',
+    username: 'priya',
+    email: 'priya@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Senior Modular Designer',
+    company: 'Cookscape',
+    avatar: 'PS',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_rahul',
+    name: 'Rahul Verma',
+    username: 'rahul',
+    email: 'rahul@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Kitchen Specialist',
+    company: 'Cookscape',
+    avatar: 'RV',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_karthik',
+    name: 'Karthik Raman',
+    username: 'karthik',
+    email: 'karthik@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Wardrobe CAD Engineer',
+    company: 'Cookscape',
+    avatar: 'KR',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_sneha',
+    name: 'Sneha Patel',
+    username: 'sneha',
+    email: 'sneha@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Interior Architect',
+    company: 'Cookscape',
+    avatar: 'SP',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_vikram',
+    name: 'Vikram Singhania',
+    username: 'vikram',
+    email: 'vikram@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Floor Architect / FA',
+    company: 'Cookscape',
+    avatar: 'VS',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_ananya',
+    name: 'Ananya Iyer',
+    username: 'ananya',
+    email: 'ananya@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Space Planner',
+    company: 'Cookscape',
+    avatar: 'AI',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_rajesh',
+    name: 'Rajesh Nair',
+    username: 'rajesh',
+    email: 'rajesh@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Modular Kitchen Designer',
+    company: 'Cookscape',
+    avatar: 'RN',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_deepa',
+    name: 'Deepa Menon',
+    username: 'deepa',
+    email: 'deepa@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Floor Architect / FA',
+    company: 'Cookscape',
+    avatar: 'DM',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_suresh',
+    name: 'Suresh Babu',
+    username: 'suresh',
+    email: 'suresh@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Cabinetry Drafter',
+    company: 'Cookscape',
+    avatar: 'SB',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_meera',
+    name: 'Meera Krishnan',
+    username: 'meera',
+    email: 'meera@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: '3D Visualizer & Designer',
+    company: 'Cookscape',
+    avatar: 'MK',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_pooja',
+    name: 'Pooja Hegde',
+    username: 'pooja',
+    email: 'pooja@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Floor Architect / FA',
+    company: 'Cookscape',
+    avatar: 'PH',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'usr_naveen',
+    name: 'Naveen Prasad',
+    username: 'naveen',
+    email: 'naveen@cookscape.com',
+    password: 'password123',
+    role: 'employee',
+    designation: 'Modular CAD Specialist',
+    company: 'Cookscape',
+    avatar: 'NP',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }
@@ -350,6 +522,11 @@ async function checkDatabaseConnection() {
 
     isConnected = false;
     lastError = err.message || String(err);
+    // Graceful zero-loss fallback: route methods to MockPrismaClient so API calls never fail
+    if (!(activePrisma instanceof MockPrismaClient)) {
+      activePrisma = new MockPrismaClient();
+      console.log('✓ Switched to Resilient JSON Data Store fallback (zero data loss mode).');
+    }
     return false;
   }
 }

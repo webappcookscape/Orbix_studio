@@ -9,10 +9,10 @@ class ProjectController {
   async getAll(req, res) {
     try {
       const projects = await projectService.getProjects(req.user);
-      res.json(projects);
+      res.json({ success: true, projects: projects || [] });
     } catch (err) {
       console.error('getProjects error:', err);
-      res.status(500).json({ success: false, error: err.message });
+      res.status(500).json({ success: false, error: err.message, projects: [] });
     }
   }
 
@@ -73,7 +73,9 @@ class ProjectController {
   // POST /api/projects/:id/fork
   async fork(req, res) {
     try {
-      const forked = await projectService.forkProject(req.params.id, req.user);
+      const targetUser = (req.body && req.body.colleagueUser) || req.user;
+      const senderUser = (req.body && req.body.senderUser) || req.user;
+      const forked = await projectService.forkProject(req.params.id, targetUser, senderUser);
       res.status(201).json({ success: true, project: forked });
     } catch (err) {
       console.error('forkProject error:', err);

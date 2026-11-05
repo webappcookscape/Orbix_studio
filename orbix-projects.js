@@ -276,22 +276,70 @@
     activeProjectId: null,
     projects: [],
     users: [
+      // ── 3 Admins ──
       { id: 'usr_admin', name: 'Cookscape Admin', username: 'admin', email: 'admin@cookscape.com', role: 'admin', designation: 'System Administrator', company: 'Cookscape', avatar: 'CA' },
       { id: 'usr_sangathamizh', name: 'Sangathamizh', username: 'sangathamizh', email: 'designteam.cookscape@gmail.com', role: 'admin', designation: 'Business Head', company: 'Cookscape', avatar: 'S' },
+      { id: 'usr_dinesh', name: 'Dinesh Kumar', username: 'dinesh', email: 'dinesh@cookscape.com', role: 'admin', designation: 'Managing Director', company: 'Cookscape', avatar: 'DK' },
+
+      // ── 15 Employees / Modular Designers / Floor Architects ──
       { id: 'usr_elakkiya', name: 'Elakkiya', username: 'elakkiya', email: 'elakkiya.sakthivelu3089@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'E' },
-      { id: 'usr_aravind', name: 'Aravind', username: 'aravind', email: 'webapp.cookscape@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'A' }
+      { id: 'usr_aravind', name: 'Aravind', username: 'aravind', email: 'webapp.cookscape@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'A' },
+      { id: 'usr_dev', name: 'Dev Kancheti', username: 'dev', email: 'dev@cookscape.com', role: 'employee', designation: 'Design Lead', company: 'Cookscape', avatar: 'DK' },
+      { id: 'usr_priya', name: 'Priya Sharma', username: 'priya', email: 'priya@cookscape.com', role: 'employee', designation: 'Senior Modular Designer', company: 'Cookscape', avatar: 'PS' },
+      { id: 'usr_rahul', name: 'Rahul Verma', username: 'rahul', email: 'rahul@cookscape.com', role: 'employee', designation: 'Kitchen Specialist', company: 'Cookscape', avatar: 'RV' },
+      { id: 'usr_karthik', name: 'Karthik Raman', username: 'karthik', email: 'karthik@cookscape.com', role: 'employee', designation: 'Wardrobe CAD Engineer', company: 'Cookscape', avatar: 'KR' },
+      { id: 'usr_sneha', name: 'Sneha Patel', username: 'sneha', email: 'sneha@cookscape.com', role: 'employee', designation: 'Interior Architect', company: 'Cookscape', avatar: 'SP' },
+      { id: 'usr_vikram', name: 'Vikram Singhania', username: 'vikram', email: 'vikram@cookscape.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'VS' },
+      { id: 'usr_ananya', name: 'Ananya Iyer', username: 'ananya', email: 'ananya@cookscape.com', role: 'employee', designation: 'Space Planner', company: 'Cookscape', avatar: 'AI' },
+      { id: 'usr_rajesh', name: 'Rajesh Nair', username: 'rajesh', email: 'rajesh@cookscape.com', role: 'employee', designation: 'Modular Kitchen Designer', company: 'Cookscape', avatar: 'RN' },
+      { id: 'usr_deepa', name: 'Deepa Menon', username: 'deepa', email: 'deepa@cookscape.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'DM' },
+      { id: 'usr_suresh', name: 'Suresh Babu', username: 'suresh', email: 'suresh@cookscape.com', role: 'employee', designation: 'Cabinetry Drafter', company: 'Cookscape', avatar: 'SB' },
+      { id: 'usr_meera', name: 'Meera Krishnan', username: 'meera', email: 'meera@cookscape.com', role: 'employee', designation: '3D Visualizer & Designer', company: 'Cookscape', avatar: 'MK' },
+      { id: 'usr_pooja', name: 'Pooja Hegde', username: 'pooja', email: 'pooja@cookscape.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'PH' },
+      { id: 'usr_naveen', name: 'Naveen Prasad', username: 'naveen', email: 'naveen@cookscape.com', role: 'employee', designation: 'Modular CAD Specialist', company: 'Cookscape', avatar: 'NP' }
     ],
     filter: 'all',
     searchQuery: '',
     dbStatus: null,
+    vpsSyncStatus: 'connected',
+
+    getApiBase: function () {
+      try {
+        var custom = localStorage.getItem('orbix_vps_url');
+        if (custom && custom.trim()) {
+          return custom.trim().replace(/\/+$/, '');
+        }
+      } catch (e) { }
+
+      if (typeof window !== 'undefined' && window.location) {
+        var host = window.location.hostname;
+        // Same host if on production domain or local port 4180
+        if (host === 'studio.orbixdesigns.com' || (host && host.indexOf('orbixdesigns.com') !== -1)) {
+          return '';
+        }
+        if ((host === 'localhost' || host === '127.0.0.1') && window.location.port === '4180') {
+          return '';
+        }
+      }
+      // If accessed via file://, VS Code Live Server (5500), or other ports, default to the production VPS!
+      return 'https://studio.orbixdesigns.com';
+    },
 
     apiFetch: function (url, options) {
+      var self = this;
       options = options || {};
       options.credentials = 'include';
       if (!options.headers) {
         options.headers = {};
       }
-      return fetch(url, options);
+      if (self.currentUser && self.currentUser.id && !options.headers['x-user-id']) {
+        options.headers['x-user-id'] = self.currentUser.id;
+      }
+      var base = self.getApiBase();
+      var fullUrl = (url.indexOf('http://') === 0 || url.indexOf('https://') === 0)
+        ? url
+        : (base + (url.indexOf('/') === 0 ? '' : '/') + url);
+      return fetch(fullUrl, options);
     },
 
     verifySession: function (cb) {
@@ -389,7 +437,7 @@
         if (saved) {
           this.currentUser = JSON.parse(saved);
           // If cached user is an obsolete demo account, reset to primary admin
-          if (this.currentUser.id === 'usr_dev' || this.currentUser.id === 'usr_alex' || this.currentUser.id === 'usr_priya' || (this.currentUser.email && this.currentUser.email.indexOf('@orbixstudio.io') !== -1)) {
+          if (this.currentUser.id === 'usr_alex' || (this.currentUser.email && this.currentUser.email.indexOf('@orbixstudio.io') !== -1)) {
             this.currentUser = this.users[0];
             try {
               localStorage.setItem('orbix_current_user', JSON.stringify(this.currentUser));
@@ -542,8 +590,10 @@
 
     applyRolePermissions: function () {
       var isAdm = this.isAdmin();
-      document.body.classList.toggle('role-employee', !isAdm);
-      document.body.classList.toggle('role-admin', isAdm);
+      if (document.body && document.body.classList) {
+        document.body.classList.toggle('role-employee', !isAdm);
+        document.body.classList.toggle('role-admin', isAdm);
+      }
       var userModalEl = document.getElementById('userModal');
       if (userModalEl) {
         userModalEl.classList.toggle('role-employee', !isAdm);
@@ -672,9 +722,7 @@
           var userList = Array.isArray(data) ? data : (data && Array.isArray(data.users) ? data.users : null);
           if (Array.isArray(userList)) {
             self.users = userList.filter(function (u) {
-              return u.id !== 'usr_dev' &&
-                u.id !== 'usr_alex' &&
-                u.id !== 'usr_priya' &&
+              return u.id !== 'usr_alex' &&
                 u.email !== 'dev@orbixstudio.io' &&
                 u.email !== 'alex@orbixstudio.io' &&
                 u.email !== 'priya@orbixstudio.io' &&
@@ -729,6 +777,84 @@
         });
     },
 
+    _mergeProjects: function (localList, remoteList) {
+      var map = {};
+      (localList || []).forEach(function (p) {
+        if (p && p.id) map[p.id] = p;
+      });
+      (remoteList || []).forEach(function (rp) {
+        if (!rp || !rp.id) return;
+        var lp = map[rp.id];
+        if (!lp) {
+          map[rp.id] = rp;
+        } else {
+          var localMod = (lp.data && lp.data.plan && lp.data.plan._lastModified) || 0;
+          var remoteMod = rp.updatedAt ? new Date(rp.updatedAt).getTime() : 0;
+          if (localMod > remoteMod && lp.data) {
+            map[rp.id] = Object.assign({}, rp, {
+              data: lp.data,
+              units_count: lp.units_count !== undefined ? lp.units_count : rp.units_count,
+              _needsVpsPush: true
+            });
+          } else {
+            map[rp.id] = rp;
+          }
+        }
+      });
+      var result = [];
+      for (var k in map) {
+        if (map.hasOwnProperty(k)) result.push(map[k]);
+      }
+      result.sort(function (a, b) {
+        var tA = a.updatedAt ? new Date(a.updatedAt).getTime() : (a.updated_at ? new Date(a.updated_at).getTime() : 0);
+        var tB = b.updatedAt ? new Date(b.updatedAt).getTime() : (b.updated_at ? new Date(b.updated_at).getTime() : 0);
+        return tB - tA;
+      });
+      return result;
+    },
+
+    updateVpsSyncStatus: function (status, text) {
+      this.vpsSyncStatus = status;
+      var badge = document.getElementById('vpsSyncBadge');
+      if (badge) {
+        var txt = badge.querySelector('.vps-text');
+        badge.className = 'vps-badge ' + (status || 'connected');
+        if (txt) txt.textContent = text || (status === 'connected' ? 'VPS: studio.orbixdesigns.com' : 'VPS Offline (Local Safe)');
+      }
+      var pill = document.getElementById('vpsStatusPill');
+      if (pill) {
+        pill.className = 'vsc-status-pill ' + (status || 'connected');
+        pill.textContent = status === 'connected' ? 'Connected (Live Sync)' : 'Offline (Local Safe)';
+      }
+      var timeEl = document.getElementById('vpsLastSyncTime');
+      if (timeEl && status === 'connected') {
+        var d = new Date();
+        timeEl.textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+    },
+
+    syncLocalProjectsToVPS: function () {
+      var self = this;
+      if (!this.projects || !this.projects.length) return;
+      this.projects.forEach(function (p) {
+        if (!p || !p.id || !p._needsVpsPush) return;
+        OrbixProjects.apiFetch('/api/projects/' + p.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            data: p.data,
+            units_count: p.units_count
+          })
+        }).then(function () {
+          delete p._needsVpsPush;
+          var uId = self.currentUser ? self.currentUser.id : 'anon';
+          try {
+            localStorage.setItem('orbix_local_projects_' + uId, JSON.stringify(self.projects));
+          } catch (e) { }
+        }).catch(function () { });
+      });
+    },
+
     fetchProjects: function (cb) {
       var self = this;
       if (!this.currentUser) {
@@ -753,42 +879,58 @@
         '&userRole=' + encodeURIComponent(roleParam);
 
       var listContainer = document.getElementById('projectsGrid');
+      var uId = self.currentUser ? self.currentUser.id : 'anon';
+      var localKey = 'orbix_local_projects_' + uId;
+
+      // 1. Instant local load: ensures user NEVER experiences vanishing projects on refresh or hard refresh!
+      try {
+        var localSaved = localStorage.getItem(localKey);
+        if (localSaved) {
+          var parsed = JSON.parse(localSaved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            self.projects = parsed;
+            self.renderProjectsList();
+            self.renderSharedCopyAlert();
+          }
+        }
+      } catch (e) { }
+
       if (listContainer && (!self.projects || !self.projects.length)) {
-        listContainer.innerHTML = '<div class="proj-loading">Loading live projects from PostgreSQL...</div>';
+        listContainer.innerHTML = '<div class="proj-loading">Loading projects from VPS & Database...</div>';
       }
 
+      // 2. Fetch fresh projects from VPS / Backend API
       OrbixProjects.apiFetch(url)
         .then(function (r) {
           if (!r.ok) throw new Error('Failed to fetch projects (status ' + r.status + ')');
           return r.json();
         })
         .then(function (data) {
-          self.projects = data.projects || [];
+          // Robust parser: handles both array direct return [p1, p2] and object { projects: [p1, p2] }
+          var remoteList = Array.isArray(data) ? data : (data && Array.isArray(data.projects) ? data.projects : []);
+          
+          // Merge remote projects with local projects without blowing away drafts
+          self.projects = self._mergeProjects(self.projects || [], remoteList);
+
           try {
-            var localKey = 'orbix_local_projects_' + (self.currentUser ? self.currentUser.id : 'anon');
             localStorage.setItem(localKey, JSON.stringify(self.projects));
           } catch (e) { }
+
           self.renderProjectsList();
           self.renderSharedCopyAlert();
-          if (self.projects.length === 0) {
-            self.activeProjectId = null;
-            if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
-              window.OrbixUI.resetProject('New Project');
-            }
-          }
+          self.updateVpsSyncStatus('connected', 'Synced with VPS');
+
+          // Auto-sync any local unsaved projects to VPS in background
+          self.syncLocalProjectsToVPS();
+
           if (cb) cb();
         })
         .catch(function (err) {
-          console.warn('[OrbixProjects] Projects API offline, loading cached projects:', err.message);
-          try {
-            var localKey = 'orbix_local_projects_' + (self.currentUser ? self.currentUser.id : 'anon');
-            var localSaved = localStorage.getItem(localKey);
-            if (localSaved) {
-              self.projects = JSON.parse(localSaved);
-            }
-          } catch (e) { }
+          console.warn('[OrbixProjects] Projects API offline or VPS unreachable:', err.message);
+          // If offline or network failed, we already loaded localSaved above!
           self.renderProjectsList();
           self.renderSharedCopyAlert();
+          self.updateVpsSyncStatus('offline', 'VPS Offline (Local Safe)');
           if (cb) cb();
         });
     },
@@ -1388,27 +1530,102 @@
       var original = this.projects.find(function (p) { return p.id === originalId; });
       if (!original) return;
 
+      var fallbackCopy = function () {
+        var newId = 'proj_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+        var copy = JSON.parse(JSON.stringify(original));
+        copy.id = newId;
+        copy.title = original.title + ' (Copy)';
+        copy.createdBy = self.currentUser ? self.currentUser.id : 'usr_admin';
+        copy.owner_name = self.currentUser ? self.currentUser.name : 'Cookscape Designer';
+        copy.owner_email = self.currentUser ? self.currentUser.email : 'designer@cookscape.com';
+        copy.created_at = new Date().toISOString();
+        copy.updated_at = new Date().toISOString();
+        copy._needsVpsPush = true;
+        self.projects = self.projects || [];
+        self.projects.unshift(copy);
+        var uId = self.currentUser ? self.currentUser.id : 'anon';
+        try {
+          localStorage.setItem('orbix_local_projects_' + uId, JSON.stringify(self.projects));
+        } catch (e) { }
+        self.renderProjectsList();
+        self.openProject(newId);
+        self.showCopyNotification(original.title, copy.title);
+        if (typeof showToast === 'function') {
+          showToast('✓ Created copy: "' + copy.title + '"');
+        }
+      };
+
       OrbixProjects.apiFetch('/api/projects/' + originalId + '/fork', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ colleagueUser: self.currentUser })
+        body: JSON.stringify({
+          colleagueUser: self.currentUser,
+          senderUser: self.currentUser
+        })
       })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+          if (!r.ok) throw new Error('Status ' + r.status);
+          return r.json();
+        })
         .then(function (data) {
-          if (data.success && data.project) {
-            self.fetchProjects();
-            self.openProject(data.project.id);
-            self.showCopyNotification(original.title, data.project.title);
+          if (data && (data.project || (data.success && data.id))) {
+            var newP = data.project || data;
+            self.projects = self.projects || [];
+            self.projects.unshift(newP);
+            var uId = self.currentUser ? self.currentUser.id : 'anon';
+            try {
+              localStorage.setItem('orbix_local_projects_' + uId, JSON.stringify(self.projects));
+            } catch (e) { }
+            self.renderProjectsList();
+            self.openProject(newP.id);
+            self.showCopyNotification(original.title, newP.title);
+            if (typeof showToast === 'function') {
+              showToast('✓ Created copy: "' + newP.title + '"');
+            }
+          } else {
+            fallbackCopy();
           }
         })
-        .catch(function (err) {
-          alert('Failed to create copy: ' + err.message);
+        .catch(function () {
+          fallbackCopy();
         });
     },
 
     forkProjectForColleague: function (originalId, colleagueUser) {
       var self = this;
-      fetch('/api/projects/' + originalId + '/fork', {
+      var original = this.projects.find(function (p) { return p.id === originalId; });
+      if (!original) return;
+
+      var fallbackColleagueCopy = function () {
+        var newId = 'proj_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+        var copy = JSON.parse(JSON.stringify(original));
+        copy.id = newId;
+        copy.title = original.title + ' (Copy for ' + (colleagueUser.name || 'Colleague') + ')';
+        copy.createdBy = colleagueUser.id;
+        copy.owner_name = colleagueUser.name;
+        copy.owner_email = colleagueUser.email;
+        copy.data = copy.data || {};
+        copy.data.shareNotice = {
+          noticeId: 'sn_' + newId,
+          originalTitle: original.title,
+          sharedByName: self.currentUser ? self.currentUser.name : 'Colleague',
+          sharedByDesignation: self.currentUser ? self.currentUser.designation : 'Modular Designer',
+          sharedAt: new Date().toISOString()
+        };
+        copy._needsVpsPush = true;
+        try {
+          var colKey = 'orbix_local_projects_' + colleagueUser.id;
+          var colProjects = JSON.parse(localStorage.getItem(colKey) || '[]');
+          colProjects.unshift(copy);
+          localStorage.setItem(colKey, JSON.stringify(colProjects));
+        } catch (e) { }
+        self.closeModal('shareModal');
+        if (typeof showToast === 'function') {
+          showToast('✓ Created copy for ' + colleagueUser.name + ' (saved, will sync to VPS)');
+        }
+      };
+
+      OrbixProjects.apiFetch('/api/projects/' + originalId + '/fork', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1416,15 +1633,24 @@
           senderUser: self.currentUser
         })
       })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+          if (!r.ok) throw new Error('Status ' + r.status);
+          return r.json();
+        })
         .then(function (data) {
-          if (data.success && data.project) {
+          if (data && (data.project || data.success)) {
             self.closeModal('shareModal');
             self.fetchProjects();
             if (typeof showToast === 'function') {
-              showToast('✓ Created copy for ' + colleagueUser.name + ': "' + data.project.title + '"');
+              var pTitle = (data.project && data.project.title) || (original.title + ' (Copy)');
+              showToast('✓ Created copy for ' + colleagueUser.name + ': "' + pTitle + '"');
             }
+          } else {
+            fallbackColleagueCopy();
           }
+        })
+        .catch(function () {
+          fallbackColleagueCopy();
         });
     },
 
@@ -1525,7 +1751,7 @@
 
     populateBhDropdown: function () {
       var select = document.getElementById('newProjBhName');
-      if (!select) return;
+      if (!select || !select.appendChild || typeof document.createElement !== 'function') return;
 
       var currentVal = select.value;
       select.innerHTML = '<option value="" disabled selected>-- Select Business Head (BH) --</option>';
@@ -1767,7 +1993,9 @@
                 // Initialize fresh local draft for this new project (clears old project units)
                 var uId = self.currentUser ? self.currentUser.id : 'anon';
                 try {
+                  localStorage.setItem('orbix_local_projects_' + uId, JSON.stringify(self.projects));
                   localStorage.setItem('orbix_active_proj_' + uId, newProj.id);
+                  localStorage.setItem('orbix_active_project_id', newProj.id);
                   var projDraftKey = 'orbix_project_' + uId + '_' + newProj.id;
                   localStorage.setItem(projDraftKey, JSON.stringify(payload.data.plan));
                   localStorage.setItem('orbix_working_project_draft', JSON.stringify({
@@ -2161,13 +2389,129 @@
         });
       }
 
+      // VPS Cloud Sync Badge Click
+      var vpsBadge = document.getElementById('vpsSyncBadge');
+      if (vpsBadge) {
+        vpsBadge.addEventListener('click', function () {
+          self.openVpsSyncModal();
+        });
+      }
+
+      // VPS Sync Now Button
+      var vpsSyncBtn = document.getElementById('vpsSyncNowBtn');
+      if (vpsSyncBtn) {
+        vpsSyncBtn.addEventListener('click', function () {
+          self.syncAllWithVPS();
+        });
+      }
+
+      // VPS Test Connection Button
+      var vpsTestBtn = document.getElementById('vpsTestConnBtn');
+      if (vpsTestBtn) {
+        vpsTestBtn.addEventListener('click', function () {
+          self.testVpsConnection();
+        });
+      }
+
+      // VPS URL Input change
+      var vpsInput = document.getElementById('vpsServerUrlInput');
+      if (vpsInput) {
+        vpsInput.addEventListener('change', function () {
+          var val = vpsInput.value.trim();
+          if (val) {
+            localStorage.setItem('orbix_vps_url', val);
+          } else {
+            localStorage.removeItem('orbix_vps_url');
+          }
+          self.updateVpsDisplay();
+        });
+      }
+
       // Modal close triggers
-      document.querySelectorAll('.modal-close-btn, .modal-backdrop').forEach(function (el) {
+      document.querySelectorAll('.modal-close-btn, .modal-backdrop, .modal-close').forEach(function (el) {
         el.addEventListener('click', function () {
-          document.querySelectorAll('.orbix-modal').forEach(function (m) {
+          document.querySelectorAll('.orbix-modal, .modal').forEach(function (m) {
             m.classList.remove('is-open');
           });
         });
+      });
+    },
+
+    openVpsSyncModal: function () {
+      var modal = document.getElementById('vpsSyncModal');
+      if (!modal) return;
+      this.updateVpsDisplay();
+      modal.classList.add('is-open');
+    },
+
+    updateVpsDisplay: function () {
+      var base = this.getApiBase() || (typeof window !== 'undefined' ? window.location.origin : '');
+      var disp = document.getElementById('vpsServerDisplay');
+      if (disp) disp.textContent = base || 'https://studio.orbixdesigns.com';
+      var inp = document.getElementById('vpsServerUrlInput');
+      if (inp) inp.value = localStorage.getItem('orbix_vps_url') || '';
+      var pill = document.getElementById('vpsStatusPill');
+      if (pill) {
+        pill.className = 'vsc-status-pill ' + (this.vpsSyncStatus || 'connected');
+        pill.textContent = this.vpsSyncStatus === 'connected' ? 'Connected (Live Sync)' : 'Offline (Local Safe)';
+      }
+      var timeEl = document.getElementById('vpsLastSyncTime');
+      if (timeEl && this.vpsSyncStatus === 'connected') {
+        var d = new Date();
+        timeEl.textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+    },
+
+    testVpsConnection: function () {
+      var self = this;
+      var testBtn = document.getElementById('vpsTestConnBtn');
+      if (testBtn) {
+        testBtn.disabled = true;
+        testBtn.textContent = 'Testing...';
+      }
+      var start = Date.now();
+      OrbixProjects.apiFetch('/api/health')
+        .then(function (r) {
+          var elapsed = Date.now() - start;
+          if (r.ok) {
+            self.updateVpsSyncStatus('connected', 'VPS Connected (' + elapsed + 'ms)');
+            if (typeof showToast === 'function') {
+              showToast('✓ VPS Connection Verified! Latency: ' + elapsed + 'ms');
+            }
+          } else {
+            throw new Error('Status ' + r.status);
+          }
+        })
+        .catch(function (err) {
+          self.updateVpsSyncStatus('offline', 'VPS Offline');
+          if (typeof showToast === 'function') {
+            showToast('⚠ VPS Unreachable: ' + err.message);
+          }
+        })
+        .then(function () {
+          if (testBtn) {
+            testBtn.disabled = false;
+            testBtn.textContent = '⚡ Test Connection';
+          }
+          self.updateVpsDisplay();
+        });
+    },
+
+    syncAllWithVPS: function () {
+      var self = this;
+      var syncBtn = document.getElementById('vpsSyncNowBtn');
+      if (syncBtn) {
+        syncBtn.disabled = true;
+        syncBtn.textContent = 'Syncing...';
+      }
+      self.fetchProjects(function () {
+        if (syncBtn) {
+          syncBtn.disabled = false;
+          syncBtn.textContent = '🔄 Sync All Projects Now';
+        }
+        if (typeof showToast === 'function') {
+          showToast('✓ All Projects Synchronized with VPS!');
+        }
       });
     },
 
