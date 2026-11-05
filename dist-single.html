@@ -16647,13 +16647,65 @@ body.role-employee #adminCreateEmpBox,
             existing.loftH = fn.unitConfig.loftH;
           }
 
-          if (fn.dimensions) {
-            if (existing.W && !fn.dimensions.W) fn.dimensions.W = existing.W;
-            else if (fn.dimensions.W) existing.W = fn.dimensions.W;
-            if (existing.H && !fn.dimensions.H) fn.dimensions.H = existing.H;
-            else if (fn.dimensions.H) existing.H = fn.dimensions.H;
-            if (existing.D && !fn.dimensions.D) fn.dimensions.D = existing.D;
-            else if (fn.dimensions.D) existing.D = fn.dimensions.D;
+          if (existing.W) {
+            fn.dimensions = fn.dimensions || {};
+            fn.dimensions.W = existing.W;
+          } else if (fn.dimensions && fn.dimensions.W) {
+            existing.W = fn.dimensions.W;
+          }
+          if (existing.H) {
+            fn.dimensions = fn.dimensions || {};
+            fn.dimensions.H = existing.H;
+          } else if (fn.dimensions && fn.dimensions.H) {
+            existing.H = fn.dimensions.H;
+          }
+          if (existing.D) {
+            fn.dimensions = fn.dimensions || {};
+            fn.dimensions.D = existing.D;
+          } else if (fn.dimensions && fn.dimensions.D) {
+            existing.D = fn.dimensions.D;
+          }
+
+          if (existing.ctype) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.ctype = existing.ctype;
+          } else if (fn.unitConfig && fn.unitConfig.ctype) {
+            existing.ctype = fn.unitConfig.ctype;
+          }
+
+          if (existing.counter) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.counter = existing.counter;
+          } else if (fn.unitConfig && fn.unitConfig.counter) {
+            existing.counter = fn.unitConfig.counter;
+          }
+
+          if (existing.sections !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.sections = existing.sections;
+          } else if (fn.unitConfig && fn.unitConfig.sections !== undefined) {
+            existing.sections = fn.unitConfig.sections;
+          }
+
+          if (existing.back !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.back = existing.back;
+          } else if (fn.unitConfig && fn.unitConfig.back !== undefined) {
+            existing.back = fn.unitConfig.back;
+          }
+
+          if (existing.drawerH !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.drawerH = existing.drawerH;
+          } else if (fn.unitConfig && fn.unitConfig.drawerH !== undefined) {
+            existing.drawerH = fn.unitConfig.drawerH;
+          }
+
+          if (existing.loftShutters !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.loftShutters = existing.loftShutters;
+          } else if (fn.unitConfig && fn.unitConfig.loftShutters !== undefined) {
+            existing.loftShutters = fn.unitConfig.loftShutters;
           }
           newUnits.push(existing);
         } else {
@@ -16764,9 +16816,11 @@ body.role-employee #adminCreateEmpBox,
         var selGroup = null;
         homeObj.traverse(function (obj) {
           if (obj.userData && obj.userData.isFurnitureGroup) {
-            obj.visible = true;
-            if (obj.userData.furnitureId === furnId) {
+            if (furnId && obj.userData.furnitureId === furnId) {
+              obj.visible = false;
               selGroup = obj;
+            } else {
+              obj.visible = true;
             }
           }
         });
@@ -16835,6 +16889,7 @@ body.role-employee #adminCreateEmpBox,
             var scCount = match.unitConfig.shutters || 2;
             for (var sc = 0; sc < scCount; sc++) {
               match.shutterMaterials[sc] = u.shutterCol;
+              match.shutterColors[sc] = u.shutterCol;
             }
           }
           if (u.carcass) {
@@ -18315,20 +18370,27 @@ body.role-employee #adminCreateEmpBox,
         this.archRenderer.buildHome(proj);
         var homeObj = scene.getObjectByName('OrbixHome3D');
         var selFurnId = null;
-        if (this.editor && this.editor.selected && this.editor.selected.length > 0) {
+        if (window.S && window.S.units && window.S.units[window.S.active]) {
+          selFurnId = window.S.units[window.S.active]._furnId;
+        } else if (this.editor && this.editor.selected && this.editor.selected.length > 0) {
           var selItem = this.editor.selected.find(function (it) { return it.type === 'furniture'; });
           if (selItem) selFurnId = selItem.id;
         } else if (gl.getGizmoFurnId) {
           selFurnId = gl.getGizmoFurnId();
         }
-        if (selFurnId && homeObj && gl.gizmoSet) {
+        if (homeObj) {
           var foundMesh = null;
           homeObj.traverse(function (c) {
-            if (c.userData && c.userData.isFurnitureGroup && c.userData.furnitureId === selFurnId) {
-              foundMesh = c;
+            if (c.userData && c.userData.isFurnitureGroup) {
+              if (selFurnId && c.userData.furnitureId === selFurnId) {
+                c.visible = false; // Hide active unit so live interactive Cupboard CAD root renders it
+                foundMesh = c;
+              } else {
+                c.visible = true;
+              }
             }
           });
-          if (foundMesh) {
+          if (foundMesh && gl.gizmoSet && selFurnId) {
             gl.gizmoSet(foundMesh, selFurnId);
           }
         }
@@ -19471,6 +19533,10 @@ function lam(code){
   for(var i=0;i<LAMINATES.length;i++){
     if(LAMINATES[i].name.toLowerCase() === cLower) return LAMINATES[i];
   }
+  // 2b. Match on hex color code
+  for(var i=0;i<LAMINATES.length;i++){
+    if(LAMINATES[i].hex && (LAMINATES[i].hex === c || LAMINATES[i].hex.toLowerCase() === cLower)) return LAMINATES[i];
+  }
   // 3. Keyword / alias mapping for imported & catalog finish names
   if(cLower.indexOf('walnut') !== -1) {
     for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 3410' || LAMINATES[i].name.toLowerCase().indexOf('walnut') !== -1) return LAMINATES[i];
@@ -19628,8 +19694,10 @@ function load(){
     var raw=localStorage.getItem("cupboard-cad"); if(!raw) return;
     var d=JSON.parse(raw);
     if(d.units&&Array.isArray(d.units)){
-      if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-        var validIds = (window.OrbixUI.project.plan.furniture || []).map(function(f){ return f.id; });
+      var planObj = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+      while(planObj && planObj.plan && (planObj.plan.furniture || planObj.plan.walls || planObj.plan.rooms)) planObj = planObj.plan;
+      if(planObj && planObj.furniture && planObj.furniture.length > 0){
+        var validIds = planObj.furniture.map(function(f){ return f.id; });
         S.units = d.units.filter(function(u){ return u._furnId && validIds.indexOf(u._furnId) !== -1; });
       } else {
         S.units = [];
@@ -22745,7 +22813,7 @@ function cssRender(L,u0){
       if(b.mat==="glass"||b.mat==="mirror") return;
       var t = b.col ? tex(lam(b.col)) : null;
       var n=box(g,{x:b.x,y:b.y,z:b.z,w:b.w,h:b.h,d:b.d,tex:t,eb:b.role==="front",faces:b.role==="front"?["F","L","R","T","Bo"]:["F","L","R","T"]});
-      if(b.mat==="reveal") n.firstChild.style.background="#241E18";
+      if(b.mat==="reveal" && n && n.firstChild && n.firstChild.style) n.firstChild.style.background="#241E18";
       else if(b.mat) $all(".face",n).forEach(function(f){ f.style.background=/granite|galaxy|green/.test(b.mat)?"#27272b":/marble|quartz|beige|splash|tile|glass/.test(b.mat)?"#e8e4dc":b.mat==="floor"||/tile/.test(b.mat)?"#97C96E":b.mat==="steel"?"#C9CCCF":/^leather/.test(b.mat)?b.mat.slice(8):/^(black|nickel|brass|chrome)$/.test(b.mat)?"#3a3a3c":b.mat==="led"?"#FFE6B8":"#2b2723"; });
     });
   });
@@ -22756,7 +22824,9 @@ function fit(){
   if(GL.ok){ GL.frame(); return; }
   var r=stage.getBoundingClientRect();
   if(!r.height) return;
-  var u=U(), totalH=u.H+(u.loft?u.loftH+2:0);
+  var u=U();
+  if(!u) return;
+  var totalH=u.H+(u.loft?u.loftH+2:0);
   var span = u.shape==="lcorner" ? u.W+u.D+Math.max(u.D,(u.W2||1200)*0.55) : Math.max(u.W,u.D*1.6);
   scale=Math.max(0.05,Math.min((r.height*0.72)/totalH,(r.width*0.64)/span));
 }
@@ -24110,7 +24180,6 @@ function setView(v){
     }
     if(typeof buildScene === 'function') buildScene();
     if(window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') window.OrbixUI.render3DHome(true);
-    if(root) root.visible = false; // Placed units inside OrbixHome3D take center stage
 
     // Frame camera on the active unit
     var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
@@ -25265,6 +25334,15 @@ if(PARAMS.get("embed")==="1"){
   });
   stEl.addEventListener("pointerdown",function(){ tourOn=false; spinOn=false; },true);
 }
+window.renderRail = renderRail;
+window.renderAll = renderAll;
+window.softAll = softAll;
+window.buildScene = buildScene;
+window.renderLegend = renderLegend;
+window.renderFoot = renderFoot;
+window.renderSheet = renderSheet;
+window.renderElev = renderElev;
+
 renderRail();
 renderAll();
 loadThree(function(){

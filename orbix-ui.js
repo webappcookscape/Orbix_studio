@@ -1880,13 +1880,65 @@
             existing.loftH = fn.unitConfig.loftH;
           }
 
-          if (fn.dimensions) {
-            if (existing.W && !fn.dimensions.W) fn.dimensions.W = existing.W;
-            else if (fn.dimensions.W) existing.W = fn.dimensions.W;
-            if (existing.H && !fn.dimensions.H) fn.dimensions.H = existing.H;
-            else if (fn.dimensions.H) existing.H = fn.dimensions.H;
-            if (existing.D && !fn.dimensions.D) fn.dimensions.D = existing.D;
-            else if (fn.dimensions.D) existing.D = fn.dimensions.D;
+          if (existing.W) {
+            fn.dimensions = fn.dimensions || {};
+            fn.dimensions.W = existing.W;
+          } else if (fn.dimensions && fn.dimensions.W) {
+            existing.W = fn.dimensions.W;
+          }
+          if (existing.H) {
+            fn.dimensions = fn.dimensions || {};
+            fn.dimensions.H = existing.H;
+          } else if (fn.dimensions && fn.dimensions.H) {
+            existing.H = fn.dimensions.H;
+          }
+          if (existing.D) {
+            fn.dimensions = fn.dimensions || {};
+            fn.dimensions.D = existing.D;
+          } else if (fn.dimensions && fn.dimensions.D) {
+            existing.D = fn.dimensions.D;
+          }
+
+          if (existing.ctype) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.ctype = existing.ctype;
+          } else if (fn.unitConfig && fn.unitConfig.ctype) {
+            existing.ctype = fn.unitConfig.ctype;
+          }
+
+          if (existing.counter) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.counter = existing.counter;
+          } else if (fn.unitConfig && fn.unitConfig.counter) {
+            existing.counter = fn.unitConfig.counter;
+          }
+
+          if (existing.sections !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.sections = existing.sections;
+          } else if (fn.unitConfig && fn.unitConfig.sections !== undefined) {
+            existing.sections = fn.unitConfig.sections;
+          }
+
+          if (existing.back !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.back = existing.back;
+          } else if (fn.unitConfig && fn.unitConfig.back !== undefined) {
+            existing.back = fn.unitConfig.back;
+          }
+
+          if (existing.drawerH !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.drawerH = existing.drawerH;
+          } else if (fn.unitConfig && fn.unitConfig.drawerH !== undefined) {
+            existing.drawerH = fn.unitConfig.drawerH;
+          }
+
+          if (existing.loftShutters !== undefined) {
+            fn.unitConfig = fn.unitConfig || {};
+            fn.unitConfig.loftShutters = existing.loftShutters;
+          } else if (fn.unitConfig && fn.unitConfig.loftShutters !== undefined) {
+            existing.loftShutters = fn.unitConfig.loftShutters;
           }
           newUnits.push(existing);
         } else {
@@ -1997,9 +2049,11 @@
         var selGroup = null;
         homeObj.traverse(function (obj) {
           if (obj.userData && obj.userData.isFurnitureGroup) {
-            obj.visible = true;
-            if (obj.userData.furnitureId === furnId) {
+            if (furnId && obj.userData.furnitureId === furnId) {
+              obj.visible = false;
               selGroup = obj;
+            } else {
+              obj.visible = true;
             }
           }
         });
@@ -2068,6 +2122,7 @@
             var scCount = match.unitConfig.shutters || 2;
             for (var sc = 0; sc < scCount; sc++) {
               match.shutterMaterials[sc] = u.shutterCol;
+              match.shutterColors[sc] = u.shutterCol;
             }
           }
           if (u.carcass) {
@@ -3548,20 +3603,27 @@
         this.archRenderer.buildHome(proj);
         var homeObj = scene.getObjectByName('OrbixHome3D');
         var selFurnId = null;
-        if (this.editor && this.editor.selected && this.editor.selected.length > 0) {
+        if (window.S && window.S.units && window.S.units[window.S.active]) {
+          selFurnId = window.S.units[window.S.active]._furnId;
+        } else if (this.editor && this.editor.selected && this.editor.selected.length > 0) {
           var selItem = this.editor.selected.find(function (it) { return it.type === 'furniture'; });
           if (selItem) selFurnId = selItem.id;
         } else if (gl.getGizmoFurnId) {
           selFurnId = gl.getGizmoFurnId();
         }
-        if (selFurnId && homeObj && gl.gizmoSet) {
+        if (homeObj) {
           var foundMesh = null;
           homeObj.traverse(function (c) {
-            if (c.userData && c.userData.isFurnitureGroup && c.userData.furnitureId === selFurnId) {
-              foundMesh = c;
+            if (c.userData && c.userData.isFurnitureGroup) {
+              if (selFurnId && c.userData.furnitureId === selFurnId) {
+                c.visible = false; // Hide active unit so live interactive Cupboard CAD root renders it
+                foundMesh = c;
+              } else {
+                c.visible = true;
+              }
             }
           });
-          if (foundMesh) {
+          if (foundMesh && gl.gizmoSet && selFurnId) {
             gl.gizmoSet(foundMesh, selFurnId);
           }
         }

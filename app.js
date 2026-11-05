@@ -125,6 +125,10 @@ function lam(code){
   for(var i=0;i<LAMINATES.length;i++){
     if(LAMINATES[i].name.toLowerCase() === cLower) return LAMINATES[i];
   }
+  // 2b. Match on hex color code
+  for(var i=0;i<LAMINATES.length;i++){
+    if(LAMINATES[i].hex && (LAMINATES[i].hex === c || LAMINATES[i].hex.toLowerCase() === cLower)) return LAMINATES[i];
+  }
   // 3. Keyword / alias mapping for imported & catalog finish names
   if(cLower.indexOf('walnut') !== -1) {
     for(var i=0;i<LAMINATES.length;i++) if(LAMINATES[i].code === 'MDF 3410' || LAMINATES[i].name.toLowerCase().indexOf('walnut') !== -1) return LAMINATES[i];
@@ -282,8 +286,10 @@ function load(){
     var raw=localStorage.getItem("cupboard-cad"); if(!raw) return;
     var d=JSON.parse(raw);
     if(d.units&&Array.isArray(d.units)){
-      if(window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan){
-        var validIds = (window.OrbixUI.project.plan.furniture || []).map(function(f){ return f.id; });
+      var planObj = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+      while(planObj && planObj.plan && (planObj.plan.furniture || planObj.plan.walls || planObj.plan.rooms)) planObj = planObj.plan;
+      if(planObj && planObj.furniture && planObj.furniture.length > 0){
+        var validIds = planObj.furniture.map(function(f){ return f.id; });
         S.units = d.units.filter(function(u){ return u._furnId && validIds.indexOf(u._furnId) !== -1; });
       } else {
         S.units = [];
@@ -3353,7 +3359,7 @@ function cssRender(L,u0){
       if(b.mat==="glass"||b.mat==="mirror") return;
       var t = b.col ? tex(lam(b.col)) : null;
       var n=box(g,{x:b.x,y:b.y,z:b.z,w:b.w,h:b.h,d:b.d,tex:t,eb:b.role==="front",faces:b.role==="front"?["F","L","R","T","Bo"]:["F","L","R","T"]});
-      if(b.mat==="reveal") n.firstChild.style.background="#241E18";
+      if(b.mat==="reveal" && n && n.firstChild && n.firstChild.style) n.firstChild.style.background="#241E18";
       else if(b.mat) $all(".face",n).forEach(function(f){ f.style.background=/granite|galaxy|green/.test(b.mat)?"#27272b":/marble|quartz|beige|splash|tile|glass/.test(b.mat)?"#e8e4dc":b.mat==="floor"||/tile/.test(b.mat)?"#97C96E":b.mat==="steel"?"#C9CCCF":/^leather/.test(b.mat)?b.mat.slice(8):/^(black|nickel|brass|chrome)$/.test(b.mat)?"#3a3a3c":b.mat==="led"?"#FFE6B8":"#2b2723"; });
     });
   });
@@ -3364,7 +3370,9 @@ function fit(){
   if(GL.ok){ GL.frame(); return; }
   var r=stage.getBoundingClientRect();
   if(!r.height) return;
-  var u=U(), totalH=u.H+(u.loft?u.loftH+2:0);
+  var u=U();
+  if(!u) return;
+  var totalH=u.H+(u.loft?u.loftH+2:0);
   var span = u.shape==="lcorner" ? u.W+u.D+Math.max(u.D,(u.W2||1200)*0.55) : Math.max(u.W,u.D*1.6);
   scale=Math.max(0.05,Math.min((r.height*0.72)/totalH,(r.width*0.64)/span));
 }
@@ -4718,7 +4726,6 @@ function setView(v){
     }
     if(typeof buildScene === 'function') buildScene();
     if(window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') window.OrbixUI.render3DHome(true);
-    if(root) root.visible = false; // Placed units inside OrbixHome3D take center stage
 
     // Frame camera on the active unit
     var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
@@ -5873,6 +5880,15 @@ if(PARAMS.get("embed")==="1"){
   });
   stEl.addEventListener("pointerdown",function(){ tourOn=false; spinOn=false; },true);
 }
+window.renderRail = renderRail;
+window.renderAll = renderAll;
+window.softAll = softAll;
+window.buildScene = buildScene;
+window.renderLegend = renderLegend;
+window.renderFoot = renderFoot;
+window.renderSheet = renderSheet;
+window.renderElev = renderElev;
+
 renderRail();
 renderAll();
 loadThree(function(){
