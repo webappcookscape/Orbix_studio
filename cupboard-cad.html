@@ -5682,9 +5682,6 @@
         </button>
         <button class="auth-logout-btn" id="userLogoutBtn" title="Sign out of this session">Logout</button>
       </div>
-      <button class="btn" id="printBtn">Print</button>
-      <button class="btn" id="csvBtn">CSV</button>
-      <button class="btn" id="dxfBtn">DXF</button>
       <button class="btn" id="exportSkpTopBtn"
         title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)"
         style="background:#0284c7;color:#fff;font-weight:600;border-color:#0284c7;">📐 Export .skp</button>
@@ -21656,27 +21653,36 @@
       for (var k in t.handles) o.push("Handle " + q(t.handles[k].h.label) + "," + (t.handles[k].h.unit === "rft" ? Math.round(t.handles[k].q) + ",ft" : t.handles[k].q + ",nos"));
       return o.join("\r\n");
     }
-    $("#csvBtn").addEventListener("click", function () {
-      var activeView = document.querySelector(".view.is-on");
-      if (activeView && activeView.id === "view-boq" && window.OrbixUI && window.OrbixUI.exportXLSX) {
-        window.OrbixUI.exportXLSX();
-        return;
-      }
-      deliver("process-sheet.csv", sheetCSV());
-    });
-    $("#dxfBtn").addEventListener("click", function () {
-      var u = U();
-      deliver("elevation-" + (u.label || "unit").toLowerCase().replace(/\s+/g, "-") + ".dxf", drawDXF(elevDraw(u)));
-    });
-    $("#printBtn").addEventListener("click", function () {
-      var activeView = document.querySelector(".view.is-on");
-      if (activeView && activeView.id === "view-boq" && window.OrbixUI && window.OrbixUI.downloadPDF) {
-        window.OrbixUI.downloadPDF();
-        return;
-      }
-      setView("sheet");
-      setTimeout(function () { window.print(); }, 140);
-    });
+    var _csvBtn = $("#csvBtn");
+    if (_csvBtn) {
+      _csvBtn.addEventListener("click", function () {
+        var activeView = document.querySelector(".view.is-on");
+        if (activeView && activeView.id === "view-boq" && window.OrbixUI && window.OrbixUI.exportXLSX) {
+          window.OrbixUI.exportXLSX();
+          return;
+        }
+        deliver("process-sheet.csv", sheetCSV());
+      });
+    }
+    var _dxfBtn = $("#dxfBtn");
+    if (_dxfBtn) {
+      _dxfBtn.addEventListener("click", function () {
+        var u = U();
+        deliver("elevation-" + (u.label || "unit").toLowerCase().replace(/\s+/g, "-") + ".dxf", drawDXF(elevDraw(u)));
+      });
+    }
+    var _printBtn = $("#printBtn");
+    if (_printBtn) {
+      _printBtn.addEventListener("click", function () {
+        var activeView = document.querySelector(".view.is-on");
+        if (activeView && activeView.id === "view-boq" && window.OrbixUI && window.OrbixUI.downloadPDF) {
+          window.OrbixUI.downloadPDF();
+          return;
+        }
+        setView("sheet");
+        setTimeout(function () { window.print(); }, 140);
+      });
+    }
 
     /* ══════════ VIEWS ══════════ */
     function setView(v) {
