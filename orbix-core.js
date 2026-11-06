@@ -4375,6 +4375,8 @@
     wallDirection: wallDirection,
     wallNormal: wallNormal,
     wallPolygon: wallPolygon,
+    projectPointToSegment: Vec2.projectOnSegment,
+    projectPointOnSegment: projectPointOnSegment,
     getWallInnerLength: getWallInnerLength,
     getWallInnerSegment: getWallInnerSegment,
     setWallInnerLength: setWallInnerLength,
