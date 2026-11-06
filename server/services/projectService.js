@@ -12,8 +12,31 @@ function formatProject(p) {
   if (!dateVal && p.createdAt) {
     dateVal = typeof p.createdAt.toISOString === 'function' ? p.createdAt.toISOString() : String(p.createdAt);
   }
+  const createdAtStr = p.created_at || (p.createdAt ? (typeof p.createdAt.toISOString === 'function' ? p.createdAt.toISOString() : String(p.createdAt)) : dateVal);
+  const updatedAtStr = p.updated_at || (p.updatedAt ? (typeof p.updatedAt.toISOString === 'function' ? p.updatedAt.toISOString() : String(p.updatedAt)) : createdAtStr);
+
   return {
     ...p,
+    title: p.title || p.name || '',
+    name: p.name || p.title || '',
+    owner_name: p.owner_name || p.ownerName || '',
+    owner_email: p.owner_email || p.ownerEmail || '',
+    ownerName: p.ownerName || p.owner_name || '',
+    ownerEmail: p.ownerEmail || p.owner_email || '',
+    created_by: p.created_by || p.createdBy || '',
+    createdBy: p.createdBy || p.created_by || '',
+    units_count: p.units_count !== undefined ? p.units_count : (p.unitsCount ?? 0),
+    boards_est: p.boards_est !== undefined ? p.boards_est : (p.boardsEst ?? 0),
+    unitsCount: p.unitsCount !== undefined ? p.unitsCount : (p.units_count ?? 0),
+    boardsEst: p.boardsEst !== undefined ? p.boardsEst : (p.boards_est ?? 0),
+    is_shared: p.is_shared !== undefined ? p.is_shared : (p.isShared ?? false),
+    isShared: p.isShared !== undefined ? p.isShared : (p.is_shared ?? false),
+    fork_count: p.fork_count !== undefined ? p.fork_count : (p.forkCount ?? 0),
+    forkCount: p.forkCount !== undefined ? p.forkCount : (p.fork_count ?? 0),
+    created_at: createdAtStr,
+    updated_at: updatedAtStr,
+    createdAt: p.createdAt || createdAtStr,
+    updatedAt: p.updatedAt || updatedAtStr,
     contact_number: p.contact_number || d.contactNumber || d.phone || '',
     location: p.location || d.location || d.siteAddress || '',
     bh_name: p.bh_name || d.bhName || d.designerName || '',
@@ -148,10 +171,11 @@ class ProjectService {
       data.forkCount = parseInt(updates.fork_count ?? updates.forkCount, 10);
     }
 
-    return prisma.project.update({
+    const updated = await prisma.project.update({
       where: { id },
       data
     });
+    return formatProject(updated);
   }
 
   // 5. Delete project

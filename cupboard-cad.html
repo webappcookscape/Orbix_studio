@@ -4223,9 +4223,11 @@ body.role-employee #adminCreateEmpBox,
 
             origSetView(v);
 
-            if (!self._popstateHandling) {
-              self.updateUrl(v, false);
-            }
+            try {
+              if (!self._popstateHandling) {
+                self.updateUrl(v, false);
+              }
+            } catch (_) { }
           };
           window.setView._isRouterHooked = true;
         }
@@ -4238,19 +4240,35 @@ body.role-employee #adminCreateEmpBox,
 
     updateUrl: function (view, replace) {
       if (!window.history || !window.history.pushState) return;
-      var canonical = this.VIEW_TO_PATH[view] || ('/' + view);
-      if (window.location.pathname.toLowerCase() !== canonical.toLowerCase()) {
-        if (replace) {
-          window.history.replaceState({ view: view }, '', canonical);
-        } else {
-          window.history.pushState({ view: view }, '', canonical);
+      try {
+        if (window.location && window.location.protocol === 'file:') {
+          try {
+            if (window.location.hash !== '#' + view) {
+              window.location.hash = '#' + view;
+            }
+          } catch (_) { }
+          return;
         }
+        var canonical = this.VIEW_TO_PATH[view] || ('/' + view);
+        if (window.location && window.location.pathname.toLowerCase() !== canonical.toLowerCase()) {
+          if (replace) {
+            window.history.replaceState({ view: view }, '', canonical);
+          } else {
+            window.history.pushState({ view: view }, '', canonical);
+          }
+        }
+      } catch (err) {
+        try {
+          if (window.location && window.location.hash !== '#' + view) {
+            window.location.hash = '#' + view;
+          }
+        } catch (_) { }
       }
     },
 
     navigateTo: function (v, replace) {
       if (v === 'login') {
-        this.updateUrl('login', replace);
+        try { this.updateUrl('login', replace); } catch (_) { }
         if (typeof OrbixProjects.showLogin === 'function') {
           OrbixProjects.showLogin();
         }
@@ -4265,7 +4283,7 @@ body.role-employee #adminCreateEmpBox,
           this.navigateTo('home', true);
           return;
         }
-        this.updateUrl('users', replace);
+        try { this.updateUrl('users', replace); } catch (_) { }
         if (typeof OrbixProjects.openUserModal === 'function') {
           OrbixProjects.openUserModal();
         }
@@ -4278,9 +4296,15 @@ body.role-employee #adminCreateEmpBox,
       }
 
       if (typeof window.setView === 'function') {
-        window.setView(v);
+        try {
+          window.setView(v);
+        } catch (err) {
+          console.warn('setView error:', err);
+        }
       }
-      this.updateUrl(v, replace);
+      try {
+        this.updateUrl(v, replace);
+      } catch (_) { }
     },
 
     navigateByPath: function (path, replace) {
@@ -4835,17 +4859,39 @@ body.role-employee #adminCreateEmpBox,
 
     _mergeProjects: function (localList, remoteList) {
       var map = {};
+      function normalize(p) {
+        if (!p || typeof p !== 'object') return p;
+        p.title = p.title || p.name || 'Untitled Project';
+        p.name = p.name || p.title;
+        p.owner_name = p.owner_name || p.ownerName || '';
+        p.ownerName = p.ownerName || p.owner_name;
+        p.owner_email = p.owner_email || p.ownerEmail || '';
+        p.ownerEmail = p.ownerEmail || p.owner_email;
+        p.created_by = p.created_by || p.createdBy || '';
+        p.createdBy = p.createdBy || p.created_by;
+        p.created_at = p.created_at || (p.createdAt ? (typeof p.createdAt.toISOString === 'function' ? p.createdAt.toISOString() : String(p.createdAt)) : '');
+        p.updated_at = p.updated_at || (p.updatedAt ? (typeof p.updatedAt.toISOString === 'function' ? p.updatedAt.toISOString() : String(p.updatedAt)) : p.created_at);
+        p.createdAt = p.createdAt || p.created_at;
+        p.updatedAt = p.updatedAt || p.updated_at;
+        p.units_count = p.units_count !== undefined ? p.units_count : (p.unitsCount ?? 0);
+        p.boards_est = p.boards_est !== undefined ? p.boards_est : (p.boardsEst ?? 0);
+        p.is_shared = p.is_shared !== undefined ? p.is_shared : (p.isShared ?? false);
+        p.fork_count = p.fork_count !== undefined ? p.fork_count : (p.forkCount ?? 0);
+        return p;
+      }
+
       (localList || []).forEach(function (p) {
-        if (p && p.id) map[p.id] = p;
+        if (p && p.id) map[p.id] = normalize(p);
       });
       (remoteList || []).forEach(function (rp) {
         if (!rp || !rp.id) return;
+        normalize(rp);
         var lp = map[rp.id];
         if (!lp) {
           map[rp.id] = rp;
         } else {
           var localMod = (lp.data && lp.data.plan && lp.data.plan._lastModified) || 0;
-          var remoteMod = rp.updatedAt ? new Date(rp.updatedAt).getTime() : 0;
+          var remoteMod = rp.updatedAt ? new Date(rp.updatedAt).getTime() : (rp.updated_at ? new Date(rp.updated_at).getTime() : 0);
           if (localMod > remoteMod && lp.data) {
             map[rp.id] = Object.assign({}, rp, {
               data: lp.data,
@@ -5091,18 +5137,34 @@ body.role-employee #adminCreateEmpBox,
       var html = '';
       for (var i = 0; i < this.projects.length; i++) {
         var p = this.projects[i];
-        var isOwner = this.currentUser && (p.created_by === this.currentUser.id || p.owner_email === this.currentUser.email);
+        var isOwner = this.currentUser && (
+          (p.created_by && p.created_by === this.currentUser.id) ||
+          (p.createdBy && p.createdBy === this.currentUser.id) ||
+          (p.owner_email && p.owner_email === this.currentUser.email) ||
+          (p.ownerEmail && p.ownerEmail === this.currentUser.email)
+        );
+
+        var ownerName = p.owner_name || p.ownerName || (isOwner ? (this.currentUser ? this.currentUser.name : 'You') : 'Cookscape Designer');
+        var ownerInitials = (ownerName && ownerName !== 'You')
+          ? ownerName.substring(0, 2).toUpperCase()
+          : (this.currentUser ? this.currentUser.name.substring(0, 2).toUpperCase() : 'DK');
+
+        var dateVal = p.updated_at || p.updatedAt || p.created_at || p.createdAt || p.date_time || (p.data && p.data.details && (p.data.details.dateTime || p.data.details.dateCreated));
         var dateStr = 'Recently';
-        try {
-          var d = new Date(p.updated_at || p.created_at);
-          dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-        } catch (e) { }
+        if (dateVal) {
+          try {
+            var d = new Date(dateVal);
+            if (!isNaN(d.getTime())) {
+              dateStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+            }
+          } catch (e) { }
+        }
 
         var details = p.data && p.data.details ? p.data.details : {};
-        var contactStr = p.contact_number || details.contactNumber || '';
-        var locationStr = p.location || details.location || '';
-        var bhStr = p.bh_name || details.bhName || '';
-        var cpStr = p.cp_code || details.cpCode || '';
+        var contactStr = p.contact_number || p.contactNumber || details.contactNumber || details.phone || '';
+        var locationStr = p.location || details.location || details.siteAddress || '';
+        var bhStr = p.bh_name || p.bhName || details.bhName || details.designerName || '';
+        var cpStr = p.cp_code || p.cpCode || details.cpCode || details.quoteId || '';
         var clientStr = p.client || details.clientName || 'Private Client';
         var statusClass = (p.status === 'Active' || p.status === 'In Progress') ? 'pstatus-active' : (p.status === 'Completed' ? 'pstatus-done' : 'pstatus-draft');
         var typeBadge = p.type || 'Interior CAD';
@@ -5139,9 +5201,9 @@ body.role-employee #adminCreateEmpBox,
 
           '<div class="pcard-foot">' +
           '<div class="pcard-owner">' +
-          '<span class="powner-avatar">' + (p.owner_name ? p.owner_name.substring(0, 2).toUpperCase() : 'DK') + '</span>' +
+          '<span class="powner-avatar">' + ownerInitials + '</span>' +
           '<div class="powner-details">' +
-          '<span class="powner-name">' + (isOwner ? 'You' : p.owner_name) + '</span>' +
+          '<span class="powner-name">' + (isOwner ? 'You' : ownerName) + '</span>' +
           '<span class="powner-date">' + dateStr + '</span>' +
           '</div>' +
           '</div>' +
@@ -5165,7 +5227,7 @@ body.role-employee #adminCreateEmpBox,
       cards.forEach(function (card) {
         var id = card.getAttribute('data-id');
 
-        // Clicking anywhere on the project card (or the Open 2D button) opens it in 2D
+        // Clicking anywhere on the project card opens it in 2D
         card.style.cursor = 'pointer';
         card.addEventListener('click', function (e) {
           // If clicked specifically on share, fork, or delete action icons, do not open
@@ -5174,6 +5236,16 @@ body.role-employee #adminCreateEmpBox,
           }
           e.preventDefault();
           self.openProject(id);
+        });
+
+        // Dedicated click listeners on Open 2D Plan button and Title for instant response
+        var openBtns = card.querySelectorAll('.open-proj-btn, .pcard-title[data-open]');
+        openBtns.forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            self.openProject(id);
+          });
         });
 
         // Share action
@@ -5211,8 +5283,21 @@ body.role-employee #adminCreateEmpBox,
     openProject: function (idOrProj, switchView) {
       var self = this;
       var id = (typeof idOrProj === 'object' && idOrProj) ? idOrProj.id : idOrProj;
-      var project = (typeof idOrProj === 'object' && idOrProj) ? idOrProj : this.projects.find(function (p) { return p.id === id; });
+      var project = (typeof idOrProj === 'object' && idOrProj) ? idOrProj : null;
+      if (!project && self.projects) {
+        project = self.projects.find(function (p) { return p.id === id; });
+      }
+      if (!project && id) {
+        try {
+          var uId = self.currentUser ? self.currentUser.id : 'anon';
+          var localList = JSON.parse(localStorage.getItem('orbix_local_projects_' + uId) || '[]');
+          project = localList.find(function (p) { return p.id === id; });
+        } catch (_) {}
+      }
       if (!project && !id) return;
+      if (!project) {
+        project = { id: id, title: 'Project ' + id };
+      }
 
       this.activeProjectId = id;
       if (this.currentUser) {
@@ -5221,27 +5306,23 @@ body.role-employee #adminCreateEmpBox,
         } catch (e) { }
       }
 
-      // If project object is provided, load immediately for snappy UI response
-      if (project && project.data && project.data.plan) {
-        self._loadProjectIntoWorkspace(project, switchView);
-      }
+      // 1. Immediately switch view and load workspace without waiting for async API!
+      self._loadProjectIntoWorkspace(project, switchView);
 
-      // Fetch fresh live project from PostgreSQL in background
+      // 2. Fetch fresh live project from PostgreSQL in background
       OrbixProjects.apiFetch('/api/projects/' + id)
         .then(function (r) {
           if (!r.ok) throw new Error('Status ' + r.status);
           return r.json();
         })
         .then(function (data) {
-          var liveProj = (data && (data.project || (data.id && data))) || project;
+          var liveProj = (data && (data.project || (data.id && data))) || null;
           if (liveProj) {
-            self._loadProjectIntoWorkspace(liveProj, switchView);
+            self._loadProjectIntoWorkspace(liveProj, false);
           }
         })
-        .catch(function () {
-          if (project) {
-            self._loadProjectIntoWorkspace(project, switchView);
-          }
+        .catch(function (err) {
+          console.warn('[OrbixProjects] Live fetch background update offline:', err);
         });
     },
 
@@ -5321,7 +5402,14 @@ body.role-employee #adminCreateEmpBox,
         if (project.data && project.data.plan && (project.data.plan.plan || project.data.plan.walls || project.data.plan.furniture)) {
           planToLoad = project.data.plan;
         } else if (window.OrbixCore && typeof window.OrbixCore.createProject === 'function') {
-          planToLoad = window.OrbixCore.createProject(project.title);
+          planToLoad = window.OrbixCore.createProject(project.title || project.name || 'Untitled Project');
+        } else {
+          planToLoad = {
+            schemaVersion: '1.0.0',
+            id: project.id || ('proj_' + Date.now().toString(36)),
+            meta: { title: project.title || project.name || 'Untitled Project' },
+            plan: { gridSize: 100, walls: [], openings: [], rooms: [], furniture: [] }
+          };
         }
       }
 
@@ -5365,11 +5453,31 @@ body.role-employee #adminCreateEmpBox,
       if (typeof camApply === 'function') camApply();
 
       if (switchView !== false) {
-        if (root.OrbixRouter) {
-          root.OrbixRouter.navigateTo('plan');
-        } else if (typeof window.setView === 'function') {
-          window.setView('plan');
+        try {
+          if (typeof window.setView === 'function') {
+            window.setView('plan');
+          } else if (root.OrbixRouter && typeof root.OrbixRouter.navigateTo === 'function') {
+            root.OrbixRouter.navigateTo('plan');
+          }
+        } catch (switchErr) {
+          console.warn('[Orbix Studio] Error calling setView("plan"):', switchErr);
         }
+
+        // Guaranteed DOM view switch fallback: ensure view-plan is active and view-home is inactive
+        try {
+          var allViews = document.querySelectorAll('.view');
+          if (allViews && allViews.length) {
+            allViews.forEach(function (s) { s.classList.toggle('is-on', s.id === 'view-plan'); });
+          }
+          var allTabs = document.querySelectorAll('.vtab');
+          if (allTabs && allTabs.length) {
+            allTabs.forEach(function (b) {
+              var on = b.getAttribute('data-view') === 'plan';
+              b.classList.toggle('is-on', on);
+              b.setAttribute('aria-pressed', String(on));
+            });
+          }
+        } catch (_) { }
 
         setTimeout(function () {
           if (window.OrbixUI && window.OrbixUI.editor) {
@@ -5382,7 +5490,7 @@ body.role-employee #adminCreateEmpBox,
         }, 60);
 
         if (typeof showToast === 'function') {
-          showToast('Opened project: ' + project.title);
+          showToast('Opened project: ' + (project.title || project.name || 'Project'));
         }
       }
     },
@@ -6030,8 +6138,18 @@ body.role-employee #adminCreateEmpBox,
             .then(function (data) {
               var newProj = (data && (data.project || (data.id && data))) || null;
               if (newProj && newProj.id) {
+                newProj.title = newProj.title || newProj.name || payload.title;
+                newProj.client = newProj.client || payload.client;
+                newProj.owner_name = newProj.owner_name || newProj.ownerName || (self.currentUser ? self.currentUser.name : 'Cookscape Designer');
+                newProj.owner_email = newProj.owner_email || newProj.ownerEmail || (self.currentUser ? self.currentUser.email : 'designer@cookscape.com');
+                newProj.created_by = newProj.created_by || newProj.createdBy || (self.currentUser ? self.currentUser.id : 'usr_admin');
+                newProj.created_at = newProj.created_at || (newProj.createdAt ? (typeof newProj.createdAt.toISOString === 'function' ? newProj.createdAt.toISOString() : String(newProj.createdAt)) : new Date().toISOString());
+                newProj.updated_at = newProj.updated_at || (newProj.updatedAt ? (typeof newProj.updatedAt.toISOString === 'function' ? newProj.updatedAt.toISOString() : String(newProj.updatedAt)) : newProj.created_at);
+                newProj.units_count = newProj.units_count !== undefined ? newProj.units_count : (newProj.unitsCount ?? 0);
+                newProj.boards_est = newProj.boards_est !== undefined ? newProj.boards_est : (newProj.boardsEst ?? 0);
+                newProj.is_shared = newProj.is_shared !== undefined ? newProj.is_shared : (newProj.isShared ?? false);
+                newProj.fork_count = newProj.fork_count !== undefined ? newProj.fork_count : (newProj.forkCount ?? 0);
                 if (!newProj.data) newProj.data = payload.data;
-                if (!newProj.client) newProj.client = payload.client;
                 if (!newProj.contact_number) newProj.contact_number = payload.contact_number;
                 if (!newProj.location) newProj.location = payload.location;
                 if (!newProj.bh_name) newProj.bh_name = payload.bh_name;
@@ -25723,9 +25841,13 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // Update browser URL via router
-    if (window.OrbixRouter && typeof window.OrbixRouter.updateUrl === 'function') {
-      window.OrbixRouter.updateUrl(v, false);
+    // Update browser URL via router safely
+    try {
+      if (window.OrbixRouter && typeof window.OrbixRouter.updateUrl === 'function') {
+        window.OrbixRouter.updateUrl(v, false);
+      }
+    } catch (e) {
+      console.warn('Router updateUrl failed:', e);
     }
 
     $all(".vtab").forEach(function (b) {

@@ -4853,9 +4853,13 @@
       }
     }
 
-    // Update browser URL via router
-    if (window.OrbixRouter && typeof window.OrbixRouter.updateUrl === 'function') {
-      window.OrbixRouter.updateUrl(v, false);
+    // Update browser URL via router safely
+    try {
+      if (window.OrbixRouter && typeof window.OrbixRouter.updateUrl === 'function') {
+        window.OrbixRouter.updateUrl(v, false);
+      }
+    } catch (e) {
+      console.warn('Router updateUrl failed:', e);
     }
 
     $all(".vtab").forEach(function (b) {
