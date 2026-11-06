@@ -2578,6 +2578,23 @@
         var d = new Date();
         timeEl.textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       }
+
+      var diag = document.getElementById('vpsDiagAlert');
+      if (diag && !diag.hasCustomContent) {
+        if (this.vpsSyncStatus === 'connected') {
+          diag.style.display = 'block';
+          diag.style.background = '#ecfdf5';
+          diag.style.color = '#065f46';
+          diag.style.border = '1px solid #a7f3d0';
+          diag.innerHTML = '<strong>✓ VPS Live Connection Active</strong><br>Connected to <code>' + (base || 'https://studio.orbixdesigns.com') + '</code>. Your projects, quotes, and colleague copies sync automatically in real-time.';
+        } else {
+          diag.style.display = 'block';
+          diag.style.background = '#f8fafc';
+          diag.style.color = '#334155';
+          diag.style.border = '1px solid #cbd5e1';
+          diag.innerHTML = '<strong>ℹ️ Offline (Local Safe) Active:</strong><br>All your designs and projects are saved locally in this browser. To synchronize across your 18 team members on your VPS, enter your VPS address above (e.g. <code>http://YOUR_VPS_IP:4180</code> or <code>http://localhost:4180</code>) and click <strong>⚡ Test Connection</strong>.';
+        }
+      }
     },
 
     testVpsConnection: function () {
@@ -2587,21 +2604,49 @@
         testBtn.disabled = true;
         testBtn.textContent = 'Testing...';
       }
+      var targetUrl = self.getApiBase() || (typeof window !== 'undefined' ? window.location.origin : '');
       var start = Date.now();
-      OrbixProjects.apiFetch('/api/health')
+      OrbixProjects.apiFetch('/api/status')
+        .then(function (r) {
+          if (!r.ok) return OrbixProjects.apiFetch('/api/health');
+          return r;
+        })
         .then(function (r) {
           var elapsed = Date.now() - start;
           if (r.ok) {
             self.updateVpsSyncStatus('connected', 'VPS Connected (' + elapsed + 'ms)');
+            var diag = document.getElementById('vpsDiagAlert');
+            if (diag) {
+              diag.hasCustomContent = true;
+              diag.style.display = 'block';
+              diag.style.background = '#ecfdf5';
+              diag.style.color = '#065f46';
+              diag.style.border = '1px solid #a7f3d0';
+              diag.innerHTML = '<strong>✓ VPS Live Connection Verified!</strong><br>Successfully reached <code>' + targetUrl + '</code> with ' + elapsed + 'ms latency. Your 18 team accounts and projects will sync with this server.';
+            }
             if (typeof showToast === 'function') {
               showToast('✓ VPS Connection Verified! Latency: ' + elapsed + 'ms');
             }
           } else {
-            throw new Error('Status ' + r.status);
+            throw new Error('Server returned HTTP ' + r.status);
           }
         })
         .catch(function (err) {
           self.updateVpsSyncStatus('offline', 'VPS Offline');
+          var diag = document.getElementById('vpsDiagAlert');
+          if (diag) {
+            diag.hasCustomContent = true;
+            diag.style.display = 'block';
+            diag.style.background = '#fffbeb';
+            diag.style.color = '#92400e';
+            diag.style.border = '1px solid #fde68a';
+            diag.innerHTML = '<strong>⚠️ Why Connection Failed to ' + (targetUrl || 'default VPS') + ':</strong><br>' +
+              'The browser could not reach the server: <em>' + (err.message || 'Network request failed') + '</em>.<br><br>' +
+              '<strong>How to connect your VPS:</strong><br>' +
+              '• <strong>If you have a VPS IP:</strong> Type your VPS IP in the Custom VPS Server URL box above (for example: <code>http://192.168.1.50:4180</code> or your public IP <code>http://YOUR_IP:4180</code>), then click <strong>⚡ Test Connection</strong>.<br>' +
+              '• <strong>If running on your computer:</strong> In terminal run <code>npm start</code>, and set URL to <code>http://localhost:4180</code>.<br>' +
+              '• <strong>Safety guarantee:</strong> While offline, "Local Safe" protects all drawings and quotes locally in your browser so you will never lose work.';
+          }
           if (typeof showToast === 'function') {
             showToast('⚠ VPS Unreachable: ' + err.message);
           }
