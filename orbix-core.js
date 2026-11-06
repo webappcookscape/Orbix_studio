@@ -613,6 +613,134 @@
     return [p1, p2, p3, p4];
   }
 
+  // Computes the clear inner length between interior faces of adjoining walls (in mm)
+  function getWallInnerLength(w, plan) {
+    if (!w) return 0;
+    var totalL = wallLength(w);
+    if (!plan || !plan.walls || plan.walls.length <= 1) return totalL;
+
+    var startDeduction = 0;
+    var endDeduction = 0;
+    var walls = plan.walls;
+    var wDir = wallDirection(w);
+
+    for (var i = 0; i < walls.length; i++) {
+      var other = walls[i];
+      if (other.id === w.id) continue;
+      var oThickness = other.thickness || 150;
+      var oHalfT = oThickness / 2.0;
+
+      // Check start connection
+      if (Vec2.dist(w.start, other.start) < 60 || Vec2.dist(w.start, other.end) < 60) {
+        var oDir = wallDirection(other);
+        var dot = Math.abs(wDir.x * oDir.x + wDir.y * oDir.y);
+        var sinAngle = Math.sqrt(Math.max(0.1, 1 - dot * dot));
+        var dedStart = oHalfT / sinAngle;
+        if (dedStart > startDeduction) startDeduction = dedStart;
+      }
+
+      // Check end connection
+      if (Vec2.dist(w.end, other.start) < 60 || Vec2.dist(w.end, other.end) < 60) {
+        var oDir2 = wallDirection(other);
+        var dot2 = Math.abs(wDir.x * oDir2.x + wDir.y * oDir2.y);
+        var sinAngle2 = Math.sqrt(Math.max(0.1, 1 - dot2 * dot2));
+        var dedEnd = oHalfT / sinAngle2;
+        if (dedEnd > endDeduction) endDeduction = dedEnd;
+      }
+    }
+
+    var innerL = Math.max(0, totalL - (startDeduction + endDeduction));
+    return innerL;
+  }
+
+  // Returns { start, end, innerLength, startDeduction, endDeduction } for witness lines and dimensions
+  function getWallInnerSegment(w, plan) {
+    if (!w) return null;
+    var totalL = wallLength(w);
+    var wDir = wallDirection(w);
+    var startDeduction = 0;
+    var endDeduction = 0;
+
+    if (plan && plan.walls && plan.walls.length > 1) {
+      var walls = plan.walls;
+      for (var i = 0; i < walls.length; i++) {
+        var other = walls[i];
+        if (other.id === w.id) continue;
+        var oThickness = other.thickness || 150;
+        var oHalfT = oThickness / 2.0;
+
+        if (Vec2.dist(w.start, other.start) < 60 || Vec2.dist(w.start, other.end) < 60) {
+          var oDir = wallDirection(other);
+          var dot = Math.abs(wDir.x * oDir.x + wDir.y * oDir.y);
+          var sinAngle = Math.sqrt(Math.max(0.1, 1 - dot * dot));
+          var ded = oHalfT / sinAngle;
+          if (ded > startDeduction) startDeduction = ded;
+        }
+
+        if (Vec2.dist(w.end, other.start) < 60 || Vec2.dist(w.end, other.end) < 60) {
+          var oDir2 = wallDirection(other);
+          var dot2 = Math.abs(wDir.x * oDir2.x + wDir.y * oDir2.y);
+          var sinAngle2 = Math.sqrt(Math.max(0.1, 1 - dot2 * dot2));
+          var ded2 = oHalfT / sinAngle2;
+          if (ded2 > endDeduction) endDeduction = ded2;
+        }
+      }
+    }
+
+    var innerStart = {
+      x: w.start.x + wDir.x * startDeduction,
+      y: w.start.y + wDir.y * startDeduction
+    };
+    var innerEnd = {
+      x: w.end.x - wDir.x * endDeduction,
+      y: w.end.y - wDir.y * endDeduction
+    };
+    var innerL = Math.max(0, totalL - (startDeduction + endDeduction));
+
+    return {
+      start: innerStart,
+      end: innerEnd,
+      innerLength: innerL,
+      startDeduction: startDeduction,
+      endDeduction: endDeduction
+    };
+  }
+
+  // Adjusts wall length so its clear inner length equals targetInnerLen (mm)
+  function setWallInnerLength(w, targetInnerLen, plan, anchorEnd) {
+    if (!w || targetInnerLen <= 50) return;
+    var seg = getWallInnerSegment(w, plan);
+    var deductions = (seg ? seg.startDeduction + seg.endDeduction : 0);
+    var targetCenterlineL = targetInnerLen + deductions;
+    var dir = wallDirection(w);
+
+    var oldPt = (anchorEnd === 'end') ? { x: w.start.x, y: w.start.y } : { x: w.end.x, y: w.end.y };
+    var newPt;
+    if (anchorEnd === 'end') {
+      w.start.x = w.end.x - dir.x * targetCenterlineL;
+      w.start.y = w.end.y - dir.y * targetCenterlineL;
+      newPt = w.start;
+    } else {
+      w.end.x = w.start.x + dir.x * targetCenterlineL;
+      w.end.y = w.start.y + dir.y * targetCenterlineL;
+      newPt = w.end;
+    }
+    // Also move connected adjoining walls that meet at this corner junction
+    if (plan && plan.walls) {
+      plan.walls.forEach(function (other) {
+        if (other.id === w.id) return;
+        if (Vec2.dist(other.start, oldPt) < 5) {
+          other.start.x = newPt.x;
+          other.start.y = newPt.y;
+        } else if (Vec2.dist(other.end, oldPt) < 5) {
+          other.end.x = newPt.x;
+          other.end.y = newPt.y;
+        }
+      });
+    }
+    return w;
+  }
+
   // Comprehensive placement overlap detector against adjacent furniture, wall cores, and openings
   function checkPlacementOverlap(f, plan, ignoreId) {
     if (!f || !plan) return { hasOverlap: false };
@@ -4163,6 +4291,9 @@
     wallDirection: wallDirection,
     wallNormal: wallNormal,
     wallPolygon: wallPolygon,
+    getWallInnerLength: getWallInnerLength,
+    getWallInnerSegment: getWallInnerSegment,
+    setWallInnerLength: setWallInnerLength,
     splitWall: splitWall,
     detectRooms: detectRooms,
     calculateItemCost: calculateItemCost,

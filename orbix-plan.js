@@ -447,6 +447,34 @@
         return;
       }
 
+      // Check if clicked directly on any placed furniture unit from ANY tool
+      var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
+      var hitFurn = null;
+      for (var fi = furnList.length - 1; fi >= 0; fi--) {
+        var fn = furnList[fi];
+        var fPoly = Core.getFurniturePolygon(fn);
+        if (Core.Vec2.pointInPolygon(worldPt, fPoly) || Vec2.dist(worldPt, fn.pos) < Math.max(100, (fn.dimensions ? fn.dimensions.W : 600) / 2)) {
+          hitFurn = fn;
+          break;
+        }
+      }
+
+      if (hitFurn && (self.activeTool === 'select' || self.activeTool === 'furniture' || self.activeTool === 'wall' || !self.wallChainStart)) {
+        if (typeof self.setTool === 'function') self.setTool('select');
+        else self.activeTool = 'select';
+        self.selected = [{ type: 'furniture', id: hitFurn.id }];
+        self.dragState = {
+          type: 'move_furniture',
+          furniture: hitFurn,
+          startWorld: Vec2.clone(worldPt),
+          origPos: Vec2.clone(hitFurn.pos),
+          origRotY: hitFurn.rotY || 0
+        };
+        self.onSelectionChange(self.selected);
+        self.render();
+        return;
+      }
+
       if (self.activeTool === 'select') {
         self.handleSelectMouseDown(worldPt, e.shiftKey);
       } else if (self.activeTool === 'wall') {
@@ -859,6 +887,20 @@
     });
   };
 
+  PlanEditor.prototype.setTool = function (tool) {
+    this.activeTool = tool;
+    if (tool !== 'wall') this.wallChainStart = null;
+    if (typeof document !== 'undefined') {
+      var toolBtns = document.querySelectorAll('.plan-tool-btn');
+      if (toolBtns && toolBtns.length) {
+        toolBtns.forEach(function (b) {
+          if (b.dataset.tool === tool) b.classList.add('is-active');
+          else b.classList.remove('is-active');
+        });
+      }
+    }
+  };
+
   PlanEditor.prototype.handleSelectMouseDown = function (worldPt, isShift) {
     // 0. Check if clicked a Lock Badge (A or B) of any selected wall
     for (var s0 = 0; s0 < this.selected.length; s0++) {
@@ -1232,8 +1274,9 @@
 
     // 2. WALL SNATCHING (FLUSH SNAP TO WALL FACE) & WALL OVERLAP PREVENTION
     var walls = plan.walls || [];
+    var rooms = plan.rooms || [];
     var bestWallSnap = null;
-    var minWallDist = 260; // snap zone (mm)
+    var minWallDist = 280; // snap zone (mm)
     var halfD = fD / 2;
     var halfW = fW / 2;
 
@@ -1248,20 +1291,37 @@
       var halfT = (w.thickness || 150) / 2;
       var flushDist = halfT + halfD;
 
+      // Inner clear segment bounds
+      var innerSeg = (Core.getWallInnerSegment ? Core.getWallInnerSegment(w, plan) : null);
+      var startClear = ((innerSeg && innerSeg.startDeduction ? innerSeg.startDeduction : halfT) + halfW) / wLen;
+      var endClear = 1 - (((innerSeg && innerSeg.endDeduction ? innerSeg.endDeduction : halfT) + halfW) / wLen);
+      if (startClear > endClear) { startClear = 0.05; endClear = 0.95; }
+
       // Project unit position onto wall segment
       var toCur = { x: pos.x - w.start.x, y: pos.y - w.start.y };
       var t = (toCur.x * wDir.x + toCur.y * wDir.y) / wLen;
-      var tClamped = Math.max(halfW / wLen, Math.min(1 - halfW / wLen, t));
+      var tClamped = Math.max(startClear, Math.min(endClear, t));
       var proj = { x: w.start.x + tClamped * dx, y: w.start.y + tClamped * dy };
 
       var toCurProj = { x: pos.x - proj.x, y: pos.y - proj.y };
       var sDist = toCurProj.x * wNorm.x + toCurProj.y * wNorm.y;
       var sign = sDist >= 0 ? 1 : -1;
       var normOut = { x: sign * wNorm.x, y: sign * wNorm.y };
+
+      // Room Interior Awareness: if one side is inside a room, orient front into that room
+      if (rooms.length > 0) {
+        var testPos = { x: proj.x + wNorm.x * (flushDist + 20), y: proj.y + wNorm.y * (flushDist + 20) };
+        var testNeg = { x: proj.x - wNorm.x * (flushDist + 20), y: proj.y - wNorm.y * (flushDist + 20) };
+        var posInRoom = rooms.some(function (r) { return r.polygon && Core.Vec2.pointInPolygon(testPos, r.polygon); });
+        var negInRoom = rooms.some(function (r) { return r.polygon && Core.Vec2.pointInPolygon(testNeg, r.polygon); });
+        if (posInRoom && !negInRoom) normOut = { x: wNorm.x, y: wNorm.y };
+        else if (negInRoom && !posInRoom) normOut = { x: -wNorm.x, y: -wNorm.y };
+      }
+
       var perpDist = Math.abs(sDist);
 
-      // Wall Snatching: when within 260mm of flush contact
-      if (perpDist < flushDist + minWallDist && t >= -0.1 && t <= 1.1) {
+      // Wall Snatching: when within 280mm of flush contact
+      if (perpDist < flushDist + minWallDist && t >= -0.15 && t <= 1.15) {
         var snapDist = Math.abs(perpDist - flushDist);
         if (snapDist < minWallDist) {
           minWallDist = snapDist;
@@ -1282,7 +1342,7 @@
           };
         }
       } else if (perpDist < flushDist && t >= 0 && t <= 1) {
-        // Overlap Prevention: if not in snap zone but penetrated wall core, clamp outward so it never overlaps
+        // Overlap Prevention: clamp strictly outward so units never overlap walls
         pos.x = proj.x + normOut.x * flushDist;
         pos.y = proj.y + normOut.y * flushDist;
       }
@@ -1290,6 +1350,25 @@
 
     if (bestWallSnap) {
       return bestWallSnap;
+    }
+
+    // Secondary collision clamping against any intersecting wall cores
+    for (var w2 = 0; w2 < walls.length; w2++) {
+      var wObj = walls[w2];
+      var wPoly = Core.wallPolygon(wObj);
+      var fDummy = { pos: pos, rotY: rotY, dimensions: fDims };
+      var fPoly = Core.getFurniturePolygon(fDummy);
+      if (Core.polygonsIntersect(fPoly, wPoly, 10)) {
+        var wDir2 = Core.wallDirection(wObj);
+        var wNorm2 = Core.wallNormal(wObj);
+        var toF = { x: pos.x - wObj.start.x, y: pos.y - wObj.start.y };
+        var sD = toF.x * wNorm2.x + toF.y * wNorm2.y;
+        var sSign = sD >= 0 ? 1 : -1;
+        var reqDist = ((wObj.thickness || 150) / 2) + halfD;
+        var tProj = Math.max(0, Math.min(Core.wallLength(wObj), toF.x * wDir2.x + toF.y * wDir2.y));
+        pos.x = wObj.start.x + wDir2.x * tProj + sSign * wNorm2.x * reqDist;
+        pos.y = wObj.start.y + wDir2.y * tProj + sSign * wNorm2.y * reqDist;
+      }
     }
 
     return { pos: pos, rotY: rotY };
@@ -1707,13 +1786,27 @@
   };
 
   PlanEditor.prototype.renderWalls = function (ctx) {
-    var walls = this.project.plan.walls;
+    var walls = this.project.plan.walls || [];
+    var self = this;
+
+    // Helper: find connected walls at a point
+    var getConnected = function (pt, excludeId) {
+      var res = [];
+      for (var j = 0; j < walls.length; j++) {
+        var ow = walls[j];
+        if (ow.id === excludeId) continue;
+        if (Vec2.dist(pt, ow.start) < 60) res.push({ wall: ow, endpoint: 'start', pt: ow.start });
+        else if (Vec2.dist(pt, ow.end) < 60) res.push({ wall: ow, endpoint: 'end', pt: ow.end });
+      }
+      return res;
+    };
+
+    // ── PASS 1: Fill all wall polygons and corner junction quads (L-Joint Solid Fill) ──
     for (var i = 0; i < walls.length; i++) {
       var w = walls[i];
       var isSelected = this.isSelected('wall', w.id);
       var poly = Core.wallPolygon(w);
 
-      // Fill wall thickness
       ctx.fillStyle = isSelected ? '#1B4F72' : '#33302B';
       ctx.beginPath();
       var sp0 = this.worldToScreen(poly[0]);
@@ -1725,22 +1818,111 @@
       ctx.closePath();
       ctx.fill();
 
-      // Outer outline
-      ctx.strokeStyle = isSelected ? '#2E7BB5' : '#1A1816';
-      ctx.lineWidth = isSelected ? 2 : 1;
+      // Fill L-corner junction miter quads where two walls meet
+      var startConns = getConnected(w.start, w.id);
+      for (var sc = 0; sc < startConns.length; sc++) {
+        var otherW = startConns[sc].wall;
+        var oPoly = Core.wallPolygon(otherW);
+        var halfTW = (w.thickness || 150) / 2;
+        var halfTO = (otherW.thickness || 150) / 2;
+        var junctionPoly = [
+          poly[0], poly[3],
+          startConns[sc].endpoint === 'start' ? oPoly[3] : oPoly[2],
+          startConns[sc].endpoint === 'start' ? oPoly[0] : oPoly[1]
+        ];
+        ctx.beginPath();
+        var j0 = this.worldToScreen(junctionPoly[0]);
+        ctx.moveTo(j0.x, j0.y);
+        for (var jp = 1; jp < junctionPoly.length; jp++) {
+          var jPt = this.worldToScreen(junctionPoly[jp]);
+          ctx.lineTo(jPt.x, jPt.y);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    // ── PASS 2: Stroke Wall Outlines (L-Joint Connected Miter, No Internal Dividing Lines) ──
+    for (var k = 0; k < walls.length; k++) {
+      var wk = walls[k];
+      var isSelK = this.isSelected('wall', wk.id);
+      var polyK = Core.wallPolygon(wk);
+      var startConnsK = getConnected(wk.start, wk.id);
+      var endConnsK = getConnected(wk.end, wk.id);
+
+      ctx.strokeStyle = isSelK ? '#2E7BB5' : '#1A1816';
+      ctx.lineWidth = isSelK ? 2 : 1;
+
+      // Stroke Longitudinal Side 1 (p0 to p1)
+      ctx.beginPath();
+      var spK0 = this.worldToScreen(polyK[0]);
+      var spK1 = this.worldToScreen(polyK[1]);
+      ctx.moveTo(spK0.x, spK0.y);
+      ctx.lineTo(spK1.x, spK1.y);
       ctx.stroke();
 
+      // Stroke Longitudinal Side 2 (p2 to p3)
+      ctx.beginPath();
+      var spK2 = this.worldToScreen(polyK[2]);
+      var spK3 = this.worldToScreen(polyK[3]);
+      ctx.moveTo(spK2.x, spK2.y);
+      ctx.lineTo(spK3.x, spK3.y);
+      ctx.stroke();
+
+      // End-Cap B (p1 to p2): ONLY stroke if this end is free/unconnected
+      // If connected to another wall, suppressing the stroke links corners into a seamless L-joint!
+      if (endConnsK.length === 0) {
+        ctx.beginPath();
+        ctx.moveTo(spK1.x, spK1.y);
+        ctx.lineTo(spK2.x, spK2.y);
+        ctx.stroke();
+      } else {
+        // Connect outer and inner corner lines across junction
+        for (var ec = 0; ec < endConnsK.length; ec++) {
+          var eW = endConnsK[ec].wall;
+          var ePoly = Core.wallPolygon(eW);
+          var eCornerA = (endConnsK[ec].endpoint === 'start') ? ePoly[0] : ePoly[1];
+          var eCornerB = (endConnsK[ec].endpoint === 'start') ? ePoly[3] : ePoly[2];
+
+          // Connect closest outer pair and inner pair
+          var d1 = Vec2.dist(polyK[1], eCornerA);
+          var d2 = Vec2.dist(polyK[1], eCornerB);
+          var pOuter = d1 < d2 ? eCornerA : eCornerB;
+          var pInner = d1 < d2 ? eCornerB : eCornerA;
+
+          ctx.beginPath();
+          var spOuter = this.worldToScreen(pOuter);
+          ctx.moveTo(spK1.x, spK1.y);
+          ctx.lineTo(spOuter.x, spOuter.y);
+          ctx.stroke();
+
+          ctx.beginPath();
+          var spInner = this.worldToScreen(pInner);
+          ctx.moveTo(spK2.x, spK2.y);
+          ctx.lineTo(spInner.x, spInner.y);
+          ctx.stroke();
+        }
+      }
+
+      // End-Cap A (p3 to p0): ONLY stroke if this start is free/unconnected
+      if (startConnsK.length === 0) {
+        ctx.beginPath();
+        ctx.moveTo(spK3.x, spK3.y);
+        ctx.lineTo(spK0.x, spK0.y);
+        ctx.stroke();
+      }
+
       // If selected or hovered, draw distance to parallel walls
-      if (isSelected || (this.hoveredWallId === w.id && (!this.selected || !this.selected.some(function(s){ return s.type === 'wall'; })))) {
-        this.renderParallelWallDimensions(ctx, w);
+      if (isSelK || (this.hoveredWallId === wk.id && (!this.selected || !this.selected.some(function(s){ return s.type === 'wall'; })))) {
+        this.renderParallelWallDimensions(ctx, wk);
       }
 
       // If selected, draw handles at endpoints and joint locks
-      if (isSelected) {
-        this.renderHandle(ctx, w.start);
-        this.renderHandle(ctx, w.end);
-        this.renderLockBadge(ctx, w, 'A');
-        this.renderLockBadge(ctx, w, 'B');
+      if (isSelK) {
+        this.renderHandle(ctx, wk.start);
+        this.renderHandle(ctx, wk.end);
+        this.renderLockBadge(ctx, wk, 'A');
+        this.renderLockBadge(ctx, wk, 'B');
       }
     }
   };
@@ -2341,14 +2523,22 @@
 
     // Case 1: Wall with NO openings
     if (wallOpenings.length === 0) {
-      var dsWorld = { x: w.start.x + norm.x * dimOffset, y: w.start.y + norm.y * dimOffset };
-      var deWorld = { x: w.end.x + norm.x * dimOffset, y: w.end.y + norm.y * dimOffset };
+      // Calculate clear inner dimension between adjoining plaster faces
+      var planObj = this.project && this.project.plan;
+      var innerMm = (Core.getWallInnerLength ? Core.getWallInnerLength(w, planObj) : lMm);
+      var innerSeg = (Core.getWallInnerSegment ? Core.getWallInnerSegment(w, planObj) : null);
+      var hasAdjoining = innerSeg && (innerSeg.startDeduction > 10 || innerSeg.endDeduction > 10);
+      var ptStart = hasAdjoining ? innerSeg.start : w.start;
+      var ptEnd = hasAdjoining ? innerSeg.end : w.end;
+
+      var dsWorld = { x: ptStart.x + norm.x * dimOffset, y: ptStart.y + norm.y * dimOffset };
+      var deWorld = { x: ptEnd.x + norm.x * dimOffset, y: ptEnd.y + norm.y * dimOffset };
       var sDs = this.worldToScreen(dsWorld);
       var sDe = this.worldToScreen(deWorld);
 
-      // Extension witness lines
-      var wsOff = this.worldToScreen({ x: w.start.x + norm.x * (halfT + 15), y: w.start.y + norm.y * (halfT + 15) });
-      var weOff = this.worldToScreen({ x: w.end.x + norm.x * (halfT + 15), y: w.end.y + norm.y * (halfT + 15) });
+      // Extension witness lines originating directly from inner plaster corner faces
+      var wsOff = this.worldToScreen({ x: ptStart.x + norm.x * (halfT + 15), y: ptStart.y + norm.y * (halfT + 15) });
+      var weOff = this.worldToScreen({ x: ptEnd.x + norm.x * (halfT + 15), y: ptEnd.y + norm.y * (halfT + 15) });
       var dsExt = this.worldToScreen({ x: dsWorld.x + norm.x * 45, y: dsWorld.y + norm.y * 45 });
       var deExt = this.worldToScreen({ x: deWorld.x + norm.x * 45, y: deWorld.y + norm.y * 45 });
 
@@ -2377,10 +2567,12 @@
       ctx.arc(sDe.x, sDe.y, 3.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Dimension text pill
+      // Dimension text pill - Displays Clear Inner Span (e.g. 5'-0" [Inner])
       var midX = (sDs.x + sDe.x) / 2;
       var midY = (sDs.y + sDe.y) / 2;
-      var dimText = this.formatDim(lMm);
+      var dimText = hasAdjoining ?
+        (this.formatDim(innerMm) + ' [Inner]') :
+        this.formatDim(lMm);
       drawDimPill(midX, midY, dimText);
 
       // If active, show Corner A, Corner B, and Arrow 1
@@ -2735,17 +2927,17 @@
       var sEnd = this.worldToScreen(snap.pt);
       var distMm = Math.round(Vec2.dist(this.wallChainStart, snap.pt));
 
-      // 1a. Draw alignment guide lines if snapped to perpendicular, parallel, or orthogonal
+      // 1a. Draw alignment guide lines with vibrant color coding
       if (snap.type === 'perpendicular' || snap.type === 'parallel') {
         var isPerp = (snap.type === 'perpendicular');
         ctx.save();
-        ctx.strokeStyle = isPerp ? '#10b981' : '#059669'; // Emerald green
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = isPerp ? '#10b981' : '#2563eb'; // Emerald green (perp) or Royal Blue (parallel)
+        ctx.lineWidth = 2;
         ctx.setLineDash([6, 4]);
 
         var gDx = sEnd.x - sStart.x, gDy = sEnd.y - sStart.y;
         var gLen = Math.hypot(gDx, gDy) || 1;
-        var ext = 1800;
+        var ext = 2200;
         ctx.beginPath();
         ctx.moveTo(sStart.x - (gDx / gLen) * ext, sStart.y - (gDy / gLen) * ext);
         ctx.lineTo(sEnd.x + (gDx / gLen) * ext, sEnd.y + (gDy / gLen) * ext);
@@ -2759,7 +2951,7 @@
         ctx.font = '700 11px "IBM Plex Sans", sans-serif';
         var gText = (isPerp ? '⊥ 90° Perpendicular' : '∥ Parallel') + (snap.target && snap.target.id ? ' to Wall' : '');
         var gtw = ctx.measureText(gText).width;
-        ctx.fillStyle = isPerp ? '#065f46' : '#047857';
+        ctx.fillStyle = isPerp ? '#065f46' : '#1e40af';
         ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(gMidX - gtw / 2 - 8, gMidY - 10, gtw + 16, 20, 4);
         else ctx.rect(gMidX - gtw / 2 - 8, gMidY - 10, gtw + 16, 20);
@@ -2770,15 +2962,23 @@
         ctx.fillText(gText, gMidX, gMidY);
         ctx.restore();
       } else if (snap.type === 'ortho' || snap.type === 'angle') {
+        // Distinct color by alignment angle: Amber for Horizontal, Cyan for Vertical, Purple for 45°
+        var deg = snap.angleDeg || 0;
+        var isH = (deg === 0 || deg === 180 || deg === 360);
+        var isV = (deg === 90 || deg === 270);
+        var guideCol = isH ? '#f59e0b' : (isV ? '#06b6d4' : '#a855f7');
+        var badgeBg = isH ? '#d97706' : (isV ? '#0891b2' : '#7e22ce');
+        var aLabel = isH ? ('↔ ' + deg + '° Horizontal') : (isV ? ('↕ ' + deg + '° Vertical') : ('∡ ' + deg + '° Angle'));
+
         ctx.save();
-        ctx.strokeStyle = '#0284c7'; // Sky blue
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = guideCol;
+        ctx.lineWidth = 2;
         ctx.setLineDash([5, 4]);
         var gDx2 = sEnd.x - sStart.x, gDy2 = sEnd.y - sStart.y;
         var gLen2 = Math.hypot(gDx2, gDy2) || 1;
         ctx.beginPath();
-        ctx.moveTo(sStart.x - (gDx2 / gLen2) * 1200, sStart.y - (gDy2 / gLen2) * 1200);
-        ctx.lineTo(sEnd.x + (gDx2 / gLen2) * 1200, sEnd.y + (gDy2 / gLen2) * 1200);
+        ctx.moveTo(sStart.x - (gDx2 / gLen2) * 1600, sStart.y - (gDy2 / gLen2) * 1600);
+        ctx.lineTo(sEnd.x + (gDx2 / gLen2) * 1600, sEnd.y + (gDy2 / gLen2) * 1600);
         ctx.stroke();
         ctx.restore();
 
@@ -2787,9 +2987,8 @@
         var gMidY2 = (sStart.y + sEnd.y) / 2 - 38;
         ctx.save();
         ctx.font = '700 11px "IBM Plex Mono", monospace';
-        var aText = (snap.label || (snap.angleDeg + '°'));
-        var atw = ctx.measureText(aText).width;
-        ctx.fillStyle = '#0369a1';
+        var atw = ctx.measureText(aLabel).width;
+        ctx.fillStyle = badgeBg;
         ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(gMidX2 - atw / 2 - 8, gMidY2 - 10, atw + 16, 20, 4);
         else ctx.rect(gMidX2 - atw / 2 - 8, gMidY2 - 10, atw + 16, 20);
@@ -2797,7 +2996,7 @@
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(aText, gMidX2, gMidY2);
+        ctx.fillText(aLabel, gMidX2, gMidY2);
         ctx.restore();
       }
 
@@ -2926,10 +3125,22 @@
         ctx.fillText(hudText, midX, midY);
         ctx.restore();
       } else {
-        // Standard dimension indicator
+        // Standard dimension indicator with Clear Inner Span
         ctx.save();
         ctx.font = '600 12px "IBM Plex Mono", monospace';
-        var dText = this.formatDim(distMm);
+        var pWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
+        var sConnW = null, eConnW = null;
+        for (var pi = 0; pi < pWalls.length; pi++) {
+          if (!sConnW && (Vec2.dist(this.wallChainStart, pWalls[pi].start) < 60 || Vec2.dist(this.wallChainStart, pWalls[pi].end) < 60)) sConnW = pWalls[pi];
+          if (!eConnW && (Vec2.dist(snap.pt, pWalls[pi].start) < 60 || Vec2.dist(snap.pt, pWalls[pi].end) < 60)) eConnW = pWalls[pi];
+        }
+        var sDed = sConnW ? ((sConnW.thickness || 150) / 2) : 0;
+        var eDed = eConnW ? ((eConnW.thickness || 150) / 2) : 0;
+        var innerPrev = Math.max(0, distMm - (sDed + eDed));
+
+        var dText = (sDed > 0 || eDed > 0) ?
+          (this.formatDim(innerPrev) + ' [Inner] · ' + this.formatDim(distMm)) :
+          this.formatDim(distMm);
         var dtw = ctx.measureText(dText).width;
         ctx.fillStyle = 'rgba(27, 79, 114, 0.95)';
         ctx.beginPath();

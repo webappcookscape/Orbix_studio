@@ -1628,33 +1628,75 @@
       box(0, -4490, 0, 6000, 80, 6000, 0.7, 0xe9e3d8);
       return s;
     }
-    function makeGrassFloorMat() {
+    function makeFloorMat(type) {
+      type = type || window.currentFloorType || "white_tile";
       var c = document.createElement("canvas"); c.width = c.height = 512;
-      var g = c.getContext("2d"), rnd = mulberry(4242);
-      // Darker grass-green / mossy grout line
-      g.fillStyle = "#325A1C"; g.fillRect(0, 0, 512, 512);
-      for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
-        // Fresh, vibrant grass green tiles
-        g.fillStyle = (i + j) % 2 ? "#5EAC34" : "#529E2C"; g.fillRect(i * 256 + 4, j * 256 + 4, 248, 248);
-        // Fine organic grass blade stippling
-        for (var k = 0; k < 280; k++) {
-          g.fillStyle = "rgba(25,60,12," + (0.06 + rnd() * 0.10).toFixed(3) + ")";
-          g.fillRect(i * 256 + 4 + rnd() * 248, j * 256 + 4 + rnd() * 248, 1 + rnd() * 3, 2 + rnd() * 3);
+      var g = c.getContext("2d");
+
+      if (type === "white_tile") {
+        // Crisp White Italian Carrara Porcelain Tile (800x800mm)
+        g.fillStyle = "#E8E8EC"; g.fillRect(0, 0, 512, 512);
+        for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
+          g.fillStyle = (i + j) % 2 ? "#FAFAFC" : "#F4F4F8"; g.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
+          g.strokeStyle = "rgba(180, 185, 195, 0.22)"; g.lineWidth = 1.8;
+          g.beginPath(); g.moveTo(i * 256 + 20, j * 256 + 30);
+          g.bezierCurveTo(i * 256 + 100, j * 256 + 90, i * 256 + 140, j * 256 + 180, i * 256 + 230, j * 256 + 220);
+          g.stroke();
+          g.strokeStyle = "rgba(195, 200, 210, 0.15)"; g.lineWidth = 1.2;
+          g.beginPath(); g.moveTo(i * 256 + 180, j * 256 + 40);
+          g.bezierCurveTo(i * 256 + 120, j * 256 + 110, i * 256 + 70, j * 256 + 190, i * 256 + 50, j * 256 + 240);
+          g.stroke();
         }
-        for (var k = 0; k < 140; k++) {
-          g.fillStyle = "rgba(165,230,90," + (0.08 + rnd() * 0.14).toFixed(3) + ")";
-          g.fillRect(i * 256 + 4 + rnd() * 248, j * 256 + 4 + rnd() * 248, 1 + rnd() * 2, 1 + rnd() * 2);
+      } else if (type === "square_tile") {
+        // Classic Neutral Warm White Square Ceramic Tiles (600x600mm)
+        g.fillStyle = "#CFC8BE"; g.fillRect(0, 0, 512, 512);
+        for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
+          g.fillStyle = (i + j) % 2 ? "#F5F2EB" : "#EFECE4"; g.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
+          for (var s = 0; s < 180; s++) {
+            var rx = (Math.sin(s * 17.3 + i * 5) * 0.5 + 0.5) * 246;
+            var ry = (Math.cos(s * 23.7 + j * 7) * 0.5 + 0.5) * 246;
+            g.fillStyle = "rgba(0,0,0,0.015)"; g.fillRect(i * 256 + 3 + rx, j * 256 + 3 + ry, 2, 2);
+          }
+        }
+      } else if (type === "grey_tile") {
+        // Contemporary Matte Charcoal / Grey Stone Tile (600x1200mm)
+        g.fillStyle = "#2B2D31"; g.fillRect(0, 0, 512, 512);
+        for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
+          g.fillStyle = (i + j) % 2 ? "#5A5E66" : "#52565E"; g.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
+          for (var s = 0; s < 250; s++) {
+            var rx = (Math.sin(s * 13.1 + i * 3) * 0.5 + 0.5) * 246;
+            var ry = (Math.cos(s * 19.3 + j * 9) * 0.5 + 0.5) * 246;
+            g.fillStyle = "rgba(255,255,255,0.035)"; g.fillRect(i * 256 + 3 + rx, j * 256 + 3 + ry, 2, 1);
+          }
+        }
+      } else if (type === "wooden") {
+        // Warm Natural Oak Hardwood Parquet Planks
+        g.fillStyle = "#5A3D22"; g.fillRect(0, 0, 512, 512);
+        for (var p = 0; p < 8; p++) {
+          g.fillStyle = (p % 2 === 0) ? "#BA8C5E" : "#B28254";
+          g.fillRect(2, p * 64 + 2, 508, 60);
+          for (var wLine = 0; wLine < 14; wLine++) {
+            var yG = p * 64 + 4 + wLine * 4;
+            g.strokeStyle = (wLine % 2 === 0) ? "rgba(75, 45, 18, 0.18)" : "rgba(150, 105, 60, 0.2)";
+            g.lineWidth = (wLine % 3 === 0) ? 1.5 : 0.8;
+            g.beginPath(); g.moveTo(2, yG);
+            g.bezierCurveTo(150, yG + Math.sin(p + wLine) * 3, 350, yG - Math.cos(p + wLine) * 3, 510, yG);
+            g.stroke();
+          }
         }
       }
+
       var tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
       tex.repeat.set(120, 120);
       tex.encoding = THREE.sRGBEncoding;
       if (renderer && renderer.capabilities) tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      var isWhite = (type === "white_tile");
+      var isWood = (type === "wooden");
       var m = new THREE.MeshStandardMaterial({
         map: tex,
-        roughness: 0.65,
-        metalness: 0.02
+        roughness: isWhite ? 0.2 : (isWood ? 0.45 : 0.4),
+        metalness: isWhite ? 0.04 : 0.02
       });
       return m;
     }
@@ -1688,7 +1730,7 @@
       var fill = new THREE.DirectionalLight(0xe8eef8, 0.42); fill.position.set(2600, 1900, 4800); scene.add(fill);
       var rim = new THREE.DirectionalLight(0xdfe8f5, 0.4); rim.position.set(2400, 1600, -2600); scene.add(rim);
       scene.add(new THREE.HemisphereLight(0xeef1f5, 0x8c8478, 0.32));
-      floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), makeGrassFloorMat());
+      floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
       root = new THREE.Group(); scene.add(root);
       ok = true; return true;
@@ -1813,28 +1855,9 @@
     var floorT = null;
     function floorMat() {
       if (matCache["sp|floor"]) return matCache["sp|floor"];
-      if (false) {
-        /* (kept) dark polished stone floor */
-        var cn = document.createElement("canvas"); cn.width = cn.height = 512;
-        var gn = cn.getContext("2d"), rn = mulberry(777);
-        gn.fillStyle = "#1F1E1D"; gn.fillRect(0, 0, 512, 512);
-        for (var ii = 0; ii < 2; ii++) for (var jj = 0; jj < 2; jj++) { gn.fillStyle = (ii + jj) % 2 ? "#2B2A28" : "#282725"; gn.fillRect(ii * 256 + 2, jj * 256 + 2, 252, 252); for (var kk = 0; kk < 220; kk++) { gn.fillStyle = "rgba(255,255,255," + (0.01 + rn() * 0.03).toFixed(3) + ")"; gn.fillRect(ii * 256 + 2 + rn() * 252, jj * 256 + 2 + rn() * 252, 1 + rn() * 3, 1); } }
-        floorT = new THREE.CanvasTexture(cn); floorT.wrapS = floorT.wrapT = THREE.RepeatWrapping; floorT.encoding = THREE.sRGBEncoding; floorT.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        var md = new THREE.MeshPhysicalMaterial({ map: floorT, roughness: 0.16, metalness: 0, clearcoat: 0.9, clearcoatRoughness: 0.12, envMapIntensity: 0.9 });
-        matCache["sp|floor"] = md; return md;
-      }
-      /* 2 × 2 large porcelain tiles per repeat (1200 mm) — 600 mm tiles with a fine grout (Grass Green) */
-      var c = document.createElement("canvas"); c.width = c.height = 512;
-      var g = c.getContext("2d"), rnd = mulberry(4242);
-      g.fillStyle = "#325A1C"; g.fillRect(0, 0, 512, 512);
-      for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
-        g.fillStyle = (i + j) % 2 ? "#5EAC34" : "#529E2C"; g.fillRect(i * 256 + 4, j * 256 + 4, 248, 248);
-        for (var k = 0; k < 280; k++) { g.fillStyle = "rgba(25,60,12," + (0.06 + rnd() * 0.10).toFixed(3) + ")"; g.fillRect(i * 256 + 4 + rnd() * 248, j * 256 + 4 + rnd() * 248, 1 + rnd() * 3, 2 + rnd() * 3); }
-        for (var k = 0; k < 140; k++) { g.fillStyle = "rgba(165,230,90," + (0.08 + rnd() * 0.14).toFixed(3) + ")"; g.fillRect(i * 256 + 4 + rnd() * 248, j * 256 + 4 + rnd() * 248, 1 + rnd() * 2, 1 + rnd() * 2); }
-      }
-      floorT = new THREE.CanvasTexture(c); floorT.wrapS = floorT.wrapT = THREE.RepeatWrapping; floorT.encoding = THREE.sRGBEncoding; floorT.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      var m = new THREE.MeshPhysicalMaterial({ map: floorT, roughness: 0.32, metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.25, envMapIntensity: 0.6 });
-      matCache["sp|floor"] = m; return m;
+      var m = makeFloorMat(window.currentFloorType || "white_tile");
+      matCache["sp|floor"] = m;
+      return m;
     }
     /* ── stone counters: granite speckle / marble veins ── */
     var STONES = {
@@ -2193,8 +2216,14 @@
       }
 
       if (furnPos) {
-        var baseElev = (activeU && activeU.elev) ? activeU.elev : 0;
-        root.position.set(furnPos.x, (furnPos.z || 0) - baseElev, furnPos.y);
+        var fZ = (furnPos.z !== undefined && furnPos.z !== null) ? parseFloat(furnPos.z) : 0;
+        var uElev = (activeU && activeU.elev !== undefined && activeU.elev !== null) ? parseFloat(activeU.elev) : 0;
+        // Total target elevation AFFL:
+        var targetElev = Math.max(fZ, uElev);
+        // layoutRun(u) already adds uElev to internal box.y coordinates.
+        // Set root.position.y to targetElev - uElev so root.y + box.y == targetElev ALWAYS without double-elevation!
+        var rootY = targetElev - uElev;
+        root.position.set(furnPos.x, rootY, furnPos.y);
         root.rotation.y = -furnRot;
       } else {
         root.position.set(0, 0, 0);
@@ -2981,7 +3010,7 @@
       });
       return out;
     }
-    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; } };
+    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; if (floor) floor.material = makeFloorMat(type); render(); } };
   })();
 
   /* ═══════════════════════════════════════════════════════════════
@@ -4869,6 +4898,9 @@
     });
     $all(".view").forEach(function (s) { s.classList.toggle("is-on", s.id === "view-" + v); });
     if (v === "design") {
+      if (window.OrbixUI && typeof window.OrbixUI.update3DStudioRoomOptions === 'function') {
+        window.OrbixUI.update3DStudioRoomOptions();
+      }
       if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
         window.OrbixUI.syncProjectUnitsTo3DStudio();
       }

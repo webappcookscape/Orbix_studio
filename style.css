@@ -279,6 +279,46 @@ input,select{font:inherit;color:inherit}
 .minibtn:hover{color:var(--ink);border-color:var(--ink-3)}
 .minibtn[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
 
+.floor-finish-group{
+  display:inline-flex;
+  align-items:center;
+  gap:2px;
+  background:#f1f5f9;
+  padding:2px;
+  border-radius:4px;
+  border:1px solid var(--rule);
+}
+.floor-finish-group .minibtn{
+  padding:4px 8px;
+  font-size:10.5px;
+  border:none;
+  background:transparent;
+  border-radius:3px;
+  cursor:pointer;
+}
+.floor-finish-group .minibtn:hover{
+  background:#e2e8f0;
+}
+.floor-finish-group .minibtn.is-on{
+  background:#2563eb;
+  color:#ffffff;
+  font-weight:700;
+}
+#studioRoomSelect{
+  font-family:var(--cond);
+  font-size:11px;
+  font-weight:600;
+  border:1px solid var(--rule);
+  padding:4px 8px;
+  border-radius:4px;
+  background:#ffffff;
+  color:var(--ink-2);
+  outline:none;
+}
+#studioRoomSelect:hover{
+  border-color:var(--ink-3);
+}
+
 /* ══════════ RAIL ══════════ */
 .rail{
   flex:0 0 330px;display:flex;flex-direction:column;min-height:0;

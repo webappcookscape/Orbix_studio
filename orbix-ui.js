@@ -114,7 +114,10 @@
       if (!proj) return;
       this.project = proj;
       this.syncProjectUnitsTo3DStudio(); // Synchronize units FIRST so window.S.units reflects project
-      this.saveToLocalStorage();         // THEN save clean state to local storage
+      this.saveToLocalStorage();
+      if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+        root.OrbixProjects.saveActiveProject({ plan: this.project });
+      }         // THEN save clean state to local storage
       if (this.editor) {
         this.editor.project = proj;
         this.editor.selected = [];
@@ -251,6 +254,41 @@
       var btnExportSkpTop = document.getElementById('exportSkpTopBtn');
       if (btnExportSkpTop) {
         btnExportSkpTop.addEventListener('click', handleExportSkp);
+      }
+
+      // 3D Floor Finish Switcher buttons
+      var floorGroup = document.getElementById('floorFinishGroup');
+      if (floorGroup) {
+        var floorBtns = floorGroup.querySelectorAll('button[data-floor]');
+        floorBtns.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var floorType = btn.getAttribute('data-floor');
+            floorBtns.forEach(function (b) { b.classList.remove('is-on'); });
+            btn.classList.add('is-on');
+            if (self.archRenderer && typeof self.archRenderer.setFloorMaterial === 'function') {
+              self.archRenderer.setFloorMaterial(floorType);
+            }
+            if (window.__cc && window.__cc.gl && typeof window.__cc.gl.setFloorMaterial === 'function') {
+              window.__cc.gl.setFloorMaterial(floorType);
+            }
+            if (typeof window.toast === 'function') {
+              window.toast('Floor Finish: ' + (btn.title || floorType));
+            }
+          });
+        });
+      }
+
+      // 3D Studio Room Selector
+      var studioRoomSel = document.getElementById('studioRoomSelect');
+      if (studioRoomSel) {
+        studioRoomSel.addEventListener('change', function () {
+          var roomId = studioRoomSel.value;
+          self.render3DHome(false, roomId);
+          if (typeof window.toast === 'function') {
+            var selOpt = studioRoomSel.options[studioRoomSel.selectedIndex];
+            window.toast('3D Studio: Viewing ' + (selOpt ? selOpt.textContent : roomId));
+          }
+        });
       }
 
       var btnExportJson = document.getElementById('planExportJson');
@@ -733,6 +771,28 @@
         badge.innerHTML = '<span class="badge-label">Estimated Total:</span> <span class="badge-amount">' +
           quote.currencySymbol + ' ' + quote.grandTotal.toLocaleString('en-IN') + '</span>';
       }
+
+      this.update3DStudioRoomOptions();
+    },
+
+    update3DStudioRoomOptions: function () {
+      var studioRoomSel = document.getElementById('studioRoomSelect');
+      if (!studioRoomSel) return;
+      var curVal = studioRoomSel.value || 'all';
+      var plan = this.getPlan();
+      var rooms = (plan && plan.rooms) ? plan.rooms : [];
+      var html = '<option value="all">🏠 All Rooms</option>';
+      rooms.forEach(function (rm, idx) {
+        var rName = rm.name || ('Room ' + (idx + 1));
+        var rType = rm.type ? (' (' + rm.type + ')') : '';
+        html += '<option value="' + rm.id + '">' + rName + rType + '</option>';
+      });
+      studioRoomSel.innerHTML = html;
+      if (rooms.some(function (r) { return r.id === curVal; })) {
+        studioRoomSel.value = curVal;
+      } else {
+        studioRoomSel.value = 'all';
+      }
     },
 
     renderInspector: function (selected) {
@@ -750,11 +810,16 @@
         var w = this.editor.getWall(sel.id);
         if (!w) return;
         var lenMm = Math.round(Core.wallLength(w));
+        var planObj = self.editor.project && self.editor.project.plan;
+        var innerMm = Math.round(Core.getWallInnerLength ? Core.getWallInnerLength(w, planObj) : lenMm);
+        var innerDisplay = self.editor.formatDim(innerMm);
         var lenDisplay = self.editor.formatDim(lenMm);
         panel.innerHTML =
           '<div class="insp-title">Wall Properties</div>' +
-          '<div class="insp-row"><label>Length ' + (self.editor.unitSystem === 'imperial' ? '(ft/in or mm)' : '(mm)') + '</label><input type="text" id="inspWallLen" value="' + (self.editor.unitSystem === 'imperial' ? lenDisplay : lenMm) + '">' +
-          '<span style="font-size:11px;color:#64748B;">Current: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
+          '<div class="insp-row"><label>Clear Inner Length ' + (self.editor.unitSystem === 'imperial' ? '(e.g. 5ft or mm)' : '(mm)') + '</label><input type="text" id="inspWallInnerLen" value="' + (self.editor.unitSystem === 'imperial' ? innerDisplay : innerMm) + '">' +
+          '<span style="font-size:11px;color:#0284c7;font-weight:600;">Clear Inner: ' + innerDisplay + ' (' + innerMm + ' mm)</span></div>' +
+          '<div class="insp-row"><label>Centerline Length</label><input type="text" id="inspWallLen" value="' + (self.editor.unitSystem === 'imperial' ? lenDisplay : lenMm) + '">' +
+          '<span style="font-size:11px;color:#64748B;">Centerline: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
           '<div style="margin:10px 0;padding:8px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">' +
@@ -764,6 +829,23 @@
           '<button class="btn small full" id="inspWallLockB" style="font-size:11px;">' + (w.endLocked !== false ? '🔒 Corner B Locked' : '🔓 Corner B Unlocked') + '</button>' +
           '</div></div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
+
+        var elInner = document.getElementById('inspWallInnerLen');
+        if (elInner) {
+          elInner.addEventListener('change', function (e) {
+            var targetInner = self.editor.parseDimInput(e.target.value);
+            if (targetInner > 50) {
+              var anchor = (w.startLocked === false && w.endLocked !== false) ? 'end' : 'start';
+              if (Core.setWallInnerLength) {
+                Core.setWallInnerLength(w, targetInner, self.editor.project && self.editor.project.plan, anchor);
+              }
+              Core.detectRooms(self.editor.project);
+              self.editor.pushHistory('Resize Wall Inner Length');
+              self.editor.render();
+              self.renderInspector(self.editor.selected);
+            }
+          });
+        }
 
         var btnLockA = document.getElementById('inspWallLockA');
         if (btnLockA) {
@@ -1813,9 +1895,10 @@
               fn.shutterColors[sc] = existing.shutterCol;
               fn.shutterMaterials[sc] = existing.shutterCol;
             }
-          } else {
-            var sColExisting = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish);
-            if (sColExisting) existing.shutterCol = sColExisting;
+          } else if (fn.unitConfig && fn.unitConfig.shutterCol) {
+            existing.shutterCol = fn.unitConfig.shutterCol;
+          } else if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) {
+            existing.shutterCol = fn.materials.shutter.finish;
           }
 
           if (existing.carcass) {
@@ -1824,9 +1907,10 @@
             fn.materials = fn.materials || {};
             fn.materials.carcass = fn.materials.carcass || {};
             fn.materials.carcass.finish = existing.carcass;
-          } else {
-            var cColExisting = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish);
-            if (cColExisting) existing.carcass = cColExisting;
+          } else if (fn.unitConfig && fn.unitConfig.carcass) {
+            existing.carcass = fn.unitConfig.carcass;
+          } else if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) {
+            existing.carcass = fn.materials.carcass.finish;
           }
 
           if (existing.dstyle) {
@@ -2152,6 +2236,9 @@
       }
       if (this.project) this.project.units_count = furnList.length;
       this.saveToLocalStorage();
+      if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+        root.OrbixProjects.saveActiveProject({ plan: this.project });
+      }
       if (this.editor) this.editor.render();
       if (this.render3DHome) this.render3DHome(true);
       if (window.S && window.S.units && window.S.units[window.S.active]) {
@@ -2240,6 +2327,9 @@
       plan.furniture.push(newFurn);
       this.project.units_count = plan.furniture.length;
       this.saveToLocalStorage();
+      if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+        root.OrbixProjects.saveActiveProject({ plan: this.project });
+      }
       if (root.OrbixProjects && root.OrbixProjects.saveActiveProject) {
         root.OrbixProjects.saveActiveProject();
       }
@@ -2343,6 +2433,9 @@
 
       plan.furniture.push(newDecor);
       this.saveToLocalStorage();
+      if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+        root.OrbixProjects.saveActiveProject({ plan: this.project });
+      }
       if (root.OrbixProjects && root.OrbixProjects.saveActiveProject) {
         root.OrbixProjects.saveActiveProject();
       }
@@ -3863,7 +3956,7 @@
       this.syncProjectUnitsTo3DStudio();
     },
 
-    render3DHome: function (keepCamera) {
+    render3DHome: function (keepCamera, isolatedRoomId) {
       if (typeof THREE === 'undefined' || !window.__cc || !window.__cc.gl) return;
       var gl = window.__cc.gl;
       var scene = gl.getScene ? gl.getScene() : null;
@@ -3874,7 +3967,10 @@
       }
       if (this.archRenderer) {
         var proj = this.project || (this.editor && this.editor.project);
-        this.archRenderer.buildHome(proj);
+        if (isolatedRoomId !== undefined) {
+          this.currentIsolatedRoomId = (isolatedRoomId === 'all' || !isolatedRoomId) ? null : isolatedRoomId;
+        }
+        this.archRenderer.buildHome(proj, this.currentIsolatedRoomId);
         var homeObj = scene.getObjectByName('OrbixHome3D');
         var selFurnId = null;
         if (window.S && window.S.units && window.S.units[window.S.active]) {

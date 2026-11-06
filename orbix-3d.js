@@ -20,40 +20,147 @@
     this.opts = opts || {};
     this.group = null;
     this.materials = {};
+    this.selectedFloorType = 'white_tile';
+    this.isolatedRoomId = null;
     this.initMaterials();
   }
+
+  // Procedural Canvas Floor Texture Generator (White Tile, Square Tile, Grey Tile, Wooden)
+  ArchitecturalRenderer.createFloorTexture = function (type) {
+    if (typeof document === 'undefined') return null;
+    var canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    type = type || 'white_tile';
+
+    if (type === 'white_tile') {
+      // 800x800 White Italian Carrara Porcelain Tile
+      ctx.fillStyle = '#E8E8EC'; // Crisp grout line
+      ctx.fillRect(0, 0, 512, 512);
+      for (var i = 0; i < 2; i++) {
+        for (var j = 0; j < 2; j++) {
+          ctx.fillStyle = (i + j) % 2 ? '#FAFAFC' : '#F4F4F8';
+          ctx.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
+          // Delicate grey marble veins
+          ctx.strokeStyle = 'rgba(180, 185, 195, 0.22)';
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(i * 256 + 20, j * 256 + 30);
+          ctx.bezierCurveTo(i * 256 + 100, j * 256 + 90, i * 256 + 140, j * 256 + 180, i * 256 + 230, j * 256 + 220);
+          ctx.stroke();
+          ctx.strokeStyle = 'rgba(195, 200, 210, 0.15)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(i * 256 + 180, j * 256 + 40);
+          ctx.bezierCurveTo(i * 256 + 120, j * 256 + 110, i * 256 + 70, j * 256 + 190, i * 256 + 50, j * 256 + 240);
+          ctx.stroke();
+        }
+      }
+    } else if (type === 'square_tile') {
+      // 600x600 Classic Neutral Warm White Square Ceramic Tiles
+      ctx.fillStyle = '#CFC8BE'; // Neutral grout line
+      ctx.fillRect(0, 0, 512, 512);
+      for (var i = 0; i < 2; i++) {
+        for (var j = 0; j < 2; j++) {
+          ctx.fillStyle = (i + j) % 2 ? '#F5F2EB' : '#EFECE4';
+          ctx.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
+          for (var s = 0; s < 180; s++) {
+            var rx = (Math.sin(s * 17.3 + i * 5) * 0.5 + 0.5) * 246;
+            var ry = (Math.cos(s * 23.7 + j * 7) * 0.5 + 0.5) * 246;
+            ctx.fillStyle = 'rgba(0,0,0,0.015)';
+            ctx.fillRect(i * 256 + 3 + rx, j * 256 + 3 + ry, 2, 2);
+          }
+        }
+      }
+    } else if (type === 'grey_tile') {
+      // 600x1200 Contemporary Matte Charcoal / Grey Stone Tile
+      ctx.fillStyle = '#2B2D31'; // Dark grout line
+      ctx.fillRect(0, 0, 512, 512);
+      for (var i = 0; i < 2; i++) {
+        for (var j = 0; j < 2; j++) {
+          ctx.fillStyle = (i + j) % 2 ? '#5A5E66' : '#52565E';
+          ctx.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
+          for (var s = 0; s < 250; s++) {
+            var rx = (Math.sin(s * 13.1 + i * 3) * 0.5 + 0.5) * 246;
+            var ry = (Math.cos(s * 19.3 + j * 9) * 0.5 + 0.5) * 246;
+            ctx.fillStyle = 'rgba(255,255,255,0.035)';
+            ctx.fillRect(i * 256 + 3 + rx, j * 256 + 3 + ry, 2, 1);
+          }
+        }
+      }
+    } else if (type === 'wooden') {
+      // Warm Natural Oak / Teak Hardwood Parquet Planks
+      ctx.fillStyle = '#5A3D22'; // Bevel seam between planks
+      ctx.fillRect(0, 0, 512, 512);
+      var plankH = 64;
+      for (var p = 0; p < 8; p++) {
+        var baseWood = (p % 2 === 0) ? '#BA8C5E' : '#B28254';
+        ctx.fillStyle = baseWood;
+        ctx.fillRect(2, p * plankH + 2, 508, plankH - 4);
+        for (var g = 0; g < 14; g++) {
+          var yG = p * plankH + 4 + g * 4;
+          ctx.strokeStyle = (g % 2 === 0) ? 'rgba(75, 45, 18, 0.18)' : 'rgba(150, 105, 60, 0.2)';
+          ctx.lineWidth = (g % 3 === 0) ? 1.5 : 0.8;
+          ctx.beginPath();
+          ctx.moveTo(2, yG);
+          ctx.bezierCurveTo(150, yG + Math.sin(p + g) * 3, 350, yG - Math.cos(p + g) * 3, 510, yG);
+          ctx.stroke();
+        }
+      }
+    }
+
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(8, 8);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  };
+
+  ArchitecturalRenderer.prototype.createFloorMaterial = function (type) {
+    if (typeof THREE === 'undefined') return null;
+    type = type || this.selectedFloorType || 'white_tile';
+    var tex = ArchitecturalRenderer.createFloorTexture(type);
+    var isWood = (type === 'wooden');
+    var isGloss = (type === 'white_tile');
+
+    return new THREE.MeshStandardMaterial({
+      map: tex,
+      roughness: isGloss ? 0.18 : (isWood ? 0.45 : 0.4),
+      metalness: isGloss ? 0.05 : 0.02,
+      side: THREE.DoubleSide
+    });
+  };
+
+  ArchitecturalRenderer.prototype.setFloorMaterial = function (type) {
+    this.selectedFloorType = type;
+    this.materials.floorTile = this.createFloorMaterial(type);
+    this.materials.floorWood = (type === 'wooden' ? this.materials.floorTile : this.createFloorMaterial('wooden'));
+  };
 
   ArchitecturalRenderer.prototype.initMaterials = function () {
     if (typeof THREE === 'undefined') return;
 
-    // Wall Plaster (Warm architectural beige matte)
+    // Wall Plaster (Warm architectural beige matte {beige})
     this.materials.wall = new THREE.MeshStandardMaterial({
-      color: 0xE8DEC8, // Warm interior beige
+      color: 0xEDE5D8, // Warm architectural beige
       roughness: 0.88,
       metalness: 0.02
     });
 
     // Wall Core (Cutaway section interior)
     this.materials.wallCore = new THREE.MeshStandardMaterial({
-      color: 0xD9CEBA, // Harmonious deeper beige core
+      color: 0xDFD6C4, // Harmonious deeper beige core
       roughness: 0.9,
       metalness: 0.0
     });
 
-    // Floor Finishes (Light green grass color) - DoubleSide so visible from all angles
-    this.materials.floorTile = new THREE.MeshStandardMaterial({
-      color: 0x97C96E,
-      roughness: 0.35,
-      metalness: 0.1,
-      side: THREE.DoubleSide
-    });
-
-    this.materials.floorWood = new THREE.MeshStandardMaterial({
-      color: 0xB8936A,
-      roughness: 0.5,
-      metalness: 0.05,
-      side: THREE.DoubleSide
-    });
+    // Floor Finishes: Architectural Procedural PBR (Default: White Tile)
+    this.selectedFloorType = this.selectedFloorType || 'white_tile';
+    this.materials.floorTile = this.createFloorMaterial(this.selectedFloorType);
+    this.materials.floorWood = this.createFloorMaterial('wooden');
 
     // Ceiling & False Ceiling
     this.materials.ceiling = new THREE.MeshStandardMaterial({
@@ -110,8 +217,13 @@
   /* ─────────────────────────────────────────────────────────────────────────────
      Build Complete 3D Home Scene
      ───────────────────────────────────────────────────────────────────────────── */
-  ArchitecturalRenderer.prototype.buildHome = function (project) {
+  ArchitecturalRenderer.prototype.buildHome = function (project, isolatedRoomId) {
     if (!this.scene || typeof THREE === 'undefined') return null;
+
+    if (isolatedRoomId !== undefined) {
+      this.isolatedRoomId = (isolatedRoomId === 'all' || !isolatedRoomId) ? null : isolatedRoomId;
+    }
+    var targetIsoId = this.isolatedRoomId;
 
     // Remove existing home group if any
     if (this.group) {
@@ -131,6 +243,41 @@
     var openings = plan.openings || [];
     var rooms = plan.rooms || [];
     var furniture = plan.furniture || [];
+
+    // Room Isolation Mode: select a particular room and view that room only!
+    var targetRoom = null;
+    if (targetIsoId) {
+      targetRoom = rooms.find(function (r) { return r.id === targetIsoId; });
+    }
+
+    if (targetRoom && targetRoom.polygon && targetRoom.polygon.length >= 3) {
+      // 1. Isolate room floor
+      rooms = [targetRoom];
+
+      // 2. Isolate perimeter walls of that room
+      var roomPoly = targetRoom.polygon;
+      walls = walls.filter(function (w) {
+        var midW = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
+        for (var pi = 0; pi < roomPoly.length; pi++) {
+          var pA = roomPoly[pi];
+          var pB = roomPoly[(pi + 1) % roomPoly.length];
+          var segDx = pB.x - pA.x, segDy = pB.y - pA.y;
+          var segLen = Math.hypot(segDx, segDy);
+          if (segLen < 1) continue;
+          var t = Math.max(0, Math.min(1, ((midW.x - pA.x) * segDx + (midW.y - pA.y) * segDy) / (segLen * segLen)));
+          var projX = pA.x + t * segDx, projY = pA.y + t * segDy;
+          if (Math.hypot(midW.x - projX, midW.y - projY) < 120) return true;
+        }
+        return false;
+      });
+
+      // 3. Isolate furniture inside target room
+      furniture = furniture.filter(function (f) {
+        if (f.roomId === targetRoom.id) return true;
+        if (f.pos && Core.Vec2.pointInPolygon(f.pos, roomPoly)) return true;
+        return false;
+      });
+    }
 
     // Map openings by wallId
     var openingsByWall = {};
@@ -923,8 +1070,8 @@
     var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1);
 
     // Carcass Materials (Resolves finish name, laminate code, or hex)
-    var carcassRaw = (furn.materials && furn.materials.carcass && furn.materials.carcass.finish) ||
-                     (furn.unitConfig && furn.unitConfig.carcass) ||
+    var carcassRaw = (furn.unitConfig && furn.unitConfig.carcass) ||
+                     (furn.materials && furn.materials.carcass && furn.materials.carcass.finish) ||
                      furn.carcassColor ||
                      'MDF 1135';
     var carcassColor = ArchitecturalRenderer.resolveFinishColor(carcassRaw, 0xEDEBE4);
@@ -957,25 +1104,25 @@
     var innerW = dims.W - 36;
     var innerD = dims.D - 20;
 
-    // Helper: Material for individual shutter s
+    // Helper: Material for individual shutter s (Prioritizes user's edited finish!)
     function getShutterMaterial(sIdx) {
-      var col = (furn.shutterColors && furn.shutterColors[sIdx]) || null;
       var matFin = (furn.unitConfig && furn.unitConfig.shutterCol) ||
                    (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) ||
                    (furn.shutterMaterials && furn.shutterMaterials[sIdx]) ||
+                   (furn.shutterColors && furn.shutterColors[sIdx]) ||
                    'MDF 3410';
 
-      var threeCol = 0x6E4E35;
-      if (col && (!furn.unitConfig || !furn.unitConfig.shutterCol || col === furn.unitConfig.shutterCol)) {
-        threeCol = ArchitecturalRenderer.resolveFinishColor(col, 0x6E4E35);
-      } else {
-        threeCol = ArchitecturalRenderer.resolveFinishColor(matFin, 0x6E4E35);
-      }
+      var threeCol = ArchitecturalRenderer.resolveFinishColor(matFin, 0x6E4E35);
       var isGloss = String(matFin).toLowerCase().indexOf('gloss') !== -1;
+      var isWood = String(matFin).toLowerCase().indexOf('wood') !== -1 ||
+                   String(matFin).toLowerCase().indexOf('oak') !== -1 ||
+                   String(matFin).toLowerCase().indexOf('walnut') !== -1 ||
+                   String(matFin).toLowerCase().indexOf('teak') !== -1;
+
       return new THREE.MeshStandardMaterial({
         color: threeCol,
-        roughness: isGloss ? 0.15 : 0.45,
-        metalness: 0.05
+        roughness: isGloss ? 0.15 : (isWood ? 0.45 : 0.6),
+        metalness: 0.04
       });
     }
 
