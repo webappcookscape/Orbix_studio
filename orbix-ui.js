@@ -2122,10 +2122,12 @@
             existing.D = fn.dimensions.D;
           }
 
+          if (existing.ctype === 'kitchen') existing.ctype = isWall ? 'kwall' : 'kbase';
           if (existing.ctype) {
             fn.unitConfig = fn.unitConfig || {};
             fn.unitConfig.ctype = existing.ctype;
           } else if (fn.unitConfig && fn.unitConfig.ctype) {
+            if (fn.unitConfig.ctype === 'kitchen') fn.unitConfig.ctype = isWall ? 'kwall' : 'kbase';
             existing.ctype = fn.unitConfig.ctype;
           }
 

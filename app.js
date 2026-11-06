@@ -4133,17 +4133,7 @@
       }
       return;
     }
-    var gT = grp(r, "Cupboard type");
-    var tg = el("tgrid", gT);
-    CTYPES.forEach(function (t) {
-      var b = el("tbtn" + ((u.ctype || "wardrobe") === t.id ? " is-on" : ""), tg, "button");
-      b.textContent = t.label; b.setAttribute("aria-pressed", String((u.ctype || "wardrobe") === t.id));
-      b.addEventListener("click", function () {
-        applyType(u, t.id);
-        if (t.id === "kitchen") { cam.yaw = -34; cam.pitch = -17; cam.zoom = -0.12; } else { cam.yaw = -26; cam.pitch = -7; cam.zoom = 0; }
-        renderRail(); renderAll();
-      });
-    });
+    if (u.ctype === "kitchen") u.ctype = (u.elev && u.elev >= 1000) ? "kwall" : "kbase";
     var gD = grp(r, "Door style");
     var dg = el("tgrid", gD);
     DSTYLES.forEach(function (s) {
@@ -4159,10 +4149,6 @@
         el(null, b, "i").textContent = p.label;
         b.addEventListener("click", function () { u.paint = p.id; renderRail(); renderAll(); });
       });
-    }
-    if ((u.ctype || "") === "kbase" && false) {
-      var rK = el("row", gT); rK.style.marginTop = "8px";
-      seg(rK, [{ l: "Granite black", v: "black" }, { l: "Marble white", v: "white" }], u.counter || "black", function (v) { u.counter = v; renderAll(); });
     }
     if (u.ctype === "kitchen") {
       var gK = grp(r, "Kitchen layout");
