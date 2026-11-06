@@ -364,21 +364,39 @@
     };
   }
 
-  function isWallUnitCategory(category, name) {
+  function isWallUnitCategory(category, name, code, costCategory) {
     var cat = (category || '').toLowerCase();
     var nm = (name || '').toLowerCase();
-    return cat.indexOf('wall') !== -1 || cat.indexOf('overhead') !== -1 || cat.indexOf('spice') !== -1 ||
-           cat.indexOf('loft') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'kitchen_wall' ||
-           cat === 'crockery_wall' || cat === 'spice_rack' || cat === 'loft_os' || cat === 'kitchen_os' ||
-           nm.indexOf('wall') !== -1 || nm.indexOf('overhead') !== -1 || nm.indexOf('spice rack') !== -1 ||
-           nm.indexOf('spice_rack') !== -1 || nm.indexOf('loft') !== -1;
+    var cd = (code || '').toLowerCase();
+    var cc = (costCategory || '').toLowerCase();
+
+    // Check categories and cost categories
+    if (cat.indexOf('wall') !== -1 || cat.indexOf('overhead') !== -1 || cat.indexOf('spice') !== -1 ||
+        cat.indexOf('loft') !== -1 || cat.indexOf('wm') !== -1 || cat.indexOf('wcm') !== -1 ||
+        cat === 'k_wall' || cat === 'kitchen_wall' || cat === 'crockery_wall' || cat === 'spice_rack' ||
+        cat === 'loft_os' || cat === 'kitchen_os' || cat === 'kitchen_wm') {
+      return true;
+    }
+    if (cc.indexOf('wall') !== -1 || cc.indexOf('overhead') !== -1 || cc.indexOf('spice') !== -1 ||
+        cc.indexOf('loft') !== -1 || cc.indexOf('wm') !== -1) {
+      return true;
+    }
+    if (cd.indexOf('wm') !== -1 || cd.indexOf('wcm') !== -1 || cd.indexOf('wall') !== -1) {
+      return true;
+    }
+    if (nm.indexOf('wall') !== -1 || nm.indexOf('overhead') !== -1 || nm.indexOf('spice rack') !== -1 ||
+        nm.indexOf('spice_rack') !== -1 || nm.indexOf('loft') !== -1 ||
+        /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nm)) {
+      return true;
+    }
+    return false;
   }
 
   function createFurniturePlacement(opts) {
     opts = opts || {};
     var isDecor = !!(opts.isDecor || opts.excludeFromPricing || opts.category === 'decor' || opts.category === 'appliance_decor');
     var cat = (opts.category || (isDecor ? 'decor' : 'wardrobe')).toLowerCase();
-    var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name);
+    var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name, opts.code || opts.catalogItemId, opts.costCategory);
     var defElev = isWallUnit ? 1500 : 0;
     var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
       parseFloat(opts.elevation) :
@@ -416,7 +434,7 @@
       rotY: opts.rotY || 0,
       dimensions: {
         W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
-        H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : 2100),
+        H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : (cat.indexOf('base') !== -1 || cat.indexOf('fm') !== -1 || cat.indexOf('d2') !== -1 || cat.indexOf('d3') !== -1 || cat.indexOf('tv') !== -1 ? 850 : 2100)),
         D: opts.dimensions ? opts.dimensions.D : (isWallUnit ? 350 : 600)
       },
       shutterColors: initColors,
@@ -525,15 +543,23 @@
   function checkFurnitureCollision(f, allFurn, ignoreId) {
     if (!f || !allFurn || !allFurn.length) return { collided: false };
     var polyF = getFurniturePolygon(f);
-    var elev1 = f.elevation !== undefined ? f.elevation : ((f.pos && f.pos.z) || 0);
-    var h1 = (f.dimensions && f.dimensions.H) || 2100;
+    var isWall1 = isWallUnitCategory(f.category, f.name, f.code || f.catalogItemId, f.costCategory);
+    var elev1 = (f.elevation !== undefined && f.elevation !== null && f.elevation !== '') ?
+      parseFloat(f.elevation) :
+      ((f.pos && f.pos.z !== undefined && f.pos.z !== null && f.pos.z !== 0) ?
+        parseFloat(f.pos.z) : (isWall1 ? 1500 : 0));
+    var h1 = (f.dimensions && f.dimensions.H) ? parseFloat(f.dimensions.H) : (isWall1 ? 600 : 850);
     var top1 = elev1 + h1;
 
     for (var i = 0; i < allFurn.length; i++) {
       var other = allFurn[i];
       if (other.id === f.id || (ignoreId && other.id === ignoreId)) continue;
-      var elev2 = other.elevation !== undefined ? other.elevation : ((other.pos && other.pos.z) || 0);
-      var h2 = (other.dimensions && other.dimensions.H) || 2100;
+      var isWall2 = isWallUnitCategory(other.category, other.name, other.code || other.catalogItemId, other.costCategory);
+      var elev2 = (other.elevation !== undefined && other.elevation !== null && other.elevation !== '') ?
+        parseFloat(other.elevation) :
+        ((other.pos && other.pos.z !== undefined && other.pos.z !== null && other.pos.z !== 0) ?
+          parseFloat(other.pos.z) : (isWall2 ? 1500 : 0));
+      var h2 = (other.dimensions && other.dimensions.H) ? parseFloat(other.dimensions.H) : (isWall2 ? 600 : 850);
       var top2 = elev2 + h2;
 
       // If vertical elevation ranges do not overlap (e.g. wall cabinet above floor base unit), allow
@@ -756,10 +782,12 @@
     // 2. Check collision / penetration into walls
     var walls = plan.walls || [];
     var polyF = getFurniturePolygon(f);
+    var isWallU = isWallUnitCategory(f.category, f.name, f.code || f.catalogItemId, f.costCategory);
     var elev1 = (f.elevation !== undefined && f.elevation !== null && f.elevation !== "") ?
       parseFloat(f.elevation) :
-      ((f.pos && f.pos.z !== undefined) ? parseFloat(f.pos.z) : 0);
-    var h1 = (f.dimensions && f.dimensions.H) || 2100;
+      ((f.pos && f.pos.z !== undefined && f.pos.z !== null && f.pos.z !== 0) ?
+        parseFloat(f.pos.z) : (isWallU ? 1500 : 0));
+    var h1 = (f.dimensions && f.dimensions.H) ? parseFloat(f.dimensions.H) : (isWallU ? 600 : 850);
     var top1 = elev1 + h1;
 
     for (var i = 0; i < walls.length; i++) {

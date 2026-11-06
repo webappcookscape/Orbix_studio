@@ -4407,8 +4407,8 @@
       if (plan) {
         plan.furniture = plan.furniture || [];
         var isW = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
-          window.OrbixCore.isWallUnit(c.ctype, c.label) :
-          (c.ctype === 'kwall' || (c.label && c.label.toLowerCase().indexOf('wall') !== -1));
+          window.OrbixCore.isWallUnit(c.ctype, c.label, c.code, c.costCategory) :
+          (c.ctype === 'kwall' || (c.label && c.label.toLowerCase().indexOf('wall') !== -1) || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(c.label));
         var uElev = orig ? ((orig.elevation !== undefined && orig.elevation !== null) ? orig.elevation : (orig.pos ? orig.pos.z : 0)) : (c.elev !== undefined ? c.elev : (isW ? 1500 : 0));
         c.elev = uElev;
         var nPos = orig ? { x: orig.pos.x + (c.W || 600) + 100, y: orig.pos.y, z: uElev } : { x: 2000, y: 2000, z: uElev };

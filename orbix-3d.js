@@ -1061,11 +1061,12 @@
                      (name.indexOf('open box') !== -1 || name.indexOf('open storage') !== -1) ||
                      (furn.unitConfig && (furn.unitConfig.doorType === 'open' || furn.unitConfig.type === 'open')));
     var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
-      window.OrbixCore.isWallUnit(cat, name) :
+      window.OrbixCore.isWallUnit(cat, name, furn.code || furn.catalogItemId, furn.costCategory) :
       (cat.indexOf('wall') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'kitchen_wall' ||
        cat === 'crockery_wall' || cat === 'spice_rack' || cat.indexOf('overhead') !== -1 ||
        cat.indexOf('loft') !== -1 || name.indexOf('wall') !== -1 || name.indexOf('overhead') !== -1 ||
-       name.indexOf('spice rack') !== -1 || name.indexOf('loft') !== -1);
+       name.indexOf('spice rack') !== -1 || name.indexOf('loft') !== -1 ||
+       /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name));
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
     var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1);
 

@@ -447,19 +447,29 @@
         return;
       }
 
-      // Check if clicked directly on any placed furniture unit from ANY tool
+      // Check if clicked directly on any placed furniture unit
       var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
-      var hitFurn = null;
+      var matchingHits = [];
       for (var fi = furnList.length - 1; fi >= 0; fi--) {
         var fn = furnList[fi];
         var fPoly = Core.getFurniturePolygon(fn);
         if (Core.Vec2.pointInPolygon(worldPt, fPoly) || Vec2.dist(worldPt, fn.pos) < Math.max(100, (fn.dimensions ? fn.dimensions.W : 600) / 2)) {
-          hitFurn = fn;
-          break;
+          matchingHits.push(fn);
         }
       }
 
-      if (hitFurn && (self.activeTool === 'select' || self.activeTool === 'furniture' || self.activeTool === 'wall' || !self.wallChainStart)) {
+      // If activeTool is 'furniture', user wants to PLACE a new unit! Do NOT hijack to drag an existing unit!
+      if (matchingHits.length > 0 && self.activeTool !== 'furniture' && (self.activeTool === 'select' || self.activeTool === 'wall' || !self.wallChainStart)) {
+        // Selection cycling: if one of the hits is already selected, cycle to the next hit underneath!
+        var curSelId = (self.selected && self.selected.length === 1 && self.selected[0].type === 'furniture') ? self.selected[0].id : null;
+        var hitFurn = matchingHits[0];
+        if (curSelId && matchingHits.length > 1) {
+          var curIdx = matchingHits.findIndex(function (h) { return h.id === curSelId; });
+          if (curIdx !== -1) {
+            hitFurn = matchingHits[(curIdx + 1) % matchingHits.length];
+          }
+        }
+
         if (typeof self.setTool === 'function') self.setTool('select');
         else self.activeTool = 'select';
         self.selected = [{ type: 'furniture', id: hitFurn.id }];
@@ -1013,24 +1023,36 @@
       }
     }
 
-    // Check if clicked a furniture unit (Supports rotated OBBs!)
+    // Check if clicked a furniture unit (Supports rotated OBBs and cycling between overlapping units!)
     var furnList = this.project.plan.furniture || [];
+    var matchingHits = [];
     for (var f = furnList.length - 1; f >= 0; f--) {
       var fn = furnList[f];
       var poly = Core.getFurniturePolygon(fn);
       if (Core.Vec2.pointInPolygon(worldPt, poly)) {
-        this.selected = [{ type: 'furniture', id: fn.id }];
-        this.dragState = {
-          type: 'move_furniture',
-          furniture: fn,
-          startWorld: Vec2.clone(worldPt),
-          origPos: Vec2.clone(fn.pos),
-          origRotY: fn.rotY || 0
-        };
-        this.onSelectionChange(this.selected);
-        this.render();
-        return;
+        matchingHits.push(fn);
       }
+    }
+    if (matchingHits.length > 0) {
+      var curSelId = (this.selected && this.selected.length === 1 && this.selected[0].type === 'furniture') ? this.selected[0].id : null;
+      var hitFurn = matchingHits[0];
+      if (curSelId && matchingHits.length > 1) {
+        var curIdx = matchingHits.findIndex(function (h) { return h.id === curSelId; });
+        if (curIdx !== -1) {
+          hitFurn = matchingHits[(curIdx + 1) % matchingHits.length];
+        }
+      }
+      this.selected = [{ type: 'furniture', id: hitFurn.id }];
+      this.dragState = {
+        type: 'move_furniture',
+        furniture: hitFurn,
+        startWorld: Vec2.clone(worldPt),
+        origPos: Vec2.clone(hitFurn.pos),
+        origRotY: hitFurn.rotY || 0
+      };
+      this.onSelectionChange(this.selected);
+      this.render();
+      return;
     }
 
     // Check if clicked a dimension line
@@ -1167,7 +1189,7 @@
     }
   };
 
-  // Computes the 4 corner jointing points of a modular furniture unit
+  // Computes the 8 connection points (4 corners + 4 edge midpoints) of a modular furniture unit
   PlanEditor.prototype.getFurnitureJointPoints = function (furn) {
     if (!furn) return [];
     var pos = furn.pos || { x: 0, y: 0 };
@@ -1179,14 +1201,20 @@
     var halfD = (dims.D || 600) / 2;
 
     return [
-      { name: 'BL', x: pos.x - halfW * u.x - halfD * v.x, y: pos.y - halfW * u.y - halfD * v.y },
-      { name: 'BR', x: pos.x + halfW * u.x - halfD * v.x, y: pos.y + halfW * u.y - halfD * v.y },
-      { name: 'FR', x: pos.x + halfW * u.x + halfD * v.x, y: pos.y + halfW * u.y + halfD * v.y },
-      { name: 'FL', x: pos.x - halfW * u.x + halfD * v.x, y: pos.y - halfW * u.y + halfD * v.y }
+      // 4 Corners:
+      { name: 'BL', x: pos.x - halfW * u.x - halfD * v.x, y: pos.y - halfW * u.y - halfD * v.y, isCorner: true },
+      { name: 'BR', x: pos.x + halfW * u.x - halfD * v.x, y: pos.y + halfW * u.y - halfD * v.y, isCorner: true },
+      { name: 'FR', x: pos.x + halfW * u.x + halfD * v.x, y: pos.y + halfW * u.y + halfD * v.y, isCorner: true },
+      { name: 'FL', x: pos.x - halfW * u.x + halfD * v.x, y: pos.y - halfW * u.y + halfD * v.y, isCorner: true },
+      // 4 Midpoints:
+      { name: 'BM', x: pos.x - halfD * v.x, y: pos.y - halfD * v.y, isMid: true },
+      { name: 'FM', x: pos.x + halfD * v.x, y: pos.y + halfD * v.y, isMid: true },
+      { name: 'LM', x: pos.x - halfW * u.x, y: pos.y - halfW * u.y, isMid: true },
+      { name: 'RM', x: pos.x + halfW * u.x, y: pos.y + halfW * u.y, isMid: true }
     ];
   };
 
-  // Smart Modular Snapping: 1) Adjacent Unit Jointing, 2) Wall Snatching & Overlap Prevention
+  // Smart Modular Snapping: 1) Adjacent Unit Jointing, 2) Plumb Stacking, 3) Wall Snatching & Overlap Prevention
   PlanEditor.prototype.snapFurniture = function (furn, candidatePos, candidateRotY) {
     var pos = { x: candidatePos.x, y: candidatePos.y };
     var rotY = candidateRotY !== undefined ? candidateRotY : (furn.rotY || 0);
@@ -1199,72 +1227,242 @@
     var furnList = plan.furniture || [];
     var activeId = furn.id;
 
-    // 1. UNIT-TO-UNIT 4-CORNER / EDGE JOINTING SNAP
+    var isWallU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : false;
+    var fElev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+      parseFloat(furn.elevation) :
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+        parseFloat(furn.pos.z) : (isWallU ? 1500 : 0));
+    var fH = (furn.dimensions && furn.dimensions.H) ? parseFloat(furn.dimensions.H) : (isWallU ? 600 : 850);
+    var fTop = fElev + fH;
+
     var bestJoint = null;
-    var minJointDist = 140; // mm magnetic snap threshold for jointing
+    var minJointDist = 180; // mm magnetic snap threshold
 
     for (var i = 0; i < furnList.length; i++) {
       var other = furnList[i];
       if (activeId && other.id === activeId) continue;
-      var oDims = other.dimensions || { W: 1200, D: 600 };
+      var oDims = other.dimensions || { W: 1200, D: 600, H: 2100 };
       var oW = oDims.W || 1200;
       var oD = oDims.D || 600;
       var oRot = other.rotY || 0;
       var oPos = other.pos || { x: 0, y: 0 };
 
+      var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
+      var oElev = (other.elevation !== undefined && other.elevation !== null && other.elevation !== '') ?
+        parseFloat(other.elevation) :
+        ((other.pos && other.pos.z !== undefined && other.pos.z !== null && other.pos.z !== 0) ?
+          parseFloat(other.pos.z) : (isWallO ? 1500 : 0));
+      var oH = (other.dimensions && other.dimensions.H) ? parseFloat(other.dimensions.H) : (isWallO ? 600 : 850);
+      var oTop = oElev + oH;
+
+      var isDifferentBand = (fTop <= oElev + 5 || oTop <= fElev + 5);
+
       var uO = { x: Math.cos(oRot), y: Math.sin(oRot) };
       var vO = { x: -Math.sin(oRot), y: Math.cos(oRot) };
 
-      // Candidate joint positions:
-      // A. Side-by-Side: Active unit Left joints to Other unit Right
-      var rightJointPos = {
-        x: oPos.x + ((oW + fW) / 2) * uO.x,
-        y: oPos.y + ((oW + fW) / 2) * uO.y
-      };
-      var dRight = Math.hypot(pos.x - rightJointPos.x, pos.y - rightJointPos.y);
-      if (dRight < minJointDist) {
-        minJointDist = dRight;
-        bestJoint = {
-          pos: rightJointPos,
-          rotY: oRot,
-          type: 'unit_joint',
-          side: 'right',
-          target: other
+      if (isDifferentBand) {
+        // ─── PLUMB STACKING (Wall unit above base unit, or base unit below wall unit) ───
+        // In 2D, back face should be flush with other's back face against the wall:
+        var backFlushPos = {
+          x: oPos.x - ((oD - fD) / 2) * vO.x,
+          y: oPos.y - ((oD - fD) / 2) * vO.y
         };
-      }
 
-      // B. Side-by-Side: Active unit Right joints to Other unit Left
-      var leftJointPos = {
-        x: oPos.x - ((oW + fW) / 2) * uO.x,
-        y: oPos.y - ((oW + fW) / 2) * uO.y
-      };
-      var dLeft = Math.hypot(pos.x - leftJointPos.x, pos.y - leftJointPos.y);
-      if (dLeft < minJointDist) {
-        minJointDist = dLeft;
-        bestJoint = {
-          pos: leftJointPos,
-          rotY: oRot,
-          type: 'unit_joint',
-          side: 'left',
-          target: other
-        };
-      }
+        // 1. Center aligned plumb
+        var plumbCenterPos = backFlushPos;
+        var dPlumbCenter = Math.hypot(pos.x - plumbCenterPos.x, pos.y - plumbCenterPos.y);
+        if (dPlumbCenter < minJointDist + 60 && dPlumbCenter < (bestJoint ? bestJoint.dist : 9999)) {
+          bestJoint = {
+            pos: plumbCenterPos,
+            rotY: oRot,
+            type: 'unit_joint',
+            snapMode: 'plumb',
+            align: 'center',
+            target: other,
+            dist: dPlumbCenter,
+            badgeLabel: isWallU ? '✓ Plumb Aligned above Base Unit (Center)' : '✓ Plumb Aligned below Wall Unit (Center)',
+            snapPoint: plumbCenterPos
+          };
+        }
 
-      // C. Back-to-Back Island Joint
-      var backJointPos = {
-        x: oPos.x - ((oD + fD) / 2) * vO.x,
-        y: oPos.y - ((oD + fD) / 2) * vO.y
-      };
-      var dBack = Math.hypot(pos.x - backJointPos.x, pos.y - backJointPos.y);
-      if (dBack < minJointDist) {
-        minJointDist = dBack;
-        bestJoint = {
-          pos: backJointPos,
-          rotY: (oRot + Math.PI) % (Math.PI * 2),
-          type: 'unit_joint',
-          side: 'back',
-          target: other
+        // 2. Left-flush plumb
+        var plumbLeftPos = {
+          x: backFlushPos.x - ((oW - fW) / 2) * uO.x,
+          y: backFlushPos.y - ((oW - fW) / 2) * uO.y
         };
+        var dPlumbLeft = Math.hypot(pos.x - plumbLeftPos.x, pos.y - plumbLeftPos.y);
+        if (dPlumbLeft < minJointDist + 60 && dPlumbLeft < (bestJoint ? bestJoint.dist : 9999)) {
+          bestJoint = {
+            pos: plumbLeftPos,
+            rotY: oRot,
+            type: 'unit_joint',
+            snapMode: 'plumb',
+            align: 'left',
+            target: other,
+            dist: dPlumbLeft,
+            badgeLabel: isWallU ? '✓ Plumb Aligned above Base Unit (Left)' : '✓ Plumb Aligned below Wall Unit (Left)',
+            snapPoint: plumbLeftPos
+          };
+        }
+
+        // 3. Right-flush plumb
+        var plumbRightPos = {
+          x: backFlushPos.x + ((oW - fW) / 2) * uO.x,
+          y: backFlushPos.y + ((oW - fW) / 2) * uO.y
+        };
+        var dPlumbRight = Math.hypot(pos.x - plumbRightPos.x, pos.y - plumbRightPos.y);
+        if (dPlumbRight < minJointDist + 60 && dPlumbRight < (bestJoint ? bestJoint.dist : 9999)) {
+          bestJoint = {
+            pos: plumbRightPos,
+            rotY: oRot,
+            type: 'unit_joint',
+            snapMode: 'plumb',
+            align: 'right',
+            target: other,
+            dist: dPlumbRight,
+            badgeLabel: isWallU ? '✓ Plumb Aligned above Base Unit (Right)' : '✓ Plumb Aligned below Wall Unit (Right)',
+            snapPoint: plumbRightPos
+          };
+        }
+      } else {
+        // ─── SAME ELEVATION BAND JOINTING ───
+
+        // Check angle orientation: parallel vs perpendicular
+        var angleDiff = Math.abs((rotY - oRot + Math.PI * 4) % (Math.PI * 2));
+        var isPerp = (Math.abs(angleDiff - Math.PI / 2) < 0.45 || Math.abs(angleDiff - 3 * Math.PI / 2) < 0.45);
+
+        if (!isPerp) {
+          // A. Parallel Side-by-Side: Active unit Left joints to Other unit Right (Back flush)
+          var rightJointPos = {
+            x: oPos.x + ((oW + fW) / 2) * uO.x - ((oD - fD) / 2) * vO.x,
+            y: oPos.y + ((oW + fW) / 2) * uO.y - ((oD - fD) / 2) * vO.y
+          };
+          var dRight = Math.hypot(pos.x - rightJointPos.x, pos.y - rightJointPos.y);
+          if (dRight < minJointDist && dRight < (bestJoint ? bestJoint.dist : 9999)) {
+            bestJoint = {
+              pos: rightJointPos,
+              rotY: oRot,
+              type: 'unit_joint',
+              side: 'right',
+              target: other,
+              dist: dRight,
+              badgeLabel: '✓ Jointed Side-by-Side',
+              snapPoint: { x: oPos.x + (oW / 2) * uO.x, y: oPos.y + (oW / 2) * uO.y }
+            };
+          }
+
+          // B. Parallel Side-by-Side: Active unit Right joints to Other unit Left (Back flush)
+          var leftJointPos = {
+            x: oPos.x - ((oW + fW) / 2) * uO.x - ((oD - fD) / 2) * vO.x,
+            y: oPos.y - ((oW + fW) / 2) * uO.y - ((oD - fD) / 2) * vO.y
+          };
+          var dLeft = Math.hypot(pos.x - leftJointPos.x, pos.y - leftJointPos.y);
+          if (dLeft < minJointDist && dLeft < (bestJoint ? bestJoint.dist : 9999)) {
+            bestJoint = {
+              pos: leftJointPos,
+              rotY: oRot,
+              type: 'unit_joint',
+              side: 'left',
+              target: other,
+              dist: dLeft,
+              badgeLabel: '✓ Jointed Side-by-Side',
+              snapPoint: { x: oPos.x - (oW / 2) * uO.x, y: oPos.y - (oW / 2) * uO.y }
+            };
+          }
+
+          // C. Back-to-Back Island Joint
+          var backJointPos = {
+            x: oPos.x - ((oD + fD) / 2) * vO.x,
+            y: oPos.y - ((oD + fD) / 2) * vO.y
+          };
+          var dBack = Math.hypot(pos.x - backJointPos.x, pos.y - backJointPos.y);
+          if (dBack < minJointDist && dBack < (bestJoint ? bestJoint.dist : 9999)) {
+            bestJoint = {
+              pos: backJointPos,
+              rotY: (oRot + Math.PI) % (Math.PI * 2),
+              type: 'unit_joint',
+              side: 'back',
+              target: other,
+              dist: dBack,
+              badgeLabel: '✓ Back-to-Back Island Joint',
+              snapPoint: backJointPos
+            };
+          }
+        } else {
+          // Perpendicular L-Corner Jointing
+          var perpRot = Math.abs(angleDiff - Math.PI / 2) < 0.45 ? (oRot + Math.PI / 2) : (oRot - Math.PI / 2);
+
+          // Right L-corner (Right side of other unit)
+          var lCornerRight = {
+            x: oPos.x + (oW / 2 - fD / 2) * uO.x + (oD / 2 + fW / 2) * vO.x,
+            y: oPos.y + (oW / 2 - fD / 2) * uO.y + (oD / 2 + fW / 2) * vO.y
+          };
+          var dLRight = Math.hypot(pos.x - lCornerRight.x, pos.y - lCornerRight.y);
+          if (dLRight < minJointDist && dLRight < (bestJoint ? bestJoint.dist : 9999)) {
+            bestJoint = {
+              pos: lCornerRight,
+              rotY: perpRot,
+              type: 'unit_joint',
+              side: 'l_corner_right',
+              target: other,
+              dist: dLRight,
+              badgeLabel: '✓ L-Corner Jointed',
+              snapPoint: lCornerRight
+            };
+          }
+
+          // Left L-corner (Left side of other unit)
+          var lCornerLeft = {
+            x: oPos.x - (oW / 2 - fD / 2) * uO.x + (oD / 2 + fW / 2) * vO.x,
+            y: oPos.y - (oW / 2 - fD / 2) * uO.y + (oD / 2 + fW / 2) * vO.y
+          };
+          var dLLeft = Math.hypot(pos.x - lCornerLeft.x, pos.y - lCornerLeft.y);
+          if (dLLeft < minJointDist && dLLeft < (bestJoint ? bestJoint.dist : 9999)) {
+            bestJoint = {
+              pos: lCornerLeft,
+              rotY: perpRot,
+              type: 'unit_joint',
+              side: 'l_corner_left',
+              target: other,
+              dist: dLLeft,
+              badgeLabel: '✓ L-Corner Jointed',
+              snapPoint: lCornerLeft
+            };
+          }
+        }
+
+        // Multi-point corner-to-corner & midpoint magnetic snapping (4 corners + 4 midpoints)
+        var otherPts = this.getFurnitureJointPoints(other);
+        var actTest = { pos: pos, rotY: rotY, dimensions: fDims };
+        var actPts = this.getFurnitureJointPoints(actTest);
+
+        for (var ap = 0; ap < actPts.length; ap++) {
+          for (var op = 0; op < otherPts.length; op++) {
+            var pDist = Math.hypot(actPts[ap].x - otherPts[op].x, actPts[ap].y - otherPts[op].y);
+            if (pDist < minJointDist && pDist < (bestJoint ? bestJoint.dist : 9999)) {
+              var shiftX = otherPts[op].x - actPts[ap].x;
+              var shiftY = otherPts[op].y - actPts[ap].y;
+              var testSnappedPos = { x: pos.x + shiftX, y: pos.y + shiftY };
+
+              // Verify non-penetration
+              var dummyF = { pos: testSnappedPos, rotY: rotY, dimensions: fDims };
+              var polyF = Core.getFurniturePolygon(dummyF);
+              var polyO = Core.getFurniturePolygon(other);
+              if (!Core.polygonsIntersect(polyF, polyO, 5)) {
+                bestJoint = {
+                  pos: testSnappedPos,
+                  rotY: rotY,
+                  type: 'unit_joint',
+                  side: 'point_snap',
+                  target: other,
+                  dist: pDist,
+                  badgeLabel: '✓ Point Snapped (' + actPts[ap].name + ' to ' + otherPts[op].name + ')',
+                  snapPoint: { x: otherPts[op].x, y: otherPts[op].y }
+                };
+              }
+            }
+          }
+        }
       }
     }
 
@@ -1338,7 +1536,8 @@
             type: 'wall_snap',
             wall: w,
             proj: proj,
-            norm: normOut
+            norm: normOut,
+            badgeLabel: '✓ Snapped Flush to Wall'
           };
         }
       } else if (perpDist < flushDist && t >= 0 && t <= 1) {
@@ -1393,15 +1592,16 @@
     }
 
     var isWall = (Core.isWallUnit) ?
-      Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name) :
-      ((this.furniturePreset.category && this.furniturePreset.category.toLowerCase().indexOf('wall') !== -1) ||
-       (this.furniturePreset.name && this.furniturePreset.name.toLowerCase().indexOf('wall') !== -1));
-    var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null) ?
-      this.furniturePreset.elevation : (isWall ? 1500 : 0);
+      Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name, this.furniturePreset.code || this.furniturePreset.catalogItemId, this.furniturePreset.costCategory) :
+      false;
+    var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '') ?
+      parseFloat(this.furniturePreset.elevation) : (isWall ? 1500 : 0);
 
     var furn = Core.createFurniturePlacement({
       name: this.furniturePreset.name,
       category: this.furniturePreset.category,
+      code: this.furniturePreset.code,
+      costCategory: this.furniturePreset.costCategory,
       roomId: matchedRoomId,
       elevation: presetElev,
       pos: { x: finalPos.x, y: finalPos.y, z: presetElev },
@@ -1412,6 +1612,8 @@
 
     this.project.plan.furniture.push(furn);
     this.pushHistory('Place ' + furn.name);
+    if (typeof this.setTool === 'function') this.setTool('select');
+    else this.activeTool = 'select';
     this.selected = [{ type: 'furniture', id: furn.id }];
     this.onSelectionChange(this.selected);
     this.render();
@@ -1525,9 +1727,10 @@
         newFurn.id = newId;
         newFurn.name = (orig.name || 'Unit') + ' (Copy)';
         var isWall = (Core.isWallUnit) ?
-          Core.isWallUnit(orig.category, orig.name) :
+          Core.isWallUnit(orig.category, orig.name, orig.code || orig.catalogItemId, orig.costCategory) :
           ((orig.category && orig.category.toLowerCase().indexOf('wall') !== -1) ||
-           (orig.name && orig.name.toLowerCase().indexOf('wall') !== -1));
+           (orig.name && orig.name.toLowerCase().indexOf('wall') !== -1) ||
+           /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(orig.name));
         var origElev = (orig.elevation !== undefined && orig.elevation !== null) ?
           orig.elevation : ((orig.pos && orig.pos.z !== 0) ? orig.pos.z : (isWall ? 1500 : 0));
         newFurn.elevation = origElev;
@@ -2797,20 +3000,31 @@
         ctx.fillText(warnTxt, 0, -dPx / 2 - 13);
       }
 
-      // 4 Corner Jointing Points (for jointing two units together)
-      var cornerPts = [
-        { x: -wPx / 2, y: -dPx / 2 },
-        { x: wPx / 2, y: -dPx / 2 },
-        { x: wPx / 2, y: dPx / 2 },
-        { x: -wPx / 2, y: dPx / 2 }
+      // 8 Jointing & Connection Points (4 corners + 4 edge midpoints)
+      var isWallF = (Core.isWallUnit) ?
+        Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
+      var pointColor = isWallF ? '#0284c7' : '#10b981';
+      var activeCornerColor = isSelected ? '#f59e0b' : pointColor;
+
+      var connectionPts = [
+        // 4 Corners (Primary snaps)
+        { x: -wPx / 2, y: -dPx / 2, r: isSelected ? 4 : 3, corner: true },
+        { x: wPx / 2, y: -dPx / 2, r: isSelected ? 4 : 3, corner: true },
+        { x: wPx / 2, y: dPx / 2, r: isSelected ? 4 : 3, corner: true },
+        { x: -wPx / 2, y: dPx / 2, r: isSelected ? 4 : 3, corner: true },
+        // 4 Midpoints (Secondary snaps)
+        { x: 0, y: -dPx / 2, r: 2.2, corner: false },
+        { x: 0, y: dPx / 2, r: 2.2, corner: false },
+        { x: -wPx / 2, y: 0, r: 2.2, corner: false },
+        { x: wPx / 2, y: 0, r: 2.2, corner: false }
       ];
-      for (var cpi = 0; cpi < cornerPts.length; cpi++) {
-        var cp = cornerPts[cpi];
-        ctx.fillStyle = isSelected ? '#0284c7' : '#64748b';
+      for (var cpi = 0; cpi < connectionPts.length; cpi++) {
+        var cp = connectionPts[cpi];
+        ctx.fillStyle = cp.corner ? activeCornerColor : pointColor;
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.2;
         ctx.beginPath();
-        ctx.arc(cp.x, cp.y, isSelected ? 3.5 : 2.5, 0, Math.PI * 2);
+        ctx.arc(cp.x, cp.y, cp.r, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
       }
@@ -2819,27 +3033,27 @@
       if (this.dragState && this.dragState.type === 'move_furniture' && this.dragState.furniture.id === f.id && this.dragState.snapInfo) {
         var sInfo = this.dragState.snapInfo;
         if (sInfo.type === 'unit_joint') {
-          var jTxt = '✓ Jointed with Unit';
+          var jTxt = sInfo.badgeLabel || '✓ Jointed with Unit';
           ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
           var jw = ctx.measureText(jTxt).width;
           ctx.fillStyle = '#059669';
           ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(-jw / 2 - 6, -dPx / 2 - 22, jw + 12, 17, 4);
-          else ctx.rect(-jw / 2 - 6, -dPx / 2 - 22, jw + 12, 17);
+          if (ctx.roundRect) ctx.roundRect(-jw / 2 - 8, -dPx / 2 - 24, jw + 16, 18, 5);
+          else ctx.rect(-jw / 2 - 8, -dPx / 2 - 24, jw + 16, 18);
           ctx.fill();
           ctx.fillStyle = '#ffffff';
-          ctx.fillText(jTxt, 0, -dPx / 2 - 13);
+          ctx.fillText(jTxt, 0, -dPx / 2 - 14);
         } else if (sInfo.type === 'wall_snap') {
-          var wTxt = '✓ Snapped Flush to Wall';
+          var wTxt = sInfo.badgeLabel || '✓ Snapped Flush to Wall';
           ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
           var ww = ctx.measureText(wTxt).width;
           ctx.fillStyle = '#0284c7';
           ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(-ww / 2 - 6, -dPx / 2 - 22, ww + 12, 17, 4);
-          else ctx.rect(-ww / 2 - 6, -dPx / 2 - 22, ww + 12, 17);
+          if (ctx.roundRect) ctx.roundRect(-ww / 2 - 8, -dPx / 2 - 24, ww + 16, 18, 5);
+          else ctx.rect(-ww / 2 - 8, -dPx / 2 - 24, ww + 16, 18);
           ctx.fill();
           ctx.fillStyle = '#ffffff';
-          ctx.fillText(wTxt, 0, -dPx / 2 - 13);
+          ctx.fillText(wTxt, 0, -dPx / 2 - 14);
         }
       }
 
@@ -3242,19 +3456,27 @@
       ctx.strokeRect(-fW / 2, -fD / 2, fW, fD);
       ctx.setLineDash([]);
 
-      // 4 Corner Jointing Points on Ghost
+      // 8 Jointing Points on Ghost (4 corners + 4 midpoints)
+      var isWallG = (Core.isWallUnit) ?
+        Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name, this.furniturePreset.code || this.furniturePreset.catalogItemId, this.furniturePreset.costCategory) : false;
+      var ghostPointColor = isWallG ? '#0284c7' : '#10b981';
+
       var gCorners = [
-        { x: -fW / 2, y: -fD / 2 },
-        { x: fW / 2, y: -fD / 2 },
-        { x: fW / 2, y: fD / 2 },
-        { x: -fW / 2, y: fD / 2 }
+        { x: -fW / 2, y: -fD / 2, r: 3.5 },
+        { x: fW / 2, y: -fD / 2, r: 3.5 },
+        { x: fW / 2, y: fD / 2, r: 3.5 },
+        { x: -fW / 2, y: fD / 2, r: 3.5 },
+        { x: 0, y: -fD / 2, r: 2.2 },
+        { x: 0, y: fD / 2, r: 2.2 },
+        { x: -fW / 2, y: 0, r: 2.2 },
+        { x: fW / 2, y: 0, r: 2.2 }
       ];
       for (var gci = 0; gci < gCorners.length; gci++) {
-        ctx.fillStyle = (snapRes.type === 'unit_joint') ? '#10b981' : '#0284c7';
+        ctx.fillStyle = ghostPointColor;
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1.2;
         ctx.beginPath();
-        ctx.arc(gCorners[gci].x, gCorners[gci].y, 3.5, 0, Math.PI * 2);
+        ctx.arc(gCorners[gci].x, gCorners[gci].y, gCorners[gci].r, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
       }
@@ -3273,8 +3495,12 @@
       ctx.textBaseline = 'middle';
       ctx.fillText(this.furniturePreset.name, 0, -6);
 
-      // Snap feedback text
-      if (snapRes.type === 'unit_joint') {
+      // Snap feedback text badge
+      if (snapRes.badgeLabel) {
+        ctx.fillStyle = (snapRes.type === 'unit_joint') ? '#10b981' : '#0284c7';
+        ctx.font = '700 9.5px "IBM Plex Sans", sans-serif';
+        ctx.fillText(snapRes.badgeLabel, 0, 9);
+      } else if (snapRes.type === 'unit_joint') {
         ctx.fillStyle = '#10b981';
         ctx.font = '700 9.5px "IBM Plex Sans", sans-serif';
         ctx.fillText('✓ Snapped & Jointed to Unit', 0, 9);

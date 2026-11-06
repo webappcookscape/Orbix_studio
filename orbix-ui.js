@@ -1122,10 +1122,11 @@
         if (!fn.shutterStates) fn.shutterStates = [];
 
         var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
-          window.OrbixCore.isWallUnit(fn.category, fn.name) :
+          window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) :
           ((fn.category && fn.category.toLowerCase().indexOf('wall') !== -1) ||
            (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1) ||
-           fn.category === 'kitchen_wall');
+           fn.category === 'kitchen_wall' ||
+           /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(fn.name));
 
         var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
           fn.elevation :
@@ -1660,6 +1661,9 @@
             var idx = parseInt(inp.getAttribute('data-sidx'));
             if (!fn.shutterColors) fn.shutterColors = [];
             fn.shutterColors[idx] = inp.value;
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.shutterCol = inp.value;
+            syncInspectorTo3D();
             self.editor.pushHistory('Change Shutter ' + (idx + 1) + ' Color');
             self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
@@ -1672,6 +1676,9 @@
             var idx = parseInt(sel.getAttribute('data-sidx'));
             if (!fn.shutterMaterials) fn.shutterMaterials = [];
             fn.shutterMaterials[idx] = sel.value;
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.shutterCol = sel.value;
+            syncInspectorTo3D();
             self.editor.pushHistory('Change Shutter ' + (idx + 1) + ' Material');
             self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
@@ -1989,52 +1996,55 @@
         var existing = existingMap[fn.id];
 
         var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
-          window.OrbixCore.isWallUnit(fn.category, fn.name) :
+          window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) :
           (fn.category === 'kitchen_wall' || (fn.category && fn.category.indexOf('wall') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1));
-        var unitElev = (fn.elevation !== undefined && fn.elevation !== null) ?
-          fn.elevation : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
+        var unitElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
+          parseFloat(fn.elevation) : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? parseFloat(fn.pos.z) : (isWall ? 1500 : 0));
 
         if (existing) {
           if (fn.name) existing.label = fn.name;
           existing.elev = unitElev;
           
-          // Bidirectional preservation: preserve active 3D edits and sync to fn.unitConfig
-          if (existing.shutterCol) {
+          // Bidirectional preservation: project unit fn is primary source of truth
+          if (fn.unitConfig && fn.unitConfig.shutterCol) {
+            existing.shutterCol = fn.unitConfig.shutterCol;
+          } else if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) {
+            existing.shutterCol = fn.materials.shutter.finish;
+          } else if (existing.shutterCol) {
             fn.unitConfig = fn.unitConfig || {};
             fn.unitConfig.shutterCol = existing.shutterCol;
             fn.materials = fn.materials || {};
             fn.materials.shutter = fn.materials.shutter || {};
             fn.materials.shutter.finish = existing.shutterCol;
-            fn.shutterColors = fn.shutterColors || [];
-            fn.shutterMaterials = fn.shutterMaterials || [];
-            var sCnt = (fn.unitConfig && fn.unitConfig.shutters) || 2;
-            for (var sc = 0; sc < sCnt; sc++) {
-              fn.shutterColors[sc] = toValidHexColor(existing.shutterCol, '#6e4e35');
-              fn.shutterMaterials[sc] = existing.shutterCol;
-            }
-          } else if (fn.unitConfig && fn.unitConfig.shutterCol) {
-            existing.shutterCol = fn.unitConfig.shutterCol;
-          } else if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) {
-            existing.shutterCol = fn.materials.shutter.finish;
           }
 
-          if (existing.carcass) {
+          // Preserve per-shutter colors array without blowing away individual shutter edits
+          var activeFinish = (fn.unitConfig && fn.unitConfig.shutterCol) || (existing && existing.shutterCol) || '#6e4e35';
+          var sCnt = (fn.unitConfig && fn.unitConfig.shutters) || 2;
+          fn.shutterColors = fn.shutterColors || [];
+          fn.shutterMaterials = fn.shutterMaterials || [];
+          for (var sc = 0; sc < sCnt; sc++) {
+            if (!fn.shutterColors[sc]) fn.shutterColors[sc] = toValidHexColor(activeFinish, '#6e4e35');
+            if (!fn.shutterMaterials[sc]) fn.shutterMaterials[sc] = activeFinish;
+          }
+
+          if (fn.unitConfig && fn.unitConfig.carcass) {
+            existing.carcass = fn.unitConfig.carcass;
+          } else if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) {
+            existing.carcass = fn.materials.carcass.finish;
+          } else if (existing.carcass) {
             fn.unitConfig = fn.unitConfig || {};
             fn.unitConfig.carcass = existing.carcass;
             fn.materials = fn.materials || {};
             fn.materials.carcass = fn.materials.carcass || {};
             fn.materials.carcass.finish = existing.carcass;
-          } else if (fn.unitConfig && fn.unitConfig.carcass) {
-            existing.carcass = fn.unitConfig.carcass;
-          } else if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) {
-            existing.carcass = fn.materials.carcass.finish;
           }
 
-          if (existing.dstyle) {
+          if (fn.unitConfig && fn.unitConfig.dstyle) {
+            existing.dstyle = fn.unitConfig.dstyle;
+          } else if (existing.dstyle) {
             fn.unitConfig = fn.unitConfig || {};
             fn.unitConfig.dstyle = existing.dstyle;
-          } else if (fn.unitConfig && fn.unitConfig.dstyle) {
-            existing.dstyle = fn.unitConfig.dstyle;
           }
 
           if (existing.handle) {
@@ -2408,9 +2418,10 @@
       }
 
       var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
-        window.OrbixCore.isWallUnit(preset.category, preset.name) :
+        window.OrbixCore.isWallUnit(preset.category, preset.name, preset.code || preset.catalogItemId, preset.costCategory) :
         ((preset.category && preset.category.toLowerCase().indexOf('wall') !== -1) ||
-         (preset.name && preset.name.toLowerCase().indexOf('wall') !== -1));
+         (preset.name && preset.name.toLowerCase().indexOf('wall') !== -1) ||
+         /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(preset.name));
       var initElev = (preset.elevation !== undefined && preset.elevation !== null) ?
         preset.elevation : (isWall ? 1500 : 0);
 
