@@ -909,8 +909,9 @@
       return this.buildDecorMesh(furn, fg, dims);
     }
     var isBed = (cat === 'bed' || name.indexOf('bed') !== -1);
-    var isOpenBox = (cat.indexOf('os') !== -1 || cat.indexOf('open') !== -1 || name.indexOf('open') !== -1 ||
-                     cat === 'spice_rack' || cat === 'kitchen_os' || cat === 'loft_os' ||
+    var isOpenBox = (cat === 'spice_rack' ||
+                     (cat.indexOf('open') !== -1 && cat.indexOf('shutter') === -1) ||
+                     (name.indexOf('open box') !== -1 || name.indexOf('open storage') !== -1) ||
                      (furn.unitConfig && (furn.unitConfig.doorType === 'open' || furn.unitConfig.type === 'open')));
     var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
       window.OrbixCore.isWallUnit(cat, name) :

@@ -115,7 +115,7 @@
   var MODEL_RATES_MATRIX = {
     kitchen_wm: {
       id: 'kitchen_wm',
-      label: 'Kitcehn - WM',
+      label: 'Kitchen - WM',
       description: 'Kitchen Wall Mounted / Wall Units',
       category: 'kitchen_wall',
       pricingModel: 'front_area',
@@ -123,7 +123,7 @@
     },
     kitchen_fm: {
       id: 'kitchen_fm',
-      label: 'Kitcehn - FM',
+      label: 'Kitchen - FM',
       description: 'Kitchen Floor Mounted / Base Units',
       category: 'kitchen_base',
       pricingModel: 'front_area',
@@ -131,7 +131,7 @@
     },
     kitchen_d2d3: {
       id: 'kitchen_d2d3',
-      label: 'Kitcehn - D2/D3',
+      label: 'Kitchen - D2/D3',
       description: 'Kitchen 2-Drawer / 3-Drawer Tandem Units',
       category: 'kitchen_base',
       pricingModel: 'front_area',
@@ -139,9 +139,9 @@
     },
     kitchen_os: {
       id: 'kitchen_os',
-      label: 'Kitcehn o/s',
-      description: 'Kitchen Open Shelves / Open Boxes',
-      category: 'kitchen_wall',
+      label: 'Kitchen o/s (Only Shutter)',
+      description: 'Kitchen Only Shutter (Without Carcass / Civil Slab Shutters)',
+      category: 'kitchen_base',
       pricingModel: 'front_area',
       rates: { 'PRICE 1': 895, 'PRICE 2': 984, 'PRICE 3': 1184, 'PRICE 4': 1236, 'LIVE LANE': 1196, 'CC MATTE': 1250, 'CC GLOSSY': 1567, 'SURABHI': 1786, 'MR+': 1984 }
     },
@@ -407,6 +407,9 @@
       id: opts.id || uid('furn'),
       name: opts.name || 'Modular Unit',
       category: opts.category || 'wardrobe',
+      catalogItemId: opts.catalogItemId || opts.code || null,
+      modelType: opts.modelType || null,
+      costCategory: opts.costCategory || null,
       roomId: opts.roomId || null,
       pos: { x: opts.pos ? opts.pos.x : 0, y: opts.pos ? opts.pos.y : 0, z: elev },
       elevation: elev,
@@ -1068,28 +1071,72 @@
      Depth does NOT multiply the front-area formula.
      ───────────────────────────────────────────────────────────────────────────── */
   function resolveModelType(item) {
+    if (!item) return 'wr_shelves';
+    var COST_CAT_MAP = {
+      'Kitchen - WM': 'kitchen_wm',
+      'Kitchen - FM': 'kitchen_fm',
+      'Kitchen - D2/D3': 'kitchen_d2d3',
+      'Kitchen O/S': 'kitchen_os',
+      'Kitchen o/s': 'kitchen_os',
+      'Spice Rack (OPEN BOXES)': 'spice_rack',
+      'Wr - Modular - ONLY SHELVES': 'wr_shelves',
+      'Wr - Modular - 2 DRAWERS': 'wr_drawers',
+      'Wr - Modular - SLIDING': 'wr_sliding',
+      'Loft - O/S': 'loft_os',
+      'POOJA WITH CNC': 'pooja_cnc',
+      'TV Unit Cabinet': 'tv_cabinet',
+      'Wall Paneling': 'wall_paneling'
+    };
+    if (item.costCategory && COST_CAT_MAP[item.costCategory]) {
+      return COST_CAT_MAP[item.costCategory];
+    }
+    var LEGACY_MODEL_MAP = {
+      'tv_unit_cabinet': 'tv_cabinet',
+      'pooja_with_cnc': 'pooja_cnc',
+      'spice_rack_open_box': 'spice_rack',
+      'kitchen_o_s': 'kitchen_os',
+      'wardrobe_modular_shelves': 'wr_shelves',
+      'wardrobe_modular_drawers': 'wr_drawers',
+      'wardrobe_modular_sliding': 'wr_sliding'
+    };
+    if (item.modelType && LEGACY_MODEL_MAP[item.modelType]) {
+      return LEGACY_MODEL_MAP[item.modelType];
+    }
     if (item.modelType && MODEL_RATES_MATRIX[item.modelType]) return item.modelType;
+
+    // Check catalog lookup if catalogItemId, code, or id matches a catalog item
+    var cId = item.catalogItemId || item.code || item.id;
+    if (cId && Array.isArray(FURNITURE_CATALOG)) {
+      var found = FURNITURE_CATALOG.find(function(c) { return c.id === cId || c.code === cId; });
+      if (found) {
+        if (found.costCategory && COST_CAT_MAP[found.costCategory]) {
+          return COST_CAT_MAP[found.costCategory];
+        }
+        if (found.modelType && MODEL_RATES_MATRIX[found.modelType]) {
+          return found.modelType;
+        }
+        if (found.modelType && LEGACY_MODEL_MAP[found.modelType]) {
+          return LEGACY_MODEL_MAP[found.modelType];
+        }
+      }
+    }
+
     var id = (item.id || '').toLowerCase();
     var cat = (item.category || '').toLowerCase();
     var name = (item.name || '').toLowerCase();
 
     if (id.indexOf('slide') !== -1 || name.indexOf('sliding') !== -1) return 'wr_sliding';
-    if (name.indexOf('pooja') !== -1 || id.indexOf('pooja') !== -1) return 'pooja_cnc';
-    if (name.indexOf('panel') !== -1 || cat === 'wall_paneling') return 'wall_paneling';
-    if (name.indexOf('spice') !== -1 || id.indexOf('spice') !== -1) return 'spice_rack';
-    if (id.indexOf('loft') !== -1 || name.indexOf('loft') !== -1) return 'loft_os';
-    if (name.indexOf('open shel') !== -1 || id === 'kitchen_os') return 'kitchen_os';
-    if (id === 'k_wall' || cat === 'kitchen_wall') return 'kitchen_wm';
-    if (id === 'k_island' || name.indexOf('drawer') !== -1 || id === 'kitchen_d2d3') {
-      if (cat === 'wardrobe') return 'wr_drawers';
-      return 'kitchen_d2d3';
-    }
-    if (id === 'k_base' || id === 'k_tall' || cat === 'kitchen_base' || cat === 'kitchen_tall') return 'kitchen_fm';
-    if (id === 'w3d' || id === 'w4d') return 'wr_drawers';
-    if (id === 'w2d' || cat === 'wardrobe') return 'wr_shelves';
-    if (cat === 'tv_unit' || name.indexOf('tv') !== -1) return 'tv_cabinet';
-    if (cat === 'crockery') return 'pooja_cnc';
-    if (cat === 'vanity' || cat === 'shoe_rack') return 'wr_shelves';
+    if (cat === 'wall_paneling' || id.indexOf('pnl-') === 0 || name.indexOf('panel') !== -1 || id.indexOf('ledge') === 0 || name.indexOf('ledge') !== -1) return 'wall_paneling';
+    if (id.indexOf('fm-d2') !== -1 || id.indexOf('fm-d3') !== -1 || id.indexOf('kitchen_d2d3') !== -1 || (cat === 'kitchen_base' && (name.indexOf('d2') !== -1 || name.indexOf('d3') !== -1))) return 'kitchen_d2d3';
+    if ((name.indexOf('o/s') !== -1 || id.indexOf('o/s') !== -1 || name.indexOf('only shutter') !== -1 || id.indexOf('only-shutter') !== -1 || id === 'kitchen_os') && id.indexOf('loft') === -1 && name.indexOf('loft') === -1) return 'kitchen_os';
+    if (name.indexOf('open shel') !== -1 || id.indexOf('open-shel') !== -1 || id.indexOf('sr-') === 0 || cat === 'spice_rack' || name.indexOf('spice') !== -1 || id.indexOf('ob-') === 0 || id.indexOf('open-box') !== -1 || id.indexOf('open-storage') !== -1 || name.indexOf('open box') !== -1 || name.indexOf('open storage') !== -1) return 'spice_rack';
+    if (name.indexOf('pooja') !== -1 || id.indexOf('pooja') !== -1 || cat === 'pooja' || cat === 'mandir') return 'pooja_cnc';
+    if (id.indexOf('ctvb') !== -1 || id.indexOf('ctvw') !== -1 || cat === 'tv_unit' || name.indexOf('tv') !== -1 || name.indexOf('crockery') !== -1 || cat === 'crockery') return 'tv_cabinet';
+    if (id.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || cat === 'loft') return 'loft_os';
+    if (id.indexOf('tbm-') === 0 || id.indexOf('fm-') === 0 || id.indexOf('fcm-') === 0 || cat === 'kitchen_base' || cat === 'kitchen_tall' || id === 'k_base' || id === 'k_tall') return 'kitchen_fm';
+    if (id.indexOf('wm-') === 0 || id.indexOf('wcm-') === 0 || cat === 'kitchen_wall' || id === 'k_wall') return 'kitchen_wm';
+    if ((cat === 'wardrobe' || id.indexOf('wr-') === 0) && (name.indexOf('drawer') !== -1 || id.indexOf('drawers') !== -1 || id === 'w3d' || id === 'w4d')) return 'wr_drawers';
+    if (cat === 'wardrobe' || id.indexOf('wr-') === 0 || id === 'w2d' || cat === 'vanity' || cat === 'shoe_rack') return 'wr_shelves';
     return 'wr_shelves';
   }
 
@@ -1132,9 +1179,11 @@
     var modelDef = (rateCard.modelRates && rateCard.modelRates[modelType]) || MODEL_RATES_MATRIX[modelType];
     var activeTier = item.tierOverride || roomTier || (rateCard.roomTiers && item.roomId && rateCard.roomTiers[item.roomId]) || rateCard.selectedTier || null;
 
-    var baseRate = (item.pricingOverrides && item.pricingOverrides.baseRate);
-    if (!baseRate && activeTier && modelDef && modelDef.rates && modelDef.rates[activeTier]) {
+    var baseRate = null;
+    if (activeTier && modelDef && modelDef.rates && modelDef.rates[activeTier]) {
       baseRate = modelDef.rates[activeTier];
+    } else if (item.pricingOverrides && item.pricingOverrides.baseRate) {
+      baseRate = item.pricingOverrides.baseRate;
     }
     if (!baseRate) {
       baseRate = catConfig.baseRatePerSft || catConfig.baseRatePerRft || 1700;
