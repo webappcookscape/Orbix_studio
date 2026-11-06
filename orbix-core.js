@@ -1269,13 +1269,28 @@
   }
 
   function calculateItemCost(item, rateCard, roomTier) {
-    if (!item) return { totalCost: 0, baseAmount: 0, subtotal: 0, gstAmount: 0, frontAreaSft: 0 };
+    if (!item) return { totalCost: 0, baseAmount: 0, subtotal: 0, gstAmount: 0, frontAreaSft: 0, areaSft: 0, baseRate: 0, totalAmount: 0, dimensions: { W: 0, H: 0, D: 0 } };
     if (item.isDecor || item.excludeFromPricing || item.category === 'decor' || item.category === 'appliance_decor') {
+      var dDims = item.dimensions || { W: 0, H: 0, D: 0 };
       return {
+        id: item.id || '',
+        itemId: item.id || '',
         item: item,
+        name: item.name || 'Decor Item',
+        itemName: item.name || 'Decor Item',
+        dimensions: dDims,
+        category: item.category || 'decor',
+        categoryName: 'Decor / Styling',
+        modelType: item.decorType || 'decor',
+        modelLabel: 'Decor (Excluded)',
+        areaSft: 0,
+        frontAreaSft: 0,
+        runningFt: 0,
         baseRate: 0,
         baseAmount: 0,
         totalAmount: 0,
+        extraDepthCharge: 0,
+        matCharge: 0,
         shutterMultiplier: 1,
         carcassMultiplier: 1,
         carcassFinishMultiplier: 1,
@@ -1283,14 +1298,15 @@
         hardwareCost: 0,
         drawerCost: 0,
         accessoriesCost: 0,
-        extraDepthCharge: 0,
         subtotal: 0,
         gstRate: 0,
         gstAmount: 0,
         totalCost: 0,
-        frontAreaSft: 0,
-        category: 'decor',
         formulaDescription: 'Decor / Styling (Excluded from Woodwork BOQ — ₹0.00)',
+        materials: item.materials || {
+          shutter: { material: 'None', finish: 'None' },
+          carcass: { material: 'None', finish: 'None' }
+        },
         isDecor: true,
         excludeFromPricing: true
       };
@@ -1544,7 +1560,7 @@
     // 3. Labor, Installation & Transport
     var totalWoodworkSft = 0;
     for (var w = 0; w < lineItems.length; w++) {
-      totalWoodworkSft += lineItems[w].areaSft;
+      totalWoodworkSft += (lineItems[w].areaSft || 0);
     }
 
     var installCharge = totalWoodworkSft * (rateCard.laborRates.installationPerSft || 85);

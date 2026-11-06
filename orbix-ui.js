@@ -3185,7 +3185,7 @@
             var rsTier = rs.variant || (rateCard.roomTiers && rateCard.roomTiers[rs.id]) || currentTier;
             return '<div class="boq-room-stat-card' + (isCardSelected ? ' is-selected' : '') + '">' +
               '<div class="boq-room-stat-title">' + rs.name + '</div>' +
-              '<div class="boq-room-stat-area">' + (rs.areaSqFt > 0 ? (Math.round(rs.areaSqFt) + ' sq ft (' + rs.areaSqM.toFixed(1) + ' m²)') : 'Modular Units Only') + '</div>' +
+              '<div class="boq-room-stat-area">' + (rs.areaSqFt > 0 ? (Math.round(rs.areaSqFt) + ' sq ft (' + (rs.areaSqM != null ? rs.areaSqM.toFixed(1) : '0.0') + ' m²)') : 'Modular Units Only') + '</div>' +
               '<div class="boq-room-stat-cost">₹ ' + Math.round(rs.roomSubtotal).toLocaleString('en-IN') + '.00</div>' +
               '<div class="boq-room-stat-items">' + rs.itemCount + ' unit' + (rs.itemCount === 1 ? '' : 's') + ' · ' + rs.percentShare + '% share</div>' +
               '<div style="display:flex;align-items:center;justify-content:space-between;margin:6px 0 4px 0;gap:4px;">' +
@@ -3333,7 +3333,7 @@
           }
 
           var rFound = (self.project.plan.rooms || []).filter(function (rm) { return rm.name === rName || rm.id === (rItems[0] && rItems[0].roomId); })[0];
-          var rAreaStr = rFound && rFound.areaSqFt > 0 ? (Math.round(rFound.areaSqFt) + ' sq ft · ' + rFound.areaSqM.toFixed(1) + ' m²') : '';
+          var rAreaStr = rFound && rFound.areaSqFt > 0 ? (Math.round(rFound.areaSqFt) + ' sq ft · ' + (rFound.areaSqM != null ? rFound.areaSqM.toFixed(1) : '0.0') + ' m²') : '';
           var rRoomId = (rFound ? rFound.id : (rItems[0] && rItems[0].roomId) || '_general');
           var rActiveTier = (rateCard.roomTiers && rateCard.roomTiers[rRoomId]) || (rFound && rFound.variant) || currentTier;
 
@@ -3395,9 +3395,9 @@
               '<div>Auto Soft-Close Hinges</div>' +
               '<div>Cam Connectors</div>' +
               '</td>' +
-              '<td class="c-num">' + item.baseRate.toLocaleString('en-IN') + '</td>' +
-              '<td class="c-num">' + item.areaSft.toFixed(2) + ' sq foot</td>' +
-              '<td class="c-num bold">' + Math.round(item.totalAmount).toLocaleString('en-IN') + '.00</td>' +
+              '<td class="c-num">' + (item.baseRate != null ? item.baseRate.toLocaleString('en-IN') : '0') + '</td>' +
+              '<td class="c-num">' + (item.areaSft != null ? item.areaSft.toFixed(2) : '0.00') + ' sq foot</td>' +
+              '<td class="c-num bold">' + Math.round(item.totalAmount || 0).toLocaleString('en-IN') + '.00</td>' +
               '</tr>';
           }
         }
@@ -4513,9 +4513,9 @@
           setCell(currRow, 5, it.categoryName || 'Wardrobe', sCenter);
           setCell(currRow, 6, 'Shutter: ' + smat.material + ' (' + smat.finish + ')\nCarcass: ' + cmat.material + ' (' + cmat.finish + ')', sLeft);
           setCell(currRow, 7, 'Auto Soft-Close Hinges\nCam Connectors', sLeft);
-          setCell(currRow, 8, it.baseRate, sNum, 'n');
-          setCell(currRow, 9, it.areaSft.toFixed(2) + ' sq foot', sNum);
-          setCell(currRow, 10, Math.round(it.totalAmount), sCur, 'n');
+          setCell(currRow, 8, it.baseRate || 0, sNum, 'n');
+          setCell(currRow, 9, (it.areaSft != null ? it.areaSft.toFixed(2) : '0.00') + ' sq foot', sNum);
+          setCell(currRow, 10, Math.round(it.totalAmount || 0), sCur, 'n');
 
           rowHeights[currRow] = 58; // High row height for thumbnail
           currRow++;
