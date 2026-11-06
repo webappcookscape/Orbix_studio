@@ -4290,6 +4290,46 @@
     return 'unit-icons/' + sanitizeIconId(id) + '.svg';
   }
 
+  function toValidHexColor(val, fallback) {
+    var fb = (typeof fallback === 'string' && /^#[0-9a-fA-F]{6}$/.test(fallback)) ? fallback : '#edebe4';
+    if (!val || typeof val !== 'string') return fb;
+    var str = val.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(str)) return str;
+    if (/^#[0-9a-fA-F]{3}$/.test(str)) {
+      return '#' + str[1] + str[1] + str[2] + str[2] + str[3] + str[3];
+    }
+    if (/^[0-9a-fA-F]{6}$/.test(str)) return '#' + str;
+
+    var lower = str.toLowerCase();
+    if (lower.indexOf('1135') !== -1 || lower.indexOf('white') !== -1 || lower.indexOf('frost') !== -1) return '#edebe4';
+    if (lower.indexOf('3410') !== -1 || lower.indexOf('walnut') !== -1) return '#6e4e35';
+    if (lower.indexOf('3411') !== -1 || lower.indexOf('wenge') !== -1) return '#4a3a2e';
+    if (lower.indexOf('1101') !== -1 || lower.indexOf('ivory') !== -1 || lower.indexOf('cream') !== -1) return '#e4dcc8';
+    if (lower.indexOf('2204') !== -1 || lower.indexOf('oak') !== -1) return '#c4a173';
+    if (lower.indexOf('2210') !== -1 || lower.indexOf('teak') !== -1) return '#a9743f';
+    if (lower.indexOf('4402') !== -1 || lower.indexOf('grey oak') !== -1) return '#9c9891';
+    if (lower.indexOf('5501') !== -1 || lower.indexOf('graphite') !== -1) return '#585b5e';
+    if (lower.indexOf('6601') !== -1 || lower.indexOf('gloss white') !== -1) return '#f4f3ef';
+    if (lower.indexOf('6620') !== -1 || lower.indexOf('gloss grey') !== -1) return '#8d9296';
+    if (lower.indexOf('6630') !== -1 || lower.indexOf('gloss red') !== -1 || lower.indexOf('red') !== -1) return '#b2231f';
+    if (lower.indexOf('6640') !== -1 || lower.indexOf('gloss black') !== -1 || lower === 'black') return '#1c1c1e';
+    if (lower.indexOf('7701') !== -1 || lower.indexOf('sage') !== -1) return '#8e9c86';
+    if (lower.indexOf('7702') !== -1 || lower.indexOf('charcoal') !== -1) return '#3b3d40';
+    if (lower.indexOf('7703') !== -1 || lower.indexOf('sand') !== -1 || lower.indexOf('beige') !== -1) return '#d3c4a9';
+    if (lower.indexOf('7704') !== -1 || lower.indexOf('taupe') !== -1) return '#9a9188';
+    if (lower.indexOf('7706') !== -1 || lower.indexOf('coffee') !== -1 || lower.indexOf('brown') !== -1) return '#5a4232';
+    if (lower.indexOf('7707') !== -1 || lower.indexOf('navy') !== -1 || lower.indexOf('blue') !== -1) return '#2e3f5c';
+    if (lower.indexOf('7708') !== -1 || lower.indexOf('terracotta') !== -1) return '#b5654a';
+    if (lower.indexOf('7709') !== -1 || lower.indexOf('olive') !== -1) return '#6b6e45';
+    if (lower.indexOf('8801') !== -1 || lower.indexOf('concrete') !== -1) return '#a8a5a0';
+    if (lower.indexOf('7710') !== -1 || lower.indexOf('powder') !== -1) return '#a9bed2';
+    if (lower.indexOf('7711') !== -1 || lower.indexOf('blush') !== -1) return '#d9b4a6';
+    if (lower.indexOf('grey') !== -1 || lower.indexOf('gray') !== -1) return '#8d9296';
+    if (lower.indexOf('green') !== -1) return '#7a8875';
+
+    return fb;
+  }
+
   return {
     SFT_FACTOR: SFT_FACTOR,
     SQM_FACTOR: SQM_FACTOR,
@@ -4329,6 +4369,7 @@
     isWallUnit: isWallUnitCategory,
     checkPlacementOverlap: checkPlacementOverlap,
     getUnitIcon: getUnitIcon,
-    sanitizeIconId: sanitizeIconId
+    sanitizeIconId: sanitizeIconId,
+    toValidHexColor: toValidHexColor
   };
 });

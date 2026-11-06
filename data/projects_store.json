@@ -1,5 +1,84 @@
 [
   {
+    "id": "proj_mw4qm6oc5a5b",
+    "title": "Vikram Singhania — Living Room (Copy from Cookscape Admin)",
+    "client": "Vikram Singhania",
+    "type": "Wardrobe",
+    "status": "Draft",
+    "createdBy": "usr_elakkiya",
+    "ownerName": "Elakkiya",
+    "ownerEmail": "elakkiya.sakthivelu3089@gmail.com",
+    "unitsCount": 3,
+    "boardsEst": 0,
+    "data": {
+      "plan": {
+        "meta": {
+          "title": "Vikram Singhania — Living Room"
+        },
+        "plan": {
+          "furniture": [
+            {
+              "id": "f1"
+            },
+            {
+              "id": "f2"
+            },
+            {
+              "id": "f3"
+            }
+          ]
+        }
+      },
+      "shareNotice": {
+        "noticeId": "sn_proj_mw4qm6oc5a5b",
+        "originalTitle": "Vikram Singhania — Living Room",
+        "sharedByName": "Cookscape Admin",
+        "sharedByDesignation": "System Administrator",
+        "sharedAt": "2026-11-06T08:53:34.668Z"
+      }
+    },
+    "isShared": false,
+    "forkCount": 0,
+    "createdAt": "2026-11-06T08:53:34.670Z",
+    "updatedAt": "2026-11-06T08:53:34.670Z"
+  },
+  {
+    "id": "proj_client_vikram",
+    "title": "Vikram Singhania — Living Room",
+    "client": "Vikram Singhania",
+    "type": "Wardrobe",
+    "status": "Draft",
+    "createdBy": "usr_admin",
+    "ownerName": "Cookscape Admin",
+    "ownerEmail": "admin@cookscape.com",
+    "unitsCount": 3,
+    "boardsEst": 0,
+    "data": {
+      "plan": {
+        "meta": {
+          "title": "Vikram Singhania — Living Room"
+        },
+        "plan": {
+          "furniture": [
+            {
+              "id": "f1"
+            },
+            {
+              "id": "f2"
+            },
+            {
+              "id": "f3"
+            }
+          ]
+        }
+      }
+    },
+    "isShared": false,
+    "forkCount": 1,
+    "createdAt": "2026-11-06T08:53:34.660Z",
+    "updatedAt": "2026-11-06T08:53:34.676Z"
+  },
+  {
     "id": "proj_mw4pwgr0ffcg",
     "title": "Vikram Singhania — Living Room (Copy from Cookscape Admin)",
     "client": "Vikram Singhania",

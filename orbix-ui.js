@@ -8,9 +8,50 @@
   var Core = root.OrbixCore;
   var PlanEditor = root.OrbixPlan;
 
+  var toValidHexColor = (Core && Core.toValidHexColor) || function (val, fallback) {
+    var fb = (typeof fallback === 'string' && /^#[0-9a-fA-F]{6}$/.test(fallback)) ? fallback : '#edebe4';
+    if (!val || typeof val !== 'string') return fb;
+    var str = val.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(str)) return str;
+    if (/^#[0-9a-fA-F]{3}$/.test(str)) {
+      return '#' + str[1] + str[1] + str[2] + str[2] + str[3] + str[3];
+    }
+    if (/^[0-9a-fA-F]{6}$/.test(str)) return '#' + str;
+
+    var lower = str.toLowerCase();
+    if (lower.indexOf('1135') !== -1 || lower.indexOf('white') !== -1 || lower.indexOf('frost') !== -1) return '#edebe4';
+    if (lower.indexOf('3410') !== -1 || lower.indexOf('walnut') !== -1) return '#6e4e35';
+    if (lower.indexOf('3411') !== -1 || lower.indexOf('wenge') !== -1) return '#4a3a2e';
+    if (lower.indexOf('1101') !== -1 || lower.indexOf('ivory') !== -1 || lower.indexOf('cream') !== -1) return '#e4dcc8';
+    if (lower.indexOf('2204') !== -1 || lower.indexOf('oak') !== -1) return '#c4a173';
+    if (lower.indexOf('2210') !== -1 || lower.indexOf('teak') !== -1) return '#a9743f';
+    if (lower.indexOf('4402') !== -1 || lower.indexOf('grey oak') !== -1) return '#9c9891';
+    if (lower.indexOf('5501') !== -1 || lower.indexOf('graphite') !== -1) return '#585b5e';
+    if (lower.indexOf('6601') !== -1 || lower.indexOf('gloss white') !== -1) return '#f4f3ef';
+    if (lower.indexOf('6620') !== -1 || lower.indexOf('gloss grey') !== -1) return '#8d9296';
+    if (lower.indexOf('6630') !== -1 || lower.indexOf('gloss red') !== -1 || lower.indexOf('red') !== -1) return '#b2231f';
+    if (lower.indexOf('6640') !== -1 || lower.indexOf('gloss black') !== -1 || lower === 'black') return '#1c1c1e';
+    if (lower.indexOf('7701') !== -1 || lower.indexOf('sage') !== -1) return '#8e9c86';
+    if (lower.indexOf('7702') !== -1 || lower.indexOf('charcoal') !== -1) return '#3b3d40';
+    if (lower.indexOf('7703') !== -1 || lower.indexOf('sand') !== -1 || lower.indexOf('beige') !== -1) return '#d3c4a9';
+    if (lower.indexOf('7704') !== -1 || lower.indexOf('taupe') !== -1) return '#9a9188';
+    if (lower.indexOf('7706') !== -1 || lower.indexOf('coffee') !== -1 || lower.indexOf('brown') !== -1) return '#5a4232';
+    if (lower.indexOf('7707') !== -1 || lower.indexOf('navy') !== -1 || lower.indexOf('blue') !== -1) return '#2e3f5c';
+    if (lower.indexOf('7708') !== -1 || lower.indexOf('terracotta') !== -1) return '#b5654a';
+    if (lower.indexOf('7709') !== -1 || lower.indexOf('olive') !== -1) return '#6b6e45';
+    if (lower.indexOf('8801') !== -1 || lower.indexOf('concrete') !== -1) return '#a8a5a0';
+    if (lower.indexOf('7710') !== -1 || lower.indexOf('powder') !== -1) return '#a9bed2';
+    if (lower.indexOf('7711') !== -1 || lower.indexOf('blush') !== -1) return '#d9b4a6';
+    if (lower.indexOf('grey') !== -1 || lower.indexOf('gray') !== -1) return '#8d9296';
+    if (lower.indexOf('green') !== -1) return '#7a8875';
+
+    return fb;
+  };
+
   var OrbixUI = {
     editor: null,
     project: null,
+    toValidHexColor: toValidHexColor,
 
     formatDisplayDate: function (dStr, includeTime) {
       if (!dStr) return '';
@@ -800,12 +841,16 @@
       if (!panel) return;
       var self = this;
 
-      if (!selected || selected.length === 0) {
+      if (!selected) {
         panel.innerHTML = '<div class="insp-empty">Select a wall, door, window, or room to inspect and edit exact dimensions.</div>';
         return;
       }
 
-      var sel = selected[0];
+      var sel = Array.isArray(selected) ? selected[0] : selected;
+      if (!sel || !sel.type) {
+        panel.innerHTML = '<div class="insp-empty">Select a wall, door, window, or room to inspect and edit exact dimensions.</div>';
+        return;
+      }
       if (sel.type === 'wall') {
         var w = this.editor.getWall(sel.id);
         if (!w) return;
@@ -866,38 +911,50 @@
           });
         }
 
-        document.getElementById('inspWallLen').addEventListener('change', function (e) {
-          var targetL = self.editor.parseDimInput(e.target.value);
-          if (targetL > 100) {
-            var dir = Core.wallDirection(w);
-            if (w.startLocked === false && w.endLocked !== false) {
-              // Corner B is locked, Corner A released: resize wall anchored from Corner B
-              w.start.x = w.end.x - dir.x * targetL;
-              w.start.y = w.end.y - dir.y * targetL;
-            } else {
-              // Corner A is locked (or both locked): resize wall anchored from Corner A
-              w.end.x = w.start.x + dir.x * targetL;
-              w.end.y = w.start.y + dir.y * targetL;
+        var elWallLen = document.getElementById('inspWallLen');
+        if (elWallLen) {
+          elWallLen.addEventListener('change', function (e) {
+            var targetL = self.editor.parseDimInput(e.target.value);
+            if (targetL > 100) {
+              var dir = Core.wallDirection(w);
+              if (w.startLocked === false && w.endLocked !== false) {
+                // Corner B is locked, Corner A released: resize wall anchored from Corner B
+                w.start.x = w.end.x - dir.x * targetL;
+                w.start.y = w.end.y - dir.y * targetL;
+              } else {
+                // Corner A is locked (or both locked): resize wall anchored from Corner A
+                w.end.x = w.start.x + dir.x * targetL;
+                w.end.y = w.start.y + dir.y * targetL;
+              }
+              Core.detectRooms(self.editor.project);
+              self.editor.pushHistory('Resize Wall');
+              self.editor.render();
+              self.renderInspector(self.editor.selected);
             }
-            Core.detectRooms(self.editor.project);
-            self.editor.pushHistory('Resize Wall');
+          });
+        }
+        var elWallThick = document.getElementById('inspWallThick');
+        if (elWallThick) {
+          elWallThick.addEventListener('change', function (e) {
+            w.thickness = parseFloat(e.target.value);
+            self.editor.pushHistory('Change Wall Thickness');
             self.editor.render();
-            self.renderInspector(self.editor.selected);
-          }
-        });
-        document.getElementById('inspWallThick').addEventListener('change', function (e) {
-          w.thickness = parseFloat(e.target.value);
-          self.editor.pushHistory('Change Wall Thickness');
-          self.editor.render();
-        });
-        document.getElementById('inspWallH').addEventListener('change', function (e) {
-          w.height = parseFloat(e.target.value);
-          self.editor.pushHistory('Change Wall Height');
-          self.editor.render();
-        });
-        document.getElementById('inspDelWall').addEventListener('click', function () {
-          self.editor.deleteSelected();
-        });
+          });
+        }
+        var elWallH = document.getElementById('inspWallH');
+        if (elWallH) {
+          elWallH.addEventListener('change', function (e) {
+            w.height = parseFloat(e.target.value);
+            self.editor.pushHistory('Change Wall Height');
+            self.editor.render();
+          });
+        }
+        var elDelWall = document.getElementById('inspDelWall');
+        if (elDelWall) {
+          elDelWall.addEventListener('click', function () {
+            self.editor.deleteSelected();
+          });
+        }
       } else if (sel.type === 'opening') {
         var op = null;
         for (var i = 0; i < this.project.plan.openings.length; i++) {
@@ -1020,16 +1077,19 @@
           if (elSi) elSi.addEventListener(evt, updateOp);
         });
 
-        document.getElementById('inspDelOp').addEventListener('click', function () {
-          self.editor.deleteSelected();
-          self.saveToLocalStorage();
-          if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
-            window.OrbixProjects.saveActiveProject({ plan: self.project });
-          }
-          if (typeof self.render3DHome === 'function') {
-            self.render3DHome();
-          }
-        });
+        var elDelOp = document.getElementById('inspDelOp');
+        if (elDelOp) {
+          elDelOp.addEventListener('click', function () {
+            self.editor.deleteSelected();
+            self.saveToLocalStorage();
+            if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
+              window.OrbixProjects.saveActiveProject({ plan: self.project });
+            }
+            if (typeof self.render3DHome === 'function') {
+              self.render3DHome();
+            }
+          });
+        }
       } else if (sel.type === 'furniture') {
         var fn = null;
         for (var f = 0; f < this.project.plan.furniture.length; f++) {
@@ -1073,8 +1133,10 @@
 
         var shutterItemsHtml = '';
         for (var s = 0; s < shuttersCount; s++) {
-          var sColor = fn.shutterColors[s] || (shutterFinish.indexOf('White') !== -1 ? '#edebe4' : shutterFinish.indexOf('Sage') !== -1 ? '#7a8875' : shutterFinish.indexOf('Oak') !== -1 ? '#c8b293' : '#6e4e35');
-          var sMat = fn.shutterMaterials[s] || shutterFinish;
+          var rawCol = (fn.shutterColors && fn.shutterColors[s]);
+          var fallbackHex = (shutterFinish.indexOf('White') !== -1 ? '#edebe4' : shutterFinish.indexOf('Sage') !== -1 ? '#7a8875' : shutterFinish.indexOf('Oak') !== -1 ? '#c8b293' : '#6e4e35');
+          var sColor = toValidHexColor(rawCol, toValidHexColor(shutterFinish, fallbackHex));
+          var sMat = (fn.shutterMaterials && fn.shutterMaterials[s]) || shutterFinish;
           var sOpen = !!(fn.shutterStates && fn.shutterStates[s]);
 
           shutterItemsHtml +=
@@ -1293,19 +1355,25 @@
           if (typeof window.renderAll === 'function') window.renderAll();
         }
 
-        document.getElementById('inspFurnName').addEventListener('change', function (e) {
-          fn.name = e.target.value;
-          syncInspectorTo3D();
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.editor.render();
-        });
-        document.getElementById('inspFurnRoom').addEventListener('change', function (e) {
-          fn.roomId = e.target.value || null;
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.editor.render();
-        });
+        var elFurnName = document.getElementById('inspFurnName');
+        if (elFurnName) {
+          elFurnName.addEventListener('change', function (e) {
+            fn.name = e.target.value;
+            syncInspectorTo3D();
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+          });
+        }
+        var elFurnRoom = document.getElementById('inspFurnRoom');
+        if (elFurnRoom) {
+          elFurnRoom.addEventListener('change', function (e) {
+            fn.roomId = e.target.value || null;
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+          });
+        }
         var elElev = document.getElementById('inspFurnElev');
         if (elElev) {
           elElev.addEventListener('change', function (e) {
@@ -1317,59 +1385,74 @@
             if (self.render3DHome) self.render3DHome(true);
           });
         }
-        document.getElementById('inspFurnW').addEventListener('change', function (e) {
-          fn.dimensions.W = parseFloat(e.target.value);
-          syncInspectorTo3D();
-          self.editor.pushHistory('Resize Furniture');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.editor.render();
-          if (self.render3DHome) self.render3DHome(true);
-        });
-        document.getElementById('inspFurnH').addEventListener('change', function (e) {
-          fn.dimensions.H = parseFloat(e.target.value);
-          syncInspectorTo3D();
-          self.editor.pushHistory('Resize Furniture');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.editor.render();
-          if (self.render3DHome) self.render3DHome(true);
-        });
-        document.getElementById('inspFurnD').addEventListener('change', function (e) {
-          fn.dimensions.D = parseFloat(e.target.value);
-          syncInspectorTo3D();
-          self.editor.pushHistory('Resize Furniture');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.editor.render();
-          if (self.render3DHome) self.render3DHome(true);
-        });
-        document.getElementById('inspFurnShutters').addEventListener('change', function (e) {
-          if (!fn.unitConfig) fn.unitConfig = {};
-          fn.unitConfig.shutters = parseInt(e.target.value) || 0;
-          if (!fn.shutterStates) fn.shutterStates = [];
-          while (fn.shutterStates.length < fn.unitConfig.shutters) fn.shutterStates.push(false);
-          syncInspectorTo3D();
-          self.editor.pushHistory('Edit Shutters Count');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.editor.render();
-          self.renderInspector(self.editor.selected);
-          if (self.render3DHome) self.render3DHome(true);
-        });
-        document.getElementById('inspFurnDrawers').addEventListener('change', function (e) {
-          if (!fn.unitConfig) fn.unitConfig = {};
-          fn.unitConfig.drawers = parseInt(e.target.value) || 0;
-          if (!fn.drawerStates) fn.drawerStates = [];
-          while (fn.drawerStates.length < fn.unitConfig.drawers) fn.drawerStates.push(false);
-          syncInspectorTo3D();
-          self.editor.pushHistory('Edit Drawers Count');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.editor.render();
-          self.renderInspector(self.editor.selected);
-          if (self.render3DHome) self.render3DHome(true);
-        });
+        var elFurnW = document.getElementById('inspFurnW');
+        if (elFurnW) {
+          elFurnW.addEventListener('change', function (e) {
+            fn.dimensions.W = parseFloat(e.target.value);
+            syncInspectorTo3D();
+            self.editor.pushHistory('Resize Furniture');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var elFurnH = document.getElementById('inspFurnH');
+        if (elFurnH) {
+          elFurnH.addEventListener('change', function (e) {
+            fn.dimensions.H = parseFloat(e.target.value);
+            syncInspectorTo3D();
+            self.editor.pushHistory('Resize Furniture');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var elFurnD = document.getElementById('inspFurnD');
+        if (elFurnD) {
+          elFurnD.addEventListener('change', function (e) {
+            fn.dimensions.D = parseFloat(e.target.value);
+            syncInspectorTo3D();
+            self.editor.pushHistory('Resize Furniture');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var elFurnShutters = document.getElementById('inspFurnShutters');
+        if (elFurnShutters) {
+          elFurnShutters.addEventListener('change', function (e) {
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.shutters = parseInt(e.target.value) || 0;
+            if (!fn.shutterStates) fn.shutterStates = [];
+            while (fn.shutterStates.length < fn.unitConfig.shutters) fn.shutterStates.push(false);
+            syncInspectorTo3D();
+            self.editor.pushHistory('Edit Shutters Count');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var elFurnDrawers = document.getElementById('inspFurnDrawers');
+        if (elFurnDrawers) {
+          elFurnDrawers.addEventListener('change', function (e) {
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.drawers = parseInt(e.target.value) || 0;
+            if (!fn.drawerStates) fn.drawerStates = [];
+            while (fn.drawerStates.length < fn.unitConfig.drawers) fn.drawerStates.push(false);
+            syncInspectorTo3D();
+            self.editor.pushHistory('Edit Drawers Count');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
         var doorStyleSelect = document.getElementById('inspFurnDoorStyle');
         if (doorStyleSelect) {
           doorStyleSelect.addEventListener('change', function (e) {
@@ -1409,19 +1492,22 @@
             if (self.render3DHome) self.render3DHome();
           });
         }
-        document.getElementById('inspFurnShutterCol').addEventListener('change', function (e) {
-          if (!fn.materials) fn.materials = {};
-          if (!fn.materials.shutter) fn.materials.shutter = { material: 'HDHMR_18MM' };
-          fn.materials.shutter.finish = e.target.value;
-          if (!fn.unitConfig) fn.unitConfig = {};
-          fn.unitConfig.shutterCol = e.target.value;
-          syncInspectorTo3D();
-          self.editor.pushHistory('Change Shutter Finish');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.editor.render();
-          if (self.render3DHome) self.render3DHome();
-        });
+        var elShutterCol = document.getElementById('inspFurnShutterCol');
+        if (elShutterCol) {
+          elShutterCol.addEventListener('change', function (e) {
+            if (!fn.materials) fn.materials = {};
+            if (!fn.materials.shutter) fn.materials.shutter = { material: 'HDHMR_18MM' };
+            fn.materials.shutter.finish = e.target.value;
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.shutterCol = e.target.value;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Change Shutter Finish');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome();
+          });
+        }
 
         // Bulk Shutter Controls
         // Elevation Presets
@@ -1430,7 +1516,8 @@
           btnFloor.addEventListener('click', function () {
             fn.elevation = 0;
             if (fn.pos) fn.pos.z = 0;
-            document.getElementById('inspFurnElev').value = 0;
+            var elevEl = document.getElementById('inspFurnElev');
+            if (elevEl) elevEl.value = 0;
             syncInspectorTo3D();
             self.editor.pushHistory('Set Elevation: 0mm (Floor)');
             self.saveToLocalStorage();
@@ -1443,7 +1530,8 @@
           btnWall.addEventListener('click', function () {
             fn.elevation = 1500;
             if (fn.pos) fn.pos.z = 1500;
-            document.getElementById('inspFurnElev').value = 1500;
+            var elevEl2 = document.getElementById('inspFurnElev');
+            if (elevEl2) elevEl2.value = 1500;
             syncInspectorTo3D();
             self.editor.pushHistory('Set Elevation: 1500mm (Wall)');
             self.saveToLocalStorage();
@@ -1494,7 +1582,7 @@
         var btnApplyAll = document.getElementById('inspShutterApplyAll');
         if (btnApplyAll) {
           btnApplyAll.addEventListener('click', function () {
-            var col0 = (fn.shutterColors && fn.shutterColors[0]) || '#6e4e35';
+            var col0 = toValidHexColor((fn.shutterColors && fn.shutterColors[0]), '#6e4e35');
             var mat0 = (fn.shutterMaterials && fn.shutterMaterials[0]) || shutterFinish;
             if (!fn.shutterColors) fn.shutterColors = [];
             if (!fn.shutterMaterials) fn.shutterMaterials = [];
@@ -1589,141 +1677,170 @@
             if (self.render3DHome) self.render3DHome(true);
           });
         });
-        document.getElementById('inspFurnCarcass').addEventListener('change', function (e) {
-          if (!fn.materials) fn.materials = {};
-          if (!fn.materials.carcass) fn.materials.carcass = { material: 'BWP_18MM' };
-          fn.materials.carcass.finish = e.target.value;
-          if (!fn.unitConfig) fn.unitConfig = {};
-          fn.unitConfig.carcass = e.target.value;
-          syncInspectorTo3D();
-          self.editor.pushHistory('Change Carcass Finish');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.editor.render();
-          if (self.render3DHome) self.render3DHome(true);
-        });
+        var elFurnCarcass = document.getElementById('inspFurnCarcass');
+        if (elFurnCarcass) {
+          elFurnCarcass.addEventListener('change', function (e) {
+            if (!fn.materials) fn.materials = {};
+            if (!fn.materials.carcass) fn.materials.carcass = { material: 'BWP_18MM' };
+            fn.materials.carcass.finish = e.target.value;
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.carcass = e.target.value;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Change Carcass Finish');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
 
-        document.getElementById('inspFurnShutter').addEventListener('change', function (e) {
-          if (!fn.materials) fn.materials = {};
-          if (!fn.materials.shutter) fn.materials.shutter = { material: 'HDHMR_18MM' };
-          fn.materials.shutter.finish = e.target.value;
-          if (!fn.unitConfig) fn.unitConfig = {};
-          fn.unitConfig.shutterCol = e.target.value;
-          if (!fn.shutterMaterials) fn.shutterMaterials = [];
-          for (var sm = 0; sm < shuttersCount; sm++) {
-            fn.shutterMaterials[sm] = e.target.value;
-          }
-          syncInspectorTo3D();
-          self.editor.pushHistory('Change Shutter Finish');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          self.renderInspector(self.editor.selected);
-          if (self.render3DHome) self.render3DHome(true);
-        });
-
-        document.getElementById('inspFurnHandle').addEventListener('change', function (e) {
-          if (!fn.unitConfig) fn.unitConfig = {};
-          fn.unitConfig.handle = e.target.value;
-          fn.handleType = e.target.value;
-          syncInspectorTo3D();
-          self.editor.pushHistory('Change Handle Style');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          if (self.render3DHome) self.render3DHome(true);
-        });
-
-        document.getElementById('inspFurnHFinish').addEventListener('change', function (e) {
-          if (!fn.unitConfig) fn.unitConfig = {};
-          fn.unitConfig.hfinish = e.target.value;
-          fn.handleFinish = e.target.value;
-          syncInspectorTo3D();
-          self.editor.pushHistory('Change Handle Finish');
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          if (self.render3DHome) self.render3DHome(true);
-        });
-        document.getElementById('inspOpen3DStudio').addEventListener('click', function () {
-          if (window.S && window.S.units) {
-            var existingIdx = -1;
-            for (var u = 0; u < window.S.units.length; u++) {
-              if (window.S.units[u].label === fn.name || window.S.units[u]._furnId === fn.id) {
-                existingIdx = u;
-                break;
-              }
+        var elFurnShutter = document.getElementById('inspFurnShutter');
+        if (elFurnShutter) {
+          elFurnShutter.addEventListener('change', function (e) {
+            if (!fn.materials) fn.materials = {};
+            if (!fn.materials.shutter) fn.materials.shutter = { material: 'HDHMR_18MM' };
+            fn.materials.shutter.finish = e.target.value;
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.shutterCol = e.target.value;
+            if (!fn.shutterMaterials) fn.shutterMaterials = [];
+            for (var sm = 0; sm < shuttersCount; sm++) {
+              fn.shutterMaterials[sm] = e.target.value;
             }
-            if (existingIdx !== -1) {
-              window.S.active = existingIdx;
-              var activeUnit = window.S.units[existingIdx];
-              activeUnit.W = fn.dimensions.W;
-              activeUnit.H = fn.dimensions.H;
-              activeUnit.D = fn.dimensions.D;
-              if (fn.unitConfig) {
-                if (fn.unitConfig.shutters !== undefined) activeUnit.shutters = fn.unitConfig.shutters;
-                if (fn.unitConfig.drawers !== undefined) activeUnit.drawers = fn.unitConfig.drawers;
-                if (fn.unitConfig.shelves !== undefined) activeUnit.shelves = fn.unitConfig.shelves;
-                if (fn.unitConfig.dstyle) activeUnit.dstyle = fn.unitConfig.dstyle;
-                if (fn.unitConfig.handle) activeUnit.handle = fn.unitConfig.handle;
-                if (fn.unitConfig.hfinish) activeUnit.hfinish = fn.unitConfig.hfinish;
-                if (fn.unitConfig.counter) activeUnit.counter = fn.unitConfig.counter;
-                if (fn.unitConfig.shutterCol) activeUnit.shutterCol = fn.unitConfig.shutterCol;
-                else if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) activeUnit.shutterCol = fn.materials.shutter.finish;
-                if (fn.unitConfig.carcass) activeUnit.carcass = fn.unitConfig.carcass;
-                else if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) activeUnit.carcass = fn.materials.carcass.finish;
-              }
-            } else {
-              var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
-              var sFinish = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
-              var cFinish = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
-              var newU = {
-                label: fn.name,
-                ctype: isKitchen ? 'kbase' : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
-                _furnId: fn.id,
-                W: fn.dimensions.W,
-                H: fn.dimensions.H,
-                D: fn.dimensions.D,
-                T: 18,
-                type: (fn.unitConfig && (fn.unitConfig.type || fn.unitConfig.doorType)) || 'hinged',
-                shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1),
-                sections: (fn.unitConfig && fn.unitConfig.sections) || (fn.dimensions.W > 1200 ? 2 : 1),
-                shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isKitchen ? 1 : 3),
-                drawers: (fn.unitConfig && fn.unitConfig.drawers) || 0,
-                drawerH: 180,
-                loft: (fn.unitConfig && fn.unitConfig.loft) || false,
-                loftH: 600,
-                loftShutters: 2,
-                back: 18,
-                dstyle: (fn.unitConfig && fn.unitConfig.dstyle) || 'slab',
-                handle: (fn.unitConfig && fn.unitConfig.handle) || 'gprof',
-                hfinish: (fn.unitConfig && fn.unitConfig.hfinish) || 'black',
-                counter: (fn.unitConfig && fn.unitConfig.counter) || (isKitchen ? 'black' : 'none'),
-                carcass: cFinish,
-                shutterCol: sFinish
-              };
-              window.S.units.push(newU);
-              window.S.active = window.S.units.length - 1;
+            if (!fn.shutterColors) fn.shutterColors = [];
+            var hexVal = toValidHexColor(e.target.value, '#edebe4');
+            for (var sc = 0; sc < shuttersCount; sc++) {
+              fn.shutterColors[sc] = hexVal;
             }
-            if (typeof window.renderRail === 'function') window.renderRail();
-            if (typeof window.renderAll === 'function') window.renderAll();
-            var vtab = document.querySelector('.vtab[data-view="design"]');
-            if (vtab) vtab.click();
-          }
-        });
-        document.getElementById('inspRotateFurn').addEventListener('click', function () {
-          fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
-          self.editor.pushHistory('Rotate Furniture');
-          self.saveToLocalStorage();
-          self.editor.render();
-          if (self.render3DHome) self.render3DHome();
-        });
-        document.getElementById('inspDelFurn').addEventListener('click', function () {
-          self.editor.deleteSelected();
-          if (window.S && window.S.units) {
-            window.S.units = window.S.units.filter(function (u) { return u._furnId !== fn.id; });
-            window.S.active = Math.max(0, window.S.units.length - 1);
-            if (typeof window.renderRail === 'function') window.renderRail();
-          }
-          if (self.render3DHome) self.render3DHome();
-        });
+            syncInspectorTo3D();
+            self.editor.pushHistory('Change Shutter Finish');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        var elFurnHandle = document.getElementById('inspFurnHandle');
+        if (elFurnHandle) {
+          elFurnHandle.addEventListener('change', function (e) {
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.handle = e.target.value;
+            fn.handleType = e.target.value;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Change Handle Style');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        var elFurnHFinish = document.getElementById('inspFurnHFinish');
+        if (elFurnHFinish) {
+          elFurnHFinish.addEventListener('change', function (e) {
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.hfinish = e.target.value;
+            fn.handleFinish = e.target.value;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Change Handle Finish');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        var elOpen3DStudio = document.getElementById('inspOpen3DStudio');
+        if (elOpen3DStudio) {
+          elOpen3DStudio.addEventListener('click', function () {
+            if (window.S && window.S.units) {
+              var existingIdx = -1;
+              for (var u = 0; u < window.S.units.length; u++) {
+                if (window.S.units[u].label === fn.name || window.S.units[u]._furnId === fn.id) {
+                  existingIdx = u;
+                  break;
+                }
+              }
+              if (existingIdx !== -1) {
+                window.S.active = existingIdx;
+                var activeUnit = window.S.units[existingIdx];
+                activeUnit.W = fn.dimensions.W;
+                activeUnit.H = fn.dimensions.H;
+                activeUnit.D = fn.dimensions.D;
+                if (fn.unitConfig) {
+                  if (fn.unitConfig.shutters !== undefined) activeUnit.shutters = fn.unitConfig.shutters;
+                  if (fn.unitConfig.drawers !== undefined) activeUnit.drawers = fn.unitConfig.drawers;
+                  if (fn.unitConfig.shelves !== undefined) activeUnit.shelves = fn.unitConfig.shelves;
+                  if (fn.unitConfig.dstyle) activeUnit.dstyle = fn.unitConfig.dstyle;
+                  if (fn.unitConfig.handle) activeUnit.handle = fn.unitConfig.handle;
+                  if (fn.unitConfig.hfinish) activeUnit.hfinish = fn.unitConfig.hfinish;
+                  if (fn.unitConfig.counter) activeUnit.counter = fn.unitConfig.counter;
+                  if (fn.unitConfig.shutterCol) activeUnit.shutterCol = fn.unitConfig.shutterCol;
+                  else if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) activeUnit.shutterCol = fn.materials.shutter.finish;
+                  if (fn.unitConfig.carcass) activeUnit.carcass = fn.unitConfig.carcass;
+                  else if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) activeUnit.carcass = fn.materials.carcass.finish;
+                }
+              } else {
+                var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
+                var sFinish = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
+                var cFinish = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
+                var newU = {
+                  label: fn.name,
+                  ctype: isKitchen ? 'kbase' : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
+                  _furnId: fn.id,
+                  W: fn.dimensions.W,
+                  H: fn.dimensions.H,
+                  D: fn.dimensions.D,
+                  T: 18,
+                  type: (fn.unitConfig && (fn.unitConfig.type || fn.unitConfig.doorType)) || 'hinged',
+                  shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1),
+                  sections: (fn.unitConfig && fn.unitConfig.sections) || (fn.dimensions.W > 1200 ? 2 : 1),
+                  shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isKitchen ? 1 : 3),
+                  drawers: (fn.unitConfig && fn.unitConfig.drawers) || 0,
+                  drawerH: 180,
+                  loft: (fn.unitConfig && fn.unitConfig.loft) || false,
+                  loftH: 600,
+                  loftShutters: 2,
+                  back: 18,
+                  dstyle: (fn.unitConfig && fn.unitConfig.dstyle) || 'slab',
+                  handle: (fn.unitConfig && fn.unitConfig.handle) || 'gprof',
+                  hfinish: (fn.unitConfig && fn.unitConfig.hfinish) || 'black',
+                  counter: (fn.unitConfig && fn.unitConfig.counter) || (isKitchen ? 'black' : 'none'),
+                  carcass: cFinish,
+                  shutterCol: sFinish
+                };
+                window.S.units.push(newU);
+                window.S.active = window.S.units.length - 1;
+              }
+              if (typeof window.renderRail === 'function') window.renderRail();
+              if (typeof window.renderAll === 'function') window.renderAll();
+              var vtab = document.querySelector('.vtab[data-view="design"]');
+              if (vtab) vtab.click();
+            }
+          });
+        }
+
+        var elRotateFurn = document.getElementById('inspRotateFurn');
+        if (elRotateFurn) {
+          elRotateFurn.addEventListener('click', function () {
+            fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+            self.editor.pushHistory('Rotate Furniture');
+            self.saveToLocalStorage();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome();
+          });
+        }
+
+        var elDelFurn = document.getElementById('inspDelFurn');
+        if (elDelFurn) {
+          elDelFurn.addEventListener('click', function () {
+            self.editor.deleteSelected();
+            if (window.S && window.S.units) {
+              window.S.units = window.S.units.filter(function (u) { return u._furnId !== fn.id; });
+              window.S.active = Math.max(0, window.S.units.length - 1);
+              if (typeof window.renderRail === 'function') window.renderRail();
+            }
+            if (self.render3DHome) self.render3DHome();
+          });
+        }
       } else if (sel.type === 'room') {
         var rm = null;
         var rooms = this.project.plan.rooms || [];
@@ -1892,7 +2009,7 @@
             fn.shutterMaterials = fn.shutterMaterials || [];
             var sCnt = (fn.unitConfig && fn.unitConfig.shutters) || 2;
             for (var sc = 0; sc < sCnt; sc++) {
-              fn.shutterColors[sc] = existing.shutterCol;
+              fn.shutterColors[sc] = toValidHexColor(existing.shutterCol, '#6e4e35');
               fn.shutterMaterials[sc] = existing.shutterCol;
             }
           } else if (fn.unitConfig && fn.unitConfig.shutterCol) {
@@ -2223,7 +2340,7 @@
             var scCount = match.unitConfig.shutters || 2;
             for (var sc = 0; sc < scCount; sc++) {
               match.shutterMaterials[sc] = u.shutterCol;
-              match.shutterColors[sc] = u.shutterCol;
+              match.shutterColors[sc] = toValidHexColor(u.shutterCol, '#6e4e35');
             }
           }
           if (u.carcass) {
