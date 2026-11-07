@@ -312,6 +312,9 @@
             if (window.__cc && window.__cc.gl && typeof window.__cc.gl.setFloorMaterial === 'function') {
               window.__cc.gl.setFloorMaterial(floorType);
             }
+            if (typeof self.render3DHome === 'function') {
+              self.render3DHome(true);
+            }
             if (typeof window.toast === 'function') {
               window.toast('Floor Finish: ' + (btn.title || floorType));
             }
@@ -1464,7 +1467,7 @@
             self.saveToLocalStorage();
             self.renderBOQ();
             self.editor.render();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
         var handleSelect = document.getElementById('inspFurnHandle');
@@ -1477,7 +1480,7 @@
             self.saveToLocalStorage();
             self.renderBOQ();
             self.editor.render();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
         var counterSelect = document.getElementById('inspFurnCounter');
@@ -1490,7 +1493,7 @@
             self.saveToLocalStorage();
             self.renderBOQ();
             self.editor.render();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
         var elShutterCol = document.getElementById('inspFurnShutterCol');
@@ -1506,7 +1509,7 @@
             self.saveToLocalStorage();
             self.renderBOQ();
             self.editor.render();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
 
@@ -1832,7 +1835,7 @@
             self.editor.pushHistory('Rotate Furniture');
             self.saveToLocalStorage();
             self.editor.render();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
 
@@ -1845,7 +1848,7 @@
               window.S.active = Math.max(0, window.S.units.length - 1);
               if (typeof window.renderRail === 'function') window.renderRail();
             }
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
       } else if (sel.type === 'room') {
@@ -1895,7 +1898,7 @@
             self.editor.pushHistory('Rename Room');
             self.editor.render();
             self.saveToLocalStorage();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         });
 
@@ -1905,7 +1908,7 @@
             rm.floorFinish = e.target.value;
             self.editor.pushHistory('Change Floor Finish');
             self.saveToLocalStorage();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
 
@@ -1926,7 +1929,7 @@
             rm.ceilingHeight = parseFloat(e.target.value) || 2800;
             self.editor.pushHistory('Change Ceiling Height');
             self.saveToLocalStorage();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
 

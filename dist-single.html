@@ -164,9 +164,36 @@ input,select{font:inherit;color:inherit}
 .stagewrap{flex:1 1 auto;display:flex;flex-direction:column;min-width:0}
 #stage{
   flex:1 1 auto;position:relative;min-height:0;
-  background: linear-gradient(180deg, #3FA9F5 0%, #68BAF7 28%, #96D2FA 58%, #C4E6FC 82%, #DCF1FD 100%);
+  background: radial-gradient(circle at 50% 45%, #FAF9F5 0%, #EBE7DE 58%, #DCD6CA 100%);
   perspective:2600px;perspective-origin:50% 46%;
   overflow:hidden;cursor:grab;touch-action:none;
+}
+/* Floating 3D Camera & Presentation HUD */
+.stage-cam-hud{
+  position:absolute;top:12px;right:14px;z-index:30;
+  display:flex;align-items:center;gap:3px;
+  background:rgba(15,23,42,.82);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:8px;padding:4px 6px;
+  box-shadow:0 4px 18px rgba(0,0,0,.26);
+  pointer-events:auto;
+}
+.cam-hud-btn{
+  font-family:var(--cond);font-size:11px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:#e2e8f0;background:transparent;
+  border:1px solid transparent;border-radius:5px;padding:4px 9px;
+  cursor:pointer;white-space:nowrap;transition:all .15s ease;
+}
+.cam-hud-btn:hover{
+  background:rgba(255,255,255,.16);color:#ffffff;
+}
+.cam-hud-btn.is-active, .cam-hud-btn[aria-pressed="true"]{
+  background:#2563eb;color:#ffffff;border-color:#3b82f6;
+  box-shadow:0 1px 4px rgba(37,99,235,.45);
+}
+.cam-hud-sep{
+  width:1px;height:16px;background:rgba(255,255,255,.2);margin:0 3px;
 }
 #stage.grab{cursor:grabbing}
 #world{
@@ -263,8 +290,9 @@ input,select{font:inherit;color:inherit}
 
 /* stage bar */
 .stagebar{
-  flex:0 0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
-  padding:9px 14px;background:var(--panel);border-top:1px solid var(--rule);
+  flex:0 0 auto;display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;
+  padding:8px 14px;background:var(--panel);border-top:1px solid var(--rule);
+  min-width:0;
 }
 .legend{display:flex;gap:18px;flex-wrap:wrap;min-width:0}
 .lg{display:flex;align-items:center;gap:8px;min-width:0}
@@ -275,7 +303,7 @@ input,select{font:inherit;color:inherit}
 .lg-t{display:flex;flex-direction:column;min-width:0}
 .lg-role{font-family:var(--cond);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
 .lg-code{font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.viewbtns{margin-left:auto;display:flex;gap:5px}
+.viewbtns{margin-left:auto;display:flex;align-items:center;gap:5px;flex-wrap:wrap;max-width:100%}
 .minibtn{
   font-family:var(--cond);font-size:11px;font-weight:600;letter-spacing:.05em;
   text-transform:uppercase;padding:6px 11px;border:1px solid var(--rule);
@@ -2910,6 +2938,14 @@ body.role-employee #adminCreateEmpBox,
     <section class="view" id="view-design">
       <div class="stagewrap">
         <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
+          <div class="stage-cam-hud" id="stageCamHud">
+            <button class="cam-hud-btn" id="hudFrontBtn" title="Front Elevation View">👁 Front</button>
+            <button class="cam-hud-btn is-active" id="hudIsoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
+            <button class="cam-hud-btn" id="hudSideBtn" title="Side Elevation View">◨ Side</button>
+            <span class="cam-hud-sep"></span>
+            <button class="cam-hud-btn" id="hudOpenBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
+            <button class="cam-hud-btn" id="hudPresentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
+          </div>
           <div id="world"></div>
         </div>
         <div class="stagebar">
@@ -2934,11 +2970,11 @@ body.role-employee #adminCreateEmpBox,
             <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
               <option value="all">🏠 All Rooms</option>
             </select>
-            <button class="minibtn" id="presentBtn" aria-pressed="false">Present</button>
-            <button class="minibtn" id="openBtn" aria-pressed="false">Open all</button>
-            <button class="minibtn" id="frontBtn">Front</button>
-            <button class="minibtn" id="isoBtn">3/4</button>
-            <button class="minibtn" id="sideBtn">Side</button>
+            <button class="minibtn" id="frontBtn" title="Front Elevation View">👁 Front</button>
+            <button class="minibtn" id="isoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
+            <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
+            <button class="minibtn" id="openBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
+            <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
           </div>
         </div>
       </div>
@@ -15397,85 +15433,177 @@ body.role-employee #adminCreateEmpBox,
     type = type || 'white_tile';
 
     if (type === 'white_tile') {
-      // 800x800 White Italian Carrara Porcelain Tile
-      ctx.fillStyle = '#E8E8EC'; // Crisp grout line
+      // 800x800 Italian Carrara / Calacatta Polished Marble Slabs
+      ctx.fillStyle = '#D6D6DE'; // Micro grout line
       ctx.fillRect(0, 0, 512, 512);
       for (var i = 0; i < 2; i++) {
         for (var j = 0; j < 2; j++) {
-          ctx.fillStyle = (i + j) % 2 ? '#FAFAFC' : '#F4F4F8';
-          ctx.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
-          // Delicate grey marble veins
-          ctx.strokeStyle = 'rgba(180, 185, 195, 0.22)';
-          ctx.lineWidth = 1.8;
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          // Soft alabaster marble base
+          var slabGrad = ctx.createLinearGradient(tx, ty, tx + tw, ty + th);
+          slabGrad.addColorStop(0, '#FAF9FC');
+          slabGrad.addColorStop(0.5, '#F4F4F8');
+          slabGrad.addColorStop(1, '#EDECEF');
+          ctx.fillStyle = slabGrad;
+          ctx.fillRect(tx, ty, tw, th);
+
+          // Subtle perimeter bevel highlight
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
+
+          // Primary soft slate-taupe marble veins
+          ctx.strokeStyle = 'rgba(140, 148, 160, 0.28)';
+          ctx.lineWidth = 2.0;
           ctx.beginPath();
-          ctx.moveTo(i * 256 + 20, j * 256 + 30);
-          ctx.bezierCurveTo(i * 256 + 100, j * 256 + 90, i * 256 + 140, j * 256 + 180, i * 256 + 230, j * 256 + 220);
+          ctx.moveTo(tx + 18, ty + 24);
+          ctx.bezierCurveTo(tx + 90, ty + 85, tx + 130, ty + 160, tx + 235, ty + 225);
           ctx.stroke();
-          ctx.strokeStyle = 'rgba(195, 200, 210, 0.15)';
+
+          // Vein branch
+          ctx.strokeStyle = 'rgba(155, 162, 175, 0.20)';
           ctx.lineWidth = 1.2;
           ctx.beginPath();
-          ctx.moveTo(i * 256 + 180, j * 256 + 40);
-          ctx.bezierCurveTo(i * 256 + 120, j * 256 + 110, i * 256 + 70, j * 256 + 190, i * 256 + 50, j * 256 + 240);
+          ctx.moveTo(tx + 105, ty + 105);
+          ctx.bezierCurveTo(tx + 160, ty + 95, tx + 195, ty + 130, tx + 240, ty + 145);
+          ctx.stroke();
+
+          // Secondary delicate gold/amber feathering
+          ctx.strokeStyle = 'rgba(185, 155, 115, 0.16)';
+          ctx.lineWidth = 1.0;
+          ctx.beginPath();
+          ctx.moveTo(tx + 190, ty + 35);
+          ctx.bezierCurveTo(tx + 125, ty + 95, tx + 75, ty + 175, tx + 45, ty + 238);
           ctx.stroke();
         }
       }
     } else if (type === 'square_tile') {
-      // 600x600 Classic Neutral Warm White Square Ceramic Tiles
-      ctx.fillStyle = '#CFC8BE'; // Neutral grout line
+      // 600x600 Premium Vitrified Travertine / Ivory Ceramic Tile
+      ctx.fillStyle = '#C8BFB2'; // Warm sandstone grout
       ctx.fillRect(0, 0, 512, 512);
       for (var i = 0; i < 2; i++) {
         for (var j = 0; j < 2; j++) {
-          ctx.fillStyle = (i + j) % 2 ? '#F5F2EB' : '#EFECE4';
-          ctx.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
-          for (var s = 0; s < 180; s++) {
-            var rx = (Math.sin(s * 17.3 + i * 5) * 0.5 + 0.5) * 246;
-            var ry = (Math.cos(s * 23.7 + j * 7) * 0.5 + 0.5) * 246;
-            ctx.fillStyle = 'rgba(0,0,0,0.015)';
-            ctx.fillRect(i * 256 + 3 + rx, j * 256 + 3 + ry, 2, 2);
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          // Tile face with soft chamfered edge shading
+          if (ctx.createRadialGradient) {
+            var tileGrad = ctx.createRadialGradient(tx + 126, ty + 126, 40, tx + 126, ty + 126, 130);
+            tileGrad.addColorStop(0, '#FAF7F2');
+            tileGrad.addColorStop(0.85, '#EFEAE0');
+            tileGrad.addColorStop(1, '#E4DDCF');
+            ctx.fillStyle = tileGrad;
+          } else {
+            ctx.fillStyle = '#EFEAE0';
+          }
+          ctx.fillRect(tx, ty, tw, th);
+
+          // Subtle top/left bevel highlight
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
+
+          // Micro travertine specks
+          for (var s = 0; s < 120; s++) {
+            var rx = (Math.sin(s * 19.1 + i * 7) * 0.5 + 0.5) * (tw - 8);
+            var ry = (Math.cos(s * 29.3 + j * 11) * 0.5 + 0.5) * (th - 8);
+            ctx.fillStyle = (s % 2 === 0) ? 'rgba(0,0,0,0.025)' : 'rgba(255,255,255,0.06)';
+            ctx.fillRect(tx + 4 + rx, ty + 4 + ry, 2, 2);
           }
         }
       }
     } else if (type === 'grey_tile') {
-      // 600x1200 Contemporary Matte Charcoal / Grey Stone Tile
-      ctx.fillStyle = '#2B2D31'; // Dark grout line
+      // 600x1200 Contemporary Basalt / Charcoal Slate Slabs
+      ctx.fillStyle = '#222428'; // Deep precision grout
       ctx.fillRect(0, 0, 512, 512);
       for (var i = 0; i < 2; i++) {
         for (var j = 0; j < 2; j++) {
-          ctx.fillStyle = (i + j) % 2 ? '#5A5E66' : '#52565E';
-          ctx.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
-          for (var s = 0; s < 250; s++) {
-            var rx = (Math.sin(s * 13.1 + i * 3) * 0.5 + 0.5) * 246;
-            var ry = (Math.cos(s * 19.3 + j * 9) * 0.5 + 0.5) * 246;
-            ctx.fillStyle = 'rgba(255,255,255,0.035)';
-            ctx.fillRect(i * 256 + 3 + rx, j * 256 + 3 + ry, 2, 1);
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var slateGrad = ctx.createLinearGradient(tx, ty, tx + tw, ty + th);
+          slateGrad.addColorStop(0, (i + j) % 2 ? '#484C55' : '#3E424B');
+          slateGrad.addColorStop(1, (i + j) % 2 ? '#3A3E47' : '#343841');
+          ctx.fillStyle = slateGrad;
+          ctx.fillRect(tx, ty, tw, th);
+
+          // Fine slate cleft grain
+          for (var sl = 0; sl < 16; sl++) {
+            var yS = ty + 12 + sl * 15;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(tx + 4, yS);
+            ctx.lineTo(tx + tw - 4, yS + (Math.sin(sl + i) * 3));
+            ctx.stroke();
           }
+
+          // Subtle edge bevel
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
         }
       }
     } else if (type === 'wooden') {
-      // Warm Natural Oak / Teak Hardwood Parquet Planks
-      ctx.fillStyle = '#5A3D22'; // Bevel seam between planks
+      // Warm Natural European Oak Parquet Planks
+      ctx.fillStyle = '#442D19'; // Deep V-groove micro-bevel between planks
       ctx.fillRect(0, 0, 512, 512);
       var plankH = 64;
+      var oakTones = ['#C29F74', '#B69165', '#CBAB82', '#AA855A', '#BE9B70', '#B18B5F', '#C6A57B', '#A58055'];
       for (var p = 0; p < 8; p++) {
-        var baseWood = (p % 2 === 0) ? '#BA8C5E' : '#B28254';
-        ctx.fillStyle = baseWood;
-        ctx.fillRect(2, p * plankH + 2, 508, plankH - 4);
-        for (var g = 0; g < 14; g++) {
-          var yG = p * plankH + 4 + g * 4;
-          ctx.strokeStyle = (g % 2 === 0) ? 'rgba(75, 45, 18, 0.18)' : 'rgba(150, 105, 60, 0.2)';
-          ctx.lineWidth = (g % 3 === 0) ? 1.5 : 0.8;
+        var py = p * plankH + 1;
+        var pHeight = plankH - 2;
+        var baseWood = oakTones[p % oakTones.length];
+        var pGrad = ctx.createLinearGradient(0, py, 512, py + pHeight);
+        pGrad.addColorStop(0, baseWood);
+        pGrad.addColorStop(0.5, oakTones[(p + 2) % oakTones.length]);
+        pGrad.addColorStop(1, baseWood);
+        ctx.fillStyle = pGrad;
+        ctx.fillRect(2, py, 508, pHeight);
+
+        // Natural flowing wood grain & growth pores
+        for (var g = 0; g < 15; g++) {
+          var yG = py + 3 + g * 4;
+          ctx.strokeStyle = (g % 2 === 0) ? 'rgba(65, 38, 14, 0.16)' : 'rgba(160, 115, 65, 0.18)';
+          ctx.lineWidth = (g % 3 === 0) ? 1.6 : 0.9;
           ctx.beginPath();
           ctx.moveTo(2, yG);
-          ctx.bezierCurveTo(150, yG + Math.sin(p + g) * 3, 350, yG - Math.cos(p + g) * 3, 510, yG);
+          ctx.bezierCurveTo(140, yG + Math.sin(p * 1.5 + g) * 3.5, 340, yG - Math.cos(p + g * 1.2) * 3.5, 510, yG);
           ctx.stroke();
         }
+
+        // Top edge bevel highlight
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(2, py + 1);
+        ctx.lineTo(510, py + 1);
+        ctx.stroke();
       }
     }
 
     var tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(8, 8);
+    tex.repeat.set(1, 1);
     tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  };
+
+  ArchitecturalRenderer.createWallBumpTexture = function () {
+    if (typeof document === 'undefined') return null;
+    var canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 256;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, 256, 256);
+    // Micro stipple eggshell plaster bump
+    for (var i = 0; i < 4000; i++) {
+      var rx = Math.random() * 256;
+      var ry = Math.random() * 256;
+      var bright = Math.random() < 0.5;
+      ctx.fillStyle = bright ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+      ctx.fillRect(rx, ry, 1.5, 1.5);
+    }
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(12, 12);
     return tex;
   };
 
@@ -15484,30 +15612,42 @@ body.role-employee #adminCreateEmpBox,
     type = type || this.selectedFloorType || 'white_tile';
     var tex = ArchitecturalRenderer.createFloorTexture(type);
     var isWood = (type === 'wooden');
-    var isGloss = (type === 'white_tile');
+    var isWhite = (type === 'white_tile');
 
     return new THREE.MeshStandardMaterial({
       map: tex,
-      roughness: isGloss ? 0.18 : (isWood ? 0.45 : 0.4),
-      metalness: isGloss ? 0.05 : 0.02,
+      roughness: isWhite ? 0.12 : (isWood ? 0.34 : 0.28),
+      metalness: isWhite ? 0.04 : (isWood ? 0.01 : 0.02),
       side: THREE.DoubleSide
     });
   };
 
   ArchitecturalRenderer.prototype.setFloorMaterial = function (type) {
-    this.selectedFloorType = type;
-    this.materials.floorTile = this.createFloorMaterial(type);
-    this.materials.floorWood = (type === 'wooden' ? this.materials.floorTile : this.createFloorMaterial('wooden'));
+    this.selectedFloorType = type || 'white_tile';
+    this.materials.floorTile = this.createFloorMaterial(this.selectedFloorType);
+    this.materials.floorWood = (this.selectedFloorType === 'wooden' ? this.materials.floorTile : this.createFloorMaterial('wooden'));
+    if (this.group) {
+      var self = this;
+      this.group.traverse(function (o) {
+        if (o.userData && o.userData.isFloorMesh) {
+          var finish = o.userData.floorFinish || self.selectedFloorType;
+          o.material = self.createFloorMaterial(finish);
+        }
+      });
+    }
   };
 
   ArchitecturalRenderer.prototype.initMaterials = function () {
     if (typeof THREE === 'undefined') return;
 
+    var wallBump = ArchitecturalRenderer.createWallBumpTexture();
     // Wall Plaster (Warm architectural beige matte {beige})
     this.materials.wall = new THREE.MeshStandardMaterial({
       color: 0xEDE5D8, // Warm architectural beige
-      roughness: 0.88,
-      metalness: 0.02
+      roughness: 0.90,
+      metalness: 0.01,
+      bumpMap: wallBump,
+      bumpScale: 0.08
     });
 
     // Wall Core (Cutaway section interior)
@@ -15515,6 +15655,13 @@ body.role-employee #adminCreateEmpBox,
       color: 0xDFD6C4, // Harmonious deeper beige core
       roughness: 0.9,
       metalness: 0.0
+    });
+
+    // Skirting Board (Architectural Satin Baseboards)
+    this.materials.skirting = new THREE.MeshStandardMaterial({
+      color: 0xFCFCFC,
+      roughness: 0.35,
+      metalness: 0.02
     });
 
     // Floor Finishes: Architectural Procedural PBR (Default: White Tile)
@@ -15656,10 +15803,15 @@ body.role-employee #adminCreateEmpBox,
     }
 
     // 2. Build Room Floors
-    for (var r = 0; r < rooms.length; r++) {
-      var room = rooms[r];
-      var floorMesh = this.buildRoomFloor(room);
-      if (floorMesh) this.group.add(floorMesh);
+    if (rooms && rooms.length > 0) {
+      for (var r = 0; r < rooms.length; r++) {
+        var room = rooms[r];
+        var floorMesh = this.buildRoomFloor(room);
+        if (floorMesh) this.group.add(floorMesh);
+      }
+    } else {
+      var fallbackFloor = this.buildBoundingFloor(walls, furniture);
+      if (fallbackFloor) this.group.add(fallbackFloor);
     }
 
     // 3. Build Placed Furniture Units in 3D
@@ -15715,6 +15867,21 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
+    var self = this;
+    function addSkirting(startX, len) {
+      if (!self.materials.skirting || len < 40) return;
+      var skH = 75, skT = 12;
+      var skGeo = new THREE.BoxGeometry(len, skH, skT);
+      var skF = new THREE.Mesh(skGeo, self.materials.skirting);
+      skF.position.set(startX + len / 2, skH / 2, wThick / 2 + skT / 2);
+      skF.receiveShadow = true;
+      group.add(skF);
+      var skB = new THREE.Mesh(skGeo, self.materials.skirting);
+      skB.position.set(startX + len / 2, skH / 2, -wThick / 2 - skT / 2);
+      skB.receiveShadow = true;
+      group.add(skB);
+    }
+
     if (validOps.length === 0) {
       // Solid Wall: Single extruded box
       var geo = new THREE.BoxGeometry(wLen, wHeight, wThick);
@@ -15723,6 +15890,7 @@ body.role-employee #adminCreateEmpBox,
       mesh.receiveShadow = true;
       mesh.position.set(wLen / 2, wHeight / 2, 0);
       group.add(mesh);
+      addSkirting(0, wLen);
     } else {
       validOps.sort(function (a, b) { return a.offset - b.offset; });
 
@@ -15746,6 +15914,7 @@ body.role-employee #adminCreateEmpBox,
           segMesh.castShadow = true;
           segMesh.receiveShadow = true;
           group.add(segMesh);
+          addSkirting(currX, segW);
         }
 
         // 2. Below window sill segment (if window with sillHeight > 0)
@@ -15756,6 +15925,7 @@ body.role-employee #adminCreateEmpBox,
           sillMesh.castShadow = true;
           sillMesh.receiveShadow = true;
           group.add(sillMesh);
+          addSkirting(opStart, opWidth);
         }
 
         // 3. Above opening lintel segment
@@ -15793,6 +15963,7 @@ body.role-employee #adminCreateEmpBox,
         lastMesh.castShadow = true;
         lastMesh.receiveShadow = true;
         group.add(lastMesh);
+        addSkirting(currX, lastW);
       }
     }
 
@@ -15953,26 +16124,85 @@ body.role-employee #adminCreateEmpBox,
   };
 
   ArchitecturalRenderer.prototype.buildRoomFloor = function (room) {
-    if (!room.polygon || room.polygon.length < 3) return null;
+    if (!room || !room.polygon || room.polygon.length < 3) return null;
 
     var shape = new THREE.Shape();
-    shape.moveTo(room.polygon[0].x, room.polygon[0].y);
+    // 2D y is along 3D Z. Shape coordinates (x, -y) rotated by -Math.PI/2 around X
+    // yield 3D (x, 0, y) with normal vector facing straight UP (+Y)
+    shape.moveTo(room.polygon[0].x, -room.polygon[0].y);
     for (var i = 1; i < room.polygon.length; i++) {
-      shape.lineTo(room.polygon[i].x, room.polygon[i].y);
+      shape.lineTo(room.polygon[i].x, -room.polygon[i].y);
     }
     shape.closePath();
 
     var geo = new THREE.ShapeGeometry(shape);
-    var mat = room.type === 'bedroom' ? this.materials.floorWood : this.materials.floorTile;
+
+    var finishType = this.selectedFloorType || 'white_tile';
+    if (room.floorFinish) {
+      if (room.floorFinish === 'wood') finishType = 'wooden';
+      else if (room.floorFinish === 'marble') finishType = 'white_tile';
+      else if (room.floorFinish === 'tile') finishType = 'square_tile';
+      else if (room.floorFinish === 'concrete') finishType = 'grey_tile';
+      else finishType = room.floorFinish;
+    } else if (room.type === 'bedroom' && this.selectedFloorType === 'white_tile') {
+      finishType = 'wooden';
+    }
+
+    // Physical millimeter UV mapping so tile sizes are authentic and scale-consistent
+    var tileSize = (finishType === 'wooden') ? 1200 : (finishType === 'white_tile' ? 1600 : 1200);
+    if (geo && geo.attributes && geo.attributes.position && geo.attributes.uv) {
+      var posAttr = geo.attributes.position;
+      var uvAttr = geo.attributes.uv;
+      for (var v = 0; v < posAttr.count; v++) {
+        var vx = posAttr.getX(v);
+        var vy = posAttr.getY(v);
+        uvAttr.setXY(v, vx / tileSize, -vy / tileSize);
+      }
+      uvAttr.needsUpdate = true;
+    }
+
+    var mat = this.createFloorMaterial(finishType);
     var mesh = new THREE.Mesh(geo, mat);
 
-    // Rotate flat into X-Z floor plane
-    mesh.rotation.x = Math.PI / 2;
+    // Rotate flat into X-Z floor plane with normal facing straight UP (+Y)
+    mesh.rotation.x = -Math.PI / 2;
     mesh.position.y = 1; // 1mm above base level to prevent Z-fighting
     mesh.receiveShadow = true;
-    mesh.name = 'Floor_' + room.name;
+    mesh.name = 'Floor_' + (room.name || 'Room');
+    mesh.userData = { isFloorMesh: true, floorFinish: finishType, roomId: room.id };
 
     return mesh;
+  };
+
+  ArchitecturalRenderer.prototype.buildBoundingFloor = function (walls, furniture) {
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    if (walls && walls.length > 0) {
+      for (var w = 0; w < walls.length; w++) {
+        var wl = walls[w];
+        if (wl.start) { minX = Math.min(minX, wl.start.x); maxX = Math.max(maxX, wl.start.x); minY = Math.min(minY, wl.start.y); maxY = Math.max(maxY, wl.start.y); }
+        if (wl.end) { minX = Math.min(minX, wl.end.x); maxX = Math.max(maxX, wl.end.x); minY = Math.min(minY, wl.end.y); maxY = Math.max(maxY, wl.end.y); }
+      }
+    }
+    if (furniture && furniture.length > 0) {
+      for (var f = 0; f < furniture.length; f++) {
+        var fn = furniture[f];
+        if (fn.pos) { minX = Math.min(minX, fn.pos.x - 600); maxX = Math.max(maxX, fn.pos.x + 600); minY = Math.min(minY, fn.pos.y - 600); maxY = Math.max(maxY, fn.pos.y + 600); }
+      }
+    }
+    if (!isFinite(minX) || !isFinite(maxX)) return null;
+    var pad = 600;
+    minX -= pad; maxX += pad; minY -= pad; maxY += pad;
+    var dummyRoom = {
+      id: 'bounding_floor',
+      name: 'General Floor',
+      polygon: [
+        { x: minX, y: minY },
+        { x: maxX, y: minY },
+        { x: maxX, y: maxY },
+        { x: minX, y: maxY }
+      ]
+    };
+    return this.buildRoomFloor(dummyRoom);
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
@@ -17573,6 +17803,9 @@ body.role-employee #adminCreateEmpBox,
             if (window.__cc && window.__cc.gl && typeof window.__cc.gl.setFloorMaterial === 'function') {
               window.__cc.gl.setFloorMaterial(floorType);
             }
+            if (typeof self.render3DHome === 'function') {
+              self.render3DHome(true);
+            }
             if (typeof window.toast === 'function') {
               window.toast('Floor Finish: ' + (btn.title || floorType));
             }
@@ -18725,7 +18958,7 @@ body.role-employee #adminCreateEmpBox,
             self.saveToLocalStorage();
             self.renderBOQ();
             self.editor.render();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
         var handleSelect = document.getElementById('inspFurnHandle');
@@ -18738,7 +18971,7 @@ body.role-employee #adminCreateEmpBox,
             self.saveToLocalStorage();
             self.renderBOQ();
             self.editor.render();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
         var counterSelect = document.getElementById('inspFurnCounter');
@@ -18751,7 +18984,7 @@ body.role-employee #adminCreateEmpBox,
             self.saveToLocalStorage();
             self.renderBOQ();
             self.editor.render();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
         var elShutterCol = document.getElementById('inspFurnShutterCol');
@@ -18767,7 +19000,7 @@ body.role-employee #adminCreateEmpBox,
             self.saveToLocalStorage();
             self.renderBOQ();
             self.editor.render();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
 
@@ -19093,7 +19326,7 @@ body.role-employee #adminCreateEmpBox,
             self.editor.pushHistory('Rotate Furniture');
             self.saveToLocalStorage();
             self.editor.render();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
 
@@ -19106,7 +19339,7 @@ body.role-employee #adminCreateEmpBox,
               window.S.active = Math.max(0, window.S.units.length - 1);
               if (typeof window.renderRail === 'function') window.renderRail();
             }
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
       } else if (sel.type === 'room') {
@@ -19156,7 +19389,7 @@ body.role-employee #adminCreateEmpBox,
             self.editor.pushHistory('Rename Room');
             self.editor.render();
             self.saveToLocalStorage();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         });
 
@@ -19166,7 +19399,7 @@ body.role-employee #adminCreateEmpBox,
             rm.floorFinish = e.target.value;
             self.editor.pushHistory('Change Floor Finish');
             self.saveToLocalStorage();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
 
@@ -19187,7 +19420,7 @@ body.role-employee #adminCreateEmpBox,
             rm.ceilingHeight = parseFloat(e.target.value) || 2800;
             self.editor.pushHistory('Change Ceiling Height');
             self.saveToLocalStorage();
-            if (self.render3DHome) self.render3DHome();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
 
@@ -24036,55 +24269,72 @@ body.role-employee #adminCreateEmpBox,
       var g = c.getContext("2d");
 
       if (type === "white_tile") {
-        // Crisp White Italian Carrara Porcelain Tile (800x800mm)
-        g.fillStyle = "#E8E8EC"; g.fillRect(0, 0, 512, 512);
+        // 800x800 Italian Carrara / Calacatta Polished Marble Slabs
+        g.fillStyle = "#D6D6DE"; g.fillRect(0, 0, 512, 512);
         for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
-          g.fillStyle = (i + j) % 2 ? "#FAFAFC" : "#F4F4F8"; g.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
-          g.strokeStyle = "rgba(180, 185, 195, 0.22)"; g.lineWidth = 1.8;
-          g.beginPath(); g.moveTo(i * 256 + 20, j * 256 + 30);
-          g.bezierCurveTo(i * 256 + 100, j * 256 + 90, i * 256 + 140, j * 256 + 180, i * 256 + 230, j * 256 + 220);
-          g.stroke();
-          g.strokeStyle = "rgba(195, 200, 210, 0.15)"; g.lineWidth = 1.2;
-          g.beginPath(); g.moveTo(i * 256 + 180, j * 256 + 40);
-          g.bezierCurveTo(i * 256 + 120, j * 256 + 110, i * 256 + 70, j * 256 + 190, i * 256 + 50, j * 256 + 240);
-          g.stroke();
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var slabGrad = g.createLinearGradient(tx, ty, tx + tw, ty + th);
+          slabGrad.addColorStop(0, "#FAF9FC"); slabGrad.addColorStop(0.5, "#F4F4F8"); slabGrad.addColorStop(1, "#EDECEF");
+          g.fillStyle = slabGrad; g.fillRect(tx, ty, tw, th);
+          g.strokeStyle = "rgba(255, 255, 255, 0.7)"; g.lineWidth = 1.5; g.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
+          g.strokeStyle = "rgba(140, 148, 160, 0.28)"; g.lineWidth = 2.0;
+          g.beginPath(); g.moveTo(tx + 18, ty + 24); g.bezierCurveTo(tx + 90, ty + 85, tx + 130, ty + 160, tx + 235, ty + 225); g.stroke();
+          g.strokeStyle = "rgba(155, 162, 175, 0.20)"; g.lineWidth = 1.2;
+          g.beginPath(); g.moveTo(tx + 105, ty + 105); g.bezierCurveTo(tx + 160, ty + 95, tx + 195, ty + 130, tx + 240, ty + 145); g.stroke();
+          g.strokeStyle = "rgba(185, 155, 115, 0.16)"; g.lineWidth = 1.0;
+          g.beginPath(); g.moveTo(tx + 190, ty + 35); g.bezierCurveTo(tx + 125, ty + 95, tx + 75, ty + 175, tx + 45, ty + 238); g.stroke();
         }
       } else if (type === "square_tile") {
-        // Classic Neutral Warm White Square Ceramic Tiles (600x600mm)
-        g.fillStyle = "#CFC8BE"; g.fillRect(0, 0, 512, 512);
+        // 600x600 Premium Vitrified Travertine / Ivory Ceramic Tile
+        g.fillStyle = "#C8BFB2"; g.fillRect(0, 0, 512, 512);
         for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
-          g.fillStyle = (i + j) % 2 ? "#F5F2EB" : "#EFECE4"; g.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
-          for (var s = 0; s < 180; s++) {
-            var rx = (Math.sin(s * 17.3 + i * 5) * 0.5 + 0.5) * 246;
-            var ry = (Math.cos(s * 23.7 + j * 7) * 0.5 + 0.5) * 246;
-            g.fillStyle = "rgba(0,0,0,0.015)"; g.fillRect(i * 256 + 3 + rx, j * 256 + 3 + ry, 2, 2);
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var tileGrad = g.createRadialGradient(tx + 126, ty + 126, 40, tx + 126, ty + 126, 130);
+          tileGrad.addColorStop(0, "#FAF7F2"); tileGrad.addColorStop(0.85, "#EFEAE0"); tileGrad.addColorStop(1, "#E4DDCF");
+          g.fillStyle = tileGrad; g.fillRect(tx, ty, tw, th);
+          g.strokeStyle = "rgba(255, 255, 255, 0.55)"; g.lineWidth = 1.2; g.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
+          for (var s = 0; s < 120; s++) {
+            var rx = (Math.sin(s * 19.1 + i * 7) * 0.5 + 0.5) * (tw - 8);
+            var ry = (Math.cos(s * 29.3 + j * 11) * 0.5 + 0.5) * (th - 8);
+            g.fillStyle = (s % 2 === 0) ? "rgba(0,0,0,0.025)" : "rgba(255,255,255,0.06)";
+            g.fillRect(tx + 4 + rx, ty + 4 + ry, 2, 2);
           }
         }
       } else if (type === "grey_tile") {
-        // Contemporary Matte Charcoal / Grey Stone Tile (600x1200mm)
-        g.fillStyle = "#2B2D31"; g.fillRect(0, 0, 512, 512);
+        // 600x1200 Contemporary Basalt / Charcoal Slate Slabs
+        g.fillStyle = "#222428"; g.fillRect(0, 0, 512, 512);
         for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
-          g.fillStyle = (i + j) % 2 ? "#5A5E66" : "#52565E"; g.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
-          for (var s = 0; s < 250; s++) {
-            var rx = (Math.sin(s * 13.1 + i * 3) * 0.5 + 0.5) * 246;
-            var ry = (Math.cos(s * 19.3 + j * 9) * 0.5 + 0.5) * 246;
-            g.fillStyle = "rgba(255,255,255,0.035)"; g.fillRect(i * 256 + 3 + rx, j * 256 + 3 + ry, 2, 1);
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var slateGrad = g.createLinearGradient(tx, ty, tx + tw, ty + th);
+          slateGrad.addColorStop(0, (i + j) % 2 ? "#484C55" : "#3E424B"); slateGrad.addColorStop(1, (i + j) % 2 ? "#3A3E47" : "#343841");
+          g.fillStyle = slateGrad; g.fillRect(tx, ty, tw, th);
+          for (var sl = 0; sl < 16; sl++) {
+            var yS = ty + 12 + sl * 15;
+            g.strokeStyle = "rgba(255, 255, 255, 0.04)"; g.lineWidth = 1.5;
+            g.beginPath(); g.moveTo(tx + 4, yS); g.lineTo(tx + tw - 4, yS + (Math.sin(sl + i) * 3)); g.stroke();
           }
+          g.strokeStyle = "rgba(255, 255, 255, 0.08)"; g.lineWidth = 1; g.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
         }
       } else if (type === "wooden") {
-        // Warm Natural Oak Hardwood Parquet Planks
-        g.fillStyle = "#5A3D22"; g.fillRect(0, 0, 512, 512);
+        // Warm Natural European Oak Parquet Planks
+        g.fillStyle = "#442D19"; g.fillRect(0, 0, 512, 512);
+        var plankH = 64;
+        var oakTones = ["#C29F74", "#B69165", "#CBAB82", "#AA855A", "#BE9B70", "#B18B5F", "#C6A57B", "#A58055"];
         for (var p = 0; p < 8; p++) {
-          g.fillStyle = (p % 2 === 0) ? "#BA8C5E" : "#B28254";
-          g.fillRect(2, p * 64 + 2, 508, 60);
-          for (var wLine = 0; wLine < 14; wLine++) {
-            var yG = p * 64 + 4 + wLine * 4;
-            g.strokeStyle = (wLine % 2 === 0) ? "rgba(75, 45, 18, 0.18)" : "rgba(150, 105, 60, 0.2)";
-            g.lineWidth = (wLine % 3 === 0) ? 1.5 : 0.8;
+          var py = p * plankH + 1, pHeight = plankH - 2, baseWood = oakTones[p % oakTones.length];
+          var pGrad = g.createLinearGradient(0, py, 512, py + pHeight);
+          pGrad.addColorStop(0, baseWood); pGrad.addColorStop(0.5, oakTones[(p + 2) % oakTones.length]); pGrad.addColorStop(1, baseWood);
+          g.fillStyle = pGrad; g.fillRect(2, py, 508, pHeight);
+          for (var wLine = 0; wLine < 15; wLine++) {
+            var yG = py + 3 + wLine * 4;
+            g.strokeStyle = (wLine % 2 === 0) ? "rgba(65, 38, 14, 0.16)" : "rgba(160, 115, 65, 0.18)";
+            g.lineWidth = (wLine % 3 === 0) ? 1.6 : 0.9;
             g.beginPath(); g.moveTo(2, yG);
-            g.bezierCurveTo(150, yG + Math.sin(p + wLine) * 3, 350, yG - Math.cos(p + wLine) * 3, 510, yG);
+            g.bezierCurveTo(140, yG + Math.sin(p * 1.5 + wLine) * 3.5, 340, yG - Math.cos(p + wLine * 1.2) * 3.5, 510, yG);
             g.stroke();
           }
+          g.strokeStyle = "rgba(255, 255, 255, 0.15)"; g.lineWidth = 0.8;
+          g.beginPath(); g.moveTo(2, py + 1); g.lineTo(510, py + 1); g.stroke();
         }
       }
 
@@ -24097,8 +24347,8 @@ body.role-employee #adminCreateEmpBox,
       var isWood = (type === "wooden");
       var m = new THREE.MeshStandardMaterial({
         map: tex,
-        roughness: isWhite ? 0.2 : (isWood ? 0.45 : 0.4),
-        metalness: isWhite ? 0.04 : 0.02
+        roughness: isWhite ? 0.12 : (isWood ? 0.34 : 0.28),
+        metalness: isWhite ? 0.04 : (isWood ? 0.01 : 0.02)
       });
       return m;
     }
@@ -24109,7 +24359,7 @@ body.role-employee #adminCreateEmpBox,
       renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = (NEO || FX) ? 0.96 : 1.02;
+      renderer.toneMappingExposure = (NEO || FX) ? 1.04 : 1.08;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.domElement.id = "gl";
@@ -24122,16 +24372,17 @@ body.role-employee #adminCreateEmpBox,
       /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
       scene.environment = (NEO || FX) ? pmrem.fromScene(makeRoomScene(), 0.04, 10, 30000).texture : pmrem.fromEquirectangular(makeEnv()).texture;
       if (EMBED) camera.far = 80000;
-      keyL = new THREE.DirectionalLight(0xfff3e4, NEO ? 1.55 : 1.45);
+      keyL = new THREE.DirectionalLight(0xfffaec, NEO ? 1.45 : 1.35);
       keyL.position.set(-1700, 3400, 2700); keyL.castShadow = true;
       keyL.shadow.mapSize.set(4096, 4096);
       var sc = keyL.shadow.camera; sc.left = -3400; sc.right = 3400; sc.top = 3400; sc.bottom = -3400; sc.near = 200; sc.far = 14000;
-      keyL.shadow.bias = -0.0005; keyL.shadow.normalBias = 3; keyL.shadow.radius = 2;
+      keyL.shadow.bias = -0.0005; keyL.shadow.normalBias = 3; keyL.shadow.radius = 2.5;
       scene.add(keyL); scene.add(keyL.target);
       /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
-      var fill = new THREE.DirectionalLight(0xe8eef8, 0.42); fill.position.set(2600, 1900, 4800); scene.add(fill);
-      var rim = new THREE.DirectionalLight(0xdfe8f5, 0.4); rim.position.set(2400, 1600, -2600); scene.add(rim);
-      scene.add(new THREE.HemisphereLight(0xeef1f5, 0x8c8478, 0.32));
+      var fill = new THREE.DirectionalLight(0xdde9f8, 0.55); fill.position.set(2600, 1900, 4800); scene.add(fill);
+      var rim = new THREE.DirectionalLight(0xecf0f8, 0.35); rim.position.set(2400, 1600, -2600); scene.add(rim);
+      var bounceL = new THREE.DirectionalLight(0xf4ece0, 0.32); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
+      scene.add(new THREE.HemisphereLight(0xf6f8fc, 0x8e8375, 0.45));
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
       root = new THREE.Group(); scene.add(root);
@@ -24232,7 +24483,7 @@ body.role-employee #adminCreateEmpBox,
         case "steel": m = new THREE.MeshStandardMaterial({ color: 0xC9CCCF, metalness: 1, roughness: 0.38, envMapIntensity: 1.1 }); break;
         case "hob": m = new THREE.MeshPhysicalMaterial({ color: 0x0b0b0e, roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.3 }); break;
         case "tile": m = tileMat(); break;
-        case "wall": m = new THREE.MeshStandardMaterial({ color: 0xE8DEC8, roughness: 0.96, metalness: 0 }); break;
+        case "wall": m = new THREE.MeshStandardMaterial({ color: 0xF2ECE2, roughness: 0.90, metalness: 0 }); break;
         case "window": m = new THREE.MeshBasicMaterial({ color: NEO ? 0xFFF1DA : 0xFFFDF7 }); break;
         case "floor": m = floorMat(); break;
       }
@@ -27373,7 +27624,13 @@ body.role-employee #adminCreateEmpBox,
     b.addEventListener("click", function () {
       if (!GL.ok) { toast("Door animation needs WebGL"); return; }
       var open = GL.toggleAll();
-      b.textContent = open ? "Close all" : "Open all"; b.setAttribute("aria-pressed", String(open));
+      b.textContent = open ? "🚪 Close all" : "🚪 Open all"; b.setAttribute("aria-pressed", String(open));
+      var hudB = $("#hudOpenBtn");
+      if (hudB) {
+        hudB.textContent = open ? "🚪 Close all" : "🚪 Open all";
+        hudB.setAttribute("aria-pressed", String(open));
+        hudB.classList.toggle("is-active", open);
+      }
     });
   })();
   (function () {
@@ -27414,6 +27671,55 @@ body.role-employee #adminCreateEmpBox,
     cam.pitch = -2;
     camApply();
   });
+
+  // Floating 3D Camera & Presentation HUD Wiring
+  (function () {
+    var hudFront = $("#hudFrontBtn");
+    var hudIso = $("#hudIsoBtn");
+    var hudSide = $("#hudSideBtn");
+    var hudOpen = $("#hudOpenBtn");
+    var hudPresent = $("#hudPresentBtn");
+
+    function setActiveHudCam(btn) {
+      if (hudFront) hudFront.classList.remove("is-active");
+      if (hudIso) hudIso.classList.remove("is-active");
+      if (hudSide) hudSide.classList.remove("is-active");
+      if (btn) btn.classList.add("is-active");
+    }
+
+    if (hudFront) {
+      hudFront.addEventListener("click", function () {
+        setActiveHudCam(hudFront);
+        var b = $("#frontBtn"); if (b) b.click();
+      });
+    }
+    if (hudIso) {
+      hudIso.addEventListener("click", function () {
+        setActiveHudCam(hudIso);
+        var b = $("#isoBtn"); if (b) b.click();
+      });
+    }
+    if (hudSide) {
+      hudSide.addEventListener("click", function () {
+        setActiveHudCam(hudSide);
+        var b = $("#sideBtn"); if (b) b.click();
+      });
+    }
+    if (hudOpen) {
+      hudOpen.addEventListener("click", function () {
+        var b = $("#openBtn"); if (b) b.click();
+      });
+    }
+    if (hudPresent) {
+      hudPresent.addEventListener("click", function () {
+        var b = $("#presentBtn"); if (b) b.click();
+      });
+    }
+
+    var fBtn = $("#frontBtn"); if (fBtn) fBtn.addEventListener("click", function () { setActiveHudCam(hudFront); });
+    var iBtn = $("#isoBtn"); if (iBtn) iBtn.addEventListener("click", function () { setActiveHudCam(hudIso); });
+    var sBtn = $("#sideBtn"); if (sBtn) sBtn.addEventListener("click", function () { setActiveHudCam(hudSide); });
+  })();
 
   /* ═══════════════════════════════════════════════════════════════
      DRILLING — System 32 boring positions
@@ -28384,14 +28690,32 @@ body.role-employee #adminCreateEmpBox,
   (function () {
     var b = $("#presentBtn"); if (!b) return;
     function spin() { if (!presenting) return; cam.yaw += 0.18; camApply(); requestAnimationFrame(spin); }
+    function syncHudPresent(on) {
+      var hudP = $("#hudPresentBtn");
+      if (hudP) {
+        hudP.textContent = on ? "⛶ Exit present" : "⛶ Present";
+        hudP.setAttribute("aria-pressed", String(on));
+        hudP.classList.toggle("is-active", on);
+      }
+    }
     b.addEventListener("click", function () {
       presenting = !presenting;
       $("#view-design").classList.toggle("present", presenting);
       b.textContent = presenting ? "Exit present" : "Present";
       b.setAttribute("aria-pressed", String(presenting));
+      syncHudPresent(presenting);
       setTimeout(function () { fit(); camApply(); if (presenting) spin(); }, 60);
     });
-    stage.addEventListener("pointerdown", function () { if (presenting) { presenting = false; $("#view-design").classList.remove("present"); b.textContent = "Present"; b.setAttribute("aria-pressed", "false"); setTimeout(function () { fit(); camApply(); }, 60); } }, true);
+    stage.addEventListener("pointerdown", function () {
+      if (presenting) {
+        presenting = false;
+        $("#view-design").classList.remove("present");
+        b.textContent = "Present";
+        b.setAttribute("aria-pressed", "false");
+        syncHudPresent(false);
+        setTimeout(function () { fit(); camApply(); }, 60);
+      }
+    }, true);
   })();
   /* three.js is fetched in the background: the page paints at once on the
      CSS fallback and upgrades to WebGL the moment the library lands */

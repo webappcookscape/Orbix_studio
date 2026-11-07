@@ -191,6 +191,14 @@
     <section class="view" id="view-design">
       <div class="stagewrap">
         <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
+          <div class="stage-cam-hud" id="stageCamHud">
+            <button class="cam-hud-btn" id="hudFrontBtn" title="Front Elevation View">👁 Front</button>
+            <button class="cam-hud-btn is-active" id="hudIsoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
+            <button class="cam-hud-btn" id="hudSideBtn" title="Side Elevation View">◨ Side</button>
+            <span class="cam-hud-sep"></span>
+            <button class="cam-hud-btn" id="hudOpenBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
+            <button class="cam-hud-btn" id="hudPresentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
+          </div>
           <div id="world"></div>
         </div>
         <div class="stagebar">
@@ -215,11 +223,11 @@
             <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
               <option value="all">🏠 All Rooms</option>
             </select>
-            <button class="minibtn" id="presentBtn" aria-pressed="false">Present</button>
-            <button class="minibtn" id="openBtn" aria-pressed="false">Open all</button>
-            <button class="minibtn" id="frontBtn">Front</button>
-            <button class="minibtn" id="isoBtn">3/4</button>
-            <button class="minibtn" id="sideBtn">Side</button>
+            <button class="minibtn" id="frontBtn" title="Front Elevation View">👁 Front</button>
+            <button class="minibtn" id="isoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
+            <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
+            <button class="minibtn" id="openBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
+            <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
           </div>
         </div>
       </div>

@@ -1634,55 +1634,72 @@
       var g = c.getContext("2d");
 
       if (type === "white_tile") {
-        // Crisp White Italian Carrara Porcelain Tile (800x800mm)
-        g.fillStyle = "#E8E8EC"; g.fillRect(0, 0, 512, 512);
+        // 800x800 Italian Carrara / Calacatta Polished Marble Slabs
+        g.fillStyle = "#D6D6DE"; g.fillRect(0, 0, 512, 512);
         for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
-          g.fillStyle = (i + j) % 2 ? "#FAFAFC" : "#F4F4F8"; g.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
-          g.strokeStyle = "rgba(180, 185, 195, 0.22)"; g.lineWidth = 1.8;
-          g.beginPath(); g.moveTo(i * 256 + 20, j * 256 + 30);
-          g.bezierCurveTo(i * 256 + 100, j * 256 + 90, i * 256 + 140, j * 256 + 180, i * 256 + 230, j * 256 + 220);
-          g.stroke();
-          g.strokeStyle = "rgba(195, 200, 210, 0.15)"; g.lineWidth = 1.2;
-          g.beginPath(); g.moveTo(i * 256 + 180, j * 256 + 40);
-          g.bezierCurveTo(i * 256 + 120, j * 256 + 110, i * 256 + 70, j * 256 + 190, i * 256 + 50, j * 256 + 240);
-          g.stroke();
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var slabGrad = g.createLinearGradient(tx, ty, tx + tw, ty + th);
+          slabGrad.addColorStop(0, "#FAF9FC"); slabGrad.addColorStop(0.5, "#F4F4F8"); slabGrad.addColorStop(1, "#EDECEF");
+          g.fillStyle = slabGrad; g.fillRect(tx, ty, tw, th);
+          g.strokeStyle = "rgba(255, 255, 255, 0.7)"; g.lineWidth = 1.5; g.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
+          g.strokeStyle = "rgba(140, 148, 160, 0.28)"; g.lineWidth = 2.0;
+          g.beginPath(); g.moveTo(tx + 18, ty + 24); g.bezierCurveTo(tx + 90, ty + 85, tx + 130, ty + 160, tx + 235, ty + 225); g.stroke();
+          g.strokeStyle = "rgba(155, 162, 175, 0.20)"; g.lineWidth = 1.2;
+          g.beginPath(); g.moveTo(tx + 105, ty + 105); g.bezierCurveTo(tx + 160, ty + 95, tx + 195, ty + 130, tx + 240, ty + 145); g.stroke();
+          g.strokeStyle = "rgba(185, 155, 115, 0.16)"; g.lineWidth = 1.0;
+          g.beginPath(); g.moveTo(tx + 190, ty + 35); g.bezierCurveTo(tx + 125, ty + 95, tx + 75, ty + 175, tx + 45, ty + 238); g.stroke();
         }
       } else if (type === "square_tile") {
-        // Classic Neutral Warm White Square Ceramic Tiles (600x600mm)
-        g.fillStyle = "#CFC8BE"; g.fillRect(0, 0, 512, 512);
+        // 600x600 Premium Vitrified Travertine / Ivory Ceramic Tile
+        g.fillStyle = "#C8BFB2"; g.fillRect(0, 0, 512, 512);
         for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
-          g.fillStyle = (i + j) % 2 ? "#F5F2EB" : "#EFECE4"; g.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
-          for (var s = 0; s < 180; s++) {
-            var rx = (Math.sin(s * 17.3 + i * 5) * 0.5 + 0.5) * 246;
-            var ry = (Math.cos(s * 23.7 + j * 7) * 0.5 + 0.5) * 246;
-            g.fillStyle = "rgba(0,0,0,0.015)"; g.fillRect(i * 256 + 3 + rx, j * 256 + 3 + ry, 2, 2);
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var tileGrad = g.createRadialGradient(tx + 126, ty + 126, 40, tx + 126, ty + 126, 130);
+          tileGrad.addColorStop(0, "#FAF7F2"); tileGrad.addColorStop(0.85, "#EFEAE0"); tileGrad.addColorStop(1, "#E4DDCF");
+          g.fillStyle = tileGrad; g.fillRect(tx, ty, tw, th);
+          g.strokeStyle = "rgba(255, 255, 255, 0.55)"; g.lineWidth = 1.2; g.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
+          for (var s = 0; s < 120; s++) {
+            var rx = (Math.sin(s * 19.1 + i * 7) * 0.5 + 0.5) * (tw - 8);
+            var ry = (Math.cos(s * 29.3 + j * 11) * 0.5 + 0.5) * (th - 8);
+            g.fillStyle = (s % 2 === 0) ? "rgba(0,0,0,0.025)" : "rgba(255,255,255,0.06)";
+            g.fillRect(tx + 4 + rx, ty + 4 + ry, 2, 2);
           }
         }
       } else if (type === "grey_tile") {
-        // Contemporary Matte Charcoal / Grey Stone Tile (600x1200mm)
-        g.fillStyle = "#2B2D31"; g.fillRect(0, 0, 512, 512);
+        // 600x1200 Contemporary Basalt / Charcoal Slate Slabs
+        g.fillStyle = "#222428"; g.fillRect(0, 0, 512, 512);
         for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
-          g.fillStyle = (i + j) % 2 ? "#5A5E66" : "#52565E"; g.fillRect(i * 256 + 3, j * 256 + 3, 250, 250);
-          for (var s = 0; s < 250; s++) {
-            var rx = (Math.sin(s * 13.1 + i * 3) * 0.5 + 0.5) * 246;
-            var ry = (Math.cos(s * 19.3 + j * 9) * 0.5 + 0.5) * 246;
-            g.fillStyle = "rgba(255,255,255,0.035)"; g.fillRect(i * 256 + 3 + rx, j * 256 + 3 + ry, 2, 1);
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var slateGrad = g.createLinearGradient(tx, ty, tx + tw, ty + th);
+          slateGrad.addColorStop(0, (i + j) % 2 ? "#484C55" : "#3E424B"); slateGrad.addColorStop(1, (i + j) % 2 ? "#3A3E47" : "#343841");
+          g.fillStyle = slateGrad; g.fillRect(tx, ty, tw, th);
+          for (var sl = 0; sl < 16; sl++) {
+            var yS = ty + 12 + sl * 15;
+            g.strokeStyle = "rgba(255, 255, 255, 0.04)"; g.lineWidth = 1.5;
+            g.beginPath(); g.moveTo(tx + 4, yS); g.lineTo(tx + tw - 4, yS + (Math.sin(sl + i) * 3)); g.stroke();
           }
+          g.strokeStyle = "rgba(255, 255, 255, 0.08)"; g.lineWidth = 1; g.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
         }
       } else if (type === "wooden") {
-        // Warm Natural Oak Hardwood Parquet Planks
-        g.fillStyle = "#5A3D22"; g.fillRect(0, 0, 512, 512);
+        // Warm Natural European Oak Parquet Planks
+        g.fillStyle = "#442D19"; g.fillRect(0, 0, 512, 512);
+        var plankH = 64;
+        var oakTones = ["#C29F74", "#B69165", "#CBAB82", "#AA855A", "#BE9B70", "#B18B5F", "#C6A57B", "#A58055"];
         for (var p = 0; p < 8; p++) {
-          g.fillStyle = (p % 2 === 0) ? "#BA8C5E" : "#B28254";
-          g.fillRect(2, p * 64 + 2, 508, 60);
-          for (var wLine = 0; wLine < 14; wLine++) {
-            var yG = p * 64 + 4 + wLine * 4;
-            g.strokeStyle = (wLine % 2 === 0) ? "rgba(75, 45, 18, 0.18)" : "rgba(150, 105, 60, 0.2)";
-            g.lineWidth = (wLine % 3 === 0) ? 1.5 : 0.8;
+          var py = p * plankH + 1, pHeight = plankH - 2, baseWood = oakTones[p % oakTones.length];
+          var pGrad = g.createLinearGradient(0, py, 512, py + pHeight);
+          pGrad.addColorStop(0, baseWood); pGrad.addColorStop(0.5, oakTones[(p + 2) % oakTones.length]); pGrad.addColorStop(1, baseWood);
+          g.fillStyle = pGrad; g.fillRect(2, py, 508, pHeight);
+          for (var wLine = 0; wLine < 15; wLine++) {
+            var yG = py + 3 + wLine * 4;
+            g.strokeStyle = (wLine % 2 === 0) ? "rgba(65, 38, 14, 0.16)" : "rgba(160, 115, 65, 0.18)";
+            g.lineWidth = (wLine % 3 === 0) ? 1.6 : 0.9;
             g.beginPath(); g.moveTo(2, yG);
-            g.bezierCurveTo(150, yG + Math.sin(p + wLine) * 3, 350, yG - Math.cos(p + wLine) * 3, 510, yG);
+            g.bezierCurveTo(140, yG + Math.sin(p * 1.5 + wLine) * 3.5, 340, yG - Math.cos(p + wLine * 1.2) * 3.5, 510, yG);
             g.stroke();
           }
+          g.strokeStyle = "rgba(255, 255, 255, 0.15)"; g.lineWidth = 0.8;
+          g.beginPath(); g.moveTo(2, py + 1); g.lineTo(510, py + 1); g.stroke();
         }
       }
 
@@ -1695,8 +1712,8 @@
       var isWood = (type === "wooden");
       var m = new THREE.MeshStandardMaterial({
         map: tex,
-        roughness: isWhite ? 0.2 : (isWood ? 0.45 : 0.4),
-        metalness: isWhite ? 0.04 : 0.02
+        roughness: isWhite ? 0.12 : (isWood ? 0.34 : 0.28),
+        metalness: isWhite ? 0.04 : (isWood ? 0.01 : 0.02)
       });
       return m;
     }
@@ -1707,7 +1724,7 @@
       renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = (NEO || FX) ? 0.96 : 1.02;
+      renderer.toneMappingExposure = (NEO || FX) ? 1.04 : 1.08;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.domElement.id = "gl";
@@ -1720,16 +1737,17 @@
       /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
       scene.environment = (NEO || FX) ? pmrem.fromScene(makeRoomScene(), 0.04, 10, 30000).texture : pmrem.fromEquirectangular(makeEnv()).texture;
       if (EMBED) camera.far = 80000;
-      keyL = new THREE.DirectionalLight(0xfff3e4, NEO ? 1.55 : 1.45);
+      keyL = new THREE.DirectionalLight(0xfffaec, NEO ? 1.45 : 1.35);
       keyL.position.set(-1700, 3400, 2700); keyL.castShadow = true;
       keyL.shadow.mapSize.set(4096, 4096);
       var sc = keyL.shadow.camera; sc.left = -3400; sc.right = 3400; sc.top = 3400; sc.bottom = -3400; sc.near = 200; sc.far = 14000;
-      keyL.shadow.bias = -0.0005; keyL.shadow.normalBias = 3; keyL.shadow.radius = 2;
+      keyL.shadow.bias = -0.0005; keyL.shadow.normalBias = 3; keyL.shadow.radius = 2.5;
       scene.add(keyL); scene.add(keyL.target);
       /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
-      var fill = new THREE.DirectionalLight(0xe8eef8, 0.42); fill.position.set(2600, 1900, 4800); scene.add(fill);
-      var rim = new THREE.DirectionalLight(0xdfe8f5, 0.4); rim.position.set(2400, 1600, -2600); scene.add(rim);
-      scene.add(new THREE.HemisphereLight(0xeef1f5, 0x8c8478, 0.32));
+      var fill = new THREE.DirectionalLight(0xdde9f8, 0.55); fill.position.set(2600, 1900, 4800); scene.add(fill);
+      var rim = new THREE.DirectionalLight(0xecf0f8, 0.35); rim.position.set(2400, 1600, -2600); scene.add(rim);
+      var bounceL = new THREE.DirectionalLight(0xf4ece0, 0.32); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
+      scene.add(new THREE.HemisphereLight(0xf6f8fc, 0x8e8375, 0.45));
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
       root = new THREE.Group(); scene.add(root);
@@ -1830,7 +1848,7 @@
         case "steel": m = new THREE.MeshStandardMaterial({ color: 0xC9CCCF, metalness: 1, roughness: 0.38, envMapIntensity: 1.1 }); break;
         case "hob": m = new THREE.MeshPhysicalMaterial({ color: 0x0b0b0e, roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.3 }); break;
         case "tile": m = tileMat(); break;
-        case "wall": m = new THREE.MeshStandardMaterial({ color: 0xE8DEC8, roughness: 0.96, metalness: 0 }); break;
+        case "wall": m = new THREE.MeshStandardMaterial({ color: 0xF2ECE2, roughness: 0.90, metalness: 0 }); break;
         case "window": m = new THREE.MeshBasicMaterial({ color: NEO ? 0xFFF1DA : 0xFFFDF7 }); break;
         case "floor": m = floorMat(); break;
       }
@@ -4971,7 +4989,13 @@
     b.addEventListener("click", function () {
       if (!GL.ok) { toast("Door animation needs WebGL"); return; }
       var open = GL.toggleAll();
-      b.textContent = open ? "Close all" : "Open all"; b.setAttribute("aria-pressed", String(open));
+      b.textContent = open ? "🚪 Close all" : "🚪 Open all"; b.setAttribute("aria-pressed", String(open));
+      var hudB = $("#hudOpenBtn");
+      if (hudB) {
+        hudB.textContent = open ? "🚪 Close all" : "🚪 Open all";
+        hudB.setAttribute("aria-pressed", String(open));
+        hudB.classList.toggle("is-active", open);
+      }
     });
   })();
   (function () {
@@ -5012,6 +5036,55 @@
     cam.pitch = -2;
     camApply();
   });
+
+  // Floating 3D Camera & Presentation HUD Wiring
+  (function () {
+    var hudFront = $("#hudFrontBtn");
+    var hudIso = $("#hudIsoBtn");
+    var hudSide = $("#hudSideBtn");
+    var hudOpen = $("#hudOpenBtn");
+    var hudPresent = $("#hudPresentBtn");
+
+    function setActiveHudCam(btn) {
+      if (hudFront) hudFront.classList.remove("is-active");
+      if (hudIso) hudIso.classList.remove("is-active");
+      if (hudSide) hudSide.classList.remove("is-active");
+      if (btn) btn.classList.add("is-active");
+    }
+
+    if (hudFront) {
+      hudFront.addEventListener("click", function () {
+        setActiveHudCam(hudFront);
+        var b = $("#frontBtn"); if (b) b.click();
+      });
+    }
+    if (hudIso) {
+      hudIso.addEventListener("click", function () {
+        setActiveHudCam(hudIso);
+        var b = $("#isoBtn"); if (b) b.click();
+      });
+    }
+    if (hudSide) {
+      hudSide.addEventListener("click", function () {
+        setActiveHudCam(hudSide);
+        var b = $("#sideBtn"); if (b) b.click();
+      });
+    }
+    if (hudOpen) {
+      hudOpen.addEventListener("click", function () {
+        var b = $("#openBtn"); if (b) b.click();
+      });
+    }
+    if (hudPresent) {
+      hudPresent.addEventListener("click", function () {
+        var b = $("#presentBtn"); if (b) b.click();
+      });
+    }
+
+    var fBtn = $("#frontBtn"); if (fBtn) fBtn.addEventListener("click", function () { setActiveHudCam(hudFront); });
+    var iBtn = $("#isoBtn"); if (iBtn) iBtn.addEventListener("click", function () { setActiveHudCam(hudIso); });
+    var sBtn = $("#sideBtn"); if (sBtn) sBtn.addEventListener("click", function () { setActiveHudCam(hudSide); });
+  })();
 
   /* ═══════════════════════════════════════════════════════════════
      DRILLING — System 32 boring positions
@@ -5982,14 +6055,32 @@
   (function () {
     var b = $("#presentBtn"); if (!b) return;
     function spin() { if (!presenting) return; cam.yaw += 0.18; camApply(); requestAnimationFrame(spin); }
+    function syncHudPresent(on) {
+      var hudP = $("#hudPresentBtn");
+      if (hudP) {
+        hudP.textContent = on ? "⛶ Exit present" : "⛶ Present";
+        hudP.setAttribute("aria-pressed", String(on));
+        hudP.classList.toggle("is-active", on);
+      }
+    }
     b.addEventListener("click", function () {
       presenting = !presenting;
       $("#view-design").classList.toggle("present", presenting);
       b.textContent = presenting ? "Exit present" : "Present";
       b.setAttribute("aria-pressed", String(presenting));
+      syncHudPresent(presenting);
       setTimeout(function () { fit(); camApply(); if (presenting) spin(); }, 60);
     });
-    stage.addEventListener("pointerdown", function () { if (presenting) { presenting = false; $("#view-design").classList.remove("present"); b.textContent = "Present"; b.setAttribute("aria-pressed", "false"); setTimeout(function () { fit(); camApply(); }, 60); } }, true);
+    stage.addEventListener("pointerdown", function () {
+      if (presenting) {
+        presenting = false;
+        $("#view-design").classList.remove("present");
+        b.textContent = "Present";
+        b.setAttribute("aria-pressed", "false");
+        syncHudPresent(false);
+        setTimeout(function () { fit(); camApply(); }, 60);
+      }
+    }, true);
   })();
   /* three.js is fetched in the background: the page paints at once on the
      CSS fallback and upgrades to WebGL the moment the library lands */
