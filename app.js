@@ -1721,7 +1721,7 @@
       if (!window.THREE) return false;
       try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" }); }
       catch (e) { return false; }
-      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = (NEO || FX) ? 1.04 : 1.08;
@@ -1739,9 +1739,9 @@
       if (EMBED) camera.far = 80000;
       keyL = new THREE.DirectionalLight(0xfffaec, NEO ? 1.45 : 1.35);
       keyL.position.set(-1700, 3400, 2700); keyL.castShadow = true;
-      keyL.shadow.mapSize.set(4096, 4096);
+      keyL.shadow.mapSize.set(2048, 2048);
       var sc = keyL.shadow.camera; sc.left = -3400; sc.right = 3400; sc.top = 3400; sc.bottom = -3400; sc.near = 200; sc.far = 14000;
-      keyL.shadow.bias = -0.0005; keyL.shadow.normalBias = 3; keyL.shadow.radius = 2.5;
+      keyL.shadow.bias = -0.0005; keyL.shadow.normalBias = 3; keyL.shadow.radius = 2.0;
       scene.add(keyL); scene.add(keyL.target);
       /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
       var fill = new THREE.DirectionalLight(0xdde9f8, 0.55); fill.position.set(2600, 1900, 4800); scene.add(fill);
@@ -2590,7 +2590,8 @@
         scm.left = -half; scm.right = half; scm.top = half; scm.bottom = -half; scm.near = 200; scm.far = half * 2 + 6000;
         scm.updateProjectionMatrix(); keyL.target.updateMatrixWorld();
       }
-      var r = stage.getBoundingClientRect(), aspect = (r.width && r.height) ? r.width / r.height : 1.6;
+      cachedStageRect = stage.getBoundingClientRect();
+      var r = cachedStageRect, aspect = (r.width && r.height) ? r.width / r.height : 1.6;
       var t = Math.tan(camera.fov * Math.PI / 360);
       var dH = (size.y * 1.06) / (2 * t), dW = (Math.hypot(size.x, size.z) * 0.78) / (2 * t * aspect);
       var k = (mode === 'home' && homeObj) ? 1.25 : (ROOM.id ? 1.16 : 1.22);
@@ -2632,10 +2633,36 @@
       });
     }
 
-    function apply() {
+    var cachedStageRect = null;
+    var rafPending = false;
+    function requestRender() {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(function () {
+        rafPending = false;
+        render();
+      });
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', function () {
+        cachedStageRect = null;
+      });
+    }
+
+    function apply(forceSync) {
       if (!ok) return;
-      var r = stage.getBoundingClientRect();
-      if (r.width && r.height) { var cw0 = renderer.domElement.width; renderer.setSize(r.width, r.height, false); if (renderer.domElement.width !== cw0) fxResize(); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); }
+      if (!cachedStageRect) {
+        cachedStageRect = stage.getBoundingClientRect();
+      }
+      var r = cachedStageRect;
+      if (r && r.width && r.height) {
+        var cw0 = renderer.domElement.width;
+        renderer.setSize(r.width, r.height, false);
+        if (renderer.domElement.width !== cw0) fxResize();
+        camera.aspect = r.width / r.height;
+        camera.updateProjectionMatrix();
+      }
       var yaw = cam.yaw * Math.PI / 180, el = (-cam.pitch) * Math.PI / 180;
       var safeZoom = Math.max(0.15, 1 + cam.zoom);
       var d = dist / safeZoom;
@@ -2646,7 +2673,11 @@
       camera.position.set(target.x + d * Math.sin(yaw) * Math.cos(el), target.y + d * Math.sin(el), target.z + d * Math.cos(yaw) * Math.cos(el));
       camera.lookAt(target);
       updateWallCutaway();
-      render();
+      if (forceSync) {
+        render();
+      } else {
+        requestRender();
+      }
     }
     /* ── offscreen thumbnail renderer (own context, own environment) ── */
     var tR = null, tScene, tCam, tRoot;

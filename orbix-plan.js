@@ -567,7 +567,7 @@
 
       if (self.activeTool === 'select') {
         self.handleSelectMouseDown(worldPt, e.shiftKey);
-      } else if (self.activeTool === 'wall') {
+      } else if (self.activeTool === 'wall' || self.activeTool === 'divider') {
         self.handleWallMouseDown(worldPt);
       } else if (self.activeTool === 'door' || self.activeTool === 'window') {
         self.handleOpeningMouseDown(worldPt, self.activeTool);
@@ -778,7 +778,7 @@
       }
       if (overLockBadge) {
         self.canvas.style.cursor = 'pointer';
-      } else if (self.activeTool === 'wall' || self.wallChainStart || self.activeTool === 'dimension') {
+      } else if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.wallChainStart || self.activeTool === 'dimension') {
         self.canvas.style.cursor = 'crosshair';
       } else if (self.dragState) {
         self.canvas.style.cursor = 'grabbing';
@@ -787,7 +787,7 @@
       }
 
       // Live drawing render
-      if (self.activeTool === 'wall' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.wallChainStart) {
+      if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.wallChainStart) {
         self.render();
       }
     });
@@ -991,6 +991,10 @@
             }
           }
         }
+        if (!rotated && (e.key === 'r' || e.key === 'R')) {
+          self.setTool('divider');
+          return;
+        }
       }
       if (e.key === 'Escape') {
         if (self.numericInputBuffer) {
@@ -1009,13 +1013,13 @@
 
   PlanEditor.prototype.setTool = function (tool) {
     this.activeTool = tool;
-    if (tool !== 'wall') {
+    if (tool !== 'wall' && tool !== 'divider') {
       this.wallChainStart = null;
       this.wallChainFirstPoint = null;
       this.numericInputBuffer = '';
     }
     if (this.canvas) {
-      if (tool === 'wall' || tool === 'dimension') {
+      if (tool === 'wall' || tool === 'divider' || tool === 'dimension') {
         this.canvas.style.cursor = 'crosshair';
       } else {
         this.canvas.style.cursor = 'default';
@@ -1262,6 +1266,7 @@
   };
 
   PlanEditor.prototype.handleWallMouseDown = function (worldPt) {
+    var isDivider = (this.activeTool === 'divider');
     var snapped = this.snapPoint(worldPt);
     if (!this.wallChainStart) {
       this.wallChainStart = Vec2.clone(snapped.pt);
@@ -1271,31 +1276,36 @@
       var endPt = Vec2.clone(snapped.pt);
       var segDist = Vec2.dist(this.wallChainStart, endPt);
       if (segDist < 40) {
-        // Clicking same point finishes the wall chain!
+        // Clicking same point finishes the chain!
         this.wallChainStart = null;
         this.wallChainFirstPoint = null;
         this.numericInputBuffer = '';
         if (Core.detectRooms) Core.detectRooms(this.project);
-        this.pushHistory('Finish Wall Chain');
+        this.pushHistory(isDivider ? 'Finish Room Divider' : 'Finish Wall Chain');
         this.render();
         return;
       }
       if (segDist > 60) {
-        var newW = Core.createWall({
-          start: this.wallChainStart,
-          end: endPt,
-          thickness: this.wallPreset.thickness,
-          height: this.wallPreset.height
-        });
+        var newW = isDivider
+          ? Core.createRoomDivider({
+              start: this.wallChainStart,
+              end: endPt
+            })
+          : Core.createWall({
+              start: this.wallChainStart,
+              end: endPt,
+              thickness: this.wallPreset.thickness,
+              height: this.wallPreset.height
+            });
         this.project.plan.walls.push(newW);
-        this.pushHistory('Draw Wall');
+        this.pushHistory(isDivider ? 'Draw Room Divider' : 'Draw Wall');
 
-        // Check if loop closed (connected back to start of chain)
+        // Check if loop closed (connected back to start of chain) or if room divider was placed
         var isLoopClosed = (this.wallChainFirstPoint && Vec2.dist(endPt, this.wallChainFirstPoint) < 60) ||
                            (snapped && snapped.isChainClose);
 
-        if (isLoopClosed) {
-          // Room closed! Run room detection and cleanly terminate wall chain
+        if (isLoopClosed || isDivider) {
+          // Room closed or Room Divider placed! Run room detection and cleanly terminate chain
           this.wallChainStart = null;
           this.wallChainFirstPoint = null;
           this.numericInputBuffer = '';
@@ -2153,8 +2163,10 @@
     // ── PASS 1: Fill all wall polygons and corner junction quads (L-Joint Solid Fill) ──
     for (var i = 0; i < walls.length; i++) {
       var w = walls[i];
+      if (w.isDivider || w.thickness === 0) continue;
       var isSelected = this.isSelected('wall', w.id);
       var poly = Core.wallPolygon(w);
+      if (!poly || poly.length < 4) continue;
 
       ctx.fillStyle = isSelected ? '#1B4F72' : '#33302B';
       ctx.beginPath();
@@ -2171,7 +2183,9 @@
       var startConns = getConnected(w.start, w.id);
       for (var sc = 0; sc < startConns.length; sc++) {
         var otherW = startConns[sc].wall;
+        if (otherW.isDivider || otherW.thickness === 0) continue;
         var oPoly = Core.wallPolygon(otherW);
+        if (!oPoly || oPoly.length < 4) continue;
         var halfTW = (w.thickness || 150) / 2;
         var halfTO = (otherW.thickness || 150) / 2;
         var junctionPoly = [
@@ -2194,8 +2208,10 @@
     // ── PASS 2: Stroke Wall Outlines (L-Joint Connected Miter, No Internal Dividing Lines) ──
     for (var k = 0; k < walls.length; k++) {
       var wk = walls[k];
+      if (wk.isDivider || wk.thickness === 0) continue;
       var isSelK = this.isSelected('wall', wk.id);
       var polyK = Core.wallPolygon(wk);
+      if (!polyK || polyK.length < 4) continue;
       var startConnsK = getConnected(wk.start, wk.id);
       var endConnsK = getConnected(wk.end, wk.id);
 
@@ -2272,6 +2288,66 @@
         this.renderHandle(ctx, wk.end);
         this.renderLockBadge(ctx, wk, 'A');
         this.renderLockBadge(ctx, wk, 'B');
+      }
+    }
+
+    // ── PASS 3: Render Room Dividers (Architectural Dash-Dot Line with Purple Badges) ──
+    for (var d = 0; d < walls.length; d++) {
+      var div = walls[d];
+      if (!div.isDivider) continue;
+      var isDivSel = this.isSelected('wall', div.id);
+      var pStart = this.worldToScreen(div.start);
+      var pEnd = this.worldToScreen(div.end);
+
+      ctx.save();
+      if (isDivSel) {
+        ctx.shadowColor = 'rgba(124, 58, 237, 0.45)';
+        ctx.shadowBlur = 8;
+      }
+      ctx.beginPath();
+      ctx.setLineDash([8, 5, 2, 5]); // Architectural dash-dot standard
+      ctx.strokeStyle = isDivSel ? '#6D28D9' : '#8B5CF6';
+      ctx.lineWidth = isDivSel ? 3.5 : 2;
+      ctx.moveTo(pStart.x, pStart.y);
+      ctx.lineTo(pEnd.x, pEnd.y);
+      ctx.stroke();
+
+      // End-point circle nodes
+      ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = isDivSel ? '#6D28D9' : '#8B5CF6';
+      ctx.beginPath();
+      ctx.arc(pStart.x, pStart.y, isDivSel ? 4.5 : 3.5, 0, Math.PI * 2);
+      ctx.arc(pEnd.x, pEnd.y, isDivSel ? 4.5 : 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Midpoint badge "✂ ROOM DIVIDER"
+      var midX = (pStart.x + pEnd.x) / 2;
+      var midY = (pStart.y + pEnd.y) / 2;
+      var angle = Math.atan2(pEnd.y - pStart.y, pEnd.x - pStart.x);
+      if (angle > Math.PI / 2 || angle < -Math.PI / 2) angle += Math.PI;
+
+      ctx.translate(midX, midY);
+      ctx.rotate(angle);
+      var badgeText = '✂ ROOM DIVIDER';
+      ctx.font = '700 9.5px "IBM Plex Sans", -apple-system, sans-serif';
+      var tw = ctx.measureText(badgeText).width;
+      ctx.fillStyle = isDivSel ? '#6D28D9' : '#7C3AED';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-tw / 2 - 7, -9, tw + 14, 18, 4);
+      else ctx.rect(-tw / 2 - 7, -9, tw + 14, 18);
+      ctx.fill();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(badgeText, 0, 0);
+
+      ctx.restore();
+
+      // If selected, draw handles at endpoints
+      if (isDivSel) {
+        this.renderHandle(ctx, div.start);
+        this.renderHandle(ctx, div.end);
       }
     }
   };
@@ -3494,13 +3570,25 @@
         ctx.restore();
       }
 
-      // Draw ghost wall line
-      ctx.strokeStyle = '#1B4F72';
-      ctx.lineWidth = Math.max(2, this.wallPreset.thickness * this.zoom);
-      ctx.beginPath();
-      ctx.moveTo(sStart.x, sStart.y);
-      ctx.lineTo(sEnd.x, sEnd.y);
-      ctx.stroke();
+      // Draw ghost wall line or ghost divider
+      if (this.activeTool === 'divider') {
+        ctx.save();
+        ctx.strokeStyle = '#8B5CF6';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([8, 5, 2, 5]);
+        ctx.beginPath();
+        ctx.moveTo(sStart.x, sStart.y);
+        ctx.lineTo(sEnd.x, sEnd.y);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        ctx.strokeStyle = '#1B4F72';
+        ctx.lineWidth = Math.max(2, this.wallPreset.thickness * this.zoom);
+        ctx.beginPath();
+        ctx.moveTo(sStart.x, sStart.y);
+        ctx.lineTo(sEnd.x, sEnd.y);
+        ctx.stroke();
+      }
 
       // Corner A & B labels and parallel dimension line with witness lines
       if (distMm > 60) {
@@ -3650,8 +3738,8 @@
 
       // 1b. Render precision CAD crosshair reticle (+) at wall tip while drawing chain
       this.renderCrosshairReticle(ctx, snap.pt, snap, true);
-    } else if (this.activeTool === 'wall') {
-      // 1c. Render precision CAD crosshair reticle (+) before starting first wall
+    } else if (this.activeTool === 'wall' || this.activeTool === 'divider') {
+      // 1c. Render precision CAD crosshair reticle (+) before starting first wall or divider
       var snap0 = this.snapPoint(this.cursorWorld);
       this.renderCrosshairReticle(ctx, snap0.pt, snap0, false);
     }

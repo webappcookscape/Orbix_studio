@@ -314,18 +314,28 @@
      ───────────────────────────────────────────────────────────────────────────── */
   function createWall(opts) {
     opts = opts || {};
+    var isDiv = !!opts.isDivider;
     return {
-      id: opts.id || uid('wall'),
+      id: opts.id || uid(isDiv ? 'divider' : 'wall'),
       start: { x: opts.start ? opts.start.x : 0, y: opts.start ? opts.start.y : 0 },
       end: { x: opts.end ? opts.end.x : 0, y: opts.end ? opts.end.y : 0 },
-      thickness: opts.thickness !== undefined ? opts.thickness : 150, // standard 150mm wall (or 230mm brick)
-      height: opts.height !== undefined ? opts.height : 2800, // 2.8m ceiling height
+      thickness: isDiv ? 0 : (opts.thickness !== undefined ? opts.thickness : 150), // 0 for divider, 150mm for standard wall
+      height: isDiv ? 0 : (opts.height !== undefined ? opts.height : 2800), // 0 for divider, 2.8m for wall
       material: opts.material || 'plaster_white',
       openings: opts.openings ? opts.openings.slice() : [],
       pinned: !!opts.pinned,
       startLocked: opts.startLocked !== undefined ? !!opts.startLocked : true,
-      endLocked: opts.endLocked !== undefined ? !!opts.endLocked : true
+      endLocked: opts.endLocked !== undefined ? !!opts.endLocked : true,
+      isDivider: isDiv
     };
+  }
+
+  function createRoomDivider(opts) {
+    opts = opts || {};
+    opts.isDivider = true;
+    opts.thickness = 0;
+    opts.height = 0;
+    return createWall(opts);
   }
 
   function createOpening(opts) {
@@ -630,6 +640,7 @@
 
   // Gets the 4 corners of the 2D wall rectangle
   function wallPolygon(w) {
+    if (!w || w.isDivider || w.thickness === 0) return [];
     var halfT = (w.thickness || 150) / 2.0;
     var norm = wallNormal(w);
     var p1 = { x: w.start.x + norm.x * halfT, y: w.start.y + norm.y * halfT };
@@ -991,7 +1002,8 @@
             thickness: w.thickness,
             height: w.height,
             start: pA,
-            end: pB
+            end: pB,
+            isDivider: !!w.isDivider
           });
         }
       }
@@ -4367,6 +4379,7 @@
     FURNITURE_CATALOG: FURNITURE_CATALOG,
     createProject: createProject,
     createWall: createWall,
+    createRoomDivider: createRoomDivider,
     createOpening: createOpening,
     createRoom: createRoom,
     createFurniturePlacement: createFurniturePlacement,
@@ -4381,6 +4394,7 @@
     getWallInnerSegment: getWallInnerSegment,
     setWallInnerLength: setWallInnerLength,
     splitWall: splitWall,
+    subdivideWalls: subdivideWalls,
     detectRooms: detectRooms,
     calculateItemCost: calculateItemCost,
     generateFullQuotation: generateFullQuotation,

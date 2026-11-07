@@ -988,6 +988,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 }
 .plan-tool-btn:hover{color:#0F172A;border-color:#94A3B8;background:#F8FAFC}
 .plan-tool-btn.is-active{background:#1B4F72;border-color:#1B4F72;color:#fff;box-shadow:0 1px 4px rgba(27,79,114,.3)}
+.plan-tool-btn[data-tool="divider"].is-active{background:#7C3AED;border-color:#6D28D9;color:#fff;box-shadow:0 1px 4px rgba(124,58,237,.35)}
 .plan-select{
   font-family:var(--sans);font-size:11.5px;padding:4px 8px;border:1px solid #CBD5E1;
   border-radius:4px;background:#fff;color:#1E293B;
@@ -3086,6 +3087,7 @@ body.role-employee #adminCreateEmpBox,
               <option value="200">200 mm (External)</option>
               <option value="230">230 mm (Brick)</option>
             </select>
+            <button class="plan-tool-btn" data-tool="divider" id="planDividerBtn" title="Room Divider: Divide rooms without solid walls (Hotkey R)">✂ Room Divider</button>
             <button class="plan-tool-btn" data-tool="door" title="Place Door (D)">🚪 + Door</button>
             <select class="plan-select" id="planDoorWidth" title="Door Width">
               <option value="750">750 mm (Bath)</option>
@@ -7333,18 +7335,28 @@ body.role-employee #adminCreateEmpBox,
      ───────────────────────────────────────────────────────────────────────────── */
   function createWall(opts) {
     opts = opts || {};
+    var isDiv = !!opts.isDivider;
     return {
-      id: opts.id || uid('wall'),
+      id: opts.id || uid(isDiv ? 'divider' : 'wall'),
       start: { x: opts.start ? opts.start.x : 0, y: opts.start ? opts.start.y : 0 },
       end: { x: opts.end ? opts.end.x : 0, y: opts.end ? opts.end.y : 0 },
-      thickness: opts.thickness !== undefined ? opts.thickness : 150, // standard 150mm wall (or 230mm brick)
-      height: opts.height !== undefined ? opts.height : 2800, // 2.8m ceiling height
+      thickness: isDiv ? 0 : (opts.thickness !== undefined ? opts.thickness : 150), // 0 for divider, 150mm for standard wall
+      height: isDiv ? 0 : (opts.height !== undefined ? opts.height : 2800), // 0 for divider, 2.8m for wall
       material: opts.material || 'plaster_white',
       openings: opts.openings ? opts.openings.slice() : [],
       pinned: !!opts.pinned,
       startLocked: opts.startLocked !== undefined ? !!opts.startLocked : true,
-      endLocked: opts.endLocked !== undefined ? !!opts.endLocked : true
+      endLocked: opts.endLocked !== undefined ? !!opts.endLocked : true,
+      isDivider: isDiv
     };
+  }
+
+  function createRoomDivider(opts) {
+    opts = opts || {};
+    opts.isDivider = true;
+    opts.thickness = 0;
+    opts.height = 0;
+    return createWall(opts);
   }
 
   function createOpening(opts) {
@@ -7649,6 +7661,7 @@ body.role-employee #adminCreateEmpBox,
 
   // Gets the 4 corners of the 2D wall rectangle
   function wallPolygon(w) {
+    if (!w || w.isDivider || w.thickness === 0) return [];
     var halfT = (w.thickness || 150) / 2.0;
     var norm = wallNormal(w);
     var p1 = { x: w.start.x + norm.x * halfT, y: w.start.y + norm.y * halfT };
@@ -8010,7 +8023,8 @@ body.role-employee #adminCreateEmpBox,
             thickness: w.thickness,
             height: w.height,
             start: pA,
-            end: pB
+            end: pB,
+            isDivider: !!w.isDivider
           });
         }
       }
@@ -11386,6 +11400,7 @@ body.role-employee #adminCreateEmpBox,
     FURNITURE_CATALOG: FURNITURE_CATALOG,
     createProject: createProject,
     createWall: createWall,
+    createRoomDivider: createRoomDivider,
     createOpening: createOpening,
     createRoom: createRoom,
     createFurniturePlacement: createFurniturePlacement,
@@ -11400,6 +11415,7 @@ body.role-employee #adminCreateEmpBox,
     getWallInnerSegment: getWallInnerSegment,
     setWallInnerLength: setWallInnerLength,
     splitWall: splitWall,
+    subdivideWalls: subdivideWalls,
     detectRooms: detectRooms,
     calculateItemCost: calculateItemCost,
     generateFullQuotation: generateFullQuotation,
@@ -11992,7 +12008,7 @@ body.role-employee #adminCreateEmpBox,
 
       if (self.activeTool === 'select') {
         self.handleSelectMouseDown(worldPt, e.shiftKey);
-      } else if (self.activeTool === 'wall') {
+      } else if (self.activeTool === 'wall' || self.activeTool === 'divider') {
         self.handleWallMouseDown(worldPt);
       } else if (self.activeTool === 'door' || self.activeTool === 'window') {
         self.handleOpeningMouseDown(worldPt, self.activeTool);
@@ -12203,7 +12219,7 @@ body.role-employee #adminCreateEmpBox,
       }
       if (overLockBadge) {
         self.canvas.style.cursor = 'pointer';
-      } else if (self.activeTool === 'wall' || self.wallChainStart || self.activeTool === 'dimension') {
+      } else if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.wallChainStart || self.activeTool === 'dimension') {
         self.canvas.style.cursor = 'crosshair';
       } else if (self.dragState) {
         self.canvas.style.cursor = 'grabbing';
@@ -12212,7 +12228,7 @@ body.role-employee #adminCreateEmpBox,
       }
 
       // Live drawing render
-      if (self.activeTool === 'wall' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.wallChainStart) {
+      if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.wallChainStart) {
         self.render();
       }
     });
@@ -12416,6 +12432,10 @@ body.role-employee #adminCreateEmpBox,
             }
           }
         }
+        if (!rotated && (e.key === 'r' || e.key === 'R')) {
+          self.setTool('divider');
+          return;
+        }
       }
       if (e.key === 'Escape') {
         if (self.numericInputBuffer) {
@@ -12434,13 +12454,13 @@ body.role-employee #adminCreateEmpBox,
 
   PlanEditor.prototype.setTool = function (tool) {
     this.activeTool = tool;
-    if (tool !== 'wall') {
+    if (tool !== 'wall' && tool !== 'divider') {
       this.wallChainStart = null;
       this.wallChainFirstPoint = null;
       this.numericInputBuffer = '';
     }
     if (this.canvas) {
-      if (tool === 'wall' || tool === 'dimension') {
+      if (tool === 'wall' || tool === 'divider' || tool === 'dimension') {
         this.canvas.style.cursor = 'crosshair';
       } else {
         this.canvas.style.cursor = 'default';
@@ -12687,6 +12707,7 @@ body.role-employee #adminCreateEmpBox,
   };
 
   PlanEditor.prototype.handleWallMouseDown = function (worldPt) {
+    var isDivider = (this.activeTool === 'divider');
     var snapped = this.snapPoint(worldPt);
     if (!this.wallChainStart) {
       this.wallChainStart = Vec2.clone(snapped.pt);
@@ -12696,31 +12717,36 @@ body.role-employee #adminCreateEmpBox,
       var endPt = Vec2.clone(snapped.pt);
       var segDist = Vec2.dist(this.wallChainStart, endPt);
       if (segDist < 40) {
-        // Clicking same point finishes the wall chain!
+        // Clicking same point finishes the chain!
         this.wallChainStart = null;
         this.wallChainFirstPoint = null;
         this.numericInputBuffer = '';
         if (Core.detectRooms) Core.detectRooms(this.project);
-        this.pushHistory('Finish Wall Chain');
+        this.pushHistory(isDivider ? 'Finish Room Divider' : 'Finish Wall Chain');
         this.render();
         return;
       }
       if (segDist > 60) {
-        var newW = Core.createWall({
-          start: this.wallChainStart,
-          end: endPt,
-          thickness: this.wallPreset.thickness,
-          height: this.wallPreset.height
-        });
+        var newW = isDivider
+          ? Core.createRoomDivider({
+              start: this.wallChainStart,
+              end: endPt
+            })
+          : Core.createWall({
+              start: this.wallChainStart,
+              end: endPt,
+              thickness: this.wallPreset.thickness,
+              height: this.wallPreset.height
+            });
         this.project.plan.walls.push(newW);
-        this.pushHistory('Draw Wall');
+        this.pushHistory(isDivider ? 'Draw Room Divider' : 'Draw Wall');
 
-        // Check if loop closed (connected back to start of chain)
+        // Check if loop closed (connected back to start of chain) or if room divider was placed
         var isLoopClosed = (this.wallChainFirstPoint && Vec2.dist(endPt, this.wallChainFirstPoint) < 60) ||
                            (snapped && snapped.isChainClose);
 
-        if (isLoopClosed) {
-          // Room closed! Run room detection and cleanly terminate wall chain
+        if (isLoopClosed || isDivider) {
+          // Room closed or Room Divider placed! Run room detection and cleanly terminate chain
           this.wallChainStart = null;
           this.wallChainFirstPoint = null;
           this.numericInputBuffer = '';
@@ -13578,8 +13604,10 @@ body.role-employee #adminCreateEmpBox,
     // ── PASS 1: Fill all wall polygons and corner junction quads (L-Joint Solid Fill) ──
     for (var i = 0; i < walls.length; i++) {
       var w = walls[i];
+      if (w.isDivider || w.thickness === 0) continue;
       var isSelected = this.isSelected('wall', w.id);
       var poly = Core.wallPolygon(w);
+      if (!poly || poly.length < 4) continue;
 
       ctx.fillStyle = isSelected ? '#1B4F72' : '#33302B';
       ctx.beginPath();
@@ -13596,7 +13624,9 @@ body.role-employee #adminCreateEmpBox,
       var startConns = getConnected(w.start, w.id);
       for (var sc = 0; sc < startConns.length; sc++) {
         var otherW = startConns[sc].wall;
+        if (otherW.isDivider || otherW.thickness === 0) continue;
         var oPoly = Core.wallPolygon(otherW);
+        if (!oPoly || oPoly.length < 4) continue;
         var halfTW = (w.thickness || 150) / 2;
         var halfTO = (otherW.thickness || 150) / 2;
         var junctionPoly = [
@@ -13619,8 +13649,10 @@ body.role-employee #adminCreateEmpBox,
     // ── PASS 2: Stroke Wall Outlines (L-Joint Connected Miter, No Internal Dividing Lines) ──
     for (var k = 0; k < walls.length; k++) {
       var wk = walls[k];
+      if (wk.isDivider || wk.thickness === 0) continue;
       var isSelK = this.isSelected('wall', wk.id);
       var polyK = Core.wallPolygon(wk);
+      if (!polyK || polyK.length < 4) continue;
       var startConnsK = getConnected(wk.start, wk.id);
       var endConnsK = getConnected(wk.end, wk.id);
 
@@ -13697,6 +13729,66 @@ body.role-employee #adminCreateEmpBox,
         this.renderHandle(ctx, wk.end);
         this.renderLockBadge(ctx, wk, 'A');
         this.renderLockBadge(ctx, wk, 'B');
+      }
+    }
+
+    // ── PASS 3: Render Room Dividers (Architectural Dash-Dot Line with Purple Badges) ──
+    for (var d = 0; d < walls.length; d++) {
+      var div = walls[d];
+      if (!div.isDivider) continue;
+      var isDivSel = this.isSelected('wall', div.id);
+      var pStart = this.worldToScreen(div.start);
+      var pEnd = this.worldToScreen(div.end);
+
+      ctx.save();
+      if (isDivSel) {
+        ctx.shadowColor = 'rgba(124, 58, 237, 0.45)';
+        ctx.shadowBlur = 8;
+      }
+      ctx.beginPath();
+      ctx.setLineDash([8, 5, 2, 5]); // Architectural dash-dot standard
+      ctx.strokeStyle = isDivSel ? '#6D28D9' : '#8B5CF6';
+      ctx.lineWidth = isDivSel ? 3.5 : 2;
+      ctx.moveTo(pStart.x, pStart.y);
+      ctx.lineTo(pEnd.x, pEnd.y);
+      ctx.stroke();
+
+      // End-point circle nodes
+      ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = isDivSel ? '#6D28D9' : '#8B5CF6';
+      ctx.beginPath();
+      ctx.arc(pStart.x, pStart.y, isDivSel ? 4.5 : 3.5, 0, Math.PI * 2);
+      ctx.arc(pEnd.x, pEnd.y, isDivSel ? 4.5 : 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Midpoint badge "✂ ROOM DIVIDER"
+      var midX = (pStart.x + pEnd.x) / 2;
+      var midY = (pStart.y + pEnd.y) / 2;
+      var angle = Math.atan2(pEnd.y - pStart.y, pEnd.x - pStart.x);
+      if (angle > Math.PI / 2 || angle < -Math.PI / 2) angle += Math.PI;
+
+      ctx.translate(midX, midY);
+      ctx.rotate(angle);
+      var badgeText = '✂ ROOM DIVIDER';
+      ctx.font = '700 9.5px "IBM Plex Sans", -apple-system, sans-serif';
+      var tw = ctx.measureText(badgeText).width;
+      ctx.fillStyle = isDivSel ? '#6D28D9' : '#7C3AED';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-tw / 2 - 7, -9, tw + 14, 18, 4);
+      else ctx.rect(-tw / 2 - 7, -9, tw + 14, 18);
+      ctx.fill();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(badgeText, 0, 0);
+
+      ctx.restore();
+
+      // If selected, draw handles at endpoints
+      if (isDivSel) {
+        this.renderHandle(ctx, div.start);
+        this.renderHandle(ctx, div.end);
       }
     }
   };
@@ -14919,13 +15011,25 @@ body.role-employee #adminCreateEmpBox,
         ctx.restore();
       }
 
-      // Draw ghost wall line
-      ctx.strokeStyle = '#1B4F72';
-      ctx.lineWidth = Math.max(2, this.wallPreset.thickness * this.zoom);
-      ctx.beginPath();
-      ctx.moveTo(sStart.x, sStart.y);
-      ctx.lineTo(sEnd.x, sEnd.y);
-      ctx.stroke();
+      // Draw ghost wall line or ghost divider
+      if (this.activeTool === 'divider') {
+        ctx.save();
+        ctx.strokeStyle = '#8B5CF6';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([8, 5, 2, 5]);
+        ctx.beginPath();
+        ctx.moveTo(sStart.x, sStart.y);
+        ctx.lineTo(sEnd.x, sEnd.y);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        ctx.strokeStyle = '#1B4F72';
+        ctx.lineWidth = Math.max(2, this.wallPreset.thickness * this.zoom);
+        ctx.beginPath();
+        ctx.moveTo(sStart.x, sStart.y);
+        ctx.lineTo(sEnd.x, sEnd.y);
+        ctx.stroke();
+      }
 
       // Corner A & B labels and parallel dimension line with witness lines
       if (distMm > 60) {
@@ -15075,8 +15179,8 @@ body.role-employee #adminCreateEmpBox,
 
       // 1b. Render precision CAD crosshair reticle (+) at wall tip while drawing chain
       this.renderCrosshairReticle(ctx, snap.pt, snap, true);
-    } else if (this.activeTool === 'wall') {
-      // 1c. Render precision CAD crosshair reticle (+) before starting first wall
+    } else if (this.activeTool === 'wall' || this.activeTool === 'divider') {
+      // 1c. Render precision CAD crosshair reticle (+) before starting first wall or divider
       var snap0 = this.snapPoint(this.cursorWorld);
       this.renderCrosshairReticle(ctx, snap0.pt, snap0, false);
     }
@@ -15828,9 +15932,49 @@ body.role-employee #adminCreateEmpBox,
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Build Architectural Room Divider Threshold (Floor Transition Strip)
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildDividerThreshold = function (wall) {
+    if (!wall || typeof THREE === 'undefined') return null;
+    var wLen = Core.wallLength(wall);
+    if (!wLen || wLen < 50) return null;
+    var angle = Core.wallAngle(wall);
+    var start = wall.start;
+
+    var group = new THREE.Group();
+    group.name = 'DividerThreshold_' + wall.id;
+
+    // Brass / Architectural Champagne Metal transition strip
+    var stripW = 30; // 30mm width
+    var stripH = 4;  // 4mm height flush above floor
+    var geo = new THREE.BoxGeometry(wLen, stripH, stripW);
+    var mat = new THREE.MeshStandardMaterial({
+      color: 0xD4AF37, // Polished architectural warm brass
+      metalness: 0.85,
+      roughness: 0.3
+    });
+    var stripMesh = new THREE.Mesh(geo, mat);
+    stripMesh.position.set(wLen / 2, stripH / 2 + 1, 0);
+    stripMesh.receiveShadow = true;
+    group.add(stripMesh);
+
+    group.position.set(start.x, 0, start.y);
+    group.rotation.y = -angle;
+    group.userData = {
+      isDivider: true,
+      wallId: wall.id
+    };
+    return group;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build 3D Wall with Real Openings (Subdivided Blocks)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildWallWithCutouts = function (wall, ops) {
+    if (wall && wall.isDivider) {
+      return this.buildDividerThreshold(wall);
+    }
+
     var group = new THREE.Group();
     group.name = 'Wall_' + wall.id;
 
@@ -17725,8 +17869,12 @@ body.role-employee #adminCreateEmpBox,
           toolBtns.forEach(function (b) { b.classList.remove('is-active'); });
           btn.classList.add('is-active');
           var tool = btn.dataset.tool;
-          self.editor.activeTool = tool;
-          if (tool !== 'wall') self.editor.wallChainStart = null;
+          if (typeof self.editor.setTool === 'function') {
+            self.editor.setTool(tool);
+          } else {
+            self.editor.activeTool = tool;
+            if (tool !== 'wall' && tool !== 'divider') self.editor.wallChainStart = null;
+          }
           self.editor.render();
         });
       });
@@ -18349,10 +18497,29 @@ body.role-employee #adminCreateEmpBox,
         var w = this.editor.getWall(sel.id);
         if (!w) return;
         var lenMm = Math.round(Core.wallLength(w));
+        var lenDisplay = self.editor.formatDim(lenMm);
+
+        if (w.isDivider) {
+          panel.innerHTML =
+            '<div class="insp-title" style="color:#7C3AED;">✂ Room Divider</div>' +
+            '<div style="font-size:12px;color:#64748B;margin-bottom:12px;line-height:1.4;">Divides rooms into independent spaces with separate floor finishes without solid physical walls.</div>' +
+            '<div class="insp-row"><label>Divider Span Length</label><input type="text" id="inspDivLen" value="' + (self.editor.unitSystem === 'imperial' ? lenDisplay : lenMm) + '" readonly style="background:#F8FAFC;">' +
+            '<span style="font-size:11px;color:#7C3AED;font-weight:600;">Length: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
+            '<div class="insp-row"><label>3D Architectural Strip</label><div style="font-size:11.5px;color:#334155;padding:4px 0;font-weight:500;">Flush Brushed Brass Threshold (30mm)</div></div>' +
+            '<button class="btn danger full" id="inspDelWall" style="margin-top:14px;background:#DC2626;">Delete Room Divider</button>';
+
+          var btnDelDiv = document.getElementById('inspDelWall');
+          if (btnDelDiv) {
+            btnDelDiv.addEventListener('click', function () {
+              self.editor.deleteSelected();
+            });
+          }
+          return;
+        }
+
         var planObj = self.editor.project && self.editor.project.plan;
         var innerMm = Math.round(Core.getWallInnerLength ? Core.getWallInnerLength(w, planObj) : lenMm);
         var innerDisplay = self.editor.formatDim(innerMm);
-        var lenDisplay = self.editor.formatDim(lenMm);
         panel.innerHTML =
           '<div class="insp-title">Wall Properties</div>' +
           '<div class="insp-row"><label>Clear Inner Length ' + (self.editor.unitSystem === 'imperial' ? '(e.g. 5ft or mm)' : '(mm)') + '</label><input type="text" id="inspWallInnerLen" value="' + (self.editor.unitSystem === 'imperial' ? innerDisplay : innerMm) + '">' +
@@ -19456,6 +19623,9 @@ body.role-employee #adminCreateEmpBox,
     },
 
     syncProjectUnitsTo3DStudio: function (selectFurnId) {
+      if (this.sync3DStudioUnits && window.S && window.S.units && window.S.units.length > 0) {
+        this.sync3DStudioUnits();
+      }
       var plan = this.getPlan();
       var furnList = (plan && plan.furniture) || [];
 
@@ -24356,7 +24526,7 @@ body.role-employee #adminCreateEmpBox,
       if (!window.THREE) return false;
       try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" }); }
       catch (e) { return false; }
-      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = (NEO || FX) ? 1.04 : 1.08;
@@ -24374,9 +24544,9 @@ body.role-employee #adminCreateEmpBox,
       if (EMBED) camera.far = 80000;
       keyL = new THREE.DirectionalLight(0xfffaec, NEO ? 1.45 : 1.35);
       keyL.position.set(-1700, 3400, 2700); keyL.castShadow = true;
-      keyL.shadow.mapSize.set(4096, 4096);
+      keyL.shadow.mapSize.set(2048, 2048);
       var sc = keyL.shadow.camera; sc.left = -3400; sc.right = 3400; sc.top = 3400; sc.bottom = -3400; sc.near = 200; sc.far = 14000;
-      keyL.shadow.bias = -0.0005; keyL.shadow.normalBias = 3; keyL.shadow.radius = 2.5;
+      keyL.shadow.bias = -0.0005; keyL.shadow.normalBias = 3; keyL.shadow.radius = 2.0;
       scene.add(keyL); scene.add(keyL.target);
       /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
       var fill = new THREE.DirectionalLight(0xdde9f8, 0.55); fill.position.set(2600, 1900, 4800); scene.add(fill);
@@ -25225,7 +25395,8 @@ body.role-employee #adminCreateEmpBox,
         scm.left = -half; scm.right = half; scm.top = half; scm.bottom = -half; scm.near = 200; scm.far = half * 2 + 6000;
         scm.updateProjectionMatrix(); keyL.target.updateMatrixWorld();
       }
-      var r = stage.getBoundingClientRect(), aspect = (r.width && r.height) ? r.width / r.height : 1.6;
+      cachedStageRect = stage.getBoundingClientRect();
+      var r = cachedStageRect, aspect = (r.width && r.height) ? r.width / r.height : 1.6;
       var t = Math.tan(camera.fov * Math.PI / 360);
       var dH = (size.y * 1.06) / (2 * t), dW = (Math.hypot(size.x, size.z) * 0.78) / (2 * t * aspect);
       var k = (mode === 'home' && homeObj) ? 1.25 : (ROOM.id ? 1.16 : 1.22);
@@ -25267,10 +25438,36 @@ body.role-employee #adminCreateEmpBox,
       });
     }
 
-    function apply() {
+    var cachedStageRect = null;
+    var rafPending = false;
+    function requestRender() {
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(function () {
+        rafPending = false;
+        render();
+      });
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', function () {
+        cachedStageRect = null;
+      });
+    }
+
+    function apply(forceSync) {
       if (!ok) return;
-      var r = stage.getBoundingClientRect();
-      if (r.width && r.height) { var cw0 = renderer.domElement.width; renderer.setSize(r.width, r.height, false); if (renderer.domElement.width !== cw0) fxResize(); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); }
+      if (!cachedStageRect) {
+        cachedStageRect = stage.getBoundingClientRect();
+      }
+      var r = cachedStageRect;
+      if (r && r.width && r.height) {
+        var cw0 = renderer.domElement.width;
+        renderer.setSize(r.width, r.height, false);
+        if (renderer.domElement.width !== cw0) fxResize();
+        camera.aspect = r.width / r.height;
+        camera.updateProjectionMatrix();
+      }
       var yaw = cam.yaw * Math.PI / 180, el = (-cam.pitch) * Math.PI / 180;
       var safeZoom = Math.max(0.15, 1 + cam.zoom);
       var d = dist / safeZoom;
@@ -25281,7 +25478,11 @@ body.role-employee #adminCreateEmpBox,
       camera.position.set(target.x + d * Math.sin(yaw) * Math.cos(el), target.y + d * Math.sin(el), target.z + d * Math.cos(yaw) * Math.cos(el));
       camera.lookAt(target);
       updateWallCutaway();
-      render();
+      if (forceSync) {
+        render();
+      } else {
+        requestRender();
+      }
     }
     /* ── offscreen thumbnail renderer (own context, own environment) ── */
     var tR = null, tScene, tCam, tRoot;

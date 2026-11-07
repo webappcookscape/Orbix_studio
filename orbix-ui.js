@@ -234,8 +234,12 @@
           toolBtns.forEach(function (b) { b.classList.remove('is-active'); });
           btn.classList.add('is-active');
           var tool = btn.dataset.tool;
-          self.editor.activeTool = tool;
-          if (tool !== 'wall') self.editor.wallChainStart = null;
+          if (typeof self.editor.setTool === 'function') {
+            self.editor.setTool(tool);
+          } else {
+            self.editor.activeTool = tool;
+            if (tool !== 'wall' && tool !== 'divider') self.editor.wallChainStart = null;
+          }
           self.editor.render();
         });
       });
@@ -858,10 +862,29 @@
         var w = this.editor.getWall(sel.id);
         if (!w) return;
         var lenMm = Math.round(Core.wallLength(w));
+        var lenDisplay = self.editor.formatDim(lenMm);
+
+        if (w.isDivider) {
+          panel.innerHTML =
+            '<div class="insp-title" style="color:#7C3AED;">✂ Room Divider</div>' +
+            '<div style="font-size:12px;color:#64748B;margin-bottom:12px;line-height:1.4;">Divides rooms into independent spaces with separate floor finishes without solid physical walls.</div>' +
+            '<div class="insp-row"><label>Divider Span Length</label><input type="text" id="inspDivLen" value="' + (self.editor.unitSystem === 'imperial' ? lenDisplay : lenMm) + '" readonly style="background:#F8FAFC;">' +
+            '<span style="font-size:11px;color:#7C3AED;font-weight:600;">Length: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
+            '<div class="insp-row"><label>3D Architectural Strip</label><div style="font-size:11.5px;color:#334155;padding:4px 0;font-weight:500;">Flush Brushed Brass Threshold (30mm)</div></div>' +
+            '<button class="btn danger full" id="inspDelWall" style="margin-top:14px;background:#DC2626;">Delete Room Divider</button>';
+
+          var btnDelDiv = document.getElementById('inspDelWall');
+          if (btnDelDiv) {
+            btnDelDiv.addEventListener('click', function () {
+              self.editor.deleteSelected();
+            });
+          }
+          return;
+        }
+
         var planObj = self.editor.project && self.editor.project.plan;
         var innerMm = Math.round(Core.getWallInnerLength ? Core.getWallInnerLength(w, planObj) : lenMm);
         var innerDisplay = self.editor.formatDim(innerMm);
-        var lenDisplay = self.editor.formatDim(lenMm);
         panel.innerHTML =
           '<div class="insp-title">Wall Properties</div>' +
           '<div class="insp-row"><label>Clear Inner Length ' + (self.editor.unitSystem === 'imperial' ? '(e.g. 5ft or mm)' : '(mm)') + '</label><input type="text" id="inspWallInnerLen" value="' + (self.editor.unitSystem === 'imperial' ? innerDisplay : innerMm) + '">' +
@@ -1965,6 +1988,9 @@
     },
 
     syncProjectUnitsTo3DStudio: function (selectFurnId) {
+      if (this.sync3DStudioUnits && window.S && window.S.units && window.S.units.length > 0) {
+        this.sync3DStudioUnits();
+      }
       var plan = this.getPlan();
       var furnList = (plan && plan.furniture) || [];
 

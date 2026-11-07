@@ -432,9 +432,49 @@
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Build Architectural Room Divider Threshold (Floor Transition Strip)
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildDividerThreshold = function (wall) {
+    if (!wall || typeof THREE === 'undefined') return null;
+    var wLen = Core.wallLength(wall);
+    if (!wLen || wLen < 50) return null;
+    var angle = Core.wallAngle(wall);
+    var start = wall.start;
+
+    var group = new THREE.Group();
+    group.name = 'DividerThreshold_' + wall.id;
+
+    // Brass / Architectural Champagne Metal transition strip
+    var stripW = 30; // 30mm width
+    var stripH = 4;  // 4mm height flush above floor
+    var geo = new THREE.BoxGeometry(wLen, stripH, stripW);
+    var mat = new THREE.MeshStandardMaterial({
+      color: 0xD4AF37, // Polished architectural warm brass
+      metalness: 0.85,
+      roughness: 0.3
+    });
+    var stripMesh = new THREE.Mesh(geo, mat);
+    stripMesh.position.set(wLen / 2, stripH / 2 + 1, 0);
+    stripMesh.receiveShadow = true;
+    group.add(stripMesh);
+
+    group.position.set(start.x, 0, start.y);
+    group.rotation.y = -angle;
+    group.userData = {
+      isDivider: true,
+      wallId: wall.id
+    };
+    return group;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build 3D Wall with Real Openings (Subdivided Blocks)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildWallWithCutouts = function (wall, ops) {
+    if (wall && wall.isDivider) {
+      return this.buildDividerThreshold(wall);
+    }
+
     var group = new THREE.Group();
     group.name = 'Wall_' + wall.id;
 

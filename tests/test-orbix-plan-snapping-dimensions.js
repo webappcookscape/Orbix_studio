@@ -83,11 +83,11 @@ const testUnit = {
   dimensions: { W: 1200, D: 600 }
 };
 const joints = editor.getFurnitureJointPoints(testUnit);
-assert.strictEqual(joints.length, 4, 'Should have 4 corner joint points');
-assert.deepStrictEqual(joints[0], { name: 'BL', x: 400, y: 700 });
-assert.deepStrictEqual(joints[1], { name: 'BR', x: 1600, y: 700 });
-assert.deepStrictEqual(joints[2], { name: 'FR', x: 1600, y: 1300 });
-assert.deepStrictEqual(joints[3], { name: 'FL', x: 400, y: 1300 });
+assert.ok(joints.length >= 4, 'Should have corner and midpoint joint points');
+assert.deepStrictEqual(joints[0], { name: 'BL', x: 400, y: 700, isCorner: true });
+assert.deepStrictEqual(joints[1], { name: 'BR', x: 1600, y: 700, isCorner: true });
+assert.deepStrictEqual(joints[2], { name: 'FR', x: 1600, y: 1300, isCorner: true });
+assert.deepStrictEqual(joints[3], { name: 'FL', x: 400, y: 1300, isCorner: true });
 console.log('✓ 4-corner jointing points calculated with millimeter precision');
 
 // 3. Test Unit-to-Unit Jointing
