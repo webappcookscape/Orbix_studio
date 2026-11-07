@@ -119,6 +119,11 @@
       }
       if (!restored || !this.project) {
         this.project = Core.createProject('Untitled Project');
+      } else {
+        // Sanitize and detect clean room boundaries for restored working project
+        if (typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
+          try { Core.detectRooms(this.project); } catch (e) { console.warn('[Orbix UI] detectRooms on init:', e); }
+        }
       }
 
       var self = this;
@@ -154,6 +159,9 @@
     loadProject: function (proj) {
       if (!proj) return;
       this.project = proj;
+      if (typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
+        try { Core.detectRooms(this.project); } catch (e) { console.warn('[Orbix UI] detectRooms on load:', e); }
+      }
       this.syncProjectUnitsTo3DStudio(); // Synchronize units FIRST so window.S.units reflects project
       this.saveToLocalStorage();
       if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
@@ -858,14 +866,18 @@
         panel.innerHTML = '<div class="insp-empty">Select a wall, door, window, or room to inspect and edit exact dimensions.</div>';
         return;
       }
+      var ed = this.editor || (self && self.editor) || (window.OrbixUI && window.OrbixUI.editor);
+      if (!ed) return;
+
       if (sel.type === 'wall') {
-        var w = this.editor.getWall(sel.id);
+        if (typeof ed.getWall !== 'function') return;
+        var w = ed.getWall(sel.id);
         if (!w) return;
         var lenMm = Math.round(Core.wallLength(w));
-        var lenDisplay = self.editor.formatDim(lenMm);
+        var lenDisplay = (ed.formatDim ? ed.formatDim(lenMm) : (lenMm + ' mm'));
 
         if (w.isDivider) {
-          var planObj = self.editor.project && self.editor.project.plan;
+          var planObj = ed.project && ed.project.plan;
           var divRooms = (planObj && planObj.rooms || []).filter(function (r) {
             return r.wallIds && r.wallIds.indexOf(w.id) !== -1;
           });
@@ -877,7 +889,7 @@
             '<div class="insp-title" style="color:#7C3AED;">✂ Room Divider</div>' +
             '<div style="font-size:12px;color:#64748B;margin-bottom:12px;line-height:1.4;">Divides open space into independent rooms with custom 3D flooring without building solid physical walls.</div>' +
             '<div class="insp-row"><label>Divided Spaces</label><div style="font-size:12px;color:#1E293B;font-weight:700;padding:3px 0;">' + roomsInfo + '</div></div>' +
-            '<div class="insp-row"><label>Divider Span Length</label><input type="text" id="inspDivLen" value="' + (self.editor.unitSystem === 'imperial' ? lenDisplay : lenMm) + '" readonly style="background:#F8FAFC;font-weight:600;color:#1E293B;">' +
+            '<div class="insp-row"><label>Divider Span Length</label><input type="text" id="inspDivLen" value="' + (ed.unitSystem === 'imperial' ? lenDisplay : lenMm) + '" readonly style="background:#F8FAFC;font-weight:600;color:#1E293B;">' +
             '<span style="font-size:11px;color:#7C3AED;font-weight:600;">Length: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
             '<div class="insp-row"><label>3D Architectural Strip</label><div style="font-size:11.5px;color:#334155;padding:4px 0;font-weight:500;">Flush Brushed Brass Threshold (30mm)</div></div>' +
             '<button class="btn danger full" id="inspDelWall" style="margin-top:14px;background:#DC2626;">🗑️ Delete Room Divider</button>';
@@ -885,20 +897,20 @@
           var btnDelDiv = document.getElementById('inspDelWall');
           if (btnDelDiv) {
             btnDelDiv.addEventListener('click', function () {
-              self.editor.deleteSelected();
+              ed.deleteSelected();
             });
           }
           return;
         }
 
-        var planObj = self.editor.project && self.editor.project.plan;
+        var planObj = ed.project && ed.project.plan;
         var innerMm = Math.round(Core.getWallInnerLength ? Core.getWallInnerLength(w, planObj) : lenMm);
-        var innerDisplay = self.editor.formatDim(innerMm);
+        var innerDisplay = (ed.formatDim ? ed.formatDim(innerMm) : (innerMm + ' mm'));
         panel.innerHTML =
           '<div class="insp-title">Wall Properties</div>' +
-          '<div class="insp-row"><label>Clear Inner Length ' + (self.editor.unitSystem === 'imperial' ? '(e.g. 5ft or mm)' : '(mm)') + '</label><input type="text" id="inspWallInnerLen" value="' + (self.editor.unitSystem === 'imperial' ? innerDisplay : innerMm) + '">' +
+          '<div class="insp-row"><label>Clear Inner Length ' + (ed.unitSystem === 'imperial' ? '(e.g. 5ft or mm)' : '(mm)') + '</label><input type="text" id="inspWallInnerLen" value="' + (ed.unitSystem === 'imperial' ? innerDisplay : innerMm) + '">' +
           '<span style="font-size:11px;color:#0284c7;font-weight:600;">Clear Inner: ' + innerDisplay + ' (' + innerMm + ' mm)</span></div>' +
-          '<div class="insp-row"><label>Centerline Length</label><input type="text" id="inspWallLen" value="' + (self.editor.unitSystem === 'imperial' ? lenDisplay : lenMm) + '">' +
+          '<div class="insp-row"><label>Centerline Length</label><input type="text" id="inspWallLen" value="' + (ed.unitSystem === 'imperial' ? lenDisplay : lenMm) + '">' +
           '<span style="font-size:11px;color:#64748B;">Centerline: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
@@ -907,16 +919,16 @@
         var elInner = document.getElementById('inspWallInnerLen');
         if (elInner) {
           elInner.addEventListener('change', function (e) {
-            var targetInner = self.editor.parseDimInput(e.target.value);
+            var targetInner = ed.parseDimInput(e.target.value);
             if (targetInner > 50) {
               var anchor = (w.startLocked === false && w.endLocked !== false) ? 'end' : 'start';
               if (Core.setWallInnerLength) {
-                Core.setWallInnerLength(w, targetInner, self.editor.project && self.editor.project.plan, anchor);
+                Core.setWallInnerLength(w, targetInner, ed.project && ed.project.plan, anchor);
               }
-              Core.detectRooms(self.editor.project);
-              self.editor.pushHistory('Resize Wall Inner Length');
-              self.editor.render();
-              self.renderInspector(self.editor.selected);
+              Core.detectRooms(ed.project);
+              ed.pushHistory('Resize Wall Inner Length');
+              ed.render();
+              self.renderInspector(ed.selected);
             }
           });
         }
@@ -924,7 +936,7 @@
         var elWallLen = document.getElementById('inspWallLen');
         if (elWallLen) {
           elWallLen.addEventListener('change', function (e) {
-            var targetL = self.editor.parseDimInput(e.target.value);
+            var targetL = ed.parseDimInput(e.target.value);
             if (targetL > 100) {
               var dir = Core.wallDirection(w);
               if (w.startLocked === false && w.endLocked !== false) {
@@ -936,10 +948,10 @@
                 w.end.x = w.start.x + dir.x * targetL;
                 w.end.y = w.start.y + dir.y * targetL;
               }
-              Core.detectRooms(self.editor.project);
-              self.editor.pushHistory('Resize Wall');
-              self.editor.render();
-              self.renderInspector(self.editor.selected);
+              Core.detectRooms(ed.project);
+              ed.pushHistory('Resize Wall');
+              ed.render();
+              self.renderInspector(ed.selected);
             }
           });
         }
@@ -947,22 +959,22 @@
         if (elWallThick) {
           elWallThick.addEventListener('change', function (e) {
             w.thickness = parseFloat(e.target.value);
-            self.editor.pushHistory('Change Wall Thickness');
-            self.editor.render();
+            ed.pushHistory('Change Wall Thickness');
+            ed.render();
           });
         }
         var elWallH = document.getElementById('inspWallH');
         if (elWallH) {
           elWallH.addEventListener('change', function (e) {
             w.height = parseFloat(e.target.value);
-            self.editor.pushHistory('Change Wall Height');
-            self.editor.render();
+            ed.pushHistory('Change Wall Height');
+            ed.render();
           });
         }
         var elDelWall = document.getElementById('inspDelWall');
         if (elDelWall) {
           elDelWall.addEventListener('click', function () {
-            self.editor.deleteSelected();
+            ed.deleteSelected();
           });
         }
       } else if (sel.type === 'opening') {

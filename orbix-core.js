@@ -27,26 +27,47 @@
      ───────────────────────────────────────────────────────────────────────────── */
   var Vec2 = {
     create: function (x, y) { return { x: x || 0, y: y || 0 }; },
-    clone: function (p) { return { x: p.x, y: p.y }; },
-    add: function (a, b) { return { x: a.x + b.x, y: a.y + b.y }; },
-    sub: function (a, b) { return { x: a.x - b.x, y: a.y - b.y }; },
-    scale: function (p, s) { return { x: p.x * s, y: p.y * s }; },
+    clone: function (p) { return p ? { x: p.x, y: p.y } : { x: 0, y: 0 }; },
+    add: function (a, b) {
+      if (!a) return b ? { x: b.x, y: b.y } : { x: 0, y: 0 };
+      if (!b) return { x: a.x, y: a.y };
+      return { x: a.x + b.x, y: a.y + b.y };
+    },
+    sub: function (a, b) {
+      if (!a) return b ? { x: -b.x, y: -b.y } : { x: 0, y: 0 };
+      if (!b) return { x: a.x, y: a.y };
+      return { x: a.x - b.x, y: a.y - b.y };
+    },
+    scale: function (p, s) { return p ? { x: p.x * s, y: p.y * s } : { x: 0, y: 0 }; },
     dist: function (a, b) {
+      if (!a || !b) return 0;
       var dx = b.x - a.x, dy = b.y - a.y;
       return Math.sqrt(dx * dx + dy * dy);
     },
     distSq: function (a, b) {
+      if (!a || !b) return 0;
       var dx = b.x - a.x, dy = b.y - a.y;
       return dx * dx + dy * dy;
     },
-    len: function (p) { return Math.sqrt(p.x * p.x + p.y * p.y); },
+    len: function (p) {
+      if (!p) return 0;
+      return Math.sqrt(p.x * p.x + p.y * p.y);
+    },
     normalize: function (p) {
+      if (!p) return { x: 0, y: 0 };
       var l = Math.sqrt(p.x * p.x + p.y * p.y);
       return l > 1e-9 ? { x: p.x / l, y: p.y / l } : { x: 0, y: 0 };
     },
-    dot: function (a, b) { return a.x * b.x + a.y * b.y; },
-    cross: function (a, b) { return a.x * b.y - a.y * b.x; },
+    dot: function (a, b) {
+      if (!a || !b) return 0;
+      return a.x * b.x + a.y * b.y;
+    },
+    cross: function (a, b) {
+      if (!a || !b) return 0;
+      return a.x * b.y - a.y * b.x;
+    },
     angle: function (a, b) {
+      if (!a || !b) return 0;
       return Math.atan2(b.y - a.y, b.x - a.x);
     },
     // Project point P onto line segment AB, returning { pt, t } where t in [0, 1]
@@ -1856,6 +1877,8 @@
      Project Serialization, Export & Validation
      ───────────────────────────────────────────────────────────────────────────── */
   function serializeProject(project) {
+    if (!project) return '{}';
+    project.meta = project.meta || {};
     project.meta.dateModified = new Date().toISOString();
     return JSON.stringify(project, null, 2);
   }

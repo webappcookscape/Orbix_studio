@@ -529,7 +529,7 @@
      Build Architectural Room Divider Threshold (Floor Transition Strip)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildDividerThreshold = function (wall) {
-    if (!wall || typeof THREE === 'undefined') return null;
+    if (!wall || !wall.start || !wall.end || typeof THREE === 'undefined') return null;
     var wLen = Core.wallLength(wall);
     if (!wLen || wLen < 50) return null;
     var angle = Core.wallAngle(wall);
@@ -867,6 +867,9 @@
     var cleaner = (typeof Core !== 'undefined' && Core.cleanPolygon) || ArchitecturalRenderer.cleanPolygon;
     var poly = cleaner ? cleaner(room.polygon) : room.polygon;
     if (!poly || poly.length < 3) return null;
+    for (var p = 0; p < poly.length; p++) {
+      if (!poly[p] || !isFinite(poly[p].x) || !isFinite(poly[p].y)) return null;
+    }
 
     // Check signed area in shape coordinates (x, -y).
     // In Three.js, ShapeGeometry triangulates using Earcut.

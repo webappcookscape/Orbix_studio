@@ -552,6 +552,9 @@
     }
 
     if (deletedSomething) {
+      if (typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
+        Core.detectRooms(this.project);
+      }
       this.selected = [];
       this.onSelectionChange(this.selected);
       this.pushHistory('Delete');
@@ -2053,14 +2056,16 @@
     var walls = this.project.plan.walls || [];
     var self = this;
 
-    // Helper: find connected walls at a point
+    // Helper: find connected walls at a point (ignores virtual room dividers)
     var getConnected = function (pt, excludeId) {
       var res = [];
+      if (!pt) return res;
       for (var j = 0; j < walls.length; j++) {
         var ow = walls[j];
-        if (ow.id === excludeId) continue;
-        if (Vec2.dist(pt, ow.start) < 60) res.push({ wall: ow, endpoint: 'start', pt: ow.start });
-        else if (Vec2.dist(pt, ow.end) < 60) res.push({ wall: ow, endpoint: 'end', pt: ow.end });
+        if (!ow || ow.id === excludeId) continue;
+        if (ow.isDivider || ow.thickness === 0) continue;
+        if (ow.start && Vec2.dist(pt, ow.start) < 60) res.push({ wall: ow, endpoint: 'start', pt: ow.start });
+        else if (ow.end && Vec2.dist(pt, ow.end) < 60) res.push({ wall: ow, endpoint: 'end', pt: ow.end });
       }
       return res;
     };
@@ -2150,9 +2155,12 @@
         // Connect outer and inner corner lines across junction
         for (var ec = 0; ec < endConnsK.length; ec++) {
           var eW = endConnsK[ec].wall;
+          if (!eW || eW.isDivider || eW.thickness === 0) continue;
           var ePoly = Core.wallPolygon(eW);
+          if (!ePoly || ePoly.length < 4) continue;
           var eCornerA = (endConnsK[ec].endpoint === 'start') ? ePoly[0] : ePoly[1];
           var eCornerB = (endConnsK[ec].endpoint === 'start') ? ePoly[3] : ePoly[2];
+          if (!eCornerA || !eCornerB) continue;
 
           // Connect closest outer pair and inner pair
           var d1 = Vec2.dist(polyK[1], eCornerA);
