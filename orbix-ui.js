@@ -1808,12 +1808,16 @@
                   else if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) activeUnit.carcass = fn.materials.carcass.finish;
                 }
               } else {
+                var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+                  window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.id, fn.costCategory) :
+                  (fn.category === 'kitchen_wall' || (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1));
                 var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
+                var isBase = !isWall && (isKitchen || fn.category === 'crockery' || fn.category === 'tv_unit' || (fn.name && fn.name.indexOf('BASE') !== -1));
                 var sFinish = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
                 var cFinish = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
                 var newU = {
                   label: fn.name,
-                  ctype: isKitchen ? 'kbase' : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
+                  ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
                   _furnId: fn.id,
                   W: fn.dimensions.W,
                   H: fn.dimensions.H,
@@ -1832,9 +1836,12 @@
                   dstyle: (fn.unitConfig && fn.unitConfig.dstyle) || 'slab',
                   handle: (fn.unitConfig && fn.unitConfig.handle) || 'gprof',
                   hfinish: (fn.unitConfig && fn.unitConfig.hfinish) || 'black',
-                  counter: (fn.unitConfig && fn.unitConfig.counter) || (isKitchen ? 'black' : 'none'),
+                  counter: (fn.unitConfig && fn.unitConfig.counter) || (isBase ? (fn.unitConfig && fn.unitConfig.counter ? fn.unitConfig.counter : 'black') : 'none'),
                   carcass: cFinish,
-                  shutterCol: sFinish
+                  shutterCol: sFinish,
+                  tvBack: 'none',
+                  tvShow: false,
+                  tvFloat: false
                 };
                 window.S.units.push(newU);
                 window.S.active = window.S.units.length - 1;
@@ -2023,6 +2030,7 @@
         var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
           window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) :
           (fn.category === 'kitchen_wall' || (fn.category && fn.category.indexOf('wall') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1));
+        var isBase = !isWall && (isKitchen || fn.category === 'crockery' || fn.category === 'tv_unit' || (fn.name && fn.name.indexOf('BASE') !== -1));
         var unitElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
           parseFloat(fn.elevation) : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? parseFloat(fn.pos.z) : (isWall ? 1500 : 0));
 
@@ -2148,11 +2156,13 @@
           }
 
           if (existing.ctype === 'kitchen') existing.ctype = isWall ? 'kwall' : 'kbase';
+          if (existing.ctype === 'tv' || existing.ctype === 'crockery') existing.ctype = isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe');
           if (existing.ctype) {
             fn.unitConfig = fn.unitConfig || {};
             fn.unitConfig.ctype = existing.ctype;
           } else if (fn.unitConfig && fn.unitConfig.ctype) {
             if (fn.unitConfig.ctype === 'kitchen') fn.unitConfig.ctype = isWall ? 'kwall' : 'kbase';
+            if (fn.unitConfig.ctype === 'tv' || fn.unitConfig.ctype === 'crockery') fn.unitConfig.ctype = isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe');
             existing.ctype = fn.unitConfig.ctype;
           }
 
@@ -2192,14 +2202,14 @@
           }
           newUnits.push(existing);
         } else {
-          var defH = isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 1800 : (fn.category === 'crockery' ? 2100 : 2100));
+          var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 450 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
-          var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 600);
+          var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 450);
           var sColNew = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
           var cColNew = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
           var u = {
             label: fn.name,
-            ctype: isKitchen ? (isWall ? 'kwall' : 'kbase') : fn.category === 'tv_unit' ? 'tv' : fn.category === 'crockery' ? 'crockery' : 'wardrobe',
+            ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
             _furnId: fn.id,
             elev: unitElev,
             W: (fn.dimensions && fn.dimensions.W) || defW,
@@ -2219,9 +2229,12 @@
             dstyle: (fn.unitConfig && fn.unitConfig.dstyle) || 'slab',
             handle: (fn.unitConfig && fn.unitConfig.handle) || 'gprof',
             hfinish: (fn.unitConfig && fn.unitConfig.hfinish) || 'black',
-            counter: (fn.unitConfig && fn.unitConfig.counter) || (isKitchen ? 'black' : 'none'),
+            counter: (fn.unitConfig && fn.unitConfig.counter) || (isBase ? (fn.unitConfig && fn.unitConfig.counter ? fn.unitConfig.counter : 'black') : 'none'),
             carcass: cColNew,
-            shutterCol: sColNew
+            shutterCol: sColNew,
+            tvBack: 'none',
+            tvShow: false,
+            tvFloat: false
           };
           newUnits.push(u);
         }

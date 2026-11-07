@@ -912,9 +912,10 @@
         L.boxes.push({ shape: "cyl", r: 9, len: 700, x: fx - 330, y: 330, z: fz + 380, mat: "metal" });      /* long door handle */
         L.boxes.push({ shape: "cyl", r: 9, len: 260, x: fx - 330, y: 1200, z: fz + 380, mat: "metal" });
       }
-      if (!run.island && run.ry !== 180 && !(window.OrbixUI && window.OrbixUI.project)) { var ww = (run.ry || 0) ? run.len + 900 : 16000; L.boxes.push({ x: 0, y: 0, z: -D / 2 - 14, w: ww, h: 3000, d: 14, mat: "wall", noFrame: true }); L.boxes.push({ x: 0, y: 0, z: -D / 2 - 6, w: ww, h: 110, d: 2, mat: "ao", tile: 110, noFrame: true }); }
+      var hasArch = (window.OrbixUI && (window.OrbixUI.project || window.OrbixUI.editor)) || (u && u._furnId);
+      if (!run.island && run.ry !== 180 && !hasArch) { var ww = (run.ry || 0) ? run.len + 900 : 16000; L.boxes.push({ x: 0, y: 0, z: -D / 2 - 14, w: ww, h: 3000, d: 14, mat: "wall", noFrame: true }); L.boxes.push({ x: 0, y: 0, z: -D / 2 - 6, w: ww, h: 110, d: 2, mat: "ao", tile: 110, noFrame: true }); }
       L.transform = (run.ry || run.tx || run.tz) ? { tx: run.tx, tz: run.tz, ry: run.ry } : null;
-      if (first && !(window.OrbixUI && window.OrbixUI.project)) { L.boxes.push({ x: 0, y: -13, z: 1400, w: 20000, h: 12, d: 14000, mat: "floor", tile: 1200, noFrame: true }); first = false; }
+      if (first && !hasArch) { L.boxes.push({ x: 0, y: -13, z: 1400, w: 20000, h: 12, d: 14000, mat: "floor", tile: 1200, noFrame: true }); first = false; }
       out.push(L);
     });
     return out;
@@ -966,10 +967,14 @@
   var TV_SIZES = { 43: 960, 50: 1120, 55: 1230, 65: 1450, 75: 1680 };
   function tvSpec(u) {
     var s = { W: u.W, H: u.H || 450, D: u.D || 450, T: u.T };
-    s.float = u.tvFloat !== false; s.elev = s.float ? 300 : 80;
-    s.back = u.tvBack || "panel"; s.backH = s.back === "none" ? 0 : (u.tvBackH || 2400);
+    var isBaseConsole = (u.H <= 900) || (u.label && /BASE/i.test(u.label)) || (u.name && /BASE/i.test(u.name)) || !!u._furnId;
+    s.float = u.tvFloat !== false && !isBaseConsole;
+    s.elev = s.float ? 300 : (u.elev || (isBaseConsole ? 0 : 80));
+    s.back = u.tvBack || (isBaseConsole ? "none" : "panel");
+    s.backH = s.back === "none" ? 0 : (u.tvBackH || 2400);
     s.towers = u.tvTowers || "none"; s.tw = 450; s.tH = Math.min(u.tvBackH || 2400, 2400);
-    s.tvW = TV_SIZES[u.tvSize || 55] || 1230; s.tvH = Math.round(s.tvW * 9 / 16); s.show = u.tvShow !== false;
+    s.tvW = TV_SIZES[u.tvSize || 55] || 1230; s.tvH = Math.round(s.tvW * 9 / 16);
+    s.show = (s.back !== "none") && (u.tvShow !== false) && !isBaseConsole;
     s.tvY = s.elev + s.H + 250;
     s.col = u.tvBackCol || u.shutterCol;
     s.shelves = [];
@@ -1037,9 +1042,7 @@
     }
     if (!s.float) L.boxes.push({ x: 0, y: 0, z: D / 2 - 60, w: u.W - 40, h: s.elev, d: 18, mat: "kick" });
     var zw = -D / 2 - 18;
-    L.boxes.push({ x: 0, y: 0, z: zw - 14, w: 16000, h: 3000, d: 14, mat: "wall", noFrame: true });
-    L.boxes.push({ x: 0, y: 0, z: zw - 6, w: 16000, h: 110, d: 2, mat: "ao", tile: 110, noFrame: true });
-    L.boxes.push({ x: 0, y: -13, z: 5000 - D / 2, w: 16000, h: 12, d: 10000, mat: "floor", tile: 1200, noFrame: true });
+    roomBoxes(zw, D).forEach(function (b) { L.boxes.push(b); });
     return [L];
   }
   function tvPanels(u) {
@@ -1090,7 +1093,10 @@
     return lay;
   }
   function roomBoxes(zWall, D) {
-    if (window.OrbixUI && window.OrbixUI.project) return [];
+    var hasArch = (typeof window !== 'undefined' && window.OrbixUI && (window.OrbixUI.project || window.OrbixUI.editor));
+    var plan = (typeof window !== 'undefined' && window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+    var activeU = typeof U === 'function' ? U() : null;
+    if (hasArch || plan || (activeU && activeU._furnId)) return [];
     return [{ x: 0, y: 0, z: zWall - 7, w: 16000, h: 3000, d: 14, mat: "wall", noFrame: true },
     { x: 0, y: 0, z: zWall + 1, w: 16000, h: 110, d: 2, mat: "ao", tile: 110, noFrame: true },
     { x: 0, y: -13, z: 5000 - D / 2, w: 16000, h: 12, d: 10000, mat: "floor", tile: 1200, noFrame: true }];
@@ -1546,7 +1552,7 @@
     });
     if (runs[1]) L[0].boxes.push({ x: u0.W / 2 + u0.T / 2, y: 0, z: 0, w: u0.T, h: u0.H + (u0.loft ? u0.loftH + 2 : 0), d: u0.D, col: u0.carcass, role: "side" });
     /* only generate synthetic backdrop wall if NOT working inside architectural CAD project */
-    var hasArchProject = (window.OrbixUI && window.OrbixUI.project);
+    var hasArchProject = (window.OrbixUI && (window.OrbixUI.project || window.OrbixUI.editor)) || (u0 && u0._furnId);
     if (!hasArchProject && runs.length) {
       L.forEach(function (lay, i) {
         var u = runs[i], ww = i ? u.W + 1600 : 16000;
