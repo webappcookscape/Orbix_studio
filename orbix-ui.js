@@ -902,12 +902,6 @@
           '<span style="font-size:11px;color:#64748B;">Centerline: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
-          '<div style="margin:10px 0;padding:8px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">' +
-          '<div style="font-size:11px;font-weight:700;color:#1e293b;margin-bottom:6px;">🔒 Joint Connection Locks</div>' +
-          '<div style="display:flex;gap:8px;">' +
-          '<button class="btn small full" id="inspWallLockA" style="font-size:11px;">' + (w.startLocked !== false ? '🔒 Corner A Locked' : '🔓 Corner A Unlocked') + '</button>' +
-          '<button class="btn small full" id="inspWallLockB" style="font-size:11px;">' + (w.endLocked !== false ? '🔒 Corner B Locked' : '🔓 Corner B Unlocked') + '</button>' +
-          '</div></div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
 
         var elInner = document.getElementById('inspWallInnerLen');
@@ -924,25 +918,6 @@
               self.editor.render();
               self.renderInspector(self.editor.selected);
             }
-          });
-        }
-
-        var btnLockA = document.getElementById('inspWallLockA');
-        if (btnLockA) {
-          btnLockA.addEventListener('click', function () {
-            w.startLocked = (w.startLocked === false ? true : false);
-            self.editor.pushHistory('Toggle Corner A Lock');
-            self.editor.render();
-            self.renderInspector(self.editor.selected);
-          });
-        }
-        var btnLockB = document.getElementById('inspWallLockB');
-        if (btnLockB) {
-          btnLockB.addEventListener('click', function () {
-            w.endLocked = (w.endLocked === false ? true : false);
-            self.editor.pushHistory('Toggle Corner B Lock');
-            self.editor.render();
-            self.renderInspector(self.editor.selected);
           });
         }
 

@@ -726,108 +726,6 @@
         return;
       }
 
-      if (self.dragState && self.dragState.type === 'move_vertex') {
-        var snapped = self.snapPoint(self.cursorWorld, self.dragState.wallId);
-        var refs = self.dragState.connectedRefs || [self.dragState.vertexRef];
-        for (var cr = 0; cr < refs.length; cr++) {
-          refs[cr].x = snapped.pt.x;
-          refs[cr].y = snapped.pt.y;
-        }
-        self.render();
-        return;
-      }
-
-      if (self.dragState && self.dragState.type === 'move_wall') {
-        var dx = self.cursorWorld.x - self.dragState.startWorld.x;
-        var dy = self.cursorWorld.y - self.dragState.startWorld.y;
-        var startLocked = self.dragState.wall.startLocked !== false;
-        var endLocked = self.dragState.wall.endLocked !== false;
-
-        if (startLocked && endLocked) {
-          // Both locked: Translate wall rigidly, extending both connected side walls
-          self.dragState.wall.start.x = self.dragState.origStart.x + dx;
-          self.dragState.wall.start.y = self.dragState.origStart.y + dy;
-          self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
-          self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
-          if (self.dragState.connectedStart) {
-            for (var cs = 0; cs < self.dragState.connectedStart.length; cs++) {
-              self.dragState.connectedStart[cs].ref.x = self.dragState.connectedStart[cs].orig.x + dx;
-              self.dragState.connectedStart[cs].ref.y = self.dragState.connectedStart[cs].orig.y + dy;
-            }
-          }
-          if (self.dragState.connectedEnd) {
-            for (var ce = 0; ce < self.dragState.connectedEnd.length; ce++) {
-              self.dragState.connectedEnd[ce].ref.x = self.dragState.connectedEnd[ce].orig.x + dx;
-              self.dragState.connectedEnd[ce].ref.y = self.dragState.connectedEnd[ce].orig.y + dy;
-            }
-          }
-        } else if (!startLocked && endLocked) {
-          // Corner A RELEASED, Corner B LOCKED:
-          // Corner B stays pinned at origEnd! Corner A moves, extending the wall from B.
-          self.dragState.wall.end.x = self.dragState.origEnd.x;
-          self.dragState.wall.end.y = self.dragState.origEnd.y;
-          self.dragState.wall.start.x = self.dragState.origStart.x + dx;
-          self.dragState.wall.start.y = self.dragState.origStart.y + dy;
-          if (self.dragState.connectedStart) {
-            for (var cs2 = 0; cs2 < self.dragState.connectedStart.length; cs2++) {
-              self.dragState.connectedStart[cs2].ref.x = self.dragState.connectedStart[cs2].orig.x + dx;
-              self.dragState.connectedStart[cs2].ref.y = self.dragState.connectedStart[cs2].orig.y + dy;
-            }
-          }
-          if (self.dragState.connectedEnd) {
-            for (var ce2 = 0; ce2 < self.dragState.connectedEnd.length; ce2++) {
-              self.dragState.connectedEnd[ce2].ref.x = self.dragState.connectedEnd[ce2].orig.x;
-              self.dragState.connectedEnd[ce2].ref.y = self.dragState.connectedEnd[ce2].orig.y;
-            }
-          }
-          if (self.dragState.openings && self.dragState.origLen) {
-            var curLenA = Core.wallLength(self.dragState.wall);
-            for (var oi = 0; oi < self.dragState.openings.length; oi++) {
-              var opItem = self.dragState.openings[oi];
-              var distFromEnd = self.dragState.origLen - opItem.origOffset;
-              var halfW = opItem.op.width / 2;
-              opItem.op.offset = Math.max(halfW, Math.min(curLenA - halfW, curLenA - distFromEnd));
-            }
-          }
-        } else if (startLocked && !endLocked) {
-          // Corner A LOCKED, Corner B RELEASED:
-          // Corner A stays pinned at origStart! Corner B moves, extending the wall from A.
-          self.dragState.wall.start.x = self.dragState.origStart.x;
-          self.dragState.wall.start.y = self.dragState.origStart.y;
-          self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
-          self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
-          if (self.dragState.connectedStart) {
-            for (var cs3 = 0; cs3 < self.dragState.connectedStart.length; cs3++) {
-              self.dragState.connectedStart[cs3].ref.x = self.dragState.connectedStart[cs3].orig.x;
-              self.dragState.connectedStart[cs3].ref.y = self.dragState.connectedStart[cs3].orig.y;
-            }
-          }
-          if (self.dragState.connectedEnd) {
-            for (var ce3 = 0; ce3 < self.dragState.connectedEnd.length; ce3++) {
-              self.dragState.connectedEnd[ce3].ref.x = self.dragState.connectedEnd[ce3].orig.x + dx;
-              self.dragState.connectedEnd[ce3].ref.y = self.dragState.connectedEnd[ce3].orig.y + dy;
-            }
-          }
-          if (self.dragState.openings && self.dragState.origLen) {
-            var curLenB = Core.wallLength(self.dragState.wall);
-            for (var oi2 = 0; oi2 < self.dragState.openings.length; oi2++) {
-              var opItem2 = self.dragState.openings[oi2];
-              var halfW2 = opItem2.op.width / 2;
-              opItem2.op.offset = Math.max(halfW2, Math.min(curLenB - halfW2, opItem2.origOffset));
-            }
-          }
-        } else {
-          // Both released: translate wall freely without dragging connected corners
-          self.dragState.wall.start.x = self.dragState.origStart.x + dx;
-          self.dragState.wall.start.y = self.dragState.origStart.y + dy;
-          self.dragState.wall.end.x = self.dragState.origEnd.x + dx;
-          self.dragState.wall.end.y = self.dragState.origEnd.y + dy;
-        }
-
-        self.render();
-        return;
-      }
-
       if (self.dragState && self.dragState.type === 'move_furniture') {
         var dx = self.cursorWorld.x - self.dragState.startWorld.x;
         var dy = self.cursorWorld.y - self.dragState.startWorld.y;
@@ -929,9 +827,9 @@
             return;
           }
           self.pushHistory('Move Furniture');
-        } else if (self.dragState.type === 'move_vertex' || self.dragState.type === 'move_wall' || self.dragState.type === 'move_opening') {
+        } else if (self.dragState.type === 'move_opening') {
           Core.detectRooms(self.project);
-          self.pushHistory('Move Wall');
+          self.pushHistory('Move Opening');
         }
         self.dragState = null;
         self.render();
@@ -1158,93 +1056,7 @@
   };
 
   PlanEditor.prototype.handleSelectMouseDown = function (worldPt, isShift) {
-    // 0. Check if clicked a Lock Badge (A or B) of any selected wall
-    for (var s0 = 0; s0 < this.selected.length; s0++) {
-      if (this.selected[s0].type === 'wall') {
-        var sw = this.getWall(this.selected[s0].id);
-        if (sw && sw._badgeBounds) {
-          var ms = this.lastMouseScreen;
-          var corners = ['A', 'B'];
-          for (var ci = 0; ci < corners.length; ci++) {
-            var cKey = corners[ci];
-            var bb = sw._badgeBounds[cKey];
-            if (bb) {
-              var hit = false;
-              if (ms && Math.hypot(ms.x - bb.x, ms.y - bb.y) < 24) hit = true;
-              else if (bb.world && Vec2.dist(worldPt, bb.world) < 250) hit = true;
-
-              if (hit) {
-                if (cKey === 'A') {
-                  sw.startLocked = (sw.startLocked === false ? true : false);
-                  var msgA = (sw.startLocked !== false) ? 'Corner A Locked 🔒' : 'Corner A Released 🔓';
-                  if (typeof window !== 'undefined' && typeof window.toast === 'function') window.toast(msgA);
-                  this.pushHistory(sw.startLocked !== false ? 'Lock Corner A' : 'Unlock Corner A');
-                } else {
-                  sw.endLocked = (sw.endLocked === false ? true : false);
-                  var msgB = (sw.endLocked !== false) ? 'Corner B Locked 🔒' : 'Corner B Released 🔓';
-                  if (typeof window !== 'undefined' && typeof window.toast === 'function') window.toast(msgB);
-                  this.pushHistory(sw.endLocked !== false ? 'Lock Corner B' : 'Unlock Corner B');
-                }
-                this.render();
-                if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.renderInspector) {
-                  window.OrbixUI.renderInspector(this.selected);
-                }
-                return;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Check if clicked an endpoint handle of a selected wall
-    for (var s = 0; s < this.selected.length; s++) {
-      if (this.selected[s].type === 'wall') {
-        var w = this.getWall(this.selected[s].id);
-        if (w) {
-          if (Vec2.dist(worldPt, w.start) < 140) {
-            var connected = [w.start];
-            if (w.startLocked !== false) {
-              var allW = (this.project && this.project.plan && this.project.plan.walls) || [];
-              for (var ci = 0; ci < allW.length; ci++) {
-                var ow = allW[ci];
-                if (ow.id === w.id) continue;
-                if (Vec2.dist(ow.start, w.start) < 30 && ow.startLocked !== false) connected.push(ow.start);
-                if (Vec2.dist(ow.end, w.start) < 30 && ow.endLocked !== false) connected.push(ow.end);
-              }
-            }
-            this.dragState = {
-              type: 'move_vertex',
-              wallId: w.id,
-              vertexRef: w.start,
-              connectedRefs: connected
-            };
-            return;
-          }
-          if (Vec2.dist(worldPt, w.end) < 140) {
-            var connected = [w.end];
-            if (w.endLocked !== false) {
-              var allW = (this.project && this.project.plan && this.project.plan.walls) || [];
-              for (var ci2 = 0; ci2 < allW.length; ci2++) {
-                var ow2 = allW[ci2];
-                if (ow2.id === w.id) continue;
-                if (Vec2.dist(ow2.start, w.end) < 30 && ow2.startLocked !== false) connected.push(ow2.start);
-                if (Vec2.dist(ow2.end, w.end) < 30 && ow2.endLocked !== false) connected.push(ow2.end);
-              }
-            }
-            this.dragState = {
-              type: 'move_vertex',
-              wallId: w.id,
-              vertexRef: w.end,
-              connectedRefs: connected
-            };
-            return;
-          }
-        }
-      }
-    }
-
-    // Check if clicked an opening
+    // 1. Check if clicked an opening
     var openings = this.project.plan.openings || [];
     for (var o = 0; o < openings.length; o++) {
       var op = openings[o];
@@ -1269,7 +1081,7 @@
       }
     }
 
-    // Check if clicked a furniture unit (Supports rotated OBBs and cycling between overlapping units!)
+    // 2. Check if clicked a furniture unit (Supports rotated OBBs and cycling between overlapping units!)
     var furnList = this.project.plan.furniture || [];
     var matchingHits = [];
     for (var f = furnList.length - 1; f >= 0; f--) {
@@ -1301,7 +1113,7 @@
       return;
     }
 
-    // Check if clicked a dimension line
+    // 3. Check if clicked a dimension line
     var dims = (this.project && this.project.plan && this.project.plan.dimensions) || [];
     for (var di = dims.length - 1; di >= 0; di--) {
       var dm = dims[di];
@@ -1317,50 +1129,11 @@
       }
     }
 
-    // Check if clicked a wall
+    // 4. Check if clicked a wall -> Select wall only; wall moving is completely removed
     var near = this.findNearestWall(worldPt, 250);
     if (near) {
       if (!isShift) this.selected = [];
       this.selected.push({ type: 'wall', id: near.wall.id });
-      var connStart = [];
-      var connEnd = [];
-      var allWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
-      for (var i = 0; i < allWalls.length; i++) {
-        var cw = allWalls[i];
-        if (cw.id === near.wall.id) continue;
-        if (Vec2.dist(cw.start, near.wall.start) < 30) {
-          connStart.push({ ref: cw.start, orig: Vec2.clone(cw.start) });
-        }
-        if (Vec2.dist(cw.end, near.wall.start) < 30) {
-          connStart.push({ ref: cw.end, orig: Vec2.clone(cw.end) });
-        }
-        if (Vec2.dist(cw.start, near.wall.end) < 30) {
-          connEnd.push({ ref: cw.start, orig: Vec2.clone(cw.start) });
-        }
-        if (Vec2.dist(cw.end, near.wall.end) < 30) {
-          connEnd.push({ ref: cw.end, orig: Vec2.clone(cw.end) });
-        }
-      }
-
-      var wallOpenings = [];
-      var allOps = (this.project && this.project.plan && this.project.plan.openings) || [];
-      for (var opIdx = 0; opIdx < allOps.length; opIdx++) {
-        if (allOps[opIdx].wallId === near.wall.id) {
-          wallOpenings.push({ op: allOps[opIdx], origOffset: allOps[opIdx].offset });
-        }
-      }
-
-      this.dragState = {
-        type: 'move_wall',
-        wall: near.wall,
-        startWorld: Vec2.clone(worldPt),
-        origStart: Vec2.clone(near.wall.start),
-        origEnd: Vec2.clone(near.wall.end),
-        origLen: Core.wallLength(near.wall),
-        openings: wallOpenings,
-        connectedStart: connStart,
-        connectedEnd: connEnd
-      };
       this.onSelectionChange(this.selected);
       this.render();
       return;
@@ -2414,12 +2187,10 @@
         this.renderParallelWallDimensions(ctx, wk);
       }
 
-      // If selected, draw handles at endpoints and joint locks
+      // If selected, draw handles at endpoints
       if (isSelK) {
         this.renderHandle(ctx, wk.start);
         this.renderHandle(ctx, wk.end);
-        this.renderLockBadge(ctx, wk, 'A');
-        this.renderLockBadge(ctx, wk, 'B');
       }
     }
 
