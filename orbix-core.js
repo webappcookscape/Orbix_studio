@@ -101,6 +101,89 @@
         if (intersect) inside = !inside;
       }
       return inside;
+    },
+    // Polygon sanitization: remove consecutive duplicates, dead-end spikes/reversals, and collinear points
+    cleanPolygon: function (pts) {
+      if (!pts || !Array.isArray(pts) || pts.length < 3) return [];
+      var res = [];
+      for (var i = 0; i < pts.length; i++) {
+        if (pts[i] && typeof pts[i].x === 'number' && typeof pts[i].y === 'number') {
+          res.push({ x: Math.round(pts[i].x * 10) / 10, y: Math.round(pts[i].y * 10) / 10 });
+        }
+      }
+      if (res.length < 3) return [];
+
+      var globalChanged = true;
+      var passes = 0;
+      while (globalChanged && passes++ < 12 && res.length >= 3) {
+        globalChanged = false;
+
+        // 1. Remove consecutive duplicates (< 20mm)
+        var n1 = res.length;
+        var next1 = [];
+        for (var i = 0; i < n1; i++) {
+          var p = res[i];
+          var pNext = res[(i + 1) % n1];
+          if (Math.hypot(p.x - pNext.x, p.y - pNext.y) < 20) {
+            globalChanged = true;
+            continue;
+          }
+          next1.push(p);
+        }
+        res = next1;
+        if (res.length < 3) break;
+
+        // 2. Remove spikes (A -> B -> A or acute turnarounds where dot product < -0.98)
+        var n2 = res.length;
+        var spikeFound = false;
+        for (var i = 0; i < n2; i++) {
+          var prev = res[(i - 1 + n2) % n2];
+          var curr = res[i];
+          var next = res[(i + 1) % n2];
+          var d = Math.hypot(prev.x - next.x, prev.y - next.y);
+          if (d < 30) {
+            res.splice(i, 1);
+            globalChanged = true;
+            spikeFound = true;
+            break;
+          }
+          var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
+          var v2x = next.x - curr.x, v2y = next.y - curr.y;
+          var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+          if (l1 > 10 && l2 > 10) {
+            var dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
+            if (dot < -0.98) {
+              res.splice(i, 1);
+              globalChanged = true;
+              spikeFound = true;
+              break;
+            }
+          }
+        }
+        if (spikeFound) continue;
+
+        // 3. Remove collinear points along straight lines (sin(theta) < 0.02 and dot > 0)
+        var n3 = res.length;
+        var next3 = [];
+        for (var i = 0; i < n3; i++) {
+          var prev = res[(i - 1 + n3) % n3];
+          var curr = res[i];
+          var nextP = res[(i + 1) % n3];
+          var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
+          var v2x = nextP.x - curr.x, v2y = nextP.y - curr.y;
+          var cross = v1x * v2y - v1y * v2x;
+          var dot = v1x * v2x + v1y * v2y;
+          var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+          var sinTheta = Math.abs(cross) / (l1 * l2 + 1e-9);
+          if (sinTheta < 0.02 && dot > 0) {
+            globalChanged = true;
+            continue;
+          }
+          next3.push(curr);
+        }
+        res = next3;
+      }
+      return res.length >= 3 ? res : [];
     }
   };
 
@@ -997,21 +1080,19 @@
           y: w.start.y + tB * (w.end.y - w.start.y)
         };
 
-        // For room dividers, snap free endpoints flush to meeting walls within snapTol
-        if (w.isDivider) {
-          if (tA === 0) {
-            for (var ja = 0; ja < walls.length; ja++) {
-              if (walls[ja].id === w.id) continue;
-              var prA = projectPointOnSegment(pA, walls[ja].start, walls[ja].end);
-              if (prA.dist <= snapTol) { pA = { x: prA.pt.x, y: prA.pt.y }; break; }
-            }
+        // Snap free endpoints flush to meeting walls or corners within snapTol (for both walls and dividers)
+        if (tA === 0) {
+          for (var ja = 0; ja < walls.length; ja++) {
+            if (walls[ja].id === w.id) continue;
+            var prA = projectPointOnSegment(pA, walls[ja].start, walls[ja].end);
+            if (prA.dist <= snapTol) { pA = { x: prA.pt.x, y: prA.pt.y }; break; }
           }
-          if (tB === 1) {
-            for (var jb = 0; jb < walls.length; jb++) {
-              if (walls[jb].id === w.id) continue;
-              var prB = projectPointOnSegment(pB, walls[jb].start, walls[jb].end);
-              if (prB.dist <= snapTol) { pB = { x: prB.pt.x, y: prB.pt.y }; break; }
-            }
+        }
+        if (tB === 1) {
+          for (var jb = 0; jb < walls.length; jb++) {
+            if (walls[jb].id === w.id) continue;
+            var prB = projectPointOnSegment(pB, walls[jb].start, walls[jb].end);
+            if (prB.dist <= snapTol) { pB = { x: prB.pt.x, y: prB.pt.y }; break; }
           }
         }
 
@@ -1041,7 +1122,8 @@
     }
 
     // Step 1: Subdivide walls at all cross-junctions and T-junctions
-    var segments = subdivideWalls(walls, 120);
+    var snapTol = 120;
+    var segments = subdivideWalls(walls, snapTol);
     if (segments.length < 3) {
       project.plan.rooms = [];
       return [];
@@ -1049,7 +1131,7 @@
 
     // Step 2: Build vertex adjacency map with vertex clustering
     var vertices = [];
-    var TOL = 80; // 80 mm snapping tolerance for vertices
+    var TOL = Math.max(120, snapTol); // snapping tolerance matching subdivideWalls
 
     function findOrAddVertex(pt) {
       for (var i = 0; i < vertices.length; i++) {
@@ -1057,7 +1139,7 @@
           return i;
         }
       }
-      vertices.push({ id: vertices.length, pt: Vec2.clone(pt), edges: [] });
+      vertices.push({ id: vertices.length, pt: Vec2.clone(pt), edges: [], removed: false });
       return vertices.length - 1;
     }
 
@@ -1076,6 +1158,7 @@
         to: vEnd,
         angle: Vec2.angle(vertices[vStart].pt, vertices[vEnd].pt),
         visited: false,
+        removed: false,
         twin: null
       };
       halfEdges.push(e0);
@@ -1088,6 +1171,7 @@
         to: vStart,
         angle: Vec2.angle(vertices[vEnd].pt, vertices[vStart].pt),
         visited: false,
+        removed: false,
         twin: e0
       };
       e0.twin = e1;
@@ -1097,8 +1181,38 @@
       vertices[vEnd].edges.push(e1);
     }
 
-    // Step 3: Sort outgoing edges around each vertex CCW (ascending order of angle)
+    // Step 2.5: Iterative dead-end pruning (peel off leaves/antennae/spurs)
+    // A vertex with degree < 2 cannot be part of any 2-connected cycle.
+    var changed = true;
+    var prunePass = 0;
+    while (changed && prunePass++ < 50) {
+      changed = false;
+      for (var vi = 0; vi < vertices.length; vi++) {
+        var vtx = vertices[vi];
+        if (vtx.removed) continue;
+        var activeEdges = [];
+        for (var ei = 0; ei < vtx.edges.length; ei++) {
+          if (!vtx.edges[ei].removed) activeEdges.push(vtx.edges[ei]);
+        }
+        if (activeEdges.length < 2) {
+          vtx.removed = true;
+          for (var ai = 0; ai < activeEdges.length; ai++) {
+            var aEdge = activeEdges[ai];
+            aEdge.removed = true;
+            if (aEdge.twin) aEdge.twin.removed = true;
+          }
+          changed = true;
+        }
+      }
+    }
+
+    // Step 3: Filter active edges and sort CCW around each vertex
     for (var v = 0; v < vertices.length; v++) {
+      if (vertices[v].removed) {
+        vertices[v].edges = [];
+        continue;
+      }
+      vertices[v].edges = vertices[v].edges.filter(function (e) { return !e.removed; });
       vertices[v].edges.sort(function (a, b) { return a.angle - b.angle; });
     }
 
@@ -1106,19 +1220,20 @@
     var cycles = [];
     for (var e = 0; e < halfEdges.length; e++) {
       var edge = halfEdges[e];
-      if (edge.visited) continue;
+      if (edge.visited || edge.removed) continue;
 
       var cycle = [];
       var curr = edge;
       var guard = 0;
       var closed = false;
 
-      while (!curr.visited && guard++ < 300) {
+      while (!curr.visited && !curr.removed && guard++ < 300) {
         curr.visited = true;
         cycle.push(curr);
 
         // At curr.to vertex, take the leftmost turn (the edge right before curr.twin in CCW order)
         var toVert = vertices[curr.to];
+        if (!toVert || toVert.removed || toVert.edges.length === 0) break;
         var twin = curr.twin;
         var twinIdx = toVert.edges.indexOf(twin);
         if (twinIdx === -1) break;
@@ -1135,27 +1250,31 @@
       }
 
       if (closed && cycle.length >= 3) {
-        var poly = cycle.map(function (ce) { return Vec2.clone(vertices[ce.from].pt); });
-        var area = Vec2.polygonArea(poly);
-        // Positive area loops represent interior faces in CCW orientation
-        if (area > 500000) { // minimum 0.5 m² to be a valid room
-          var wallIds = [];
-          for (var k = 0; k < cycle.length; k++) {
-            if (wallIds.indexOf(cycle[k].wallId) === -1) wallIds.push(cycle[k].wallId);
+        var rawPoly = cycle.map(function (ce) { return Vec2.clone(vertices[ce.from].pt); });
+        // Clean polygon: remove duplicates, acute turnarounds/spikes, and collinear points
+        var poly = Vec2.cleanPolygon(rawPoly);
+        if (poly && poly.length >= 3) {
+          var area = Vec2.polygonArea(poly);
+          // Positive area loops represent interior faces in CCW orientation
+          if (area > 500000) { // minimum 0.5 m² to be a valid room
+            var wallIds = [];
+            for (var k = 0; k < cycle.length; k++) {
+              if (wallIds.indexOf(cycle[k].wallId) === -1) wallIds.push(cycle[k].wallId);
+            }
+            var perim = 0;
+            for (var pIdx = 0; pIdx < poly.length; pIdx++) {
+              var pNext = poly[(pIdx + 1) % poly.length];
+              perim += Vec2.dist(poly[pIdx], pNext);
+            }
+            cycles.push({
+              polygon: poly,
+              areaSqMm: area,
+              areaSqM: area / SQM_FACTOR,
+              areaSqFt: area / SFT_FACTOR,
+              perimeter: perim,
+              wallIds: wallIds
+            });
           }
-          var perim = 0;
-          for (var pIdx = 0; pIdx < poly.length; pIdx++) {
-            var pNext = poly[(pIdx + 1) % poly.length];
-            perim += Vec2.dist(poly[pIdx], pNext);
-          }
-          cycles.push({
-            polygon: poly,
-            areaSqMm: area,
-            areaSqM: area / SQM_FACTOR,
-            areaSqFt: area / SFT_FACTOR,
-            perimeter: perim,
-            wallIds: wallIds
-          });
         }
       }
     }
@@ -4415,6 +4534,7 @@
     splitWall: splitWall,
     subdivideWalls: subdivideWalls,
     detectRooms: detectRooms,
+    cleanPolygon: Vec2.cleanPolygon,
     calculateItemCost: calculateItemCost,
     generateFullQuotation: generateFullQuotation,
     lockQuotationVersion: lockQuotationVersion,

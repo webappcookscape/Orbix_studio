@@ -211,6 +211,89 @@
     return tex;
   };
 
+  ArchitecturalRenderer.cleanPolygon = function (pts) {
+    if (!pts || !Array.isArray(pts) || pts.length < 3) return [];
+    var res = [];
+    for (var i = 0; i < pts.length; i++) {
+      if (pts[i] && typeof pts[i].x === 'number' && typeof pts[i].y === 'number') {
+        res.push({ x: Math.round(pts[i].x * 10) / 10, y: Math.round(pts[i].y * 10) / 10 });
+      }
+    }
+    if (res.length < 3) return [];
+
+    var globalChanged = true;
+    var passes = 0;
+    while (globalChanged && passes++ < 12 && res.length >= 3) {
+      globalChanged = false;
+
+      // 1. Remove consecutive duplicates (< 20mm)
+      var n1 = res.length;
+      var next1 = [];
+      for (var i = 0; i < n1; i++) {
+        var p = res[i];
+        var pNext = res[(i + 1) % n1];
+        if (Math.hypot(p.x - pNext.x, p.y - pNext.y) < 20) {
+          globalChanged = true;
+          continue;
+        }
+        next1.push(p);
+      }
+      res = next1;
+      if (res.length < 3) break;
+
+      // 2. Remove spikes (A -> B -> A or acute turnarounds where dot product < -0.98)
+      var n2 = res.length;
+      var spikeFound = false;
+      for (var i = 0; i < n2; i++) {
+        var prev = res[(i - 1 + n2) % n2];
+        var curr = res[i];
+        var next = res[(i + 1) % n2];
+        var d = Math.hypot(prev.x - next.x, prev.y - next.y);
+        if (d < 30) {
+          res.splice(i, 1);
+          globalChanged = true;
+          spikeFound = true;
+          break;
+        }
+        var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
+        var v2x = next.x - curr.x, v2y = next.y - curr.y;
+        var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+        if (l1 > 10 && l2 > 10) {
+          var dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
+          if (dot < -0.98) {
+            res.splice(i, 1);
+            globalChanged = true;
+            spikeFound = true;
+            break;
+          }
+        }
+      }
+      if (spikeFound) continue;
+
+      // 3. Remove collinear points along straight lines (sin(theta) < 0.02 and dot > 0)
+      var n3 = res.length;
+      var next3 = [];
+      for (var i = 0; i < n3; i++) {
+        var prev = res[(i - 1 + n3) % n3];
+        var curr = res[i];
+        var nextP = res[(i + 1) % n3];
+        var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
+        var v2x = nextP.x - curr.x, v2y = nextP.y - curr.y;
+        var cross = v1x * v2y - v1y * v2x;
+        var dot = v1x * v2x + v1y * v2y;
+        var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+        var sinTheta = Math.abs(cross) / (l1 * l2 + 1e-9);
+        if (sinTheta < 0.02 && dot > 0) {
+          globalChanged = true;
+          continue;
+        }
+        next3.push(curr);
+      }
+      res = next3;
+    }
+    return res.length >= 3 ? res : [];
+  };
+
   ArchitecturalRenderer.prototype.createFloorMaterial = function (type) {
     if (typeof THREE === 'undefined') return null;
     type = type || this.selectedFloorType || 'white_tile';
@@ -232,10 +315,21 @@
     this.materials.floorWood = (this.selectedFloorType === 'wooden' ? this.materials.floorTile : this.createFloorMaterial('wooden'));
     if (this.group) {
       var self = this;
+      var tileSize = (this.selectedFloorType === 'wooden') ? 1200 : (this.selectedFloorType === 'white_tile' ? 1600 : 1200);
       this.group.traverse(function (o) {
         if (o.userData && o.userData.isFloorMesh) {
-          var finish = o.userData.floorFinish || self.selectedFloorType;
-          o.material = self.createFloorMaterial(finish);
+          o.userData.floorFinish = self.selectedFloorType;
+          o.material = self.createFloorMaterial(self.selectedFloorType);
+          if (o.geometry && o.geometry.attributes && o.geometry.attributes.position && o.geometry.attributes.uv) {
+            var posAttr = o.geometry.attributes.position;
+            var uvAttr = o.geometry.attributes.uv;
+            for (var v = 0; v < posAttr.count; v++) {
+              var vx = posAttr.getX(v);
+              var vy = posAttr.getY(v);
+              uvAttr.setXY(v, vx / tileSize, -vy / tileSize);
+            }
+            uvAttr.needsUpdate = true;
+          }
         }
       });
     }
@@ -770,16 +864,75 @@
   ArchitecturalRenderer.prototype.buildRoomFloor = function (room) {
     if (!room || !room.polygon || room.polygon.length < 3) return null;
 
+    var cleaner = (typeof Core !== 'undefined' && Core.cleanPolygon) || ArchitecturalRenderer.cleanPolygon;
+    var poly = cleaner ? cleaner(room.polygon) : room.polygon;
+    if (!poly || poly.length < 3) return null;
+
+    // Check signed area in shape coordinates (x, -y).
+    // In Three.js, ShapeGeometry triangulates using Earcut.
+    // Shape coordinates (x, -y) rotated by -Math.PI/2 around X
+    // yield 3D (x, 0, y) with normal facing UP (+Y) when shape is CCW in shape space.
+    var shapeArea = 0;
+    var n = poly.length;
+    for (var i = 0; i < n; i++) {
+      var j = (i + 1) % n;
+      shapeArea += poly[i].x * (-poly[j].y) - poly[j].x * (-poly[i].y);
+    }
+    shapeArea = shapeArea / 2;
+    if (Math.abs(shapeArea) < 100000) return null; // Ignore degenerate/tiny loops (< 0.1 m²)
+
+    // If clockwise in shape space, reverse points so Earcut gets standard CCW
+    var orderedPts = poly.slice();
+    if (shapeArea < 0) {
+      orderedPts.reverse();
+    }
+
     var shape = new THREE.Shape();
-    // 2D y is along 3D Z. Shape coordinates (x, -y) rotated by -Math.PI/2 around X
-    // yield 3D (x, 0, y) with normal vector facing straight UP (+Y)
-    shape.moveTo(room.polygon[0].x, -room.polygon[0].y);
-    for (var i = 1; i < room.polygon.length; i++) {
-      shape.lineTo(room.polygon[i].x, -room.polygon[i].y);
+    shape.moveTo(orderedPts[0].x, -orderedPts[0].y);
+    for (var i = 1; i < orderedPts.length; i++) {
+      shape.lineTo(orderedPts[i].x, -orderedPts[i].y);
     }
     shape.closePath();
 
-    var geo = new THREE.ShapeGeometry(shape);
+    var geo = null;
+    try {
+      geo = new THREE.ShapeGeometry(shape);
+    } catch (e) {
+      console.warn('[Orbix 3D] ShapeGeometry failed, skipping degenerate floor:', e);
+      return null;
+    }
+
+    if (!geo || !geo.attributes || !geo.attributes.position || geo.attributes.position.count < 3) {
+      return null;
+    }
+
+    // Validate vertex bounding box against polygon bounding box:
+    // If any vertex was thrown thousands of millimeters outside the polygon due to triangulation failure, reject
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (var p = 0; p < orderedPts.length; p++) {
+      var pt = orderedPts[p];
+      if (pt.x < minX) minX = pt.x;
+      if (pt.x > maxX) maxX = pt.x;
+      if (pt.y < minY) minY = pt.y;
+      if (pt.y > maxY) maxY = pt.y;
+    }
+    var posAttr = geo.attributes.position;
+    var maxSpan = Math.max(maxX - minX, maxY - minY) * 2 + 1000; // mm safe envelope
+    var hasWildVertex = false;
+    for (var v = 0; v < posAttr.count; v++) {
+      var vx = posAttr.getX(v);
+      var vy = posAttr.getY(v);
+      if (!isFinite(vx) || !isFinite(vy) ||
+          vx < minX - maxSpan || vx > maxX + maxSpan ||
+          -vy < minY - maxSpan || -vy > maxY + maxSpan) {
+        hasWildVertex = true;
+        break;
+      }
+    }
+    if (hasWildVertex) {
+      console.warn('[Orbix 3D] Degenerate floor triangulation detected outside room bounds; skipping floor mesh');
+      return null;
+    }
 
     var finishType = this.selectedFloorType || 'white_tile';
     if (room.floorFinish) {
@@ -794,8 +947,7 @@
 
     // Physical millimeter UV mapping so tile sizes are authentic and scale-consistent
     var tileSize = (finishType === 'wooden') ? 1200 : (finishType === 'white_tile' ? 1600 : 1200);
-    if (geo && geo.attributes && geo.attributes.position && geo.attributes.uv) {
-      var posAttr = geo.attributes.position;
+    if (geo.attributes && geo.attributes.uv) {
       var uvAttr = geo.attributes.uv;
       for (var v = 0; v < posAttr.count; v++) {
         var vx = posAttr.getX(v);
@@ -803,6 +955,9 @@
         uvAttr.setXY(v, vx / tileSize, -vy / tileSize);
       }
       uvAttr.needsUpdate = true;
+    }
+    if (typeof geo.computeVertexNormals === 'function') {
+      geo.computeVertexNormals();
     }
 
     var mat = this.createFloorMaterial(finishType);
