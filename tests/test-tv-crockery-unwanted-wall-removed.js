@@ -244,6 +244,60 @@ assert.strictEqual(crDirectWallBoxes.length, 0, 'layoutCrockery must not generat
 assert.strictEqual(crDirectFloorBoxes.length, 0, 'layoutCrockery must not generate 16-meter floor boxes when inside architectural project');
 console.log('✓ TEST 5 PASSED: layoutCrockery safely suppressed synthetic walls and floors.\n');
 
+console.log('[TEST 6] Verifying Countertop customization for CROCKERY/TV BASE 1 DRAWER (Copy)');
+// 6a: Test white marble countertop
+u2.counter = 'white';
+const whiteLays = global.__cc.layouts(u2);
+const whiteBoxes = [];
+whiteLays.forEach(l => { whiteBoxes.push(...l.boxes); });
+const whiteCounter = whiteBoxes.find(b => b.mat && b.mat.startsWith('stone:'));
+assert(whiteCounter, 'Must generate a stone countertop box when counter="white"');
+assert.strictEqual(whiteCounter.mat, 'stone:marble', 'White counter must have stone:marble mat');
+console.log('✓ 6a: White Marble countertop verified (mat: stone:marble)');
+
+// 6b: Test black galaxy countertop
+u2.counter = 'galaxy';
+const galaxyLays = global.__cc.layouts(u2);
+const galaxyBoxes = [];
+galaxyLays.forEach(l => { galaxyBoxes.push(...l.boxes); });
+const galaxyCounter = galaxyBoxes.find(b => b.mat && b.mat.startsWith('stone:'));
+assert(galaxyCounter, 'Must generate a stone countertop box when counter="galaxy"');
+assert.strictEqual(galaxyCounter.mat, 'stone:galaxy', 'Galaxy counter must have stone:galaxy mat');
+console.log('✓ 6b: Black Galaxy countertop verified (mat: stone:galaxy)');
+
+// 6c: Test none (no countertop / carcass top)
+u2.counter = 'none';
+const noneLays = global.__cc.layouts(u2);
+const noneBoxes = [];
+noneLays.forEach(l => { noneBoxes.push(...l.boxes); });
+const noneCounter = noneBoxes.find(b => b.mat && b.mat.startsWith('stone:'));
+assert(!noneCounter, 'Must NOT generate a stone countertop box when counter="none"');
+console.log('✓ 6c: None (Carcass Top) verified: 0 stone countertop boxes generated');
+
+// 6d: Verify 2D Plan Inspector renders Countertop select for CROCKERY/TV BASE 1 DRAWER (Copy)
+let renderedHtml = '';
+global.document.getElementById = function(id) {
+  const el = mockEl(id);
+  if (id === 'planInspectorContent') {
+    return {
+      set innerHTML(val) { renderedHtml = val; },
+      get innerHTML() { return renderedHtml; },
+      appendChild: () => {},
+      querySelectorAll: () => []
+    };
+  }
+  return el;
+};
+global.OrbixUI.editor = { project: project };
+global.OrbixUI.renderInspector({ type: 'furniture', id: furn2.id });
+assert(renderedHtml.includes('inspFurnCounter'), 'Inspector must render Countertop select (inspFurnCounter) for CROCKERY/TV BASE 1 DRAWER (Copy)');
+assert(renderedHtml.includes('Black Galaxy Granite'), 'Inspector must contain Black Galaxy Granite option');
+assert(renderedHtml.includes('White Marble'), 'Inspector must contain White Marble option');
+assert(renderedHtml.includes('None (Carcass Top)'), 'Inspector must contain None (Carcass Top) option');
+console.log('✓ 6d: 2D Plan Inspector successfully renders Countertop options for CROCKERY/TV BASE 1 DRAWER (Copy)');
+
+console.log('✓ TEST 6 PASSED: Countertop fully customizable across 2D & 3D!\n');
+
 console.log('======================================================================');
-console.log('ALL TESTS PASSED: Unwanted walls for TV & Crockery units 100% resolved!');
+console.log('ALL TESTS PASSED: Unwanted walls removed & Countertop fully working!');
 console.log('======================================================================');

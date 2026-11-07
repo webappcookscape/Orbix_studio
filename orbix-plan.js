@@ -1183,10 +1183,45 @@
         return;
       }
       if (segDist > 60) {
+        var finalEndPt = endPt;
+        if (isDivider) {
+          // Verify if endPt connects to a boundary wall/divider within 150mm
+          var isEndOnWall = false;
+          var allWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
+          for (var wi = 0; wi < allWalls.length; wi++) {
+            var pr = Vec2.projectOnSegment(endPt, allWalls[wi].start, allWalls[wi].end);
+            if (pr && pr.dist <= 150 && pr.t >= -0.05 && pr.t <= 1.05) {
+              isEndOnWall = true;
+              finalEndPt = Vec2.clone(pr.pt);
+              break;
+            }
+          }
+          if (!isEndOnWall) {
+            // Auto-project in cursor direction to find opposite wall and cleanly bridge wall-to-wall!
+            var cdx = endPt.x - this.wallChainStart.x;
+            var cdy = endPt.y - this.wallChainStart.y;
+            var cDist = Math.hypot(cdx, cdy);
+            if (cDist > 60) {
+              var dir = { x: cdx / cDist, y: cdy / cDist };
+              var oppHit = this.findOppositeWallIntersection(this.wallChainStart, dir);
+              if (oppHit && oppHit.pt) {
+                finalEndPt = Vec2.clone(oppHit.pt);
+                isEndOnWall = true;
+              }
+            }
+          }
+          if (!isEndOnWall) {
+            if (typeof window.toast === 'function') {
+              window.toast('Room divider must connect to an opposite wall', 'warning');
+            }
+            return; // Reject placing dangling divider!
+          }
+        }
+
         var newW = isDivider
           ? Core.createRoomDivider({
               start: this.wallChainStart,
-              end: endPt
+              end: finalEndPt
             })
           : Core.createWall({
               start: this.wallChainStart,

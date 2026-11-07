@@ -154,36 +154,40 @@
         res = next1;
         if (res.length < 3) break;
 
-        // 2. Remove spikes (A -> B -> A or acute turnarounds where dot product < -0.98)
-        var n2 = res.length;
-        var spikeFound = false;
-        for (var i = 0; i < n2; i++) {
-          var prev = res[(i - 1 + n2) % n2];
-          var curr = res[i];
-          var next = res[(i + 1) % n2];
-          var d = Math.hypot(prev.x - next.x, prev.y - next.y);
-          if (d < 30) {
-            res.splice(i, 1);
-            globalChanged = true;
-            spikeFound = true;
-            break;
-          }
-          var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
-          var v2x = next.x - curr.x, v2y = next.y - curr.y;
-          var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
-          if (l1 > 10 && l2 > 10) {
-            var dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
-            if (dot < -0.98) {
+        // 2. Remove spikes (A -> B -> A or acute turnarounds where dot product < -0.998)
+        // Guard: NEVER remove vertices from a 3-vertex triangle (preserves all triangular & slender rooms)
+        if (res.length > 3) {
+          var n2 = res.length;
+          var spikeFound = false;
+          for (var i = 0; i < n2; i++) {
+            var prev = res[(i - 1 + n2) % n2];
+            var curr = res[i];
+            var next = res[(i + 1) % n2];
+            var d = Math.hypot(prev.x - next.x, prev.y - next.y);
+            if (d < 30) {
               res.splice(i, 1);
               globalChanged = true;
               spikeFound = true;
               break;
             }
+            var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
+            var v2x = next.x - curr.x, v2y = next.y - curr.y;
+            var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+            if (l1 > 10 && l2 > 10) {
+              var dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
+              if (dot < -0.998) {
+                res.splice(i, 1);
+                globalChanged = true;
+                spikeFound = true;
+                break;
+              }
+            }
           }
+          if (spikeFound) continue;
         }
-        if (spikeFound) continue;
 
         // 3. Remove collinear points along straight lines (sin(theta) < 0.02 and dot > 0)
+        // Guard: only prune collinear if remaining vertices >= 3
         var n3 = res.length;
         var next3 = [];
         for (var i = 0; i < n3; i++) {
@@ -196,13 +200,13 @@
           var dot = v1x * v2x + v1y * v2y;
           var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
           var sinTheta = Math.abs(cross) / (l1 * l2 + 1e-9);
-          if (sinTheta < 0.02 && dot > 0) {
+          if (sinTheta < 0.02 && dot > 0 && (n3 - (n3 - next3.length)) > 3) {
             globalChanged = true;
             continue;
           }
           next3.push(curr);
         }
-        res = next3;
+        if (next3.length >= 3) res = next3;
       }
       return res.length >= 3 ? res : [];
     }
@@ -1133,9 +1137,66 @@
   }
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Prune Dangling / Orphan Room Dividers (Unattached Stubs)
+     ───────────────────────────────────────────────────────────────────────────── */
+  function pruneOrphanDividers(project) {
+    if (!project || !project.plan || !project.plan.walls) return 0;
+    var snapTol = 150;
+    var totalPruned = 0;
+    var changed = true;
+    var passes = 0;
+
+    while (changed && passes++ < 10) {
+      changed = false;
+      var walls = project.plan.walls;
+      var toRemove = [];
+
+      for (var i = 0; i < walls.length; i++) {
+        var w = walls[i];
+        if (!w.isDivider) continue;
+
+        var startConnected = false;
+        var endConnected = false;
+
+        for (var j = 0; j < walls.length; j++) {
+          if (i === j) continue;
+          var other = walls[j];
+
+          if (!startConnected) {
+            var prS = projectPointOnSegment(w.start, other.start, other.end);
+            if (prS.dist <= snapTol && prS.t >= -0.05 && prS.t <= 1.05) startConnected = true;
+          }
+          if (!endConnected) {
+            var prE = projectPointOnSegment(w.end, other.start, other.end);
+            if (prE.dist <= snapTol && prE.t >= -0.05 && prE.t <= 1.05) endConnected = true;
+          }
+          if (startConnected && endConnected) break;
+        }
+
+        if (!startConnected || !endConnected) {
+          toRemove.push(w.id);
+        }
+      }
+
+      if (toRemove.length > 0) {
+        project.plan.walls = project.plan.walls.filter(function (w) {
+          return toRemove.indexOf(w.id) === -1;
+        });
+        totalPruned += toRemove.length;
+        changed = true;
+      }
+    }
+    return totalPruned;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Room Boundary Detection (Planar Face Traversal)
      ───────────────────────────────────────────────────────────────────────────── */
   function detectRooms(project) {
+    if (!project || !project.plan) return [];
+    // Step 0: Automatically prune unattached / dangling divider stubs
+    pruneOrphanDividers(project);
+
     var walls = project.plan.walls || [];
     if (walls.length < 3) {
       project.plan.rooms = [];
@@ -1274,6 +1335,9 @@
         var rawPoly = cycle.map(function (ce) { return Vec2.clone(vertices[ce.from].pt); });
         // Clean polygon: remove duplicates, acute turnarounds/spikes, and collinear points
         var poly = Vec2.cleanPolygon(rawPoly);
+        if (!poly || poly.length < 3) {
+          poly = rawPoly.filter(function (pt) { return pt && isFinite(pt.x) && isFinite(pt.y); });
+        }
         if (poly && poly.length >= 3) {
           var area = Vec2.polygonArea(poly);
           // Positive area loops represent interior faces in CCW orientation
@@ -1282,6 +1346,20 @@
             for (var k = 0; k < cycle.length; k++) {
               if (wallIds.indexOf(cycle[k].wallId) === -1) wallIds.push(cycle[k].wallId);
             }
+
+            // Guard: A valid architectural room must be bounded by at least one physical wall (not 100% dividers)
+            var hasPhysicalWall = false;
+            for (var wi = 0; wi < wallIds.length; wi++) {
+              for (var aw = 0; aw < walls.length; aw++) {
+                if (walls[aw].id === wallIds[wi] && !walls[aw].isDivider) {
+                  hasPhysicalWall = true;
+                  break;
+                }
+              }
+              if (hasPhysicalWall) break;
+            }
+            if (!hasPhysicalWall) continue; // Skip phantom loop between crossing dividers!
+
             var perim = 0;
             for (var pIdx = 0; pIdx < poly.length; pIdx++) {
               var pNext = poly[(pIdx + 1) % poly.length];
@@ -4557,6 +4635,7 @@
     splitWall: splitWall,
     subdivideWalls: subdivideWalls,
     detectRooms: detectRooms,
+    pruneOrphanDividers: pruneOrphanDividers,
     cleanPolygon: Vec2.cleanPolygon,
     calculateItemCost: calculateItemCost,
     generateFullQuotation: generateFullQuotation,

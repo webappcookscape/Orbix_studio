@@ -241,36 +241,40 @@
       res = next1;
       if (res.length < 3) break;
 
-      // 2. Remove spikes (A -> B -> A or acute turnarounds where dot product < -0.98)
-      var n2 = res.length;
-      var spikeFound = false;
-      for (var i = 0; i < n2; i++) {
-        var prev = res[(i - 1 + n2) % n2];
-        var curr = res[i];
-        var next = res[(i + 1) % n2];
-        var d = Math.hypot(prev.x - next.x, prev.y - next.y);
-        if (d < 30) {
-          res.splice(i, 1);
-          globalChanged = true;
-          spikeFound = true;
-          break;
-        }
-        var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
-        var v2x = next.x - curr.x, v2y = next.y - curr.y;
-        var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
-        if (l1 > 10 && l2 > 10) {
-          var dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
-          if (dot < -0.98) {
+      // 2. Remove spikes (A -> B -> A or acute turnarounds where dot product < -0.998)
+      // Guard: NEVER remove vertices from a 3-vertex triangle (preserves all triangular & slender rooms)
+      if (res.length > 3) {
+        var n2 = res.length;
+        var spikeFound = false;
+        for (var i = 0; i < n2; i++) {
+          var prev = res[(i - 1 + n2) % n2];
+          var curr = res[i];
+          var next = res[(i + 1) % n2];
+          var d = Math.hypot(prev.x - next.x, prev.y - next.y);
+          if (d < 30) {
             res.splice(i, 1);
             globalChanged = true;
             spikeFound = true;
             break;
           }
+          var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
+          var v2x = next.x - curr.x, v2y = next.y - curr.y;
+          var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+          if (l1 > 10 && l2 > 10) {
+            var dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
+            if (dot < -0.998) {
+              res.splice(i, 1);
+              globalChanged = true;
+              spikeFound = true;
+              break;
+            }
+          }
         }
+        if (spikeFound) continue;
       }
-      if (spikeFound) continue;
 
       // 3. Remove collinear points along straight lines (sin(theta) < 0.02 and dot > 0)
+      // Guard: only prune collinear if remaining vertices >= 3
       var n3 = res.length;
       var next3 = [];
       for (var i = 0; i < n3; i++) {
@@ -283,13 +287,13 @@
         var dot = v1x * v2x + v1y * v2y;
         var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
         var sinTheta = Math.abs(cross) / (l1 * l2 + 1e-9);
-        if (sinTheta < 0.02 && dot > 0) {
+        if (sinTheta < 0.02 && dot > 0 && (n3 - (n3 - next3.length)) > 3) {
           globalChanged = true;
           continue;
         }
         next3.push(curr);
       }
-      res = next3;
+      if (next3.length >= 3) res = next3;
     }
     return res.length >= 3 ? res : [];
   };
@@ -444,6 +448,8 @@
       plan = plan.plan;
     }
     plan = plan || {};
+    this.currentProject = project;
+    this.currentPlan = plan;
     var walls = plan.walls || [];
     var openings = plan.openings || [];
     var rooms = plan.rooms || [];
@@ -531,7 +537,7 @@
   ArchitecturalRenderer.prototype.buildDividerThreshold = function (wall) {
     if (!wall || !wall.start || !wall.end || typeof THREE === 'undefined') return null;
     var wLen = Core.wallLength(wall);
-    if (!wLen || wLen < 50) return null;
+    if (!wLen || wLen < 50 || wLen > 15000) return null; // Clamped to valid architectural span
     var angle = Core.wallAngle(wall);
     var start = wall.start;
 
@@ -566,6 +572,27 @@
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildWallWithCutouts = function (wall, ops) {
     if (wall && wall.isDivider) {
+      // Guard: Only render 3D threshold strip if divider is a valid room boundary or connected at both ends
+      var planObj = this.currentPlan || (this.currentProject && this.currentProject.plan);
+      var pRooms = (planObj && planObj.rooms) || [];
+      var isUsedInRoom = false;
+      for (var ri = 0; ri < pRooms.length; ri++) {
+        if (pRooms[ri].wallIds && pRooms[ri].wallIds.indexOf(wall.id) !== -1) {
+          isUsedInRoom = true;
+          break;
+        }
+      }
+      var allW = (planObj && planObj.walls) || [];
+      var startConn = false, endConn = false;
+      for (var wi = 0; wi < allW.length; wi++) {
+        var ow = allW[wi];
+        if (ow.id === wall.id) continue;
+        if (!startConn && Core.projectPointOnSegment(wall.start, ow.start, ow.end).dist <= 150) startConn = true;
+        if (!endConn && Core.projectPointOnSegment(wall.end, ow.start, ow.end).dist <= 150) endConn = true;
+      }
+      if (!isUsedInRoom && (!startConn || !endConn)) {
+        return null; // Suppress dangling / orphan divider in 3D!
+      }
       return this.buildDividerThreshold(wall);
     }
 
@@ -866,6 +893,11 @@
 
     var cleaner = (typeof Core !== 'undefined' && Core.cleanPolygon) || ArchitecturalRenderer.cleanPolygon;
     var poly = cleaner ? cleaner(room.polygon) : room.polygon;
+    if (!poly || poly.length < 3) {
+      if (room.polygon && room.polygon.length >= 3) {
+        poly = room.polygon.filter(function (pt) { return pt && isFinite(pt.x) && isFinite(pt.y); });
+      }
+    }
     if (!poly || poly.length < 3) return null;
     for (var p = 0; p < poly.length; p++) {
       if (!poly[p] || !isFinite(poly[p].x) || !isFinite(poly[p].y)) return null;
@@ -1460,7 +1492,7 @@
        name.indexOf('spice rack') !== -1 || name.indexOf('loft') !== -1 ||
        /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name));
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
-    var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1);
+    var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1 || cat === 'tv_unit' || (name && name.toLowerCase().indexOf('base') !== -1));
 
     // Carcass Materials (Resolves finish name, laminate code, or hex)
     var carcassRaw = (furn.unitConfig && furn.unitConfig.carcass) ||
@@ -1485,11 +1517,22 @@
     var handleMat = ArchitecturalRenderer.getHandleMaterial(handleFinish);
 
     // Countertop
-    var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'black' : 'none');
+    var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'black' : (isBase ? 'black' : 'none'));
     var counterHex = 0x1A1A1D;
     if (counterColorName === 'white' || counterColorName === 'marble') counterHex = 0xF5F5F7;
-    else if (counterColorName === 'quartz' || counterColorName === 'greyq') counterHex = 0x8E9297;
-    var counterMat = new THREE.MeshStandardMaterial({ color: counterHex, roughness: 0.2, metalness: 0.1 });
+    else if (counterColorName === 'quartz') counterHex = 0xF5F5F7;
+    else if (counterColorName === 'greyq') counterHex = 0x8E9297;
+    else if (counterColorName === 'beige') counterHex = 0xE6DFD5;
+    else if (counterColorName === 'green') counterHex = 0x2A3E30;
+    else if (counterColorName === 'galaxy') counterHex = 0x18181A;
+    else if (counterColorName !== 'none' && counterColorName !== 'black') {
+      counterHex = ArchitecturalRenderer.resolveFinishColor(counterColorName, 0x1A1A1D);
+    }
+    var counterMat = new THREE.MeshStandardMaterial({
+      color: counterHex,
+      roughness: (counterColorName === 'white' || counterColorName === 'marble' || counterColorName === 'quartz') ? 0.12 : 0.22,
+      metalness: 0.08
+    });
 
     var plinthH = isBase ? 75 : 0;
     var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;

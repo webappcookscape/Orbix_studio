@@ -318,6 +318,19 @@
             var floorType = btn.getAttribute('data-floor');
             floorBtns.forEach(function (b) { b.classList.remove('is-on'); });
             btn.classList.add('is-on');
+
+            var proj = self.project || (self.editor && self.editor.project);
+            if (proj && proj.plan && proj.plan.rooms) {
+              if (self.currentIsolatedRoomId) {
+                var rMatch = proj.plan.rooms.find(function (r) { return r.id === self.currentIsolatedRoomId; });
+                if (rMatch) rMatch.floorFinish = floorType;
+              } else {
+                proj.plan.rooms.forEach(function (r) {
+                  r.floorFinish = floorType;
+                });
+              }
+            }
+
             if (self.archRenderer && typeof self.archRenderer.setFloorMaterial === 'function') {
               self.archRenderer.setFloorMaterial(floorType);
             }
@@ -326,6 +339,9 @@
             }
             if (typeof self.render3DHome === 'function') {
               self.render3DHome(true);
+            }
+            if (typeof self.saveToLocalStorage === 'function') {
+              self.saveToLocalStorage();
             }
             if (typeof window.toast === 'function') {
               window.toast('Floor Finish: ' + (btn.title || floorType));
@@ -1135,20 +1151,20 @@
         var drawersCount = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? fn.unitConfig.drawers : 0;
         var doorStyle = (fn.unitConfig && fn.unitConfig.dstyle) || 'slab';
         var handleType = (fn.unitConfig && fn.unitConfig.handle) || 'gprof';
-        var counterType = (fn.unitConfig && fn.unitConfig.counter) || ((fn.category && fn.category.indexOf('kitchen') !== -1) ? 'black' : 'none');
-
-        var isBaseUnit = (fn.category && (fn.category === 'kitchen_base' || fn.category === 'crockery' || fn.category === 'vanity'));
-
-        if (!fn.shutterColors) fn.shutterColors = [];
-        if (!fn.shutterMaterials) fn.shutterMaterials = [];
-        if (!fn.shutterStates) fn.shutterStates = [];
-
         var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
           window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) :
           ((fn.category && fn.category.toLowerCase().indexOf('wall') !== -1) ||
            (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1) ||
            fn.category === 'kitchen_wall' ||
            /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(fn.name));
+
+        var isBaseUnit = !isWall && (fn.category === 'kitchen_base' || fn.category === 'crockery' || fn.category === 'vanity' || fn.category === 'tv_unit' || (fn.category && fn.category.indexOf('base') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('base') !== -1));
+        var counterType = (fn.unitConfig && fn.unitConfig.counter) || (isBaseUnit ? 'black' : 'none');
+        if (counterType === 'BLUE') counterType = 'black';
+
+        if (!fn.shutterColors) fn.shutterColors = [];
+        if (!fn.shutterMaterials) fn.shutterMaterials = [];
+        if (!fn.shutterStates) fn.shutterStates = [];
 
         var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
           fn.elevation :
@@ -1269,9 +1285,12 @@
             '</div>' +
             (isBaseUnit ? ('<div class="insp-row"><label>Countertop</label><select id="inspFurnCounter">' +
               '<option value="black"' + (counterType === "black" ? " selected" : "") + '>Black Galaxy Granite</option>' +
+              '<option value="galaxy"' + (counterType === "galaxy" ? " selected" : "") + '>Black Galaxy</option>' +
               '<option value="white"' + (counterType === "white" || counterType === "marble" ? " selected" : "") + '>White Marble</option>' +
               '<option value="quartz"' + (counterType === "quartz" ? " selected" : "") + '>Pure White Quartz</option>' +
               '<option value="greyq"' + (counterType === "greyq" ? " selected" : "") + '>Grey Quartz</option>' +
+              '<option value="beige"' + (counterType === "beige" ? " selected" : "") + '>Beige Marble</option>' +
+              '<option value="green"' + (counterType === "green" ? " selected" : "") + '>Green Granite</option>' +
               '<option value="none"' + (counterType === "none" ? " selected" : "") + '>None (Carcass Top)</option>' +
             '</select></div>') : "") +
           '</div>' +

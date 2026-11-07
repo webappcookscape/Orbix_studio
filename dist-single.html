@@ -7175,36 +7175,40 @@ body.role-employee #adminCreateEmpBox,
         res = next1;
         if (res.length < 3) break;
 
-        // 2. Remove spikes (A -> B -> A or acute turnarounds where dot product < -0.98)
-        var n2 = res.length;
-        var spikeFound = false;
-        for (var i = 0; i < n2; i++) {
-          var prev = res[(i - 1 + n2) % n2];
-          var curr = res[i];
-          var next = res[(i + 1) % n2];
-          var d = Math.hypot(prev.x - next.x, prev.y - next.y);
-          if (d < 30) {
-            res.splice(i, 1);
-            globalChanged = true;
-            spikeFound = true;
-            break;
-          }
-          var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
-          var v2x = next.x - curr.x, v2y = next.y - curr.y;
-          var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
-          if (l1 > 10 && l2 > 10) {
-            var dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
-            if (dot < -0.98) {
+        // 2. Remove spikes (A -> B -> A or acute turnarounds where dot product < -0.998)
+        // Guard: NEVER remove vertices from a 3-vertex triangle (preserves all triangular & slender rooms)
+        if (res.length > 3) {
+          var n2 = res.length;
+          var spikeFound = false;
+          for (var i = 0; i < n2; i++) {
+            var prev = res[(i - 1 + n2) % n2];
+            var curr = res[i];
+            var next = res[(i + 1) % n2];
+            var d = Math.hypot(prev.x - next.x, prev.y - next.y);
+            if (d < 30) {
               res.splice(i, 1);
               globalChanged = true;
               spikeFound = true;
               break;
             }
+            var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
+            var v2x = next.x - curr.x, v2y = next.y - curr.y;
+            var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+            if (l1 > 10 && l2 > 10) {
+              var dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
+              if (dot < -0.998) {
+                res.splice(i, 1);
+                globalChanged = true;
+                spikeFound = true;
+                break;
+              }
+            }
           }
+          if (spikeFound) continue;
         }
-        if (spikeFound) continue;
 
         // 3. Remove collinear points along straight lines (sin(theta) < 0.02 and dot > 0)
+        // Guard: only prune collinear if remaining vertices >= 3
         var n3 = res.length;
         var next3 = [];
         for (var i = 0; i < n3; i++) {
@@ -7217,13 +7221,13 @@ body.role-employee #adminCreateEmpBox,
           var dot = v1x * v2x + v1y * v2y;
           var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
           var sinTheta = Math.abs(cross) / (l1 * l2 + 1e-9);
-          if (sinTheta < 0.02 && dot > 0) {
+          if (sinTheta < 0.02 && dot > 0 && (n3 - (n3 - next3.length)) > 3) {
             globalChanged = true;
             continue;
           }
           next3.push(curr);
         }
-        res = next3;
+        if (next3.length >= 3) res = next3;
       }
       return res.length >= 3 ? res : [];
     }
@@ -8154,9 +8158,66 @@ body.role-employee #adminCreateEmpBox,
   }
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Prune Dangling / Orphan Room Dividers (Unattached Stubs)
+     ───────────────────────────────────────────────────────────────────────────── */
+  function pruneOrphanDividers(project) {
+    if (!project || !project.plan || !project.plan.walls) return 0;
+    var snapTol = 150;
+    var totalPruned = 0;
+    var changed = true;
+    var passes = 0;
+
+    while (changed && passes++ < 10) {
+      changed = false;
+      var walls = project.plan.walls;
+      var toRemove = [];
+
+      for (var i = 0; i < walls.length; i++) {
+        var w = walls[i];
+        if (!w.isDivider) continue;
+
+        var startConnected = false;
+        var endConnected = false;
+
+        for (var j = 0; j < walls.length; j++) {
+          if (i === j) continue;
+          var other = walls[j];
+
+          if (!startConnected) {
+            var prS = projectPointOnSegment(w.start, other.start, other.end);
+            if (prS.dist <= snapTol && prS.t >= -0.05 && prS.t <= 1.05) startConnected = true;
+          }
+          if (!endConnected) {
+            var prE = projectPointOnSegment(w.end, other.start, other.end);
+            if (prE.dist <= snapTol && prE.t >= -0.05 && prE.t <= 1.05) endConnected = true;
+          }
+          if (startConnected && endConnected) break;
+        }
+
+        if (!startConnected || !endConnected) {
+          toRemove.push(w.id);
+        }
+      }
+
+      if (toRemove.length > 0) {
+        project.plan.walls = project.plan.walls.filter(function (w) {
+          return toRemove.indexOf(w.id) === -1;
+        });
+        totalPruned += toRemove.length;
+        changed = true;
+      }
+    }
+    return totalPruned;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Room Boundary Detection (Planar Face Traversal)
      ───────────────────────────────────────────────────────────────────────────── */
   function detectRooms(project) {
+    if (!project || !project.plan) return [];
+    // Step 0: Automatically prune unattached / dangling divider stubs
+    pruneOrphanDividers(project);
+
     var walls = project.plan.walls || [];
     if (walls.length < 3) {
       project.plan.rooms = [];
@@ -8295,6 +8356,9 @@ body.role-employee #adminCreateEmpBox,
         var rawPoly = cycle.map(function (ce) { return Vec2.clone(vertices[ce.from].pt); });
         // Clean polygon: remove duplicates, acute turnarounds/spikes, and collinear points
         var poly = Vec2.cleanPolygon(rawPoly);
+        if (!poly || poly.length < 3) {
+          poly = rawPoly.filter(function (pt) { return pt && isFinite(pt.x) && isFinite(pt.y); });
+        }
         if (poly && poly.length >= 3) {
           var area = Vec2.polygonArea(poly);
           // Positive area loops represent interior faces in CCW orientation
@@ -8303,6 +8367,20 @@ body.role-employee #adminCreateEmpBox,
             for (var k = 0; k < cycle.length; k++) {
               if (wallIds.indexOf(cycle[k].wallId) === -1) wallIds.push(cycle[k].wallId);
             }
+
+            // Guard: A valid architectural room must be bounded by at least one physical wall (not 100% dividers)
+            var hasPhysicalWall = false;
+            for (var wi = 0; wi < wallIds.length; wi++) {
+              for (var aw = 0; aw < walls.length; aw++) {
+                if (walls[aw].id === wallIds[wi] && !walls[aw].isDivider) {
+                  hasPhysicalWall = true;
+                  break;
+                }
+              }
+              if (hasPhysicalWall) break;
+            }
+            if (!hasPhysicalWall) continue; // Skip phantom loop between crossing dividers!
+
             var perim = 0;
             for (var pIdx = 0; pIdx < poly.length; pIdx++) {
               var pNext = poly[(pIdx + 1) % poly.length];
@@ -11578,6 +11656,7 @@ body.role-employee #adminCreateEmpBox,
     splitWall: splitWall,
     subdivideWalls: subdivideWalls,
     detectRooms: detectRooms,
+    pruneOrphanDividers: pruneOrphanDividers,
     cleanPolygon: Vec2.cleanPolygon,
     calculateItemCost: calculateItemCost,
     generateFullQuotation: generateFullQuotation,
@@ -12786,10 +12865,45 @@ body.role-employee #adminCreateEmpBox,
         return;
       }
       if (segDist > 60) {
+        var finalEndPt = endPt;
+        if (isDivider) {
+          // Verify if endPt connects to a boundary wall/divider within 150mm
+          var isEndOnWall = false;
+          var allWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
+          for (var wi = 0; wi < allWalls.length; wi++) {
+            var pr = Vec2.projectOnSegment(endPt, allWalls[wi].start, allWalls[wi].end);
+            if (pr && pr.dist <= 150 && pr.t >= -0.05 && pr.t <= 1.05) {
+              isEndOnWall = true;
+              finalEndPt = Vec2.clone(pr.pt);
+              break;
+            }
+          }
+          if (!isEndOnWall) {
+            // Auto-project in cursor direction to find opposite wall and cleanly bridge wall-to-wall!
+            var cdx = endPt.x - this.wallChainStart.x;
+            var cdy = endPt.y - this.wallChainStart.y;
+            var cDist = Math.hypot(cdx, cdy);
+            if (cDist > 60) {
+              var dir = { x: cdx / cDist, y: cdy / cDist };
+              var oppHit = this.findOppositeWallIntersection(this.wallChainStart, dir);
+              if (oppHit && oppHit.pt) {
+                finalEndPt = Vec2.clone(oppHit.pt);
+                isEndOnWall = true;
+              }
+            }
+          }
+          if (!isEndOnWall) {
+            if (typeof window.toast === 'function') {
+              window.toast('Room divider must connect to an opposite wall', 'warning');
+            }
+            return; // Reject placing dangling divider!
+          }
+        }
+
         var newW = isDivider
           ? Core.createRoomDivider({
               start: this.wallChainStart,
-              end: endPt
+              end: finalEndPt
             })
           : Core.createWall({
               start: this.wallChainStart,
@@ -15842,36 +15956,40 @@ body.role-employee #adminCreateEmpBox,
       res = next1;
       if (res.length < 3) break;
 
-      // 2. Remove spikes (A -> B -> A or acute turnarounds where dot product < -0.98)
-      var n2 = res.length;
-      var spikeFound = false;
-      for (var i = 0; i < n2; i++) {
-        var prev = res[(i - 1 + n2) % n2];
-        var curr = res[i];
-        var next = res[(i + 1) % n2];
-        var d = Math.hypot(prev.x - next.x, prev.y - next.y);
-        if (d < 30) {
-          res.splice(i, 1);
-          globalChanged = true;
-          spikeFound = true;
-          break;
-        }
-        var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
-        var v2x = next.x - curr.x, v2y = next.y - curr.y;
-        var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
-        if (l1 > 10 && l2 > 10) {
-          var dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
-          if (dot < -0.98) {
+      // 2. Remove spikes (A -> B -> A or acute turnarounds where dot product < -0.998)
+      // Guard: NEVER remove vertices from a 3-vertex triangle (preserves all triangular & slender rooms)
+      if (res.length > 3) {
+        var n2 = res.length;
+        var spikeFound = false;
+        for (var i = 0; i < n2; i++) {
+          var prev = res[(i - 1 + n2) % n2];
+          var curr = res[i];
+          var next = res[(i + 1) % n2];
+          var d = Math.hypot(prev.x - next.x, prev.y - next.y);
+          if (d < 30) {
             res.splice(i, 1);
             globalChanged = true;
             spikeFound = true;
             break;
           }
+          var v1x = curr.x - prev.x, v1y = curr.y - prev.y;
+          var v2x = next.x - curr.x, v2y = next.y - curr.y;
+          var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+          if (l1 > 10 && l2 > 10) {
+            var dot = (v1x * v2x + v1y * v2y) / (l1 * l2);
+            if (dot < -0.998) {
+              res.splice(i, 1);
+              globalChanged = true;
+              spikeFound = true;
+              break;
+            }
+          }
         }
+        if (spikeFound) continue;
       }
-      if (spikeFound) continue;
 
       // 3. Remove collinear points along straight lines (sin(theta) < 0.02 and dot > 0)
+      // Guard: only prune collinear if remaining vertices >= 3
       var n3 = res.length;
       var next3 = [];
       for (var i = 0; i < n3; i++) {
@@ -15884,13 +16002,13 @@ body.role-employee #adminCreateEmpBox,
         var dot = v1x * v2x + v1y * v2y;
         var l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
         var sinTheta = Math.abs(cross) / (l1 * l2 + 1e-9);
-        if (sinTheta < 0.02 && dot > 0) {
+        if (sinTheta < 0.02 && dot > 0 && (n3 - (n3 - next3.length)) > 3) {
           globalChanged = true;
           continue;
         }
         next3.push(curr);
       }
-      res = next3;
+      if (next3.length >= 3) res = next3;
     }
     return res.length >= 3 ? res : [];
   };
@@ -16045,6 +16163,8 @@ body.role-employee #adminCreateEmpBox,
       plan = plan.plan;
     }
     plan = plan || {};
+    this.currentProject = project;
+    this.currentPlan = plan;
     var walls = plan.walls || [];
     var openings = plan.openings || [];
     var rooms = plan.rooms || [];
@@ -16132,7 +16252,7 @@ body.role-employee #adminCreateEmpBox,
   ArchitecturalRenderer.prototype.buildDividerThreshold = function (wall) {
     if (!wall || !wall.start || !wall.end || typeof THREE === 'undefined') return null;
     var wLen = Core.wallLength(wall);
-    if (!wLen || wLen < 50) return null;
+    if (!wLen || wLen < 50 || wLen > 15000) return null; // Clamped to valid architectural span
     var angle = Core.wallAngle(wall);
     var start = wall.start;
 
@@ -16167,6 +16287,27 @@ body.role-employee #adminCreateEmpBox,
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildWallWithCutouts = function (wall, ops) {
     if (wall && wall.isDivider) {
+      // Guard: Only render 3D threshold strip if divider is a valid room boundary or connected at both ends
+      var planObj = this.currentPlan || (this.currentProject && this.currentProject.plan);
+      var pRooms = (planObj && planObj.rooms) || [];
+      var isUsedInRoom = false;
+      for (var ri = 0; ri < pRooms.length; ri++) {
+        if (pRooms[ri].wallIds && pRooms[ri].wallIds.indexOf(wall.id) !== -1) {
+          isUsedInRoom = true;
+          break;
+        }
+      }
+      var allW = (planObj && planObj.walls) || [];
+      var startConn = false, endConn = false;
+      for (var wi = 0; wi < allW.length; wi++) {
+        var ow = allW[wi];
+        if (ow.id === wall.id) continue;
+        if (!startConn && Core.projectPointOnSegment(wall.start, ow.start, ow.end).dist <= 150) startConn = true;
+        if (!endConn && Core.projectPointOnSegment(wall.end, ow.start, ow.end).dist <= 150) endConn = true;
+      }
+      if (!isUsedInRoom && (!startConn || !endConn)) {
+        return null; // Suppress dangling / orphan divider in 3D!
+      }
       return this.buildDividerThreshold(wall);
     }
 
@@ -16467,6 +16608,11 @@ body.role-employee #adminCreateEmpBox,
 
     var cleaner = (typeof Core !== 'undefined' && Core.cleanPolygon) || ArchitecturalRenderer.cleanPolygon;
     var poly = cleaner ? cleaner(room.polygon) : room.polygon;
+    if (!poly || poly.length < 3) {
+      if (room.polygon && room.polygon.length >= 3) {
+        poly = room.polygon.filter(function (pt) { return pt && isFinite(pt.x) && isFinite(pt.y); });
+      }
+    }
     if (!poly || poly.length < 3) return null;
     for (var p = 0; p < poly.length; p++) {
       if (!poly[p] || !isFinite(poly[p].x) || !isFinite(poly[p].y)) return null;
@@ -17061,7 +17207,7 @@ body.role-employee #adminCreateEmpBox,
        name.indexOf('spice rack') !== -1 || name.indexOf('loft') !== -1 ||
        /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name));
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
-    var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1);
+    var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1 || cat === 'tv_unit' || (name && name.toLowerCase().indexOf('base') !== -1));
 
     // Carcass Materials (Resolves finish name, laminate code, or hex)
     var carcassRaw = (furn.unitConfig && furn.unitConfig.carcass) ||
@@ -17086,11 +17232,22 @@ body.role-employee #adminCreateEmpBox,
     var handleMat = ArchitecturalRenderer.getHandleMaterial(handleFinish);
 
     // Countertop
-    var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'black' : 'none');
+    var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'black' : (isBase ? 'black' : 'none'));
     var counterHex = 0x1A1A1D;
     if (counterColorName === 'white' || counterColorName === 'marble') counterHex = 0xF5F5F7;
-    else if (counterColorName === 'quartz' || counterColorName === 'greyq') counterHex = 0x8E9297;
-    var counterMat = new THREE.MeshStandardMaterial({ color: counterHex, roughness: 0.2, metalness: 0.1 });
+    else if (counterColorName === 'quartz') counterHex = 0xF5F5F7;
+    else if (counterColorName === 'greyq') counterHex = 0x8E9297;
+    else if (counterColorName === 'beige') counterHex = 0xE6DFD5;
+    else if (counterColorName === 'green') counterHex = 0x2A3E30;
+    else if (counterColorName === 'galaxy') counterHex = 0x18181A;
+    else if (counterColorName !== 'none' && counterColorName !== 'black') {
+      counterHex = ArchitecturalRenderer.resolveFinishColor(counterColorName, 0x1A1A1D);
+    }
+    var counterMat = new THREE.MeshStandardMaterial({
+      color: counterHex,
+      roughness: (counterColorName === 'white' || counterColorName === 'marble' || counterColorName === 'quartz') ? 0.12 : 0.22,
+      metalness: 0.08
+    });
 
     var plinthH = isBase ? 75 : 0;
     var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
@@ -18212,6 +18369,19 @@ body.role-employee #adminCreateEmpBox,
             var floorType = btn.getAttribute('data-floor');
             floorBtns.forEach(function (b) { b.classList.remove('is-on'); });
             btn.classList.add('is-on');
+
+            var proj = self.project || (self.editor && self.editor.project);
+            if (proj && proj.plan && proj.plan.rooms) {
+              if (self.currentIsolatedRoomId) {
+                var rMatch = proj.plan.rooms.find(function (r) { return r.id === self.currentIsolatedRoomId; });
+                if (rMatch) rMatch.floorFinish = floorType;
+              } else {
+                proj.plan.rooms.forEach(function (r) {
+                  r.floorFinish = floorType;
+                });
+              }
+            }
+
             if (self.archRenderer && typeof self.archRenderer.setFloorMaterial === 'function') {
               self.archRenderer.setFloorMaterial(floorType);
             }
@@ -18220,6 +18390,9 @@ body.role-employee #adminCreateEmpBox,
             }
             if (typeof self.render3DHome === 'function') {
               self.render3DHome(true);
+            }
+            if (typeof self.saveToLocalStorage === 'function') {
+              self.saveToLocalStorage();
             }
             if (typeof window.toast === 'function') {
               window.toast('Floor Finish: ' + (btn.title || floorType));
@@ -19029,20 +19202,20 @@ body.role-employee #adminCreateEmpBox,
         var drawersCount = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? fn.unitConfig.drawers : 0;
         var doorStyle = (fn.unitConfig && fn.unitConfig.dstyle) || 'slab';
         var handleType = (fn.unitConfig && fn.unitConfig.handle) || 'gprof';
-        var counterType = (fn.unitConfig && fn.unitConfig.counter) || ((fn.category && fn.category.indexOf('kitchen') !== -1) ? 'black' : 'none');
-
-        var isBaseUnit = (fn.category && (fn.category === 'kitchen_base' || fn.category === 'crockery' || fn.category === 'vanity'));
-
-        if (!fn.shutterColors) fn.shutterColors = [];
-        if (!fn.shutterMaterials) fn.shutterMaterials = [];
-        if (!fn.shutterStates) fn.shutterStates = [];
-
         var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
           window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) :
           ((fn.category && fn.category.toLowerCase().indexOf('wall') !== -1) ||
            (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1) ||
            fn.category === 'kitchen_wall' ||
            /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(fn.name));
+
+        var isBaseUnit = !isWall && (fn.category === 'kitchen_base' || fn.category === 'crockery' || fn.category === 'vanity' || fn.category === 'tv_unit' || (fn.category && fn.category.indexOf('base') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('base') !== -1));
+        var counterType = (fn.unitConfig && fn.unitConfig.counter) || (isBaseUnit ? 'black' : 'none');
+        if (counterType === 'BLUE') counterType = 'black';
+
+        if (!fn.shutterColors) fn.shutterColors = [];
+        if (!fn.shutterMaterials) fn.shutterMaterials = [];
+        if (!fn.shutterStates) fn.shutterStates = [];
 
         var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
           fn.elevation :
@@ -19163,9 +19336,12 @@ body.role-employee #adminCreateEmpBox,
             '</div>' +
             (isBaseUnit ? ('<div class="insp-row"><label>Countertop</label><select id="inspFurnCounter">' +
               '<option value="black"' + (counterType === "black" ? " selected" : "") + '>Black Galaxy Granite</option>' +
+              '<option value="galaxy"' + (counterType === "galaxy" ? " selected" : "") + '>Black Galaxy</option>' +
               '<option value="white"' + (counterType === "white" || counterType === "marble" ? " selected" : "") + '>White Marble</option>' +
               '<option value="quartz"' + (counterType === "quartz" ? " selected" : "") + '>Pure White Quartz</option>' +
               '<option value="greyq"' + (counterType === "greyq" ? " selected" : "") + '>Grey Quartz</option>' +
+              '<option value="beige"' + (counterType === "beige" ? " selected" : "") + '>Beige Marble</option>' +
+              '<option value="green"' + (counterType === "green" ? " selected" : "") + '>Green Granite</option>' +
               '<option value="none"' + (counterType === "none" ? " selected" : "") + '>None (Carcass Top)</option>' +
             '</select></div>') : "") +
           '</div>' +
@@ -23809,9 +23985,12 @@ body.role-employee #adminCreateEmpBox,
         if (dr.cx >= fr.covers[0] && dr.cx <= fr.covers[1] && (!fr.yr || (dr.cy >= fr.yr[0] && dr.cy <= fr.yr[1]))) { dr.behind = fr; break; }
       }
     });
-    if (ct === "kbase") {
-      B.push({ x: 0, y: 0, z: u.D / 2 - 70, w: u.W - 2 * T, h: elev, d: 18, mat: "kick" });
+    var hasCounter = (u.counter && u.counter !== "none") || (ct === "kbase" && u.counter !== "none");
+    if (hasCounter) {
       B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 38, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
+    }
+    if (ct === "kbase" && elev > 0) {
+      B.push({ x: 0, y: 0, z: u.D / 2 - 70, w: u.W - 2 * T, h: elev, d: 18, mat: "kick" });
     }
     if (ct === "dresser") {
       B.push({ x: 0, y: u.H + 60, z: -u.D / 2 + T + 18, w: u.W * 0.5 + 50, h: 680, d: 14, col: CC, role: "back" });
@@ -23856,7 +24035,15 @@ body.role-employee #adminCreateEmpBox,
   var KLAYOUTS = [{ id: "straight", label: "Straight" }, { id: "lshape", label: "L-shape" }, { id: "ushape", label: "U-shape" }, { id: "parallel", label: "Parallel" }, { id: "island", label: "Island" }, { id: "lisland", label: "L + island" }, { id: "peninsula", label: "Peninsula" }, { id: "gshape", label: "G-shape" }];
   /* counters: id → stone kind rendered by stoneMat */
   var COUNTERS = [{ id: "black", label: "Granite black", kind: "granite" }, { id: "galaxy", label: "Black galaxy", kind: "galaxy" }, { id: "green", label: "Granite green", kind: "green" }, { id: "white", label: "Marble white", kind: "marble" }, { id: "beige", label: "Marble beige", kind: "beige" }, { id: "quartz", label: "Quartz white", kind: "quartz" }, { id: "greyq", label: "Quartz grey", kind: "greyq" }];
-  function counterKind(u) { for (var i = 0; i < COUNTERS.length; i++) if (COUNTERS[i].id === (u.counter || "black")) return COUNTERS[i].kind; return "granite"; }
+  function counterKind(u) {
+    var cVal = (u && u.counter) || "black";
+    for (var i = 0; i < COUNTERS.length; i++) {
+      if (COUNTERS[i].id === cVal || COUNTERS[i].kind === cVal) return COUNTERS[i].kind;
+    }
+    if (cVal === "marble") return "marble";
+    if (cVal === "granite") return "granite";
+    return "granite";
+  }
   var SPLASHES = [{ id: "subway", label: "Subway tile" }, { id: "largeformat", label: "Large tile" }, { id: "chevron", label: "Chevron" }, { id: "hex", label: "Hexagon" }, { id: "slab", label: "Stone slab" }, { id: "glass", label: "Lacquered glass" }, { id: "terrazzo", label: "Terrazzo" }];
   function splashMatId(u) {
     var k = u.kSplash || "subway";
@@ -27437,6 +27624,38 @@ body.role-employee #adminCreateEmpBox,
         var rG = el("row", g4); rG.style.marginTop = "8px";
         fld(rG, "Loft ht", u.loftH, function (v) { u.loftH = Math.max(150, num(v, u.loftH)); softAll(true); });
         fld(rG, "Loft shutters", u.loftShutters, function (v) { u.loftShutters = Math.max(1, num(v, u.loftShutters) | 0); softAll(true); });
+      }
+
+      var isBaseU = (u.ctype === "kbase" || (u.counter && u.counter !== "none") || (u.label && /base/i.test(u.label)) || (u.name && /base/i.test(u.name)) || (u.H <= 900 && (!u.elev || u.elev < 1000) && u.ctype !== "kwall"));
+      if (isBaseU) {
+        var gCt = grp(r, "Countertop");
+        var cOpts = [
+          { l: "None", v: "none" },
+          { l: "Granite black", v: "black" },
+          { l: "Black galaxy", v: "galaxy" },
+          { l: "Marble white", v: "white" },
+          { l: "Quartz white", v: "quartz" },
+          { l: "Quartz grey", v: "greyq" },
+          { l: "Marble beige", v: "beige" },
+          { l: "Granite green", v: "green" }
+        ];
+        var curCt = u.counter || "black";
+        if (!cOpts.some(function (o) { return o.v === curCt; })) curCt = "black";
+        seg(gCt, cOpts, curCt, function (v) {
+          u.counter = v;
+          if (u._furnId && window.OrbixUI) {
+            var plan = (typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI.project && window.OrbixUI.project.plan);
+            if (plan && plan.furniture) {
+              var match = plan.furniture.find(function (f) { return f.id === u._furnId; });
+              if (match) {
+                match.unitConfig = match.unitConfig || {};
+                match.unitConfig.counter = v;
+              }
+            }
+          }
+          renderRail();
+          renderAll();
+        });
       }
 
     }

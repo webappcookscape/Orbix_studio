@@ -736,9 +736,12 @@
         if (dr.cx >= fr.covers[0] && dr.cx <= fr.covers[1] && (!fr.yr || (dr.cy >= fr.yr[0] && dr.cy <= fr.yr[1]))) { dr.behind = fr; break; }
       }
     });
-    if (ct === "kbase") {
-      B.push({ x: 0, y: 0, z: u.D / 2 - 70, w: u.W - 2 * T, h: elev, d: 18, mat: "kick" });
+    var hasCounter = (u.counter && u.counter !== "none") || (ct === "kbase" && u.counter !== "none");
+    if (hasCounter) {
       B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 38, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
+    }
+    if (ct === "kbase" && elev > 0) {
+      B.push({ x: 0, y: 0, z: u.D / 2 - 70, w: u.W - 2 * T, h: elev, d: 18, mat: "kick" });
     }
     if (ct === "dresser") {
       B.push({ x: 0, y: u.H + 60, z: -u.D / 2 + T + 18, w: u.W * 0.5 + 50, h: 680, d: 14, col: CC, role: "back" });
@@ -783,7 +786,15 @@
   var KLAYOUTS = [{ id: "straight", label: "Straight" }, { id: "lshape", label: "L-shape" }, { id: "ushape", label: "U-shape" }, { id: "parallel", label: "Parallel" }, { id: "island", label: "Island" }, { id: "lisland", label: "L + island" }, { id: "peninsula", label: "Peninsula" }, { id: "gshape", label: "G-shape" }];
   /* counters: id → stone kind rendered by stoneMat */
   var COUNTERS = [{ id: "black", label: "Granite black", kind: "granite" }, { id: "galaxy", label: "Black galaxy", kind: "galaxy" }, { id: "green", label: "Granite green", kind: "green" }, { id: "white", label: "Marble white", kind: "marble" }, { id: "beige", label: "Marble beige", kind: "beige" }, { id: "quartz", label: "Quartz white", kind: "quartz" }, { id: "greyq", label: "Quartz grey", kind: "greyq" }];
-  function counterKind(u) { for (var i = 0; i < COUNTERS.length; i++) if (COUNTERS[i].id === (u.counter || "black")) return COUNTERS[i].kind; return "granite"; }
+  function counterKind(u) {
+    var cVal = (u && u.counter) || "black";
+    for (var i = 0; i < COUNTERS.length; i++) {
+      if (COUNTERS[i].id === cVal || COUNTERS[i].kind === cVal) return COUNTERS[i].kind;
+    }
+    if (cVal === "marble") return "marble";
+    if (cVal === "granite") return "granite";
+    return "granite";
+  }
   var SPLASHES = [{ id: "subway", label: "Subway tile" }, { id: "largeformat", label: "Large tile" }, { id: "chevron", label: "Chevron" }, { id: "hex", label: "Hexagon" }, { id: "slab", label: "Stone slab" }, { id: "glass", label: "Lacquered glass" }, { id: "terrazzo", label: "Terrazzo" }];
   function splashMatId(u) {
     var k = u.kSplash || "subway";
@@ -4364,6 +4375,38 @@
         var rG = el("row", g4); rG.style.marginTop = "8px";
         fld(rG, "Loft ht", u.loftH, function (v) { u.loftH = Math.max(150, num(v, u.loftH)); softAll(true); });
         fld(rG, "Loft shutters", u.loftShutters, function (v) { u.loftShutters = Math.max(1, num(v, u.loftShutters) | 0); softAll(true); });
+      }
+
+      var isBaseU = (u.ctype === "kbase" || (u.counter && u.counter !== "none") || (u.label && /base/i.test(u.label)) || (u.name && /base/i.test(u.name)) || (u.H <= 900 && (!u.elev || u.elev < 1000) && u.ctype !== "kwall"));
+      if (isBaseU) {
+        var gCt = grp(r, "Countertop");
+        var cOpts = [
+          { l: "None", v: "none" },
+          { l: "Granite black", v: "black" },
+          { l: "Black galaxy", v: "galaxy" },
+          { l: "Marble white", v: "white" },
+          { l: "Quartz white", v: "quartz" },
+          { l: "Quartz grey", v: "greyq" },
+          { l: "Marble beige", v: "beige" },
+          { l: "Granite green", v: "green" }
+        ];
+        var curCt = u.counter || "black";
+        if (!cOpts.some(function (o) { return o.v === curCt; })) curCt = "black";
+        seg(gCt, cOpts, curCt, function (v) {
+          u.counter = v;
+          if (u._furnId && window.OrbixUI) {
+            var plan = (typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI.project && window.OrbixUI.project.plan);
+            if (plan && plan.furniture) {
+              var match = plan.furniture.find(function (f) { return f.id === u._furnId; });
+              if (match) {
+                match.unitConfig = match.unitConfig || {};
+                match.unitConfig.counter = v;
+              }
+            }
+          }
+          renderRail();
+          renderAll();
+        });
       }
 
     }
