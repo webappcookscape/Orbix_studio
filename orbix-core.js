@@ -996,6 +996,25 @@
           x: w.start.x + tB * (w.end.x - w.start.x),
           y: w.start.y + tB * (w.end.y - w.start.y)
         };
+
+        // For room dividers, snap free endpoints flush to meeting walls within snapTol
+        if (w.isDivider) {
+          if (tA === 0) {
+            for (var ja = 0; ja < walls.length; ja++) {
+              if (walls[ja].id === w.id) continue;
+              var prA = projectPointOnSegment(pA, walls[ja].start, walls[ja].end);
+              if (prA.dist <= snapTol) { pA = { x: prA.pt.x, y: prA.pt.y }; break; }
+            }
+          }
+          if (tB === 1) {
+            for (var jb = 0; jb < walls.length; jb++) {
+              if (walls[jb].id === w.id) continue;
+              var prB = projectPointOnSegment(pB, walls[jb].start, walls[jb].end);
+              if (prB.dist <= snapTol) { pB = { x: prB.pt.x, y: prB.pt.y }; break; }
+            }
+          }
+        }
+
         if (Math.hypot(pB.x - pA.x, pB.y - pA.y) > 40) {
           subSegments.push({
             wallId: w.id,
@@ -1022,7 +1041,7 @@
     }
 
     // Step 1: Subdivide walls at all cross-junctions and T-junctions
-    var segments = subdivideWalls(walls, 80);
+    var segments = subdivideWalls(walls, 120);
     if (segments.length < 3) {
       project.plan.rooms = [];
       return [];
@@ -1030,7 +1049,7 @@
 
     // Step 2: Build vertex adjacency map with vertex clustering
     var vertices = [];
-    var TOL = 60; // 60 mm snapping tolerance for vertices
+    var TOL = 80; // 80 mm snapping tolerance for vertices
 
     function findOrAddVertex(pt) {
       for (var i = 0; i < vertices.length; i++) {

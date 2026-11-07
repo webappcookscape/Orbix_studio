@@ -3,7 +3,7 @@
    Offline CAD engine, cache-first app shell & resilient background sync
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'orbix-studio-v12';
+const CACHE_NAME = 'orbix-studio-v13';
 const STATIC_ASSETS = [
   './',
   './index.html',

@@ -185,11 +185,122 @@
     };
   };
 
+  // Helper: Cast ray from origin along dir vector to find first intersecting opposite wall
+  PlanEditor.prototype.findOppositeWallIntersection = function (origin, dir, ignoreWallId) {
+    var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    var best = null;
+    for (var i = 0; i < walls.length; i++) {
+      var w = walls[i];
+      if (w.id === ignoreWallId) continue;
+      var p1 = w.start, p2 = w.end;
+      // Skip walls touching origin
+      if (Vec2.dist(origin, p1) < 50 || Vec2.dist(origin, p2) < 50) continue;
+      var pr0 = Vec2.projectOnSegment(origin, p1, p2);
+      if (pr0.dist < 40 && pr0.t >= 0 && pr0.t <= 1) continue;
+
+      var dxw = p2.x - p1.x, dyw = p2.y - p1.y;
+      var denom = dir.x * dyw - dir.y * dxw;
+      if (Math.abs(denom) < 1e-6) continue;
+      var t = ((p1.x - origin.x) * dyw - (p1.y - origin.y) * dxw) / denom;
+      var u = ((p1.x - origin.x) * dir.y - (p1.y - origin.y) * dir.x) / denom;
+      if (t > 80 && u >= -0.01 && u <= 1.01) {
+        var clampedU = Math.max(0, Math.min(1, u));
+        var hitPt = { x: p1.x + clampedU * dxw, y: p1.y + clampedU * dyw };
+        if (!best || t < best.t) {
+          best = { t: t, u: clampedU, pt: hitPt, wall: w };
+        }
+      }
+    }
+    return best;
+  };
+
   // Snapping logic: Room Close Loop -> Joint Snap -> On-Wall Snap -> Ortho/Angle Guides -> Grid Snap
   PlanEditor.prototype.snapPoint = function (worldPt, ignoreWallId) {
     var snapDistMm = 200; // snapping radius in mm
     var snapped = Vec2.clone(worldPt);
     var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
+
+    // 0a. Room Divider Special Auto-Snapping & Wall-to-Wall Locking
+    if (this.activeTool === 'divider') {
+      if (this.wallChainStart) {
+        var S = this.wallChainStart;
+        var cdx = worldPt.x - S.x, cdy = worldPt.y - S.y;
+        var curDist = Math.hypot(cdx, cdy);
+        var curAngle = Math.atan2(cdy, cdx);
+
+        // Check nearest orthogonal direction (0, 90, 180, 270)
+        var orthoStep = Math.PI / 2;
+        var nearestOrthoAng = Math.round(curAngle / orthoStep) * orthoStep;
+        var diffOrtho = Math.abs(Math.atan2(Math.sin(curAngle - nearestOrthoAng), Math.cos(curAngle - nearestOrthoAng)));
+
+        // Find starting wall if S is on one
+        var startWall = null;
+        for (var swi = 0; swi < walls.length; swi++) {
+          var prSw = Vec2.projectOnSegment(S, walls[swi].start, walls[swi].end);
+          if (prSw.dist < 60 && prSw.t >= -0.05 && prSw.t <= 1.05) {
+            startWall = walls[swi];
+            break;
+          }
+        }
+
+        var candidateAngles = [nearestOrthoAng];
+        if (startWall) {
+          var wNorm = Core.wallNormal(startWall);
+          var perpAng1 = Math.atan2(wNorm.y, wNorm.x);
+          var perpAng2 = Math.atan2(-wNorm.y, -wNorm.x);
+          candidateAngles.push(perpAng1, perpAng2);
+        }
+        if (diffOrtho > 0.18) {
+          candidateAngles.push(curAngle);
+        }
+
+        var bestHit = null;
+        var minAngDiff = Infinity;
+        for (var ca = 0; ca < candidateAngles.length; ca++) {
+          var a = candidateAngles[ca];
+          var dirV = { x: Math.cos(a), y: Math.sin(a) };
+          var hit = this.findOppositeWallIntersection(S, dirV, startWall ? startWall.id : null);
+          if (hit) {
+            var aDiff = Math.abs(Math.atan2(Math.sin(curAngle - a), Math.cos(curAngle - a)));
+            var distToHit = Math.hypot(worldPt.x - hit.pt.x, worldPt.y - hit.pt.y);
+            if (distToHit < 480 || (aDiff < 0.38 && curDist > 120)) {
+              if (aDiff < minAngDiff) {
+                minAngDiff = aDiff;
+                bestHit = { hit: hit, angle: a };
+              }
+            }
+          }
+        }
+
+        if (bestHit) {
+          var h = bestHit.hit;
+          var degSnap = Math.round(((bestHit.angle * 180 / Math.PI) % 360 + 360) % 360);
+          return {
+            pt: Vec2.clone(h.pt),
+            type: 'divider_wall_snap',
+            target: h.wall,
+            label: '✂ Snap Wall to Wall (' + Math.round(h.t) + ' mm)',
+            angleDeg: degSnap,
+            distMm: Math.round(h.t),
+            isOppositeWall: true
+          };
+        }
+      } else {
+        // Step 1: Picking start point of divider -> snap onto nearest wall face within 280mm
+        for (var w0 = 0; w0 < walls.length; w0++) {
+          var wCandidate = walls[w0];
+          var pr0 = Vec2.projectOnSegment(worldPt, wCandidate.start, wCandidate.end);
+          if (pr0 && pr0.dist < 280 && pr0.t >= 0 && pr0.t <= 1) {
+            return {
+              pt: Vec2.clone(pr0.pt),
+              type: 'divider_start_snap',
+              target: wCandidate,
+              label: '✂ Start on Wall'
+            };
+          }
+        }
+      }
+    }
 
     // 0. Close room loop priority: snapping back to the starting point of the current wall chain
     if (this.wallChainStart && this.wallChainFirstPoint) {
@@ -424,15 +535,15 @@
     for (var s = 0; s < this.selected.length; s++) {
       var item = this.selected[s];
       if (item.type === 'wall') {
-        this.project.plan.walls = walls.filter(function (w) { return w.id !== item.id; });
+        this.project.plan.walls = this.project.plan.walls.filter(function (w) { return w.id !== item.id; });
         // Also remove openings on this wall
-        this.project.plan.openings = openings.filter(function (op) { return op.wallId !== item.id; });
+        this.project.plan.openings = this.project.plan.openings.filter(function (op) { return op.wallId !== item.id; });
         deletedSomething = true;
       } else if (item.type === 'opening') {
-        this.project.plan.openings = openings.filter(function (op) { return op.id !== item.id; });
+        this.project.plan.openings = this.project.plan.openings.filter(function (op) { return op.id !== item.id; });
         deletedSomething = true;
       } else if (item.type === 'furniture') {
-        this.project.plan.furniture = furniture.filter(function (f) { return f.id !== item.id; });
+        this.project.plan.furniture = this.project.plan.furniture.filter(function (f) { return f.id !== item.id; });
         deletedSomething = true;
       } else if (item.type === 'dimension') {
         this.project.plan.dimensions = (this.project.plan.dimensions || []).filter(function (d) { return d.id !== item.id; });
@@ -442,6 +553,7 @@
 
     if (deletedSomething) {
       this.selected = [];
+      this.onSelectionChange(this.selected);
       this.pushHistory('Delete');
       this.render();
       if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.render3DHome) {
@@ -486,8 +598,15 @@
     });
 
     this.canvas.addEventListener('contextmenu', function (e) {
-      if (self.wallChainStart) {
+      if (self.wallChainStart || self.activeTool === 'divider') {
         e.preventDefault();
+        var wasDiv = (self.activeTool === 'divider');
+        self.wallChainStart = null;
+        self.wallChainFirstPoint = null;
+        self.numericInputBuffer = '';
+        if (wasDiv) self.setTool('select');
+        if (Core.detectRooms) Core.detectRooms(self.project);
+        self.render();
       }
     });
 
@@ -503,13 +622,15 @@
         return;
       }
 
-      if (e.button === 2) { // Right click cancels / finishes wall chain
-        if (self.wallChainStart) {
+      if (e.button === 2) { // Right click cancels / finishes wall chain or divider
+        if (self.wallChainStart || self.activeTool === 'divider') {
+          var wasDiv2 = (self.activeTool === 'divider');
           self.wallChainStart = null;
           self.wallChainFirstPoint = null;
           self.numericInputBuffer = '';
+          if (wasDiv2) self.setTool('select');
           if (Core.detectRooms) Core.detectRooms(self.project);
-          self.pushHistory('Finish Wall Chain');
+          self.pushHistory(wasDiv2 ? 'Cancel Room Divider' : 'Finish Wall Chain');
           self.render();
         }
         return;
@@ -1300,20 +1421,31 @@
         this.project.plan.walls.push(newW);
         this.pushHistory(isDivider ? 'Draw Room Divider' : 'Draw Wall');
 
-        // Check if loop closed (connected back to start of chain) or if room divider was placed
-        var isLoopClosed = (this.wallChainFirstPoint && Vec2.dist(endPt, this.wallChainFirstPoint) < 60) ||
-                           (snapped && snapped.isChainClose);
-
-        if (isLoopClosed || isDivider) {
-          // Room closed or Room Divider placed! Run room detection and cleanly terminate chain
+        if (isDivider) {
+          // Room Divider placed! Run room detection, select the new divider, and switch cleanly to select tool
           this.wallChainStart = null;
           this.wallChainFirstPoint = null;
           this.numericInputBuffer = '';
           if (Core.detectRooms) Core.detectRooms(this.project);
+          this.selected = [{ type: 'wall', id: newW.id }];
+          this.onSelectionChange(this.selected);
+          this.setTool('select');
         } else {
-          // Chain to the next wall
-          this.wallChainStart = Vec2.clone(endPt);
-          this.numericInputBuffer = '';
+          // Check if loop closed (connected back to start of chain)
+          var isLoopClosed = (this.wallChainFirstPoint && Vec2.dist(endPt, this.wallChainFirstPoint) < 60) ||
+                             (snapped && snapped.isChainClose);
+
+          if (isLoopClosed) {
+            // Room closed! Run room detection and cleanly terminate wall chain
+            this.wallChainStart = null;
+            this.wallChainFirstPoint = null;
+            this.numericInputBuffer = '';
+            if (Core.detectRooms) Core.detectRooms(this.project);
+          } else {
+            // Chain to the next wall
+            this.wallChainStart = Vec2.clone(endPt);
+            this.numericInputBuffer = '';
+          }
         }
       }
     }
@@ -3368,7 +3500,35 @@
     var isJoint = snapInfo && (snapInfo.type === 'joint' || snapInfo.isChainClose);
     var isWallSeg = snapInfo && (snapInfo.type === 'wall_segment');
 
-    if (isDrawingWall) {
+    if (this.activeTool === 'divider') {
+      themeColor = '#8b5cf6'; // Violet
+      badgeBg = 'rgba(109, 40, 217, 0.96)';
+      badgeText = '✂ Click on wall to start Room Divider';
+
+      if (isDrawingWall) {
+        if (snapInfo && (snapInfo.type === 'divider_wall_snap' || snapInfo.isOppositeWall)) {
+          themeColor = '#10b981'; // Emerald
+          badgeBg = 'rgba(6, 95, 70, 0.96)';
+          badgeText = '🔒 Wall-to-Wall Connected · ' + this.formatDim(snapInfo.distMm || 0) + ' (Click to Divide)';
+        } else if (snapInfo && (snapInfo.type === 'wall_segment' || snapInfo.type === 'joint')) {
+          themeColor = '#10b981';
+          badgeBg = 'rgba(6, 95, 70, 0.96)';
+          badgeText = '✂ Connect to ' + (snapInfo.label || 'Wall') + ' · ' + this.formatDim(snapInfo.distMm || 0);
+        } else if (snapInfo && snapInfo.type === 'ortho') {
+          var degD = snapInfo.angleDeg || 0;
+          var isHD = (degD === 0 || degD === 180 || degD === 360);
+          badgeText = '✂ ' + (isHD ? '↔ Horizontal' : '↕ Vertical') + ' · ' + this.formatDim(snapInfo.distMm || 0);
+        } else {
+          badgeText = '✂ Click opposite wall to divide room (Esc to cancel)';
+        }
+      } else {
+        if (snapInfo && (snapInfo.type === 'divider_start_snap' || snapInfo.type === 'wall_segment' || snapInfo.type === 'joint')) {
+          themeColor = '#10b981';
+          badgeBg = 'rgba(6, 95, 70, 0.96)';
+          badgeText = '✂ Click to Start Divider on Wall';
+        }
+      }
+    } else if (isDrawingWall) {
       if (snapInfo && snapInfo.isChainClose) {
         themeColor = '#10b981'; // Vibrant Emerald
         badgeBg = 'rgba(6, 95, 70, 0.96)';

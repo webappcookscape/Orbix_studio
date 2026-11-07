@@ -22,14 +22,32 @@ if (typeof document === 'undefined') {
     createElement: (tag) => {
       if (tag === 'canvas') {
         return {
+          style: {},
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          getBoundingClientRect: () => ({ left: 0, top: 0, width: 800, height: 600 }),
           getContext: () => ({
+            save: () => {},
+            restore: () => {},
+            translate: () => {},
+            rotate: () => {},
+            scale: () => {},
+            clearRect: () => {},
+            setLineDash: () => {},
+            measureText: () => ({ width: 40 }),
+            fillText: () => {},
             createLinearGradient: () => ({ addColorStop: () => {} }),
             createRadialGradient: () => ({ addColorStop: () => {} }),
             fillRect: () => {},
             strokeRect: () => {},
             beginPath: () => {},
+            closePath: () => {},
+            moveTo: () => {},
+            lineTo: () => {},
             arc: () => {},
             fill: () => {},
+            rect: () => {},
+            roundRect: () => {},
             stroke: () => {}
           }),
           width: 512,
@@ -125,5 +143,33 @@ const uiSrc = fs.readFileSync(path.join(__dirname, '../orbix-ui.js'), 'utf8');
 assert.ok(uiSrc.includes('✂ Room Divider'), 'orbix-ui.js inspector must display ✂ Room Divider');
 assert.ok(uiSrc.includes('Delete Room Divider'), 'orbix-ui.js inspector must have Delete Room Divider button');
 console.log('✓ 2D Plan Studio divider tool, rendering, and inspector verified.');
+
+// ── Test 8: Sturdy Auto-Clamping & Opposite Wall Ray Intersection ──
+console.log('\n[Test 8] Sturdy Auto-Clamping & Opposite Wall Ray Intersection');
+// Test 8a: Imprecise divider with 75mm gap automatically clamps and detects 2 rooms
+const pImprecise = Core.createProject();
+pImprecise.plan.walls = [
+  Core.createWall({ start: { x: 0, y: 0 }, end: { x: 4000, y: 0 } }),
+  Core.createWall({ start: { x: 4000, y: 0 }, end: { x: 4000, y: 3000 } }),
+  Core.createWall({ start: { x: 4000, y: 3000 }, end: { x: 0, y: 3000 } }),
+  Core.createWall({ start: { x: 0, y: 3000 }, end: { x: 0, y: 0 } }),
+  // Divider 75mm off the walls
+  Core.createRoomDivider({ start: { x: 2000, y: 75 }, end: { x: 2000, y: 2925 } })
+];
+const impRooms = Core.detectRooms(pImprecise);
+assert.strictEqual(impRooms.length, 2, 'Imprecise divider with 75mm gap must auto-clamp and detect 2 rooms');
+console.log('✓ Sturdy auto-clamping verified: 2 rooms detected despite 75mm gap.');
+
+// Test 8b: Opposite wall ray intersection in orbix-plan.js
+const PlanModule = require('../orbix-plan.js');
+const PlanEditor = PlanModule.PlanEditor || PlanModule;
+const dummyContainer = document.createElement('div');
+const editor = new PlanEditor(dummyContainer, { project: pImprecise });
+const hitOpp = editor.findOppositeWallIntersection({ x: 2000, y: 0 }, { x: 0, y: 1 });
+assert.ok(hitOpp, 'Ray should intersect opposite wall');
+assert.strictEqual(Math.round(hitOpp.pt.x), 2000, 'Intersection X should be 2000');
+assert.strictEqual(Math.round(hitOpp.pt.y), 3000, 'Intersection Y should be 3000 on opposite wall');
+assert.strictEqual(Math.round(hitOpp.t), 3000, 'Distance should be 3000mm');
+console.log('✓ Opposite wall ray-casting auto-snap verified: hit opposite wall at (2000, 3000).');
 
 console.log('\nALL ROOM DIVIDER & ZERO-LAG PERFORMANCE TESTS PASSED PERFECTLY!');

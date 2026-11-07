@@ -865,13 +865,22 @@
         var lenDisplay = self.editor.formatDim(lenMm);
 
         if (w.isDivider) {
+          var planObj = self.editor.project && self.editor.project.plan;
+          var divRooms = (planObj && planObj.rooms || []).filter(function (r) {
+            return r.wallIds && r.wallIds.indexOf(w.id) !== -1;
+          });
+          var roomsInfo = divRooms.length > 0
+            ? divRooms.map(function (r) { return r.name || 'Room'; }).join(' ⟷ ')
+            : 'Boundary Divider';
+
           panel.innerHTML =
             '<div class="insp-title" style="color:#7C3AED;">✂ Room Divider</div>' +
-            '<div style="font-size:12px;color:#64748B;margin-bottom:12px;line-height:1.4;">Divides rooms into independent spaces with separate floor finishes without solid physical walls.</div>' +
-            '<div class="insp-row"><label>Divider Span Length</label><input type="text" id="inspDivLen" value="' + (self.editor.unitSystem === 'imperial' ? lenDisplay : lenMm) + '" readonly style="background:#F8FAFC;">' +
+            '<div style="font-size:12px;color:#64748B;margin-bottom:12px;line-height:1.4;">Divides open space into independent rooms with custom 3D flooring without building solid physical walls.</div>' +
+            '<div class="insp-row"><label>Divided Spaces</label><div style="font-size:12px;color:#1E293B;font-weight:700;padding:3px 0;">' + roomsInfo + '</div></div>' +
+            '<div class="insp-row"><label>Divider Span Length</label><input type="text" id="inspDivLen" value="' + (self.editor.unitSystem === 'imperial' ? lenDisplay : lenMm) + '" readonly style="background:#F8FAFC;font-weight:600;color:#1E293B;">' +
             '<span style="font-size:11px;color:#7C3AED;font-weight:600;">Length: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
             '<div class="insp-row"><label>3D Architectural Strip</label><div style="font-size:11.5px;color:#334155;padding:4px 0;font-weight:500;">Flush Brushed Brass Threshold (30mm)</div></div>' +
-            '<button class="btn danger full" id="inspDelWall" style="margin-top:14px;background:#DC2626;">Delete Room Divider</button>';
+            '<button class="btn danger full" id="inspDelWall" style="margin-top:14px;background:#DC2626;">🗑️ Delete Room Divider</button>';
 
           var btnDelDiv = document.getElementById('inspDelWall');
           if (btnDelDiv) {
