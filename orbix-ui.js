@@ -2460,11 +2460,9 @@
         var selGroup = null;
         homeObj.traverse(function (obj) {
           if (obj.userData && obj.userData.isFurnitureGroup) {
+            obj.visible = true;
             if (furnId && obj.userData.furnitureId === furnId) {
-              obj.visible = false;
               selGroup = obj;
-            } else {
-              obj.visible = true;
             }
           }
         });
@@ -4314,11 +4312,9 @@
           var foundMesh = null;
           homeObj.traverse(function (c) {
             if (c.userData && c.userData.isFurnitureGroup) {
+              c.visible = true;
               if (selFurnId && c.userData.furnitureId === selFurnId) {
-                c.visible = false; // Hide active unit so live interactive Cupboard CAD root renders it
                 foundMesh = c;
-              } else {
-                c.visible = true;
               }
             }
           });
