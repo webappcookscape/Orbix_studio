@@ -64,6 +64,7 @@
      unit "rft" → continuous profile, charged per running foot
      ─────────────────────────────────────────────────────────────── */
   var HANDLES = [
+    { id: 'pull', label: 'Pull Handle', kind: 'bar', len: 200, unit: 'pc', rate: 180 },
     { id: 'ibh10', label: 'IBH 10"', kind: 'ibh', len: 254, unit: 'pc', rate: 320 },
     { id: 'ibh8', label: 'IBH 8"', kind: 'ibh', len: 203, unit: 'pc', rate: 295 },
     { id: 'bar224', label: 'Bar 224', kind: 'bar', len: 224, unit: 'pc', rate: 180 },
@@ -709,15 +710,30 @@
         Hn.push({ cx: -u.W / 4 - 12, y: 30 + elev, w: sw, h: shh, hl: true, z: zF + T + T / 2, hd: hd, fin: fin, door: sA });
         Hn.push({ cx: u.W / 4 + 12, y: 30 + elev, w: sw, h: shh, hl: false, z: zF - 6 + T / 2, hd: hd, fin: fin, door: sB });
         fronts.push(sA, sB);
-      } else if (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled)) {
-        // FCM-RT (Fixed Cum Movable - Right Door): Left half is 600mm fixed panel, right half is 600mm movable shutter
-        var fixW = (u.fixedPanel && u.fixedPanel.width) || (u.W / 2);
+      } else if (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled) ||
+                 (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.enabled) ||
+                 (u.unitConfig && u.unitConfig.unitType === "fcm-rt") ||
+                 u.catalogItemId === "fcm-rt" || u.catalogItemId === "fm-rt-01" ||
+                 u.id === "fcm-rt" || u.id === "fm-rt-01" ||
+                 (u.id && /fcm[-_ ]*rt/i.test(u.id)) ||
+                 (u.label && /fcm[-_ ]*rt/i.test(u.label)) ||
+                 (u.name && /fcm[-_ ]*rt/i.test(u.name))) {
+        // FCM-RT (Cookscape): Left 600mm panel is 100% FIXED (no door, no hinge, no handle).
+        // Right 600mm shutter is HINGED on the right (opening: "right") and opens outwards to the right.
+        var fixW = (u.fixedPanel && u.fixedPanel.width) ||
+                   (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.width) ||
+                   (u.W / 2);
         var movW = u.W - fixW - 6;
         var fixCx = -u.W / 2 + fixW / 2;
         var movCx = u.W / 2 - movW / 2;
+        // 1. Static Left Fixed Panel (attached directly to carcass, never opens, NO handle)
         frontParts(u, ds, fixCx, 3, fixW - 3, u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
-        hinged(movCx, 3, movW, u.H - 6, zF, false, frontParts(u, ds, movCx, 3, movW, u.H - 6, zF, SC, T, "door"));
-        Hn.push({ cx: movCx, y: 3 + elev, w: movW, h: u.H - 6, hl: false, z: zF + T / 2, hd: hd, fin: fin });
+        // 2. Right Movable Shutter (Hinged on the right edge, opens outward to the right)
+        var isHl = !!(
+          (u.openShutter && u.openShutter.opening === "left") ||
+          (u.unitConfig && u.unitConfig.openShutter && u.unitConfig.openShutter.opening === "left")
+        );
+        hinged(movCx, 3, movW, u.H - 6, zF, isHl, frontParts(u, ds, movCx, 3, movW, u.H - 6, zF, SC, T, "door"));
       } else {
         var n = Math.max(1, u.shutters), w1 = (u.W - (n + 1) * 3) / n;
         for (var i = 0; i < n; i++) {
@@ -749,8 +765,22 @@
     if (hasCounter) {
       B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 38, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
     }
-    if (ct === "kbase" && elev > 0) {
-      B.push({ x: 0, y: 0, z: u.D / 2 - 70, w: u.W - 2 * T, h: elev, d: 18, mat: "kick" });
+    if (ct === "kbase") {
+      var isFcm = (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled) ||
+                   (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.enabled) ||
+                   (u.unitConfig && u.unitConfig.unitType === "fcm-rt") ||
+                   u.catalogItemId === "fcm-rt" || u.catalogItemId === "fm-rt-01" ||
+                   u.id === "fcm-rt" || u.id === "fm-rt-01" ||
+                   (u.id && /fcm[-_ ]*rt/i.test(u.id)) ||
+                   (u.label && /fcm[-_ ]*rt/i.test(u.label)) ||
+                   (u.name && /fcm[-_ ]*rt/i.test(u.name)));
+      var plinthH = elev > 0 ? elev : (isFcm ? 100 : 0);
+      if (plinthH > 0) {
+        var pY = elev > 0 ? 0 : -plinthH;
+        B.push({ x: 0, y: pY, z: u.D / 2 - 70, w: u.W - 2 * T, h: plinthH, d: 18, mat: "kick" });
+        B.push({ x: -u.W / 2 + T, y: pY, z: 0, w: 18, h: plinthH, d: u.D - 90, mat: "kick" });
+        B.push({ x: u.W / 2 - T, y: pY, z: 0, w: 18, h: plinthH, d: u.D - 90, mat: "kick" });
+      }
     }
     if (ct === "dresser") {
       B.push({ x: 0, y: u.H + 60, z: -u.D / 2 + T + 18, w: u.W * 0.5 + 50, h: 680, d: 14, col: CC, role: "back" });
@@ -2388,7 +2418,16 @@
       var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
       if (plan && plan.furniture && plan.furniture.length > 0) {
         plan.furniture.forEach(function (fn) {
-          var numShutters = (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? parseInt(fn.unitConfig.shutters) : ((fn.dimensions && fn.dimensions.W > 1200) ? 3 : 2);
+          var isFcm = !!(
+            (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
+            (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
+            (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+            fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
+            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+          );
+          var numShutters = isFcm ? 1 : ((fn.unitConfig && fn.unitConfig.shutters !== undefined) ? parseInt(fn.unitConfig.shutters) : ((fn.dimensions && fn.dimensions.W > 1200) ? 3 : 2));
           var numDrawers = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? parseInt(fn.unitConfig.drawers) : 0;
           fn.shutterStates = fn.shutterStates || [];
           for (var s = 0; s < numShutters; s++) fn.shutterStates[s] = allOpen;
@@ -2556,8 +2595,8 @@
                 } else {
                   var hingeGroup = part.userData.hingeGroup || (part.parent && part.parent.userData && part.parent.userData.isShutterHinge ? part.parent : null);
                   if (hingeGroup) {
-                    var hingeLeft = (sIdx % 2 === 0);
-                    hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.6) : 0;
+                    var hingeLeft = (hingeGroup.name === "ShutterHinge_Right") ? false : (sIdx % 2 === 0);
+                    hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.55) : 0;
                     render();
                   } else if (window.OrbixUI && window.OrbixUI.render3DHome) {
                     window.OrbixUI.render3DHome(true);
@@ -3364,6 +3403,16 @@
       case "overhead":
         [900, 1200, 1500, 1800, 2400, 3000].forEach(function (w) { f(w + " · " + Math.max(2, Math.round(w / 600)) + " door", { W: w, shutters: Math.max(2, Math.round(w / 600)) }); f(w + " tall 750", { W: w, H: 750, shutters: Math.max(2, Math.round(w / 600)) }); }); break;
       case "kbase":
+        f("1200 · FCM-RT (Cookscape)", {
+          W: 1200, H: 720, D: 560,
+          unitType: "fcm-rt",
+          fixedPanel: { enabled: true, width: 600, type: "fixed" },
+          openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "right" },
+          shutters: 1, sections: 2, shelves: 1, drawers: 0,
+          handle: "pull", hfinish: "black",
+          carcass: "MDF 1135", shutterCol: "MDF 7701",
+          counter: "black", loft: false
+        });
         [1200, 1800, 2400, 3000, 3600].forEach(function (w) { f(w + " · granite", { W: w, shutters: Math.max(2, Math.round(w / 600)), sections: Math.max(2, Math.round(w / 600)), counter: "black" }); f(w + " · marble", { W: w, shutters: Math.max(2, Math.round(w / 600)), sections: Math.max(2, Math.round(w / 600)), counter: "white" }); }); break;
       case "kwall":
         [900, 1200, 1800, 2400, 3000].forEach(function (w) { f(w + " · 720 high", { W: w, shutters: Math.max(2, Math.round(w / 600)), sections: Math.max(2, Math.round(w / 600)) }); f(w + " · 900 high", { W: w, H: 900, shutters: Math.max(2, Math.round(w / 600)), sections: Math.max(2, Math.round(w / 600)) }); }); break;

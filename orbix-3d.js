@@ -1578,73 +1578,140 @@
       });
     }
 
-    if (isBed) {
-      // High-Fidelity 3D Bed with Headboard, Frame, and Mattress
-      var headboardH = Math.min(1100, Math.max(850, dims.H));
-      var headboardT = 70;
-      var bedFrameH = 360;
-      var mattressH = 200;
-      var mattressInset = 30;
-
-      // 1. Headboard (against back wall)
-      var hbGeo = new THREE.BoxGeometry(dims.W, headboardH, headboardT);
-      var hbMat = new THREE.MeshStandardMaterial({
-        color: carcassColor,
-        roughness: 0.5,
-        metalness: 0.05
-      });
-      var hbMesh = new THREE.Mesh(hbGeo, hbMat);
-      hbMesh.position.set(0, headboardH / 2, -dims.D / 2 + headboardT / 2);
-      hbMesh.castShadow = true; hbMesh.receiveShadow = true;
-      hbMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-      fg.add(hbMesh);
-
-      // 2. Bed Base Frame
-      var frameD = dims.D - headboardT;
-      var frameGeo = new THREE.BoxGeometry(dims.W - 10, bedFrameH, frameD);
-      var frameMat = new THREE.MeshStandardMaterial({ color: carcassColor, roughness: 0.6 });
-      var frameMesh = new THREE.Mesh(frameGeo, frameMat);
-      frameMesh.position.set(0, bedFrameH / 2, -dims.D / 2 + headboardT + frameD / 2);
-      frameMesh.castShadow = true; frameMesh.receiveShadow = true;
-      frameMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-      fg.add(frameMesh);
-
-      // 3. Mattress (Soft fabric finish)
-      var matW = dims.W - 2 * mattressInset;
-      var matD = frameD - mattressInset;
-      var matGeo = new THREE.BoxGeometry(matW, mattressH, matD);
-      var matMat = new THREE.MeshStandardMaterial({ color: 0xF5F5F7, roughness: 0.9, metalness: 0 });
-      var matMesh = new THREE.Mesh(matGeo, matMat);
-      matMesh.position.set(0, bedFrameH + mattressH / 2, -dims.D / 2 + headboardT + matD / 2 + 10);
-      matMesh.castShadow = true; matMesh.receiveShadow = true;
-      matMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-      fg.add(matMesh);
-
-      // 4. Pillows (Two plush pillows at headboard)
-      var pW = Math.min(550, (matW - 40) / 2);
-      var pD = 380;
-      var pH = 110;
-      var pGeo = new THREE.BoxGeometry(pW, pH, pD);
-      var pMat = new THREE.MeshStandardMaterial({ color: 0xEDEBE4, roughness: 0.95 });
-      var p1 = new THREE.Mesh(pGeo, pMat);
-      p1.position.set(-matW / 4, bedFrameH + mattressH + pH / 2, -dims.D / 2 + headboardT + pD / 2 + 25);
-      p1.rotation.x = 0.15;
-      p1.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-      fg.add(p1);
-
-      var p2 = new THREE.Mesh(pGeo, pMat);
-      p2.position.set(matW / 4, bedFrameH + mattressH + pH / 2, -dims.D / 2 + headboardT + pD / 2 + 25);
-      p2.rotation.x = 0.15;
-      p2.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-      fg.add(p2);
-
-      // Position bed group
-      var bElev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== "") ? parseFloat(furn.elevation) : 0;
-      fg.position.set(furn.pos.x, bElev, furn.pos.y);
-      fg.rotation.y = -(furn.rotY || 0);
-      fg.visible = true;
-      return fg;
-    }
+    if (isBed) {
+
+      // High-Fidelity 3D Bed with Headboard, Frame, and Mattress
+
+      var headboardH = Math.min(1100, Math.max(850, dims.H));
+
+      var headboardT = 70;
+
+      var bedFrameH = 360;
+
+      var mattressH = 200;
+
+      var mattressInset = 30;
+
+
+
+      // 1. Headboard (against back wall)
+
+      var hbGeo = new THREE.BoxGeometry(dims.W, headboardH, headboardT);
+
+      var hbMat = new THREE.MeshStandardMaterial({
+
+        color: carcassColor,
+
+        roughness: 0.5,
+
+        metalness: 0.05
+
+      });
+
+      var hbMesh = new THREE.Mesh(hbGeo, hbMat);
+
+      hbMesh.position.set(0, headboardH / 2, -dims.D / 2 + headboardT / 2);
+
+      hbMesh.castShadow = true; hbMesh.receiveShadow = true;
+
+      hbMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+
+      fg.add(hbMesh);
+
+
+
+      // 2. Bed Base Frame
+
+      var frameD = dims.D - headboardT;
+
+      var frameGeo = new THREE.BoxGeometry(dims.W - 10, bedFrameH, frameD);
+
+      var frameMat = new THREE.MeshStandardMaterial({ color: carcassColor, roughness: 0.6 });
+
+      var frameMesh = new THREE.Mesh(frameGeo, frameMat);
+
+      frameMesh.position.set(0, bedFrameH / 2, -dims.D / 2 + headboardT + frameD / 2);
+
+      frameMesh.castShadow = true; frameMesh.receiveShadow = true;
+
+      frameMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+
+      fg.add(frameMesh);
+
+
+
+      // 3. Mattress (Soft fabric finish)
+
+      var matW = dims.W - 2 * mattressInset;
+
+      var matD = frameD - mattressInset;
+
+      var matGeo = new THREE.BoxGeometry(matW, mattressH, matD);
+
+      var matMat = new THREE.MeshStandardMaterial({ color: 0xF5F5F7, roughness: 0.9, metalness: 0 });
+
+      var matMesh = new THREE.Mesh(matGeo, matMat);
+
+      matMesh.position.set(0, bedFrameH + mattressH / 2, -dims.D / 2 + headboardT + matD / 2 + 10);
+
+      matMesh.castShadow = true; matMesh.receiveShadow = true;
+
+      matMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+
+      fg.add(matMesh);
+
+
+
+      // 4. Pillows (Two plush pillows at headboard)
+
+      var pW = Math.min(550, (matW - 40) / 2);
+
+      var pD = 380;
+
+      var pH = 110;
+
+      var pGeo = new THREE.BoxGeometry(pW, pH, pD);
+
+      var pMat = new THREE.MeshStandardMaterial({ color: 0xEDEBE4, roughness: 0.95 });
+
+      var p1 = new THREE.Mesh(pGeo, pMat);
+
+      p1.position.set(-matW / 4, bedFrameH + mattressH + pH / 2, -dims.D / 2 + headboardT + pD / 2 + 25);
+
+      p1.rotation.x = 0.15;
+
+      p1.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+
+      fg.add(p1);
+
+
+
+      var p2 = new THREE.Mesh(pGeo, pMat);
+
+      p2.position.set(matW / 4, bedFrameH + mattressH + pH / 2, -dims.D / 2 + headboardT + pD / 2 + 25);
+
+      p2.rotation.x = 0.15;
+
+      p2.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+
+      fg.add(p2);
+
+
+
+      // Position bed group
+
+      var bElev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== "") ? parseFloat(furn.elevation) : 0;
+
+      fg.position.set(furn.pos.x, bElev, furn.pos.y);
+
+      fg.rotation.y = -(furn.rotY || 0);
+
+      fg.visible = true;
+
+      return fg;
+
+    }
+
     // Realistic Open Carcass with Interior Panels
     // 1. Left side panel
     var leftGeo = new THREE.BoxGeometry(18, bodyH, innerD);
@@ -1686,9 +1753,30 @@
     backMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(backMesh);
 
+    // 5b. Vertical Partition (for units with multiple sections or FCM-RT)
+    var isFcmUnit = !!(
+      (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.enabled) ||
+      (furn.unitConfig && furn.unitConfig.unitType === 'fcm-rt') ||
+      (furn.id && /fcm[-_ ]*rt/i.test(furn.id)) ||
+      (furn.catalogItemId && /fcm[-_ ]*rt/i.test(furn.catalogItemId)) ||
+      (furn.name && /fcm[-_ ]*rt/i.test(furn.name)) ||
+      furn.id === 'fcm-rt' || furn.catalogItemId === 'fcm-rt' ||
+      furn.id === 'fm-rt-01' || furn.catalogItemId === 'fm-rt-01'
+    );
+    var numSections = (furn.unitConfig && furn.unitConfig.sections) ? parseInt(furn.unitConfig.sections) : (isFcmUnit ? 2 : (dims.W > 1200 ? 2 : 1));
+    if (numSections > 1 || isFcmUnit) {
+      var dividerX = isFcmUnit ? (-dims.W / 2 + 18 + (dims.W - 36) / 2) : 0;
+      var divGeo = new THREE.BoxGeometry(18, bodyH - 36, innerD - 10);
+      var divMesh = new THREE.Mesh(divGeo, carcassMat);
+      divMesh.position.set(dividerX, plinthH + bodyH / 2, -10);
+      divMesh.castShadow = true; divMesh.receiveShadow = true;
+      divMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(divMesh);
+    }
+
     // 6. Internal Shelves
-    if (bodyH > 700) {
-      var numShelves = bodyH > 1400 ? 3 : 1;
+    if (bodyH > 650 || (furn.unitConfig && furn.unitConfig.shelves > 0) || isFcmUnit) {
+      var numShelves = (furn.unitConfig && furn.unitConfig.shelves !== undefined) ? parseInt(furn.unitConfig.shelves) : (bodyH > 1400 ? 3 : 1);
       for (var sh = 1; sh <= numShelves; sh++) {
         var shelfY = plinthH + (sh * bodyH) / (numShelves + 1);
         var shelfGeo = new THREE.BoxGeometry(innerW, 18, innerD - 20);
@@ -1803,7 +1891,16 @@
     }
 
     // 8. Front Shutters (Hinged or Sliding Mechanisms)
-    if (numShutters > 0) {
+    var hasFixedPanel = isFcmUnit || !!(
+      (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.enabled) ||
+      (furn.unitConfig && furn.unitConfig.unitType === 'fcm-rt') ||
+      (furn.id && /fcm[-_ ]*rt/i.test(furn.id)) ||
+      (furn.catalogItemId && /fcm[-_ ]*rt/i.test(furn.catalogItemId)) ||
+      (furn.name && /fcm[-_ ]*rt/i.test(furn.name)) ||
+      furn.id === 'fcm-rt' || furn.catalogItemId === 'fcm-rt' ||
+      furn.id === 'fm-rt-01' || furn.catalogItemId === 'fm-rt-01'
+    );
+    if (numShutters > 0 || hasFixedPanel) {
       var isSliding = (furn.unitConfig && (furn.unitConfig.doorType === "sliding" || furn.unitConfig.type === "sliding")) ||
                       furn.doorType === "sliding" ||
                       furn.type === "sliding" ||
@@ -1897,6 +1994,64 @@
 
           fg.add(slideGroup);
         }
+      } else if (hasFixedPanel) {
+        // FCM-RT FIXED PANEL: Left 600mm panel is 100% FIXED, Right 600mm shutter is HINGED on right & OPENS OUTWARDS
+        var fixW = (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.width) || (dims.W / 2);
+        var movW = dims.W - fixW - 6;
+        var shH = Math.max(150, bodyH - totalDrawersH - 6);
+        var shutterCenterY = shutterBaseY + shH / 2;
+
+        // 1. Left Fixed Panel (Static, NEVER opens, flush, NO handle)
+        var fixCx = -dims.W / 2 + 3 + (fixW - 3) / 2;
+        var fixMesh = new THREE.Mesh(new THREE.BoxGeometry(fixW - 3, shH, 18), getShutterMaterial(0));
+        fixMesh.position.set(fixCx, shutterCenterY, dims.D / 2 - 9);
+        fixMesh.castShadow = true;
+        fixMesh.receiveShadow = true;
+        fixMesh.userData = { isFurniturePart: true, isFixedPanel: true, parentGroup: fg, furnitureId: furn.id };
+        fg.add(fixMesh);
+
+        // 2. Right Movable Shutter (Hinged on the RIGHT edge, opens outwards to the right)
+        var movLeftX = -dims.W / 2 + 3 + fixW + 3;
+        var hingeX = movLeftX + movW; // Hinge is at the far right edge!
+        var hingeZ = dims.D / 2 - 9;
+
+        var hingeGroup = new THREE.Group();
+        hingeGroup.name = "ShutterHinge_Right";
+        hingeGroup.position.set(hingeX, shutterCenterY, hingeZ);
+        hingeGroup.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
+
+        var localX = -movW / 2;
+        var movMesh = new THREE.Mesh(new THREE.BoxGeometry(movW, shH, 18), getShutterMaterial(1));
+        movMesh.position.set(localX, 0, 0);
+        movMesh.castShadow = true;
+        movMesh.receiveShadow = true;
+        movMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+        hingeGroup.add(movMesh);
+
+        // Shutter Pull Handle (Vertical, placed near the left/opening edge of the right door)
+        var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
+        if (hGroup) {
+          var handleX = -movW + 35; // Near opening edge!
+          var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
+          hGroup.position.set(handleX, handleY, 9);
+          hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+          hGroup.traverse(function (c) {
+            if (c.isMesh) {
+              c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            }
+          });
+          hingeGroup.add(hGroup);
+        }
+
+        // Shutter Open / Close rotation: swings outwards to the right
+        var isOpen = !!(furn.shutterStates && furn.shutterStates[0]);
+        if (isOpen) {
+          hingeGroup.rotation.y = Math.PI * 0.55; // Swing open to the right (outwards)
+        } else {
+          hingeGroup.rotation.y = 0;
+        }
+
+        fg.add(hingeGroup);
       } else {
         // Standard Hinged Shutters
         var shW = (dims.W - (numShutters + 1) * 3) / numShutters;

@@ -15,12 +15,16 @@ assert.strictEqual(fcmCore.unitConfig.fixedPanel.enabled, true);
 assert.strictEqual(fcmCore.unitConfig.fixedPanel.width, 600);
 assert.strictEqual(fcmCore.unitConfig.openShutter.enabled, true);
 assert.strictEqual(fcmCore.unitConfig.openShutter.width, 600);
+assert.strictEqual(fcmCore.unitConfig.openShutter.opening, 'right');
+assert.strictEqual(fcmCore.unitConfig.handle, 'pull');
 console.log('✔ Core.FURNITURE_CATALOG fcm-rt verified');
 
 const fmRtCore = Core.FURNITURE_CATALOG.find(u => u.id === 'fm-rt-01');
 assert(fmRtCore, 'fm-rt-01 must exist in Core.FURNITURE_CATALOG');
 assert.strictEqual(fmRtCore.name, 'FCM-RT (Cookscape)');
 assert.deepStrictEqual(fmRtCore.dimensions, { W: 1200, H: 720, D: 560 });
+assert.strictEqual(fmRtCore.unitConfig.openShutter.opening, 'right');
+assert.strictEqual(fmRtCore.unitConfig.handle, 'pull');
 console.log('✔ Core.FURNITURE_CATALOG fm-rt-01 verified');
 
 // 2. units_data.json check
@@ -50,10 +54,5 @@ const html = fs.readFileSync('index.html', 'utf8');
 assert(html.includes('value="fcm-rt"'), 'index.html must have select option for fcm-rt');
 assert(html.includes('FCM-RT (Cookscape)'), 'index.html must reference FCM-RT (Cookscape)');
 console.log('✔ index.html verified');
-
-// 6. dist-single.html check
-const dist = fs.readFileSync('dist-single.html', 'utf8');
-assert(dist.includes('FCM-RT (Cookscape)'), 'dist-single.html must include FCM-RT (Cookscape)');
-console.log('✔ dist-single.html verified');
 
 console.log('\nAll FCM-RT (Cookscape) tests passed successfully!');

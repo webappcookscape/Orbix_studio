@@ -1810,16 +1810,36 @@
               if (existingIdx !== -1) {
                 window.S.active = existingIdx;
                 var activeUnit = window.S.units[existingIdx];
+                var isFcm = !!(
+                  (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
+                  (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
+                  (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
+                  (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+                  fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
+                  fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+                );
+                activeUnit.label = fn.name;
                 activeUnit.W = fn.dimensions.W;
                 activeUnit.H = fn.dimensions.H;
                 activeUnit.D = fn.dimensions.D;
                 if (fn.unitConfig) {
+                  activeUnit.unitConfig = Object.assign({}, fn.unitConfig);
+                  if (fn.unitConfig.unitType) activeUnit.unitType = fn.unitConfig.unitType;
+                  if (fn.unitConfig.fixedPanel) activeUnit.fixedPanel = fn.unitConfig.fixedPanel;
+                  if (fn.unitConfig.openShutter) activeUnit.openShutter = fn.unitConfig.openShutter;
                   if (fn.unitConfig.shutters !== undefined) activeUnit.shutters = fn.unitConfig.shutters;
-                  if (fn.unitConfig.drawers !== undefined) activeUnit.drawers = fn.unitConfig.drawers;
+                  else if (isFcm) activeUnit.shutters = 1;
+                  if (fn.unitConfig.sections !== undefined) activeUnit.sections = fn.unitConfig.sections;
+                  else if (isFcm) activeUnit.sections = 2;
                   if (fn.unitConfig.shelves !== undefined) activeUnit.shelves = fn.unitConfig.shelves;
+                  else if (isFcm) activeUnit.shelves = 1;
+                  if (fn.unitConfig.drawers !== undefined) activeUnit.drawers = fn.unitConfig.drawers;
                   if (fn.unitConfig.dstyle) activeUnit.dstyle = fn.unitConfig.dstyle;
                   if (fn.unitConfig.handle) activeUnit.handle = fn.unitConfig.handle;
+                  else if (isFcm) activeUnit.handle = 'pull';
                   if (fn.unitConfig.hfinish) activeUnit.hfinish = fn.unitConfig.hfinish;
+                  else if (isFcm) activeUnit.hfinish = 'black';
                   if (fn.unitConfig.counter) activeUnit.counter = fn.unitConfig.counter;
                   if (fn.unitConfig.shutterCol) activeUnit.shutterCol = fn.unitConfig.shutterCol;
                   else if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) activeUnit.shutterCol = fn.materials.shutter.finish;
@@ -1827,25 +1847,39 @@
                   else if (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) activeUnit.carcass = fn.materials.carcass.finish;
                 }
               } else {
+                var isFcm = !!(
+                  (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
+                  (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
+                  (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
+                  (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+                  fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
+                  fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+                );
                 var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
                   window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.id, fn.costCategory) :
                   (fn.category === 'kitchen_wall' || (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1));
                 var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
-                var isBase = !isWall && (isKitchen || fn.category === 'crockery' || fn.category === 'tv_unit' || (fn.name && fn.name.indexOf('BASE') !== -1));
+                var isBase = !isWall && (isKitchen || fn.category === 'crockery' || fn.category === 'tv_unit' || (fn.name && fn.name.indexOf('BASE') !== -1) || isFcm);
                 var sFinish = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
                 var cFinish = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
                 var newU = {
                   label: fn.name,
                   ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
                   _furnId: fn.id,
+                  unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcm ? 'fcm-rt' : undefined),
+                  catalogItemId: fn.catalogItemId || fn.id,
+                  fixedPanel: fn.unitConfig && fn.unitConfig.fixedPanel,
+                  openShutter: fn.unitConfig && fn.unitConfig.openShutter,
+                  unitConfig: fn.unitConfig ? Object.assign({}, fn.unitConfig) : undefined,
                   W: fn.dimensions.W,
                   H: fn.dimensions.H,
                   D: fn.dimensions.D,
                   T: 18,
                   type: (fn.unitConfig && (fn.unitConfig.type || fn.unitConfig.doorType)) || 'hinged',
-                  shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1),
-                  sections: (fn.unitConfig && fn.unitConfig.sections) || (fn.dimensions.W > 1200 ? 2 : 1),
-                  shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isKitchen ? 1 : 3),
+                  shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (isFcm ? 1 : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1)),
+                  sections: (fn.unitConfig && fn.unitConfig.sections) || (isFcm ? 2 : (fn.dimensions.W > 1200 ? 2 : 1)),
+                  shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isFcm ? 1 : (isKitchen ? 1 : 3)),
                   drawers: (fn.unitConfig && fn.unitConfig.drawers) || 0,
                   drawerH: 180,
                   loft: (fn.unitConfig && fn.unitConfig.loft) || false,
@@ -1853,7 +1887,7 @@
                   loftShutters: 2,
                   back: 18,
                   dstyle: (fn.unitConfig && fn.unitConfig.dstyle) || 'slab',
-                  handle: (fn.unitConfig && fn.unitConfig.handle) || 'gprof',
+                  handle: (fn.unitConfig && fn.unitConfig.handle) || (isFcm ? 'pull' : 'gprof'),
                   hfinish: (fn.unitConfig && fn.unitConfig.hfinish) || 'black',
                   counter: (fn.unitConfig && fn.unitConfig.counter) || (isBase ? (fn.unitConfig && fn.unitConfig.counter ? fn.unitConfig.counter : 'black') : 'none'),
                   carcass: cFinish,
@@ -2229,8 +2263,40 @@
           } else if (fn.unitConfig && fn.unitConfig.loftShutters !== undefined) {
             existing.loftShutters = fn.unitConfig.loftShutters;
           }
+
+          var isExistingFcm = !!(
+            (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
+            (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
+            (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+            fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
+            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+          );
+          if (isExistingFcm) {
+            existing.unitType = 'fcm-rt';
+            existing.fixedPanel = (fn.unitConfig && fn.unitConfig.fixedPanel) || { enabled: true, width: 600, type: 'fixed' };
+            existing.openShutter = (fn.unitConfig && fn.unitConfig.openShutter) || { enabled: true, width: 600, type: 'shutter', count: 1, opening: 'right' };
+            existing.shutters = 1;
+            existing.sections = 2;
+            existing.shelves = 1;
+            existing.handle = (fn.unitConfig && fn.unitConfig.handle) || 'pull';
+            existing.hfinish = (fn.unitConfig && fn.unitConfig.hfinish) || 'black';
+          }
+          if (fn.unitConfig) existing.unitConfig = Object.assign({}, fn.unitConfig);
+          if (fn.catalogItemId) existing.catalogItemId = fn.catalogItemId;
+
           newUnits.push(existing);
         } else {
+          var isFcmNew = !!(
+            (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
+            (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
+            (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+            fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
+            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+          );
           var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 450 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
           var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 450);
@@ -2240,15 +2306,20 @@
             label: fn.name,
             ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
             _furnId: fn.id,
+            unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcmNew ? 'fcm-rt' : undefined),
+            catalogItemId: fn.catalogItemId || fn.id,
+            fixedPanel: fn.unitConfig && fn.unitConfig.fixedPanel,
+            openShutter: fn.unitConfig && fn.unitConfig.openShutter,
+            unitConfig: fn.unitConfig ? Object.assign({}, fn.unitConfig) : undefined,
             elev: unitElev,
             W: (fn.dimensions && fn.dimensions.W) || defW,
             H: (fn.dimensions && fn.dimensions.H) || defH,
             D: (fn.dimensions && fn.dimensions.D) || defD,
             T: 18,
             type: (fn.unitConfig && (fn.unitConfig.type || fn.unitConfig.doorType)) || 'hinged',
-            shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (defW > 1200 ? 3 : defW > 600 ? 2 : 1),
-            sections: (fn.unitConfig && fn.unitConfig.sections) || (defW > 1200 ? 2 : 1),
-            shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isKitchen ? 1 : 3),
+            shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (isFcmNew ? 1 : (defW > 1200 ? 3 : defW > 600 ? 2 : 1)),
+            sections: (fn.unitConfig && fn.unitConfig.sections) || (isFcmNew ? 2 : (defW > 1200 ? 2 : 1)),
+            shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isFcmNew ? 1 : (isKitchen ? 1 : 3)),
             drawers: (fn.unitConfig && fn.unitConfig.drawers) || 0,
             drawerH: 180,
             loft: (fn.unitConfig && fn.unitConfig.loft) || false,
@@ -2256,7 +2327,7 @@
             loftShutters: 2,
             back: 18,
             dstyle: (fn.unitConfig && fn.unitConfig.dstyle) || 'slab',
-            handle: (fn.unitConfig && fn.unitConfig.handle) || 'gprof',
+            handle: (fn.unitConfig && fn.unitConfig.handle) || (isFcmNew ? 'pull' : 'gprof'),
             hfinish: (fn.unitConfig && fn.unitConfig.hfinish) || 'black',
             counter: (fn.unitConfig && fn.unitConfig.counter) || (isBase ? (fn.unitConfig && fn.unitConfig.counter ? fn.unitConfig.counter : 'black') : 'none'),
             carcass: cColNew,

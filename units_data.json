@@ -7,7 +7,7 @@
     "category": "tv_unit",
     "costCategory": "TV Unit Cabinet",
     "areaSqft": 0.9687523546,
-    "icon": "📺",
+    "icon": "\ud83d\udcfa",
     "dimensions": {
       "W": 450,
       "H": 200,
@@ -54,7 +54,7 @@
     "category": "tv_unit",
     "costCategory": "TV Unit Cabinet",
     "areaSqft": 1.291669806,
-    "icon": "📺",
+    "icon": "\ud83d\udcfa",
     "dimensions": {
       "W": 600,
       "H": 200,
@@ -101,7 +101,7 @@
     "category": "pooja",
     "costCategory": "POOJA WITH CNC",
     "areaSqft": 6.054702216,
-    "icon": "🛕",
+    "icon": "\ud83d\uded5",
     "dimensions": {
       "W": 750,
       "H": 750,
@@ -148,7 +148,7 @@
     "category": "tv_unit",
     "costCategory": "TV Unit Cabinet",
     "areaSqft": 7.26564266,
-    "icon": "📺",
+    "icon": "\ud83d\udcfa",
     "dimensions": {
       "W": 900,
       "H": 750,
@@ -195,7 +195,7 @@
     "category": "tv_unit",
     "costCategory": "TV Unit Cabinet",
     "areaSqft": 2.421880887,
-    "icon": "📺",
+    "icon": "\ud83d\udcfa",
     "dimensions": {
       "W": 450,
       "H": 500,
@@ -242,7 +242,7 @@
     "category": "pooja",
     "costCategory": "POOJA WITH CNC",
     "areaSqft": 5.812514128,
-    "icon": "🛕",
+    "icon": "\ud83d\uded5",
     "dimensions": {
       "W": 900,
       "H": 600,
@@ -289,7 +289,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 4.843761773,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 1500,
       "H": 300,
@@ -336,7 +336,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 9.687523546,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 720,
@@ -364,7 +364,7 @@
       "loft": false,
       "loftH": 0,
       "counter": "black",
-      "handle": "gprof",
+      "handle": "pull",
       "hfinish": "black",
       "led": false,
       "carcass": "MDF 1135",
@@ -381,7 +381,7 @@
         "width": 600,
         "type": "shutter",
         "count": 1,
-        "opening": "left"
+        "opening": "right"
       }
     },
     "pricingOverrides": {
@@ -397,7 +397,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 9.3,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 720,
@@ -427,7 +427,7 @@
         "width": 600,
         "type": "shutter",
         "count": 1,
-        "opening": "left"
+        "opening": "right"
       },
       "shutters": 1,
       "doorType": "hinged",
@@ -440,7 +440,7 @@
       "loft": false,
       "loftH": 0,
       "counter": "black",
-      "handle": "gprof",
+      "handle": "pull",
       "hfinish": "black",
       "led": false,
       "carcass": "MDF 1135",
@@ -459,7 +459,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 9.687523546,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 750,
@@ -506,7 +506,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 3.63282133,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 450,
       "H": 750,
@@ -553,7 +553,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 4.843761773,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 750,
@@ -600,7 +600,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 6.054702216,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 750,
       "H": 750,
@@ -647,7 +647,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 7.26564266,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 750,
@@ -694,7 +694,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 3.63282133,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 450,
       "H": 750,
@@ -741,7 +741,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 6.054702216,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 750,
       "H": 750,
@@ -788,7 +788,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 7.26564266,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 750,
@@ -835,7 +835,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 3.63282133,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 450,
       "H": 750,
@@ -882,7 +882,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 6.054702216,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 750,
       "H": 750,
@@ -929,7 +929,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 7.26564266,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 750,
@@ -976,7 +976,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 3.63282133,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 450,
       "H": 750,
@@ -1023,7 +1023,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 4.843761773,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 750,
@@ -1070,7 +1070,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 7.26564266,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 750,
@@ -1117,7 +1117,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 0.726564266,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 450,
       "H": 150,
@@ -1164,7 +1164,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 1.210940443,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 750,
       "H": 150,
@@ -1211,7 +1211,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 1.453128532,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 900,
       "H": 150,
@@ -1258,7 +1258,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - 2 DRAWERS",
     "areaSqft": 13.56253296,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 600,
       "H": 2100,
@@ -1305,7 +1305,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 3.875009418,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -1352,7 +1352,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 3.875009418,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -1399,7 +1399,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 1.937504709,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 300,
       "H": 600,
@@ -1446,7 +1446,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 2.906257064,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 450,
       "H": 600,
@@ -1493,7 +1493,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 3.875009418,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -1540,7 +1540,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 4.843761773,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 750,
       "H": 600,
@@ -1587,7 +1587,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 4.843761773,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 750,
       "H": 600,
@@ -1634,7 +1634,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 5.812514128,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 900,
       "H": 600,
@@ -1681,7 +1681,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 5.812514128,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 900,
       "H": 600,
@@ -1728,7 +1728,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - ONLY SHELVES",
     "areaSqft": 4.359385596,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 450,
       "H": 900,
@@ -1775,7 +1775,7 @@
     "category": "loft",
     "costCategory": "Loft - O/S",
     "areaSqft": 4.359385596,
-    "icon": "📦",
+    "icon": "\ud83d\udce6",
     "dimensions": {
       "W": 450,
       "H": 900,
@@ -1822,7 +1822,7 @@
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
     "areaSqft": 15.50003767,
-    "icon": "🪵",
+    "icon": "\ud83e\udeb5",
     "dimensions": {
       "W": 1200,
       "H": 1200,
@@ -1869,7 +1869,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 3.875009418,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -1916,7 +1916,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 0.9687523546,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 300,
       "H": 300,
@@ -1963,7 +1963,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 3.875009418,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -2010,7 +2010,7 @@
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
     "areaSqft": 0.2325005651,
-    "icon": "🪵",
+    "icon": "\ud83e\udeb5",
     "dimensions": {
       "W": 1200,
       "H": 18,
@@ -2057,7 +2057,7 @@
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
     "areaSqft": 19.37504709,
-    "icon": "🪵",
+    "icon": "\ud83e\udeb5",
     "dimensions": {
       "W": 1200,
       "H": 1500,
@@ -2104,7 +2104,7 @@
     "category": "loft",
     "costCategory": "Loft - O/S",
     "areaSqft": 6.054702216,
-    "icon": "📦",
+    "icon": "\ud83d\udce6",
     "dimensions": {
       "W": 750,
       "H": 750,
@@ -2151,7 +2151,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 1.937504709,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 600,
       "H": 300,
@@ -2198,7 +2198,7 @@
     "category": "loft",
     "costCategory": "Loft - O/S",
     "areaSqft": 1.937504709,
-    "icon": "📦",
+    "icon": "\ud83d\udce6",
     "dimensions": {
       "W": 300,
       "H": 600,
@@ -2245,7 +2245,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 1.291669806,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 600,
       "H": 200,
@@ -2292,7 +2292,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 9.687523546,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 750,
@@ -2339,7 +2339,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 2.421880887,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 300,
       "H": 750,
@@ -2386,7 +2386,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 4.843761773,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 750,
@@ -2433,7 +2433,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 4.843761773,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 750,
@@ -2480,7 +2480,7 @@
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
     "areaSqft": 0.1743754238,
-    "icon": "🪵",
+    "icon": "\ud83e\udeb5",
     "dimensions": {
       "W": 900,
       "H": 18,
@@ -2527,7 +2527,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 0.9687523546,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 600,
       "H": 150,
@@ -2574,7 +2574,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - SLIDING",
     "areaSqft": 40.68759889,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 1800,
       "H": 2100,
@@ -2621,7 +2621,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - ONLY SHELVES",
     "areaSqft": 13.56253296,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 600,
       "H": 2100,
@@ -2668,7 +2668,7 @@
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
     "areaSqft": 1.291669806,
-    "icon": "🪵",
+    "icon": "\ud83e\udeb5",
     "dimensions": {
       "W": 600,
       "H": 200,
@@ -2715,7 +2715,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 2.906257064,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 450,
       "H": 600,
@@ -2762,7 +2762,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 3.875009418,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -2809,7 +2809,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 1.937504709,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 300,
       "H": 600,
@@ -2856,7 +2856,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - ONLY SHELVES",
     "areaSqft": 8.718771191,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 900,
       "H": 900,
@@ -2903,7 +2903,7 @@
     "category": "loft",
     "costCategory": "Loft - O/S",
     "areaSqft": 7.26564266,
-    "icon": "📦",
+    "icon": "\ud83d\udce6",
     "dimensions": {
       "W": 750,
       "H": 900,
@@ -2950,7 +2950,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - ONLY SHELVES",
     "areaSqft": 20.34379945,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 900,
       "H": 2100,
@@ -2997,7 +2997,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - 2 DRAWERS",
     "areaSqft": 20.34379945,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 900,
       "H": 2100,
@@ -3044,7 +3044,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - ONLY SHELVES",
     "areaSqft": 13.56253296,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 600,
       "H": 2100,
@@ -3091,7 +3091,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - 2 DRAWERS",
     "areaSqft": 13.56253296,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 600,
       "H": 2100,
@@ -3138,7 +3138,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen O/S",
     "areaSqft": 9.687523546,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 750,
@@ -3185,7 +3185,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen O/S",
     "areaSqft": 4.843761773,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 750,
@@ -3232,7 +3232,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen O/S",
     "areaSqft": 3.875009418,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -3279,7 +3279,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen O/S",
     "areaSqft": 1.937504709,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 300,
       "H": 600,
