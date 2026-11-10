@@ -362,6 +362,18 @@
       var parsedTypedDist = this.parseDimInput(this.numericInputBuffer);
       var targetDist = (this.numericInputBuffer && parsedTypedDist > 0) ? parsedTypedDist : rawDist;
 
+      // Collect all candidate reference vertices for dual-axis tracking (Object Snap Tracking)
+      var refVertices = [];
+      if (this.wallChainFirstPoint && Vec2.dist(this.wallChainFirstPoint, this.wallChainStart) > 60) {
+        refVertices.push(this.wallChainFirstPoint);
+      }
+      for (var vi = 0; vi < walls.length; vi++) {
+        var vw = walls[vi];
+        if (vw.id === ignoreWallId) continue;
+        if (Vec2.dist(vw.start, this.wallChainStart) > 60) refVertices.push(vw.start);
+        if (Vec2.dist(vw.end, this.wallChainStart) > 60) refVertices.push(vw.end);
+      }
+
       // 2a. Perpendicular & Parallel guides relative to existing walls
       for (var j = 0; j < walls.length; j++) {
         var ew = walls[j];
@@ -374,18 +386,51 @@
           var diffP = Math.atan2(Math.sin(currentAngle - parAngles[p]), Math.cos(currentAngle - parAngles[p]));
           if (Math.abs(diffP) < 0.14) { // within ~8 degrees
             var snapAngle = parAngles[p];
+            var dirU = { x: Math.cos(snapAngle), y: Math.sin(snapAngle) };
+
+            // Check if projecting along dirU aligns with any reference vertex (Dual-Axis Alignment)
+            var bestAlignV = null;
+            var bestAlignDist = Infinity;
+            var snapTol = snapDistMm || 200;
+
+            for (var rvi = 0; rvi < refVertices.length; rvi++) {
+              var rv = refVertices[rvi];
+              var projLen = (rv.x - this.wallChainStart.x) * dirU.x + (rv.y - this.wallChainStart.y) * dirU.y;
+              if (projLen > 60) {
+                var dLen = Math.abs(targetDist - projLen);
+                if (dLen < snapTol && dLen < bestAlignDist) {
+                  bestAlignDist = dLen;
+                  bestAlignV = { pt: rv, len: Math.round(projLen) };
+                }
+              }
+            }
+
+            // Also check matching the length of ew itself
+            var ewLen = Core.wallLength(ew);
+            if (ewLen > 60 && Math.abs(targetDist - ewLen) < snapTol && Math.abs(targetDist - ewLen) < bestAlignDist) {
+              var oppPt = (Vec2.dist(ew.start, this.wallChainStart) < Vec2.dist(ew.end, this.wallChainStart)) ? ew.end : ew.start;
+              bestAlignV = { pt: oppPt, len: Math.round(ewLen) };
+            }
+
             var distCleanP = (this.numericInputBuffer && parsedTypedDist > 0) ? parsedTypedDist :
-              (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist);
-            snapped.x = Math.round(this.wallChainStart.x + Math.cos(snapAngle) * distCleanP);
-            snapped.y = Math.round(this.wallChainStart.y + Math.sin(snapAngle) * distCleanP);
-            return {
+              (bestAlignV ? bestAlignV.len : (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist));
+
+            snapped.x = Math.round(this.wallChainStart.x + dirU.x * distCleanP);
+            snapped.y = Math.round(this.wallChainStart.y + dirU.y * distCleanP);
+
+            var retParallel = {
               pt: snapped,
               type: 'parallel',
               target: ew,
-              label: '∥ Parallel',
+              label: bestAlignV ? '✛ Dual-Axis Aligned (X & Y)' : '∥ Parallel',
               angleDeg: Math.round(((snapAngle * 180 / Math.PI) % 360 + 360) % 360),
               distMm: distCleanP
             };
+            if (bestAlignV) {
+              retParallel.alignedVertex = bestAlignV.pt;
+              retParallel.isDualAxis = true;
+            }
+            return retParallel;
           }
         }
 
@@ -395,18 +440,43 @@
           var diffQ = Math.atan2(Math.sin(currentAngle - perpAngles[q]), Math.cos(currentAngle - perpAngles[q]));
           if (Math.abs(diffQ) < 0.14) {
             var snapAnglePerp = perpAngles[q];
+            var dirUPerp = { x: Math.cos(snapAnglePerp), y: Math.sin(snapAnglePerp) };
+
+            var bestAlignVPerp = null;
+            var bestAlignDistPerp = Infinity;
+            var snapTolP = snapDistMm || 200;
+
+            for (var rvp = 0; rvp < refVertices.length; rvp++) {
+              var rvpPt = refVertices[rvp];
+              var projLenP = (rvpPt.x - this.wallChainStart.x) * dirUPerp.x + (rvpPt.y - this.wallChainStart.y) * dirUPerp.y;
+              if (projLenP > 60) {
+                var dLenP = Math.abs(targetDist - projLenP);
+                if (dLenP < snapTolP && dLenP < bestAlignDistPerp) {
+                  bestAlignDistPerp = dLenP;
+                  bestAlignVPerp = { pt: rvpPt, len: Math.round(projLenP) };
+                }
+              }
+            }
+
             var distCleanPerp = (this.numericInputBuffer && parsedTypedDist > 0) ? parsedTypedDist :
-              (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist);
-            snapped.x = Math.round(this.wallChainStart.x + Math.cos(snapAnglePerp) * distCleanPerp);
-            snapped.y = Math.round(this.wallChainStart.y + Math.sin(snapAnglePerp) * distCleanPerp);
-            return {
+              (bestAlignVPerp ? bestAlignVPerp.len : (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist));
+
+            snapped.x = Math.round(this.wallChainStart.x + dirUPerp.x * distCleanPerp);
+            snapped.y = Math.round(this.wallChainStart.y + dirUPerp.y * distCleanPerp);
+
+            var retPerp = {
               pt: snapped,
               type: 'perpendicular',
               target: ew,
-              label: '⊥ 90° Perpendicular',
+              label: bestAlignVPerp ? '✛ Dual-Axis Aligned (X & Y)' : '⊥ 90° Perpendicular',
               angleDeg: Math.round(((snapAnglePerp * 180 / Math.PI) % 360 + 360) % 360),
               distMm: distCleanPerp
             };
+            if (bestAlignVPerp) {
+              retPerp.alignedVertex = bestAlignVPerp.pt;
+              retPerp.isDualAxis = true;
+            }
+            return retPerp;
           }
         }
       }
@@ -418,18 +488,72 @@
       var diffOrtho = Math.abs(currentAngle - nearestOrtho);
       if (isShift || diffOrtho < 0.28) { // within ~16 degrees or shift held
         var deg = Math.round(((nearestOrtho * 180 / Math.PI) % 360 + 360) % 360);
-        var distClean = (this.numericInputBuffer && parsedTypedDist > 0) ? parsedTypedDist :
-          (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist);
-        snapped.x = Math.round(this.wallChainStart.x + Math.cos(nearestOrtho) * distClean);
-        snapped.y = Math.round(this.wallChainStart.y + Math.sin(nearestOrtho) * distClean);
-        var orthoLabel = (deg === 0 || deg === 180 || deg === 360) ? '↔ Horizontal' : '↕ Vertical';
-        return {
+        var isHoriz = (deg === 0 || deg === 180 || deg === 360);
+        var isVert = (deg === 90 || deg === 270);
+        var snapTolOrtho = snapDistMm || 220;
+
+        var orthoAlignV = null;
+        var minDiffCoord = Infinity;
+
+        if (isHoriz) {
+          // Drawing horizontally: Y locked to wallChainStart.y. Magnetically snap X to aligned vertex!
+          for (var rvh = 0; rvh < refVertices.length; rvh++) {
+            var vh = refVertices[rvh];
+            var diffX = Math.abs(worldPt.x - vh.x);
+            var isCorrectDir = (deg === 0 && vh.x > this.wallChainStart.x) || (deg === 180 && vh.x < this.wallChainStart.x);
+            if (isCorrectDir && diffX < snapTolOrtho && diffX < minDiffCoord) {
+              minDiffCoord = diffX;
+              orthoAlignV = vh;
+            }
+          }
+        } else if (isVert) {
+          // Drawing vertically: X locked to wallChainStart.x. Magnetically snap Y to aligned vertex!
+          for (var rvv = 0; rvv < refVertices.length; rvv++) {
+            var vv = refVertices[rvv];
+            var diffY = Math.abs(worldPt.y - vv.y);
+            var isCorrectDirV = (deg === 90 && vv.y > this.wallChainStart.y) || (deg === 270 && vv.y < this.wallChainStart.y);
+            if (isCorrectDirV && diffY < snapTolOrtho && diffY < minDiffCoord) {
+              minDiffCoord = diffY;
+              orthoAlignV = vv;
+            }
+          }
+        }
+
+        var distClean;
+        if (this.numericInputBuffer && parsedTypedDist > 0) {
+          distClean = parsedTypedDist;
+          snapped.x = Math.round(this.wallChainStart.x + Math.cos(nearestOrtho) * distClean);
+          snapped.y = Math.round(this.wallChainStart.y + Math.sin(nearestOrtho) * distClean);
+        } else if (orthoAlignV) {
+          if (isHoriz) {
+            snapped.x = orthoAlignV.x;
+            snapped.y = this.wallChainStart.y;
+            distClean = Math.round(Math.abs(orthoAlignV.x - this.wallChainStart.x));
+          } else {
+            snapped.x = this.wallChainStart.x;
+            snapped.y = orthoAlignV.y;
+            distClean = Math.round(Math.abs(orthoAlignV.y - this.wallChainStart.y));
+          }
+        } else {
+          distClean = (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist);
+          snapped.x = Math.round(this.wallChainStart.x + Math.cos(nearestOrtho) * distClean);
+          snapped.y = Math.round(this.wallChainStart.y + Math.sin(nearestOrtho) * distClean);
+        }
+
+        var orthoLabel = isHoriz ? '↔ Horizontal' : '↕ Vertical';
+        var retOrtho = {
           pt: snapped,
           type: 'ortho',
-          label: orthoLabel,
+          label: orthoAlignV ? '✛ Dual-Axis Aligned (X & Y)' : orthoLabel,
           angleDeg: deg,
           distMm: distClean
         };
+        if (orthoAlignV) {
+          retOrtho.alignedVertex = orthoAlignV;
+          retOrtho.isDualAxis = true;
+          retOrtho.alignedAxis = isHoriz ? 'x' : 'y';
+        }
+        return retOrtho;
       }
 
       // 2c. 45° Diagonal increments
@@ -2051,9 +2175,11 @@
         ctx.setLineDash([]);
       }
 
-      // Room Center Label
-      var centroid = Core.Vec2.polygonCentroid(r.polygon);
-      var cScreen = this.worldToScreen(centroid);
+      // Room Center Label (guaranteed strictly within inner walls)
+      var interiorPt = (Core.Vec2 && typeof Core.Vec2.interiorVisualCenter === 'function')
+        ? Core.Vec2.interiorVisualCenter(r.polygon)
+        : Core.Vec2.polygonCentroid(r.polygon);
+      var cScreen = this.worldToScreen(interiorPt);
 
       var nameTxt = r.name || ('Room ' + (i + 1));
       var areaTxt = (r.areaSqM || 0).toFixed(1) + ' m²  ·  ' + Math.round(r.areaSqFt || 0) + ' sq ft';
@@ -3343,7 +3469,11 @@
         }
       }
     } else if (isDrawingWall) {
-      if (snapInfo && snapInfo.isChainClose) {
+      if (snapInfo && (snapInfo.isDualAxis || snapInfo.alignedVertex)) {
+        themeColor = '#10b981';
+        badgeBg = 'rgba(15, 23, 42, 0.92)';
+        badgeText = 'Specify end point';
+      } else if (snapInfo && snapInfo.isChainClose) {
         themeColor = '#10b981'; // Vibrant Emerald
         badgeBg = 'rgba(6, 95, 70, 0.96)';
         badgeText = '⮌ Close Room Loop [Click to Finish]';
@@ -3471,8 +3601,132 @@
       var sEnd = this.worldToScreen(snap.pt);
       var distMm = Math.round(Vec2.dist(this.wallChainStart, snap.pt));
 
+      // Failsafe: check if snapped point aligns with any existing corner on either X or Y within 35mm
+      if (!snap.alignedVertex && distMm > 60) {
+        var pWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
+        for (var fsi = 0; fsi < pWalls.length; fsi++) {
+          var fsw = pWalls[fsi];
+          if (Vec2.dist(fsw.start, this.wallChainStart) > 60) {
+            if (Math.abs(fsw.start.x - snap.pt.x) < 35 || Math.abs(fsw.start.y - snap.pt.y) < 35) {
+              snap.alignedVertex = fsw.start;
+              snap.isDualAxis = true;
+              break;
+            }
+          }
+          if (Vec2.dist(fsw.end, this.wallChainStart) > 60) {
+            if (Math.abs(fsw.end.x - snap.pt.x) < 35 || Math.abs(fsw.end.y - snap.pt.y) < 35) {
+              snap.alignedVertex = fsw.end;
+              snap.isDualAxis = true;
+              break;
+            }
+          }
+        }
+      }
+
       // 1a. Draw alignment guide lines with vibrant color coding
-      if (snap.type === 'perpendicular' || snap.type === 'parallel') {
+      if (snap.isDualAxis || snap.alignedVertex) {
+        // Dual Axis Guidelines: Both X-Axis and Y-Axis displayed simultaneously (AutoCAD standard)
+        var vAlign = snap.alignedVertex;
+        var sAlign = vAlign ? this.worldToScreen(vAlign) : null;
+        var ext = Math.max(this.width || 3000, this.height || 3000) * 1.5;
+
+        var gDx = sEnd.x - sStart.x, gDy = sEnd.y - sStart.y;
+        var gLen = Math.hypot(gDx, gDy) || 1;
+        var isHoriz = Math.abs(gDy) < Math.abs(gDx) * 0.2 || (snap.angleDeg === 0 || snap.angleDeg === 180 || snap.angleDeg === 360);
+        var isVert = Math.abs(gDx) < Math.abs(gDy) * 0.2 || (snap.angleDeg === 90 || snap.angleDeg === 270);
+
+        ctx.save();
+        ctx.strokeStyle = '#10b981'; // Crisp CAD Emerald Green (matching sample image 2)
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([5, 4]);
+
+        // Axis 1: Along the current wall line (passes through sStart and sEnd, extending full canvas)
+        ctx.beginPath();
+        if (isHoriz) {
+          ctx.moveTo(-1000, sEnd.y);
+          ctx.lineTo((this.width || 3000) + 1000, sEnd.y);
+        } else if (isVert) {
+          ctx.moveTo(sEnd.x, -1000);
+          ctx.lineTo(sEnd.x, (this.height || 3000) + 1000);
+        } else {
+          ctx.moveTo(sStart.x - (gDx / gLen) * ext, sStart.y - (gDy / gLen) * ext);
+          ctx.lineTo(sEnd.x + (gDx / gLen) * ext, sEnd.y + (gDy / gLen) * ext);
+        }
+        ctx.stroke();
+
+        // Axis 2: Alignment Tracking Axis (passes through sEnd and sAlign, extending full canvas)
+        ctx.beginPath();
+        if (isHoriz) {
+          ctx.moveTo(sEnd.x, -1000);
+          ctx.lineTo(sEnd.x, (this.height || 3000) + 1000);
+        } else if (isVert) {
+          ctx.moveTo(-1000, sEnd.y);
+          ctx.lineTo((this.width || 3000) + 1000, sEnd.y);
+        } else if (sAlign) {
+          var nX = -gDy / gLen, nY = gDx / gLen;
+          ctx.moveTo(sEnd.x - nX * ext, sEnd.y - nY * ext);
+          ctx.lineTo(sEnd.x + nX * ext, sEnd.y + nY * ext);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        // Corner Crosshair Markers (+) at corners (exactly like sample image 2)
+        var drawCornerPlus = function (ctx, cx, cy) {
+          var arm = 14;
+          ctx.save();
+          // White high-contrast outline
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.moveTo(cx - arm, cy); ctx.lineTo(cx + arm, cy);
+          ctx.moveTo(cx, cy - arm); ctx.lineTo(cx, cy + arm);
+          ctx.stroke();
+          // Vivid Green Core
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(cx - arm, cy); ctx.lineTo(cx + arm, cy);
+          ctx.moveTo(cx, cy - arm); ctx.lineTo(cx, cy + arm);
+          ctx.stroke();
+          ctx.restore();
+        };
+
+        if (sAlign) drawCornerPlus(ctx, sAlign.x, sAlign.y);
+        drawCornerPlus(ctx, sStart.x, sStart.y);
+        drawCornerPlus(ctx, sEnd.x, sEnd.y);
+
+        // Connected previous corners in this wall chain (e.g. top-right in U-shape)
+        var pWallsRef = (this.project && this.project.plan && this.project.plan.walls) || [];
+        for (var wi = 0; wi < pWallsRef.length; wi++) {
+          var pw = pWallsRef[wi];
+          var ss = this.worldToScreen(pw.start);
+          var se = this.worldToScreen(pw.end);
+          if (Vec2.dist(pw.end, this.wallChainStart) < 60 && (!vAlign || Vec2.dist(pw.start, vAlign) > 60)) {
+            drawCornerPlus(ctx, ss.x, ss.y);
+          }
+          if (Vec2.dist(pw.start, this.wallChainStart) < 60 && (!vAlign || Vec2.dist(pw.end, vAlign) > 60)) {
+            drawCornerPlus(ctx, se.x, se.y);
+          }
+        }
+
+        // Dual-Axis Pill Badge
+        var gMidX = (sStart.x + sEnd.x) / 2;
+        var gMidY = (sStart.y + sEnd.y) / 2 - 38;
+        ctx.save();
+        ctx.font = '700 11px "IBM Plex Sans", sans-serif';
+        var gText = '✛ Dual-Axis Aligned (X & Y Axis)';
+        var gtw = ctx.measureText(gText).width;
+        ctx.fillStyle = '#065f46';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(gMidX - gtw / 2 - 8, gMidY - 10, gtw + 16, 20, 4);
+        else ctx.rect(gMidX - gtw / 2 - 8, gMidY - 10, gtw + 16, 20);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(gText, gMidX, gMidY);
+        ctx.restore();
+      } else if (snap.type === 'perpendicular' || snap.type === 'parallel') {
         var isPerp = (snap.type === 'perpendicular');
         ctx.save();
         ctx.strokeStyle = isPerp ? '#10b981' : '#2563eb'; // Emerald green (perp) or Royal Blue (parallel)

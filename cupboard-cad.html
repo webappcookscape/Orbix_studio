@@ -164,7 +164,7 @@ input,select{font:inherit;color:inherit}
 .stagewrap{flex:1 1 auto;display:flex;flex-direction:column;min-width:0}
 #stage{
   flex:1 1 auto;position:relative;min-height:0;
-  background: radial-gradient(circle at 50% 45%, #FAF9F5 0%, #EBE7DE 58%, #DCD6CA 100%);
+  background: linear-gradient(180deg, #6BB2E6 0%, #8CC2EB 35%, #B8DCF5 70%, #DDF0FD 100%);
   perspective:2600px;perspective-origin:50% 46%;
   overflow:hidden;cursor:grab;touch-action:none;
 }
@@ -3122,7 +3122,8 @@ body.role-employee #adminCreateEmpBox,
                 <optgroup label="Cookscape Modular Units Catalog">
                   <option value="ctvb-1d-1dr" selected>ctvb-1d-1dr: CROCKERY/TV BASE 1DOOR 1 DRAWER (450×200)</option>
                   <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (900×750)</option>
-                  <option value="fm-rt-01">fm-rt-01: FCM -RT Kitchen Base (1200×750)</option>
+                  <option value="fcm-rt">fcm-rt: FCM-RT (Cookscape) (1200×720)</option>
+                  <option value="fm-rt-01">fm-rt-01: FCM-RT (Cookscape) (1200×720)</option>
                   <option value="fm-120">fm-120: FM 120 Kitchen Base (1200×750)</option>
                   <option value="fm-60">fm-60: FM 60 Kitchen Base (600×750)</option>
                   <option value="wm-60-dbl">wm-60-dbl: WM 60 DOUBLE Kitchen Wall (600×600)</option>
@@ -3639,31 +3640,31 @@ body.role-employee #adminCreateEmpBox,
     </div>
 
     <div class="modal-body furn-catalog-body">
-      <!-- Featured Spotlight Card: FCM -RT (Kitchen Base) (1200×750) -->
+      <!-- Featured Spotlight Card: FCM-RT (Cookscape) (1200×720) -->
       <div class="furn-spotlight-card" id="furnSpotlightCard">
         <div class="spotlight-left">
           <div class="spotlight-icon">🍳</div>
           <div class="spotlight-info">
             <div class="spotlight-badge-row">
               <span class="spotlight-pill">⭐ FEATURED KITCHEN BASE</span>
-              <span class="spotlight-code">code: fm-rt-01</span>
+              <span class="spotlight-code">code: fcm-rt</span>
             </div>
-            <h4 class="spotlight-title">FCM -RT (Kitchen Base)</h4>
+            <h4 class="spotlight-title">FCM-RT (Cookscape)</h4>
             <div class="spotlight-dims">
               <span class="dim-chip"><b>W</b> 1200 mm</span>
-              <span class="dim-chip"><b>H</b> 750 mm</span>
-              <span class="dim-chip"><b>D</b> 550 mm</span>
-              <span class="spec-chip">1 Shutter · Slab · G-Profile Black Handle</span>
+              <span class="dim-chip"><b>H</b> 720 mm</span>
+              <span class="dim-chip"><b>D</b> 560 mm</span>
+              <span class="spec-chip">600mm Fixed Panel + 600mm Movable Shutter · Slab · G-Profile Handle</span>
             </div>
             <div class="spotlight-materials">
-              <span>Shutter: <b>HDHMR 18mm (Absolute White)</b></span>
-              <span>Carcass: <b>BWP 18mm Waterproof</b></span>
+              <span>Shutter: <b>HDHMR 18mm (MDF 7701)</b></span>
+              <span>Carcass: <b>BWP 18mm Waterproof (MDF 1135)</b></span>
             </div>
           </div>
         </div>
         <div class="spotlight-action">
           <div class="spotlight-price">₹ 17,398.79 <small>Est. base</small></div>
-          <button type="button" class="btn primary furn-select-btn" id="spotlightSelectFCMBtn" data-furn-id="fm-rt-01">🎯 Select &amp; Place</button>
+          <button type="button" class="btn primary furn-select-btn" id="spotlightSelectFCMBtn" data-furn-id="fcm-rt">🎯 Select &amp; Place</button>
         </div>
       </div>
 
@@ -4055,6 +4056,7 @@ body.role-employee #adminCreateEmpBox,
   "ctvb-2dr": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"37,92 77,89.6 97.03999999999999,81.91999999999999 81.03999999999999,83.91999999999999 31,94\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"36,83 70,80.6 70,85.6 36,88\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"73,43.6 91.03999999999999,33.92 91.03999999999999,75.91999999999999 73,85.6\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"33,46 51.04,36.32 91.03999999999999,33.92 73,43.6\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <line x1=\"33\" y1=\"46\" x2=\"73\" y2=\"43.6\" stroke=\"#64748B\" stroke-width=\"1.8\" />\n  <polygon points=\"33,46 73,43.6 73,85.6 33,88\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"36,50 70,47.6 70,63.6 36,66\" fill=\"#00B894\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"45.35\" y1=\"56.8\" x2=\"60.650000000000006\" y2=\"56.08\" stroke=\"#F1F5F9\" stroke-width=\"2.2\" stroke-linecap=\"round\" />\n  <line x1=\"45.35\" y1=\"56.8\" x2=\"60.650000000000006\" y2=\"56.08\" stroke=\"#475569\" stroke-width=\"0.8\" stroke-linecap=\"round\" />\n  <polygon points=\"36,68 70,65.6 70,81.6 36,84\" fill=\"#00B894\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"45.35\" y1=\"74.8\" x2=\"60.650000000000006\" y2=\"74.08\" stroke=\"#F1F5F9\" stroke-width=\"2.2\" stroke-linecap=\"round\" />\n  <line x1=\"45.35\" y1=\"74.8\" x2=\"60.650000000000006\" y2=\"74.08\" stroke=\"#475569\" stroke-width=\"0.8\" stroke-linecap=\"round\" />\n</svg>",
   "ctvw-2d": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"29,88 89,84.4 105.76,78.48 89.76,80.48 23,90\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"85,37.4 99.76,29.479999999999997 99.76,72.48 85,80.4\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"25,41 39.76,33.08 99.76,29.479999999999997 85,37.4\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"25,41 85,37.4 85,80.4 25,84\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <path d=\"M 25 41 Q 55 25 85 37.4 Z\" fill=\"#F59E0B\" stroke=\"#1E293B\" stroke-width=\"1.3\" />\n  <circle cx=\"55\" cy=\"26\" r=\"3\" fill=\"#D97706\" stroke=\"#1E293B\" stroke-width=\"1\" />\n  <polygon points=\"28,44 54,42.2 54,79.2 28,81\" fill=\"#FEF3C7\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"56,42.2 82,40.4 82,77.4 56,79.2\" fill=\"#FEF3C7\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"30\" y1=\"51.4\" x2=\"52\" y2=\"49.6\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"58\" y1=\"49.6\" x2=\"80\" y2=\"47.8\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"30\" y1=\"58.8\" x2=\"52\" y2=\"57\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"58\" y1=\"57\" x2=\"80\" y2=\"55.199999999999996\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"30\" y1=\"66.2\" x2=\"52\" y2=\"64.4\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"58\" y1=\"64.4\" x2=\"80\" y2=\"62.6\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"30\" y1=\"73.6\" x2=\"52\" y2=\"71.8\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"58\" y1=\"71.8\" x2=\"80\" y2=\"70\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <circle cx=\"51\" cy=\"62.5\" r=\"2\" fill=\"#B45309\" stroke=\"#78350F\" stroke-width=\"0.8\" />\n  <circle cx=\"59\" cy=\"62.5\" r=\"2\" fill=\"#B45309\" stroke=\"#78350F\" stroke-width=\"0.8\" />\n</svg>",
   "ctvw-obs-02": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"22,82 96,77.56 112.76,71.64 96.76,73.64 16,84\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"92,41.56 106.76,33.64 106.76,65.64 92,73.56\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"18,46 32.76,38.08 106.76,33.64 92,41.56\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"18,46 92,41.56 92,73.56 18,78\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"27,45.5 95,41.06 95,67.06 27,71.5\" fill=\"#E2E8F0\" stroke=\"#CBD5E1\" stroke-width=\"0.8\" />\n  <polygon points=\"21,49 27,45.5 95,41.06 89,44.56\" fill=\"#94A3B8\" />\n  <polygon points=\"21,49 27,45.5 27,71.5 21,75\" fill=\"#CBD5E1\" />\n  <polygon points=\"21,57.666666666666664 89,53.22666666666667 95,49.72666666666667 27,54.166666666666664\" fill=\"#F8FAFC\" stroke=\"#1E293B\" stroke-width=\"1\" />\n  <line x1=\"23\" y1=\"53.666666666666664\" x2=\"87\" y2=\"49.22666666666667\" stroke=\"#94A3B8\" stroke-width=\"1.8\" stroke-linecap=\"round\" />\n  <polygon points=\"21,66.33333333333333 89,61.89333333333333 95,58.39333333333333 27,62.83333333333333\" fill=\"#F8FAFC\" stroke=\"#1E293B\" stroke-width=\"1\" />\n  <line x1=\"23\" y1=\"62.33333333333333\" x2=\"87\" y2=\"57.89333333333333\" stroke=\"#94A3B8\" stroke-width=\"1.8\" stroke-linecap=\"round\" />\n</svg>",
+  "fcm-rt": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"18,97 96,92.32 116.03999999999999,84.63999999999999 100.03999999999999,86.63999999999999 12,99\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"17,88 89,83.32 89,88.32 17,93\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"92,35.32 110.03999999999999,25.64 110.03999999999999,78.63999999999999 92,88.32\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"14,40 32.04,30.32 110.03999999999999,25.64 92,35.32\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <line x1=\"14\" y1=\"40\" x2=\"92\" y2=\"35.32\" stroke=\"#64748B\" stroke-width=\"1.8\" />\n  <polygon points=\"14,40 92,35.32 92,88.32 14,93\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"17,43 53,40.66 53,87.66 17,90\" fill=\"#D1D5DB\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"54,40.66 89,38.32 89,85.32 54,87.66\" fill=\"#E5E7EB\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"84.5\" y1=\"62.739999999999995\" x2=\"84.5\" y2=\"71.74\" stroke=\"#1E293B\" stroke-width=\"2.4\" stroke-linecap=\"round\" />\n</svg>",
   "fm-rt-01": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"18,97 96,92.32 116.03999999999999,84.63999999999999 100.03999999999999,86.63999999999999 12,99\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"17,88 89,83.32 89,88.32 17,93\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"92,35.32 110.03999999999999,25.64 110.03999999999999,78.63999999999999 92,88.32\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"14,40 32.04,30.32 110.03999999999999,25.64 92,35.32\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <line x1=\"14\" y1=\"40\" x2=\"92\" y2=\"35.32\" stroke=\"#64748B\" stroke-width=\"1.8\" />\n  <polygon points=\"14,40 92,35.32 92,88.32 14,93\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"17,43 89,38.32 89,85.32 17,90\" fill=\"#00B894\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"84.5\" y1=\"62.739999999999995\" x2=\"84.5\" y2=\"71.74\" stroke=\"#F1F5F9\" stroke-width=\"2\" stroke-linecap=\"round\" />\n  <line x1=\"84.5\" y1=\"62.739999999999995\" x2=\"84.5\" y2=\"71.74\" stroke=\"#475569\" stroke-width=\"0.8\" stroke-linecap=\"round\" />\n</svg>",
   "fm-120": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"18,97 96,92.32 116.03999999999999,84.63999999999999 100.03999999999999,86.63999999999999 12,99\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"17,88 89,83.32 89,88.32 17,93\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"92,35.32 110.03999999999999,25.64 110.03999999999999,78.63999999999999 92,88.32\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"14,40 32.04,30.32 110.03999999999999,25.64 92,35.32\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <line x1=\"14\" y1=\"40\" x2=\"92\" y2=\"35.32\" stroke=\"#64748B\" stroke-width=\"1.8\" />\n  <polygon points=\"14,40 92,35.32 92,88.32 14,93\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"17,43 52,40.66 52,87.66 17,90\" fill=\"#00B894\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"48\" y1=\"62.739999999999995\" x2=\"48\" y2=\"71.74\" stroke=\"#F1F5F9\" stroke-width=\"2\" stroke-linecap=\"round\" />\n  <line x1=\"48\" y1=\"62.739999999999995\" x2=\"48\" y2=\"71.74\" stroke=\"#475569\" stroke-width=\"0.8\" stroke-linecap=\"round\" />\n  <polygon points=\"53,40.66 89,38.32 89,85.32 53,87.66\" fill=\"#00B894\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"57\" y1=\"60.39999999999999\" x2=\"57\" y2=\"69.39999999999999\" stroke=\"#F1F5F9\" stroke-width=\"2\" stroke-linecap=\"round\" />\n  <line x1=\"57\" y1=\"60.39999999999999\" x2=\"57\" y2=\"69.39999999999999\" stroke=\"#475569\" stroke-width=\"0.8\" stroke-linecap=\"round\" />\n</svg>",
   "fm-45": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"37,99 77,96.6 97.03999999999999,88.91999999999999 81.03999999999999,90.91999999999999 31,101\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"36,90 70,87.6 70,92.6 36,95\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"73,36.6 91.03999999999999,26.92 91.03999999999999,82.91999999999999 73,92.6\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"33,39 51.04,29.32 91.03999999999999,26.92 73,36.6\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <line x1=\"33\" y1=\"39\" x2=\"73\" y2=\"36.6\" stroke=\"#64748B\" stroke-width=\"1.8\" />\n  <polygon points=\"33,39 73,36.6 73,92.6 33,95\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"36,42 70,39.6 70,89.6 36,92\" fill=\"#00B894\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"65.5\" y1=\"63\" x2=\"65.5\" y2=\"72\" stroke=\"#F1F5F9\" stroke-width=\"2\" stroke-linecap=\"round\" />\n  <line x1=\"65.5\" y1=\"63\" x2=\"65.5\" y2=\"72\" stroke=\"#475569\" stroke-width=\"0.8\" stroke-linecap=\"round\" />\n</svg>",
@@ -7144,6 +7146,58 @@ body.role-employee #adminCreateEmpBox,
       }
       return inside;
     },
+    // Guaranteed Interior Visual Center (Pole of Inaccessibility)
+    // Ensures room title/badge point is strictly inside room walls, even for concave (L/T-shaped) polygons
+    interiorVisualCenter: function (poly) {
+      if (!poly || poly.length < 3) return { x: 0, y: 0 };
+      var centroid = Vec2.polygonCentroid(poly);
+      // Check if centroid is comfortably inside polygon (at least 150mm from all wall edges)
+      if (Vec2.pointInPolygon(centroid, poly)) {
+        var minClearance = Infinity;
+        for (var i = 0; i < poly.length; i++) {
+          var p1 = poly[i], p2 = poly[(i + 1) % poly.length];
+          var proj = Vec2.projectOnSegment(centroid, p1, p2);
+          if (proj.dist < minClearance) minClearance = proj.dist;
+        }
+        if (minClearance >= 150) {
+          return centroid;
+        }
+      }
+
+      // If centroid is outside (e.g. concave L-shape) or too close to a wall, find internal pole of inaccessibility
+      var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (var p = 0; p < poly.length; p++) {
+        if (poly[p].x < minX) minX = poly[p].x;
+        if (poly[p].x > maxX) maxX = poly[p].x;
+        if (poly[p].y < minY) minY = poly[p].y;
+        if (poly[p].y > maxY) maxY = poly[p].y;
+      }
+
+      var bestPt = centroid;
+      var bestDist = -1;
+      var steps = 16;
+      var stepX = (maxX - minX) / steps;
+      var stepY = (maxY - minY) / steps;
+
+      for (var ix = 1; ix < steps; ix++) {
+        for (var iy = 1; iy < steps; iy++) {
+          var cand = { x: minX + ix * stepX, y: minY + iy * stepY };
+          if (Vec2.pointInPolygon(cand, poly)) {
+            var candMinDist = Infinity;
+            for (var e = 0; e < poly.length; e++) {
+              var ep1 = poly[e], ep2 = poly[(e + 1) % poly.length];
+              var cProj = Vec2.projectOnSegment(cand, ep1, ep2);
+              if (cProj.dist < candMinDist) candMinDist = cProj.dist;
+            }
+            if (candMinDist > bestDist) {
+              bestDist = candMinDist;
+              bestPt = cand;
+            }
+          }
+        }
+      }
+      return bestPt;
+    },
     // Polygon sanitization: remove consecutive duplicates, dead-end spikes/reversals, and collinear points
     cleanPolygon: function (pts) {
       if (!pts || !Array.isArray(pts) || pts.length < 3) return [];
@@ -9244,26 +9298,31 @@ body.role-employee #adminCreateEmpBox,
       customRate: 11005.03
     },
     {
-      id: "fm-rt-01",
-      code: "fm-rt-01",
-      name: "FCM -RT",
+      id: "fcm-rt",
+      code: "FCM-RT",
+      name: "FCM-RT (Cookscape)",
       modelType: "kitchen_fm",
       category: "kitchen_base",
       costCategory: "Kitchen - FM",
-      areaSqft: 9.687523546,
+      areaSqft: 9.30,
       icon: "🍳",
-      dimensions: { W: 1200, H: 750, D: 550 },
+      dimensions: { W: 1200, H: 720, D: 560 },
+      elevation: 0,
       materials: {
-        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
-        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
       },
       unitConfig: {
+        ctype: "kbase",
+        unitType: "fcm-rt",
+        fixedPanel: { enabled: true, width: 600, type: "fixed" },
+        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
-        sections: 0,
+        sections: 2,
         shelves: 1,
         drawers: 0,
         loft: false,
@@ -9272,8 +9331,48 @@ body.role-employee #adminCreateEmpBox,
         handle: "gprof",
         hfinish: "black",
         led: false,
-        carcass: "BWP_18mm",
-        shutterCol: "BLUE"
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 17398.79 },
+      customRate: 17398.79
+    },
+    {
+      id: "fm-rt-01",
+      code: "fm-rt-01",
+      name: "FCM-RT (Cookscape)",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 9.30,
+      icon: "🍳",
+      dimensions: { W: 1200, H: 720, D: 560 },
+      elevation: 0,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kbase",
+        unitType: "fcm-rt",
+        fixedPanel: { enabled: true, width: 600, type: "fixed" },
+        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 2,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
       },
       pricingOverrides: { baseRate: 17398.79 },
       customRate: 17398.79
@@ -11658,6 +11757,7 @@ body.role-employee #adminCreateEmpBox,
     detectRooms: detectRooms,
     pruneOrphanDividers: pruneOrphanDividers,
     cleanPolygon: Vec2.cleanPolygon,
+    interiorVisualCenter: Vec2.interiorVisualCenter,
     calculateItemCost: calculateItemCost,
     generateFullQuotation: generateFullQuotation,
     lockQuotationVersion: lockQuotationVersion,
@@ -12044,6 +12144,18 @@ body.role-employee #adminCreateEmpBox,
       var parsedTypedDist = this.parseDimInput(this.numericInputBuffer);
       var targetDist = (this.numericInputBuffer && parsedTypedDist > 0) ? parsedTypedDist : rawDist;
 
+      // Collect all candidate reference vertices for dual-axis tracking (Object Snap Tracking)
+      var refVertices = [];
+      if (this.wallChainFirstPoint && Vec2.dist(this.wallChainFirstPoint, this.wallChainStart) > 60) {
+        refVertices.push(this.wallChainFirstPoint);
+      }
+      for (var vi = 0; vi < walls.length; vi++) {
+        var vw = walls[vi];
+        if (vw.id === ignoreWallId) continue;
+        if (Vec2.dist(vw.start, this.wallChainStart) > 60) refVertices.push(vw.start);
+        if (Vec2.dist(vw.end, this.wallChainStart) > 60) refVertices.push(vw.end);
+      }
+
       // 2a. Perpendicular & Parallel guides relative to existing walls
       for (var j = 0; j < walls.length; j++) {
         var ew = walls[j];
@@ -12056,18 +12168,51 @@ body.role-employee #adminCreateEmpBox,
           var diffP = Math.atan2(Math.sin(currentAngle - parAngles[p]), Math.cos(currentAngle - parAngles[p]));
           if (Math.abs(diffP) < 0.14) { // within ~8 degrees
             var snapAngle = parAngles[p];
+            var dirU = { x: Math.cos(snapAngle), y: Math.sin(snapAngle) };
+
+            // Check if projecting along dirU aligns with any reference vertex (Dual-Axis Alignment)
+            var bestAlignV = null;
+            var bestAlignDist = Infinity;
+            var snapTol = snapDistMm || 200;
+
+            for (var rvi = 0; rvi < refVertices.length; rvi++) {
+              var rv = refVertices[rvi];
+              var projLen = (rv.x - this.wallChainStart.x) * dirU.x + (rv.y - this.wallChainStart.y) * dirU.y;
+              if (projLen > 60) {
+                var dLen = Math.abs(targetDist - projLen);
+                if (dLen < snapTol && dLen < bestAlignDist) {
+                  bestAlignDist = dLen;
+                  bestAlignV = { pt: rv, len: Math.round(projLen) };
+                }
+              }
+            }
+
+            // Also check matching the length of ew itself
+            var ewLen = Core.wallLength(ew);
+            if (ewLen > 60 && Math.abs(targetDist - ewLen) < snapTol && Math.abs(targetDist - ewLen) < bestAlignDist) {
+              var oppPt = (Vec2.dist(ew.start, this.wallChainStart) < Vec2.dist(ew.end, this.wallChainStart)) ? ew.end : ew.start;
+              bestAlignV = { pt: oppPt, len: Math.round(ewLen) };
+            }
+
             var distCleanP = (this.numericInputBuffer && parsedTypedDist > 0) ? parsedTypedDist :
-              (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist);
-            snapped.x = Math.round(this.wallChainStart.x + Math.cos(snapAngle) * distCleanP);
-            snapped.y = Math.round(this.wallChainStart.y + Math.sin(snapAngle) * distCleanP);
-            return {
+              (bestAlignV ? bestAlignV.len : (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist));
+
+            snapped.x = Math.round(this.wallChainStart.x + dirU.x * distCleanP);
+            snapped.y = Math.round(this.wallChainStart.y + dirU.y * distCleanP);
+
+            var retParallel = {
               pt: snapped,
               type: 'parallel',
               target: ew,
-              label: '∥ Parallel',
+              label: bestAlignV ? '✛ Dual-Axis Aligned (X & Y)' : '∥ Parallel',
               angleDeg: Math.round(((snapAngle * 180 / Math.PI) % 360 + 360) % 360),
               distMm: distCleanP
             };
+            if (bestAlignV) {
+              retParallel.alignedVertex = bestAlignV.pt;
+              retParallel.isDualAxis = true;
+            }
+            return retParallel;
           }
         }
 
@@ -12077,18 +12222,43 @@ body.role-employee #adminCreateEmpBox,
           var diffQ = Math.atan2(Math.sin(currentAngle - perpAngles[q]), Math.cos(currentAngle - perpAngles[q]));
           if (Math.abs(diffQ) < 0.14) {
             var snapAnglePerp = perpAngles[q];
+            var dirUPerp = { x: Math.cos(snapAnglePerp), y: Math.sin(snapAnglePerp) };
+
+            var bestAlignVPerp = null;
+            var bestAlignDistPerp = Infinity;
+            var snapTolP = snapDistMm || 200;
+
+            for (var rvp = 0; rvp < refVertices.length; rvp++) {
+              var rvpPt = refVertices[rvp];
+              var projLenP = (rvpPt.x - this.wallChainStart.x) * dirUPerp.x + (rvpPt.y - this.wallChainStart.y) * dirUPerp.y;
+              if (projLenP > 60) {
+                var dLenP = Math.abs(targetDist - projLenP);
+                if (dLenP < snapTolP && dLenP < bestAlignDistPerp) {
+                  bestAlignDistPerp = dLenP;
+                  bestAlignVPerp = { pt: rvpPt, len: Math.round(projLenP) };
+                }
+              }
+            }
+
             var distCleanPerp = (this.numericInputBuffer && parsedTypedDist > 0) ? parsedTypedDist :
-              (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist);
-            snapped.x = Math.round(this.wallChainStart.x + Math.cos(snapAnglePerp) * distCleanPerp);
-            snapped.y = Math.round(this.wallChainStart.y + Math.sin(snapAnglePerp) * distCleanPerp);
-            return {
+              (bestAlignVPerp ? bestAlignVPerp.len : (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist));
+
+            snapped.x = Math.round(this.wallChainStart.x + dirUPerp.x * distCleanPerp);
+            snapped.y = Math.round(this.wallChainStart.y + dirUPerp.y * distCleanPerp);
+
+            var retPerp = {
               pt: snapped,
               type: 'perpendicular',
               target: ew,
-              label: '⊥ 90° Perpendicular',
+              label: bestAlignVPerp ? '✛ Dual-Axis Aligned (X & Y)' : '⊥ 90° Perpendicular',
               angleDeg: Math.round(((snapAnglePerp * 180 / Math.PI) % 360 + 360) % 360),
               distMm: distCleanPerp
             };
+            if (bestAlignVPerp) {
+              retPerp.alignedVertex = bestAlignVPerp.pt;
+              retPerp.isDualAxis = true;
+            }
+            return retPerp;
           }
         }
       }
@@ -12100,18 +12270,72 @@ body.role-employee #adminCreateEmpBox,
       var diffOrtho = Math.abs(currentAngle - nearestOrtho);
       if (isShift || diffOrtho < 0.28) { // within ~16 degrees or shift held
         var deg = Math.round(((nearestOrtho * 180 / Math.PI) % 360 + 360) % 360);
-        var distClean = (this.numericInputBuffer && parsedTypedDist > 0) ? parsedTypedDist :
-          (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist);
-        snapped.x = Math.round(this.wallChainStart.x + Math.cos(nearestOrtho) * distClean);
-        snapped.y = Math.round(this.wallChainStart.y + Math.sin(nearestOrtho) * distClean);
-        var orthoLabel = (deg === 0 || deg === 180 || deg === 360) ? '↔ Horizontal' : '↕ Vertical';
-        return {
+        var isHoriz = (deg === 0 || deg === 180 || deg === 360);
+        var isVert = (deg === 90 || deg === 270);
+        var snapTolOrtho = snapDistMm || 220;
+
+        var orthoAlignV = null;
+        var minDiffCoord = Infinity;
+
+        if (isHoriz) {
+          // Drawing horizontally: Y locked to wallChainStart.y. Magnetically snap X to aligned vertex!
+          for (var rvh = 0; rvh < refVertices.length; rvh++) {
+            var vh = refVertices[rvh];
+            var diffX = Math.abs(worldPt.x - vh.x);
+            var isCorrectDir = (deg === 0 && vh.x > this.wallChainStart.x) || (deg === 180 && vh.x < this.wallChainStart.x);
+            if (isCorrectDir && diffX < snapTolOrtho && diffX < minDiffCoord) {
+              minDiffCoord = diffX;
+              orthoAlignV = vh;
+            }
+          }
+        } else if (isVert) {
+          // Drawing vertically: X locked to wallChainStart.x. Magnetically snap Y to aligned vertex!
+          for (var rvv = 0; rvv < refVertices.length; rvv++) {
+            var vv = refVertices[rvv];
+            var diffY = Math.abs(worldPt.y - vv.y);
+            var isCorrectDirV = (deg === 90 && vv.y > this.wallChainStart.y) || (deg === 270 && vv.y < this.wallChainStart.y);
+            if (isCorrectDirV && diffY < snapTolOrtho && diffY < minDiffCoord) {
+              minDiffCoord = diffY;
+              orthoAlignV = vv;
+            }
+          }
+        }
+
+        var distClean;
+        if (this.numericInputBuffer && parsedTypedDist > 0) {
+          distClean = parsedTypedDist;
+          snapped.x = Math.round(this.wallChainStart.x + Math.cos(nearestOrtho) * distClean);
+          snapped.y = Math.round(this.wallChainStart.y + Math.sin(nearestOrtho) * distClean);
+        } else if (orthoAlignV) {
+          if (isHoriz) {
+            snapped.x = orthoAlignV.x;
+            snapped.y = this.wallChainStart.y;
+            distClean = Math.round(Math.abs(orthoAlignV.x - this.wallChainStart.x));
+          } else {
+            snapped.x = this.wallChainStart.x;
+            snapped.y = orthoAlignV.y;
+            distClean = Math.round(Math.abs(orthoAlignV.y - this.wallChainStart.y));
+          }
+        } else {
+          distClean = (this.project.plan.snapToGrid ? Math.round(targetDist / 50) * 50 : targetDist);
+          snapped.x = Math.round(this.wallChainStart.x + Math.cos(nearestOrtho) * distClean);
+          snapped.y = Math.round(this.wallChainStart.y + Math.sin(nearestOrtho) * distClean);
+        }
+
+        var orthoLabel = isHoriz ? '↔ Horizontal' : '↕ Vertical';
+        var retOrtho = {
           pt: snapped,
           type: 'ortho',
-          label: orthoLabel,
+          label: orthoAlignV ? '✛ Dual-Axis Aligned (X & Y)' : orthoLabel,
           angleDeg: deg,
           distMm: distClean
         };
+        if (orthoAlignV) {
+          retOrtho.alignedVertex = orthoAlignV;
+          retOrtho.isDualAxis = true;
+          retOrtho.alignedAxis = isHoriz ? 'x' : 'y';
+        }
+        return retOrtho;
       }
 
       // 2c. 45° Diagonal increments
@@ -13733,9 +13957,11 @@ body.role-employee #adminCreateEmpBox,
         ctx.setLineDash([]);
       }
 
-      // Room Center Label
-      var centroid = Core.Vec2.polygonCentroid(r.polygon);
-      var cScreen = this.worldToScreen(centroid);
+      // Room Center Label (guaranteed strictly within inner walls)
+      var interiorPt = (Core.Vec2 && typeof Core.Vec2.interiorVisualCenter === 'function')
+        ? Core.Vec2.interiorVisualCenter(r.polygon)
+        : Core.Vec2.polygonCentroid(r.polygon);
+      var cScreen = this.worldToScreen(interiorPt);
 
       var nameTxt = r.name || ('Room ' + (i + 1));
       var areaTxt = (r.areaSqM || 0).toFixed(1) + ' m²  ·  ' + Math.round(r.areaSqFt || 0) + ' sq ft';
@@ -15025,7 +15251,11 @@ body.role-employee #adminCreateEmpBox,
         }
       }
     } else if (isDrawingWall) {
-      if (snapInfo && snapInfo.isChainClose) {
+      if (snapInfo && (snapInfo.isDualAxis || snapInfo.alignedVertex)) {
+        themeColor = '#10b981';
+        badgeBg = 'rgba(15, 23, 42, 0.92)';
+        badgeText = 'Specify end point';
+      } else if (snapInfo && snapInfo.isChainClose) {
         themeColor = '#10b981'; // Vibrant Emerald
         badgeBg = 'rgba(6, 95, 70, 0.96)';
         badgeText = '⮌ Close Room Loop [Click to Finish]';
@@ -15153,8 +15383,132 @@ body.role-employee #adminCreateEmpBox,
       var sEnd = this.worldToScreen(snap.pt);
       var distMm = Math.round(Vec2.dist(this.wallChainStart, snap.pt));
 
+      // Failsafe: check if snapped point aligns with any existing corner on either X or Y within 35mm
+      if (!snap.alignedVertex && distMm > 60) {
+        var pWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
+        for (var fsi = 0; fsi < pWalls.length; fsi++) {
+          var fsw = pWalls[fsi];
+          if (Vec2.dist(fsw.start, this.wallChainStart) > 60) {
+            if (Math.abs(fsw.start.x - snap.pt.x) < 35 || Math.abs(fsw.start.y - snap.pt.y) < 35) {
+              snap.alignedVertex = fsw.start;
+              snap.isDualAxis = true;
+              break;
+            }
+          }
+          if (Vec2.dist(fsw.end, this.wallChainStart) > 60) {
+            if (Math.abs(fsw.end.x - snap.pt.x) < 35 || Math.abs(fsw.end.y - snap.pt.y) < 35) {
+              snap.alignedVertex = fsw.end;
+              snap.isDualAxis = true;
+              break;
+            }
+          }
+        }
+      }
+
       // 1a. Draw alignment guide lines with vibrant color coding
-      if (snap.type === 'perpendicular' || snap.type === 'parallel') {
+      if (snap.isDualAxis || snap.alignedVertex) {
+        // Dual Axis Guidelines: Both X-Axis and Y-Axis displayed simultaneously (AutoCAD standard)
+        var vAlign = snap.alignedVertex;
+        var sAlign = vAlign ? this.worldToScreen(vAlign) : null;
+        var ext = Math.max(this.width || 3000, this.height || 3000) * 1.5;
+
+        var gDx = sEnd.x - sStart.x, gDy = sEnd.y - sStart.y;
+        var gLen = Math.hypot(gDx, gDy) || 1;
+        var isHoriz = Math.abs(gDy) < Math.abs(gDx) * 0.2 || (snap.angleDeg === 0 || snap.angleDeg === 180 || snap.angleDeg === 360);
+        var isVert = Math.abs(gDx) < Math.abs(gDy) * 0.2 || (snap.angleDeg === 90 || snap.angleDeg === 270);
+
+        ctx.save();
+        ctx.strokeStyle = '#10b981'; // Crisp CAD Emerald Green (matching sample image 2)
+        ctx.lineWidth = 1.8;
+        ctx.setLineDash([5, 4]);
+
+        // Axis 1: Along the current wall line (passes through sStart and sEnd, extending full canvas)
+        ctx.beginPath();
+        if (isHoriz) {
+          ctx.moveTo(-1000, sEnd.y);
+          ctx.lineTo((this.width || 3000) + 1000, sEnd.y);
+        } else if (isVert) {
+          ctx.moveTo(sEnd.x, -1000);
+          ctx.lineTo(sEnd.x, (this.height || 3000) + 1000);
+        } else {
+          ctx.moveTo(sStart.x - (gDx / gLen) * ext, sStart.y - (gDy / gLen) * ext);
+          ctx.lineTo(sEnd.x + (gDx / gLen) * ext, sEnd.y + (gDy / gLen) * ext);
+        }
+        ctx.stroke();
+
+        // Axis 2: Alignment Tracking Axis (passes through sEnd and sAlign, extending full canvas)
+        ctx.beginPath();
+        if (isHoriz) {
+          ctx.moveTo(sEnd.x, -1000);
+          ctx.lineTo(sEnd.x, (this.height || 3000) + 1000);
+        } else if (isVert) {
+          ctx.moveTo(-1000, sEnd.y);
+          ctx.lineTo((this.width || 3000) + 1000, sEnd.y);
+        } else if (sAlign) {
+          var nX = -gDy / gLen, nY = gDx / gLen;
+          ctx.moveTo(sEnd.x - nX * ext, sEnd.y - nY * ext);
+          ctx.lineTo(sEnd.x + nX * ext, sEnd.y + nY * ext);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        // Corner Crosshair Markers (+) at corners (exactly like sample image 2)
+        var drawCornerPlus = function (ctx, cx, cy) {
+          var arm = 14;
+          ctx.save();
+          // White high-contrast outline
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.moveTo(cx - arm, cy); ctx.lineTo(cx + arm, cy);
+          ctx.moveTo(cx, cy - arm); ctx.lineTo(cx, cy + arm);
+          ctx.stroke();
+          // Vivid Green Core
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(cx - arm, cy); ctx.lineTo(cx + arm, cy);
+          ctx.moveTo(cx, cy - arm); ctx.lineTo(cx, cy + arm);
+          ctx.stroke();
+          ctx.restore();
+        };
+
+        if (sAlign) drawCornerPlus(ctx, sAlign.x, sAlign.y);
+        drawCornerPlus(ctx, sStart.x, sStart.y);
+        drawCornerPlus(ctx, sEnd.x, sEnd.y);
+
+        // Connected previous corners in this wall chain (e.g. top-right in U-shape)
+        var pWallsRef = (this.project && this.project.plan && this.project.plan.walls) || [];
+        for (var wi = 0; wi < pWallsRef.length; wi++) {
+          var pw = pWallsRef[wi];
+          var ss = this.worldToScreen(pw.start);
+          var se = this.worldToScreen(pw.end);
+          if (Vec2.dist(pw.end, this.wallChainStart) < 60 && (!vAlign || Vec2.dist(pw.start, vAlign) > 60)) {
+            drawCornerPlus(ctx, ss.x, ss.y);
+          }
+          if (Vec2.dist(pw.start, this.wallChainStart) < 60 && (!vAlign || Vec2.dist(pw.end, vAlign) > 60)) {
+            drawCornerPlus(ctx, se.x, se.y);
+          }
+        }
+
+        // Dual-Axis Pill Badge
+        var gMidX = (sStart.x + sEnd.x) / 2;
+        var gMidY = (sStart.y + sEnd.y) / 2 - 38;
+        ctx.save();
+        ctx.font = '700 11px "IBM Plex Sans", sans-serif';
+        var gText = '✛ Dual-Axis Aligned (X & Y Axis)';
+        var gtw = ctx.measureText(gText).width;
+        ctx.fillStyle = '#065f46';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(gMidX - gtw / 2 - 8, gMidY - 10, gtw + 16, 20, 4);
+        else ctx.rect(gMidX - gtw / 2 - 8, gMidY - 10, gtw + 16, 20);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(gText, gMidX, gMidY);
+        ctx.restore();
+      } else if (snap.type === 'perpendicular' || snap.type === 'parallel') {
         var isPerp = (snap.type === 'perpendicular');
         ctx.save();
         ctx.strokeStyle = isPerp ? '#10b981' : '#2563eb'; // Emerald green (perp) or Royal Blue (parallel)
@@ -16015,6 +16369,14 @@ body.role-employee #adminCreateEmpBox,
 
   ArchitecturalRenderer.prototype.createFloorMaterial = function (type) {
     if (typeof THREE === 'undefined') return null;
+    if (type === 'neutral_ground' || type === 'grass') {
+      return new THREE.MeshStandardMaterial({
+        color: 0x4E8A42, // Lush grass green
+        roughness: 0.92,
+        metalness: 0.0,
+        side: THREE.DoubleSide
+      });
+    }
     type = type || this.selectedFloorType || 'white_tile';
     var tex = ArchitecturalRenderer.createFloorTexture(type);
     var isWood = (type === 'wooden');
@@ -16028,7 +16390,7 @@ body.role-employee #adminCreateEmpBox,
     });
   };
 
-  ArchitecturalRenderer.prototype.setFloorMaterial = function (type) {
+  ArchitecturalRenderer.prototype.setFloorMaterial = function (type, targetRoomId) {
     this.selectedFloorType = type || 'white_tile';
     this.materials.floorTile = this.createFloorMaterial(this.selectedFloorType);
     this.materials.floorWood = (this.selectedFloorType === 'wooden' ? this.materials.floorTile : this.createFloorMaterial('wooden'));
@@ -16037,6 +16399,14 @@ body.role-employee #adminCreateEmpBox,
       var tileSize = (this.selectedFloorType === 'wooden') ? 1200 : (this.selectedFloorType === 'white_tile' ? 1600 : 1200);
       this.group.traverse(function (o) {
         if (o.userData && o.userData.isFloorMesh) {
+          // If targetRoomId is specified, update ONLY that specific room's floor mesh within its walls!
+          if (targetRoomId && o.userData.roomId !== targetRoomId) {
+            return;
+          }
+          // Never apply interior floor tile texture outside walls (bounding_floor remains neutral)
+          if (o.userData.roomId === 'bounding_floor') {
+            return;
+          }
           o.userData.floorFinish = self.selectedFloorType;
           o.material = self.createFloorMaterial(self.selectedFloorType);
           if (o.geometry && o.geometry.attributes && o.geometry.attributes.position && o.geometry.attributes.uv) {
@@ -16739,11 +17109,11 @@ body.role-employee #adminCreateEmpBox,
       }
     }
     if (!isFinite(minX) || !isFinite(maxX)) return null;
-    var pad = 600;
-    minX -= pad; maxX += pad; minY -= pad; maxY += pad;
+    // Bounded strictly to walls (no padding outside walls) with neutral ground finish
     var dummyRoom = {
       id: 'bounding_floor',
       name: 'General Floor',
+      floorFinish: 'grass',
       polygon: [
         { x: minX, y: minY },
         { x: maxX, y: minY },
@@ -18383,7 +18753,7 @@ body.role-employee #adminCreateEmpBox,
             }
 
             if (self.archRenderer && typeof self.archRenderer.setFloorMaterial === 'function') {
-              self.archRenderer.setFloorMaterial(floorType);
+              self.archRenderer.setFloorMaterial(floorType, self.currentIsolatedRoomId);
             }
             if (window.__cc && window.__cc.gl && typeof window.__cc.gl.setFloorMaterial === 'function') {
               window.__cc.gl.setFloorMaterial(floorType);
@@ -19984,6 +20354,7 @@ body.role-employee #adminCreateEmpBox,
             rm.name = e.target.value;
             self.editor.render();
             self.saveToLocalStorage();
+            if (self.update3DStudioRoomOptions) self.update3DStudioRoomOptions();
           });
         }
 
@@ -19994,6 +20365,7 @@ body.role-employee #adminCreateEmpBox,
             self.editor.pushHistory('Rename Room');
             self.editor.render();
             self.saveToLocalStorage();
+            if (self.update3DStudioRoomOptions) self.update3DStudioRoomOptions();
             if (self.render3DHome) self.render3DHome(true);
           });
         });
@@ -20004,6 +20376,14 @@ body.role-employee #adminCreateEmpBox,
             rm.floorFinish = e.target.value;
             self.editor.pushHistory('Change Floor Finish');
             self.saveToLocalStorage();
+            var fType = rm.floorFinish;
+            if (fType === 'wood') fType = 'wooden';
+            else if (fType === 'marble') fType = 'white_tile';
+            else if (fType === 'tile') fType = 'square_tile';
+            else if (fType === 'concrete') fType = 'grey_tile';
+            if (self.archRenderer && typeof self.archRenderer.setFloorMaterial === 'function') {
+              self.archRenderer.setFloorMaterial(fType, rm.id);
+            }
             if (self.render3DHome) self.render3DHome(true);
           });
         }
@@ -22200,6 +22580,24 @@ body.role-employee #adminCreateEmpBox,
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
 
+      // Ensure sky is radiant sky blue and outer ground outside walls is lush grass green
+      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
+        scene.background = new THREE.Color(0x82C3EC);
+      }
+      scene.children.forEach(function (c) {
+        if (c.isMesh && c.geometry && c.geometry.type === 'PlaneGeometry' && c.geometry.parameters && c.geometry.parameters.width >= 100000) {
+          if (typeof gl.makeGrassGroundMat === 'function') {
+            c.material = gl.makeGrassGroundMat();
+          } else if (typeof gl.makeNeutralGroundMat === 'function') {
+            c.material = gl.makeNeutralGroundMat();
+          } else if (c.material) {
+            c.material.map = null;
+            if (c.material.color) c.material.color.setHex(0x4E8A42);
+            c.material.needsUpdate = true;
+          }
+        }
+      });
+
       if (!this.archRenderer && root.Orbix3D) {
         this.archRenderer = new root.Orbix3D(scene);
       }
@@ -23958,6 +24356,15 @@ body.role-employee #adminCreateEmpBox,
         Hn.push({ cx: -u.W / 4 - 12, y: 30 + elev, w: sw, h: shh, hl: true, z: zF + T + T / 2, hd: hd, fin: fin, door: sA });
         Hn.push({ cx: u.W / 4 + 12, y: 30 + elev, w: sw, h: shh, hl: false, z: zF - 6 + T / 2, hd: hd, fin: fin, door: sB });
         fronts.push(sA, sB);
+      } else if (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled)) {
+        // FCM-RT (Fixed Cum Movable - Right Door): Left half is 600mm fixed panel, right half is 600mm movable shutter
+        var fixW = (u.fixedPanel && u.fixedPanel.width) || (u.W / 2);
+        var movW = u.W - fixW - 6;
+        var fixCx = -u.W / 2 + fixW / 2;
+        var movCx = u.W / 2 - movW / 2;
+        frontParts(u, ds, fixCx, 3, fixW - 3, u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
+        hinged(movCx, 3, movW, u.H - 6, zF, false, frontParts(u, ds, movCx, 3, movW, u.H - 6, zF, SC, T, "door"));
+        Hn.push({ cx: movCx, y: 3 + elev, w: movW, h: u.H - 6, hl: false, z: zF + T / 2, hd: hd, fin: fin });
       } else {
         var n = Math.max(1, u.shutters), w1 = (u.W - (n + 1) * 3) / n;
         for (var i = 0; i < n; i++) {
@@ -24983,6 +25390,54 @@ body.role-employee #adminCreateEmpBox,
       });
       return m;
     }
+    function makeGrassGroundMat() {
+      if (matCache["sp|grassGround"]) return matCache["sp|grassGround"];
+      var c = document.createElement("canvas"); c.width = c.height = 512;
+      var g = c.getContext("2d");
+      if (g) {
+        // Rich natural lawn grass green base
+        g.fillStyle = "#46813A";
+        g.fillRect(0, 0, 512, 512);
+
+        // Organic grass sod tone variations
+        var lawnTones = ["#3D7333", "#4A883E", "#559947", "#3E7834", "#4F9042", "#5C9F4E"];
+        for (var i = 0; i < 400; i++) {
+          var x = Math.random() * 512, y = Math.random() * 512, rad = 8 + Math.random() * 24;
+          var grad = g.createRadialGradient(x, y, 0, x, y, rad);
+          var col = lawnTones[Math.floor(Math.random() * lawnTones.length)];
+          grad.addColorStop(0, col);
+          grad.addColorStop(1, "rgba(70, 129, 58, 0)");
+          g.fillStyle = grad;
+          g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
+        }
+
+        // Fine lawn grass blades
+        for (var b = 0; b < 2500; b++) {
+          var bx = Math.random() * 512, by = Math.random() * 512, blen = 3 + Math.random() * 7;
+          var bcol = (b % 3 === 0) ? "#65AD55" : ((b % 3 === 1) ? "#3B6E32" : "#4B893F");
+          g.strokeStyle = bcol; g.lineWidth = 1.0;
+          g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + (Math.random() - 0.5) * 3, by - blen); g.stroke();
+        }
+      }
+
+      var tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(160, 160);
+      tex.encoding = THREE.sRGBEncoding;
+
+      var m = new THREE.MeshStandardMaterial({
+        map: tex,
+        color: 0x4E8A42,
+        roughness: 0.92,
+        metalness: 0.0,
+        side: THREE.DoubleSide
+      });
+      matCache["sp|grassGround"] = m;
+      return m;
+    }
+    function makeNeutralGroundMat() {
+      return makeGrassGroundMat();
+    }
     function init() {
       if (!window.THREE) return false;
       try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" }); }
@@ -24997,6 +25452,7 @@ body.role-employee #adminCreateEmpBox,
       stage.appendChild(renderer.domElement);
       stage.classList.add("gl");
       scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
       camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
@@ -25013,8 +25469,9 @@ body.role-employee #adminCreateEmpBox,
       var fill = new THREE.DirectionalLight(0xdde9f8, 0.55); fill.position.set(2600, 1900, 4800); scene.add(fill);
       var rim = new THREE.DirectionalLight(0xecf0f8, 0.35); rim.position.set(2400, 1600, -2600); scene.add(rim);
       var bounceL = new THREE.DirectionalLight(0xf4ece0, 0.32); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
-      scene.add(new THREE.HemisphereLight(0xf6f8fc, 0x8e8375, 0.45));
-      floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), makeFloorMat());
+      scene.add(new THREE.HemisphereLight(0x82C3EC, 0x4E8A42, 0.45)); // Sky blue overhead + grass green ground bounce
+      var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
+      floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
       root = new THREE.Group(); scene.add(root);
       ok = true; return true;
@@ -26325,7 +26782,7 @@ body.role-employee #adminCreateEmpBox,
       });
       return out;
     }
-    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; if (floor) floor.material = makeFloorMat(type); render(); } };
+    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, makeGrassGroundMat: makeGrassGroundMat, makeNeutralGroundMat: makeGrassGroundMat, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0)); if (floor) floor.material = hasArchHome ? makeGrassGroundMat() : makeFloorMat(type); render(); } };
   })();
 
   /* ═══════════════════════════════════════════════════════════════

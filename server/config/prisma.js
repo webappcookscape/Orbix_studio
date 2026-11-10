@@ -448,9 +448,10 @@ try {
 }
 
 let currentUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/cupboard_cad';
+const shouldSkipPostgres = process.env.SKIP_POSTGRES === 'true' || process.env.USE_JSON_STORE === 'true';
 
 // Active Prisma Client instance
-let activePrisma = new PrismaClient({
+let activePrisma = shouldSkipPostgres ? new MockPrismaClient() : new PrismaClient({
   datasources: { db: { url: currentUrl } },
   log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   errorFormat: 'minimal'
@@ -472,6 +473,11 @@ let isConnected = false;
 let lastError = null;
 
 async function checkDatabaseConnection() {
+  if (shouldSkipPostgres) {
+    isConnected = false;
+    lastError = null;
+    return false;
+  }
   try {
     await activePrisma.$queryRaw`SELECT 1`;
 
@@ -539,13 +545,17 @@ async function checkDatabaseConnection() {
 }
 
 // Initial connection check on module load
-checkDatabaseConnection().then(ok => {
-  if (ok) {
-    console.log('✓ Prisma connected to PostgreSQL live database.');
-  } else {
-    console.warn('⚠ Prisma PostgreSQL connection warning:', lastError);
-  }
-});
+if (shouldSkipPostgres) {
+  console.log('✓ Resilient JSON Data Store mode active (zero data loss mode).');
+} else {
+  checkDatabaseConnection().then(ok => {
+    if (ok) {
+      console.log('✓ Prisma connected to PostgreSQL live database.');
+    } else {
+      console.warn('⚠ Prisma PostgreSQL connection warning:', lastError);
+    }
+  });
+}
 
 function getDatabaseStatus() {
   const url = process.env.DATABASE_URL || currentUrl || '';

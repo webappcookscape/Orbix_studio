@@ -123,6 +123,58 @@
       }
       return inside;
     },
+    // Guaranteed Interior Visual Center (Pole of Inaccessibility)
+    // Ensures room title/badge point is strictly inside room walls, even for concave (L/T-shaped) polygons
+    interiorVisualCenter: function (poly) {
+      if (!poly || poly.length < 3) return { x: 0, y: 0 };
+      var centroid = Vec2.polygonCentroid(poly);
+      // Check if centroid is comfortably inside polygon (at least 150mm from all wall edges)
+      if (Vec2.pointInPolygon(centroid, poly)) {
+        var minClearance = Infinity;
+        for (var i = 0; i < poly.length; i++) {
+          var p1 = poly[i], p2 = poly[(i + 1) % poly.length];
+          var proj = Vec2.projectOnSegment(centroid, p1, p2);
+          if (proj.dist < minClearance) minClearance = proj.dist;
+        }
+        if (minClearance >= 150) {
+          return centroid;
+        }
+      }
+
+      // If centroid is outside (e.g. concave L-shape) or too close to a wall, find internal pole of inaccessibility
+      var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (var p = 0; p < poly.length; p++) {
+        if (poly[p].x < minX) minX = poly[p].x;
+        if (poly[p].x > maxX) maxX = poly[p].x;
+        if (poly[p].y < minY) minY = poly[p].y;
+        if (poly[p].y > maxY) maxY = poly[p].y;
+      }
+
+      var bestPt = centroid;
+      var bestDist = -1;
+      var steps = 16;
+      var stepX = (maxX - minX) / steps;
+      var stepY = (maxY - minY) / steps;
+
+      for (var ix = 1; ix < steps; ix++) {
+        for (var iy = 1; iy < steps; iy++) {
+          var cand = { x: minX + ix * stepX, y: minY + iy * stepY };
+          if (Vec2.pointInPolygon(cand, poly)) {
+            var candMinDist = Infinity;
+            for (var e = 0; e < poly.length; e++) {
+              var ep1 = poly[e], ep2 = poly[(e + 1) % poly.length];
+              var cProj = Vec2.projectOnSegment(cand, ep1, ep2);
+              if (cProj.dist < candMinDist) candMinDist = cProj.dist;
+            }
+            if (candMinDist > bestDist) {
+              bestDist = candMinDist;
+              bestPt = cand;
+            }
+          }
+        }
+      }
+      return bestPt;
+    },
     // Polygon sanitization: remove consecutive duplicates, dead-end spikes/reversals, and collinear points
     cleanPolygon: function (pts) {
       if (!pts || !Array.isArray(pts) || pts.length < 3) return [];
@@ -2223,26 +2275,31 @@
       customRate: 11005.03
     },
     {
-      id: "fm-rt-01",
-      code: "fm-rt-01",
-      name: "FCM -RT",
+      id: "fcm-rt",
+      code: "FCM-RT",
+      name: "FCM-RT (Cookscape)",
       modelType: "kitchen_fm",
       category: "kitchen_base",
       costCategory: "Kitchen - FM",
-      areaSqft: 9.687523546,
+      areaSqft: 9.30,
       icon: "🍳",
-      dimensions: { W: 1200, H: 750, D: 550 },
+      dimensions: { W: 1200, H: 720, D: 560 },
+      elevation: 0,
       materials: {
-        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
-        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
       },
       unitConfig: {
+        ctype: "kbase",
+        unitType: "fcm-rt",
+        fixedPanel: { enabled: true, width: 600, type: "fixed" },
+        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
-        sections: 0,
+        sections: 2,
         shelves: 1,
         drawers: 0,
         loft: false,
@@ -2251,8 +2308,48 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
-        carcass: "BWP_18mm",
-        shutterCol: "BLUE"
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 17398.79 },
+      customRate: 17398.79
+    },
+    {
+      id: "fm-rt-01",
+      code: "fm-rt-01",
+      name: "FCM-RT (Cookscape)",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 9.30,
+      icon: "🍳",
+      dimensions: { W: 1200, H: 720, D: 560 },
+      elevation: 0,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kbase",
+        unitType: "fcm-rt",
+        fixedPanel: { enabled: true, width: 600, type: "fixed" },
+        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 2,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
       },
       pricingOverrides: { baseRate: 17398.79 },
       customRate: 17398.79
@@ -4637,6 +4734,7 @@
     detectRooms: detectRooms,
     pruneOrphanDividers: pruneOrphanDividers,
     cleanPolygon: Vec2.cleanPolygon,
+    interiorVisualCenter: Vec2.interiorVisualCenter,
     calculateItemCost: calculateItemCost,
     generateFullQuotation: generateFullQuotation,
     lockQuotationVersion: lockQuotationVersion,

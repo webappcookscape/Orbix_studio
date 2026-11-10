@@ -159,7 +159,7 @@ input,select{font:inherit;color:inherit}
 .stagewrap{flex:1 1 auto;display:flex;flex-direction:column;min-width:0}
 #stage{
   flex:1 1 auto;position:relative;min-height:0;
-  background: radial-gradient(circle at 50% 45%, #FAF9F5 0%, #EBE7DE 58%, #DCD6CA 100%);
+  background: linear-gradient(180deg, #6BB2E6 0%, #8CC2EB 35%, #B8DCF5 70%, #DDF0FD 100%);
   perspective:2600px;perspective-origin:50% 46%;
   overflow:hidden;cursor:grab;touch-action:none;
 }

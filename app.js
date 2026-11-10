@@ -709,6 +709,15 @@
         Hn.push({ cx: -u.W / 4 - 12, y: 30 + elev, w: sw, h: shh, hl: true, z: zF + T + T / 2, hd: hd, fin: fin, door: sA });
         Hn.push({ cx: u.W / 4 + 12, y: 30 + elev, w: sw, h: shh, hl: false, z: zF - 6 + T / 2, hd: hd, fin: fin, door: sB });
         fronts.push(sA, sB);
+      } else if (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled)) {
+        // FCM-RT (Fixed Cum Movable - Right Door): Left half is 600mm fixed panel, right half is 600mm movable shutter
+        var fixW = (u.fixedPanel && u.fixedPanel.width) || (u.W / 2);
+        var movW = u.W - fixW - 6;
+        var fixCx = -u.W / 2 + fixW / 2;
+        var movCx = u.W / 2 - movW / 2;
+        frontParts(u, ds, fixCx, 3, fixW - 3, u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
+        hinged(movCx, 3, movW, u.H - 6, zF, false, frontParts(u, ds, movCx, 3, movW, u.H - 6, zF, SC, T, "door"));
+        Hn.push({ cx: movCx, y: 3 + elev, w: movW, h: u.H - 6, hl: false, z: zF + T / 2, hd: hd, fin: fin });
       } else {
         var n = Math.max(1, u.shutters), w1 = (u.W - (n + 1) * 3) / n;
         for (var i = 0; i < n; i++) {
@@ -1734,6 +1743,54 @@
       });
       return m;
     }
+    function makeGrassGroundMat() {
+      if (matCache["sp|grassGround"]) return matCache["sp|grassGround"];
+      var c = document.createElement("canvas"); c.width = c.height = 512;
+      var g = c.getContext("2d");
+      if (g) {
+        // Rich natural lawn grass green base
+        g.fillStyle = "#46813A";
+        g.fillRect(0, 0, 512, 512);
+
+        // Organic grass sod tone variations
+        var lawnTones = ["#3D7333", "#4A883E", "#559947", "#3E7834", "#4F9042", "#5C9F4E"];
+        for (var i = 0; i < 400; i++) {
+          var x = Math.random() * 512, y = Math.random() * 512, rad = 8 + Math.random() * 24;
+          var grad = g.createRadialGradient(x, y, 0, x, y, rad);
+          var col = lawnTones[Math.floor(Math.random() * lawnTones.length)];
+          grad.addColorStop(0, col);
+          grad.addColorStop(1, "rgba(70, 129, 58, 0)");
+          g.fillStyle = grad;
+          g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
+        }
+
+        // Fine lawn grass blades
+        for (var b = 0; b < 2500; b++) {
+          var bx = Math.random() * 512, by = Math.random() * 512, blen = 3 + Math.random() * 7;
+          var bcol = (b % 3 === 0) ? "#65AD55" : ((b % 3 === 1) ? "#3B6E32" : "#4B893F");
+          g.strokeStyle = bcol; g.lineWidth = 1.0;
+          g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + (Math.random() - 0.5) * 3, by - blen); g.stroke();
+        }
+      }
+
+      var tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(160, 160);
+      tex.encoding = THREE.sRGBEncoding;
+
+      var m = new THREE.MeshStandardMaterial({
+        map: tex,
+        color: 0x4E8A42,
+        roughness: 0.92,
+        metalness: 0.0,
+        side: THREE.DoubleSide
+      });
+      matCache["sp|grassGround"] = m;
+      return m;
+    }
+    function makeNeutralGroundMat() {
+      return makeGrassGroundMat();
+    }
     function init() {
       if (!window.THREE) return false;
       try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" }); }
@@ -1748,6 +1805,7 @@
       stage.appendChild(renderer.domElement);
       stage.classList.add("gl");
       scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
       camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
@@ -1764,8 +1822,9 @@
       var fill = new THREE.DirectionalLight(0xdde9f8, 0.55); fill.position.set(2600, 1900, 4800); scene.add(fill);
       var rim = new THREE.DirectionalLight(0xecf0f8, 0.35); rim.position.set(2400, 1600, -2600); scene.add(rim);
       var bounceL = new THREE.DirectionalLight(0xf4ece0, 0.32); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
-      scene.add(new THREE.HemisphereLight(0xf6f8fc, 0x8e8375, 0.45));
-      floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), makeFloorMat());
+      scene.add(new THREE.HemisphereLight(0x82C3EC, 0x4E8A42, 0.45)); // Sky blue overhead + grass green ground bounce
+      var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
+      floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
       root = new THREE.Group(); scene.add(root);
       ok = true; return true;
@@ -3076,7 +3135,7 @@
       });
       return out;
     }
-    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; if (floor) floor.material = makeFloorMat(type); render(); } };
+    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, makeGrassGroundMat: makeGrassGroundMat, makeNeutralGroundMat: makeGrassGroundMat, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0)); if (floor) floor.material = hasArchHome ? makeGrassGroundMat() : makeFloorMat(type); render(); } };
   })();
 
   /* ═══════════════════════════════════════════════════════════════

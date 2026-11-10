@@ -331,7 +331,7 @@
   {
     "id": "fm-rt-01",
     "code": "fm-rt-01",
-    "name": "FCM -RT",
+    "name": "FCM-RT (Cookscape)",
     "modelType": "kitchen_fm",
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
@@ -339,17 +339,17 @@
     "icon": "🍳",
     "dimensions": {
       "W": 1200,
-      "H": 750,
-      "D": 550
+      "H": 720,
+      "D": 560
     },
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7701"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 1135"
       }
     },
     "unitConfig": {
@@ -358,7 +358,7 @@
       "dstyle": "slab",
       "glassTint": "none",
       "profileColor": "none",
-      "sections": 0,
+      "sections": 2,
       "shelves": 1,
       "drawers": 0,
       "loft": false,
@@ -367,8 +367,84 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701",
+      "ctype": "kbase",
+      "unitType": "fcm-rt",
+      "fixedPanel": {
+        "enabled": true,
+        "width": 600,
+        "type": "fixed"
+      },
+      "openShutter": {
+        "enabled": true,
+        "width": 600,
+        "type": "shutter",
+        "count": 1,
+        "opening": "left"
+      }
+    },
+    "pricingOverrides": {
+      "baseRate": 17398.79
+    },
+    "customRate": 17398.79
+  },
+  {
+    "id": "fcm-rt",
+    "code": "FCM-RT",
+    "name": "FCM-RT (Cookscape)",
+    "modelType": "kitchen_fm",
+    "category": "kitchen_base",
+    "costCategory": "Kitchen - FM",
+    "areaSqft": 9.3,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 1200,
+      "H": 720,
+      "D": 560
+    },
+    "elevation": 0,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7701"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 1135"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kbase",
+      "unitType": "fcm-rt",
+      "fixedPanel": {
+        "enabled": true,
+        "width": 600,
+        "type": "fixed"
+      },
+      "openShutter": {
+        "enabled": true,
+        "width": 600,
+        "type": "shutter",
+        "count": 1,
+        "opening": "left"
+      },
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 2,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "black",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701"
     },
     "pricingOverrides": {
       "baseRate": 17398.79

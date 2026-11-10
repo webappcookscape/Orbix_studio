@@ -332,7 +332,7 @@
             }
 
             if (self.archRenderer && typeof self.archRenderer.setFloorMaterial === 'function') {
-              self.archRenderer.setFloorMaterial(floorType);
+              self.archRenderer.setFloorMaterial(floorType, self.currentIsolatedRoomId);
             }
             if (window.__cc && window.__cc.gl && typeof window.__cc.gl.setFloorMaterial === 'function') {
               window.__cc.gl.setFloorMaterial(floorType);
@@ -1933,6 +1933,7 @@
             rm.name = e.target.value;
             self.editor.render();
             self.saveToLocalStorage();
+            if (self.update3DStudioRoomOptions) self.update3DStudioRoomOptions();
           });
         }
 
@@ -1943,6 +1944,7 @@
             self.editor.pushHistory('Rename Room');
             self.editor.render();
             self.saveToLocalStorage();
+            if (self.update3DStudioRoomOptions) self.update3DStudioRoomOptions();
             if (self.render3DHome) self.render3DHome(true);
           });
         });
@@ -1953,6 +1955,14 @@
             rm.floorFinish = e.target.value;
             self.editor.pushHistory('Change Floor Finish');
             self.saveToLocalStorage();
+            var fType = rm.floorFinish;
+            if (fType === 'wood') fType = 'wooden';
+            else if (fType === 'marble') fType = 'white_tile';
+            else if (fType === 'tile') fType = 'square_tile';
+            else if (fType === 'concrete') fType = 'grey_tile';
+            if (self.archRenderer && typeof self.archRenderer.setFloorMaterial === 'function') {
+              self.archRenderer.setFloorMaterial(fType, rm.id);
+            }
             if (self.render3DHome) self.render3DHome(true);
           });
         }
@@ -4148,6 +4158,24 @@
       var gl = window.__cc.gl;
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
+
+      // Ensure sky is radiant sky blue and outer ground outside walls is lush grass green
+      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
+        scene.background = new THREE.Color(0x82C3EC);
+      }
+      scene.children.forEach(function (c) {
+        if (c.isMesh && c.geometry && c.geometry.type === 'PlaneGeometry' && c.geometry.parameters && c.geometry.parameters.width >= 100000) {
+          if (typeof gl.makeGrassGroundMat === 'function') {
+            c.material = gl.makeGrassGroundMat();
+          } else if (typeof gl.makeNeutralGroundMat === 'function') {
+            c.material = gl.makeNeutralGroundMat();
+          } else if (c.material) {
+            c.material.map = null;
+            if (c.material.color) c.material.color.setHex(0x4E8A42);
+            c.material.needsUpdate = true;
+          }
+        }
+      });
 
       if (!this.archRenderer && root.Orbix3D) {
         this.archRenderer = new root.Orbix3D(scene);

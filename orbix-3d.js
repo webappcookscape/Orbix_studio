@@ -300,6 +300,14 @@
 
   ArchitecturalRenderer.prototype.createFloorMaterial = function (type) {
     if (typeof THREE === 'undefined') return null;
+    if (type === 'neutral_ground' || type === 'grass') {
+      return new THREE.MeshStandardMaterial({
+        color: 0x4E8A42, // Lush grass green
+        roughness: 0.92,
+        metalness: 0.0,
+        side: THREE.DoubleSide
+      });
+    }
     type = type || this.selectedFloorType || 'white_tile';
     var tex = ArchitecturalRenderer.createFloorTexture(type);
     var isWood = (type === 'wooden');
@@ -313,7 +321,7 @@
     });
   };
 
-  ArchitecturalRenderer.prototype.setFloorMaterial = function (type) {
+  ArchitecturalRenderer.prototype.setFloorMaterial = function (type, targetRoomId) {
     this.selectedFloorType = type || 'white_tile';
     this.materials.floorTile = this.createFloorMaterial(this.selectedFloorType);
     this.materials.floorWood = (this.selectedFloorType === 'wooden' ? this.materials.floorTile : this.createFloorMaterial('wooden'));
@@ -322,6 +330,14 @@
       var tileSize = (this.selectedFloorType === 'wooden') ? 1200 : (this.selectedFloorType === 'white_tile' ? 1600 : 1200);
       this.group.traverse(function (o) {
         if (o.userData && o.userData.isFloorMesh) {
+          // If targetRoomId is specified, update ONLY that specific room's floor mesh within its walls!
+          if (targetRoomId && o.userData.roomId !== targetRoomId) {
+            return;
+          }
+          // Never apply interior floor tile texture outside walls (bounding_floor remains neutral)
+          if (o.userData.roomId === 'bounding_floor') {
+            return;
+          }
           o.userData.floorFinish = self.selectedFloorType;
           o.material = self.createFloorMaterial(self.selectedFloorType);
           if (o.geometry && o.geometry.attributes && o.geometry.attributes.position && o.geometry.attributes.uv) {
@@ -1024,11 +1040,11 @@
       }
     }
     if (!isFinite(minX) || !isFinite(maxX)) return null;
-    var pad = 600;
-    minX -= pad; maxX += pad; minY -= pad; maxY += pad;
+    // Bounded strictly to walls (no padding outside walls) with neutral ground finish
     var dummyRoom = {
       id: 'bounding_floor',
       name: 'General Floor',
+      floorFinish: 'grass',
       polygon: [
         { x: minX, y: minY },
         { x: maxX, y: minY },
