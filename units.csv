@@ -47,7 +47,8 @@ ctvb-doors-only,CROCKERY / TV BASE ONLY DOORS,Loft-OS,Loft-OS,750,750,0,2,hinged
 ctvb-open-storage,CROCKERY/TV BASE OPEN STORAGE,Spice Rack,Spice Rack,600,300,300,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,BLUE,g prof,black,False,,1.937504709
 ctvw-doors-only,CROCKERY/TV WALL UNIT ONLY DOOR,Loft-OS,Loft-OS,300,600,0,1,none,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,BLUE,g prof,black,False,,1.937504709
 ctvw-open-box,CROCKERY/TV WALL OPEN BOX STORAGE,Spice Rack,Spice Rack,600,200,300,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,1.291669806
-fm-lt-01,FCM -LT,KITCHEN - FM,KITCHEN - FM,1200,750,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,9.687523546
+fm-lt-01,FCM-LT (Cookscape),KITCHEN - FM,KITCHEN - FM,1200,720,560,1,hinged,slab,none,none,2,1,0,False,0,HDHMR_18mm,MDF 7701,BWP_18mm,MDF 1135,black,pull,black,False,17398.79,9.30
+fcm-lt,FCM-LT (Cookscape),KITCHEN - FM,KITCHEN - FM,1200,720,560,1,hinged,slab,none,none,2,1,0,False,0,HDHMR_18mm,MDF 7701,BWP_18mm,MDF 1135,black,pull,black,False,17398.79,9.30
 fm-30-oil,FM30 -OIL PULLOUT,KITCHEN - D2/D3,KITCHEN - FM,300,750,550,1,sliding,slab,none,none,0,0,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,2.421880887
 fm-d2-60,FM D2 - 60,KITCHEN - D2/D3,KITCHEN - FM,600,750,550,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,4.843761773
 fm-d3-60,FM D3 - 60,KITCHEN - D2/D3,KITCHEN - FM,600,750,550,3,sliding,slab,none,none,0,0,3,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,black,g prof,black,False,,4.843761773

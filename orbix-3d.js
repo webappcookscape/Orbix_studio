@@ -321,10 +321,26 @@
     });
   };
 
+  // Helper: Retrieve Base Hex Color for any Floor Tile Finish
+  ArchitecturalRenderer.getFloorTileColor = function (type) {
+    if (type === 'square_tile') return 0xDFD7CA; // Warm travertine ivory
+    if (type === 'grey_tile') return 0x3E424B;   // Charcoal basalt slate
+    if (type === 'wooden') return 0xB38256;      // Warm oak hardwood
+    return 0xEDECEF;                             // White Calacatta marble tile (default)
+  };
+
   ArchitecturalRenderer.prototype.setFloorMaterial = function (type, targetRoomId) {
     this.selectedFloorType = type || 'white_tile';
     this.materials.floorTile = this.createFloorMaterial(this.selectedFloorType);
     this.materials.floorWood = (this.selectedFloorType === 'wooden' ? this.materials.floorTile : this.createFloorMaterial('wooden'));
+
+    // Dynamic Skirting color update to match current floor tile
+    var skirtingTileColor = ArchitecturalRenderer.getFloorTileColor(this.selectedFloorType);
+    if (this.materials.skirting) {
+      this.materials.skirting.color.setHex(skirtingTileColor);
+      this.materials.skirting.needsUpdate = true;
+    }
+
     if (this.group) {
       var self = this;
       var tileSize = (this.selectedFloorType === 'wooden') ? 1200 : (this.selectedFloorType === 'white_tile' ? 1600 : 1200);
@@ -359,10 +375,10 @@
     if (typeof THREE === 'undefined') return;
 
     var wallBump = ArchitecturalRenderer.createWallBumpTexture();
-    // Wall Plaster (Warm architectural beige matte {beige})
+    // Wall Plaster (Natural warm earthy mud plaster - deeper and richer than light beige)
     this.materials.wall = new THREE.MeshStandardMaterial({
-      color: 0xEDE5D8, // Warm architectural beige
-      roughness: 0.90,
+      color: 0x9E836A, // Natural warm mud plaster
+      roughness: 0.92,
       metalness: 0.01,
       bumpMap: wallBump,
       bumpScale: 0.08
@@ -370,15 +386,17 @@
 
     // Wall Core (Cutaway section interior)
     this.materials.wallCore = new THREE.MeshStandardMaterial({
-      color: 0xDFD6C4, // Harmonious deeper beige core
+      color: 0x886F58, // Rich earthy mud core
       roughness: 0.9,
       metalness: 0.0
     });
 
-    // Skirting Board (Architectural Satin Baseboards)
+    // Skirting Board (Architectural Baseboards matching Floor Tile Color)
+    this.selectedFloorType = this.selectedFloorType || 'white_tile';
+    var skirtingTileColor = ArchitecturalRenderer.getFloorTileColor(this.selectedFloorType);
     this.materials.skirting = new THREE.MeshStandardMaterial({
-      color: 0xFCFCFC,
-      roughness: 0.35,
+      color: skirtingTileColor,
+      roughness: 0.25,
       metalness: 0.02
     });
 
@@ -1550,7 +1568,7 @@
       metalness: 0.08
     });
 
-    var plinthH = isBase ? 75 : 0;
+    var plinthH = isBase ? 100 : 0;
     var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
     var bodyH = Math.max(100, dims.H - plinthH - counterH);
     var innerW = dims.W - 36;
@@ -1753,15 +1771,17 @@
     backMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(backMesh);
 
-    // 5b. Vertical Partition (for units with multiple sections or FCM-RT)
+    // 5b. Vertical Partition (for units with multiple sections or FCM-RT/FCM-LT)
     var isFcmUnit = !!(
       (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.enabled) ||
-      (furn.unitConfig && furn.unitConfig.unitType === 'fcm-rt') ||
-      (furn.id && /fcm[-_ ]*rt/i.test(furn.id)) ||
-      (furn.catalogItemId && /fcm[-_ ]*rt/i.test(furn.catalogItemId)) ||
-      (furn.name && /fcm[-_ ]*rt/i.test(furn.name)) ||
+      (furn.unitConfig && (furn.unitConfig.unitType === 'fcm-rt' || furn.unitConfig.unitType === 'fcm-lt')) ||
+      (furn.id && /fcm[-_ ]*(rt|lt)/i.test(furn.id)) ||
+      (furn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(furn.catalogItemId)) ||
+      (furn.name && /fcm[-_ ]*(rt|lt)/i.test(furn.name)) ||
       furn.id === 'fcm-rt' || furn.catalogItemId === 'fcm-rt' ||
-      furn.id === 'fm-rt-01' || furn.catalogItemId === 'fm-rt-01'
+      furn.id === 'fm-rt-01' || furn.catalogItemId === 'fm-rt-01' ||
+      furn.id === 'fcm-lt' || furn.catalogItemId === 'fcm-lt' ||
+      furn.id === 'fm-lt-01' || furn.catalogItemId === 'fm-lt-01'
     );
     var numSections = (furn.unitConfig && furn.unitConfig.sections) ? parseInt(furn.unitConfig.sections) : (isFcmUnit ? 2 : (dims.W > 1200 ? 2 : 1));
     if (numSections > 1 || isFcmUnit) {
@@ -1995,63 +2015,117 @@
           fg.add(slideGroup);
         }
       } else if (hasFixedPanel) {
-        // FCM-RT FIXED PANEL: Left 600mm panel is 100% FIXED, Right 600mm shutter is HINGED on right & OPENS OUTWARDS
+        // FCM Modular Unit with 1 Fixed Panel & 1 Movable Shutter (FCM-RT or FCM-LT)
+        var isLeftOpen = !!(
+          (furn.unitConfig && furn.unitConfig.openShutter && furn.unitConfig.openShutter.opening === 'left') ||
+          (furn.unitConfig && furn.unitConfig.unitType === 'fcm-lt') ||
+          (furn.id && /fcm[-_ ]*lt/i.test(furn.id)) ||
+          (furn.catalogItemId && /fcm[-_ ]*lt/i.test(furn.catalogItemId)) ||
+          (furn.name && /fcm[-_ ]*lt/i.test(furn.name)) ||
+          furn.id === 'fcm-lt' || furn.catalogItemId === 'fcm-lt' ||
+          furn.id === 'fm-lt-01' || furn.catalogItemId === 'fm-lt-01'
+        );
         var fixW = (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.width) || (dims.W / 2);
         var movW = dims.W - fixW - 6;
         var shH = Math.max(150, bodyH - totalDrawersH - 6);
         var shutterCenterY = shutterBaseY + shH / 2;
 
-        // 1. Left Fixed Panel (Static, NEVER opens, flush, NO handle)
-        var fixCx = -dims.W / 2 + 3 + (fixW - 3) / 2;
-        var fixMesh = new THREE.Mesh(new THREE.BoxGeometry(fixW - 3, shH, 18), getShutterMaterial(0));
-        fixMesh.position.set(fixCx, shutterCenterY, dims.D / 2 - 9);
-        fixMesh.castShadow = true;
-        fixMesh.receiveShadow = true;
-        fixMesh.userData = { isFurniturePart: true, isFixedPanel: true, parentGroup: fg, furnitureId: furn.id };
-        fg.add(fixMesh);
+        if (isLeftOpen) {
+          // ── FCM-LT (Cookscape): Left 600mm OPENS TO LEFT, Right 600mm is 100% FIXED ──
+          // 1. Right Fixed Panel (Static, NEVER opens, flush, NO handle)
+          var fixCx = dims.W / 2 - 3 - (fixW - 3) / 2;
+          var fixMesh = new THREE.Mesh(new THREE.BoxGeometry(fixW - 3, shH, 18), getShutterMaterial(1));
+          fixMesh.position.set(fixCx, shutterCenterY, dims.D / 2 - 9);
+          fixMesh.castShadow = true;
+          fixMesh.receiveShadow = true;
+          fixMesh.userData = { isFurniturePart: true, isFixedPanel: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(fixMesh);
 
-        // 2. Right Movable Shutter (Hinged on the RIGHT edge, opens outwards to the right)
-        var movLeftX = -dims.W / 2 + 3 + fixW + 3;
-        var hingeX = movLeftX + movW; // Hinge is at the far right edge!
-        var hingeZ = dims.D / 2 - 9;
+          // 2. Left Movable Shutter (Hinged on the LEFT outer edge, opens outwards to the left)
+          var hingeX = -dims.W / 2 + 3;
+          var hingeZ = dims.D / 2 - 9;
 
-        var hingeGroup = new THREE.Group();
-        hingeGroup.name = "ShutterHinge_Right";
-        hingeGroup.position.set(hingeX, shutterCenterY, hingeZ);
-        hingeGroup.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
+          var hingeGroup = new THREE.Group();
+          hingeGroup.name = "ShutterHinge_Left";
+          hingeGroup.position.set(hingeX, shutterCenterY, hingeZ);
+          hingeGroup.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
 
-        var localX = -movW / 2;
-        var movMesh = new THREE.Mesh(new THREE.BoxGeometry(movW, shH, 18), getShutterMaterial(1));
-        movMesh.position.set(localX, 0, 0);
-        movMesh.castShadow = true;
-        movMesh.receiveShadow = true;
-        movMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-        hingeGroup.add(movMesh);
+          var localX = movW / 2;
+          var movMesh = new THREE.Mesh(new THREE.BoxGeometry(movW, shH, 18), getShutterMaterial(0));
+          movMesh.position.set(localX, 0, 0);
+          movMesh.castShadow = true;
+          movMesh.receiveShadow = true;
+          movMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+          hingeGroup.add(movMesh);
 
-        // Shutter Pull Handle (Vertical, placed near the left/opening edge of the right door)
-        var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
-        if (hGroup) {
-          var handleX = -movW + 35; // Near opening edge!
-          var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
-          hGroup.position.set(handleX, handleY, 9);
-          hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-          hGroup.traverse(function (c) {
-            if (c.isMesh) {
-              c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-            }
-          });
-          hingeGroup.add(hGroup);
-        }
+          // Shutter Pull Handle (Vertical, placed near the inner right opening edge of left door)
+          var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
+          if (hGroup) {
+            var handleX = movW - 35; // Near opening edge on the right of the door
+            var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
+            hGroup.position.set(handleX, handleY, 9);
+            hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hGroup.traverse(function (c) {
+              if (c.isMesh) {
+                c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+              }
+            });
+            hingeGroup.add(hGroup);
+          }
 
-        // Shutter Open / Close rotation: swings outwards to the right
-        var isOpen = !!(furn.shutterStates && furn.shutterStates[0]);
-        if (isOpen) {
-          hingeGroup.rotation.y = Math.PI * 0.55; // Swing open to the right (outwards)
+          // Shutter Open / Close rotation: swings outwards to the left
+          var isOpen = !!(furn.shutterStates && furn.shutterStates[0]);
+          hingeGroup.rotation.y = isOpen ? -Math.PI * 0.55 : 0;
+          fg.add(hingeGroup);
         } else {
-          hingeGroup.rotation.y = 0;
-        }
+          // ── FCM-RT (Cookscape): Left 600mm is 100% FIXED, Right 600mm OPENS TO RIGHT ──
+          // 1. Left Fixed Panel (Static, NEVER opens, flush, NO handle)
+          var fixCx = -dims.W / 2 + 3 + (fixW - 3) / 2;
+          var fixMesh = new THREE.Mesh(new THREE.BoxGeometry(fixW - 3, shH, 18), getShutterMaterial(0));
+          fixMesh.position.set(fixCx, shutterCenterY, dims.D / 2 - 9);
+          fixMesh.castShadow = true;
+          fixMesh.receiveShadow = true;
+          fixMesh.userData = { isFurniturePart: true, isFixedPanel: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(fixMesh);
 
-        fg.add(hingeGroup);
+          // 2. Right Movable Shutter (Hinged on the RIGHT edge, opens outwards to the right)
+          var movLeftX = -dims.W / 2 + 3 + fixW + 3;
+          var hingeX = movLeftX + movW; // Hinge is at the far right edge!
+          var hingeZ = dims.D / 2 - 9;
+
+          var hingeGroup = new THREE.Group();
+          hingeGroup.name = "ShutterHinge_Right";
+          hingeGroup.position.set(hingeX, shutterCenterY, hingeZ);
+          hingeGroup.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
+
+          var localX = -movW / 2;
+          var movMesh = new THREE.Mesh(new THREE.BoxGeometry(movW, shH, 18), getShutterMaterial(1));
+          movMesh.position.set(localX, 0, 0);
+          movMesh.castShadow = true;
+          movMesh.receiveShadow = true;
+          movMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+          hingeGroup.add(movMesh);
+
+          // Shutter Pull Handle (Vertical, placed near the left/opening edge of the right door)
+          var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
+          if (hGroup) {
+            var handleX = -movW + 35; // Near opening edge!
+            var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
+            hGroup.position.set(handleX, handleY, 9);
+            hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hGroup.traverse(function (c) {
+              if (c.isMesh) {
+                c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+              }
+            });
+            hingeGroup.add(hGroup);
+          }
+
+          // Shutter Open / Close rotation: swings outwards to the right
+          var isOpen = !!(furn.shutterStates && furn.shutterStates[0]);
+          hingeGroup.rotation.y = isOpen ? Math.PI * 0.55 : 0;
+          fg.add(hingeGroup);
+        }
       } else {
         // Standard Hinged Shutters
         var shW = (dims.W - (numShutters + 1) * 3) / numShutters;

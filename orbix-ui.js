@@ -1812,12 +1812,22 @@
                 var activeUnit = window.S.units[existingIdx];
                 var isFcm = !!(
                   (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-                  (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
-                  (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
-                  (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+                  (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
+                  (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
                   fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
-                  fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+                  fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
+                  fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+                  fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
+                );
+                var isLt = !!(
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+                  (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
+                  (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+                  fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+                  fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
                 activeUnit.label = fn.name;
                 activeUnit.W = fn.dimensions.W;
@@ -1826,6 +1836,7 @@
                 if (fn.unitConfig) {
                   activeUnit.unitConfig = Object.assign({}, fn.unitConfig);
                   if (fn.unitConfig.unitType) activeUnit.unitType = fn.unitConfig.unitType;
+                  else if (isFcm) activeUnit.unitType = isLt ? 'fcm-lt' : 'fcm-rt';
                   if (fn.unitConfig.fixedPanel) activeUnit.fixedPanel = fn.unitConfig.fixedPanel;
                   if (fn.unitConfig.openShutter) activeUnit.openShutter = fn.unitConfig.openShutter;
                   if (fn.unitConfig.shutters !== undefined) activeUnit.shutters = fn.unitConfig.shutters;
@@ -1849,12 +1860,22 @@
               } else {
                 var isFcm = !!(
                   (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-                  (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
-                  (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
-                  (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+                  (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
+                  (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
                   fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
-                  fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+                  fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
+                  fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+                  fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
+                );
+                var isLt = !!(
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+                  (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
+                  (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+                  fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+                  fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
                 var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
                   window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.id, fn.costCategory) :
@@ -1867,7 +1888,7 @@
                   label: fn.name,
                   ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
                   _furnId: fn.id,
-                  unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcm ? 'fcm-rt' : undefined),
+                  unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcm ? (isLt ? 'fcm-lt' : 'fcm-rt') : undefined),
                   catalogItemId: fn.catalogItemId || fn.id,
                   fixedPanel: fn.unitConfig && fn.unitConfig.fixedPanel,
                   openShutter: fn.unitConfig && fn.unitConfig.openShutter,
@@ -2264,19 +2285,30 @@
             existing.loftShutters = fn.unitConfig.loftShutters;
           }
 
+          var isExistingFcmLt = !!(
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+            (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+            fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+            fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
+          );
           var isExistingFcm = !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-            (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
-            (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
-            (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+            isExistingFcmLt ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+            (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
             fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
-            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
+            fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+            fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           if (isExistingFcm) {
-            existing.unitType = 'fcm-rt';
+            existing.unitType = isExistingFcmLt ? 'fcm-lt' : 'fcm-rt';
             existing.fixedPanel = (fn.unitConfig && fn.unitConfig.fixedPanel) || { enabled: true, width: 600, type: 'fixed' };
-            existing.openShutter = (fn.unitConfig && fn.unitConfig.openShutter) || { enabled: true, width: 600, type: 'shutter', count: 1, opening: 'right' };
+            existing.openShutter = (fn.unitConfig && fn.unitConfig.openShutter) || { enabled: true, width: 600, type: 'shutter', count: 1, opening: isExistingFcmLt ? 'left' : 'right' };
             existing.shutters = 1;
             existing.sections = 2;
             existing.shelves = 1;
@@ -2288,14 +2320,25 @@
 
           newUnits.push(existing);
         } else {
+          var isFcmLtNew = !!(
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+            (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+            fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+            fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
+          );
           var isFcmNew = !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-            (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
-            (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
-            (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+            isFcmLtNew ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+            (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
             fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
-            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
+            fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+            fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 450 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
@@ -2306,10 +2349,10 @@
             label: fn.name,
             ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
             _furnId: fn.id,
-            unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcmNew ? 'fcm-rt' : undefined),
+            unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcmNew ? (isFcmLtNew ? 'fcm-lt' : 'fcm-rt') : undefined),
             catalogItemId: fn.catalogItemId || fn.id,
-            fixedPanel: fn.unitConfig && fn.unitConfig.fixedPanel,
-            openShutter: fn.unitConfig && fn.unitConfig.openShutter,
+            fixedPanel: (fn.unitConfig && fn.unitConfig.fixedPanel) || (isFcmNew ? { enabled: true, width: 600, type: 'fixed' } : undefined),
+            openShutter: (fn.unitConfig && fn.unitConfig.openShutter) || (isFcmNew ? { enabled: true, width: 600, type: 'shutter', count: 1, opening: isFcmLtNew ? 'left' : 'right' } : undefined),
             unitConfig: fn.unitConfig ? Object.assign({}, fn.unitConfig) : undefined,
             elev: unitElev,
             W: (fn.dimensions && fn.dimensions.W) || defW,

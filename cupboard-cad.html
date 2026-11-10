@@ -3124,6 +3124,8 @@ body.role-employee #adminCreateEmpBox,
                   <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (900×750)</option>
                   <option value="fcm-rt">fcm-rt: FCM-RT (Cookscape) (1200×720)</option>
                   <option value="fm-rt-01">fm-rt-01: FCM-RT (Cookscape) (1200×720)</option>
+                  <option value="fcm-lt">fcm-lt: FCM-LT (Cookscape) (1200×720)</option>
+                  <option value="fm-lt-01">fm-lt-01: FCM-LT (Cookscape) (1200×720)</option>
                   <option value="fm-120">fm-120: FM 120 Kitchen Base (1200×750)</option>
                   <option value="fm-60">fm-60: FM 60 Kitchen Base (600×750)</option>
                   <option value="wm-60-dbl">wm-60-dbl: WM 60 DOUBLE Kitchen Wall (600×600)</option>
@@ -9357,6 +9359,86 @@ body.role-employee #adminCreateEmpBox,
         unitType: "fcm-rt",
         fixedPanel: { enabled: true, width: 600, type: "fixed" },
         openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "right" },
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 2,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "pull",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 17398.79 },
+      customRate: 17398.79
+    },
+    {
+      id: "fcm-lt",
+      code: "FCM-LT",
+      name: "FCM-LT (Cookscape)",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 9.30,
+      icon: "🍳",
+      dimensions: { W: 1200, H: 720, D: 560 },
+      elevation: 0,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kbase",
+        unitType: "fcm-lt",
+        fixedPanel: { enabled: true, width: 600, type: "fixed" },
+        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 2,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "pull",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 17398.79 },
+      customRate: 17398.79
+    },
+    {
+      id: "fm-lt-01",
+      code: "fm-lt-01",
+      name: "FCM-LT (Cookscape)",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 9.30,
+      icon: "🍳",
+      dimensions: { W: 1200, H: 720, D: 560 },
+      elevation: 0,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kbase",
+        unitType: "fcm-lt",
+        fixedPanel: { enabled: true, width: 600, type: "fixed" },
+        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
@@ -16390,10 +16472,26 @@ body.role-employee #adminCreateEmpBox,
     });
   };
 
+  // Helper: Retrieve Base Hex Color for any Floor Tile Finish
+  ArchitecturalRenderer.getFloorTileColor = function (type) {
+    if (type === 'square_tile') return 0xDFD7CA; // Warm travertine ivory
+    if (type === 'grey_tile') return 0x3E424B;   // Charcoal basalt slate
+    if (type === 'wooden') return 0xB38256;      // Warm oak hardwood
+    return 0xEDECEF;                             // White Calacatta marble tile (default)
+  };
+
   ArchitecturalRenderer.prototype.setFloorMaterial = function (type, targetRoomId) {
     this.selectedFloorType = type || 'white_tile';
     this.materials.floorTile = this.createFloorMaterial(this.selectedFloorType);
     this.materials.floorWood = (this.selectedFloorType === 'wooden' ? this.materials.floorTile : this.createFloorMaterial('wooden'));
+
+    // Dynamic Skirting color update to match current floor tile
+    var skirtingTileColor = ArchitecturalRenderer.getFloorTileColor(this.selectedFloorType);
+    if (this.materials.skirting) {
+      this.materials.skirting.color.setHex(skirtingTileColor);
+      this.materials.skirting.needsUpdate = true;
+    }
+
     if (this.group) {
       var self = this;
       var tileSize = (this.selectedFloorType === 'wooden') ? 1200 : (this.selectedFloorType === 'white_tile' ? 1600 : 1200);
@@ -16428,10 +16526,10 @@ body.role-employee #adminCreateEmpBox,
     if (typeof THREE === 'undefined') return;
 
     var wallBump = ArchitecturalRenderer.createWallBumpTexture();
-    // Wall Plaster (Warm architectural beige matte {beige})
+    // Wall Plaster (Natural warm earthy mud plaster - deeper and richer than light beige)
     this.materials.wall = new THREE.MeshStandardMaterial({
-      color: 0xEDE5D8, // Warm architectural beige
-      roughness: 0.90,
+      color: 0x9E836A, // Natural warm mud plaster
+      roughness: 0.92,
       metalness: 0.01,
       bumpMap: wallBump,
       bumpScale: 0.08
@@ -16439,15 +16537,17 @@ body.role-employee #adminCreateEmpBox,
 
     // Wall Core (Cutaway section interior)
     this.materials.wallCore = new THREE.MeshStandardMaterial({
-      color: 0xDFD6C4, // Harmonious deeper beige core
+      color: 0x886F58, // Rich earthy mud core
       roughness: 0.9,
       metalness: 0.0
     });
 
-    // Skirting Board (Architectural Satin Baseboards)
+    // Skirting Board (Architectural Baseboards matching Floor Tile Color)
+    this.selectedFloorType = this.selectedFloorType || 'white_tile';
+    var skirtingTileColor = ArchitecturalRenderer.getFloorTileColor(this.selectedFloorType);
     this.materials.skirting = new THREE.MeshStandardMaterial({
-      color: 0xFCFCFC,
-      roughness: 0.35,
+      color: skirtingTileColor,
+      roughness: 0.25,
       metalness: 0.02
     });
 
@@ -17619,7 +17719,7 @@ body.role-employee #adminCreateEmpBox,
       metalness: 0.08
     });
 
-    var plinthH = isBase ? 75 : 0;
+    var plinthH = isBase ? 100 : 0;
     var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
     var bodyH = Math.max(100, dims.H - plinthH - counterH);
     var innerW = dims.W - 36;
@@ -17822,15 +17922,17 @@ body.role-employee #adminCreateEmpBox,
     backMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(backMesh);
 
-    // 5b. Vertical Partition (for units with multiple sections or FCM-RT)
+    // 5b. Vertical Partition (for units with multiple sections or FCM-RT/FCM-LT)
     var isFcmUnit = !!(
       (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.enabled) ||
-      (furn.unitConfig && furn.unitConfig.unitType === 'fcm-rt') ||
-      (furn.id && /fcm[-_ ]*rt/i.test(furn.id)) ||
-      (furn.catalogItemId && /fcm[-_ ]*rt/i.test(furn.catalogItemId)) ||
-      (furn.name && /fcm[-_ ]*rt/i.test(furn.name)) ||
+      (furn.unitConfig && (furn.unitConfig.unitType === 'fcm-rt' || furn.unitConfig.unitType === 'fcm-lt')) ||
+      (furn.id && /fcm[-_ ]*(rt|lt)/i.test(furn.id)) ||
+      (furn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(furn.catalogItemId)) ||
+      (furn.name && /fcm[-_ ]*(rt|lt)/i.test(furn.name)) ||
       furn.id === 'fcm-rt' || furn.catalogItemId === 'fcm-rt' ||
-      furn.id === 'fm-rt-01' || furn.catalogItemId === 'fm-rt-01'
+      furn.id === 'fm-rt-01' || furn.catalogItemId === 'fm-rt-01' ||
+      furn.id === 'fcm-lt' || furn.catalogItemId === 'fcm-lt' ||
+      furn.id === 'fm-lt-01' || furn.catalogItemId === 'fm-lt-01'
     );
     var numSections = (furn.unitConfig && furn.unitConfig.sections) ? parseInt(furn.unitConfig.sections) : (isFcmUnit ? 2 : (dims.W > 1200 ? 2 : 1));
     if (numSections > 1 || isFcmUnit) {
@@ -18064,63 +18166,117 @@ body.role-employee #adminCreateEmpBox,
           fg.add(slideGroup);
         }
       } else if (hasFixedPanel) {
-        // FCM-RT FIXED PANEL: Left 600mm panel is 100% FIXED, Right 600mm shutter is HINGED on right & OPENS OUTWARDS
+        // FCM Modular Unit with 1 Fixed Panel & 1 Movable Shutter (FCM-RT or FCM-LT)
+        var isLeftOpen = !!(
+          (furn.unitConfig && furn.unitConfig.openShutter && furn.unitConfig.openShutter.opening === 'left') ||
+          (furn.unitConfig && furn.unitConfig.unitType === 'fcm-lt') ||
+          (furn.id && /fcm[-_ ]*lt/i.test(furn.id)) ||
+          (furn.catalogItemId && /fcm[-_ ]*lt/i.test(furn.catalogItemId)) ||
+          (furn.name && /fcm[-_ ]*lt/i.test(furn.name)) ||
+          furn.id === 'fcm-lt' || furn.catalogItemId === 'fcm-lt' ||
+          furn.id === 'fm-lt-01' || furn.catalogItemId === 'fm-lt-01'
+        );
         var fixW = (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.width) || (dims.W / 2);
         var movW = dims.W - fixW - 6;
         var shH = Math.max(150, bodyH - totalDrawersH - 6);
         var shutterCenterY = shutterBaseY + shH / 2;
 
-        // 1. Left Fixed Panel (Static, NEVER opens, flush, NO handle)
-        var fixCx = -dims.W / 2 + 3 + (fixW - 3) / 2;
-        var fixMesh = new THREE.Mesh(new THREE.BoxGeometry(fixW - 3, shH, 18), getShutterMaterial(0));
-        fixMesh.position.set(fixCx, shutterCenterY, dims.D / 2 - 9);
-        fixMesh.castShadow = true;
-        fixMesh.receiveShadow = true;
-        fixMesh.userData = { isFurniturePart: true, isFixedPanel: true, parentGroup: fg, furnitureId: furn.id };
-        fg.add(fixMesh);
+        if (isLeftOpen) {
+          // ── FCM-LT (Cookscape): Left 600mm OPENS TO LEFT, Right 600mm is 100% FIXED ──
+          // 1. Right Fixed Panel (Static, NEVER opens, flush, NO handle)
+          var fixCx = dims.W / 2 - 3 - (fixW - 3) / 2;
+          var fixMesh = new THREE.Mesh(new THREE.BoxGeometry(fixW - 3, shH, 18), getShutterMaterial(1));
+          fixMesh.position.set(fixCx, shutterCenterY, dims.D / 2 - 9);
+          fixMesh.castShadow = true;
+          fixMesh.receiveShadow = true;
+          fixMesh.userData = { isFurniturePart: true, isFixedPanel: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(fixMesh);
 
-        // 2. Right Movable Shutter (Hinged on the RIGHT edge, opens outwards to the right)
-        var movLeftX = -dims.W / 2 + 3 + fixW + 3;
-        var hingeX = movLeftX + movW; // Hinge is at the far right edge!
-        var hingeZ = dims.D / 2 - 9;
+          // 2. Left Movable Shutter (Hinged on the LEFT outer edge, opens outwards to the left)
+          var hingeX = -dims.W / 2 + 3;
+          var hingeZ = dims.D / 2 - 9;
 
-        var hingeGroup = new THREE.Group();
-        hingeGroup.name = "ShutterHinge_Right";
-        hingeGroup.position.set(hingeX, shutterCenterY, hingeZ);
-        hingeGroup.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
+          var hingeGroup = new THREE.Group();
+          hingeGroup.name = "ShutterHinge_Left";
+          hingeGroup.position.set(hingeX, shutterCenterY, hingeZ);
+          hingeGroup.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
 
-        var localX = -movW / 2;
-        var movMesh = new THREE.Mesh(new THREE.BoxGeometry(movW, shH, 18), getShutterMaterial(1));
-        movMesh.position.set(localX, 0, 0);
-        movMesh.castShadow = true;
-        movMesh.receiveShadow = true;
-        movMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-        hingeGroup.add(movMesh);
+          var localX = movW / 2;
+          var movMesh = new THREE.Mesh(new THREE.BoxGeometry(movW, shH, 18), getShutterMaterial(0));
+          movMesh.position.set(localX, 0, 0);
+          movMesh.castShadow = true;
+          movMesh.receiveShadow = true;
+          movMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+          hingeGroup.add(movMesh);
 
-        // Shutter Pull Handle (Vertical, placed near the left/opening edge of the right door)
-        var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
-        if (hGroup) {
-          var handleX = -movW + 35; // Near opening edge!
-          var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
-          hGroup.position.set(handleX, handleY, 9);
-          hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-          hGroup.traverse(function (c) {
-            if (c.isMesh) {
-              c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
-            }
-          });
-          hingeGroup.add(hGroup);
-        }
+          // Shutter Pull Handle (Vertical, placed near the inner right opening edge of left door)
+          var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
+          if (hGroup) {
+            var handleX = movW - 35; // Near opening edge on the right of the door
+            var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
+            hGroup.position.set(handleX, handleY, 9);
+            hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hGroup.traverse(function (c) {
+              if (c.isMesh) {
+                c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+              }
+            });
+            hingeGroup.add(hGroup);
+          }
 
-        // Shutter Open / Close rotation: swings outwards to the right
-        var isOpen = !!(furn.shutterStates && furn.shutterStates[0]);
-        if (isOpen) {
-          hingeGroup.rotation.y = Math.PI * 0.55; // Swing open to the right (outwards)
+          // Shutter Open / Close rotation: swings outwards to the left
+          var isOpen = !!(furn.shutterStates && furn.shutterStates[0]);
+          hingeGroup.rotation.y = isOpen ? -Math.PI * 0.55 : 0;
+          fg.add(hingeGroup);
         } else {
-          hingeGroup.rotation.y = 0;
-        }
+          // ── FCM-RT (Cookscape): Left 600mm is 100% FIXED, Right 600mm OPENS TO RIGHT ──
+          // 1. Left Fixed Panel (Static, NEVER opens, flush, NO handle)
+          var fixCx = -dims.W / 2 + 3 + (fixW - 3) / 2;
+          var fixMesh = new THREE.Mesh(new THREE.BoxGeometry(fixW - 3, shH, 18), getShutterMaterial(0));
+          fixMesh.position.set(fixCx, shutterCenterY, dims.D / 2 - 9);
+          fixMesh.castShadow = true;
+          fixMesh.receiveShadow = true;
+          fixMesh.userData = { isFurniturePart: true, isFixedPanel: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(fixMesh);
 
-        fg.add(hingeGroup);
+          // 2. Right Movable Shutter (Hinged on the RIGHT edge, opens outwards to the right)
+          var movLeftX = -dims.W / 2 + 3 + fixW + 3;
+          var hingeX = movLeftX + movW; // Hinge is at the far right edge!
+          var hingeZ = dims.D / 2 - 9;
+
+          var hingeGroup = new THREE.Group();
+          hingeGroup.name = "ShutterHinge_Right";
+          hingeGroup.position.set(hingeX, shutterCenterY, hingeZ);
+          hingeGroup.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
+
+          var localX = -movW / 2;
+          var movMesh = new THREE.Mesh(new THREE.BoxGeometry(movW, shH, 18), getShutterMaterial(1));
+          movMesh.position.set(localX, 0, 0);
+          movMesh.castShadow = true;
+          movMesh.receiveShadow = true;
+          movMesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+          hingeGroup.add(movMesh);
+
+          // Shutter Pull Handle (Vertical, placed near the left/opening edge of the right door)
+          var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
+          if (hGroup) {
+            var handleX = -movW + 35; // Near opening edge!
+            var handleY = (isBase || drawersCount > 0) ? shH * 0.25 : 0;
+            hGroup.position.set(handleX, handleY, 9);
+            hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+            hGroup.traverse(function (c) {
+              if (c.isMesh) {
+                c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+              }
+            });
+            hingeGroup.add(hGroup);
+          }
+
+          // Shutter Open / Close rotation: swings outwards to the right
+          var isOpen = !!(furn.shutterStates && furn.shutterStates[0]);
+          hingeGroup.rotation.y = isOpen ? Math.PI * 0.55 : 0;
+          fg.add(hingeGroup);
+        }
       } else {
         // Standard Hinged Shutters
         var shW = (dims.W - (numShutters + 1) * 3) / numShutters;
@@ -20321,12 +20477,22 @@ body.role-employee #adminCreateEmpBox,
                 var activeUnit = window.S.units[existingIdx];
                 var isFcm = !!(
                   (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-                  (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
-                  (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
-                  (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+                  (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
+                  (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
                   fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
-                  fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+                  fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
+                  fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+                  fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
+                );
+                var isLt = !!(
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+                  (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
+                  (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+                  fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+                  fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
                 activeUnit.label = fn.name;
                 activeUnit.W = fn.dimensions.W;
@@ -20335,6 +20501,7 @@ body.role-employee #adminCreateEmpBox,
                 if (fn.unitConfig) {
                   activeUnit.unitConfig = Object.assign({}, fn.unitConfig);
                   if (fn.unitConfig.unitType) activeUnit.unitType = fn.unitConfig.unitType;
+                  else if (isFcm) activeUnit.unitType = isLt ? 'fcm-lt' : 'fcm-rt';
                   if (fn.unitConfig.fixedPanel) activeUnit.fixedPanel = fn.unitConfig.fixedPanel;
                   if (fn.unitConfig.openShutter) activeUnit.openShutter = fn.unitConfig.openShutter;
                   if (fn.unitConfig.shutters !== undefined) activeUnit.shutters = fn.unitConfig.shutters;
@@ -20358,12 +20525,22 @@ body.role-employee #adminCreateEmpBox,
               } else {
                 var isFcm = !!(
                   (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-                  (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
-                  (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
-                  (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+                  (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
+                  (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
                   fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
-                  fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+                  fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
+                  fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+                  fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
+                );
+                var isLt = !!(
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+                  (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
+                  (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+                  fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+                  fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
                 var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
                   window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.id, fn.costCategory) :
@@ -20376,7 +20553,7 @@ body.role-employee #adminCreateEmpBox,
                   label: fn.name,
                   ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
                   _furnId: fn.id,
-                  unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcm ? 'fcm-rt' : undefined),
+                  unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcm ? (isLt ? 'fcm-lt' : 'fcm-rt') : undefined),
                   catalogItemId: fn.catalogItemId || fn.id,
                   fixedPanel: fn.unitConfig && fn.unitConfig.fixedPanel,
                   openShutter: fn.unitConfig && fn.unitConfig.openShutter,
@@ -20773,19 +20950,30 @@ body.role-employee #adminCreateEmpBox,
             existing.loftShutters = fn.unitConfig.loftShutters;
           }
 
+          var isExistingFcmLt = !!(
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+            (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+            fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+            fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
+          );
           var isExistingFcm = !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-            (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
-            (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
-            (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+            isExistingFcmLt ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+            (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
             fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
-            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
+            fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+            fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           if (isExistingFcm) {
-            existing.unitType = 'fcm-rt';
+            existing.unitType = isExistingFcmLt ? 'fcm-lt' : 'fcm-rt';
             existing.fixedPanel = (fn.unitConfig && fn.unitConfig.fixedPanel) || { enabled: true, width: 600, type: 'fixed' };
-            existing.openShutter = (fn.unitConfig && fn.unitConfig.openShutter) || { enabled: true, width: 600, type: 'shutter', count: 1, opening: 'right' };
+            existing.openShutter = (fn.unitConfig && fn.unitConfig.openShutter) || { enabled: true, width: 600, type: 'shutter', count: 1, opening: isExistingFcmLt ? 'left' : 'right' };
             existing.shutters = 1;
             existing.sections = 2;
             existing.shelves = 1;
@@ -20797,14 +20985,25 @@ body.role-employee #adminCreateEmpBox,
 
           newUnits.push(existing);
         } else {
+          var isFcmLtNew = !!(
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+            (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+            fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+            fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
+          );
           var isFcmNew = !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-            (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
-            (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
-            (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+            isFcmLtNew ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+            (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
+            (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
             fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
-            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
+            fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+            fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 450 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
@@ -20815,10 +21014,10 @@ body.role-employee #adminCreateEmpBox,
             label: fn.name,
             ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
             _furnId: fn.id,
-            unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcmNew ? 'fcm-rt' : undefined),
+            unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcmNew ? (isFcmLtNew ? 'fcm-lt' : 'fcm-rt') : undefined),
             catalogItemId: fn.catalogItemId || fn.id,
-            fixedPanel: fn.unitConfig && fn.unitConfig.fixedPanel,
-            openShutter: fn.unitConfig && fn.unitConfig.openShutter,
+            fixedPanel: (fn.unitConfig && fn.unitConfig.fixedPanel) || (isFcmNew ? { enabled: true, width: 600, type: 'fixed' } : undefined),
+            openShutter: (fn.unitConfig && fn.unitConfig.openShutter) || (isFcmNew ? { enabled: true, width: 600, type: 'shutter', count: 1, opening: isFcmLtNew ? 'left' : 'right' } : undefined),
             unitConfig: fn.unitConfig ? Object.assign({}, fn.unitConfig) : undefined,
             elev: unitElev,
             W: (fn.dimensions && fn.dimensions.W) || defW,
@@ -24516,6 +24715,27 @@ body.role-employee #adminCreateEmpBox,
         Hn.push({ cx: -u.W / 4 - 12, y: 30 + elev, w: sw, h: shh, hl: true, z: zF + T + T / 2, hd: hd, fin: fin, door: sA });
         Hn.push({ cx: u.W / 4 + 12, y: 30 + elev, w: sw, h: shh, hl: false, z: zF - 6 + T / 2, hd: hd, fin: fin, door: sB });
         fronts.push(sA, sB);
+      } else if (u.unitType === "fcm-lt" ||
+                 (u.unitConfig && u.unitConfig.unitType === "fcm-lt") ||
+                 (u.openShutter && u.openShutter.opening === "left") ||
+                 (u.unitConfig && u.unitConfig.openShutter && u.unitConfig.openShutter.opening === "left") ||
+                 u.catalogItemId === "fcm-lt" || u.catalogItemId === "fm-lt-01" ||
+                 u.id === "fcm-lt" || u.id === "fm-lt-01" ||
+                 (u.id && /fcm[-_ ]*lt/i.test(u.id)) ||
+                 (u.label && /fcm[-_ ]*lt/i.test(u.label)) ||
+                 (u.name && /fcm[-_ ]*lt/i.test(u.name))) {
+        // FCM-LT (Cookscape): Left 600mm shutter is HINGED on the left (opening: "left") and opens outwards to the left.
+        // Right 600mm panel is 100% FIXED (no door, no hinge, no handle).
+        var fixW = (u.fixedPanel && u.fixedPanel.width) ||
+                   (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.width) ||
+                   (u.W / 2);
+        var movW = u.W - fixW - 6;
+        var movCx = -u.W / 2 + movW / 2 + 3;
+        var fixCx = u.W / 2 - fixW / 2;
+        // 1. Left Movable Shutter (Hinged on the left edge, opens outward to the left)
+        hinged(movCx, 3, movW, u.H - 6, zF, true, frontParts(u, ds, movCx, 3, movW, u.H - 6, zF, SC, T, "door"));
+        // 2. Static Right Fixed Panel (attached directly to carcass, never opens, NO handle)
+        frontParts(u, ds, fixCx, 3, fixW - 3, u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
       } else if (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled) ||
                  (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.enabled) ||
                  (u.unitConfig && u.unitConfig.unitType === "fcm-rt") ||
@@ -24572,17 +24792,19 @@ body.role-employee #adminCreateEmpBox,
       B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 38, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
     }
     if (ct === "kbase") {
-      var isFcm = (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled) ||
+      var isFcm = (u.unitType === "fcm-rt" || u.unitType === "fcm-lt" || (u.fixedPanel && u.fixedPanel.enabled) ||
                    (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.enabled) ||
-                   (u.unitConfig && u.unitConfig.unitType === "fcm-rt") ||
+                   (u.unitConfig && (u.unitConfig.unitType === "fcm-rt" || u.unitConfig.unitType === "fcm-lt")) ||
                    u.catalogItemId === "fcm-rt" || u.catalogItemId === "fm-rt-01" ||
+                   u.catalogItemId === "fcm-lt" || u.catalogItemId === "fm-lt-01" ||
                    u.id === "fcm-rt" || u.id === "fm-rt-01" ||
-                   (u.id && /fcm[-_ ]*rt/i.test(u.id)) ||
-                   (u.label && /fcm[-_ ]*rt/i.test(u.label)) ||
-                   (u.name && /fcm[-_ ]*rt/i.test(u.name)));
+                   u.id === "fcm-lt" || u.id === "fm-lt-01" ||
+                   (u.id && /fcm[-_ ]*(rt|lt)/i.test(u.id)) ||
+                   (u.label && /fcm[-_ ]*(rt|lt)/i.test(u.label)) ||
+                   (u.name && /fcm[-_ ]*(rt|lt)/i.test(u.name)));
       var plinthH = elev > 0 ? elev : (isFcm ? 100 : 0);
       if (plinthH > 0) {
-        var pY = elev > 0 ? 0 : -plinthH;
+        var pY = elev > 0 ? elev : 0;
         B.push({ x: 0, y: pY, z: u.D / 2 - 70, w: u.W - 2 * T, h: plinthH, d: 18, mat: "kick" });
         B.push({ x: -u.W / 2 + T, y: pY, z: 0, w: 18, h: plinthH, d: u.D - 90, mat: "kick" });
         B.push({ x: u.W / 2 - T, y: pY, z: 0, w: 18, h: plinthH, d: u.D - 90, mat: "kick" });
@@ -25760,7 +25982,7 @@ body.role-employee #adminCreateEmpBox,
         case "steel": m = new THREE.MeshStandardMaterial({ color: 0xC9CCCF, metalness: 1, roughness: 0.38, envMapIntensity: 1.1 }); break;
         case "hob": m = new THREE.MeshPhysicalMaterial({ color: 0x0b0b0e, roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.3 }); break;
         case "tile": m = tileMat(); break;
-        case "wall": m = new THREE.MeshStandardMaterial({ color: 0xF2ECE2, roughness: 0.90, metalness: 0 }); break;
+        case "wall": m = new THREE.MeshStandardMaterial({ color: 0x9E836A, roughness: 0.90, metalness: 0 }); break;
         case "window": m = new THREE.MeshBasicMaterial({ color: NEO ? 0xFFF1DA : 0xFFFDF7 }); break;
         case "floor": m = floorMat(); break;
       }
@@ -26130,17 +26352,12 @@ body.role-employee #adminCreateEmpBox,
         }
       }
 
-      // When OrbixHome3D is rendering the 3D floor plan with placed furniture,
-      // hide the active unit's static mesh in homeObj so root (which has full parametric
-      // textures, door styles, handles, hinges, and animations) renders it seamlessly!
+      // Keep all furniture units inside homeObj (OrbixHome3D) visible so the complete
+      // carcass, countertop, shutters, shelves and stand are always rendered!
       if (homeObj && homeObj.children && homeObj.children.length > 0) {
         homeObj.traverse(function (obj) {
           if (obj.userData && obj.userData.isFurnitureGroup) {
-            if (activeFurnId && obj.userData.furnitureId === activeFurnId) {
-              obj.visible = false;
-            } else {
-              obj.visible = true;
-            }
+            obj.visible = true;
           }
         });
       }
@@ -26401,7 +26618,7 @@ body.role-employee #adminCreateEmpBox,
                 } else {
                   var hingeGroup = part.userData.hingeGroup || (part.parent && part.parent.userData && part.parent.userData.isShutterHinge ? part.parent : null);
                   if (hingeGroup) {
-                    var hingeLeft = (hingeGroup.name === "ShutterHinge_Right") ? false : (sIdx % 2 === 0);
+                    var hingeLeft = (hingeGroup.name === "ShutterHinge_Right") ? false : (hingeGroup.name === "ShutterHinge_Left" ? true : (sIdx % 2 === 0));
                     hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.55) : 0;
                     render();
                   } else if (window.OrbixUI && window.OrbixUI.render3DHome) {
@@ -27209,6 +27426,16 @@ body.role-employee #adminCreateEmpBox,
       case "overhead":
         [900, 1200, 1500, 1800, 2400, 3000].forEach(function (w) { f(w + " · " + Math.max(2, Math.round(w / 600)) + " door", { W: w, shutters: Math.max(2, Math.round(w / 600)) }); f(w + " tall 750", { W: w, H: 750, shutters: Math.max(2, Math.round(w / 600)) }); }); break;
       case "kbase":
+        f("1200 · FCM-LT (Cookscape)", {
+          W: 1200, H: 720, D: 560,
+          unitType: "fcm-lt",
+          fixedPanel: { enabled: true, width: 600, type: "fixed" },
+          openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
+          shutters: 1, sections: 2, shelves: 1, drawers: 0,
+          handle: "pull", hfinish: "black",
+          carcass: "MDF 1135", shutterCol: "MDF 7701",
+          counter: "black", loft: false
+        });
         f("1200 · FCM-RT (Cookscape)", {
           W: 1200, H: 720, D: 560,
           unitType: "fcm-rt",

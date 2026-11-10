@@ -710,6 +710,27 @@
         Hn.push({ cx: -u.W / 4 - 12, y: 30 + elev, w: sw, h: shh, hl: true, z: zF + T + T / 2, hd: hd, fin: fin, door: sA });
         Hn.push({ cx: u.W / 4 + 12, y: 30 + elev, w: sw, h: shh, hl: false, z: zF - 6 + T / 2, hd: hd, fin: fin, door: sB });
         fronts.push(sA, sB);
+      } else if (u.unitType === "fcm-lt" ||
+                 (u.unitConfig && u.unitConfig.unitType === "fcm-lt") ||
+                 (u.openShutter && u.openShutter.opening === "left") ||
+                 (u.unitConfig && u.unitConfig.openShutter && u.unitConfig.openShutter.opening === "left") ||
+                 u.catalogItemId === "fcm-lt" || u.catalogItemId === "fm-lt-01" ||
+                 u.id === "fcm-lt" || u.id === "fm-lt-01" ||
+                 (u.id && /fcm[-_ ]*lt/i.test(u.id)) ||
+                 (u.label && /fcm[-_ ]*lt/i.test(u.label)) ||
+                 (u.name && /fcm[-_ ]*lt/i.test(u.name))) {
+        // FCM-LT (Cookscape): Left 600mm shutter is HINGED on the left (opening: "left") and opens outwards to the left.
+        // Right 600mm panel is 100% FIXED (no door, no hinge, no handle).
+        var fixW = (u.fixedPanel && u.fixedPanel.width) ||
+                   (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.width) ||
+                   (u.W / 2);
+        var movW = u.W - fixW - 6;
+        var movCx = -u.W / 2 + movW / 2 + 3;
+        var fixCx = u.W / 2 - fixW / 2;
+        // 1. Left Movable Shutter (Hinged on the left edge, opens outward to the left)
+        hinged(movCx, 3, movW, u.H - 6, zF, true, frontParts(u, ds, movCx, 3, movW, u.H - 6, zF, SC, T, "door"));
+        // 2. Static Right Fixed Panel (attached directly to carcass, never opens, NO handle)
+        frontParts(u, ds, fixCx, 3, fixW - 3, u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
       } else if (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled) ||
                  (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.enabled) ||
                  (u.unitConfig && u.unitConfig.unitType === "fcm-rt") ||
@@ -766,17 +787,19 @@
       B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 38, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
     }
     if (ct === "kbase") {
-      var isFcm = (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled) ||
+      var isFcm = (u.unitType === "fcm-rt" || u.unitType === "fcm-lt" || (u.fixedPanel && u.fixedPanel.enabled) ||
                    (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.enabled) ||
-                   (u.unitConfig && u.unitConfig.unitType === "fcm-rt") ||
+                   (u.unitConfig && (u.unitConfig.unitType === "fcm-rt" || u.unitConfig.unitType === "fcm-lt")) ||
                    u.catalogItemId === "fcm-rt" || u.catalogItemId === "fm-rt-01" ||
+                   u.catalogItemId === "fcm-lt" || u.catalogItemId === "fm-lt-01" ||
                    u.id === "fcm-rt" || u.id === "fm-rt-01" ||
-                   (u.id && /fcm[-_ ]*rt/i.test(u.id)) ||
-                   (u.label && /fcm[-_ ]*rt/i.test(u.label)) ||
-                   (u.name && /fcm[-_ ]*rt/i.test(u.name)));
+                   u.id === "fcm-lt" || u.id === "fm-lt-01" ||
+                   (u.id && /fcm[-_ ]*(rt|lt)/i.test(u.id)) ||
+                   (u.label && /fcm[-_ ]*(rt|lt)/i.test(u.label)) ||
+                   (u.name && /fcm[-_ ]*(rt|lt)/i.test(u.name)));
       var plinthH = elev > 0 ? elev : (isFcm ? 100 : 0);
       if (plinthH > 0) {
-        var pY = elev > 0 ? 0 : -plinthH;
+        var pY = elev > 0 ? elev : 0;
         B.push({ x: 0, y: pY, z: u.D / 2 - 70, w: u.W - 2 * T, h: plinthH, d: 18, mat: "kick" });
         B.push({ x: -u.W / 2 + T, y: pY, z: 0, w: 18, h: plinthH, d: u.D - 90, mat: "kick" });
         B.push({ x: u.W / 2 - T, y: pY, z: 0, w: 18, h: plinthH, d: u.D - 90, mat: "kick" });
@@ -1954,7 +1977,7 @@
         case "steel": m = new THREE.MeshStandardMaterial({ color: 0xC9CCCF, metalness: 1, roughness: 0.38, envMapIntensity: 1.1 }); break;
         case "hob": m = new THREE.MeshPhysicalMaterial({ color: 0x0b0b0e, roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.3 }); break;
         case "tile": m = tileMat(); break;
-        case "wall": m = new THREE.MeshStandardMaterial({ color: 0xF2ECE2, roughness: 0.90, metalness: 0 }); break;
+        case "wall": m = new THREE.MeshStandardMaterial({ color: 0x9E836A, roughness: 0.90, metalness: 0 }); break;
         case "window": m = new THREE.MeshBasicMaterial({ color: NEO ? 0xFFF1DA : 0xFFFDF7 }); break;
         case "floor": m = floorMat(); break;
       }
@@ -2324,17 +2347,12 @@
         }
       }
 
-      // When OrbixHome3D is rendering the 3D floor plan with placed furniture,
-      // hide the active unit's static mesh in homeObj so root (which has full parametric
-      // textures, door styles, handles, hinges, and animations) renders it seamlessly!
+      // Keep all furniture units inside homeObj (OrbixHome3D) visible so the complete
+      // carcass, countertop, shutters, shelves and stand are always rendered!
       if (homeObj && homeObj.children && homeObj.children.length > 0) {
         homeObj.traverse(function (obj) {
           if (obj.userData && obj.userData.isFurnitureGroup) {
-            if (activeFurnId && obj.userData.furnitureId === activeFurnId) {
-              obj.visible = false;
-            } else {
-              obj.visible = true;
-            }
+            obj.visible = true;
           }
         });
       }
@@ -2595,7 +2613,7 @@
                 } else {
                   var hingeGroup = part.userData.hingeGroup || (part.parent && part.parent.userData && part.parent.userData.isShutterHinge ? part.parent : null);
                   if (hingeGroup) {
-                    var hingeLeft = (hingeGroup.name === "ShutterHinge_Right") ? false : (sIdx % 2 === 0);
+                    var hingeLeft = (hingeGroup.name === "ShutterHinge_Right") ? false : (hingeGroup.name === "ShutterHinge_Left" ? true : (sIdx % 2 === 0));
                     hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.55) : 0;
                     render();
                   } else if (window.OrbixUI && window.OrbixUI.render3DHome) {
@@ -3403,6 +3421,16 @@
       case "overhead":
         [900, 1200, 1500, 1800, 2400, 3000].forEach(function (w) { f(w + " · " + Math.max(2, Math.round(w / 600)) + " door", { W: w, shutters: Math.max(2, Math.round(w / 600)) }); f(w + " tall 750", { W: w, H: 750, shutters: Math.max(2, Math.round(w / 600)) }); }); break;
       case "kbase":
+        f("1200 · FCM-LT (Cookscape)", {
+          W: 1200, H: 720, D: 560,
+          unitType: "fcm-lt",
+          fixedPanel: { enabled: true, width: 600, type: "fixed" },
+          openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
+          shutters: 1, sections: 2, shelves: 1, drawers: 0,
+          handle: "pull", hfinish: "black",
+          carcass: "MDF 1135", shutterCol: "MDF 7701",
+          counter: "black", loft: false
+        });
         f("1200 · FCM-RT (Cookscape)", {
           W: 1200, H: 720, D: 560,
           unitType: "fcm-rt",
