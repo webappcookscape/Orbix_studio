@@ -455,17 +455,17 @@
     },
     materials: {
       'MDF 1135': { name: 'White Matte', rateAddPerSft: 0 },
-      'MDF 3410': { name: 'Walnut Woodgrain', rateAddPerSft: 60 },
-      'MDF 2204': { name: 'Sonoma Oak', rateAddPerSft: 50 },
-      'MDF 6601': { name: 'Gloss White Acrylic', rateAddPerSft: 250 },
-      'MDF 7701': { name: 'Sage Green Matte', rateAddPerSft: 110 },
-      'MDF 7707': { name: 'Navy Blue Matte', rateAddPerSft: 110 },
-      'MDF 8801': { name: 'Concrete Look', rateAddPerSft: 150 }
+      'MDF 3410': { name: 'Walnut Woodgrain', rateAddPerSft: 0 },
+      'MDF 2204': { name: 'Sonoma Oak', rateAddPerSft: 0 },
+      'MDF 6601': { name: 'Gloss White Acrylic', rateAddPerSft: 0 },
+      'MDF 7701': { name: 'Sage Green Matte', rateAddPerSft: 0 },
+      'MDF 7707': { name: 'Navy Blue Matte', rateAddPerSft: 0 },
+      'MDF 8801': { name: 'Concrete Look', rateAddPerSft: 0 }
     },
     laborRates: {
-      installationPerSft: 85,
-      carcassAssemblyPerSft: 65,
-      transportLumpSum: 4500
+      installationPerSft: 0,
+      carcassAssemblyPerSft: 0,
+      transportLumpSum: 0
     }
   };
 
@@ -1687,12 +1687,8 @@
       extraDepthCharge = frontAreaSft * (extraDepth100 * catConfig.deepCabinetExtraPer100mm);
     }
 
-    // Material finish upgrade surcharge (if specified)
+    // Laminates and finish colors do not affect unit pricing (all laminate selections standard rate)
     var matCharge = 0;
-    var matKey = item.unitConfig && (item.unitConfig.shutterCol || item.unitConfig.carcass);
-    if (matKey && rateCard.materials[matKey] && rateCard.materials[matKey].rateAddPerSft) {
-      matCharge = frontAreaSft * rateCard.materials[matKey].rateAddPerSft;
-    }
 
     var totalItemAmount = baseAmount + extraDepthCharge + matCharge;
 
@@ -1886,17 +1882,15 @@
       }
     }
 
-    // 3. Labor, Installation & Transport
+    // 3. Labor, Installation & Transport (Zero impact on total)
     var totalWoodworkSft = 0;
     for (var w = 0; w < lineItems.length; w++) {
       totalWoodworkSft += (lineItems[w].areaSft || 0);
     }
 
-    var installCharge = totalWoodworkSft * (rateCard.laborRates.installationPerSft || 85);
-    var transportCharge = lineItems.length === 0 ? 0 :
-                          (lineItems.length === 1 && totalWoodworkSft < 15) ? 650 :
-                          (lineItems.length <= 2 ? 1500 : (rateCard.laborRates.transportLumpSum || 4500));
-    var laborTotal = installCharge + transportCharge;
+    var installCharge = 0;
+    var transportCharge = 0;
+    var laborTotal = 0;
 
     var grossBeforeTax = subtotal + laborTotal;
     var marginAmount = grossBeforeTax * ((rateCard.marginPercent || 15) / 100.0);

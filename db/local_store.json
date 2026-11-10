@@ -900,33 +900,33 @@
               },
               "MDF 3410": {
                 "name": "Walnut Woodgrain",
-                "rateAddPerSft": 60
+                "rateAddPerSft": 0
               },
               "MDF 2204": {
                 "name": "Sonoma Oak",
-                "rateAddPerSft": 50
+                "rateAddPerSft": 0
               },
               "MDF 6601": {
                 "name": "Gloss White Acrylic",
-                "rateAddPerSft": 250
+                "rateAddPerSft": 0
               },
               "MDF 7701": {
                 "name": "Sage Green Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 7707": {
                 "name": "Navy Blue Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 8801": {
                 "name": "Concrete Look",
-                "rateAddPerSft": 150
+                "rateAddPerSft": 0
               }
             },
             "laborRates": {
-              "installationPerSft": 85,
-              "carcassAssemblyPerSft": 65,
-              "transportLumpSum": 4500
+              "installationPerSft": 0,
+              "carcassAssemblyPerSft": 0,
+              "transportLumpSum": 0
             }
           },
           "quotationHistory": [],
@@ -1316,33 +1316,33 @@
               },
               "MDF 3410": {
                 "name": "Walnut Woodgrain",
-                "rateAddPerSft": 60
+                "rateAddPerSft": 0
               },
               "MDF 2204": {
                 "name": "Sonoma Oak",
-                "rateAddPerSft": 50
+                "rateAddPerSft": 0
               },
               "MDF 6601": {
                 "name": "Gloss White Acrylic",
-                "rateAddPerSft": 250
+                "rateAddPerSft": 0
               },
               "MDF 7701": {
                 "name": "Sage Green Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 7707": {
                 "name": "Navy Blue Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 8801": {
                 "name": "Concrete Look",
-                "rateAddPerSft": 150
+                "rateAddPerSft": 0
               }
             },
             "laborRates": {
-              "installationPerSft": 85,
-              "carcassAssemblyPerSft": 65,
-              "transportLumpSum": 4500
+              "installationPerSft": 0,
+              "carcassAssemblyPerSft": 0,
+              "transportLumpSum": 0
             }
           },
           "quotationHistory": [],
@@ -2066,33 +2066,33 @@
               },
               "MDF 3410": {
                 "name": "Walnut Woodgrain",
-                "rateAddPerSft": 60
+                "rateAddPerSft": 0
               },
               "MDF 2204": {
                 "name": "Sonoma Oak",
-                "rateAddPerSft": 50
+                "rateAddPerSft": 0
               },
               "MDF 6601": {
                 "name": "Gloss White Acrylic",
-                "rateAddPerSft": 250
+                "rateAddPerSft": 0
               },
               "MDF 7701": {
                 "name": "Sage Green Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 7707": {
                 "name": "Navy Blue Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 8801": {
                 "name": "Concrete Look",
-                "rateAddPerSft": 150
+                "rateAddPerSft": 0
               }
             },
             "laborRates": {
-              "installationPerSft": 85,
-              "carcassAssemblyPerSft": 65,
-              "transportLumpSum": 4500
+              "installationPerSft": 0,
+              "carcassAssemblyPerSft": 0,
+              "transportLumpSum": 0
             }
           },
           "quotationHistory": []
@@ -2467,33 +2467,33 @@
               },
               "MDF 3410": {
                 "name": "Walnut Woodgrain",
-                "rateAddPerSft": 60
+                "rateAddPerSft": 0
               },
               "MDF 2204": {
                 "name": "Sonoma Oak",
-                "rateAddPerSft": 50
+                "rateAddPerSft": 0
               },
               "MDF 6601": {
                 "name": "Gloss White Acrylic",
-                "rateAddPerSft": 250
+                "rateAddPerSft": 0
               },
               "MDF 7701": {
                 "name": "Sage Green Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 7707": {
                 "name": "Navy Blue Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 8801": {
                 "name": "Concrete Look",
-                "rateAddPerSft": 150
+                "rateAddPerSft": 0
               }
             },
             "laborRates": {
-              "installationPerSft": 85,
-              "carcassAssemblyPerSft": 65,
-              "transportLumpSum": 4500
+              "installationPerSft": 0,
+              "carcassAssemblyPerSft": 0,
+              "transportLumpSum": 0
             }
           }
         },
@@ -2899,33 +2899,33 @@
               },
               "MDF 3410": {
                 "name": "Walnut Woodgrain",
-                "rateAddPerSft": 60
+                "rateAddPerSft": 0
               },
               "MDF 2204": {
                 "name": "Sonoma Oak",
-                "rateAddPerSft": 50
+                "rateAddPerSft": 0
               },
               "MDF 6601": {
                 "name": "Gloss White Acrylic",
-                "rateAddPerSft": 250
+                "rateAddPerSft": 0
               },
               "MDF 7701": {
                 "name": "Sage Green Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 7707": {
                 "name": "Navy Blue Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 8801": {
                 "name": "Concrete Look",
-                "rateAddPerSft": 150
+                "rateAddPerSft": 0
               }
             },
             "laborRates": {
-              "installationPerSft": 85,
-              "carcassAssemblyPerSft": 65,
-              "transportLumpSum": 4500
+              "installationPerSft": 0,
+              "carcassAssemblyPerSft": 0,
+              "transportLumpSum": 0
             }
           },
           "quotationHistory": [],
@@ -3310,33 +3310,33 @@
               },
               "MDF 3410": {
                 "name": "Walnut Woodgrain",
-                "rateAddPerSft": 60
+                "rateAddPerSft": 0
               },
               "MDF 2204": {
                 "name": "Sonoma Oak",
-                "rateAddPerSft": 50
+                "rateAddPerSft": 0
               },
               "MDF 6601": {
                 "name": "Gloss White Acrylic",
-                "rateAddPerSft": 250
+                "rateAddPerSft": 0
               },
               "MDF 7701": {
                 "name": "Sage Green Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 7707": {
                 "name": "Navy Blue Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 8801": {
                 "name": "Concrete Look",
-                "rateAddPerSft": 150
+                "rateAddPerSft": 0
               }
             },
             "laborRates": {
-              "installationPerSft": 85,
-              "carcassAssemblyPerSft": 65,
-              "transportLumpSum": 4500
+              "installationPerSft": 0,
+              "carcassAssemblyPerSft": 0,
+              "transportLumpSum": 0
             }
           },
           "quotationHistory": [],
@@ -3721,33 +3721,33 @@
               },
               "MDF 3410": {
                 "name": "Walnut Woodgrain",
-                "rateAddPerSft": 60
+                "rateAddPerSft": 0
               },
               "MDF 2204": {
                 "name": "Sonoma Oak",
-                "rateAddPerSft": 50
+                "rateAddPerSft": 0
               },
               "MDF 6601": {
                 "name": "Gloss White Acrylic",
-                "rateAddPerSft": 250
+                "rateAddPerSft": 0
               },
               "MDF 7701": {
                 "name": "Sage Green Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 7707": {
                 "name": "Navy Blue Matte",
-                "rateAddPerSft": 110
+                "rateAddPerSft": 0
               },
               "MDF 8801": {
                 "name": "Concrete Look",
-                "rateAddPerSft": 150
+                "rateAddPerSft": 0
               }
             },
             "laborRates": {
-              "installationPerSft": 85,
-              "carcassAssemblyPerSft": 65,
-              "transportLumpSum": 4500
+              "installationPerSft": 0,
+              "carcassAssemblyPerSft": 0,
+              "transportLumpSum": 0
             }
           },
           "quotationHistory": [],

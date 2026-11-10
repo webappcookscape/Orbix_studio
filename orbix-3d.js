@@ -336,7 +336,7 @@
 
     // Dynamic Skirting color update to match current floor tile
     var skirtingTileColor = ArchitecturalRenderer.getFloorTileColor(this.selectedFloorType);
-    if (this.materials.skirting) {
+    if (this.materials.skirting && this.materials.skirting.color && typeof this.materials.skirting.color.setHex === 'function') {
       this.materials.skirting.color.setHex(skirtingTileColor);
       this.materials.skirting.needsUpdate = true;
     }

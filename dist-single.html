@@ -7480,17 +7480,17 @@ body.role-employee #adminCreateEmpBox,
     },
     materials: {
       'MDF 1135': { name: 'White Matte', rateAddPerSft: 0 },
-      'MDF 3410': { name: 'Walnut Woodgrain', rateAddPerSft: 60 },
-      'MDF 2204': { name: 'Sonoma Oak', rateAddPerSft: 50 },
-      'MDF 6601': { name: 'Gloss White Acrylic', rateAddPerSft: 250 },
-      'MDF 7701': { name: 'Sage Green Matte', rateAddPerSft: 110 },
-      'MDF 7707': { name: 'Navy Blue Matte', rateAddPerSft: 110 },
-      'MDF 8801': { name: 'Concrete Look', rateAddPerSft: 150 }
+      'MDF 3410': { name: 'Walnut Woodgrain', rateAddPerSft: 0 },
+      'MDF 2204': { name: 'Sonoma Oak', rateAddPerSft: 0 },
+      'MDF 6601': { name: 'Gloss White Acrylic', rateAddPerSft: 0 },
+      'MDF 7701': { name: 'Sage Green Matte', rateAddPerSft: 0 },
+      'MDF 7707': { name: 'Navy Blue Matte', rateAddPerSft: 0 },
+      'MDF 8801': { name: 'Concrete Look', rateAddPerSft: 0 }
     },
     laborRates: {
-      installationPerSft: 85,
-      carcassAssemblyPerSft: 65,
-      transportLumpSum: 4500
+      installationPerSft: 0,
+      carcassAssemblyPerSft: 0,
+      transportLumpSum: 0
     }
   };
 
@@ -8712,12 +8712,8 @@ body.role-employee #adminCreateEmpBox,
       extraDepthCharge = frontAreaSft * (extraDepth100 * catConfig.deepCabinetExtraPer100mm);
     }
 
-    // Material finish upgrade surcharge (if specified)
+    // Laminates and finish colors do not affect unit pricing (all laminate selections standard rate)
     var matCharge = 0;
-    var matKey = item.unitConfig && (item.unitConfig.shutterCol || item.unitConfig.carcass);
-    if (matKey && rateCard.materials[matKey] && rateCard.materials[matKey].rateAddPerSft) {
-      matCharge = frontAreaSft * rateCard.materials[matKey].rateAddPerSft;
-    }
 
     var totalItemAmount = baseAmount + extraDepthCharge + matCharge;
 
@@ -8911,17 +8907,15 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // 3. Labor, Installation & Transport
+    // 3. Labor, Installation & Transport (Zero impact on total)
     var totalWoodworkSft = 0;
     for (var w = 0; w < lineItems.length; w++) {
       totalWoodworkSft += (lineItems[w].areaSft || 0);
     }
 
-    var installCharge = totalWoodworkSft * (rateCard.laborRates.installationPerSft || 85);
-    var transportCharge = lineItems.length === 0 ? 0 :
-                          (lineItems.length === 1 && totalWoodworkSft < 15) ? 650 :
-                          (lineItems.length <= 2 ? 1500 : (rateCard.laborRates.transportLumpSum || 4500));
-    var laborTotal = installCharge + transportCharge;
+    var installCharge = 0;
+    var transportCharge = 0;
+    var laborTotal = 0;
 
     var grossBeforeTax = subtotal + laborTotal;
     var marginAmount = grossBeforeTax * ((rateCard.marginPercent || 15) / 100.0);
@@ -16487,7 +16481,7 @@ body.role-employee #adminCreateEmpBox,
 
     // Dynamic Skirting color update to match current floor tile
     var skirtingTileColor = ArchitecturalRenderer.getFloorTileColor(this.selectedFloorType);
-    if (this.materials.skirting) {
+    if (this.materials.skirting && this.materials.skirting.color && typeof this.materials.skirting.color.setHex === 'function') {
       this.materials.skirting.color.setHex(skirtingTileColor);
       this.materials.skirting.needsUpdate = true;
     }
@@ -22202,7 +22196,7 @@ body.role-employee #adminCreateEmpBox,
         '<div class="insp-row"><label>Kitchen Wall (₹/Rft)</label><input type="number" id="rc_kwall" value="' + (rateCard.categories.kitchen_wall.baseRatePerRft || 2100) + '"></div>' +
         '<div class="insp-row"><label>TV Media Wall (₹/SFT)</label><input type="number" id="rc_tv" value="' + (rateCard.categories.tv_unit.baseRatePerSft || 1650) + '"></div>' +
         '<div class="insp-row"><label>Flooring (₹/SFT)</label><input type="number" id="rc_floor" value="' + (rateCard.categories.flooring.baseRatePerSft || 140) + '"></div>' +
-        '<div class="insp-row"><label>Installation (₹/SFT)</label><input type="number" id="rc_install" value="' + (rateCard.laborRates.installationPerSft || 85) + '"></div>' +
+        '<div class="insp-row"><label>Installation (₹/SFT)</label><input type="number" id="rc_install" value="' + (rateCard.laborRates && rateCard.laborRates.installationPerSft !== undefined ? rateCard.laborRates.installationPerSft : 0) + '"></div>' +
         '<div class="insp-row"><label>Company Margin (%)</label><input type="number" id="rc_margin" value="' + (rateCard.marginPercent || 15) + '"></div>' +
         '<div class="insp-row"><label>GST (%)</label><input type="number" id="rc_gst" value="' + (rateCard.gstPercent || 18) + '"></div>' +
         '</div>' +
@@ -22902,7 +22896,7 @@ body.role-employee #adminCreateEmpBox,
           rc.categories.kitchen_wall.baseRatePerRft = parseFloat(document.getElementById('rc_kwall').value) || 2100;
           rc.categories.tv_unit.baseRatePerSft = parseFloat(document.getElementById('rc_tv').value) || 1650;
           rc.categories.flooring.baseRatePerSft = parseFloat(document.getElementById('rc_floor').value) || 140;
-          rc.laborRates.installationPerSft = parseFloat(document.getElementById('rc_install').value) || 85;
+          rc.laborRates.installationPerSft = parseFloat(document.getElementById('rc_install').value) || 0;
           rc.marginPercent = parseFloat(document.getElementById('rc_margin').value) || 15;
           rc.gstPercent = parseFloat(document.getElementById('rc_gst').value) || 18;
 

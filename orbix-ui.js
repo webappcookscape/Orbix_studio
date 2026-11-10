@@ -3537,7 +3537,7 @@
         '<div class="insp-row"><label>Kitchen Wall (₹/Rft)</label><input type="number" id="rc_kwall" value="' + (rateCard.categories.kitchen_wall.baseRatePerRft || 2100) + '"></div>' +
         '<div class="insp-row"><label>TV Media Wall (₹/SFT)</label><input type="number" id="rc_tv" value="' + (rateCard.categories.tv_unit.baseRatePerSft || 1650) + '"></div>' +
         '<div class="insp-row"><label>Flooring (₹/SFT)</label><input type="number" id="rc_floor" value="' + (rateCard.categories.flooring.baseRatePerSft || 140) + '"></div>' +
-        '<div class="insp-row"><label>Installation (₹/SFT)</label><input type="number" id="rc_install" value="' + (rateCard.laborRates.installationPerSft || 85) + '"></div>' +
+        '<div class="insp-row"><label>Installation (₹/SFT)</label><input type="number" id="rc_install" value="' + (rateCard.laborRates && rateCard.laborRates.installationPerSft !== undefined ? rateCard.laborRates.installationPerSft : 0) + '"></div>' +
         '<div class="insp-row"><label>Company Margin (%)</label><input type="number" id="rc_margin" value="' + (rateCard.marginPercent || 15) + '"></div>' +
         '<div class="insp-row"><label>GST (%)</label><input type="number" id="rc_gst" value="' + (rateCard.gstPercent || 18) + '"></div>' +
         '</div>' +
@@ -4237,7 +4237,7 @@
           rc.categories.kitchen_wall.baseRatePerRft = parseFloat(document.getElementById('rc_kwall').value) || 2100;
           rc.categories.tv_unit.baseRatePerSft = parseFloat(document.getElementById('rc_tv').value) || 1650;
           rc.categories.flooring.baseRatePerSft = parseFloat(document.getElementById('rc_floor').value) || 140;
-          rc.laborRates.installationPerSft = parseFloat(document.getElementById('rc_install').value) || 85;
+          rc.laborRates.installationPerSft = parseFloat(document.getElementById('rc_install').value) || 0;
           rc.marginPercent = parseFloat(document.getElementById('rc_margin').value) || 15;
           rc.gstPercent = parseFloat(document.getElementById('rc_gst').value) || 18;
 
