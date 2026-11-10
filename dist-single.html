@@ -21125,11 +21125,9 @@ body.role-employee #adminCreateEmpBox,
         var selGroup = null;
         homeObj.traverse(function (obj) {
           if (obj.userData && obj.userData.isFurnitureGroup) {
+            obj.visible = true;
             if (furnId && obj.userData.furnitureId === furnId) {
-              obj.visible = false;
               selGroup = obj;
-            } else {
-              obj.visible = true;
             }
           }
         });
@@ -22979,11 +22977,9 @@ body.role-employee #adminCreateEmpBox,
           var foundMesh = null;
           homeObj.traverse(function (c) {
             if (c.userData && c.userData.isFurnitureGroup) {
+              c.visible = true;
               if (selFurnId && c.userData.furnitureId === selFurnId) {
-                c.visible = false; // Hide active unit so live interactive Cupboard CAD root renders it
                 foundMesh = c;
-              } else {
-                c.visible = true;
               }
             }
           });
@@ -26352,29 +26348,16 @@ body.role-employee #adminCreateEmpBox,
         }
       }
 
-      // Keep all furniture units inside homeObj (OrbixHome3D) visible so the complete
-      // carcass, countertop, shutters, shelves and stand are always rendered!
+      // In architectural CAD view, OrbixHome3D renders all placed furniture complete
+      // with plinth base legs, carcass, countertop, shutters and shelves.
       if (homeObj && homeObj.children && homeObj.children.length > 0) {
         homeObj.traverse(function (obj) {
           if (obj.userData && obj.userData.isFurnitureGroup) {
             obj.visible = true;
           }
         });
-      }
-
-      if (furnPos) {
-        var fZ = (furnPos.z !== undefined && furnPos.z !== null) ? parseFloat(furnPos.z) : 0;
-        var uElev = (activeU && activeU.elev !== undefined && activeU.elev !== null) ? parseFloat(activeU.elev) : 0;
-        // Total target elevation AFFL:
-        var targetElev = Math.max(fZ, uElev);
-        // layoutRun(u) already adds uElev to internal box.y coordinates.
-        // Set root.position.y to targetElev - uElev so root.y + box.y == targetElev ALWAYS without double-elevation!
-        var rootY = targetElev - uElev;
-        root.position.set(furnPos.x, rootY, furnPos.y);
-        root.rotation.y = -furnRot;
-      } else {
-        root.position.set(0, 0, 0);
-        root.rotation.y = 0;
+        frame();
+        return;
       }
       L.forEach(function (lay) {
         var g = new THREE.Group();
