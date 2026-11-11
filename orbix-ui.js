@@ -1160,6 +1160,8 @@
            /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(fn.name));
 
         var isBaseUnit = !isWall && (fn.category === 'kitchen_base' || fn.category === 'crockery' || fn.category === 'vanity' || fn.category === 'tv_unit' || (fn.category && fn.category.indexOf('base') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('base') !== -1));
+        var isTvOrVanity = (fn.category === 'tv_unit' || fn.category === 'vanity' || (fn.name && (fn.name.toLowerCase().indexOf('tv') !== -1 || fn.name.toLowerCase().indexOf('vanity') !== -1)));
+        var isWardrobeOrTall = (fn.category === 'wardrobe' || fn.category === 'kitchen_tall' || (fn.name && (fn.name.toLowerCase().indexOf('wardrobe') !== -1 || fn.name.toLowerCase().indexOf('tall') !== -1 || fn.name.toLowerCase().indexOf('tbm') !== -1)));
         var counterType = (fn.unitConfig && fn.unitConfig.counter) || (isBaseUnit ? 'black' : 'none');
         if (counterType === 'BLUE') counterType = 'black';
 
@@ -1170,6 +1172,19 @@
         var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
           fn.elevation :
           ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
+
+        var hasLegs = false;
+        if (!isWall) {
+          if (fn.unitConfig && fn.unitConfig.hasLegs !== undefined) {
+            hasLegs = !!fn.unitConfig.hasLegs;
+          } else if (fn.unitConfig && fn.unitConfig.mountType !== undefined) {
+            hasLegs = (fn.unitConfig.mountType !== 'floating');
+          } else if (isTvOrVanity) {
+            hasLegs = (parseFloat(curElev) <= 50);
+          } else if (isWardrobeOrTall || isBaseUnit) {
+            hasLegs = true;
+          }
+        }
 
         var shutterItemsHtml = '';
         for (var s = 0; s < shuttersCount; s++) {
@@ -1293,6 +1308,10 @@
               '<option value="beige"' + (counterType === "beige" ? " selected" : "") + '>Beige Marble</option>' +
               '<option value="green"' + (counterType === "green" ? " selected" : "") + '>Green Granite</option>' +
               '<option value="none"' + (counterType === "none" ? " selected" : "") + '>None (Carcass Top)</option>' +
+            '</select></div>') : "") +
+            (!isWall ? ('<div class="insp-row" style="margin-top:6px;"><label>Base & Legs</label><select id="inspFurnLegs">' +
+              '<option value="legs"' + (hasLegs ? " selected" : "") + '>Floor Standing (100mm Legs / Plinth)</option>' +
+              '<option value="floating"' + (!hasLegs ? " selected" : "") + '>Floating / Wall-Hung (No Legs)</option>' +
             '</select></div>') : "") +
           '</div>' +
 
@@ -1533,6 +1552,29 @@
             self.renderBOQ();
             self.editor.render();
             if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var legsSelect = document.getElementById('inspFurnLegs');
+        if (legsSelect) {
+          legsSelect.addEventListener('change', function (e) {
+            var val = e.target.value;
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.hasLegs = (val === 'legs');
+            fn.unitConfig.mountType = (val === 'legs' ? 'floor' : 'floating');
+            if (val === 'floating' && (!fn.elevation || parseFloat(fn.elevation) === 0)) {
+              fn.elevation = 250;
+              if (fn.pos) fn.pos.z = 250;
+            } else if (val === 'legs' && parseFloat(fn.elevation) <= 250) {
+              fn.elevation = 0;
+              if (fn.pos) fn.pos.z = 0;
+            }
+            syncInspectorTo3D();
+            self.editor.pushHistory('Toggle Unit Legs / Plinth');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+            self.renderInspector(self.editor.selected);
           });
         }
         var elShutterCol = document.getElementById('inspFurnShutterCol');

@@ -709,7 +709,7 @@
       var mouseWorldBefore = self.screenToWorld(mouseScreen);
 
       var zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-      self.zoom = Math.max(0.02, Math.min(2.5, self.zoom * zoomFactor));
+      self.zoom = Math.max(0.01, Math.min(10.0, self.zoom * zoomFactor));
 
       var mouseScreenAfter = self.worldToScreen(mouseWorldBefore);
       self.pan.x += (mouseScreen.x - mouseScreenAfter.x);
@@ -1424,6 +1424,41 @@
     var u = { x: Math.cos(theta), y: Math.sin(theta) };
     var v = { x: -Math.sin(theta), y: Math.cos(theta) };
     var dims = furn.dimensions || { W: 1200, D: 600 };
+
+    var isLCorner = !!(
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' ||
+      (furn.id && /fbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
+      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+    );
+
+    if (isLCorner) {
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
+      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || 560;
+
+      function toWorld(lx, ly, name) {
+        return {
+          name: name,
+          x: pos.x + lx * u.x + ly * v.x,
+          y: pos.y + lx * u.y + ly * v.y,
+          isCorner: true
+        };
+      }
+
+      return [
+        toWorld(-cW / 2, -cD / 2, 'Wall Corner'),
+        toWorld(cW / 2, -cD / 2, 'Arm 1 Wall End'),
+        toWorld(cW / 2, -cD / 2 + cDepth, 'Arm 1 Front End'),
+        toWorld(-cW / 2 + cDepth, -cD / 2 + cDepth, 'Inside Corner'),
+        toWorld(-cW / 2 + cDepth, cD / 2, 'Arm 2 Front End'),
+        toWorld(-cW / 2, cD / 2, 'Arm 2 Wall End'),
+        { name: 'Arm 1 Joint', x: pos.x + (cW / 2) * u.x + (-cD / 2 + cDepth / 2) * v.x, y: pos.y + (cW / 2) * u.y + (-cD / 2 + cDepth / 2) * v.y, isMid: true },
+        { name: 'Arm 2 Joint', x: pos.x + (-cW / 2 + cDepth / 2) * u.x + (cD / 2) * v.x, y: pos.y + (-cW / 2 + cDepth / 2) * u.y + (cD / 2) * v.y, isMid: true }
+      ];
+    }
+
     var halfW = (dims.W || 1200) / 2;
     var halfD = (dims.D || 600) / 2;
 
@@ -1557,6 +1592,68 @@
         // Check angle orientation: parallel vs perpendicular
         var angleDiff = Math.abs((rotY - oRot + Math.PI * 4) % (Math.PI * 2));
         var isPerp = (Math.abs(angleDiff - Math.PI / 2) < 0.45 || Math.abs(angleDiff - 3 * Math.PI / 2) < 0.45);
+
+        var otherIsLCorner = !!(
+          (other.unitConfig && (other.unitConfig.geometryType === 'l_shaped_corner' || other.unitConfig.unitType === 'fbcm' || (other.unitConfig.corner && other.unitConfig.corner.enabled))) ||
+          other.catalogItemId === 'fbcm' || other.id === 'fbcm' || other.id === 'f_fbcm_1' ||
+          (other.id && /fbcm/i.test(other.id)) ||
+          (other.name && /l[-_ ]*shaped.*corner/i.test(other.name))
+        );
+
+        if (otherIsLCorner) {
+          var cW = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legW) || 900;
+          var cD = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legD) || 900;
+          var cDepth = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.depth) || 560;
+
+          // 1. Arm 1 face (along +uO at local X = +cW/2, Y = -cD/2 + cDepth/2)
+          var arm1FaceCenter = {
+            x: oPos.x + (cW / 2) * uO.x + (-cD / 2 + cDepth / 2) * vO.x,
+            y: oPos.y + (cW / 2) * uO.y + (-cD / 2 + cDepth / 2) * vO.y
+          };
+          var targetPosArm1 = {
+            x: arm1FaceCenter.x + (fW / 2) * uO.x - ((cDepth - fD) / 2) * vO.x,
+            y: arm1FaceCenter.y + (fW / 2) * uO.y - ((cDepth - fD) / 2) * vO.y
+          };
+          var dArm1 = Math.hypot(pos.x - targetPosArm1.x, pos.y - targetPosArm1.y);
+          if (dArm1 < minJointDist + 80 && dArm1 < (bestJoint ? bestJoint.dist : 9999)) {
+            bestJoint = {
+              pos: targetPosArm1,
+              rotY: oRot,
+              type: 'unit_joint',
+              side: 'arm1',
+              target: other,
+              dist: dArm1,
+              badgeLabel: '✓ Jointed to Corner Arm 1',
+              snapPoint: arm1FaceCenter
+            };
+          }
+
+          // 2. Arm 2 face (along +vO at local X = -cW/2 + cDepth/2, Y = +cD/2)
+          var arm2FaceCenter = {
+            x: oPos.x + (-cW / 2 + cDepth / 2) * uO.x + (cD / 2) * vO.x,
+            y: oPos.y + (-cW / 2 + cDepth / 2) * uO.y + (cD / 2) * vO.y
+          };
+          var rotArm2 = (oRot + Math.PI / 2) % (Math.PI * 2);
+          var uArm2 = { x: Math.cos(rotArm2), y: Math.sin(rotArm2) };
+          var vArm2 = { x: -Math.sin(rotArm2), y: Math.cos(rotArm2) };
+          var targetPosArm2 = {
+            x: arm2FaceCenter.x + (fW / 2) * uArm2.x - ((cDepth - fD) / 2) * vArm2.x,
+            y: arm2FaceCenter.y + (fW / 2) * uArm2.y - ((cDepth - fD) / 2) * vArm2.y
+          };
+          var dArm2 = Math.hypot(pos.x - targetPosArm2.x, pos.y - targetPosArm2.y);
+          if (dArm2 < minJointDist + 80 && dArm2 < (bestJoint ? bestJoint.dist : 9999)) {
+            bestJoint = {
+              pos: targetPosArm2,
+              rotY: rotArm2,
+              type: 'unit_joint',
+              side: 'arm2',
+              target: other,
+              dist: dArm2,
+              badgeLabel: '✓ Jointed to Corner Arm 2',
+              snapPoint: arm2FaceCenter
+            };
+          }
+        }
 
         if (!isPerp) {
           // A. Parallel Side-by-Side: Active unit Left joints to Other unit Right (Back flush)
@@ -1704,6 +1801,60 @@
     var minWallDist = 280; // snap zone (mm)
     var halfD = fD / 2;
     var halfW = fW / 2;
+
+    var furnIsLCorner = !!(
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' ||
+      (furn.id && /fbcm/i.test(furn.id)) ||
+      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+    );
+
+    if (furnIsLCorner) {
+      // Magnetic 90° corner snapping for L-shaped corner base unit
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
+      for (var wa = 0; wa < walls.length; wa++) {
+        var wA = walls[wa];
+        for (var wb = wa + 1; wb < walls.length; wb++) {
+          var wB = walls[wb];
+          var sharedPt = null, endA = null, endB = null;
+          if (Vec2.dist(wA.start, wB.start) < 20) { sharedPt = wA.start; endA = wA.end; endB = wB.end; }
+          else if (Vec2.dist(wA.start, wB.end) < 20) { sharedPt = wA.start; endA = wA.end; endB = wB.start; }
+          else if (Vec2.dist(wA.end, wB.start) < 20) { sharedPt = wA.end; endA = wA.start; endB = wB.end; }
+          else if (Vec2.dist(wA.end, wB.end) < 20) { sharedPt = wA.end; endA = wA.start; endB = wB.start; }
+
+          if (sharedPt) {
+            var vA = { x: endA.x - sharedPt.x, y: endA.y - sharedPt.y };
+            var vB = { x: endB.x - sharedPt.x, y: endB.y - sharedPt.y };
+            var lenA = Math.hypot(vA.x, vA.y);
+            var lenB = Math.hypot(vB.x, vB.y);
+            if (lenA > 100 && lenB > 100) {
+              var uA = { x: vA.x / lenA, y: vA.y / lenA };
+              var uB = { x: vB.x / lenB, y: vB.y / lenB };
+              var dotAB = uA.x * uB.x + uA.y * uB.y;
+              if (Math.abs(dotAB) < 0.25) {
+                var halfTA = (wA.thickness || 150) / 2;
+                var halfTB = (wB.thickness || 150) / 2;
+                var cornerCenter = {
+                  x: sharedPt.x + (halfTA + cW / 2) * uA.x + (halfTB + cD / 2) * uB.x,
+                  y: sharedPt.y + (halfTA + cW / 2) * uA.y + (halfTB + cD / 2) * uB.y
+                };
+                var distCorner = Math.hypot(pos.x - cornerCenter.x, pos.y - cornerCenter.y);
+                if (distCorner < 350) {
+                  var rotAngle = Math.atan2(uA.y, uA.x);
+                  return {
+                    pos: cornerCenter,
+                    rotY: rotAngle,
+                    type: 'wall_snap',
+                    badgeLabel: '✓ Snapped Flush into Room Corner (90°)'
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
     for (var wIdx = 0; wIdx < walls.length; wIdx++) {
       var w = walls[wIdx];

@@ -3555,7 +3555,7 @@
       costCategory: "Loft - O/S",
       areaSqft: 4.359385596,
       icon: "📦",
-      dimensions: { W: 450, H: 900, D: 600 },
+      dimensions: { W: 450, H: 900, D: 18 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
@@ -4570,7 +4570,7 @@
       costCategory: "Kitchen O/S",
       areaSqft: 9.687523546,
       icon: "🍳",
-      dimensions: { W: 1200, H: 750, D: 600 },
+      dimensions: { W: 1200, H: 750, D: 18 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
@@ -4586,7 +4586,7 @@
         drawers: 0,
         loft: false,
         loftH: 0,
-        counter: "black",
+        counter: "none",
         handle: "gprof",
         hfinish: "black",
         led: false,
@@ -4605,7 +4605,7 @@
       costCategory: "Kitchen O/S",
       areaSqft: 4.843761773,
       icon: "🍳",
-      dimensions: { W: 600, H: 750, D: 600 },
+      dimensions: { W: 600, H: 750, D: 18 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
@@ -4621,7 +4621,7 @@
         drawers: 0,
         loft: false,
         loftH: 0,
-        counter: "black",
+        counter: "none",
         handle: "gprof",
         hfinish: "black",
         led: false,
@@ -4640,7 +4640,7 @@
       costCategory: "Kitchen O/S",
       areaSqft: 3.875009418,
       icon: "🍳",
-      dimensions: { W: 600, H: 600, D: 600 },
+      dimensions: { W: 600, H: 600, D: 18 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
@@ -4675,7 +4675,7 @@
       costCategory: "Kitchen O/S",
       areaSqft: 1.937504709,
       icon: "🍳",
-      dimensions: { W: 300, H: 600, D: 600 },
+      dimensions: { W: 300, H: 600, D: 18 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }

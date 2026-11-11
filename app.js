@@ -2784,8 +2784,8 @@
         camera.updateProjectionMatrix();
       }
       var yaw = cam.yaw * Math.PI / 180, el = (-cam.pitch) * Math.PI / 180;
-      var safeZoom = Math.max(0.15, 1 + cam.zoom);
-      var d = dist / safeZoom;
+      var safeZoom = Math.max(0.05, 1 + cam.zoom);
+      var d = Math.max(250, dist / safeZoom);
       if (camera.far < d * 4) {
         camera.far = Math.max(1000000, d * 5);
         camera.updateProjectionMatrix();
@@ -3719,7 +3719,7 @@
   }
   function camApply() {
     cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
-    cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom));
+    cam.zoom = Math.max(-0.92, Math.min(8.0, cam.zoom));
     if (GL.ok) { GL.apply(); return; }
     var s = scale * (1 + cam.zoom);
     world.style.transform = "rotateX(" + (-cam.pitch) + "deg) rotateY(" + cam.yaw + "deg) scale3d(" + s + "," + s + "," + s + ")";
@@ -3856,9 +3856,11 @@
               gizmoDrag.obj.position.x = gizmoDrag.startPos.x + deltaLocalZ * Math.sin(theta);
               gizmoDrag.obj.position.z = gizmoDrag.startPos.z + deltaLocalZ * Math.cos(theta);
             } else if (gizmoDrag.axis === 'rot') {
-              // Free rotation around vertical axis
+              // Rotation around vertical axis with 15° snap (or 90° if Shift held)
               var cx = gizmoDrag.startPos.x, cz = gizmoDrag.startPos.z;
-              var angle = Math.atan2(curF.x - cx, curF.z - cz);
+              var rawAngle = Math.atan2(curF.x - cx, curF.z - cz);
+              var snapStep = e.shiftKey ? (Math.PI / 2) : (Math.PI / 12);
+              var angle = Math.round(rawAngle / snapStep) * snapStep;
               gizmoDrag.obj.rotation.y = angle;
             } else {
               gizmoDrag.obj.position.x = gizmoDrag.startPos.x + dx;
@@ -4171,7 +4173,8 @@
     stage.addEventListener("pointercancel", up);
     stage.addEventListener("wheel", function (e) {
       e.preventDefault();
-      cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom - e.deltaY * 0.0016));
+      var zoomDelta = -e.deltaY * 0.0012;
+      cam.zoom = Math.max(-0.92, Math.min(8.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
       camApply();
     }, { passive: false });
 

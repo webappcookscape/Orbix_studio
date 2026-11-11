@@ -1879,7 +1879,7 @@
     "dimensions": {
       "W": 450,
       "H": 900,
-      "D": 600
+      "D": 18
     },
     "materials": {
       "shutter": {
@@ -3242,7 +3242,7 @@
     "dimensions": {
       "W": 1200,
       "H": 750,
-      "D": 600
+      "D": 18
     },
     "materials": {
       "shutter": {
@@ -3265,7 +3265,7 @@
       "drawers": 0,
       "loft": false,
       "loftH": 0,
-      "counter": "black",
+      "counter": "none",
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
@@ -3289,7 +3289,7 @@
     "dimensions": {
       "W": 600,
       "H": 750,
-      "D": 600
+      "D": 18
     },
     "materials": {
       "shutter": {
@@ -3312,7 +3312,7 @@
       "drawers": 0,
       "loft": false,
       "loftH": 0,
-      "counter": "black",
+      "counter": "none",
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
@@ -3336,7 +3336,7 @@
     "dimensions": {
       "W": 600,
       "H": 600,
-      "D": 600
+      "D": 18
     },
     "materials": {
       "shutter": {
@@ -3383,7 +3383,7 @@
     "dimensions": {
       "W": 300,
       "H": 600,
-      "D": 600
+      "D": 18
     },
     "materials": {
       "shutter": {

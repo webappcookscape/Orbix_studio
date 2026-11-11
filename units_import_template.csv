@@ -35,7 +35,7 @@ wm-75-gl,WM 75 GL,KITCHEN - WM,KITCHEN - WM,750,600,300,2,hinged,slab,none,none,
 wm-90,WM 90,KITCHEN - WM,KITCHEN - WM,900,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,5.812514128
 wm-90-gl,WM 90 GL,KITCHEN - WM,KITCHEN - WM,900,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,5.812514128
 loft-1d-mod,LOFT 1 DOOR MODULAR,Wardrobe modular shelves,Wardrobe modular shelves,450,900,550,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,4.359385596
-loft-1d-os,LOFT 1 DOOR O/S,Loft-OS,Loft-OS,450,900,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,4.359385596
+loft-1d-os,LOFT 1 DOOR O/S,Loft-OS,Loft-OS,450,900,18,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,4.359385596
 pnl-wall,WALL PANEL,WALL PANELING,WALL PANELING,1200,1200,0,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,15.50003767
 ob-std,OPEN BOX,Spice Rack,Spice Rack,600,600,300,0,none,slab,none,none,0,1,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,3.875009418
 ob-200-300,OPEN BOX-200 - 300,Spice Rack,Spice Rack,300,300,200,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,0.9687523546
@@ -64,7 +64,7 @@ wr-shelves,WR 2 DOOR WITH SHELVBES,Wardrobe modular shelves,Wardrobe modular she
 wr-drawers,WR 2 DOOR WITH DRAWERS,Wardrobe modular drawers,Wardrobe modular drawers,900,2100,550,2,hinged,slab,none,none,0,1,2,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,20.34379945
 wr-1-shelves,WR 1 DOOR WITH SHELVBES,Wardrobe modular shelves,Wardrobe modular shelves,600,2100,550,1,hinged,slab,none,none,0,1,0,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,13.56253296
 wr-1-drawers,WR 1 DOOR WITH DRAWERS,Wardrobe modular drawers,Wardrobe modular drawers,600,2100,550,1,hinged,slab,none,none,0,1,1,True,750,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,13.56253296
-fm-120 o/s,FM 120 O/S,KITCHEN O/S,KITCHEN O/S,1200,750,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,black,g prof,black,False,,9.687523546
-fm-60 o/s,FM 60 O/S,KITCHEN O/S,KITCHEN O/S,600,750,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,black,g prof,black,False,,4.843761773
-wm-60 o/s,WM  60 O/S,KITCHEN O/S,KITCHEN O/S,600,600,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,3.875009418
-wm-30 o/s,WM 30 O/S,KITCHEN O/S,KITCHEN O/S,300,600,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,1.937504709
+fm-120 o/s,FM 120 O/S,KITCHEN O/S,KITCHEN O/S,1200,750,18,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,9.687523546
+fm-60 o/s,FM 60 O/S,KITCHEN O/S,KITCHEN O/S,600,750,18,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,4.843761773
+wm-60 o/s,WM  60 O/S,KITCHEN O/S,KITCHEN O/S,600,600,18,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,3.875009418
+wm-30 o/s,WM 30 O/S,KITCHEN O/S,KITCHEN O/S,300,600,18,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,1.937504709
