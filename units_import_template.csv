@@ -24,7 +24,7 @@ fm-ds-90,FM DS 90,KITCHEN - FM,KITCHEN - FM,900,750,550,4,hinged,slab,none,none,
 sr-45,SR 45,Spice Rack Open Box,Spice Rack Open Box,450,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_19mm,Absolute White,none,none,none,False,,0.726564266
 sr-75,SR 75,Spice Rack Open Box,Spice Rack Open Box,750,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_20mm,Absolute White,none,none,none,False,,1.210940443
 sr-90,SR 90,Spice Rack Open Box,Spice Rack Open Box,900,150,150,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_21mm,Absolute White,none,none,none,False,,1.453128532
-tbm-60-oven,TBM 60 OVEN,Wardrobe modular drawers,Wardrobe modular drawers,600,2100,550,2,hinged,slab,none,none,0,4,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,13.56253296
+tbm-60-oven,TBM 60 OVEN,oven_tall_unit,Kitchen - Tall Unit,600,2100,600,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,MDF 7701,BWP_18mm,MDF 1135,none,g prof,black,False,,13.56253296
 wcm-lt-01,WCM LEFT,KITCHEN - WM,KITCHEN - WM,600,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,3.875009418
 wcm-rt-01,WCM RIGHT,KITCHEN - WM,KITCHEN - WM,600,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,3.875009418
 wm-30,WM 30,KITCHEN - WM,KITCHEN - WM,300,600,300,1,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,none,g prof,black,False,,1.937504709

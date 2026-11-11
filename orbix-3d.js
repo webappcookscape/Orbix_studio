@@ -1678,6 +1678,208 @@
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Build Kitchen Built-in Oven Tall Cabinet (TBM 60 OVEN / oven_tall)
+     3-zone structure: Bottom Storage (700mm), Oven Niche (600mm), Top Storage (800mm)
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildOvenTallCabinetMesh = function (furn, fg, dims, carcassMat, getShutterMaterial, handleType, handleMat) {
+    var W = dims.W;
+    var H = dims.H;
+    var D = dims.D;
+
+    var uCfg = furn.unitConfig || {};
+    var ovenCfg = uCfg.oven || {};
+    var shCfg = uCfg.shutterConfig || {};
+
+    var bottomH = (shCfg.bottom && shCfg.bottom.height) || (ovenCfg.bottomElevation) || 700;
+    var ovenH = (ovenCfg.openingH) || 600;
+    var topH = (shCfg.top && shCfg.top.height) || Math.max(100, H - bottomH - ovenH);
+
+    var innerW = W - 36;
+    var innerD = D - 20;
+
+    // 1. Left side carcass panel
+    var leftMesh = new THREE.Mesh(new THREE.BoxGeometry(18, H, D), carcassMat);
+    leftMesh.position.set(-W / 2 + 9, H / 2, 0);
+    leftMesh.castShadow = true; leftMesh.receiveShadow = true;
+    leftMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(leftMesh);
+
+    // 2. Right side carcass panel
+    var rightMesh = new THREE.Mesh(new THREE.BoxGeometry(18, H, D), carcassMat);
+    rightMesh.position.set(W / 2 - 9, H / 2, 0);
+    rightMesh.castShadow = true; rightMesh.receiveShadow = true;
+    rightMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(rightMesh);
+
+    // 3. Bottom floor panel
+    var botMesh = new THREE.Mesh(new THREE.BoxGeometry(innerW, 18, innerD), carcassMat);
+    botMesh.position.set(0, 9, -10);
+    botMesh.castShadow = true; botMesh.receiveShadow = true;
+    botMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(botMesh);
+
+    // 4. Top ceiling panel
+    var topMesh = new THREE.Mesh(new THREE.BoxGeometry(innerW, 18, innerD), carcassMat);
+    topMesh.position.set(0, H - 9, -10);
+    topMesh.castShadow = true; topMesh.receiveShadow = true;
+    topMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(topMesh);
+
+    // 5. Oven Support Shelf (Bottom support at Y = bottomH)
+    var ovenBotShelf = new THREE.Mesh(new THREE.BoxGeometry(innerW, 18, innerD), carcassMat);
+    ovenBotShelf.position.set(0, bottomH - 9, -10);
+    ovenBotShelf.castShadow = true; ovenBotShelf.receiveShadow = true;
+    ovenBotShelf.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(ovenBotShelf);
+
+    // 6. Oven Top Shelf (Top divider at Y = bottomH + ovenH)
+    var ovenTopShelf = new THREE.Mesh(new THREE.BoxGeometry(innerW, 18, innerD), carcassMat);
+    ovenTopShelf.position.set(0, bottomH + ovenH - 9, -10);
+    ovenTopShelf.castShadow = true; ovenTopShelf.receiveShadow = true;
+    ovenTopShelf.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(ovenTopShelf);
+
+    // 7. Back panels:
+    // a) Bottom back panel (behind bottom storage, 0 to bottomH)
+    var bkBotGeo = new THREE.BoxGeometry(innerW, Math.max(10, bottomH - 36), 12);
+    var bkBotMesh = new THREE.Mesh(bkBotGeo, carcassMat);
+    bkBotMesh.position.set(0, bottomH / 2, -D / 2 + 6);
+    bkBotMesh.castShadow = true; bkBotMesh.receiveShadow = true;
+    bkBotMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(bkBotMesh);
+
+    // b) Middle oven niche: NO back panel (heat ventilation as specified in oven.backPanel: false)!
+
+    // c) Top back panel (behind top storage, bottomH + ovenH to H)
+    var bkTopH = Math.max(10, H - (bottomH + ovenH) - 18);
+    var bkTopGeo = new THREE.BoxGeometry(innerW, bkTopH, 12);
+    var bkTopMesh = new THREE.Mesh(bkTopGeo, carcassMat);
+    bkTopMesh.position.set(0, bottomH + ovenH + bkTopH / 2, -D / 2 + 6);
+    bkTopMesh.castShadow = true; bkTopMesh.receiveShadow = true;
+    bkTopMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(bkTopMesh);
+
+    // 8. Built-in Oven Model in the Cavity (Y = bottomH to bottomH + ovenH)
+    var ovenMeshGroup = new THREE.Group();
+    ovenMeshGroup.name = "BuiltInOvenAppliance";
+
+    var ovenBodyMat = new THREE.MeshStandardMaterial({ color: 0x1A1C20, metalness: 0.8, roughness: 0.3 });
+    var ovenSteelMat = new THREE.MeshStandardMaterial({ color: 0xD8DCE2, metalness: 0.9, roughness: 0.2 });
+    var ovenGlassMat = new THREE.MeshStandardMaterial({ color: 0x050709, roughness: 0.08, metalness: 0.9 });
+    var ovenDisplayMat = new THREE.MeshStandardMaterial({ color: 0x00E5FF, emissive: 0x00B0FF, emissiveIntensity: 0.9 });
+
+    var oW = innerW - 4;
+    var oH = ovenH - 12;
+    var oD = D - 40;
+
+    var oBody = new THREE.Mesh(new THREE.BoxGeometry(oW, oH, oD), ovenBodyMat);
+    oBody.position.set(0, bottomH + ovenH / 2, -15);
+    oBody.castShadow = true;
+    ovenMeshGroup.add(oBody);
+
+    var oGlass = new THREE.Mesh(new THREE.BoxGeometry(W - 8, oH * 0.72, 14), ovenGlassMat);
+    oGlass.position.set(0, bottomH + (oH * 0.72) / 2 + 6, D / 2 - 7);
+    ovenMeshGroup.add(oGlass);
+
+    var fasciaH = oH * 0.24;
+    var oFascia = new THREE.Mesh(new THREE.BoxGeometry(W - 8, fasciaH, 16), ovenSteelMat);
+    oFascia.position.set(0, bottomH + ovenH - fasciaH / 2 - 8, D / 2 - 8);
+    ovenMeshGroup.add(oFascia);
+
+    var oDisp = new THREE.Mesh(new THREE.BoxGeometry(100, 24, 2), ovenDisplayMat);
+    oDisp.position.set(0, bottomH + ovenH - fasciaH / 2 - 8, D / 2);
+    ovenMeshGroup.add(oDisp);
+
+    var oHandle = new THREE.Mesh(new THREE.CylinderGeometry(7, 7, W * 0.7, 16), ovenSteelMat);
+    oHandle.rotation.z = Math.PI / 2;
+    oHandle.position.set(0, bottomH + oH * 0.7 - 12, D / 2 + 14);
+    ovenMeshGroup.add(oHandle);
+
+    ovenMeshGroup.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    ovenMeshGroup.traverse(function(c) {
+      if (c.isMesh) c.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    });
+    fg.add(ovenMeshGroup);
+
+    // 9. Bottom Shutter (Height: bottomH - 6)
+    var bShW = W - 6;
+    var bShH = Math.max(100, bottomH - 6);
+    var bHingeX = -W / 2 + 3;
+    var bHingeY = bShH / 2 + 3;
+    var bHingeZ = D / 2 - 9;
+
+    var bHingeGroup = new THREE.Group();
+    bHingeGroup.name = "ShutterHinge_Bottom";
+    bHingeGroup.position.set(bHingeX, bHingeY, bHingeZ);
+    bHingeGroup.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
+
+    var bShMat = getShutterMaterial(0);
+    var bShMesh = new THREE.Mesh(new THREE.BoxGeometry(bShW, bShH, 18), bShMat);
+    bShMesh.position.set(bShW / 2, 0, 0);
+    bShMesh.castShadow = true; bShMesh.receiveShadow = true;
+    bShMesh.userData = { isFurniturePart: true, isShutter: true, shutterIdx: 0, hingeGroup: bHingeGroup, parentGroup: fg, furnitureId: furn.id };
+    bHingeGroup.add(bShMesh);
+
+    var bHandle = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, bShH * 0.35));
+    if (bHandle) {
+      bHandle.position.set(bShW - 25, bShH * 0.3, 9);
+      bHandle.userData = { isFurniturePart: true, isShutter: true, shutterIdx: 0, hingeGroup: bHingeGroup, parentGroup: fg, furnitureId: furn.id };
+      bHandle.traverse(function (c) {
+        if (c.isMesh) c.userData = { isFurniturePart: true, isShutter: true, shutterIdx: 0, hingeGroup: bHingeGroup, parentGroup: fg, furnitureId: furn.id };
+      });
+      bHingeGroup.add(bHandle);
+    }
+
+    var isBOpen = !!(furn.shutterStates && furn.shutterStates[0]);
+    bHingeGroup.rotation.y = isBOpen ? -Math.PI * 0.6 : 0;
+    fg.add(bHingeGroup);
+
+    // 10. Top Shutter (Height: topH - 6)
+    var tShW = W - 6;
+    var tShH = Math.max(100, topH - 6);
+    var tHingeX = -W / 2 + 3;
+    var tHingeY = bottomH + ovenH + tShH / 2 + 3;
+    var tHingeZ = D / 2 - 9;
+
+    var tHingeGroup = new THREE.Group();
+    tHingeGroup.name = "ShutterHinge_Top";
+    tHingeGroup.position.set(tHingeX, tHingeY, tHingeZ);
+    tHingeGroup.userData = { isShutterHinge: true, shutterIdx: 1, furnitureId: furn.id };
+
+    var tShMat = getShutterMaterial(1);
+    var tShMesh = new THREE.Mesh(new THREE.BoxGeometry(tShW, tShH, 18), tShMat);
+    tShMesh.position.set(tShW / 2, 0, 0);
+    tShMesh.castShadow = true; tShMesh.receiveShadow = true;
+    tShMesh.userData = { isFurniturePart: true, isShutter: true, shutterIdx: 1, hingeGroup: tHingeGroup, parentGroup: fg, furnitureId: furn.id };
+    tHingeGroup.add(tShMesh);
+
+    var tHandle = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, tShH * 0.35));
+    if (tHandle) {
+      tHandle.position.set(tShW - 25, -tShH * 0.3, 9);
+      tHandle.userData = { isFurniturePart: true, isShutter: true, shutterIdx: 1, hingeGroup: tHingeGroup, parentGroup: fg, furnitureId: furn.id };
+      tHandle.traverse(function (c) {
+        if (c.isMesh) c.userData = { isFurniturePart: true, isShutter: true, shutterIdx: 1, hingeGroup: tHingeGroup, parentGroup: fg, furnitureId: furn.id };
+      });
+      tHingeGroup.add(tHandle);
+    }
+
+    var isTOpen = !!(furn.shutterStates && furn.shutterStates[1]);
+    tHingeGroup.rotation.y = isTOpen ? -Math.PI * 0.6 : 0;
+    fg.add(tHingeGroup);
+
+    // Position and rotate unit
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+      parseFloat(furn.elevation) :
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+        parseFloat(furn.pos.z) : 0);
+    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    fg.rotation.y = -(furn.rotY || 0);
+    fg.visible = true;
+
+    return fg;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build Placed 3D Furniture Unit
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
@@ -1789,6 +1991,18 @@
     );
     if (isLCorner) {
       return this.buildLCornerCabinetMesh(furn, fg, dims, carcassMat, counterMat, plinthH, bodyH, counterH, getShutterMaterial, handleType, handleMat, isBase, isKitchen);
+    }
+
+    var isOvenTall = !!(
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'oven_tall' || furn.unitConfig.unitType === 'oven_tall_unit' || furn.unitConfig.unitType === 'tbm-60-oven' || (furn.unitConfig.oven && furn.unitConfig.oven.enabled))) ||
+      furn.catalogItemId === 'tbm-60-oven' || furn.id === 'tbm-60-oven' ||
+      (furn.id && /tbm[-_ ]*60[-_ ]*oven/i.test(furn.id)) ||
+      (furn.catalogItemId && /tbm[-_ ]*60[-_ ]*oven/i.test(furn.catalogItemId)) ||
+      (furn.name && /tbm[-_ ]*60[-_ ]*oven/i.test(furn.name)) ||
+      (furn.name && /oven.*tall/i.test(furn.name))
+    );
+    if (isOvenTall) {
+      return this.buildOvenTallCabinetMesh(furn, fg, dims, carcassMat, getShutterMaterial, handleType, handleMat);
     }
 
     if (isBed) {

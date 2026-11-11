@@ -3131,33 +3131,67 @@
       id: "tbm-60-oven",
       code: "tbm-60-oven",
       name: "TBM 60 OVEN",
-      modelType: "wardrobe_modular_drawers",
-      category: "wardrobe",
-      costCategory: "Wr - Modular - 2 DRAWERS",
+      modelType: "oven_tall_unit",
+      category: "kitchen_tall",
+      costCategory: "Kitchen - Tall Unit",
       areaSqft: 13.56253296,
-      icon: "🚪",
-      dimensions: { W: 600, H: 2100, D: 550 },
+      icon: "🎛️",
+      dimensions: { W: 600, H: 2100, D: 600 },
       materials: {
-        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
-        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" },
+        back: { material: "BACK_9mm", finish: "MDF 1135" }
       },
       unitConfig: {
+        ctype: "kitchen",
+        unitType: "tbm-60-oven",
+        geometryType: "oven_tall",
+        construction: {
+          carcassThickness: 18,
+          shutterThickness: 18,
+          backThickness: 9,
+          edgeBand: 1
+        },
+        oven: {
+          enabled: true,
+          bottomElevation: 700,
+          openingW: 564,
+          openingH: 600,
+          openingD: 600,
+          backPanel: false,
+          supportBottom: true,
+          supportTop: true,
+          ventilation: true
+        },
         shutters: 2,
         doorType: "hinged",
-        dstyle: "slab",
-        glassTint: "none",
-        profileColor: "none",
-        sections: 0,
-        shelves: 4,
         drawers: 0,
-        loft: false,
-        loftH: 0,
-        counter: "none",
+        shelves: 0,
+        sections: 3,
+        shutterConfig: {
+          bottom: {
+            enabled: true,
+            height: 700,
+            hingeSide: "left",
+            openingAngle: 105,
+            type: "hinged"
+          },
+          top: {
+            enabled: true,
+            height: 800,
+            hingeSide: "left",
+            openingAngle: 105,
+            type: "hinged"
+          }
+        },
+        dstyle: "slab",
         handle: "gprof",
         hfinish: "black",
         led: false,
-        carcass: "BWP_18mm",
-        shutterCol: "BLUE"
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701",
+        counter: "none",
+        loft: false
       },
       pricingOverrides: { baseRate: 23598.81 },
       customRate: 23598.81
