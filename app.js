@@ -2600,7 +2600,7 @@
                 } else {
                   var hingeGroup = part.userData.hingeGroup || (part.parent && part.parent.userData && part.parent.userData.isShutterHinge ? part.parent : null);
                   if (hingeGroup) {
-                    var hingeLeft = (hingeGroup.name === "ShutterHinge_Right") ? false : (hingeGroup.name === "ShutterHinge_Left" ? true : (sIdx % 2 === 0));
+                    var hingeLeft = (hingeGroup.name === "ShutterHinge_Right" || hingeGroup.name === "ShutterHinge_1") ? false : (hingeGroup.name === "ShutterHinge_Left" || hingeGroup.name === "ShutterHinge_0" ? true : (sIdx % 2 === 0));
                     hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.55) : 0;
                     render();
                   } else if (window.OrbixUI && window.OrbixUI.render3DHome) {
@@ -3408,6 +3408,16 @@
       case "overhead":
         [900, 1200, 1500, 1800, 2400, 3000].forEach(function (w) { f(w + " · " + Math.max(2, Math.round(w / 600)) + " door", { W: w, shutters: Math.max(2, Math.round(w / 600)) }); f(w + " tall 750", { W: w, H: 750, shutters: Math.max(2, Math.round(w / 600)) }); }); break;
       case "kbase":
+        f("900 · L-SHAPED CORNER (Cookscape)", {
+          W: 900, H: 720, D: 560,
+          unitType: "fbcm",
+          geometryType: "l_shaped_corner",
+          corner: { enabled: true, type: "L", legW: 900, legD: 900, depth: 560, orientation: "right" },
+          shutters: 2, sections: 1, shelves: 2, drawers: 0,
+          handle: "standard", hfinish: "black",
+          carcass: "MDF 1135", shutterCol: "MDF 7701",
+          counter: "black", loft: false
+        });
         f("1200 · FCM-LT (Cookscape)", {
           W: 1200, H: 720, D: 560,
           unitType: "fcm-lt",

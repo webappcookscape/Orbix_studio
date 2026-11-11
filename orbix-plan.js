@@ -3213,9 +3213,60 @@
       ctx.translate(sPos.x, sPos.y);
       ctx.rotate(f.rotY || 0);
 
+      // Check if L-shaped corner base unit
+      var isLCorner = !!(
+        (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
+        f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' ||
+        (f.id && /fbcm/i.test(f.id)) ||
+        (f.name && /l[-_ ]*shaped.*corner/i.test(f.name))
+      );
+
       // Furniture body boundary (Red if colliding!)
       var isDecor = !!(f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor');
-      if (isColliding) {
+
+      if (isLCorner) {
+        var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || 900;
+        var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || 900;
+        var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || 560;
+        var cwPx = cW * this.zoom;
+        var cdPx = cD * this.zoom;
+        var depthPx = cDepth * this.zoom;
+
+        if (isColliding) {
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
+          ctx.strokeStyle = '#dc2626';
+          ctx.lineWidth = 2.5;
+        } else {
+          ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
+          ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
+          ctx.lineWidth = isSelected ? 2 : 1.2;
+        }
+
+        // 6-vertex L-shaped polygon
+        ctx.beginPath();
+        ctx.moveTo(-cwPx / 2, -cdPx / 2);
+        ctx.lineTo(cwPx / 2, -cdPx / 2);
+        ctx.lineTo(cwPx / 2, cdPx / 2);
+        ctx.lineTo(cwPx / 2 - depthPx, cdPx / 2);
+        ctx.lineTo(cwPx / 2 - depthPx, -cdPx / 2 + depthPx);
+        ctx.lineTo(-cwPx / 2, -cdPx / 2 + depthPx);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Inside corner shutter front edges (Door 1 & Door 2)
+        ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? '#2563eb' : '#92400e');
+        ctx.lineWidth = isSelected || isColliding ? 3.5 : 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-cwPx / 2, -cdPx / 2 + depthPx);
+        ctx.lineTo(cwPx / 2 - depthPx, -cdPx / 2 + depthPx);
+        ctx.lineTo(cwPx / 2 - depthPx, cdPx / 2);
+        ctx.stroke();
+
+        // Handle indicator pill at inside corner junction
+        ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
+        ctx.fillRect(cwPx / 2 - depthPx - 5, -cdPx / 2 + depthPx - 5, 10, 10);
+      } else if (isColliding) {
         ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
         ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
         ctx.strokeStyle = '#dc2626';
@@ -3235,31 +3286,33 @@
         ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
       }
 
-      // Shutter dividers
-      var numShutters = (f.unitConfig && f.unitConfig.shutters) || (wMm > 1200 ? 3 : wMm > 600 ? 2 : 1);
-      if (numShutters > 1) {
-        ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? 'rgba(27, 79, 114, 0.35)' : 'rgba(110, 78, 53, 0.25)');
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        for (var s = 1; s < numShutters; s++) {
-          var sx = -wPx / 2 + s * (wPx / numShutters);
-          ctx.moveTo(sx, -dPx / 2);
-          ctx.lineTo(sx, dPx / 2);
+      if (!isLCorner) {
+        // Shutter dividers
+        var numShutters = (f.unitConfig && f.unitConfig.shutters) || (wMm > 1200 ? 3 : wMm > 600 ? 2 : 1);
+        if (numShutters > 1) {
+          ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? 'rgba(27, 79, 114, 0.35)' : 'rgba(110, 78, 53, 0.25)');
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (var s = 1; s < numShutters; s++) {
+            var sx = -wPx / 2 + s * (wPx / numShutters);
+            ctx.moveTo(sx, -dPx / 2);
+            ctx.lineTo(sx, dPx / 2);
+          }
+          ctx.stroke();
         }
+
+        // Front Shutter / Door edge (at +dPx/2) - clearly distinguishes front from back
+        ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? '#2563eb' : '#92400e');
+        ctx.lineWidth = isSelected || isColliding ? 3.5 : 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-wPx / 2, dPx / 2);
+        ctx.lineTo(wPx / 2, dPx / 2);
         ctx.stroke();
+
+        // Front handle pill indicator
+        ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
+        ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
       }
-
-      // Front Shutter / Door edge (at +dPx/2) - clearly distinguishes front from back
-      ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? '#2563eb' : '#92400e');
-      ctx.lineWidth = isSelected || isColliding ? 3.5 : 2.5;
-      ctx.beginPath();
-      ctx.moveTo(-wPx / 2, dPx / 2);
-      ctx.lineTo(wPx / 2, dPx / 2);
-      ctx.stroke();
-
-      // Front handle pill indicator
-      ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
-      ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
 
       // Labels: Name + Size
       ctx.fillStyle = isColliding ? '#991b1b' : (isDecor ? '#065f46' : (isSelected ? '#1e3a8a' : '#23211E'));

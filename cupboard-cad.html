@@ -3126,6 +3126,8 @@ body.role-employee #adminCreateEmpBox,
                   <option value="fm-rt-01">fm-rt-01: FCM-RT (Cookscape) (1200×720)</option>
                   <option value="fcm-lt">fcm-lt: FCM-LT (Cookscape) (1200×720)</option>
                   <option value="fm-lt-01">fm-lt-01: FCM-LT (Cookscape) (1200×720)</option>
+                  <option value="fbcm">fbcm: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
+                  <option value="f_fbcm_1">f_fbcm_1: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
                   <option value="fm-120">fm-120: FM 120 Kitchen Base (1200×750)</option>
                   <option value="fm-60">fm-60: FM 60 Kitchen Base (600×750)</option>
                   <option value="wm-60-dbl">wm-60-dbl: WM 60 DOUBLE Kitchen Wall (600×600)</option>
@@ -9454,6 +9456,110 @@ body.role-employee #adminCreateEmpBox,
       customRate: 17398.79
     },
     {
+      id: "fbcm",
+      code: "FBCM",
+      name: "L-SHAPED CORNER BASE UNIT (Cookscape)",
+      catalogItemId: "fbcm",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 8.70,
+      icon: "🍳",
+      dimensions: { W: 900, H: 720, D: 560 },
+      elevation: 0,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kbase",
+        unitType: "fbcm",
+        geometryType: "l_shaped_corner",
+        corner: {
+          enabled: true,
+          type: "L",
+          legW: 900,
+          legD: 900,
+          depth: 560,
+          orientation: "right"
+        },
+        shutters: 2,
+        doors: [
+          { id: "door_1", position: "front", type: "hinged", opening: "left" },
+          { id: "door_2", position: "side", type: "hinged", opening: "right" }
+        ],
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 1,
+        shelves: 2,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "standard",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 16500.00 },
+      customRate: 16500.00
+    },
+    {
+      id: "f_fbcm_1",
+      code: "FBCM-01",
+      name: "L-SHAPED CORNER BASE UNIT (Cookscape)",
+      catalogItemId: "fbcm",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 8.70,
+      icon: "🍳",
+      dimensions: { W: 900, H: 720, D: 560 },
+      elevation: 0,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kbase",
+        unitType: "fbcm",
+        geometryType: "l_shaped_corner",
+        corner: {
+          enabled: true,
+          type: "L",
+          legW: 900,
+          legD: 900,
+          depth: 560,
+          orientation: "right"
+        },
+        shutters: 2,
+        doors: [
+          { id: "door_1", position: "front", type: "hinged", opening: "left" },
+          { id: "door_2", position: "side", type: "hinged", opening: "right" }
+        ],
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 1,
+        shelves: 2,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "standard",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 16500.00 },
+      customRate: 16500.00
+    },
+    {
       id: "fm-120",
       code: "fm-120",
       name: "FM 120",
@@ -15071,9 +15177,60 @@ body.role-employee #adminCreateEmpBox,
       ctx.translate(sPos.x, sPos.y);
       ctx.rotate(f.rotY || 0);
 
+      // Check if L-shaped corner base unit
+      var isLCorner = !!(
+        (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
+        f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' ||
+        (f.id && /fbcm/i.test(f.id)) ||
+        (f.name && /l[-_ ]*shaped.*corner/i.test(f.name))
+      );
+
       // Furniture body boundary (Red if colliding!)
       var isDecor = !!(f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor');
-      if (isColliding) {
+
+      if (isLCorner) {
+        var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || 900;
+        var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || 900;
+        var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || 560;
+        var cwPx = cW * this.zoom;
+        var cdPx = cD * this.zoom;
+        var depthPx = cDepth * this.zoom;
+
+        if (isColliding) {
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
+          ctx.strokeStyle = '#dc2626';
+          ctx.lineWidth = 2.5;
+        } else {
+          ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
+          ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
+          ctx.lineWidth = isSelected ? 2 : 1.2;
+        }
+
+        // 6-vertex L-shaped polygon
+        ctx.beginPath();
+        ctx.moveTo(-cwPx / 2, -cdPx / 2);
+        ctx.lineTo(cwPx / 2, -cdPx / 2);
+        ctx.lineTo(cwPx / 2, cdPx / 2);
+        ctx.lineTo(cwPx / 2 - depthPx, cdPx / 2);
+        ctx.lineTo(cwPx / 2 - depthPx, -cdPx / 2 + depthPx);
+        ctx.lineTo(-cwPx / 2, -cdPx / 2 + depthPx);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Inside corner shutter front edges (Door 1 & Door 2)
+        ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? '#2563eb' : '#92400e');
+        ctx.lineWidth = isSelected || isColliding ? 3.5 : 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-cwPx / 2, -cdPx / 2 + depthPx);
+        ctx.lineTo(cwPx / 2 - depthPx, -cdPx / 2 + depthPx);
+        ctx.lineTo(cwPx / 2 - depthPx, cdPx / 2);
+        ctx.stroke();
+
+        // Handle indicator pill at inside corner junction
+        ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
+        ctx.fillRect(cwPx / 2 - depthPx - 5, -cdPx / 2 + depthPx - 5, 10, 10);
+      } else if (isColliding) {
         ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
         ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
         ctx.strokeStyle = '#dc2626';
@@ -15093,31 +15250,33 @@ body.role-employee #adminCreateEmpBox,
         ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
       }
 
-      // Shutter dividers
-      var numShutters = (f.unitConfig && f.unitConfig.shutters) || (wMm > 1200 ? 3 : wMm > 600 ? 2 : 1);
-      if (numShutters > 1) {
-        ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? 'rgba(27, 79, 114, 0.35)' : 'rgba(110, 78, 53, 0.25)');
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        for (var s = 1; s < numShutters; s++) {
-          var sx = -wPx / 2 + s * (wPx / numShutters);
-          ctx.moveTo(sx, -dPx / 2);
-          ctx.lineTo(sx, dPx / 2);
+      if (!isLCorner) {
+        // Shutter dividers
+        var numShutters = (f.unitConfig && f.unitConfig.shutters) || (wMm > 1200 ? 3 : wMm > 600 ? 2 : 1);
+        if (numShutters > 1) {
+          ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? 'rgba(27, 79, 114, 0.35)' : 'rgba(110, 78, 53, 0.25)');
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (var s = 1; s < numShutters; s++) {
+            var sx = -wPx / 2 + s * (wPx / numShutters);
+            ctx.moveTo(sx, -dPx / 2);
+            ctx.lineTo(sx, dPx / 2);
+          }
+          ctx.stroke();
         }
+
+        // Front Shutter / Door edge (at +dPx/2) - clearly distinguishes front from back
+        ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? '#2563eb' : '#92400e');
+        ctx.lineWidth = isSelected || isColliding ? 3.5 : 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-wPx / 2, dPx / 2);
+        ctx.lineTo(wPx / 2, dPx / 2);
         ctx.stroke();
+
+        // Front handle pill indicator
+        ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
+        ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
       }
-
-      // Front Shutter / Door edge (at +dPx/2) - clearly distinguishes front from back
-      ctx.strokeStyle = isColliding ? '#dc2626' : (isSelected ? '#2563eb' : '#92400e');
-      ctx.lineWidth = isSelected || isColliding ? 3.5 : 2.5;
-      ctx.beginPath();
-      ctx.moveTo(-wPx / 2, dPx / 2);
-      ctx.lineTo(wPx / 2, dPx / 2);
-      ctx.stroke();
-
-      // Front handle pill indicator
-      ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
-      ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
 
       // Labels: Name + Size
       ctx.fillStyle = isColliding ? '#991b1b' : (isDecor ? '#065f46' : (isSelected ? '#1e3a8a' : '#23211E'));
@@ -17639,6 +17798,190 @@ body.role-employee #adminCreateEmpBox,
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Build L-Shaped Corner Base Unit (Cookscape) - 900x900 Corner Module
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildLCornerCabinetMesh = function (furn, fg, dims, carcassMat, counterMat, plinthH, bodyH, counterH, getShutterMaterial, handleType, handleMat, isBase, isKitchen) {
+    var legW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
+    var legD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
+    var depth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || 560;
+    var W = legW;
+    var D = legD;
+    var openW = W - depth; // 340 mm
+    var openD = D - depth; // 340 mm
+
+    var plinthMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.85, metalness: 0.1 });
+
+    // 1. Plinth Base (100mm high, set back by 40mm from front faces)
+    if (plinthH > 0) {
+      var p1W = W - 20;
+      var p1D = depth - 40;
+      var p1Mesh = new THREE.Mesh(new THREE.BoxGeometry(p1W, plinthH, p1D), plinthMat);
+      p1Mesh.position.set(0, plinthH / 2, -D / 2 + p1D / 2 + 10);
+      p1Mesh.castShadow = true; p1Mesh.receiveShadow = true;
+      p1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(p1Mesh);
+
+      var p2W = depth - 40;
+      var p2D = openD - 10;
+      var p2Mesh = new THREE.Mesh(new THREE.BoxGeometry(p2W, plinthH, p2D), plinthMat);
+      p2Mesh.position.set(W / 2 - p2W / 2 - 10, plinthH / 2, -D / 2 + depth + p2D / 2);
+      p2Mesh.castShadow = true; p2Mesh.receiveShadow = true;
+      p2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(p2Mesh);
+    }
+
+    // 2. Bottom Floors (18mm Carcass)
+    var botY = plinthH + 9;
+    var b1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W, 18, depth), carcassMat);
+    b1Mesh.position.set(0, botY, -D / 2 + depth / 2);
+    b1Mesh.castShadow = true; b1Mesh.receiveShadow = true;
+    b1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(b1Mesh);
+
+    var b2Mesh = new THREE.Mesh(new THREE.BoxGeometry(depth, 18, openD), carcassMat);
+    b2Mesh.position.set(W / 2 - depth / 2, botY, -D / 2 + depth + openD / 2);
+    b2Mesh.castShadow = true; b2Mesh.receiveShadow = true;
+    b2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(b2Mesh);
+
+    // 3. Back Panels (18mm Carcass)
+    var bk1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W - 18, bodyH, 18), carcassMat);
+    bk1Mesh.position.set(-9, plinthH + bodyH / 2, -D / 2 + 9);
+    bk1Mesh.castShadow = true; bk1Mesh.receiveShadow = true;
+    bk1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(bk1Mesh);
+
+    var bk2Mesh = new THREE.Mesh(new THREE.BoxGeometry(18, bodyH, D), carcassMat);
+    bk2Mesh.position.set(W / 2 - 9, plinthH + bodyH / 2, 0);
+    bk2Mesh.castShadow = true; bk2Mesh.receiveShadow = true;
+    bk2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(bk2Mesh);
+
+    // 4. Outer End Panels (18mm Carcass)
+    var end1Mesh = new THREE.Mesh(new THREE.BoxGeometry(18, bodyH, depth - 18), carcassMat);
+    end1Mesh.position.set(-W / 2 + 9, plinthH + bodyH / 2, -D / 2 + 18 + (depth - 18) / 2);
+    end1Mesh.castShadow = true; end1Mesh.receiveShadow = true;
+    end1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(end1Mesh);
+
+    var end2Mesh = new THREE.Mesh(new THREE.BoxGeometry(depth - 18, bodyH, 18), carcassMat);
+    end2Mesh.position.set(W / 2 - 18 - (depth - 18) / 2, plinthH + bodyH / 2, D / 2 - 9);
+    end2Mesh.castShadow = true; end2Mesh.receiveShadow = true;
+    end2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(end2Mesh);
+
+    // 5. Top Support Rails (18mm Carcass)
+    var topY = plinthH + bodyH - 9;
+    var t1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W, 18, depth), carcassMat);
+    t1Mesh.position.set(0, topY, -D / 2 + depth / 2);
+    t1Mesh.castShadow = true; t1Mesh.receiveShadow = true;
+    t1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(t1Mesh);
+
+    var t2Mesh = new THREE.Mesh(new THREE.BoxGeometry(depth, 18, openD), carcassMat);
+    t2Mesh.position.set(W / 2 - depth / 2, topY, -D / 2 + depth + openD / 2);
+    t2Mesh.castShadow = true; t2Mesh.receiveShadow = true;
+    t2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(t2Mesh);
+
+    // 6. Shelves (2 Shelves, shelves: 2)
+    var numShelves = (furn.unitConfig && furn.unitConfig.shelves !== undefined) ? parseInt(furn.unitConfig.shelves) : 2;
+    for (var sh = 1; sh <= numShelves; sh++) {
+      var shY = plinthH + (sh * bodyH) / (numShelves + 1);
+      var s1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W - 36, 18, depth - 40), carcassMat);
+      s1Mesh.position.set(0, shY, -D / 2 + (depth - 40) / 2 + 18);
+      s1Mesh.castShadow = true; s1Mesh.receiveShadow = true;
+      s1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(s1Mesh);
+
+      var s2Mesh = new THREE.Mesh(new THREE.BoxGeometry(depth - 40, 18, openD - 15), carcassMat);
+      s2Mesh.position.set(W / 2 - (depth - 40) / 2 - 18, shY, -D / 2 + depth + (openD - 15) / 2);
+      s2Mesh.castShadow = true; s2Mesh.receiveShadow = true;
+      s2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(s2Mesh);
+    }
+
+    // 7. Countertop Stone (35mm Black Stone, counterH = 35)
+    if (counterH > 0) {
+      var cY = plinthH + bodyH + counterH / 2;
+      var c1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W + 20, counterH, depth + 20), counterMat);
+      c1Mesh.position.set(-10, cY, -D / 2 + (depth + 20) / 2);
+      c1Mesh.castShadow = true; c1Mesh.receiveShadow = true;
+      c1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(c1Mesh);
+
+      var c2Mesh = new THREE.Mesh(new THREE.BoxGeometry(depth + 20, counterH, openD + 20), counterMat);
+      c2Mesh.position.set(W / 2 - (depth + 20) / 2, cY, -D / 2 + depth + (openD + 20) / 2);
+      c2Mesh.castShadow = true; c2Mesh.receiveShadow = true;
+      c2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(c2Mesh);
+    }
+
+    // 8. Doors (Two Hinged Doors meeting at Inside 90° Corner)
+    var shH = bodyH - 6;
+    var shutterCenterY = plinthH + 3 + shH / 2;
+    var doorW = openW - 6;
+    var shutterMat0 = getShutterMaterial(0);
+    var shutterMat1 = getShutterMaterial(1);
+
+    // Door 1 (Front Door on Left Wing Face)
+    var d1LeftX = -W / 2 + 18;
+    var hinge1Group = new THREE.Group();
+    hinge1Group.name = "ShutterHinge_0";
+    hinge1Group.position.set(d1LeftX, shutterCenterY, -D / 2 + depth + 9);
+    hinge1Group.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
+
+    var d1Mesh = new THREE.Mesh(new THREE.BoxGeometry(doorW, shH, 18), shutterMat0);
+    d1Mesh.position.set(doorW / 2, 0, 0);
+    d1Mesh.castShadow = true; d1Mesh.receiveShadow = true;
+    d1Mesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hinge1Group, parentGroup: fg, furnitureId: furn.id };
+    hinge1Group.add(d1Mesh);
+
+    var isD1Open = !!(furn.shutterStates && furn.shutterStates[0]);
+    hinge1Group.rotation.y = isD1Open ? -Math.PI * 0.55 : 0;
+    fg.add(hinge1Group);
+
+    // Door 2 (Side Door on Right Wing Face)
+    var d2RightZ = D / 2 - 18;
+    var hinge2Group = new THREE.Group();
+    hinge2Group.name = "ShutterHinge_1";
+    hinge2Group.position.set(W / 2 - depth - 9, shutterCenterY, d2RightZ);
+    hinge2Group.userData = { isShutterHinge: true, shutterIdx: 1, furnitureId: furn.id };
+
+    var d2Mesh = new THREE.Mesh(new THREE.BoxGeometry(18, shH, doorW), shutterMat1);
+    d2Mesh.position.set(0, 0, -doorW / 2);
+    d2Mesh.castShadow = true; d2Mesh.receiveShadow = true;
+    d2Mesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
+    hinge2Group.add(d2Mesh);
+
+    // Vertical Black Pull Handle on Door 2 near inside corner junction
+    var hGroup = ArchitecturalRenderer.createHandleMesh("pull", handleMat, true, Math.min(180, shH * 0.35));
+    if (hGroup) {
+      hGroup.position.set(-14, shH * 0.25, -doorW + 35);
+      hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
+      hGroup.traverse(function (c) {
+        if (c.isMesh) c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
+      });
+      hinge2Group.add(hGroup);
+    }
+
+    var isD2Open = !!(furn.shutterStates && furn.shutterStates[1]);
+    hinge2Group.rotation.y = isD2Open ? Math.PI * 0.55 : 0;
+    fg.add(hinge2Group);
+
+    // Position and rotate unit
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+      parseFloat(furn.elevation) :
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+        parseFloat(furn.pos.z) : 0);
+    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    fg.rotation.y = -(furn.rotY || 0);
+    fg.visible = true;
+
+    return fg;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build Placed 3D Furniture Unit
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
@@ -17739,6 +18082,17 @@ body.role-employee #adminCreateEmpBox,
         roughness: isGloss ? 0.15 : (isWood ? 0.45 : 0.6),
         metalness: 0.04
       });
+    }
+
+    var isLCorner = !!(
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' ||
+      (furn.id && /fbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
+      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+    );
+    if (isLCorner) {
+      return this.buildLCornerCabinetMesh(furn, fg, dims, carcassMat, counterMat, plinthH, bodyH, counterH, getShutterMaterial, handleType, handleMat, isBase, isKitchen);
     }
 
     if (isBed) {
@@ -20469,7 +20823,15 @@ body.role-employee #adminCreateEmpBox,
               if (existingIdx !== -1) {
                 window.S.active = existingIdx;
                 var activeUnit = window.S.units[existingIdx];
-                var isFcm = !!(
+                var isFbcm = !!(
+                  (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+                  (fn.id && /fbcm/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fbcm/i.test(fn.catalogItemId)) ||
+                  (fn.name && /l[-_ ]*shaped.*corner/i.test(fn.name)) ||
+                  fn.id === 'fbcm' || fn.catalogItemId === 'fbcm' ||
+                  fn.id === 'f_fbcm_1' || fn.catalogItemId === 'f_fbcm_1'
+                );
+                var isFcm = !isFbcm && !!(
                   (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
                   (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
                   (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
@@ -20495,22 +20857,31 @@ body.role-employee #adminCreateEmpBox,
                 if (fn.unitConfig) {
                   activeUnit.unitConfig = Object.assign({}, fn.unitConfig);
                   if (fn.unitConfig.unitType) activeUnit.unitType = fn.unitConfig.unitType;
+                  else if (isFbcm) activeUnit.unitType = 'fbcm';
                   else if (isFcm) activeUnit.unitType = isLt ? 'fcm-lt' : 'fcm-rt';
+                  if (fn.unitConfig.geometryType) activeUnit.geometryType = fn.unitConfig.geometryType;
+                  else if (isFbcm) activeUnit.geometryType = 'l_shaped_corner';
+                  if (fn.unitConfig.corner) activeUnit.corner = fn.unitConfig.corner;
                   if (fn.unitConfig.fixedPanel) activeUnit.fixedPanel = fn.unitConfig.fixedPanel;
                   if (fn.unitConfig.openShutter) activeUnit.openShutter = fn.unitConfig.openShutter;
                   if (fn.unitConfig.shutters !== undefined) activeUnit.shutters = fn.unitConfig.shutters;
+                  else if (isFbcm) activeUnit.shutters = 2;
                   else if (isFcm) activeUnit.shutters = 1;
                   if (fn.unitConfig.sections !== undefined) activeUnit.sections = fn.unitConfig.sections;
+                  else if (isFbcm) activeUnit.sections = 1;
                   else if (isFcm) activeUnit.sections = 2;
                   if (fn.unitConfig.shelves !== undefined) activeUnit.shelves = fn.unitConfig.shelves;
+                  else if (isFbcm) activeUnit.shelves = 2;
                   else if (isFcm) activeUnit.shelves = 1;
                   if (fn.unitConfig.drawers !== undefined) activeUnit.drawers = fn.unitConfig.drawers;
                   if (fn.unitConfig.dstyle) activeUnit.dstyle = fn.unitConfig.dstyle;
                   if (fn.unitConfig.handle) activeUnit.handle = fn.unitConfig.handle;
+                  else if (isFbcm) activeUnit.handle = 'standard';
                   else if (isFcm) activeUnit.handle = 'pull';
                   if (fn.unitConfig.hfinish) activeUnit.hfinish = fn.unitConfig.hfinish;
-                  else if (isFcm) activeUnit.hfinish = 'black';
+                  else if (isFbcm || isFcm) activeUnit.hfinish = 'black';
                   if (fn.unitConfig.counter) activeUnit.counter = fn.unitConfig.counter;
+                  else if (isFbcm) activeUnit.counter = 'black';
                   if (fn.unitConfig.shutterCol) activeUnit.shutterCol = fn.unitConfig.shutterCol;
                   else if (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) activeUnit.shutterCol = fn.materials.shutter.finish;
                   if (fn.unitConfig.carcass) activeUnit.carcass = fn.unitConfig.carcass;
@@ -20944,7 +21315,14 @@ body.role-employee #adminCreateEmpBox,
             existing.loftShutters = fn.unitConfig.loftShutters;
           }
 
-          var isExistingFcmLt = !!(
+          var isExistingFbcm = !!(
+            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+            fn.id === 'fbcm' || fn.catalogItemId === 'fbcm' ||
+            fn.id === 'f_fbcm_1' || fn.catalogItemId === 'f_fbcm_1' ||
+            (fn.id && /fbcm/i.test(fn.id)) ||
+            (fn.name && /l[-_ ]*shaped.*corner/i.test(fn.name))
+          );
+          var isExistingFcmLt = !isExistingFbcm && !!(
             (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
             (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
             (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
@@ -20952,7 +21330,7 @@ body.role-employee #adminCreateEmpBox,
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
-          var isExistingFcm = !!(
+          var isExistingFcm = !isExistingFbcm && !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
             isExistingFcmLt ||
             (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
@@ -20964,7 +21342,16 @@ body.role-employee #adminCreateEmpBox,
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
-          if (isExistingFcm) {
+          if (isExistingFbcm) {
+            existing.unitType = 'fbcm';
+            existing.geometryType = 'l_shaped_corner';
+            existing.shutters = 2;
+            existing.sections = 1;
+            existing.shelves = 2;
+            existing.handle = (fn.unitConfig && fn.unitConfig.handle) || 'standard';
+            existing.hfinish = (fn.unitConfig && fn.unitConfig.hfinish) || 'black';
+            existing.counter = 'black';
+          } else if (isExistingFcm) {
             existing.unitType = isExistingFcmLt ? 'fcm-lt' : 'fcm-rt';
             existing.fixedPanel = (fn.unitConfig && fn.unitConfig.fixedPanel) || { enabled: true, width: 600, type: 'fixed' };
             existing.openShutter = (fn.unitConfig && fn.unitConfig.openShutter) || { enabled: true, width: 600, type: 'shutter', count: 1, opening: isExistingFcmLt ? 'left' : 'right' };
@@ -20979,7 +21366,14 @@ body.role-employee #adminCreateEmpBox,
 
           newUnits.push(existing);
         } else {
-          var isFcmLtNew = !!(
+          var isFbcmNew = !!(
+            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+            fn.id === 'fbcm' || fn.catalogItemId === 'fbcm' ||
+            fn.id === 'f_fbcm_1' || fn.catalogItemId === 'f_fbcm_1' ||
+            (fn.id && /fbcm/i.test(fn.id)) ||
+            (fn.name && /l[-_ ]*shaped.*corner/i.test(fn.name))
+          );
+          var isFcmLtNew = !isFbcmNew && !!(
             (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
             (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
             (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
@@ -20987,7 +21381,7 @@ body.role-employee #adminCreateEmpBox,
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
-          var isFcmNew = !!(
+          var isFcmNew = !isFbcmNew && !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
             isFcmLtNew ||
             (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
@@ -21008,7 +21402,8 @@ body.role-employee #adminCreateEmpBox,
             label: fn.name,
             ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
             _furnId: fn.id,
-            unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFcmNew ? (isFcmLtNew ? 'fcm-lt' : 'fcm-rt') : undefined),
+            unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFbcmNew ? 'fbcm' : (isFcmNew ? (isFcmLtNew ? 'fcm-lt' : 'fcm-rt') : undefined)),
+            geometryType: (fn.unitConfig && fn.unitConfig.geometryType) || (isFbcmNew ? 'l_shaped_corner' : undefined),
             catalogItemId: fn.catalogItemId || fn.id,
             fixedPanel: (fn.unitConfig && fn.unitConfig.fixedPanel) || (isFcmNew ? { enabled: true, width: 600, type: 'fixed' } : undefined),
             openShutter: (fn.unitConfig && fn.unitConfig.openShutter) || (isFcmNew ? { enabled: true, width: 600, type: 'shutter', count: 1, opening: isFcmLtNew ? 'left' : 'right' } : undefined),
@@ -21019,9 +21414,9 @@ body.role-employee #adminCreateEmpBox,
             D: (fn.dimensions && fn.dimensions.D) || defD,
             T: 18,
             type: (fn.unitConfig && (fn.unitConfig.type || fn.unitConfig.doorType)) || 'hinged',
-            shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (isFcmNew ? 1 : (defW > 1200 ? 3 : defW > 600 ? 2 : 1)),
-            sections: (fn.unitConfig && fn.unitConfig.sections) || (isFcmNew ? 2 : (defW > 1200 ? 2 : 1)),
-            shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isFcmNew ? 1 : (isKitchen ? 1 : 3)),
+            shutters: (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (isFbcmNew ? 2 : (isFcmNew ? 1 : (defW > 1200 ? 3 : defW > 600 ? 2 : 1))),
+            sections: (fn.unitConfig && fn.unitConfig.sections) || (isFbcmNew ? 1 : (isFcmNew ? 2 : (defW > 1200 ? 2 : 1))),
+            shelves: (fn.unitConfig && fn.unitConfig.shelves) || (isFbcmNew ? 2 : (isFcmNew ? 1 : (isKitchen ? 1 : 3))),
             drawers: (fn.unitConfig && fn.unitConfig.drawers) || 0,
             drawerH: 180,
             loft: (fn.unitConfig && fn.unitConfig.loft) || false,
@@ -26595,7 +26990,7 @@ body.role-employee #adminCreateEmpBox,
                 } else {
                   var hingeGroup = part.userData.hingeGroup || (part.parent && part.parent.userData && part.parent.userData.isShutterHinge ? part.parent : null);
                   if (hingeGroup) {
-                    var hingeLeft = (hingeGroup.name === "ShutterHinge_Right") ? false : (hingeGroup.name === "ShutterHinge_Left" ? true : (sIdx % 2 === 0));
+                    var hingeLeft = (hingeGroup.name === "ShutterHinge_Right" || hingeGroup.name === "ShutterHinge_1") ? false : (hingeGroup.name === "ShutterHinge_Left" || hingeGroup.name === "ShutterHinge_0" ? true : (sIdx % 2 === 0));
                     hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.55) : 0;
                     render();
                   } else if (window.OrbixUI && window.OrbixUI.render3DHome) {
@@ -27403,6 +27798,16 @@ body.role-employee #adminCreateEmpBox,
       case "overhead":
         [900, 1200, 1500, 1800, 2400, 3000].forEach(function (w) { f(w + " · " + Math.max(2, Math.round(w / 600)) + " door", { W: w, shutters: Math.max(2, Math.round(w / 600)) }); f(w + " tall 750", { W: w, H: 750, shutters: Math.max(2, Math.round(w / 600)) }); }); break;
       case "kbase":
+        f("900 · L-SHAPED CORNER (Cookscape)", {
+          W: 900, H: 720, D: 560,
+          unitType: "fbcm",
+          geometryType: "l_shaped_corner",
+          corner: { enabled: true, type: "L", legW: 900, legD: 900, depth: 560, orientation: "right" },
+          shutters: 2, sections: 1, shelves: 2, drawers: 0,
+          handle: "standard", hfinish: "black",
+          carcass: "MDF 1135", shutterCol: "MDF 7701",
+          counter: "black", loft: false
+        });
         f("1200 · FCM-LT (Cookscape)", {
           W: 1200, H: 720, D: 560,
           unitType: "fcm-lt",

@@ -1494,6 +1494,190 @@
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Build L-Shaped Corner Base Unit (Cookscape) - 900x900 Corner Module
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildLCornerCabinetMesh = function (furn, fg, dims, carcassMat, counterMat, plinthH, bodyH, counterH, getShutterMaterial, handleType, handleMat, isBase, isKitchen) {
+    var legW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
+    var legD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
+    var depth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || 560;
+    var W = legW;
+    var D = legD;
+    var openW = W - depth; // 340 mm
+    var openD = D - depth; // 340 mm
+
+    var plinthMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.85, metalness: 0.1 });
+
+    // 1. Plinth Base (100mm high, set back by 40mm from front faces)
+    if (plinthH > 0) {
+      var p1W = W - 20;
+      var p1D = depth - 40;
+      var p1Mesh = new THREE.Mesh(new THREE.BoxGeometry(p1W, plinthH, p1D), plinthMat);
+      p1Mesh.position.set(0, plinthH / 2, -D / 2 + p1D / 2 + 10);
+      p1Mesh.castShadow = true; p1Mesh.receiveShadow = true;
+      p1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(p1Mesh);
+
+      var p2W = depth - 40;
+      var p2D = openD - 10;
+      var p2Mesh = new THREE.Mesh(new THREE.BoxGeometry(p2W, plinthH, p2D), plinthMat);
+      p2Mesh.position.set(W / 2 - p2W / 2 - 10, plinthH / 2, -D / 2 + depth + p2D / 2);
+      p2Mesh.castShadow = true; p2Mesh.receiveShadow = true;
+      p2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(p2Mesh);
+    }
+
+    // 2. Bottom Floors (18mm Carcass)
+    var botY = plinthH + 9;
+    var b1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W, 18, depth), carcassMat);
+    b1Mesh.position.set(0, botY, -D / 2 + depth / 2);
+    b1Mesh.castShadow = true; b1Mesh.receiveShadow = true;
+    b1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(b1Mesh);
+
+    var b2Mesh = new THREE.Mesh(new THREE.BoxGeometry(depth, 18, openD), carcassMat);
+    b2Mesh.position.set(W / 2 - depth / 2, botY, -D / 2 + depth + openD / 2);
+    b2Mesh.castShadow = true; b2Mesh.receiveShadow = true;
+    b2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(b2Mesh);
+
+    // 3. Back Panels (18mm Carcass)
+    var bk1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W - 18, bodyH, 18), carcassMat);
+    bk1Mesh.position.set(-9, plinthH + bodyH / 2, -D / 2 + 9);
+    bk1Mesh.castShadow = true; bk1Mesh.receiveShadow = true;
+    bk1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(bk1Mesh);
+
+    var bk2Mesh = new THREE.Mesh(new THREE.BoxGeometry(18, bodyH, D), carcassMat);
+    bk2Mesh.position.set(W / 2 - 9, plinthH + bodyH / 2, 0);
+    bk2Mesh.castShadow = true; bk2Mesh.receiveShadow = true;
+    bk2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(bk2Mesh);
+
+    // 4. Outer End Panels (18mm Carcass)
+    var end1Mesh = new THREE.Mesh(new THREE.BoxGeometry(18, bodyH, depth - 18), carcassMat);
+    end1Mesh.position.set(-W / 2 + 9, plinthH + bodyH / 2, -D / 2 + 18 + (depth - 18) / 2);
+    end1Mesh.castShadow = true; end1Mesh.receiveShadow = true;
+    end1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(end1Mesh);
+
+    var end2Mesh = new THREE.Mesh(new THREE.BoxGeometry(depth - 18, bodyH, 18), carcassMat);
+    end2Mesh.position.set(W / 2 - 18 - (depth - 18) / 2, plinthH + bodyH / 2, D / 2 - 9);
+    end2Mesh.castShadow = true; end2Mesh.receiveShadow = true;
+    end2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(end2Mesh);
+
+    // 5. Top Support Rails (18mm Carcass)
+    var topY = plinthH + bodyH - 9;
+    var t1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W, 18, depth), carcassMat);
+    t1Mesh.position.set(0, topY, -D / 2 + depth / 2);
+    t1Mesh.castShadow = true; t1Mesh.receiveShadow = true;
+    t1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(t1Mesh);
+
+    var t2Mesh = new THREE.Mesh(new THREE.BoxGeometry(depth, 18, openD), carcassMat);
+    t2Mesh.position.set(W / 2 - depth / 2, topY, -D / 2 + depth + openD / 2);
+    t2Mesh.castShadow = true; t2Mesh.receiveShadow = true;
+    t2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(t2Mesh);
+
+    // 6. Shelves (2 Shelves, shelves: 2)
+    var numShelves = (furn.unitConfig && furn.unitConfig.shelves !== undefined) ? parseInt(furn.unitConfig.shelves) : 2;
+    for (var sh = 1; sh <= numShelves; sh++) {
+      var shY = plinthH + (sh * bodyH) / (numShelves + 1);
+      var s1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W - 36, 18, depth - 40), carcassMat);
+      s1Mesh.position.set(0, shY, -D / 2 + (depth - 40) / 2 + 18);
+      s1Mesh.castShadow = true; s1Mesh.receiveShadow = true;
+      s1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(s1Mesh);
+
+      var s2Mesh = new THREE.Mesh(new THREE.BoxGeometry(depth - 40, 18, openD - 15), carcassMat);
+      s2Mesh.position.set(W / 2 - (depth - 40) / 2 - 18, shY, -D / 2 + depth + (openD - 15) / 2);
+      s2Mesh.castShadow = true; s2Mesh.receiveShadow = true;
+      s2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(s2Mesh);
+    }
+
+    // 7. Countertop Stone (35mm Black Stone, counterH = 35)
+    if (counterH > 0) {
+      var cY = plinthH + bodyH + counterH / 2;
+      var c1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W + 20, counterH, depth + 20), counterMat);
+      c1Mesh.position.set(-10, cY, -D / 2 + (depth + 20) / 2);
+      c1Mesh.castShadow = true; c1Mesh.receiveShadow = true;
+      c1Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(c1Mesh);
+
+      var c2Mesh = new THREE.Mesh(new THREE.BoxGeometry(depth + 20, counterH, openD + 20), counterMat);
+      c2Mesh.position.set(W / 2 - (depth + 20) / 2, cY, -D / 2 + depth + (openD + 20) / 2);
+      c2Mesh.castShadow = true; c2Mesh.receiveShadow = true;
+      c2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(c2Mesh);
+    }
+
+    // 8. Doors (Two Hinged Doors meeting at Inside 90° Corner)
+    var shH = bodyH - 6;
+    var shutterCenterY = plinthH + 3 + shH / 2;
+    var doorW = openW - 6;
+    var shutterMat0 = getShutterMaterial(0);
+    var shutterMat1 = getShutterMaterial(1);
+
+    // Door 1 (Front Door on Left Wing Face)
+    var d1LeftX = -W / 2 + 18;
+    var hinge1Group = new THREE.Group();
+    hinge1Group.name = "ShutterHinge_0";
+    hinge1Group.position.set(d1LeftX, shutterCenterY, -D / 2 + depth + 9);
+    hinge1Group.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
+
+    var d1Mesh = new THREE.Mesh(new THREE.BoxGeometry(doorW, shH, 18), shutterMat0);
+    d1Mesh.position.set(doorW / 2, 0, 0);
+    d1Mesh.castShadow = true; d1Mesh.receiveShadow = true;
+    d1Mesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hinge1Group, parentGroup: fg, furnitureId: furn.id };
+    hinge1Group.add(d1Mesh);
+
+    var isD1Open = !!(furn.shutterStates && furn.shutterStates[0]);
+    hinge1Group.rotation.y = isD1Open ? -Math.PI * 0.55 : 0;
+    fg.add(hinge1Group);
+
+    // Door 2 (Side Door on Right Wing Face)
+    var d2RightZ = D / 2 - 18;
+    var hinge2Group = new THREE.Group();
+    hinge2Group.name = "ShutterHinge_1";
+    hinge2Group.position.set(W / 2 - depth - 9, shutterCenterY, d2RightZ);
+    hinge2Group.userData = { isShutterHinge: true, shutterIdx: 1, furnitureId: furn.id };
+
+    var d2Mesh = new THREE.Mesh(new THREE.BoxGeometry(18, shH, doorW), shutterMat1);
+    d2Mesh.position.set(0, 0, -doorW / 2);
+    d2Mesh.castShadow = true; d2Mesh.receiveShadow = true;
+    d2Mesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
+    hinge2Group.add(d2Mesh);
+
+    // Vertical Black Pull Handle on Door 2 near inside corner junction
+    var hGroup = ArchitecturalRenderer.createHandleMesh("pull", handleMat, true, Math.min(180, shH * 0.35));
+    if (hGroup) {
+      hGroup.position.set(-14, shH * 0.25, -doorW + 35);
+      hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
+      hGroup.traverse(function (c) {
+        if (c.isMesh) c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
+      });
+      hinge2Group.add(hGroup);
+    }
+
+    var isD2Open = !!(furn.shutterStates && furn.shutterStates[1]);
+    hinge2Group.rotation.y = isD2Open ? Math.PI * 0.55 : 0;
+    fg.add(hinge2Group);
+
+    // Position and rotate unit
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+      parseFloat(furn.elevation) :
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+        parseFloat(furn.pos.z) : 0);
+    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    fg.rotation.y = -(furn.rotY || 0);
+    fg.visible = true;
+
+    return fg;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build Placed 3D Furniture Unit
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
@@ -1594,6 +1778,17 @@
         roughness: isGloss ? 0.15 : (isWood ? 0.45 : 0.6),
         metalness: 0.04
       });
+    }
+
+    var isLCorner = !!(
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' ||
+      (furn.id && /fbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
+      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+    );
+    if (isLCorner) {
+      return this.buildLCornerCabinetMesh(furn, fg, dims, carcassMat, counterMat, plinthH, bodyH, counterH, getShutterMaterial, handleType, handleMat, isBase, isKitchen);
     }
 
     if (isBed) {

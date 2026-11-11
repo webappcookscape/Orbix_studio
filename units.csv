@@ -70,3 +70,5 @@ fm-120 o/s,FM 120 O/S,KITCHEN O/S,KITCHEN O/S,1200,750,0,2,hinged,slab,none,none
 fm-60 o/s,FM 60 O/S,KITCHEN O/S,KITCHEN O/S,600,750,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,black,g prof,black,False,,4.843761773
 wm-60 o/s,WM  60 O/S,KITCHEN O/S,KITCHEN O/S,600,600,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,3.875009418
 wm-30 o/s,WM 30 O/S,KITCHEN O/S,KITCHEN O/S,300,600,0,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,1.937504709
+fbcm,L-SHAPED CORNER BASE UNIT (Cookscape),Kitchen - FM,Kitchen - FM,900,720,560,2,hinged,slab,none,none,1,2,0,False,0,HDHMR_18mm,MDF 7701,BWP_18mm,MDF 1135,black,standard,black,False,16500.00,8.70
+f_fbcm_1,L-SHAPED CORNER BASE UNIT (Cookscape),Kitchen - FM,Kitchen - FM,900,720,560,2,hinged,slab,none,none,1,2,0,False,0,HDHMR_18mm,MDF 7701,BWP_18mm,MDF 1135,black,standard,black,False,16500.00,8.70

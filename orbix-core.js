@@ -2429,6 +2429,110 @@
       customRate: 17398.79
     },
     {
+      id: "fbcm",
+      code: "FBCM",
+      name: "L-SHAPED CORNER BASE UNIT (Cookscape)",
+      catalogItemId: "fbcm",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 8.70,
+      icon: "🍳",
+      dimensions: { W: 900, H: 720, D: 560 },
+      elevation: 0,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kbase",
+        unitType: "fbcm",
+        geometryType: "l_shaped_corner",
+        corner: {
+          enabled: true,
+          type: "L",
+          legW: 900,
+          legD: 900,
+          depth: 560,
+          orientation: "right"
+        },
+        shutters: 2,
+        doors: [
+          { id: "door_1", position: "front", type: "hinged", opening: "left" },
+          { id: "door_2", position: "side", type: "hinged", opening: "right" }
+        ],
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 1,
+        shelves: 2,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "standard",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 16500.00 },
+      customRate: 16500.00
+    },
+    {
+      id: "f_fbcm_1",
+      code: "FBCM-01",
+      name: "L-SHAPED CORNER BASE UNIT (Cookscape)",
+      catalogItemId: "fbcm",
+      modelType: "kitchen_fm",
+      category: "kitchen_base",
+      costCategory: "Kitchen - FM",
+      areaSqft: 8.70,
+      icon: "🍳",
+      dimensions: { W: 900, H: 720, D: 560 },
+      elevation: 0,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kbase",
+        unitType: "fbcm",
+        geometryType: "l_shaped_corner",
+        corner: {
+          enabled: true,
+          type: "L",
+          legW: 900,
+          legD: 900,
+          depth: 560,
+          orientation: "right"
+        },
+        shutters: 2,
+        doors: [
+          { id: "door_1", position: "front", type: "hinged", opening: "left" },
+          { id: "door_2", position: "side", type: "hinged", opening: "right" }
+        ],
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 1,
+        shelves: 2,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "black",
+        handle: "standard",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 16500.00 },
+      customRate: 16500.00
+    },
+    {
       id: "fm-120",
       code: "fm-120",
       name: "FM 120",
