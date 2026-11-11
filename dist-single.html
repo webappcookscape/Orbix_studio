@@ -10582,7 +10582,7 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Loft - O/S",
       areaSqft: 4.359385596,
       icon: "📦",
-      dimensions: { W: 450, H: 900, D: 600 },
+      dimensions: { W: 450, H: 900, D: 18 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
@@ -11597,7 +11597,7 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Kitchen O/S",
       areaSqft: 9.687523546,
       icon: "🍳",
-      dimensions: { W: 1200, H: 750, D: 600 },
+      dimensions: { W: 1200, H: 750, D: 18 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
@@ -11613,7 +11613,7 @@ body.role-employee #adminCreateEmpBox,
         drawers: 0,
         loft: false,
         loftH: 0,
-        counter: "black",
+        counter: "none",
         handle: "gprof",
         hfinish: "black",
         led: false,
@@ -11632,7 +11632,7 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Kitchen O/S",
       areaSqft: 4.843761773,
       icon: "🍳",
-      dimensions: { W: 600, H: 750, D: 600 },
+      dimensions: { W: 600, H: 750, D: 18 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
@@ -11648,7 +11648,7 @@ body.role-employee #adminCreateEmpBox,
         drawers: 0,
         loft: false,
         loftH: 0,
-        counter: "black",
+        counter: "none",
         handle: "gprof",
         hfinish: "black",
         led: false,
@@ -11667,7 +11667,7 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Kitchen O/S",
       areaSqft: 3.875009418,
       icon: "🍳",
-      dimensions: { W: 600, H: 600, D: 600 },
+      dimensions: { W: 600, H: 600, D: 18 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
@@ -11702,7 +11702,7 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Kitchen O/S",
       areaSqft: 1.937504709,
       icon: "🍳",
-      dimensions: { W: 300, H: 600, D: 600 },
+      dimensions: { W: 300, H: 600, D: 18 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
@@ -12703,7 +12703,7 @@ body.role-employee #adminCreateEmpBox,
       var mouseWorldBefore = self.screenToWorld(mouseScreen);
 
       var zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-      self.zoom = Math.max(0.02, Math.min(2.5, self.zoom * zoomFactor));
+      self.zoom = Math.max(0.01, Math.min(10.0, self.zoom * zoomFactor));
 
       var mouseScreenAfter = self.worldToScreen(mouseWorldBefore);
       self.pan.x += (mouseScreen.x - mouseScreenAfter.x);
@@ -13418,6 +13418,41 @@ body.role-employee #adminCreateEmpBox,
     var u = { x: Math.cos(theta), y: Math.sin(theta) };
     var v = { x: -Math.sin(theta), y: Math.cos(theta) };
     var dims = furn.dimensions || { W: 1200, D: 600 };
+
+    var isLCorner = !!(
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' ||
+      (furn.id && /fbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
+      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+    );
+
+    if (isLCorner) {
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
+      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || 560;
+
+      function toWorld(lx, ly, name) {
+        return {
+          name: name,
+          x: pos.x + lx * u.x + ly * v.x,
+          y: pos.y + lx * u.y + ly * v.y,
+          isCorner: true
+        };
+      }
+
+      return [
+        toWorld(-cW / 2, -cD / 2, 'Wall Corner'),
+        toWorld(cW / 2, -cD / 2, 'Arm 1 Wall End'),
+        toWorld(cW / 2, -cD / 2 + cDepth, 'Arm 1 Front End'),
+        toWorld(-cW / 2 + cDepth, -cD / 2 + cDepth, 'Inside Corner'),
+        toWorld(-cW / 2 + cDepth, cD / 2, 'Arm 2 Front End'),
+        toWorld(-cW / 2, cD / 2, 'Arm 2 Wall End'),
+        { name: 'Arm 1 Joint', x: pos.x + (cW / 2) * u.x + (-cD / 2 + cDepth / 2) * v.x, y: pos.y + (cW / 2) * u.y + (-cD / 2 + cDepth / 2) * v.y, isMid: true },
+        { name: 'Arm 2 Joint', x: pos.x + (-cW / 2 + cDepth / 2) * u.x + (cD / 2) * v.x, y: pos.y + (-cW / 2 + cDepth / 2) * u.y + (cD / 2) * v.y, isMid: true }
+      ];
+    }
+
     var halfW = (dims.W || 1200) / 2;
     var halfD = (dims.D || 600) / 2;
 
@@ -13551,6 +13586,68 @@ body.role-employee #adminCreateEmpBox,
         // Check angle orientation: parallel vs perpendicular
         var angleDiff = Math.abs((rotY - oRot + Math.PI * 4) % (Math.PI * 2));
         var isPerp = (Math.abs(angleDiff - Math.PI / 2) < 0.45 || Math.abs(angleDiff - 3 * Math.PI / 2) < 0.45);
+
+        var otherIsLCorner = !!(
+          (other.unitConfig && (other.unitConfig.geometryType === 'l_shaped_corner' || other.unitConfig.unitType === 'fbcm' || (other.unitConfig.corner && other.unitConfig.corner.enabled))) ||
+          other.catalogItemId === 'fbcm' || other.id === 'fbcm' || other.id === 'f_fbcm_1' ||
+          (other.id && /fbcm/i.test(other.id)) ||
+          (other.name && /l[-_ ]*shaped.*corner/i.test(other.name))
+        );
+
+        if (otherIsLCorner) {
+          var cW = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legW) || 900;
+          var cD = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legD) || 900;
+          var cDepth = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.depth) || 560;
+
+          // 1. Arm 1 face (along +uO at local X = +cW/2, Y = -cD/2 + cDepth/2)
+          var arm1FaceCenter = {
+            x: oPos.x + (cW / 2) * uO.x + (-cD / 2 + cDepth / 2) * vO.x,
+            y: oPos.y + (cW / 2) * uO.y + (-cD / 2 + cDepth / 2) * vO.y
+          };
+          var targetPosArm1 = {
+            x: arm1FaceCenter.x + (fW / 2) * uO.x - ((cDepth - fD) / 2) * vO.x,
+            y: arm1FaceCenter.y + (fW / 2) * uO.y - ((cDepth - fD) / 2) * vO.y
+          };
+          var dArm1 = Math.hypot(pos.x - targetPosArm1.x, pos.y - targetPosArm1.y);
+          if (dArm1 < minJointDist + 80 && dArm1 < (bestJoint ? bestJoint.dist : 9999)) {
+            bestJoint = {
+              pos: targetPosArm1,
+              rotY: oRot,
+              type: 'unit_joint',
+              side: 'arm1',
+              target: other,
+              dist: dArm1,
+              badgeLabel: '✓ Jointed to Corner Arm 1',
+              snapPoint: arm1FaceCenter
+            };
+          }
+
+          // 2. Arm 2 face (along +vO at local X = -cW/2 + cDepth/2, Y = +cD/2)
+          var arm2FaceCenter = {
+            x: oPos.x + (-cW / 2 + cDepth / 2) * uO.x + (cD / 2) * vO.x,
+            y: oPos.y + (-cW / 2 + cDepth / 2) * uO.y + (cD / 2) * vO.y
+          };
+          var rotArm2 = (oRot + Math.PI / 2) % (Math.PI * 2);
+          var uArm2 = { x: Math.cos(rotArm2), y: Math.sin(rotArm2) };
+          var vArm2 = { x: -Math.sin(rotArm2), y: Math.cos(rotArm2) };
+          var targetPosArm2 = {
+            x: arm2FaceCenter.x + (fW / 2) * uArm2.x - ((cDepth - fD) / 2) * vArm2.x,
+            y: arm2FaceCenter.y + (fW / 2) * uArm2.y - ((cDepth - fD) / 2) * vArm2.y
+          };
+          var dArm2 = Math.hypot(pos.x - targetPosArm2.x, pos.y - targetPosArm2.y);
+          if (dArm2 < minJointDist + 80 && dArm2 < (bestJoint ? bestJoint.dist : 9999)) {
+            bestJoint = {
+              pos: targetPosArm2,
+              rotY: rotArm2,
+              type: 'unit_joint',
+              side: 'arm2',
+              target: other,
+              dist: dArm2,
+              badgeLabel: '✓ Jointed to Corner Arm 2',
+              snapPoint: arm2FaceCenter
+            };
+          }
+        }
 
         if (!isPerp) {
           // A. Parallel Side-by-Side: Active unit Left joints to Other unit Right (Back flush)
@@ -13698,6 +13795,60 @@ body.role-employee #adminCreateEmpBox,
     var minWallDist = 280; // snap zone (mm)
     var halfD = fD / 2;
     var halfW = fW / 2;
+
+    var furnIsLCorner = !!(
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' ||
+      (furn.id && /fbcm/i.test(furn.id)) ||
+      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+    );
+
+    if (furnIsLCorner) {
+      // Magnetic 90° corner snapping for L-shaped corner base unit
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
+      for (var wa = 0; wa < walls.length; wa++) {
+        var wA = walls[wa];
+        for (var wb = wa + 1; wb < walls.length; wb++) {
+          var wB = walls[wb];
+          var sharedPt = null, endA = null, endB = null;
+          if (Vec2.dist(wA.start, wB.start) < 20) { sharedPt = wA.start; endA = wA.end; endB = wB.end; }
+          else if (Vec2.dist(wA.start, wB.end) < 20) { sharedPt = wA.start; endA = wA.end; endB = wB.start; }
+          else if (Vec2.dist(wA.end, wB.start) < 20) { sharedPt = wA.end; endA = wA.start; endB = wB.end; }
+          else if (Vec2.dist(wA.end, wB.end) < 20) { sharedPt = wA.end; endA = wA.start; endB = wB.start; }
+
+          if (sharedPt) {
+            var vA = { x: endA.x - sharedPt.x, y: endA.y - sharedPt.y };
+            var vB = { x: endB.x - sharedPt.x, y: endB.y - sharedPt.y };
+            var lenA = Math.hypot(vA.x, vA.y);
+            var lenB = Math.hypot(vB.x, vB.y);
+            if (lenA > 100 && lenB > 100) {
+              var uA = { x: vA.x / lenA, y: vA.y / lenA };
+              var uB = { x: vB.x / lenB, y: vB.y / lenB };
+              var dotAB = uA.x * uB.x + uA.y * uB.y;
+              if (Math.abs(dotAB) < 0.25) {
+                var halfTA = (wA.thickness || 150) / 2;
+                var halfTB = (wB.thickness || 150) / 2;
+                var cornerCenter = {
+                  x: sharedPt.x + (halfTA + cW / 2) * uA.x + (halfTB + cD / 2) * uB.x,
+                  y: sharedPt.y + (halfTA + cW / 2) * uA.y + (halfTB + cD / 2) * uB.y
+                };
+                var distCorner = Math.hypot(pos.x - cornerCenter.x, pos.y - cornerCenter.y);
+                if (distCorner < 350) {
+                  var rotAngle = Math.atan2(uA.y, uA.x);
+                  return {
+                    pos: cornerCenter,
+                    rotY: rotAngle,
+                    type: 'wall_snap',
+                    badgeLabel: '✓ Snapped Flush into Room Corner (90°)'
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
     for (var wIdx = 0; wIdx < walls.length; wIdx++) {
       var w = walls[wIdx];
@@ -18016,6 +18167,109 @@ body.role-employee #adminCreateEmpBox,
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Build Architectural Wall Panel / Back Panel (pnl-back / wall_paneling)
+     Mounts flush against the wall with exact beveling, NO internal carcass box
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildWallPanelMesh = function (furn, fg, dims, carcassMat) {
+    var W = dims.W;
+    var H = dims.H;
+    var D = Math.max(12, dims.D || 18);
+
+    var panelGeo = new THREE.BoxGeometry(W, H, D);
+    var panelMesh = new THREE.Mesh(panelGeo, carcassMat);
+    panelMesh.position.set(0, H / 2, -D / 2);
+    panelMesh.castShadow = true; panelMesh.receiveShadow = true;
+    panelMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+    fg.add(panelMesh);
+
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+      parseFloat(furn.elevation) :
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+        parseFloat(furn.pos.z) : 0);
+    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    fg.rotation.y = -(furn.rotY || 0);
+    fg.visible = true;
+    return fg;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Build O/S (Only Shutter) Unit (e.g. LOFT 2 DOOR O/S, FM 120 O/S, WM 60 O/S)
+     Mounts flush against existing masonry opening / niche frame. Zero carcass panels.
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildOnlyShutterMesh = function (furn, fg, dims, carcassMat, getShutterMaterial, handleType, handleMat) {
+    var W = dims.W;
+    var H = dims.H;
+    var D = 18;
+
+    var numShutters = (furn.unitConfig && furn.unitConfig.shutters !== undefined) ?
+      parseInt(furn.unitConfig.shutters) : (W > 1200 ? 3 : W > 600 ? 2 : 1);
+    numShutters = Math.max(1, numShutters);
+
+    // Slim perimeter mounting frame (25mm reveal)
+    var frameMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7, metalness: 0.1 });
+    var topFrame = new THREE.Mesh(new THREE.BoxGeometry(W, 25, 25), frameMat);
+    topFrame.position.set(0, H - 12.5, -12.5);
+    fg.add(topFrame);
+    var botFrame = new THREE.Mesh(new THREE.BoxGeometry(W, 25, 25), frameMat);
+    botFrame.position.set(0, 12.5, -12.5);
+    fg.add(botFrame);
+    var leftFrame = new THREE.Mesh(new THREE.BoxGeometry(25, Math.max(10, H - 50), 25), frameMat);
+    leftFrame.position.set(-W / 2 + 12.5, H / 2, -12.5);
+    fg.add(leftFrame);
+    var rightFrame = new THREE.Mesh(new THREE.BoxGeometry(25, Math.max(10, H - 50), 25), frameMat);
+    rightFrame.position.set(W / 2 - 12.5, H / 2, -12.5);
+    fg.add(rightFrame);
+
+    var shW = (W - (numShutters + 1) * 3) / numShutters;
+    var shH = Math.max(100, H - 6);
+    var hingeY = H / 2;
+
+    for (var s = 0; s < numShutters; s++) {
+      var hingeLeft = (s % 2 === 0);
+      var sLeftX = -W / 2 + 3 + s * (shW + 3);
+      var hingeX = hingeLeft ? sLeftX : (sLeftX + shW);
+      var hingeZ = 0;
+
+      var hingeGroup = new THREE.Group();
+      hingeGroup.name = "ShutterHinge_" + s;
+      hingeGroup.position.set(hingeX, hingeY, hingeZ);
+      hingeGroup.userData = { isShutterHinge: true, shutterIdx: s, furnitureId: furn.id };
+
+      var localX = hingeLeft ? (shW / 2) : (-shW / 2);
+      var sGeo = new THREE.BoxGeometry(shW, shH, 18);
+      var sMesh = new THREE.Mesh(sGeo, getShutterMaterial(s));
+      sMesh.position.set(localX, 0, 0);
+      sMesh.castShadow = true; sMesh.receiveShadow = true;
+      sMesh.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+      hingeGroup.add(sMesh);
+
+      var hGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, true, Math.min(180, shH * 0.35));
+      if (hGroup) {
+        var handleX = hingeLeft ? (shW - 25) : (-shW + 25);
+        hGroup.position.set(handleX, 0, 9);
+        hGroup.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+        hGroup.traverse(function (c) {
+          if (c.isMesh) c.userData = { isFurniturePart: true, isShutter: true, shutterIdx: s, hingeGroup: hingeGroup, parentGroup: fg, furnitureId: furn.id };
+        });
+        hingeGroup.add(hGroup);
+      }
+
+      var isOpen = !!(furn.shutterStates && furn.shutterStates[s]);
+      hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.6) : 0;
+      fg.add(hingeGroup);
+    }
+
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+      parseFloat(furn.elevation) :
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+        parseFloat(furn.pos.z) : 0);
+    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    fg.rotation.y = -(furn.rotY || 0);
+    fg.visible = true;
+    return fg;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build Kitchen Built-in Oven Tall Cabinet (TBM 60 OVEN / oven_tall)
      3-zone structure: Bottom Storage (700mm), Oven Niche (600mm), Top Storage (800mm)
      ───────────────────────────────────────────────────────────────────────────── */
@@ -18028,51 +18282,66 @@ body.role-employee #adminCreateEmpBox,
     var ovenCfg = uCfg.oven || {};
     var shCfg = uCfg.shutterConfig || {};
 
+    var hasLegs = (uCfg.hasLegs !== undefined) ? !!uCfg.hasLegs : (uCfg.mountType === 'floating' ? false : true);
+    var plinthH = hasLegs ? 100 : 0;
+    var bodyH = Math.max(100, H - plinthH);
+
     var bottomH = (shCfg.bottom && shCfg.bottom.height) || (ovenCfg.bottomElevation) || 700;
     var ovenH = (ovenCfg.openingH) || 600;
-    var topH = (shCfg.top && shCfg.top.height) || Math.max(100, H - bottomH - ovenH);
+    var topH = (shCfg.top && shCfg.top.height) || Math.max(100, bodyH - bottomH - ovenH);
 
     var innerW = W - 36;
     var innerD = D - 20;
 
+    // Plinth Base (if legs enabled)
+    if (plinthH > 0) {
+      var pGeo = new THREE.BoxGeometry(W - 30, plinthH, D - 50);
+      var pMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8 });
+      var pMesh = new THREE.Mesh(pGeo, pMat);
+      pMesh.position.set(0, plinthH / 2, -15);
+      pMesh.castShadow = true; pMesh.receiveShadow = true;
+      pMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(pMesh);
+    }
+
     // 1. Left side carcass panel
-    var leftMesh = new THREE.Mesh(new THREE.BoxGeometry(18, H, D), carcassMat);
-    leftMesh.position.set(-W / 2 + 9, H / 2, 0);
+    var leftMesh = new THREE.Mesh(new THREE.BoxGeometry(18, bodyH, D), carcassMat);
+    leftMesh.position.set(-W / 2 + 9, plinthH + bodyH / 2, 0);
     leftMesh.castShadow = true; leftMesh.receiveShadow = true;
     leftMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(leftMesh);
 
     // 2. Right side carcass panel
-    var rightMesh = new THREE.Mesh(new THREE.BoxGeometry(18, H, D), carcassMat);
-    rightMesh.position.set(W / 2 - 9, H / 2, 0);
+    var rightMesh = new THREE.Mesh(new THREE.BoxGeometry(18, bodyH, D), carcassMat);
+    rightMesh.position.set(W / 2 - 9, plinthH + bodyH / 2, 0);
     rightMesh.castShadow = true; rightMesh.receiveShadow = true;
     rightMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(rightMesh);
 
     // 3. Bottom floor panel
     var botMesh = new THREE.Mesh(new THREE.BoxGeometry(innerW, 18, innerD), carcassMat);
-    botMesh.position.set(0, 9, -10);
+    botMesh.position.set(0, plinthH + 9, -10);
     botMesh.castShadow = true; botMesh.receiveShadow = true;
     botMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(botMesh);
 
     // 4. Top ceiling panel
     var topMesh = new THREE.Mesh(new THREE.BoxGeometry(innerW, 18, innerD), carcassMat);
-    topMesh.position.set(0, H - 9, -10);
+    topMesh.position.set(0, plinthH + bodyH - 9, -10);
     topMesh.castShadow = true; topMesh.receiveShadow = true;
     topMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(topMesh);
 
-    // 5. Oven Support Shelf (Bottom support at Y = bottomH)
+    // 5. Oven Support Shelf (Bottom support at Y = plinthH + bottomH)
     var ovenBotShelf = new THREE.Mesh(new THREE.BoxGeometry(innerW, 18, innerD), carcassMat);
-    ovenBotShelf.position.set(0, bottomH - 9, -10);
+    ovenBotShelf.position.set(0, plinthH + bottomH - 9, -10);
     ovenBotShelf.castShadow = true; ovenBotShelf.receiveShadow = true;
     ovenBotShelf.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(ovenBotShelf);
 
-    // 6. Oven Top Shelf (Top divider at Y = bottomH + ovenH)
+    // 6. Oven Top Shelf (Top divider at Y = plinthH + bottomH + ovenH)
     var ovenTopShelf = new THREE.Mesh(new THREE.BoxGeometry(innerW, 18, innerD), carcassMat);
-    ovenTopShelf.position.set(0, bottomH + ovenH - 9, -10);
+    ovenTopShelf.position.set(0, plinthH + bottomH + ovenH - 9, -10);
     ovenTopShelf.castShadow = true; ovenTopShelf.receiveShadow = true;
     ovenTopShelf.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(ovenTopShelf);
@@ -18081,23 +18350,23 @@ body.role-employee #adminCreateEmpBox,
     // a) Bottom back panel (behind bottom storage, 0 to bottomH)
     var bkBotGeo = new THREE.BoxGeometry(innerW, Math.max(10, bottomH - 36), 12);
     var bkBotMesh = new THREE.Mesh(bkBotGeo, carcassMat);
-    bkBotMesh.position.set(0, bottomH / 2, -D / 2 + 6);
+    bkBotMesh.position.set(0, plinthH + bottomH / 2, -D / 2 + 6);
     bkBotMesh.castShadow = true; bkBotMesh.receiveShadow = true;
     bkBotMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(bkBotMesh);
 
     // b) Middle oven niche: NO back panel (heat ventilation as specified in oven.backPanel: false)!
 
-    // c) Top back panel (behind top storage, bottomH + ovenH to H)
-    var bkTopH = Math.max(10, H - (bottomH + ovenH) - 18);
+    // c) Top back panel (behind top storage, bottomH + ovenH to bodyH)
+    var bkTopH = Math.max(10, bodyH - (bottomH + ovenH) - 18);
     var bkTopGeo = new THREE.BoxGeometry(innerW, bkTopH, 12);
     var bkTopMesh = new THREE.Mesh(bkTopGeo, carcassMat);
-    bkTopMesh.position.set(0, bottomH + ovenH + bkTopH / 2, -D / 2 + 6);
+    bkTopMesh.position.set(0, plinthH + bottomH + ovenH + bkTopH / 2, -D / 2 + 6);
     bkTopMesh.castShadow = true; bkTopMesh.receiveShadow = true;
     bkTopMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(bkTopMesh);
 
-    // 8. Built-in Oven Model in the Cavity (Y = bottomH to bottomH + ovenH)
+    // 8. Built-in Oven Model in the Cavity (Y = plinthH + bottomH to plinthH + bottomH + ovenH)
     var ovenMeshGroup = new THREE.Group();
     ovenMeshGroup.name = "BuiltInOvenAppliance";
 
@@ -18111,26 +18380,26 @@ body.role-employee #adminCreateEmpBox,
     var oD = D - 40;
 
     var oBody = new THREE.Mesh(new THREE.BoxGeometry(oW, oH, oD), ovenBodyMat);
-    oBody.position.set(0, bottomH + ovenH / 2, -15);
+    oBody.position.set(0, plinthH + bottomH + ovenH / 2, -15);
     oBody.castShadow = true;
     ovenMeshGroup.add(oBody);
 
     var oGlass = new THREE.Mesh(new THREE.BoxGeometry(W - 8, oH * 0.72, 14), ovenGlassMat);
-    oGlass.position.set(0, bottomH + (oH * 0.72) / 2 + 6, D / 2 - 7);
+    oGlass.position.set(0, plinthH + bottomH + (oH * 0.72) / 2 + 6, D / 2 - 7);
     ovenMeshGroup.add(oGlass);
 
     var fasciaH = oH * 0.24;
     var oFascia = new THREE.Mesh(new THREE.BoxGeometry(W - 8, fasciaH, 16), ovenSteelMat);
-    oFascia.position.set(0, bottomH + ovenH - fasciaH / 2 - 8, D / 2 - 8);
+    oFascia.position.set(0, plinthH + bottomH + ovenH - fasciaH / 2 - 8, D / 2 - 8);
     ovenMeshGroup.add(oFascia);
 
     var oDisp = new THREE.Mesh(new THREE.BoxGeometry(100, 24, 2), ovenDisplayMat);
-    oDisp.position.set(0, bottomH + ovenH - fasciaH / 2 - 8, D / 2);
+    oDisp.position.set(0, plinthH + bottomH + ovenH - fasciaH / 2 - 8, D / 2);
     ovenMeshGroup.add(oDisp);
 
     var oHandle = new THREE.Mesh(new THREE.CylinderGeometry(7, 7, W * 0.7, 16), ovenSteelMat);
     oHandle.rotation.z = Math.PI / 2;
-    oHandle.position.set(0, bottomH + oH * 0.7 - 12, D / 2 + 14);
+    oHandle.position.set(0, plinthH + bottomH + oH * 0.7 - 12, D / 2 + 14);
     ovenMeshGroup.add(oHandle);
 
     ovenMeshGroup.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
@@ -18143,7 +18412,7 @@ body.role-employee #adminCreateEmpBox,
     var bShW = W - 6;
     var bShH = Math.max(100, bottomH - 6);
     var bHingeX = -W / 2 + 3;
-    var bHingeY = bShH / 2 + 3;
+    var bHingeY = plinthH + bShH / 2 + 3;
     var bHingeZ = D / 2 - 9;
 
     var bHingeGroup = new THREE.Group();
@@ -18176,7 +18445,7 @@ body.role-employee #adminCreateEmpBox,
     var tShW = W - 6;
     var tShH = Math.max(100, topH - 6);
     var tHingeX = -W / 2 + 3;
-    var tHingeY = bottomH + ovenH + tShH / 2 + 3;
+    var tHingeY = plinthH + bottomH + ovenH + tShH / 2 + 3;
     var tHingeZ = D / 2 - 9;
 
     var tHingeGroup = new THREE.Group();
@@ -18292,7 +18561,24 @@ body.role-employee #adminCreateEmpBox,
       metalness: 0.08
     });
 
-    var plinthH = isBase ? 100 : 0;
+    var isTvOrVanity = (cat === 'tv_unit' || cat === 'vanity' || (name && (name.indexOf('tv') !== -1 || name.indexOf('vanity') !== -1)));
+    var isWardrobeOrTall = (cat === 'wardrobe' || cat === 'kitchen_tall' || (name && (name.indexOf('wardrobe') !== -1 || name.indexOf('tall') !== -1 || name.indexOf('tbm') !== -1)));
+
+    // Legs / Plinth determination (Wardrobes/Tall units get legs; TV/Vanity configurable)
+    var hasLegs = false;
+    if (!isWall) {
+      if (furn.unitConfig && furn.unitConfig.hasLegs !== undefined) {
+        hasLegs = !!furn.unitConfig.hasLegs;
+      } else if (furn.unitConfig && furn.unitConfig.mountType !== undefined) {
+        hasLegs = (furn.unitConfig.mountType !== 'floating');
+      } else if (isTvOrVanity) {
+        var elevVal = parseFloat(furn.elevation || (furn.pos && furn.pos.z) || 0);
+        hasLegs = (elevVal <= 50);
+      } else if (isWardrobeOrTall || isBase) {
+        hasLegs = true;
+      }
+    }
+    var plinthH = hasLegs ? 100 : 0;
     var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
     var bodyH = Math.max(100, dims.H - plinthH - counterH);
     var innerW = dims.W - 36;
@@ -18318,6 +18604,25 @@ body.role-employee #adminCreateEmpBox,
         roughness: isGloss ? 0.15 : (isWood ? 0.45 : 0.6),
         metalness: 0.04
       });
+    }
+
+    // 1. Architectural Wall Paneling / Back Panel (zero carcass)
+    var isWallPanel = (cat === 'wall_paneling' || furn.id === 'pnl-back' || furn.catalogItemId === 'pnl-back' || (name && (name.indexOf('back panel') !== -1 || name.indexOf('wall panel') !== -1 || name.indexOf('vertical ledge') !== -1)));
+    if (isWallPanel) {
+      return this.buildWallPanelMesh(furn, fg, dims, carcassMat);
+    }
+
+    // 2. O/S (Only Shutter) Unit (zero carcass box)
+    var isOnlyShutter = !!(
+      (cat && (cat === 'loft_os' || cat === 'kitchen_o_s' || cat.indexOf('o/s') !== -1 || cat.indexOf('os') !== -1)) ||
+      (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1) ||
+      (furn.modelType && /o_s|os/i.test(furn.modelType)) ||
+      (name && /\bo\/?s\b/i.test(name)) ||
+      (furn.id && /\bo_?s\b/i.test(furn.id)) ||
+      (furn.code && /\bo_?s\b/i.test(furn.code))
+    );
+    if (isOnlyShutter) {
+      return this.buildOnlyShutterMesh(furn, fg, dims, carcassMat, getShutterMaterial, handleType, handleMat);
     }
 
     var isLCorner = !!(
@@ -20420,6 +20725,8 @@ body.role-employee #adminCreateEmpBox,
            /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(fn.name));
 
         var isBaseUnit = !isWall && (fn.category === 'kitchen_base' || fn.category === 'crockery' || fn.category === 'vanity' || fn.category === 'tv_unit' || (fn.category && fn.category.indexOf('base') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('base') !== -1));
+        var isTvOrVanity = (fn.category === 'tv_unit' || fn.category === 'vanity' || (fn.name && (fn.name.toLowerCase().indexOf('tv') !== -1 || fn.name.toLowerCase().indexOf('vanity') !== -1)));
+        var isWardrobeOrTall = (fn.category === 'wardrobe' || fn.category === 'kitchen_tall' || (fn.name && (fn.name.toLowerCase().indexOf('wardrobe') !== -1 || fn.name.toLowerCase().indexOf('tall') !== -1 || fn.name.toLowerCase().indexOf('tbm') !== -1)));
         var counterType = (fn.unitConfig && fn.unitConfig.counter) || (isBaseUnit ? 'black' : 'none');
         if (counterType === 'BLUE') counterType = 'black';
 
@@ -20430,6 +20737,19 @@ body.role-employee #adminCreateEmpBox,
         var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
           fn.elevation :
           ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
+
+        var hasLegs = false;
+        if (!isWall) {
+          if (fn.unitConfig && fn.unitConfig.hasLegs !== undefined) {
+            hasLegs = !!fn.unitConfig.hasLegs;
+          } else if (fn.unitConfig && fn.unitConfig.mountType !== undefined) {
+            hasLegs = (fn.unitConfig.mountType !== 'floating');
+          } else if (isTvOrVanity) {
+            hasLegs = (parseFloat(curElev) <= 50);
+          } else if (isWardrobeOrTall || isBaseUnit) {
+            hasLegs = true;
+          }
+        }
 
         var shutterItemsHtml = '';
         for (var s = 0; s < shuttersCount; s++) {
@@ -20553,6 +20873,10 @@ body.role-employee #adminCreateEmpBox,
               '<option value="beige"' + (counterType === "beige" ? " selected" : "") + '>Beige Marble</option>' +
               '<option value="green"' + (counterType === "green" ? " selected" : "") + '>Green Granite</option>' +
               '<option value="none"' + (counterType === "none" ? " selected" : "") + '>None (Carcass Top)</option>' +
+            '</select></div>') : "") +
+            (!isWall ? ('<div class="insp-row" style="margin-top:6px;"><label>Base & Legs</label><select id="inspFurnLegs">' +
+              '<option value="legs"' + (hasLegs ? " selected" : "") + '>Floor Standing (100mm Legs / Plinth)</option>' +
+              '<option value="floating"' + (!hasLegs ? " selected" : "") + '>Floating / Wall-Hung (No Legs)</option>' +
             '</select></div>') : "") +
           '</div>' +
 
@@ -20793,6 +21117,29 @@ body.role-employee #adminCreateEmpBox,
             self.renderBOQ();
             self.editor.render();
             if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var legsSelect = document.getElementById('inspFurnLegs');
+        if (legsSelect) {
+          legsSelect.addEventListener('change', function (e) {
+            var val = e.target.value;
+            if (!fn.unitConfig) fn.unitConfig = {};
+            fn.unitConfig.hasLegs = (val === 'legs');
+            fn.unitConfig.mountType = (val === 'legs' ? 'floor' : 'floating');
+            if (val === 'floating' && (!fn.elevation || parseFloat(fn.elevation) === 0)) {
+              fn.elevation = 250;
+              if (fn.pos) fn.pos.z = 250;
+            } else if (val === 'legs' && parseFloat(fn.elevation) <= 250) {
+              fn.elevation = 0;
+              if (fn.pos) fn.pos.z = 0;
+            }
+            syncInspectorTo3D();
+            self.editor.pushHistory('Toggle Unit Legs / Plinth');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+            self.renderInspector(self.editor.selected);
           });
         }
         var elShutterCol = document.getElementById('inspFurnShutterCol');
@@ -27422,8 +27769,8 @@ body.role-employee #adminCreateEmpBox,
         camera.updateProjectionMatrix();
       }
       var yaw = cam.yaw * Math.PI / 180, el = (-cam.pitch) * Math.PI / 180;
-      var safeZoom = Math.max(0.15, 1 + cam.zoom);
-      var d = dist / safeZoom;
+      var safeZoom = Math.max(0.05, 1 + cam.zoom);
+      var d = Math.max(250, dist / safeZoom);
       if (camera.far < d * 4) {
         camera.far = Math.max(1000000, d * 5);
         camera.updateProjectionMatrix();
@@ -28357,7 +28704,7 @@ body.role-employee #adminCreateEmpBox,
   }
   function camApply() {
     cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
-    cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom));
+    cam.zoom = Math.max(-0.92, Math.min(8.0, cam.zoom));
     if (GL.ok) { GL.apply(); return; }
     var s = scale * (1 + cam.zoom);
     world.style.transform = "rotateX(" + (-cam.pitch) + "deg) rotateY(" + cam.yaw + "deg) scale3d(" + s + "," + s + "," + s + ")";
@@ -28494,9 +28841,11 @@ body.role-employee #adminCreateEmpBox,
               gizmoDrag.obj.position.x = gizmoDrag.startPos.x + deltaLocalZ * Math.sin(theta);
               gizmoDrag.obj.position.z = gizmoDrag.startPos.z + deltaLocalZ * Math.cos(theta);
             } else if (gizmoDrag.axis === 'rot') {
-              // Free rotation around vertical axis
+              // Rotation around vertical axis with 15° snap (or 90° if Shift held)
               var cx = gizmoDrag.startPos.x, cz = gizmoDrag.startPos.z;
-              var angle = Math.atan2(curF.x - cx, curF.z - cz);
+              var rawAngle = Math.atan2(curF.x - cx, curF.z - cz);
+              var snapStep = e.shiftKey ? (Math.PI / 2) : (Math.PI / 12);
+              var angle = Math.round(rawAngle / snapStep) * snapStep;
               gizmoDrag.obj.rotation.y = angle;
             } else {
               gizmoDrag.obj.position.x = gizmoDrag.startPos.x + dx;
@@ -28809,7 +29158,8 @@ body.role-employee #adminCreateEmpBox,
     stage.addEventListener("pointercancel", up);
     stage.addEventListener("wheel", function (e) {
       e.preventDefault();
-      cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom - e.deltaY * 0.0016));
+      var zoomDelta = -e.deltaY * 0.0012;
+      cam.zoom = Math.max(-0.92, Math.min(8.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
       camApply();
     }, { passive: false });
 
