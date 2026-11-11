@@ -1667,7 +1667,9 @@
     fg.add(hinge2Group);
 
     // Position and rotate unit
-    var isWallCorner = isWall || (furn.category && furn.category.indexOf('wall') !== -1) || (furn.name && furn.name.toLowerCase().indexOf('wall') !== -1) || /(^|\b|_|-)(wcm)($|\b|_|-|\d+)/i.test(furn.name || '');
+    var catL = (furn.category || '').toLowerCase();
+    var nameL = (furn.name || '').toLowerCase();
+    var isWallCorner = (!isBase && (catL.indexOf('wall') !== -1 || nameL.indexOf('wall') !== -1 || /(^|\b|_|-)(wcm)($|\b|_|-|\d+)/i.test(nameL)));
     var defElevCorner = isWallCorner ? 1500 : 0;
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
