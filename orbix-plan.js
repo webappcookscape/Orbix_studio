@@ -1489,6 +1489,15 @@
     var furnList = plan.furniture || [];
     var activeId = furn.id;
 
+    // Shift key temporarily disables all snapping for pixel-precision free positioning
+    if (this.isShiftDown) {
+      return { pos: pos, rotY: rotY, type: 'free_placement' };
+    }
+
+    // Decor & appliance items (sinks, gas hobs, dishwashers, dining tables, plants, etc.)
+    // must NOT snap/snatch to adjacent unit points or edges, allowing free centering between units
+    var isDecorF = !!(furn.isDecor || furn.excludeFromPricing || furn.category === 'decor' || (furn.decorType && furn.decorType !== 'general'));
+
     var isWallU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : false;
     var fElev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
@@ -1500,19 +1509,21 @@
     var bestJoint = null;
     var minJointDist = 180; // mm magnetic snap threshold
 
-    for (var i = 0; i < furnList.length; i++) {
-      var other = furnList[i];
-      if (activeId && other.id === activeId) continue;
-      var oDims = other.dimensions || { W: 1200, D: 600, H: 2100 };
-      var oW = oDims.W || 1200;
-      var oD = oDims.D || 600;
-      var oRot = other.rotY || 0;
-      var oPos = other.pos || { x: 0, y: 0 };
+    // Unit-to-unit jointing & multi-point magnetic snapping is only evaluated for regular woodwork cabinets
+    if (!isDecorF) {
+      for (var i = 0; i < furnList.length; i++) {
+        var other = furnList[i];
+        if (activeId && other.id === activeId) continue;
+        var oDims = other.dimensions || { W: 1200, D: 600, H: 2100 };
+        var oW = oDims.W || 1200;
+        var oD = oDims.D || 600;
+        var oRot = other.rotY || 0;
+        var oPos = other.pos || { x: 0, y: 0 };
 
-      var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
-      var oElev = (other.elevation !== undefined && other.elevation !== null && other.elevation !== '') ?
-        parseFloat(other.elevation) :
-        ((other.pos && other.pos.z !== undefined && other.pos.z !== null && other.pos.z !== 0) ?
+        var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
+        var oElev = (other.elevation !== undefined && other.elevation !== null && other.elevation !== '') ?
+          parseFloat(other.elevation) :
+          ((other.pos && other.pos.z !== undefined && other.pos.z !== null && other.pos.z !== 0) ?
           parseFloat(other.pos.z) : (isWallO ? 1500 : 0));
       var oH = (other.dimensions && other.dimensions.H) ? parseFloat(other.dimensions.H) : (isWallO ? 600 : 850);
       var oTop = oElev + oH;
@@ -1789,6 +1800,7 @@
         }
       }
     }
+  }
 
     if (bestJoint) {
       return bestJoint;
@@ -2390,7 +2402,7 @@
       return res;
     };
 
-    // ── PASS 1: Fill all wall polygons and corner junction quads (L-Joint Solid Fill) ──
+    // ── PASS 1: Fill all wall polygons and corner junction quads (Architectural Slate Poche) ──
     for (var i = 0; i < walls.length; i++) {
       var w = walls[i];
       if (w.isDivider || w.thickness === 0) continue;
@@ -2398,7 +2410,7 @@
       var poly = Core.wallPolygon(w);
       if (!poly || poly.length < 4) continue;
 
-      ctx.fillStyle = isSelected ? '#1B4F72' : '#33302B';
+      ctx.fillStyle = isSelected ? '#1e40af' : '#1e293b';
       ctx.beginPath();
       var sp0 = this.worldToScreen(poly[0]);
       ctx.moveTo(sp0.x, sp0.y);
@@ -2435,7 +2447,7 @@
       }
     }
 
-    // ── PASS 2: Stroke Wall Outlines (L-Joint Connected Miter, No Internal Dividing Lines) ──
+    // ── PASS 2: Stroke Wall Outlines (Crisp Architectural Contours) ──
     for (var k = 0; k < walls.length; k++) {
       var wk = walls[k];
       if (wk.isDivider || wk.thickness === 0) continue;
@@ -2445,8 +2457,8 @@
       var startConnsK = getConnected(wk.start, wk.id);
       var endConnsK = getConnected(wk.end, wk.id);
 
-      ctx.strokeStyle = isSelK ? '#2E7BB5' : '#1A1816';
-      ctx.lineWidth = isSelK ? 2 : 1;
+      ctx.strokeStyle = isSelK ? '#3b82f6' : '#0f172a';
+      ctx.lineWidth = isSelK ? 2.5 : 1.5;
 
       // Stroke Longitudinal Side 1 (p0 to p1)
       ctx.beginPath();
@@ -3426,23 +3438,40 @@
         ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
         ctx.fillRect(cwPx / 2 - depthPx - 5, -cdPx / 2 + depthPx - 5, 10, 10);
       } else if (isColliding) {
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
         ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
         ctx.strokeStyle = '#dc2626';
         ctx.lineWidth = 2.5;
         ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
       } else if (isDecor) {
-        ctx.fillStyle = isSelected ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.14)';
+        ctx.fillStyle = isSelected ? 'rgba(16, 185, 129, 0.28)' : 'rgba(240, 253, 244, 0.95)';
         ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
         ctx.strokeStyle = isSelected ? '#047857' : '#059669';
-        ctx.lineWidth = isSelected ? 2.5 : 1.5;
+        ctx.lineWidth = isSelected ? 2.5 : 1.6;
         ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
       } else {
-        ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
-        ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
-        ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
-        ctx.lineWidth = isSelected ? 2 : 1.2;
-        ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+        var isWallUnitItem = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
+        if (isWallUnitItem) {
+          // Wall unit: Distinctive clean architectural cyan/blue border with corner ticks
+          ctx.fillStyle = isSelected ? 'rgba(2, 132, 199, 0.25)' : 'rgba(240, 249, 255, 0.95)';
+          ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
+          ctx.strokeStyle = isSelected ? '#0284c7' : '#0369a1';
+          ctx.lineWidth = isSelected ? 2.5 : 1.6;
+          ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+          ctx.strokeStyle = 'rgba(2, 132, 199, 0.4)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(-wPx / 2, -dPx / 2 + 10); ctx.lineTo(-wPx / 2 + 10, -dPx / 2);
+          ctx.moveTo(wPx / 2 - 10, -dPx / 2); ctx.lineTo(wPx / 2, -dPx / 2 + 10);
+          ctx.stroke();
+        } else {
+          // Base / Tall unit: Crisp architectural white card with elegant dark slate border
+          ctx.fillStyle = isSelected ? 'rgba(37, 99, 235, 0.16)' : 'rgba(255, 255, 255, 0.96)';
+          ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
+          ctx.strokeStyle = isSelected ? '#2563eb' : '#334155';
+          ctx.lineWidth = isSelected ? 2.5 : 1.6;
+          ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+        }
       }
 
       if (isDecor) {
@@ -3567,33 +3596,36 @@
         ctx.fillText(warnTxt, 0, -dPx / 2 - 13);
       }
 
-      // 8 Jointing & Connection Points (4 corners + 4 edge midpoints)
-      var isWallF = (Core.isWallUnit) ?
-        Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
-      var pointColor = isWallF ? '#0284c7' : '#10b981';
-      var activeCornerColor = isSelected ? '#f59e0b' : pointColor;
+      // 8 Jointing & Connection Points (4 corners + 4 edge midpoints) - ONLY rendered on active selection or drag!
+      var isActivelyMovingThis = !!(this.dragState && this.dragState.type === 'move_furniture' && this.dragState.furniture && this.dragState.furniture.id === f.id);
+      if (isSelected || isActivelyMovingThis) {
+        var isWallF = (Core.isWallUnit) ?
+          Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
+        var pointColor = isWallF ? '#0284c7' : '#10b981';
+        var activeCornerColor = isSelected ? '#f59e0b' : pointColor;
 
-      var connectionPts = [
-        // 4 Corners (Primary snaps)
-        { x: -wPx / 2, y: -dPx / 2, r: isSelected ? 4 : 3, corner: true },
-        { x: wPx / 2, y: -dPx / 2, r: isSelected ? 4 : 3, corner: true },
-        { x: wPx / 2, y: dPx / 2, r: isSelected ? 4 : 3, corner: true },
-        { x: -wPx / 2, y: dPx / 2, r: isSelected ? 4 : 3, corner: true },
-        // 4 Midpoints (Secondary snaps)
-        { x: 0, y: -dPx / 2, r: 2.2, corner: false },
-        { x: 0, y: dPx / 2, r: 2.2, corner: false },
-        { x: -wPx / 2, y: 0, r: 2.2, corner: false },
-        { x: wPx / 2, y: 0, r: 2.2, corner: false }
-      ];
-      for (var cpi = 0; cpi < connectionPts.length; cpi++) {
-        var cp = connectionPts[cpi];
-        ctx.fillStyle = cp.corner ? activeCornerColor : pointColor;
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.arc(cp.x, cp.y, cp.r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+        var connectionPts = [
+          // 4 Corners (Primary snaps)
+          { x: -wPx / 2, y: -dPx / 2, r: 4, corner: true },
+          { x: wPx / 2, y: -dPx / 2, r: 4, corner: true },
+          { x: wPx / 2, y: dPx / 2, r: 4, corner: true },
+          { x: -wPx / 2, y: dPx / 2, r: 4, corner: true },
+          // 4 Midpoints (Secondary snaps)
+          { x: 0, y: -dPx / 2, r: 2.5, corner: false },
+          { x: 0, y: dPx / 2, r: 2.5, corner: false },
+          { x: -wPx / 2, y: 0, r: 2.5, corner: false },
+          { x: wPx / 2, y: 0, r: 2.5, corner: false }
+        ];
+        for (var cpi = 0; cpi < connectionPts.length; cpi++) {
+          var cp = connectionPts[cpi];
+          ctx.fillStyle = cp.corner ? activeCornerColor : pointColor;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(cp.x, cp.y, cp.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
       }
 
       // If actively dragging and snapped/jointed, display snap feedback badge

@@ -235,8 +235,8 @@
     bindToolbar: function () {
       var self = this;
 
-      // Tool buttons
-      var toolBtns = document.querySelectorAll('.plan-tool-btn');
+      // Tool buttons (excluding #planFurnitureBtn which toggles the Furnish Drawer without arming tool)
+      var toolBtns = document.querySelectorAll('.plan-tool-btn:not(#planFurnitureBtn)');
       toolBtns.forEach(function (btn) {
         btn.addEventListener('click', function () {
           toolBtns.forEach(function (b) { b.classList.remove('is-active'); });
@@ -2883,6 +2883,19 @@
       });
 
       plan.furniture.push(newDecor);
+      // Ensure all plan references (editor.project, this.project) stay synchronized
+      if (this.editor && this.editor.project && this.editor.project.plan) {
+        this.editor.project.plan.furniture = this.editor.project.plan.furniture || [];
+        if (!this.editor.project.plan.furniture.find(function (it) { return it.id === fId; })) {
+          this.editor.project.plan.furniture.push(newDecor);
+        }
+      }
+      if (this.project && this.project.plan && this.project.plan.furniture) {
+        if (!this.project.plan.furniture.find(function (it) { return it.id === fId; })) {
+          this.project.plan.furniture.push(newDecor);
+        }
+      }
+
       this.saveToLocalStorage();
       if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
         root.OrbixProjects.saveActiveProject({ plan: this.project });
@@ -2891,9 +2904,21 @@
         root.OrbixProjects.saveActiveProject();
       }
       if (this.editor) {
+        if (typeof this.editor.setTool === 'function') {
+          this.editor.setTool('select');
+        } else {
+          this.editor.activeTool = 'select';
+        }
+        this.editor.furniturePreset = null;
         this.editor.selected = [{ type: 'furniture', id: fId }];
+        if (typeof this.editor.onSelectionChange === 'function') {
+          this.editor.onSelectionChange(this.editor.selected);
+        }
         this.editor.render();
       }
+      document.querySelectorAll('.plan-tool-btn').forEach(function (b) {
+        b.classList.toggle('is-active', b.dataset.tool === 'select');
+      });
       if (this.render3DHome) this.render3DHome(true);
       if (typeof window.showToast === 'function') {
         window.showToast('🌿 Placed ' + newDecor.name + ' (Excluded from Woodwork Pricing)');
@@ -3434,594 +3459,119 @@
         ]
       };
 
+      function mapItemToCard(it) {
+        var w = (it.dimensions && it.dimensions.W) || 600;
+        var h = (it.dimensions && it.dimensions.H) || 750;
+        var d = (it.dimensions && it.dimensions.D) || 560;
+        var variants = [w];
+        if (w === 600) variants = [450, 500, 600, 800, 900];
+        else if (w === 900) variants = [600, 750, 900, 1050, 1200];
+        else if (w === 1200) variants = [900, 1050, 1200, 1500];
+        else if (w === 450) variants = [300, 400, 450, 500, 600];
+        else if (w === 300) variants = [300, 350, 400, 450];
+        else if (w === 1000) variants = [700, 750, 800, 900, 1000, 1050, 1100, 1200];
+        else if (w === 1800) variants = [1500, 1800, 2100, 2400];
+        var code = it.code || (it.id ? it.id.toUpperCase() : 'UNIT');
+        var name = it.name || code;
+        return {
+          id: it.id,
+          code: code,
+          name: name,
+          badge: String(variants.length),
+          selectedLabel: code || name,
+          dimensions: { W: w, H: h, D: d },
+          category: it.category || 'base_unit',
+          unitConfig: it.unitConfig || {},
+          materials: it.materials || {},
+          variants: variants
+        };
+      }
+
       function getCardsForTab(cat, tabId) {
         var curCore = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : Core;
         var catalog = (curCore && curCore.FURNITURE_CATALOG) || [];
-        function findCatItem(id) {
-          return catalog.find(function (c) { return c.id === id || c.code === id; });
-        }
+        var res = [];
 
-        if (cat === 'base_unit') {
-          if (tabId === 'cookscape_fm') {
-            return [
-              {
-                id: 'fm-550-open',
-                code: 'FM OPEN',
-                name: 'FM 550 OPEN',
-                badge: '7',
-                selectedLabel: 'FM 550 OPEN',
-                dimensions: { W: 550, H: 750, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 0, shelves: 1, carcass: 'Absolute White' },
-                variants: [300, 450, 500, 550, 600, 900, 1200]
-              },
-              {
-                id: 'bs-50-700',
-                code: 'BS',
-                name: 'BS - 50 X 700',
-                badge: '1',
-                selectedLabel: 'BS - 50 X 700',
-                dimensions: { W: 50, H: 700, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 0, carcass: 'Absolute White' },
-                variants: [50]
-              },
-              {
-                id: 'fm-300',
-                code: 'FM 1 DOOR',
-                name: 'FM 300 (1 DOOR)',
-                badge: '7',
-                selectedLabel: 'FM 300',
-                dimensions: { W: 300, H: 750, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 1, doorType: 'hinged', dstyle: 'slab', shelves: 1, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
-                variants: [300, 350, 400, 450, 500, 550, 600]
-              },
-              {
-                id: 'fm-1000',
-                code: 'FM 2 DOOR',
-                name: 'FM 1000 (2 DOOR)',
-                badge: '12',
-                selectedLabel: 'FM 1000',
-                dimensions: { W: 1000, H: 750, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 2, doorType: 'hinged', dstyle: 'slab', shelves: 1, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
-                variants: [700, 750, 800, 900, 1000, 1050, 1100, 1200]
-              },
-              {
-                id: 'fm-300-os',
-                code: 'FM 1 DOOR(O/S)',
-                name: 'FM 300 SINK BASE (ONLY SHUTTER)',
-                badge: '7',
-                selectedLabel: 'FM 300 (O/S)',
-                dimensions: { W: 300, H: 750, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 1, doorType: 'hinged', dstyle: 'slab', shelves: 0, carcass: 'MDF 1135' },
-                variants: [300, 350, 400, 450, 500, 550, 600]
-              },
-              {
-                id: 'fm-1200-os',
-                code: 'FM 2 DOOR (O/S)',
-                name: 'FM 1200 SINK BASE (ONLY SHUTTER)',
-                badge: '9',
-                selectedLabel: 'FM 1200 O/S',
-                dimensions: { W: 1200, H: 750, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 2, doorType: 'hinged', dstyle: 'slab', shelves: 0, carcass: 'MDF 1135' },
-                variants: [750, 800, 900, 1000, 1050, 1100, 1200]
-              },
-              {
-                id: 'fcm-rt',
-                code: 'FCM-RT',
-                name: 'FCM-RT (Cookscape)',
-                badge: '2',
-                selectedLabel: 'FCM-RT (Cookscape)',
-                dimensions: { W: 1200, H: 720, D: 560 },
-                unitConfig: (findCatItem('fcm-rt') && findCatItem('fcm-rt').unitConfig) || { ctype: 'kbase', fixedPanel: { enabled: true, width: 600, type: 'fixed' }, openShutter: { enabled: true, width: 600, type: 'shutter', count: 1, opening: 'right' } },
-                variants: [1050, 1200]
-              },
-              {
-                id: 'fcm-lt',
-                code: 'FCM-LT',
-                name: 'FCM-LT (Cookscape)',
-                badge: '2',
-                selectedLabel: 'FCM-LT (Cookscape)',
-                dimensions: { W: 1200, H: 720, D: 560 },
-                unitConfig: (findCatItem('fcm-lt') && findCatItem('fcm-lt').unitConfig) || { ctype: 'kbase', fixedPanel: { enabled: true, width: 600, type: 'fixed' }, openShutter: { enabled: true, width: 600, type: 'shutter', count: 1, opening: 'left' } },
-                variants: [1050, 1200]
-              }
-            ];
-          }
+        if (cat === 'all' || tabId === 'all_units') {
+          res = catalog.map(mapItemToCard);
+        } else if (cat === 'base_unit') {
+          var baseUnits = catalog.filter(function (it) {
+            var c = (it.category || '').toLowerCase();
+            var n = (it.name || '').toLowerCase();
+            var m = (it.modelType || '').toLowerCase();
+            var cfg = it.unitConfig || {};
+            return c === 'kitchen_base' || cfg.ctype === 'kbase' || n.indexOf('base') !== -1 || m.indexOf('base') !== -1 ||
+              n.indexOf('fm') !== -1 || (it.id && it.id.indexOf('fm') === 0) || (it.id && it.id.indexOf('tbm') === 0) || (it.id && it.id.indexOf('ctvb') === 0) ||
+              n.indexOf('corner') !== -1 || n.indexOf('fcm') !== -1;
+          });
 
           if (tabId === 'cookscape_corner') {
-            return [
-              {
-                id: 'fbcm',
-                code: 'L-CORNER',
-                name: 'L-SHAPED CORNER BASE UNIT (Cookscape)',
-                badge: '3',
-                selectedLabel: 'L-SHAPED CORNER BASE UNIT',
-                dimensions: { W: 900, H: 720, D: 560 },
-                unitConfig: (findCatItem('fbcm') && findCatItem('fbcm').unitConfig) || { ctype: 'kbase', geometryType: 'l_shaped_corner' },
-                variants: [900, 1050, 1200]
-              },
-              {
-                id: 'fcm-rt',
-                code: 'FCM-RT',
-                name: 'FCM-RT (Cookscape)',
-                badge: '2',
-                selectedLabel: 'FCM-RT (Cookscape)',
-                dimensions: { W: 1200, H: 720, D: 560 },
-                unitConfig: (findCatItem('fcm-rt') && findCatItem('fcm-rt').unitConfig),
-                variants: [1050, 1200]
-              },
-              {
-                id: 'fcm-lt',
-                code: 'FCM-LT',
-                name: 'FCM-LT (Cookscape)',
-                badge: '2',
-                selectedLabel: 'FCM-LT (Cookscape)',
-                dimensions: { W: 1200, H: 720, D: 560 },
-                unitConfig: (findCatItem('fcm-lt') && findCatItem('fcm-lt').unitConfig),
-                variants: [1050, 1200]
-              }
-            ];
+            res = baseUnits.filter(function (it) {
+              var n = (it.name + ' ' + it.id).toLowerCase();
+              return n.indexOf('corner') !== -1 || n.indexOf('fcm') !== -1 || n.indexOf('fbcm') !== -1;
+            });
+          } else if (tabId === 'cookscape_drawers' || tabId === 'kitchen_drawers' || tabId === 'drawer_units') {
+            res = baseUnits.filter(function (it) {
+              var n = (it.name + ' ' + it.id).toLowerCase();
+              var cfg = it.unitConfig || {};
+              return (cfg.drawers && cfg.drawers > 0) || n.indexOf('drawer') !== -1;
+            });
+          } else if (tabId === 'cookscape_crockery') {
+            res = baseUnits.filter(function (it) {
+              var n = (it.name + ' ' + it.id).toLowerCase();
+              return n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1 || (it.id && it.id.indexOf('ctvb') === 0);
+            });
+          } else if (tabId === 'shutter_drawer') {
+            res = baseUnits.filter(function (it) {
+              var cfg = it.unitConfig || {};
+              var n = (it.name + ' ' + it.id).toLowerCase();
+              return (cfg.drawers > 0 && cfg.shutters > 0) || (n.indexOf('door') !== -1 && n.indexOf('drawer') !== -1);
+            });
+          } else if (tabId === 'cookscape_fm') {
+            res = baseUnits.filter(function (it) {
+              var n = (it.name + ' ' + it.id).toLowerCase();
+              return n.indexOf('fm') !== -1 || n.indexOf('tbm') !== -1 || (it.id && it.id.indexOf('fm') === 0) || (it.id && it.id.indexOf('tbm') === 0);
+            });
+          } else {
+            res = baseUnits;
           }
-
-          if (tabId === 'cookscape_crockery') {
-            return [
-              {
-                id: 'ctvb-1d-1dr',
-                code: 'TV-1D-1DR',
-                name: 'CROCKERY/TV BASE 1DOOR 1 DRAWER',
-                badge: '4',
-                selectedLabel: 'ctvb-1d-1dr (450×200)',
-                dimensions: { W: 450, H: 200, D: 450 },
-                unitConfig: (findCatItem('ctvb-1d-1dr') && findCatItem('ctvb-1d-1dr').unitConfig),
-                variants: [450, 600, 750]
-              },
-              {
-                id: 'ctvb-1dr',
-                code: 'TV-1DR',
-                name: 'CROCKERY/TV BASE 1 DRAWER',
-                badge: '3',
-                selectedLabel: 'ctvb-1dr (600×200)',
-                dimensions: { W: 600, H: 200, D: 350 },
-                unitConfig: (findCatItem('ctvb-1dr') && findCatItem('ctvb-1dr').unitConfig),
-                variants: [450, 600, 800]
-              },
-              {
-                id: 'ctvb-2d',
-                code: 'TV-2D',
-                name: 'CROCKERY/TV BASE 2 DOOR',
-                badge: '6',
-                selectedLabel: 'ctvb-2d (750×750)',
-                dimensions: { W: 750, H: 750, D: 450 },
-                unitConfig: (findCatItem('ctvb-2d') && findCatItem('ctvb-2d').unitConfig),
-                variants: [600, 750, 900, 1050]
-              },
-              {
-                id: 'ctvb-2d-2dr',
-                code: 'TV-2D-2DR',
-                name: 'CROCKERY/TV BASE 2 DOOR 2 DRAWER',
-                badge: '5',
-                selectedLabel: 'ctvb-2d-2dr (900×750)',
-                dimensions: { W: 900, H: 750, D: 450 },
-                unitConfig: (findCatItem('ctvb-2d-2dr') && findCatItem('ctvb-2d-2dr').unitConfig),
-                variants: [750, 900, 1050, 1200]
-              },
-              {
-                id: 'ctvb-2dr',
-                code: 'TV-2DR',
-                name: 'CROCKERY/TV BASE 2 DRAWER',
-                badge: '4',
-                selectedLabel: 'ctvb-2dr (450×500)',
-                dimensions: { W: 450, H: 500, D: 350 },
-                unitConfig: (findCatItem('ctvb-2dr') && findCatItem('ctvb-2dr').unitConfig),
-                variants: [450, 600, 750]
-              }
-            ];
-          }
-
-          if (tabId === 'cookscape_drawers' || tabId === 'kitchen_drawers' || tabId === 'drawer_units') {
-            return [
-              {
-                id: 'fm-d2-60',
-                code: 'FM 2 DRAWER',
-                name: 'FM 2 DRAWER BASE (600)',
-                badge: '5',
-                selectedLabel: 'FM 2 DRAWER (600)',
-                dimensions: { W: 600, H: 750, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 0, drawers: 2, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
-                variants: [450, 500, 600, 800, 900]
-              },
-              {
-                id: 'fm-d3-60',
-                code: 'FM 3 DRAWER',
-                name: 'FM 3 DRAWER BASE (600)',
-                badge: '5',
-                selectedLabel: 'FM 3 DRAWER (600)',
-                dimensions: { W: 600, H: 750, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 0, drawers: 3, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
-                variants: [450, 500, 600, 800, 900]
-              },
-              {
-                id: 'fm-d2-90',
-                code: 'FM 2 DRAWER (900)',
-                name: 'FM 2 DRAWER WIDE BASE',
-                badge: '4',
-                selectedLabel: 'FM 2 DRAWER (900)',
-                dimensions: { W: 900, H: 750, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 0, drawers: 2, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
-                variants: [750, 900, 1050]
-              }
-            ];
-          }
-
-          if (tabId === 'shutter_drawer') {
-            return [
-              {
-                id: 'fm-1d-1dr',
-                code: 'FM 1D 1DR',
-                name: 'FM 1 DOOR 1 DRAWER BASE',
-                badge: '6',
-                selectedLabel: 'FM 1D 1DR (450)',
-                dimensions: { W: 450, H: 750, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 1, drawers: 1, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
-                variants: [400, 450, 500, 600]
-              },
-              {
-                id: 'fm-2d-2dr',
-                code: 'FM 2D 2DR',
-                name: 'FM 2 DOOR 2 DRAWER BASE',
-                badge: '5',
-                selectedLabel: 'FM 2D 2DR (900)',
-                dimensions: { W: 900, H: 750, D: 560 },
-                unitConfig: { ctype: 'kbase', shutters: 2, drawers: 2, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
-                variants: [750, 900, 1050, 1200]
-              }
-            ];
-          }
-        }
-
-        if (cat === 'wall_unit') {
-          return [
-            {
-              id: 'wm-60',
-              code: 'WM 60',
-              name: 'WM 60 (1 DOOR WALL)',
-              badge: '6',
-              selectedLabel: 'WM 600 (Wall)',
-              dimensions: { W: 600, H: 600, D: 320 },
-              unitConfig: { ctype: 'kwall', shutters: 1, shelves: 1, carcass: 'MDF 1135' },
-              variants: [300, 450, 600, 750, 900]
-            },
-            {
-              id: 'wm-60-dbl',
-              code: 'WM 60 DBL',
-              name: 'WM 60 DOUBLE KITCHEN WALL',
-              badge: '4',
-              selectedLabel: 'WM 60 DBL',
-              dimensions: { W: 600, H: 600, D: 320 },
-              unitConfig: (findCatItem('wm-60-dbl') && findCatItem('wm-60-dbl').unitConfig),
-              variants: [600, 750, 900]
-            },
-            {
-              id: 'ctvw-2d',
-              code: 'POOJA WALL',
-              name: 'CROCKERY/TV WALL 2 DOOR',
-              badge: '4',
-              selectedLabel: 'ctvw-2d (900×600)',
-              dimensions: { W: 900, H: 600, D: 300 },
-              unitConfig: (findCatItem('ctvw-2d') && findCatItem('ctvw-2d').unitConfig),
-              variants: [600, 750, 900]
-            },
-            {
-              id: 'ctvw-obs-02',
-              code: 'SPICE RACK',
-              name: 'CROCKERY/TV WALL OPEN BOX STORAGE',
-              badge: '3',
-              selectedLabel: 'ctvw-obs-02 (1500×300)',
-              dimensions: { W: 1500, H: 300, D: 200 },
-              unitConfig: (findCatItem('ctvw-obs-02') && findCatItem('ctvw-obs-02').unitConfig),
-              variants: [900, 1200, 1500]
-            }
-          ];
-        }
-
-        if (cat === 'wardrobe') {
-          return [
-            {
-              id: 'wr-sliding',
-              code: 'SLIDING WR',
-              name: 'SLIDING WARDROBE (1800×2100)',
-              badge: '6',
-              selectedLabel: 'wr-sliding (1800×2100)',
-              dimensions: { W: 1800, H: 2100, D: 600 },
-              unitConfig: (findCatItem('wr-sliding') && findCatItem('wr-sliding').unitConfig),
-              variants: [1500, 1800, 2100, 2400]
-            },
-            {
-              id: 'wr-shelves',
-              code: 'WR 2D SHELVES',
-              name: 'WR 2 DOOR WITH SHELVES',
-              badge: '5',
-              selectedLabel: 'wr-shelves (900×2100)',
-              dimensions: { W: 900, H: 2100, D: 600 },
-              unitConfig: (findCatItem('wr-shelves') && findCatItem('wr-shelves').unitConfig),
-              variants: [800, 900, 1000, 1200]
-            },
-            {
-              id: 'wr-drawers',
-              code: 'WR 2D DRAWERS',
-              name: 'WR 2 DOOR WITH DRAWERS',
-              badge: '5',
-              selectedLabel: 'wr-drawers (900×2100)',
-              dimensions: { W: 900, H: 2100, D: 600 },
-              unitConfig: (findCatItem('wr-drawers') && findCatItem('wr-drawers').unitConfig),
-              variants: [800, 900, 1000, 1200]
-            },
-            {
-              id: 'loft-2d-mod',
-              code: 'LOFT 2D',
-              name: 'WARDROBE LOFT 2 DOOR',
-              badge: '4',
-              selectedLabel: 'loft-2d (900×450)',
-              dimensions: { W: 900, H: 450, D: 600 },
-              unitConfig: { ctype: 'loft', shutters: 2, carcass: 'MDF 1135' },
-              variants: [800, 900, 1000, 1200]
-            }
-          ];
-        }
-
-        if (cat === 'crockery') {
-          return [
-            {
-              id: 'ctvb-1d-1dr',
-              code: 'CR-1D-1DR',
-              name: 'CROCKERY BASE 1DOOR 1 DRAWER',
-              badge: '4',
-              selectedLabel: 'ctvb-1d-1dr (450×200)',
-              dimensions: { W: 450, H: 200, D: 450 },
-              unitConfig: (findCatItem('ctvb-1d-1dr') && findCatItem('ctvb-1d-1dr').unitConfig),
-              variants: [450, 600, 750]
-            },
-            {
-              id: 'ctvb-1dr',
-              code: 'CR-1DR',
-              name: 'CROCKERY BASE 1 DRAWER',
-              badge: '3',
-              selectedLabel: 'ctvb-1dr (600×200)',
-              dimensions: { W: 600, H: 200, D: 350 },
-              unitConfig: (findCatItem('ctvb-1dr') && findCatItem('ctvb-1dr').unitConfig),
-              variants: [450, 600, 800]
-            },
-            {
-              id: 'ctvb-2d',
-              code: 'CR-2D',
-              name: 'CROCKERY BASE 2 DOOR',
-              badge: '6',
-              selectedLabel: 'ctvb-2d (750×750)',
-              dimensions: { W: 750, H: 750, D: 450 },
-              unitConfig: (findCatItem('ctvb-2d') && findCatItem('ctvb-2d').unitConfig),
-              variants: [600, 750, 900, 1050]
-            },
-            {
-              id: 'ctvb-2d-2dr',
-              code: 'CR-2D-2DR',
-              name: 'CROCKERY BASE 2 DOOR 2 DRAWER',
-              badge: '5',
-              selectedLabel: 'ctvb-2d-2dr (900×750)',
-              dimensions: { W: 900, H: 750, D: 450 },
-              unitConfig: (findCatItem('ctvb-2d-2dr') && findCatItem('ctvb-2d-2dr').unitConfig),
-              variants: [750, 900, 1050, 1200]
-            },
-            {
-              id: 'ctvw-2d',
-              code: 'CR-WALL-2D',
-              name: 'CROCKERY WALL 2 DOOR',
-              badge: '4',
-              selectedLabel: 'ctvw-2d (900×600)',
-              dimensions: { W: 900, H: 600, D: 300 },
-              unitConfig: (findCatItem('ctvw-2d') && findCatItem('ctvw-2d').unitConfig),
-              variants: [600, 750, 900]
-            },
-            {
-              id: 'ctvw-obs-02',
-              code: 'CR-OPEN-BOX',
-              name: 'CROCKERY OPEN BOX STORAGE',
-              badge: '3',
-              selectedLabel: 'ctvw-obs-02 (1500×300)',
-              dimensions: { W: 1500, H: 300, D: 200 },
-              unitConfig: (findCatItem('ctvw-obs-02') && findCatItem('ctvw-obs-02').unitConfig),
-              variants: [900, 1200, 1500]
-            }
-          ];
-        }
-
-        if (cat === 'tv_unit') {
-          return [
-            {
-              id: 'ctvb-2d-2dr',
-              code: 'TV-2D-2DR',
-              name: 'TV BASE 2 DOOR 2 DRAWER',
-              badge: '5',
-              selectedLabel: 'ctvb-2d-2dr (900×750)',
-              dimensions: { W: 900, H: 750, D: 450 },
-              unitConfig: (findCatItem('ctvb-2d-2dr') && findCatItem('ctvb-2d-2dr').unitConfig),
-              variants: [750, 900, 1050, 1200]
-            },
-            {
-              id: 'ctvb-1d-1dr',
-              code: 'TV-1D-1DR',
-              name: 'TV BASE 1DOOR 1 DRAWER',
-              badge: '4',
-              selectedLabel: 'ctvb-1d-1dr (450×200)',
-              dimensions: { W: 450, H: 200, D: 450 },
-              unitConfig: (findCatItem('ctvb-1d-1dr') && findCatItem('ctvb-1d-1dr').unitConfig),
-              variants: [450, 600, 750]
-            },
-            {
-              id: 'ctvb-2dr',
-              code: 'TV-2DR',
-              name: 'TV BASE 2 DRAWER CONSOLE',
-              badge: '4',
-              selectedLabel: 'ctvb-2dr (450×500)',
-              dimensions: { W: 450, H: 500, D: 350 },
-              unitConfig: (findCatItem('ctvb-2dr') && findCatItem('ctvb-2dr').unitConfig),
-              variants: [450, 600, 750]
-            },
-            {
-              id: 'ctvb-2d',
-              code: 'TV-2D',
-              name: 'TV BASE 2 DOOR CABINET',
-              badge: '6',
-              selectedLabel: 'ctvb-2d (750×750)',
-              dimensions: { W: 750, H: 750, D: 450 },
-              unitConfig: (findCatItem('ctvb-2d') && findCatItem('ctvb-2d').unitConfig),
-              variants: [600, 750, 900, 1050]
-            },
-            {
-              id: 'ctvw-2d',
-              code: 'TV-WALL-2D',
-              name: 'TV WALL 2 DOOR UNIT',
-              badge: '4',
-              selectedLabel: 'ctvw-2d (900×600)',
-              dimensions: { W: 900, H: 600, D: 300 },
-              unitConfig: (findCatItem('ctvw-2d') && findCatItem('ctvw-2d').unitConfig),
-              variants: [600, 750, 900]
-            },
-            {
-              id: 'ctvw-obs-02',
-              code: 'TV-SHELF',
-              name: 'TV FLOATING WALL SHELF',
-              badge: '3',
-              selectedLabel: 'ctvw-obs-02 (1500×300)',
-              dimensions: { W: 1500, H: 300, D: 200 },
-              unitConfig: (findCatItem('ctvw-obs-02') && findCatItem('ctvw-obs-02').unitConfig),
-              variants: [900, 1200, 1500]
-            }
-          ];
-        }
-
-        if (cat === 'all') {
-          return [
-            {
-              id: 'fbcm',
-              code: 'L-CORNER',
-              name: 'L-SHAPED CORNER BASE UNIT (Cookscape)',
-              badge: '3',
-              selectedLabel: 'L-SHAPED CORNER BASE UNIT',
-              dimensions: { W: 900, H: 720, D: 560 },
-              unitConfig: (findCatItem('fbcm') && findCatItem('fbcm').unitConfig) || { ctype: 'kbase', geometryType: 'l_shaped_corner' },
-              variants: [900, 1050, 1200]
-            },
-            {
-              id: 'fcm-rt',
-              code: 'FCM-RT',
-              name: 'FCM-RT (Cookscape)',
-              badge: '2',
-              selectedLabel: 'FCM-RT (Cookscape)',
-              dimensions: { W: 1200, H: 720, D: 560 },
-              unitConfig: (findCatItem('fcm-rt') && findCatItem('fcm-rt').unitConfig),
-              variants: [1050, 1200]
-            },
-            {
-              id: 'fcm-lt',
-              code: 'FCM-LT',
-              name: 'FCM-LT (Cookscape)',
-              badge: '2',
-              selectedLabel: 'FCM-LT (Cookscape)',
-              dimensions: { W: 1200, H: 720, D: 560 },
-              unitConfig: (findCatItem('fcm-lt') && findCatItem('fcm-lt').unitConfig),
-              variants: [1050, 1200]
-            },
-            {
-              id: 'fm-1000',
-              code: 'FM 2 DOOR',
-              name: 'FM 1000 (2 DOOR BASE)',
-              badge: '12',
-              selectedLabel: 'FM 1000',
-              dimensions: { W: 1000, H: 750, D: 560 },
-              unitConfig: { ctype: 'kbase', shutters: 2, doorType: 'hinged', dstyle: 'slab', shelves: 1, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
-              variants: [700, 750, 800, 900, 1000, 1050, 1100, 1200]
-            },
-            {
-              id: 'wm-60-dbl',
-              code: 'WM 60 DBL',
-              name: 'WM 60 DOUBLE KITCHEN WALL',
-              badge: '4',
-              selectedLabel: 'WM 60 DBL',
-              dimensions: { W: 600, H: 600, D: 320 },
-              unitConfig: (findCatItem('wm-60-dbl') && findCatItem('wm-60-dbl').unitConfig),
-              variants: [600, 750, 900]
-            },
-            {
-              id: 'wr-sliding',
-              code: 'SLIDING WR',
-              name: 'SLIDING WARDROBE (1800×2100)',
-              badge: '6',
-              selectedLabel: 'wr-sliding (1800×2100)',
-              dimensions: { W: 1800, H: 2100, D: 600 },
-              unitConfig: (findCatItem('wr-sliding') && findCatItem('wr-sliding').unitConfig),
-              variants: [1500, 1800, 2100, 2400]
-            },
-            {
-              id: 'ctvb-2d-2dr',
-              code: 'TV-2D-2DR',
-              name: 'CROCKERY/TV BASE 2 DOOR 2 DRAWER',
-              badge: '5',
-              selectedLabel: 'ctvb-2d-2dr (900×750)',
-              dimensions: { W: 900, H: 750, D: 450 },
-              unitConfig: (findCatItem('ctvb-2d-2dr') && findCatItem('ctvb-2d-2dr').unitConfig),
-              variants: [750, 900, 1050, 1200]
-            },
-            {
-              id: 'ctvw-2d',
-              code: 'CR-WALL-2D',
-              name: 'CROCKERY/TV WALL 2 DOOR',
-              badge: '4',
-              selectedLabel: 'ctvw-2d (900×600)',
-              dimensions: { W: 900, H: 600, D: 300 },
-              unitConfig: (findCatItem('ctvw-2d') && findCatItem('ctvw-2d').unitConfig),
-              variants: [600, 750, 900]
-            }
-          ];
-        }
-
-        // Generic fallback for any other category
-        var filtered = catalog.filter(function (it) {
-          var c = (it.category || '').toLowerCase();
-          var n = (it.name || '').toLowerCase();
-          if (cat === 'crockery') return c.indexOf('crockery') !== -1 || n.indexOf('crockery') !== -1;
-          if (cat === 'tv_unit') return c.indexOf('tv') !== -1 || n.indexOf('tv') !== -1;
-          if (cat === 'all') return true;
-          return c.indexOf(cat) !== -1 || n.indexOf(cat) !== -1;
-        });
-
-        if (filtered.length > 0) {
-          return filtered.slice(0, 10).map(function (it) {
-            return {
-              id: it.id,
-              code: it.code || it.id.toUpperCase(),
-              name: it.name,
-              badge: '4',
-              selectedLabel: (it.code || it.name),
-              dimensions: it.dimensions || { W: 900, H: 750, D: 560 },
-              unitConfig: it.unitConfig,
-              variants: [it.dimensions ? it.dimensions.W : 900]
-            };
+          if (!res || !res.length) res = baseUnits;
+          res = res.map(mapItemToCard);
+        } else if (cat === 'wall_unit') {
+          var wallUnits = catalog.filter(function (it) {
+            var c = (it.category || '').toLowerCase();
+            var n = (it.name || '').toLowerCase();
+            var cfg = it.unitConfig || {};
+            return c === 'kitchen_wall' || c === 'spice_rack' || c === 'pooja' || cfg.ctype === 'kwall' ||
+              n.indexOf('wall') !== -1 || n.indexOf('wm') !== -1 || (it.id && it.id.indexOf('wm') === 0) || (it.id && it.id.indexOf('ctvw') === 0) ||
+              n.indexOf('spice') !== -1 || n.indexOf('pooja') !== -1;
           });
+          res = wallUnits.map(mapItemToCard);
+        } else if (cat === 'wardrobe') {
+          var wrUnits = catalog.filter(function (it) {
+            var c = (it.category || '').toLowerCase();
+            var n = (it.name || '').toLowerCase();
+            return c.indexOf('wardrobe') !== -1 || c.indexOf('loft') !== -1 || c.indexOf('panel') !== -1 ||
+              n.indexOf('wardrobe') !== -1 || n.indexOf('wr') !== -1 || n.indexOf('loft') !== -1 || n.indexOf('sliding') !== -1;
+          });
+          res = wrUnits.map(mapItemToCard);
+        } else if (cat === 'crockery') {
+          var crUnits = catalog.filter(function (it) {
+            var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+            return n.indexOf('crockery') !== -1 || (it.id && (it.id.indexOf('ctvb') === 0 || it.id.indexOf('ctvw') === 0));
+          });
+          res = crUnits.map(mapItemToCard);
+        } else if (cat === 'tv_unit') {
+          var tvUnits = catalog.filter(function (it) {
+            var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+            return n.indexOf('tv') !== -1 || (it.id && (it.id.indexOf('ctvb') === 0 || it.id.indexOf('ctvw') === 0));
+          });
+          res = tvUnits.map(mapItemToCard);
+        } else {
+          res = catalog.map(mapItemToCard);
         }
 
-        // Fallback default decor items
-        return [
-          {
-            id: cat + '-item-1',
-            code: cat.toUpperCase(),
-            name: cat.toUpperCase() + ' Standard Unit',
-            badge: '2',
-            selectedLabel: cat.toUpperCase() + ' 900mm',
-            dimensions: { W: 900, H: 800, D: 500 },
-            category: 'decor',
-            isDecor: true,
-            variants: [600, 900, 1200]
-          }
-        ];
+        return res.length ? res : catalog.map(mapItemToCard);
       }
 
       function renderTabs(cat) {
@@ -4193,20 +3743,31 @@
         var pBtn = document.getElementById('planFurnitureBtn');
         if (!sp) return;
 
-        var isOpen = sp.style.display !== 'none' && sp.style.display !== '';
-        if (!isOpen) {
-          // Closed -> OPEN side menu
+        var isVisible = (sp.style.display === 'flex' || sp.style.display === 'block');
+        if (!isVisible) {
+          // Closed -> OPEN both side menu and bottom units drawer so units show immediately
           sp.style.display = 'flex';
-          if (bt) bt.style.display = 'none'; // bottom options tray opens when a menu item is clicked
+          if (bt) {
+            bt.style.display = 'flex';
+            bt.classList.remove('is-collapsed');
+          }
           document.querySelectorAll('.plan-tool-btn').forEach(function (b) { b.classList.remove('is-active'); });
           if (pBtn) pBtn.classList.add('is-active');
-          if (self.editor) self.editor.activeTool = 'furniture';
+          // Crucial: keep tool as 'select' until user specifically clicks a unit card to place!
+          if (self.editor) {
+            self.editor.furniturePreset = null;
+            self.editor.activeTool = 'select';
+          }
+          switchCategory(currentCat || 'base_unit', trayCatTitle ? trayCatTitle.textContent : 'Base Unit');
         } else {
           // Already open -> toggle CLOSE
           sp.style.display = 'none';
           if (bt) bt.style.display = 'none';
           if (pBtn) pBtn.classList.remove('is-active');
-          if (self.editor) self.editor.activeTool = 'select';
+          if (self.editor) {
+            self.editor.activeTool = 'select';
+            self.editor.furniturePreset = null;
+          }
           var selectBtn = document.querySelector ? document.querySelector('.plan-tool-btn[data-tool="select"]') : null;
           if (selectBtn) selectBtn.classList.add('is-active');
         }
