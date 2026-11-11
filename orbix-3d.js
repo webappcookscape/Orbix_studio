@@ -1239,15 +1239,26 @@
   ArchitecturalRenderer.prototype.buildDecorMesh = function (furn, fg, dims) {
     var cat = (furn.category || 'decor').toLowerCase();
     var name = (furn.name || '').toLowerCase();
-    var decorType = furn.decorType || (name.indexOf('fridge') !== -1 || name.indexOf('refrigerator') !== -1 ? 'fridge' :
+    var decorType = furn.decorType || (
+      (name.indexOf('sink') !== -1) ? 'sink' :
+      (name.indexOf('hob') !== -1 || name.indexOf('stove') !== -1 || name.indexOf('burner') !== -1 || name.indexOf('cooktop') !== -1 || name.indexOf('component_2') !== -1) ? 'gas_hob' :
+      (name.indexOf('dish') !== -1) ? 'dishwasher' :
+      (name.indexOf('washing') !== -1 || name.indexOf('aeg') !== -1 || name.indexOf('laundry') !== -1) ? 'washing_machine' :
+      (name.indexOf('kent') !== -1 || name.indexOf('ro') !== -1 || name.indexOf('purifier') !== -1 || name.indexOf('water') !== -1) ? 'ro_purifier' :
+      (name.indexOf('dining') !== -1 || name.indexOf('1ewt') !== -1 || (name.indexOf('table') !== -1 && name.indexOf('top') === -1)) ? 'dining_table' :
+      (name.indexOf('fridge') !== -1 || name.indexOf('refrigerator') !== -1) ? 'fridge' :
       (name.indexOf('ice') !== -1 || name.indexOf('chiller') !== -1 || name.indexOf('side box') !== -1 || name.indexOf('wine') !== -1) ? 'ice_box' :
       (name.indexOf('plant') !== -1 || name.indexOf('pot') !== -1 || name.indexOf('tree') !== -1) ? 'plant' :
       (name.indexOf('microwave') !== -1 || name.indexOf('oven') !== -1) ? 'microwave' :
       (name.indexOf('chimney') !== -1 || name.indexOf('hood') !== -1) ? 'chimney' :
       (name.indexOf('tv') !== -1) ? 'tv' :
-      (name.indexOf('sofa') !== -1 || name.indexOf('couch') !== -1) ? 'sofa' : 'general');
+      (name.indexOf('sofa') !== -1 || name.indexOf('couch') !== -1) ? 'sofa' : 'general'
+    );
 
-    var defDecorElev = (decorType === 'chimney' || decorType === 'hood') ? 1600 : (decorType === 'microwave' ? 1200 : 0);
+    var defDecorElev = (decorType === 'chimney' || decorType === 'hood') ? 1500 :
+      (decorType === 'ro_purifier') ? 1200 :
+      (decorType === 'microwave') ? 1200 :
+      (decorType === 'sink' || decorType === 'gas_hob') ? 850 : 0;
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
@@ -1480,6 +1491,317 @@
         leg.position.set(off[0], 50, off[1]);
         fg.add(leg);
       });
+    } else if (decorType === 'sink') {
+      // Kitchen Sink with Faucet & Drainboard
+      var sSteelMat = new THREE.MeshStandardMaterial({ color: 0xD8DDE2, metalness: 0.9, roughness: 0.2 });
+      var darkSinkMat = new THREE.MeshStandardMaterial({ color: 0x4A525D, metalness: 0.85, roughness: 0.35 });
+      var chromeFaucetMat = new THREE.MeshStandardMaterial({ color: 0xF0F2F5, metalness: 0.98, roughness: 0.08 });
+
+      var rimH = 8;
+      var rimMesh = new THREE.Mesh(new THREE.BoxGeometry(W, rimH, D), sSteelMat);
+      rimMesh.position.set(0, rimH / 2, 0);
+      rimMesh.castShadow = true; rimMesh.receiveShadow = true;
+      fg.add(rimMesh);
+
+      var basinW = W * 0.52, basinD = D * 0.78, basinH = 190, basinX = -W * 0.2;
+      var basinWallMat = new THREE.MeshStandardMaterial({ color: 0xB8C0C8, metalness: 0.88, roughness: 0.25, side: THREE.DoubleSide });
+
+      var basinFloor = new THREE.Mesh(new THREE.BoxGeometry(basinW - 16, 6, basinD - 16), sSteelMat);
+      basinFloor.position.set(basinX, -basinH + 3, 0);
+      basinFloor.receiveShadow = true;
+      fg.add(basinFloor);
+
+      var bL = new THREE.Mesh(new THREE.BoxGeometry(8, basinH, basinD), basinWallMat);
+      bL.position.set(basinX - basinW / 2 + 4, -basinH / 2, 0);
+      var bR = new THREE.Mesh(new THREE.BoxGeometry(8, basinH, basinD), basinWallMat);
+      bR.position.set(basinX + basinW / 2 - 4, -basinH / 2, 0);
+      var bF = new THREE.Mesh(new THREE.BoxGeometry(basinW, basinH, 8), basinWallMat);
+      bF.position.set(basinX, -basinH / 2, basinD / 2 - 4);
+      var bB = new THREE.Mesh(new THREE.BoxGeometry(basinW, basinH, 8), basinWallMat);
+      bB.position.set(basinX, -basinH / 2, -basinD / 2 + 4);
+      fg.add(bL); fg.add(bR); fg.add(bF); fg.add(bB);
+
+      var strainer = new THREE.Mesh(new THREE.CylinderGeometry(38, 34, 6, 24), darkSinkMat);
+      strainer.position.set(basinX, -basinH + 5, 0);
+      fg.add(strainer);
+
+      var dbW = W * 0.38, dbD = D * 0.74, dbX = W * 0.26;
+      for (var r = 0; r < 5; r++) {
+        var ribZ = -dbD / 2 + 30 + r * ((dbD - 60) / 4);
+        var rib = new THREE.Mesh(new THREE.BoxGeometry(dbW - 20, 4, 10), sSteelMat);
+        rib.position.set(dbX, rimH + 1, ribZ);
+        fg.add(rib);
+      }
+
+      var faucetBase = new THREE.Mesh(new THREE.CylinderGeometry(18, 22, 28, 20), chromeFaucetMat);
+      faucetBase.position.set(basinX, rimH + 14, -basinD / 2 + 20);
+      fg.add(faucetBase);
+
+      var stem = new THREE.Mesh(new THREE.CylinderGeometry(10, 10, 160, 16), chromeFaucetMat);
+      stem.position.set(basinX, rimH + 28 + 80, -basinD / 2 + 20);
+      fg.add(stem);
+
+      var spoutArc = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 110, 16), chromeFaucetMat);
+      spoutArc.position.set(basinX, rimH + 28 + 175, -basinD / 2 + 70);
+      spoutArc.rotation.x = Math.PI / 2.8;
+      fg.add(spoutArc);
+
+      var nozzle = new THREE.Mesh(new THREE.CylinderGeometry(12, 10, 26, 16), chromeFaucetMat);
+      nozzle.position.set(basinX, rimH + 28 + 150, -basinD / 2 + 120);
+      fg.add(nozzle);
+
+      var handleLever = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 55, 12), chromeFaucetMat);
+      handleLever.position.set(basinX + 26, rimH + 45, -basinD / 2 + 20);
+      handleLever.rotation.z = Math.PI / 3;
+      fg.add(handleLever);
+
+    } else if (decorType === 'gas_hob') {
+      // 2-Burner Toughened Glass Gas Hob / Stove
+      var hobGlassMat = new THREE.MeshStandardMaterial({ color: 0x121417, metalness: 0.9, roughness: 0.08 });
+      var hobBezelMat = new THREE.MeshStandardMaterial({ color: 0x94A3B8, metalness: 0.85, roughness: 0.25 });
+      var trivetMat = new THREE.MeshStandardMaterial({ color: 0x1E2024, roughness: 0.85, metalness: 0.3 });
+      var brassMat = new THREE.MeshStandardMaterial({ color: 0xD4AF37, metalness: 0.85, roughness: 0.2 });
+      var knobMat = new THREE.MeshStandardMaterial({ color: 0xE2E8F0, metalness: 0.92, roughness: 0.15 });
+
+      var chassis = new THREE.Mesh(new THREE.BoxGeometry(W - 20, 35, D - 20), hobBezelMat);
+      chassis.position.set(0, -15, 0);
+      fg.add(chassis);
+
+      var glassTop = new THREE.Mesh(new THREE.BoxGeometry(W, 10, D), hobGlassMat);
+      glassTop.position.set(0, 5, 0);
+      glassTop.castShadow = true; glassTop.receiveShadow = true;
+      fg.add(glassTop);
+
+      [-W * 0.24, W * 0.24].forEach(function (bx) {
+        var tray = new THREE.Mesh(new THREE.CylinderGeometry(72, 76, 5, 28), hobBezelMat);
+        tray.position.set(bx, 11, -D * 0.04);
+        fg.add(tray);
+
+        var brassRing = new THREE.Mesh(new THREE.CylinderGeometry(46, 50, 8, 24), brassMat);
+        brassRing.position.set(bx, 15, -D * 0.04);
+        fg.add(brassRing);
+
+        var burnerCap = new THREE.Mesh(new THREE.CylinderGeometry(38, 38, 6, 24), trivetMat);
+        burnerCap.position.set(bx, 19, -D * 0.04);
+        fg.add(burnerCap);
+
+        var sp1 = new THREE.Mesh(new THREE.BoxGeometry(130, 12, 12), trivetMat);
+        var sp2 = new THREE.Mesh(new THREE.BoxGeometry(12, 12, 130), trivetMat);
+        sp1.position.set(bx, 17, -D * 0.04);
+        sp2.position.set(bx, 17, -D * 0.04);
+        sp1.castShadow = true; sp2.castShadow = true;
+        fg.add(sp1); fg.add(sp2);
+      });
+
+      [-W * 0.14, W * 0.14].forEach(function (kx) {
+        var baseRing = new THREE.Mesh(new THREE.CylinderGeometry(18, 20, 4, 20), trivetMat);
+        baseRing.position.set(kx, 11, D * 0.36);
+        fg.add(baseRing);
+
+        var knob = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 14, 20), knobMat);
+        knob.position.set(kx, 17, D * 0.36);
+        knob.castShadow = true;
+        fg.add(knob);
+      });
+
+    } else if (decorType === 'dishwasher') {
+      // Under-counter Siemens Built-in Dishwasher
+      var dwSteelMat = new THREE.MeshStandardMaterial({ color: 0xD0D5DB, metalness: 0.85, roughness: 0.25 });
+      var dwDarkMat = new THREE.MeshStandardMaterial({ color: 0x1E2228, metalness: 0.75, roughness: 0.35 });
+      var dwLedMat = new THREE.MeshStandardMaterial({ color: 0x00E5FF, emissive: 0x00B0FF, emissiveIntensity: 0.85 });
+
+      var dwBody = new THREE.Mesh(new THREE.BoxGeometry(W, H - 90, D - 30), dwSteelMat);
+      dwBody.position.set(0, (H - 90) / 2 + 90, -15);
+      dwBody.castShadow = true; dwBody.receiveShadow = true;
+      fg.add(dwBody);
+
+      var dwPlinth = new THREE.Mesh(new THREE.BoxGeometry(W - 10, 90, D - 40), dwDarkMat);
+      dwPlinth.position.set(0, 45, -20);
+      fg.add(dwPlinth);
+
+      var doorH = H - 190;
+      var dwDoor = new THREE.Mesh(new THREE.BoxGeometry(W - 4, doorH, 24), dwSteelMat);
+      dwDoor.position.set(0, 90 + doorH / 2, D / 2 - 12);
+      dwDoor.castShadow = true;
+      fg.add(dwDoor);
+
+      var fasciaH = 95;
+      var dwFascia = new THREE.Mesh(new THREE.BoxGeometry(W - 4, fasciaH, 26), dwDarkMat);
+      dwFascia.position.set(0, H - fasciaH / 2, D / 2 - 13);
+      fg.add(dwFascia);
+
+      var dwHandle = new THREE.Mesh(new THREE.BoxGeometry(W * 0.55, 18, 14), dwSteelMat);
+      dwHandle.position.set(0, H - fasciaH - 12, D / 2 - 1);
+      fg.add(dwHandle);
+
+      var dwScreen = new THREE.Mesh(new THREE.BoxGeometry(60, 24, 3), dwLedMat);
+      dwScreen.position.set(0, H - fasciaH / 2, D / 2 + 1);
+      fg.add(dwScreen);
+
+    } else if (decorType === 'washing_machine') {
+      // AEG Front-Loading Washing Machine
+      var wmBodyMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, metalness: 0.3, roughness: 0.2 });
+      var wmSteelMat = new THREE.MeshStandardMaterial({ color: 0xC4CAD2, metalness: 0.92, roughness: 0.15 });
+      var wmGlassMat = new THREE.MeshStandardMaterial({ color: 0x1E293B, roughness: 0.1, metalness: 0.5, transparent: true, opacity: 0.75 });
+      var wmLedMat = new THREE.MeshStandardMaterial({ color: 0x38BDF8, emissive: 0x0284C7, emissiveIntensity: 0.7 });
+
+      var wmBody = new THREE.Mesh(new THREE.BoxGeometry(W, H - 40, D - 20), wmBodyMat);
+      wmBody.position.set(0, (H - 40) / 2 + 40, -10);
+      wmBody.castShadow = true; wmBody.receiveShadow = true;
+      fg.add(wmBody);
+
+      var wmPlinth = new THREE.Mesh(new THREE.BoxGeometry(W - 4, 40, D - 15), new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7 }));
+      wmPlinth.position.set(0, 20, -5);
+      fg.add(wmPlinth);
+
+      var wmFascia = new THREE.Mesh(new THREE.BoxGeometry(W - 4, 110, 24), wmBodyMat);
+      wmFascia.position.set(0, H - 55, D / 2 - 12);
+      fg.add(wmFascia);
+
+      var drawer = new THREE.Mesh(new THREE.BoxGeometry(W * 0.28, 70, 8), wmSteelMat);
+      drawer.position.set(-W * 0.3, H - 55, D / 2 + 1);
+      fg.add(drawer);
+
+      var progKnob = new THREE.Mesh(new THREE.CylinderGeometry(26, 26, 16, 28), wmSteelMat);
+      progKnob.rotation.x = Math.PI / 2;
+      progKnob.position.set(0, H - 55, D / 2 + 5);
+      progKnob.castShadow = true;
+      fg.add(progKnob);
+
+      var wmDisplay = new THREE.Mesh(new THREE.BoxGeometry(W * 0.28, 55, 4), wmLedMat);
+      wmDisplay.position.set(W * 0.3, H - 55, D / 2 + 1);
+      fg.add(wmDisplay);
+
+      var doorCenterY = (H - 120) * 0.52 + 20;
+      var doorRadius = Math.min(W * 0.34, (H - 120) * 0.44);
+
+      var doorBezel = new THREE.Mesh(new THREE.TorusGeometry(doorRadius, 20, 16, 36), wmSteelMat);
+      doorBezel.position.set(0, doorCenterY, D / 2 - 2);
+      doorBezel.castShadow = true;
+      fg.add(doorBezel);
+
+      var doorGlass = new THREE.Mesh(new THREE.CylinderGeometry(doorRadius - 10, doorRadius - 10, 10, 32), wmGlassMat);
+      doorGlass.rotation.x = Math.PI / 2;
+      doorGlass.position.set(0, doorCenterY, D / 2 - 2);
+      fg.add(doorGlass);
+
+      var drumInterior = new THREE.Mesh(new THREE.CylinderGeometry(doorRadius * 0.72, doorRadius * 0.65, 50, 24), wmSteelMat);
+      drumInterior.rotation.x = Math.PI / 2;
+      drumInterior.position.set(0, doorCenterY, D / 2 - 35);
+      fg.add(drumInterior);
+
+      var latch = new THREE.Mesh(new THREE.BoxGeometry(14, 45, 12), wmSteelMat);
+      latch.position.set(doorRadius - 6, doorCenterY, D / 2 + 6);
+      fg.add(latch);
+
+    } else if (decorType === 'ro_purifier') {
+      // Kent Mineral RO Wall-Mounted Water Purifier
+      var roWhiteMat = new THREE.MeshStandardMaterial({ color: 0xFDFDFD, roughness: 0.25, metalness: 0.1 });
+      var roTankMat = new THREE.MeshStandardMaterial({ color: 0x60A5FA, transparent: true, opacity: 0.48, roughness: 0.15, metalness: 0.2 });
+      var roChromeMat = new THREE.MeshStandardMaterial({ color: 0xE2E8F0, metalness: 0.95, roughness: 0.1 });
+      var roFilterMat = new THREE.MeshStandardMaterial({ color: 0x3B82F6, roughness: 0.4 });
+
+      var baseH = H * 0.42;
+      var roBase = new THREE.Mesh(new THREE.BoxGeometry(W, baseH, D), roWhiteMat);
+      roBase.position.set(0, baseH / 2, 0);
+      roBase.castShadow = true; roBase.receiveShadow = true;
+      fg.add(roBase);
+
+      var tankH = H - baseH;
+      var roTank = new THREE.Mesh(new THREE.BoxGeometry(W - 8, tankH, D - 8), roTankMat);
+      roTank.position.set(0, baseH + tankH / 2, 0);
+      roTank.castShadow = true;
+      fg.add(roTank);
+
+      [-W * 0.22, W * 0.22].forEach(function (fx) {
+        var cyl = new THREE.Mesh(new THREE.CylinderGeometry(28, 28, tankH * 0.7, 20), roFilterMat);
+        cyl.position.set(fx, baseH + tankH * 0.45, -10);
+        fg.add(cyl);
+      });
+
+      var roBadge = new THREE.Mesh(new THREE.BoxGeometry(W * 0.45, 26, 4), new THREE.MeshStandardMaterial({ color: 0x1D4ED8 }));
+      roBadge.position.set(0, baseH + 18, D / 2 + 1);
+      fg.add(roBadge);
+
+      var tapStem = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 30, 16), roChromeMat);
+      tapStem.position.set(0, 35, D / 2 + 12);
+      tapStem.rotation.x = Math.PI / 2.5;
+      fg.add(tapStem);
+
+      var tapLever = new THREE.Mesh(new THREE.BoxGeometry(10, 36, 6), roChromeMat);
+      tapLever.position.set(0, 52, D / 2 + 8);
+      fg.add(tapLever);
+
+    } else if (decorType === 'dining_table') {
+      // 4-Seater Dining Table Set with Chairs
+      var marbleTopMat = new THREE.MeshStandardMaterial({ color: 0xF5F6F8, roughness: 0.18, metalness: 0.15 });
+      var chairWoodMat = new THREE.MeshStandardMaterial({ color: 0x1E2228, roughness: 0.65, metalness: 0.2 });
+      var cushionMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.88 });
+      var steelLegMat = new THREE.MeshStandardMaterial({ color: 0x2D3748, metalness: 0.85, roughness: 0.3 });
+
+      var tableTopH = 35;
+      var tableH = Math.min(H, 760);
+      var tableW = W * 0.82;
+      var tableD = D * 0.68;
+
+      var slab = new THREE.Mesh(new THREE.BoxGeometry(tableW, tableTopH, tableD), marbleTopMat);
+      slab.position.set(0, tableH - tableTopH / 2, 0);
+      slab.castShadow = true; slab.receiveShadow = true;
+      fg.add(slab);
+
+      var tLegGeo = new THREE.CylinderGeometry(20, 16, tableH - tableTopH, 16);
+      [
+        [-tableW / 2 + 50, -tableD / 2 + 50],
+        [tableW / 2 - 50, -tableD / 2 + 50],
+        [-tableW / 2 + 50, tableD / 2 - 50],
+        [tableW / 2 - 50, tableD / 2 - 50]
+      ].forEach(function (pos) {
+        var tl = new THREE.Mesh(tLegGeo, steelLegMat);
+        tl.position.set(pos[0], (tableH - tableTopH) / 2, pos[1]);
+        tl.castShadow = true;
+        fg.add(tl);
+      });
+
+      var vase = new THREE.Mesh(new THREE.CylinderGeometry(20, 14, 65, 18), new THREE.MeshStandardMaterial({ color: 0xE2E8F0, roughness: 0.3 }));
+      vase.position.set(0, tableH + 32, 0);
+      fg.add(vase);
+
+      function addChair(cx, cz, rotY) {
+        var chGroup = new THREE.Group();
+        var chSeatH = 440;
+        var chW = 420;
+        var chD = 400;
+
+        var seat = new THREE.Mesh(new THREE.BoxGeometry(chW, 45, chD), cushionMat);
+        seat.position.set(0, chSeatH, 0);
+        seat.castShadow = true;
+        chGroup.add(seat);
+
+        var backrestH = 380;
+        var backrest = new THREE.Mesh(new THREE.BoxGeometry(chW - 20, backrestH, 30), cushionMat);
+        backrest.position.set(0, chSeatH + backrestH / 2, -chD / 2 + 15);
+        backrest.castShadow = true;
+        chGroup.add(backrest);
+
+        var legGeo = new THREE.CylinderGeometry(12, 9, chSeatH, 12);
+        [[-chW / 2 + 30, -chD / 2 + 30], [chW / 2 - 30, -chD / 2 + 30], [-chW / 2 + 30, chD / 2 - 30], [chW / 2 - 30, chD / 2 - 30]].forEach(function (lp) {
+          var leg = new THREE.Mesh(legGeo, chairWoodMat);
+          leg.position.set(lp[0], chSeatH / 2, lp[1]);
+          leg.castShadow = true;
+          chGroup.add(leg);
+        });
+
+        chGroup.position.set(cx, 0, cz);
+        chGroup.rotation.y = rotY;
+        fg.add(chGroup);
+      }
+
+      var chairXSpacing = tableW * 0.28;
+      addChair(-chairXSpacing, tableD / 2 + 190, Math.PI);
+      addChair(chairXSpacing, tableD / 2 + 190, Math.PI);
+      addChair(-chairXSpacing, -tableD / 2 - 190, 0);
+      addChair(chairXSpacing, -tableD / 2 - 190, 0);
+
     } else {
       var genMat = new THREE.MeshStandardMaterial({ color: 0x64748B, roughness: 0.4, metalness: 0.2 });
       var box = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), genMat);

@@ -233,6 +233,10 @@
       </div>
 
       <aside class="rail" id="rail">
+        <div class="units-rail-header" id="unitsRailHeader" title="Click to collapse or expand the units switcher bar">
+          <span class="units-rail-title" id="unitsRailTitle">📦 Units (<span id="unitsRailCount">0</span>)</span>
+          <button type="button" class="units-rail-toggle-btn" id="unitsRailToggleBtn" title="Toggle Units Bar">▾ Collapse</button>
+        </div>
         <div class="units" id="units"></div>
         <div class="railscroll" id="railScroll"></div>
         <div class="railfoot">
@@ -1221,11 +1225,66 @@
           </div>
 
           <!-- 10. Washing Machine -->
-          <div class="decor-preset-card" data-name="Washing Machine" data-type="fridge" data-w="600" data-h="850" data-d="600" data-elev="0">
+          <div class="decor-preset-card" data-name="AEG Washing Machine" data-type="washing_machine" data-w="600" data-h="850" data-d="600" data-elev="0">
             <div class="decor-card-icon">🧺</div>
             <div class="decor-card-info">
-              <div class="decor-card-title">Front-Load Washer</div>
+              <div class="decor-card-title">AEG Washing Machine</div>
               <div class="decor-card-dims">600 × 850 × 600 mm</div>
+              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 11. Kitchen Sink -->
+          <div class="decor-preset-card" data-name="Kitchen Sink (Satin Finish)" data-type="sink" data-w="800" data-h="400" data-d="500" data-elev="850">
+            <div class="decor-card-icon">🚰</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Kitchen Sink with Faucet</div>
+              <div class="decor-card-dims">800 × 400 × 500 mm</div>
+              <div class="decor-card-elev">Elevation: 850 mm (Counter)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 12. Gas Hob / Stove -->
+          <div class="decor-preset-card" data-name="2-Burner Gas Hob" data-type="gas_hob" data-w="750" data-h="120" data-d="500" data-elev="850">
+            <div class="decor-card-icon">🔥</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">2-Burner Glass Gas Hob</div>
+              <div class="decor-card-dims">750 × 120 × 500 mm</div>
+              <div class="decor-card-elev">Elevation: 850 mm (Counter)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 13. Built-in Dishwasher -->
+          <div class="decor-preset-card" data-name="Siemens Dishwasher" data-type="dishwasher" data-w="600" data-h="820" data-d="600" data-elev="0">
+            <div class="decor-card-icon">🍽️</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Siemens Dishwasher</div>
+              <div class="decor-card-dims">600 × 820 × 600 mm</div>
+              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 14. Kent Mineral RO Purifier -->
+          <div class="decor-preset-card" data-name="Kent Mineral RO Purifier" data-type="ro_purifier" data-w="400" data-h="520" data-d="260" data-elev="1200">
+            <div class="decor-card-icon">💧</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Kent Mineral RO Purifier</div>
+              <div class="decor-card-dims">400 × 520 × 260 mm</div>
+              <div class="decor-card-elev">Elevation: 1200 mm (Wall)</div>
+            </div>
+            <div class="decor-card-badge">Place ➔</div>
+          </div>
+
+          <!-- 15. 4-Seater Dining Table Set -->
+          <div class="decor-preset-card" data-name="4-Seater Dining Table Set" data-type="dining_table" data-w="1200" data-h="760" data-d="800" data-elev="0">
+            <div class="decor-card-icon">🪑</div>
+            <div class="decor-card-info">
+              <div class="decor-card-title">Dining Table + 4 Chairs</div>
+              <div class="decor-card-dims">1200 × 760 × 800 mm</div>
               <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
             </div>
             <div class="decor-card-badge">Place ➔</div>
@@ -1257,6 +1316,12 @@
             <div>
               <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Decor Visual Style</label>
               <select id="customDecorType" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+                <option value="sink">🚰 Kitchen Sink (Faucet &amp; Drain)</option>
+                <option value="gas_hob">🔥 Gas Hob / Stove (2 Burners)</option>
+                <option value="dishwasher">🍽️ Dishwasher (Built-in)</option>
+                <option value="washing_machine">🧺 Washing Machine (AEG Front-Load)</option>
+                <option value="ro_purifier">💧 Kent Mineral RO Purifier</option>
+                <option value="dining_table">🪑 Dining Table Set (4 Chairs)</option>
                 <option value="fridge">❄️ Refrigerator / Chiller</option>
                 <option value="ice_box">🧊 Ice Box / Wine Cooler</option>
                 <option value="plant">🌿 Indoor Plant / Foliage</option>

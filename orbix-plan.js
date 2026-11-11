@@ -3445,7 +3445,68 @@
         ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
       }
 
-      if (!isLCorner) {
+      if (isDecor) {
+        var dType = f.decorType || (
+          (f.name.toLowerCase().indexOf('sink') !== -1) ? 'sink' :
+          (f.name.toLowerCase().indexOf('hob') !== -1 || f.name.toLowerCase().indexOf('stove') !== -1 || f.name.toLowerCase().indexOf('burner') !== -1 || f.name.toLowerCase().indexOf('component_2') !== -1) ? 'gas_hob' :
+          (f.name.toLowerCase().indexOf('dish') !== -1) ? 'dishwasher' :
+          (f.name.toLowerCase().indexOf('washing') !== -1 || f.name.toLowerCase().indexOf('aeg') !== -1) ? 'washing_machine' :
+          (f.name.toLowerCase().indexOf('ro') !== -1 || f.name.toLowerCase().indexOf('purifier') !== -1 || f.name.toLowerCase().indexOf('kent') !== -1) ? 'ro_purifier' :
+          (f.name.toLowerCase().indexOf('dining') !== -1 || f.name.toLowerCase().indexOf('1ewt') !== -1 || (f.name.toLowerCase().indexOf('table') !== -1 && f.name.toLowerCase().indexOf('top') === -1)) ? 'dining_table' :
+          (f.name.toLowerCase().indexOf('plant') !== -1) ? 'plant' : 'general'
+        );
+
+        ctx.strokeStyle = isSelected ? '#047857' : '#059669';
+        ctx.fillStyle = isSelected ? '#047857' : '#059669';
+        ctx.lineWidth = 1.2;
+
+        if (dType === 'sink') {
+          // Basin cutout & drain
+          var bW = wPx * 0.52, bD = dPx * 0.74, bX = -wPx * 0.2;
+          ctx.strokeRect(bX - bW / 2, -bD / 2, bW, bD);
+          ctx.beginPath(); ctx.arc(bX, 0, Math.min(bW, bD) * 0.16, 0, Math.PI * 2); ctx.stroke();
+          // Faucet
+          ctx.beginPath(); ctx.arc(bX, -bD / 2 + 6, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(bX, -bD / 2 + 6); ctx.lineTo(bX, -bD / 2 + 16); ctx.stroke();
+          // Drainboard ribs
+          var dbW = wPx * 0.36, dbX = wPx * 0.26;
+          for (var r = -2; r <= 2; r++) {
+            ctx.beginPath(); ctx.moveTo(dbX - dbW / 2 + 4, r * (bD / 6)); ctx.lineTo(dbX + dbW / 2 - 4, r * (bD / 6)); ctx.stroke();
+          }
+        } else if (dType === 'gas_hob') {
+          // 2 Burners with crosshairs
+          [-wPx * 0.25, wPx * 0.25].forEach(function (bx) {
+            ctx.beginPath(); ctx.arc(bx, -dPx * 0.05, Math.min(wPx, dPx) * 0.22, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(bx, -dPx * 0.05, Math.min(wPx, dPx) * 0.11, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(bx - Math.min(wPx, dPx) * 0.26, -dPx * 0.05); ctx.lineTo(bx + Math.min(wPx, dPx) * 0.26, -dPx * 0.05); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(bx, -dPx * 0.05 - Math.min(wPx, dPx) * 0.26); ctx.lineTo(bx, -dPx * 0.05 + Math.min(wPx, dPx) * 0.26); ctx.stroke();
+          });
+          // 2 Knobs at front
+          [-wPx * 0.14, wPx * 0.14].forEach(function (kx) {
+            ctx.beginPath(); ctx.arc(kx, dPx / 2 - 6, 3, 0, Math.PI * 2); ctx.fill();
+          });
+        } else if (dType === 'washing_machine') {
+          // Outer circular door & inner drum
+          ctx.beginPath(); ctx.arc(0, 0, Math.min(wPx, dPx) * 0.36, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, Math.min(wPx, dPx) * 0.24, 0, Math.PI * 2); ctx.stroke();
+          // Detergent drawer
+          ctx.strokeRect(-wPx / 2 + 4, -dPx / 2 + 4, wPx * 0.26, dPx * 0.2);
+        } else if (dType === 'dining_table') {
+          // 4 chair outlines around table
+          var chW = wPx * 0.3, chD = 8;
+          ctx.strokeRect(-wPx * 0.35, dPx / 2 + 2, chW, chD);
+          ctx.strokeRect(wPx * 0.05, dPx / 2 + 2, chW, chD);
+          ctx.strokeRect(-wPx * 0.35, -dPx / 2 - 10, chW, chD);
+          ctx.strokeRect(wPx * 0.05, -dPx / 2 - 10, chW, chD);
+        } else if (dType === 'plant') {
+          ctx.beginPath(); ctx.arc(0, 0, Math.min(wPx, dPx) * 0.35, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(-wPx * 0.25, 0); ctx.lineTo(wPx * 0.25, 0); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(0, -dPx * 0.25); ctx.lineTo(0, dPx * 0.25); ctx.stroke();
+        } else {
+          // Subtle inner border for general decor
+          ctx.strokeRect(-wPx / 2 + 4, -dPx / 2 + 4, wPx - 8, dPx - 8);
+        }
+      } else if (!isLCorner) {
         // Shutter dividers
         var numShutters = (f.unitConfig && f.unitConfig.shutters) || (wMm > 1200 ? 3 : wMm > 600 ? 2 : 1);
         if (numShutters > 1) {

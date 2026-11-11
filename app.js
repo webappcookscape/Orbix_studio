@@ -4270,8 +4270,39 @@
     });
     return g;
   }
+  function updateUnitsRailHeader() {
+    var cnt = document.getElementById("unitsRailCount");
+    var btn = document.getElementById("unitsRailToggleBtn");
+    var title = document.getElementById("unitsRailTitle");
+    var uw = document.getElementById("units");
+    if (!uw) return;
+    var isCollapsed = uw.classList.contains("is-collapsed");
+    if (cnt) cnt.textContent = S.units.length;
+    var activeUnit = S.units[S.active];
+    var activeLabel = activeUnit ? (activeUnit.label || ("Unit " + (S.active + 1))) : "None";
+    if (title) {
+      title.innerHTML = isCollapsed ?
+        ('📦 Units (' + S.units.length + ') · <span style="color:#059669;font-weight:600;text-transform:none;">' + activeLabel + '</span>') :
+        ('📦 Units in Project (<span id="unitsRailCount">' + S.units.length + '</span>)');
+    }
+    if (btn) btn.textContent = isCollapsed ? "▸ Expand" : "▾ Collapse";
+  }
+
   function renderRail() {
     var uw = $("#units"); uw.innerHTML = "";
+    var savedCol = null;
+    try { savedCol = localStorage.getItem("orbix_units_rail_collapsed"); } catch (e) { }
+    if (savedCol === "true") uw.classList.add("is-collapsed");
+    var hdr = document.getElementById("unitsRailHeader");
+    if (hdr && !hdr._wired) {
+      hdr._wired = true;
+      hdr.addEventListener("click", function () {
+        var nowCol = uw.classList.toggle("is-collapsed");
+        try { localStorage.setItem("orbix_units_rail_collapsed", String(nowCol)); } catch (e) { }
+        updateUnitsRailHeader();
+      });
+    }
+
     S.units.forEach(function (u, i) {
       var c = el("uchip" + (i === S.active ? " is-on" : ""), uw, "button");
       c.textContent = u.label || ("Unit " + (i + 1));
@@ -4322,6 +4353,8 @@
         window.OrbixUI.openDecorModal();
       }
     });
+
+    updateUnitsRailHeader();
 
     var r = $("#railScroll"); r.innerHTML = "";
     var u = U();

@@ -2990,7 +2990,31 @@
 
         var lower = fileName.toLowerCase();
         if (typeSelect) {
-          if (lower.indexOf('fridge') !== -1 || lower.indexOf('refrigerator') !== -1) {
+          if (lower.indexOf('sink') !== -1) {
+            typeSelect.value = 'sink';
+            if (wInput) wInput.value = 800; if (hInput) hInput.value = 400; if (dInput) dInput.value = 500;
+            if (elevInput) elevInput.value = 850;
+          } else if (lower.indexOf('hob') !== -1 || lower.indexOf('stove') !== -1 || lower.indexOf('burner') !== -1 || lower.indexOf('component_2') !== -1) {
+            typeSelect.value = 'gas_hob';
+            if (wInput) wInput.value = 750; if (hInput) hInput.value = 120; if (dInput) dInput.value = 500;
+            if (elevInput) elevInput.value = 850;
+          } else if (lower.indexOf('dish') !== -1) {
+            typeSelect.value = 'dishwasher';
+            if (wInput) wInput.value = 600; if (hInput) hInput.value = 820; if (dInput) dInput.value = 600;
+            if (elevInput) elevInput.value = 0;
+          } else if (lower.indexOf('washing') !== -1 || lower.indexOf('aeg') !== -1 || lower.indexOf('laundry') !== -1) {
+            typeSelect.value = 'washing_machine';
+            if (wInput) wInput.value = 600; if (hInput) hInput.value = 850; if (dInput) dInput.value = 600;
+            if (elevInput) elevInput.value = 0;
+          } else if (lower.indexOf('kent') !== -1 || lower.indexOf('ro') !== -1 || lower.indexOf('purifier') !== -1) {
+            typeSelect.value = 'ro_purifier';
+            if (wInput) wInput.value = 400; if (hInput) hInput.value = 520; if (dInput) dInput.value = 260;
+            if (elevInput) elevInput.value = 1200;
+          } else if (lower.indexOf('dining') !== -1 || lower.indexOf('1ewt') !== -1 || (lower.indexOf('table') !== -1 && lower.indexOf('top') === -1)) {
+            typeSelect.value = 'dining_table';
+            if (wInput) wInput.value = 1200; if (hInput) hInput.value = 760; if (dInput) dInput.value = 800;
+            if (elevInput) elevInput.value = 0;
+          } else if (lower.indexOf('fridge') !== -1 || lower.indexOf('refrigerator') !== -1) {
             typeSelect.value = 'fridge';
             if (wInput) wInput.value = 900; if (hInput) hInput.value = 1800; if (dInput) dInput.value = 700;
           } else if (lower.indexOf('ice') !== -1 || lower.indexOf('chiller') !== -1 || lower.indexOf('side') !== -1) {
