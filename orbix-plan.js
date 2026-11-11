@@ -140,6 +140,10 @@
   };
 
   PlanEditor.prototype.initDOM = function () {
+    var existingTray = this.container ? this.container.querySelector('#furnishBottomTray') : null;
+    if (existingTray && this.container.parentElement) {
+      this.container.parentElement.appendChild(existingTray);
+    }
     this.container.innerHTML = '';
     this.container.style.position = 'relative';
     this.container.style.overflow = 'hidden';
