@@ -2679,13 +2679,34 @@
       var box = new THREE.Box3();
       var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
 
-      // 1. In 'unit' mode, frame the active unit's parametric model in root
-      if (mode === 'unit' && root && root.children.length > 0) {
+      // 1. In 'unit' mode, frame the active placed unit in OrbixHome3D if present!
+      if (mode === 'unit' && homeObj && homeObj.children.length > 0) {
+        var selFurnId = (window.S && window.S.units && window.S.units[window.S.active]) ? window.S.units[window.S.active]._furnId : null;
+        if (!selFurnId && window.OrbixUI && window.OrbixUI.editor && window.OrbixUI.editor.selected) {
+          var selItem = window.OrbixUI.editor.selected.find(function (it) { return it.type === 'furniture'; });
+          if (selItem) selFurnId = selItem.id;
+        }
+        var activeUnitMesh = null;
+        if (selFurnId) {
+          homeObj.traverse(function (o) {
+            if (o.userData && o.userData.isFurnitureGroup && o.userData.furnitureId === selFurnId) {
+              activeUnitMesh = o;
+            }
+          });
+        }
+        if (activeUnitMesh) {
+          activeUnitMesh.updateMatrixWorld(true);
+          box.setFromObject(activeUnitMesh);
+        }
+      }
+
+      // 2. In 'unit' mode, fallback to single unit parametric model in root
+      if (box.isEmpty() && mode === 'unit' && root && root.children.length > 0) {
         root.updateMatrixWorld(true);
         root.traverse(function (o) { if (o.isMesh && !o.userData.noFrame) box.expandByObject(o); });
       }
 
-      // 2. In 'home' mode, or if root was empty, frame the full architectural house
+      // 3. In 'home' mode, or if root was empty, frame the full architectural house
       if (box.isEmpty() && homeObj && homeObj.children.length > 0) {
         homeObj.updateMatrixWorld(true);
         homeObj.traverse(function (o) { if (o.isMesh && o.visible) box.expandByObject(o); });
@@ -2694,7 +2715,7 @@
         }
       }
 
-      // 3. Fallback to root
+      // 4. Fallback to root
       if (box.isEmpty() && root && root.children.length > 0) {
         root.updateMatrixWorld(true);
         root.traverse(function (o) { if (o.isMesh && !o.userData.noFrame) box.expandByObject(o); });
@@ -2784,8 +2805,8 @@
         camera.updateProjectionMatrix();
       }
       var yaw = cam.yaw * Math.PI / 180, el = (-cam.pitch) * Math.PI / 180;
-      var safeZoom = Math.max(0.05, 1 + cam.zoom);
-      var d = Math.max(250, dist / safeZoom);
+      var safeZoom = Math.max(0.02, 1 + cam.zoom);
+      var d = Math.max(50, dist / safeZoom);
       if (camera.far < d * 4) {
         camera.far = Math.max(1000000, d * 5);
         camera.updateProjectionMatrix();
@@ -3719,7 +3740,7 @@
   }
   function camApply() {
     cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
-    cam.zoom = Math.max(-0.92, Math.min(8.0, cam.zoom));
+    cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom));
     if (GL.ok) { GL.apply(); return; }
     var s = scale * (1 + cam.zoom);
     world.style.transform = "rotateX(" + (-cam.pitch) + "deg) rotateY(" + cam.yaw + "deg) scale3d(" + s + "," + s + "," + s + ")";
@@ -4136,20 +4157,25 @@
       if (ids.length === 2) {
         var a = pts[ids[0]], b = pts[ids[1]];
         var d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-        if (lastD) cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom + (d - lastD) * 0.004));
+        if (lastD) cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom + (d - lastD) * 0.004));
         lastD = d;
       } else {
         var dx = e.clientX - prev.clientX;
         var dy = e.clientY - prev.clientY;
         if (prev.button === 2 || prev.button === 1 || e.shiftKey || studioCamMode === 'pan') {
-          // Pan camera target across floor plane
+          // Pan camera target across 3D space (both Horizontal X-Z and Vertical Y up/down!)
           var yawRad = cam.yaw * Math.PI / 180;
+          var pitchRad = (-cam.pitch) * Math.PI / 180;
           var cosY = Math.cos(yawRad), sinY = Math.sin(yawRad);
-          var panSpeed = 7.0 * Math.max(0.2, 1 - cam.zoom * 0.4);
+          var panSpeed = 6.0 * Math.max(0.08, 1 - cam.zoom * 0.03);
           var tgt = GL.getTarget ? GL.getTarget() : null;
           if (tgt) {
-            tgt.x -= (dx * cosY + dy * sinY * 0.5) * panSpeed;
-            tgt.z -= (-dx * sinY + dy * cosY * 0.5) * panSpeed;
+            tgt.x -= dx * cosY * panSpeed;
+            tgt.z += dx * sinY * panSpeed;
+            tgt.y += dy * Math.cos(pitchRad) * panSpeed;
+            tgt.x += dy * Math.sin(pitchRad) * sinY * panSpeed * 0.5;
+            tgt.z += dy * Math.sin(pitchRad) * cosY * panSpeed * 0.5;
+            tgt.y = Math.max(-500, Math.min(6000, tgt.y));
           }
         } else {
           // Orbit camera 360 degrees
@@ -4174,7 +4200,7 @@
     stage.addEventListener("wheel", function (e) {
       e.preventDefault();
       var zoomDelta = -e.deltaY * 0.0012;
-      cam.zoom = Math.max(-0.92, Math.min(8.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
+      cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
       camApply();
     }, { passive: false });
 
@@ -4200,7 +4226,8 @@
       cam.pitch = 28;
       cam.zoom = 0;
       var tgt = GL.getTarget ? GL.getTarget() : null;
-      if (tgt) { tgt.x = 0; tgt.z = 0; }
+      if (tgt) { tgt.x = 0; tgt.y = 800; tgt.z = 0; }
+      if (GL.ok && GL.frame) GL.frame('home');
       camApply();
       if (GL.ok) GL.settle();
     });

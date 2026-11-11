@@ -1273,7 +1273,11 @@
             '<div class="insp-row" style="margin-bottom:4px;"><label>Floor Elevation (AFFL)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
             '<div style="display:flex;gap:4px;margin-top:6px;">' +
               '<button type="button" class="btn small" id="btnPresetFloor" style="flex:1;font-size:10px;padding:3px;background:#f8fafc;border:1px solid #cbd5e1;">Floor (0 mm)</button>' +
-              '<button type="button" class="btn small" id="btnPresetWall" style="flex:1;font-size:10px;padding:3px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;">Wall Mount (1500 mm)</button>' +
+              '<button type="button" class="btn small" id="btnPresetWall" style="flex:1;font-size:10px;padding:3px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;">Wall (1500 mm)</button>' +
+              '<button type="button" class="btn small" id="btnPresetLoft" style="flex:1;font-size:10px;padding:3px;background:#ede9fe;border:1px solid #ddd6fe;color:#5b21b6;">Loft (2100 mm)</button>' +
+            '</div>' +
+            '<div style="margin-top:6px;">' +
+              '<button type="button" class="btn small full" id="inspFocusUnitBtn3D" style="font-size:11px;padding:4px;background:#059669;color:#ffffff;border:none;border-radius:4px;cursor:pointer;font-weight:600;">🎯 Zoom / Focus Unit in 3D</button>' +
             '</div>' +
           '</div>' +
 
@@ -1397,6 +1401,7 @@
                 eu.W = fn.dimensions.W;
                 eu.H = fn.dimensions.H;
                 eu.D = fn.dimensions.D;
+                eu.elev = (fn.elevation !== undefined && fn.elevation !== null) ? parseFloat(fn.elevation) : 0;
                 if (fn.unitConfig) {
                   if (fn.unitConfig.shutters !== undefined) eu.shutters = fn.unitConfig.shutters;
                   if (fn.unitConfig.drawers !== undefined) eu.drawers = fn.unitConfig.drawers;
@@ -1437,14 +1442,19 @@
         }
         var elElev = document.getElementById('inspFurnElev');
         if (elElev) {
-          elElev.addEventListener('change', function (e) {
-            fn.elevation = parseFloat(e.target.value) || 0;
-            if (fn.pos) fn.pos.z = fn.elevation;
+          var onElevInput = function (e) {
+            var val = parseFloat(e.target.value);
+            if (isNaN(val)) val = 0;
+            fn.elevation = val;
+            if (fn.pos) fn.pos.z = val;
+            syncInspectorTo3D();
             self.editor.pushHistory('Change Unit Elevation');
             self.saveToLocalStorage();
             self.editor.render();
             if (self.render3DHome) self.render3DHome(true);
-          });
+          };
+          elElev.addEventListener('input', onElevInput);
+          elElev.addEventListener('change', onElevInput);
         }
         var elFurnW = document.getElementById('inspFurnW');
         if (elFurnW) {
@@ -1621,6 +1631,26 @@
             self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
             self.renderInspector(self.editor.selected);
+          });
+        }
+        var btnLoft = document.getElementById('btnPresetLoft');
+        if (btnLoft) {
+          btnLoft.addEventListener('click', function () {
+            fn.elevation = 2100;
+            if (fn.pos) fn.pos.z = 2100;
+            var elevEl3 = document.getElementById('inspFurnElev');
+            if (elevEl3) elevEl3.value = 2100;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Set Elevation: 2100mm (Loft)');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+            self.renderInspector(self.editor.selected);
+          });
+        }
+        var btnFocus3D = document.getElementById('inspFocusUnitBtn3D');
+        if (btnFocus3D) {
+          btnFocus3D.addEventListener('click', function () {
+            self.zoomToFurnitureIn3D(fn.id);
           });
         }
 
@@ -2516,22 +2546,47 @@
       if (typeof window.buildScene === 'function') window.buildScene();
       if (typeof this.render3DHome === 'function') this.render3DHome(true);
 
-      // Focus camera on selected unit in 3D
-      var plan = this.getPlan();
-      var rot = 0;
-      if (plan && plan.furniture) {
-        var f = plan.furniture.find(function (it) { return it.id === furnId; });
-        if (f) rot = f.rotY || 0;
-      }
-      if (window.cam) {
-        window.cam.yaw = -(rot * 180 / Math.PI) - 24;
-        window.cam.pitch = -10;
-      }
-      if (window.__cc && window.__cc.gl && window.__cc.gl.frame) {
-        window.__cc.gl.frame('unit');
-      }
-      if (typeof window.camApply === 'function') window.camApply();
+      // Unit selection in 3D preserves camera angle and position perfectly (no unwanted teleport)
       this.highlight3DFurniture(furnId);
+    },
+
+    zoomToFurnitureIn3D: function (furnId) {
+      if (!furnId || !window.__cc || !window.__cc.gl) return;
+      var gl = window.__cc.gl;
+      var scene = gl.getScene ? gl.getScene() : null;
+      var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+      if (!homeObj) return;
+
+      var targetMesh = null;
+      homeObj.traverse(function (obj) {
+        if (obj.userData && obj.userData.isFurnitureGroup && obj.userData.furnitureId === furnId) {
+          targetMesh = obj;
+        }
+      });
+
+      if (targetMesh) {
+        targetMesh.updateMatrixWorld(true);
+        var box = new THREE.Box3().setFromObject(targetMesh);
+        if (!box.isEmpty()) {
+          var center = box.getCenter(new THREE.Vector3());
+          var size = box.getSize(new THREE.Vector3());
+          var tgt = gl.getTarget ? gl.getTarget() : null;
+          if (tgt) {
+            tgt.copy(center);
+          }
+          var plan = this.getPlan();
+          var f = plan && plan.furniture ? plan.furniture.find(function (it) { return it.id === furnId; }) : null;
+          if (window.cam) {
+            var rot = f ? (f.rotY || 0) : 0;
+            window.cam.yaw = -(rot * 180 / Math.PI) - 20;
+            window.cam.pitch = -10;
+            window.cam.zoom = 1.2;
+          }
+          if (typeof window.camApply === 'function') window.camApply();
+          if (gl.settle) gl.settle();
+          if (typeof toast === 'function') toast("🎯 Focused on " + ((f && f.name) || 'Unit'));
+        }
+      }
     },
 
     highlight3DFurniture: function (furnId) {
@@ -2590,7 +2645,10 @@
           if (u.loftH !== undefined) match.unitConfig.loftH = u.loftH;
           if (u.back !== undefined) match.unitConfig.back = u.back;
           if (u.hfinish) match.unitConfig.hfinish = u.hfinish;
-          if (u.elev !== undefined) {
+          if (match.elevation !== undefined && match.elevation !== null && match.elevation !== '') {
+            u.elev = parseFloat(match.elevation);
+            if (match.pos) match.pos.z = parseFloat(match.elevation);
+          } else if (u.elev !== undefined) {
             match.elevation = u.elev;
             if (match.pos) match.pos.z = u.elev;
           }

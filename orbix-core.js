@@ -566,8 +566,10 @@
     opts = opts || {};
     var isDecor = !!(opts.isDecor || opts.excludeFromPricing || opts.category === 'decor' || opts.category === 'appliance_decor');
     var cat = (opts.category || (isDecor ? 'decor' : 'wardrobe')).toLowerCase();
+    var nm = (opts.name || '').toLowerCase();
     var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name, opts.code || opts.catalogItemId, opts.costCategory);
-    var defElev = isWallUnit ? 1500 : 0;
+    var isLoft = (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1);
+    var defElev = isLoft ? 2100 : (isWallUnit ? 1500 : 0);
     var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
       parseFloat(opts.elevation) :
       ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && opts.pos.z !== 0) ?

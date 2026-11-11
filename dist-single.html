@@ -7593,8 +7593,10 @@ body.role-employee #adminCreateEmpBox,
     opts = opts || {};
     var isDecor = !!(opts.isDecor || opts.excludeFromPricing || opts.category === 'decor' || opts.category === 'appliance_decor');
     var cat = (opts.category || (isDecor ? 'decor' : 'wardrobe')).toLowerCase();
+    var nm = (opts.name || '').toLowerCase();
     var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name, opts.code || opts.catalogItemId, opts.costCategory);
-    var defElev = isWallUnit ? 1500 : 0;
+    var isLoft = (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1);
+    var defElev = isLoft ? 2100 : (isWallUnit ? 1500 : 0);
     var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
       parseFloat(opts.elevation) :
       ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && opts.pos.z !== 0) ?
@@ -13966,8 +13968,12 @@ body.role-employee #adminCreateEmpBox,
     var isWall = (Core.isWallUnit) ?
       Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name, this.furniturePreset.code || this.furniturePreset.catalogItemId, this.furniturePreset.costCategory) :
       false;
+    var catPlan = (this.furniturePreset.category || '').toLowerCase();
+    var nmPlan = (this.furniturePreset.name || '').toLowerCase();
+    var isLoftPlan = (catPlan.indexOf('loft') !== -1 || nmPlan.indexOf('loft') !== -1);
+    var defPlanElev = isLoftPlan ? 2100 : (isWall ? 1500 : 0);
     var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '') ?
-      parseFloat(this.furniturePreset.elevation) : (isWall ? 1500 : 0);
+      parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
     var furn = Core.createFurniturePlacement({
       name: this.furniturePreset.name,
@@ -17736,10 +17742,11 @@ body.role-employee #adminCreateEmpBox,
       (name.indexOf('tv') !== -1) ? 'tv' :
       (name.indexOf('sofa') !== -1 || name.indexOf('couch') !== -1) ? 'sofa' : 'general');
 
+    var defDecorElev = (decorType === 'chimney' || decorType === 'hood') ? 1600 : (decorType === 'microwave' ? 1200 : 0);
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : 0);
+        parseFloat(furn.pos.z) : defDecorElev);
 
     var W = dims.W, H = dims.H, D = dims.D;
 
@@ -18155,10 +18162,12 @@ body.role-employee #adminCreateEmpBox,
     fg.add(hinge2Group);
 
     // Position and rotate unit
+    var isWallCorner = isWall || (furn.category && furn.category.indexOf('wall') !== -1) || (furn.name && furn.name.toLowerCase().indexOf('wall') !== -1) || /(^|\b|_|-)(wcm)($|\b|_|-|\d+)/i.test(furn.name || '');
+    var defElevCorner = isWallCorner ? 1500 : 0;
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : 0);
+        parseFloat(furn.pos.z) : defElevCorner);
     fg.position.set(furn.pos.x, elev, furn.pos.y);
     fg.rotation.y = -(furn.rotY || 0);
     fg.visible = true;
@@ -18259,10 +18268,15 @@ body.role-employee #adminCreateEmpBox,
       fg.add(hingeGroup);
     }
 
+    var catOS = (furn.category || '').toLowerCase();
+    var nameOS = (furn.name || '').toLowerCase();
+    var isLoftOS = (catOS.indexOf('loft') !== -1 || nameOS.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
+    var isWallOS = (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)));
+    var defElevOS = isLoftOS ? 2100 : (isWallOS ? 1500 : 0);
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : 0);
+        parseFloat(furn.pos.z) : defElevOS);
     fg.position.set(furn.pos.x, elev, furn.pos.y);
     fg.rotation.y = -(furn.rotY || 0);
     fg.visible = true;
@@ -19260,11 +19274,13 @@ body.role-employee #adminCreateEmpBox,
     }
 
     // Position and rotate unit (with elevation from finished floor level!)
+    var isLoftUnit = (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
+    var defElevUnit = isLoftUnit ? 2100 : (isWall ? 1500 : 0);
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
         parseFloat(furn.pos.z) :
-        (isWall ? 1500 : 0));
+        defElevUnit);
     fg.position.set(furn.pos.x, elev, furn.pos.y);
     fg.rotation.y = -(furn.rotY || 0);
 
@@ -20839,7 +20855,11 @@ body.role-employee #adminCreateEmpBox,
             '<div class="insp-row" style="margin-bottom:4px;"><label>Floor Elevation (AFFL)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
             '<div style="display:flex;gap:4px;margin-top:6px;">' +
               '<button type="button" class="btn small" id="btnPresetFloor" style="flex:1;font-size:10px;padding:3px;background:#f8fafc;border:1px solid #cbd5e1;">Floor (0 mm)</button>' +
-              '<button type="button" class="btn small" id="btnPresetWall" style="flex:1;font-size:10px;padding:3px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;">Wall Mount (1500 mm)</button>' +
+              '<button type="button" class="btn small" id="btnPresetWall" style="flex:1;font-size:10px;padding:3px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;">Wall (1500 mm)</button>' +
+              '<button type="button" class="btn small" id="btnPresetLoft" style="flex:1;font-size:10px;padding:3px;background:#ede9fe;border:1px solid #ddd6fe;color:#5b21b6;">Loft (2100 mm)</button>' +
+            '</div>' +
+            '<div style="margin-top:6px;">' +
+              '<button type="button" class="btn small full" id="inspFocusUnitBtn3D" style="font-size:11px;padding:4px;background:#059669;color:#ffffff;border:none;border-radius:4px;cursor:pointer;font-weight:600;">🎯 Zoom / Focus Unit in 3D</button>' +
             '</div>' +
           '</div>' +
 
@@ -20963,6 +20983,7 @@ body.role-employee #adminCreateEmpBox,
                 eu.W = fn.dimensions.W;
                 eu.H = fn.dimensions.H;
                 eu.D = fn.dimensions.D;
+                eu.elev = (fn.elevation !== undefined && fn.elevation !== null) ? parseFloat(fn.elevation) : 0;
                 if (fn.unitConfig) {
                   if (fn.unitConfig.shutters !== undefined) eu.shutters = fn.unitConfig.shutters;
                   if (fn.unitConfig.drawers !== undefined) eu.drawers = fn.unitConfig.drawers;
@@ -21003,14 +21024,19 @@ body.role-employee #adminCreateEmpBox,
         }
         var elElev = document.getElementById('inspFurnElev');
         if (elElev) {
-          elElev.addEventListener('change', function (e) {
-            fn.elevation = parseFloat(e.target.value) || 0;
-            if (fn.pos) fn.pos.z = fn.elevation;
+          var onElevInput = function (e) {
+            var val = parseFloat(e.target.value);
+            if (isNaN(val)) val = 0;
+            fn.elevation = val;
+            if (fn.pos) fn.pos.z = val;
+            syncInspectorTo3D();
             self.editor.pushHistory('Change Unit Elevation');
             self.saveToLocalStorage();
             self.editor.render();
             if (self.render3DHome) self.render3DHome(true);
-          });
+          };
+          elElev.addEventListener('input', onElevInput);
+          elElev.addEventListener('change', onElevInput);
         }
         var elFurnW = document.getElementById('inspFurnW');
         if (elFurnW) {
@@ -21187,6 +21213,26 @@ body.role-employee #adminCreateEmpBox,
             self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
             self.renderInspector(self.editor.selected);
+          });
+        }
+        var btnLoft = document.getElementById('btnPresetLoft');
+        if (btnLoft) {
+          btnLoft.addEventListener('click', function () {
+            fn.elevation = 2100;
+            if (fn.pos) fn.pos.z = 2100;
+            var elevEl3 = document.getElementById('inspFurnElev');
+            if (elevEl3) elevEl3.value = 2100;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Set Elevation: 2100mm (Loft)');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+            self.renderInspector(self.editor.selected);
+          });
+        }
+        var btnFocus3D = document.getElementById('inspFocusUnitBtn3D');
+        if (btnFocus3D) {
+          btnFocus3D.addEventListener('click', function () {
+            self.zoomToFurnitureIn3D(fn.id);
           });
         }
 
@@ -22082,22 +22128,47 @@ body.role-employee #adminCreateEmpBox,
       if (typeof window.buildScene === 'function') window.buildScene();
       if (typeof this.render3DHome === 'function') this.render3DHome(true);
 
-      // Focus camera on selected unit in 3D
-      var plan = this.getPlan();
-      var rot = 0;
-      if (plan && plan.furniture) {
-        var f = plan.furniture.find(function (it) { return it.id === furnId; });
-        if (f) rot = f.rotY || 0;
-      }
-      if (window.cam) {
-        window.cam.yaw = -(rot * 180 / Math.PI) - 24;
-        window.cam.pitch = -10;
-      }
-      if (window.__cc && window.__cc.gl && window.__cc.gl.frame) {
-        window.__cc.gl.frame('unit');
-      }
-      if (typeof window.camApply === 'function') window.camApply();
+      // Unit selection in 3D preserves camera angle and position perfectly (no unwanted teleport)
       this.highlight3DFurniture(furnId);
+    },
+
+    zoomToFurnitureIn3D: function (furnId) {
+      if (!furnId || !window.__cc || !window.__cc.gl) return;
+      var gl = window.__cc.gl;
+      var scene = gl.getScene ? gl.getScene() : null;
+      var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+      if (!homeObj) return;
+
+      var targetMesh = null;
+      homeObj.traverse(function (obj) {
+        if (obj.userData && obj.userData.isFurnitureGroup && obj.userData.furnitureId === furnId) {
+          targetMesh = obj;
+        }
+      });
+
+      if (targetMesh) {
+        targetMesh.updateMatrixWorld(true);
+        var box = new THREE.Box3().setFromObject(targetMesh);
+        if (!box.isEmpty()) {
+          var center = box.getCenter(new THREE.Vector3());
+          var size = box.getSize(new THREE.Vector3());
+          var tgt = gl.getTarget ? gl.getTarget() : null;
+          if (tgt) {
+            tgt.copy(center);
+          }
+          var plan = this.getPlan();
+          var f = plan && plan.furniture ? plan.furniture.find(function (it) { return it.id === furnId; }) : null;
+          if (window.cam) {
+            var rot = f ? (f.rotY || 0) : 0;
+            window.cam.yaw = -(rot * 180 / Math.PI) - 20;
+            window.cam.pitch = -10;
+            window.cam.zoom = 1.2;
+          }
+          if (typeof window.camApply === 'function') window.camApply();
+          if (gl.settle) gl.settle();
+          if (typeof toast === 'function') toast("🎯 Focused on " + ((f && f.name) || 'Unit'));
+        }
+      }
     },
 
     highlight3DFurniture: function (furnId) {
@@ -22156,7 +22227,10 @@ body.role-employee #adminCreateEmpBox,
           if (u.loftH !== undefined) match.unitConfig.loftH = u.loftH;
           if (u.back !== undefined) match.unitConfig.back = u.back;
           if (u.hfinish) match.unitConfig.hfinish = u.hfinish;
-          if (u.elev !== undefined) {
+          if (match.elevation !== undefined && match.elevation !== null && match.elevation !== '') {
+            u.elev = parseFloat(match.elevation);
+            if (match.pos) match.pos.z = parseFloat(match.elevation);
+          } else if (u.elev !== undefined) {
             match.elevation = u.elev;
             if (match.pos) match.pos.z = u.elev;
           }
@@ -27664,13 +27738,34 @@ body.role-employee #adminCreateEmpBox,
       var box = new THREE.Box3();
       var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
 
-      // 1. In 'unit' mode, frame the active unit's parametric model in root
-      if (mode === 'unit' && root && root.children.length > 0) {
+      // 1. In 'unit' mode, frame the active placed unit in OrbixHome3D if present!
+      if (mode === 'unit' && homeObj && homeObj.children.length > 0) {
+        var selFurnId = (window.S && window.S.units && window.S.units[window.S.active]) ? window.S.units[window.S.active]._furnId : null;
+        if (!selFurnId && window.OrbixUI && window.OrbixUI.editor && window.OrbixUI.editor.selected) {
+          var selItem = window.OrbixUI.editor.selected.find(function (it) { return it.type === 'furniture'; });
+          if (selItem) selFurnId = selItem.id;
+        }
+        var activeUnitMesh = null;
+        if (selFurnId) {
+          homeObj.traverse(function (o) {
+            if (o.userData && o.userData.isFurnitureGroup && o.userData.furnitureId === selFurnId) {
+              activeUnitMesh = o;
+            }
+          });
+        }
+        if (activeUnitMesh) {
+          activeUnitMesh.updateMatrixWorld(true);
+          box.setFromObject(activeUnitMesh);
+        }
+      }
+
+      // 2. In 'unit' mode, fallback to single unit parametric model in root
+      if (box.isEmpty() && mode === 'unit' && root && root.children.length > 0) {
         root.updateMatrixWorld(true);
         root.traverse(function (o) { if (o.isMesh && !o.userData.noFrame) box.expandByObject(o); });
       }
 
-      // 2. In 'home' mode, or if root was empty, frame the full architectural house
+      // 3. In 'home' mode, or if root was empty, frame the full architectural house
       if (box.isEmpty() && homeObj && homeObj.children.length > 0) {
         homeObj.updateMatrixWorld(true);
         homeObj.traverse(function (o) { if (o.isMesh && o.visible) box.expandByObject(o); });
@@ -27679,7 +27774,7 @@ body.role-employee #adminCreateEmpBox,
         }
       }
 
-      // 3. Fallback to root
+      // 4. Fallback to root
       if (box.isEmpty() && root && root.children.length > 0) {
         root.updateMatrixWorld(true);
         root.traverse(function (o) { if (o.isMesh && !o.userData.noFrame) box.expandByObject(o); });
@@ -27769,8 +27864,8 @@ body.role-employee #adminCreateEmpBox,
         camera.updateProjectionMatrix();
       }
       var yaw = cam.yaw * Math.PI / 180, el = (-cam.pitch) * Math.PI / 180;
-      var safeZoom = Math.max(0.05, 1 + cam.zoom);
-      var d = Math.max(250, dist / safeZoom);
+      var safeZoom = Math.max(0.02, 1 + cam.zoom);
+      var d = Math.max(50, dist / safeZoom);
       if (camera.far < d * 4) {
         camera.far = Math.max(1000000, d * 5);
         camera.updateProjectionMatrix();
@@ -28704,7 +28799,7 @@ body.role-employee #adminCreateEmpBox,
   }
   function camApply() {
     cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
-    cam.zoom = Math.max(-0.92, Math.min(8.0, cam.zoom));
+    cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom));
     if (GL.ok) { GL.apply(); return; }
     var s = scale * (1 + cam.zoom);
     world.style.transform = "rotateX(" + (-cam.pitch) + "deg) rotateY(" + cam.yaw + "deg) scale3d(" + s + "," + s + "," + s + ")";
@@ -29121,20 +29216,25 @@ body.role-employee #adminCreateEmpBox,
       if (ids.length === 2) {
         var a = pts[ids[0]], b = pts[ids[1]];
         var d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-        if (lastD) cam.zoom = Math.max(-0.80, Math.min(3.5, cam.zoom + (d - lastD) * 0.004));
+        if (lastD) cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom + (d - lastD) * 0.004));
         lastD = d;
       } else {
         var dx = e.clientX - prev.clientX;
         var dy = e.clientY - prev.clientY;
         if (prev.button === 2 || prev.button === 1 || e.shiftKey || studioCamMode === 'pan') {
-          // Pan camera target across floor plane
+          // Pan camera target across 3D space (both Horizontal X-Z and Vertical Y up/down!)
           var yawRad = cam.yaw * Math.PI / 180;
+          var pitchRad = (-cam.pitch) * Math.PI / 180;
           var cosY = Math.cos(yawRad), sinY = Math.sin(yawRad);
-          var panSpeed = 7.0 * Math.max(0.2, 1 - cam.zoom * 0.4);
+          var panSpeed = 6.0 * Math.max(0.08, 1 - cam.zoom * 0.03);
           var tgt = GL.getTarget ? GL.getTarget() : null;
           if (tgt) {
-            tgt.x -= (dx * cosY + dy * sinY * 0.5) * panSpeed;
-            tgt.z -= (-dx * sinY + dy * cosY * 0.5) * panSpeed;
+            tgt.x -= dx * cosY * panSpeed;
+            tgt.z += dx * sinY * panSpeed;
+            tgt.y += dy * Math.cos(pitchRad) * panSpeed;
+            tgt.x += dy * Math.sin(pitchRad) * sinY * panSpeed * 0.5;
+            tgt.z += dy * Math.sin(pitchRad) * cosY * panSpeed * 0.5;
+            tgt.y = Math.max(-500, Math.min(6000, tgt.y));
           }
         } else {
           // Orbit camera 360 degrees
@@ -29159,7 +29259,7 @@ body.role-employee #adminCreateEmpBox,
     stage.addEventListener("wheel", function (e) {
       e.preventDefault();
       var zoomDelta = -e.deltaY * 0.0012;
-      cam.zoom = Math.max(-0.92, Math.min(8.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
+      cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
       camApply();
     }, { passive: false });
 
@@ -29185,7 +29285,8 @@ body.role-employee #adminCreateEmpBox,
       cam.pitch = 28;
       cam.zoom = 0;
       var tgt = GL.getTarget ? GL.getTarget() : null;
-      if (tgt) { tgt.x = 0; tgt.z = 0; }
+      if (tgt) { tgt.x = 0; tgt.y = 800; tgt.z = 0; }
+      if (GL.ok && GL.frame) GL.frame('home');
       camApply();
       if (GL.ok) GL.settle();
     });

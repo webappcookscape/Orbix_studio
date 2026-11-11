@@ -32,11 +32,12 @@ assert(orbixUiSrc.includes('Floating / Wall-Hung (No Legs)'), 'Floating option m
 
 console.log('✓ Fix 1 in orbix-ui.js verified (Inspector legs toggle)');
 
-// 3. Check app.js (Zoom & Gizmo snap)
+// 3. Check app.js (Zoom & Gizmo snap & Vertical Panning)
 const appSrc = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
-assert(appSrc.includes('Math.min(8.0, cam.zoom)'), '3D camera zoom range not increased to 8.0');
+assert(appSrc.includes('Math.min(25.0, cam.zoom)'), '3D camera zoom range not increased to 25.0');
 assert(appSrc.includes('var snapStep = e.shiftKey ? (Math.PI / 2) : (Math.PI / 12);'), '15-degree rotation snapping step missing');
-assert(appSrc.includes('d = Math.max(250, dist / safeZoom)'), 'Minimum camera zoom distance 250mm missing');
+assert(appSrc.includes('d = Math.max(50, dist / safeZoom)'), 'Minimum camera zoom distance 50mm missing');
+assert(appSrc.includes('tgt.y += dy * Math.cos(pitchRad) * panSpeed'), 'Vertical 3D camera pan missing');
 
 console.log('✓ Fix 2 in app.js verified (3D zoom range & 15/90 deg rotation snapping)');
 

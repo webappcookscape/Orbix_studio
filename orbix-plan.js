@@ -1968,8 +1968,12 @@
     var isWall = (Core.isWallUnit) ?
       Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name, this.furniturePreset.code || this.furniturePreset.catalogItemId, this.furniturePreset.costCategory) :
       false;
+    var catPlan = (this.furniturePreset.category || '').toLowerCase();
+    var nmPlan = (this.furniturePreset.name || '').toLowerCase();
+    var isLoftPlan = (catPlan.indexOf('loft') !== -1 || nmPlan.indexOf('loft') !== -1);
+    var defPlanElev = isLoftPlan ? 2100 : (isWall ? 1500 : 0);
     var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '') ?
-      parseFloat(this.furniturePreset.elevation) : (isWall ? 1500 : 0);
+      parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
     var furn = Core.createFurniturePlacement({
       name: this.furniturePreset.name,

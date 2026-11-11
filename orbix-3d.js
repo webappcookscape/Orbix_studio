@@ -1247,10 +1247,11 @@
       (name.indexOf('tv') !== -1) ? 'tv' :
       (name.indexOf('sofa') !== -1 || name.indexOf('couch') !== -1) ? 'sofa' : 'general');
 
+    var defDecorElev = (decorType === 'chimney' || decorType === 'hood') ? 1600 : (decorType === 'microwave' ? 1200 : 0);
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : 0);
+        parseFloat(furn.pos.z) : defDecorElev);
 
     var W = dims.W, H = dims.H, D = dims.D;
 
@@ -1666,10 +1667,12 @@
     fg.add(hinge2Group);
 
     // Position and rotate unit
+    var isWallCorner = isWall || (furn.category && furn.category.indexOf('wall') !== -1) || (furn.name && furn.name.toLowerCase().indexOf('wall') !== -1) || /(^|\b|_|-)(wcm)($|\b|_|-|\d+)/i.test(furn.name || '');
+    var defElevCorner = isWallCorner ? 1500 : 0;
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : 0);
+        parseFloat(furn.pos.z) : defElevCorner);
     fg.position.set(furn.pos.x, elev, furn.pos.y);
     fg.rotation.y = -(furn.rotY || 0);
     fg.visible = true;
@@ -1770,10 +1773,15 @@
       fg.add(hingeGroup);
     }
 
+    var catOS = (furn.category || '').toLowerCase();
+    var nameOS = (furn.name || '').toLowerCase();
+    var isLoftOS = (catOS.indexOf('loft') !== -1 || nameOS.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
+    var isWallOS = (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)));
+    var defElevOS = isLoftOS ? 2100 : (isWallOS ? 1500 : 0);
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : 0);
+        parseFloat(furn.pos.z) : defElevOS);
     fg.position.set(furn.pos.x, elev, furn.pos.y);
     fg.rotation.y = -(furn.rotY || 0);
     fg.visible = true;
@@ -2771,11 +2779,13 @@
     }
 
     // Position and rotate unit (with elevation from finished floor level!)
+    var isLoftUnit = (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
+    var defElevUnit = isLoftUnit ? 2100 : (isWall ? 1500 : 0);
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
         parseFloat(furn.pos.z) :
-        (isWall ? 1500 : 0));
+        defElevUnit);
     fg.position.set(furn.pos.x, elev, furn.pos.y);
     fg.rotation.y = -(furn.rotY || 0);
 
