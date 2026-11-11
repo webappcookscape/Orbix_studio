@@ -2775,6 +2775,403 @@ body.role-employee #adminCreateEmpBox,
   border-color: #166534 !important;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   FURNISH SUB-MENU PANEL & BOTTOM UNIT DRAWER (EXACT CAD UI MATCH)
+   ══════════════════════════════════════════════════════════════════════════ */
+.furn-side-panel {
+  flex: 0 0 178px;
+  width: 178px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  z-index: 15;
+  user-select: none;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.03);
+}
+
+.furn-side-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 6px;
+}
+
+.furn-side-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.2px;
+}
+
+.furn-side-search-icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.furn-side-search-icon-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.furn-side-search-row {
+  padding: 2px 14px 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.furn-side-search-link {
+  font-size: 12px;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+  transition: color 0.15s ease;
+}
+
+.furn-side-search-link:hover {
+  text-decoration: underline;
+  color: #1d4ed8;
+}
+
+.furn-side-search-input {
+  width: 100%;
+  font-size: 12px;
+  padding: 4px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  margin-top: 4px;
+  outline: none;
+}
+.furn-side-search-input:focus {
+  border-color: #2563eb;
+}
+
+.furn-side-cat-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 4px 0 180px;
+}
+
+.furn-side-cat-item {
+  padding: 8px 16px;
+  font-size: 12.5px;
+  color: #334155;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+}
+
+.furn-side-cat-item:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.furn-side-cat-item.is-active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
+  border-left-color: #2563eb;
+}
+
+/* Bottom Unit Tray */
+.furn-bottom-tray {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #cbd5e1;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.07);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  height: 168px;
+  transition: height 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.furn-bottom-tray.is-collapsed {
+  height: 38px !important;
+}
+
+.furn-bottom-tray.is-collapsed .furn-tray-cards-container {
+  display: none !important;
+}
+
+.furn-tray-header {
+  height: 38px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.furn-tray-cat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 3px 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.furn-tray-chevron {
+  font-size: 9px;
+  color: #64748b;
+}
+
+.furn-tray-search-icon {
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.furn-tray-tabs-scroll {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  height: 100%;
+}
+.furn-tray-tabs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.furn-tray-tab {
+  padding: 0 12px;
+  height: 100%;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.12s ease;
+}
+
+.furn-tray-tab:hover {
+  color: #1e293b;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.furn-tray-tab.is-active {
+  color: #2563eb;
+  font-weight: 700;
+  border-bottom-color: #2563eb;
+  background: #ffffff;
+}
+
+.furn-tray-tab-count {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  background: #e2e8f0;
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+
+.furn-tray-tab.is-active .furn-tray-tab-count {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.furn-tray-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+.furn-tray-action-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.15s ease;
+}
+
+.furn-tray-action-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.furn-tray-cards-container {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  overflow-x: auto;
+  background: #f8fafc;
+  scrollbar-width: thin;
+}
+.furn-tray-cards-container::-webkit-scrollbar {
+  height: 5px;
+}
+.furn-tray-cards-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* Card item */
+.furn-card {
+  flex: 0 0 170px;
+  width: 170px;
+  height: 104px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.furn-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
+}
+
+.furn-card.is-active {
+  border-color: #2563eb;
+  background: #f0f7ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+.furn-card-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  height: 60px;
+}
+
+.furn-card-thumb {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.furn-card-thumb img,
+.furn-card-thumb svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.furn-card-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 48px;
+}
+
+.furn-card-badge {
+  align-self: flex-end;
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  border-radius: 3px;
+  padding: 1px 4px;
+  line-height: 1.2;
+}
+
+.furn-card-code {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.furn-card-bottom {
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  transition: all 0.12s ease;
+}
+
+.furn-card-bottom:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.furn-card-title-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 auto;
+}
+
+.furn-card-chevron {
+  font-size: 8.5px;
+  color: #64748b;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+
 
 
 
@@ -3104,21 +3501,12 @@ body.role-employee #adminCreateEmpBox,
             </select>
             <!-- Dimension Measurement Tool -->
             <button class="plan-tool-btn" data-tool="dimension" id="planDimensionBtn" title="Measure Length between Two Points (Hotkey M)">📏 Dimension</button>
-            <!-- Restyled Modular Furniture Selector & Catalog Trigger -->
-            <div class="furn-picker-toolbar-widget" id="furnPickerWidget">
-              <button class="plan-tool-btn furn-place-btn" data-tool="furniture" id="planFurnitureBtn" title="Place Cookscape Modular Unit on Floor Plan (Hotkey F)">
-                <img src="data:image/png;base64,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" alt="Cookscape Units" class="furn-tool-img-icon" style="width:20px;height:24px;object-fit:contain;vertical-align:middle;margin-right:4px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.12));">
-                <span class="furn-tool-text">+ Cookscape Units</span>
-              </button>
-              <button class="furn-active-badge-btn" id="openFurnCatalogBtn" type="button" title="Browse full Cookscape Units catalog & search">
-                <img src="data:image/png;base64,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" alt="Cookscape Unit" class="furn-badge-img-icon" id="planFurnActiveImg" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-right:6px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.12));">
-                <span class="furn-badge-info">
-                  <span class="furn-badge-title" id="planFurnActiveName">CROCKERY/TV BASE 1DOOR 1 DRAWER</span>
-                  <span class="furn-badge-dims" id="planFurnActiveDims">450×200</span>
-                </span>
-                <span class="furn-badge-chevron">▾</span>
-              </button>
-              <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="display:none;" aria-hidden="true">
+            <!-- Furnish: Modular Units & Furniture Catalog Tool -->
+            <button class="plan-tool-btn furn-place-btn" data-tool="furniture" id="planFurnitureBtn" onclick="window.toggleFurnishMenu && window.toggleFurnishMenu(event)" title="Furnish: Modular Units & Furniture Catalog (Hotkey F)">
+              <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAACECAYAAABmpo7WAAAQAElEQVR4AeydB2BU1dLH/3N30ysl9EAaoYTOoyOCqIiKoIJSpEpXpL3nU/lAqjRRBEFRakCKDZDyRFBRIAhIkyo+eqgJhPSyye43c8mGwAuR3XuTbEKWnL3tlDnzOzNnztlkUSzFL4fSgILil0NpoBiIQ+EAioEUA3EwDTiYOMUWUgzEwTTgYOIUW0gxEAfTgIOJ49AWkpiYiGPHjuHSpUtITk4Gr+AcTH36i5M3QDTKefPmTaxbtw7h4eGI2L0b67/7Dsv4fNGiRVi1ahU2b96MvXv24MyZM4iJiYHJZNLYouMUdyggly9fxurVq7Fy5Ur4+Pqi36uvYkD//hg6ZAh6vPIKnmzXDtWqV4diMOD02bP46eef1fwCaunSpVi7di1+/eUXHD9+HFevXlWtynFU/WCSOASQ06dPY+myZVi/fj0CAgPx2uuvo03r1jAYjTBlZKjJzc0N/v7+aFC/Pp5iMN26dkV/BtaPgT3/wgto1LgxSpQsiWi2rn379mEtW9jiJUvw+eefq9B++OEHHNi/H+fOnUNsbCzS09MfTEP5nKtAgRw5cgSfscJkpDdo0ABD2BKaNmmCDLNZhZB9zpDz9Ew4VkhyNLC1+JUpg7CaNdH60UfxwvPPo3fv3hg0eDC69+iBNm3bIiAoCFL2xJ9/YguDWb58uQpKXOJ37A537dqFkydP4vr160hJSclnBHc3VyBA9rD/nz9/Pg4cPIjHHntMdUt1atdWIYiSRfl3i3n/K8mbkQMoueft7Y0QhtGUrefp9u3Ro3t3DBo4EH3Zsjp07Ig69erBw9MTl9hV7ty5E19++SXE/Un66quvsG3bNhw6dAgXL15EfHw88sOq8g2IKS0N27dvx9yPP8ZZdhsdO3VC7169EBIcnAXi/mq374k509IEcvbk4uKCihUqoF6dOmjLA+KlLl3Qn13fILbQl9gVtnjkEZTn5wkc5R1kIBs2bMAydqkCasWKFdi4cSN2c7Dx119/4caNG0hNTc0SUAaCtCsDJeumDSeKDXntypqQkKBGRZ98+ilu3bqF7jxKu778Mipwh61KsqtiDYVEWeLCrO1bj0SEUqVKoXpoKFq2aIFObEV9+/TBkKFD0YuP7Z56CtVr1IDMbWckqPjpJ6xeswYSiCxcuFCNAC9GRiIqKgpxcXFI40Foq5h5BiQ6OhrffPMNlvDEqhgMeJVHYCe2Cpl4RQGiEFuFzev8AkpGuMiXPYmsHh4eCKhSBf9o2BDtGYzq/gYNQi+2cqOTE/48dUodeDt37MCJEydwloGJmxNrsUVu3YGIv/3iiy+whkeOTLaD2Q08xVGRK0dJ0knpsC0COkpeUazIb84UKJYtYAO7rqVLl6pWNX36dDz9zDOQKE50cO3aNSQlJdm8mNUNyCkeIYsXL8amTZsQymuF1157Da3YF5OiqHOEdCizL4XyYGQrd+J0k+eMb779Vp1TXF1d0X/AADUMV9jdWS1CFqqSpM9idbZ0WBMQafQgR0oC4vAff+BJNuXBHG42YrM2sxQmnlRtFYiL3e+nQO4LBElXrlxR54rVvFPg5+enzitPPP44nJyd1QFnFY6IQHQ7We/ZcrQbiMD4mCOmuXPnYs/evYhnE/6NI4+tP/6Io7z/JNGHgQWTzmRPMtKIyBYZCySvVeaz585B1i2yCxDIIbQsWlXL5z6IC7PwoNNTQLuBSKjn6+sLsY4ZM2eiMS/ofHx8cIVj+q28+Pp0/nxMmTwZM99/H59zBPIdh46/80r5Mo80MWVrh7MfFXZvenbOnrqs8sgkLSv9LVu2oDavkV7jSKsJr2dyWrRa29HDG9gNRBWCR4kcvby8UCssDGLCvXr2xMiRIzF27FgMGz4cHZ57DkE8smS74hfeZ/p8wQJMnDABkxjWHLauNbwY28GLsjM8EmWVbFVI9qNiMEgzeZqs7f2RuXuwg6Olpk2bYjBHUvV4ASnWICk3pctA0zqotAFhFVk4SeQkcwaf3vXjyytliell8dWTNwdHjxqF8ePH499vvYVuvB6pW7cupOw+dnlLOCCYyM/eGTMG02fMwBKOXrbySvkEb2nEx8bCqrDsRwODIrLf/RFRVr37fv8dn3zyCQ4eOIC2vN0i+2Q1ec0hECTd1bEHuCAidS55gKx3ZdEMRGozKAqusit6+8OZWLBmJbbxgunUkaO4dekqkHRnFSt5JXlxTC9bGo+2aoXu3bphFIOaNHEixnMayCOyZcuWcHd3x7GjRyEh9AS2qNGjR2M8H+ez0sT9HeAVtCzAZERmh2Q9l+hO2sopEd0GQfxwV0QEPp43D7LqfrZDB/TmfbBgtmiBIImz2PVDRCoQIrKpvC5AJOSLvRaFmdeO4zXzeXQ6vg2ttoSjxfIP8Picieg3eyomLfoUK9d9i4idu3D+5CkkRd0A0jLuEtaNtzQCKldGi+bN8fJLL2HEiBGYPGmSajGjGEh73o8qwxuJsuj65uuvMYWfDR82TLW492fNgqya5fOTC7xazuDdXCuce4/yTDY05zEI2fLvwlsnMjD8K1VSIyYtIKwdIiLIYIGNL12ASJsSPfmVKo3SgQHwqVsd1LQ2rrcIw75GgVgd7InJ7rfQL+ow2u/fgEc2LETLhTPw7IcT8PrH72P2imVYt3kTDu7Zh6vnL0p1dyVno1Hde5JJtfOLL2L4G2+oAcPsOXMwdtw4vMz7TyEhIeqWhew7TZ86FW8wKBXolClYxO7w5+3b1U3EH7Zuxae8jSNrhp4833Xp3BkCWSBIuqthOy+IbLOK7M3YDUSlb7HAzCmrQjnnkYlUE5SUNDinpsPTQijh7oHSZcuiVGgQPBqEIa1ZbZxvXgO/NqiIhZWMeBOR6HZhNx7b8y0enTsJ361dh7nhS7D5hy04fvAwu74rQHJaVjPWExG+DK8JGvCkK/tOw/hzlKnvvQcZ+VOnTVMXbfXr10cqb6l/zRYlMGUfShZzHTnY8OEoUSDI1oi1Ti1HmdSJyObVefY2pU/Zr/PmXEBJvG5KB6WmwcCwXE0Z8CIjSnl5w69iRZSsGQrXFqy8sABIePxG5H50Ob8brbetQPPwD9COQQ2eOxPvhy/G2k0bcWjvPkSxNVkSknKUuSQrWyK/Z55+GkM5ZJ3A81MFbqdtmzZwz6NtnNwisByFzOFm/gDJoeGsWwKLP89AmgmUnAojg5ItiVL+leBbpxoMzeogqmUt/NawMpZVccY7hqvofuE3tN3xJVqsmoM286ag70fTMHnxAqxevxZ7I3bjyn/PIiM2Xm1CLEBOJOyWYwa3d5dVy00HSroBISJ9uyWQ7nJ9Ckp6eMGvQnmUDAuFS5M6uNWiNg41CsKaEE9MdItBn2sH0W7POrT4ej4affQupiyYByNHgPoKlre16QbEoChQzLIqyUOBeXTz57scnZlA7PacGJgHL4BKuLjBT+aoasFwa1QLiS1r42CzqtgVFQmy6DxQ8rB7UrXdQIh48uIa9PCbXE3WjyCVMJVE+bbo0jpHMShjigkeHFF7uLhm1ZsvJyKzxoY0AdHYdpErLvtcavSpoWd2A9HQZnHRXDRQDCQX5RTEI92AiKkqPAHwT0H0o8i0qRsQIgLppBbZG6OHlKzdQIhY/RxVyHaBThzUaiRqMygGDleFCLeh3i0cb6ILIm0y2w2kcKgof6WUwZTZot2HYiB2qy5vChYDyRu92l2r3UBUT5nNXxr441S7K7Nb/KJX0G4dWj8i1cNv3qtW2RBUt07uffAQXNsPJNM68gIIkWp/hU79EmXJekyL4HYD0dLow1CWiEBENne1GIjNKnuwAmIpRGQzFN2APMyr63sREd0GQUT3Pvrbax2BKJDKLJAV9t+2m2sGIu6I9mpybcNRH4oO7ZJNTFIKykQmR72SBAnyK0VqlMVc9Ko3P+oR2bWKnCuQ/OhEUWpDBieRNiTFQBxsRBQDKapAZOvEIBOxJAfrZGESR7OFyESmdlib61SrkDfhaVAU/jwEOsRrUmPhSoq94hLdJpAFxN6KcihHRKAc7jv6LXVS58GkRSd2A3F05RSEfFpAWOUtBmLVhIMcdQNCRIXSzTgIhywxdAOikGydyK+XyrScVb9dJ2RXqaJRyG4gRKRahO1+M3fFSX0SQisW7WBzb0n/pyK71lrtBmJtWA8hrHUV9qPogog0dUMzEE2tZxaWvxiwSEckZd57WA8FDsRsMSMjIQkUlwiL/JHOvSR4wKXBDAsf731UFK91AyLb8QaeVWxx/TJLpMXEoUeyO55Jc0PCrViAF1bZFZ2WlIyKMakwxifBwv+yPyuK57oBISLGYYOKOH9ySgpqxqajQ7kgBPiWQkZyqlqBwJXaklJTEBqdjHGegagYZ0KKfEMbl1MzFdE3TUCICLJdYI9uZAI0JCSjpZMvyGjErdRkkKszb2BZYCAF8i07zrcS8bSxFCpVrAhX/jzSnJ5hT1P5VkZkJiJN7WkCYnfLLLOZfZunKQOB7t5Ye/4kVqVeh2fJEhBQYmqp6SYEpQDBXiVw9MpFxDgB8lV6dreZDwVFdu4aiCgr2dqsYmsBvfILEGeLAmcQjpmTEOPlAvnolk1EbSKDraEMOSHdnIEZl4/hUkl3uDg58WOZedQsDv2mut1MMLYIqhsQImLV2tI0wEVg4igrmZXuIm6KrYbv4vbLAneDETHpabjlaoTRmWHcfuDw70Ssi8xkq7C6AZERYSAewA8YCbG8yOC88rUWZoaSs+CEVIZl5nx/9wc8OZcvfHc1AxG/aXO32esQsbIZoImtwtkM9XuzVJPha6PBCIXzCAz5Pi272rBZKMcooA0IK9VeZSlgIGxSKTz0y1oMQPQtWHjesKpFLC6ebchVMcBiSuczC5ewPnWsIxGPLBYpw2wG8TrKXp1wFVDkrSASESHNxYjTqfF4qVwIOpt9kBQTA3CHRB7FoCAa6XA3OqFmCsH1Rhzke0rkWVFOBQZElGpwc8XBjAT4OrsipFwFmFLT5LaanNhtXTOYEW9KwzuhTeAfb0KKfMc6g1QzFNE33YAoPLIVdioPbK48V7g6OeO/JVywJvocjsVch9HdjdVs4cjAwotDQqKXK35LjIYn5zPw4pEXKfy8aP8oenWPiBiH7bW5enthrVcatnqY4OnjDZgtICK1IjdPD+zwtmD+xaO4YjRD/lcD9UERftMERNQmUZAW/RARXNzcoHi4g0mwEVh4GlHUKEshBSjpg80+GYgv7QUjWyFngCO+LCyUeAci0Qpf2PnDPbazpJ7F2H0Rp5yqVLiDHi4MjOcU6XROeRzhnsgmQLTK4hhA/q4XAkvS3+UrAs8LB5ACU3T+N6wbEIOiwAj2nw/JSEYevTQD0cNvZu+b+GKDcntSl/Pszx6Gc01AiIiDHv3VRsSWVsi0LwNTPqwj0ia7JiCFTGeFQtxiIA6GSTcgRFRwO5UoOi/9gCgEhaGIL4XGF0m0prGOwlpcExAiuv3Bkp6957DZoEiUpX+wTtnSxQAACjRJREFUoKeY99YlA1GS3CciOdiVNAGBhobtktaBC0mElf3XgGT3m8h2MNqAOLCCCko0QUBEPFYJAgU5vHK7VQwkN+1oeEZEdpXWDYjCn30bIAtFu+QoLpSpAU1AZAxYJzKpT67lqCVJffJ5uvzWSeGa1rX0+k5ZbUDYLGUyu1OdPmdExLamT135UQsRQfQgiThC1NKmJiBaGi4um7MGioHkrJcCu6sfEDbb247mYfT8+vHTDQgpBIWhyKQMjS/SWL4wF9cEhIh0/zxE7MsgIbScQH0rNPrVYzBqAiKa0kMIqaewJ4mwzLwPR6TNvu0HUtg16KDyawJCpG00OKhOClQsTUDSTKY7wjMc+a2TYhd2RyX2nGkDkpqabVInfVbX7IcVRcmTb5QrDINFsYeitYybm5u6ZWC91uMocRVRJly50KNSax0M23qq91FgSyIiTVVrAmKUPxHQ1Hz+FibSpqzcpBUYknLL8yDPNAHRQ4AHEbIw5HFxcYGzs7NmUTUBubd1Yt8PowHIw5EIB3s5GQzqHxdFnr+Ao0eOqL9jQGS/JSq69Y8FS7kRg/gz53EjLhZx5nSkOBmQ4eoMiwuPHCcjIMB0a7BgKxIQki6cPYd3/vUmmj3WWrUQsRItnkMTEImGZIUqqslgw5j8fA/MUqpgQGQGWh+6jCq7T8Jp9x9IOHAM0X+dQXRUFOQ7TRI5r8nFCWaGBWcngGHesSoLXxrAWRxv44RHvkCQdPrknxg97A00ePIxTN27DYk1A9D2kVaq7KIXA/dJjkQk6nngpDxwzhwySoPSsDySbYMWTZtiVJ9XMXfYP7Fh5DjsfPVf2PFsf2yu/ww+862Ft+I98eKpONTdewa+u44gfc8RxBz9E1EXI3Ejnq3KkoFklkj97Q2xJklSeQEnIoJAcGJ59u/fj779+qH+Sx3xQcQPiKtaCd7tH4UTDyxLhhnu7u4oXbo0SpQoASf5KhDY9uLu21Yge+6UlBQk3IxRb4nA6on1jd2Vu18pBNSohpatHkHvzl0wof9QhI98B9uHjkFEt+H4sXVXrAlsiZlKJQyMNKP1vvMIPh0FJw93RF+5iugb0YjLMGW5Prg4Iz/nKCJSQcif0u2KiEDv3r0xbNgwnPrrFFIrl4VSKxQZZEHckZMIVdwQHFoVQUFBCA0NRfny5eHq6gpbX4qtBbLnrx5SFV3H/AtPjBiMoe/8G3MWfIrvt2zB8eMncOXaNaRmX8lnL+jljtJVKqFOwwbo0L49hr/SB3NeH42Nr49BxLuzUK9VC0z+R1uMirTg8SNXUWXXcRh2HUbcQXZ9Zy8g+lYMYlVQijpH3QYlcxRBjxfRHRA//fwzunfvjtGjRsHDwwMDBw7E60OGYlyjtmgSnYagWBPGVWuG+W/+H8Lq10VISAgqVWKr8fZW3Zet8mgCElzJH9cr+GKbnwGf7NiC4evC0X7RTDw3oA/mvD8LE8ePx/QZM7B4yRJs/s9/cOjwYVy+cgWp8kVkOUhqdjbC2dcbzhxC9nyxC2YNHYm1I97FzgH/Ztf3KjbUbod5nqEYEe2EdkevIzCC56iIPxB/6Diiz5xD9M2bDCqNLUpBuqszLArl0Mr9b4kLFksXi/j+++/RpUsXjB07FmXKlMGQIUPQrFkzmHiQyd/Lh9WpjcnDR2PVzNkYNngwQmrWQLmy5eDr6wuZ2Ilsa9sqlSYgbqy8J7zLAacuAHwOb0+4JafjiYaNUbd+PchIMSgKLl64gF+3b8fy8HB8MItBTZiA6dOnq6D+wx0/cOgQIi9fRipvxUg3DNk7YySI6wsKq4HWbdqgf5eumD7oDXwzYix2DHgLOzr0x8Y67fGJV3WMvOGMJw9fReCuE3DdeRimaHanUqG1t/c5WkFIu+vWr8cLL7yAqVOnIigwEIMHDUL9+vWRxoMoPT0d3jzyK1SoAP/KlRFSvRqq1QqDD88XXl5emkBYRVOsJ/Ycnd3dsWDMBHzxZFe0NPqgs1dFhHcdhM4dOsKZ/WfJkiUhwgcHByOsVi3UrVsXYWFhqOzvDyde5UdevIhff/kFK1eswOwPPsAEtqj3WBELFy3Cxk2b8PuBA7gYGYkknqv+Rz4Dwa10CQTwHNXq0Vbo1+VlTGNQ344ej50D38aB54dgeu9BSL/vNw1BdSliEVL3mi+/RMeOHTF37lxVxgEDBqBGzZqQedLCWy4+Pj6oWLGiOj/U5PtVq1ZV5wlPT0/I5E1EUo3mpGipQUaWm68PuvfogW3LVyP8w7lo89STCK4aonaqRo0aqk+tUqWKKnypUqXg6+urRiDleNIL4glQANWpU0fNHxgQAFd2V1fYWiJ27cLqlSsx+8MPMYktatq0afh84UJ8t2ED9u7bh3NsdYlJSf8rPoNyZVBiUdWrV8+2+Xknq4GVJyDS2f2EL1+OTs89hyWLF6Nhw4bo17evOjEnJyerBXxZXrF0mait/SnPsoul6AlCbYzfFE52/xARjBxvSwUunh5w8/JUlS0dCGRzlwlOlCIjqhZbiCQBINcywgIYQLly5XAXKL6WspJHLKp27dqQfLI1ce3qVfy2ezfWrF6NObNnY9KkSXjvvffw2WefQVzNb3v3qqASEhNFJDWJ4uVE/LoMIIGRkWbC8qXL0KlTJ3zFltG8eXP06tVLdbFJDFnySdjqz5ZcrVo1ZAchrsnI1i115kXSBCQngaQzIrAoQGJyGUniumRiFJMX5d4LSpQusKTjMhIlj4xCKygpX7ZsWRWM5KlXrx7EqsTHSxtRvODct2cPvmblzv3oI0yePBmTp0zBvPnzsYrvHfz9d0RFXkJ6SirCFy5C4w7t0Ofdt9G8cWP0YOsW2RIZoqyppK3sIMTdyqAR1yT9yqnPet7THUhOwhER75ookA4JKNm2l5EmnRdlCChxawJKRqRYhwCSJBYlEASUWI7MSVZQ4k6kvJStzu7RalECypsn2UReI/3zw+loOPUtdJg1AVvPnkTvFfNxwN8bdZs1QZWKlZCQkKDOAVKn1CPtS3viTmUQSKgroJBPr3wBkltfxKKkw/eC8vPzUyfRAHZrMkpFUdlBCSy5lvsCSqDKCtnX11d1m1K+Gs8hDavVBCqURmyVMjD7l4Vv0wZQjE7wd3ZXv+zGCkJcqxWEQM5vEFYdFTgQqyD3Hq2gZOK0WpT4dVG0KL8yh53ZQYklCSRJAkq1KA4umoTWgOV6NFDaF4q7G9LcnWG+fBX1AkNQmec5ASFJoErd4gJlgNwrT35dOyyQ+ynACspqUeLbBZSManFn4nasoAJY4f379MXU5s/C79x1JN68gdJ8HNfsKbzSrRuqsPWJBQoIgS5136/d/Lpf6IDcTzFEdHtd4eSk7iEJKJmnylYoj7eGj0DEm1OwvN8I7Hx7Gia8PQYBvDYqweskRwGBzFeRAZLZn7sORJR1XT4wAK/07An/qsHqPXGFBsXxuu94EqnqenjfioE4GPtiIMVAHEwDDiZOsYU4GJD/BwAA//9T1d6ZAAAABklEQVQDALMW3A8cPMJaAAAAAElFTkSuQmCC" alt="Furnish" class="furn-tool-img-icon" style="width:18px;height:22px;object-fit:contain;vertical-align:middle;margin-right:5px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.12));">
+              <span class="furn-tool-text">Furnish</span>
+            </button>
+            <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="display:none;" aria-hidden="true">
                 <optgroup label="Cookscape Modular Units Catalog">
                   <option value="ctvb-1d-1dr" selected>ctvb-1d-1dr: CROCKERY/TV BASE 1DOOR 1 DRAWER (450×200)</option>
                   <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (900×750)</option>
@@ -3136,7 +3524,6 @@ body.role-employee #adminCreateEmpBox,
                   <option value="wr-drawers">wr-drawers: WR 2 DOOR WITH DRAWERS (900×2100)</option>
                 </optgroup>
               </select>
-            </div>
             <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">✂️ Split</button>
             <!-- Import Custom 3D Decors & .skp (Excluded from Woodwork Pricing) -->
             <button class="plan-tool-btn" id="openDecorModalBtn" type="button" title="Import Decors, Appliances &amp; .skp 3D Models (Excluded from Woodwork Pricing: Fridge, Ice Box, Plants, Microwave, Chimney, TV, etc.)" style="background:#f0fdf4;color:#166534;border-color:#86efac;font-weight:600;display:inline-flex;align-items:center;gap:5px;">
@@ -3186,7 +3573,60 @@ body.role-employee #adminCreateEmpBox,
       </div>
 
       <div class="plan-layout">
+        <!-- ══════ LEFT FURNISH SUB-MENU PANEL ══════ -->
+        <aside class="furn-side-panel" id="furnishSidePanel" style="display:none;">
+          <div class="furn-side-header">
+            <span class="furn-side-title">Furnish</span>
+            <button type="button" class="furn-side-search-icon-btn" id="furnSideSearchBtn" title="Search Catalog">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+          </div>
+          <div class="furn-side-search-row">
+            <a href="#" class="furn-side-search-link" id="furnSideSearchLink">Search Catalog</a>
+            <input type="text" class="furn-side-search-input" id="furnSideQuickSearch" placeholder="Type to filter..." style="display:none;">
+          </div>
+          <div class="furn-side-cat-list" id="furnSideCatList">
+            <div class="furn-side-cat-item" data-cat="all">All</div>
+            <div class="furn-side-cat-item" data-cat="art">Art</div>
+            <div class="furn-side-cat-item is-active" data-cat="base_unit">Base Unit</div>
+            <div class="furn-side-cat-item" data-cat="bath">Bath</div>
+            <div class="furn-side-cat-item" data-cat="bed">Bed</div>
+            <div class="furn-side-cat-item" data-cat="bookshelf">Bookshelf</div>
+            <div class="furn-side-cat-item" data-cat="chair">Chair</div>
+            <div class="furn-side-cat-item" data-cat="chandeliers">Chandeliers</div>
+            <div class="furn-side-cat-item" data-cat="chimney">Chimney</div>
+            <div class="furn-side-cat-item" data-cat="crockery">Crockery</div>
+            <div class="furn-side-cat-item" data-cat="decor">Decor</div>
+            <div class="furn-side-cat-item" data-cat="dining">Dining</div>
+            <div class="furn-side-cat-item" data-cat="tv_unit">TV Unit</div>
+            <div class="furn-side-cat-item" data-cat="wardrobe">Wardrobe</div>
+            <div class="furn-side-cat-item" data-cat="wall_unit">Wall Unit</div>
+          </div>
+        </aside>
+
         <div id="planCanvasContainer"></div>
+
+        <!-- ══════ BOTTOM FURNISH UNIT DRAWER / TRAY ══════ -->
+        <div class="furn-bottom-tray" id="furnishBottomTray" style="display:none;">
+          <div class="furn-tray-header">
+            <div class="furn-tray-cat-pill" id="furnTrayCatPill" title="Current Category">
+              <span id="furnTrayCatTitle">Base Unit</span>
+              <span class="furn-tray-chevron">▾</span>
+              <span class="furn-tray-search-icon" title="Search in Category">🔍</span>
+            </div>
+            <div class="furn-tray-tabs-scroll" id="furnTrayTabs">
+              <!-- Dynamically rendered tabs -->
+            </div>
+            <div class="furn-tray-actions">
+              <button type="button" class="furn-tray-action-btn" id="furnTrayFilterBtn" title="Filter Units">🔻</button>
+              <button type="button" class="furn-tray-action-btn" id="furnTrayMinBtn" title="Minimize / Expand Bar">➖</button>
+              <button type="button" class="furn-tray-action-btn" id="furnTrayCloseBtn" title="Close Furnish Tray">✖</button>
+            </div>
+          </div>
+          <div class="furn-tray-cards-container" id="furnTrayCards">
+            <!-- Dynamically populated unit cards -->
+          </div>
+        </div>
         <aside class="plan-inspector">
           <div id="planInspectorContent"></div>
         </aside>
@@ -4061,6 +4501,8 @@ body.role-employee #adminCreateEmpBox,
   "ctvw-2d": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"29,88 89,84.4 105.76,78.48 89.76,80.48 23,90\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"85,37.4 99.76,29.479999999999997 99.76,72.48 85,80.4\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"25,41 39.76,33.08 99.76,29.479999999999997 85,37.4\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"25,41 85,37.4 85,80.4 25,84\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <path d=\"M 25 41 Q 55 25 85 37.4 Z\" fill=\"#F59E0B\" stroke=\"#1E293B\" stroke-width=\"1.3\" />\n  <circle cx=\"55\" cy=\"26\" r=\"3\" fill=\"#D97706\" stroke=\"#1E293B\" stroke-width=\"1\" />\n  <polygon points=\"28,44 54,42.2 54,79.2 28,81\" fill=\"#FEF3C7\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"56,42.2 82,40.4 82,77.4 56,79.2\" fill=\"#FEF3C7\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"30\" y1=\"51.4\" x2=\"52\" y2=\"49.6\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"58\" y1=\"49.6\" x2=\"80\" y2=\"47.8\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"30\" y1=\"58.8\" x2=\"52\" y2=\"57\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"58\" y1=\"57\" x2=\"80\" y2=\"55.199999999999996\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"30\" y1=\"66.2\" x2=\"52\" y2=\"64.4\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"58\" y1=\"64.4\" x2=\"80\" y2=\"62.6\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"30\" y1=\"73.6\" x2=\"52\" y2=\"71.8\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <line x1=\"58\" y1=\"71.8\" x2=\"80\" y2=\"70\" stroke=\"#D97706\" stroke-dasharray=\"2,2\" stroke-width=\"1\" />\n  <circle cx=\"51\" cy=\"62.5\" r=\"2\" fill=\"#B45309\" stroke=\"#78350F\" stroke-width=\"0.8\" />\n  <circle cx=\"59\" cy=\"62.5\" r=\"2\" fill=\"#B45309\" stroke=\"#78350F\" stroke-width=\"0.8\" />\n</svg>",
   "ctvw-obs-02": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"22,82 96,77.56 112.76,71.64 96.76,73.64 16,84\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"92,41.56 106.76,33.64 106.76,65.64 92,73.56\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"18,46 32.76,38.08 106.76,33.64 92,41.56\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"18,46 92,41.56 92,73.56 18,78\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"27,45.5 95,41.06 95,67.06 27,71.5\" fill=\"#E2E8F0\" stroke=\"#CBD5E1\" stroke-width=\"0.8\" />\n  <polygon points=\"21,49 27,45.5 95,41.06 89,44.56\" fill=\"#94A3B8\" />\n  <polygon points=\"21,49 27,45.5 27,71.5 21,75\" fill=\"#CBD5E1\" />\n  <polygon points=\"21,57.666666666666664 89,53.22666666666667 95,49.72666666666667 27,54.166666666666664\" fill=\"#F8FAFC\" stroke=\"#1E293B\" stroke-width=\"1\" />\n  <line x1=\"23\" y1=\"53.666666666666664\" x2=\"87\" y2=\"49.22666666666667\" stroke=\"#94A3B8\" stroke-width=\"1.8\" stroke-linecap=\"round\" />\n  <polygon points=\"21,66.33333333333333 89,61.89333333333333 95,58.39333333333333 27,62.83333333333333\" fill=\"#F8FAFC\" stroke=\"#1E293B\" stroke-width=\"1\" />\n  <line x1=\"23\" y1=\"62.33333333333333\" x2=\"87\" y2=\"57.89333333333333\" stroke=\"#94A3B8\" stroke-width=\"1.8\" stroke-linecap=\"round\" />\n</svg>",
   "fcm-rt": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"18,97 96,92.32 116.03999999999999,84.63999999999999 100.03999999999999,86.63999999999999 12,99\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"17,88 89,83.32 89,88.32 17,93\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"92,35.32 110.03999999999999,25.64 110.03999999999999,78.63999999999999 92,88.32\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"14,40 32.04,30.32 110.03999999999999,25.64 92,35.32\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <line x1=\"14\" y1=\"40\" x2=\"92\" y2=\"35.32\" stroke=\"#64748B\" stroke-width=\"1.8\" />\n  <polygon points=\"14,40 92,35.32 92,88.32 14,93\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"17,43 53,40.66 53,87.66 17,90\" fill=\"#D1D5DB\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"54,40.66 89,38.32 89,85.32 54,87.66\" fill=\"#E5E7EB\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"84.5\" y1=\"62.739999999999995\" x2=\"84.5\" y2=\"71.74\" stroke=\"#1E293B\" stroke-width=\"2.4\" stroke-linecap=\"round\" />\n</svg>",
+  "fcm-lt": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"18,97 96,92.32 116.04,84.64 100.04,86.64 12,99\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"17,88 89,83.32 89,88.32 17,93\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"92,35.32 110.04,25.64 110.04,78.64 92,88.32\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"14,40 32.04,30.32 110.04,25.64 92,35.32\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <line x1=\"14\" y1=\"40\" x2=\"92\" y2=\"35.32\" stroke=\"#64748B\" stroke-width=\"1.8\" />\n  <polygon points=\"14,40 92,35.32 92,88.32 14,93\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"17,43 53,40.66 53,87.66 17,90\" fill=\"#E5E7EB\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"54,40.66 89,38.32 89,85.32 54,87.66\" fill=\"#D1D5DB\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"21.5\" y1=\"65\" x2=\"21.5\" y2=\"74\" stroke=\"#1E293B\" stroke-width=\"2.4\" stroke-linecap=\"round\" />\n</svg>",
+  "fbcm": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"16,98 94,93.5 112,85 96,87 10,100\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"15,88 88,83.5 88,88.5 15,93\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"90,36 108,26.5 108,79 90,88.5\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"12,41 30,31.5 108,26.5 90,36\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"12,41 90,36 90,88.5 12,93.5\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"15,44 50,41.8 50,88 15,90.5\" fill=\"#E5E7EB\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"52,41.8 87,39.5 87,85.5 52,88\" fill=\"#E5E7EB\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"46\" y1=\"64\" x2=\"46\" y2=\"73\" stroke=\"#1E293B\" stroke-width=\"2.4\" stroke-linecap=\"round\" />\n  <line x1=\"56\" y1=\"63\" x2=\"56\" y2=\"72\" stroke=\"#1E293B\" stroke-width=\"2.4\" stroke-linecap=\"round\" />\n</svg>",
   "fm-rt-01": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"18,97 96,92.32 116.03999999999999,84.63999999999999 100.03999999999999,86.63999999999999 12,99\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"17,88 89,83.32 89,88.32 17,93\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"92,35.32 110.03999999999999,25.64 110.03999999999999,78.63999999999999 92,88.32\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"14,40 32.04,30.32 110.03999999999999,25.64 92,35.32\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <line x1=\"14\" y1=\"40\" x2=\"92\" y2=\"35.32\" stroke=\"#64748B\" stroke-width=\"1.8\" />\n  <polygon points=\"14,40 92,35.32 92,88.32 14,93\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"17,43 89,38.32 89,85.32 17,90\" fill=\"#00B894\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"84.5\" y1=\"62.739999999999995\" x2=\"84.5\" y2=\"71.74\" stroke=\"#F1F5F9\" stroke-width=\"2\" stroke-linecap=\"round\" />\n  <line x1=\"84.5\" y1=\"62.739999999999995\" x2=\"84.5\" y2=\"71.74\" stroke=\"#475569\" stroke-width=\"0.8\" stroke-linecap=\"round\" />\n</svg>",
   "fm-120": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"18,97 96,92.32 116.03999999999999,84.63999999999999 100.03999999999999,86.63999999999999 12,99\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"17,88 89,83.32 89,88.32 17,93\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"92,35.32 110.03999999999999,25.64 110.03999999999999,78.63999999999999 92,88.32\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"14,40 32.04,30.32 110.03999999999999,25.64 92,35.32\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <line x1=\"14\" y1=\"40\" x2=\"92\" y2=\"35.32\" stroke=\"#64748B\" stroke-width=\"1.8\" />\n  <polygon points=\"14,40 92,35.32 92,88.32 14,93\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"17,43 52,40.66 52,87.66 17,90\" fill=\"#00B894\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"48\" y1=\"62.739999999999995\" x2=\"48\" y2=\"71.74\" stroke=\"#F1F5F9\" stroke-width=\"2\" stroke-linecap=\"round\" />\n  <line x1=\"48\" y1=\"62.739999999999995\" x2=\"48\" y2=\"71.74\" stroke=\"#475569\" stroke-width=\"0.8\" stroke-linecap=\"round\" />\n  <polygon points=\"53,40.66 89,38.32 89,85.32 53,87.66\" fill=\"#00B894\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"57\" y1=\"60.39999999999999\" x2=\"57\" y2=\"69.39999999999999\" stroke=\"#F1F5F9\" stroke-width=\"2\" stroke-linecap=\"round\" />\n  <line x1=\"57\" y1=\"60.39999999999999\" x2=\"57\" y2=\"69.39999999999999\" stroke=\"#475569\" stroke-width=\"0.8\" stroke-linecap=\"round\" />\n</svg>",
   "fm-45": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"37,99 77,96.6 97.03999999999999,88.91999999999999 81.03999999999999,90.91999999999999 31,101\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"36,90 70,87.6 70,92.6 36,95\" fill=\"#334155\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <polygon points=\"73,36.6 91.03999999999999,26.92 91.03999999999999,82.91999999999999 73,92.6\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"33,39 51.04,29.32 91.03999999999999,26.92 73,36.6\" fill=\"url(#topGraniteGrad)\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <line x1=\"33\" y1=\"39\" x2=\"73\" y2=\"36.6\" stroke=\"#64748B\" stroke-width=\"1.8\" />\n  <polygon points=\"33,39 73,36.6 73,92.6 33,95\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"36,42 70,39.6 70,89.6 36,92\" fill=\"#00B894\" stroke=\"#1E293B\" stroke-width=\"1.2\" />\n  <line x1=\"65.5\" y1=\"63\" x2=\"65.5\" y2=\"72\" stroke=\"#F1F5F9\" stroke-width=\"2\" stroke-linecap=\"round\" />\n  <line x1=\"65.5\" y1=\"63\" x2=\"65.5\" y2=\"72\" stroke=\"#475569\" stroke-width=\"0.8\" stroke-linecap=\"round\" />\n</svg>",
@@ -12138,6 +12580,10 @@ body.role-employee #adminCreateEmpBox,
   };
 
   PlanEditor.prototype.initDOM = function () {
+    var existingTray = this.container ? this.container.querySelector('#furnishBottomTray') : null;
+    if (existingTray && this.container.parentElement) {
+      this.container.parentElement.appendChild(existingTray);
+    }
     this.container.innerHTML = '';
     this.container.style.position = 'relative';
     this.container.style.overflow = 'hidden';
@@ -19723,6 +20169,7 @@ body.role-employee #adminCreateEmpBox,
       syncFurnDropdown();
       self.initFurnitureCatalogModal();
       if (typeof self.initDecorModal === 'function') self.initDecorModal();
+      if (typeof self.initFurnishUI === 'function') self.initFurnishUI();
 
       if (furnSel && Core.FURNITURE_CATALOG) {
         furnSel.addEventListener('change', function () {
@@ -22261,14 +22708,6 @@ body.role-employee #adminCreateEmpBox,
       }
 
       if (openBtn) openBtn.addEventListener('click', openModal);
-      if (planFurnBtn) {
-        planFurnBtn.addEventListener('click', function (e) {
-          // If tool is already furniture, clicking + Furniture again opens the catalog
-          if (self.editor && self.editor.activeTool === 'furniture') {
-            openModal();
-          }
-        });
-      }
       if (closeBtn) closeBtn.addEventListener('click', closeModal);
       if (closeFootBtn) closeFootBtn.addEventListener('click', closeModal);
       if (backdrop) backdrop.addEventListener('click', closeModal);
@@ -22512,6 +22951,860 @@ body.role-employee #adminCreateEmpBox,
         if (catEl) catEl.textContent = 'Cookscape Units';
         if (self.editor) self.editor.furniturePreset = defaultItem;
       }
+    },
+
+    initFurnishUI: function () {
+      var self = this;
+      var sidePanel = document.getElementById('furnishSidePanel');
+      var bottomTray = document.getElementById('furnishBottomTray');
+      var planFurnBtn = document.getElementById('planFurnitureBtn');
+      var openCatalogBtn = document.getElementById('openFurnCatalogBtn');
+      var sideSearchBtn = document.getElementById('furnSideSearchBtn');
+      var sideSearchLink = document.getElementById('furnSideSearchLink');
+      var sideQuickSearch = document.getElementById('furnSideQuickSearch');
+      var catList = document.getElementById('furnSideCatList');
+      var catItems = catList ? catList.querySelectorAll('.furn-side-cat-item') : [];
+      var trayCatPill = document.getElementById('furnTrayCatPill');
+      var trayCatTitle = document.getElementById('furnTrayCatTitle');
+      var trayTabs = document.getElementById('furnTrayTabs');
+      var trayCards = document.getElementById('furnTrayCards');
+      var trayMinBtn = document.getElementById('furnTrayMinBtn');
+      var trayCloseBtn = document.getElementById('furnTrayCloseBtn');
+      var trayFilterBtn = document.getElementById('furnTrayFilterBtn');
+
+      if (!sidePanel || !bottomTray) return;
+
+      var Core = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : ((typeof root !== 'undefined' && root.OrbixCore) ? root.OrbixCore : {});
+      var currentCat = 'base_unit';
+      var currentTab = 'cookscape_fm';
+      var isCollapsed = false;
+      var isFurnishMenuOpen = false;
+
+      var TABS_DATA = {
+        base_unit: [
+          { id: 'cookscape_fm', label: 'COOKSCAPE (Kitchen- FM)', count: '43' },
+          { id: 'cookscape_crockery', label: 'COOKSCAPE (Tv/Study/Crockery)', count: '54' },
+          { id: 'cookscape_corner', label: 'COOKSCAPE - CORNER UNITS', count: '25' },
+          { id: 'cookscape_drawers', label: 'COOKSCAPE - DRAWERS', count: '28' },
+          { id: 'kitchen_drawers', label: 'KITCHEN - DRAWERS', count: '5' },
+          { id: 'drawer_units', label: 'Drawer Units', count: '46' },
+          { id: 'shutter_drawer', label: 'Shutter + Drawer Units', count: '153+' }
+        ],
+        wall_unit: [
+          { id: 'kitchen_wm', label: 'KITCHEN - WM (Wall Units)', count: '24' },
+          { id: 'wall_os', label: 'KITCHEN WALL O/S', count: '8' },
+          { id: 'spice_racks', label: 'Spice Racks & Open Box', count: '14' },
+          { id: 'pooja_wall', label: 'Pooja & Crockery Wall', count: '12' }
+        ],
+        wardrobe: [
+          { id: 'wr_sliding', label: 'Sliding Wardrobes', count: '18' },
+          { id: 'wr_hinged', label: 'Hinged 2-Door Wardrobes', count: '26' },
+          { id: 'wr_lofts', label: 'Wardrobe Modular Lofts', count: '15' },
+          { id: 'wr_panels', label: 'Wall Paneling', count: '10' }
+        ],
+        bed: [
+          { id: 'bed_all', label: 'All Beds', count: '12' },
+          { id: 'bed_king', label: 'King Size Beds', count: '5' },
+          { id: 'bed_queen', label: 'Queen Size Beds', count: '4' },
+          { id: 'bed_single', label: 'Single Beds', count: '3' }
+        ],
+        chair: [
+          { id: 'chair_all', label: 'All Chairs', count: '16' },
+          { id: 'chair_arm', label: 'Armchairs & Lounge', count: '6' },
+          { id: 'chair_dining', label: 'Dining Chairs', count: '6' },
+          { id: 'chair_office', label: 'Office Chairs', count: '4' }
+        ],
+        chimney: [
+          { id: 'chimney_all', label: 'All Chimneys', count: '8' },
+          { id: 'chimney_60', label: 'Wall Mount 600', count: '4' },
+          { id: 'chimney_90', label: 'Wall Mount 900', count: '4' }
+        ],
+        crockery: [
+          { id: 'crockery_all', label: 'All Crockery', count: '15' },
+          { id: 'crockery_base', label: 'Crockery Base Units', count: '8' },
+          { id: 'crockery_wall', label: 'Crockery Wall Units', count: '7' }
+        ],
+        dining: [
+          { id: 'dining_all', label: 'All Dining Sets', count: '10' },
+          { id: 'dining_4', label: '4-Seater Tables', count: '5' },
+          { id: 'dining_6', label: '6-Seater Tables', count: '5' }
+        ],
+        tv_unit: [
+          { id: 'tv_all', label: 'All TV Units', count: '14' },
+          { id: 'tv_base', label: 'TV Base Consoles', count: '8' },
+          { id: 'tv_wall', label: 'TV Wall Panels & Units', count: '6' }
+        ],
+        bath: [
+          { id: 'bath_all', label: 'All Bath Fixtures', count: '12' },
+          { id: 'bath_vanity', label: 'Vanities & Cabinets', count: '6' },
+          { id: 'bath_sanitary', label: 'Commodes & Basins', count: '6' }
+        ],
+        bookshelf: [
+          { id: 'book_all', label: 'All Bookshelves', count: '9' },
+          { id: 'book_floor', label: 'Floor Bookshelves', count: '5' },
+          { id: 'book_wall', label: 'Wall Shelves', count: '4' }
+        ],
+        chandeliers: [
+          { id: 'light_all', label: 'All Lights & Chandeliers', count: '12' },
+          { id: 'light_pendant', label: 'Pendant Lights', count: '6' },
+          { id: 'light_chand', label: 'Grand Chandeliers', count: '6' }
+        ],
+        art: [
+          { id: 'art_all', label: 'All Wall Art', count: '14' },
+          { id: 'art_painting', label: 'Canvas Paintings', count: '8' },
+          { id: 'art_mirrors', label: 'Decorative Mirrors', count: '6' }
+        ],
+        decor: [
+          { id: 'decor_all', label: 'All Decors & Plants', count: '18' },
+          { id: 'decor_plants', label: 'Indoor Plants', count: '8' },
+          { id: 'decor_appliance', label: 'Appliances (Fridge/Ice)', count: '6' },
+          { id: 'decor_rugs', label: 'Carpets & Rugs', count: '4' }
+        ],
+        all: [
+          { id: 'all_units', label: 'All Units & Furniture', count: '180+' }
+        ]
+      };
+
+      function getCardsForTab(cat, tabId) {
+        var curCore = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : Core;
+        var catalog = (curCore && curCore.FURNITURE_CATALOG) || [];
+        function findCatItem(id) {
+          return catalog.find(function (c) { return c.id === id || c.code === id; });
+        }
+
+        if (cat === 'base_unit') {
+          if (tabId === 'cookscape_fm') {
+            return [
+              {
+                id: 'fm-550-open',
+                code: 'FM OPEN',
+                name: 'FM 550 OPEN',
+                badge: '7',
+                selectedLabel: 'FM 550 OPEN',
+                dimensions: { W: 550, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 0, shelves: 1, carcass: 'Absolute White' },
+                variants: [300, 450, 500, 550, 600, 900, 1200]
+              },
+              {
+                id: 'bs-50-700',
+                code: 'BS',
+                name: 'BS - 50 X 700',
+                badge: '1',
+                selectedLabel: 'BS - 50 X 700',
+                dimensions: { W: 50, H: 700, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 0, carcass: 'Absolute White' },
+                variants: [50]
+              },
+              {
+                id: 'fm-300',
+                code: 'FM 1 DOOR',
+                name: 'FM 300 (1 DOOR)',
+                badge: '7',
+                selectedLabel: 'FM 300',
+                dimensions: { W: 300, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 1, doorType: 'hinged', dstyle: 'slab', shelves: 1, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [300, 350, 400, 450, 500, 550, 600]
+              },
+              {
+                id: 'fm-1000',
+                code: 'FM 2 DOOR',
+                name: 'FM 1000 (2 DOOR)',
+                badge: '12',
+                selectedLabel: 'FM 1000',
+                dimensions: { W: 1000, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 2, doorType: 'hinged', dstyle: 'slab', shelves: 1, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [700, 750, 800, 900, 1000, 1050, 1100, 1200]
+              },
+              {
+                id: 'fm-300-os',
+                code: 'FM 1 DOOR(O/S)',
+                name: 'FM 300 SINK BASE (ONLY SHUTTER)',
+                badge: '7',
+                selectedLabel: 'FM 300 (O/S)',
+                dimensions: { W: 300, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 1, doorType: 'hinged', dstyle: 'slab', shelves: 0, carcass: 'MDF 1135' },
+                variants: [300, 350, 400, 450, 500, 550, 600]
+              },
+              {
+                id: 'fm-1200-os',
+                code: 'FM 2 DOOR (O/S)',
+                name: 'FM 1200 SINK BASE (ONLY SHUTTER)',
+                badge: '9',
+                selectedLabel: 'FM 1200 O/S',
+                dimensions: { W: 1200, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 2, doorType: 'hinged', dstyle: 'slab', shelves: 0, carcass: 'MDF 1135' },
+                variants: [750, 800, 900, 1000, 1050, 1100, 1200]
+              },
+              {
+                id: 'fcm-rt',
+                code: 'FCM-RT',
+                name: 'FCM-RT (Cookscape)',
+                badge: '2',
+                selectedLabel: 'FCM-RT (Cookscape)',
+                dimensions: { W: 1200, H: 720, D: 560 },
+                unitConfig: (findCatItem('fcm-rt') && findCatItem('fcm-rt').unitConfig) || { ctype: 'kbase', fixedPanel: { enabled: true, width: 600, type: 'fixed' }, openShutter: { enabled: true, width: 600, type: 'shutter', count: 1, opening: 'right' } },
+                variants: [1050, 1200]
+              },
+              {
+                id: 'fcm-lt',
+                code: 'FCM-LT',
+                name: 'FCM-LT (Cookscape)',
+                badge: '2',
+                selectedLabel: 'FCM-LT (Cookscape)',
+                dimensions: { W: 1200, H: 720, D: 560 },
+                unitConfig: (findCatItem('fcm-lt') && findCatItem('fcm-lt').unitConfig) || { ctype: 'kbase', fixedPanel: { enabled: true, width: 600, type: 'fixed' }, openShutter: { enabled: true, width: 600, type: 'shutter', count: 1, opening: 'left' } },
+                variants: [1050, 1200]
+              }
+            ];
+          }
+
+          if (tabId === 'cookscape_corner') {
+            return [
+              {
+                id: 'fbcm',
+                code: 'L-CORNER',
+                name: 'L-SHAPED CORNER BASE UNIT (Cookscape)',
+                badge: '3',
+                selectedLabel: 'L-SHAPED CORNER BASE UNIT',
+                dimensions: { W: 900, H: 720, D: 560 },
+                unitConfig: (findCatItem('fbcm') && findCatItem('fbcm').unitConfig) || { ctype: 'kbase', geometryType: 'l_shaped_corner' },
+                variants: [900, 1050, 1200]
+              },
+              {
+                id: 'fcm-rt',
+                code: 'FCM-RT',
+                name: 'FCM-RT (Cookscape)',
+                badge: '2',
+                selectedLabel: 'FCM-RT (Cookscape)',
+                dimensions: { W: 1200, H: 720, D: 560 },
+                unitConfig: (findCatItem('fcm-rt') && findCatItem('fcm-rt').unitConfig),
+                variants: [1050, 1200]
+              },
+              {
+                id: 'fcm-lt',
+                code: 'FCM-LT',
+                name: 'FCM-LT (Cookscape)',
+                badge: '2',
+                selectedLabel: 'FCM-LT (Cookscape)',
+                dimensions: { W: 1200, H: 720, D: 560 },
+                unitConfig: (findCatItem('fcm-lt') && findCatItem('fcm-lt').unitConfig),
+                variants: [1050, 1200]
+              }
+            ];
+          }
+
+          if (tabId === 'cookscape_crockery') {
+            return [
+              {
+                id: 'ctvb-1d-1dr',
+                code: 'TV-1D-1DR',
+                name: 'CROCKERY/TV BASE 1DOOR 1 DRAWER',
+                badge: '4',
+                selectedLabel: 'ctvb-1d-1dr (450×200)',
+                dimensions: { W: 450, H: 200, D: 450 },
+                unitConfig: (findCatItem('ctvb-1d-1dr') && findCatItem('ctvb-1d-1dr').unitConfig),
+                variants: [450, 600, 750]
+              },
+              {
+                id: 'ctvb-1dr',
+                code: 'TV-1DR',
+                name: 'CROCKERY/TV BASE 1 DRAWER',
+                badge: '3',
+                selectedLabel: 'ctvb-1dr (600×200)',
+                dimensions: { W: 600, H: 200, D: 350 },
+                unitConfig: (findCatItem('ctvb-1dr') && findCatItem('ctvb-1dr').unitConfig),
+                variants: [450, 600, 800]
+              },
+              {
+                id: 'ctvb-2d',
+                code: 'TV-2D',
+                name: 'CROCKERY/TV BASE 2 DOOR',
+                badge: '6',
+                selectedLabel: 'ctvb-2d (750×750)',
+                dimensions: { W: 750, H: 750, D: 450 },
+                unitConfig: (findCatItem('ctvb-2d') && findCatItem('ctvb-2d').unitConfig),
+                variants: [600, 750, 900, 1050]
+              },
+              {
+                id: 'ctvb-2d-2dr',
+                code: 'TV-2D-2DR',
+                name: 'CROCKERY/TV BASE 2 DOOR 2 DRAWER',
+                badge: '5',
+                selectedLabel: 'ctvb-2d-2dr (900×750)',
+                dimensions: { W: 900, H: 750, D: 450 },
+                unitConfig: (findCatItem('ctvb-2d-2dr') && findCatItem('ctvb-2d-2dr').unitConfig),
+                variants: [750, 900, 1050, 1200]
+              },
+              {
+                id: 'ctvb-2dr',
+                code: 'TV-2DR',
+                name: 'CROCKERY/TV BASE 2 DRAWER',
+                badge: '4',
+                selectedLabel: 'ctvb-2dr (450×500)',
+                dimensions: { W: 450, H: 500, D: 350 },
+                unitConfig: (findCatItem('ctvb-2dr') && findCatItem('ctvb-2dr').unitConfig),
+                variants: [450, 600, 750]
+              }
+            ];
+          }
+
+          if (tabId === 'cookscape_drawers' || tabId === 'kitchen_drawers' || tabId === 'drawer_units') {
+            return [
+              {
+                id: 'fm-d2-60',
+                code: 'FM 2 DRAWER',
+                name: 'FM 2 DRAWER BASE (600)',
+                badge: '5',
+                selectedLabel: 'FM 2 DRAWER (600)',
+                dimensions: { W: 600, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 0, drawers: 2, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [450, 500, 600, 800, 900]
+              },
+              {
+                id: 'fm-d3-60',
+                code: 'FM 3 DRAWER',
+                name: 'FM 3 DRAWER BASE (600)',
+                badge: '5',
+                selectedLabel: 'FM 3 DRAWER (600)',
+                dimensions: { W: 600, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 0, drawers: 3, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [450, 500, 600, 800, 900]
+              },
+              {
+                id: 'fm-d2-90',
+                code: 'FM 2 DRAWER (900)',
+                name: 'FM 2 DRAWER WIDE BASE',
+                badge: '4',
+                selectedLabel: 'FM 2 DRAWER (900)',
+                dimensions: { W: 900, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 0, drawers: 2, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [750, 900, 1050]
+              }
+            ];
+          }
+
+          if (tabId === 'shutter_drawer') {
+            return [
+              {
+                id: 'fm-1d-1dr',
+                code: 'FM 1D 1DR',
+                name: 'FM 1 DOOR 1 DRAWER BASE',
+                badge: '6',
+                selectedLabel: 'FM 1D 1DR (450)',
+                dimensions: { W: 450, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 1, drawers: 1, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [400, 450, 500, 600]
+              },
+              {
+                id: 'fm-2d-2dr',
+                code: 'FM 2D 2DR',
+                name: 'FM 2 DOOR 2 DRAWER BASE',
+                badge: '5',
+                selectedLabel: 'FM 2D 2DR (900)',
+                dimensions: { W: 900, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 2, drawers: 2, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [750, 900, 1050, 1200]
+              }
+            ];
+          }
+        }
+
+        if (cat === 'wall_unit') {
+          return [
+            {
+              id: 'wm-60',
+              code: 'WM 60',
+              name: 'WM 60 (1 DOOR WALL)',
+              badge: '6',
+              selectedLabel: 'WM 600 (Wall)',
+              dimensions: { W: 600, H: 600, D: 320 },
+              unitConfig: { ctype: 'kwall', shutters: 1, shelves: 1, carcass: 'MDF 1135' },
+              variants: [300, 450, 600, 750, 900]
+            },
+            {
+              id: 'wm-60-dbl',
+              code: 'WM 60 DBL',
+              name: 'WM 60 DOUBLE KITCHEN WALL',
+              badge: '4',
+              selectedLabel: 'WM 60 DBL',
+              dimensions: { W: 600, H: 600, D: 320 },
+              unitConfig: (findCatItem('wm-60-dbl') && findCatItem('wm-60-dbl').unitConfig),
+              variants: [600, 750, 900]
+            },
+            {
+              id: 'ctvw-2d',
+              code: 'POOJA WALL',
+              name: 'CROCKERY/TV WALL 2 DOOR',
+              badge: '4',
+              selectedLabel: 'ctvw-2d (900×600)',
+              dimensions: { W: 900, H: 600, D: 300 },
+              unitConfig: (findCatItem('ctvw-2d') && findCatItem('ctvw-2d').unitConfig),
+              variants: [600, 750, 900]
+            },
+            {
+              id: 'ctvw-obs-02',
+              code: 'SPICE RACK',
+              name: 'CROCKERY/TV WALL OPEN BOX STORAGE',
+              badge: '3',
+              selectedLabel: 'ctvw-obs-02 (1500×300)',
+              dimensions: { W: 1500, H: 300, D: 200 },
+              unitConfig: (findCatItem('ctvw-obs-02') && findCatItem('ctvw-obs-02').unitConfig),
+              variants: [900, 1200, 1500]
+            }
+          ];
+        }
+
+        if (cat === 'wardrobe') {
+          return [
+            {
+              id: 'wr-sliding',
+              code: 'SLIDING WR',
+              name: 'SLIDING WARDROBE (1800×2100)',
+              badge: '6',
+              selectedLabel: 'wr-sliding (1800×2100)',
+              dimensions: { W: 1800, H: 2100, D: 600 },
+              unitConfig: (findCatItem('wr-sliding') && findCatItem('wr-sliding').unitConfig),
+              variants: [1500, 1800, 2100, 2400]
+            },
+            {
+              id: 'wr-shelves',
+              code: 'WR 2D SHELVES',
+              name: 'WR 2 DOOR WITH SHELVES',
+              badge: '5',
+              selectedLabel: 'wr-shelves (900×2100)',
+              dimensions: { W: 900, H: 2100, D: 600 },
+              unitConfig: (findCatItem('wr-shelves') && findCatItem('wr-shelves').unitConfig),
+              variants: [800, 900, 1000, 1200]
+            },
+            {
+              id: 'wr-drawers',
+              code: 'WR 2D DRAWERS',
+              name: 'WR 2 DOOR WITH DRAWERS',
+              badge: '5',
+              selectedLabel: 'wr-drawers (900×2100)',
+              dimensions: { W: 900, H: 2100, D: 600 },
+              unitConfig: (findCatItem('wr-drawers') && findCatItem('wr-drawers').unitConfig),
+              variants: [800, 900, 1000, 1200]
+            },
+            {
+              id: 'loft-2d-mod',
+              code: 'LOFT 2D',
+              name: 'WARDROBE LOFT 2 DOOR',
+              badge: '4',
+              selectedLabel: 'loft-2d (900×450)',
+              dimensions: { W: 900, H: 450, D: 600 },
+              unitConfig: { ctype: 'loft', shutters: 2, carcass: 'MDF 1135' },
+              variants: [800, 900, 1000, 1200]
+            }
+          ];
+        }
+
+        if (cat === 'bed') {
+          return [
+            {
+              id: 'bed-king',
+              code: 'KING BED',
+              name: 'King Size Master Bed (1800×2000)',
+              badge: '4',
+              selectedLabel: 'King Bed 1800×2000',
+              category: 'decor',
+              decorType: 'bed',
+              isDecor: true,
+              dimensions: { W: 1800, H: 950, D: 2000 },
+              elevation: 0,
+              variants: [1800, 2000]
+            },
+            {
+              id: 'bed-queen',
+              code: 'QUEEN BED',
+              name: 'Queen Size Bed (1500×2000)',
+              badge: '4',
+              selectedLabel: 'Queen Bed 1500×2000',
+              category: 'decor',
+              decorType: 'bed',
+              isDecor: true,
+              dimensions: { W: 1500, H: 950, D: 2000 },
+              elevation: 0,
+              variants: [1500]
+            },
+            {
+              id: 'bed-single',
+              code: 'SINGLE BED',
+              name: 'Single Bed (900×1900)',
+              badge: '3',
+              selectedLabel: 'Single Bed 900×1900',
+              category: 'decor',
+              decorType: 'bed',
+              isDecor: true,
+              dimensions: { W: 900, H: 850, D: 1900 },
+              elevation: 0,
+              variants: [900, 1050]
+            }
+          ];
+        }
+
+        if (cat === 'chair') {
+          return [
+            {
+              id: 'chair-arm',
+              code: 'ARMCHAIR',
+              name: 'Lounge Accent Armchair',
+              badge: '5',
+              selectedLabel: 'Lounge Armchair (800×800)',
+              category: 'decor',
+              decorType: 'sofa',
+              isDecor: true,
+              dimensions: { W: 800, H: 800, D: 800 },
+              elevation: 0,
+              variants: [750, 800, 900]
+            },
+            {
+              id: 'chair-dining',
+              code: 'DINING CHAIR',
+              name: 'Modern Dining Chair',
+              badge: '4',
+              selectedLabel: 'Dining Chair (450×500)',
+              category: 'decor',
+              decorType: 'chair',
+              isDecor: true,
+              dimensions: { W: 450, H: 850, D: 500 },
+              elevation: 0,
+              variants: [450]
+            },
+            {
+              id: 'sofa-3s',
+              code: '3S SOFA',
+              name: '3-Seater Comfort Sofa',
+              badge: '6',
+              selectedLabel: '3-Seater Sofa (2000×850)',
+              category: 'decor',
+              decorType: 'sofa',
+              isDecor: true,
+              dimensions: { W: 2000, H: 800, D: 850 },
+              elevation: 0,
+              variants: [1800, 2000, 2200]
+            }
+          ];
+        }
+
+        if (cat === 'chimney') {
+          return [
+            {
+              id: 'chimney-600',
+              code: 'CHIMNEY 600',
+              name: 'Curved Glass Chimney 600mm',
+              badge: '3',
+              selectedLabel: 'Chimney 600mm',
+              category: 'decor',
+              decorType: 'chimney',
+              isDecor: true,
+              dimensions: { W: 600, H: 550, D: 480 },
+              elevation: 1400,
+              variants: [600]
+            },
+            {
+              id: 'chimney-900',
+              code: 'CHIMNEY 900',
+              name: 'Pyramid Chimney 900mm',
+              badge: '3',
+              selectedLabel: 'Chimney 900mm',
+              category: 'decor',
+              decorType: 'chimney',
+              isDecor: true,
+              dimensions: { W: 900, H: 600, D: 500 },
+              elevation: 1400,
+              variants: [900]
+            }
+          ];
+        }
+
+        // Generic fallback for any other category
+        var filtered = catalog.filter(function (it) {
+          var c = (it.category || '').toLowerCase();
+          var n = (it.name || '').toLowerCase();
+          if (cat === 'crockery') return c.indexOf('crockery') !== -1 || n.indexOf('crockery') !== -1;
+          if (cat === 'tv_unit') return c.indexOf('tv') !== -1 || n.indexOf('tv') !== -1;
+          if (cat === 'all') return true;
+          return c.indexOf(cat) !== -1 || n.indexOf(cat) !== -1;
+        });
+
+        if (filtered.length > 0) {
+          return filtered.slice(0, 10).map(function (it) {
+            return {
+              id: it.id,
+              code: it.code || it.id.toUpperCase(),
+              name: it.name,
+              badge: '4',
+              selectedLabel: (it.code || it.name),
+              dimensions: it.dimensions || { W: 900, H: 750, D: 560 },
+              unitConfig: it.unitConfig,
+              variants: [it.dimensions ? it.dimensions.W : 900]
+            };
+          });
+        }
+
+        // Fallback default decor items
+        return [
+          {
+            id: cat + '-item-1',
+            code: cat.toUpperCase(),
+            name: cat.toUpperCase() + ' Standard Unit',
+            badge: '2',
+            selectedLabel: cat.toUpperCase() + ' 900mm',
+            dimensions: { W: 900, H: 800, D: 500 },
+            category: 'decor',
+            isDecor: true,
+            variants: [600, 900, 1200]
+          }
+        ];
+      }
+
+      function renderTabs(cat) {
+        trayTabs.innerHTML = '';
+        var tabList = TABS_DATA[cat] || TABS_DATA.all;
+        currentTab = tabList[0] ? tabList[0].id : 'default';
+
+        tabList.forEach(function (t, idx) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'furn-tray-tab' + (idx === 0 ? ' is-active' : '');
+          btn.dataset.tabId = t.id;
+          btn.innerHTML = '<span>' + t.label + '</span>' + (t.count ? '<span class="furn-tray-tab-count">' + t.count + '</span>' : '');
+          btn.addEventListener('click', function () {
+            trayTabs.querySelectorAll('.furn-tray-tab').forEach(function (b) { b.classList.remove('is-active'); });
+            btn.classList.add('is-active');
+            currentTab = t.id;
+            renderCards(cat, currentTab);
+          });
+          trayTabs.appendChild(btn);
+        });
+      }
+
+      function renderCards(cat, tabId) {
+        trayCards.innerHTML = '';
+        var cards = getCardsForTab(cat, tabId);
+        var activePresetId = (self.editor && self.editor.furniturePreset && self.editor.furniturePreset.id) || '';
+
+        cards.forEach(function (cardData) {
+          var card = document.createElement('div');
+          var isSel = (cardData.id === activePresetId);
+          card.className = 'furn-card' + (isSel ? ' is-active' : '');
+          card.dataset.unitId = cardData.id;
+
+          // Thumbnail
+          var curCore = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : Core;
+          var getIconFn = (curCore && curCore.getUnitIcon) || (typeof OrbixUnitIcons !== 'undefined' && OrbixUnitIcons.getIcon);
+          var thumbUrl = getIconFn ? getIconFn({ id: cardData.id }) : 'icon-cookscape-unit.png';
+
+          var topHtml = '<div class="furn-card-top">' +
+            '<div class="furn-card-thumb"><img src="' + thumbUrl + '" alt="' + cardData.code + '" loading="lazy"></div>' +
+            '<div class="furn-card-info">' +
+            '<span class="furn-card-badge">' + cardData.badge + '</span>' +
+            '<span class="furn-card-code" title="' + cardData.name + '">' + cardData.code + '</span>' +
+            '</div></div>';
+
+          var bottomHtml = '<div class="furn-card-bottom" title="Select variant / place unit">' +
+            '<span class="furn-card-title-text">' + cardData.selectedLabel + '</span>' +
+            '<span class="furn-card-chevron">▾</span>' +
+            '</div>';
+
+          card.innerHTML = topHtml + bottomHtml;
+
+          // Click handler to select and place
+          card.addEventListener('click', function (e) {
+            trayCards.querySelectorAll('.furn-card').forEach(function (c) { c.classList.remove('is-active'); });
+            card.classList.add('is-active');
+
+            var itemToPlace = {
+              id: cardData.id,
+              name: cardData.name,
+              category: cardData.category || (cat === 'base_unit' ? 'kitchen_base' : (cat === 'wall_unit' ? 'kitchen_wall' : cat)),
+              dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: 750, D: 560 }),
+              unitConfig: Object.assign({}, cardData.unitConfig || {})
+            };
+            if (cardData.isDecor) {
+              itemToPlace.isDecor = true;
+              itemToPlace.decorType = cardData.decorType || 'decor';
+              itemToPlace.elevation = cardData.elevation || 0;
+            }
+
+            if (self.editor) {
+              self.editor.furniturePreset = itemToPlace;
+              self.editor.activeTool = 'furniture';
+            }
+
+            // Sync top toolbar button active state
+            document.querySelectorAll('.plan-tool-btn').forEach(function (b) {
+              b.classList.toggle('is-active', b.dataset.tool === 'furniture');
+            });
+            var widget = document.getElementById('furnPickerWidget');
+            if (widget) widget.classList.add('is-tool-active');
+
+            // Sync top toolbar badge
+            var nameEl = document.getElementById('planFurnActiveName');
+            var dimsEl = document.getElementById('planFurnActiveDims');
+            var imgEl = document.getElementById('planFurnActiveImg');
+            if (nameEl) nameEl.textContent = itemToPlace.name;
+            if (dimsEl && itemToPlace.dimensions) dimsEl.textContent = itemToPlace.dimensions.W + '×' + itemToPlace.dimensions.H;
+            if (imgEl) imgEl.src = thumbUrl;
+
+            // Check if 3D Studio active
+            var is3D = document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+            if (is3D && typeof self.placeModularUnitIn3D === 'function') {
+              self.placeModularUnitIn3D(itemToPlace);
+            } else {
+              if (typeof window.toast === 'function') {
+                window.toast('Ready to place: ' + itemToPlace.name + ' (' + itemToPlace.dimensions.W + '×' + itemToPlace.dimensions.H + '). Click on floor plan to position.');
+              }
+            }
+          });
+
+          trayCards.appendChild(card);
+        });
+      }
+
+      function switchCategory(catKey, catLabel) {
+        currentCat = catKey;
+        if (trayCatTitle) trayCatTitle.textContent = catLabel;
+        catItems.forEach(function (item) {
+          item.classList.toggle('is-active', item.dataset.cat === catKey);
+        });
+        renderTabs(catKey);
+        renderCards(catKey, currentTab);
+      }
+
+      // Wire Category Item Clicks in Left Panel: "on clicking the menu all the option like in model should open down"
+      catItems.forEach(function (item) {
+        item.onclick = function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          var catKey = item.dataset.cat || 'all';
+          var catLabel = item.textContent.trim();
+          switchCategory(catKey, catLabel);
+
+          // Open the bottom options drawer down at the bottom
+          bottomTray.style.display = 'flex';
+          bottomTray.classList.remove('is-collapsed');
+          if (trayMinBtn) {
+            trayMinBtn.textContent = '➖';
+            trayMinBtn.title = 'Minimize Tray';
+          }
+          if (self.editor && self.editor.resize) {
+            setTimeout(function () { self.editor.resize(); }, 150);
+          }
+        };
+      });
+
+      // Wire Minimize / Expand button on bottom tray
+      if (trayMinBtn) {
+        trayMinBtn.onclick = function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          isCollapsed = !isCollapsed;
+          bottomTray.classList.toggle('is-collapsed', isCollapsed);
+          trayMinBtn.textContent = isCollapsed ? '➕' : '➖';
+          trayMinBtn.title = isCollapsed ? 'Expand Tray' : 'Minimize Tray';
+          if (self.editor && self.editor.resize) {
+            setTimeout(function () { self.editor.resize(); }, 220);
+          }
+        };
+      }
+
+      // Wire Close button on bottom tray
+      if (trayCloseBtn) {
+        trayCloseBtn.onclick = function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          bottomTray.style.display = 'none';
+          if (self.editor && self.editor.resize) {
+            setTimeout(function () { self.editor.resize(); }, 150);
+          }
+        };
+      }
+
+      // Wire Top Toolbar "Furnish" button toggle:
+      // "when i click furnish side menu should open and on another it should get close"
+      window.toggleFurnishMenu = function (e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        var sp = document.getElementById('furnishSidePanel');
+        var bt = document.getElementById('furnishBottomTray');
+        var pBtn = document.getElementById('planFurnitureBtn');
+        if (!sp) return;
+
+        var isOpen = sp.style.display !== 'none' && sp.style.display !== '';
+        if (!isOpen) {
+          // Closed -> OPEN side menu
+          sp.style.display = 'flex';
+          if (bt) bt.style.display = 'none'; // bottom options tray opens when a menu item is clicked
+          document.querySelectorAll('.plan-tool-btn').forEach(function (b) { b.classList.remove('is-active'); });
+          if (pBtn) pBtn.classList.add('is-active');
+          if (self.editor) self.editor.activeTool = 'furniture';
+        } else {
+          // Already open -> toggle CLOSE
+          sp.style.display = 'none';
+          if (bt) bt.style.display = 'none';
+          if (pBtn) pBtn.classList.remove('is-active');
+          if (self.editor) self.editor.activeTool = 'select';
+          var selectBtn = document.querySelector ? document.querySelector('.plan-tool-btn[data-tool="select"]') : null;
+          if (selectBtn) selectBtn.classList.add('is-active');
+        }
+        if (self.editor && self.editor.resize) {
+          setTimeout(function () { self.editor.resize(); }, 150);
+        }
+      };
+
+      if (planFurnBtn) {
+        planFurnBtn.onclick = window.toggleFurnishMenu;
+      }
+
+      // Initial pre-render of Base Unit so tabs and cards are ready
+      switchCategory('base_unit', 'Base Unit');
+
+      // Close Furnish panels when selecting any other drawing tool
+      var otherToolBtns = document.querySelectorAll('.plan-tool-btn:not(#planFurnitureBtn)');
+      otherToolBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (btn.dataset.tool !== 'furniture') {
+            isFurnishMenuOpen = false;
+            sidePanel.style.display = 'none';
+            bottomTray.style.display = 'none';
+            if (self.editor && self.editor.resize) {
+              setTimeout(function () { self.editor.resize(); }, 120);
+            }
+          }
+        });
+      });
+
+      // Wire Search Catalog link to open full catalog modal
+      if (sideSearchLink) {
+        sideSearchLink.onclick = function (e) {
+          if (e && e.preventDefault) e.preventDefault();
+          if (typeof self.openFurnitureCatalogModal === 'function') {
+            self.openFurnitureCatalogModal();
+          }
+        };
+      }
+
+      // Wire Search icon button to toggle quick filter input
+      if (sideSearchBtn && sideQuickSearch) {
+        sideSearchBtn.onclick = function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          var isHidden = (sideQuickSearch.style.display === 'none');
+          sideQuickSearch.style.display = isHidden ? 'block' : 'none';
+          if (isHidden) sideQuickSearch.focus();
+        };
+
+        sideQuickSearch.addEventListener('input', function (e) {
+          var q = (e.target.value || '').trim().toLowerCase();
+          catItems.forEach(function (ci) {
+            var text = ci.textContent.toLowerCase();
+            ci.style.display = (!q || text.indexOf(q) !== -1) ? 'block' : 'none';
+          });
+        });
+      }
+
+      // Initial state: Closed until user clicks "Furnish"
+      sidePanel.style.display = 'none';
+      bottomTray.style.display = 'none';
+      isFurnishMenuOpen = false;
+      try { switchCategory('base_unit', 'Base Unit'); } catch (_) {}
     },
 
     exportSketchUp: function (format) {

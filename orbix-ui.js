@@ -462,6 +462,7 @@
       syncFurnDropdown();
       self.initFurnitureCatalogModal();
       if (typeof self.initDecorModal === 'function') self.initDecorModal();
+      if (typeof self.initFurnishUI === 'function') self.initFurnishUI();
 
       if (furnSel && Core.FURNITURE_CATALOG) {
         furnSel.addEventListener('change', function () {
@@ -3000,14 +3001,6 @@
       }
 
       if (openBtn) openBtn.addEventListener('click', openModal);
-      if (planFurnBtn) {
-        planFurnBtn.addEventListener('click', function (e) {
-          // If tool is already furniture, clicking + Furniture again opens the catalog
-          if (self.editor && self.editor.activeTool === 'furniture') {
-            openModal();
-          }
-        });
-      }
       if (closeBtn) closeBtn.addEventListener('click', closeModal);
       if (closeFootBtn) closeFootBtn.addEventListener('click', closeModal);
       if (backdrop) backdrop.addEventListener('click', closeModal);
@@ -3251,6 +3244,860 @@
         if (catEl) catEl.textContent = 'Cookscape Units';
         if (self.editor) self.editor.furniturePreset = defaultItem;
       }
+    },
+
+    initFurnishUI: function () {
+      var self = this;
+      var sidePanel = document.getElementById('furnishSidePanel');
+      var bottomTray = document.getElementById('furnishBottomTray');
+      var planFurnBtn = document.getElementById('planFurnitureBtn');
+      var openCatalogBtn = document.getElementById('openFurnCatalogBtn');
+      var sideSearchBtn = document.getElementById('furnSideSearchBtn');
+      var sideSearchLink = document.getElementById('furnSideSearchLink');
+      var sideQuickSearch = document.getElementById('furnSideQuickSearch');
+      var catList = document.getElementById('furnSideCatList');
+      var catItems = catList ? catList.querySelectorAll('.furn-side-cat-item') : [];
+      var trayCatPill = document.getElementById('furnTrayCatPill');
+      var trayCatTitle = document.getElementById('furnTrayCatTitle');
+      var trayTabs = document.getElementById('furnTrayTabs');
+      var trayCards = document.getElementById('furnTrayCards');
+      var trayMinBtn = document.getElementById('furnTrayMinBtn');
+      var trayCloseBtn = document.getElementById('furnTrayCloseBtn');
+      var trayFilterBtn = document.getElementById('furnTrayFilterBtn');
+
+      if (!sidePanel || !bottomTray) return;
+
+      var Core = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : ((typeof root !== 'undefined' && root.OrbixCore) ? root.OrbixCore : {});
+      var currentCat = 'base_unit';
+      var currentTab = 'cookscape_fm';
+      var isCollapsed = false;
+      var isFurnishMenuOpen = false;
+
+      var TABS_DATA = {
+        base_unit: [
+          { id: 'cookscape_fm', label: 'COOKSCAPE (Kitchen- FM)', count: '43' },
+          { id: 'cookscape_crockery', label: 'COOKSCAPE (Tv/Study/Crockery)', count: '54' },
+          { id: 'cookscape_corner', label: 'COOKSCAPE - CORNER UNITS', count: '25' },
+          { id: 'cookscape_drawers', label: 'COOKSCAPE - DRAWERS', count: '28' },
+          { id: 'kitchen_drawers', label: 'KITCHEN - DRAWERS', count: '5' },
+          { id: 'drawer_units', label: 'Drawer Units', count: '46' },
+          { id: 'shutter_drawer', label: 'Shutter + Drawer Units', count: '153+' }
+        ],
+        wall_unit: [
+          { id: 'kitchen_wm', label: 'KITCHEN - WM (Wall Units)', count: '24' },
+          { id: 'wall_os', label: 'KITCHEN WALL O/S', count: '8' },
+          { id: 'spice_racks', label: 'Spice Racks & Open Box', count: '14' },
+          { id: 'pooja_wall', label: 'Pooja & Crockery Wall', count: '12' }
+        ],
+        wardrobe: [
+          { id: 'wr_sliding', label: 'Sliding Wardrobes', count: '18' },
+          { id: 'wr_hinged', label: 'Hinged 2-Door Wardrobes', count: '26' },
+          { id: 'wr_lofts', label: 'Wardrobe Modular Lofts', count: '15' },
+          { id: 'wr_panels', label: 'Wall Paneling', count: '10' }
+        ],
+        bed: [
+          { id: 'bed_all', label: 'All Beds', count: '12' },
+          { id: 'bed_king', label: 'King Size Beds', count: '5' },
+          { id: 'bed_queen', label: 'Queen Size Beds', count: '4' },
+          { id: 'bed_single', label: 'Single Beds', count: '3' }
+        ],
+        chair: [
+          { id: 'chair_all', label: 'All Chairs', count: '16' },
+          { id: 'chair_arm', label: 'Armchairs & Lounge', count: '6' },
+          { id: 'chair_dining', label: 'Dining Chairs', count: '6' },
+          { id: 'chair_office', label: 'Office Chairs', count: '4' }
+        ],
+        chimney: [
+          { id: 'chimney_all', label: 'All Chimneys', count: '8' },
+          { id: 'chimney_60', label: 'Wall Mount 600', count: '4' },
+          { id: 'chimney_90', label: 'Wall Mount 900', count: '4' }
+        ],
+        crockery: [
+          { id: 'crockery_all', label: 'All Crockery', count: '15' },
+          { id: 'crockery_base', label: 'Crockery Base Units', count: '8' },
+          { id: 'crockery_wall', label: 'Crockery Wall Units', count: '7' }
+        ],
+        dining: [
+          { id: 'dining_all', label: 'All Dining Sets', count: '10' },
+          { id: 'dining_4', label: '4-Seater Tables', count: '5' },
+          { id: 'dining_6', label: '6-Seater Tables', count: '5' }
+        ],
+        tv_unit: [
+          { id: 'tv_all', label: 'All TV Units', count: '14' },
+          { id: 'tv_base', label: 'TV Base Consoles', count: '8' },
+          { id: 'tv_wall', label: 'TV Wall Panels & Units', count: '6' }
+        ],
+        bath: [
+          { id: 'bath_all', label: 'All Bath Fixtures', count: '12' },
+          { id: 'bath_vanity', label: 'Vanities & Cabinets', count: '6' },
+          { id: 'bath_sanitary', label: 'Commodes & Basins', count: '6' }
+        ],
+        bookshelf: [
+          { id: 'book_all', label: 'All Bookshelves', count: '9' },
+          { id: 'book_floor', label: 'Floor Bookshelves', count: '5' },
+          { id: 'book_wall', label: 'Wall Shelves', count: '4' }
+        ],
+        chandeliers: [
+          { id: 'light_all', label: 'All Lights & Chandeliers', count: '12' },
+          { id: 'light_pendant', label: 'Pendant Lights', count: '6' },
+          { id: 'light_chand', label: 'Grand Chandeliers', count: '6' }
+        ],
+        art: [
+          { id: 'art_all', label: 'All Wall Art', count: '14' },
+          { id: 'art_painting', label: 'Canvas Paintings', count: '8' },
+          { id: 'art_mirrors', label: 'Decorative Mirrors', count: '6' }
+        ],
+        decor: [
+          { id: 'decor_all', label: 'All Decors & Plants', count: '18' },
+          { id: 'decor_plants', label: 'Indoor Plants', count: '8' },
+          { id: 'decor_appliance', label: 'Appliances (Fridge/Ice)', count: '6' },
+          { id: 'decor_rugs', label: 'Carpets & Rugs', count: '4' }
+        ],
+        all: [
+          { id: 'all_units', label: 'All Units & Furniture', count: '180+' }
+        ]
+      };
+
+      function getCardsForTab(cat, tabId) {
+        var curCore = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : Core;
+        var catalog = (curCore && curCore.FURNITURE_CATALOG) || [];
+        function findCatItem(id) {
+          return catalog.find(function (c) { return c.id === id || c.code === id; });
+        }
+
+        if (cat === 'base_unit') {
+          if (tabId === 'cookscape_fm') {
+            return [
+              {
+                id: 'fm-550-open',
+                code: 'FM OPEN',
+                name: 'FM 550 OPEN',
+                badge: '7',
+                selectedLabel: 'FM 550 OPEN',
+                dimensions: { W: 550, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 0, shelves: 1, carcass: 'Absolute White' },
+                variants: [300, 450, 500, 550, 600, 900, 1200]
+              },
+              {
+                id: 'bs-50-700',
+                code: 'BS',
+                name: 'BS - 50 X 700',
+                badge: '1',
+                selectedLabel: 'BS - 50 X 700',
+                dimensions: { W: 50, H: 700, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 0, carcass: 'Absolute White' },
+                variants: [50]
+              },
+              {
+                id: 'fm-300',
+                code: 'FM 1 DOOR',
+                name: 'FM 300 (1 DOOR)',
+                badge: '7',
+                selectedLabel: 'FM 300',
+                dimensions: { W: 300, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 1, doorType: 'hinged', dstyle: 'slab', shelves: 1, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [300, 350, 400, 450, 500, 550, 600]
+              },
+              {
+                id: 'fm-1000',
+                code: 'FM 2 DOOR',
+                name: 'FM 1000 (2 DOOR)',
+                badge: '12',
+                selectedLabel: 'FM 1000',
+                dimensions: { W: 1000, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 2, doorType: 'hinged', dstyle: 'slab', shelves: 1, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [700, 750, 800, 900, 1000, 1050, 1100, 1200]
+              },
+              {
+                id: 'fm-300-os',
+                code: 'FM 1 DOOR(O/S)',
+                name: 'FM 300 SINK BASE (ONLY SHUTTER)',
+                badge: '7',
+                selectedLabel: 'FM 300 (O/S)',
+                dimensions: { W: 300, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 1, doorType: 'hinged', dstyle: 'slab', shelves: 0, carcass: 'MDF 1135' },
+                variants: [300, 350, 400, 450, 500, 550, 600]
+              },
+              {
+                id: 'fm-1200-os',
+                code: 'FM 2 DOOR (O/S)',
+                name: 'FM 1200 SINK BASE (ONLY SHUTTER)',
+                badge: '9',
+                selectedLabel: 'FM 1200 O/S',
+                dimensions: { W: 1200, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 2, doorType: 'hinged', dstyle: 'slab', shelves: 0, carcass: 'MDF 1135' },
+                variants: [750, 800, 900, 1000, 1050, 1100, 1200]
+              },
+              {
+                id: 'fcm-rt',
+                code: 'FCM-RT',
+                name: 'FCM-RT (Cookscape)',
+                badge: '2',
+                selectedLabel: 'FCM-RT (Cookscape)',
+                dimensions: { W: 1200, H: 720, D: 560 },
+                unitConfig: (findCatItem('fcm-rt') && findCatItem('fcm-rt').unitConfig) || { ctype: 'kbase', fixedPanel: { enabled: true, width: 600, type: 'fixed' }, openShutter: { enabled: true, width: 600, type: 'shutter', count: 1, opening: 'right' } },
+                variants: [1050, 1200]
+              },
+              {
+                id: 'fcm-lt',
+                code: 'FCM-LT',
+                name: 'FCM-LT (Cookscape)',
+                badge: '2',
+                selectedLabel: 'FCM-LT (Cookscape)',
+                dimensions: { W: 1200, H: 720, D: 560 },
+                unitConfig: (findCatItem('fcm-lt') && findCatItem('fcm-lt').unitConfig) || { ctype: 'kbase', fixedPanel: { enabled: true, width: 600, type: 'fixed' }, openShutter: { enabled: true, width: 600, type: 'shutter', count: 1, opening: 'left' } },
+                variants: [1050, 1200]
+              }
+            ];
+          }
+
+          if (tabId === 'cookscape_corner') {
+            return [
+              {
+                id: 'fbcm',
+                code: 'L-CORNER',
+                name: 'L-SHAPED CORNER BASE UNIT (Cookscape)',
+                badge: '3',
+                selectedLabel: 'L-SHAPED CORNER BASE UNIT',
+                dimensions: { W: 900, H: 720, D: 560 },
+                unitConfig: (findCatItem('fbcm') && findCatItem('fbcm').unitConfig) || { ctype: 'kbase', geometryType: 'l_shaped_corner' },
+                variants: [900, 1050, 1200]
+              },
+              {
+                id: 'fcm-rt',
+                code: 'FCM-RT',
+                name: 'FCM-RT (Cookscape)',
+                badge: '2',
+                selectedLabel: 'FCM-RT (Cookscape)',
+                dimensions: { W: 1200, H: 720, D: 560 },
+                unitConfig: (findCatItem('fcm-rt') && findCatItem('fcm-rt').unitConfig),
+                variants: [1050, 1200]
+              },
+              {
+                id: 'fcm-lt',
+                code: 'FCM-LT',
+                name: 'FCM-LT (Cookscape)',
+                badge: '2',
+                selectedLabel: 'FCM-LT (Cookscape)',
+                dimensions: { W: 1200, H: 720, D: 560 },
+                unitConfig: (findCatItem('fcm-lt') && findCatItem('fcm-lt').unitConfig),
+                variants: [1050, 1200]
+              }
+            ];
+          }
+
+          if (tabId === 'cookscape_crockery') {
+            return [
+              {
+                id: 'ctvb-1d-1dr',
+                code: 'TV-1D-1DR',
+                name: 'CROCKERY/TV BASE 1DOOR 1 DRAWER',
+                badge: '4',
+                selectedLabel: 'ctvb-1d-1dr (450×200)',
+                dimensions: { W: 450, H: 200, D: 450 },
+                unitConfig: (findCatItem('ctvb-1d-1dr') && findCatItem('ctvb-1d-1dr').unitConfig),
+                variants: [450, 600, 750]
+              },
+              {
+                id: 'ctvb-1dr',
+                code: 'TV-1DR',
+                name: 'CROCKERY/TV BASE 1 DRAWER',
+                badge: '3',
+                selectedLabel: 'ctvb-1dr (600×200)',
+                dimensions: { W: 600, H: 200, D: 350 },
+                unitConfig: (findCatItem('ctvb-1dr') && findCatItem('ctvb-1dr').unitConfig),
+                variants: [450, 600, 800]
+              },
+              {
+                id: 'ctvb-2d',
+                code: 'TV-2D',
+                name: 'CROCKERY/TV BASE 2 DOOR',
+                badge: '6',
+                selectedLabel: 'ctvb-2d (750×750)',
+                dimensions: { W: 750, H: 750, D: 450 },
+                unitConfig: (findCatItem('ctvb-2d') && findCatItem('ctvb-2d').unitConfig),
+                variants: [600, 750, 900, 1050]
+              },
+              {
+                id: 'ctvb-2d-2dr',
+                code: 'TV-2D-2DR',
+                name: 'CROCKERY/TV BASE 2 DOOR 2 DRAWER',
+                badge: '5',
+                selectedLabel: 'ctvb-2d-2dr (900×750)',
+                dimensions: { W: 900, H: 750, D: 450 },
+                unitConfig: (findCatItem('ctvb-2d-2dr') && findCatItem('ctvb-2d-2dr').unitConfig),
+                variants: [750, 900, 1050, 1200]
+              },
+              {
+                id: 'ctvb-2dr',
+                code: 'TV-2DR',
+                name: 'CROCKERY/TV BASE 2 DRAWER',
+                badge: '4',
+                selectedLabel: 'ctvb-2dr (450×500)',
+                dimensions: { W: 450, H: 500, D: 350 },
+                unitConfig: (findCatItem('ctvb-2dr') && findCatItem('ctvb-2dr').unitConfig),
+                variants: [450, 600, 750]
+              }
+            ];
+          }
+
+          if (tabId === 'cookscape_drawers' || tabId === 'kitchen_drawers' || tabId === 'drawer_units') {
+            return [
+              {
+                id: 'fm-d2-60',
+                code: 'FM 2 DRAWER',
+                name: 'FM 2 DRAWER BASE (600)',
+                badge: '5',
+                selectedLabel: 'FM 2 DRAWER (600)',
+                dimensions: { W: 600, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 0, drawers: 2, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [450, 500, 600, 800, 900]
+              },
+              {
+                id: 'fm-d3-60',
+                code: 'FM 3 DRAWER',
+                name: 'FM 3 DRAWER BASE (600)',
+                badge: '5',
+                selectedLabel: 'FM 3 DRAWER (600)',
+                dimensions: { W: 600, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 0, drawers: 3, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [450, 500, 600, 800, 900]
+              },
+              {
+                id: 'fm-d2-90',
+                code: 'FM 2 DRAWER (900)',
+                name: 'FM 2 DRAWER WIDE BASE',
+                badge: '4',
+                selectedLabel: 'FM 2 DRAWER (900)',
+                dimensions: { W: 900, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 0, drawers: 2, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [750, 900, 1050]
+              }
+            ];
+          }
+
+          if (tabId === 'shutter_drawer') {
+            return [
+              {
+                id: 'fm-1d-1dr',
+                code: 'FM 1D 1DR',
+                name: 'FM 1 DOOR 1 DRAWER BASE',
+                badge: '6',
+                selectedLabel: 'FM 1D 1DR (450)',
+                dimensions: { W: 450, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 1, drawers: 1, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [400, 450, 500, 600]
+              },
+              {
+                id: 'fm-2d-2dr',
+                code: 'FM 2D 2DR',
+                name: 'FM 2 DOOR 2 DRAWER BASE',
+                badge: '5',
+                selectedLabel: 'FM 2D 2DR (900)',
+                dimensions: { W: 900, H: 750, D: 560 },
+                unitConfig: { ctype: 'kbase', shutters: 2, drawers: 2, carcass: 'MDF 1135', shutterCol: 'MDF 7701' },
+                variants: [750, 900, 1050, 1200]
+              }
+            ];
+          }
+        }
+
+        if (cat === 'wall_unit') {
+          return [
+            {
+              id: 'wm-60',
+              code: 'WM 60',
+              name: 'WM 60 (1 DOOR WALL)',
+              badge: '6',
+              selectedLabel: 'WM 600 (Wall)',
+              dimensions: { W: 600, H: 600, D: 320 },
+              unitConfig: { ctype: 'kwall', shutters: 1, shelves: 1, carcass: 'MDF 1135' },
+              variants: [300, 450, 600, 750, 900]
+            },
+            {
+              id: 'wm-60-dbl',
+              code: 'WM 60 DBL',
+              name: 'WM 60 DOUBLE KITCHEN WALL',
+              badge: '4',
+              selectedLabel: 'WM 60 DBL',
+              dimensions: { W: 600, H: 600, D: 320 },
+              unitConfig: (findCatItem('wm-60-dbl') && findCatItem('wm-60-dbl').unitConfig),
+              variants: [600, 750, 900]
+            },
+            {
+              id: 'ctvw-2d',
+              code: 'POOJA WALL',
+              name: 'CROCKERY/TV WALL 2 DOOR',
+              badge: '4',
+              selectedLabel: 'ctvw-2d (900×600)',
+              dimensions: { W: 900, H: 600, D: 300 },
+              unitConfig: (findCatItem('ctvw-2d') && findCatItem('ctvw-2d').unitConfig),
+              variants: [600, 750, 900]
+            },
+            {
+              id: 'ctvw-obs-02',
+              code: 'SPICE RACK',
+              name: 'CROCKERY/TV WALL OPEN BOX STORAGE',
+              badge: '3',
+              selectedLabel: 'ctvw-obs-02 (1500×300)',
+              dimensions: { W: 1500, H: 300, D: 200 },
+              unitConfig: (findCatItem('ctvw-obs-02') && findCatItem('ctvw-obs-02').unitConfig),
+              variants: [900, 1200, 1500]
+            }
+          ];
+        }
+
+        if (cat === 'wardrobe') {
+          return [
+            {
+              id: 'wr-sliding',
+              code: 'SLIDING WR',
+              name: 'SLIDING WARDROBE (1800×2100)',
+              badge: '6',
+              selectedLabel: 'wr-sliding (1800×2100)',
+              dimensions: { W: 1800, H: 2100, D: 600 },
+              unitConfig: (findCatItem('wr-sliding') && findCatItem('wr-sliding').unitConfig),
+              variants: [1500, 1800, 2100, 2400]
+            },
+            {
+              id: 'wr-shelves',
+              code: 'WR 2D SHELVES',
+              name: 'WR 2 DOOR WITH SHELVES',
+              badge: '5',
+              selectedLabel: 'wr-shelves (900×2100)',
+              dimensions: { W: 900, H: 2100, D: 600 },
+              unitConfig: (findCatItem('wr-shelves') && findCatItem('wr-shelves').unitConfig),
+              variants: [800, 900, 1000, 1200]
+            },
+            {
+              id: 'wr-drawers',
+              code: 'WR 2D DRAWERS',
+              name: 'WR 2 DOOR WITH DRAWERS',
+              badge: '5',
+              selectedLabel: 'wr-drawers (900×2100)',
+              dimensions: { W: 900, H: 2100, D: 600 },
+              unitConfig: (findCatItem('wr-drawers') && findCatItem('wr-drawers').unitConfig),
+              variants: [800, 900, 1000, 1200]
+            },
+            {
+              id: 'loft-2d-mod',
+              code: 'LOFT 2D',
+              name: 'WARDROBE LOFT 2 DOOR',
+              badge: '4',
+              selectedLabel: 'loft-2d (900×450)',
+              dimensions: { W: 900, H: 450, D: 600 },
+              unitConfig: { ctype: 'loft', shutters: 2, carcass: 'MDF 1135' },
+              variants: [800, 900, 1000, 1200]
+            }
+          ];
+        }
+
+        if (cat === 'bed') {
+          return [
+            {
+              id: 'bed-king',
+              code: 'KING BED',
+              name: 'King Size Master Bed (1800×2000)',
+              badge: '4',
+              selectedLabel: 'King Bed 1800×2000',
+              category: 'decor',
+              decorType: 'bed',
+              isDecor: true,
+              dimensions: { W: 1800, H: 950, D: 2000 },
+              elevation: 0,
+              variants: [1800, 2000]
+            },
+            {
+              id: 'bed-queen',
+              code: 'QUEEN BED',
+              name: 'Queen Size Bed (1500×2000)',
+              badge: '4',
+              selectedLabel: 'Queen Bed 1500×2000',
+              category: 'decor',
+              decorType: 'bed',
+              isDecor: true,
+              dimensions: { W: 1500, H: 950, D: 2000 },
+              elevation: 0,
+              variants: [1500]
+            },
+            {
+              id: 'bed-single',
+              code: 'SINGLE BED',
+              name: 'Single Bed (900×1900)',
+              badge: '3',
+              selectedLabel: 'Single Bed 900×1900',
+              category: 'decor',
+              decorType: 'bed',
+              isDecor: true,
+              dimensions: { W: 900, H: 850, D: 1900 },
+              elevation: 0,
+              variants: [900, 1050]
+            }
+          ];
+        }
+
+        if (cat === 'chair') {
+          return [
+            {
+              id: 'chair-arm',
+              code: 'ARMCHAIR',
+              name: 'Lounge Accent Armchair',
+              badge: '5',
+              selectedLabel: 'Lounge Armchair (800×800)',
+              category: 'decor',
+              decorType: 'sofa',
+              isDecor: true,
+              dimensions: { W: 800, H: 800, D: 800 },
+              elevation: 0,
+              variants: [750, 800, 900]
+            },
+            {
+              id: 'chair-dining',
+              code: 'DINING CHAIR',
+              name: 'Modern Dining Chair',
+              badge: '4',
+              selectedLabel: 'Dining Chair (450×500)',
+              category: 'decor',
+              decorType: 'chair',
+              isDecor: true,
+              dimensions: { W: 450, H: 850, D: 500 },
+              elevation: 0,
+              variants: [450]
+            },
+            {
+              id: 'sofa-3s',
+              code: '3S SOFA',
+              name: '3-Seater Comfort Sofa',
+              badge: '6',
+              selectedLabel: '3-Seater Sofa (2000×850)',
+              category: 'decor',
+              decorType: 'sofa',
+              isDecor: true,
+              dimensions: { W: 2000, H: 800, D: 850 },
+              elevation: 0,
+              variants: [1800, 2000, 2200]
+            }
+          ];
+        }
+
+        if (cat === 'chimney') {
+          return [
+            {
+              id: 'chimney-600',
+              code: 'CHIMNEY 600',
+              name: 'Curved Glass Chimney 600mm',
+              badge: '3',
+              selectedLabel: 'Chimney 600mm',
+              category: 'decor',
+              decorType: 'chimney',
+              isDecor: true,
+              dimensions: { W: 600, H: 550, D: 480 },
+              elevation: 1400,
+              variants: [600]
+            },
+            {
+              id: 'chimney-900',
+              code: 'CHIMNEY 900',
+              name: 'Pyramid Chimney 900mm',
+              badge: '3',
+              selectedLabel: 'Chimney 900mm',
+              category: 'decor',
+              decorType: 'chimney',
+              isDecor: true,
+              dimensions: { W: 900, H: 600, D: 500 },
+              elevation: 1400,
+              variants: [900]
+            }
+          ];
+        }
+
+        // Generic fallback for any other category
+        var filtered = catalog.filter(function (it) {
+          var c = (it.category || '').toLowerCase();
+          var n = (it.name || '').toLowerCase();
+          if (cat === 'crockery') return c.indexOf('crockery') !== -1 || n.indexOf('crockery') !== -1;
+          if (cat === 'tv_unit') return c.indexOf('tv') !== -1 || n.indexOf('tv') !== -1;
+          if (cat === 'all') return true;
+          return c.indexOf(cat) !== -1 || n.indexOf(cat) !== -1;
+        });
+
+        if (filtered.length > 0) {
+          return filtered.slice(0, 10).map(function (it) {
+            return {
+              id: it.id,
+              code: it.code || it.id.toUpperCase(),
+              name: it.name,
+              badge: '4',
+              selectedLabel: (it.code || it.name),
+              dimensions: it.dimensions || { W: 900, H: 750, D: 560 },
+              unitConfig: it.unitConfig,
+              variants: [it.dimensions ? it.dimensions.W : 900]
+            };
+          });
+        }
+
+        // Fallback default decor items
+        return [
+          {
+            id: cat + '-item-1',
+            code: cat.toUpperCase(),
+            name: cat.toUpperCase() + ' Standard Unit',
+            badge: '2',
+            selectedLabel: cat.toUpperCase() + ' 900mm',
+            dimensions: { W: 900, H: 800, D: 500 },
+            category: 'decor',
+            isDecor: true,
+            variants: [600, 900, 1200]
+          }
+        ];
+      }
+
+      function renderTabs(cat) {
+        trayTabs.innerHTML = '';
+        var tabList = TABS_DATA[cat] || TABS_DATA.all;
+        currentTab = tabList[0] ? tabList[0].id : 'default';
+
+        tabList.forEach(function (t, idx) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'furn-tray-tab' + (idx === 0 ? ' is-active' : '');
+          btn.dataset.tabId = t.id;
+          btn.innerHTML = '<span>' + t.label + '</span>' + (t.count ? '<span class="furn-tray-tab-count">' + t.count + '</span>' : '');
+          btn.addEventListener('click', function () {
+            trayTabs.querySelectorAll('.furn-tray-tab').forEach(function (b) { b.classList.remove('is-active'); });
+            btn.classList.add('is-active');
+            currentTab = t.id;
+            renderCards(cat, currentTab);
+          });
+          trayTabs.appendChild(btn);
+        });
+      }
+
+      function renderCards(cat, tabId) {
+        trayCards.innerHTML = '';
+        var cards = getCardsForTab(cat, tabId);
+        var activePresetId = (self.editor && self.editor.furniturePreset && self.editor.furniturePreset.id) || '';
+
+        cards.forEach(function (cardData) {
+          var card = document.createElement('div');
+          var isSel = (cardData.id === activePresetId);
+          card.className = 'furn-card' + (isSel ? ' is-active' : '');
+          card.dataset.unitId = cardData.id;
+
+          // Thumbnail
+          var curCore = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : Core;
+          var getIconFn = (curCore && curCore.getUnitIcon) || (typeof OrbixUnitIcons !== 'undefined' && OrbixUnitIcons.getIcon);
+          var thumbUrl = getIconFn ? getIconFn({ id: cardData.id }) : 'icon-cookscape-unit.png';
+
+          var topHtml = '<div class="furn-card-top">' +
+            '<div class="furn-card-thumb"><img src="' + thumbUrl + '" alt="' + cardData.code + '" loading="lazy"></div>' +
+            '<div class="furn-card-info">' +
+            '<span class="furn-card-badge">' + cardData.badge + '</span>' +
+            '<span class="furn-card-code" title="' + cardData.name + '">' + cardData.code + '</span>' +
+            '</div></div>';
+
+          var bottomHtml = '<div class="furn-card-bottom" title="Select variant / place unit">' +
+            '<span class="furn-card-title-text">' + cardData.selectedLabel + '</span>' +
+            '<span class="furn-card-chevron">▾</span>' +
+            '</div>';
+
+          card.innerHTML = topHtml + bottomHtml;
+
+          // Click handler to select and place
+          card.addEventListener('click', function (e) {
+            trayCards.querySelectorAll('.furn-card').forEach(function (c) { c.classList.remove('is-active'); });
+            card.classList.add('is-active');
+
+            var itemToPlace = {
+              id: cardData.id,
+              name: cardData.name,
+              category: cardData.category || (cat === 'base_unit' ? 'kitchen_base' : (cat === 'wall_unit' ? 'kitchen_wall' : cat)),
+              dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: 750, D: 560 }),
+              unitConfig: Object.assign({}, cardData.unitConfig || {})
+            };
+            if (cardData.isDecor) {
+              itemToPlace.isDecor = true;
+              itemToPlace.decorType = cardData.decorType || 'decor';
+              itemToPlace.elevation = cardData.elevation || 0;
+            }
+
+            if (self.editor) {
+              self.editor.furniturePreset = itemToPlace;
+              self.editor.activeTool = 'furniture';
+            }
+
+            // Sync top toolbar button active state
+            document.querySelectorAll('.plan-tool-btn').forEach(function (b) {
+              b.classList.toggle('is-active', b.dataset.tool === 'furniture');
+            });
+            var widget = document.getElementById('furnPickerWidget');
+            if (widget) widget.classList.add('is-tool-active');
+
+            // Sync top toolbar badge
+            var nameEl = document.getElementById('planFurnActiveName');
+            var dimsEl = document.getElementById('planFurnActiveDims');
+            var imgEl = document.getElementById('planFurnActiveImg');
+            if (nameEl) nameEl.textContent = itemToPlace.name;
+            if (dimsEl && itemToPlace.dimensions) dimsEl.textContent = itemToPlace.dimensions.W + '×' + itemToPlace.dimensions.H;
+            if (imgEl) imgEl.src = thumbUrl;
+
+            // Check if 3D Studio active
+            var is3D = document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+            if (is3D && typeof self.placeModularUnitIn3D === 'function') {
+              self.placeModularUnitIn3D(itemToPlace);
+            } else {
+              if (typeof window.toast === 'function') {
+                window.toast('Ready to place: ' + itemToPlace.name + ' (' + itemToPlace.dimensions.W + '×' + itemToPlace.dimensions.H + '). Click on floor plan to position.');
+              }
+            }
+          });
+
+          trayCards.appendChild(card);
+        });
+      }
+
+      function switchCategory(catKey, catLabel) {
+        currentCat = catKey;
+        if (trayCatTitle) trayCatTitle.textContent = catLabel;
+        catItems.forEach(function (item) {
+          item.classList.toggle('is-active', item.dataset.cat === catKey);
+        });
+        renderTabs(catKey);
+        renderCards(catKey, currentTab);
+      }
+
+      // Wire Category Item Clicks in Left Panel: "on clicking the menu all the option like in model should open down"
+      catItems.forEach(function (item) {
+        item.onclick = function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          var catKey = item.dataset.cat || 'all';
+          var catLabel = item.textContent.trim();
+          switchCategory(catKey, catLabel);
+
+          // Open the bottom options drawer down at the bottom
+          bottomTray.style.display = 'flex';
+          bottomTray.classList.remove('is-collapsed');
+          if (trayMinBtn) {
+            trayMinBtn.textContent = '➖';
+            trayMinBtn.title = 'Minimize Tray';
+          }
+          if (self.editor && self.editor.resize) {
+            setTimeout(function () { self.editor.resize(); }, 150);
+          }
+        };
+      });
+
+      // Wire Minimize / Expand button on bottom tray
+      if (trayMinBtn) {
+        trayMinBtn.onclick = function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          isCollapsed = !isCollapsed;
+          bottomTray.classList.toggle('is-collapsed', isCollapsed);
+          trayMinBtn.textContent = isCollapsed ? '➕' : '➖';
+          trayMinBtn.title = isCollapsed ? 'Expand Tray' : 'Minimize Tray';
+          if (self.editor && self.editor.resize) {
+            setTimeout(function () { self.editor.resize(); }, 220);
+          }
+        };
+      }
+
+      // Wire Close button on bottom tray
+      if (trayCloseBtn) {
+        trayCloseBtn.onclick = function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          bottomTray.style.display = 'none';
+          if (self.editor && self.editor.resize) {
+            setTimeout(function () { self.editor.resize(); }, 150);
+          }
+        };
+      }
+
+      // Wire Top Toolbar "Furnish" button toggle:
+      // "when i click furnish side menu should open and on another it should get close"
+      window.toggleFurnishMenu = function (e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        var sp = document.getElementById('furnishSidePanel');
+        var bt = document.getElementById('furnishBottomTray');
+        var pBtn = document.getElementById('planFurnitureBtn');
+        if (!sp) return;
+
+        var isOpen = sp.style.display !== 'none' && sp.style.display !== '';
+        if (!isOpen) {
+          // Closed -> OPEN side menu
+          sp.style.display = 'flex';
+          if (bt) bt.style.display = 'none'; // bottom options tray opens when a menu item is clicked
+          document.querySelectorAll('.plan-tool-btn').forEach(function (b) { b.classList.remove('is-active'); });
+          if (pBtn) pBtn.classList.add('is-active');
+          if (self.editor) self.editor.activeTool = 'furniture';
+        } else {
+          // Already open -> toggle CLOSE
+          sp.style.display = 'none';
+          if (bt) bt.style.display = 'none';
+          if (pBtn) pBtn.classList.remove('is-active');
+          if (self.editor) self.editor.activeTool = 'select';
+          var selectBtn = document.querySelector ? document.querySelector('.plan-tool-btn[data-tool="select"]') : null;
+          if (selectBtn) selectBtn.classList.add('is-active');
+        }
+        if (self.editor && self.editor.resize) {
+          setTimeout(function () { self.editor.resize(); }, 150);
+        }
+      };
+
+      if (planFurnBtn) {
+        planFurnBtn.onclick = window.toggleFurnishMenu;
+      }
+
+      // Initial pre-render of Base Unit so tabs and cards are ready
+      switchCategory('base_unit', 'Base Unit');
+
+      // Close Furnish panels when selecting any other drawing tool
+      var otherToolBtns = document.querySelectorAll('.plan-tool-btn:not(#planFurnitureBtn)');
+      otherToolBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (btn.dataset.tool !== 'furniture') {
+            isFurnishMenuOpen = false;
+            sidePanel.style.display = 'none';
+            bottomTray.style.display = 'none';
+            if (self.editor && self.editor.resize) {
+              setTimeout(function () { self.editor.resize(); }, 120);
+            }
+          }
+        });
+      });
+
+      // Wire Search Catalog link to open full catalog modal
+      if (sideSearchLink) {
+        sideSearchLink.onclick = function (e) {
+          if (e && e.preventDefault) e.preventDefault();
+          if (typeof self.openFurnitureCatalogModal === 'function') {
+            self.openFurnitureCatalogModal();
+          }
+        };
+      }
+
+      // Wire Search icon button to toggle quick filter input
+      if (sideSearchBtn && sideQuickSearch) {
+        sideSearchBtn.onclick = function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          var isHidden = (sideQuickSearch.style.display === 'none');
+          sideQuickSearch.style.display = isHidden ? 'block' : 'none';
+          if (isHidden) sideQuickSearch.focus();
+        };
+
+        sideQuickSearch.addEventListener('input', function (e) {
+          var q = (e.target.value || '').trim().toLowerCase();
+          catItems.forEach(function (ci) {
+            var text = ci.textContent.toLowerCase();
+            ci.style.display = (!q || text.indexOf(q) !== -1) ? 'block' : 'none';
+          });
+        });
+      }
+
+      // Initial state: Closed until user clicks "Furnish"
+      sidePanel.style.display = 'none';
+      bottomTray.style.display = 'none';
+      isFurnishMenuOpen = false;
+      try { switchCategory('base_unit', 'Base Unit'); } catch (_) {}
     },
 
     exportSketchUp: function (format) {

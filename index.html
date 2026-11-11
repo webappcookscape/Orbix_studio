@@ -356,21 +356,12 @@
             </select>
             <!-- Dimension Measurement Tool -->
             <button class="plan-tool-btn" data-tool="dimension" id="planDimensionBtn" title="Measure Length between Two Points (Hotkey M)">📏 Dimension</button>
-            <!-- Restyled Modular Furniture Selector & Catalog Trigger -->
-            <div class="furn-picker-toolbar-widget" id="furnPickerWidget">
-              <button class="plan-tool-btn furn-place-btn" data-tool="furniture" id="planFurnitureBtn" title="Place Cookscape Modular Unit on Floor Plan (Hotkey F)">
-                <img src="icon-furniture.png" alt="Cookscape Units" class="furn-tool-img-icon" style="width:20px;height:24px;object-fit:contain;vertical-align:middle;margin-right:4px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.12));">
-                <span class="furn-tool-text">+ Cookscape Units</span>
-              </button>
-              <button class="furn-active-badge-btn" id="openFurnCatalogBtn" type="button" title="Browse full Cookscape Units catalog & search">
-                <img src="icon-cookscape-unit.png" alt="Cookscape Unit" class="furn-badge-img-icon" id="planFurnActiveImg" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-right:6px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.12));">
-                <span class="furn-badge-info">
-                  <span class="furn-badge-title" id="planFurnActiveName">CROCKERY/TV BASE 1DOOR 1 DRAWER</span>
-                  <span class="furn-badge-dims" id="planFurnActiveDims">450×200</span>
-                </span>
-                <span class="furn-badge-chevron">▾</span>
-              </button>
-              <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="display:none;" aria-hidden="true">
+            <!-- Furnish: Modular Units & Furniture Catalog Tool -->
+            <button class="plan-tool-btn furn-place-btn" data-tool="furniture" id="planFurnitureBtn" onclick="window.toggleFurnishMenu && window.toggleFurnishMenu(event)" title="Furnish: Modular Units & Furniture Catalog (Hotkey F)">
+              <img src="icon-furniture.png" alt="Furnish" class="furn-tool-img-icon" style="width:18px;height:22px;object-fit:contain;vertical-align:middle;margin-right:5px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.12));">
+              <span class="furn-tool-text">Furnish</span>
+            </button>
+            <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="display:none;" aria-hidden="true">
                 <optgroup label="Cookscape Modular Units Catalog">
                   <option value="ctvb-1d-1dr" selected>ctvb-1d-1dr: CROCKERY/TV BASE 1DOOR 1 DRAWER (450×200)</option>
                   <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (900×750)</option>
@@ -388,7 +379,6 @@
                   <option value="wr-drawers">wr-drawers: WR 2 DOOR WITH DRAWERS (900×2100)</option>
                 </optgroup>
               </select>
-            </div>
             <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">✂️ Split</button>
             <!-- Import Custom 3D Decors & .skp (Excluded from Woodwork Pricing) -->
             <button class="plan-tool-btn" id="openDecorModalBtn" type="button" title="Import Decors, Appliances &amp; .skp 3D Models (Excluded from Woodwork Pricing: Fridge, Ice Box, Plants, Microwave, Chimney, TV, etc.)" style="background:#f0fdf4;color:#166534;border-color:#86efac;font-weight:600;display:inline-flex;align-items:center;gap:5px;">
@@ -438,7 +428,60 @@
       </div>
 
       <div class="plan-layout">
+        <!-- ══════ LEFT FURNISH SUB-MENU PANEL ══════ -->
+        <aside class="furn-side-panel" id="furnishSidePanel" style="display:none;">
+          <div class="furn-side-header">
+            <span class="furn-side-title">Furnish</span>
+            <button type="button" class="furn-side-search-icon-btn" id="furnSideSearchBtn" title="Search Catalog">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+          </div>
+          <div class="furn-side-search-row">
+            <a href="#" class="furn-side-search-link" id="furnSideSearchLink">Search Catalog</a>
+            <input type="text" class="furn-side-search-input" id="furnSideQuickSearch" placeholder="Type to filter..." style="display:none;">
+          </div>
+          <div class="furn-side-cat-list" id="furnSideCatList">
+            <div class="furn-side-cat-item" data-cat="all">All</div>
+            <div class="furn-side-cat-item" data-cat="art">Art</div>
+            <div class="furn-side-cat-item is-active" data-cat="base_unit">Base Unit</div>
+            <div class="furn-side-cat-item" data-cat="bath">Bath</div>
+            <div class="furn-side-cat-item" data-cat="bed">Bed</div>
+            <div class="furn-side-cat-item" data-cat="bookshelf">Bookshelf</div>
+            <div class="furn-side-cat-item" data-cat="chair">Chair</div>
+            <div class="furn-side-cat-item" data-cat="chandeliers">Chandeliers</div>
+            <div class="furn-side-cat-item" data-cat="chimney">Chimney</div>
+            <div class="furn-side-cat-item" data-cat="crockery">Crockery</div>
+            <div class="furn-side-cat-item" data-cat="decor">Decor</div>
+            <div class="furn-side-cat-item" data-cat="dining">Dining</div>
+            <div class="furn-side-cat-item" data-cat="tv_unit">TV Unit</div>
+            <div class="furn-side-cat-item" data-cat="wardrobe">Wardrobe</div>
+            <div class="furn-side-cat-item" data-cat="wall_unit">Wall Unit</div>
+          </div>
+        </aside>
+
         <div id="planCanvasContainer"></div>
+
+        <!-- ══════ BOTTOM FURNISH UNIT DRAWER / TRAY ══════ -->
+        <div class="furn-bottom-tray" id="furnishBottomTray" style="display:none;">
+          <div class="furn-tray-header">
+            <div class="furn-tray-cat-pill" id="furnTrayCatPill" title="Current Category">
+              <span id="furnTrayCatTitle">Base Unit</span>
+              <span class="furn-tray-chevron">▾</span>
+              <span class="furn-tray-search-icon" title="Search in Category">🔍</span>
+            </div>
+            <div class="furn-tray-tabs-scroll" id="furnTrayTabs">
+              <!-- Dynamically rendered tabs -->
+            </div>
+            <div class="furn-tray-actions">
+              <button type="button" class="furn-tray-action-btn" id="furnTrayFilterBtn" title="Filter Units">🔻</button>
+              <button type="button" class="furn-tray-action-btn" id="furnTrayMinBtn" title="Minimize / Expand Bar">➖</button>
+              <button type="button" class="furn-tray-action-btn" id="furnTrayCloseBtn" title="Close Furnish Tray">✖</button>
+            </div>
+          </div>
+          <div class="furn-tray-cards-container" id="furnTrayCards">
+            <!-- Dynamically populated unit cards -->
+          </div>
+        </div>
         <aside class="plan-inspector">
           <div id="planInspectorContent"></div>
         </aside>
