@@ -76,20 +76,22 @@ assert.strictEqual(editor.selected[0].id, testWall.id, 'Selected item ID must ma
 assert.strictEqual(editor.dragState, null, 'dragState MUST be null; move_wall must not be initiated');
 console.log('✓ Wall clicked: Selected successfully without activating move_wall dragState.');
 
-// [Test 2] Clicking Endpoint Handle of Selected Wall Does NOT Drag Vertex
-console.log('\n[Test 2] Clicking Endpoint Handle of Selected Wall Does NOT Drag Vertex');
+// [Test 2] Clicking Endpoint Handle of Selected Wall Engages Move Vertex
+console.log('\n[Test 2] Clicking Endpoint Handle of Selected Wall Engages Move Vertex');
 const clickStartPt = { x: 1000, y: 1000 };
 editor.handleSelectMouseDown(clickStartPt, false);
-assert.strictEqual(editor.dragState, null, 'dragState MUST be null; move_vertex must not be initiated');
-console.log('✓ Endpoint clicked: dragState remains null, preventing vertex dragging.');
+assert(editor.dragState, 'dragState must be active for moving endpoint vertex');
+assert.strictEqual(editor.dragState.type, 'move_vertex', 'dragState type must be move_vertex');
+console.log('✓ Endpoint clicked: dragState engages move_vertex with connected refs.');
 
-// [Test 3] Wall Coordinates Remain Strictly Invariant
-console.log('\n[Test 3] Wall Coordinates Remain Strictly Invariant');
-assert.strictEqual(testWall.start.x, 1000);
-assert.strictEqual(testWall.start.y, 1000);
-assert.strictEqual(testWall.end.x, 4000);
-assert.strictEqual(testWall.end.y, 1000);
-console.log('✓ Wall start and end points remain completely locked in place.');
+// [Test 3] Clicking Already-Selected Wall Engages Move Wall
+console.log('\n[Test 3] Clicking Already-Selected Wall Engages Move Wall');
+editor.dragState = null;
+editor.selected = [{ type: 'wall', id: testWall.id }];
+editor.handleSelectMouseDown(clickWallPt, false);
+assert(editor.dragState, 'dragState must be active for moving wall');
+assert.strictEqual(editor.dragState.type, 'move_wall', 'dragState type must be move_wall');
+console.log('✓ Wall clicked while already selected: engages move_wall cleanly.');
 
 // [Test 4] Furniture Moving Remains Fully Functional
 console.log('\n[Test 4] Furniture Moving Remains Fully Functional');

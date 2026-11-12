@@ -8976,7 +8976,7 @@ body.role-employee #adminCreateEmpBox,
               if (wallIds.indexOf(cycle[k].wallId) === -1) wallIds.push(cycle[k].wallId);
             }
 
-            // Guard: A valid architectural room must be bounded by at least one physical wall (not 100% dividers)
+            // Guard: A valid architectural room must be bounded by at least one physical wall OR be an enclosed room divider zone (e.g. Pooja room)
             var hasPhysicalWall = false;
             for (var wi = 0; wi < wallIds.length; wi++) {
               for (var aw = 0; aw < walls.length; aw++) {
@@ -8987,7 +8987,9 @@ body.role-employee #adminCreateEmpBox,
               }
               if (hasPhysicalWall) break;
             }
-            if (!hasPhysicalWall) continue; // Skip phantom loop between crossing dividers!
+            // Allow enclosed divider zones (area >= 200,000 mm² = 0.2 m²) even if 100% dividers (e.g. Pooja Room)
+            var isEnclosedDividerZone = (!hasPhysicalWall && cycle.length >= 3 && area >= 200000);
+            if (!hasPhysicalWall && !isEnclosedDividerZone) continue;
 
             var perim = 0;
             for (var pIdx = 0; pIdx < poly.length; pIdx++) {
@@ -9060,6 +9062,21 @@ body.role-employee #adminCreateEmpBox,
       var roomName = (roomIdx < apartmentPresets.length) ? apartmentPresets[roomIdx] : ('Room ' + (roomIdx + 1));
       if (cycles.length === 1) {
         roomName = 'Room 1';
+      }
+
+      // If cycle is bounded 100% by dividers, it is an enclosed divider zone: name it Pooja Room!
+      var allDividers = (uCyc.wallIds && uCyc.wallIds.length >= 3);
+      if (allDividers) {
+        for (var dwi = 0; dwi < uCyc.wallIds.length; dwi++) {
+          var wItem = walls.find(function (w) { return w.id === uCyc.wallIds[dwi]; });
+          if (wItem && !wItem.isDivider) {
+            allDividers = false;
+            break;
+          }
+        }
+      }
+      if (allDividers) {
+        roomName = 'Pooja Room';
       }
 
       var newRoom = createRoom({
@@ -13392,7 +13409,20 @@ body.role-employee #adminCreateEmpBox,
 
       if (self.activeTool === 'select') {
         self.handleSelectMouseDown(worldPt, e.shiftKey);
-      } else if (self.activeTool === 'wall' || self.activeTool === 'divider') {
+      } else if (self.activeTool === 'divider') {
+        // Room divider: supports click-and-drag box to create a dedicated room/zone (e.g. Pooja room)!
+        if (self.wallChainStart) {
+          self.handleWallMouseDown(worldPt);
+        } else {
+          self.dragState = {
+            type: 'draw_divider_box',
+            startWorld: Vec2.clone(worldPt),
+            currentWorld: Vec2.clone(worldPt),
+            hasMoved: false
+          };
+          self.render();
+        }
+      } else if (self.activeTool === 'wall') {
         self.handleWallMouseDown(worldPt);
       } else if (self.activeTool === 'door' || self.activeTool === 'window') {
         self.handleOpeningMouseDown(worldPt, self.activeTool);
@@ -13426,6 +13456,89 @@ body.role-employee #adminCreateEmpBox,
       if (self.dragState && self.dragState.type === 'pan') {
         self.pan.x = self.dragState.startPan.x + (mouseScreen.x - self.dragState.startScreen.x);
         self.pan.y = self.dragState.startPan.y + (mouseScreen.y - self.dragState.startScreen.y);
+        self.render();
+        return;
+      }
+
+      if (self.dragState && self.dragState.type === 'draw_divider_box') {
+        self.dragState.currentWorld = Vec2.clone(self.cursorWorld);
+        if (!self.dragState.hasMoved && Vec2.dist(self.cursorWorld, self.dragState.startWorld) > 10) {
+          self.dragState.hasMoved = true;
+        }
+        self.render();
+        return;
+      }
+
+      if (self.dragState && self.dragState.type === 'move_wall') {
+        var ds = self.dragState;
+        var rawDx = self.cursorWorld.x - ds.startWorld.x;
+        var rawDy = self.cursorWorld.y - ds.startWorld.y;
+
+        if (!ds.hasMoved && Math.hypot(rawDx, rawDy) > 6) {
+          ds.hasMoved = true;
+        }
+
+        var wDir = ds.origDir;
+        var wNorm = ds.origNorm;
+
+        // Project mouse movement onto perpendicular (normal) and parallel (direction) axes
+        var projPerp = rawDx * wNorm.x + rawDy * wNorm.y;
+        var projParallel = rawDx * wDir.x + rawDy * wDir.y;
+
+        // User requirement: "it has to moovable parellel & perperndicular only with its connected walls also !"
+        var dispX = 0, dispY = 0;
+        if (Math.abs(projPerp) >= Math.abs(projParallel)) {
+          // Dominant PERPENDICULAR movement (resizing room / translating wall laterally)
+          var snappedPerp = Math.round(projPerp / 25) * 25;
+          dispX = wNorm.x * snappedPerp;
+          dispY = wNorm.y * snappedPerp;
+        } else {
+          // Dominant PARALLEL movement (sliding wall longitudinally along its axis)
+          var snappedParallel = Math.round(projParallel / 25) * 25;
+          dispX = wDir.x * snappedParallel;
+          dispY = wDir.y * snappedParallel;
+        }
+
+        // 1. Move target wall start and end
+        ds.wall.start.x = Math.round(ds.origStart.x + dispX);
+        ds.wall.start.y = Math.round(ds.origStart.y + dispY);
+        ds.wall.end.x = Math.round(ds.origEnd.x + dispX);
+        ds.wall.end.y = Math.round(ds.origEnd.y + dispY);
+
+        // 2. Move connected walls endpoints so corners stay seamlessly connected!
+        for (var cs = 0; cs < ds.connectedStart.length; cs++) {
+          var connS = ds.connectedStart[cs];
+          connS.wall[connS.endpoint].x = Math.round(connS.orig.x + dispX);
+          connS.wall[connS.endpoint].y = Math.round(connS.orig.y + dispY);
+        }
+        for (var ce = 0; ce < ds.connectedEnd.length; ce++) {
+          var connE = ds.connectedEnd[ce];
+          connE.wall[connE.endpoint].x = Math.round(connE.orig.x + dispX);
+          connE.wall[connE.endpoint].y = Math.round(connE.orig.y + dispY);
+        }
+
+        self.render();
+        return;
+      }
+
+      if (self.dragState && self.dragState.type === 'move_vertex') {
+        var vds = self.dragState;
+        var vRawDx = self.cursorWorld.x - vds.startWorld.x;
+        var vRawDy = self.cursorWorld.y - vds.startWorld.y;
+
+        if (!vds.hasMoved && Math.hypot(vRawDx, vRawDy) > 6) {
+          vds.hasMoved = true;
+        }
+
+        var vSnap = self.snapPoint(self.cursorWorld);
+        var vNewPt = vSnap.pt || self.cursorWorld;
+
+        for (var vr = 0; vr < vds.connectedRefs.length; vr++) {
+          var vRef = vds.connectedRefs[vr];
+          vRef.wall[vRef.endpoint].x = Math.round(vNewPt.x / 25) * 25;
+          vRef.wall[vRef.endpoint].y = Math.round(vNewPt.y / 25) * 25;
+        }
+
         self.render();
         return;
       }
@@ -13520,6 +13633,71 @@ body.role-employee #adminCreateEmpBox,
 
     window.addEventListener('mouseup', function () {
       if (self.dragState) {
+        if (self.dragState.type === 'draw_divider_box') {
+          var dsBox = self.dragState;
+          var p1 = dsBox.startWorld;
+          var p2 = self.cursorWorld;
+          var minX = Math.round(Math.min(p1.x, p2.x) / 25) * 25;
+          var maxX = Math.round(Math.max(p1.x, p2.x) / 25) * 25;
+          var minY = Math.round(Math.min(p1.y, p2.y) / 25) * 25;
+          var maxY = Math.round(Math.max(p1.y, p2.y) / 25) * 25;
+          var wMm = maxX - minX;
+          var hMm = maxY - minY;
+
+          self.dragState = null;
+
+          if (wMm >= 250 && hMm >= 250) {
+            // Dragged a box: create 4 room divider boundary walls enclosing Pooja Room zone!
+            var dTop = Core.createRoomDivider({ start: { x: minX, y: minY }, end: { x: maxX, y: minY } });
+            var dRight = Core.createRoomDivider({ start: { x: maxX, y: minY }, end: { x: maxX, y: maxY } });
+            var dBottom = Core.createRoomDivider({ start: { x: maxX, y: maxY }, end: { x: minX, y: maxY } });
+            var dLeft = Core.createRoomDivider({ start: { x: minX, y: maxY }, end: { x: minX, y: minY } });
+
+            self.project.plan.walls.push(dTop, dRight, dBottom, dLeft);
+
+            if (Core.detectRooms) Core.detectRooms(self.project);
+
+            // Find the room enclosing this center point
+            var centerPt = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+            var foundRoom = null;
+            var rooms = self.project.plan.rooms || [];
+            for (var ri = 0; ri < rooms.length; ri++) {
+              if (rooms[ri].polygon && Core.Vec2.pointInPolygon(centerPt, rooms[ri].polygon)) {
+                if (!foundRoom || (rooms[ri].areaSqM && foundRoom.areaSqM && rooms[ri].areaSqM < foundRoom.areaSqM)) {
+                  foundRoom = rooms[ri];
+                }
+              }
+            }
+
+            if (foundRoom) {
+              foundRoom.name = 'Pooja Room';
+              self.selected = [{ type: 'room', id: foundRoom.id }];
+            } else {
+              self.selected = [{ type: 'wall', id: dTop.id }];
+            }
+
+            self.pushHistory('Create Pooja Room Area');
+            if (typeof self.setTool === 'function') self.setTool('select');
+            else self.activeTool = 'select';
+
+            self.onSelectionChange(self.selected);
+            self.render();
+            if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.showToast) {
+              window.OrbixUI.showToast('Pooja Room area created successfully!', 'success');
+            }
+            if (typeof window !== 'undefined' && window.OrbixUI) {
+              if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+              if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
+            }
+            return;
+          } else {
+            // Simple click without dragging: initiate point-to-point drawing!
+            self.handleWallMouseDown(dsBox.startWorld);
+            self.render();
+            return;
+          }
+        }
+
         if (self.dragState.type === 'move_furniture') {
           if (!self.dragState.hasMoved && self.dragState.matchingHits && self.dragState.matchingHits.length > 1) {
             // User performed a stationary click on stacked units (e.g. wall unit above floor unit):
@@ -13549,6 +13727,11 @@ body.role-employee #adminCreateEmpBox,
         } else if (self.dragState.type === 'move_opening') {
           Core.detectRooms(self.project);
           self.pushHistory('Move Opening');
+        } else if (self.dragState.type === 'move_wall' || self.dragState.type === 'move_vertex') {
+          if (self.dragState.hasMoved) {
+            if (Core.detectRooms) Core.detectRooms(self.project);
+            self.pushHistory(self.dragState.type === 'move_wall' ? 'Move Wall' : 'Move Vertex');
+          }
         }
         self.dragState = null;
         self.render();
@@ -13775,6 +13958,41 @@ body.role-employee #adminCreateEmpBox,
   };
 
   PlanEditor.prototype.handleSelectMouseDown = function (worldPt, isShift) {
+    // 0. Check if clicked an endpoint handle of an already-selected wall
+    if (this.selected && this.selected.length === 1 && this.selected[0].type === 'wall') {
+      var selWall = this.getWall(this.selected[0].id);
+      if (selWall && selWall.start && selWall.end) {
+        var dStart = Vec2.dist(worldPt, selWall.start);
+        var dEnd = Vec2.dist(worldPt, selWall.end);
+        if (dStart < 120 || dEnd < 120) {
+          var isStart = (dStart <= dEnd);
+          var targetPt = isStart ? selWall.start : selWall.end;
+          var connectedRefs = [{ wall: selWall, endpoint: isStart ? 'start' : 'end', orig: Vec2.clone(targetPt) }];
+          var allWList = this.project.plan.walls || [];
+          for (var vci = 0; vci < allWList.length; vci++) {
+            var owItem = allWList[vci];
+            if (!owItem || owItem.id === selWall.id) continue;
+            if (owItem.start && Vec2.dist(targetPt, owItem.start) < 60) {
+              connectedRefs.push({ wall: owItem, endpoint: 'start', orig: Vec2.clone(owItem.start) });
+            } else if (owItem.end && Vec2.dist(targetPt, owItem.end) < 60) {
+              connectedRefs.push({ wall: owItem, endpoint: 'end', orig: Vec2.clone(owItem.end) });
+            }
+          }
+          this.dragState = {
+            type: 'move_vertex',
+            wall: selWall,
+            endpoint: isStart ? 'start' : 'end',
+            targetPt: targetPt,
+            connectedRefs: connectedRefs,
+            startWorld: Vec2.clone(worldPt),
+            hasMoved: false
+          };
+          this.render();
+          return;
+        }
+      }
+    }
+
     // 1. Check if clicked an opening
     var openings = this.project.plan.openings || [];
     for (var o = 0; o < openings.length; o++) {
@@ -13848,12 +14066,53 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // 4. Check if clicked a wall -> Select wall only; wall moving is completely removed
+    // 4. Check if clicked a wall -> Select first, or move parallel/perpendicular if already selected
     var near = this.findNearestWall(worldPt, 250);
     if (near) {
+      var w = near.wall;
+      var curSelWallId = (this.selected && this.selected.length === 1 && this.selected[0].type === 'wall') ? this.selected[0].id : null;
+      var isAlreadySelected = (curSelWallId === w.id);
+
       if (!isShift) this.selected = [];
-      this.selected.push({ type: 'wall', id: near.wall.id });
+      this.selected.push({ type: 'wall', id: w.id });
       this.onSelectionChange(this.selected);
+
+      // Move wall: Enabled! Moves parallel and perpendicular only, with connected walls moving along!
+      if (isAlreadySelected) {
+        var allWalls = this.project.plan.walls || [];
+        var connectedStart = [];
+        var connectedEnd = [];
+        for (var cw = 0; cw < allWalls.length; cw++) {
+          var other = allWalls[cw];
+          if (!other || other.id === w.id) continue;
+          if (other.start && Vec2.dist(w.start, other.start) < 60) {
+            connectedStart.push({ wall: other, endpoint: 'start', orig: Vec2.clone(other.start) });
+          } else if (other.end && Vec2.dist(w.start, other.end) < 60) {
+            connectedStart.push({ wall: other, endpoint: 'end', orig: Vec2.clone(other.end) });
+          }
+          if (other.start && Vec2.dist(w.end, other.start) < 60) {
+            connectedEnd.push({ wall: other, endpoint: 'start', orig: Vec2.clone(other.start) });
+          } else if (other.end && Vec2.dist(w.end, other.end) < 60) {
+            connectedEnd.push({ wall: other, endpoint: 'end', orig: Vec2.clone(other.end) });
+          }
+        }
+
+        this.dragState = {
+          type: 'move_wall',
+          wall: w,
+          startWorld: Vec2.clone(worldPt),
+          origStart: Vec2.clone(w.start),
+          origEnd: Vec2.clone(w.end),
+          origDir: Core.wallDirection(w),
+          origNorm: Core.wallNormal(w),
+          connectedStart: connectedStart,
+          connectedEnd: connectedEnd,
+          hasMoved: false
+        };
+      } else {
+        this.dragState = null;
+      }
+
       this.render();
       return;
     }
@@ -13900,37 +14159,16 @@ body.role-employee #adminCreateEmpBox,
       }
       if (segDist > 60) {
         var finalEndPt = endPt;
+        var isEndOnWall = false;
         if (isDivider) {
-          // Verify if endPt connects to a boundary wall/divider within 150mm
-          var isEndOnWall = false;
           var allWalls = (this.project && this.project.plan && this.project.plan.walls) || [];
           for (var wi = 0; wi < allWalls.length; wi++) {
             var pr = Vec2.projectOnSegment(endPt, allWalls[wi].start, allWalls[wi].end);
-            if (pr && pr.dist <= 150 && pr.t >= -0.05 && pr.t <= 1.05) {
-              isEndOnWall = true;
+            if (pr && pr.dist <= 120 && pr.t >= -0.05 && pr.t <= 1.05) {
               finalEndPt = Vec2.clone(pr.pt);
+              isEndOnWall = true;
               break;
             }
-          }
-          if (!isEndOnWall) {
-            // Auto-project in cursor direction to find opposite wall and cleanly bridge wall-to-wall!
-            var cdx = endPt.x - this.wallChainStart.x;
-            var cdy = endPt.y - this.wallChainStart.y;
-            var cDist = Math.hypot(cdx, cdy);
-            if (cDist > 60) {
-              var dir = { x: cdx / cDist, y: cdy / cDist };
-              var oppHit = this.findOppositeWallIntersection(this.wallChainStart, dir);
-              if (oppHit && oppHit.pt) {
-                finalEndPt = Vec2.clone(oppHit.pt);
-                isEndOnWall = true;
-              }
-            }
-          }
-          if (!isEndOnWall) {
-            if (typeof window.toast === 'function') {
-              window.toast('Room divider must connect to an opposite wall', 'warning');
-            }
-            return; // Reject placing dangling divider!
           }
         }
 
@@ -13948,31 +14186,28 @@ body.role-employee #adminCreateEmpBox,
         this.project.plan.walls.push(newW);
         this.pushHistory(isDivider ? 'Draw Room Divider' : 'Draw Wall');
 
-        if (isDivider) {
-          // Room Divider placed! Run room detection, select the new divider, and switch cleanly to select tool
+        // Check if loop closed (connected back to start of chain)
+        var isLoopClosed = (this.wallChainFirstPoint && Vec2.dist(endPt, this.wallChainFirstPoint) < 60) ||
+                           (snapped && snapped.isChainClose);
+
+        if (isLoopClosed) {
+          // Loop closed! Terminate chain and run room detection
           this.wallChainStart = null;
           this.wallChainFirstPoint = null;
           this.numericInputBuffer = '';
           if (Core.detectRooms) Core.detectRooms(this.project);
-          this.selected = [{ type: 'wall', id: newW.id }];
-          this.onSelectionChange(this.selected);
+          if (isDivider) this.setTool('select');
+        } else if (isDivider && isEndOnWall) {
+          // Divider connected to an existing wall: finish divider and detect rooms
+          this.wallChainStart = null;
+          this.wallChainFirstPoint = null;
+          this.numericInputBuffer = '';
+          if (Core.detectRooms) Core.detectRooms(this.project);
           this.setTool('select');
         } else {
-          // Check if loop closed (connected back to start of chain)
-          var isLoopClosed = (this.wallChainFirstPoint && Vec2.dist(endPt, this.wallChainFirstPoint) < 60) ||
-                             (snapped && snapped.isChainClose);
-
-          if (isLoopClosed) {
-            // Room closed! Run room detection and cleanly terminate wall chain
-            this.wallChainStart = null;
-            this.wallChainFirstPoint = null;
-            this.numericInputBuffer = '';
-            if (Core.detectRooms) Core.detectRooms(this.project);
-          } else {
-            // Chain to the next wall
-            this.wallChainStart = Vec2.clone(endPt);
-            this.numericInputBuffer = '';
-          }
+          // Continue chain to next point (enables free multi-segment divider enclosures & boxes without joining walls!)
+          this.wallChainStart = Vec2.clone(endPt);
+          this.numericInputBuffer = '';
         }
       }
     }
@@ -16345,7 +16580,7 @@ body.role-employee #adminCreateEmpBox,
     if (this.activeTool === 'divider') {
       themeColor = '#8b5cf6'; // Violet
       badgeBg = 'rgba(109, 40, 217, 0.96)';
-      badgeText = '✂ Click on wall to start Room Divider';
+      badgeText = '✂ Drag box for Pooja Room / Zone, or click to start divider';
 
       if (isDrawingWall) {
         if (snapInfo && (snapInfo.type === 'divider_wall_snap' || snapInfo.isOppositeWall)) {
@@ -16361,13 +16596,13 @@ body.role-employee #adminCreateEmpBox,
           var isHD = (degD === 0 || degD === 180 || degD === 360);
           badgeText = '✂ ' + (isHD ? '↔ Horizontal' : '↕ Vertical') + ' · ' + this.formatDim(snapInfo.distMm || 0);
         } else {
-          badgeText = '✂ Click opposite wall to divide room (Esc to cancel)';
+          badgeText = '✂ Click next corner (or click start to close Pooja Room loop)';
         }
       } else {
         if (snapInfo && (snapInfo.type === 'divider_start_snap' || snapInfo.type === 'wall_segment' || snapInfo.type === 'joint')) {
           themeColor = '#10b981';
           badgeBg = 'rgba(6, 95, 70, 0.96)';
-          badgeText = '✂ Click to Start Divider on Wall';
+          badgeText = '✂ Drag box for Pooja Room, or click to start on wall';
         }
       }
     } else if (isDrawingWall) {
@@ -16496,6 +16731,63 @@ body.role-employee #adminCreateEmpBox,
   };
 
   PlanEditor.prototype.renderPreview = function (ctx) {
+    // 0. Dragging Room Divider Area Box (e.g. Pooja Room)
+    if (this.dragState && this.dragState.type === 'draw_divider_box') {
+      var p1 = this.dragState.startWorld;
+      var p2 = this.cursorWorld;
+      var minX = Math.round(Math.min(p1.x, p2.x) / 25) * 25;
+      var maxX = Math.round(Math.max(p1.x, p2.x) / 25) * 25;
+      var minY = Math.round(Math.min(p1.y, p2.y) / 25) * 25;
+      var maxY = Math.round(Math.max(p1.y, p2.y) / 25) * 25;
+      var wMm = maxX - minX;
+      var hMm = maxY - minY;
+      var areaSqM = ((wMm * hMm) / 1000000).toFixed(2);
+      var areaSqFt = ((wMm * hMm) / 92903.04).toFixed(1);
+
+      var sp1 = this.worldToScreen({ x: minX, y: minY });
+      var sp2 = this.worldToScreen({ x: maxX, y: maxY });
+      var sW = sp2.x - sp1.x;
+      var sH = sp2.y - sp1.y;
+
+      ctx.save();
+      // Violet semi-transparent room zone fill
+      ctx.fillStyle = 'rgba(124, 58, 237, 0.14)';
+      ctx.fillRect(sp1.x, sp1.y, sW, sH);
+
+      // Dash-dot architectural divider boundary line
+      ctx.strokeStyle = '#7C3AED';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([8, 5, 2, 5]);
+      ctx.strokeRect(sp1.x, sp1.y, sW, sH);
+      ctx.setLineDash([]);
+
+      // Corner accent dots
+      ctx.fillStyle = '#6D28D9';
+      [ {x: sp1.x, y: sp1.y}, {x: sp2.x, y: sp1.y}, {x: sp2.x, y: sp2.y}, {x: sp1.x, y: sp2.y} ].forEach(function (pt) {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Center floating badge: "✂ POOJA ROOM: 1200 × 1200 mm · 1.44 m²"
+      var midX = (sp1.x + sp2.x) / 2;
+      var midY = (sp1.y + sp2.y) / 2;
+      var label = '✂ POOJA ROOM: ' + wMm + ' × ' + hMm + ' mm (' + areaSqM + ' m² / ' + areaSqFt + ' sq ft)';
+      ctx.font = '700 11.5px "IBM Plex Sans", -apple-system, sans-serif';
+      var tw = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(109, 40, 217, 0.95)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(midX - tw / 2 - 10, midY - 12, tw + 20, 24, 6);
+      else ctx.rect(midX - tw / 2 - 10, midY - 12, tw + 20, 24);
+      ctx.fill();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, midX, midY);
+
+      ctx.restore();
+    }
+
     // 1. Wall drawing preview line & dynamic guidelines
     if (this.wallChainStart) {
       var snap = this.snapPoint(this.cursorWorld);

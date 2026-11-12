@@ -160,3 +160,4 @@ assert.strictEqual(unit3Visible, true, 'Unit placed against visible Wall 3 MUST 
 
 console.log('✓ 3D Single Wall Cutoff and attached furniture hiding verified successfully');
 console.log('ALL TESTS PASSED!');
+

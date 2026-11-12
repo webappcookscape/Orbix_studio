@@ -1401,7 +1401,7 @@
               if (wallIds.indexOf(cycle[k].wallId) === -1) wallIds.push(cycle[k].wallId);
             }
 
-            // Guard: A valid architectural room must be bounded by at least one physical wall (not 100% dividers)
+            // Guard: A valid architectural room must be bounded by at least one physical wall OR be an enclosed room divider zone (e.g. Pooja room)
             var hasPhysicalWall = false;
             for (var wi = 0; wi < wallIds.length; wi++) {
               for (var aw = 0; aw < walls.length; aw++) {
@@ -1412,7 +1412,9 @@
               }
               if (hasPhysicalWall) break;
             }
-            if (!hasPhysicalWall) continue; // Skip phantom loop between crossing dividers!
+            // Allow enclosed divider zones (area >= 200,000 mm² = 0.2 m²) even if 100% dividers (e.g. Pooja Room)
+            var isEnclosedDividerZone = (!hasPhysicalWall && cycle.length >= 3 && area >= 200000);
+            if (!hasPhysicalWall && !isEnclosedDividerZone) continue;
 
             var perim = 0;
             for (var pIdx = 0; pIdx < poly.length; pIdx++) {
@@ -1485,6 +1487,21 @@
       var roomName = (roomIdx < apartmentPresets.length) ? apartmentPresets[roomIdx] : ('Room ' + (roomIdx + 1));
       if (cycles.length === 1) {
         roomName = 'Room 1';
+      }
+
+      // If cycle is bounded 100% by dividers, it is an enclosed divider zone: name it Pooja Room!
+      var allDividers = (uCyc.wallIds && uCyc.wallIds.length >= 3);
+      if (allDividers) {
+        for (var dwi = 0; dwi < uCyc.wallIds.length; dwi++) {
+          var wItem = walls.find(function (w) { return w.id === uCyc.wallIds[dwi]; });
+          if (wItem && !wItem.isDivider) {
+            allDividers = false;
+            break;
+          }
+        }
+      }
+      if (allDividers) {
+        roomName = 'Pooja Room';
       }
 
       var newRoom = createRoom({
