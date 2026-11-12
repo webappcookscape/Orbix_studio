@@ -17,3 +17,4 @@ with open('orbix-dado-textures.js', 'w', encoding='utf-8') as f:
     f.write(content)
 
 print(f"Generated orbix-dado-textures.js ({len(content)} bytes)")
+
