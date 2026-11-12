@@ -4095,7 +4095,12 @@
         var rIcon = rObj.name.indexOf('Bed') !== -1 ? '🛏️ ' :
                     rObj.name.indexOf('Kitchen') !== -1 ? '🍳 ' :
                     rObj.name.indexOf('Living') !== -1 ? '🛋️ ' :
-                    rObj.name.indexOf('Dining') !== -1 ? '🍽️ ' : '🚪 ';
+                    rObj.name.indexOf('Dining') !== -1 ? '🍽️ ' :
+                    (rObj.name.indexOf('Pooja') !== -1 || rObj.name.indexOf('Prayer') !== -1) ? '🪔 ' :
+                    (rObj.name.indexOf('Toilet') !== -1 || rObj.name.indexOf('Bath') !== -1) ? '🚿 ' :
+                    (rObj.name.indexOf('Dress') !== -1 || rObj.name.indexOf('Wardrobe') !== -1) ? '👔 ' :
+                    (rObj.name.indexOf('Store') !== -1 || rObj.name.indexOf('Pantry') !== -1) ? '📦 ' :
+                    (rObj.name.indexOf('Sitout') !== -1 || rObj.name.indexOf('Balcony') !== -1) ? '🌿 ' : '🚪 ';
 
         html += '<button class="room-filter-pill' + (isThisRoomActive ? ' is-active' : '') + '" data-room="' + rObj.id + '">' +
           rIcon + rObj.name + ' <span class="room-pill-badge">' + rUnitsCount + ' units' + rSubtotalStr + '</span>' +

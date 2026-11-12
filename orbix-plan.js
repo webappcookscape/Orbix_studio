@@ -2682,6 +2682,65 @@
 
     // 6. Active Tool / Drawing Preview
     this.renderPreview(ctx);
+
+    // 7. Architectural North Arrow & Title Block (as in reference plan)
+    this.renderTitleAndNorthArrow(ctx);
+  };
+
+  PlanEditor.prototype.renderTitleAndNorthArrow = function (ctx) {
+    var margin = 40;
+    var x = this.width - margin - 45;
+    var y = this.height - margin - 35;
+
+    ctx.save();
+    // 1. Authentic Architectural North Arrow Symbol (Circle + Directional Needle)
+    var r = 16;
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Crosshairs
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(x - r - 4, y); ctx.lineTo(x + r + 4, y);
+    ctx.moveTo(x, y - r - 4); ctx.lineTo(x, y + r + 4);
+    ctx.stroke();
+
+    // Half-filled Compass Needle
+    ctx.beginPath();
+    ctx.moveTo(x, y - r + 3);
+    ctx.lineTo(x - 5, y + 3);
+    ctx.lineTo(x, y - 2);
+    ctx.closePath();
+    ctx.fillStyle = '#0f172a';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(x, y - r + 3);
+    ctx.lineTo(x + 5, y + 3);
+    ctx.lineTo(x, y - 2);
+    ctx.closePath();
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.stroke();
+
+    // Letter 'N'
+    ctx.font = '700 12px "IBM Plex Sans", -apple-system, sans-serif';
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('N', x, y - r - 3);
+
+    // 2. Title Block: GROUND FLOOR PLAN
+    var titleText = 'GROUND FLOOR PLAN';
+    ctx.font = '700 12px "IBM Plex Sans", -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(titleText, x, y + r + 6);
+
+    ctx.restore();
   };
 
   PlanEditor.prototype.renderUnderlay = function (ctx) {
@@ -2757,9 +2816,26 @@
       if (!r.polygon || r.polygon.length < 3) continue;
 
       var isSelected = this.isSelected('room', r.id);
+      var rLower = (r.name || '').toLowerCase();
+      var isBath = rLower.indexOf('toilet') !== -1 || rLower.indexOf('bath') !== -1 || rLower.indexOf('wc') !== -1;
+      var isSitout = rLower.indexOf('sitout') !== -1 || rLower.indexOf('balcony') !== -1 || rLower.indexOf('deck') !== -1 || rLower.indexOf('foyer') !== -1;
+      var isPooja = rLower.indexOf('pooja') !== -1 || rLower.indexOf('prayer') !== -1 || rLower.indexOf('mandir') !== -1;
+      var isKitchen = rLower.indexOf('kitchen') !== -1 || rLower.indexOf('pantry') !== -1;
 
-      // Floor Fill
-      ctx.fillStyle = isSelected ? 'rgba(37, 99, 235, 0.16)' : 'rgba(232, 241, 245, 0.45)';
+      // Authentic Architectural Floor Fills (matching reference CAD floor plan)
+      var floorFill = isSelected ? 'rgba(37, 99, 235, 0.18)' :
+        isBath ? 'rgba(224, 242, 254, 0.75)' :       // Sky cyan for toilets/baths
+        isSitout ? 'rgba(241, 245, 249, 0.85)' :     // Slate stone for sitouts
+        isPooja ? 'rgba(254, 243, 199, 0.75)' :      // Sacred amber cream for pooja
+        isKitchen ? 'rgba(255, 251, 235, 0.75)' :    // Warm ivory for kitchens
+        'rgba(248, 250, 252, 0.75)';                // Crisp off-white for bedrooms/living
+
+      var strokeBorder = isSelected ? '#2563eb' :
+        isBath ? 'rgba(56, 189, 248, 0.4)' :
+        isPooja ? 'rgba(245, 158, 11, 0.4)' :
+        'rgba(203, 213, 225, 0.45)';
+
+      ctx.fillStyle = floorFill;
       ctx.beginPath();
       var p0 = this.worldToScreen(r.polygon[0]);
       ctx.moveTo(p0.x, p0.y);
@@ -2770,13 +2846,23 @@
       ctx.closePath();
       ctx.fill();
 
-      if (isSelected) {
-        ctx.strokeStyle = '#2563eb';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6, 4]);
-        ctx.stroke();
-        ctx.setLineDash([]);
+      ctx.strokeStyle = strokeBorder;
+      ctx.lineWidth = isSelected ? 2 : 1;
+      if (isSelected) ctx.setLineDash([6, 4]);
+      ctx.stroke();
+      if (isSelected) ctx.setLineDash([]);
+
+      // Compute bounding box dimensions (W x H)
+      var rMinX = Infinity, rMaxX = -Infinity, rMinY = Infinity, rMaxY = -Infinity;
+      for (var pi = 0; pi < r.polygon.length; pi++) {
+        var ptV = r.polygon[pi];
+        if (ptV.x < rMinX) rMinX = ptV.x;
+        if (ptV.x > rMaxX) rMaxX = ptV.x;
+        if (ptV.y < rMinY) rMinY = ptV.y;
+        if (ptV.y > rMaxY) rMaxY = ptV.y;
       }
+      var rwMm = Math.max(100, Math.round(rMaxX - rMinX));
+      var rhMm = Math.max(100, Math.round(rMaxY - rMinY));
 
       // Room Center Label (guaranteed strictly within inner walls)
       var interiorPt = (Core.Vec2 && typeof Core.Vec2.interiorVisualCenter === 'function')
@@ -2784,35 +2870,37 @@
         : Core.Vec2.polygonCentroid(r.polygon);
       var cScreen = this.worldToScreen(interiorPt);
 
-      var nameTxt = r.name || ('Room ' + (i + 1));
-      var areaTxt = (r.areaSqM || 0).toFixed(1) + ' m²  ·  ' + Math.round(r.areaSqFt || 0) + ' sq ft';
+      var nameTxt = (r.name || ('Room ' + (i + 1))).toUpperCase();
+      var dimTxt = (this.unitSystem === 'imperial')
+        ? (Core.formatFeetInches(rwMm) + ' × ' + Core.formatFeetInches(rhMm))
+        : ((rwMm / 1000).toFixed(1) + 'm × ' + (rhMm / 1000).toFixed(1) + 'm  ·  ' + (r.areaSqM || 0).toFixed(1) + ' m²');
 
-      // Badge pill
-      ctx.font = '600 13px "IBM Plex Sans", sans-serif';
+      // Sleek architectural typography directly on floor with soft translucent halo pill
+      ctx.font = '700 12.5px "IBM Plex Sans", -apple-system, sans-serif';
       var nw = ctx.measureText(nameTxt).width;
-      ctx.font = '500 11px "IBM Plex Mono", monospace';
-      var aw = ctx.measureText(areaTxt).width;
-      var bw = Math.max(nw, aw) + 24;
-      var bh = 42;
+      ctx.font = '600 10.5px "IBM Plex Sans", monospace';
+      var dw = ctx.measureText(dimTxt).width;
+      var bw = Math.max(nw, dw) + 20;
+      var bh = 36;
 
-      ctx.fillStyle = isSelected ? '#1e3a8a' : 'rgba(255, 255, 255, 0.94)';
-      ctx.strokeStyle = isSelected ? '#3b82f6' : '#d1d5db';
-      ctx.lineWidth = isSelected ? 2 : 1;
+      ctx.fillStyle = isSelected ? '#1e3a8a' : 'rgba(255, 255, 255, 0.88)';
+      ctx.strokeStyle = isSelected ? '#3b82f6' : 'rgba(203, 213, 225, 0.7)';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(cScreen.x - bw / 2, cScreen.y - bh / 2, bw, bh, 6);
+      if (ctx.roundRect) ctx.roundRect(cScreen.x - bw / 2, cScreen.y - bh / 2, bw, bh, 4);
       else ctx.rect(cScreen.x - bw / 2, cScreen.y - bh / 2, bw, bh);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = isSelected ? '#ffffff' : '#1f2937';
-      ctx.font = '700 13px "IBM Plex Sans", sans-serif';
+      ctx.fillStyle = isSelected ? '#ffffff' : '#0f172a';
+      ctx.font = '700 12px "IBM Plex Sans", -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(nameTxt, cScreen.x, cScreen.y - 9);
+      ctx.fillText(nameTxt, cScreen.x, cScreen.y - 7);
 
-      ctx.fillStyle = isSelected ? '#93c5fd' : '#4b5563';
-      ctx.font = '500 10.5px "IBM Plex Mono", monospace';
-      ctx.fillText(areaTxt, cScreen.x, cScreen.y + 9);
+      ctx.fillStyle = isSelected ? '#93c5fd' : '#475569';
+      ctx.font = '600 10px "IBM Plex Sans", monospace';
+      ctx.fillText(dimTxt, cScreen.x, cScreen.y + 8);
     }
   };
 
@@ -2996,26 +3084,28 @@
       ctx.arc(pEnd.x, pEnd.y, isDivSel ? 4.5 : 3.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Midpoint badge "✂ ROOM DIVIDER"
-      var midX = (pStart.x + pEnd.x) / 2;
-      var midY = (pStart.y + pEnd.y) / 2;
-      var angle = Math.atan2(pEnd.y - pStart.y, pEnd.x - pStart.x);
-      if (angle > Math.PI / 2 || angle < -Math.PI / 2) angle += Math.PI;
+      // Midpoint badge "✂ ROOM DIVIDER" (rendered when selected or zoomed in)
+      if (isDivSel || self.zoom >= 0.055) {
+        var midX = (pStart.x + pEnd.x) / 2;
+        var midY = (pStart.y + pEnd.y) / 2;
+        var angle = Math.atan2(pEnd.y - pStart.y, pEnd.x - pStart.x);
+        if (angle > Math.PI / 2 || angle < -Math.PI / 2) angle += Math.PI;
 
-      ctx.translate(midX, midY);
-      ctx.rotate(angle);
-      var badgeText = '✂ ROOM DIVIDER';
-      ctx.font = '700 9.5px "IBM Plex Sans", -apple-system, sans-serif';
-      var tw = ctx.measureText(badgeText).width;
-      ctx.fillStyle = isDivSel ? '#6D28D9' : '#7C3AED';
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(-tw / 2 - 7, -9, tw + 14, 18, 4);
-      else ctx.rect(-tw / 2 - 7, -9, tw + 14, 18);
-      ctx.fill();
-      ctx.fillStyle = '#FFFFFF';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(badgeText, 0, 0);
+        ctx.translate(midX, midY);
+        ctx.rotate(angle);
+        var badgeText = '✂ ROOM DIVIDER';
+        ctx.font = '700 9.5px "IBM Plex Sans", -apple-system, sans-serif';
+        var tw = ctx.measureText(badgeText).width;
+        ctx.fillStyle = isDivSel ? '#6D28D9' : 'rgba(109, 40, 217, 0.85)';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(-tw / 2 - 7, -9, tw + 14, 18, 4);
+        else ctx.rect(-tw / 2 - 7, -9, tw + 14, 18);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badgeText, 0, 0);
+      }
 
       ctx.restore();
 
@@ -3023,6 +3113,34 @@
       if (isDivSel) {
         this.renderHandle(ctx, div.start);
         this.renderHandle(ctx, div.end);
+      }
+    }
+
+    // ── PASS 4: Render Architectural Structural Black RCC Columns at Wall Corners & Junctions ──
+    var columnPts = [];
+    var isUniqueCorner = function (pt) {
+      for (var ci = 0; ci < columnPts.length; ci++) {
+        if (Vec2.dist(pt, columnPts[ci]) < 50) return false;
+      }
+      return true;
+    };
+    for (var wci = 0; wci < walls.length; wci++) {
+      var wItem = walls[wci];
+      if (wItem.isDivider || wItem.thickness === 0) continue;
+      if (wItem.start && isUniqueCorner(wItem.start)) columnPts.push(wItem.start);
+      if (wItem.end && isUniqueCorner(wItem.end)) columnPts.push(wItem.end);
+    }
+
+    var colSizeMm = 220; // Authentic 220mm structural RCC column
+    var colSizePx = colSizeMm * this.zoom;
+    if (colSizePx >= 4) {
+      ctx.fillStyle = '#0f172a'; // Deep architectural black
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1;
+      for (var cpi = 0; cpi < columnPts.length; cpi++) {
+        var sCol = this.worldToScreen(columnPts[cpi]);
+        ctx.fillRect(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2, colSizePx, colSizePx);
+        ctx.strokeRect(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2, colSizePx, colSizePx);
       }
     }
   };
@@ -3425,49 +3543,64 @@
       var leafEndWorld = { x: hingePt.x + normDir.x * op.width, y: hingePt.y + normDir.y * op.width };
       var sLeaf = this.worldToScreen(leafEndWorld);
 
-      ctx.strokeStyle = isSelected ? '#1B4F72' : (isGhost ? '#0284c7' : '#2E7BB5');
-      ctx.lineWidth = isSelected ? 2 : 1.5;
-
-      // Swing leaf line (door slab)
+      // Door leaf (rich dark wood slab as in reference plan)
+      ctx.strokeStyle = isSelected ? '#2563eb' : (isGhost ? '#0284c7' : '#451a03');
+      ctx.lineWidth = isSelected ? 2.5 : 2;
       ctx.beginPath();
       ctx.moveTo(sHinge.x, sHinge.y);
       ctx.lineTo(sLeaf.x, sLeaf.y);
       ctx.stroke();
 
-      // Dotted quarter arc from closed position along wall to open leaf
+      // Hinge node
+      ctx.fillStyle = isSelected ? '#1d4ed8' : '#78350f';
+      ctx.beginPath();
+      ctx.arc(sHinge.x, sHinge.y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Swing arc (thin crimson architectural arc as in reference plan)
       var startAngle = Math.atan2(leafDir.y, leafDir.x);
       var endAngle = Math.atan2(normDir.y, normDir.x);
       var diff = endAngle - startAngle;
       while (diff < -Math.PI) diff += Math.PI * 2;
       while (diff > Math.PI) diff -= Math.PI * 2;
 
-      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = isSelected ? '#2563eb' : (isGhost ? '#0284c7' : '#b91c1c');
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.arc(sHinge.x, sHinge.y, swingRadiusPx, startAngle, endAngle, diff < 0);
       ctx.stroke();
-      ctx.setLineDash([]);
     } else {
-      // Draw Window Double Line Symbol
-      ctx.strokeStyle = isSelected ? '#1B4F72' : (isGhost ? '#0284c7' : '#2E7BB5');
-      ctx.lineWidth = 2;
+      // Draw Architectural Window (outer cut, double glass pane in sky cyan, sill stone)
+      var g1 = this.worldToScreen({ x: opStart.x + wNorm.x * (halfT / 3), y: opStart.y + wNorm.y * (halfT / 3) });
+      var g2 = this.worldToScreen({ x: opEnd.x + wNorm.x * (halfT / 3), y: opEnd.y + wNorm.y * (halfT / 3) });
+      var g3 = this.worldToScreen({ x: opStart.x - wNorm.x * (halfT / 3), y: opStart.y - wNorm.y * (halfT / 3) });
+      var g4 = this.worldToScreen({ x: opEnd.x - wNorm.x * (halfT / 3), y: opEnd.y - wNorm.y * (halfT / 3) });
+
+      // Double glass lines in architectural cyan
+      ctx.strokeStyle = isSelected ? '#2563eb' : (isGhost ? '#0284c7' : '#0284c7');
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y);
+      ctx.moveTo(g3.x, g3.y); ctx.lineTo(g4.x, g4.y);
+      ctx.stroke();
+
+      // Outer sill line
+      ctx.strokeStyle = isSelected ? '#1d4ed8' : '#0f172a';
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.moveTo(sStart.x, sStart.y); ctx.lineTo(sEnd.x, sEnd.y);
       ctx.stroke();
-
-      var g1 = this.worldToScreen({ x: opStart.x + wNorm.x * (halfT / 2), y: opStart.y + wNorm.y * (halfT / 2) });
-      var g2 = this.worldToScreen({ x: opEnd.x + wNorm.x * (halfT / 2), y: opEnd.y + wNorm.y * (halfT / 2) });
-      ctx.strokeStyle = isGhost ? '#0284c7' : '#8EADC4';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y);
-      ctx.stroke();
     }
 
-    // Label
-    ctx.fillStyle = isSelected ? '#1B4F72' : (isGhost ? '#0284c7' : '#2E7BB5');
-    ctx.font = '600 10px "IBM Plex Sans", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText((op.type === 'door' ? 'D ' : 'W ') + this.formatDim(op.width), sCenter.x, sCenter.y - 12);
+    // Clean compact architectural label (W, BW, or D)
+    if (this.zoom >= 0.055 || isSelected) {
+      var isBayWindow = /bay/i.test(op.type || '') || (op.width >= 1500);
+      var tagPrefix = op.type === 'door' ? 'D' : (isBayWindow ? 'BW' : 'W');
+      ctx.fillStyle = isSelected ? '#1d4ed8' : '#0f172a';
+      ctx.font = '700 10.5px "IBM Plex Sans", -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(tagPrefix, sCenter.x, sCenter.y - 12);
+    }
   };
 
   PlanEditor.prototype.renderOpenings = function (ctx) {
@@ -3905,12 +4038,45 @@
           ctx.moveTo(wPx / 2 - 10, -dPx / 2); ctx.lineTo(wPx / 2, -dPx / 2 + 10);
           ctx.stroke();
         } else {
-          // Base / Tall unit: Crisp architectural white card with elegant dark slate border
-          ctx.fillStyle = isSelected ? 'rgba(37, 99, 235, 0.16)' : 'rgba(255, 255, 255, 0.96)';
-          ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
-          ctx.strokeStyle = isSelected ? '#2563eb' : '#334155';
-          ctx.lineWidth = isSelected ? 2.5 : 1.6;
-          ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+          var isWardrobeOrStorage = (
+            (f.category === 'wardrobe' || f.category === 'tall' || f.category === 'storage') ||
+            /wardrobe|almirah|cupboard|closet|dress|store|cabinet|tv.*unit/i.test(f.name) ||
+            /wardrobe|almirah|cupboard/i.test(f.catalogItemId || '')
+          );
+
+          if (isWardrobeOrStorage) {
+            // Warm architectural wood finish with authentic diagonal cross-hatching (as in reference floor plan)
+            ctx.fillStyle = isSelected ? 'rgba(37, 99, 235, 0.22)' : 'rgba(212, 163, 115, 0.42)';
+            ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
+            ctx.strokeStyle = isSelected ? '#1d4ed8' : '#78350f';
+            ctx.lineWidth = isSelected ? 2.5 : 1.6;
+            ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+
+            // Internal architectural diagonal slash hatch lines (/ / / /)
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(-wPx / 2, -dPx / 2, wPx, dPx);
+            ctx.clip();
+
+            ctx.strokeStyle = isSelected ? 'rgba(37, 99, 235, 0.35)' : 'rgba(120, 53, 15, 0.3)';
+            ctx.lineWidth = 1;
+            var hatchSpacing = 14;
+            var totalSpan = wPx + dPx;
+            for (var hx = -totalSpan; hx <= totalSpan; hx += hatchSpacing) {
+              ctx.beginPath();
+              ctx.moveTo(hx - dPx, -dPx / 2);
+              ctx.lineTo(hx + dPx, dPx / 2);
+              ctx.stroke();
+            }
+            ctx.restore();
+          } else {
+            // Base / Tall unit: Crisp architectural white card with elegant dark slate border
+            ctx.fillStyle = isSelected ? 'rgba(37, 99, 235, 0.16)' : 'rgba(255, 255, 255, 0.96)';
+            ctx.fillRect(-wPx / 2, -dPx / 2, wPx, dPx);
+            ctx.strokeStyle = isSelected ? '#2563eb' : '#334155';
+            ctx.lineWidth = isSelected ? 2.5 : 1.6;
+            ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, dPx);
+          }
         }
       }
 

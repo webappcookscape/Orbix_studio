@@ -313,10 +313,14 @@
     var isWood = (type === 'wooden');
     var isWhite = (type === 'white_tile');
 
+    // Natural architectural matte finish — eliminates glossy mirror reflections and glare
     return new THREE.MeshStandardMaterial({
       map: tex,
-      roughness: isWhite ? 0.12 : (isWood ? 0.34 : 0.28),
-      metalness: isWhite ? 0.04 : (isWood ? 0.01 : 0.02),
+      roughness: isWood ? 0.78 : (isWhite ? 0.82 : 0.85),
+      metalness: 0.0,
+      polygonOffset: true,
+      polygonOffsetFactor: -1.0,
+      polygonOffsetUnits: -1.0,
       side: THREE.DoubleSide
     });
   };
@@ -396,8 +400,8 @@
     var skirtingTileColor = ArchitecturalRenderer.getFloorTileColor(this.selectedFloorType);
     this.materials.skirting = new THREE.MeshStandardMaterial({
       color: skirtingTileColor,
-      roughness: 0.25,
-      metalness: 0.02
+      roughness: 0.8,
+      metalness: 0.0
     });
 
     // Floor Finishes: Architectural Procedural PBR (Default: White Tile)
@@ -544,11 +548,11 @@
       }
     }
 
-    // 2. Build Room Floors
+    // 2. Build Room Floors (with inner divided room holes to prevent floor overlapping/glitches)
     if (rooms && rooms.length > 0) {
       for (var r = 0; r < rooms.length; r++) {
         var room = rooms[r];
-        var floorMesh = this.buildRoomFloor(room);
+        var floorMesh = this.buildRoomFloor(room, rooms);
         if (floorMesh) this.group.add(floorMesh);
       }
     } else {
@@ -956,7 +960,7 @@
     return wg;
   };
 
-  ArchitecturalRenderer.prototype.buildRoomFloor = function (room) {
+  ArchitecturalRenderer.prototype.buildRoomFloor = function (room, allRooms) {
     if (!room || !room.polygon || room.polygon.length < 3) return null;
 
     var cleaner = (typeof Core !== 'undefined' && Core.cleanPolygon) || ArchitecturalRenderer.cleanPolygon;
@@ -996,6 +1000,46 @@
       shape.lineTo(orderedPts[i].x, -orderedPts[i].y);
     }
     shape.closePath();
+
+    // Check for interior divided rooms (e.g. Pooja room) inside this room to create clean holes and prevent floor overlap/glitch!
+    var isInnerRoom = false;
+    if (allRooms && allRooms.length > 1) {
+      for (var ar = 0; ar < allRooms.length; ar++) {
+        var otherR = allRooms[ar];
+        if (!otherR || otherR.id === room.id || !otherR.polygon || otherR.polygon.length < 3) continue;
+
+        var otherCenter = (typeof Core !== 'undefined' && Core.Vec2) ? Core.Vec2.polygonCentroid(otherR.polygon) : null;
+        if (!otherCenter) continue;
+
+        // If otherR is an inner room inside this room: cut a hole out of this floor mesh!
+        if (otherR.areaSqMm < (room.areaSqMm || 999999999) && Core.Vec2.pointInPolygon(otherCenter, poly)) {
+          var holePoly = cleaner ? cleaner(otherR.polygon) : otherR.polygon;
+          if (holePoly && holePoly.length >= 3) {
+            var hArea = 0;
+            var hn = holePoly.length;
+            for (var hi = 0; hi < hn; hi++) {
+              var hj = (hi + 1) % hn;
+              hArea += holePoly[hi].x * (-holePoly[hj].y) - holePoly[hj].x * (-holePoly[hi].y);
+            }
+            hArea = hArea / 2;
+            var orderedHole = holePoly.slice();
+            // Three.js Earcut requires holes to have CW winding in shape space
+            if (hArea > 0) orderedHole.reverse();
+
+            var holePath = new THREE.Path();
+            holePath.moveTo(orderedHole[0].x, -orderedHole[0].y);
+            for (var hp = 1; hp < orderedHole.length; hp++) {
+              holePath.lineTo(orderedHole[hp].x, -orderedHole[hp].y);
+            }
+            holePath.closePath();
+            shape.holes.push(holePath);
+          }
+        } else if (otherR.areaSqMm > (room.areaSqMm || 0) && Core.Vec2.pointInPolygon(Core.Vec2.polygonCentroid(poly), otherR.polygon)) {
+          // This room itself is an inner divided room!
+          isInnerRoom = true;
+        }
+      }
+    }
 
     var geo = null;
     try {
@@ -1068,7 +1112,7 @@
 
     // Rotate flat into X-Z floor plane with normal facing straight UP (+Y)
     mesh.rotation.x = -Math.PI / 2;
-    mesh.position.y = 1; // 1mm above base level to prevent Z-fighting
+    mesh.position.y = isInnerRoom ? 1.08 : 1.0; // Subtle elevation for inner divided room to eliminate coplanar Z-fighting
     mesh.receiveShadow = true;
     mesh.name = 'Floor_' + (room.name || 'Room');
     mesh.userData = { isFloorMesh: true, floorFinish: finishType, roomId: room.id };

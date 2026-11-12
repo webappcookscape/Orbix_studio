@@ -1786,15 +1786,24 @@
       roomMap[rooms[r].id] = rooms[r];
     }
 
-    // Auto-associate unassigned furniture items if inside a room
+    // Associate furniture items with their enclosing room (prioritizing smaller divided rooms, e.g. Pooja Room inside Living Room)
     for (var fIdx = 0; fIdx < furniture.length; fIdx++) {
       var fu = furniture[fIdx];
-      if ((!fu.roomId || !roomMap[fu.roomId]) && fu.pos) {
+      if (fu.pos) {
+        var matchingRooms = [];
         for (var rmIdx = 0; rmIdx < rooms.length; rmIdx++) {
           if (rooms[rmIdx].polygon && Vec2.pointInPolygon(fu.pos, rooms[rmIdx].polygon)) {
-            fu.roomId = rooms[rmIdx].id;
-            break;
+            matchingRooms.push(rooms[rmIdx]);
           }
+        }
+        if (matchingRooms.length > 0) {
+          // Sort ascending by area so inner/divided room (e.g. Pooja room) takes priority
+          matchingRooms.sort(function (a, b) { return (a.areaSqMm || 0) - (b.areaSqMm || 0); });
+          fu.roomId = matchingRooms[0].id;
+          fu.roomName = matchingRooms[0].name;
+        } else if (!fu.roomId || !roomMap[fu.roomId]) {
+          fu.roomId = '_general';
+          fu.roomName = 'General';
         }
       }
     }
