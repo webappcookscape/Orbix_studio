@@ -1248,9 +1248,6 @@
      ───────────────────────────────────────────────────────────────────────────── */
   function detectRooms(project) {
     if (!project || !project.plan) return [];
-    // Step 0: Automatically prune unattached / dangling divider stubs
-    pruneOrphanDividers(project);
-
     var walls = project.plan.walls || [];
     if (walls.length < 3) {
       project.plan.rooms = [];
@@ -1437,23 +1434,55 @@
     // Step 5: Update existing room entities or create new ones with smart apartment naming
     var updatedRooms = [];
     var existingRooms = project.plan.rooms || [];
+    var usedExisting = {};
     var unassignedCycles = [];
 
     for (var c = 0; c < cycles.length; c++) {
       var cyc = cycles[c];
       var center = Vec2.polygonCentroid(cyc.polygon);
       var matchedRoom = null;
+      var bestScore = Infinity;
 
-      // Match with an existing room by centroid containment or center distance
+      // Match with an existing room by wall overlap or centroid & area similarity
       for (var er = 0; er < existingRooms.length; er++) {
         var exR = existingRooms[er];
-        if (exR.polygon && (Vec2.pointInPolygon(center, exR.polygon) || Vec2.dist(center, Vec2.polygonCentroid(exR.polygon)) < 500)) {
-          matchedRoom = exR;
-          break;
+        if (!exR || usedExisting[exR.id]) continue;
+        if (!exR.polygon || exR.polygon.length < 3) continue;
+
+        var exCenter = Vec2.polygonCentroid(exR.polygon);
+        var dist = Vec2.dist(center, exCenter);
+        var areaRatio = (exR.areaSqMm && cyc.areaSqMm)
+          ? Math.min(cyc.areaSqMm, exR.areaSqMm) / Math.max(cyc.areaSqMm, exR.areaSqMm)
+          : 0;
+
+        var wallOverlap = 0;
+        if (exR.wallIds && cyc.wallIds) {
+          for (var wi = 0; wi < cyc.wallIds.length; wi++) {
+            if (exR.wallIds.indexOf(cyc.wallIds[wi]) !== -1) wallOverlap++;
+          }
+        }
+        var wallOverlapRatio = cyc.wallIds ? (wallOverlap / Math.max(1, cyc.wallIds.length)) : 0;
+
+        var isMatch = false;
+        if (wallOverlapRatio >= 0.5) {
+          isMatch = true;
+        } else if (dist < 600 && areaRatio > 0.45) {
+          isMatch = true;
+        } else if (dist < 300 && areaRatio > 0.3) {
+          isMatch = true;
+        }
+
+        if (isMatch) {
+          var score = dist - (wallOverlapRatio * 500);
+          if (score < bestScore) {
+            bestScore = score;
+            matchedRoom = exR;
+          }
         }
       }
 
       if (matchedRoom) {
+        usedExisting[matchedRoom.id] = true;
         matchedRoom.polygon = cyc.polygon;
         matchedRoom.areaSqMm = cyc.areaSqMm;
         matchedRoom.areaSqM = cyc.areaSqM;

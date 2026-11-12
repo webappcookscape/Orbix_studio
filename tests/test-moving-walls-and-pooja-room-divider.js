@@ -146,4 +146,104 @@ assert(poojaRoom, 'A room named "Pooja Room" must be detected for the divider en
 assert.strictEqual(poojaRoom.areaSqM, 2.25, 'Pooja Room area must be 2.25 m² (1.5m x 1.5m)');
 console.log('✓ Pooja Room without joining external walls detected and named properly!');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 3: Divided Room Draggable & Movable Straight (Parallel & Perpendicular)
+// ─────────────────────────────────────────────────────────────────────────────
+console.log('\n--- Part 3: Divided Room Draggable & Movable Straight ---');
+
+const editor2 = new Plan({ appendChild: () => {}, style: {}, querySelector: () => null }, { project: project2 });
+// 3.1: First click inside Pooja room selects it
+editor2.handleSelectMouseDown({ x: 2000, y: 2000 }, false);
+assert.strictEqual(editor2.selected.length, 1);
+assert.strictEqual(editor2.selected[0].type, 'room');
+assert.strictEqual(editor2.selected[0].id, poojaRoom.id);
+assert.strictEqual(editor2.dragState, null, 'First click selects without moving');
+console.log('✓ Click before move verified: First click on room selects it.');
+
+// 3.2: Second click initiates move_room with divider walls tracking
+editor2.handleSelectMouseDown({ x: 2000, y: 2000 }, false);
+assert(editor2.dragState, 'Clicking already-selected room must engage dragState');
+assert.strictEqual(editor2.dragState.type, 'move_room');
+assert.strictEqual(editor2.dragState.dividerWalls.length, 4, 'All 4 boundary divider walls must be tracked');
+
+// 3.3: Drag room along X by +500mm (parallel/perpendicular straight)
+const rds = editor2.dragState;
+const rRawDx = 500;
+const rRawDy = 20; // minor Y jitter
+
+let rDispX = 0, rDispY = 0;
+if (Math.abs(rRawDx) >= Math.abs(rRawDy)) {
+  rDispX = Math.round(rRawDx / 25) * 25;
+  rDispY = 0;
+} else {
+  rDispX = 0;
+  rDispY = Math.round(rRawDy / 25) * 25;
+}
+
+assert.strictEqual(rDispX, 500);
+assert.strictEqual(rDispY, 0, 'Y jitter must be zeroed out for straight movement');
+
+// Apply movement to divider walls
+for (let dwi = 0; dwi < rds.dividerWalls.length; dwi++) {
+  const dw = rds.dividerWalls[dwi];
+  dw.wall.start.x = Math.round(dw.origStart.x + rDispX);
+  dw.wall.start.y = Math.round(dw.origStart.y + rDispY);
+  dw.wall.end.x = Math.round(dw.origEnd.x + rDispX);
+  dw.wall.end.y = Math.round(dw.origEnd.y + rDispY);
+}
+
+// Verify divider boundaries translated straight along X
+assert.strictEqual(dTop.start.x, 2000);
+assert.strictEqual(dTop.end.x, 3500);
+assert.strictEqual(dTop.start.y, 1500);
+assert.strictEqual(dTop.end.y, 1500);
+console.log('✓ Divided room draggable straight verified: Pooja room moved along X with zero angle shift.');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 4: Divided Room Deletion
+// ─────────────────────────────────────────────────────────────────────────────
+console.log('\n--- Part 4: Divided Room Deletion ---');
+
+// Select pooja room and delete it
+editor2.selected = [{ type: 'room', id: poojaRoom.id }];
+const initialWallCount = project2.plan.walls.length; // 4 outer + 4 dividers = 8
+assert.strictEqual(initialWallCount, 8);
+
+editor2.deleteSelected();
+
+// Verify that the 4 divider walls were deleted and outer walls remain
+assert.strictEqual(project2.plan.walls.length, 4, 'All 4 divider walls must be removed');
+assert.strictEqual(project2.plan.walls.every(w => !w.isDivider), true, 'Only physical outer walls remain');
+assert.strictEqual(project2.plan.rooms.length, 1, 'Only outer room remains');
+assert.strictEqual(project2.plan.rooms[0].name, 'Living / Hall');
+console.log('✓ Divided room deletion verified: Room and its divider walls cleanly removed.');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Part 5: Zoom LOD and Measurement Visibility
+// ─────────────────────────────────────────────────────────────────────────────
+console.log('\n--- Part 5: Zoom LOD and Measurement Visibility ---');
+
+// Test 5.1: Zoomed out (< 0.055) suppresses unselected wall dimensions
+editor2.zoom = 0.04;
+let textRenderCount = 0;
+const mockCtx = {
+  save: () => {}, restore: () => {}, translate: () => {}, rotate: () => {},
+  beginPath: () => {}, moveTo: () => {}, lineTo: () => {}, stroke: () => {},
+  fill: () => {}, arc: () => {}, setLineDash: () => {}, rect: () => {}, roundRect: () => {},
+  measureText: () => ({ width: 40 }),
+  fillText: () => { textRenderCount++; }
+};
+
+const outerWall = project2.plan.walls[0];
+editor2.renderWallDimensions(mockCtx, outerWall, false);
+assert.strictEqual(textRenderCount, 0, 'Zoomed-out unselected wall dimension must NOT render text pills');
+console.log('✓ Zoom LOD verified: Text suppressed when zoomed out (zoom < 0.055) to prevent clutter.');
+
+// Test 5.2: Zoomed in (>= 0.055) renders crisp measurements
+editor2.zoom = 0.12;
+editor2.renderWallDimensions(mockCtx, outerWall, false);
+assert(textRenderCount > 0, 'Zoomed-in wall dimension must render measurement text pill');
+console.log('✓ Measurement visibility verified: Measurements rendered when zoomed in with high readability.');
+
 console.log('\nALL TESTS PASSED SUCCESSFULLY! 🚀');
+

@@ -2070,7 +2070,8 @@
           '<div class="insp-row"><label>Area (sq.ft)</label><input type="text" value="' + areaSqFt + ' sq ft (' + areaSqM + ' m²)" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
           '<div class="insp-row"><label>Perimeter (mm)</label><input type="text" value="' + Math.round(rm.perimeter || 0).toLocaleString() + ' mm" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
           '<div class="insp-row" style="margin-top:6px;"><label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="inspRoomFlooringQuote"' + (rm.includeFlooring ? ' checked' : '') + '> Include Civil Flooring in Quote (₹' + (self.project && self.project.rateCard && self.project.rateCard.categories && self.project.rateCard.categories.flooring ? self.project.rateCard.categories.flooring.baseRatePerSft : 140) + '/SFT)</label></div>' +
-          '<button class="btn primary full" id="inspFocusRoom3D" style="margin-top:12px">👁 View Room in 3D Studio</button>';
+          '<button class="btn primary full" id="inspFocusRoom3D" style="margin-top:12px">👁 View Room in 3D Studio</button>' +
+          '<button class="btn danger full" id="inspDelRoom" style="margin-top:8px">🗑️ Delete Room & Dividers</button>';
 
         var nameInput = document.getElementById('inspRoomName');
         if (nameInput) {
@@ -2138,6 +2139,15 @@
           focusBtn.addEventListener('click', function () {
             var vtab = document.querySelector('.vtab[data-view="design"]');
             if (vtab) vtab.click();
+          });
+        }
+
+        var delRoomBtn = document.getElementById('inspDelRoom');
+        if (delRoomBtn) {
+          delRoomBtn.addEventListener('click', function () {
+            self.editor.deleteSelected();
+            if (self.update3DStudioRoomOptions) self.update3DStudioRoomOptions();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
       }
