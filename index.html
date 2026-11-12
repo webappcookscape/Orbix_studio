@@ -211,7 +211,16 @@
             <button class="minibtn" id="camResetCentreBtn" title="Re-centre 3D camera on room centre" style="font-weight:600;">🎯 Re-Centre</button>
             <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
             <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
-            <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
+            <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera or click to cycle Wall 1, 2, 3, 4" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
+            <select class="minibtn" id="wallCutSelect" title="Single wall cutoff: hide Wall 1, 2, 3, 4, or auto-cut camera wall (attached units hide too)" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+              <option value="single_auto">👁 Auto-Cut (1 Wall)</option>
+              <option value="wall_1">Wall 1 Hidden</option>
+              <option value="wall_2">Wall 2 Hidden</option>
+              <option value="wall_3">Wall 3 Hidden</option>
+              <option value="wall_4">Wall 4 Hidden</option>
+              <option value="all">🏛 All Walls Visible</option>
+              <option value="hidden">🚫 All Walls Hidden</option>
+            </select>
             <!-- 3D Floor Finish Switcher -->
             <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
               <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White Tile</button>

@@ -537,7 +537,11 @@
       var wall = walls[w];
       var wallOps = openingsByWall[wall.id] || [];
       var wallMeshGroup = this.buildWallWithCutouts(wall, wallOps);
-      if (wallMeshGroup) this.group.add(wallMeshGroup);
+      if (wallMeshGroup) {
+        wallMeshGroup.userData.wallIndex = w;
+        wallMeshGroup.userData.wallNumber = w + 1; // 1, 2, 3, 4
+        this.group.add(wallMeshGroup);
+      }
     }
 
     // 2. Build Room Floors
@@ -552,11 +556,41 @@
       if (fallbackFloor) this.group.add(fallbackFloor);
     }
 
-    // 3. Build Placed Furniture Units in 3D
+    // 3. Build Placed Furniture Units in 3D & associate with closest wall
     for (var f = 0; f < furniture.length; f++) {
       var furn = furniture[f];
       var furnMesh = this.buildFurnitureMesh(furn);
       if (furnMesh) {
+        var bestWall = null, bestDist = 999999;
+        if (furn.wallId) {
+          var matchedWall = walls.find(function (wItem) { return wItem.id === furn.wallId; });
+          if (matchedWall) {
+            var matchedIdx = walls.indexOf(matchedWall);
+            bestWall = { id: matchedWall.id, index: matchedIdx, number: matchedIdx + 1 };
+          }
+        }
+        if (!bestWall && furn.pos && walls.length > 0) {
+          for (var wi = 0; wi < walls.length; wi++) {
+            var wObj = walls[wi];
+            if (!wObj || !wObj.start || !wObj.end) continue;
+            var p1 = wObj.start, p2 = wObj.end;
+            var dx = p2.x - p1.x, dy = p2.y - p1.y;
+            var lenSq = dx * dx + dy * dy;
+            if (lenSq < 1) continue;
+            var t = Math.max(0, Math.min(1, ((furn.pos.x - p1.x) * dx + (furn.pos.y - p1.y) * dy) / lenSq));
+            var projX = p1.x + t * dx, projY = p1.y + t * dy;
+            var dist = Math.hypot(furn.pos.x - projX, furn.pos.y - projY);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestWall = { id: wObj.id, index: wi, number: wi + 1, dist: dist };
+            }
+          }
+        }
+        if (bestWall && (furn.wallId || bestDist < 1200)) {
+          furnMesh.userData.wallId = bestWall.id;
+          furnMesh.userData.wallIndex = bestWall.index;
+          furnMesh.userData.wallNumber = bestWall.number;
+        }
         this.group.add(furnMesh);
       }
     }

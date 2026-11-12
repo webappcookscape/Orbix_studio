@@ -2742,24 +2742,53 @@
       var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
       if (!homeObj) return;
 
-      var mode = window.OrbixWallMode || 'cutaway';
+      var mode = window.OrbixWallMode || 'single_auto';
+      if (mode === 'cutaway') mode = 'single_auto';
+
+      var wallMeshes = [];
+      var furnMeshes = [];
+
       homeObj.children.forEach(function (child) {
         if (child.userData && child.userData.isWall) {
-          if (mode === 'all') {
-            child.visible = true;
-            return;
-          }
-          if (mode === 'hidden') {
-            child.visible = false;
-            return;
-          }
-          // Auto-cutaway mode
-          var wMid = child.userData.mid;
-          if (!wMid) return;
+          wallMeshes.push(child);
+        } else if (child.userData && (child.userData.isFurniture || child.userData.isFurnitureGroup || (child.name && child.name.indexOf('Furniture_') === 0))) {
+          furnMeshes.push(child);
+        }
+      });
 
-          var camToTargX = target.x - camera.position.x;
-          var camToTargZ = target.z - camera.position.z;
-          var camToTargDist = Math.hypot(camToTargX, camToTargZ) || 1;
+      var wallVisibility = {}; // wallId -> boolean (true: visible, false: hidden)
+
+      if (mode === 'all') {
+        wallMeshes.forEach(function (wMesh) {
+          wMesh.visible = true;
+          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = true;
+        });
+      } else if (mode === 'hidden') {
+        wallMeshes.forEach(function (wMesh) {
+          wMesh.visible = false;
+          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = false;
+        });
+      } else if (mode.indexOf('wall_') === 0) {
+        // Specific single wall hidden by number: 'wall_1', 'wall_2', 'wall_3', 'wall_4'
+        var targetWallNum = parseInt(mode.replace('wall_', ''), 10);
+        wallMeshes.forEach(function (wMesh, wIdx) {
+          var wNum = (wMesh.userData && wMesh.userData.wallNumber) ? wMesh.userData.wallNumber : (wIdx + 1);
+          var isTarget = (wNum === targetWallNum);
+          wMesh.visible = !isTarget;
+          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !isTarget;
+        });
+      } else {
+        // 'single_auto' / 'cutaway': HIDE ONLY THE SINGLE MOST OBSTRUCTING WALL
+        var bestObstructingWall = null;
+        var maxScore = -999999;
+
+        var camToTargX = target.x - camera.position.x;
+        var camToTargZ = target.z - camera.position.z;
+        var camToTargDist = Math.hypot(camToTargX, camToTargZ) || 1;
+
+        wallMeshes.forEach(function (wMesh) {
+          var wMid = wMesh.userData && wMesh.userData.mid;
+          if (!wMid) return;
 
           var camToWallX = wMid.x - camera.position.x;
           var camToWallZ = wMid.y - camera.position.z;
@@ -2767,9 +2796,52 @@
 
           var dot = (camToTargX * camToWallX + camToTargZ * camToWallZ) / (camToTargDist * camToWallDist);
 
-          // Obstructing if between camera and interior
-          var isObstructing = (camToWallDist < camToTargDist * 0.95 && dot > 0.35);
-          child.visible = !isObstructing;
+          // Obstruction score: wall is between camera and target (camToWallDist < camToTargDist) and facing view direction (dot > 0.15)
+          if (camToWallDist < camToTargDist * 1.05 && dot > 0.15) {
+            var score = dot * (1.6 - (camToWallDist / camToTargDist));
+            if (score > maxScore) {
+              maxScore = score;
+              bestObstructingWall = wMesh;
+            }
+          }
+        });
+
+        wallMeshes.forEach(function (wMesh) {
+          var shouldHide = (bestObstructingWall && wMesh === bestObstructingWall);
+          wMesh.visible = !shouldHide;
+          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !shouldHide;
+        });
+      }
+
+      // Synchronize furniture units attached to hidden walls!
+      furnMeshes.forEach(function (fMesh) {
+        var wId = fMesh.userData && fMesh.userData.wallId;
+        if (wId && wallVisibility[wId] !== undefined) {
+          fMesh.visible = wallVisibility[wId];
+        } else if (fMesh.userData && fMesh.userData.wallNumber) {
+          var wNum = fMesh.userData.wallNumber;
+          var targetWallMesh = wallMeshes.find(function (wm, idx) {
+            return ((wm.userData && wm.userData.wallNumber) === wNum) || ((idx + 1) === wNum);
+          });
+          if (targetWallMesh) {
+            fMesh.visible = targetWallMesh.visible;
+          } else {
+            fMesh.visible = true;
+          }
+        } else {
+          // If no wallId assigned, check proximity to any hidden wall
+          var isNearHiddenWall = false;
+          for (var wi = 0; wi < wallMeshes.length; wi++) {
+            var wm = wallMeshes[wi];
+            if (!wm.visible && wm.userData && wm.userData.mid) {
+              var d = Math.hypot(fMesh.position.x - wm.userData.mid.x, fMesh.position.z - wm.userData.mid.y);
+              if (d < 1000) {
+                isNearHiddenWall = true;
+                break;
+              }
+            }
+          }
+          fMesh.visible = !isNearHiddenWall;
         }
       });
     }
@@ -5275,30 +5347,68 @@
     });
   })();
   (function () {
-    var b = $("#toggleWallCutawayBtn"); if (!b) return;
-    window.OrbixWallMode = 'cutaway';
-    b.addEventListener("click", function () {
-      if (window.OrbixWallMode === 'cutaway') {
-        window.OrbixWallMode = 'all';
-        b.textContent = '🏛 Walls: All Visible';
-        b.classList.remove('is-on');
-        toast("Showing all walls");
-      } else if (window.OrbixWallMode === 'all') {
-        window.OrbixWallMode = 'hidden';
-        b.textContent = '🚫 Walls: Hidden';
-        b.classList.remove('is-on');
-        toast("Hiding all walls");
-      } else {
-        window.OrbixWallMode = 'cutaway';
-        b.textContent = '👁 Walls: Auto-Cutaway';
-        b.classList.add('is-on');
-        toast("Auto-cutaway: front obstructing walls hidden");
+    var b = $("#toggleWallCutawayBtn");
+    var sel = $("#wallCutSelect");
+    window.OrbixWallMode = 'single_auto';
+
+    function setWallCutMode(newMode, showToastMsg) {
+      window.OrbixWallMode = newMode;
+      if (sel) sel.value = newMode;
+      if (b) {
+        if (newMode === 'single_auto' || newMode === 'cutaway') {
+          b.textContent = '👁 Walls: Auto-Cutaway';
+          b.classList.add('is-on');
+        } else if (newMode === 'wall_1') {
+          b.textContent = '🧱 Wall 1 Hidden';
+          b.classList.add('is-on');
+        } else if (newMode === 'wall_2') {
+          b.textContent = '🧱 Wall 2 Hidden';
+          b.classList.add('is-on');
+        } else if (newMode === 'wall_3') {
+          b.textContent = '🧱 Wall 3 Hidden';
+          b.classList.add('is-on');
+        } else if (newMode === 'wall_4') {
+          b.textContent = '🧱 Wall 4 Hidden';
+          b.classList.add('is-on');
+        } else if (newMode === 'all') {
+          b.textContent = '🏛 Walls: All Visible';
+          b.classList.remove('is-on');
+        } else if (newMode === 'hidden') {
+          b.textContent = '🚫 Walls: Hidden';
+          b.classList.remove('is-on');
+        }
+      }
+      if (showToastMsg) {
+        var msg = 'Auto-cut single wall: front wall & attached units hidden';
+        if (newMode === 'wall_1') msg = 'Wall 1 & attached units hidden';
+        else if (newMode === 'wall_2') msg = 'Wall 2 & attached units hidden';
+        else if (newMode === 'wall_3') msg = 'Wall 3 & attached units hidden';
+        else if (newMode === 'wall_4') msg = 'Wall 4 & attached units hidden';
+        else if (newMode === 'all') msg = 'Showing all walls & units';
+        else if (newMode === 'hidden') msg = 'Hiding all walls & attached units';
+        toast(msg);
       }
       if (GL.ok && GL.updateWallCutaway) {
         GL.updateWallCutaway();
         GL.settle();
       }
-    });
+    }
+
+    if (sel) {
+      sel.addEventListener('change', function () {
+        setWallCutMode(sel.value, true);
+      });
+    }
+
+    if (b) {
+      var modesList = ['single_auto', 'wall_1', 'wall_2', 'wall_3', 'wall_4', 'all', 'hidden'];
+      b.addEventListener('click', function () {
+        var curIdx = modesList.indexOf(window.OrbixWallMode);
+        if (curIdx === -1) curIdx = 0;
+        var nextMode = modesList[(curIdx + 1) % modesList.length];
+        setWallCutMode(nextMode, true);
+      });
+    }
   })();
   $("#isoBtn").addEventListener("click", function () {
     var rot = getActiveUnitRotation();

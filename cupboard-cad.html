@@ -3397,7 +3397,16 @@ body.role-employee #adminCreateEmpBox,
             <button class="minibtn" id="camResetCentreBtn" title="Re-centre 3D camera on room centre" style="font-weight:600;">🎯 Re-Centre</button>
             <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
             <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
-            <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
+            <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera or click to cycle Wall 1, 2, 3, 4" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
+            <select class="minibtn" id="wallCutSelect" title="Single wall cutoff: hide Wall 1, 2, 3, 4, or auto-cut camera wall (attached units hide too)" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+              <option value="single_auto">👁 Auto-Cut (1 Wall)</option>
+              <option value="wall_1">Wall 1 Hidden</option>
+              <option value="wall_2">Wall 2 Hidden</option>
+              <option value="wall_3">Wall 3 Hidden</option>
+              <option value="wall_4">Wall 4 Hidden</option>
+              <option value="all">🏛 All Walls Visible</option>
+              <option value="hidden">🚫 All Walls Hidden</option>
+            </select>
             <!-- 3D Floor Finish Switcher -->
             <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
               <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White Tile</button>
@@ -13331,26 +13340,51 @@ body.role-employee #adminCreateEmpBox,
 
       // When in select tool, clicking a placed furniture unit selects and allows moving it
       if (matchingHits.length > 0 && self.activeTool === 'select') {
-        // Selection cycling: if one of the hits is already selected, cycle to the next hit underneath!
+        // Priority to higher elevation units (wall units AFFL 1500/2100 over base units AFFL 0)
+        var getUnitElevation = function (f) {
+          if (f.elevation !== undefined && f.elevation !== null) return parseFloat(f.elevation) || 0;
+          if (f.pos && f.pos.z !== undefined && f.pos.z !== null) return parseFloat(f.pos.z) || 0;
+          var cat = (f.category || '').toLowerCase();
+          var name = (f.name || '').toLowerCase();
+          if (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1) return 2100;
+          if (cat.indexOf('wall') !== -1 || name.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name)) return 1500;
+          return 0;
+        };
+        matchingHits.sort(function (a, b) {
+          return getUnitElevation(b) - getUnitElevation(a);
+        });
+
         var curSelId = (self.selected && self.selected.length === 1 && self.selected[0].type === 'furniture') ? self.selected[0].id : null;
-        var hitFurn = matchingHits[0];
-        if (curSelId && matchingHits.length > 1) {
-          var curIdx = matchingHits.findIndex(function (h) { return h.id === curSelId; });
-          if (curIdx !== -1) {
-            hitFurn = matchingHits[(curIdx + 1) % matchingHits.length];
-          }
+        var isAlreadySelected = curSelId && matchingHits.some(function (h) { return h.id === curSelId; });
+
+        var hitFurn;
+        if (isAlreadySelected) {
+          // If a unit is already selected, KEEP that selected unit so moving it never switches to unit underneath!
+          hitFurn = matchingHits.find(function (h) { return h.id === curSelId; });
+        } else {
+          // If clicking an unselected unit, select the topmost unit (wall unit over base unit)
+          hitFurn = matchingHits[0];
         }
 
         if (typeof self.setTool === 'function') self.setTool('select');
         else self.activeTool = 'select';
         self.selected = [{ type: 'furniture', id: hitFurn.id }];
-        self.dragState = {
-          type: 'move_furniture',
-          furniture: hitFurn,
-          startWorld: Vec2.clone(worldPt),
-          origPos: Vec2.clone(hitFurn.pos),
-          origRotY: hitFurn.rotY || 0
-        };
+
+        // Click-before-move: Only initiate drag if the unit was ALREADY clicked and selected before!
+        if (isAlreadySelected) {
+          self.dragState = {
+            type: 'move_furniture',
+            furniture: hitFurn,
+            startWorld: Vec2.clone(worldPt),
+            origPos: Vec2.clone(hitFurn.pos),
+            origRotY: hitFurn.rotY || 0,
+            hasMoved: false,
+            matchingHits: matchingHits
+          };
+        } else {
+          self.dragState = null;
+        }
+
         self.onSelectionChange(self.selected);
         self.render();
         return;
@@ -13397,6 +13431,9 @@ body.role-employee #adminCreateEmpBox,
       }
 
       if (self.dragState && self.dragState.type === 'move_furniture') {
+        if (!self.dragState.hasMoved && Vec2.dist(self.cursorWorld, self.dragState.startWorld) > 8) {
+          self.dragState.hasMoved = true;
+        }
         var dx = self.cursorWorld.x - self.dragState.startWorld.x;
         var dy = self.cursorWorld.y - self.dragState.startWorld.y;
         var newX = Math.round((self.dragState.origPos.x + dx) / 25) * 25;
@@ -13484,6 +13521,18 @@ body.role-employee #adminCreateEmpBox,
     window.addEventListener('mouseup', function () {
       if (self.dragState) {
         if (self.dragState.type === 'move_furniture') {
+          if (!self.dragState.hasMoved && self.dragState.matchingHits && self.dragState.matchingHits.length > 1) {
+            // User performed a stationary click on stacked units (e.g. wall unit above floor unit):
+            // cycle to the next unit underneath!
+            var hits = self.dragState.matchingHits;
+            var curId = self.dragState.furniture.id;
+            var curIdx = hits.findIndex(function (h) { return h.id === curId; });
+            if (curIdx !== -1) {
+              var nextUnit = hits[(curIdx + 1) % hits.length];
+              self.selected = [{ type: 'furniture', id: nextUnit.id }];
+              self.onSelectionChange(self.selected);
+            }
+          }
           if (self.dragState.hasCollision) {
             // Revert invalid overlapping placement!
             self.dragState.furniture.pos.x = self.dragState.origPos.x;
@@ -14949,7 +14998,7 @@ body.role-employee #adminCreateEmpBox,
       var poly = Core.wallPolygon(w);
       if (!poly || poly.length < 4) continue;
 
-      ctx.fillStyle = isSelected ? '#1e40af' : '#1e293b';
+      ctx.fillStyle = isSelected ? '#2563eb' : '#334155';
       ctx.beginPath();
       var sp0 = this.worldToScreen(poly[0]);
       ctx.moveTo(sp0.x, sp0.y);
@@ -15375,6 +15424,12 @@ body.role-employee #adminCreateEmpBox,
     var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
     if (walls.length < 2 || this.zoom < 0.03) return;
 
+    // Only render corner angle arcs when actively drawing walls or when a wall is selected or hovered
+    var isDrawingWall = (this.activeTool === 'wall' || this.isDrawing || !!this.wallChainStart);
+    var isAnyWallSelected = (this.selected && this.selected.some(function (s) { return s.type === 'wall'; }));
+    var isWallHovered = !!this.hoveredWallId;
+    if (!isDrawingWall && !isAnyWallSelected && !isWallHovered) return;
+
     var joints = [];
     for (var i = 0; i < walls.length; i++) {
       var w = walls[i];
@@ -15716,11 +15771,18 @@ body.role-employee #adminCreateEmpBox,
       ctx.save();
       ctx.translate(midX, midY);
       ctx.rotate(textAngle);
-      ctx.font = isActive ? '700 11px "IBM Plex Mono", monospace' : '600 10.5px "IBM Plex Mono", monospace';
+      ctx.font = isActive ? '700 11px "IBM Plex Sans", -apple-system, sans-serif' : '600 10.5px "IBM Plex Sans", -apple-system, sans-serif';
       var tw = ctx.measureText(text).width;
-      var th = 16;
+      var th = 18;
+      var pw = tw + 14;
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(-tw / 2 - 4, -th / 2, tw + 8, th);
+      ctx.strokeStyle = isActive ? '#2563eb' : '#cbd5e1';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-pw / 2, -th / 2, pw, th, 4);
+      else ctx.rect(-pw / 2, -th / 2, pw, th);
+      ctx.fill();
+      ctx.stroke();
       ctx.fillStyle = textColor;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -15782,12 +15844,10 @@ body.role-employee #adminCreateEmpBox,
         this.formatDim(lMm);
       drawDimPill(midX, midY, dimText);
 
-      // If active, show Corner A, Corner B, and Arrow 1
-      if (isActive) {
-        if (!isSelected) {
-          drawCornerLabel(w.start, 'A', -1);
-          drawCornerLabel(w.end, 'B', 1);
-        }
+      // If opening is actively placed or selected on this wall, show Corner A, Corner B, and Arrow 1
+      if (hasSelectedOpening || !!options.previewOpening) {
+        drawCornerLabel(w.start, 'A', -1);
+        drawCornerLabel(w.end, 'B', 1);
         drawCoreArrow(0, lMm, 'A', '1');
       }
       ctx.restore();
@@ -15878,12 +15938,10 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // 5. Corner Labels A and B, plus Direction Arrows 1 and 2
-    if (isActive) {
-      if (!isSelected) {
-        drawCornerLabel(w.start, 'A', -1);
-        drawCornerLabel(w.end, 'B', 1);
-      }
+    // 5. Corner Labels A and B, plus Direction Arrows 1 and 2 ONLY when editing openings
+    if (hasSelectedOpening || !!options.previewOpening) {
+      drawCornerLabel(w.start, 'A', -1);
+      drawCornerLabel(w.end, 'B', 1);
       // Direction arrow 1 in Segment 1 (start to first opening start)
       var firstOpStartT = cleanDivs.length > 2 ? cleanDivs[1] : 0;
       drawCoreArrow(0, firstOpStartT, 'A', '1');
@@ -17668,7 +17726,11 @@ body.role-employee #adminCreateEmpBox,
       var wall = walls[w];
       var wallOps = openingsByWall[wall.id] || [];
       var wallMeshGroup = this.buildWallWithCutouts(wall, wallOps);
-      if (wallMeshGroup) this.group.add(wallMeshGroup);
+      if (wallMeshGroup) {
+        wallMeshGroup.userData.wallIndex = w;
+        wallMeshGroup.userData.wallNumber = w + 1; // 1, 2, 3, 4
+        this.group.add(wallMeshGroup);
+      }
     }
 
     // 2. Build Room Floors
@@ -17683,11 +17745,41 @@ body.role-employee #adminCreateEmpBox,
       if (fallbackFloor) this.group.add(fallbackFloor);
     }
 
-    // 3. Build Placed Furniture Units in 3D
+    // 3. Build Placed Furniture Units in 3D & associate with closest wall
     for (var f = 0; f < furniture.length; f++) {
       var furn = furniture[f];
       var furnMesh = this.buildFurnitureMesh(furn);
       if (furnMesh) {
+        var bestWall = null, bestDist = 999999;
+        if (furn.wallId) {
+          var matchedWall = walls.find(function (wItem) { return wItem.id === furn.wallId; });
+          if (matchedWall) {
+            var matchedIdx = walls.indexOf(matchedWall);
+            bestWall = { id: matchedWall.id, index: matchedIdx, number: matchedIdx + 1 };
+          }
+        }
+        if (!bestWall && furn.pos && walls.length > 0) {
+          for (var wi = 0; wi < walls.length; wi++) {
+            var wObj = walls[wi];
+            if (!wObj || !wObj.start || !wObj.end) continue;
+            var p1 = wObj.start, p2 = wObj.end;
+            var dx = p2.x - p1.x, dy = p2.y - p1.y;
+            var lenSq = dx * dx + dy * dy;
+            if (lenSq < 1) continue;
+            var t = Math.max(0, Math.min(1, ((furn.pos.x - p1.x) * dx + (furn.pos.y - p1.y) * dy) / lenSq));
+            var projX = p1.x + t * dx, projY = p1.y + t * dy;
+            var dist = Math.hypot(furn.pos.x - projX, furn.pos.y - projY);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestWall = { id: wObj.id, index: wi, number: wi + 1, dist: dist };
+            }
+          }
+        }
+        if (bestWall && (furn.wallId || bestDist < 1200)) {
+          furnMesh.userData.wallId = bestWall.id;
+          furnMesh.userData.wallIndex = bestWall.index;
+          furnMesh.userData.wallNumber = bestWall.number;
+        }
         this.group.add(furnMesh);
       }
     }
@@ -29241,24 +29333,53 @@ body.role-employee #adminCreateEmpBox,
       var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
       if (!homeObj) return;
 
-      var mode = window.OrbixWallMode || 'cutaway';
+      var mode = window.OrbixWallMode || 'single_auto';
+      if (mode === 'cutaway') mode = 'single_auto';
+
+      var wallMeshes = [];
+      var furnMeshes = [];
+
       homeObj.children.forEach(function (child) {
         if (child.userData && child.userData.isWall) {
-          if (mode === 'all') {
-            child.visible = true;
-            return;
-          }
-          if (mode === 'hidden') {
-            child.visible = false;
-            return;
-          }
-          // Auto-cutaway mode
-          var wMid = child.userData.mid;
-          if (!wMid) return;
+          wallMeshes.push(child);
+        } else if (child.userData && (child.userData.isFurniture || child.userData.isFurnitureGroup || (child.name && child.name.indexOf('Furniture_') === 0))) {
+          furnMeshes.push(child);
+        }
+      });
 
-          var camToTargX = target.x - camera.position.x;
-          var camToTargZ = target.z - camera.position.z;
-          var camToTargDist = Math.hypot(camToTargX, camToTargZ) || 1;
+      var wallVisibility = {}; // wallId -> boolean (true: visible, false: hidden)
+
+      if (mode === 'all') {
+        wallMeshes.forEach(function (wMesh) {
+          wMesh.visible = true;
+          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = true;
+        });
+      } else if (mode === 'hidden') {
+        wallMeshes.forEach(function (wMesh) {
+          wMesh.visible = false;
+          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = false;
+        });
+      } else if (mode.indexOf('wall_') === 0) {
+        // Specific single wall hidden by number: 'wall_1', 'wall_2', 'wall_3', 'wall_4'
+        var targetWallNum = parseInt(mode.replace('wall_', ''), 10);
+        wallMeshes.forEach(function (wMesh, wIdx) {
+          var wNum = (wMesh.userData && wMesh.userData.wallNumber) ? wMesh.userData.wallNumber : (wIdx + 1);
+          var isTarget = (wNum === targetWallNum);
+          wMesh.visible = !isTarget;
+          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !isTarget;
+        });
+      } else {
+        // 'single_auto' / 'cutaway': HIDE ONLY THE SINGLE MOST OBSTRUCTING WALL
+        var bestObstructingWall = null;
+        var maxScore = -999999;
+
+        var camToTargX = target.x - camera.position.x;
+        var camToTargZ = target.z - camera.position.z;
+        var camToTargDist = Math.hypot(camToTargX, camToTargZ) || 1;
+
+        wallMeshes.forEach(function (wMesh) {
+          var wMid = wMesh.userData && wMesh.userData.mid;
+          if (!wMid) return;
 
           var camToWallX = wMid.x - camera.position.x;
           var camToWallZ = wMid.y - camera.position.z;
@@ -29266,9 +29387,52 @@ body.role-employee #adminCreateEmpBox,
 
           var dot = (camToTargX * camToWallX + camToTargZ * camToWallZ) / (camToTargDist * camToWallDist);
 
-          // Obstructing if between camera and interior
-          var isObstructing = (camToWallDist < camToTargDist * 0.95 && dot > 0.35);
-          child.visible = !isObstructing;
+          // Obstruction score: wall is between camera and target (camToWallDist < camToTargDist) and facing view direction (dot > 0.15)
+          if (camToWallDist < camToTargDist * 1.05 && dot > 0.15) {
+            var score = dot * (1.6 - (camToWallDist / camToTargDist));
+            if (score > maxScore) {
+              maxScore = score;
+              bestObstructingWall = wMesh;
+            }
+          }
+        });
+
+        wallMeshes.forEach(function (wMesh) {
+          var shouldHide = (bestObstructingWall && wMesh === bestObstructingWall);
+          wMesh.visible = !shouldHide;
+          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !shouldHide;
+        });
+      }
+
+      // Synchronize furniture units attached to hidden walls!
+      furnMeshes.forEach(function (fMesh) {
+        var wId = fMesh.userData && fMesh.userData.wallId;
+        if (wId && wallVisibility[wId] !== undefined) {
+          fMesh.visible = wallVisibility[wId];
+        } else if (fMesh.userData && fMesh.userData.wallNumber) {
+          var wNum = fMesh.userData.wallNumber;
+          var targetWallMesh = wallMeshes.find(function (wm, idx) {
+            return ((wm.userData && wm.userData.wallNumber) === wNum) || ((idx + 1) === wNum);
+          });
+          if (targetWallMesh) {
+            fMesh.visible = targetWallMesh.visible;
+          } else {
+            fMesh.visible = true;
+          }
+        } else {
+          // If no wallId assigned, check proximity to any hidden wall
+          var isNearHiddenWall = false;
+          for (var wi = 0; wi < wallMeshes.length; wi++) {
+            var wm = wallMeshes[wi];
+            if (!wm.visible && wm.userData && wm.userData.mid) {
+              var d = Math.hypot(fMesh.position.x - wm.userData.mid.x, fMesh.position.z - wm.userData.mid.y);
+              if (d < 1000) {
+                isNearHiddenWall = true;
+                break;
+              }
+            }
+          }
+          fMesh.visible = !isNearHiddenWall;
         }
       });
     }
@@ -31774,30 +31938,68 @@ body.role-employee #adminCreateEmpBox,
     });
   })();
   (function () {
-    var b = $("#toggleWallCutawayBtn"); if (!b) return;
-    window.OrbixWallMode = 'cutaway';
-    b.addEventListener("click", function () {
-      if (window.OrbixWallMode === 'cutaway') {
-        window.OrbixWallMode = 'all';
-        b.textContent = '🏛 Walls: All Visible';
-        b.classList.remove('is-on');
-        toast("Showing all walls");
-      } else if (window.OrbixWallMode === 'all') {
-        window.OrbixWallMode = 'hidden';
-        b.textContent = '🚫 Walls: Hidden';
-        b.classList.remove('is-on');
-        toast("Hiding all walls");
-      } else {
-        window.OrbixWallMode = 'cutaway';
-        b.textContent = '👁 Walls: Auto-Cutaway';
-        b.classList.add('is-on');
-        toast("Auto-cutaway: front obstructing walls hidden");
+    var b = $("#toggleWallCutawayBtn");
+    var sel = $("#wallCutSelect");
+    window.OrbixWallMode = 'single_auto';
+
+    function setWallCutMode(newMode, showToastMsg) {
+      window.OrbixWallMode = newMode;
+      if (sel) sel.value = newMode;
+      if (b) {
+        if (newMode === 'single_auto' || newMode === 'cutaway') {
+          b.textContent = '👁 Walls: Auto-Cutaway';
+          b.classList.add('is-on');
+        } else if (newMode === 'wall_1') {
+          b.textContent = '🧱 Wall 1 Hidden';
+          b.classList.add('is-on');
+        } else if (newMode === 'wall_2') {
+          b.textContent = '🧱 Wall 2 Hidden';
+          b.classList.add('is-on');
+        } else if (newMode === 'wall_3') {
+          b.textContent = '🧱 Wall 3 Hidden';
+          b.classList.add('is-on');
+        } else if (newMode === 'wall_4') {
+          b.textContent = '🧱 Wall 4 Hidden';
+          b.classList.add('is-on');
+        } else if (newMode === 'all') {
+          b.textContent = '🏛 Walls: All Visible';
+          b.classList.remove('is-on');
+        } else if (newMode === 'hidden') {
+          b.textContent = '🚫 Walls: Hidden';
+          b.classList.remove('is-on');
+        }
+      }
+      if (showToastMsg) {
+        var msg = 'Auto-cut single wall: front wall & attached units hidden';
+        if (newMode === 'wall_1') msg = 'Wall 1 & attached units hidden';
+        else if (newMode === 'wall_2') msg = 'Wall 2 & attached units hidden';
+        else if (newMode === 'wall_3') msg = 'Wall 3 & attached units hidden';
+        else if (newMode === 'wall_4') msg = 'Wall 4 & attached units hidden';
+        else if (newMode === 'all') msg = 'Showing all walls & units';
+        else if (newMode === 'hidden') msg = 'Hiding all walls & attached units';
+        toast(msg);
       }
       if (GL.ok && GL.updateWallCutaway) {
         GL.updateWallCutaway();
         GL.settle();
       }
-    });
+    }
+
+    if (sel) {
+      sel.addEventListener('change', function () {
+        setWallCutMode(sel.value, true);
+      });
+    }
+
+    if (b) {
+      var modesList = ['single_auto', 'wall_1', 'wall_2', 'wall_3', 'wall_4', 'all', 'hidden'];
+      b.addEventListener('click', function () {
+        var curIdx = modesList.indexOf(window.OrbixWallMode);
+        if (curIdx === -1) curIdx = 0;
+        var nextMode = modesList[(curIdx + 1) % modesList.length];
+        setWallCutMode(nextMode, true);
+      });
+    }
   })();
   $("#isoBtn").addEventListener("click", function () {
     var rot = getActiveUnitRotation();

@@ -792,26 +792,51 @@
 
       // When in select tool, clicking a placed furniture unit selects and allows moving it
       if (matchingHits.length > 0 && self.activeTool === 'select') {
-        // Selection cycling: if one of the hits is already selected, cycle to the next hit underneath!
+        // Priority to higher elevation units (wall units AFFL 1500/2100 over base units AFFL 0)
+        var getUnitElevation = function (f) {
+          if (f.elevation !== undefined && f.elevation !== null) return parseFloat(f.elevation) || 0;
+          if (f.pos && f.pos.z !== undefined && f.pos.z !== null) return parseFloat(f.pos.z) || 0;
+          var cat = (f.category || '').toLowerCase();
+          var name = (f.name || '').toLowerCase();
+          if (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1) return 2100;
+          if (cat.indexOf('wall') !== -1 || name.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name)) return 1500;
+          return 0;
+        };
+        matchingHits.sort(function (a, b) {
+          return getUnitElevation(b) - getUnitElevation(a);
+        });
+
         var curSelId = (self.selected && self.selected.length === 1 && self.selected[0].type === 'furniture') ? self.selected[0].id : null;
-        var hitFurn = matchingHits[0];
-        if (curSelId && matchingHits.length > 1) {
-          var curIdx = matchingHits.findIndex(function (h) { return h.id === curSelId; });
-          if (curIdx !== -1) {
-            hitFurn = matchingHits[(curIdx + 1) % matchingHits.length];
-          }
+        var isAlreadySelected = curSelId && matchingHits.some(function (h) { return h.id === curSelId; });
+
+        var hitFurn;
+        if (isAlreadySelected) {
+          // If a unit is already selected, KEEP that selected unit so moving it never switches to unit underneath!
+          hitFurn = matchingHits.find(function (h) { return h.id === curSelId; });
+        } else {
+          // If clicking an unselected unit, select the topmost unit (wall unit over base unit)
+          hitFurn = matchingHits[0];
         }
 
         if (typeof self.setTool === 'function') self.setTool('select');
         else self.activeTool = 'select';
         self.selected = [{ type: 'furniture', id: hitFurn.id }];
-        self.dragState = {
-          type: 'move_furniture',
-          furniture: hitFurn,
-          startWorld: Vec2.clone(worldPt),
-          origPos: Vec2.clone(hitFurn.pos),
-          origRotY: hitFurn.rotY || 0
-        };
+
+        // Click-before-move: Only initiate drag if the unit was ALREADY clicked and selected before!
+        if (isAlreadySelected) {
+          self.dragState = {
+            type: 'move_furniture',
+            furniture: hitFurn,
+            startWorld: Vec2.clone(worldPt),
+            origPos: Vec2.clone(hitFurn.pos),
+            origRotY: hitFurn.rotY || 0,
+            hasMoved: false,
+            matchingHits: matchingHits
+          };
+        } else {
+          self.dragState = null;
+        }
+
         self.onSelectionChange(self.selected);
         self.render();
         return;
@@ -858,6 +883,9 @@
       }
 
       if (self.dragState && self.dragState.type === 'move_furniture') {
+        if (!self.dragState.hasMoved && Vec2.dist(self.cursorWorld, self.dragState.startWorld) > 8) {
+          self.dragState.hasMoved = true;
+        }
         var dx = self.cursorWorld.x - self.dragState.startWorld.x;
         var dy = self.cursorWorld.y - self.dragState.startWorld.y;
         var newX = Math.round((self.dragState.origPos.x + dx) / 25) * 25;
@@ -945,6 +973,18 @@
     window.addEventListener('mouseup', function () {
       if (self.dragState) {
         if (self.dragState.type === 'move_furniture') {
+          if (!self.dragState.hasMoved && self.dragState.matchingHits && self.dragState.matchingHits.length > 1) {
+            // User performed a stationary click on stacked units (e.g. wall unit above floor unit):
+            // cycle to the next unit underneath!
+            var hits = self.dragState.matchingHits;
+            var curId = self.dragState.furniture.id;
+            var curIdx = hits.findIndex(function (h) { return h.id === curId; });
+            if (curIdx !== -1) {
+              var nextUnit = hits[(curIdx + 1) % hits.length];
+              self.selected = [{ type: 'furniture', id: nextUnit.id }];
+              self.onSelectionChange(self.selected);
+            }
+          }
           if (self.dragState.hasCollision) {
             // Revert invalid overlapping placement!
             self.dragState.furniture.pos.x = self.dragState.origPos.x;
@@ -2410,7 +2450,7 @@
       var poly = Core.wallPolygon(w);
       if (!poly || poly.length < 4) continue;
 
-      ctx.fillStyle = isSelected ? '#1e40af' : '#1e293b';
+      ctx.fillStyle = isSelected ? '#2563eb' : '#334155';
       ctx.beginPath();
       var sp0 = this.worldToScreen(poly[0]);
       ctx.moveTo(sp0.x, sp0.y);
@@ -2836,6 +2876,12 @@
     var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
     if (walls.length < 2 || this.zoom < 0.03) return;
 
+    // Only render corner angle arcs when actively drawing walls or when a wall is selected or hovered
+    var isDrawingWall = (this.activeTool === 'wall' || this.isDrawing || !!this.wallChainStart);
+    var isAnyWallSelected = (this.selected && this.selected.some(function (s) { return s.type === 'wall'; }));
+    var isWallHovered = !!this.hoveredWallId;
+    if (!isDrawingWall && !isAnyWallSelected && !isWallHovered) return;
+
     var joints = [];
     for (var i = 0; i < walls.length; i++) {
       var w = walls[i];
@@ -3177,11 +3223,18 @@
       ctx.save();
       ctx.translate(midX, midY);
       ctx.rotate(textAngle);
-      ctx.font = isActive ? '700 11px "IBM Plex Mono", monospace' : '600 10.5px "IBM Plex Mono", monospace';
+      ctx.font = isActive ? '700 11px "IBM Plex Sans", -apple-system, sans-serif' : '600 10.5px "IBM Plex Sans", -apple-system, sans-serif';
       var tw = ctx.measureText(text).width;
-      var th = 16;
+      var th = 18;
+      var pw = tw + 14;
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(-tw / 2 - 4, -th / 2, tw + 8, th);
+      ctx.strokeStyle = isActive ? '#2563eb' : '#cbd5e1';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-pw / 2, -th / 2, pw, th, 4);
+      else ctx.rect(-pw / 2, -th / 2, pw, th);
+      ctx.fill();
+      ctx.stroke();
       ctx.fillStyle = textColor;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -3243,12 +3296,10 @@
         this.formatDim(lMm);
       drawDimPill(midX, midY, dimText);
 
-      // If active, show Corner A, Corner B, and Arrow 1
-      if (isActive) {
-        if (!isSelected) {
-          drawCornerLabel(w.start, 'A', -1);
-          drawCornerLabel(w.end, 'B', 1);
-        }
+      // If opening is actively placed or selected on this wall, show Corner A, Corner B, and Arrow 1
+      if (hasSelectedOpening || !!options.previewOpening) {
+        drawCornerLabel(w.start, 'A', -1);
+        drawCornerLabel(w.end, 'B', 1);
         drawCoreArrow(0, lMm, 'A', '1');
       }
       ctx.restore();
@@ -3339,12 +3390,10 @@
       }
     }
 
-    // 5. Corner Labels A and B, plus Direction Arrows 1 and 2
-    if (isActive) {
-      if (!isSelected) {
-        drawCornerLabel(w.start, 'A', -1);
-        drawCornerLabel(w.end, 'B', 1);
-      }
+    // 5. Corner Labels A and B, plus Direction Arrows 1 and 2 ONLY when editing openings
+    if (hasSelectedOpening || !!options.previewOpening) {
+      drawCornerLabel(w.start, 'A', -1);
+      drawCornerLabel(w.end, 'B', 1);
       // Direction arrow 1 in Segment 1 (start to first opening start)
       var firstOpStartT = cleanDivs.length > 2 ? cleanDivs[1] : 0;
       drawCoreArrow(0, firstOpStartT, 'A', '1');
