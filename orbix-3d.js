@@ -21,6 +21,7 @@
     this.group = null;
     this.materials = {};
     this.selectedFloorType = 'white_tile';
+    this.dadoTileEnabled = (typeof window !== 'undefined' && window.dadoTileEnabled !== undefined) ? window.dadoTileEnabled : true;
     this.isolatedRoomId = null;
     this.initMaterials();
   }
@@ -235,6 +236,77 @@
     tex.repeat.set(4, 4);
     ArchitecturalRenderer._woodBumpTex = tex;
     return tex;
+  };
+
+  // Procedural Ceramic Subway / Vitrified Dado Tile Texture
+  ArchitecturalRenderer.createDadoTileTexture = function () {
+    if (ArchitecturalRenderer._dadoTileTex) return ArchitecturalRenderer._dadoTileTex;
+    if (typeof document === 'undefined') return null;
+    var canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    // Base ceramic grout background
+    ctx.fillStyle = '#D6D3D1';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Staggered subway / modular dado tiles (8 rows x 4 columns)
+    var rowH = 64;
+    var colW = 128;
+    for (var r = 0; r < 8; r++) {
+      var y = r * rowH;
+      var xOffset = (r % 2 === 1) ? colW / 2 : 0;
+      for (var c = -1; c < 5; c++) {
+        var x = c * colW + xOffset;
+        var tw = colW - 4;
+        var th = rowH - 4;
+
+        // Glazed ceramic gradient
+        var grad = ctx.createLinearGradient(x, y + 2, x + tw, y + th);
+        grad.addColorStop(0, '#FFFFFF');
+        grad.addColorStop(0.5, '#F8F9FA');
+        grad.addColorStop(1, '#E9ECEF');
+        ctx.fillStyle = grad;
+        ctx.fillRect(x + 2, y + 2, tw, th);
+
+        // Top-left bevel highlight
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(x + 2, y + th + 2);
+        ctx.lineTo(x + 2, y + 2);
+        ctx.lineTo(x + tw + 2, y + 2);
+        ctx.stroke();
+
+        // Bottom-right subtle bevel shadow
+        ctx.strokeStyle = 'rgba(160, 160, 160, 0.35)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(x + tw + 2, y + 2);
+        ctx.lineTo(x + tw + 2, y + th + 2);
+        ctx.lineTo(x + 2, y + th + 2);
+        ctx.stroke();
+      }
+    }
+
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(2, 2);
+    ArchitecturalRenderer._dadoTileTex = tex;
+    return tex;
+  };
+
+  ArchitecturalRenderer.prototype.createDadoTileMaterial = function () {
+    if (typeof THREE === 'undefined') return null;
+    var tex = ArchitecturalRenderer.createDadoTileTexture();
+    return new THREE.MeshStandardMaterial({
+      color: 0xF8F9FA,
+      map: tex,
+      roughness: 0.16,
+      metalness: 0.04
+    });
   };
 
   ArchitecturalRenderer.createContactShadowTexture = function () {
@@ -496,6 +568,9 @@
     this.selectedFloorType = this.selectedFloorType || 'white_tile';
     this.materials.floorTile = this.createFloorMaterial(this.selectedFloorType);
     this.materials.floorWood = this.createFloorMaterial('wooden');
+
+    // Dado Tile Wall Finish (Backsplash)
+    this.materials.dadoTile = this.createDadoTileMaterial();
 
     // Ceiling & False Ceiling
     this.materials.ceiling = new THREE.MeshStandardMaterial({
@@ -819,6 +894,40 @@
       group.add(skB);
     }
 
+    var hasWallDado = !!(wall && (wall.dadoTile || (wall.dadoSegments && wall.dadoSegments.length > 0)));
+
+    function addDadoTile(startX, len, maxH) {
+      var isEnabled = (typeof window !== 'undefined' && window.dadoTileEnabled !== undefined) ? window.dadoTileEnabled : self.dadoTileEnabled;
+      if (!isEnabled || !hasWallDado || !self.materials.dadoTile || len < 40) return;
+
+      var segs = (wall && wall.dadoSegments && wall.dadoSegments.length > 0)
+        ? wall.dadoSegments
+        : [{ startOffset: 0, endOffset: wLen }];
+
+      for (var si = 0; si < segs.length; si++) {
+        var seg = segs[si];
+        var sStart = Math.max(startX, seg.startOffset || 0);
+        var sEnd = Math.min(startX + len, seg.endOffset !== undefined ? seg.endOffset : wLen);
+        var subLen = sEnd - sStart;
+        if (subLen < 40) continue;
+
+        var dadoBottom = 850;
+        var dadoTop = Math.min(maxH !== undefined ? maxH : 1500, wHeight - 50);
+        if (dadoTop <= dadoBottom + 50) return;
+        var dadoH = dadoTop - dadoBottom;
+        var dadoT = 6;
+        var dadoGeo = new THREE.BoxGeometry(subLen, dadoH, dadoT);
+        var tileF = new THREE.Mesh(dadoGeo, self.materials.dadoTile);
+        tileF.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, wThick / 2 + dadoT / 2);
+        tileF.receiveShadow = true;
+        group.add(tileF);
+        var tileB = new THREE.Mesh(dadoGeo, self.materials.dadoTile);
+        tileB.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, -wThick / 2 - dadoT / 2);
+        tileB.receiveShadow = true;
+        group.add(tileB);
+      }
+    }
+
     if (validOps.length === 0) {
       // Solid Wall: Single extruded box
       var geo = new THREE.BoxGeometry(wLen, wHeight, wThick);
@@ -828,6 +937,7 @@
       mesh.position.set(wLen / 2, wHeight / 2, 0);
       group.add(mesh);
       addSkirting(0, wLen);
+      addDadoTile(0, wLen);
     } else {
       validOps.sort(function (a, b) { return a.offset - b.offset; });
 
@@ -852,6 +962,7 @@
           segMesh.receiveShadow = true;
           group.add(segMesh);
           addSkirting(currX, segW);
+          addDadoTile(currX, segW);
         }
 
         // 2. Below window sill segment (if window with sillHeight > 0)
@@ -863,6 +974,9 @@
           sillMesh.receiveShadow = true;
           group.add(sillMesh);
           addSkirting(opStart, opWidth);
+          if (sillH > 850) {
+            addDadoTile(opStart, opWidth, sillH);
+          }
         }
 
         // 3. Above opening lintel segment
@@ -901,6 +1015,7 @@
         lastMesh.receiveShadow = true;
         group.add(lastMesh);
         addSkirting(currX, lastW);
+        addDadoTile(currX, lastW);
       }
     }
 
@@ -2256,7 +2371,7 @@
     // Position and rotate unit
     var catL = (furn.category || '').toLowerCase();
     var nameL = (furn.name || '').toLowerCase();
-    var isWallCorner = (!isBase && (catL.indexOf('wall') !== -1 || nameL.indexOf('wall') !== -1 || /(^|\b|_|-)(wcm)($|\b|_|-|\d+)/i.test(nameL)));
+    var isWallCorner = (!isBase && (catL.indexOf('wall') !== -1 || nameL.indexOf('wall') !== -1 || /(^|\b|_|-)(wcm)($|\b|_|-|\d+)/i.test(nameL))) || (furn.elevation >= 1000) || (furn.unitConfig && furn.unitConfig.ctype === 'kwall');
     var defElevCorner = isWallCorner ? 1500 : 0;
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
@@ -2619,13 +2734,18 @@
                      (cat.indexOf('open') !== -1 && cat.indexOf('shutter') === -1) ||
                      (name.indexOf('open box') !== -1 || name.indexOf('open storage') !== -1) ||
                      (furn.unitConfig && (furn.unitConfig.doorType === 'open' || furn.unitConfig.type === 'open')));
-    var isWall = (typeof window !== 'undefined' && window.OrbixCore && window.OrbixCore.isWallUnit) ?
+    var isElevatedUnit = (furn.elevation !== undefined && parseFloat(furn.elevation) >= 1000) ||
+      (furn.pos && parseFloat(furn.pos.z) >= 1000) ||
+      (furn.unitConfig && (furn.unitConfig.ctype === 'kwall' || furn.unitConfig.ctype === 'wall')) ||
+      (furn.catalogItemId && furn.catalogItemId.indexOf('-1500') !== -1) ||
+      (furn.id && String(furn.id).indexOf('-1500') !== -1);
+    var isWall = isElevatedUnit || ((typeof window !== 'undefined' && window.OrbixCore && window.OrbixCore.isWallUnit) ?
       window.OrbixCore.isWallUnit(cat, name, furn.code || furn.catalogItemId, furn.costCategory) :
       (cat.indexOf('wall') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'kitchen_wall' ||
        cat === 'crockery_wall' || cat === 'spice_rack' || cat.indexOf('overhead') !== -1 ||
        cat.indexOf('loft') !== -1 || name.indexOf('wall') !== -1 || name.indexOf('overhead') !== -1 ||
        name.indexOf('spice rack') !== -1 || name.indexOf('loft') !== -1 ||
-       /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name));
+       /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name)));
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
     var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1 || cat === 'tv_unit' || (name && name.toLowerCase().indexOf('base') !== -1));
 

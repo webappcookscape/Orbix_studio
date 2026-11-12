@@ -350,6 +350,31 @@
         });
       }
 
+      // 3D Dado Tile Option Toggle (Backsplash wall tiling)
+      var dadoBtn = document.getElementById('toggleDadoTileBtn');
+      var dadoStatus = document.getElementById('dadoTileStatus');
+      if (dadoBtn) {
+        if (window.dadoTileEnabled === undefined) window.dadoTileEnabled = true;
+        dadoBtn.addEventListener('click', function () {
+          window.dadoTileEnabled = !window.dadoTileEnabled;
+          if (dadoStatus) dadoStatus.textContent = window.dadoTileEnabled ? 'ON' : 'OFF';
+          dadoBtn.classList.toggle('is-on', window.dadoTileEnabled);
+          dadoBtn.style.background = window.dadoTileEnabled ? '#059669' : '#f1f5f9';
+          dadoBtn.style.color = window.dadoTileEnabled ? '#ffffff' : '#334155';
+          dadoBtn.style.borderColor = window.dadoTileEnabled ? '#047857' : '#cbd5e1';
+
+          if (self.archRenderer) {
+            self.archRenderer.dadoTileEnabled = window.dadoTileEnabled;
+          }
+          if (typeof self.render3DHome === 'function') {
+            self.render3DHome(true);
+          }
+          if (typeof window.toast === 'function') {
+            window.toast(window.dadoTileEnabled ? '🧱 Dado Tiles Enabled (Backsplash ON)' : '🧱 Dado Tiles Disabled (Backsplash OFF)');
+          }
+        });
+      }
+
       // 3D Studio Room Selector
       var studioRoomSel = document.getElementById('studioRoomSelect');
       if (studioRoomSel) {
@@ -931,6 +956,7 @@
         var planObj = ed.project && ed.project.plan;
         var innerMm = Math.round(Core.getWallInnerLength ? Core.getWallInnerLength(w, planObj) : lenMm);
         var innerDisplay = (ed.formatDim ? ed.formatDim(innerMm) : (innerMm + ' mm'));
+        var hasDado = !!(w.dadoTile || (w.dadoSegments && w.dadoSegments.length > 0));
         panel.innerHTML =
           '<div class="insp-title">Wall Properties</div>' +
           '<div class="insp-row"><label>Clear Inner Length ' + (ed.unitSystem === 'imperial' ? '(e.g. 5ft or mm)' : '(mm)') + '</label><input type="text" id="inspWallInnerLen" value="' + (ed.unitSystem === 'imperial' ? innerDisplay : innerMm) + '">' +
@@ -939,6 +965,15 @@
           '<span style="font-size:11px;color:#64748B;">Centerline: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
+          '<div class="insp-row" style="margin-top:10px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">' +
+          '  <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin:0;font-weight:600;color:#166534;">' +
+          '    <span>🧱 Dado Tile (Backsplash)</span>' +
+          '    <input type="checkbox" id="inspWallDado" ' + (hasDado ? 'checked' : '') + ' style="width:18px;height:18px;cursor:pointer;">' +
+          '  </label>' +
+          '  <div style="font-size:11px;color:#15803d;margin-top:4px;">' +
+          (hasDado ? '✓ Backsplash ceramic subway tiles applied to this wall (850mm–1500mm)' : 'No dado tile on this wall. Check to enable backsplash.') +
+          '  </div>' +
+          '</div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
 
         var elInner = document.getElementById('inspWallInnerLen');
@@ -994,6 +1029,20 @@
             w.height = parseFloat(e.target.value);
             ed.pushHistory('Change Wall Height');
             ed.render();
+          });
+        }
+        var elWallDado = document.getElementById('inspWallDado');
+        if (elWallDado) {
+          elWallDado.addEventListener('change', function (e) {
+            w.dadoTile = e.target.checked;
+            if (!w.dadoTile) delete w.dadoSegments;
+            ed.pushHistory('Toggle Wall Dado Tile');
+            ed.render();
+            self.renderInspector(ed.selected);
+            if (self.render3DHome) self.render3DHome(true);
+            if (typeof window.toast === 'function') {
+              window.toast(w.dadoTile ? '🧱 Dado Tile Enabled for Wall' : '🧱 Dado Tile Removed from Wall');
+            }
           });
         }
         var elDelWall = document.getElementById('inspDelWall');
@@ -2428,7 +2477,7 @@
             existing.shelves = 2;
             existing.handle = (fn.unitConfig && fn.unitConfig.handle) || 'standard';
             existing.hfinish = (fn.unitConfig && fn.unitConfig.hfinish) || 'black';
-            existing.counter = 'black';
+            existing.counter = (fn.unitConfig && fn.unitConfig.counter) || (isWall ? 'none' : 'black');
           } else if (isExistingFcm) {
             existing.unitType = isExistingFcmLt ? 'fcm-lt' : 'fcm-rt';
             existing.fixedPanel = (fn.unitConfig && fn.unitConfig.fixedPanel) || { enabled: true, width: 600, type: 'fixed' };
@@ -2438,6 +2487,7 @@
             existing.shelves = 1;
             existing.handle = (fn.unitConfig && fn.unitConfig.handle) || 'pull';
             existing.hfinish = (fn.unitConfig && fn.unitConfig.hfinish) || 'black';
+            if (isWall) existing.counter = 'none';
           }
           if (fn.unitConfig) existing.unitConfig = Object.assign({}, fn.unitConfig);
           if (fn.catalogItemId) existing.catalogItemId = fn.catalogItemId;
@@ -3426,11 +3476,19 @@
       var catItems = catList ? catList.querySelectorAll('.furn-side-cat-item') : [];
       var trayCatPill = document.getElementById('furnTrayCatPill');
       var trayCatTitle = document.getElementById('furnTrayCatTitle');
+      var traySearchInput = document.getElementById('furnTraySearchInput');
+      var traySearchClear = document.getElementById('furnTraySearchClear');
+      var traySearchIcon = document.getElementById('furnTraySearchIcon');
       var trayTabs = document.getElementById('furnTrayTabs');
       var trayCards = document.getElementById('furnTrayCards');
       var trayMinBtn = document.getElementById('furnTrayMinBtn');
       var trayCloseBtn = document.getElementById('furnTrayCloseBtn');
       var trayFilterBtn = document.getElementById('furnTrayFilterBtn');
+      var currentSearchQuery = '';
+
+      function esc(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
 
       if (!sidePanel || !bottomTray) return;
 
@@ -3607,16 +3665,34 @@
             trayTabs.querySelectorAll('.furn-tray-tab').forEach(function (b) { b.classList.remove('is-active'); });
             btn.classList.add('is-active');
             currentTab = t.id;
-            renderCards(cat, currentTab);
+            renderCards(cat, currentTab, currentSearchQuery);
           });
           trayTabs.appendChild(btn);
         });
       }
 
-      function renderCards(cat, tabId) {
+      function renderCards(cat, tabId, searchQuery) {
         trayCards.innerHTML = '';
         var cards = getCardsForTab(cat, tabId);
         var activePresetId = (self.editor && self.editor.furniturePreset && self.editor.furniturePreset.id) || '';
+
+        var q = (searchQuery !== undefined && searchQuery !== null) ? String(searchQuery).trim().toLowerCase() : currentSearchQuery;
+        if (q) {
+          cards = cards.filter(function (cardData) {
+            var n = (cardData.name || '').toLowerCase();
+            var c = (cardData.code || '').toLowerCase();
+            var id = (cardData.id || '').toLowerCase();
+            var l = (cardData.selectedLabel || '').toLowerCase();
+            var dims = cardData.dimensions ? (cardData.dimensions.W + ' ' + cardData.dimensions.H + ' ' + cardData.dimensions.D) : '';
+            return n.indexOf(q) !== -1 || c.indexOf(q) !== -1 || id.indexOf(q) !== -1 || l.indexOf(q) !== -1 || dims.indexOf(q) !== -1;
+          });
+        }
+
+        if (!cards.length) {
+          var catName = (trayCatTitle && trayCatTitle.textContent) || 'this category';
+          trayCards.innerHTML = '<div class="furn-empty-state"><div style="font-size:24px;margin-bottom:6px;">🔍</div>No units found matching "<b>' + esc(q) + '</b>" in ' + esc(catName) + '</div>';
+          return;
+        }
 
         cards.forEach(function (cardData) {
           var card = document.createElement('div');
@@ -3653,6 +3729,7 @@
               name: cardData.name,
               category: cardData.category || (cat === 'base_unit' ? 'kitchen_base' : (cat === 'wall_unit' ? 'kitchen_wall' : cat)),
               dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: 750, D: 560 }),
+              elevation: (cardData.elevation !== undefined && cardData.elevation !== null) ? cardData.elevation : (cat === 'wall_unit' ? 1500 : 0),
               unitConfig: Object.assign({}, cardData.unitConfig || {})
             };
             if (cardData.isDecor) {
@@ -3699,11 +3776,14 @@
       function switchCategory(catKey, catLabel) {
         currentCat = catKey;
         if (trayCatTitle) trayCatTitle.textContent = catLabel;
+        if (traySearchInput) {
+          traySearchInput.placeholder = 'Search units in ' + catLabel + '...';
+        }
         catItems.forEach(function (item) {
           item.classList.toggle('is-active', item.dataset.cat === catKey);
         });
         renderTabs(catKey);
-        renderCards(catKey, currentTab);
+        renderCards(catKey, currentTab, currentSearchQuery);
       }
 
       // Wire Category Item Clicks in Left Panel: "on clicking the menu all the option like in model should open down"
@@ -3750,6 +3830,50 @@
             setTimeout(function () { self.editor.resize(); }, 150);
           }
         };
+      }
+
+      // Wire Search Input & Clear Button for Bottom Unit Tray
+      if (traySearchInput) {
+        traySearchInput.addEventListener('input', function () {
+          currentSearchQuery = traySearchInput.value.trim().toLowerCase();
+          if (traySearchClear) traySearchClear.style.display = currentSearchQuery ? 'inline-block' : 'none';
+          renderCards(currentCat, currentTab, currentSearchQuery);
+        });
+        traySearchInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') {
+            traySearchInput.value = '';
+            currentSearchQuery = '';
+            if (traySearchClear) traySearchClear.style.display = 'none';
+            renderCards(currentCat, currentTab, '');
+          }
+        });
+      }
+      if (traySearchClear) {
+        traySearchClear.addEventListener('click', function () {
+          if (traySearchInput) {
+            traySearchInput.value = '';
+            traySearchInput.focus();
+          }
+          currentSearchQuery = '';
+          traySearchClear.style.display = 'none';
+          renderCards(currentCat, currentTab, '');
+        });
+      }
+      if (trayCatPill) {
+        trayCatPill.addEventListener('click', function () {
+          if (traySearchInput) {
+            traySearchInput.focus();
+            traySearchInput.select();
+          }
+        });
+      }
+      if (traySearchIcon) {
+        traySearchIcon.addEventListener('click', function () {
+          if (traySearchInput) {
+            traySearchInput.focus();
+            traySearchInput.select();
+          }
+        });
       }
 
       // Wire Top Toolbar "Furnish" button toggle:

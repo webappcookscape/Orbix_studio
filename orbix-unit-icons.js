@@ -91,6 +91,10 @@
   "wm-30-o-s": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"41,95 73,93.08 93.03999999999999,85.4 77.03999999999999,87.4 35,97\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"69,41.08 87.03999999999999,31.4 87.03999999999999,79.4 69,89.08\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"37,43 55.04,33.32 87.03999999999999,31.4 69,41.08\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"37,43 69,41.08 69,89.08 37,91\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"46,42.5 72,40.58 72,82.58 46,84.5\" fill=\"#E2E8F0\" stroke=\"#CBD5E1\" stroke-width=\"0.8\" />\n  <polygon points=\"40,46 46,42.5 72,40.58 66,44.08\" fill=\"#94A3B8\" />\n  <polygon points=\"40,46 46,42.5 46,84.5 40,88\" fill=\"#CBD5E1\" />\n  <polygon points=\"40,67 66,65.08 72,61.58 46,63.5\" fill=\"#F8FAFC\" stroke=\"#1E293B\" stroke-width=\"1\" />\n</svg>"
 };
 
+  ICONS["fcm-rt-1500"] = ICONS["fcm-rt"];
+  ICONS["fcm-lt-1500"] = ICONS["fcm-lt"];
+  ICONS["fbcm-1500"] = ICONS["fbcm"];
+
   return {
     ICONS: ICONS,
     sanitizeIconId: sanitizeIconId,

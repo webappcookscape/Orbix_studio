@@ -797,9 +797,9 @@
                    (u.id && /fcm[-_ ]*(rt|lt)/i.test(u.id)) ||
                    (u.label && /fcm[-_ ]*(rt|lt)/i.test(u.label)) ||
                    (u.name && /fcm[-_ ]*(rt|lt)/i.test(u.name)));
-      var plinthH = elev > 0 ? elev : (isFcm ? 100 : 0);
+      var plinthH = (u.plinth === false) ? 0 : 100;
       if (plinthH > 0) {
-        var pY = elev > 0 ? elev : 0;
+        var pY = (elev > 0 && elev <= 150) ? elev : 0;
         B.push({ x: 0, y: pY, z: u.D / 2 - 70, w: u.W - 2 * T, h: plinthH, d: 18, mat: "kick" });
         B.push({ x: -u.W / 2 + T, y: pY, z: 0, w: 18, h: plinthH, d: u.D - 90, mat: "kick" });
         B.push({ x: u.W / 2 - T, y: pY, z: 0, w: 18, h: plinthH, d: u.D - 90, mat: "kick" });

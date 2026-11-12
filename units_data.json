@@ -3493,6 +3493,406 @@
     "customRate": 16500
   },
   {
+    "id": "fcm-rt-1500",
+    "code": "FCM-RT 1500",
+    "name": "FCM-RT 1500 (Cookscape)",
+    "catalogItemId": "fcm-rt-1500",
+    "modelType": "kitchen_wm",
+    "category": "kitchen_wall",
+    "costCategory": "Kitchen - WM",
+    "areaSqft": 9.3,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 1200,
+      "H": 720,
+      "D": 560
+    },
+    "elevation": 1500,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7701"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 1135"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kwall",
+      "unitType": "fcm-rt",
+      "fixedPanel": {
+        "enabled": true,
+        "width": 600,
+        "type": "fixed"
+      },
+      "openShutter": {
+        "enabled": true,
+        "width": 600,
+        "type": "shutter",
+        "count": 1,
+        "opening": "right"
+      },
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 2,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "pull",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701"
+    },
+    "pricingOverrides": {
+      "baseRate": 17398.79
+    },
+    "customRate": 17398.79
+  },
+  {
+    "id": "fcm-lt-1500",
+    "code": "FCM-LT 1500",
+    "name": "FCM-LT 1500 (Cookscape)",
+    "catalogItemId": "fcm-lt-1500",
+    "modelType": "kitchen_wm",
+    "category": "kitchen_wall",
+    "costCategory": "Kitchen - WM",
+    "areaSqft": 9.3,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 1200,
+      "H": 720,
+      "D": 560
+    },
+    "elevation": 1500,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7701"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 1135"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kwall",
+      "unitType": "fcm-lt",
+      "fixedPanel": {
+        "enabled": true,
+        "width": 600,
+        "type": "fixed"
+      },
+      "openShutter": {
+        "enabled": true,
+        "width": 600,
+        "type": "shutter",
+        "count": 1,
+        "opening": "left"
+      },
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 2,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "pull",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701"
+    },
+    "pricingOverrides": {
+      "baseRate": 17398.79
+    },
+    "customRate": 17398.79
+  },
+  {
+    "id": "fbcm-1500",
+    "code": "FBCM 1500",
+    "name": "L-SHAPED CORNER 1500 (Cookscape)",
+    "catalogItemId": "fbcm-1500",
+    "modelType": "kitchen_wm",
+    "category": "kitchen_wall",
+    "costCategory": "Kitchen - WM",
+    "areaSqft": 8.7,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 900,
+      "H": 720,
+      "D": 560
+    },
+    "elevation": 1500,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7701"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 1135"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kwall",
+      "unitType": "fbcm",
+      "geometryType": "l_shaped_corner",
+      "corner": {
+        "enabled": true,
+        "type": "L",
+        "legW": 900,
+        "legD": 900,
+        "depth": 560,
+        "orientation": "right"
+      },
+      "shutters": 2,
+      "doors": [
+        {
+          "id": "door_1",
+          "position": "front",
+          "type": "hinged",
+          "opening": "left"
+        },
+        {
+          "id": "door_2",
+          "position": "side",
+          "type": "hinged",
+          "opening": "right"
+        }
+      ],
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 1,
+      "shelves": 2,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "standard",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701"
+    },
+    "pricingOverrides": {
+      "baseRate": 16500
+    },
+    "customRate": 16500
+  },
+  {
+    "id": "fcm-rt-1500",
+    "code": "FCM-RT 1500",
+    "name": "FCM-RT 1500 (Cookscape)",
+    "catalogItemId": "fcm-rt-1500",
+    "modelType": "kitchen_wm",
+    "category": "kitchen_wall",
+    "costCategory": "Kitchen - WM",
+    "areaSqft": 9.3,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 1200,
+      "H": 720,
+      "D": 560
+    },
+    "elevation": 1500,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7701"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 1135"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kwall",
+      "unitType": "fcm-rt",
+      "fixedPanel": {
+        "enabled": true,
+        "width": 600,
+        "type": "fixed"
+      },
+      "openShutter": {
+        "enabled": true,
+        "width": 600,
+        "type": "shutter",
+        "count": 1,
+        "opening": "right"
+      },
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 2,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "pull",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701"
+    },
+    "pricingOverrides": {
+      "baseRate": 17398.79
+    },
+    "customRate": 17398.79
+  },
+  {
+    "id": "fcm-lt-1500",
+    "code": "FCM-LT 1500",
+    "name": "FCM-LT 1500 (Cookscape)",
+    "catalogItemId": "fcm-lt-1500",
+    "modelType": "kitchen_wm",
+    "category": "kitchen_wall",
+    "costCategory": "Kitchen - WM",
+    "areaSqft": 9.3,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 1200,
+      "H": 720,
+      "D": 560
+    },
+    "elevation": 1500,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7701"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 1135"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kwall",
+      "unitType": "fcm-lt",
+      "fixedPanel": {
+        "enabled": true,
+        "width": 600,
+        "type": "fixed"
+      },
+      "openShutter": {
+        "enabled": true,
+        "width": 600,
+        "type": "shutter",
+        "count": 1,
+        "opening": "left"
+      },
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 2,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "pull",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701"
+    },
+    "pricingOverrides": {
+      "baseRate": 17398.79
+    },
+    "customRate": 17398.79
+  },
+  {
+    "id": "fbcm-1500",
+    "code": "FBCM 1500",
+    "name": "L-SHAPED CORNER 1500 (Cookscape)",
+    "catalogItemId": "fbcm-1500",
+    "modelType": "kitchen_wm",
+    "category": "kitchen_wall",
+    "costCategory": "Kitchen - WM",
+    "areaSqft": 8.7,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 900,
+      "H": 720,
+      "D": 560
+    },
+    "elevation": 1500,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7701"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 1135"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kwall",
+      "unitType": "fbcm",
+      "geometryType": "l_shaped_corner",
+      "corner": {
+        "enabled": true,
+        "type": "L",
+        "legW": 900,
+        "legD": 900,
+        "depth": 560,
+        "orientation": "right"
+      },
+      "shutters": 2,
+      "doors": [
+        {
+          "id": "door_1",
+          "position": "front",
+          "type": "hinged",
+          "opening": "left"
+        },
+        {
+          "id": "door_2",
+          "position": "side",
+          "type": "hinged",
+          "opening": "right"
+        }
+      ],
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 1,
+      "shelves": 2,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "standard",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701"
+    },
+    "pricingOverrides": {
+      "baseRate": 16500
+    },
+    "customRate": 16500
+  },
+  {
     "id": "f_fbcm_1",
     "code": "FBCM",
     "name": "L-SHAPED CORNER BASE UNIT (Cookscape)",
@@ -3555,6 +3955,206 @@
       "loft": false,
       "loftH": 0,
       "counter": "black",
+      "handle": "standard",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701"
+    },
+    "pricingOverrides": {
+      "baseRate": 16500
+    },
+    "customRate": 16500
+  },
+  {
+    "id": "fcm-rt-1500",
+    "code": "FCM-RT 1500",
+    "name": "FCM-RT 1500 (Cookscape)",
+    "catalogItemId": "fcm-rt-1500",
+    "modelType": "kitchen_wm",
+    "category": "kitchen_wall",
+    "costCategory": "Kitchen - WM",
+    "areaSqft": 9.3,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 1200,
+      "H": 720,
+      "D": 560
+    },
+    "elevation": 1500,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7701"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 1135"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kwall",
+      "unitType": "fcm-rt",
+      "fixedPanel": {
+        "enabled": true,
+        "width": 600,
+        "type": "fixed"
+      },
+      "openShutter": {
+        "enabled": true,
+        "width": 600,
+        "type": "shutter",
+        "count": 1,
+        "opening": "right"
+      },
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 2,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "pull",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701"
+    },
+    "pricingOverrides": {
+      "baseRate": 17398.79
+    },
+    "customRate": 17398.79
+  },
+  {
+    "id": "fcm-lt-1500",
+    "code": "FCM-LT 1500",
+    "name": "FCM-LT 1500 (Cookscape)",
+    "catalogItemId": "fcm-lt-1500",
+    "modelType": "kitchen_wm",
+    "category": "kitchen_wall",
+    "costCategory": "Kitchen - WM",
+    "areaSqft": 9.3,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 1200,
+      "H": 720,
+      "D": 560
+    },
+    "elevation": 1500,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7701"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 1135"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kwall",
+      "unitType": "fcm-lt",
+      "fixedPanel": {
+        "enabled": true,
+        "width": 600,
+        "type": "fixed"
+      },
+      "openShutter": {
+        "enabled": true,
+        "width": 600,
+        "type": "shutter",
+        "count": 1,
+        "opening": "left"
+      },
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 2,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "pull",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "MDF 1135",
+      "shutterCol": "MDF 7701"
+    },
+    "pricingOverrides": {
+      "baseRate": 17398.79
+    },
+    "customRate": 17398.79
+  },
+  {
+    "id": "fbcm-1500",
+    "code": "FBCM 1500",
+    "name": "L-SHAPED CORNER 1500 (Cookscape)",
+    "catalogItemId": "fbcm-1500",
+    "modelType": "kitchen_wm",
+    "category": "kitchen_wall",
+    "costCategory": "Kitchen - WM",
+    "areaSqft": 8.7,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 900,
+      "H": 720,
+      "D": 560
+    },
+    "elevation": 1500,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7701"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 1135"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kwall",
+      "unitType": "fbcm",
+      "geometryType": "l_shaped_corner",
+      "corner": {
+        "enabled": true,
+        "type": "L",
+        "legW": 900,
+        "legD": 900,
+        "depth": 560,
+        "orientation": "right"
+      },
+      "shutters": 2,
+      "doors": [
+        {
+          "id": "door_1",
+          "position": "front",
+          "type": "hinged",
+          "opening": "left"
+        },
+        {
+          "id": "door_2",
+          "position": "side",
+          "type": "hinged",
+          "opening": "right"
+        }
+      ],
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 1,
+      "shelves": 2,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
       "handle": "standard",
       "hfinish": "black",
       "led": false,

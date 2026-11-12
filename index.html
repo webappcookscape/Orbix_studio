@@ -191,14 +191,6 @@
     <section class="view" id="view-design">
       <div class="stagewrap">
         <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
-          <div class="stage-cam-hud" id="stageCamHud">
-            <button class="cam-hud-btn" id="hudFrontBtn" title="Front Elevation View">👁 Front</button>
-            <button class="cam-hud-btn is-active" id="hudIsoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
-            <button class="cam-hud-btn" id="hudSideBtn" title="Side Elevation View">◨ Side</button>
-            <span class="cam-hud-sep"></span>
-            <button class="cam-hud-btn" id="hudOpenBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
-            <button class="cam-hud-btn" id="hudPresentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
-          </div>
           <div id="world"></div>
         </div>
         <div class="stagebar">
@@ -228,6 +220,10 @@
               <button class="minibtn" data-floor="grey_tile" title="Charcoal Grey Stone Tile">▩ Grey Tile</button>
               <button class="minibtn" data-floor="wooden" title="Warm Hardwood Parquet">🪵 Wooden</button>
             </div>
+            <!-- 3D Dado Tile Option -->
+            <button class="minibtn is-on" id="toggleDadoTileBtn" title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
+              <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
+            </button>
             <!-- 3D Room Selector -->
             <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
               <option value="all">🏠 All Rooms</option>
@@ -355,21 +351,11 @@
             </select>
             <button class="plan-tool-btn" data-tool="divider" id="planDividerBtn" title="Room Divider: Divide rooms without solid walls (Hotkey R)">✂ Room Divider</button>
             <button class="plan-tool-btn" data-tool="door" title="Place Door (D)">🚪 + Door</button>
-            <select class="plan-select" id="planDoorWidth" title="Door Width">
-              <option value="750">750 mm (Bath)</option>
-              <option value="900" selected>900 mm (Bed)</option>
-              <option value="1000">1000 mm (Main)</option>
-              <option value="1200">1200 mm (Wide)</option>
-            </select>
             <button class="plan-tool-btn" data-tool="window" title="Place Window (Win)">🪟 + Window</button>
-            <select class="plan-select" id="planWindowWidth" title="Window Width">
-              <option value="900">900 mm</option>
-              <option value="1200" selected>1200 mm</option>
-              <option value="1500">1500 mm</option>
-              <option value="1800">1800 mm</option>
-            </select>
             <!-- Dimension Measurement Tool -->
             <button class="plan-tool-btn" data-tool="dimension" id="planDimensionBtn" title="Measure Length between Two Points (Hotkey M)">📏 Dimension</button>
+            <!-- Dado Tile / Backsplash Tool -->
+            <button class="plan-tool-btn" data-tool="dado" id="planDadoBtn" title="Draw Dado Tile: Click or drag on walls to draw kitchen backsplash & bathroom dado tiles (Hotkey T)">🧱 + Dado Tile</button>
             <!-- Furnish: Modular Units & Furniture Catalog Tool -->
             <button class="plan-tool-btn furn-place-btn" data-tool="furniture" id="planFurnitureBtn" onclick="window.toggleFurnishMenu && window.toggleFurnishMenu(event)" title="Furnish: Modular Units & Furniture Catalog (Hotkey F)">
               <img src="icon-furniture.png" alt="Furnish" class="furn-tool-img-icon" style="width:18px;height:22px;object-fit:contain;vertical-align:middle;margin-right:5px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.12));">
@@ -381,10 +367,13 @@
                   <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (900×750)</option>
                   <option value="fcm-rt">fcm-rt: FCM-RT (Cookscape) (1200×720)</option>
                   <option value="fm-rt-01">fm-rt-01: FCM-RT (Cookscape) (1200×720)</option>
+                  <option value="fcm-rt-1500">fcm-rt-1500: FCM-RT 1500 (Cookscape) (1200×720, elev: 1500)</option>
                   <option value="fcm-lt">fcm-lt: FCM-LT (Cookscape) (1200×720)</option>
                   <option value="fm-lt-01">fm-lt-01: FCM-LT (Cookscape) (1200×720)</option>
+                  <option value="fcm-lt-1500">fcm-lt-1500: FCM-LT 1500 (Cookscape) (1200×720, elev: 1500)</option>
                   <option value="fbcm">fbcm: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
                   <option value="f_fbcm_1">f_fbcm_1: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
+                  <option value="fbcm-1500">fbcm-1500: L-SHAPED CORNER 1500 (Cookscape) (900×720, elev: 1500)</option>
                   <option value="fm-120">fm-120: FM 120 Kitchen Base (1200×750)</option>
                   <option value="fm-60">fm-60: FM 60 Kitchen Base (600×750)</option>
                   <option value="wm-60-dbl">wm-60-dbl: WM 60 DOUBLE Kitchen Wall (600×600)</option>
@@ -393,7 +382,6 @@
                   <option value="wr-drawers">wr-drawers: WR 2 DOOR WITH DRAWERS (900×2100)</option>
                 </optgroup>
               </select>
-            <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">✂️ Split</button>
             <!-- Import Custom 3D Decors & .skp (Excluded from Woodwork Pricing) -->
             <button class="plan-tool-btn" id="openDecorModalBtn" type="button" title="Import Decors, Appliances &amp; .skp 3D Models (Excluded from Woodwork Pricing: Fridge, Ice Box, Plants, Microwave, Chimney, TV, etc.)" style="background:#f0fdf4;color:#166534;border-color:#86efac;font-weight:600;display:inline-flex;align-items:center;gap:5px;">
               <span>🌿 + Decors / .skp</span>
@@ -472,7 +460,11 @@
             <div class="furn-tray-cat-pill" id="furnTrayCatPill" title="Current Category">
               <span id="furnTrayCatTitle">Base Unit</span>
               <span class="furn-tray-chevron">▾</span>
-              <span class="furn-tray-search-icon" title="Search in Category">🔍</span>
+            </div>
+            <div class="furn-tray-search-wrap" id="furnTraySearchWrap">
+              <span class="furn-tray-search-icon" id="furnTraySearchIcon">🔍</span>
+              <input type="text" id="furnTraySearchInput" class="furn-tray-search-input" placeholder="Search units in Base Unit..." autocomplete="off">
+              <button type="button" id="furnTraySearchClear" class="furn-tray-search-clear" title="Clear search" style="display:none;">✕</button>
             </div>
             <div class="furn-tray-tabs-scroll" id="furnTrayTabs">
               <!-- Dynamically rendered tabs -->

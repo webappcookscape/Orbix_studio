@@ -23,8 +23,9 @@
     this.onProjectChange = opts.onProjectChange || function () {};
     this.onSelectionChange = opts.onSelectionChange || function () {};
 
-    // Tool state: 'select' | 'wall' | 'door' | 'window' | 'room' | 'split' | 'measure'
+    // Tool state: 'select' | 'wall' | 'door' | 'window' | 'room' | 'split' | 'measure' | 'dimension' | 'dado'
     this.activeTool = 'select';
+    this.dadoDrawStart = null;
     this.doorPreset = { width: 900, height: 2100, swing: 'in-left' };
     this.windowPreset = { width: 1200, height: 1200, sillHeight: 900 };
     this.wallPreset = { thickness: 150, height: 2800 };
@@ -765,6 +766,12 @@
     });
 
     this.canvas.addEventListener('contextmenu', function (e) {
+      if (self.dadoDrawStart) {
+        e.preventDefault();
+        self.dadoDrawStart = null;
+        self.render();
+        return;
+      }
       if (self.wallChainStart || self.activeTool === 'divider') {
         e.preventDefault();
         var wasDiv = (self.activeTool === 'divider');
@@ -790,6 +797,11 @@
       }
 
       if (e.button === 2) { // Right click cancels / finishes wall chain or divider
+        if (self.dadoDrawStart) {
+          self.dadoDrawStart = null;
+          self.render();
+          return;
+        }
         if (self.wallChainStart || self.activeTool === 'divider') {
           var wasDiv2 = (self.activeTool === 'divider');
           self.wallChainStart = null;
@@ -905,6 +917,8 @@
         self.handleCalibrateMouseDown(worldPt);
       } else if (self.activeTool === 'dimension') {
         self.handleDimensionMouseDown(worldPt);
+      } else if (self.activeTool === 'dado') {
+        self.handleDadoMouseDown(worldPt);
       }
     });
 
@@ -1193,7 +1207,7 @@
       }
       if (overLockBadge) {
         self.canvas.style.cursor = 'pointer';
-      } else if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.wallChainStart || self.activeTool === 'dimension') {
+      } else if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.wallChainStart || self.activeTool === 'dimension' || self.activeTool === 'dado') {
         self.canvas.style.cursor = 'crosshair';
       } else if (self.dragState) {
         self.canvas.style.cursor = 'grabbing';
@@ -1202,7 +1216,7 @@
       }
 
       // Live drawing render
-      if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.wallChainStart) {
+      if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.activeTool === 'dado' || self.wallChainStart) {
         self.render();
       }
     });
@@ -1340,6 +1354,11 @@
       }
 
       if (e.key === 'Escape') {
+        if (self.dadoDrawStart) {
+          self.dadoDrawStart = null;
+          self.render();
+          return;
+        }
         if (self.activeTool === 'dimension') {
           self.dimensionStart = null;
           self.render();
@@ -1365,6 +1384,12 @@
       if (e.key.toLowerCase() === 'm' && !e.ctrlKey && !e.metaKey) {
         var dimBtn = document.getElementById('planDimensionBtn');
         if (dimBtn) dimBtn.click();
+        return;
+      }
+
+      if (e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey) {
+        var dadoBtn = document.getElementById('planDadoBtn');
+        if (dadoBtn) dadoBtn.click();
         return;
       }
 
@@ -1520,8 +1545,11 @@
       this.wallChainFirstPoint = null;
       this.numericInputBuffer = '';
     }
+    if (tool !== 'dado') {
+      this.dadoDrawStart = null;
+    }
     if (this.canvas) {
-      if (tool === 'wall' || tool === 'divider' || tool === 'dimension') {
+      if (tool === 'wall' || tool === 'divider' || tool === 'dimension' || tool === 'dado') {
         this.canvas.style.cursor = 'crosshair';
       } else {
         this.canvas.style.cursor = 'default';
@@ -2507,6 +2535,78 @@
     this.render();
   };
 
+  PlanEditor.prototype.handleDadoMouseDown = function (worldPt) {
+    var near = this.findNearestWall(worldPt, 400);
+    if (!near) {
+      if (typeof window.toast === 'function') {
+        window.toast('ℹ Click on or near a wall to draw Dado Tile (Backsplash)');
+      }
+      return;
+    }
+    var w = near.wall;
+    if (w.isDivider) {
+      if (typeof window.toast === 'function') {
+        window.toast('⚠ Dado Tiles cannot be placed on room dividers');
+      }
+      return;
+    }
+
+    if (!this.dadoDrawStart) {
+      // First click: record start point on this wall
+      this.dadoDrawStart = {
+        wallId: w.id,
+        pt: Vec2.clone(near.proj.pt),
+        t: near.proj.t
+      };
+      this.render();
+      if (typeof window.toast === 'function') {
+        window.toast('🧱 Dado Tile start set. Click another point on this wall to draw segment, or click again to toggle full wall.');
+      }
+      return;
+    }
+
+    // Second click
+    var startInfo = this.dadoDrawStart;
+    this.dadoDrawStart = null;
+
+    if (startInfo.wallId === w.id) {
+      var wLen = Core.wallLength(w);
+      var t1 = Math.min(startInfo.t, near.proj.t);
+      var t2 = Math.max(startInfo.t, near.proj.t);
+      var spanMm = (t2 - t1) * wLen;
+
+      if (spanMm < 150) {
+        // Clicked nearly same point: toggle whole wall!
+        w.dadoTile = !w.dadoTile;
+        delete w.dadoSegments;
+        var msg = w.dadoTile ? '🧱 Dado Tile (Backsplash) added to full wall' : '🧱 Dado Tile removed from wall';
+        if (typeof window.toast === 'function') window.toast(msg);
+      } else {
+        // Applied segment
+        w.dadoTile = true;
+        var sOffset = Math.round(t1 * wLen);
+        var eOffset = Math.round(t2 * wLen);
+        w.dadoSegments = [{ startOffset: sOffset, endOffset: eOffset }];
+        if (typeof window.toast === 'function') {
+          window.toast('🧱 Dado Tile drawn: ' + Math.round(spanMm) + ' mm on wall');
+        }
+      }
+    } else {
+      // Clicked a different wall: toggle that different wall
+      w.dadoTile = !w.dadoTile;
+      delete w.dadoSegments;
+      if (typeof window.toast === 'function') {
+        window.toast(w.dadoTile ? '🧱 Dado Tile added to wall' : '🧱 Dado Tile removed from wall');
+      }
+    }
+
+    this.pushHistory('Draw Dado Tile');
+    this.render();
+    if (window.OrbixUI && window.OrbixUI.render3DHome) {
+      window.OrbixUI.render3DHome(true);
+    }
+  };
+
   PlanEditor.prototype.getWall = function (id) {
     var walls = this.project.plan.walls;
     for (var i = 0; i < walls.length; i++) {
@@ -3141,6 +3241,82 @@
         var sCol = this.worldToScreen(columnPts[cpi]);
         ctx.fillRect(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2, colSizePx, colSizePx);
         ctx.strokeRect(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2, colSizePx, colSizePx);
+      }
+    }
+    this.renderDadoTiles(ctx);
+  };
+
+  PlanEditor.prototype.renderDadoTiles = function (ctx) {
+    var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    for (var wi = 0; wi < walls.length; wi++) {
+      var wItem = walls[wi];
+      if (!wItem || wItem.isDivider || wItem.thickness === 0) continue;
+      if (!wItem.dadoTile && (!wItem.dadoSegments || wItem.dadoSegments.length === 0)) continue;
+
+      var wLen = Core.wallLength(wItem);
+      if (wLen < 50) continue;
+      var wDir = Core.wallDirection(wItem);
+      var wNorm = Core.wallNormal(wItem);
+      var halfT = (wItem.thickness || 150) / 2.0;
+
+      var segs = (wItem.dadoSegments && wItem.dadoSegments.length > 0)
+        ? wItem.dadoSegments
+        : [{ startOffset: 0, endOffset: wLen }];
+
+      for (var si = 0; si < segs.length; si++) {
+        var seg = segs[si];
+        var sOff = Math.max(0, seg.startOffset || 0);
+        var eOff = Math.min(wLen, seg.endOffset !== undefined ? seg.endOffset : wLen);
+        if (eOff <= sOff + 30) continue;
+
+        var segLen = eOff - sOff;
+        var pStart = { x: wItem.start.x + wDir.x * sOff, y: wItem.start.y + wDir.y * sOff };
+        var pEnd = { x: wItem.start.x + wDir.x * eOff, y: wItem.start.y + wDir.y * eOff };
+
+        ctx.save();
+        var sp1 = this.worldToScreen(pStart);
+        var sp2 = this.worldToScreen(pEnd);
+
+        ctx.strokeStyle = '#059669';
+        ctx.lineWidth = Math.max(3, (wItem.thickness || 150) * this.zoom * 0.45);
+        ctx.lineCap = 'square';
+        ctx.beginPath();
+        ctx.moveTo(sp1.x, sp1.y);
+        ctx.lineTo(sp2.x, sp2.y);
+        ctx.stroke();
+
+        var tickStepMm = 250;
+        var numTicks = Math.floor(segLen / tickStepMm);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.lineWidth = 1.5;
+        var tickArm = (halfT + 12) * this.zoom;
+        for (var tk = 0; tk <= numTicks; tk++) {
+          var curDist = sOff + tk * tickStepMm;
+          var curPt = { x: wItem.start.x + wDir.x * curDist, y: wItem.start.y + wDir.y * curDist };
+          var sCurPt = this.worldToScreen(curPt);
+          ctx.beginPath();
+          ctx.moveTo(sCurPt.x - wNorm.x * tickArm, sCurPt.y - wNorm.y * tickArm);
+          ctx.lineTo(sCurPt.x + wNorm.x * tickArm, sCurPt.y + wNorm.y * tickArm);
+          ctx.stroke();
+        }
+
+        var sMid = this.worldToScreen({ x: (pStart.x + pEnd.x) / 2, y: (pStart.y + pEnd.y) / 2 });
+        var badgeText = '🧱 DADO TILE (' + Math.round(segLen) + ' mm)';
+        ctx.font = '700 10px "IBM Plex Sans", -apple-system, sans-serif';
+        var tw = ctx.measureText(badgeText).width;
+        ctx.fillStyle = '#065F46';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(sMid.x - tw / 2 - 6, sMid.y - 9, tw + 12, 18, 4);
+        else ctx.rect(sMid.x - tw / 2 - 6, sMid.y - 9, tw + 12, 18);
+        ctx.fill();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badgeText, sMid.x, sMid.y);
+        ctx.restore();
       }
     }
   };
@@ -5234,6 +5410,88 @@
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         ctx.fillText(tipTxt, sSnap.x + 22, sSnap.y);
+        ctx.restore();
+      }
+    }
+
+    // 7. Dado Tile Tool live preview
+    if (this.activeTool === 'dado') {
+      var nearDado = this.findNearestWall(this.cursorWorld, 400);
+      if (nearDado && !nearDado.wall.isDivider) {
+        var wDado = nearDado.wall;
+        var wPoly = Core.wallPolygon(wDado);
+
+        ctx.save();
+        if (wPoly && wPoly.length >= 4) {
+          ctx.beginPath();
+          var sp0 = this.worldToScreen(wPoly[0]);
+          ctx.moveTo(sp0.x, sp0.y);
+          for (var pi = 1; pi < wPoly.length; pi++) {
+            var spi = this.worldToScreen(wPoly[pi]);
+            ctx.lineTo(spi.x, spi.y);
+          }
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(16, 185, 129, 0.18)';
+          ctx.fill();
+          ctx.strokeStyle = '#059669';
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([6, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        if (this.dadoDrawStart && this.dadoDrawStart.wallId === wDado.id) {
+          var pt1S = this.worldToScreen(this.dadoDrawStart.pt);
+          var pt2S = this.worldToScreen(nearDado.proj.pt);
+          var drawnDistMm = Math.round(Vec2.dist(this.dadoDrawStart.pt, nearDado.proj.pt));
+
+          ctx.strokeStyle = '#047857';
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(pt1S.x, pt1S.y);
+          ctx.lineTo(pt2S.x, pt2S.y);
+          ctx.stroke();
+
+          [pt1S, pt2S].forEach(function (pt) {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#059669';
+            ctx.fill();
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          });
+
+          var midX = (pt1S.x + pt2S.x) / 2;
+          var midY = (pt1S.y + pt2S.y) / 2 - 16;
+          var badgeText = '🧱 DADO TILE: ' + drawnDistMm + ' mm';
+          ctx.font = '700 11px "IBM Plex Sans", sans-serif';
+          var tw = ctx.measureText(badgeText).width;
+          ctx.fillStyle = '#047857';
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(midX - tw / 2 - 8, midY - 10, tw + 16, 20, 4);
+          else ctx.rect(midX - tw / 2 - 8, midY - 10, tw + 16, 20);
+          ctx.fill();
+          ctx.fillStyle = '#FFFFFF';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(badgeText, midX, midY);
+        } else {
+          var sCur = this.worldToScreen(nearDado.proj.pt);
+          var hasD = !!(wDado.dadoTile || (wDado.dadoSegments && wDado.dadoSegments.length > 0));
+          var promptText = hasD ? 'Click to Remove Dado Tile (or drag segment)' : 'Click to Add Dado Tile to Wall (or drag segment)';
+          ctx.font = '700 11px "IBM Plex Sans", sans-serif';
+          var tw = ctx.measureText(promptText).width;
+          ctx.fillStyle = '#0F172A';
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(sCur.x - tw / 2 - 8, sCur.y - 24, tw + 16, 20, 4);
+          else ctx.rect(sCur.x - tw / 2 - 8, sCur.y - 24, tw + 16, 20);
+          ctx.fill();
+          ctx.fillStyle = '#FFFFFF';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(promptText, sCur.x, sCur.y - 14);
+        }
         ctx.restore();
       }
     }

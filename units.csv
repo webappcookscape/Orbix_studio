@@ -72,3 +72,6 @@ wm-60 o/s,WM  60 O/S,KITCHEN O/S,KITCHEN O/S,600,600,18,2,hinged,slab,none,none,
 wm-30 o/s,WM 30 O/S,KITCHEN O/S,KITCHEN O/S,300,600,18,1,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,1.937504709
 fbcm,L-SHAPED CORNER BASE UNIT (Cookscape),Kitchen - FM,Kitchen - FM,900,720,560,2,hinged,slab,none,none,1,2,0,False,0,HDHMR_18mm,MDF 7701,BWP_18mm,MDF 1135,black,standard,black,False,16500.00,8.70
 f_fbcm_1,L-SHAPED CORNER BASE UNIT (Cookscape),Kitchen - FM,Kitchen - FM,900,720,560,2,hinged,slab,none,none,1,2,0,False,0,HDHMR_18mm,MDF 7701,BWP_18mm,MDF 1135,black,standard,black,False,16500.00,8.70
+fcm-rt-1500,FCM-RT 1500 (Cookscape),Kitchen - WM,Kitchen - WM,1200,720,560,1,hinged,slab,none,none,2,1,0,False,0,HDHMR_18mm,MDF 7701,BWP_18mm,MDF 1135,none,pull,black,False,17398.79,9.30
+fcm-lt-1500,FCM-LT 1500 (Cookscape),Kitchen - WM,Kitchen - WM,1200,720,560,1,hinged,slab,none,none,2,1,0,False,0,HDHMR_18mm,MDF 7701,BWP_18mm,MDF 1135,none,pull,black,False,17398.79,9.30
+fbcm-1500,L-SHAPED CORNER 1500 (Cookscape),Kitchen - WM,Kitchen - WM,900,720,560,2,hinged,slab,none,none,1,2,0,False,0,HDHMR_18mm,MDF 7701,BWP_18mm,MDF 1135,none,standard,black,False,16500.00,8.70

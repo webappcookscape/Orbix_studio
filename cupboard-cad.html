@@ -1030,6 +1030,7 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 .plan-tool-btn:hover{color:#0F172A;border-color:#94A3B8;background:#F8FAFC}
 .plan-tool-btn.is-active{background:#1B4F72;border-color:#1B4F72;color:#fff;box-shadow:0 1px 4px rgba(27,79,114,.3)}
 .plan-tool-btn[data-tool="divider"].is-active{background:#7C3AED;border-color:#6D28D9;color:#fff;box-shadow:0 1px 4px rgba(124,58,237,.35)}
+.plan-tool-btn[data-tool="dado"].is-active{background:#059669;border-color:#047857;color:#fff;box-shadow:0 1px 4px rgba(5,150,105,.35)}
 .plan-select{
   font-family:var(--sans);font-size:11.5px;padding:4px 8px;border:1px solid #CBD5E1;
   border-radius:4px;background:#fff;color:#1E293B;
@@ -2975,6 +2976,56 @@ body.role-employee #adminCreateEmpBox,
   flex-shrink: 0;
 }
 
+.furn-tray-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-left: 8px;
+  height: 26px;
+  min-width: 170px;
+  max-width: 240px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.furn-tray-search-wrap:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+.furn-tray-search-icon {
+  font-size: 11px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+.furn-tray-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 11.5px;
+  color: #1e293b;
+  width: 100%;
+  padding: 0;
+}
+.furn-tray-search-input::placeholder {
+  color: #94a3b8;
+  font-size: 11px;
+}
+.furn-tray-search-clear {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+.furn-tray-search-clear:hover {
+  color: #0f172a;
+}
+
 .furn-tray-chevron {
   font-size: 9px;
   color: #64748b;
@@ -3074,36 +3125,38 @@ body.role-employee #adminCreateEmpBox,
 
 .furn-tray-cards-container {
   flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #f8fafc;
   scrollbar-width: thin;
 }
 .furn-tray-cards-container::-webkit-scrollbar {
-  height: 5px;
+  width: 5px;
 }
 .furn-tray-cards-container::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
 
-/* Card item */
+/* Card item: exactly 8 units per row, not scrollable horizontally */
 .furn-card {
-  flex: 0 0 170px;
-  width: 170px;
-  height: 104px;
+  width: 100%;
+  min-width: 0;
+  height: 98px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 5px 6px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
   position: relative;
+  box-sizing: border-box;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -3122,14 +3175,15 @@ body.role-employee #adminCreateEmpBox,
 
 .furn-card-top {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
-  height: 60px;
+  height: 52px;
+  min-width: 0;
 }
 
 .furn-card-thumb {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -3153,12 +3207,13 @@ body.role-employee #adminCreateEmpBox,
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 48px;
+  height: 44px;
+  overflow: hidden;
 }
 
 .furn-card-badge {
   align-self: flex-end;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   color: #475569;
   background: #f1f5f9;
@@ -3168,13 +3223,13 @@ body.role-employee #adminCreateEmpBox,
 }
 
 .furn-card-code {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: #1e293b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .furn-card-bottom {
@@ -3182,14 +3237,15 @@ body.role-employee #adminCreateEmpBox,
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 10.5px;
+  padding: 2px 5px;
+  font-size: 9.5px;
   font-weight: 600;
   color: #334155;
   display: flex;
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
+  min-width: 0;
   transition: all 0.12s ease;
 }
 
@@ -3203,6 +3259,18 @@ body.role-employee #adminCreateEmpBox,
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1 1 auto;
+  min-width: 0;
+}
+
+.furn-tray-cards-container .furn-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 24px 12px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .furn-card-chevron {
@@ -3377,14 +3445,6 @@ body.role-employee #adminCreateEmpBox,
     <section class="view" id="view-design">
       <div class="stagewrap">
         <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
-          <div class="stage-cam-hud" id="stageCamHud">
-            <button class="cam-hud-btn" id="hudFrontBtn" title="Front Elevation View">👁 Front</button>
-            <button class="cam-hud-btn is-active" id="hudIsoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
-            <button class="cam-hud-btn" id="hudSideBtn" title="Side Elevation View">◨ Side</button>
-            <span class="cam-hud-sep"></span>
-            <button class="cam-hud-btn" id="hudOpenBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
-            <button class="cam-hud-btn" id="hudPresentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
-          </div>
           <div id="world"></div>
         </div>
         <div class="stagebar">
@@ -3414,6 +3474,10 @@ body.role-employee #adminCreateEmpBox,
               <button class="minibtn" data-floor="grey_tile" title="Charcoal Grey Stone Tile">▩ Grey Tile</button>
               <button class="minibtn" data-floor="wooden" title="Warm Hardwood Parquet">🪵 Wooden</button>
             </div>
+            <!-- 3D Dado Tile Option -->
+            <button class="minibtn is-on" id="toggleDadoTileBtn" title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
+              <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
+            </button>
             <!-- 3D Room Selector -->
             <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
               <option value="all">🏠 All Rooms</option>
@@ -3541,21 +3605,11 @@ body.role-employee #adminCreateEmpBox,
             </select>
             <button class="plan-tool-btn" data-tool="divider" id="planDividerBtn" title="Room Divider: Divide rooms without solid walls (Hotkey R)">✂ Room Divider</button>
             <button class="plan-tool-btn" data-tool="door" title="Place Door (D)">🚪 + Door</button>
-            <select class="plan-select" id="planDoorWidth" title="Door Width">
-              <option value="750">750 mm (Bath)</option>
-              <option value="900" selected>900 mm (Bed)</option>
-              <option value="1000">1000 mm (Main)</option>
-              <option value="1200">1200 mm (Wide)</option>
-            </select>
             <button class="plan-tool-btn" data-tool="window" title="Place Window (Win)">🪟 + Window</button>
-            <select class="plan-select" id="planWindowWidth" title="Window Width">
-              <option value="900">900 mm</option>
-              <option value="1200" selected>1200 mm</option>
-              <option value="1500">1500 mm</option>
-              <option value="1800">1800 mm</option>
-            </select>
             <!-- Dimension Measurement Tool -->
             <button class="plan-tool-btn" data-tool="dimension" id="planDimensionBtn" title="Measure Length between Two Points (Hotkey M)">📏 Dimension</button>
+            <!-- Dado Tile / Backsplash Tool -->
+            <button class="plan-tool-btn" data-tool="dado" id="planDadoBtn" title="Draw Dado Tile: Click or drag on walls to draw kitchen backsplash & bathroom dado tiles (Hotkey T)">🧱 + Dado Tile</button>
             <!-- Furnish: Modular Units & Furniture Catalog Tool -->
             <button class="plan-tool-btn furn-place-btn" data-tool="furniture" id="planFurnitureBtn" onclick="window.toggleFurnishMenu && window.toggleFurnishMenu(event)" title="Furnish: Modular Units & Furniture Catalog (Hotkey F)">
               <img src="data:image/png;base64,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" alt="Furnish" class="furn-tool-img-icon" style="width:18px;height:22px;object-fit:contain;vertical-align:middle;margin-right:5px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.12));">
@@ -3567,10 +3621,13 @@ body.role-employee #adminCreateEmpBox,
                   <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (900×750)</option>
                   <option value="fcm-rt">fcm-rt: FCM-RT (Cookscape) (1200×720)</option>
                   <option value="fm-rt-01">fm-rt-01: FCM-RT (Cookscape) (1200×720)</option>
+                  <option value="fcm-rt-1500">fcm-rt-1500: FCM-RT 1500 (Cookscape) (1200×720, elev: 1500)</option>
                   <option value="fcm-lt">fcm-lt: FCM-LT (Cookscape) (1200×720)</option>
                   <option value="fm-lt-01">fm-lt-01: FCM-LT (Cookscape) (1200×720)</option>
+                  <option value="fcm-lt-1500">fcm-lt-1500: FCM-LT 1500 (Cookscape) (1200×720, elev: 1500)</option>
                   <option value="fbcm">fbcm: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
                   <option value="f_fbcm_1">f_fbcm_1: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
+                  <option value="fbcm-1500">fbcm-1500: L-SHAPED CORNER 1500 (Cookscape) (900×720, elev: 1500)</option>
                   <option value="fm-120">fm-120: FM 120 Kitchen Base (1200×750)</option>
                   <option value="fm-60">fm-60: FM 60 Kitchen Base (600×750)</option>
                   <option value="wm-60-dbl">wm-60-dbl: WM 60 DOUBLE Kitchen Wall (600×600)</option>
@@ -3579,7 +3636,6 @@ body.role-employee #adminCreateEmpBox,
                   <option value="wr-drawers">wr-drawers: WR 2 DOOR WITH DRAWERS (900×2100)</option>
                 </optgroup>
               </select>
-            <button class="plan-tool-btn" data-tool="split" title="Split Wall at Point">✂️ Split</button>
             <!-- Import Custom 3D Decors & .skp (Excluded from Woodwork Pricing) -->
             <button class="plan-tool-btn" id="openDecorModalBtn" type="button" title="Import Decors, Appliances &amp; .skp 3D Models (Excluded from Woodwork Pricing: Fridge, Ice Box, Plants, Microwave, Chimney, TV, etc.)" style="background:#f0fdf4;color:#166534;border-color:#86efac;font-weight:600;display:inline-flex;align-items:center;gap:5px;">
               <span>🌿 + Decors / .skp</span>
@@ -3658,7 +3714,11 @@ body.role-employee #adminCreateEmpBox,
             <div class="furn-tray-cat-pill" id="furnTrayCatPill" title="Current Category">
               <span id="furnTrayCatTitle">Base Unit</span>
               <span class="furn-tray-chevron">▾</span>
-              <span class="furn-tray-search-icon" title="Search in Category">🔍</span>
+            </div>
+            <div class="furn-tray-search-wrap" id="furnTraySearchWrap">
+              <span class="furn-tray-search-icon" id="furnTraySearchIcon">🔍</span>
+              <input type="text" id="furnTraySearchInput" class="furn-tray-search-input" placeholder="Search units in Base Unit..." autocomplete="off">
+              <button type="button" id="furnTraySearchClear" class="furn-tray-search-clear" title="Clear search" style="display:none;">✕</button>
             </div>
             <div class="furn-tray-tabs-scroll" id="furnTrayTabs">
               <!-- Dynamically rendered tabs -->
@@ -4673,6 +4733,10 @@ body.role-employee #adminCreateEmpBox,
   "wm-60-o-s": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"33,95 81,92.12 101.03999999999999,84.44 85.03999999999999,86.44 27,97\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"77,40.12 95.03999999999999,30.439999999999998 95.03999999999999,78.44 77,88.12\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"29,43 47.04,33.32 95.03999999999999,30.439999999999998 77,40.12\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"29,43 77,40.12 77,88.12 29,91\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"38,42.5 80,39.62 80,81.62 38,84.5\" fill=\"#E2E8F0\" stroke=\"#CBD5E1\" stroke-width=\"0.8\" />\n  <polygon points=\"32,46 38,42.5 80,39.62 74,43.12\" fill=\"#94A3B8\" />\n  <polygon points=\"32,46 38,42.5 38,84.5 32,88\" fill=\"#CBD5E1\" />\n  <polygon points=\"32,67 74,64.12 80,60.620000000000005 38,63.5\" fill=\"#F8FAFC\" stroke=\"#1E293B\" stroke-width=\"1\" />\n</svg>",
   "wm-30-o-s": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 120 120\" width=\"120\" height=\"120\">\n  \n  <defs>\n    <filter id=\"dropBlur\" x=\"-20%\" y=\"-20%\" width=\"150%\" height=\"150%\">\n      <feGaussianBlur in=\"SourceGraphic\" stdDeviation=\"2.5\" />\n    </filter>\n    <linearGradient id=\"topGraniteGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n      <stop offset=\"0%\" stop-color=\"#1E293B\" />\n      <stop offset=\"100%\" stop-color=\"#0F172A\" />\n    </linearGradient>\n  </defs>\n  <polygon points=\"41,95 73,93.08 93.03999999999999,85.4 77.03999999999999,87.4 35,97\" fill=\"rgba(15, 23, 42, 0.16)\" filter=\"url(#dropBlur)\" />\n  <polygon points=\"69,41.08 87.03999999999999,31.4 87.03999999999999,79.4 69,89.08\" fill=\"#D8E2EC\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"37,43 55.04,33.32 87.03999999999999,31.4 69,41.08\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"37,43 69,41.08 69,89.08 37,91\" fill=\"#FFFFFF\" stroke=\"#1E293B\" stroke-width=\"1.5\" stroke-linejoin=\"round\" />\n  <polygon points=\"46,42.5 72,40.58 72,82.58 46,84.5\" fill=\"#E2E8F0\" stroke=\"#CBD5E1\" stroke-width=\"0.8\" />\n  <polygon points=\"40,46 46,42.5 72,40.58 66,44.08\" fill=\"#94A3B8\" />\n  <polygon points=\"40,46 46,42.5 46,84.5 40,88\" fill=\"#CBD5E1\" />\n  <polygon points=\"40,67 66,65.08 72,61.58 46,63.5\" fill=\"#F8FAFC\" stroke=\"#1E293B\" stroke-width=\"1\" />\n</svg>"
 };
+
+  ICONS["fcm-rt-1500"] = ICONS["fcm-rt"];
+  ICONS["fcm-lt-1500"] = ICONS["fcm-lt"];
+  ICONS["fbcm-1500"] = ICONS["fbcm"];
 
   return {
     ICONS: ICONS,
@@ -10114,6 +10178,140 @@ body.role-employee #adminCreateEmpBox,
       customRate: 16500.00
     },
     {
+      id: "fcm-rt-1500",
+      code: "FCM-RT 1500",
+      name: "FCM-RT 1500 (Cookscape)",
+      catalogItemId: "fcm-rt-1500",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 9.30,
+      icon: "🍳",
+      dimensions: { W: 1200, H: 720, D: 560 },
+      elevation: 1500,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kwall",
+        unitType: "fcm-rt",
+        fixedPanel: { enabled: true, width: 600, type: "fixed" },
+        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "right" },
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 2,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "pull",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 17398.79 },
+      customRate: 17398.79
+    },
+    {
+      id: "fcm-lt-1500",
+      code: "FCM-LT 1500",
+      name: "FCM-LT 1500 (Cookscape)",
+      catalogItemId: "fcm-lt-1500",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 9.30,
+      icon: "🍳",
+      dimensions: { W: 1200, H: 720, D: 560 },
+      elevation: 1500,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kwall",
+        unitType: "fcm-lt",
+        fixedPanel: { enabled: true, width: 600, type: "fixed" },
+        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 2,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "pull",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 17398.79 },
+      customRate: 17398.79
+    },
+    {
+      id: "fbcm-1500",
+      code: "FBCM 1500",
+      name: "L-SHAPED CORNER 1500 (Cookscape)",
+      catalogItemId: "fbcm-1500",
+      modelType: "kitchen_wm",
+      category: "kitchen_wall",
+      costCategory: "Kitchen - WM",
+      areaSqft: 8.70,
+      icon: "🍳",
+      dimensions: { W: 900, H: 720, D: 560 },
+      elevation: 1500,
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
+        carcass: { material: "BWP_18mm", finish: "MDF 1135" }
+      },
+      unitConfig: {
+        ctype: "kwall",
+        unitType: "fbcm",
+        geometryType: "l_shaped_corner",
+        corner: {
+          enabled: true,
+          type: "L",
+          legW: 900,
+          legD: 900,
+          depth: 560,
+          orientation: "right"
+        },
+        shutters: 2,
+        doors: [
+          { id: "door_1", position: "front", type: "hinged", opening: "left" },
+          { id: "door_2", position: "side", type: "hinged", opening: "right" }
+        ],
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 1,
+        shelves: 2,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "none",
+        handle: "standard",
+        hfinish: "black",
+        led: false,
+        carcass: "MDF 1135",
+        shutterCol: "MDF 7701"
+      },
+      pricingOverrides: { baseRate: 16500.00 },
+      customRate: 16500.00
+    },
+    {
       id: "f_fbcm_1",
       code: "FBCM-01",
       name: "L-SHAPED CORNER BASE UNIT (Cookscape)",
@@ -12627,8 +12825,9 @@ body.role-employee #adminCreateEmpBox,
     this.onProjectChange = opts.onProjectChange || function () {};
     this.onSelectionChange = opts.onSelectionChange || function () {};
 
-    // Tool state: 'select' | 'wall' | 'door' | 'window' | 'room' | 'split' | 'measure'
+    // Tool state: 'select' | 'wall' | 'door' | 'window' | 'room' | 'split' | 'measure' | 'dimension' | 'dado'
     this.activeTool = 'select';
+    this.dadoDrawStart = null;
     this.doorPreset = { width: 900, height: 2100, swing: 'in-left' };
     this.windowPreset = { width: 1200, height: 1200, sillHeight: 900 };
     this.wallPreset = { thickness: 150, height: 2800 };
@@ -13369,6 +13568,12 @@ body.role-employee #adminCreateEmpBox,
     });
 
     this.canvas.addEventListener('contextmenu', function (e) {
+      if (self.dadoDrawStart) {
+        e.preventDefault();
+        self.dadoDrawStart = null;
+        self.render();
+        return;
+      }
       if (self.wallChainStart || self.activeTool === 'divider') {
         e.preventDefault();
         var wasDiv = (self.activeTool === 'divider');
@@ -13394,6 +13599,11 @@ body.role-employee #adminCreateEmpBox,
       }
 
       if (e.button === 2) { // Right click cancels / finishes wall chain or divider
+        if (self.dadoDrawStart) {
+          self.dadoDrawStart = null;
+          self.render();
+          return;
+        }
         if (self.wallChainStart || self.activeTool === 'divider') {
           var wasDiv2 = (self.activeTool === 'divider');
           self.wallChainStart = null;
@@ -13509,6 +13719,8 @@ body.role-employee #adminCreateEmpBox,
         self.handleCalibrateMouseDown(worldPt);
       } else if (self.activeTool === 'dimension') {
         self.handleDimensionMouseDown(worldPt);
+      } else if (self.activeTool === 'dado') {
+        self.handleDadoMouseDown(worldPt);
       }
     });
 
@@ -13797,7 +14009,7 @@ body.role-employee #adminCreateEmpBox,
       }
       if (overLockBadge) {
         self.canvas.style.cursor = 'pointer';
-      } else if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.wallChainStart || self.activeTool === 'dimension') {
+      } else if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.wallChainStart || self.activeTool === 'dimension' || self.activeTool === 'dado') {
         self.canvas.style.cursor = 'crosshair';
       } else if (self.dragState) {
         self.canvas.style.cursor = 'grabbing';
@@ -13806,7 +14018,7 @@ body.role-employee #adminCreateEmpBox,
       }
 
       // Live drawing render
-      if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.wallChainStart) {
+      if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.activeTool === 'dado' || self.wallChainStart) {
         self.render();
       }
     });
@@ -13944,6 +14156,11 @@ body.role-employee #adminCreateEmpBox,
       }
 
       if (e.key === 'Escape') {
+        if (self.dadoDrawStart) {
+          self.dadoDrawStart = null;
+          self.render();
+          return;
+        }
         if (self.activeTool === 'dimension') {
           self.dimensionStart = null;
           self.render();
@@ -13969,6 +14186,12 @@ body.role-employee #adminCreateEmpBox,
       if (e.key.toLowerCase() === 'm' && !e.ctrlKey && !e.metaKey) {
         var dimBtn = document.getElementById('planDimensionBtn');
         if (dimBtn) dimBtn.click();
+        return;
+      }
+
+      if (e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey) {
+        var dadoBtn = document.getElementById('planDadoBtn');
+        if (dadoBtn) dadoBtn.click();
         return;
       }
 
@@ -14124,8 +14347,11 @@ body.role-employee #adminCreateEmpBox,
       this.wallChainFirstPoint = null;
       this.numericInputBuffer = '';
     }
+    if (tool !== 'dado') {
+      this.dadoDrawStart = null;
+    }
     if (this.canvas) {
-      if (tool === 'wall' || tool === 'divider' || tool === 'dimension') {
+      if (tool === 'wall' || tool === 'divider' || tool === 'dimension' || tool === 'dado') {
         this.canvas.style.cursor = 'crosshair';
       } else {
         this.canvas.style.cursor = 'default';
@@ -15111,6 +15337,78 @@ body.role-employee #adminCreateEmpBox,
     this.render();
   };
 
+  PlanEditor.prototype.handleDadoMouseDown = function (worldPt) {
+    var near = this.findNearestWall(worldPt, 400);
+    if (!near) {
+      if (typeof window.toast === 'function') {
+        window.toast('ℹ Click on or near a wall to draw Dado Tile (Backsplash)');
+      }
+      return;
+    }
+    var w = near.wall;
+    if (w.isDivider) {
+      if (typeof window.toast === 'function') {
+        window.toast('⚠ Dado Tiles cannot be placed on room dividers');
+      }
+      return;
+    }
+
+    if (!this.dadoDrawStart) {
+      // First click: record start point on this wall
+      this.dadoDrawStart = {
+        wallId: w.id,
+        pt: Vec2.clone(near.proj.pt),
+        t: near.proj.t
+      };
+      this.render();
+      if (typeof window.toast === 'function') {
+        window.toast('🧱 Dado Tile start set. Click another point on this wall to draw segment, or click again to toggle full wall.');
+      }
+      return;
+    }
+
+    // Second click
+    var startInfo = this.dadoDrawStart;
+    this.dadoDrawStart = null;
+
+    if (startInfo.wallId === w.id) {
+      var wLen = Core.wallLength(w);
+      var t1 = Math.min(startInfo.t, near.proj.t);
+      var t2 = Math.max(startInfo.t, near.proj.t);
+      var spanMm = (t2 - t1) * wLen;
+
+      if (spanMm < 150) {
+        // Clicked nearly same point: toggle whole wall!
+        w.dadoTile = !w.dadoTile;
+        delete w.dadoSegments;
+        var msg = w.dadoTile ? '🧱 Dado Tile (Backsplash) added to full wall' : '🧱 Dado Tile removed from wall';
+        if (typeof window.toast === 'function') window.toast(msg);
+      } else {
+        // Applied segment
+        w.dadoTile = true;
+        var sOffset = Math.round(t1 * wLen);
+        var eOffset = Math.round(t2 * wLen);
+        w.dadoSegments = [{ startOffset: sOffset, endOffset: eOffset }];
+        if (typeof window.toast === 'function') {
+          window.toast('🧱 Dado Tile drawn: ' + Math.round(spanMm) + ' mm on wall');
+        }
+      }
+    } else {
+      // Clicked a different wall: toggle that different wall
+      w.dadoTile = !w.dadoTile;
+      delete w.dadoSegments;
+      if (typeof window.toast === 'function') {
+        window.toast(w.dadoTile ? '🧱 Dado Tile added to wall' : '🧱 Dado Tile removed from wall');
+      }
+    }
+
+    this.pushHistory('Draw Dado Tile');
+    this.render();
+    if (window.OrbixUI && window.OrbixUI.render3DHome) {
+      window.OrbixUI.render3DHome(true);
+    }
+  };
+
   PlanEditor.prototype.getWall = function (id) {
     var walls = this.project.plan.walls;
     for (var i = 0; i < walls.length; i++) {
@@ -15745,6 +16043,82 @@ body.role-employee #adminCreateEmpBox,
         var sCol = this.worldToScreen(columnPts[cpi]);
         ctx.fillRect(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2, colSizePx, colSizePx);
         ctx.strokeRect(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2, colSizePx, colSizePx);
+      }
+    }
+    this.renderDadoTiles(ctx);
+  };
+
+  PlanEditor.prototype.renderDadoTiles = function (ctx) {
+    var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    for (var wi = 0; wi < walls.length; wi++) {
+      var wItem = walls[wi];
+      if (!wItem || wItem.isDivider || wItem.thickness === 0) continue;
+      if (!wItem.dadoTile && (!wItem.dadoSegments || wItem.dadoSegments.length === 0)) continue;
+
+      var wLen = Core.wallLength(wItem);
+      if (wLen < 50) continue;
+      var wDir = Core.wallDirection(wItem);
+      var wNorm = Core.wallNormal(wItem);
+      var halfT = (wItem.thickness || 150) / 2.0;
+
+      var segs = (wItem.dadoSegments && wItem.dadoSegments.length > 0)
+        ? wItem.dadoSegments
+        : [{ startOffset: 0, endOffset: wLen }];
+
+      for (var si = 0; si < segs.length; si++) {
+        var seg = segs[si];
+        var sOff = Math.max(0, seg.startOffset || 0);
+        var eOff = Math.min(wLen, seg.endOffset !== undefined ? seg.endOffset : wLen);
+        if (eOff <= sOff + 30) continue;
+
+        var segLen = eOff - sOff;
+        var pStart = { x: wItem.start.x + wDir.x * sOff, y: wItem.start.y + wDir.y * sOff };
+        var pEnd = { x: wItem.start.x + wDir.x * eOff, y: wItem.start.y + wDir.y * eOff };
+
+        ctx.save();
+        var sp1 = this.worldToScreen(pStart);
+        var sp2 = this.worldToScreen(pEnd);
+
+        ctx.strokeStyle = '#059669';
+        ctx.lineWidth = Math.max(3, (wItem.thickness || 150) * this.zoom * 0.45);
+        ctx.lineCap = 'square';
+        ctx.beginPath();
+        ctx.moveTo(sp1.x, sp1.y);
+        ctx.lineTo(sp2.x, sp2.y);
+        ctx.stroke();
+
+        var tickStepMm = 250;
+        var numTicks = Math.floor(segLen / tickStepMm);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.lineWidth = 1.5;
+        var tickArm = (halfT + 12) * this.zoom;
+        for (var tk = 0; tk <= numTicks; tk++) {
+          var curDist = sOff + tk * tickStepMm;
+          var curPt = { x: wItem.start.x + wDir.x * curDist, y: wItem.start.y + wDir.y * curDist };
+          var sCurPt = this.worldToScreen(curPt);
+          ctx.beginPath();
+          ctx.moveTo(sCurPt.x - wNorm.x * tickArm, sCurPt.y - wNorm.y * tickArm);
+          ctx.lineTo(sCurPt.x + wNorm.x * tickArm, sCurPt.y + wNorm.y * tickArm);
+          ctx.stroke();
+        }
+
+        var sMid = this.worldToScreen({ x: (pStart.x + pEnd.x) / 2, y: (pStart.y + pEnd.y) / 2 });
+        var badgeText = '🧱 DADO TILE (' + Math.round(segLen) + ' mm)';
+        ctx.font = '700 10px "IBM Plex Sans", -apple-system, sans-serif';
+        var tw = ctx.measureText(badgeText).width;
+        ctx.fillStyle = '#065F46';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(sMid.x - tw / 2 - 6, sMid.y - 9, tw + 12, 18, 4);
+        else ctx.rect(sMid.x - tw / 2 - 6, sMid.y - 9, tw + 12, 18);
+        ctx.fill();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badgeText, sMid.x, sMid.y);
+        ctx.restore();
       }
     }
   };
@@ -17841,6 +18215,88 @@ body.role-employee #adminCreateEmpBox,
         ctx.restore();
       }
     }
+
+    // 7. Dado Tile Tool live preview
+    if (this.activeTool === 'dado') {
+      var nearDado = this.findNearestWall(this.cursorWorld, 400);
+      if (nearDado && !nearDado.wall.isDivider) {
+        var wDado = nearDado.wall;
+        var wPoly = Core.wallPolygon(wDado);
+
+        ctx.save();
+        if (wPoly && wPoly.length >= 4) {
+          ctx.beginPath();
+          var sp0 = this.worldToScreen(wPoly[0]);
+          ctx.moveTo(sp0.x, sp0.y);
+          for (var pi = 1; pi < wPoly.length; pi++) {
+            var spi = this.worldToScreen(wPoly[pi]);
+            ctx.lineTo(spi.x, spi.y);
+          }
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(16, 185, 129, 0.18)';
+          ctx.fill();
+          ctx.strokeStyle = '#059669';
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([6, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        if (this.dadoDrawStart && this.dadoDrawStart.wallId === wDado.id) {
+          var pt1S = this.worldToScreen(this.dadoDrawStart.pt);
+          var pt2S = this.worldToScreen(nearDado.proj.pt);
+          var drawnDistMm = Math.round(Vec2.dist(this.dadoDrawStart.pt, nearDado.proj.pt));
+
+          ctx.strokeStyle = '#047857';
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(pt1S.x, pt1S.y);
+          ctx.lineTo(pt2S.x, pt2S.y);
+          ctx.stroke();
+
+          [pt1S, pt2S].forEach(function (pt) {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#059669';
+            ctx.fill();
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          });
+
+          var midX = (pt1S.x + pt2S.x) / 2;
+          var midY = (pt1S.y + pt2S.y) / 2 - 16;
+          var badgeText = '🧱 DADO TILE: ' + drawnDistMm + ' mm';
+          ctx.font = '700 11px "IBM Plex Sans", sans-serif';
+          var tw = ctx.measureText(badgeText).width;
+          ctx.fillStyle = '#047857';
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(midX - tw / 2 - 8, midY - 10, tw + 16, 20, 4);
+          else ctx.rect(midX - tw / 2 - 8, midY - 10, tw + 16, 20);
+          ctx.fill();
+          ctx.fillStyle = '#FFFFFF';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(badgeText, midX, midY);
+        } else {
+          var sCur = this.worldToScreen(nearDado.proj.pt);
+          var hasD = !!(wDado.dadoTile || (wDado.dadoSegments && wDado.dadoSegments.length > 0));
+          var promptText = hasD ? 'Click to Remove Dado Tile (or drag segment)' : 'Click to Add Dado Tile to Wall (or drag segment)';
+          ctx.font = '700 11px "IBM Plex Sans", sans-serif';
+          var tw = ctx.measureText(promptText).width;
+          ctx.fillStyle = '#0F172A';
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(sCur.x - tw / 2 - 8, sCur.y - 24, tw + 16, 20, 4);
+          else ctx.rect(sCur.x - tw / 2 - 8, sCur.y - 24, tw + 16, 20);
+          ctx.fill();
+          ctx.fillStyle = '#FFFFFF';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(promptText, sCur.x, sCur.y - 14);
+        }
+        ctx.restore();
+      }
+    }
   };
 
   PlanEditor.prototype.renderHandle = function (ctx, pt) {
@@ -17887,6 +18343,7 @@ body.role-employee #adminCreateEmpBox,
     this.group = null;
     this.materials = {};
     this.selectedFloorType = 'white_tile';
+    this.dadoTileEnabled = (typeof window !== 'undefined' && window.dadoTileEnabled !== undefined) ? window.dadoTileEnabled : true;
     this.isolatedRoomId = null;
     this.initMaterials();
   }
@@ -18101,6 +18558,77 @@ body.role-employee #adminCreateEmpBox,
     tex.repeat.set(4, 4);
     ArchitecturalRenderer._woodBumpTex = tex;
     return tex;
+  };
+
+  // Procedural Ceramic Subway / Vitrified Dado Tile Texture
+  ArchitecturalRenderer.createDadoTileTexture = function () {
+    if (ArchitecturalRenderer._dadoTileTex) return ArchitecturalRenderer._dadoTileTex;
+    if (typeof document === 'undefined') return null;
+    var canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    // Base ceramic grout background
+    ctx.fillStyle = '#D6D3D1';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Staggered subway / modular dado tiles (8 rows x 4 columns)
+    var rowH = 64;
+    var colW = 128;
+    for (var r = 0; r < 8; r++) {
+      var y = r * rowH;
+      var xOffset = (r % 2 === 1) ? colW / 2 : 0;
+      for (var c = -1; c < 5; c++) {
+        var x = c * colW + xOffset;
+        var tw = colW - 4;
+        var th = rowH - 4;
+
+        // Glazed ceramic gradient
+        var grad = ctx.createLinearGradient(x, y + 2, x + tw, y + th);
+        grad.addColorStop(0, '#FFFFFF');
+        grad.addColorStop(0.5, '#F8F9FA');
+        grad.addColorStop(1, '#E9ECEF');
+        ctx.fillStyle = grad;
+        ctx.fillRect(x + 2, y + 2, tw, th);
+
+        // Top-left bevel highlight
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(x + 2, y + th + 2);
+        ctx.lineTo(x + 2, y + 2);
+        ctx.lineTo(x + tw + 2, y + 2);
+        ctx.stroke();
+
+        // Bottom-right subtle bevel shadow
+        ctx.strokeStyle = 'rgba(160, 160, 160, 0.35)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(x + tw + 2, y + 2);
+        ctx.lineTo(x + tw + 2, y + th + 2);
+        ctx.lineTo(x + 2, y + th + 2);
+        ctx.stroke();
+      }
+    }
+
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(2, 2);
+    ArchitecturalRenderer._dadoTileTex = tex;
+    return tex;
+  };
+
+  ArchitecturalRenderer.prototype.createDadoTileMaterial = function () {
+    if (typeof THREE === 'undefined') return null;
+    var tex = ArchitecturalRenderer.createDadoTileTexture();
+    return new THREE.MeshStandardMaterial({
+      color: 0xF8F9FA,
+      map: tex,
+      roughness: 0.16,
+      metalness: 0.04
+    });
   };
 
   ArchitecturalRenderer.createContactShadowTexture = function () {
@@ -18362,6 +18890,9 @@ body.role-employee #adminCreateEmpBox,
     this.selectedFloorType = this.selectedFloorType || 'white_tile';
     this.materials.floorTile = this.createFloorMaterial(this.selectedFloorType);
     this.materials.floorWood = this.createFloorMaterial('wooden');
+
+    // Dado Tile Wall Finish (Backsplash)
+    this.materials.dadoTile = this.createDadoTileMaterial();
 
     // Ceiling & False Ceiling
     this.materials.ceiling = new THREE.MeshStandardMaterial({
@@ -18685,6 +19216,40 @@ body.role-employee #adminCreateEmpBox,
       group.add(skB);
     }
 
+    var hasWallDado = !!(wall && (wall.dadoTile || (wall.dadoSegments && wall.dadoSegments.length > 0)));
+
+    function addDadoTile(startX, len, maxH) {
+      var isEnabled = (typeof window !== 'undefined' && window.dadoTileEnabled !== undefined) ? window.dadoTileEnabled : self.dadoTileEnabled;
+      if (!isEnabled || !hasWallDado || !self.materials.dadoTile || len < 40) return;
+
+      var segs = (wall && wall.dadoSegments && wall.dadoSegments.length > 0)
+        ? wall.dadoSegments
+        : [{ startOffset: 0, endOffset: wLen }];
+
+      for (var si = 0; si < segs.length; si++) {
+        var seg = segs[si];
+        var sStart = Math.max(startX, seg.startOffset || 0);
+        var sEnd = Math.min(startX + len, seg.endOffset !== undefined ? seg.endOffset : wLen);
+        var subLen = sEnd - sStart;
+        if (subLen < 40) continue;
+
+        var dadoBottom = 850;
+        var dadoTop = Math.min(maxH !== undefined ? maxH : 1500, wHeight - 50);
+        if (dadoTop <= dadoBottom + 50) return;
+        var dadoH = dadoTop - dadoBottom;
+        var dadoT = 6;
+        var dadoGeo = new THREE.BoxGeometry(subLen, dadoH, dadoT);
+        var tileF = new THREE.Mesh(dadoGeo, self.materials.dadoTile);
+        tileF.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, wThick / 2 + dadoT / 2);
+        tileF.receiveShadow = true;
+        group.add(tileF);
+        var tileB = new THREE.Mesh(dadoGeo, self.materials.dadoTile);
+        tileB.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, -wThick / 2 - dadoT / 2);
+        tileB.receiveShadow = true;
+        group.add(tileB);
+      }
+    }
+
     if (validOps.length === 0) {
       // Solid Wall: Single extruded box
       var geo = new THREE.BoxGeometry(wLen, wHeight, wThick);
@@ -18694,6 +19259,7 @@ body.role-employee #adminCreateEmpBox,
       mesh.position.set(wLen / 2, wHeight / 2, 0);
       group.add(mesh);
       addSkirting(0, wLen);
+      addDadoTile(0, wLen);
     } else {
       validOps.sort(function (a, b) { return a.offset - b.offset; });
 
@@ -18718,6 +19284,7 @@ body.role-employee #adminCreateEmpBox,
           segMesh.receiveShadow = true;
           group.add(segMesh);
           addSkirting(currX, segW);
+          addDadoTile(currX, segW);
         }
 
         // 2. Below window sill segment (if window with sillHeight > 0)
@@ -18729,6 +19296,9 @@ body.role-employee #adminCreateEmpBox,
           sillMesh.receiveShadow = true;
           group.add(sillMesh);
           addSkirting(opStart, opWidth);
+          if (sillH > 850) {
+            addDadoTile(opStart, opWidth, sillH);
+          }
         }
 
         // 3. Above opening lintel segment
@@ -18767,6 +19337,7 @@ body.role-employee #adminCreateEmpBox,
         lastMesh.receiveShadow = true;
         group.add(lastMesh);
         addSkirting(currX, lastW);
+        addDadoTile(currX, lastW);
       }
     }
 
@@ -20122,7 +20693,7 @@ body.role-employee #adminCreateEmpBox,
     // Position and rotate unit
     var catL = (furn.category || '').toLowerCase();
     var nameL = (furn.name || '').toLowerCase();
-    var isWallCorner = (!isBase && (catL.indexOf('wall') !== -1 || nameL.indexOf('wall') !== -1 || /(^|\b|_|-)(wcm)($|\b|_|-|\d+)/i.test(nameL)));
+    var isWallCorner = (!isBase && (catL.indexOf('wall') !== -1 || nameL.indexOf('wall') !== -1 || /(^|\b|_|-)(wcm)($|\b|_|-|\d+)/i.test(nameL))) || (furn.elevation >= 1000) || (furn.unitConfig && furn.unitConfig.ctype === 'kwall');
     var defElevCorner = isWallCorner ? 1500 : 0;
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
@@ -20485,13 +21056,18 @@ body.role-employee #adminCreateEmpBox,
                      (cat.indexOf('open') !== -1 && cat.indexOf('shutter') === -1) ||
                      (name.indexOf('open box') !== -1 || name.indexOf('open storage') !== -1) ||
                      (furn.unitConfig && (furn.unitConfig.doorType === 'open' || furn.unitConfig.type === 'open')));
-    var isWall = (typeof window !== 'undefined' && window.OrbixCore && window.OrbixCore.isWallUnit) ?
+    var isElevatedUnit = (furn.elevation !== undefined && parseFloat(furn.elevation) >= 1000) ||
+      (furn.pos && parseFloat(furn.pos.z) >= 1000) ||
+      (furn.unitConfig && (furn.unitConfig.ctype === 'kwall' || furn.unitConfig.ctype === 'wall')) ||
+      (furn.catalogItemId && furn.catalogItemId.indexOf('-1500') !== -1) ||
+      (furn.id && String(furn.id).indexOf('-1500') !== -1);
+    var isWall = isElevatedUnit || ((typeof window !== 'undefined' && window.OrbixCore && window.OrbixCore.isWallUnit) ?
       window.OrbixCore.isWallUnit(cat, name, furn.code || furn.catalogItemId, furn.costCategory) :
       (cat.indexOf('wall') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'kitchen_wall' ||
        cat === 'crockery_wall' || cat === 'spice_rack' || cat.indexOf('overhead') !== -1 ||
        cat.indexOf('loft') !== -1 || name.indexOf('wall') !== -1 || name.indexOf('overhead') !== -1 ||
        name.indexOf('spice rack') !== -1 || name.indexOf('loft') !== -1 ||
-       /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name));
+       /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name)));
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
     var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1 || cat === 'tv_unit' || (name && name.toLowerCase().indexOf('base') !== -1));
 
@@ -21911,6 +22487,31 @@ body.role-employee #adminCreateEmpBox,
         });
       }
 
+      // 3D Dado Tile Option Toggle (Backsplash wall tiling)
+      var dadoBtn = document.getElementById('toggleDadoTileBtn');
+      var dadoStatus = document.getElementById('dadoTileStatus');
+      if (dadoBtn) {
+        if (window.dadoTileEnabled === undefined) window.dadoTileEnabled = true;
+        dadoBtn.addEventListener('click', function () {
+          window.dadoTileEnabled = !window.dadoTileEnabled;
+          if (dadoStatus) dadoStatus.textContent = window.dadoTileEnabled ? 'ON' : 'OFF';
+          dadoBtn.classList.toggle('is-on', window.dadoTileEnabled);
+          dadoBtn.style.background = window.dadoTileEnabled ? '#059669' : '#f1f5f9';
+          dadoBtn.style.color = window.dadoTileEnabled ? '#ffffff' : '#334155';
+          dadoBtn.style.borderColor = window.dadoTileEnabled ? '#047857' : '#cbd5e1';
+
+          if (self.archRenderer) {
+            self.archRenderer.dadoTileEnabled = window.dadoTileEnabled;
+          }
+          if (typeof self.render3DHome === 'function') {
+            self.render3DHome(true);
+          }
+          if (typeof window.toast === 'function') {
+            window.toast(window.dadoTileEnabled ? '🧱 Dado Tiles Enabled (Backsplash ON)' : '🧱 Dado Tiles Disabled (Backsplash OFF)');
+          }
+        });
+      }
+
       // 3D Studio Room Selector
       var studioRoomSel = document.getElementById('studioRoomSelect');
       if (studioRoomSel) {
@@ -22492,6 +23093,7 @@ body.role-employee #adminCreateEmpBox,
         var planObj = ed.project && ed.project.plan;
         var innerMm = Math.round(Core.getWallInnerLength ? Core.getWallInnerLength(w, planObj) : lenMm);
         var innerDisplay = (ed.formatDim ? ed.formatDim(innerMm) : (innerMm + ' mm'));
+        var hasDado = !!(w.dadoTile || (w.dadoSegments && w.dadoSegments.length > 0));
         panel.innerHTML =
           '<div class="insp-title">Wall Properties</div>' +
           '<div class="insp-row"><label>Clear Inner Length ' + (ed.unitSystem === 'imperial' ? '(e.g. 5ft or mm)' : '(mm)') + '</label><input type="text" id="inspWallInnerLen" value="' + (ed.unitSystem === 'imperial' ? innerDisplay : innerMm) + '">' +
@@ -22500,6 +23102,15 @@ body.role-employee #adminCreateEmpBox,
           '<span style="font-size:11px;color:#64748B;">Centerline: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
+          '<div class="insp-row" style="margin-top:10px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">' +
+          '  <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin:0;font-weight:600;color:#166534;">' +
+          '    <span>🧱 Dado Tile (Backsplash)</span>' +
+          '    <input type="checkbox" id="inspWallDado" ' + (hasDado ? 'checked' : '') + ' style="width:18px;height:18px;cursor:pointer;">' +
+          '  </label>' +
+          '  <div style="font-size:11px;color:#15803d;margin-top:4px;">' +
+          (hasDado ? '✓ Backsplash ceramic subway tiles applied to this wall (850mm–1500mm)' : 'No dado tile on this wall. Check to enable backsplash.') +
+          '  </div>' +
+          '</div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
 
         var elInner = document.getElementById('inspWallInnerLen');
@@ -22555,6 +23166,20 @@ body.role-employee #adminCreateEmpBox,
             w.height = parseFloat(e.target.value);
             ed.pushHistory('Change Wall Height');
             ed.render();
+          });
+        }
+        var elWallDado = document.getElementById('inspWallDado');
+        if (elWallDado) {
+          elWallDado.addEventListener('change', function (e) {
+            w.dadoTile = e.target.checked;
+            if (!w.dadoTile) delete w.dadoSegments;
+            ed.pushHistory('Toggle Wall Dado Tile');
+            ed.render();
+            self.renderInspector(ed.selected);
+            if (self.render3DHome) self.render3DHome(true);
+            if (typeof window.toast === 'function') {
+              window.toast(w.dadoTile ? '🧱 Dado Tile Enabled for Wall' : '🧱 Dado Tile Removed from Wall');
+            }
           });
         }
         var elDelWall = document.getElementById('inspDelWall');
@@ -23989,7 +24614,7 @@ body.role-employee #adminCreateEmpBox,
             existing.shelves = 2;
             existing.handle = (fn.unitConfig && fn.unitConfig.handle) || 'standard';
             existing.hfinish = (fn.unitConfig && fn.unitConfig.hfinish) || 'black';
-            existing.counter = 'black';
+            existing.counter = (fn.unitConfig && fn.unitConfig.counter) || (isWall ? 'none' : 'black');
           } else if (isExistingFcm) {
             existing.unitType = isExistingFcmLt ? 'fcm-lt' : 'fcm-rt';
             existing.fixedPanel = (fn.unitConfig && fn.unitConfig.fixedPanel) || { enabled: true, width: 600, type: 'fixed' };
@@ -23999,6 +24624,7 @@ body.role-employee #adminCreateEmpBox,
             existing.shelves = 1;
             existing.handle = (fn.unitConfig && fn.unitConfig.handle) || 'pull';
             existing.hfinish = (fn.unitConfig && fn.unitConfig.hfinish) || 'black';
+            if (isWall) existing.counter = 'none';
           }
           if (fn.unitConfig) existing.unitConfig = Object.assign({}, fn.unitConfig);
           if (fn.catalogItemId) existing.catalogItemId = fn.catalogItemId;
@@ -24987,11 +25613,19 @@ body.role-employee #adminCreateEmpBox,
       var catItems = catList ? catList.querySelectorAll('.furn-side-cat-item') : [];
       var trayCatPill = document.getElementById('furnTrayCatPill');
       var trayCatTitle = document.getElementById('furnTrayCatTitle');
+      var traySearchInput = document.getElementById('furnTraySearchInput');
+      var traySearchClear = document.getElementById('furnTraySearchClear');
+      var traySearchIcon = document.getElementById('furnTraySearchIcon');
       var trayTabs = document.getElementById('furnTrayTabs');
       var trayCards = document.getElementById('furnTrayCards');
       var trayMinBtn = document.getElementById('furnTrayMinBtn');
       var trayCloseBtn = document.getElementById('furnTrayCloseBtn');
       var trayFilterBtn = document.getElementById('furnTrayFilterBtn');
+      var currentSearchQuery = '';
+
+      function esc(s) {
+        return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
 
       if (!sidePanel || !bottomTray) return;
 
@@ -25168,16 +25802,34 @@ body.role-employee #adminCreateEmpBox,
             trayTabs.querySelectorAll('.furn-tray-tab').forEach(function (b) { b.classList.remove('is-active'); });
             btn.classList.add('is-active');
             currentTab = t.id;
-            renderCards(cat, currentTab);
+            renderCards(cat, currentTab, currentSearchQuery);
           });
           trayTabs.appendChild(btn);
         });
       }
 
-      function renderCards(cat, tabId) {
+      function renderCards(cat, tabId, searchQuery) {
         trayCards.innerHTML = '';
         var cards = getCardsForTab(cat, tabId);
         var activePresetId = (self.editor && self.editor.furniturePreset && self.editor.furniturePreset.id) || '';
+
+        var q = (searchQuery !== undefined && searchQuery !== null) ? String(searchQuery).trim().toLowerCase() : currentSearchQuery;
+        if (q) {
+          cards = cards.filter(function (cardData) {
+            var n = (cardData.name || '').toLowerCase();
+            var c = (cardData.code || '').toLowerCase();
+            var id = (cardData.id || '').toLowerCase();
+            var l = (cardData.selectedLabel || '').toLowerCase();
+            var dims = cardData.dimensions ? (cardData.dimensions.W + ' ' + cardData.dimensions.H + ' ' + cardData.dimensions.D) : '';
+            return n.indexOf(q) !== -1 || c.indexOf(q) !== -1 || id.indexOf(q) !== -1 || l.indexOf(q) !== -1 || dims.indexOf(q) !== -1;
+          });
+        }
+
+        if (!cards.length) {
+          var catName = (trayCatTitle && trayCatTitle.textContent) || 'this category';
+          trayCards.innerHTML = '<div class="furn-empty-state"><div style="font-size:24px;margin-bottom:6px;">🔍</div>No units found matching "<b>' + esc(q) + '</b>" in ' + esc(catName) + '</div>';
+          return;
+        }
 
         cards.forEach(function (cardData) {
           var card = document.createElement('div');
@@ -25214,6 +25866,7 @@ body.role-employee #adminCreateEmpBox,
               name: cardData.name,
               category: cardData.category || (cat === 'base_unit' ? 'kitchen_base' : (cat === 'wall_unit' ? 'kitchen_wall' : cat)),
               dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: 750, D: 560 }),
+              elevation: (cardData.elevation !== undefined && cardData.elevation !== null) ? cardData.elevation : (cat === 'wall_unit' ? 1500 : 0),
               unitConfig: Object.assign({}, cardData.unitConfig || {})
             };
             if (cardData.isDecor) {
@@ -25260,11 +25913,14 @@ body.role-employee #adminCreateEmpBox,
       function switchCategory(catKey, catLabel) {
         currentCat = catKey;
         if (trayCatTitle) trayCatTitle.textContent = catLabel;
+        if (traySearchInput) {
+          traySearchInput.placeholder = 'Search units in ' + catLabel + '...';
+        }
         catItems.forEach(function (item) {
           item.classList.toggle('is-active', item.dataset.cat === catKey);
         });
         renderTabs(catKey);
-        renderCards(catKey, currentTab);
+        renderCards(catKey, currentTab, currentSearchQuery);
       }
 
       // Wire Category Item Clicks in Left Panel: "on clicking the menu all the option like in model should open down"
@@ -25311,6 +25967,50 @@ body.role-employee #adminCreateEmpBox,
             setTimeout(function () { self.editor.resize(); }, 150);
           }
         };
+      }
+
+      // Wire Search Input & Clear Button for Bottom Unit Tray
+      if (traySearchInput) {
+        traySearchInput.addEventListener('input', function () {
+          currentSearchQuery = traySearchInput.value.trim().toLowerCase();
+          if (traySearchClear) traySearchClear.style.display = currentSearchQuery ? 'inline-block' : 'none';
+          renderCards(currentCat, currentTab, currentSearchQuery);
+        });
+        traySearchInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') {
+            traySearchInput.value = '';
+            currentSearchQuery = '';
+            if (traySearchClear) traySearchClear.style.display = 'none';
+            renderCards(currentCat, currentTab, '');
+          }
+        });
+      }
+      if (traySearchClear) {
+        traySearchClear.addEventListener('click', function () {
+          if (traySearchInput) {
+            traySearchInput.value = '';
+            traySearchInput.focus();
+          }
+          currentSearchQuery = '';
+          traySearchClear.style.display = 'none';
+          renderCards(currentCat, currentTab, '');
+        });
+      }
+      if (trayCatPill) {
+        trayCatPill.addEventListener('click', function () {
+          if (traySearchInput) {
+            traySearchInput.focus();
+            traySearchInput.select();
+          }
+        });
+      }
+      if (traySearchIcon) {
+        traySearchIcon.addEventListener('click', function () {
+          if (traySearchInput) {
+            traySearchInput.focus();
+            traySearchInput.select();
+          }
+        });
       }
 
       // Wire Top Toolbar "Furnish" button toggle:
@@ -28361,9 +29061,9 @@ body.role-employee #adminCreateEmpBox,
                    (u.id && /fcm[-_ ]*(rt|lt)/i.test(u.id)) ||
                    (u.label && /fcm[-_ ]*(rt|lt)/i.test(u.label)) ||
                    (u.name && /fcm[-_ ]*(rt|lt)/i.test(u.name)));
-      var plinthH = elev > 0 ? elev : (isFcm ? 100 : 0);
+      var plinthH = (u.plinth === false) ? 0 : 100;
       if (plinthH > 0) {
-        var pY = elev > 0 ? elev : 0;
+        var pY = (elev > 0 && elev <= 150) ? elev : 0;
         B.push({ x: 0, y: pY, z: u.D / 2 - 70, w: u.W - 2 * T, h: plinthH, d: 18, mat: "kick" });
         B.push({ x: -u.W / 2 + T, y: pY, z: 0, w: 18, h: plinthH, d: u.D - 90, mat: "kick" });
         B.push({ x: u.W / 2 - T, y: pY, z: 0, w: 18, h: plinthH, d: u.D - 90, mat: "kick" });
