@@ -211,6 +211,94 @@
     return tex;
   };
 
+  ArchitecturalRenderer.createWoodGrainBumpTexture = function () {
+    if (ArchitecturalRenderer._woodBumpTex) return ArchitecturalRenderer._woodBumpTex;
+    if (typeof document === 'undefined') return null;
+    var canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 256;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, 256, 256);
+    // Tactile wood pore micro-relief
+    for (var sl = 0; sl < 36; sl++) {
+      var y = sl * 7;
+      ctx.strokeStyle = (sl % 2 === 0) ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(256, y + (Math.sin(sl * 0.45) * 4.5));
+      ctx.stroke();
+    }
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(4, 4);
+    ArchitecturalRenderer._woodBumpTex = tex;
+    return tex;
+  };
+
+  ArchitecturalRenderer.createContactShadowTexture = function () {
+    if (ArchitecturalRenderer._contactShadowTex) return ArchitecturalRenderer._contactShadowTex;
+    if (typeof document === 'undefined') return null;
+    var canvas = document.createElement('canvas');
+    canvas.width = 128; canvas.height = 128;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    var grad = ctx.createRadialGradient(64, 64, 12, 64, 64, 62);
+    grad.addColorStop(0, 'rgba(0, 0, 0, 0.42)');
+    grad.addColorStop(0.45, 'rgba(0, 0, 0, 0.20)');
+    grad.addColorStop(0.85, 'rgba(0, 0, 0, 0.05)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 128, 128);
+    var tex = new THREE.CanvasTexture(canvas);
+    ArchitecturalRenderer._contactShadowTex = tex;
+    return tex;
+  };
+
+  ArchitecturalRenderer.createContactShadowPlane = function (w, d) {
+    if (typeof THREE === 'undefined' || typeof document === 'undefined') return null;
+    var tex = ArchitecturalRenderer.createContactShadowTexture();
+    if (!tex) return null;
+    var geo = new THREE.PlaneGeometry(Math.max(100, w + 40), Math.max(100, d + 40));
+    var mat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 0.38,
+      depthWrite: false
+    });
+    var m = new THREE.Mesh(geo, mat);
+    m.rotation.x = -Math.PI / 2;
+    m.userData = { isContactShadow: true };
+    return m;
+  };
+
+  ArchitecturalRenderer.createUnderCabinetLight = function (w, d) {
+    if (typeof THREE === 'undefined') return null;
+    var group = new THREE.Group();
+    group.name = 'UnderCabinetLED';
+    // Emissive slim diffuser strip
+    var stripW = Math.max(100, w - 40);
+    var stripGeo = new THREE.BoxGeometry(stripW, 4, 12);
+    var stripMat = new THREE.MeshStandardMaterial({
+      color: 0xFFFBEB,
+      emissive: 0xFDE68A,
+      emissiveIntensity: 0.9,
+      roughness: 0.3
+    });
+    var stripMesh = new THREE.Mesh(stripGeo, stripMat);
+    stripMesh.position.set(0, 2, -10);
+    group.add(stripMesh);
+
+    // Downward warm task light
+    if (typeof THREE.PointLight !== 'undefined') {
+      var pLight = new THREE.PointLight(0xFFE8C4, 0.42, 1200, 2);
+      pLight.position.set(0, -10, -10);
+      group.add(pLight);
+    }
+    return group;
+  };
+
   ArchitecturalRenderer.cleanPolygon = function (pts) {
     if (!pts || !Array.isArray(pts) || pts.length < 3) return [];
     var res = [];
@@ -417,46 +505,54 @@
       side: THREE.DoubleSide
     });
 
-    // Door Wood & Frame
+    // Tactile Wood Grain Bump Map
+    var woodBump = ArchitecturalRenderer.createWoodGrainBumpTexture();
+
+    // Door Wood & Frame (Rich Teak / Dark Walnut with micro-pore relief)
     this.materials.doorWood = new THREE.MeshStandardMaterial({
       color: 0x543B2B, // Dark Walnut / Teak
-      roughness: 0.45,
-      metalness: 0.08
+      roughness: 0.42,
+      metalness: 0.06,
+      bumpMap: woodBump,
+      bumpScale: 0.025
     });
 
     this.materials.doorFrame = new THREE.MeshStandardMaterial({
       color: 0x332218, // Hardwood Frame
-      roughness: 0.5,
-      metalness: 0.15
+      roughness: 0.48,
+      metalness: 0.10,
+      bumpMap: woodBump,
+      bumpScale: 0.02
     });
 
     this.materials.doorHandle = new THREE.MeshStandardMaterial({
       color: 0xD4AF37, // Polished Architectural Brass
-      roughness: 0.2,
-      metalness: 0.85
+      roughness: 0.22,
+      metalness: 0.88,
+      clearcoat: 0.4
     });
 
     // Window Aluminum Frame & Glazing
     this.materials.windowFrame = new THREE.MeshStandardMaterial({
-      color: 0x222224, // Charcoal Architectural Aluminum
-      roughness: 0.3,
-      metalness: 0.8
+      color: 0x1E2024, // Charcoal Architectural Aluminum
+      roughness: 0.28,
+      metalness: 0.85
     });
 
     this.materials.sillStone = new THREE.MeshStandardMaterial({
-      color: 0xECE9E2, // White marble sill ledge
-      roughness: 0.3,
-      metalness: 0.05
+      color: 0xF5F3EE, // Polished white marble sill ledge
+      roughness: 0.25,
+      metalness: 0.04
     });
 
     this.materials.glass = new THREE.MeshPhysicalMaterial({
-      color: 0x90C8E8,
+      color: 0xD8ECF8,
       transparent: true,
-      opacity: 0.42,
-      roughness: 0.05,
-      metalness: 0.1,
+      opacity: 0.32,
+      roughness: 0.03,
+      metalness: 0.05,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
+      clearcoatRoughness: 0.03,
       side: THREE.DoubleSide
     });
   };
@@ -554,6 +650,10 @@
         var room = rooms[r];
         var floorMesh = this.buildRoomFloor(room, rooms);
         if (floorMesh) this.group.add(floorMesh);
+
+        // Photorealistic Interior Architectural Room Lighting
+        var roomLightGroup = this.buildRoomInteriorLighting(room, 2800);
+        if (roomLightGroup) this.group.add(roomLightGroup);
       }
     } else {
       var fallbackFloor = this.buildBoundingFloor(walls, furniture);
@@ -1149,6 +1249,93 @@
       ]
     };
     return this.buildRoomFloor(dummyRoom);
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Build Photorealistic Interior Architectural Room Lighting
+     (Warm 3000K Spotlights & Ceiling Recessed Downlight Fixtures)
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildRoomInteriorLighting = function (room, ceilingH) {
+    if (!room || !room.polygon || room.polygon.length < 3 || typeof THREE === 'undefined') return null;
+    ceilingH = ceilingH || 2800;
+    var pts = room.polygon;
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (var i = 0; i < pts.length; i++) {
+      var p = pts[i];
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    }
+    var cx = (minX + maxX) / 2;
+    var cz = (minY + maxY) / 2;
+    var rWidth = maxX - minX;
+    var rDepth = maxY - minY;
+    if (rWidth < 400 || rDepth < 400) return null;
+
+    var group = new THREE.Group();
+    group.name = 'RoomLighting_' + room.id;
+    group.userData = { isRoomLighting: true, roomId: room.id };
+
+    // Calculate spotlight layout based on room size:
+    var spotPositions = [];
+    if (rWidth > 3600 && rDepth > 3600) {
+      var dx = rWidth * 0.22, dz = rDepth * 0.22;
+      spotPositions.push({ x: cx - dx, z: cz - dz });
+      spotPositions.push({ x: cx + dx, z: cz - dz });
+      spotPositions.push({ x: cx - dx, z: cz + dz });
+      spotPositions.push({ x: cx + dx, z: cz + dz });
+    } else if (rWidth > 3600) {
+      var dx = rWidth * 0.22;
+      spotPositions.push({ x: cx - dx, z: cz });
+      spotPositions.push({ x: cx + dx, z: cz });
+    } else if (rDepth > 3600) {
+      var dz = rDepth * 0.22;
+      spotPositions.push({ x: cx, z: cz - dz });
+      spotPositions.push({ x: cx, z: cz + dz });
+    } else {
+      spotPositions.push({ x: cx, z: cz });
+    }
+
+    var downlightIntensity = spotPositions.length > 1 ? (0.6 / spotPositions.length * 1.6) : 0.85;
+
+    for (var s = 0; s < spotPositions.length; s++) {
+      var sp = spotPositions[s];
+      // 3D Ceiling Spot Trim & Emissive Lens
+      if (typeof THREE.CylinderGeometry !== 'undefined') {
+        var trimGeo = new THREE.CylinderGeometry(45, 45, 10, 16);
+        var trimMat = new THREE.MeshStandardMaterial({ color: 0xF1F5F9, roughness: 0.4 });
+        var trim = new THREE.Mesh(trimGeo, trimMat);
+        trim.position.set(sp.x, ceilingH - 5, sp.z);
+        group.add(trim);
+
+        var lensGeo = new THREE.CylinderGeometry(35, 35, 4, 16);
+        var lensMat = new THREE.MeshStandardMaterial({
+          color: 0xFFFBEB,
+          emissive: 0xFEF08A,
+          emissiveIntensity: 0.85,
+          roughness: 0.2
+        });
+        var lens = new THREE.Mesh(lensGeo, lensMat);
+        lens.position.set(sp.x, ceilingH - 8, sp.z);
+        group.add(lens);
+      }
+
+      // Warm 3000K Architectural Downlight
+      if (typeof THREE.SpotLight !== 'undefined') {
+        var spot = new THREE.SpotLight(0xFFF1DD, downlightIntensity);
+        spot.position.set(sp.x, ceilingH - 15, sp.z);
+        spot.target.position.set(sp.x, 0, sp.z);
+        spot.angle = Math.PI / 3.2; // ~56 degree cone
+        spot.penumbra = 0.8;        // Soft feathered edge
+        spot.decay = 2.0;           // Physically realistic inverse-square decay
+        spot.distance = Math.max(5000, ceilingH * 2.2);
+        group.add(spot);
+        group.add(spot.target);
+      }
+    }
+
+    return group;
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
@@ -2432,7 +2619,7 @@
                      (cat.indexOf('open') !== -1 && cat.indexOf('shutter') === -1) ||
                      (name.indexOf('open box') !== -1 || name.indexOf('open storage') !== -1) ||
                      (furn.unitConfig && (furn.unitConfig.doorType === 'open' || furn.unitConfig.type === 'open')));
-    var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+    var isWall = (typeof window !== 'undefined' && window.OrbixCore && window.OrbixCore.isWallUnit) ?
       window.OrbixCore.isWallUnit(cat, name, furn.code || furn.catalogItemId, furn.costCategory) :
       (cat.indexOf('wall') !== -1 || cat === 'wm-01' || cat === 'k_wall' || cat === 'kitchen_wall' ||
        cat === 'crockery_wall' || cat === 'spice_rack' || cat.indexOf('overhead') !== -1 ||
@@ -3188,6 +3375,25 @@
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
         parseFloat(furn.pos.z) :
         defElevUnit);
+
+    // Photorealistic Contact Shadow Grounding (ambient occlusion under floor units)
+    if (elev <= 50) {
+      var shadowPlane = ArchitecturalRenderer.createContactShadowPlane(dims.W, dims.D);
+      if (shadowPlane) {
+        shadowPlane.position.set(0, 1.15 - elev, 0);
+        fg.add(shadowPlane);
+      }
+    }
+
+    // Photorealistic Under-Cabinet LED Task Lighting for kitchen wall units & overhead storage
+    if (isWall || isKitchen || name.indexOf('fcm') !== -1 || name.indexOf('fm') !== -1) {
+      var ledStrip = ArchitecturalRenderer.createUnderCabinetLight(dims.W, dims.D);
+      if (ledStrip) {
+        ledStrip.position.set(0, 2, 0);
+        fg.add(ledStrip);
+      }
+    }
+
     fg.position.set(furn.pos.x, elev, furn.pos.y);
     fg.rotation.y = -(furn.rotY || 0);
 

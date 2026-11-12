@@ -363,6 +363,14 @@
         });
       }
 
+      // 3D Studio Photorealistic HD Render Button
+      var photoRenderBtn = document.getElementById('photoRenderBtn');
+      if (photoRenderBtn) {
+        photoRenderBtn.addEventListener('click', function () {
+          self.capturePhotorealisticRender();
+        });
+      }
+
       var btnExportJson = document.getElementById('planExportJson');
       if (btnExportJson) {
         btnExportJson.addEventListener('click', function () {
@@ -4962,6 +4970,29 @@
         if (gl.apply) gl.apply();
         if (gl.settle) gl.settle();
       }
+    },
+
+    capturePhotorealisticRender: function () {
+      var gl = window.__cc && window.__cc.gl;
+      if (!gl || typeof gl.snapshot !== 'function') {
+        if (typeof window.toast === 'function') window.toast('3D Studio is not active.');
+        return;
+      }
+      if (typeof window.toast === 'function') window.toast('📸 Rendering 4K Photorealistic Snapshot...');
+      setTimeout(function () {
+        var dataUrl = gl.snapshot(3840, 2160);
+        if (!dataUrl) dataUrl = gl.snapshot(1920, 1080);
+        if (dataUrl) {
+          var a = document.createElement('a');
+          a.href = dataUrl;
+          var projTitle = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.meta && window.OrbixUI.project.meta.title) || 'orbix-studio';
+          a.download = projTitle.toLowerCase().replace(/\s+/g, '-') + '-4k-render.jpg';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          if (typeof window.toast === 'function') window.toast('✨ 4K Photorealistic Render Downloaded!');
+        }
+      }, 80);
     },
 
     getUnitSVG: function (itemOrCat) {

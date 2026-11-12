@@ -1863,13 +1863,13 @@
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
       /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
-      scene.environment = (NEO || FX) ? pmrem.fromScene(makeRoomScene(), 0.04, 10, 30000).texture : pmrem.fromEquirectangular(makeEnv()).texture;
+      scene.environment = pmrem.fromScene(makeRoomScene(), 0.04, 10, 30000).texture;
       if (EMBED) camera.far = 80000;
       keyL = new THREE.DirectionalLight(0xfffaec, NEO ? 1.45 : 1.35);
-      keyL.position.set(-1700, 3400, 2700); keyL.castShadow = true;
+      keyL.position.set(-3500, 6800, 5400); keyL.castShadow = true;
       keyL.shadow.mapSize.set(2048, 2048);
-      var sc = keyL.shadow.camera; sc.left = -3400; sc.right = 3400; sc.top = 3400; sc.bottom = -3400; sc.near = 200; sc.far = 14000;
-      keyL.shadow.bias = -0.0005; keyL.shadow.normalBias = 3; keyL.shadow.radius = 2.0;
+      var sc = keyL.shadow.camera; sc.left = -9000; sc.right = 9000; sc.top = 9000; sc.bottom = -9000; sc.near = 200; sc.far = 28000;
+      keyL.shadow.bias = -0.0004; keyL.shadow.normalBias = 2.5; keyL.shadow.radius = 2.2;
       scene.add(keyL); scene.add(keyL.target);
       /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
       var fill = new THREE.DirectionalLight(0xdde9f8, 0.55); fill.position.set(2600, 1900, 4800); scene.add(fill);
