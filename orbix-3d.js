@@ -1507,6 +1507,110 @@
     return defaultColor || 0xEDEBE4;
   };
 
+  ArchitecturalRenderer._woodTexCache = {};
+  ArchitecturalRenderer.createWoodLaminateTexture = function (hexColor, key) {
+    if (typeof document === 'undefined' || typeof THREE === 'undefined') return null;
+    key = (key || '') + '_' + hexColor;
+    if (ArchitecturalRenderer._woodTexCache[key]) return ArchitecturalRenderer._woodTexCache[key];
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 512; canvas.height = 512;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    var rgbHex = (typeof hexColor === 'number') ? hexColor : (parseInt(String(hexColor).replace('#', ''), 16) || 0x6E4E35);
+    var r = (rgbHex >> 16) & 255, g = (rgbHex >> 8) & 255, b = rgbHex & 255;
+
+    ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 1. Broad tonal drift
+    for (var d = 0; d < 4; d++) {
+      var dx = (d * 128 + 30) % 512;
+      var grad = ctx.createLinearGradient(dx, 0, dx + 160, 0);
+      var darkFactor = 0.85 + (d % 2) * 0.1;
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(0.5, 'rgba(' + Math.round(r * darkFactor) + ',' + Math.round(g * darkFactor) + ',' + Math.round(b * darkFactor) + ',0.45)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(dx, 0, 160, 512);
+    }
+
+    // 2. Grain flow lines
+    for (var l = 0; l < 48; l++) {
+      var lx = (l * 11) % 512;
+      ctx.strokeStyle = (l % 2 === 0) ? 'rgba(0,0,0,0.14)' : 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1.0 + (l % 3) * 0.5;
+      ctx.beginPath();
+      ctx.moveTo(lx, 0);
+      for (var y = 0; y <= 512; y += 16) {
+        var wave = Math.sin((y / 512) * Math.PI * 4 + l) * 6;
+        ctx.lineTo(lx + wave, y);
+      }
+      ctx.stroke();
+    }
+
+    // 3. Tactile wood pores
+    for (var p = 0; p < 800; p++) {
+      var px = (p * 37) % 512;
+      var py = (p * 59) % 512;
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      ctx.fillRect(px, py, 1, 3 + (p % 4));
+    }
+
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(2, 2);
+    tex.encoding = (typeof THREE !== 'undefined' && THREE.sRGBEncoding) ? THREE.sRGBEncoding : 3001;
+    ArchitecturalRenderer._woodTexCache[key] = tex;
+    return tex;
+  };
+
+  ArchitecturalRenderer.resolveLaminateMaterial = function (matFin, defaultColor, isGlossOverride) {
+    if (typeof THREE === 'undefined') return null;
+    var str = (matFin && typeof matFin === 'object') ? String(matFin.finish || matFin.name || matFin.code || matFin.woodType || '') : String(matFin || '');
+    str = str.toLowerCase();
+    var colSource = (matFin && typeof matFin === 'object' && matFin.color) ? matFin.color : (typeof matFin === 'string' ? matFin : (matFin && matFin.finish));
+    var threeCol = ArchitecturalRenderer.resolveFinishColor(colSource, defaultColor || 0xEDEBE4);
+    var isGloss = !!isGlossOverride || str.indexOf('gloss') !== -1;
+    var isWood = str.indexOf('wood') !== -1 ||
+                 str.indexOf('walnut') !== -1 ||
+                 str.indexOf('teak') !== -1 ||
+                 str.indexOf('oak') !== -1 ||
+                 str.indexOf('wenge') !== -1 ||
+                 str.indexOf('3410') !== -1 ||
+                 str.indexOf('3411') !== -1 ||
+                 str.indexOf('2204') !== -1 ||
+                 str.indexOf('2210') !== -1 ||
+                 str.indexOf('4402') !== -1;
+
+    if (typeof window !== 'undefined' && Array.isArray(window.LAMINATES)) {
+      var lamItem = window.LAMINATES.find(function (it) {
+        return it.code === matFin || it.name === matFin || String(matFin).indexOf(it.code) !== -1;
+      });
+      if (lamItem && lamItem.kind === 'wood') isWood = true;
+      if (lamItem && lamItem.kind === 'gloss') isGloss = true;
+    }
+
+    var matOpts = {
+      color: threeCol,
+      roughness: isGloss ? 0.15 : (isWood ? 0.45 : 0.65),
+      metalness: isGloss ? 0.04 : 0.02
+    };
+
+    if (isWood) {
+      var woodTex = ArchitecturalRenderer.createWoodLaminateTexture(threeCol, str);
+      var woodBump = ArchitecturalRenderer.createWoodGrainBumpTexture();
+      if (woodTex) matOpts.map = woodTex;
+      if (woodBump) {
+        matOpts.bumpMap = woodBump;
+        matOpts.bumpScale = 0.035;
+      }
+    }
+
+    return new THREE.MeshStandardMaterial(matOpts);
+  };
+
   ArchitecturalRenderer.getHandleMaterial = function (hFinish) {
     var fin = String(hFinish || 'black').toLowerCase();
     if (fin.indexOf('chrome') !== -1) {
@@ -2749,18 +2853,13 @@
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
     var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1 || cat === 'tv_unit' || (name && name.toLowerCase().indexOf('base') !== -1));
 
-    // Carcass Materials (Resolves finish name, laminate code, or hex)
+    // Carcass Materials (Resolves finish name, laminate code, or hex + rich wood grains)
     var carcassRaw = (furn.unitConfig && furn.unitConfig.carcass) ||
                      (furn.materials && furn.materials.carcass && furn.materials.carcass.finish) ||
                      furn.carcassColor ||
                      'MDF 1135';
-    var carcassColor = ArchitecturalRenderer.resolveFinishColor(carcassRaw, 0xEDEBE4);
     var carcassIsGloss = String(carcassRaw).toLowerCase().indexOf('gloss') !== -1;
-    var carcassMat = new THREE.MeshStandardMaterial({
-      color: carcassColor,
-      roughness: carcassIsGloss ? 0.2 : 0.6,
-      metalness: 0.05
-    });
+    var carcassMat = ArchitecturalRenderer.resolveLaminateMaterial(carcassRaw, 0xEDEBE4, carcassIsGloss);
 
     // Door style & type
     var dstyle = (furn.unitConfig && furn.unitConfig.dstyle) || 'slab';
@@ -2812,7 +2911,7 @@
     var innerW = dims.W - 36;
     var innerD = dims.D - 20;
 
-    // Helper: Material for individual shutter s (Prioritizes user's edited finish!)
+    // Helper: Material for individual shutter s (Prioritizes user's edited finish + rich wood grains)
     function getShutterMaterial(sIdx) {
       var matFin = (furn.unitConfig && furn.unitConfig.shutterCol) ||
                    (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) ||
@@ -2820,18 +2919,7 @@
                    (furn.shutterColors && furn.shutterColors[sIdx]) ||
                    'MDF 3410';
 
-      var threeCol = ArchitecturalRenderer.resolveFinishColor(matFin, 0x6E4E35);
-      var isGloss = String(matFin).toLowerCase().indexOf('gloss') !== -1;
-      var isWood = String(matFin).toLowerCase().indexOf('wood') !== -1 ||
-                   String(matFin).toLowerCase().indexOf('oak') !== -1 ||
-                   String(matFin).toLowerCase().indexOf('walnut') !== -1 ||
-                   String(matFin).toLowerCase().indexOf('teak') !== -1;
-
-      return new THREE.MeshStandardMaterial({
-        color: threeCol,
-        roughness: isGloss ? 0.15 : (isWood ? 0.45 : 0.6),
-        metalness: 0.04
-      });
+      return ArchitecturalRenderer.resolveLaminateMaterial(matFin, 0x6E4E35);
     }
 
     // 1. Architectural Wall Paneling / Back Panel (zero carcass)
@@ -3120,27 +3208,41 @@
     var drawerH = 0;
 
     // 7. Drawers Geometry & Sliding Groups
+    var drawersOnTop = (furn.unitConfig && furn.unitConfig.drawersOnTop !== undefined) ? !!furn.unitConfig.drawersOnTop : (numShutters > 0);
+    var isSideBySide = (drawersCount === 2 && (furn.unitConfig && (furn.unitConfig.drawersSideBySide || dims.W >= 700)));
+
     if (drawersCount > 0) {
       if (numShutters === 0) {
         // Pure drawers unit (e.g. bedside unit, 3-pot drawer kitchen base)
         drawerH = Math.max(120, Math.floor((bodyH - (drawersCount + 1) * 3) / drawersCount));
         totalDrawersH = bodyH;
+      } else if (isSideBySide) {
+        // 2 side-by-side drawers on top!
+        drawerH = Math.min(220, Math.max(140, Math.floor(bodyH * 0.35)));
+        totalDrawersH = drawerH;
       } else {
-        // Mixed unit: drawers at bottom, shutters above
-        drawerH = Math.min(220, Math.max(140, Math.floor((bodyH * 0.42) / drawersCount)));
+        // Stacked drawers
+        drawerH = Math.min(220, Math.max(140, Math.floor((bodyH * 0.38) / drawersCount)));
         totalDrawersH = drawersCount * (drawerH + 3);
       }
 
+      var shutterH = Math.max(150, bodyH - totalDrawersH - 6);
+      var drawerBaseY = drawersOnTop ? (plinthH + (numShutters > 0 ? (shutterH + 6) : 3)) : (plinthH + 3);
+
       for (var d = 0; d < drawersCount; d++) {
-        var dY = plinthH + 3 + d * (drawerH + 3) + drawerH / 2;
+        var dY = isSideBySide ? (drawerBaseY + drawerH / 2) : (drawerBaseY + d * (drawerH + 3) + drawerH / 2);
+        var drawerW = isSideBySide ? Math.floor((dims.W - 9) / 2) : (dims.W - 6);
+        var drawerBoxW = isSideBySide ? (drawerW - 16) : (innerW - 20);
+        var drawerCenterX = isSideBySide ? (d === 0 ? (-dims.W / 4) : (dims.W / 4)) : 0;
+
         var isDOpen = !!(furn.drawerStates && furn.drawerStates[d]);
         var drawerGroup = new THREE.Group();
         drawerGroup.name = 'DrawerSlide_' + d;
-        drawerGroup.position.set(0, dY, isDOpen ? 350 : 0);
+        drawerGroup.position.set(drawerCenterX, dY, isDOpen ? 350 : 0);
         drawerGroup.userData = { isDrawerGroup: true, drawerIdx: d, furnitureId: furn.id, isOpen: isDOpen };
 
         // Drawer Front Facia
-        var faciaGeo = new THREE.BoxGeometry(dims.W - 6, drawerH, 18);
+        var faciaGeo = new THREE.BoxGeometry(drawerW, drawerH, 18);
         var faciaMat = getShutterMaterial(d % Math.max(1, numShutters));
         var faciaMesh = new THREE.Mesh(faciaGeo, faciaMat);
         faciaMesh.position.set(0, 0, dims.D / 2 - 9);
@@ -3149,7 +3251,7 @@
         drawerGroup.add(faciaMesh);
 
         // Drawer Pull Handle (Horizontal)
-        var dhGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, false, Math.min(180, (dims.W - 30) * 0.45));
+        var dhGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, false, Math.min(180, (drawerW - 30) * 0.45));
         if (dhGroup) {
           dhGroup.position.set(0, 0, dims.D / 2);
           dhGroup.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
@@ -3162,7 +3264,7 @@
         }
 
         // Drawer Interior Box
-        var dbGeo = new THREE.BoxGeometry(innerW - 20, 12, innerD - 30);
+        var dbGeo = new THREE.BoxGeometry(drawerBoxW, 12, innerD - 30);
         var dbMesh = new THREE.Mesh(dbGeo, carcassMat);
         dbMesh.position.set(0, -drawerH / 2 + 6, -15);
         dbMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
@@ -3170,17 +3272,17 @@
 
         var dlGeo = new THREE.BoxGeometry(12, drawerH - 24, innerD - 30);
         var dlMesh = new THREE.Mesh(dlGeo, carcassMat);
-        dlMesh.position.set(-(innerW - 20) / 2 + 6, 0, -15);
+        dlMesh.position.set(-drawerBoxW / 2 + 6, 0, -15);
         dlMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
         drawerGroup.add(dlMesh);
 
         var drGeo = new THREE.BoxGeometry(12, drawerH - 24, innerD - 30);
         var drMesh = new THREE.Mesh(drGeo, carcassMat);
-        drMesh.position.set((innerW - 20) / 2 - 6, 0, -15);
+        drMesh.position.set(drawerBoxW / 2 - 6, 0, -15);
         drMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
         drawerGroup.add(drMesh);
 
-        var dbkGeo = new THREE.BoxGeometry(innerW - 44, drawerH - 24, 12);
+        var dbkGeo = new THREE.BoxGeometry(drawerBoxW - 24, drawerH - 24, 12);
         var dbkMesh = new THREE.Mesh(dbkGeo, carcassMat);
         dbkMesh.position.set(0, 0, -(innerD - 30) / 2 - 15 + 6);
         dbkMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
@@ -3208,7 +3310,7 @@
                       (furn.id && /sliding/i.test(furn.id)) ||
                       (furn.name && /sliding/i.test(furn.name));
 
-      var shutterBaseY = plinthH + totalDrawersH + 3;
+      var shutterBaseY = (drawersOnTop && numShutters > 0) ? (plinthH + 3) : (plinthH + totalDrawersH + 3);
 
       if (isSliding) {
         // Sliding Doors on Dual Tracks

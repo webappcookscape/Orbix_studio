@@ -3487,7 +3487,7 @@ body.role-employee #adminCreateEmpBox,
             <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
             <button class="minibtn" id="openBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
             <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
-            <button class="minibtn" id="photoRenderBtn" title="Render Photorealistic High-Definition Snapshot (4K Studio Quality)" style="background:linear-gradient(135deg, #1e293b, #0f172a);color:#f8fafc;border:1px solid #334155;font-weight:600;display:inline-flex;align-items:center;gap:4px;">📸 HD Render</button>
+            <button class="minibtn" id="photoRenderBtn" title="Render Photorealistic Ultra-High-Definition Snapshot (8K/4K Studio Quality)" style="background:linear-gradient(135deg, #1e293b, #0f172a);color:#f8fafc;border:1px solid #334155;font-weight:600;display:inline-flex;align-items:center;gap:4px;">📸 8K Render</button>
           </div>
         </div>
       </div>
@@ -9721,21 +9721,59 @@ body.role-employee #adminCreateEmpBox,
   var FURNITURE_CATALOG = [
     // ─── Imported Modular Units Catalog (69 Units) ───
     {
+      id: "ctvb-1d",
+      code: "ctvb-1d",
+      name: "CROCKERY/TV BASE 1DOOR",
+      modelType: "tv_unit_cabinet",
+      category: "tv_unit",
+      costCategory: "TV Unit Cabinet",
+      areaSqft: 3.63,
+      icon: "📺",
+      dimensions: { W: 450, H: 750, D: 450 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 3500 },
+      customRate: 3500
+    },
+    {
       id: "ctvb-1d-1dr",
       code: "ctvb-1d-1dr",
       name: "CROCKERY/TV BASE 1DOOR 1 DRAWER",
       modelType: "tv_unit_cabinet",
       category: "tv_unit",
       costCategory: "TV Unit Cabinet",
-      areaSqft: 0.9687523546,
+      areaSqft: 3.63,
       icon: "📺",
-      dimensions: { W: 450, H: 200, D: 450 },
+      dimensions: { W: 450, H: 750, D: 450 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 2,
+        shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
         glassTint: "none",
@@ -9743,17 +9781,21 @@ body.role-employee #adminCreateEmpBox,
         sections: 0,
         shelves: 1,
         drawers: 1,
+        drawersOnTop: true,
         loft: false,
         loftH: 0,
         counter: "BLUE",
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
-      pricingOverrides: { baseRate: 1922 },
-      customRate: 1922
+      pricingOverrides: { baseRate: 4800 },
+      customRate: 4800
     },
     {
       id: "ctvb-1dr",
@@ -9762,16 +9804,17 @@ body.role-employee #adminCreateEmpBox,
       modelType: "tv_unit_cabinet",
       category: "tv_unit",
       costCategory: "TV Unit Cabinet",
-      areaSqft: 1.291669806,
+      areaSqft: 0.96875,
       icon: "📺",
-      dimensions: { W: 600, H: 200, D: 350 },
+      dimensions: { W: 450, H: 200, D: 450 },
+      elevation: 350,
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 1,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -9784,6 +9827,8 @@ body.role-employee #adminCreateEmpBox,
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: false,
+        mountType: "floating",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -9819,6 +9864,9 @@ body.role-employee #adminCreateEmpBox,
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -9840,7 +9888,7 @@ body.role-employee #adminCreateEmpBox,
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 4,
+        shutters: 2,
         doorType: "hinged",
         dstyle: "slab",
         glassTint: "none",
@@ -9848,12 +9896,17 @@ body.role-employee #adminCreateEmpBox,
         sections: 0,
         shelves: 1,
         drawers: 2,
+        drawersOnTop: true,
+        drawersSideBySide: true,
         loft: false,
         loftH: 0,
         counter: "BLUE",
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -9869,14 +9922,14 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "TV Unit Cabinet",
       areaSqft: 2.421880887,
       icon: "📺",
-      dimensions: { W: 450, H: 500, D: 350 },
+      dimensions: { W: 450, H: 500, D: 450 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 2,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -9889,6 +9942,9 @@ body.role-employee #adminCreateEmpBox,
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -9937,9 +9993,9 @@ body.role-employee #adminCreateEmpBox,
       modelType: "spice_rack",
       category: "spice_rack",
       costCategory: "Spice Rack (OPEN BOXES)",
-      areaSqft: 4.843761773,
+      areaSqft: 2.9,
       icon: "🧂",
-      dimensions: { W: 1500, H: 300, D: 200 },
+      dimensions: { W: 900, H: 300, D: 200 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
@@ -9962,8 +10018,8 @@ body.role-employee #adminCreateEmpBox,
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
-      pricingOverrides: { baseRate: 11005.03 },
-      customRate: 11005.03
+      pricingOverrides: { baseRate: 3200 },
+      customRate: 3200
     },
     {
       id: "fcm-rt",
@@ -15293,6 +15349,17 @@ body.role-employee #adminCreateEmpBox,
       return;
     }
     this.underlay.calibPoints = this.underlay.calibPoints || [];
+
+    // Strict orthogonal constraint: straight only, no angle tilt!
+    if (this.underlay.calibPoints.length === 1) {
+      var p1 = this.underlay.calibPoints[0];
+      if (Math.abs(worldPt.x - p1.x) >= Math.abs(worldPt.y - p1.y)) {
+        worldPt = { x: worldPt.x, y: p1.y };
+      } else {
+        worldPt = { x: p1.x, y: worldPt.y };
+      }
+    }
+
     this.underlay.calibPoints.push(Vec2.clone(worldPt));
 
     if (this.underlay.calibPoints.length === 2) {
@@ -18071,8 +18138,20 @@ body.role-employee #adminCreateEmpBox,
 
     // 5. Calibration Tool preview (2-point reference line & pins)
     if (this.activeTool === 'calibrate') {
-      var sCur = this.worldToScreen(this.cursorWorld);
       var pts = (this.underlay && this.underlay.calibPoints) || [];
+      var curWorld = { x: this.cursorWorld.x, y: this.cursorWorld.y };
+
+      if (pts.length >= 1) {
+        // Enforce straight only (orthogonal horizontal or vertical, no angle tilt!)
+        var p1 = pts[0];
+        if (Math.abs(curWorld.x - p1.x) >= Math.abs(curWorld.y - p1.y)) {
+          curWorld.y = p1.y;
+        } else {
+          curWorld.x = p1.x;
+        }
+      }
+
+      var sCur = this.worldToScreen(curWorld);
 
       if (pts.length >= 1) {
         var sP1 = this.worldToScreen(pts[0]);
@@ -18091,9 +18170,9 @@ body.role-employee #adminCreateEmpBox,
         ctx.moveTo(sP1.x, sP1.y - 14); ctx.lineTo(sP1.x, sP1.y + 14);
         ctx.stroke();
 
-        // Rubberband line to cursor
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 2;
+        // Rubberband line to cursor (strictly horizontal or vertical!)
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2.5;
         ctx.setLineDash([6, 4]);
         ctx.beginPath();
         ctx.moveTo(sP1.x, sP1.y);
@@ -18102,8 +18181,8 @@ body.role-employee #adminCreateEmpBox,
         ctx.setLineDash([]);
 
         // Live span badge
-        var liveDistWorld = Vec2.dist(pts[0], this.cursorWorld);
-        var liveBadgeText = 'Span: ' + this.formatDim(liveDistWorld) + ' (Click Point 2 to Calibrate)';
+        var liveDistWorld = Vec2.dist(pts[0], curWorld);
+        var liveBadgeText = 'Straight Span: ' + this.formatDim(liveDistWorld) + ' (Click Point 2 to Calibrate)';
         ctx.font = '700 12px "IBM Plex Sans", sans-serif';
         var lbw = ctx.measureText(liveBadgeText).width;
         var mx = (sP1.x + sCur.x) / 2;
@@ -18135,6 +18214,34 @@ body.role-employee #adminCreateEmpBox,
         ctx.fillText(guideTxt, sCur.x + 25, sCur.y);
         ctx.restore();
       }
+
+      // High-precision CAD crosshair '+' icon at cursor for pixel-accurate tracking
+      ctx.save();
+      // Outer white halo for contrast on all backgrounds
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(sCur.x - 16, sCur.y); ctx.lineTo(sCur.x + 16, sCur.y);
+      ctx.moveTo(sCur.x, sCur.y - 16); ctx.lineTo(sCur.x, sCur.y + 16);
+      ctx.stroke();
+
+      // Sharp crimson precision '+' crosshair
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(sCur.x - 16, sCur.y); ctx.lineTo(sCur.x + 16, sCur.y);
+      ctx.moveTo(sCur.x, sCur.y - 16); ctx.lineTo(sCur.x, sCur.y + 16);
+      ctx.stroke();
+
+      // Center precision target dot
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(sCur.x, sCur.y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
     }
 
     // 6. Dimension Tool live rubberband preview
@@ -19829,6 +19936,110 @@ body.role-employee #adminCreateEmpBox,
     return defaultColor || 0xEDEBE4;
   };
 
+  ArchitecturalRenderer._woodTexCache = {};
+  ArchitecturalRenderer.createWoodLaminateTexture = function (hexColor, key) {
+    if (typeof document === 'undefined' || typeof THREE === 'undefined') return null;
+    key = (key || '') + '_' + hexColor;
+    if (ArchitecturalRenderer._woodTexCache[key]) return ArchitecturalRenderer._woodTexCache[key];
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 512; canvas.height = 512;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    var rgbHex = (typeof hexColor === 'number') ? hexColor : (parseInt(String(hexColor).replace('#', ''), 16) || 0x6E4E35);
+    var r = (rgbHex >> 16) & 255, g = (rgbHex >> 8) & 255, b = rgbHex & 255;
+
+    ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 1. Broad tonal drift
+    for (var d = 0; d < 4; d++) {
+      var dx = (d * 128 + 30) % 512;
+      var grad = ctx.createLinearGradient(dx, 0, dx + 160, 0);
+      var darkFactor = 0.85 + (d % 2) * 0.1;
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(0.5, 'rgba(' + Math.round(r * darkFactor) + ',' + Math.round(g * darkFactor) + ',' + Math.round(b * darkFactor) + ',0.45)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(dx, 0, 160, 512);
+    }
+
+    // 2. Grain flow lines
+    for (var l = 0; l < 48; l++) {
+      var lx = (l * 11) % 512;
+      ctx.strokeStyle = (l % 2 === 0) ? 'rgba(0,0,0,0.14)' : 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1.0 + (l % 3) * 0.5;
+      ctx.beginPath();
+      ctx.moveTo(lx, 0);
+      for (var y = 0; y <= 512; y += 16) {
+        var wave = Math.sin((y / 512) * Math.PI * 4 + l) * 6;
+        ctx.lineTo(lx + wave, y);
+      }
+      ctx.stroke();
+    }
+
+    // 3. Tactile wood pores
+    for (var p = 0; p < 800; p++) {
+      var px = (p * 37) % 512;
+      var py = (p * 59) % 512;
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      ctx.fillRect(px, py, 1, 3 + (p % 4));
+    }
+
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(2, 2);
+    tex.encoding = (typeof THREE !== 'undefined' && THREE.sRGBEncoding) ? THREE.sRGBEncoding : 3001;
+    ArchitecturalRenderer._woodTexCache[key] = tex;
+    return tex;
+  };
+
+  ArchitecturalRenderer.resolveLaminateMaterial = function (matFin, defaultColor, isGlossOverride) {
+    if (typeof THREE === 'undefined') return null;
+    var str = (matFin && typeof matFin === 'object') ? String(matFin.finish || matFin.name || matFin.code || matFin.woodType || '') : String(matFin || '');
+    str = str.toLowerCase();
+    var colSource = (matFin && typeof matFin === 'object' && matFin.color) ? matFin.color : (typeof matFin === 'string' ? matFin : (matFin && matFin.finish));
+    var threeCol = ArchitecturalRenderer.resolveFinishColor(colSource, defaultColor || 0xEDEBE4);
+    var isGloss = !!isGlossOverride || str.indexOf('gloss') !== -1;
+    var isWood = str.indexOf('wood') !== -1 ||
+                 str.indexOf('walnut') !== -1 ||
+                 str.indexOf('teak') !== -1 ||
+                 str.indexOf('oak') !== -1 ||
+                 str.indexOf('wenge') !== -1 ||
+                 str.indexOf('3410') !== -1 ||
+                 str.indexOf('3411') !== -1 ||
+                 str.indexOf('2204') !== -1 ||
+                 str.indexOf('2210') !== -1 ||
+                 str.indexOf('4402') !== -1;
+
+    if (typeof window !== 'undefined' && Array.isArray(window.LAMINATES)) {
+      var lamItem = window.LAMINATES.find(function (it) {
+        return it.code === matFin || it.name === matFin || String(matFin).indexOf(it.code) !== -1;
+      });
+      if (lamItem && lamItem.kind === 'wood') isWood = true;
+      if (lamItem && lamItem.kind === 'gloss') isGloss = true;
+    }
+
+    var matOpts = {
+      color: threeCol,
+      roughness: isGloss ? 0.15 : (isWood ? 0.45 : 0.65),
+      metalness: isGloss ? 0.04 : 0.02
+    };
+
+    if (isWood) {
+      var woodTex = ArchitecturalRenderer.createWoodLaminateTexture(threeCol, str);
+      var woodBump = ArchitecturalRenderer.createWoodGrainBumpTexture();
+      if (woodTex) matOpts.map = woodTex;
+      if (woodBump) {
+        matOpts.bumpMap = woodBump;
+        matOpts.bumpScale = 0.035;
+      }
+    }
+
+    return new THREE.MeshStandardMaterial(matOpts);
+  };
+
   ArchitecturalRenderer.getHandleMaterial = function (hFinish) {
     var fin = String(hFinish || 'black').toLowerCase();
     if (fin.indexOf('chrome') !== -1) {
@@ -21071,18 +21282,13 @@ body.role-employee #adminCreateEmpBox,
     var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
     var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1 || cat === 'tv_unit' || (name && name.toLowerCase().indexOf('base') !== -1));
 
-    // Carcass Materials (Resolves finish name, laminate code, or hex)
+    // Carcass Materials (Resolves finish name, laminate code, or hex + rich wood grains)
     var carcassRaw = (furn.unitConfig && furn.unitConfig.carcass) ||
                      (furn.materials && furn.materials.carcass && furn.materials.carcass.finish) ||
                      furn.carcassColor ||
                      'MDF 1135';
-    var carcassColor = ArchitecturalRenderer.resolveFinishColor(carcassRaw, 0xEDEBE4);
     var carcassIsGloss = String(carcassRaw).toLowerCase().indexOf('gloss') !== -1;
-    var carcassMat = new THREE.MeshStandardMaterial({
-      color: carcassColor,
-      roughness: carcassIsGloss ? 0.2 : 0.6,
-      metalness: 0.05
-    });
+    var carcassMat = ArchitecturalRenderer.resolveLaminateMaterial(carcassRaw, 0xEDEBE4, carcassIsGloss);
 
     // Door style & type
     var dstyle = (furn.unitConfig && furn.unitConfig.dstyle) || 'slab';
@@ -21134,7 +21340,7 @@ body.role-employee #adminCreateEmpBox,
     var innerW = dims.W - 36;
     var innerD = dims.D - 20;
 
-    // Helper: Material for individual shutter s (Prioritizes user's edited finish!)
+    // Helper: Material for individual shutter s (Prioritizes user's edited finish + rich wood grains)
     function getShutterMaterial(sIdx) {
       var matFin = (furn.unitConfig && furn.unitConfig.shutterCol) ||
                    (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) ||
@@ -21142,18 +21348,7 @@ body.role-employee #adminCreateEmpBox,
                    (furn.shutterColors && furn.shutterColors[sIdx]) ||
                    'MDF 3410';
 
-      var threeCol = ArchitecturalRenderer.resolveFinishColor(matFin, 0x6E4E35);
-      var isGloss = String(matFin).toLowerCase().indexOf('gloss') !== -1;
-      var isWood = String(matFin).toLowerCase().indexOf('wood') !== -1 ||
-                   String(matFin).toLowerCase().indexOf('oak') !== -1 ||
-                   String(matFin).toLowerCase().indexOf('walnut') !== -1 ||
-                   String(matFin).toLowerCase().indexOf('teak') !== -1;
-
-      return new THREE.MeshStandardMaterial({
-        color: threeCol,
-        roughness: isGloss ? 0.15 : (isWood ? 0.45 : 0.6),
-        metalness: 0.04
-      });
+      return ArchitecturalRenderer.resolveLaminateMaterial(matFin, 0x6E4E35);
     }
 
     // 1. Architectural Wall Paneling / Back Panel (zero carcass)
@@ -21442,27 +21637,41 @@ body.role-employee #adminCreateEmpBox,
     var drawerH = 0;
 
     // 7. Drawers Geometry & Sliding Groups
+    var drawersOnTop = (furn.unitConfig && furn.unitConfig.drawersOnTop !== undefined) ? !!furn.unitConfig.drawersOnTop : (numShutters > 0);
+    var isSideBySide = (drawersCount === 2 && (furn.unitConfig && (furn.unitConfig.drawersSideBySide || dims.W >= 700)));
+
     if (drawersCount > 0) {
       if (numShutters === 0) {
         // Pure drawers unit (e.g. bedside unit, 3-pot drawer kitchen base)
         drawerH = Math.max(120, Math.floor((bodyH - (drawersCount + 1) * 3) / drawersCount));
         totalDrawersH = bodyH;
+      } else if (isSideBySide) {
+        // 2 side-by-side drawers on top!
+        drawerH = Math.min(220, Math.max(140, Math.floor(bodyH * 0.35)));
+        totalDrawersH = drawerH;
       } else {
-        // Mixed unit: drawers at bottom, shutters above
-        drawerH = Math.min(220, Math.max(140, Math.floor((bodyH * 0.42) / drawersCount)));
+        // Stacked drawers
+        drawerH = Math.min(220, Math.max(140, Math.floor((bodyH * 0.38) / drawersCount)));
         totalDrawersH = drawersCount * (drawerH + 3);
       }
 
+      var shutterH = Math.max(150, bodyH - totalDrawersH - 6);
+      var drawerBaseY = drawersOnTop ? (plinthH + (numShutters > 0 ? (shutterH + 6) : 3)) : (plinthH + 3);
+
       for (var d = 0; d < drawersCount; d++) {
-        var dY = plinthH + 3 + d * (drawerH + 3) + drawerH / 2;
+        var dY = isSideBySide ? (drawerBaseY + drawerH / 2) : (drawerBaseY + d * (drawerH + 3) + drawerH / 2);
+        var drawerW = isSideBySide ? Math.floor((dims.W - 9) / 2) : (dims.W - 6);
+        var drawerBoxW = isSideBySide ? (drawerW - 16) : (innerW - 20);
+        var drawerCenterX = isSideBySide ? (d === 0 ? (-dims.W / 4) : (dims.W / 4)) : 0;
+
         var isDOpen = !!(furn.drawerStates && furn.drawerStates[d]);
         var drawerGroup = new THREE.Group();
         drawerGroup.name = 'DrawerSlide_' + d;
-        drawerGroup.position.set(0, dY, isDOpen ? 350 : 0);
+        drawerGroup.position.set(drawerCenterX, dY, isDOpen ? 350 : 0);
         drawerGroup.userData = { isDrawerGroup: true, drawerIdx: d, furnitureId: furn.id, isOpen: isDOpen };
 
         // Drawer Front Facia
-        var faciaGeo = new THREE.BoxGeometry(dims.W - 6, drawerH, 18);
+        var faciaGeo = new THREE.BoxGeometry(drawerW, drawerH, 18);
         var faciaMat = getShutterMaterial(d % Math.max(1, numShutters));
         var faciaMesh = new THREE.Mesh(faciaGeo, faciaMat);
         faciaMesh.position.set(0, 0, dims.D / 2 - 9);
@@ -21471,7 +21680,7 @@ body.role-employee #adminCreateEmpBox,
         drawerGroup.add(faciaMesh);
 
         // Drawer Pull Handle (Horizontal)
-        var dhGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, false, Math.min(180, (dims.W - 30) * 0.45));
+        var dhGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, false, Math.min(180, (drawerW - 30) * 0.45));
         if (dhGroup) {
           dhGroup.position.set(0, 0, dims.D / 2);
           dhGroup.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
@@ -21484,7 +21693,7 @@ body.role-employee #adminCreateEmpBox,
         }
 
         // Drawer Interior Box
-        var dbGeo = new THREE.BoxGeometry(innerW - 20, 12, innerD - 30);
+        var dbGeo = new THREE.BoxGeometry(drawerBoxW, 12, innerD - 30);
         var dbMesh = new THREE.Mesh(dbGeo, carcassMat);
         dbMesh.position.set(0, -drawerH / 2 + 6, -15);
         dbMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
@@ -21492,17 +21701,17 @@ body.role-employee #adminCreateEmpBox,
 
         var dlGeo = new THREE.BoxGeometry(12, drawerH - 24, innerD - 30);
         var dlMesh = new THREE.Mesh(dlGeo, carcassMat);
-        dlMesh.position.set(-(innerW - 20) / 2 + 6, 0, -15);
+        dlMesh.position.set(-drawerBoxW / 2 + 6, 0, -15);
         dlMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
         drawerGroup.add(dlMesh);
 
         var drGeo = new THREE.BoxGeometry(12, drawerH - 24, innerD - 30);
         var drMesh = new THREE.Mesh(drGeo, carcassMat);
-        drMesh.position.set((innerW - 20) / 2 - 6, 0, -15);
+        drMesh.position.set(drawerBoxW / 2 - 6, 0, -15);
         drMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
         drawerGroup.add(drMesh);
 
-        var dbkGeo = new THREE.BoxGeometry(innerW - 44, drawerH - 24, 12);
+        var dbkGeo = new THREE.BoxGeometry(drawerBoxW - 24, drawerH - 24, 12);
         var dbkMesh = new THREE.Mesh(dbkGeo, carcassMat);
         dbkMesh.position.set(0, 0, -(innerD - 30) / 2 - 15 + 6);
         dbkMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
@@ -21530,7 +21739,7 @@ body.role-employee #adminCreateEmpBox,
                       (furn.id && /sliding/i.test(furn.id)) ||
                       (furn.name && /sliding/i.test(furn.name));
 
-      var shutterBaseY = plinthH + totalDrawersH + 3;
+      var shutterBaseY = (drawersOnTop && numShutters > 0) ? (plinthH + 3) : (plinthH + totalDrawersH + 3);
 
       if (isSliding) {
         // Sliding Doors on Dual Tracks
@@ -27239,19 +27448,27 @@ body.role-employee #adminCreateEmpBox,
         if (typeof window.toast === 'function') window.toast('3D Studio is not active.');
         return;
       }
-      if (typeof window.toast === 'function') window.toast('📸 Rendering 4K Photorealistic Snapshot...');
+      if (typeof window.toast === 'function') window.toast('📸 Rendering 8K Ultra-HD Photorealistic Snapshot...');
       setTimeout(function () {
-        var dataUrl = gl.snapshot(3840, 2160);
-        if (!dataUrl) dataUrl = gl.snapshot(1920, 1080);
+        var dataUrl = gl.snapshot(7680, 4320, { format: 'png', quality: 1.0 });
+        var resLabel = '8k';
+        if (!dataUrl) {
+          dataUrl = gl.snapshot(3840, 2160, { format: 'png', quality: 1.0 });
+          resLabel = '4k';
+        }
+        if (!dataUrl) {
+          dataUrl = gl.snapshot(1920, 1080);
+          resLabel = 'hd';
+        }
         if (dataUrl) {
           var a = document.createElement('a');
           a.href = dataUrl;
           var projTitle = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.meta && window.OrbixUI.project.meta.title) || 'orbix-studio';
-          a.download = projTitle.toLowerCase().replace(/\s+/g, '-') + '-4k-render.jpg';
+          a.download = projTitle.toLowerCase().replace(/\s+/g, '-') + '-' + resLabel + '-render.png';
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          if (typeof window.toast === 'function') window.toast('✨ 4K Photorealistic Render Downloaded!');
+          if (typeof window.toast === 'function') window.toast('✨ ' + resLabel.toUpperCase() + ' Photorealistic Render Downloaded!');
         }
       }, 80);
     },
@@ -31175,14 +31392,44 @@ body.role-employee #adminCreateEmpBox,
       tRoot = new THREE.Group(); tScene.add(tRoot);
       return true;
     }
-    function snapshot(w, h) {
+    function snapshot(w, h, opts) {
       if (!ok) return null;
+      opts = opts || {};
       var cv = renderer.domElement, pr = renderer.getPixelRatio(), cw = cv.width / pr, ch = cv.height / pr;
-      renderer.setPixelRatio(1); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-      renderer.setClearColor(0xE6E4DF, 1); fxResize(); render();
-      var url = null; try { url = cv.toDataURL("image/jpeg", 0.88); } catch (err) { }
+      var maxDim = (renderer.capabilities && renderer.capabilities.maxTextureSize) ? renderer.capabilities.maxTextureSize : 8192;
+      var targetW = Math.min(w || 3840, maxDim);
+      var targetH = Math.min(h || 2160, maxDim);
+
+      renderer.setPixelRatio(1);
+      renderer.setSize(targetW, targetH, false);
+      camera.aspect = targetW / targetH;
+      camera.updateProjectionMatrix();
+
+      var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0));
+
+      if (hasArchHome) {
+        scene.background = new THREE.Color(0x82C3EC); // Crisp radiant sky blue
+        if (floor) { floor.visible = true; }
+        renderer.setClearColor(0x82C3EC, 1);
+      } else {
+        renderer.setClearColor(0xE6E4DF, 1);
+      }
+
+      fxResize();
+      render();
+
+      var mime = (opts.format === 'png') ? "image/png" : "image/jpeg";
+      var quality = (opts.quality !== undefined) ? opts.quality : 0.96;
+      var url = null;
+      try { url = cv.toDataURL(mime, quality); } catch (err) { }
+
       renderer.setClearColor(0x000000, 0);
-      renderer.setPixelRatio(pr); renderer.setSize(cw, ch, false); fxResize(); camera.aspect = cw / ch; camera.updateProjectionMatrix();
+      renderer.setPixelRatio(pr);
+      renderer.setSize(cw, ch, false);
+      fxResize();
+      camera.aspect = cw / ch;
+      camera.updateProjectionMatrix();
+      render();
       return url;
     }
     function thumb(u) {
@@ -32462,17 +32709,34 @@ body.role-employee #adminCreateEmpBox,
       }
     }, true);
 
-    // Double-click on any 3D furniture unit: Open in 3D Studio Customizer
+    // Double-click on any 3D furniture unit: Focus camera on unit & open in 3D Studio Customizer
     stage.addEventListener("dblclick", function (e) {
       if (GL.ok && GL.pickFurniture) {
         var fHit = GL.pickFurniture(e.clientX, e.clientY);
         if (fHit && fHit.id) {
+          // Focus 3D camera right on this particular unit!
+          if (fHit.object) {
+            var box = new THREE.Box3().setFromObject(fHit.object);
+            var center = new THREE.Vector3();
+            if (!box.isEmpty()) {
+              box.getCenter(center);
+            } else if (fHit.hitPoint) {
+              center.copy(fHit.hitPoint);
+            }
+            if (center) {
+              GL.setTarget(center.x, center.y, center.z);
+              cam.zoom = Math.max(cam.zoom, 1.8);
+              camApply();
+            }
+          }
+
           if (window.OrbixUI && window.OrbixUI.editor) {
             window.OrbixUI.editor.selected = [{ type: 'furniture', id: fHit.id }];
             if (window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
           }
-          var btn = document.getElementById('inspOpen3DStudio');
-          if (btn) btn.click();
+          if (typeof window.toast === 'function') {
+            window.toast('🎯 Focused on Unit: ' + (fHit.object.name || fHit.id));
+          }
         }
       }
     });

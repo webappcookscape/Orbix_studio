@@ -2081,21 +2081,59 @@
   var FURNITURE_CATALOG = [
     // ─── Imported Modular Units Catalog (69 Units) ───
     {
+      id: "ctvb-1d",
+      code: "ctvb-1d",
+      name: "CROCKERY/TV BASE 1DOOR",
+      modelType: "tv_unit_cabinet",
+      category: "tv_unit",
+      costCategory: "TV Unit Cabinet",
+      areaSqft: 3.63,
+      icon: "📺",
+      dimensions: { W: 450, H: 750, D: 450 },
+      materials: {
+        shutter: { material: "HDHMR_18mm", finish: "BLUE" },
+        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+      },
+      unitConfig: {
+        shutters: 1,
+        doorType: "hinged",
+        dstyle: "slab",
+        glassTint: "none",
+        profileColor: "none",
+        sections: 0,
+        shelves: 1,
+        drawers: 0,
+        loft: false,
+        loftH: 0,
+        counter: "BLUE",
+        handle: "gprof",
+        hfinish: "black",
+        led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
+        carcass: "BWP_18mm",
+        shutterCol: "BLUE"
+      },
+      pricingOverrides: { baseRate: 3500 },
+      customRate: 3500
+    },
+    {
       id: "ctvb-1d-1dr",
       code: "ctvb-1d-1dr",
       name: "CROCKERY/TV BASE 1DOOR 1 DRAWER",
       modelType: "tv_unit_cabinet",
       category: "tv_unit",
       costCategory: "TV Unit Cabinet",
-      areaSqft: 0.9687523546,
+      areaSqft: 3.63,
       icon: "📺",
-      dimensions: { W: 450, H: 200, D: 450 },
+      dimensions: { W: 450, H: 750, D: 450 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 2,
+        shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
         glassTint: "none",
@@ -2103,17 +2141,21 @@
         sections: 0,
         shelves: 1,
         drawers: 1,
+        drawersOnTop: true,
         loft: false,
         loftH: 0,
         counter: "BLUE",
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
-      pricingOverrides: { baseRate: 1922 },
-      customRate: 1922
+      pricingOverrides: { baseRate: 4800 },
+      customRate: 4800
     },
     {
       id: "ctvb-1dr",
@@ -2122,16 +2164,17 @@
       modelType: "tv_unit_cabinet",
       category: "tv_unit",
       costCategory: "TV Unit Cabinet",
-      areaSqft: 1.291669806,
+      areaSqft: 0.96875,
       icon: "📺",
-      dimensions: { W: 600, H: 200, D: 350 },
+      dimensions: { W: 450, H: 200, D: 450 },
+      elevation: 350,
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 1,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -2144,6 +2187,8 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: false,
+        mountType: "floating",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -2179,6 +2224,9 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -2200,7 +2248,7 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 4,
+        shutters: 2,
         doorType: "hinged",
         dstyle: "slab",
         glassTint: "none",
@@ -2208,12 +2256,17 @@
         sections: 0,
         shelves: 1,
         drawers: 2,
+        drawersOnTop: true,
+        drawersSideBySide: true,
         loft: false,
         loftH: 0,
         counter: "BLUE",
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -2229,14 +2282,14 @@
       costCategory: "TV Unit Cabinet",
       areaSqft: 2.421880887,
       icon: "📺",
-      dimensions: { W: 450, H: 500, D: 350 },
+      dimensions: { W: 450, H: 500, D: 450 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 2,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -2249,6 +2302,9 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -2297,9 +2353,9 @@
       modelType: "spice_rack",
       category: "spice_rack",
       costCategory: "Spice Rack (OPEN BOXES)",
-      areaSqft: 4.843761773,
+      areaSqft: 2.9,
       icon: "🧂",
-      dimensions: { W: 1500, H: 300, D: 200 },
+      dimensions: { W: 900, H: 300, D: 200 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
@@ -2322,8 +2378,8 @@
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
-      pricingOverrides: { baseRate: 11005.03 },
-      customRate: 11005.03
+      pricingOverrides: { baseRate: 3200 },
+      customRate: 3200
     },
     {
       id: "fcm-rt",
