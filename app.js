@@ -2911,14 +2911,44 @@
       tRoot = new THREE.Group(); tScene.add(tRoot);
       return true;
     }
-    function snapshot(w, h) {
+    function snapshot(w, h, opts) {
       if (!ok) return null;
+      opts = opts || {};
       var cv = renderer.domElement, pr = renderer.getPixelRatio(), cw = cv.width / pr, ch = cv.height / pr;
-      renderer.setPixelRatio(1); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-      renderer.setClearColor(0xE6E4DF, 1); fxResize(); render();
-      var url = null; try { url = cv.toDataURL("image/jpeg", 0.88); } catch (err) { }
+      var maxDim = (renderer.capabilities && renderer.capabilities.maxTextureSize) ? renderer.capabilities.maxTextureSize : 8192;
+      var targetW = Math.min(w || 3840, maxDim);
+      var targetH = Math.min(h || 2160, maxDim);
+
+      renderer.setPixelRatio(1);
+      renderer.setSize(targetW, targetH, false);
+      camera.aspect = targetW / targetH;
+      camera.updateProjectionMatrix();
+
+      var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0));
+
+      if (hasArchHome) {
+        scene.background = new THREE.Color(0x82C3EC); // Crisp radiant sky blue
+        if (floor) { floor.visible = true; }
+        renderer.setClearColor(0x82C3EC, 1);
+      } else {
+        renderer.setClearColor(0xE6E4DF, 1);
+      }
+
+      fxResize();
+      render();
+
+      var mime = (opts.format === 'png') ? "image/png" : "image/jpeg";
+      var quality = (opts.quality !== undefined) ? opts.quality : 0.96;
+      var url = null;
+      try { url = cv.toDataURL(mime, quality); } catch (err) { }
+
       renderer.setClearColor(0x000000, 0);
-      renderer.setPixelRatio(pr); renderer.setSize(cw, ch, false); fxResize(); camera.aspect = cw / ch; camera.updateProjectionMatrix();
+      renderer.setPixelRatio(pr);
+      renderer.setSize(cw, ch, false);
+      fxResize();
+      camera.aspect = cw / ch;
+      camera.updateProjectionMatrix();
+      render();
       return url;
     }
     function thumb(u) {
@@ -4198,17 +4228,34 @@
       }
     }, true);
 
-    // Double-click on any 3D furniture unit: Open in 3D Studio Customizer
+    // Double-click on any 3D furniture unit: Focus camera on unit & open in 3D Studio Customizer
     stage.addEventListener("dblclick", function (e) {
       if (GL.ok && GL.pickFurniture) {
         var fHit = GL.pickFurniture(e.clientX, e.clientY);
         if (fHit && fHit.id) {
+          // Focus 3D camera right on this particular unit!
+          if (fHit.object) {
+            var box = new THREE.Box3().setFromObject(fHit.object);
+            var center = new THREE.Vector3();
+            if (!box.isEmpty()) {
+              box.getCenter(center);
+            } else if (fHit.hitPoint) {
+              center.copy(fHit.hitPoint);
+            }
+            if (center) {
+              GL.setTarget(center.x, center.y, center.z);
+              cam.zoom = Math.max(cam.zoom, 1.8);
+              camApply();
+            }
+          }
+
           if (window.OrbixUI && window.OrbixUI.editor) {
             window.OrbixUI.editor.selected = [{ type: 'furniture', id: fHit.id }];
             if (window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
           }
-          var btn = document.getElementById('inspOpen3DStudio');
-          if (btn) btn.click();
+          if (typeof window.toast === 'function') {
+            window.toast('🎯 Focused on Unit: ' + (fHit.object.name || fHit.id));
+          }
         }
       }
     });

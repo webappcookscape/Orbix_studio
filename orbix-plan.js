@@ -2463,6 +2463,17 @@
       return;
     }
     this.underlay.calibPoints = this.underlay.calibPoints || [];
+
+    // Strict orthogonal constraint: straight only, no angle tilt!
+    if (this.underlay.calibPoints.length === 1) {
+      var p1 = this.underlay.calibPoints[0];
+      if (Math.abs(worldPt.x - p1.x) >= Math.abs(worldPt.y - p1.y)) {
+        worldPt = { x: worldPt.x, y: p1.y };
+      } else {
+        worldPt = { x: p1.x, y: worldPt.y };
+      }
+    }
+
     this.underlay.calibPoints.push(Vec2.clone(worldPt));
 
     if (this.underlay.calibPoints.length === 2) {
@@ -5093,8 +5104,20 @@
 
     // 5. Calibration Tool preview (2-point reference line & pins)
     if (this.activeTool === 'calibrate') {
-      var sCur = this.worldToScreen(this.cursorWorld);
       var pts = (this.underlay && this.underlay.calibPoints) || [];
+      var curWorld = { x: this.cursorWorld.x, y: this.cursorWorld.y };
+
+      if (pts.length >= 1) {
+        // Enforce straight only (orthogonal horizontal or vertical, no angle tilt!)
+        var p1 = pts[0];
+        if (Math.abs(curWorld.x - p1.x) >= Math.abs(curWorld.y - p1.y)) {
+          curWorld.y = p1.y;
+        } else {
+          curWorld.x = p1.x;
+        }
+      }
+
+      var sCur = this.worldToScreen(curWorld);
 
       if (pts.length >= 1) {
         var sP1 = this.worldToScreen(pts[0]);
@@ -5113,9 +5136,9 @@
         ctx.moveTo(sP1.x, sP1.y - 14); ctx.lineTo(sP1.x, sP1.y + 14);
         ctx.stroke();
 
-        // Rubberband line to cursor
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 2;
+        // Rubberband line to cursor (strictly horizontal or vertical!)
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2.5;
         ctx.setLineDash([6, 4]);
         ctx.beginPath();
         ctx.moveTo(sP1.x, sP1.y);
@@ -5124,8 +5147,8 @@
         ctx.setLineDash([]);
 
         // Live span badge
-        var liveDistWorld = Vec2.dist(pts[0], this.cursorWorld);
-        var liveBadgeText = 'Span: ' + this.formatDim(liveDistWorld) + ' (Click Point 2 to Calibrate)';
+        var liveDistWorld = Vec2.dist(pts[0], curWorld);
+        var liveBadgeText = 'Straight Span: ' + this.formatDim(liveDistWorld) + ' (Click Point 2 to Calibrate)';
         ctx.font = '700 12px "IBM Plex Sans", sans-serif';
         var lbw = ctx.measureText(liveBadgeText).width;
         var mx = (sP1.x + sCur.x) / 2;
@@ -5157,6 +5180,34 @@
         ctx.fillText(guideTxt, sCur.x + 25, sCur.y);
         ctx.restore();
       }
+
+      // High-precision CAD crosshair '+' icon at cursor for pixel-accurate tracking
+      ctx.save();
+      // Outer white halo for contrast on all backgrounds
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(sCur.x - 16, sCur.y); ctx.lineTo(sCur.x + 16, sCur.y);
+      ctx.moveTo(sCur.x, sCur.y - 16); ctx.lineTo(sCur.x, sCur.y + 16);
+      ctx.stroke();
+
+      // Sharp crimson precision '+' crosshair
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(sCur.x - 16, sCur.y); ctx.lineTo(sCur.x + 16, sCur.y);
+      ctx.moveTo(sCur.x, sCur.y - 16); ctx.lineTo(sCur.x, sCur.y + 16);
+      ctx.stroke();
+
+      // Center precision target dot
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(sCur.x, sCur.y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
     }
 
     // 6. Dimension Tool live rubberband preview
