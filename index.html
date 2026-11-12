@@ -224,6 +224,11 @@
             <button class="minibtn is-on" id="toggleDadoTileBtn" title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
               <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
             </button>
+            <select class="minibtn" id="dadoTileStyleSelect" title="Dado Tile Pattern & Color" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+              <option value="rhombus_sage" selected>🧱 Pattern 1: Sage Diamond</option>
+              <option value="chevron_mono">🧱 Pattern 2: Mono Chevron</option>
+              <option value="subway_white">🧱 Pattern 3: Subway White</option>
+            </select>
             <!-- 3D Room Selector -->
             <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
               <option value="all">🏠 All Rooms</option>
@@ -1390,6 +1395,7 @@
 <script src="orbix-projects.js?v=14"></script>
 <script src="orbix-core.js?v=14"></script>
 <script src="orbix-plan.js?v=14"></script>
+<script src="orbix-dado-textures.js"></script>
 <script src="orbix-3d.js?v=14"></script>
 <script src="orbix-ui.js?v=14"></script>
 <script src="app.js?v=14"></script>

@@ -238,9 +238,29 @@
     return tex;
   };
 
-  // Procedural Ceramic Subway / Vitrified Dado Tile Texture
-  ArchitecturalRenderer.createDadoTileTexture = function () {
-    if (ArchitecturalRenderer._dadoTileTex) return ArchitecturalRenderer._dadoTileTex;
+  ArchitecturalRenderer._dadoTextures = {};
+  ArchitecturalRenderer._dadoMaterials = {};
+
+  // Dado Tile Backsplash Texture: supports 'rhombus_sage' (Sage Diamond Cube), 'chevron_mono' (Mono Split Chevron), and 'subway_white'
+  ArchitecturalRenderer.createDadoTileTexture = function (style) {
+    style = style || (typeof window !== 'undefined' && window.dadoTileStyle) || 'rhombus_sage';
+    if (ArchitecturalRenderer._dadoTextures[style]) return ArchitecturalRenderer._dadoTextures[style];
+
+    // Check if texture is in ORBIX_DADO_TEXTURES (base64 image from user uploads)
+    var b64 = (typeof window !== 'undefined' && window.ORBIX_DADO_TEXTURES && window.ORBIX_DADO_TEXTURES[style]);
+    if (b64 && typeof THREE !== 'undefined' && typeof Image !== 'undefined') {
+      var img = new Image();
+      var tex = new THREE.Texture(img);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(3, 2);
+      img.onload = function () {
+        tex.needsUpdate = true;
+      };
+      img.src = b64;
+      ArchitecturalRenderer._dadoTextures[style] = tex;
+      return tex;
+    }
+
     if (typeof document === 'undefined') return null;
     var canvas = document.createElement('canvas');
     canvas.width = 512;
@@ -291,22 +311,26 @@
       }
     }
 
-    var tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(2, 2);
-    ArchitecturalRenderer._dadoTileTex = tex;
-    return tex;
+    var subwayTex = new THREE.CanvasTexture(canvas);
+    subwayTex.wrapS = subwayTex.wrapT = THREE.RepeatWrapping;
+    subwayTex.repeat.set(2, 2);
+    ArchitecturalRenderer._dadoTextures[style] = subwayTex;
+    return subwayTex;
   };
 
-  ArchitecturalRenderer.prototype.createDadoTileMaterial = function () {
+  ArchitecturalRenderer.prototype.createDadoTileMaterial = function (style) {
     if (typeof THREE === 'undefined') return null;
-    var tex = ArchitecturalRenderer.createDadoTileTexture();
-    return new THREE.MeshStandardMaterial({
+    style = style || (typeof window !== 'undefined' && window.dadoTileStyle) || 'rhombus_sage';
+    if (ArchitecturalRenderer._dadoMaterials[style]) return ArchitecturalRenderer._dadoMaterials[style];
+    var tex = ArchitecturalRenderer.createDadoTileTexture(style);
+    var mat = new THREE.MeshStandardMaterial({
       color: 0xF8F9FA,
       map: tex,
       roughness: 0.16,
       metalness: 0.04
     });
+    ArchitecturalRenderer._dadoMaterials[style] = mat;
+    return mat;
   };
 
   ArchitecturalRenderer.createContactShadowTexture = function () {
@@ -898,7 +922,9 @@
 
     function addDadoTile(startX, len, maxH) {
       var isEnabled = (typeof window !== 'undefined' && window.dadoTileEnabled !== undefined) ? window.dadoTileEnabled : self.dadoTileEnabled;
-      if (!isEnabled || !hasWallDado || !self.materials.dadoTile || len < 40) return;
+      var style = (wall && wall.dadoTileStyle) || (typeof window !== 'undefined' && window.dadoTileStyle) || 'rhombus_sage';
+      var tileMat = self.createDadoTileMaterial(style) || self.materials.dadoTile;
+      if (!isEnabled || !hasWallDado || !tileMat || len < 40) return;
 
       var segs = (wall && wall.dadoSegments && wall.dadoSegments.length > 0)
         ? wall.dadoSegments
@@ -917,11 +943,11 @@
         var dadoH = dadoTop - dadoBottom;
         var dadoT = 6;
         var dadoGeo = new THREE.BoxGeometry(subLen, dadoH, dadoT);
-        var tileF = new THREE.Mesh(dadoGeo, self.materials.dadoTile);
+        var tileF = new THREE.Mesh(dadoGeo, tileMat);
         tileF.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, wThick / 2 + dadoT / 2);
         tileF.receiveShadow = true;
         group.add(tileF);
-        var tileB = new THREE.Mesh(dadoGeo, self.materials.dadoTile);
+        var tileB = new THREE.Mesh(dadoGeo, tileMat);
         tileB.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, -wThick / 2 - dadoT / 2);
         tileB.receiveShadow = true;
         group.add(tileB);
@@ -2294,7 +2320,9 @@
       fg.add(box);
     }
 
-    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    var posX = (furn.pos && furn.pos.x) || 0;
+    var posY = (furn.pos && furn.pos.y) || 0;
+    fg.position.set(posX, elev, posY);
     fg.rotation.y = -(furn.rotY || 0);
     fg.visible = true;
     return fg;
@@ -2481,7 +2509,9 @@
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
         parseFloat(furn.pos.z) : defElevCorner);
-    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    var posX = (furn.pos && furn.pos.x) || 0;
+    var posY = (furn.pos && furn.pos.y) || 0;
+    fg.position.set(posX, elev, posY);
     fg.rotation.y = -(furn.rotY || 0);
     fg.visible = true;
 
@@ -2508,7 +2538,9 @@
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
         parseFloat(furn.pos.z) : 0);
-    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    var posX = (furn.pos && furn.pos.x) || 0;
+    var posY = (furn.pos && furn.pos.y) || 0;
+    fg.position.set(posX, elev, posY);
     fg.rotation.y = -(furn.rotY || 0);
     fg.visible = true;
     return fg;
@@ -2518,39 +2550,95 @@
      Build O/S (Only Shutter) Unit (e.g. LOFT 2 DOOR O/S, FM 120 O/S, WM 60 O/S)
      Mounts flush against existing masonry opening / niche frame. Zero carcass panels.
      ───────────────────────────────────────────────────────────────────────────── */
-  ArchitecturalRenderer.prototype.buildOnlyShutterMesh = function (furn, fg, dims, carcassMat, getShutterMaterial, handleType, handleMat) {
+  ArchitecturalRenderer.prototype.buildOnlyShutterMesh = function (furn, fg, dims, carcassMat, getShutterMaterial, handleType, handleMat, counterMat, plinthH, counterH, isBase) {
     var W = dims.W;
     var H = dims.H;
-    var D = 18;
+
+    var catOS = (furn.category || '').toLowerCase();
+    var nameOS = (furn.name || '').toLowerCase();
+    var isLoftOS = (catOS.indexOf('loft') !== -1 || nameOS.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
+    var isWallOS = (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)));
+    var isBaseOS = isBase || catOS === 'kitchen_base' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS);
+
+    var actualPlinthH = isBaseOS ? ((plinthH !== undefined && plinthH > 0) ? plinthH : 100) : 0;
+    var actualCounterH = isBaseOS ? ((counterH !== undefined && counterH > 0) ? counterH : 35) : 0;
+    var baseD = (dims.D && dims.D > 100) ? dims.D : 560;
+
+    if (isBaseOS) {
+      // 1. Plinth Kickboard & Adjustable Cabinet Legs
+      if (actualPlinthH > 0) {
+        var pGeo = new THREE.BoxGeometry(W - 30, actualPlinthH, baseD - 50);
+        var pMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+        var pMesh = new THREE.Mesh(pGeo, pMat);
+        pMesh.position.set(0, actualPlinthH / 2, -15);
+        pMesh.castShadow = true; pMesh.receiveShadow = true;
+        pMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+        fg.add(pMesh);
+
+        // Cylindrical Legs with chrome/black feet at 4 corners
+        var legMat = new THREE.MeshStandardMaterial({ color: 0x1E293B, metalness: 0.85, roughness: 0.25 });
+        var legGeo = new THREE.CylinderGeometry(18, 16, actualPlinthH, 16);
+        [
+          [-W / 2 + 50, -baseD / 2 + 50],
+          [W / 2 - 50, -baseD / 2 + 50],
+          [-W / 2 + 50, baseD / 2 - 50],
+          [W / 2 - 50, baseD / 2 - 50]
+        ].forEach(function (lp) {
+          var lm = new THREE.Mesh(legGeo, legMat);
+          lm.position.set(lp[0], actualPlinthH / 2, lp[1]);
+          lm.castShadow = true;
+          lm.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(lm);
+        });
+      }
+
+      // 2. Countertop Stone Slab
+      if (actualCounterH > 0) {
+        var slabW = W + 20;
+        var slabD = baseD + 25;
+        var slabGeo = new THREE.BoxGeometry(slabW, actualCounterH, slabD);
+        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.18, metalness: 0.08 });
+        var slabMesh = new THREE.Mesh(slabGeo, sMat);
+        slabMesh.position.set(0, H - actualCounterH / 2, 2.5);
+        slabMesh.castShadow = true; slabMesh.receiveShadow = true;
+        slabMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+        fg.add(slabMesh);
+      }
+    }
 
     var numShutters = (furn.unitConfig && furn.unitConfig.shutters !== undefined) ?
       parseInt(furn.unitConfig.shutters) : (W > 1200 ? 3 : W > 600 ? 2 : 1);
     numShutters = Math.max(1, numShutters);
 
+    // Shutter vertical span between plinth and countertop
+    var shH = Math.max(100, H - actualPlinthH - actualCounterH - 6);
+    var hingeY = actualPlinthH + 3 + shH / 2;
+    var frontZ = isBaseOS ? (baseD / 2 - 9) : 0;
+    var frameZ = frontZ - 12.5;
+
     // Slim perimeter mounting frame (25mm reveal)
     var frameMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7, metalness: 0.1 });
     var topFrame = new THREE.Mesh(new THREE.BoxGeometry(W, 25, 25), frameMat);
-    topFrame.position.set(0, H - 12.5, -12.5);
+    topFrame.position.set(0, H - actualCounterH - 12.5, frameZ);
     fg.add(topFrame);
     var botFrame = new THREE.Mesh(new THREE.BoxGeometry(W, 25, 25), frameMat);
-    botFrame.position.set(0, 12.5, -12.5);
+    botFrame.position.set(0, actualPlinthH + 12.5, frameZ);
     fg.add(botFrame);
-    var leftFrame = new THREE.Mesh(new THREE.BoxGeometry(25, Math.max(10, H - 50), 25), frameMat);
-    leftFrame.position.set(-W / 2 + 12.5, H / 2, -12.5);
+    var frameH = Math.max(10, H - actualPlinthH - actualCounterH - 50);
+    var leftFrame = new THREE.Mesh(new THREE.BoxGeometry(25, frameH, 25), frameMat);
+    leftFrame.position.set(-W / 2 + 12.5, hingeY, frameZ);
     fg.add(leftFrame);
-    var rightFrame = new THREE.Mesh(new THREE.BoxGeometry(25, Math.max(10, H - 50), 25), frameMat);
-    rightFrame.position.set(W / 2 - 12.5, H / 2, -12.5);
+    var rightFrame = new THREE.Mesh(new THREE.BoxGeometry(25, frameH, 25), frameMat);
+    rightFrame.position.set(W / 2 - 12.5, hingeY, frameZ);
     fg.add(rightFrame);
 
     var shW = (W - (numShutters + 1) * 3) / numShutters;
-    var shH = Math.max(100, H - 6);
-    var hingeY = H / 2;
 
     for (var s = 0; s < numShutters; s++) {
       var hingeLeft = (s % 2 === 0);
       var sLeftX = -W / 2 + 3 + s * (shW + 3);
       var hingeX = hingeLeft ? sLeftX : (sLeftX + shW);
-      var hingeZ = 0;
+      var hingeZ = frontZ;
 
       var hingeGroup = new THREE.Group();
       hingeGroup.name = "ShutterHinge_" + s;
@@ -2590,7 +2678,9 @@
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
         parseFloat(furn.pos.z) : defElevOS);
-    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    var posX = (furn.pos && furn.pos.x) || 0;
+    var posY = (furn.pos && furn.pos.y) || 0;
+    fg.position.set(posX, elev, posY);
     fg.rotation.y = -(furn.rotY || 0);
     fg.visible = true;
     return fg;
@@ -2806,7 +2896,9 @@
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
         parseFloat(furn.pos.z) : 0);
-    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    var posX = (furn.pos && furn.pos.x) || 0;
+    var posY = (furn.pos && furn.pos.y) || 0;
+    fg.position.set(posX, elev, posY);
     fg.rotation.y = -(furn.rotY || 0);
     fg.visible = true;
 
@@ -2938,7 +3030,7 @@
       (furn.code && /\bo_?s\b/i.test(furn.code))
     );
     if (isOnlyShutter) {
-      return this.buildOnlyShutterMesh(furn, fg, dims, carcassMat, getShutterMaterial, handleType, handleMat);
+      return this.buildOnlyShutterMesh(furn, fg, dims, carcassMat, getShutterMaterial, handleType, handleMat, counterMat, plinthH, counterH, isBase);
     }
 
     var isLCorner = !!(
@@ -3616,7 +3708,9 @@
       }
     }
 
-    fg.position.set(furn.pos.x, elev, furn.pos.y);
+    var posX = (furn.pos && furn.pos.x) || 0;
+    var posY = (furn.pos && furn.pos.y) || 0;
+    fg.position.set(posX, elev, posY);
     fg.rotation.y = -(furn.rotY || 0);
 
     // Placed modular unit is always visible inside 3D architectural room

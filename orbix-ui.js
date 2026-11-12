@@ -375,6 +375,25 @@
         });
       }
 
+      var dadoStyleSel = document.getElementById('dadoTileStyleSelect');
+      if (dadoStyleSel) {
+        if (!window.dadoTileStyle) window.dadoTileStyle = 'rhombus_sage';
+        dadoStyleSel.value = window.dadoTileStyle;
+        dadoStyleSel.addEventListener('change', function () {
+          window.dadoTileStyle = dadoStyleSel.value;
+          if (self.archRenderer) {
+            self.archRenderer.dadoTileStyle = window.dadoTileStyle;
+          }
+          if (typeof self.render3DHome === 'function') {
+            self.render3DHome(true);
+          }
+          if (typeof window.toast === 'function') {
+            var optName = dadoStyleSel.options[dadoStyleSel.selectedIndex].text;
+            window.toast('🧱 Dado Tile Pattern: ' + optName);
+          }
+        });
+      }
+
       // 3D Studio Room Selector
       var studioRoomSel = document.getElementById('studioRoomSelect');
       if (studioRoomSel) {
@@ -971,8 +990,17 @@
           '    <input type="checkbox" id="inspWallDado" ' + (hasDado ? 'checked' : '') + ' style="width:18px;height:18px;cursor:pointer;">' +
           '  </label>' +
           '  <div style="font-size:11px;color:#15803d;margin-top:4px;">' +
-          (hasDado ? '✓ Backsplash ceramic subway tiles applied to this wall (850mm–1500mm)' : 'No dado tile on this wall. Check to enable backsplash.') +
+          (hasDado ? '✓ Backsplash tiles applied to this wall (850mm–1500mm)' : 'No dado tile on this wall. Check to enable backsplash.') +
           '  </div>' +
+          (hasDado ? (
+          '  <div style="margin-top:8px;">' +
+          '    <label style="font-size:11px;font-weight:600;color:#166534;display:block;margin-bottom:3px;">Tile Pattern</label>' +
+          '    <select id="inspWallDadoStyle" style="width:100%;height:26px;font-size:11px;border:1px solid #bbf7d0;border-radius:4px;background:#ffffff;padding:0 4px;">' +
+          '      <option value="rhombus_sage"' + ((w.dadoTileStyle || window.dadoTileStyle || 'rhombus_sage') === 'rhombus_sage' ? ' selected' : '') + '>Pattern 1: Sage Diamond</option>' +
+          '      <option value="chevron_mono"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'chevron_mono' ? ' selected' : '') + '>Pattern 2: Mono Chevron</option>' +
+          '      <option value="subway_white"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'subway_white' ? ' selected' : '') + '>Pattern 3: White Subway</option>' +
+          '    </select>' +
+          '  </div>') : '') +
           '</div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
 
@@ -1042,6 +1070,18 @@
             if (self.render3DHome) self.render3DHome(true);
             if (typeof window.toast === 'function') {
               window.toast(w.dadoTile ? '🧱 Dado Tile Enabled for Wall' : '🧱 Dado Tile Removed from Wall');
+            }
+          });
+        }
+        var elWallDadoStyle = document.getElementById('inspWallDadoStyle');
+        if (elWallDadoStyle) {
+          elWallDadoStyle.addEventListener('change', function (e) {
+            w.dadoTileStyle = e.target.value;
+            ed.pushHistory('Change Wall Dado Style');
+            if (self.render3DHome) self.render3DHome(true);
+            if (typeof window.toast === 'function') {
+              var selOpt = elWallDadoStyle.options[elWallDadoStyle.selectedIndex];
+              window.toast('🧱 Wall Dado Tile: ' + (selOpt ? selOpt.textContent : w.dadoTileStyle));
             }
           });
         }

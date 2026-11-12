@@ -657,15 +657,46 @@
     return Math.round(rad * (180 / Math.PI));
   }
 
-  // Returns 4 2D corner vertices of rotated furniture rectangle (Oriented Bounding Box)
+  // Returns 2D polygon vertices of rotated furniture (6-vertex L-polygon for corner units, 4 vertices for rectangular OBB)
   function getFurniturePolygon(f) {
-    var w = (f.dimensions && f.dimensions.W) || 1200;
-    var d = (f.dimensions && f.dimensions.D) || 600;
     var ang = f.rotY || 0;
     var cosA = Math.cos(ang), sinA = Math.sin(ang);
+    var cx = (f.pos && f.pos.x) || 0, cy = (f.pos && f.pos.y) || 0;
+
+    var isLCorner = !!(
+      (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
+      f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' ||
+      (f.id && /fbcm/i.test(f.id)) ||
+      (f.catalogItemId && /fbcm/i.test(f.catalogItemId)) ||
+      (f.name && /l[-_ ]*shaped.*corner/i.test(f.name))
+    );
+
+    if (isLCorner) {
+      var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || 900;
+      var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || 900;
+      var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || 560;
+      var ux = cosA, uy = sinA;
+      var vx = -sinA, vy = cosA;
+      function toPt(lx, ly) {
+        return {
+          x: cx + lx * ux + ly * vx,
+          y: cy + lx * uy + ly * vy
+        };
+      }
+      return [
+        toPt(-cW / 2, -cD / 2),
+        toPt(cW / 2, -cD / 2),
+        toPt(cW / 2, cD / 2),
+        toPt(cW / 2 - cDepth, cD / 2),
+        toPt(cW / 2 - cDepth, -cD / 2 + cDepth),
+        toPt(-cW / 2, -cD / 2 + cDepth)
+      ];
+    }
+
+    var w = (f.dimensions && f.dimensions.W) || 1200;
+    var d = (f.dimensions && f.dimensions.D) || 600;
     var ux = cosA * (w / 2), uy = sinA * (w / 2);
     var vx = -sinA * (d / 2), vy = cosA * (d / 2);
-    var cx = f.pos.x, cy = f.pos.y;
     return [
       { x: cx - ux - vx, y: cy - uy - vy },
       { x: cx + ux - vx, y: cy + uy - vy },

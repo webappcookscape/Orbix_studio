@@ -1887,9 +1887,10 @@
 
     var isLCorner = !!(
       (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
-      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' ||
+      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' || furn.catalogItemId === 'fbcm-1500' ||
       (furn.id && /fbcm/i.test(furn.id)) ||
       (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
+      (furn.code && /fbcm/i.test(furn.code)) ||
       (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
     );
 
@@ -1898,24 +1899,27 @@
       var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
       var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || 560;
 
-      function toWorld(lx, ly, name) {
+      function toWorld(lx, ly, name, isMid) {
         return {
           name: name,
           x: pos.x + lx * u.x + ly * v.x,
           y: pos.y + lx * u.y + ly * v.y,
-          isCorner: true
+          isCorner: !isMid,
+          isMid: !!isMid
         };
       }
 
       return [
-        toWorld(-cW / 2, -cD / 2, 'Wall Corner'),
-        toWorld(cW / 2, -cD / 2, 'Arm 1 Wall End'),
-        toWorld(cW / 2, -cD / 2 + cDepth, 'Arm 1 Front End'),
-        toWorld(-cW / 2 + cDepth, -cD / 2 + cDepth, 'Inside Corner'),
-        toWorld(-cW / 2 + cDepth, cD / 2, 'Arm 2 Front End'),
-        toWorld(-cW / 2, cD / 2, 'Arm 2 Wall End'),
-        { name: 'Arm 1 Joint', x: pos.x + (cW / 2) * u.x + (-cD / 2 + cDepth / 2) * v.x, y: pos.y + (cW / 2) * u.y + (-cD / 2 + cDepth / 2) * v.y, isMid: true },
-        { name: 'Arm 2 Joint', x: pos.x + (-cW / 2 + cDepth / 2) * u.x + (cD / 2) * v.x, y: pos.y + (-cW / 2 + cDepth / 2) * u.y + (cD / 2) * v.y, isMid: true }
+        toWorld(-cW / 2, -cD / 2, 'Back-Left Corner'),
+        toWorld(cW / 2, -cD / 2, 'Outer Corner'),
+        toWorld(cW / 2, cD / 2, 'Arm 2 End-Right'),
+        toWorld(cW / 2 - cDepth, cD / 2, 'Arm 2 End-Left'),
+        toWorld(cW / 2 - cDepth, -cD / 2 + cDepth, 'Inside Corner'),
+        toWorld(-cW / 2, -cD / 2 + cDepth, 'Arm 1 End-Bottom'),
+        toWorld(-cW / 2, -cD / 2 + cDepth / 2, 'Arm 1 Joint', true),
+        toWorld(cW / 2 - cDepth / 2, cD / 2, 'Arm 2 Joint', true),
+        toWorld(0, -cD / 2, 'Arm 1 Wall Mid', true),
+        toWorld(cW / 2, 0, 'Arm 2 Wall Mid', true)
       ];
     }
 
@@ -2066,8 +2070,10 @@
 
         var otherIsLCorner = !!(
           (other.unitConfig && (other.unitConfig.geometryType === 'l_shaped_corner' || other.unitConfig.unitType === 'fbcm' || (other.unitConfig.corner && other.unitConfig.corner.enabled))) ||
-          other.catalogItemId === 'fbcm' || other.id === 'fbcm' || other.id === 'f_fbcm_1' ||
+          other.catalogItemId === 'fbcm' || other.id === 'fbcm' || other.id === 'f_fbcm_1' || other.catalogItemId === 'fbcm-1500' ||
           (other.id && /fbcm/i.test(other.id)) ||
+          (other.catalogItemId && /fbcm/i.test(other.catalogItemId)) ||
+          (other.code && /fbcm/i.test(other.code)) ||
           (other.name && /l[-_ ]*shaped.*corner/i.test(other.name))
         );
 
@@ -2076,14 +2082,14 @@
           var cD = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legD) || 900;
           var cDepth = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.depth) || 560;
 
-          // 1. Arm 1 face (along +uO at local X = +cW/2, Y = -cD/2 + cDepth/2)
+          // 1. Arm 1 face (open joint at local X = -cW/2, Y = -cD/2 + cDepth/2, outward normal = -uO)
           var arm1FaceCenter = {
-            x: oPos.x + (cW / 2) * uO.x + (-cD / 2 + cDepth / 2) * vO.x,
-            y: oPos.y + (cW / 2) * uO.y + (-cD / 2 + cDepth / 2) * vO.y
+            x: oPos.x + (-cW / 2) * uO.x + (-cD / 2 + cDepth / 2) * vO.x,
+            y: oPos.y + (-cW / 2) * uO.y + (-cD / 2 + cDepth / 2) * vO.y
           };
           var targetPosArm1 = {
-            x: arm1FaceCenter.x + (fW / 2) * uO.x - ((cDepth - fD) / 2) * vO.x,
-            y: arm1FaceCenter.y + (fW / 2) * uO.y - ((cDepth - fD) / 2) * vO.y
+            x: arm1FaceCenter.x - (fW / 2) * uO.x,
+            y: arm1FaceCenter.y - (fW / 2) * uO.y
           };
           var dArm1 = Math.hypot(pos.x - targetPosArm1.x, pos.y - targetPosArm1.y);
           if (dArm1 < minJointDist + 80 && dArm1 < (bestJoint ? bestJoint.dist : 9999)) {
@@ -2099,17 +2105,16 @@
             };
           }
 
-          // 2. Arm 2 face (along +vO at local X = -cW/2 + cDepth/2, Y = +cD/2)
+          // 2. Arm 2 face (open joint at local X = cW/2 - cDepth/2, Y = +cD/2, outward normal = +vO)
           var arm2FaceCenter = {
-            x: oPos.x + (-cW / 2 + cDepth / 2) * uO.x + (cD / 2) * vO.x,
-            y: oPos.y + (-cW / 2 + cDepth / 2) * uO.y + (cD / 2) * vO.y
+            x: oPos.x + (cW / 2 - cDepth / 2) * uO.x + (cD / 2) * vO.x,
+            y: oPos.y + (cW / 2 - cDepth / 2) * uO.y + (cD / 2) * vO.y
           };
           var rotArm2 = (oRot + Math.PI / 2) % (Math.PI * 2);
           var uArm2 = { x: Math.cos(rotArm2), y: Math.sin(rotArm2) };
-          var vArm2 = { x: -Math.sin(rotArm2), y: Math.cos(rotArm2) };
           var targetPosArm2 = {
-            x: arm2FaceCenter.x + (fW / 2) * uArm2.x - ((cDepth - fD) / 2) * vArm2.x,
-            y: arm2FaceCenter.y + (fW / 2) * uArm2.y - ((cDepth - fD) / 2) * vArm2.y
+            x: arm2FaceCenter.x + (fW / 2) * uArm2.x,
+            y: arm2FaceCenter.y + (fW / 2) * uArm2.y
           };
           var dArm2 = Math.hypot(pos.x - targetPosArm2.x, pos.y - targetPosArm2.y);
           if (dArm2 < minJointDist + 80 && dArm2 < (bestJoint ? bestJoint.dist : 9999)) {
@@ -2276,15 +2281,23 @@
 
     var furnIsLCorner = !!(
       (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
-      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' ||
+      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' || furn.catalogItemId === 'fbcm-1500' ||
       (furn.id && /fbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
+      (furn.code && /fbcm/i.test(furn.code)) ||
       (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
     );
 
     if (furnIsLCorner) {
-      // Magnetic 90° corner snapping for L-shaped corner base unit
+      // Corner unit footprint dimensions are legW x legD (900 x 900)
       var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
       var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
+      fW = cW;
+      fD = cD;
+      halfW = cW / 2;
+      halfD = cD / 2;
+
+      // Magnetic 90° corner snapping for L-shaped corner unit
       for (var wa = 0; wa < walls.length; wa++) {
         var wA = walls[wa];
         for (var wb = wa + 1; wb < walls.length; wb++) {
@@ -2307,9 +2320,13 @@
               if (Math.abs(dotAB) < 0.25) {
                 var halfTA = (wA.thickness || 150) / 2;
                 var halfTB = (wB.thickness || 150) / 2;
+                var innerCornerPt = {
+                  x: sharedPt.x + halfTB * uA.x + halfTA * uB.x,
+                  y: sharedPt.y + halfTB * uA.y + halfTA * uB.y
+                };
                 var cornerCenter = {
-                  x: sharedPt.x + (halfTA + cW / 2) * uA.x + (halfTB + cD / 2) * uB.x,
-                  y: sharedPt.y + (halfTA + cW / 2) * uA.y + (halfTB + cD / 2) * uB.y
+                  x: innerCornerPt.x + (cW / 2) * uA.x + (cD / 2) * uB.x,
+                  y: innerCornerPt.y + (cW / 2) * uA.y + (cD / 2) * uB.y
                 };
                 var distCorner = Math.hypot(pos.x - cornerCenter.x, pos.y - cornerCenter.y);
                 if (distCorner < 350) {
@@ -4147,8 +4164,10 @@
       // Check if L-shaped corner base unit
       var isLCorner = !!(
         (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
-        f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' ||
+        f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' ||
         (f.id && /fbcm/i.test(f.id)) ||
+        (f.catalogItemId && /fbcm/i.test(f.catalogItemId)) ||
+        (f.code && /fbcm/i.test(f.code)) ||
         (f.name && /l[-_ ]*shaped.*corner/i.test(f.name))
       );
 
@@ -4168,9 +4187,16 @@
           ctx.strokeStyle = '#dc2626';
           ctx.lineWidth = 2.5;
         } else {
-          ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
-          ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
-          ctx.lineWidth = isSelected ? 2 : 1.2;
+          var isWallL = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
+          if (isWallL) {
+            ctx.fillStyle = isSelected ? 'rgba(2, 132, 199, 0.25)' : 'rgba(240, 249, 255, 0.95)';
+            ctx.strokeStyle = isSelected ? '#0284c7' : '#0369a1';
+            ctx.lineWidth = isSelected ? 2.5 : 1.6;
+          } else {
+            ctx.fillStyle = isSelected ? 'rgba(46, 123, 181, 0.22)' : 'rgba(110, 78, 53, 0.12)';
+            ctx.strokeStyle = isSelected ? '#1B4F72' : '#6E4E35';
+            ctx.lineWidth = isSelected ? 2 : 1.2;
+          }
         }
 
         // 6-vertex L-shaped polygon
@@ -4400,27 +4426,61 @@
         var pointColor = isWallF ? '#0284c7' : '#10b981';
         var activeCornerColor = isSelected ? '#f59e0b' : pointColor;
 
-        var connectionPts = [
-          // 4 Corners (Primary snaps)
-          { x: -wPx / 2, y: -dPx / 2, r: 4, corner: true },
-          { x: wPx / 2, y: -dPx / 2, r: 4, corner: true },
-          { x: wPx / 2, y: dPx / 2, r: 4, corner: true },
-          { x: -wPx / 2, y: dPx / 2, r: 4, corner: true },
-          // 4 Midpoints (Secondary snaps)
-          { x: 0, y: -dPx / 2, r: 2.5, corner: false },
-          { x: 0, y: dPx / 2, r: 2.5, corner: false },
-          { x: -wPx / 2, y: 0, r: 2.5, corner: false },
-          { x: wPx / 2, y: 0, r: 2.5, corner: false }
-        ];
-        for (var cpi = 0; cpi < connectionPts.length; cpi++) {
-          var cp = connectionPts[cpi];
-          ctx.fillStyle = cp.corner ? activeCornerColor : pointColor;
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 1.2;
-          ctx.beginPath();
-          ctx.arc(cp.x, cp.y, cp.r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
+        if (isLCorner) {
+          var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || 900;
+          var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || 900;
+          var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || 560;
+          var cwPx = cW * this.zoom;
+          var cdPx = cD * this.zoom;
+          var depthPx = cDepth * this.zoom;
+
+          var cornerConnectionPts = [
+            // 6 Perimeter vertices
+            { x: -cwPx / 2, y: -cdPx / 2, r: 4, corner: true },
+            { x: cwPx / 2, y: -cdPx / 2, r: 4, corner: true },
+            { x: cwPx / 2, y: cdPx / 2, r: 4, corner: true },
+            { x: cwPx / 2 - depthPx, y: cdPx / 2, r: 4, corner: true },
+            { x: cwPx / 2 - depthPx, y: -cdPx / 2 + depthPx, r: 4, corner: true },
+            { x: -cwPx / 2, y: -cdPx / 2 + depthPx, r: 4, corner: true },
+            // Joint midpoints
+            { x: -cwPx / 2, y: -cdPx / 2 + depthPx / 2, r: 2.5, corner: false },
+            { x: cwPx / 2 - depthPx / 2, y: cdPx / 2, r: 2.5, corner: false },
+            { x: 0, y: -cdPx / 2, r: 2.5, corner: false },
+            { x: cwPx / 2, y: 0, r: 2.5, corner: false }
+          ];
+          for (var ccpi = 0; ccpi < cornerConnectionPts.length; ccpi++) {
+            var ccp = cornerConnectionPts[ccpi];
+            ctx.fillStyle = ccp.corner ? activeCornerColor : pointColor;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.arc(ccp.x, ccp.y, ccp.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
+        } else {
+          var connectionPts = [
+            // 4 Corners (Primary snaps)
+            { x: -wPx / 2, y: -dPx / 2, r: 4, corner: true },
+            { x: wPx / 2, y: -dPx / 2, r: 4, corner: true },
+            { x: wPx / 2, y: dPx / 2, r: 4, corner: true },
+            { x: -wPx / 2, y: dPx / 2, r: 4, corner: true },
+            // 4 Midpoints (Secondary snaps)
+            { x: 0, y: -dPx / 2, r: 2.5, corner: false },
+            { x: 0, y: dPx / 2, r: 2.5, corner: false },
+            { x: -wPx / 2, y: 0, r: 2.5, corner: false },
+            { x: wPx / 2, y: 0, r: 2.5, corner: false }
+          ];
+          for (var cpi = 0; cpi < connectionPts.length; cpi++) {
+            var cp = connectionPts[cpi];
+            ctx.fillStyle = cp.corner ? activeCornerColor : pointColor;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.arc(cp.x, cp.y, cp.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
         }
       }
 

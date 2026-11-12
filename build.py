@@ -12,6 +12,8 @@ orbix_unit_icons = open(orbix_icons_path, encoding='utf-8').read() if os.path.ex
 orbix_projects = open(os.path.join(here, 'orbix-projects.js'), encoding='utf-8').read()
 orbix_core = open(os.path.join(here, 'orbix-core.js'), encoding='utf-8').read()
 orbix_plan = open(os.path.join(here, 'orbix-plan.js'), encoding='utf-8').read()
+dado_tex_path = os.path.join(here, 'orbix-dado-textures.js')
+orbix_dado_tex = open(dado_tex_path, encoding='utf-8').read() if os.path.exists(dado_tex_path) else ''
 orbix_3d = open(os.path.join(here, 'orbix-3d.js'), encoding='utf-8').read()
 orbix_ui = open(os.path.join(here, 'orbix-ui.js'), encoding='utf-8').read()
 js = open(os.path.join(here, 'app.js'), encoding='utf-8').read()
@@ -33,8 +35,8 @@ if os.path.exists(cook_icon_path):
     frag = frag.replace('src="icon-cookscape-unit.png"', 'src="' + b64_cook + '"')
 
 frag = re.sub(r'<link rel="stylesheet" href="style\.css[^"]*">', '<style>\n' + css + '\n</style>', frag)
-all_js = '<script>\n' + orbix_unit_icons + '\n' + orbix_projects + '\n' + orbix_core + '\n' + orbix_plan + '\n' + orbix_3d + '\n' + orbix_ui + '\n' + js + '\n' + pwa_js + '\n</script>'
-pattern = r'(?:<script src="orbix-unit-icons\.js[^"]*"></script>\s*)?<script src="orbix-projects\.js[^"]*"></script>\s*<script src="orbix-core\.js[^"]*"></script>\s*<script src="orbix-plan\.js[^"]*"></script>\s*<script src="orbix-3d\.js[^"]*"></script>\s*<script src="orbix-ui\.js[^"]*"></script>\s*<script src="app\.js[^"]*"></script>\s*<script src="pwa\.js[^"]*"></script>'
+all_js = '<script>\n' + orbix_unit_icons + '\n' + orbix_projects + '\n' + orbix_core + '\n' + orbix_plan + '\n' + orbix_dado_tex + '\n' + orbix_3d + '\n' + orbix_ui + '\n' + js + '\n' + pwa_js + '\n</script>'
+pattern = r'(?:<script src="orbix-unit-icons\.js[^"]*"></script>\s*)?<script src="orbix-projects\.js[^"]*"></script>\s*<script src="orbix-core\.js[^"]*"></script>\s*<script src="orbix-plan\.js[^"]*"></script>\s*(?:<script src="orbix-dado-textures\.js[^"]*"></script>\s*)?<script src="orbix-3d\.js[^"]*"></script>\s*<script src="orbix-ui\.js[^"]*"></script>\s*<script src="app\.js[^"]*"></script>\s*<script src="pwa\.js[^"]*"></script>'
 frag = re.sub(pattern, lambda m: all_js, frag, flags=re.DOTALL)
 out = frag.strip() + '\n'
 dest = sys.argv[1] if len(sys.argv) > 1 else os.path.join(here, 'dist-single.html')
