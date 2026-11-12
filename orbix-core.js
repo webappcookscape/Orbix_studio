@@ -722,11 +722,19 @@
         parseFloat(f.pos.z) : (isWall1 ? 1500 : 0));
     var h1 = (f.dimensions && f.dimensions.H) ? parseFloat(f.dimensions.H) : (isWall1 ? 600 : 850);
     var top1 = elev1 + h1;
+    var isDecor1 = !!(f.isDecor || f.decorType || (f.name && /sink|hob|stove|cooktop|burner|tap|basin/i.test(f.name)));
+    var isBase1 = !isWall1 && (f.category === 'kitchen_base' || (f.name && /base/i.test(f.name)));
 
     for (var i = 0; i < allFurn.length; i++) {
       var other = allFurn[i];
       if (other.id === f.id || (ignoreId && other.id === ignoreId)) continue;
       var isWall2 = isWallUnitCategory(other.category, other.name, other.code || other.catalogItemId, other.costCategory);
+      var isDecor2 = !!(other.isDecor || other.decorType || (other.name && /sink|hob|stove|cooktop|burner|tap|basin/i.test(other.name)));
+      var isBase2 = !isWall2 && (other.category === 'kitchen_base' || (other.name && /base/i.test(other.name)));
+
+      // Countertop fixtures (sinks, gas hobs) sit inside/on base units; allow without false collision!
+      if ((isDecor1 && isBase2) || (isDecor2 && isBase1)) continue;
+
       var elev2 = (other.elevation !== undefined && other.elevation !== null && other.elevation !== '') ?
         parseFloat(other.elevation) :
         ((other.pos && other.pos.z !== undefined && other.pos.z !== null && other.pos.z !== 0) ?
@@ -986,21 +994,38 @@
       }
       if (!opWall) continue;
 
-      var opElev = op.elevation !== undefined ? op.elevation : (op.type === "door" ? 0 : 900);
-      var opH = op.height || (op.type === "door" ? 2100 : 1200);
+      var isWindow = (op.type === "window");
+      var sillH = (op.sillHeight !== undefined && op.sillHeight !== null) ? parseFloat(op.sillHeight) : 900;
+      var opElev = op.elevation !== undefined ? parseFloat(op.elevation) : (isWindow ? sillH : 0);
+      var opH = op.height || (isWindow ? 1200 : 2100);
       var opTop = opElev + opH;
+
+      // In modular architectural design, kitchen base units and sinks sit directly under windows!
+      // Sinks and base units are only blocked if the window is a floor-to-ceiling opening (sill < 400).
+      var isSinkOrCounterFixture = !!(f.isDecor || f.decorType === 'sink' || (f.name && /sink|basin|hob|cooktop/i.test(f.name)));
+      var isBaseUnit = !isWallU && (f.category === 'kitchen_base' || f.category === 'vanity' || (f.name && /base/i.test(f.name)) || (top1 <= 1050));
+
+      if (isWindow && (isSinkOrCounterFixture || isBaseUnit) && opElev >= 700) {
+        // Base units & sinks are allowed under windows with standard sill height
+        continue;
+      }
+
       if (top1 <= opElev + 10 || opTop <= elev1 + 10) continue;
 
       var dir = wallDirection(opWall);
       var norm = wallNormal(opWall);
-      var halfT = ((opWall.thickness || 150) / 2.0) + 15;
+      var halfT = ((opWall.thickness || 150) / 2.0) + 35;
+      var opW = op.width || (isWindow ? 1200 : 900);
+      var halfW = opW / 2.0;
+      // op.offset is the center of the opening along the wall
+      var opCenterT = op.offset !== undefined ? op.offset : halfW;
       var opStart = {
-        x: opWall.start.x + dir.x * (op.offset || 0),
-        y: opWall.start.y + dir.y * (op.offset || 0)
+        x: opWall.start.x + dir.x * (opCenterT - halfW),
+        y: opWall.start.y + dir.y * (opCenterT - halfW)
       };
       var opEnd = {
-        x: opStart.x + dir.x * (op.width || 900),
-        y: opStart.y + dir.y * (op.width || 900)
+        x: opWall.start.x + dir.x * (opCenterT + halfW),
+        y: opWall.start.y + dir.y * (opCenterT + halfW)
       };
       var opPoly = [
         { x: opStart.x + norm.x * halfT, y: opStart.y + norm.y * halfT },
