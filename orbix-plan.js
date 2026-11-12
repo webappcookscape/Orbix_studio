@@ -310,12 +310,18 @@
     // 0. Close room loop priority: snapping back to the starting point of the current wall chain
     if (this.wallChainStart && this.wallChainFirstPoint) {
       if (Vec2.dist(worldPt, this.wallChainFirstPoint) < snapDistMm && Vec2.dist(this.wallChainStart, this.wallChainFirstPoint) > 120) {
+        // Enforce exact orthogonal closure to prevent angle shifting
+        var closePt = Vec2.clone(this.wallChainFirstPoint);
+        var cdx = Math.abs(this.wallChainStart.x - closePt.x);
+        var cdy = Math.abs(this.wallChainStart.y - closePt.y);
+        if (cdx < 80) this.wallChainStart.x = closePt.x; // Lock vertical 90°
+        else if (cdy < 80) this.wallChainStart.y = closePt.y; // Lock horizontal 0°/180°
         return {
-          pt: Vec2.clone(this.wallChainFirstPoint),
+          pt: closePt,
           type: 'joint',
           isChainClose: true,
           target: this.wallChainFirstPoint,
-          label: 'Close Room Loop'
+          label: 'Close Room Loop (90° Square)'
         };
       }
     }
@@ -325,10 +331,26 @@
       var w = walls[i];
       if (w.id === ignoreWallId) continue;
       if (Vec2.dist(worldPt, w.start) < snapDistMm) {
-        return { pt: Vec2.clone(w.start), type: 'joint', target: w.start, label: 'Wall Corner' };
+        var ptS = Vec2.clone(w.start);
+        if (this.wallChainStart) {
+          // If drawing near orthogonal, square to exact 90°
+          var adxS = Math.abs(this.wallChainStart.x - ptS.x);
+          var adyS = Math.abs(this.wallChainStart.y - ptS.y);
+          if (adxS < 75 && adyS > 100) ptS.x = this.wallChainStart.x;
+          else if (adyS < 75 && adxS > 100) ptS.y = this.wallChainStart.y;
+        }
+        return { pt: ptS, type: 'joint', target: w.start, label: 'Wall Corner' };
       }
       if (Vec2.dist(worldPt, w.end) < snapDistMm) {
-        return { pt: Vec2.clone(w.end), type: 'joint', target: w.end, label: 'Wall Corner' };
+        var ptE = Vec2.clone(w.end);
+        if (this.wallChainStart) {
+          // If drawing near orthogonal, square to exact 90°
+          var adxE = Math.abs(this.wallChainStart.x - ptE.x);
+          var adyE = Math.abs(this.wallChainStart.y - ptE.y);
+          if (adxE < 75 && adyE > 100) ptE.x = this.wallChainStart.x;
+          else if (adyE < 75 && adxE > 100) ptE.y = this.wallChainStart.y;
+        }
+        return { pt: ptE, type: 'joint', target: w.end, label: 'Wall Corner' };
       }
     }
 
@@ -342,7 +364,15 @@
       if (projW && projW.t > 0.04 && projW.t < 0.96) {
         var pDist = Math.hypot(worldPt.x - projW.pt.x, worldPt.y - projW.pt.y);
         if (pDist < snapDistMm * 0.75) {
-          return { pt: Vec2.clone(projW.pt), type: 'wall_segment', target: wObj, label: 'On Wall' };
+          var tPt = Vec2.clone(projW.pt);
+          if (this.wallChainStart) {
+            // When connecting to an existing wall, snap to perpendicular 90° T-junction
+            var perpProj = Core.projectPointToSegment ? Core.projectPointToSegment(this.wallChainStart, wObj.start, wObj.end) : null;
+            if (perpProj && perpProj.t > 0.02 && perpProj.t < 0.98 && Math.hypot(tPt.x - perpProj.pt.x, tPt.y - perpProj.pt.y) < 140) {
+              tPt = Vec2.clone(perpProj.pt);
+            }
+          }
+          return { pt: tPt, type: 'wall_segment', target: wObj, label: 'On Wall (90° T-Junction)' };
         }
       }
     }
@@ -870,20 +900,18 @@
         else self.activeTool = 'select';
         self.selected = [{ type: 'furniture', id: hitFurn.id }];
 
-        // Click-before-move: Only initiate drag if the unit was ALREADY clicked and selected before!
-        if (isAlreadySelected) {
-          self.dragState = {
-            type: 'move_furniture',
-            furniture: hitFurn,
-            startWorld: Vec2.clone(worldPt),
-            origPos: Vec2.clone(hitFurn.pos),
-            origRotY: hitFurn.rotY || 0,
-            hasMoved: false,
-            matchingHits: matchingHits
-          };
-        } else {
-          self.dragState = null;
-        }
+        // Immediate responsive drag: always initialize dragState so click-and-drag moves smoothly!
+        // We set hasMoved: false; in mousemove it only updates position when moved past 8mm threshold,
+        // so a stationary click selects without displacing the unit.
+        self.dragState = {
+          type: 'move_furniture',
+          furniture: hitFurn,
+          startWorld: Vec2.clone(worldPt),
+          origPos: Vec2.clone(hitFurn.pos),
+          origRotY: hitFurn.rotY || 0,
+          hasMoved: false,
+          matchingHits: matchingHits
+        };
 
         self.onSelectionChange(self.selected);
         self.render();
@@ -1013,6 +1041,21 @@
               connE.wall[connE.endpoint].y = targetY;
             }
           }
+
+          // All intermediate T-junction walls connected along wall body
+          if (ds.connectedTee) {
+            for (var ct = 0; ct < ds.connectedTee.length; ct++) {
+              var connT = ds.connectedTee[ct];
+              var isConnVertT = Math.abs(connT.wall.end.x - connT.wall.start.x) <= Math.abs(connT.wall.end.y - connT.wall.start.y);
+              if (isConnVertT) {
+                connT.wall[connT.endpoint].x = connT.orig.x;
+                connT.wall[connT.endpoint].y = targetY;
+              } else {
+                connT.wall[connT.endpoint].x = Math.round(connT.orig.x + dispX);
+                connT.wall[connT.endpoint].y = targetY;
+              }
+            }
+          }
         } else {
           // Vertical wall: lateral displacement along X (room resize)
           if (!hasConnected && Math.abs(rawDy) > Math.abs(rawDx)) {
@@ -1052,6 +1095,21 @@
             } else {
               connE2.wall[connE2.endpoint].x = targetX;
               connE2.wall[connE2.endpoint].y = Math.round(connE2.orig.y + dispY);
+            }
+          }
+
+          // All intermediate T-junction walls connected along wall body
+          if (ds.connectedTee) {
+            for (var ct2 = 0; ct2 < ds.connectedTee.length; ct2++) {
+              var connT2 = ds.connectedTee[ct2];
+              var isConnHorizT = Math.abs(connT2.wall.end.y - connT2.wall.start.y) <= Math.abs(connT2.wall.end.x - connT2.wall.start.x);
+              if (isConnHorizT) {
+                connT2.wall[connT2.endpoint].x = targetX;
+                connT2.wall[connT2.endpoint].y = connT2.orig.y; // Keep Y constant so wall stays horizontal!
+              } else {
+                connT2.wall[connT2.endpoint].x = targetX;
+                connT2.wall[connT2.endpoint].y = Math.round(connT2.orig.y + dispY);
+              }
             }
           }
         }
@@ -1134,8 +1192,12 @@
       }
 
       if (self.dragState && self.dragState.type === 'move_furniture') {
-        if (!self.dragState.hasMoved && Vec2.dist(self.cursorWorld, self.dragState.startWorld) > 8) {
-          self.dragState.hasMoved = true;
+        if (!self.dragState.hasMoved) {
+          if (Vec2.dist(self.cursorWorld, self.dragState.startWorld) > 8) {
+            self.dragState.hasMoved = true;
+          } else {
+            return;
+          }
         }
         var dx = self.cursorWorld.x - self.dragState.startWorld.x;
         var dy = self.cursorWorld.y - self.dragState.startWorld.y;
@@ -1656,6 +1718,7 @@
         var allWalls = this.project.plan.walls || [];
         var connectedStart = [];
         var connectedEnd = [];
+        var connectedTee = [];
         for (var cw = 0; cw < allWalls.length; cw++) {
           var other = allWalls[cw];
           if (!other || other.id === w.id) continue;
@@ -1669,6 +1732,20 @@
           } else if (other.end && Vec2.dist(w.end, other.end) < 60) {
             connectedEnd.push({ wall: other, endpoint: 'end', orig: Vec2.clone(other.end) });
           }
+
+          // Also check all intermediate T-junction walls connected along the wall body
+          if (other.start && Vec2.dist(w.start, other.start) >= 60 && Vec2.dist(w.end, other.start) >= 60) {
+            var prS = Vec2.projectOnSegment(other.start, w.start, w.end);
+            if (prS.dist < 60 && prS.t > 0.02 && prS.t < 0.98) {
+              connectedTee.push({ wall: other, endpoint: 'start', orig: Vec2.clone(other.start), t: prS.t });
+            }
+          }
+          if (other.end && Vec2.dist(w.start, other.end) >= 60 && Vec2.dist(w.end, other.end) >= 60) {
+            var prE = Vec2.projectOnSegment(other.end, w.start, w.end);
+            if (prE.dist < 60 && prE.t > 0.02 && prE.t < 0.98) {
+              connectedTee.push({ wall: other, endpoint: 'end', orig: Vec2.clone(other.end), t: prE.t });
+            }
+          }
         }
 
         this.dragState = {
@@ -1681,6 +1758,7 @@
           origNorm: Core.wallNormal(w),
           connectedStart: connectedStart,
           connectedEnd: connectedEnd,
+          connectedTee: connectedTee,
           hasMoved: false
         };
       } else {
@@ -1960,7 +2038,15 @@
 
     // Decor & appliance items (sinks, gas hobs, dishwashers, dining tables, plants, etc.)
     // must NOT snap/snatch to adjacent unit points or edges, allowing free centering between units
-    var isDecorF = !!(furn.isDecor || furn.excludeFromPricing || furn.category === 'decor' || (furn.decorType && furn.decorType !== 'general'));
+    var isDecorF = !!(
+      furn.isDecor ||
+      furn.excludeFromPricing ||
+      furn.category === 'decor' ||
+      (furn.decorType && furn.decorType !== 'general') ||
+      (furn.catalogItemId && /decor/i.test(furn.catalogItemId)) ||
+      (furn.id && /decor/i.test(furn.id)) ||
+      (furn.name && /decor/i.test(furn.name))
+    );
 
     var isWallU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : false;
     var fElev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
@@ -2275,7 +2361,7 @@
     var walls = plan.walls || [];
     var rooms = plan.rooms || [];
     var bestWallSnap = null;
-    var minWallDist = 280; // snap zone (mm)
+    var minWallDist = isDecorF ? 100 : 160; // snap zone (mm) - reduced to prevent aggressive snatching
     var halfD = fD / 2;
     var halfW = fW / 2;
 
@@ -2399,7 +2485,7 @@
 
           bestWallSnap = {
             pos: wallSnapPos,
-            rotY: cabinetRotY,
+            rotY: isDecorF ? rotY : cabinetRotY, // Preserve custom rotation for decor items
             type: 'wall_snap',
             wall: w,
             proj: proj,

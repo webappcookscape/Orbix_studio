@@ -2738,6 +2738,98 @@
       var k = (mode === 'home' && homeObj) ? 1.25 : (ROOM.id ? 1.16 : 1.22);
       dist = Math.max(dH, dW) * k + size.z * 0.5;
     }
+    function checkIsInnerWall(w, allWalls, rooms) {
+      if (!w) return false;
+      if (w.isDivider) return true;
+      if (rooms && rooms.length > 1) {
+        var sharedCount = 0;
+        for (var ri = 0; ri < rooms.length; ri++) {
+          if (rooms[ri].wallIds && rooms[ri].wallIds.indexOf(w.id) !== -1) sharedCount++;
+        }
+        if (sharedCount >= 2) return true;
+      }
+      if (allWalls && allWalls.length >= 4) {
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        allWalls.forEach(function (ow) {
+          if (!ow.start || !ow.end) return;
+          minX = Math.min(minX, ow.start.x, ow.end.x);
+          maxX = Math.max(maxX, ow.start.x, ow.end.x);
+          minY = Math.min(minY, ow.start.y, ow.end.y);
+          maxY = Math.max(maxY, ow.start.y, ow.end.y);
+        });
+        var midX = (w.start.x + w.end.x) / 2;
+        var midY = (w.start.y + w.end.y) / 2;
+        var margin = 250;
+        if (midX > minX + margin && midX < maxX - margin && midY > minY + margin && midY < maxY - margin) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function testRayWallIntersection(p1, p2, p3, p4) {
+      var d = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x);
+      if (Math.abs(d) < 1e-6) return null;
+      var t = ((p3.x - p1.x) * (p4.y - p3.y) - (p3.y - p1.y) * (p4.x - p3.x)) / d;
+      var u = ((p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x)) / d;
+      if (t >= 0.02 && t <= 0.98 && u >= -0.05 && u <= 1.05) {
+        return {
+          t: t,
+          u: u,
+          pt: { x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) }
+        };
+      }
+      return null;
+    }
+
+    function syncWallCutSelect(wallMeshes) {
+      var sel = document.getElementById('wallCutSelect');
+      if (!sel || !wallMeshes || !wallMeshes.length) return;
+      var expectedCount = wallMeshes.length;
+      if (sel.dataset && sel.dataset.lastWallCount == expectedCount) return;
+      if (!sel.dataset) sel.dataset = {};
+      sel.dataset.lastWallCount = expectedCount;
+
+      var curVal = sel.value || window.OrbixWallMode || 'single_auto';
+      sel.innerHTML = '';
+
+      var optAuto = document.createElement('option');
+      optAuto.value = 'single_auto';
+      optAuto.textContent = '👁 Auto-Cut (Obstructing Wall)';
+      sel.appendChild(optAuto);
+
+      var optAutoAll = document.createElement('option');
+      optAutoAll.value = 'all_obstructing';
+      optAutoAll.textContent = '👁 Auto-Cut (Inner & Outer)';
+      sel.appendChild(optAutoAll);
+
+      var pWalls = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls) || [];
+      var pRooms = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.rooms) || [];
+
+      wallMeshes.forEach(function (wm, idx) {
+        var wNum = (wm.userData && wm.userData.wallNumber) ? wm.userData.wallNumber : (idx + 1);
+        var wObj = wm.userData && (wm.userData.wall || pWalls[idx]);
+        var isInner = checkIsInnerWall(wObj, pWalls, pRooms);
+        var opt = document.createElement('option');
+        opt.value = 'wall_' + wNum;
+        opt.textContent = 'Wall ' + wNum + (isInner ? ' (Inner Partition)' : ' (Outer Wall)') + ' Hidden';
+        sel.appendChild(opt);
+      });
+
+      var optAll = document.createElement('option');
+      optAll.value = 'all';
+      optAll.textContent = '🏛 All Walls Visible';
+      sel.appendChild(optAll);
+
+      var optHidden = document.createElement('option');
+      optHidden.value = 'hidden';
+      optHidden.textContent = '🚫 All Walls Hidden';
+      sel.appendChild(optHidden);
+
+      sel.value = curVal;
+      if (!sel.value) sel.value = 'single_auto';
+    }
+
     function updateWallCutaway() {
       var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
       if (!homeObj) return;
@@ -2756,6 +2848,8 @@
         }
       });
 
+      syncWallCutSelect(wallMeshes);
+
       var wallVisibility = {}; // wallId -> boolean (true: visible, false: hidden)
 
       if (mode === 'all') {
@@ -2769,7 +2863,7 @@
           if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = false;
         });
       } else if (mode.indexOf('wall_') === 0) {
-        // Specific single wall hidden by number: 'wall_1', 'wall_2', 'wall_3', 'wall_4'
+        // Specific single wall hidden by number: 'wall_1', 'wall_2', 'wall_3', 'wall_4', 'wall_5'...
         var targetWallNum = parseInt(mode.replace('wall_', ''), 10);
         wallMeshes.forEach(function (wMesh, wIdx) {
           var wNum = (wMesh.userData && wMesh.userData.wallNumber) ? wMesh.userData.wallNumber : (wIdx + 1);
@@ -2778,36 +2872,89 @@
           if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !isTarget;
         });
       } else {
-        // 'single_auto' / 'cutaway': HIDE ONLY THE SINGLE MOST OBSTRUCTING WALL
-        var bestObstructingWall = null;
-        var maxScore = -999999;
-
-        var camToTargX = target.x - camera.position.x;
-        var camToTargZ = target.z - camera.position.z;
+        // 'single_auto' / 'all_obstructing': Support both outer walls and inner partition walls!
+        var camPt = { x: camera.position.x, y: camera.position.z };
+        var targPt = { x: target.x, y: target.z };
+        var camToTargX = targPt.x - camPt.x;
+        var camToTargZ = targPt.y - camPt.y;
         var camToTargDist = Math.hypot(camToTargX, camToTargZ) || 1;
 
-        wallMeshes.forEach(function (wMesh) {
-          var wMid = wMesh.userData && wMesh.userData.mid;
+        var pWalls = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls) || [];
+        var pRooms = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.rooms) || [];
+
+        var intersectingWalls = [];
+        var scoredWalls = [];
+
+        wallMeshes.forEach(function (wMesh, idx) {
+          var uData = wMesh.userData || {};
+          var wStart = uData.start;
+          var wEnd = uData.end;
+          var wMid = uData.mid || (wStart && wEnd ? { x: (wStart.x + wEnd.x) / 2, y: (wStart.y + wEnd.y) / 2 } : null);
           if (!wMid) return;
 
-          var camToWallX = wMid.x - camera.position.x;
-          var camToWallZ = wMid.y - camera.position.z;
-          var camToWallDist = Math.hypot(camToWallX, camToWallZ) || 1;
+          var wObj = uData.wall || pWalls[idx];
+          var isInner = checkIsInnerWall(wObj, pWalls, pRooms);
 
+          // 1. Ray-segment intersection check (direct line-of-sight barrier between camera and target)
+          var hit = (wStart && wEnd) ? testRayWallIntersection(camPt, targPt, wStart, wEnd) : null;
+          if (hit) {
+            var distToCam = Math.hypot(hit.pt.x - camPt.x, hit.pt.y - camPt.y);
+            var distToTarg = Math.hypot(hit.pt.x - targPt.x, hit.pt.y - targPt.y);
+            intersectingWalls.push({
+              mesh: wMesh,
+              hit: hit,
+              isInner: isInner,
+              distToCam: distToCam,
+              distToTarg: distToTarg,
+              t: hit.t
+            });
+          }
+
+          // 2. Obstruction score for general view angle
+          var camToWallX = wMid.x - camPt.x;
+          var camToWallZ = wMid.y - camPt.y;
+          var camToWallDist = Math.hypot(camToWallX, camToWallZ) || 1;
           var dot = (camToTargX * camToWallX + camToTargZ * camToWallZ) / (camToTargDist * camToWallDist);
 
-          // Obstruction score: wall is between camera and target (camToWallDist < camToTargDist) and facing view direction (dot > 0.15)
-          if (camToWallDist < camToTargDist * 1.05 && dot > 0.15) {
-            var score = dot * (1.6 - (camToWallDist / camToTargDist));
-            if (score > maxScore) {
-              maxScore = score;
-              bestObstructingWall = wMesh;
-            }
+          var score = -999999;
+          if (camToWallDist < camToTargDist * 1.05 && dot > 0.1) {
+            // Give inner walls strong obstruction weight when camera is looking at an interior space!
+            var innerBoost = isInner ? 0.35 : 0;
+            score = (dot + innerBoost) * (1.6 - (camToWallDist / camToTargDist));
+            if (hit) score += 10;
           }
+          scoredWalls.push({ mesh: wMesh, score: score, isInner: isInner });
         });
 
+        var hiddenSet = new Set();
+
+        if (mode === 'all_obstructing') {
+          // Hide all walls (outer & inner) that directly block line of sight
+          if (intersectingWalls.length > 0) {
+            intersectingWalls.forEach(function (iw) { hiddenSet.add(iw.mesh); });
+          } else if (scoredWalls.length > 0) {
+            scoredWalls.sort(function (a, b) { return b.score - a.score; });
+            if (scoredWalls[0].score > -999900) hiddenSet.add(scoredWalls[0].mesh);
+          }
+        } else {
+          // 'single_auto': Choose the single most obstructing wall.
+          // When looking at an inner room/unit or across an inner partition, cut the inner wall!
+          if (intersectingWalls.length > 0) {
+            var innerHit = intersectingWalls.find(function (iw) { return iw.isInner; });
+            if (innerHit && (camToTargDist < 6000 || innerHit.distToCam < 3500 || innerHit.distToTarg < 2500)) {
+              hiddenSet.add(innerHit.mesh);
+            } else {
+              intersectingWalls.sort(function (a, b) { return a.t - b.t; });
+              hiddenSet.add(intersectingWalls[0].mesh);
+            }
+          } else if (scoredWalls.length > 0) {
+            scoredWalls.sort(function (a, b) { return b.score - a.score; });
+            if (scoredWalls[0].score > -999900) hiddenSet.add(scoredWalls[0].mesh);
+          }
+        }
+
         wallMeshes.forEach(function (wMesh) {
-          var shouldHide = (bestObstructingWall && wMesh === bestObstructingWall);
+          var shouldHide = hiddenSet.has(wMesh);
           wMesh.visible = !shouldHide;
           if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !shouldHide;
         });
@@ -5405,17 +5552,12 @@
         if (newMode === 'single_auto' || newMode === 'cutaway') {
           b.textContent = '👁 Walls: Auto-Cutaway';
           b.classList.add('is-on');
-        } else if (newMode === 'wall_1') {
-          b.textContent = '🧱 Wall 1 Hidden';
+        } else if (newMode === 'all_obstructing') {
+          b.textContent = '👁 Walls: Auto (All Obstructions)';
           b.classList.add('is-on');
-        } else if (newMode === 'wall_2') {
-          b.textContent = '🧱 Wall 2 Hidden';
-          b.classList.add('is-on');
-        } else if (newMode === 'wall_3') {
-          b.textContent = '🧱 Wall 3 Hidden';
-          b.classList.add('is-on');
-        } else if (newMode === 'wall_4') {
-          b.textContent = '🧱 Wall 4 Hidden';
+        } else if (newMode.indexOf('wall_') === 0) {
+          var wN = newMode.replace('wall_', '');
+          b.textContent = '🧱 Wall ' + wN + ' Hidden';
           b.classList.add('is-on');
         } else if (newMode === 'all') {
           b.textContent = '🏛 Walls: All Visible';
@@ -5427,10 +5569,8 @@
       }
       if (showToastMsg) {
         var msg = 'Auto-cut single wall: front wall & attached units hidden';
-        if (newMode === 'wall_1') msg = 'Wall 1 & attached units hidden';
-        else if (newMode === 'wall_2') msg = 'Wall 2 & attached units hidden';
-        else if (newMode === 'wall_3') msg = 'Wall 3 & attached units hidden';
-        else if (newMode === 'wall_4') msg = 'Wall 4 & attached units hidden';
+        if (newMode === 'all_obstructing') msg = 'Auto-cutting all obstructing outer & inner walls';
+        else if (newMode.indexOf('wall_') === 0) msg = 'Wall ' + newMode.replace('wall_', '') + ' & attached units hidden';
         else if (newMode === 'all') msg = 'Showing all walls & units';
         else if (newMode === 'hidden') msg = 'Hiding all walls & attached units';
         toast(msg);
@@ -5448,11 +5588,12 @@
     }
 
     if (b) {
-      var modesList = ['single_auto', 'wall_1', 'wall_2', 'wall_3', 'wall_4', 'all', 'hidden'];
       b.addEventListener('click', function () {
-        var curIdx = modesList.indexOf(window.OrbixWallMode);
+        var opts = Array.from(sel && sel.options ? sel.options : []).map(function (o) { return o.value; });
+        if (!opts || !opts.length) opts = ['single_auto', 'all_obstructing', 'all', 'hidden'];
+        var curIdx = opts.indexOf(window.OrbixWallMode);
         if (curIdx === -1) curIdx = 0;
-        var nextMode = modesList[(curIdx + 1) % modesList.length];
+        var nextMode = opts[(curIdx + 1) % opts.length];
         setWallCutMode(nextMode, true);
       });
     }

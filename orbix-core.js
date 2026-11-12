@@ -2411,7 +2411,7 @@
       costCategory: "Spice Rack (OPEN BOXES)",
       areaSqft: 2.9,
       icon: "🧂",
-      dimensions: { W: 900, H: 300, D: 200 },
+      dimensions: { W: 600, H: 600, D: 450 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
@@ -2422,8 +2422,8 @@
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
-        sections: 0,
-        shelves: 0,
+        sections: 1,
+        shelves: 1,
         drawers: 0,
         loft: false,
         loftH: 0,
@@ -3025,8 +3025,8 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 2,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -3039,6 +3039,9 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -3060,8 +3063,8 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 2,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -3074,6 +3077,9 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -3095,8 +3101,8 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 2,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -3109,6 +3115,9 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -3130,8 +3139,8 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 3,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -3144,6 +3153,9 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -3165,8 +3177,8 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 3,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -3179,6 +3191,9 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -3200,8 +3215,8 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 3,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -3214,6 +3229,9 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -3235,7 +3253,7 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 2,
+        shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
         glassTint: "none",
@@ -3243,12 +3261,16 @@
         sections: 0,
         shelves: 1,
         drawers: 1,
+        drawersOnTop: true,
         loft: false,
         loftH: 0,
         counter: "black",
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -3270,7 +3292,7 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 2,
+        shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
         glassTint: "none",
@@ -3278,12 +3300,16 @@
         sections: 0,
         shelves: 1,
         drawers: 1,
+        drawersOnTop: true,
         loft: false,
         loftH: 0,
         counter: "black",
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -3305,7 +3331,7 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 4,
+        shutters: 2,
         doorType: "hinged",
         dstyle: "slab",
         glassTint: "none",
@@ -3313,12 +3339,17 @@
         sections: 0,
         shelves: 1,
         drawers: 2,
+        drawersOnTop: true,
+        drawersSideBySide: true,
         loft: false,
         loftH: 0,
         counter: "black",
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },
@@ -4284,8 +4315,8 @@
         carcass: { material: "BWP_18mm", finish: "Absolute White" }
       },
       unitConfig: {
-        shutters: 1,
-        doorType: "sliding",
+        shutters: 0,
+        doorType: "none",
         dstyle: "slab",
         glassTint: "none",
         profileColor: "none",
@@ -4298,6 +4329,9 @@
         handle: "gprof",
         hfinish: "black",
         led: false,
+        hasLegs: true,
+        legs: 100,
+        mountType: "floor",
         carcass: "BWP_18mm",
         shutterCol: "BLUE"
       },

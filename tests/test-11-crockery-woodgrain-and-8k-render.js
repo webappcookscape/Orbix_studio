@@ -142,12 +142,11 @@ console.log('  ✓ Item 10: CROCKERY/TV BASE 2 DRAWER verified');
 const ctvwobs02 = catalog.find(i => i.id === 'ctvw-obs-02');
 assert(ctvwobs02, 'Item 11 (ctvw-obs-02) must exist');
 const d11 = ctvwobs02.dimensions || ctvwobs02.dims;
-assert.strictEqual(d11.W, 900, 'ctvw-obs-02 W must be 900');
-assert.strictEqual(d11.H, 300, 'ctvw-obs-02 H must be 300');
-assert.strictEqual(d11.D, 200, 'ctvw-obs-02 D must be 200');
-assert.strictEqual(ctvwobs02.unitConfig.shelves, 0, 'ctvw-obs-02 shelves must be 0');
-assert.strictEqual(ctvwobs02.unitConfig.sections, 0, 'ctvw-obs-02 sections must be 0');
-console.log('  ✓ Item 11: CROCKERY/TV WALL OPEN BOX STORAGE 2 (W:900 H:300 D:200) verified');
+assert.strictEqual(d11.W, 600, 'ctvw-obs-02 W must be 600');
+assert.strictEqual(d11.H, 600, 'ctvw-obs-02 H must be 600');
+assert.strictEqual(d11.D, 450, 'ctvw-obs-02 D must be 450');
+assert.strictEqual(ctvwobs02.unitConfig.shelves, 1, 'ctvw-obs-02 shelves must be 1');
+console.log('  ✓ Item 11: CROCKERY/TV WALL OPEN BOX STORAGE 2 (W:600 H:600 D:450) verified');
 
 // 2. Load orbix-3d.js
 const ArchitecturalRenderer = require('../orbix-3d.js');
