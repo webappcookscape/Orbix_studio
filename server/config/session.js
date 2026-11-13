@@ -71,23 +71,50 @@ class ResilientSessionStore extends BaseStore {
   }
 
   initPostgresStore() {
-    try {
-      let connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/cupboard_cad';
-      const pool = new Pool({ connectionString, max: 2 });
-      this.pgStore = new pgSession({
-        pool,
-        tableName: 'session',
-        createTableIfMissing: true
-      });
-      this.pgStore.on('error', (err) => {
-        // If 5433 vs 5432 failed, try alternative port
-        if (connectionString.includes(':5433')) {
-          connectionString = connectionString.replace(':5433', ':5432');
-        } else if (connectionString.includes(':5432')) {
-          connectionString = connectionString.replace(':5432', ':5433');
+    if (process.env.SKIP_POSTGRES === 'true' || process.env.USE_JSON_STORE === 'true') return;
+    const net = require('net');
+    const primaryUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/cupboard_cad';
+    const candidates = [primaryUrl];
+    if (primaryUrl.includes(':5433')) candidates.push(primaryUrl.replace(':5433', ':5432'));
+    else if (primaryUrl.includes(':5432')) candidates.push(primaryUrl.replace(':5432', ':5433'));
+
+    const tryProbe = (idx) => {
+      if (idx >= candidates.length) return;
+      const urlStr = candidates[idx];
+      let host = '127.0.0.1';
+      let port = 5432;
+      try {
+        const u = new URL(urlStr);
+        host = u.hostname || '127.0.0.1';
+        port = Number(u.port) || 5432;
+      } catch (_) {}
+      const sock = net.createConnection({ host, port });
+      let done = false;
+      const finish = (ok) => {
+        if (done) return;
+        done = true;
+        try { sock.destroy(); } catch (_) {}
+        if (ok) {
+          try {
+            const pool = new Pool({ connectionString: urlStr, max: 2 });
+            pool.on('error', () => {});
+            this.pgStore = new pgSession({
+              pool,
+              tableName: 'session',
+              createTableIfMissing: true
+            });
+            this.pgStore.on('error', () => {});
+          } catch (_) {}
+        } else {
+          tryProbe(idx + 1);
         }
-      });
-    } catch (_) {}
+      };
+      sock.setTimeout(250);
+      sock.once('connect', () => finish(true));
+      sock.once('timeout', () => finish(false));
+      sock.once('error', () => finish(false));
+    };
+    tryProbe(0);
   }
 
   get(sid, fn) {

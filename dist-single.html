@@ -3572,6 +3572,7 @@ body.role-employee #adminCreateEmpBox,
     <!-- ══════ DESIGN ══════ -->
     <section class="view" id="view-design">
       <div class="stagewrap">
+        <div class="project-details-bar project-details-3d" id="studioProjectDetailsBadge" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:5px 14px;background:linear-gradient(90deg,#f8fafc,#eef5fb);border-bottom:1px solid #dbeafe;font-size:11.5px;color:#1e293b;z-index:5;"></div>
         <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
           <div id="world"></div>
         </div>
@@ -3605,6 +3606,9 @@ body.role-employee #adminCreateEmpBox,
             <!-- 3D Dado Tile Option -->
             <button class="minibtn is-on" id="toggleDadoTileBtn" title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
               <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
+            </button>
+            <button class="minibtn" id="toggleCeilingBtn" title="Toggle Architectural Ceiling Slab ON / OFF" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+              <span>🏠 Ceiling: <b id="ceilingStatus">OFF</b></span>
             </button>
             <select class="minibtn" id="dadoTileStyleSelect" title="Dado Tile Pattern & Color" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
               <option value="rhombus_sage" selected>🧱 Pattern 1: Sage Diamond</option>
@@ -3754,13 +3758,13 @@ body.role-employee #adminCreateEmpBox,
                   <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (900×750)</option>
                   <option value="fcm-rt">fcm-rt: FCM-RT (Cookscape) (1200×720)</option>
                   <option value="fm-rt-01">fm-rt-01: FCM-RT (Cookscape) (1200×720)</option>
-                  <option value="fcm-rt-1500">fcm-rt-1500: FCM-RT 1500 (Cookscape) (1200×720, elev: 1500)</option>
+                  <option value="fcm-rt-1500">fcm-rt-1500: WCM-RT (Cookscape) (600×600×300, 300 Fixed + 300 Open, elev: 1500)</option>
                   <option value="fcm-lt">fcm-lt: FCM-LT (Cookscape) (1200×720)</option>
                   <option value="fm-lt-01">fm-lt-01: FCM-LT (Cookscape) (1200×720)</option>
-                  <option value="fcm-lt-1500">fcm-lt-1500: FCM-LT 1500 (Cookscape) (1200×720, elev: 1500)</option>
+                  <option value="fcm-lt-1500">fcm-lt-1500: WCM-LT (Cookscape) (600×600×300, 300 Open + 300 Fixed, elev: 1500)</option>
                   <option value="fbcm">fbcm: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
                   <option value="f_fbcm_1">f_fbcm_1: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
-                  <option value="fbcm-1500">fbcm-1500: L-SHAPED CORNER 1500 (Cookscape) (900×720, elev: 1500)</option>
+                  <option value="fbcm-1500">fbcm-1500: WBCM (Cookscape) (600×600×300, L-Corner, elev: 1500)</option>
                   <option value="fm-120">fm-120: FM 120 Kitchen Base (1200×750)</option>
                   <option value="fm-60">fm-60: FM 60 Kitchen Base (600×750)</option>
                   <option value="wm-60-dbl">wm-60-dbl: WM 60 DOUBLE Kitchen Wall (600×600)</option>
@@ -3815,6 +3819,8 @@ body.role-employee #adminCreateEmpBox,
           </div>
         </div>
       </div>
+
+      <div class="project-details-bar project-details-2d" id="planProjectDetailsBar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:5px 14px;background:linear-gradient(90deg,#f8fafc,#eef5fb);border-bottom:1px solid #dbeafe;font-size:11.5px;color:#1e293b;"></div>
 
       <div class="plan-layout">
         <!-- ══════ LEFT FURNISH SUB-MENU PANEL ══════ -->
@@ -4889,8 +4895,11 @@ body.role-employee #adminCreateEmpBox,
 };
 
   ICONS["fcm-rt-1500"] = ICONS["fcm-rt"];
+  ICONS["wcm-rt"] = ICONS["fcm-rt"];
   ICONS["fcm-lt-1500"] = ICONS["fcm-lt"];
+  ICONS["wcm-lt"] = ICONS["fcm-lt"];
   ICONS["fbcm-1500"] = ICONS["fbcm"];
+  ICONS["wbcm"] = ICONS["fbcm"];
 
   return {
     ICONS: ICONS,
@@ -6163,12 +6172,26 @@ body.role-employee #adminCreateEmpBox,
         project = { id: id, title: 'Project ' + id };
       }
 
+      var prevId = this.activeProjectId;
+      if (prevId && id && String(prevId) !== String(id)) {
+        if (typeof this.flushImmediateSave === 'function') {
+          this.flushImmediateSave();
+        }
+        if (window.S) {
+          window.S.units = [];
+          window.S.active = 0;
+        }
+      }
+
       this.activeProjectId = id;
       if (this.currentUser) {
         try {
           localStorage.setItem('orbix_active_proj_' + this.currentUser.id, id);
         } catch (e) { }
       }
+      try {
+        if (id) localStorage.setItem('orbix_active_project_id', String(id));
+      } catch (e) { }
 
       // 1. Immediately switch view and load workspace without waiting for async API!
       self._loadProjectIntoWorkspace(project, switchView);
@@ -6223,14 +6246,12 @@ body.role-employee #adminCreateEmpBox,
           localPlanRaw = localStorage.getItem('orbix_project_anon_' + activeId) ||
             localStorage.getItem('orbix_project_default_' + activeId);
         }
-        if (!localPlanRaw) {
+        if (!localPlanRaw && activeId) {
           var draftRaw = localStorage.getItem('orbix_working_project_draft');
           if (draftRaw) {
             var draftObj = JSON.parse(draftRaw);
-            var draftMatches = !draftObj.projectId ||
-              String(draftObj.projectId) === String(activeId) ||
-              (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project === draftObj.plan);
-            if (draftObj && draftMatches && draftObj.plan) {
+            var draftMatches = !!(draftObj && draftObj.projectId && String(draftObj.projectId) === String(activeId));
+            if (draftMatches && draftObj.plan) {
               localPlanRaw = JSON.stringify(draftObj.plan);
             }
           }
@@ -6238,33 +6259,45 @@ body.role-employee #adminCreateEmpBox,
       } catch (e) { }
 
       var planToLoad = null;
-      var curInMemoryCount = (window.OrbixUI && window.OrbixUI.project) ? countFurn(window.OrbixUI.project) : 0;
+      var inMemProj = (window.OrbixUI && window.OrbixUI.project) ? window.OrbixUI.project : null;
+      var inMemId = inMemProj ? String(inMemProj._projectId || (inMemProj.meta && inMemProj.meta.id) || inMemProj.id || '') : '';
+      var inMemSameProj = !!(activeId && inMemId && inMemId === String(activeId));
+      var curInMemoryCount = inMemSameProj ? countFurn(inMemProj) : 0;
 
       if (localPlanRaw) {
         try {
           var parsedLocal = JSON.parse(localPlanRaw);
-          var localCount = countFurn(parsedLocal);
-          var serverCount = countFurn(project);
-
-          if (localCount >= serverCount || (parsedLocal._lastModified && (!project.updatedAt || parsedLocal._lastModified > new Date(project.updatedAt).getTime()))) {
-            planToLoad = parsedLocal;
-            console.log('[Orbix Studio] Retained latest local draft across refresh/offline (' + localCount + ' units).');
+          var localProjId = String(parsedLocal._projectId || (parsedLocal.meta && parsedLocal.meta.id) || parsedLocal.id || '');
+          var belongsToProject = !activeId || !localProjId || localProjId === String(activeId);
+          if (belongsToProject) {
+            var localCount = countFurn(parsedLocal);
+            var serverCount = countFurn(project);
+            var serverUpdatedMs = project.updatedAt ? new Date(project.updatedAt).getTime() : 0;
+            var localNewer = !!(parsedLocal._lastModified && (!serverUpdatedMs || parsedLocal._lastModified >= serverUpdatedMs));
+            if (localNewer || (serverCount === 0 && localCount > 0)) {
+              planToLoad = parsedLocal;
+              console.log('[Orbix Studio] Restored project-specific local draft (' + localCount + ' units) for ' + activeId + '.');
+            }
           }
         } catch (e) { }
       }
 
-      // If in-memory OrbixUI.project already restored units from init() and server copy has 0 units, PRESERVE in-memory units!
-      if (!planToLoad && curInMemoryCount > 0) {
+      // Preserve in-memory units ONLY when refreshing the SAME project (never leak a different project's work!)
+      if (!planToLoad && inMemSameProj && curInMemoryCount > 0) {
         var serverCount2 = countFurn(project);
         if (curInMemoryCount >= serverCount2) {
-          planToLoad = window.OrbixUI.project;
-          console.log('[Orbix Studio] Preserved in-memory restored units across server load (' + curInMemoryCount + ' units).');
+          planToLoad = inMemProj;
+          console.log('[Orbix Studio] Preserved same-project in-memory units (' + curInMemoryCount + ' units).');
         }
       }
 
       if (!planToLoad) {
         if (project.data && project.data.plan && (project.data.plan.plan || project.data.plan.walls || project.data.plan.furniture)) {
-          planToLoad = project.data.plan;
+          try {
+            planToLoad = JSON.parse(JSON.stringify(project.data.plan));
+          } catch (e) {
+            planToLoad = project.data.plan;
+          }
         } else if (window.OrbixCore && typeof window.OrbixCore.createProject === 'function') {
           planToLoad = window.OrbixCore.createProject(project.title || project.name || 'Untitled Project');
         } else {
@@ -6277,21 +6310,27 @@ body.role-employee #adminCreateEmpBox,
         }
       }
 
-      // Normalize client and quote metadata into planToLoad.meta
+      // Stamp authoritative project ID & normalize client/quote metadata into planToLoad
       if (planToLoad) {
+        if (activeId) {
+          planToLoad._projectId = String(activeId);
+          planToLoad.id = String(activeId);
+        }
         planToLoad.meta = planToLoad.meta || {};
+        if (activeId) planToLoad.meta.id = String(activeId);
+        if (project.title || project.name) planToLoad.meta.title = project.title || project.name;
         var details = (project.data && project.data.details) || {};
-        planToLoad.meta.clientName = project.client || details.clientName || planToLoad.meta.clientName || 'Vikram Singhania';
+        planToLoad.meta.clientName = project.client || details.clientName || planToLoad.meta.clientName || 'Client';
         planToLoad.meta.phone = project.contact_number || details.contactNumber || details.phone || planToLoad.meta.phone || '';
         planToLoad.meta.contactNumber = planToLoad.meta.phone;
         planToLoad.meta.siteAddress = project.location || details.location || details.siteAddress || planToLoad.meta.siteAddress || '';
         planToLoad.meta.siteLocation = planToLoad.meta.siteAddress;
         planToLoad.meta.quoteId = project.cp_code || details.cpCode || details.quoteId || planToLoad.meta.quoteId || ('ORB-' + (activeId ? String(activeId).slice(-6) : '089'));
         planToLoad.meta.cpCode = planToLoad.meta.quoteId;
-        planToLoad.meta.designerName = project.bh_name || details.bhName || details.designerName || planToLoad.meta.designerName || (self.currentUser ? self.currentUser.name : 'Sangathamizh');
+        planToLoad.meta.designerName = project.bh_name || details.bhName || details.designerName || planToLoad.meta.designerName || (self.currentUser ? self.currentUser.name : 'Designer');
         planToLoad.meta.bhName = planToLoad.meta.designerName;
         planToLoad.meta.dateCreated = project.date_time || details.dateTime || details.dateCreated || planToLoad.meta.dateCreated || new Date().toISOString();
-        planToLoad.meta.status = 'Approved Estimate';
+        planToLoad.meta.status = project.status || details.status || planToLoad.meta.status || 'Active Design';
       }
 
       // Load 2D floor plan into OrbixUI
@@ -8458,17 +8497,18 @@ body.role-employee #adminCreateEmpBox,
     var cx = (f.pos && f.pos.x) || 0, cy = (f.pos && f.pos.y) || 0;
 
     var isLCorner = !!(
-      (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
+      (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || f.unitConfig.unitType === 'wbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
       f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' ||
-      (f.id && /fbcm/i.test(f.id)) ||
-      (f.catalogItemId && /fbcm/i.test(f.catalogItemId)) ||
-      (f.name && /l[-_ ]*shaped.*corner/i.test(f.name))
+      (f.id && /fbcm|wbcm/i.test(f.id)) ||
+      (f.catalogItemId && /fbcm|wbcm/i.test(f.catalogItemId)) ||
+      (f.code && /fbcm|wbcm/i.test(f.code)) ||
+      (f.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(f.name))
     );
 
     if (isLCorner) {
-      var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || 900;
-      var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || 900;
-      var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || 560;
+      var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || (f.dimensions && f.dimensions.W) || 900;
+      var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || (f.dimensions && f.dimensions.W) || 900;
+      var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || (f.dimensions && f.dimensions.D) || 560;
       var ux = cosA, uy = sinA;
       var vx = -sinA, vy = cosA;
       function toPt(lx, ly) {
@@ -9564,15 +9604,32 @@ body.role-employee #adminCreateEmpBox,
     var formulaDescription = '';
     var tierBadge = activeTier ? (' [' + activeTier + ' · ' + (modelDef ? modelDef.label : modelType) + ']') : '';
 
+    var fixedCfg = item.fixedPanel || (item.unitConfig && item.unitConfig.fixedPanel);
+    var openCfg = item.openShutter || (item.unitConfig && item.unitConfig.openShutter);
+    var hasSplitShutter = !!(fixedCfg && fixedCfg.enabled);
+    var cornerCfg = item.unitConfig && item.unitConfig.corner;
+    var isLShapeUnit = !!(cornerCfg && cornerCfg.enabled);
+    var dimPrefix = '';
+    if (hasSplitShutter) {
+      var fixW = parseFloat(fixedCfg.width) || Math.round(dims.W / 2);
+      var openW = (openCfg && parseFloat(openCfg.width)) || Math.max(0, dims.W - fixW);
+      dimPrefix = fixW + 'mm Fixed + ' + openW + 'mm Open = ';
+    } else if (isLShapeUnit) {
+      var legW = parseFloat(cornerCfg.legW) || dims.W || 600;
+      var legD = parseFloat(cornerCfg.legD) || dims.W || 600;
+      var cDepth = parseFloat(cornerCfg.depth) || dims.D || 300;
+      dimPrefix = 'L-Shape (' + Math.max(0, legW - cDepth) + 'mm + ' + Math.max(0, legD - cDepth) + 'mm Shutters, ' + cDepth + 'mm D): ';
+    }
+
     if (activeTier && modelDef && modelDef.pricingModel === 'front_area') {
       baseAmount = frontAreaSft * baseRate;
-      formulaDescription = dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04 = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
+      formulaDescription = dimPrefix + dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04 = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
     } else if (catConfig.pricingModel === 'front_area') {
       baseAmount = frontAreaSft * baseRate;
-      formulaDescription = dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04 = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
+      formulaDescription = dimPrefix + dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04 = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
     } else if (catConfig.pricingModel === 'running_ft') {
       baseAmount = runningFt * (catConfig.baseRatePerRft || baseRate);
-      formulaDescription = dims.W + ' mm ÷ 304.8 = ' + runningFt.toFixed(2) + ' Rft @ ' + rateCard.currencySymbol + (catConfig.baseRatePerRft || baseRate) + '/Rft' + tierBadge;
+      formulaDescription = dimPrefix + dims.W + ' mm ÷ 304.8 = ' + runningFt.toFixed(2) + ' Rft @ ' + rateCard.currencySymbol + (catConfig.baseRatePerRft || baseRate) + '/Rft' + tierBadge;
     } else if (catConfig.pricingModel === 'per_piece') {
       baseAmount = baseRate;
       formulaDescription = '1 Pc @ ' + rateCard.currencySymbol + baseRate + tierBadge;
@@ -10445,15 +10502,15 @@ body.role-employee #adminCreateEmpBox,
     },
     {
       id: "fcm-rt-1500",
-      code: "FCM-RT 1500",
-      name: "FCM-RT 1500 (Cookscape)",
+      code: "WCM-RT",
+      name: "WCM-RT (Cookscape)",
       catalogItemId: "fcm-rt-1500",
       modelType: "kitchen_wm",
       category: "kitchen_wall",
       costCategory: "Kitchen - WM",
-      areaSqft: 9.30,
+      areaSqft: 3.88,
       icon: "🍳",
-      dimensions: { W: 1200, H: 720, D: 560 },
+      dimensions: { W: 600, H: 600, D: 300 },
       elevation: 1500,
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
@@ -10462,8 +10519,8 @@ body.role-employee #adminCreateEmpBox,
       unitConfig: {
         ctype: "kwall",
         unitType: "fcm-rt",
-        fixedPanel: { enabled: true, width: 600, type: "fixed" },
-        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "right" },
+        fixedPanel: { enabled: true, width: 300, type: "fixed" },
+        openShutter: { enabled: true, width: 300, type: "shutter", count: 1, opening: "right" },
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
@@ -10481,20 +10538,20 @@ body.role-employee #adminCreateEmpBox,
         carcass: "MDF 1135",
         shutterCol: "MDF 7701"
       },
-      pricingOverrides: { baseRate: 17398.79 },
-      customRate: 17398.79
+      pricingOverrides: { baseRate: 7259.28 },
+      customRate: 7259.28
     },
     {
       id: "fcm-lt-1500",
-      code: "FCM-LT 1500",
-      name: "FCM-LT 1500 (Cookscape)",
+      code: "WCM-LT",
+      name: "WCM-LT (Cookscape)",
       catalogItemId: "fcm-lt-1500",
       modelType: "kitchen_wm",
       category: "kitchen_wall",
       costCategory: "Kitchen - WM",
-      areaSqft: 9.30,
+      areaSqft: 3.88,
       icon: "🍳",
-      dimensions: { W: 1200, H: 720, D: 560 },
+      dimensions: { W: 600, H: 600, D: 300 },
       elevation: 1500,
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
@@ -10503,8 +10560,8 @@ body.role-employee #adminCreateEmpBox,
       unitConfig: {
         ctype: "kwall",
         unitType: "fcm-lt",
-        fixedPanel: { enabled: true, width: 600, type: "fixed" },
-        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
+        fixedPanel: { enabled: true, width: 300, type: "fixed" },
+        openShutter: { enabled: true, width: 300, type: "shutter", count: 1, opening: "left" },
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
@@ -10522,20 +10579,20 @@ body.role-employee #adminCreateEmpBox,
         carcass: "MDF 1135",
         shutterCol: "MDF 7701"
       },
-      pricingOverrides: { baseRate: 17398.79 },
-      customRate: 17398.79
+      pricingOverrides: { baseRate: 7259.28 },
+      customRate: 7259.28
     },
     {
       id: "fbcm-1500",
-      code: "FBCM 1500",
-      name: "L-SHAPED CORNER 1500 (Cookscape)",
+      code: "WBCM",
+      name: "WBCM (Cookscape)",
       catalogItemId: "fbcm-1500",
       modelType: "kitchen_wm",
       category: "kitchen_wall",
       costCategory: "Kitchen - WM",
-      areaSqft: 8.70,
+      areaSqft: 3.88,
       icon: "🍳",
-      dimensions: { W: 900, H: 720, D: 560 },
+      dimensions: { W: 600, H: 600, D: 300 },
       elevation: 1500,
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
@@ -10543,14 +10600,14 @@ body.role-employee #adminCreateEmpBox,
       },
       unitConfig: {
         ctype: "kwall",
-        unitType: "fbcm",
+        unitType: "wbcm",
         geometryType: "l_shaped_corner",
         corner: {
           enabled: true,
           type: "L",
-          legW: 900,
-          legD: 900,
-          depth: 560,
+          legW: 600,
+          legD: 600,
+          depth: 300,
           orientation: "right"
         },
         shutters: 2,
@@ -10574,8 +10631,8 @@ body.role-employee #adminCreateEmpBox,
         carcass: "MDF 1135",
         shutterCol: "MDF 7701"
       },
-      pricingOverrides: { baseRate: 16500.00 },
-      customRate: 16500.00
+      pricingOverrides: { baseRate: 7360.00 },
+      customRate: 7360.00
     },
     {
       id: "f_fbcm_1",
@@ -13959,20 +14016,47 @@ body.role-employee #adminCreateEmpBox,
         return;
       }
 
-      // Check if clicked directly on any placed furniture unit
+      // Check if clicked a Dado Tile segment start/end resize grip handle (valid in select or dado tool)
+      if ((self.activeTool === 'select' || self.activeTool === 'dado') && typeof self.findDadoHandleAt === 'function') {
+        var dadoHit = self.findDadoHandleAt(mouseScreen);
+        if (dadoHit) {
+          var dw = dadoHit.wall;
+          if (!dw.dadoSegments || !dw.dadoSegments.length) {
+            dw.dadoTile = true;
+            dw.dadoSegments = [{ startOffset: 0, endOffset: Math.round(dadoHit.wLen) }];
+          }
+          self.selected = [{ type: 'wall', id: dw.id }];
+          self.dragState = {
+            type: 'drag_dado_handle',
+            wall: dw,
+            segIndex: dadoHit.segIndex,
+            end: dadoHit.end,
+            wLen: dadoHit.wLen,
+            hasMoved: false
+          };
+          self.onSelectionChange(self.selected);
+          self.render();
+          return;
+        }
+      }
+
+      // Check if clicked directly on any placed furniture unit (exact rotated/L-shape polygon, never oversized circle!)
+      var clickedWallCore = (self.activeTool === 'select' && typeof self.isPointOnWallBand === 'function') ? self.isPointOnWallBand(worldPt) : false;
       var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
       var matchingHits = [];
-      for (var fi = furnList.length - 1; fi >= 0; fi--) {
-        var fn = furnList[fi];
-        var fPoly = Core.getFurniturePolygon(fn);
-        if (Core.Vec2.pointInPolygon(worldPt, fPoly) || Vec2.dist(worldPt, fn.pos) < Math.max(100, (fn.dimensions ? fn.dimensions.W : 600) / 2)) {
-          matchingHits.push(fn);
+      if (!clickedWallCore) {
+        for (var fi = furnList.length - 1; fi >= 0; fi--) {
+          var fn = furnList[fi];
+          var fPoly = Core.getFurniturePolygon(fn);
+          if (Core.Vec2.pointInPolygon(worldPt, fPoly)) {
+            matchingHits.push(fn);
+          }
         }
       }
 
       // When in select tool, clicking a placed furniture unit selects and allows moving it
       if (matchingHits.length > 0 && self.activeTool === 'select') {
-        // Priority to higher elevation units (wall units AFFL 1500/2100 over base units AFFL 0)
+        // Priority to higher elevation units (wall units AFFL 1500/2100 over base units AFFL 0), tie-break by center proximity
         var getUnitElevation = function (f) {
           if (f.elevation !== undefined && f.elevation !== null) return parseFloat(f.elevation) || 0;
           if (f.pos && f.pos.z !== undefined && f.pos.z !== null) return parseFloat(f.pos.z) || 0;
@@ -13983,7 +14067,9 @@ body.role-employee #adminCreateEmpBox,
           return 0;
         };
         matchingHits.sort(function (a, b) {
-          return getUnitElevation(b) - getUnitElevation(a);
+          var elevDiff = getUnitElevation(b) - getUnitElevation(a);
+          if (Math.abs(elevDiff) > 5) return elevDiff;
+          return Vec2.dist(worldPt, a.pos) - Vec2.dist(worldPt, b.pos);
         });
 
         var curSelId = (self.selected && self.selected.length === 1 && self.selected[0].type === 'furniture') ? self.selected[0].id : null;
@@ -14048,7 +14134,24 @@ body.role-employee #adminCreateEmpBox,
       } else if (self.activeTool === 'dimension') {
         self.handleDimensionMouseDown(worldPt);
       } else if (self.activeTool === 'dado') {
-        self.handleDadoMouseDown(worldPt);
+        var dNear = self.findNearestWall(worldPt, 400);
+        if (!self.dadoDrawStart && dNear && !dNear.wall.isDivider) {
+          var dwLen = Core.wallLength(dNear.wall);
+          var dOff = Math.round((Math.max(0, Math.min(1, dNear.proj.t)) * dwLen) / 50) * 50;
+          self.dragState = {
+            type: 'draw_dado_swipe',
+            wall: dNear.wall,
+            wLen: dwLen,
+            anchorOffset: dOff,
+            startOffset: dOff,
+            endOffset: dOff,
+            startWorld: Vec2.clone(worldPt),
+            hasMoved: false
+          };
+          self.render();
+        } else {
+          self.handleDadoMouseDown(worldPt);
+        }
       }
     });
 
@@ -14339,6 +14442,48 @@ body.role-employee #adminCreateEmpBox,
         return;
       }
 
+      if (self.dragState && self.dragState.type === 'drag_dado_handle') {
+        var dds = self.dragState;
+        var dw = dds.wall;
+        var dwLen = dds.wLen || Core.wallLength(dw);
+        var dProj = Core.projectPointToSegment(self.cursorWorld, dw.start, dw.end);
+        var clampedT = Math.max(0, Math.min(1, dProj.t));
+        var rawOff = clampedT * dwLen;
+        var snapOff = self.isShiftDown ? Math.round(rawOff) : Math.round(rawOff / 50) * 50;
+        snapOff = Math.max(0, Math.min(Math.round(dwLen), snapOff));
+        if (!dw.dadoSegments || !dw.dadoSegments.length) {
+          dw.dadoSegments = [{ startOffset: 0, endOffset: Math.round(dwLen) }];
+        }
+        var dSeg = dw.dadoSegments[dds.segIndex || 0] || dw.dadoSegments[0];
+        if (dds.end === 'start') {
+          dSeg.startOffset = Math.max(0, Math.min(dSeg.endOffset - 100, snapOff));
+        } else {
+          dSeg.endOffset = Math.min(Math.round(dwLen), Math.max(dSeg.startOffset + 100, snapOff));
+        }
+        dw.dadoTile = true;
+        dds.hasMoved = true;
+        self.render();
+        self.onSelectionChange(self.selected);
+        return;
+      }
+
+      if (self.dragState && self.dragState.type === 'draw_dado_swipe') {
+        var dsw = self.dragState;
+        if (!dsw.hasMoved && Vec2.dist(self.cursorWorld, dsw.startWorld) > 12) {
+          dsw.hasMoved = true;
+          self.dadoDrawStart = null;
+        }
+        if (dsw.hasMoved) {
+          var swProj = Core.projectPointToSegment(self.cursorWorld, dsw.wall.start, dsw.wall.end);
+          var swT = Math.max(0, Math.min(1, swProj.t));
+          var swCur = Math.round((swT * dsw.wLen) / 50) * 50;
+          dsw.startOffset = Math.max(0, Math.min(dsw.anchorOffset, swCur));
+          dsw.endOffset = Math.min(Math.round(dsw.wLen), Math.max(dsw.anchorOffset, swCur));
+          self.render();
+        }
+        return;
+      }
+
       if (self.dragState && self.dragState.type === 'move_opening') {
         var w = self.dragState.wall;
         var op = self.dragState.opening;
@@ -14369,7 +14514,10 @@ body.role-employee #adminCreateEmpBox,
           }
         }
       }
-      if (overLockBadge) {
+      var overDadoHandle = (!self.dragState && typeof self.findDadoHandleAt === 'function') ? self.findDadoHandleAt(mouseScreen) : null;
+      if (overDadoHandle) {
+        self.canvas.style.cursor = 'ew-resize';
+      } else if (overLockBadge) {
         self.canvas.style.cursor = 'pointer';
       } else if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.wallChainStart || self.activeTool === 'dimension' || self.activeTool === 'dado') {
         self.canvas.style.cursor = 'crosshair';
@@ -14450,6 +14598,44 @@ body.role-employee #adminCreateEmpBox,
             self.render();
             return;
           }
+        }
+
+        if (self.dragState.type === 'drag_dado_handle') {
+          if (self.dragState.hasMoved) {
+            self.pushHistory('Resize Dado Tile');
+            self.onSelectionChange(self.selected);
+          }
+          self.dragState = null;
+          self.render();
+          if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.render3DHome) {
+            window.OrbixUI.render3DHome(true);
+          }
+          return;
+        }
+
+        if (self.dragState.type === 'draw_dado_swipe') {
+          var swDs = self.dragState;
+          self.dragState = null;
+          if (swDs.hasMoved && (swDs.endOffset - swDs.startOffset) >= 100) {
+            swDs.wall.dadoTile = true;
+            swDs.wall.dadoSegments = [{
+              startOffset: Math.round(swDs.startOffset),
+              endOffset: Math.round(swDs.endOffset)
+            }];
+            self.selected = [{ type: 'wall', id: swDs.wall.id }];
+            self.onSelectionChange(self.selected);
+            self.pushHistory('Draw Dado Tile (' + Math.round(swDs.endOffset - swDs.startOffset) + ' mm)');
+            self.render();
+            if (typeof window.toast === 'function') {
+              window.toast('🧱 Dado Tile drawn: ' + Math.round(swDs.endOffset - swDs.startOffset) + ' mm on wall');
+            }
+            if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.render3DHome) {
+              window.OrbixUI.render3DHome(true);
+            }
+          } else {
+            self.handleDadoMouseDown(swDs.startWorld);
+          }
+          return;
         }
 
         if (self.dragState.type === 'move_furniture') {
@@ -14756,14 +14942,17 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // 2. Check if clicked a furniture unit (Supports rotated OBBs and cycling between overlapping units!)
+    // 2. Check if clicked a furniture unit (only when cursor is not inside a solid wall stripe)
+    var onWallBand = (typeof this.isPointOnWallBand === 'function') ? this.isPointOnWallBand(worldPt) : false;
     var furnList = this.project.plan.furniture || [];
     var matchingHits = [];
-    for (var f = furnList.length - 1; f >= 0; f--) {
-      var fn = furnList[f];
-      var poly = Core.getFurniturePolygon(fn);
-      if (Core.Vec2.pointInPolygon(worldPt, poly)) {
-        matchingHits.push(fn);
+    if (!onWallBand) {
+      for (var f = furnList.length - 1; f >= 0; f--) {
+        var fn = furnList[f];
+        var poly = Core.getFurniturePolygon(fn);
+        if (Core.Vec2.pointInPolygon(worldPt, poly)) {
+          matchingHits.push(fn);
+        }
       }
     }
     if (matchingHits.length > 0) {
@@ -15066,18 +15255,18 @@ body.role-employee #adminCreateEmpBox,
     var dims = furn.dimensions || { W: 1200, D: 600 };
 
     var isLCorner = !!(
-      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || furn.unitConfig.unitType === 'wbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
       furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' || furn.catalogItemId === 'fbcm-1500' ||
-      (furn.id && /fbcm/i.test(furn.id)) ||
-      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
-      (furn.code && /fbcm/i.test(furn.code)) ||
-      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+      (furn.id && /fbcm|wbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm|wbcm/i.test(furn.catalogItemId)) ||
+      (furn.code && /fbcm|wbcm/i.test(furn.code)) ||
+      (furn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(furn.name))
     );
 
     if (isLCorner) {
-      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
-      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
-      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || 560;
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || dims.W || 900;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || dims.W || 900;
+      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || dims.D || 560;
 
       function toWorld(lx, ly, name, isMid) {
         return {
@@ -15257,18 +15446,19 @@ body.role-employee #adminCreateEmpBox,
         var isPerp = (Math.abs(angleDiff - Math.PI / 2) < 0.45 || Math.abs(angleDiff - 3 * Math.PI / 2) < 0.45);
 
         var otherIsLCorner = !!(
-          (other.unitConfig && (other.unitConfig.geometryType === 'l_shaped_corner' || other.unitConfig.unitType === 'fbcm' || (other.unitConfig.corner && other.unitConfig.corner.enabled))) ||
+          (other.unitConfig && (other.unitConfig.geometryType === 'l_shaped_corner' || other.unitConfig.unitType === 'fbcm' || other.unitConfig.unitType === 'wbcm' || (other.unitConfig.corner && other.unitConfig.corner.enabled))) ||
           other.catalogItemId === 'fbcm' || other.id === 'fbcm' || other.id === 'f_fbcm_1' || other.catalogItemId === 'fbcm-1500' ||
-          (other.id && /fbcm/i.test(other.id)) ||
-          (other.catalogItemId && /fbcm/i.test(other.catalogItemId)) ||
-          (other.code && /fbcm/i.test(other.code)) ||
-          (other.name && /l[-_ ]*shaped.*corner/i.test(other.name))
+          (other.id && /fbcm|wbcm/i.test(other.id)) ||
+          (other.catalogItemId && /fbcm|wbcm/i.test(other.catalogItemId)) ||
+          (other.code && /fbcm|wbcm/i.test(other.code)) ||
+          (other.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(other.name))
         );
 
         if (otherIsLCorner) {
-          var cW = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legW) || 900;
-          var cD = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legD) || 900;
-          var cDepth = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.depth) || 560;
+          var oDims = other.dimensions || {};
+          var cW = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legW) || oDims.W || 900;
+          var cD = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legD) || oDims.W || 900;
+          var cDepth = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.depth) || oDims.D || 560;
 
           // 1. Arm 1 face (open joint at local X = -cW/2, Y = -cD/2 + cDepth/2, outward normal = -uO)
           var arm1FaceCenter = {
@@ -15468,18 +15658,19 @@ body.role-employee #adminCreateEmpBox,
     var halfW = fW / 2;
 
     var furnIsLCorner = !!(
-      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || furn.unitConfig.unitType === 'wbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
       furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' || furn.catalogItemId === 'fbcm-1500' ||
-      (furn.id && /fbcm/i.test(furn.id)) ||
-      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
-      (furn.code && /fbcm/i.test(furn.code)) ||
-      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+      (furn.id && /fbcm|wbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm|wbcm/i.test(furn.catalogItemId)) ||
+      (furn.code && /fbcm|wbcm/i.test(furn.code)) ||
+      (furn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(furn.name))
     );
 
     if (furnIsLCorner) {
-      // Corner unit footprint dimensions are legW x legD (900 x 900)
-      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
-      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
+      // Corner unit footprint dimensions are legW x legD
+      var fDims = furn.dimensions || {};
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || fDims.W || 900;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || fDims.W || 900;
       fW = cW;
       fD = cD;
       halfW = cW / 2;
@@ -15751,11 +15942,60 @@ body.role-employee #adminCreateEmpBox,
     this.render();
   };
 
+  PlanEditor.prototype.isPointOnWallBand = function (worldPt) {
+    var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    for (var wi = 0; wi < walls.length; wi++) {
+      var w = walls[wi];
+      if (!w || !w.start || !w.end || w.isDivider || w.thickness === 0) continue;
+      var proj = Vec2.projectOnSegment(worldPt, w.start, w.end);
+      if (proj.t >= -0.01 && proj.t <= 1.01) {
+        var halfT = (w.thickness || 150) * 0.5 + 6;
+        if (proj.dist <= halfT) return true;
+      }
+    }
+    return false;
+  };
+
+  PlanEditor.prototype.findDadoHandleAt = function (mouseScreen) {
+    var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    var best = null;
+    var bestDist = 14;
+    for (var wi = 0; wi < walls.length; wi++) {
+      var wItem = walls[wi];
+      if (!wItem || wItem.isDivider || wItem.thickness === 0) continue;
+      if (!wItem.dadoTile && (!wItem.dadoSegments || wItem.dadoSegments.length === 0)) continue;
+      var wLen = Core.wallLength(wItem);
+      if (wLen < 50) continue;
+      var wDir = Core.wallDirection(wItem);
+      var segs = (wItem.dadoSegments && wItem.dadoSegments.length > 0)
+        ? wItem.dadoSegments
+        : [{ startOffset: 0, endOffset: wLen }];
+      for (var si = 0; si < segs.length; si++) {
+        var seg = segs[si];
+        var sOff = Math.max(0, seg.startOffset || 0);
+        var eOff = Math.min(wLen, seg.endOffset !== undefined ? seg.endOffset : wLen);
+        var pS = this.worldToScreen({ x: wItem.start.x + wDir.x * sOff, y: wItem.start.y + wDir.y * sOff });
+        var pE = this.worldToScreen({ x: wItem.start.x + wDir.x * eOff, y: wItem.start.y + wDir.y * eOff });
+        var dS = Math.hypot(mouseScreen.x - pS.x, mouseScreen.y - pS.y);
+        if (dS <= bestDist) {
+          bestDist = dS;
+          best = { wall: wItem, segIndex: si, end: 'start', wLen: wLen };
+        }
+        var dE = Math.hypot(mouseScreen.x - pE.x, mouseScreen.y - pE.y);
+        if (dE <= bestDist) {
+          bestDist = dE;
+          best = { wall: wItem, segIndex: si, end: 'end', wLen: wLen };
+        }
+      }
+    }
+    return best;
+  };
+
   PlanEditor.prototype.handleDadoMouseDown = function (worldPt) {
     var near = this.findNearestWall(worldPt, 400);
     if (!near) {
       if (typeof window.toast === 'function') {
-        window.toast('ℹ Click on or near a wall to draw Dado Tile (Backsplash)');
+        window.toast('ℹ Click or drag along a wall to draw Dado Tile (Backsplash)');
       }
       return;
     }
@@ -15776,7 +16016,7 @@ body.role-employee #adminCreateEmpBox,
       };
       this.render();
       if (typeof window.toast === 'function') {
-        window.toast('🧱 Dado Tile start set. Click another point on this wall to draw segment, or click again to toggle full wall.');
+        window.toast('🧱 Dado Tile start set. Click another point on this wall to draw segment, or click same spot for full wall (drag green dots anytime to resize).');
       }
       return;
     }
@@ -15784,38 +16024,48 @@ body.role-employee #adminCreateEmpBox,
     // Second click
     var startInfo = this.dadoDrawStart;
     this.dadoDrawStart = null;
+    var wLen = Core.wallLength(w);
 
     if (startInfo.wallId === w.id) {
-      var wLen = Core.wallLength(w);
       var t1 = Math.min(startInfo.t, near.proj.t);
       var t2 = Math.max(startInfo.t, near.proj.t);
       var spanMm = (t2 - t1) * wLen;
 
       if (spanMm < 150) {
-        // Clicked nearly same point: toggle whole wall!
+        // Clicked nearly same point: toggle whole wall with explicit segment so handles appear!
         w.dadoTile = !w.dadoTile;
-        delete w.dadoSegments;
-        var msg = w.dadoTile ? '🧱 Dado Tile (Backsplash) added to full wall' : '🧱 Dado Tile removed from wall';
+        if (w.dadoTile) {
+          w.dadoSegments = [{ startOffset: 0, endOffset: Math.round(wLen) }];
+        } else {
+          delete w.dadoSegments;
+        }
+        var msg = w.dadoTile ? '🧱 Dado Tile added (drag green handles or use Inspector to adjust length)' : '🧱 Dado Tile removed from wall';
         if (typeof window.toast === 'function') window.toast(msg);
       } else {
-        // Applied segment
+        // Applied custom length segment
         w.dadoTile = true;
-        var sOffset = Math.round(t1 * wLen);
-        var eOffset = Math.round(t2 * wLen);
+        var sOffset = Math.round((t1 * wLen) / 50) * 50;
+        var eOffset = Math.min(Math.round(wLen), Math.max(sOffset + 100, Math.round((t2 * wLen) / 50) * 50));
         w.dadoSegments = [{ startOffset: sOffset, endOffset: eOffset }];
         if (typeof window.toast === 'function') {
-          window.toast('🧱 Dado Tile drawn: ' + Math.round(spanMm) + ' mm on wall');
+          window.toast('🧱 Dado Tile drawn: ' + Math.round(eOffset - sOffset) + ' mm on wall');
         }
       }
     } else {
-      // Clicked a different wall: toggle that different wall
+      // Clicked a different wall: toggle that different wall with explicit full segment
       w.dadoTile = !w.dadoTile;
-      delete w.dadoSegments;
+      if (w.dadoTile) {
+        w.dadoSegments = [{ startOffset: 0, endOffset: Math.round(wLen) }];
+      } else {
+        delete w.dadoSegments;
+      }
       if (typeof window.toast === 'function') {
-        window.toast(w.dadoTile ? '🧱 Dado Tile added to wall' : '🧱 Dado Tile removed from wall');
+        window.toast(w.dadoTile ? '🧱 Dado Tile added (drag green handles to resize)' : '🧱 Dado Tile removed from wall');
       }
     }
 
+    this.selected = [{ type: 'wall', id: w.id }];
+    this.onSelectionChange(this.selected);
     this.pushHistory('Draw Dado Tile');
     this.render();
     if (window.OrbixUI && window.OrbixUI.render3DHome) {
@@ -16532,8 +16782,70 @@ body.role-employee #adminCreateEmpBox,
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(badgeText, sMid.x, sMid.y);
+
+        // Draw interactive Start / End resize grip handles along wall
+        var isWallSelected = this.selected && this.selected.some(function (it) { return it.type === 'wall' && it.id === wItem.id; });
+        var gripR = (isWallSelected || this.activeTool === 'dado') ? 7 : 5.5;
+        var grips = [sp1, sp2];
+        for (var gi = 0; gi < grips.length; gi++) {
+          ctx.beginPath();
+          ctx.arc(grips[gi].x, grips[gi].y, gripR, 0, Math.PI * 2);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fill();
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = '#059669';
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(grips[gi].x, grips[gi].y, 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = '#059669';
+          ctx.fill();
+        }
         ctx.restore();
       }
+    }
+
+    // Live swipe preview while dragging dado tile along wall
+    if (this.dragState && this.dragState.type === 'draw_dado_swipe' && this.dragState.hasMoved) {
+      var swWall = this.dragState.wall;
+      var swDir = Core.wallDirection(swWall);
+      var pA = { x: swWall.start.x + swDir.x * this.dragState.startOffset, y: swWall.start.y + swDir.y * this.dragState.startOffset };
+      var pB = { x: swWall.start.x + swDir.x * this.dragState.endOffset, y: swWall.start.y + swDir.y * this.dragState.endOffset };
+      var sA = this.worldToScreen(pA);
+      var sB = this.worldToScreen(pB);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.75)';
+      ctx.lineWidth = Math.max(4, (swWall.thickness || 150) * this.zoom * 0.5);
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(sA.x, sA.y);
+      ctx.lineTo(sB.x, sB.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      var sMidP = { x: (sA.x + sB.x) / 2, y: (sA.y + sB.y) / 2 };
+      var pvText = '🧱 ' + Math.round(this.dragState.endOffset - this.dragState.startOffset) + ' mm';
+      ctx.font = '700 10px "IBM Plex Sans", -apple-system, sans-serif';
+      var pw = ctx.measureText(pvText).width;
+      ctx.fillStyle = '#047857';
+      ctx.fillRect(sMidP.x - pw / 2 - 5, sMidP.y - 8, pw + 10, 16);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pvText, sMidP.x, sMidP.y);
+      ctx.restore();
+    }
+
+    // First-click anchor marker in Dado tool
+    if (this.dadoDrawStart && this.dadoDrawStart.pt) {
+      var dsPt = this.worldToScreen(this.dadoDrawStart.pt);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(dsPt.x, dsPt.y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = '#10B981';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.stroke();
+      ctx.restore();
     }
   };
 
@@ -17615,9 +17927,9 @@ body.role-employee #adminCreateEmpBox,
         var activeCornerColor = isSelected ? '#f59e0b' : pointColor;
 
         if (isLCorner) {
-          var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || 900;
-          var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || 900;
-          var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || 560;
+          var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || (f.dimensions && f.dimensions.W) || 900;
+          var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || (f.dimensions && f.dimensions.W) || 900;
+          var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || (f.dimensions && f.dimensions.D) || 560;
           var cwPx = cW * this.zoom;
           var cdPx = cD * this.zoom;
           var depthPx = cDepth * this.zoom;
@@ -18847,6 +19159,7 @@ window.ORBIX_DADO_TEXTURES = {
     this.materials = {};
     this.selectedFloorType = 'white_tile';
     this.dadoTileEnabled = (typeof window !== 'undefined' && window.dadoTileEnabled !== undefined) ? window.dadoTileEnabled : true;
+    this.ceilingEnabled = (typeof window !== 'undefined' && window.ceilingEnabled !== undefined) ? !!window.ceilingEnabled : false;
     this.isolatedRoomId = null;
     this.initMaterials();
   }
@@ -19077,7 +19390,9 @@ window.ORBIX_DADO_TEXTURES = {
       var img = new Image();
       var tex = new THREE.Texture(img);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(3, 2);
+      tex.repeat.set(1, 1);
+      if (THREE.sRGBEncoding !== undefined) tex.encoding = THREE.sRGBEncoding;
+      if (tex.anisotropy !== undefined) tex.anisotropy = 8;
       img.onload = function () {
         tex.needsUpdate = true;
       };
@@ -19138,7 +19453,9 @@ window.ORBIX_DADO_TEXTURES = {
 
     var subwayTex = new THREE.CanvasTexture(canvas);
     subwayTex.wrapS = subwayTex.wrapT = THREE.RepeatWrapping;
-    subwayTex.repeat.set(2, 2);
+    subwayTex.repeat.set(1, 1);
+    if (THREE.sRGBEncoding !== undefined) subwayTex.encoding = THREE.sRGBEncoding;
+    if (subwayTex.anisotropy !== undefined) subwayTex.anisotropy = 8;
     ArchitecturalRenderer._dadoTextures[style] = subwayTex;
     return subwayTex;
   };
@@ -19151,8 +19468,9 @@ window.ORBIX_DADO_TEXTURES = {
     var mat = new THREE.MeshStandardMaterial({
       color: 0xF8F9FA,
       map: tex,
-      roughness: 0.16,
-      metalness: 0.04
+      roughness: 0.24,
+      metalness: 0.02,
+      envMapIntensity: 0.85
     });
     ArchitecturalRenderer._dadoMaterials[style] = mat;
     return mat;
@@ -19421,12 +19739,13 @@ window.ORBIX_DADO_TEXTURES = {
     // Dado Tile Wall Finish (Backsplash)
     this.materials.dadoTile = this.createDadoTileMaterial();
 
-    // Ceiling & False Ceiling
+    // Ceiling & False Ceiling (FrontSide facing downward -Y so bird's-eye camera looks inside cleanly)
     this.materials.ceiling = new THREE.MeshStandardMaterial({
-      color: 0xFFFFFF,
-      roughness: 0.9,
+      color: 0xF8FAFC,
+      roughness: 0.92,
       metalness: 0.0,
-      side: THREE.DoubleSide
+      envMapIntensity: 0.45,
+      side: THREE.FrontSide
     });
 
     // Tactile Wood Grain Bump Map
@@ -19568,20 +19887,34 @@ window.ORBIX_DADO_TEXTURES = {
       }
     }
 
-    // 2. Build Room Floors (with inner divided room holes to prevent floor overlapping/glitches)
+    // 2. Build Room Floors & Optional Ceilings (with inner divided room holes to prevent overlap/glitches)
+    var showCeiling = (typeof window !== 'undefined' && window.ceilingEnabled !== undefined)
+      ? !!window.ceilingEnabled
+      : !!this.ceilingEnabled;
+    var defaultCeilingH = 2800;
+
     if (rooms && rooms.length > 0) {
       for (var r = 0; r < rooms.length; r++) {
         var room = rooms[r];
         var floorMesh = this.buildRoomFloor(room, rooms);
         if (floorMesh) this.group.add(floorMesh);
 
+        if (showCeiling) {
+          var ceilingMesh = this.buildRoomCeiling(room, rooms, defaultCeilingH);
+          if (ceilingMesh) this.group.add(ceilingMesh);
+        }
+
         // Photorealistic Interior Architectural Room Lighting
-        var roomLightGroup = this.buildRoomInteriorLighting(room, 2800);
+        var roomLightGroup = this.buildRoomInteriorLighting(room, defaultCeilingH);
         if (roomLightGroup) this.group.add(roomLightGroup);
       }
     } else {
       var fallbackFloor = this.buildBoundingFloor(walls, furniture);
       if (fallbackFloor) this.group.add(fallbackFloor);
+      if (showCeiling && fallbackFloor && fallbackFloor.userData && fallbackFloor.userData.boundingRoom) {
+        var fallbackCeil = this.buildRoomCeiling(fallbackFloor.userData.boundingRoom, null, defaultCeilingH);
+        if (fallbackCeil) this.group.add(fallbackCeil);
+      }
     }
 
     // 3. Build Placed Furniture Units in 3D & associate with closest wall
@@ -19767,7 +20100,28 @@ window.ORBIX_DADO_TEXTURES = {
         if (dadoTop <= dadoBottom + 50) return;
         var dadoH = dadoTop - dadoBottom;
         var dadoT = 6;
+        var DADO_TILE_MM = 609.6; // Exact 2ft x 2ft (609.6mm x 609.6mm) ceramic tile scale
         var dadoGeo = new THREE.BoxGeometry(subLen, dadoH, dadoT);
+        if (dadoGeo.attributes && dadoGeo.attributes.uv && dadoGeo.attributes.position) {
+          var dPos = dadoGeo.attributes.position;
+          var dUv = dadoGeo.attributes.uv;
+          var dNorm = dadoGeo.attributes.normal;
+          for (var ui = 0; ui < dPos.count; ui++) {
+            var lx = dPos.getX(ui);
+            var ly = dPos.getY(ui);
+            var lz = dPos.getZ(ui);
+            var nx = dNorm ? Math.abs(dNorm.getX(ui)) : 0;
+            var ny = dNorm ? Math.abs(dNorm.getY(ui)) : 0;
+            if (nx > 0.5) {
+              dUv.setXY(ui, (lz + dadoT / 2) / DADO_TILE_MM, (ly + dadoH / 2) / DADO_TILE_MM);
+            } else if (ny > 0.5) {
+              dUv.setXY(ui, (sStart + subLen / 2 + lx) / DADO_TILE_MM, (lz + dadoT / 2) / DADO_TILE_MM);
+            } else {
+              dUv.setXY(ui, (sStart + subLen / 2 + lx) / DADO_TILE_MM, (ly + dadoH / 2) / DADO_TILE_MM);
+            }
+          }
+          dUv.needsUpdate = true;
+        }
         var tileF = new THREE.Mesh(dadoGeo, tileMat);
         tileF.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, wThick / 2 + dadoT / 2);
         tileF.receiveShadow = true;
@@ -20185,9 +20539,75 @@ window.ORBIX_DADO_TEXTURES = {
     mesh.position.y = isInnerRoom ? 1.08 : 1.0; // Subtle elevation for inner divided room to eliminate coplanar Z-fighting
     mesh.receiveShadow = true;
     mesh.name = 'Floor_' + (room.name || 'Room');
-    mesh.userData = { isFloorMesh: true, floorFinish: finishType, roomId: room.id };
+    mesh.userData = { isFloorMesh: true, floorFinish: finishType, roomId: room.id, boundingRoom: room };
 
     return mesh;
+  };
+
+  ArchitecturalRenderer.prototype.buildRoomCeiling = function (room, allRooms, ceilingH) {
+    if (!room || !room.polygon || room.polygon.length < 3 || typeof THREE === 'undefined') return null;
+    ceilingH = ceilingH || 2800;
+    var cleaner = (typeof Core !== 'undefined' && Core.cleanPolygon) || ArchitecturalRenderer.cleanPolygon;
+    var poly = cleaner ? cleaner(room.polygon) : room.polygon;
+    if (!poly || poly.length < 3) poly = room.polygon.filter(function (pt) { return pt && isFinite(pt.x) && isFinite(pt.y); });
+    if (!poly || poly.length < 3) return null;
+
+    var area2 = 0;
+    for (var i = 0; i < poly.length; i++) {
+      var j = (i + 1) % poly.length;
+      area2 += poly[i].x * poly[j].y - poly[j].x * poly[i].y;
+    }
+    if (Math.abs(area2 / 2) < 100000) return null;
+
+    var ordered = poly.slice();
+    if (area2 < 0) ordered.reverse(); // CCW in (x, y) shape space -> Rx(+PI/2) faces -Y downward
+
+    var shape = new THREE.Shape();
+    shape.moveTo(ordered[0].x, ordered[0].y);
+    for (var k = 1; k < ordered.length; k++) {
+      shape.lineTo(ordered[k].x, ordered[k].y);
+    }
+    shape.closePath();
+
+    var isInnerRoom = false;
+    if (allRooms && allRooms.length > 1) {
+      for (var ar = 0; ar < allRooms.length; ar++) {
+        var otherR = allRooms[ar];
+        if (!otherR || otherR.id === room.id || !otherR.polygon || otherR.polygon.length < 3) continue;
+        var otherCenter = (typeof Core !== 'undefined' && Core.Vec2) ? Core.Vec2.polygonCentroid(otherR.polygon) : null;
+        if (!otherCenter) continue;
+        if (otherR.areaSqMm < (room.areaSqMm || 999999999) && Core.Vec2.pointInPolygon(otherCenter, poly)) {
+          var holePoly = cleaner ? cleaner(otherR.polygon) : otherR.polygon;
+          if (holePoly && holePoly.length >= 3) {
+            var hA = 0;
+            for (var hi = 0; hi < holePoly.length; hi++) {
+              var hj = (hi + 1) % holePoly.length;
+              hA += holePoly[hi].x * holePoly[hj].y - holePoly[hj].x * holePoly[hi].y;
+            }
+            var oHole = holePoly.slice();
+            if (hA > 0) oHole.reverse();
+            var hPath = new THREE.Path();
+            hPath.moveTo(oHole[0].x, oHole[0].y);
+            for (var hk = 1; hk < oHole.length; hk++) hPath.lineTo(oHole[hk].x, oHole[hk].y);
+            hPath.closePath();
+            shape.holes.push(hPath);
+          }
+        } else if (otherR.areaSqMm > (room.areaSqMm || 0) && Core.Vec2.pointInPolygon(Core.Vec2.polygonCentroid(poly), otherR.polygon)) {
+          isInnerRoom = true;
+        }
+      }
+    }
+
+    var geo = new THREE.ShapeGeometry(shape);
+    if (typeof geo.computeVertexNormals === 'function') geo.computeVertexNormals();
+    var cMesh = new THREE.Mesh(geo, this.materials.ceiling);
+    cMesh.rotation.x = Math.PI / 2;
+    cMesh.position.y = isInnerRoom ? (ceilingH - 2) : ceilingH;
+    cMesh.receiveShadow = true;
+    cMesh.castShadow = false;
+    cMesh.name = 'Ceiling_' + (room.name || 'Room');
+    cMesh.userData = { isCeilingMesh: true, roomId: room.id };
+    return cMesh;
   };
 
   ArchitecturalRenderer.prototype.buildBoundingFloor = function (walls, furniture) {
@@ -20267,7 +20687,7 @@ window.ORBIX_DADO_TEXTURES = {
       spotPositions.push({ x: cx, z: cz });
     }
 
-    var downlightIntensity = spotPositions.length > 1 ? (0.6 / spotPositions.length * 1.6) : 0.85;
+    var downlightIntensity = spotPositions.length > 1 ? Math.max(0.38, 1.15 / spotPositions.length) : 0.72;
 
     for (var s = 0; s < spotPositions.length; s++) {
       var sp = spotPositions[s];
@@ -20283,7 +20703,7 @@ window.ORBIX_DADO_TEXTURES = {
         var lensMat = new THREE.MeshStandardMaterial({
           color: 0xFFFBEB,
           emissive: 0xFEF08A,
-          emissiveIntensity: 0.85,
+          emissiveIntensity: 0.95,
           roughness: 0.2
         });
         var lens = new THREE.Mesh(lensGeo, lensMat);
@@ -20291,18 +20711,25 @@ window.ORBIX_DADO_TEXTURES = {
         group.add(lens);
       }
 
-      // Warm 3000K Architectural Downlight
+      // Warm 3000K Architectural Downlight (decay=1 for clean millimeter distance falloff)
       if (typeof THREE.SpotLight !== 'undefined') {
-        var spot = new THREE.SpotLight(0xFFF1DD, downlightIntensity);
-        spot.position.set(sp.x, ceilingH - 15, sp.z);
+        var spot = new THREE.SpotLight(0xFFF3DF, downlightIntensity);
+        spot.position.set(sp.x, ceilingH - 25, sp.z);
         spot.target.position.set(sp.x, 0, sp.z);
-        spot.angle = Math.PI / 3.2; // ~56 degree cone
-        spot.penumbra = 0.8;        // Soft feathered edge
-        spot.decay = 2.0;           // Physically realistic inverse-square decay
-        spot.distance = Math.max(5000, ceilingH * 2.2);
+        spot.angle = Math.PI / 2.8;
+        spot.penumbra = 0.88;
+        spot.decay = 1.0;
+        spot.distance = Math.max(6000, ceilingH * 2.4);
         group.add(spot);
         group.add(spot.target);
       }
+    }
+
+    // Soft Warm Interior Radiosity / Bounce Fill so vertical cabinets & corners have rich architectural depth
+    if (typeof THREE.PointLight !== 'undefined') {
+      var fillLight = new THREE.PointLight(0xFFF6E8, 0.36, Math.max(5200, Math.max(rWidth, rDepth) * 1.45), 1.0);
+      fillLight.position.set(cx, Math.max(1500, ceilingH * 0.72), cz);
+      group.add(fillLight);
     }
 
     return group;
@@ -21339,13 +21766,13 @@ window.ORBIX_DADO_TEXTURES = {
      Build L-Shaped Corner Base Unit (Cookscape) - 900x900 Corner Module
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildLCornerCabinetMesh = function (furn, fg, dims, carcassMat, counterMat, plinthH, bodyH, counterH, getShutterMaterial, handleType, handleMat, isBase, isKitchen) {
-    var legW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
-    var legD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
-    var depth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || 560;
+    var legW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || (dims && dims.W) || 900;
+    var legD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || (dims && dims.W) || 900;
+    var depth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || (dims && dims.D) || 560;
     var W = legW;
     var D = legD;
-    var openW = W - depth; // 340 mm
-    var openD = D - depth; // 340 mm
+    var openW = W - depth;
+    var openD = D - depth;
 
     var plinthMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.85, metalness: 0.1 });
 
@@ -21455,25 +21882,37 @@ window.ORBIX_DADO_TEXTURES = {
       fg.add(c2Mesh);
     }
 
-    // 8. Doors (Two Hinged Doors meeting at Inside 90° Corner)
+    // 8. Doors (Two Hinged Doors meeting cleanly at Inside 90° Corner, both openable)
     var shH = bodyH - 6;
     var shutterCenterY = plinthH + 3 + shH / 2;
-    var doorW = openW - 6;
+    var door1W = Math.max(80, openW - 22);
+    var door2W = Math.max(80, openD - 22);
     var shutterMat0 = getShutterMaterial(0);
     var shutterMat1 = getShutterMaterial(1);
+    var lHandleY = (isBase || plinthH > 0) ? shH * 0.25 : 0;
 
     // Door 1 (Front Door on Left Wing Face)
-    var d1LeftX = -W / 2 + 18;
+    var d1LeftX = -W / 2 + 4;
     var hinge1Group = new THREE.Group();
     hinge1Group.name = "ShutterHinge_0";
     hinge1Group.position.set(d1LeftX, shutterCenterY, -D / 2 + depth + 9);
     hinge1Group.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
 
-    var d1Mesh = new THREE.Mesh(new THREE.BoxGeometry(doorW, shH, 18), shutterMat0);
-    d1Mesh.position.set(doorW / 2, 0, 0);
+    var d1Mesh = new THREE.Mesh(new THREE.BoxGeometry(door1W, shH, 18), shutterMat0);
+    d1Mesh.position.set(door1W / 2, 0, 0);
     d1Mesh.castShadow = true; d1Mesh.receiveShadow = true;
     d1Mesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hinge1Group, parentGroup: fg, furnitureId: furn.id };
     hinge1Group.add(d1Mesh);
+
+    var h1Group = ArchitecturalRenderer.createHandleMesh("pull", handleMat, true, Math.min(180, shH * 0.35));
+    if (h1Group) {
+      h1Group.position.set(door1W - 28, lHandleY, 14);
+      h1Group.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hinge1Group, parentGroup: fg, furnitureId: furn.id };
+      h1Group.traverse(function (c) {
+        if (c.isMesh) c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hinge1Group, parentGroup: fg, furnitureId: furn.id };
+      });
+      hinge1Group.add(h1Group);
+    }
 
     var isD1Open = !!(furn.shutterStates && furn.shutterStates[0]);
     hinge1Group.rotation.y = isD1Open ? -Math.PI * 0.55 : 0;
@@ -21486,16 +21925,15 @@ window.ORBIX_DADO_TEXTURES = {
     hinge2Group.position.set(W / 2 - depth - 9, shutterCenterY, d2RightZ);
     hinge2Group.userData = { isShutterHinge: true, shutterIdx: 1, furnitureId: furn.id };
 
-    var d2Mesh = new THREE.Mesh(new THREE.BoxGeometry(18, shH, doorW), shutterMat1);
-    d2Mesh.position.set(0, 0, -doorW / 2);
+    var d2Mesh = new THREE.Mesh(new THREE.BoxGeometry(18, shH, door2W), shutterMat1);
+    d2Mesh.position.set(0, 0, -door2W / 2);
     d2Mesh.castShadow = true; d2Mesh.receiveShadow = true;
     d2Mesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
     hinge2Group.add(d2Mesh);
 
-    // Vertical Black Pull Handle on Door 2 near inside corner junction
     var hGroup = ArchitecturalRenderer.createHandleMesh("pull", handleMat, true, Math.min(180, shH * 0.35));
     if (hGroup) {
-      hGroup.position.set(-14, shH * 0.25, -doorW + 35);
+      hGroup.position.set(-14, lHandleY, -door2W + 28);
       hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
       hGroup.traverse(function (c) {
         if (c.isMesh) c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
@@ -21510,7 +21948,7 @@ window.ORBIX_DADO_TEXTURES = {
     // Position and rotate unit
     var catL = (furn.category || '').toLowerCase();
     var nameL = (furn.name || '').toLowerCase();
-    var isWallCorner = (!isBase && (catL.indexOf('wall') !== -1 || nameL.indexOf('wall') !== -1 || /(^|\b|_|-)(wcm)($|\b|_|-|\d+)/i.test(nameL))) || (furn.elevation >= 1000) || (furn.unitConfig && furn.unitConfig.ctype === 'kwall');
+    var isWallCorner = (!isBase && (catL.indexOf('wall') !== -1 || nameL.indexOf('wall') !== -1 || /(^|\b|_|-)(wcm|wbcm)($|\b|_|-|\d+)/i.test(nameL))) || (furn.elevation >= 1000) || (furn.unitConfig && furn.unitConfig.ctype === 'kwall');
     var defElevCorner = isWallCorner ? 1500 : 0;
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
@@ -21604,7 +22042,7 @@ window.ORBIX_DADO_TEXTURES = {
         var slabW = W + 20;
         var slabD = baseD + 25;
         var slabGeo = new THREE.BoxGeometry(slabW, actualCounterH, slabD);
-        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.18, metalness: 0.08 });
+        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.88, metalness: 0.0 });
         var slabMesh = new THREE.Mesh(slabGeo, sMat);
         slabMesh.position.set(0, H - actualCounterH / 2, 2.5);
         slabMesh.castShadow = true; slabMesh.receiveShadow = true;
@@ -21983,8 +22421,9 @@ window.ORBIX_DADO_TEXTURES = {
     }
     var counterMat = new THREE.MeshStandardMaterial({
       color: counterHex,
-      roughness: (counterColorName === 'white' || counterColorName === 'marble' || counterColorName === 'quartz') ? 0.12 : 0.22,
-      metalness: 0.08
+      roughness: 0.88,
+      metalness: 0.0,
+      envMapIntensity: 0.28
     });
 
     var isTvOrVanity = (cat === 'tv_unit' || cat === 'vanity' || (name && (name.indexOf('tv') !== -1 || name.indexOf('vanity') !== -1)));
@@ -22041,11 +22480,12 @@ window.ORBIX_DADO_TEXTURES = {
     }
 
     var isLCorner = !!(
-      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
-      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' ||
-      (furn.id && /fbcm/i.test(furn.id)) ||
-      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
-      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || furn.unitConfig.unitType === 'wbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' || furn.catalogItemId === 'fbcm-1500' ||
+      (furn.id && /fbcm|wbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm|wbcm/i.test(furn.catalogItemId)) ||
+      (furn.code && /fbcm|wbcm/i.test(furn.code)) ||
+      (furn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(furn.name))
     );
     if (isLCorner) {
       return this.buildLCornerCabinetMesh(furn, fg, dims, carcassMat, counterMat, plinthH, bodyH, counterH, getShutterMaterial, handleType, handleMat, isBase, isKitchen);
@@ -22241,10 +22681,10 @@ window.ORBIX_DADO_TEXTURES = {
     // 5b. Vertical Partition (for units with multiple sections or FCM-RT/FCM-LT)
     var isFcmUnit = !!(
       (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.enabled) ||
-      (furn.unitConfig && (furn.unitConfig.unitType === 'fcm-rt' || furn.unitConfig.unitType === 'fcm-lt')) ||
+      (furn.unitConfig && (furn.unitConfig.unitType === 'fcm-rt' || furn.unitConfig.unitType === 'fcm-lt' || furn.unitConfig.unitType === 'wcm-rt' || furn.unitConfig.unitType === 'wcm-lt')) ||
       (furn.id && /fcm[-_ ]*(rt|lt)/i.test(furn.id)) ||
       (furn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(furn.catalogItemId)) ||
-      (furn.name && /fcm[-_ ]*(rt|lt)/i.test(furn.name)) ||
+      (furn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(furn.name)) ||
       furn.id === 'fcm-rt' || furn.catalogItemId === 'fcm-rt' ||
       furn.id === 'fm-rt-01' || furn.catalogItemId === 'fm-rt-01' ||
       furn.id === 'fcm-lt' || furn.catalogItemId === 'fcm-lt' ||
@@ -22394,10 +22834,10 @@ window.ORBIX_DADO_TEXTURES = {
     // 8. Front Shutters (Hinged or Sliding Mechanisms)
     var hasFixedPanel = isFcmUnit || !!(
       (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.enabled) ||
-      (furn.unitConfig && furn.unitConfig.unitType === 'fcm-rt') ||
+      (furn.unitConfig && (furn.unitConfig.unitType === 'fcm-rt' || furn.unitConfig.unitType === 'wcm-rt')) ||
       (furn.id && /fcm[-_ ]*rt/i.test(furn.id)) ||
       (furn.catalogItemId && /fcm[-_ ]*rt/i.test(furn.catalogItemId)) ||
-      (furn.name && /fcm[-_ ]*rt/i.test(furn.name)) ||
+      (furn.name && /(fcm[-_ ]*rt|wcm[-_ ]*rt\s*\(cookscape\))/i.test(furn.name)) ||
       furn.id === 'fcm-rt' || furn.catalogItemId === 'fcm-rt' ||
       furn.id === 'fm-rt-01' || furn.catalogItemId === 'fm-rt-01'
     );
@@ -22467,10 +22907,10 @@ window.ORBIX_DADO_TEXTURES = {
         // FCM Modular Unit with 1 Fixed Panel & 1 Movable Shutter (FCM-RT or FCM-LT)
         var isLeftOpen = !!(
           (furn.unitConfig && furn.unitConfig.openShutter && furn.unitConfig.openShutter.opening === 'left') ||
-          (furn.unitConfig && furn.unitConfig.unitType === 'fcm-lt') ||
+          (furn.unitConfig && (furn.unitConfig.unitType === 'fcm-lt' || furn.unitConfig.unitType === 'wcm-lt')) ||
           (furn.id && /fcm[-_ ]*lt/i.test(furn.id)) ||
           (furn.catalogItemId && /fcm[-_ ]*lt/i.test(furn.catalogItemId)) ||
-          (furn.name && /fcm[-_ ]*lt/i.test(furn.name)) ||
+          (furn.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(furn.name)) ||
           furn.id === 'fcm-lt' || furn.catalogItemId === 'fcm-lt' ||
           furn.id === 'fm-lt-01' || furn.catalogItemId === 'fm-lt-01'
         );
@@ -23040,6 +23480,9 @@ window.ORBIX_DADO_TEXTURES = {
           var draftObj = JSON.parse(draftRaw);
           var draftPlan = draftObj.plan || draftObj;
           if (draftPlan && (draftPlan.plan || draftPlan.walls || draftPlan.furniture || draftPlan.meta)) {
+            if (draftObj.projectId && !draftPlan._projectId) {
+              draftPlan._projectId = String(draftObj.projectId);
+            }
             this.project = draftPlan;
             restored = true;
             if (draftObj.units && window.S) {
@@ -23116,6 +23559,13 @@ window.ORBIX_DADO_TEXTURES = {
 
     loadProject: function (proj) {
       if (!proj) return;
+      var prevProjId = (this.project && (this.project._projectId || (this.project.meta && this.project.meta.id) || this.project.id)) || '';
+      var nextProjId = proj._projectId || (proj.meta && proj.meta.id) || proj.id || '';
+      if (nextProjId) proj._projectId = String(nextProjId);
+      if (window.S && (!prevProjId || !nextProjId || String(prevProjId) !== String(nextProjId))) {
+        window.S.units = [];
+        window.S.active = 0;
+      }
       this.project = proj;
       if (typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
         try { Core.detectRooms(this.project); } catch (e) { console.warn('[Orbix UI] detectRooms on load:', e); }
@@ -23329,6 +23779,34 @@ window.ORBIX_DADO_TEXTURES = {
           }
           if (typeof window.toast === 'function') {
             window.toast(window.dadoTileEnabled ? '🧱 Dado Tiles Enabled (Backsplash ON)' : '🧱 Dado Tiles Disabled (Backsplash OFF)');
+          }
+        });
+      }
+
+      // 3D Architectural Ceiling Toggle (ON / OFF)
+      var ceilBtn = document.getElementById('toggleCeilingBtn');
+      var ceilStatus = document.getElementById('ceilingStatus');
+      if (ceilBtn) {
+        if (window.ceilingEnabled === undefined) window.ceilingEnabled = false;
+        var syncCeilBtn = function () {
+          if (ceilStatus) ceilStatus.textContent = window.ceilingEnabled ? 'ON' : 'OFF';
+          ceilBtn.classList.toggle('is-on', !!window.ceilingEnabled);
+          ceilBtn.style.background = window.ceilingEnabled ? '#059669' : '#f1f5f9';
+          ceilBtn.style.color = window.ceilingEnabled ? '#ffffff' : '#334155';
+          ceilBtn.style.borderColor = window.ceilingEnabled ? '#047857' : '#cbd5e1';
+        };
+        syncCeilBtn();
+        ceilBtn.addEventListener('click', function () {
+          window.ceilingEnabled = !window.ceilingEnabled;
+          syncCeilBtn();
+          if (self.archRenderer) {
+            self.archRenderer.ceilingEnabled = window.ceilingEnabled;
+          }
+          if (typeof self.render3DHome === 'function') {
+            self.render3DHome(true);
+          }
+          if (typeof window.toast === 'function') {
+            window.toast(window.ceilingEnabled ? '🏠 Ceiling Enabled (ON)' : '🏠 Ceiling Disabled (OFF)');
           }
         });
       }
@@ -23856,6 +24334,56 @@ window.ORBIX_DADO_TEXTURES = {
       }
 
       this.update3DStudioRoomOptions();
+      this.updateProjectDetailsBadges();
+    },
+
+    updateProjectDetailsBadges: function () {
+      var proj = this.project || (this.editor && this.editor.project);
+      var meta = (proj && proj.meta) || {};
+      var plan = (proj && proj.plan) || {};
+      var rooms = plan.rooms || [];
+      var units = plan.furniture || [];
+      var activeProj = null;
+      if (window.OrbixProjects && window.OrbixProjects.activeProjectId && Array.isArray(window.OrbixProjects.projects)) {
+        activeProj = window.OrbixProjects.projects.find(function (p) {
+          return String(p.id) === String(window.OrbixProjects.activeProjectId);
+        });
+      }
+      var title = (activeProj && (activeProj.title || activeProj.name)) || meta.title || 'Untitled Project';
+      var client = (activeProj && activeProj.client) || meta.clientName || '';
+      var phone = (activeProj && activeProj.contact_number) || meta.phone || meta.contactNumber || '';
+      var code = (activeProj && activeProj.cp_code) || meta.cpCode || meta.quoteId || '';
+      var designer = (activeProj && activeProj.bh_name) || meta.designerName || meta.bhName || '';
+      var location = (activeProj && activeProj.location) || meta.siteAddress || meta.siteLocation || '';
+      var status = (activeProj && activeProj.status) || meta.status || 'Active Design';
+
+      var esc = function (v) {
+        return String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      };
+
+      var leftParts = ['<span style="font-weight:700;color:#0f172a;">📋 ' + esc(title) + '</span>'];
+      if (code) leftParts.push('<span style="background:#dbeafe;color:#1e40af;padding:1px 7px;border-radius:10px;font-weight:700;font-size:10.5px;">' + esc(code) + '</span>');
+      if (client) leftParts.push('<span style="color:#334155;">👤 <b>' + esc(client) + '</b>' + (phone ? ' (' + esc(phone) + ')' : '') + '</span>');
+      if (location) leftParts.push('<span style="color:#475569;">📍 ' + esc(location) + '</span>');
+      if (designer) leftParts.push('<span style="color:#475569;">🎨 BH: <b>' + esc(designer) + '</b></span>');
+
+      var totalSqFt = 0;
+      for (var ri = 0; ri < rooms.length; ri++) totalSqFt += (rooms[ri].areaSqFt || 0);
+      var rightHtml =
+        '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#475569;font-size:11px;">' +
+        '<span><b>' + rooms.length + '</b> Rooms</span>' +
+        '<span>· <b>' + units.length + '</b> Units</span>' +
+        (totalSqFt > 0 ? '<span>· <b>' + Math.round(totalSqFt) + '</b> sq ft</span>' : '') +
+        '<span style="background:#dcfce7;color:#166534;padding:1px 7px;border-radius:10px;font-weight:600;font-size:10.5px;">' + esc(status) + '</span>' +
+        '</div>';
+
+      var fullHtml = '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' + leftParts.join('') + '</div>' + rightHtml;
+
+      var bar2D = document.getElementById('planProjectDetailsBar');
+      if (bar2D) bar2D.innerHTML = fullHtml;
+
+      var bar3D = document.getElementById('studioProjectDetailsBadge');
+      if (bar3D) bar3D.innerHTML = fullHtml;
     },
 
     update3DStudioRoomOptions: function () {
@@ -23934,6 +24462,10 @@ window.ORBIX_DADO_TEXTURES = {
         var innerMm = Math.round(Core.getWallInnerLength ? Core.getWallInnerLength(w, planObj) : lenMm);
         var innerDisplay = (ed.formatDim ? ed.formatDim(innerMm) : (innerMm + ' mm'));
         var hasDado = !!(w.dadoTile || (w.dadoSegments && w.dadoSegments.length > 0));
+        var dSeg0 = (w.dadoSegments && w.dadoSegments.length > 0) ? w.dadoSegments[0] : { startOffset: 0, endOffset: Math.round(lenMm) };
+        var dStartOff = Math.max(0, Math.round(dSeg0.startOffset || 0));
+        var dEndOff = Math.min(Math.round(lenMm), Math.round(dSeg0.endOffset !== undefined ? dSeg0.endOffset : lenMm));
+        var dLenMm = Math.max(100, dEndOff - dStartOff);
         panel.innerHTML =
           '<div class="insp-title">Wall Properties</div>' +
           '<div class="insp-row"><label>Clear Inner Length ' + (ed.unitSystem === 'imperial' ? '(e.g. 5ft or mm)' : '(mm)') + '</label><input type="text" id="inspWallInnerLen" value="' + (ed.unitSystem === 'imperial' ? innerDisplay : innerMm) + '">' +
@@ -23948,9 +24480,23 @@ window.ORBIX_DADO_TEXTURES = {
           '    <input type="checkbox" id="inspWallDado" ' + (hasDado ? 'checked' : '') + ' style="width:18px;height:18px;cursor:pointer;">' +
           '  </label>' +
           '  <div style="font-size:11px;color:#15803d;margin-top:4px;">' +
-          (hasDado ? '✓ Backsplash tiles applied to this wall (850mm–1500mm)' : 'No dado tile on this wall. Check to enable backsplash.') +
+          (hasDado ? '✓ Length: ' + dLenMm + ' mm (850–1500mm H). Drag green handles in 2D or edit below.' : 'No dado tile on this wall. Check to enable backsplash.') +
           '  </div>' +
           (hasDado ? (
+          '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">' +
+          '    <div>' +
+          '      <label style="font-size:10.5px;font-weight:600;color:#166534;display:block;margin-bottom:2px;">Start Offset (mm)</label>' +
+          '      <input type="number" id="inspWallDadoStart" value="' + dStartOff + '" min="0" max="' + Math.max(0, Math.round(lenMm) - 100) + '" step="50" style="width:100%;height:26px;font-size:11.5px;padding:0 5px;">' +
+          '    </div>' +
+          '    <div>' +
+          '      <label style="font-size:10.5px;font-weight:600;color:#166534;display:block;margin-bottom:2px;">Tile Length (mm)</label>' +
+          '      <input type="number" id="inspWallDadoLen" value="' + dLenMm + '" min="100" max="' + Math.max(100, Math.round(lenMm) - dStartOff) + '" step="50" style="width:100%;height:26px;font-size:11.5px;padding:0 5px;">' +
+          '    </div>' +
+          '  </div>' +
+          '  <div style="display:flex;gap:6px;margin-top:6px;align-items:center;">' +
+          '    <button type="button" id="inspWallDadoFull" style="padding:3px 8px;font-size:10.5px;font-weight:600;border:1px solid #86efac;background:#dcfce7;color:#166534;border-radius:4px;cursor:pointer;">Reset Full Wall</button>' +
+          '    <span style="font-size:10px;color:#15803d;">Max ' + Math.round(lenMm) + ' mm</span>' +
+          '  </div>' +
           '  <div style="margin-top:8px;">' +
           '    <label style="font-size:11px;font-weight:600;color:#166534;display:block;margin-bottom:3px;">Tile Pattern</label>' +
           '    <select id="inspWallDadoStyle" style="width:100%;height:26px;font-size:11px;border:1px solid #bbf7d0;border-radius:4px;background:#ffffff;padding:0 4px;">' +
@@ -24021,14 +24567,60 @@ window.ORBIX_DADO_TEXTURES = {
         if (elWallDado) {
           elWallDado.addEventListener('change', function (e) {
             w.dadoTile = e.target.checked;
-            if (!w.dadoTile) delete w.dadoSegments;
+            if (w.dadoTile) {
+              if (!w.dadoSegments || !w.dadoSegments.length) {
+                w.dadoSegments = [{ startOffset: 0, endOffset: Math.max(100, Math.round(lenMm)) }];
+              }
+            } else {
+              delete w.dadoSegments;
+            }
             ed.pushHistory('Toggle Wall Dado Tile');
             ed.render();
             self.renderInspector(ed.selected);
+            if (self.saveToLocalStorage) self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
             if (typeof window.toast === 'function') {
-              window.toast(w.dadoTile ? '🧱 Dado Tile Enabled for Wall' : '🧱 Dado Tile Removed from Wall');
+              window.toast(w.dadoTile ? '🧱 Dado Tile Enabled (drag green handles or adjust length in Inspector)' : '🧱 Dado Tile Removed from Wall');
             }
+          });
+        }
+        var elWallDadoStart = document.getElementById('inspWallDadoStart');
+        var elWallDadoLen = document.getElementById('inspWallDadoLen');
+        var elWallDadoFull = document.getElementById('inspWallDadoFull');
+        var applyWallDadoInputs = function (changedStart) {
+          var maxW = Math.max(100, Math.round(lenMm));
+          var sVal = elWallDadoStart ? (parseFloat(elWallDadoStart.value) || 0) : dStartOff;
+          var lVal = elWallDadoLen ? (parseFloat(elWallDadoLen.value) || dLenMm) : dLenMm;
+          if (changedStart) {
+            sVal = Math.max(0, Math.min(maxW - 100, Math.round(sVal)));
+            lVal = Math.max(100, Math.min(maxW - sVal, Math.round(lVal)));
+          } else {
+            sVal = Math.max(0, Math.min(maxW - 100, Math.round(dStartOff)));
+            lVal = Math.max(100, Math.min(maxW - sVal, Math.round(lVal)));
+          }
+          w.dadoTile = true;
+          w.dadoSegments = [{ startOffset: sVal, endOffset: Math.min(maxW, sVal + lVal) }];
+          ed.pushHistory('Resize Wall Dado Tile');
+          ed.render();
+          self.renderInspector(ed.selected);
+          if (self.saveToLocalStorage) self.saveToLocalStorage();
+          if (self.render3DHome) self.render3DHome(true);
+        };
+        if (elWallDadoStart) {
+          elWallDadoStart.addEventListener('change', function () { applyWallDadoInputs(true); });
+        }
+        if (elWallDadoLen) {
+          elWallDadoLen.addEventListener('change', function () { applyWallDadoInputs(false); });
+        }
+        if (elWallDadoFull) {
+          elWallDadoFull.addEventListener('click', function () {
+            w.dadoTile = true;
+            w.dadoSegments = [{ startOffset: 0, endOffset: Math.max(100, Math.round(lenMm)) }];
+            ed.pushHistory('Reset Wall Dado Full Length');
+            ed.render();
+            self.renderInspector(ed.selected);
+            if (self.saveToLocalStorage) self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
         var elWallDadoStyle = document.getElementById('inspWallDadoStyle');
@@ -24466,8 +25058,10 @@ window.ORBIX_DADO_TEXTURES = {
                   if (fn.unitConfig.counter) eu.counter = fn.unitConfig.counter;
                   if (fn.unitConfig.shutterCol) eu.shutterCol = fn.unitConfig.shutterCol;
                   if (fn.unitConfig.carcass) eu.carcass = fn.unitConfig.carcass;
-                  if (fn.unitConfig.handle) eu.handle = fn.unitConfig.handle;
                   if (fn.unitConfig.hfinish) eu.hfinish = fn.unitConfig.hfinish;
+                  if (fn.unitConfig.fixedPanel) eu.fixedPanel = Object.assign({}, fn.unitConfig.fixedPanel);
+                  if (fn.unitConfig.openShutter) eu.openShutter = Object.assign({}, fn.unitConfig.openShutter);
+                  if (fn.unitConfig.corner) eu.corner = Object.assign({}, fn.unitConfig.corner);
                 }
                 break;
               }
@@ -24515,7 +25109,18 @@ window.ORBIX_DADO_TEXTURES = {
         var elFurnW = document.getElementById('inspFurnW');
         if (elFurnW) {
           elFurnW.addEventListener('change', function (e) {
-            fn.dimensions.W = parseFloat(e.target.value);
+            var newW = parseFloat(e.target.value);
+            if (!(newW > 0)) return;
+            fn.dimensions.W = newW;
+            if (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) {
+              var halfW = Math.round(newW / 2);
+              fn.unitConfig.fixedPanel.width = halfW;
+              if (fn.unitConfig.openShutter) fn.unitConfig.openShutter.width = Math.max(0, newW - halfW);
+            }
+            if (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.enabled) {
+              fn.unitConfig.corner.legW = newW;
+              fn.unitConfig.corner.legD = newW;
+            }
             syncInspectorTo3D();
             self.editor.pushHistory('Resize Furniture');
             self.saveToLocalStorage();
@@ -24539,7 +25144,12 @@ window.ORBIX_DADO_TEXTURES = {
         var elFurnD = document.getElementById('inspFurnD');
         if (elFurnD) {
           elFurnD.addEventListener('change', function (e) {
-            fn.dimensions.D = parseFloat(e.target.value);
+            var newD = parseFloat(e.target.value);
+            if (!(newD > 0)) return;
+            fn.dimensions.D = newD;
+            if (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.enabled) {
+              fn.unitConfig.corner.depth = newD;
+            }
             syncInspectorTo3D();
             self.editor.pushHistory('Resize Furniture');
             self.saveToLocalStorage();
@@ -24939,29 +25549,30 @@ window.ORBIX_DADO_TEXTURES = {
                 window.S.active = existingIdx;
                 var activeUnit = window.S.units[existingIdx];
                 var isFbcm = !!(
-                  (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
-                  (fn.id && /fbcm/i.test(fn.id)) ||
-                  (fn.catalogItemId && /fbcm/i.test(fn.catalogItemId)) ||
-                  (fn.name && /l[-_ ]*shaped.*corner/i.test(fn.name)) ||
+                  (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || fn.unitConfig.unitType === 'wbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+                  (fn.id && /fbcm|wbcm/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fbcm|wbcm/i.test(fn.catalogItemId)) ||
+                  (fn.code && /fbcm|wbcm/i.test(fn.code)) ||
+                  (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(fn.name)) ||
                   fn.id === 'fbcm' || fn.catalogItemId === 'fbcm' ||
                   fn.id === 'f_fbcm_1' || fn.catalogItemId === 'f_fbcm_1'
                 );
                 var isFcm = !isFbcm && !!(
                   (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-rt' || fn.unitConfig.unitType === 'wcm-lt')) ||
                   (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
                   (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
+                  (fn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(fn.name)) ||
                   fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
                   fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
                   fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
                   fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
                 var isLt = !!(
-                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
                   (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
                   (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+                  (fn.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(fn.name)) ||
                   fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
                   fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
@@ -25005,20 +25616,20 @@ window.ORBIX_DADO_TEXTURES = {
               } else {
                 var isFcm = !!(
                   (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-rt' || fn.unitConfig.unitType === 'wcm-lt')) ||
                   (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
                   (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
+                  (fn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(fn.name)) ||
                   fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
                   fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
                   fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
                   fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
                 var isLt = !!(
-                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
                   (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
                   (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+                  (fn.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(fn.name)) ||
                   fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
                   fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
@@ -25441,34 +26052,36 @@ window.ORBIX_DADO_TEXTURES = {
           }
 
           var isExistingFbcm = !!(
-            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || fn.unitConfig.unitType === 'wbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
             fn.id === 'fbcm' || fn.catalogItemId === 'fbcm' ||
             fn.id === 'f_fbcm_1' || fn.catalogItemId === 'f_fbcm_1' ||
-            (fn.id && /fbcm/i.test(fn.id)) ||
-            (fn.name && /l[-_ ]*shaped.*corner/i.test(fn.name))
+            (fn.id && /fbcm|wbcm/i.test(fn.id)) ||
+            (fn.catalogItemId && /fbcm|wbcm/i.test(fn.catalogItemId)) ||
+            (fn.code && /fbcm|wbcm/i.test(fn.code)) ||
+            (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(fn.name))
           );
           var isExistingFcmLt = !isExistingFbcm && !!(
-            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
             (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
             (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+            (fn.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(fn.name)) ||
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           var isExistingFcm = !isExistingFbcm && !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
             isExistingFcmLt ||
-            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-rt' || fn.unitConfig.unitType === 'wcm-lt')) ||
             (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
             (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
+            (fn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(fn.name)) ||
             fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
             fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           if (isExistingFbcm) {
-            existing.unitType = 'fbcm';
+            existing.unitType = (fn.unitConfig && fn.unitConfig.unitType) || 'fbcm';
             existing.geometryType = 'l_shaped_corner';
             existing.shutters = 2;
             existing.sections = 1;
@@ -25477,9 +26090,10 @@ window.ORBIX_DADO_TEXTURES = {
             existing.hfinish = (fn.unitConfig && fn.unitConfig.hfinish) || 'black';
             existing.counter = (fn.unitConfig && fn.unitConfig.counter) || (isWall ? 'none' : 'black');
           } else if (isExistingFcm) {
+            var exHalfW = Math.round(((fn.dimensions && fn.dimensions.W) || existing.W || 600) / 2);
             existing.unitType = isExistingFcmLt ? 'fcm-lt' : 'fcm-rt';
-            existing.fixedPanel = (fn.unitConfig && fn.unitConfig.fixedPanel) || { enabled: true, width: 600, type: 'fixed' };
-            existing.openShutter = (fn.unitConfig && fn.unitConfig.openShutter) || { enabled: true, width: 600, type: 'shutter', count: 1, opening: isExistingFcmLt ? 'left' : 'right' };
+            existing.fixedPanel = (fn.unitConfig && fn.unitConfig.fixedPanel) || { enabled: true, width: exHalfW, type: 'fixed' };
+            existing.openShutter = (fn.unitConfig && fn.unitConfig.openShutter) || { enabled: true, width: (((fn.dimensions && fn.dimensions.W) || existing.W || 600) - exHalfW), type: 'shutter', count: 1, opening: isExistingFcmLt ? 'left' : 'right' };
             existing.shutters = 1;
             existing.sections = 2;
             existing.shelves = 1;
@@ -25493,27 +26107,29 @@ window.ORBIX_DADO_TEXTURES = {
           newUnits.push(existing);
         } else {
           var isFbcmNew = !!(
-            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || fn.unitConfig.unitType === 'wbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
             fn.id === 'fbcm' || fn.catalogItemId === 'fbcm' ||
             fn.id === 'f_fbcm_1' || fn.catalogItemId === 'f_fbcm_1' ||
-            (fn.id && /fbcm/i.test(fn.id)) ||
-            (fn.name && /l[-_ ]*shaped.*corner/i.test(fn.name))
+            (fn.id && /fbcm|wbcm/i.test(fn.id)) ||
+            (fn.catalogItemId && /fbcm|wbcm/i.test(fn.catalogItemId)) ||
+            (fn.code && /fbcm|wbcm/i.test(fn.code)) ||
+            (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(fn.name))
           );
           var isFcmLtNew = !isFbcmNew && !!(
-            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
             (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
             (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+            (fn.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(fn.name)) ||
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           var isFcmNew = !isFbcmNew && !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
             isFcmLtNew ||
-            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-rt' || fn.unitConfig.unitType === 'wcm-lt')) ||
             (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
             (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
+            (fn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(fn.name)) ||
             fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
             fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
@@ -25531,8 +26147,8 @@ window.ORBIX_DADO_TEXTURES = {
             unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFbcmNew ? 'fbcm' : (isFcmNew ? (isFcmLtNew ? 'fcm-lt' : 'fcm-rt') : undefined)),
             geometryType: (fn.unitConfig && fn.unitConfig.geometryType) || (isFbcmNew ? 'l_shaped_corner' : undefined),
             catalogItemId: fn.catalogItemId || fn.id,
-            fixedPanel: (fn.unitConfig && fn.unitConfig.fixedPanel) || (isFcmNew ? { enabled: true, width: 600, type: 'fixed' } : undefined),
-            openShutter: (fn.unitConfig && fn.unitConfig.openShutter) || (isFcmNew ? { enabled: true, width: 600, type: 'shutter', count: 1, opening: isFcmLtNew ? 'left' : 'right' } : undefined),
+            fixedPanel: (fn.unitConfig && fn.unitConfig.fixedPanel) || (isFcmNew ? { enabled: true, width: Math.round(defW / 2), type: 'fixed' } : undefined),
+            openShutter: (fn.unitConfig && fn.unitConfig.openShutter) || (isFcmNew ? { enabled: true, width: defW - Math.round(defW / 2), type: 'shutter', count: 1, opening: isFcmLtNew ? 'left' : 'right' } : undefined),
             unitConfig: fn.unitConfig ? Object.assign({}, fn.unitConfig) : undefined,
             elev: unitElev,
             W: (fn.dimensions && fn.dimensions.W) || defW,
@@ -26581,8 +27197,8 @@ window.ORBIX_DADO_TEXTURES = {
 
           if (tabId === 'cookscape_corner') {
             res = baseUnits.filter(function (it) {
-              var n = (it.name + ' ' + it.id).toLowerCase();
-              return n.indexOf('corner') !== -1 || n.indexOf('fcm') !== -1 || n.indexOf('fbcm') !== -1;
+              var n = (it.name + ' ' + it.id + ' ' + (it.code || '')).toLowerCase();
+              return n.indexOf('corner') !== -1 || n.indexOf('fcm') !== -1 || n.indexOf('fbcm') !== -1 || n.indexOf('wbcm') !== -1 || n.indexOf('wcm-rt (cookscape)') !== -1 || n.indexOf('wcm-lt (cookscape)') !== -1;
             });
           } else if (tabId === 'cookscape_drawers' || tabId === 'kitchen_drawers' || tabId === 'drawer_units') {
             res = baseUnits.filter(function (it) {
@@ -28041,6 +28657,9 @@ window.ORBIX_DADO_TEXTURES = {
       if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
         scene.background = new THREE.Color(0x82C3EC);
       }
+      if (!scene.fog && THREE.FogExp2) {
+        scene.fog = new THREE.FogExp2(0xCBE3F5, 0.000011);
+      }
       scene.children.forEach(function (c) {
         if (c.isMesh && c.geometry && c.geometry.type === 'PlaneGeometry' && c.geometry.parameters && c.geometry.parameters.width >= 100000) {
           if (typeof gl.makeGrassGroundMat === 'function') {
@@ -28091,6 +28710,9 @@ window.ORBIX_DADO_TEXTURES = {
         if (!keepCamera && gl.frame) gl.frame();
         if (gl.apply) gl.apply();
         if (gl.settle) gl.settle();
+      }
+      if (typeof this.updateProjectDetailsBadges === 'function') {
+        this.updateProjectDetailsBadges();
       }
     },
 
@@ -29843,45 +30465,38 @@ window.ORBIX_DADO_TEXTURES = {
         Hn.push({ cx: -u.W / 4 - 12, y: 30 + elev, w: sw, h: shh, hl: true, z: zF + T + T / 2, hd: hd, fin: fin, door: sA });
         Hn.push({ cx: u.W / 4 + 12, y: 30 + elev, w: sw, h: shh, hl: false, z: zF - 6 + T / 2, hd: hd, fin: fin, door: sB });
         fronts.push(sA, sB);
-      } else if (u.unitType === "fcm-lt" ||
-                 (u.unitConfig && u.unitConfig.unitType === "fcm-lt") ||
+      } else if (u.unitType === "fcm-lt" || u.unitType === "wcm-lt" ||
+                 (u.unitConfig && (u.unitConfig.unitType === "fcm-lt" || u.unitConfig.unitType === "wcm-lt")) ||
                  (u.openShutter && u.openShutter.opening === "left") ||
                  (u.unitConfig && u.unitConfig.openShutter && u.unitConfig.openShutter.opening === "left") ||
                  u.catalogItemId === "fcm-lt" || u.catalogItemId === "fm-lt-01" ||
                  u.id === "fcm-lt" || u.id === "fm-lt-01" ||
                  (u.id && /fcm[-_ ]*lt/i.test(u.id)) ||
-                 (u.label && /fcm[-_ ]*lt/i.test(u.label)) ||
-                 (u.name && /fcm[-_ ]*lt/i.test(u.name))) {
-        // FCM-LT (Cookscape): Left 600mm shutter is HINGED on the left (opening: "left") and opens outwards to the left.
-        // Right 600mm panel is 100% FIXED (no door, no hinge, no handle).
+                 (u.label && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(u.label)) ||
+                 (u.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(u.name))) {
         var fixW = (u.fixedPanel && u.fixedPanel.width) ||
                    (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.width) ||
-                   (u.W / 2);
-        var movW = u.W - fixW - 6;
+                   Math.round(u.W / 2);
+        var movW = Math.max(40, u.W - fixW - 6);
         var movCx = -u.W / 2 + movW / 2 + 3;
         var fixCx = u.W / 2 - fixW / 2;
-        // 1. Left Movable Shutter (Hinged on the left edge, opens outward to the left)
         hinged(movCx, 3, movW, u.H - 6, zF, true, frontParts(u, ds, movCx, 3, movW, u.H - 6, zF, SC, T, "door"));
-        // 2. Static Right Fixed Panel (attached directly to carcass, never opens, NO handle)
-        frontParts(u, ds, fixCx, 3, fixW - 3, u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
-      } else if (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled) ||
+        frontParts(u, ds, fixCx, 3, Math.max(40, fixW - 3), u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
+      } else if (u.unitType === "fcm-rt" || u.unitType === "wcm-rt" || (u.fixedPanel && u.fixedPanel.enabled) ||
                  (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.enabled) ||
-                 (u.unitConfig && u.unitConfig.unitType === "fcm-rt") ||
+                 (u.unitConfig && (u.unitConfig.unitType === "fcm-rt" || u.unitConfig.unitType === "wcm-rt")) ||
                  u.catalogItemId === "fcm-rt" || u.catalogItemId === "fm-rt-01" ||
                  u.id === "fcm-rt" || u.id === "fm-rt-01" ||
                  (u.id && /fcm[-_ ]*rt/i.test(u.id)) ||
-                 (u.label && /fcm[-_ ]*rt/i.test(u.label)) ||
-                 (u.name && /fcm[-_ ]*rt/i.test(u.name))) {
-        // FCM-RT (Cookscape): Left 600mm panel is 100% FIXED (no door, no hinge, no handle).
-        // Right 600mm shutter is HINGED on the right (opening: "right") and opens outwards to the right.
+                 (u.label && /(fcm[-_ ]*rt|wcm[-_ ]*rt\s*\(cookscape\))/i.test(u.label)) ||
+                 (u.name && /(fcm[-_ ]*rt|wcm[-_ ]*rt\s*\(cookscape\))/i.test(u.name))) {
         var fixW = (u.fixedPanel && u.fixedPanel.width) ||
                    (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.width) ||
-                   (u.W / 2);
-        var movW = u.W - fixW - 6;
+                   Math.round(u.W / 2);
+        var movW = Math.max(40, u.W - fixW - 6);
         var fixCx = -u.W / 2 + fixW / 2;
         var movCx = u.W / 2 - movW / 2;
-        // 1. Static Left Fixed Panel (attached directly to carcass, never opens, NO handle)
-        frontParts(u, ds, fixCx, 3, fixW - 3, u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
+        frontParts(u, ds, fixCx, 3, Math.max(40, fixW - 3), u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
         // 2. Right Movable Shutter (Hinged on the right edge, opens outward to the right)
         var isHl = !!(
           (u.openShutter && u.openShutter.opening === "left") ||
@@ -29920,16 +30535,17 @@ window.ORBIX_DADO_TEXTURES = {
       B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 38, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
     }
     if (ct === "kbase") {
-      var isFcm = (u.unitType === "fcm-rt" || u.unitType === "fcm-lt" || (u.fixedPanel && u.fixedPanel.enabled) ||
+      var isFcm = (u.unitType === "fcm-rt" || u.unitType === "fcm-lt" || u.unitType === "wcm-rt" || u.unitType === "wcm-lt" ||
+                   (u.fixedPanel && u.fixedPanel.enabled) ||
                    (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.enabled) ||
-                   (u.unitConfig && (u.unitConfig.unitType === "fcm-rt" || u.unitConfig.unitType === "fcm-lt")) ||
+                   (u.unitConfig && (u.unitConfig.unitType === "fcm-rt" || u.unitConfig.unitType === "fcm-lt" || u.unitConfig.unitType === "wcm-rt" || u.unitConfig.unitType === "wcm-lt")) ||
                    u.catalogItemId === "fcm-rt" || u.catalogItemId === "fm-rt-01" ||
                    u.catalogItemId === "fcm-lt" || u.catalogItemId === "fm-lt-01" ||
                    u.id === "fcm-rt" || u.id === "fm-rt-01" ||
                    u.id === "fcm-lt" || u.id === "fm-lt-01" ||
                    (u.id && /fcm[-_ ]*(rt|lt)/i.test(u.id)) ||
-                   (u.label && /fcm[-_ ]*(rt|lt)/i.test(u.label)) ||
-                   (u.name && /fcm[-_ ]*(rt|lt)/i.test(u.name)));
+                   (u.label && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(u.label)) ||
+                   (u.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(u.name)));
       var plinthH = (u.plinth === false) ? 0 : 100;
       if (plinthH > 0) {
         var pY = (elev > 0 && elev <= 150) ? elev : 0;
@@ -30981,10 +31597,10 @@ window.ORBIX_DADO_TEXTURES = {
       if (!window.THREE) return false;
       try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" }); }
       catch (e) { return false; }
-      renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = (NEO || FX) ? 1.04 : 1.08;
+      renderer.toneMappingExposure = (NEO || FX) ? 1.06 : 1.08;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.domElement.id = "gl";
@@ -30992,23 +31608,24 @@ window.ORBIX_DADO_TEXTURES = {
       stage.classList.add("gl");
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
+      scene.fog = new THREE.FogExp2(0xCBE3F5, 0.000011); // Subtle atmospheric perspective haze
       camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
       /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
       scene.environment = pmrem.fromScene(makeRoomScene(), 0.04, 10, 30000).texture;
       if (EMBED) camera.far = 80000;
-      keyL = new THREE.DirectionalLight(0xfffaec, NEO ? 1.45 : 1.35);
-      keyL.position.set(-3500, 6800, 5400); keyL.castShadow = true;
-      keyL.shadow.mapSize.set(2048, 2048);
-      var sc = keyL.shadow.camera; sc.left = -9000; sc.right = 9000; sc.top = 9000; sc.bottom = -9000; sc.near = 200; sc.far = 28000;
-      keyL.shadow.bias = -0.0004; keyL.shadow.normalBias = 2.5; keyL.shadow.radius = 2.2;
+      keyL = new THREE.DirectionalLight(0xfff7e6, NEO ? 1.48 : 1.38);
+      keyL.position.set(-3800, 7200, 5600); keyL.castShadow = true;
+      keyL.shadow.mapSize.set(4096, 4096);
+      var sc = keyL.shadow.camera; sc.left = -9500; sc.right = 9500; sc.top = 9500; sc.bottom = -9500; sc.near = 200; sc.far = 30000;
+      keyL.shadow.bias = -0.00025; keyL.shadow.normalBias = 1.6; keyL.shadow.radius = 2.8;
       scene.add(keyL); scene.add(keyL.target);
       /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
-      var fill = new THREE.DirectionalLight(0xdde9f8, 0.55); fill.position.set(2600, 1900, 4800); scene.add(fill);
-      var rim = new THREE.DirectionalLight(0xecf0f8, 0.35); rim.position.set(2400, 1600, -2600); scene.add(rim);
-      var bounceL = new THREE.DirectionalLight(0xf4ece0, 0.32); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
-      scene.add(new THREE.HemisphereLight(0x82C3EC, 0x4E8A42, 0.45)); // Sky blue overhead + grass green ground bounce
+      var fill = new THREE.DirectionalLight(0xdce8fa, 0.58); fill.position.set(2800, 2100, 5000); scene.add(fill);
+      var rim = new THREE.DirectionalLight(0xf1f4fa, 0.38); rim.position.set(2400, 1800, -2800); scene.add(rim);
+      var bounceL = new THREE.DirectionalLight(0xf7efe2, 0.34); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
+      scene.add(new THREE.HemisphereLight(0x9CD1F4, 0x567D46, 0.50)); // Sky radiance + warm ground bounce
       var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
@@ -31171,8 +31788,7 @@ window.ORBIX_DADO_TEXTURES = {
         }
       }
       var t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      var polished = !/quartz|greyq/.test(kind);
-      var m = new THREE.MeshPhysicalMaterial({ map: t, roughness: polished ? 0.22 : 0.3, metalness: 0, clearcoat: polished ? 0.7 : 0.35, clearcoatRoughness: 0.12, envMapIntensity: 0.7 });
+      var m = new THREE.MeshPhysicalMaterial({ map: t, roughness: 0.88, metalness: 0, clearcoat: 0, clearcoatRoughness: 0.92, envMapIntensity: 0.25 });
       matCache[k] = m; return m;
     }
     /* wardrobe glass: clear / frosted / smoked / bronze / fluted (vertical ribs, ~20 mm pitch) */
@@ -31558,14 +32174,22 @@ window.ORBIX_DADO_TEXTURES = {
         plan.furniture.forEach(function (fn) {
           var isFcm = !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-            (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
-            (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
-            (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-rt' || fn.unitConfig.unitType === 'wcm-lt')) ||
+            (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
+            (fn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(fn.name)) ||
             fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
-            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
+            fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+            fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
-          var numShutters = isFcm ? 1 : ((fn.unitConfig && fn.unitConfig.shutters !== undefined) ? parseInt(fn.unitConfig.shutters) : ((fn.dimensions && fn.dimensions.W > 1200) ? 3 : 2));
+          var isLCorner = !!(
+            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || fn.unitConfig.unitType === 'wbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+            (fn.id && /fbcm|wbcm/i.test(fn.id)) ||
+            (fn.catalogItemId && /fbcm|wbcm/i.test(fn.catalogItemId)) ||
+            (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(fn.name))
+          );
+          var numShutters = isFcm ? 1 : (isLCorner ? 2 : ((fn.unitConfig && fn.unitConfig.shutters !== undefined) ? parseInt(fn.unitConfig.shutters) : ((fn.dimensions && fn.dimensions.W > 1200) ? 3 : 2)));
           var numDrawers = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? parseInt(fn.unitConfig.drawers) : 0;
           fn.shutterStates = fn.shutterStates || [];
           for (var s = 0; s < numShutters; s++) fn.shutterStates[s] = allOpen;
@@ -31678,52 +32302,96 @@ window.ORBIX_DADO_TEXTURES = {
       }
       clearSelect(); render(); return null;
     }
+    function getCanvasNdcRect() {
+      if (renderer && renderer.domElement) {
+        var cr = renderer.domElement.getBoundingClientRect();
+        if (cr && cr.width > 0 && cr.height > 0) return cr;
+      }
+      return stage ? stage.getBoundingClientRect() : null;
+    }
+    function isVisObj(obj, stopAt) {
+      var cur = obj;
+      while (cur) {
+        if (cur.visible === false) return false;
+        if (cur === stopAt) break;
+        cur = cur.parent;
+      }
+      return true;
+    }
+    function isObstructionObj(obj, stopAt) {
+      var cur = obj;
+      while (cur && cur !== stopAt) {
+        var ud = cur.userData;
+        if (ud && (ud.isWall || ud.isFloorMesh || ud.isCeilingMesh)) return true;
+        var nm = cur.name || '';
+        if (nm.indexOf('Wall_') === 0 || nm.indexOf('Floor_') === 0 || nm.indexOf('Ceiling_') === 0 || nm.indexOf('DividerThreshold_') === 0 || nm === 'DoorGroup' || nm === 'WindowGroup') {
+          return true;
+        }
+        cur = cur.parent;
+      }
+      return false;
+    }
     function pick(clientX, clientY) {
       if (!ok) return false;
       if (xT > 0.5) { var item = pickPanel(clientX, clientY); if (EMBED) postUp({ event: "select", item: item }); return !!item; }
       if (!ray) { ray = new THREE.Raycaster(); ndc = new THREE.Vector2(); }
-      var r = stage.getBoundingClientRect();
+      var r = getCanvasNdcRect();
+      if (!r || !r.width || !r.height) return false;
       ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(ndc, camera);
 
-      // 1. Check single unit preview in root (if active)
-      if (root && root.children.length > 0) {
+      var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+      var homeActive = !!(homeObj && homeObj.children && homeObj.children.length > 0 && isVisObj(homeObj, scene));
+
+      // 1. Check single unit preview in root only when architectural OrbixHome3D scene is not active
+      if (!homeActive && root && root.children.length > 0 && isVisObj(root, scene)) {
         var hits = ray.intersectObjects(root.children, true);
         for (var i = 0; i < hits.length; i++) {
-          var o = hits[i].object;
+          var ho0 = hits[i].object;
+          if (!ho0 || !ho0.isMesh || !isVisObj(ho0, root)) continue;
+          var o = ho0;
           while (o && !o.userData.door) o = o.parent;
           if (o) { toggleDoor(o.userData.door); return true; }
-          if (hits[i].object.userData.role && hits[i].object.userData.role !== "reveal") return false;
+          if (ho0.userData.role && ho0.userData.role !== "reveal") return false;
         }
       }
 
       // 2. Check placed modular units in 3D Home (OrbixHome3D)
-      var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
-      if (homeObj && homeObj.children && homeObj.children.length > 0) {
+      if (homeActive) {
         var homeHits = ray.intersectObjects(homeObj.children, true);
         for (var j = 0; j < homeHits.length; j++) {
           var ho = homeHits[j].object;
+          if (!ho || !ho.isMesh || !isVisObj(ho, scene)) continue;
           var part = ho;
+          var furnAncestor = null;
+          var actionPart = null;
           while (part && part !== homeObj) {
-            if (part.userData && (part.userData.isShutter || part.userData.isDrawer)) {
-              break;
+            if (!actionPart && part.userData && (part.userData.isShutter || part.userData.isDrawer)) {
+              actionPart = part;
+            }
+            if (!furnAncestor && part.userData && (part.userData.furnitureId || part.userData.isFurnitureGroup)) {
+              furnAncestor = part;
             }
             part = part.parent;
           }
-
-          if (part && part.userData && part.userData.furnitureId) {
-            var fId = part.userData.furnitureId;
+          if (!actionPart && !furnAncestor) {
+            if (isObstructionObj(ho, homeObj)) return false;
+            continue;
+          }
+          part = actionPart || furnAncestor;
+          var fId = (part.userData && part.userData.furnitureId) || (furnAncestor && furnAncestor.userData && furnAncestor.userData.furnitureId);
+          if (fId) {
             var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
             var fn = plan && plan.furniture && plan.furniture.find(function (it) { return it.id === fId; });
 
-            if (fn) {
-              if (part.userData.isShutter) {
-                var sIdx = part.userData.shutterIdx !== undefined ? part.userData.shutterIdx : 0;
+            if (fn && actionPart) {
+              if (actionPart.userData.isShutter) {
+                var sIdx = actionPart.userData.shutterIdx !== undefined ? actionPart.userData.shutterIdx : 0;
                 fn.shutterStates = fn.shutterStates || [];
                 fn.shutterStates[sIdx] = !fn.shutterStates[sIdx];
                 var isOpen = fn.shutterStates[sIdx];
-                if (part.userData.isSliding) {
-                  var sGroup = part.userData.shutterGroup || (part.parent && part.parent.userData && part.parent.userData.isSliding ? part.parent : null);
+                if (actionPart.userData.isSliding) {
+                  var sGroup = actionPart.userData.shutterGroup || (actionPart.parent && actionPart.parent.userData && actionPart.parent.userData.isSliding ? actionPart.parent : null);
                   if (sGroup && sGroup.userData && sGroup.userData.openX !== undefined) {
                     sGroup.position.x = isOpen ? sGroup.userData.openX : sGroup.userData.closedX;
                     render();
@@ -31731,7 +32399,7 @@ window.ORBIX_DADO_TEXTURES = {
                     window.OrbixUI.render3DHome(true);
                   }
                 } else {
-                  var hingeGroup = part.userData.hingeGroup || (part.parent && part.parent.userData && part.parent.userData.isShutterHinge ? part.parent : null);
+                  var hingeGroup = actionPart.userData.hingeGroup || (actionPart.parent && actionPart.parent.userData && actionPart.parent.userData.isShutterHinge ? actionPart.parent : null);
                   if (hingeGroup) {
                     var hingeLeft = (hingeGroup.name === "ShutterHinge_Right" || hingeGroup.name === "ShutterHinge_1") ? false : (hingeGroup.name === "ShutterHinge_Left" || hingeGroup.name === "ShutterHinge_0" ? true : (sIdx % 2 === 0));
                     hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.55) : 0;
@@ -31747,12 +32415,12 @@ window.ORBIX_DADO_TEXTURES = {
                 if (window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
                 if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
                 return true;
-              } else if (part.userData.isDrawer) {
-                var dIdx = part.userData.drawerIdx !== undefined ? part.userData.drawerIdx : 0;
+              } else if (actionPart.userData.isDrawer) {
+                var dIdx = actionPart.userData.drawerIdx !== undefined ? actionPart.userData.drawerIdx : 0;
                 fn.drawerStates = fn.drawerStates || [];
                 fn.drawerStates[dIdx] = !fn.drawerStates[dIdx];
                 var isDOpen = fn.drawerStates[dIdx];
-                var drawerGroup = part.userData.drawerGroup || (part.parent && part.parent.userData && part.parent.userData.isDrawerGroup ? part.parent : null);
+                var drawerGroup = actionPart.userData.drawerGroup || (actionPart.parent && actionPart.parent.userData && actionPart.parent.userData.isDrawerGroup ? actionPart.parent : null);
                 if (drawerGroup) {
                   drawerGroup.position.z = isDOpen ? 350 : 0;
                   render();
@@ -31768,6 +32436,7 @@ window.ORBIX_DADO_TEXTURES = {
                 return true;
               }
             }
+            return false;
           }
         }
       }
@@ -31777,31 +32446,53 @@ window.ORBIX_DADO_TEXTURES = {
     function pickFurniture(clientX, clientY) {
       if (!ok || !scene) return null;
       if (!ray) { ray = new THREE.Raycaster(); ndc = new THREE.Vector2(); }
-      var r = stage.getBoundingClientRect();
+      var r = getCanvasNdcRect();
+      if (!r || !r.width || !r.height) return null;
       ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(ndc, camera);
 
-      var activeU = U();
-      if (activeU && activeU._furnId && root && root.children.length > 0) {
-        var rootHits = ray.intersectObjects(root.children, true);
-        if (rootHits.length > 0) {
-          return { object: root, id: activeU._furnId, hitPoint: rootHits[0].point };
+      var homeObj = scene.getObjectByName('OrbixHome3D');
+      var homeActive = !!(homeObj && homeObj.children && homeObj.children.length > 0 && isVisObj(homeObj, scene));
+
+      if (!homeActive) {
+        var activeU = U();
+        if (activeU && activeU._furnId && root && root.children.length > 0 && isVisObj(root, scene)) {
+          var rootHits = ray.intersectObjects(root.children, true);
+          for (var ri = 0; ri < rootHits.length; ri++) {
+            var ro = rootHits[ri].object;
+            if (ro && ro.isMesh && isVisObj(ro, root)) {
+              return { object: root, id: activeU._furnId, hitPoint: rootHits[ri].point };
+            }
+          }
         }
+        return null;
       }
 
-      var homeObj = scene.getObjectByName('OrbixHome3D');
-      if (!homeObj) return null;
       var hits = ray.intersectObjects(homeObj.children, true);
       for (var i = 0; i < hits.length; i++) {
-        var o = hits[i].object;
-        if (o && o.userData && o.userData.furnitureId) {
-          return { object: (o.userData.parentGroup || o), id: o.userData.furnitureId, hitPoint: hits[i].point };
+        var ho = hits[i].object;
+        if (!ho || !ho.isMesh || !isVisObj(ho, scene)) continue;
+
+        var cur = ho;
+        var matchedId = null;
+        var matchedGroup = null;
+        while (cur && cur !== homeObj) {
+          if (!matchedId && cur.userData && cur.userData.furnitureId) {
+            matchedId = cur.userData.furnitureId;
+            if (cur.userData.parentGroup) matchedGroup = cur.userData.parentGroup;
+          }
+          if (cur.userData && cur.userData.isFurnitureGroup) {
+            if (!matchedId && cur.userData.furnitureId) matchedId = cur.userData.furnitureId;
+            matchedGroup = cur;
+            break;
+          }
+          cur = cur.parent;
         }
-        while (o && o.parent && o.parent !== homeObj && (!o.userData || !o.userData.isFurnitureGroup)) {
-          o = o.parent;
+        if (matchedId) {
+          return { object: (matchedGroup || ho), id: matchedId, hitPoint: hits[i].point };
         }
-        if (o && o.userData && (o.userData.isFurniture || o.userData.isFurnitureGroup)) {
-          return { object: o, id: o.userData.furnitureId, hitPoint: hits[i].point };
+        if (isObstructionObj(ho, homeObj)) {
+          return null;
         }
       }
       return null;
@@ -32141,12 +32832,18 @@ window.ORBIX_DADO_TEXTURES = {
       window.addEventListener('resize', function () {
         cachedStageRect = null;
       });
+      if (typeof ResizeObserver !== 'undefined' && stage) {
+        try {
+          new ResizeObserver(function () { cachedStageRect = null; }).observe(stage);
+        } catch (roErr) { }
+      }
     }
 
     function apply(forceSync) {
       if (!ok) return;
-      if (!cachedStageRect) {
-        cachedStageRect = stage.getBoundingClientRect();
+      var liveR = stage.getBoundingClientRect();
+      if (liveR && liveR.width > 0 && liveR.height > 0) {
+        cachedStageRect = liveR;
       }
       var r = cachedStageRect;
       if (r && r.width && r.height) {
@@ -32156,14 +32853,29 @@ window.ORBIX_DADO_TEXTURES = {
         camera.aspect = r.width / r.height;
         camera.updateProjectionMatrix();
       }
+      if (target.y < 0) target.y = 0;
+      if (target.y > 6000) target.y = 6000;
+      cam.pitch = Math.max(-85, Math.min(22, cam.pitch));
+      cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom));
       var yaw = cam.yaw * Math.PI / 180, el = (-cam.pitch) * Math.PI / 180;
-      var safeZoom = Math.max(0.02, 1 + cam.zoom);
-      var d = Math.max(50, dist / safeZoom);
+      var safeZoom = Math.max(0.18, 1 + cam.zoom);
+      var d = Math.min(45000, Math.max(50, dist / safeZoom));
+      var minCamY = 85;
+      var rawCamY = target.y + d * Math.sin(el);
+      if (rawCamY < minCamY && d > 1) {
+        var minSin = Math.max(-1, Math.min(1, (minCamY - target.y) / d));
+        el = Math.asin(minSin);
+        cam.pitch = -(el * 180 / Math.PI);
+      }
       if (camera.far < d * 4) {
         camera.far = Math.max(1000000, d * 5);
         camera.updateProjectionMatrix();
       }
-      camera.position.set(target.x + d * Math.sin(yaw) * Math.cos(el), target.y + d * Math.sin(el), target.z + d * Math.cos(yaw) * Math.cos(el));
+      camera.position.set(
+        target.x + d * Math.sin(yaw) * Math.cos(el),
+        Math.max(minCamY, target.y + d * Math.sin(el)),
+        target.z + d * Math.cos(yaw) * Math.cos(el)
+      );
       camera.lookAt(target);
       updateWallCutaway();
       if (forceSync) {
@@ -32557,7 +33269,8 @@ window.ORBIX_DADO_TEXTURES = {
     function gizmoPick(clientX, clientY) {
       if (!gizmoGroup || !gizmoGroup.visible) return null;
       if (!ray) { ray = new THREE.Raycaster(); ndc = new THREE.Vector2(); }
-      var r = stage.getBoundingClientRect();
+      var r = getCanvasNdcRect();
+      if (!r || !r.width || !r.height) return null;
       ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(ndc, camera);
       var hits = ray.intersectObjects(gizmoMeshes, true);
@@ -33121,8 +33834,8 @@ window.ORBIX_DADO_TEXTURES = {
     scale = Math.max(0.05, Math.min((r.height * 0.72) / totalH, (r.width * 0.64) / span));
   }
   function camApply() {
-    cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
-    cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom));
+    cam.pitch = Math.max(-85, Math.min(22, cam.pitch));
+    cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom));
     if (GL.ok) { GL.apply(); return; }
     var s = scale * (1 + cam.zoom);
     world.style.transform = "rotateX(" + (-cam.pitch) + "deg) rotateY(" + cam.yaw + "deg) scale3d(" + s + "," + s + "," + s + ")";
@@ -33556,7 +34269,7 @@ window.ORBIX_DADO_TEXTURES = {
       if (ids.length === 2) {
         var a = pts[ids[0]], b = pts[ids[1]];
         var d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-        if (lastD) cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom + (d - lastD) * 0.004));
+        if (lastD) cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom + (d - lastD) * 0.004));
         lastD = d;
       } else {
         var dx = e.clientX - prev.clientX;
@@ -33574,7 +34287,7 @@ window.ORBIX_DADO_TEXTURES = {
             tgt.y += dy * Math.cos(pitchRad) * panSpeed;
             tgt.x += dy * Math.sin(pitchRad) * sinY * panSpeed * 0.5;
             tgt.z += dy * Math.sin(pitchRad) * cosY * panSpeed * 0.5;
-            tgt.y = Math.max(-500, Math.min(6000, tgt.y));
+            tgt.y = Math.max(50, Math.min(6000, tgt.y));
           }
         } else {
           // Orbit camera 360 degrees
@@ -33599,7 +34312,7 @@ window.ORBIX_DADO_TEXTURES = {
     stage.addEventListener("wheel", function (e) {
       e.preventDefault();
       var zoomDelta = -e.deltaY * 0.0012;
-      cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
+      cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
       camApply();
     }, { passive: false });
 

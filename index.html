@@ -190,6 +190,7 @@
     <!-- ══════ DESIGN ══════ -->
     <section class="view" id="view-design">
       <div class="stagewrap">
+        <div class="project-details-bar project-details-3d" id="studioProjectDetailsBadge" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:5px 14px;background:linear-gradient(90deg,#f8fafc,#eef5fb);border-bottom:1px solid #dbeafe;font-size:11.5px;color:#1e293b;z-index:5;"></div>
         <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
           <div id="world"></div>
         </div>
@@ -223,6 +224,9 @@
             <!-- 3D Dado Tile Option -->
             <button class="minibtn is-on" id="toggleDadoTileBtn" title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
               <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
+            </button>
+            <button class="minibtn" id="toggleCeilingBtn" title="Toggle Architectural Ceiling Slab ON / OFF" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+              <span>🏠 Ceiling: <b id="ceilingStatus">OFF</b></span>
             </button>
             <select class="minibtn" id="dadoTileStyleSelect" title="Dado Tile Pattern & Color" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
               <option value="rhombus_sage" selected>🧱 Pattern 1: Sage Diamond</option>
@@ -372,13 +376,13 @@
                   <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (900×750)</option>
                   <option value="fcm-rt">fcm-rt: FCM-RT (Cookscape) (1200×720)</option>
                   <option value="fm-rt-01">fm-rt-01: FCM-RT (Cookscape) (1200×720)</option>
-                  <option value="fcm-rt-1500">fcm-rt-1500: FCM-RT 1500 (Cookscape) (1200×720, elev: 1500)</option>
+                  <option value="fcm-rt-1500">fcm-rt-1500: WCM-RT (Cookscape) (600×600×300, 300 Fixed + 300 Open, elev: 1500)</option>
                   <option value="fcm-lt">fcm-lt: FCM-LT (Cookscape) (1200×720)</option>
                   <option value="fm-lt-01">fm-lt-01: FCM-LT (Cookscape) (1200×720)</option>
-                  <option value="fcm-lt-1500">fcm-lt-1500: FCM-LT 1500 (Cookscape) (1200×720, elev: 1500)</option>
+                  <option value="fcm-lt-1500">fcm-lt-1500: WCM-LT (Cookscape) (600×600×300, 300 Open + 300 Fixed, elev: 1500)</option>
                   <option value="fbcm">fbcm: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
                   <option value="f_fbcm_1">f_fbcm_1: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
-                  <option value="fbcm-1500">fbcm-1500: L-SHAPED CORNER 1500 (Cookscape) (900×720, elev: 1500)</option>
+                  <option value="fbcm-1500">fbcm-1500: WBCM (Cookscape) (600×600×300, L-Corner, elev: 1500)</option>
                   <option value="fm-120">fm-120: FM 120 Kitchen Base (1200×750)</option>
                   <option value="fm-60">fm-60: FM 60 Kitchen Base (600×750)</option>
                   <option value="wm-60-dbl">wm-60-dbl: WM 60 DOUBLE Kitchen Wall (600×600)</option>
@@ -433,6 +437,8 @@
           </div>
         </div>
       </div>
+
+      <div class="project-details-bar project-details-2d" id="planProjectDetailsBar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:5px 14px;background:linear-gradient(90deg,#f8fafc,#eef5fb);border-bottom:1px solid #dbeafe;font-size:11.5px;color:#1e293b;"></div>
 
       <div class="plan-layout">
         <!-- ══════ LEFT FURNISH SUB-MENU PANEL ══════ -->

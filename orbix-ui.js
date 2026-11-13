@@ -82,6 +82,9 @@
           var draftObj = JSON.parse(draftRaw);
           var draftPlan = draftObj.plan || draftObj;
           if (draftPlan && (draftPlan.plan || draftPlan.walls || draftPlan.furniture || draftPlan.meta)) {
+            if (draftObj.projectId && !draftPlan._projectId) {
+              draftPlan._projectId = String(draftObj.projectId);
+            }
             this.project = draftPlan;
             restored = true;
             if (draftObj.units && window.S) {
@@ -158,6 +161,13 @@
 
     loadProject: function (proj) {
       if (!proj) return;
+      var prevProjId = (this.project && (this.project._projectId || (this.project.meta && this.project.meta.id) || this.project.id)) || '';
+      var nextProjId = proj._projectId || (proj.meta && proj.meta.id) || proj.id || '';
+      if (nextProjId) proj._projectId = String(nextProjId);
+      if (window.S && (!prevProjId || !nextProjId || String(prevProjId) !== String(nextProjId))) {
+        window.S.units = [];
+        window.S.active = 0;
+      }
       this.project = proj;
       if (typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
         try { Core.detectRooms(this.project); } catch (e) { console.warn('[Orbix UI] detectRooms on load:', e); }
@@ -371,6 +381,34 @@
           }
           if (typeof window.toast === 'function') {
             window.toast(window.dadoTileEnabled ? '🧱 Dado Tiles Enabled (Backsplash ON)' : '🧱 Dado Tiles Disabled (Backsplash OFF)');
+          }
+        });
+      }
+
+      // 3D Architectural Ceiling Toggle (ON / OFF)
+      var ceilBtn = document.getElementById('toggleCeilingBtn');
+      var ceilStatus = document.getElementById('ceilingStatus');
+      if (ceilBtn) {
+        if (window.ceilingEnabled === undefined) window.ceilingEnabled = false;
+        var syncCeilBtn = function () {
+          if (ceilStatus) ceilStatus.textContent = window.ceilingEnabled ? 'ON' : 'OFF';
+          ceilBtn.classList.toggle('is-on', !!window.ceilingEnabled);
+          ceilBtn.style.background = window.ceilingEnabled ? '#059669' : '#f1f5f9';
+          ceilBtn.style.color = window.ceilingEnabled ? '#ffffff' : '#334155';
+          ceilBtn.style.borderColor = window.ceilingEnabled ? '#047857' : '#cbd5e1';
+        };
+        syncCeilBtn();
+        ceilBtn.addEventListener('click', function () {
+          window.ceilingEnabled = !window.ceilingEnabled;
+          syncCeilBtn();
+          if (self.archRenderer) {
+            self.archRenderer.ceilingEnabled = window.ceilingEnabled;
+          }
+          if (typeof self.render3DHome === 'function') {
+            self.render3DHome(true);
+          }
+          if (typeof window.toast === 'function') {
+            window.toast(window.ceilingEnabled ? '🏠 Ceiling Enabled (ON)' : '🏠 Ceiling Disabled (OFF)');
           }
         });
       }
@@ -898,6 +936,56 @@
       }
 
       this.update3DStudioRoomOptions();
+      this.updateProjectDetailsBadges();
+    },
+
+    updateProjectDetailsBadges: function () {
+      var proj = this.project || (this.editor && this.editor.project);
+      var meta = (proj && proj.meta) || {};
+      var plan = (proj && proj.plan) || {};
+      var rooms = plan.rooms || [];
+      var units = plan.furniture || [];
+      var activeProj = null;
+      if (window.OrbixProjects && window.OrbixProjects.activeProjectId && Array.isArray(window.OrbixProjects.projects)) {
+        activeProj = window.OrbixProjects.projects.find(function (p) {
+          return String(p.id) === String(window.OrbixProjects.activeProjectId);
+        });
+      }
+      var title = (activeProj && (activeProj.title || activeProj.name)) || meta.title || 'Untitled Project';
+      var client = (activeProj && activeProj.client) || meta.clientName || '';
+      var phone = (activeProj && activeProj.contact_number) || meta.phone || meta.contactNumber || '';
+      var code = (activeProj && activeProj.cp_code) || meta.cpCode || meta.quoteId || '';
+      var designer = (activeProj && activeProj.bh_name) || meta.designerName || meta.bhName || '';
+      var location = (activeProj && activeProj.location) || meta.siteAddress || meta.siteLocation || '';
+      var status = (activeProj && activeProj.status) || meta.status || 'Active Design';
+
+      var esc = function (v) {
+        return String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      };
+
+      var leftParts = ['<span style="font-weight:700;color:#0f172a;">📋 ' + esc(title) + '</span>'];
+      if (code) leftParts.push('<span style="background:#dbeafe;color:#1e40af;padding:1px 7px;border-radius:10px;font-weight:700;font-size:10.5px;">' + esc(code) + '</span>');
+      if (client) leftParts.push('<span style="color:#334155;">👤 <b>' + esc(client) + '</b>' + (phone ? ' (' + esc(phone) + ')' : '') + '</span>');
+      if (location) leftParts.push('<span style="color:#475569;">📍 ' + esc(location) + '</span>');
+      if (designer) leftParts.push('<span style="color:#475569;">🎨 BH: <b>' + esc(designer) + '</b></span>');
+
+      var totalSqFt = 0;
+      for (var ri = 0; ri < rooms.length; ri++) totalSqFt += (rooms[ri].areaSqFt || 0);
+      var rightHtml =
+        '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#475569;font-size:11px;">' +
+        '<span><b>' + rooms.length + '</b> Rooms</span>' +
+        '<span>· <b>' + units.length + '</b> Units</span>' +
+        (totalSqFt > 0 ? '<span>· <b>' + Math.round(totalSqFt) + '</b> sq ft</span>' : '') +
+        '<span style="background:#dcfce7;color:#166534;padding:1px 7px;border-radius:10px;font-weight:600;font-size:10.5px;">' + esc(status) + '</span>' +
+        '</div>';
+
+      var fullHtml = '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' + leftParts.join('') + '</div>' + rightHtml;
+
+      var bar2D = document.getElementById('planProjectDetailsBar');
+      if (bar2D) bar2D.innerHTML = fullHtml;
+
+      var bar3D = document.getElementById('studioProjectDetailsBadge');
+      if (bar3D) bar3D.innerHTML = fullHtml;
     },
 
     update3DStudioRoomOptions: function () {
@@ -976,6 +1064,10 @@
         var innerMm = Math.round(Core.getWallInnerLength ? Core.getWallInnerLength(w, planObj) : lenMm);
         var innerDisplay = (ed.formatDim ? ed.formatDim(innerMm) : (innerMm + ' mm'));
         var hasDado = !!(w.dadoTile || (w.dadoSegments && w.dadoSegments.length > 0));
+        var dSeg0 = (w.dadoSegments && w.dadoSegments.length > 0) ? w.dadoSegments[0] : { startOffset: 0, endOffset: Math.round(lenMm) };
+        var dStartOff = Math.max(0, Math.round(dSeg0.startOffset || 0));
+        var dEndOff = Math.min(Math.round(lenMm), Math.round(dSeg0.endOffset !== undefined ? dSeg0.endOffset : lenMm));
+        var dLenMm = Math.max(100, dEndOff - dStartOff);
         panel.innerHTML =
           '<div class="insp-title">Wall Properties</div>' +
           '<div class="insp-row"><label>Clear Inner Length ' + (ed.unitSystem === 'imperial' ? '(e.g. 5ft or mm)' : '(mm)') + '</label><input type="text" id="inspWallInnerLen" value="' + (ed.unitSystem === 'imperial' ? innerDisplay : innerMm) + '">' +
@@ -990,9 +1082,23 @@
           '    <input type="checkbox" id="inspWallDado" ' + (hasDado ? 'checked' : '') + ' style="width:18px;height:18px;cursor:pointer;">' +
           '  </label>' +
           '  <div style="font-size:11px;color:#15803d;margin-top:4px;">' +
-          (hasDado ? '✓ Backsplash tiles applied to this wall (850mm–1500mm)' : 'No dado tile on this wall. Check to enable backsplash.') +
+          (hasDado ? '✓ Length: ' + dLenMm + ' mm (850–1500mm H). Drag green handles in 2D or edit below.' : 'No dado tile on this wall. Check to enable backsplash.') +
           '  </div>' +
           (hasDado ? (
+          '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">' +
+          '    <div>' +
+          '      <label style="font-size:10.5px;font-weight:600;color:#166534;display:block;margin-bottom:2px;">Start Offset (mm)</label>' +
+          '      <input type="number" id="inspWallDadoStart" value="' + dStartOff + '" min="0" max="' + Math.max(0, Math.round(lenMm) - 100) + '" step="50" style="width:100%;height:26px;font-size:11.5px;padding:0 5px;">' +
+          '    </div>' +
+          '    <div>' +
+          '      <label style="font-size:10.5px;font-weight:600;color:#166534;display:block;margin-bottom:2px;">Tile Length (mm)</label>' +
+          '      <input type="number" id="inspWallDadoLen" value="' + dLenMm + '" min="100" max="' + Math.max(100, Math.round(lenMm) - dStartOff) + '" step="50" style="width:100%;height:26px;font-size:11.5px;padding:0 5px;">' +
+          '    </div>' +
+          '  </div>' +
+          '  <div style="display:flex;gap:6px;margin-top:6px;align-items:center;">' +
+          '    <button type="button" id="inspWallDadoFull" style="padding:3px 8px;font-size:10.5px;font-weight:600;border:1px solid #86efac;background:#dcfce7;color:#166534;border-radius:4px;cursor:pointer;">Reset Full Wall</button>' +
+          '    <span style="font-size:10px;color:#15803d;">Max ' + Math.round(lenMm) + ' mm</span>' +
+          '  </div>' +
           '  <div style="margin-top:8px;">' +
           '    <label style="font-size:11px;font-weight:600;color:#166534;display:block;margin-bottom:3px;">Tile Pattern</label>' +
           '    <select id="inspWallDadoStyle" style="width:100%;height:26px;font-size:11px;border:1px solid #bbf7d0;border-radius:4px;background:#ffffff;padding:0 4px;">' +
@@ -1063,14 +1169,60 @@
         if (elWallDado) {
           elWallDado.addEventListener('change', function (e) {
             w.dadoTile = e.target.checked;
-            if (!w.dadoTile) delete w.dadoSegments;
+            if (w.dadoTile) {
+              if (!w.dadoSegments || !w.dadoSegments.length) {
+                w.dadoSegments = [{ startOffset: 0, endOffset: Math.max(100, Math.round(lenMm)) }];
+              }
+            } else {
+              delete w.dadoSegments;
+            }
             ed.pushHistory('Toggle Wall Dado Tile');
             ed.render();
             self.renderInspector(ed.selected);
+            if (self.saveToLocalStorage) self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
             if (typeof window.toast === 'function') {
-              window.toast(w.dadoTile ? '🧱 Dado Tile Enabled for Wall' : '🧱 Dado Tile Removed from Wall');
+              window.toast(w.dadoTile ? '🧱 Dado Tile Enabled (drag green handles or adjust length in Inspector)' : '🧱 Dado Tile Removed from Wall');
             }
+          });
+        }
+        var elWallDadoStart = document.getElementById('inspWallDadoStart');
+        var elWallDadoLen = document.getElementById('inspWallDadoLen');
+        var elWallDadoFull = document.getElementById('inspWallDadoFull');
+        var applyWallDadoInputs = function (changedStart) {
+          var maxW = Math.max(100, Math.round(lenMm));
+          var sVal = elWallDadoStart ? (parseFloat(elWallDadoStart.value) || 0) : dStartOff;
+          var lVal = elWallDadoLen ? (parseFloat(elWallDadoLen.value) || dLenMm) : dLenMm;
+          if (changedStart) {
+            sVal = Math.max(0, Math.min(maxW - 100, Math.round(sVal)));
+            lVal = Math.max(100, Math.min(maxW - sVal, Math.round(lVal)));
+          } else {
+            sVal = Math.max(0, Math.min(maxW - 100, Math.round(dStartOff)));
+            lVal = Math.max(100, Math.min(maxW - sVal, Math.round(lVal)));
+          }
+          w.dadoTile = true;
+          w.dadoSegments = [{ startOffset: sVal, endOffset: Math.min(maxW, sVal + lVal) }];
+          ed.pushHistory('Resize Wall Dado Tile');
+          ed.render();
+          self.renderInspector(ed.selected);
+          if (self.saveToLocalStorage) self.saveToLocalStorage();
+          if (self.render3DHome) self.render3DHome(true);
+        };
+        if (elWallDadoStart) {
+          elWallDadoStart.addEventListener('change', function () { applyWallDadoInputs(true); });
+        }
+        if (elWallDadoLen) {
+          elWallDadoLen.addEventListener('change', function () { applyWallDadoInputs(false); });
+        }
+        if (elWallDadoFull) {
+          elWallDadoFull.addEventListener('click', function () {
+            w.dadoTile = true;
+            w.dadoSegments = [{ startOffset: 0, endOffset: Math.max(100, Math.round(lenMm)) }];
+            ed.pushHistory('Reset Wall Dado Full Length');
+            ed.render();
+            self.renderInspector(ed.selected);
+            if (self.saveToLocalStorage) self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
           });
         }
         var elWallDadoStyle = document.getElementById('inspWallDadoStyle');
@@ -1508,8 +1660,10 @@
                   if (fn.unitConfig.counter) eu.counter = fn.unitConfig.counter;
                   if (fn.unitConfig.shutterCol) eu.shutterCol = fn.unitConfig.shutterCol;
                   if (fn.unitConfig.carcass) eu.carcass = fn.unitConfig.carcass;
-                  if (fn.unitConfig.handle) eu.handle = fn.unitConfig.handle;
                   if (fn.unitConfig.hfinish) eu.hfinish = fn.unitConfig.hfinish;
+                  if (fn.unitConfig.fixedPanel) eu.fixedPanel = Object.assign({}, fn.unitConfig.fixedPanel);
+                  if (fn.unitConfig.openShutter) eu.openShutter = Object.assign({}, fn.unitConfig.openShutter);
+                  if (fn.unitConfig.corner) eu.corner = Object.assign({}, fn.unitConfig.corner);
                 }
                 break;
               }
@@ -1557,7 +1711,18 @@
         var elFurnW = document.getElementById('inspFurnW');
         if (elFurnW) {
           elFurnW.addEventListener('change', function (e) {
-            fn.dimensions.W = parseFloat(e.target.value);
+            var newW = parseFloat(e.target.value);
+            if (!(newW > 0)) return;
+            fn.dimensions.W = newW;
+            if (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) {
+              var halfW = Math.round(newW / 2);
+              fn.unitConfig.fixedPanel.width = halfW;
+              if (fn.unitConfig.openShutter) fn.unitConfig.openShutter.width = Math.max(0, newW - halfW);
+            }
+            if (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.enabled) {
+              fn.unitConfig.corner.legW = newW;
+              fn.unitConfig.corner.legD = newW;
+            }
             syncInspectorTo3D();
             self.editor.pushHistory('Resize Furniture');
             self.saveToLocalStorage();
@@ -1581,7 +1746,12 @@
         var elFurnD = document.getElementById('inspFurnD');
         if (elFurnD) {
           elFurnD.addEventListener('change', function (e) {
-            fn.dimensions.D = parseFloat(e.target.value);
+            var newD = parseFloat(e.target.value);
+            if (!(newD > 0)) return;
+            fn.dimensions.D = newD;
+            if (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.enabled) {
+              fn.unitConfig.corner.depth = newD;
+            }
             syncInspectorTo3D();
             self.editor.pushHistory('Resize Furniture');
             self.saveToLocalStorage();
@@ -1981,29 +2151,30 @@
                 window.S.active = existingIdx;
                 var activeUnit = window.S.units[existingIdx];
                 var isFbcm = !!(
-                  (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
-                  (fn.id && /fbcm/i.test(fn.id)) ||
-                  (fn.catalogItemId && /fbcm/i.test(fn.catalogItemId)) ||
-                  (fn.name && /l[-_ ]*shaped.*corner/i.test(fn.name)) ||
+                  (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || fn.unitConfig.unitType === 'wbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+                  (fn.id && /fbcm|wbcm/i.test(fn.id)) ||
+                  (fn.catalogItemId && /fbcm|wbcm/i.test(fn.catalogItemId)) ||
+                  (fn.code && /fbcm|wbcm/i.test(fn.code)) ||
+                  (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(fn.name)) ||
                   fn.id === 'fbcm' || fn.catalogItemId === 'fbcm' ||
                   fn.id === 'f_fbcm_1' || fn.catalogItemId === 'f_fbcm_1'
                 );
                 var isFcm = !isFbcm && !!(
                   (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-rt' || fn.unitConfig.unitType === 'wcm-lt')) ||
                   (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
                   (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
+                  (fn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(fn.name)) ||
                   fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
                   fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
                   fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
                   fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
                 var isLt = !!(
-                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
                   (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
                   (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+                  (fn.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(fn.name)) ||
                   fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
                   fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
@@ -2047,20 +2218,20 @@
               } else {
                 var isFcm = !!(
                   (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-rt' || fn.unitConfig.unitType === 'wcm-lt')) ||
                   (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
                   (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
+                  (fn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(fn.name)) ||
                   fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
                   fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
                   fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
                   fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
                 var isLt = !!(
-                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+                  (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
                   (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
                   (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
-                  (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+                  (fn.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(fn.name)) ||
                   fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
                   fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
                 );
@@ -2483,34 +2654,36 @@
           }
 
           var isExistingFbcm = !!(
-            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || fn.unitConfig.unitType === 'wbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
             fn.id === 'fbcm' || fn.catalogItemId === 'fbcm' ||
             fn.id === 'f_fbcm_1' || fn.catalogItemId === 'f_fbcm_1' ||
-            (fn.id && /fbcm/i.test(fn.id)) ||
-            (fn.name && /l[-_ ]*shaped.*corner/i.test(fn.name))
+            (fn.id && /fbcm|wbcm/i.test(fn.id)) ||
+            (fn.catalogItemId && /fbcm|wbcm/i.test(fn.catalogItemId)) ||
+            (fn.code && /fbcm|wbcm/i.test(fn.code)) ||
+            (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(fn.name))
           );
           var isExistingFcmLt = !isExistingFbcm && !!(
-            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
             (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
             (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+            (fn.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(fn.name)) ||
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           var isExistingFcm = !isExistingFbcm && !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
             isExistingFcmLt ||
-            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-rt' || fn.unitConfig.unitType === 'wcm-lt')) ||
             (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
             (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
+            (fn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(fn.name)) ||
             fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
             fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           if (isExistingFbcm) {
-            existing.unitType = 'fbcm';
+            existing.unitType = (fn.unitConfig && fn.unitConfig.unitType) || 'fbcm';
             existing.geometryType = 'l_shaped_corner';
             existing.shutters = 2;
             existing.sections = 1;
@@ -2519,9 +2692,10 @@
             existing.hfinish = (fn.unitConfig && fn.unitConfig.hfinish) || 'black';
             existing.counter = (fn.unitConfig && fn.unitConfig.counter) || (isWall ? 'none' : 'black');
           } else if (isExistingFcm) {
+            var exHalfW = Math.round(((fn.dimensions && fn.dimensions.W) || existing.W || 600) / 2);
             existing.unitType = isExistingFcmLt ? 'fcm-lt' : 'fcm-rt';
-            existing.fixedPanel = (fn.unitConfig && fn.unitConfig.fixedPanel) || { enabled: true, width: 600, type: 'fixed' };
-            existing.openShutter = (fn.unitConfig && fn.unitConfig.openShutter) || { enabled: true, width: 600, type: 'shutter', count: 1, opening: isExistingFcmLt ? 'left' : 'right' };
+            existing.fixedPanel = (fn.unitConfig && fn.unitConfig.fixedPanel) || { enabled: true, width: exHalfW, type: 'fixed' };
+            existing.openShutter = (fn.unitConfig && fn.unitConfig.openShutter) || { enabled: true, width: (((fn.dimensions && fn.dimensions.W) || existing.W || 600) - exHalfW), type: 'shutter', count: 1, opening: isExistingFcmLt ? 'left' : 'right' };
             existing.shutters = 1;
             existing.sections = 2;
             existing.shelves = 1;
@@ -2535,27 +2709,29 @@
           newUnits.push(existing);
         } else {
           var isFbcmNew = !!(
-            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || fn.unitConfig.unitType === 'wbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
             fn.id === 'fbcm' || fn.catalogItemId === 'fbcm' ||
             fn.id === 'f_fbcm_1' || fn.catalogItemId === 'f_fbcm_1' ||
-            (fn.id && /fbcm/i.test(fn.id)) ||
-            (fn.name && /l[-_ ]*shaped.*corner/i.test(fn.name))
+            (fn.id && /fbcm|wbcm/i.test(fn.id)) ||
+            (fn.catalogItemId && /fbcm|wbcm/i.test(fn.catalogItemId)) ||
+            (fn.code && /fbcm|wbcm/i.test(fn.code)) ||
+            (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(fn.name))
           );
           var isFcmLtNew = !isFbcmNew && !!(
-            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-lt' || (fn.unitConfig.openShutter && fn.unitConfig.openShutter.opening === 'left'))) ||
             (fn.id && /fcm[-_ ]*lt/i.test(fn.id)) ||
             (fn.catalogItemId && /fcm[-_ ]*lt/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*lt/i.test(fn.name)) ||
+            (fn.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(fn.name)) ||
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           var isFcmNew = !isFbcmNew && !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
             isFcmLtNew ||
-            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt')) ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-rt' || fn.unitConfig.unitType === 'wcm-lt')) ||
             (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
             (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*(rt|lt)/i.test(fn.name)) ||
+            (fn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(fn.name)) ||
             fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
             fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
@@ -2573,8 +2749,8 @@
             unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFbcmNew ? 'fbcm' : (isFcmNew ? (isFcmLtNew ? 'fcm-lt' : 'fcm-rt') : undefined)),
             geometryType: (fn.unitConfig && fn.unitConfig.geometryType) || (isFbcmNew ? 'l_shaped_corner' : undefined),
             catalogItemId: fn.catalogItemId || fn.id,
-            fixedPanel: (fn.unitConfig && fn.unitConfig.fixedPanel) || (isFcmNew ? { enabled: true, width: 600, type: 'fixed' } : undefined),
-            openShutter: (fn.unitConfig && fn.unitConfig.openShutter) || (isFcmNew ? { enabled: true, width: 600, type: 'shutter', count: 1, opening: isFcmLtNew ? 'left' : 'right' } : undefined),
+            fixedPanel: (fn.unitConfig && fn.unitConfig.fixedPanel) || (isFcmNew ? { enabled: true, width: Math.round(defW / 2), type: 'fixed' } : undefined),
+            openShutter: (fn.unitConfig && fn.unitConfig.openShutter) || (isFcmNew ? { enabled: true, width: defW - Math.round(defW / 2), type: 'shutter', count: 1, opening: isFcmLtNew ? 'left' : 'right' } : undefined),
             unitConfig: fn.unitConfig ? Object.assign({}, fn.unitConfig) : undefined,
             elev: unitElev,
             W: (fn.dimensions && fn.dimensions.W) || defW,
@@ -3623,8 +3799,8 @@
 
           if (tabId === 'cookscape_corner') {
             res = baseUnits.filter(function (it) {
-              var n = (it.name + ' ' + it.id).toLowerCase();
-              return n.indexOf('corner') !== -1 || n.indexOf('fcm') !== -1 || n.indexOf('fbcm') !== -1;
+              var n = (it.name + ' ' + it.id + ' ' + (it.code || '')).toLowerCase();
+              return n.indexOf('corner') !== -1 || n.indexOf('fcm') !== -1 || n.indexOf('fbcm') !== -1 || n.indexOf('wbcm') !== -1 || n.indexOf('wcm-rt (cookscape)') !== -1 || n.indexOf('wcm-lt (cookscape)') !== -1;
             });
           } else if (tabId === 'cookscape_drawers' || tabId === 'kitchen_drawers' || tabId === 'drawer_units') {
             res = baseUnits.filter(function (it) {
@@ -5083,6 +5259,9 @@
       if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
         scene.background = new THREE.Color(0x82C3EC);
       }
+      if (!scene.fog && THREE.FogExp2) {
+        scene.fog = new THREE.FogExp2(0xCBE3F5, 0.000011);
+      }
       scene.children.forEach(function (c) {
         if (c.isMesh && c.geometry && c.geometry.type === 'PlaneGeometry' && c.geometry.parameters && c.geometry.parameters.width >= 100000) {
           if (typeof gl.makeGrassGroundMat === 'function') {
@@ -5133,6 +5312,9 @@
         if (!keepCamera && gl.frame) gl.frame();
         if (gl.apply) gl.apply();
         if (gl.settle) gl.settle();
+      }
+      if (typeof this.updateProjectDetailsBadges === 'function') {
+        this.updateProjectDetailsBadges();
       }
     },
 

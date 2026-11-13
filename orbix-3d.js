@@ -22,6 +22,7 @@
     this.materials = {};
     this.selectedFloorType = 'white_tile';
     this.dadoTileEnabled = (typeof window !== 'undefined' && window.dadoTileEnabled !== undefined) ? window.dadoTileEnabled : true;
+    this.ceilingEnabled = (typeof window !== 'undefined' && window.ceilingEnabled !== undefined) ? !!window.ceilingEnabled : false;
     this.isolatedRoomId = null;
     this.initMaterials();
   }
@@ -252,7 +253,9 @@
       var img = new Image();
       var tex = new THREE.Texture(img);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(3, 2);
+      tex.repeat.set(1, 1);
+      if (THREE.sRGBEncoding !== undefined) tex.encoding = THREE.sRGBEncoding;
+      if (tex.anisotropy !== undefined) tex.anisotropy = 8;
       img.onload = function () {
         tex.needsUpdate = true;
       };
@@ -313,7 +316,9 @@
 
     var subwayTex = new THREE.CanvasTexture(canvas);
     subwayTex.wrapS = subwayTex.wrapT = THREE.RepeatWrapping;
-    subwayTex.repeat.set(2, 2);
+    subwayTex.repeat.set(1, 1);
+    if (THREE.sRGBEncoding !== undefined) subwayTex.encoding = THREE.sRGBEncoding;
+    if (subwayTex.anisotropy !== undefined) subwayTex.anisotropy = 8;
     ArchitecturalRenderer._dadoTextures[style] = subwayTex;
     return subwayTex;
   };
@@ -326,8 +331,9 @@
     var mat = new THREE.MeshStandardMaterial({
       color: 0xF8F9FA,
       map: tex,
-      roughness: 0.16,
-      metalness: 0.04
+      roughness: 0.24,
+      metalness: 0.02,
+      envMapIntensity: 0.85
     });
     ArchitecturalRenderer._dadoMaterials[style] = mat;
     return mat;
@@ -596,12 +602,13 @@
     // Dado Tile Wall Finish (Backsplash)
     this.materials.dadoTile = this.createDadoTileMaterial();
 
-    // Ceiling & False Ceiling
+    // Ceiling & False Ceiling (FrontSide facing downward -Y so bird's-eye camera looks inside cleanly)
     this.materials.ceiling = new THREE.MeshStandardMaterial({
-      color: 0xFFFFFF,
-      roughness: 0.9,
+      color: 0xF8FAFC,
+      roughness: 0.92,
       metalness: 0.0,
-      side: THREE.DoubleSide
+      envMapIntensity: 0.45,
+      side: THREE.FrontSide
     });
 
     // Tactile Wood Grain Bump Map
@@ -743,20 +750,34 @@
       }
     }
 
-    // 2. Build Room Floors (with inner divided room holes to prevent floor overlapping/glitches)
+    // 2. Build Room Floors & Optional Ceilings (with inner divided room holes to prevent overlap/glitches)
+    var showCeiling = (typeof window !== 'undefined' && window.ceilingEnabled !== undefined)
+      ? !!window.ceilingEnabled
+      : !!this.ceilingEnabled;
+    var defaultCeilingH = 2800;
+
     if (rooms && rooms.length > 0) {
       for (var r = 0; r < rooms.length; r++) {
         var room = rooms[r];
         var floorMesh = this.buildRoomFloor(room, rooms);
         if (floorMesh) this.group.add(floorMesh);
 
+        if (showCeiling) {
+          var ceilingMesh = this.buildRoomCeiling(room, rooms, defaultCeilingH);
+          if (ceilingMesh) this.group.add(ceilingMesh);
+        }
+
         // Photorealistic Interior Architectural Room Lighting
-        var roomLightGroup = this.buildRoomInteriorLighting(room, 2800);
+        var roomLightGroup = this.buildRoomInteriorLighting(room, defaultCeilingH);
         if (roomLightGroup) this.group.add(roomLightGroup);
       }
     } else {
       var fallbackFloor = this.buildBoundingFloor(walls, furniture);
       if (fallbackFloor) this.group.add(fallbackFloor);
+      if (showCeiling && fallbackFloor && fallbackFloor.userData && fallbackFloor.userData.boundingRoom) {
+        var fallbackCeil = this.buildRoomCeiling(fallbackFloor.userData.boundingRoom, null, defaultCeilingH);
+        if (fallbackCeil) this.group.add(fallbackCeil);
+      }
     }
 
     // 3. Build Placed Furniture Units in 3D & associate with closest wall
@@ -942,7 +963,28 @@
         if (dadoTop <= dadoBottom + 50) return;
         var dadoH = dadoTop - dadoBottom;
         var dadoT = 6;
+        var DADO_TILE_MM = 609.6; // Exact 2ft x 2ft (609.6mm x 609.6mm) ceramic tile scale
         var dadoGeo = new THREE.BoxGeometry(subLen, dadoH, dadoT);
+        if (dadoGeo.attributes && dadoGeo.attributes.uv && dadoGeo.attributes.position) {
+          var dPos = dadoGeo.attributes.position;
+          var dUv = dadoGeo.attributes.uv;
+          var dNorm = dadoGeo.attributes.normal;
+          for (var ui = 0; ui < dPos.count; ui++) {
+            var lx = dPos.getX(ui);
+            var ly = dPos.getY(ui);
+            var lz = dPos.getZ(ui);
+            var nx = dNorm ? Math.abs(dNorm.getX(ui)) : 0;
+            var ny = dNorm ? Math.abs(dNorm.getY(ui)) : 0;
+            if (nx > 0.5) {
+              dUv.setXY(ui, (lz + dadoT / 2) / DADO_TILE_MM, (ly + dadoH / 2) / DADO_TILE_MM);
+            } else if (ny > 0.5) {
+              dUv.setXY(ui, (sStart + subLen / 2 + lx) / DADO_TILE_MM, (lz + dadoT / 2) / DADO_TILE_MM);
+            } else {
+              dUv.setXY(ui, (sStart + subLen / 2 + lx) / DADO_TILE_MM, (ly + dadoH / 2) / DADO_TILE_MM);
+            }
+          }
+          dUv.needsUpdate = true;
+        }
         var tileF = new THREE.Mesh(dadoGeo, tileMat);
         tileF.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, wThick / 2 + dadoT / 2);
         tileF.receiveShadow = true;
@@ -1360,9 +1402,75 @@
     mesh.position.y = isInnerRoom ? 1.08 : 1.0; // Subtle elevation for inner divided room to eliminate coplanar Z-fighting
     mesh.receiveShadow = true;
     mesh.name = 'Floor_' + (room.name || 'Room');
-    mesh.userData = { isFloorMesh: true, floorFinish: finishType, roomId: room.id };
+    mesh.userData = { isFloorMesh: true, floorFinish: finishType, roomId: room.id, boundingRoom: room };
 
     return mesh;
+  };
+
+  ArchitecturalRenderer.prototype.buildRoomCeiling = function (room, allRooms, ceilingH) {
+    if (!room || !room.polygon || room.polygon.length < 3 || typeof THREE === 'undefined') return null;
+    ceilingH = ceilingH || 2800;
+    var cleaner = (typeof Core !== 'undefined' && Core.cleanPolygon) || ArchitecturalRenderer.cleanPolygon;
+    var poly = cleaner ? cleaner(room.polygon) : room.polygon;
+    if (!poly || poly.length < 3) poly = room.polygon.filter(function (pt) { return pt && isFinite(pt.x) && isFinite(pt.y); });
+    if (!poly || poly.length < 3) return null;
+
+    var area2 = 0;
+    for (var i = 0; i < poly.length; i++) {
+      var j = (i + 1) % poly.length;
+      area2 += poly[i].x * poly[j].y - poly[j].x * poly[i].y;
+    }
+    if (Math.abs(area2 / 2) < 100000) return null;
+
+    var ordered = poly.slice();
+    if (area2 < 0) ordered.reverse(); // CCW in (x, y) shape space -> Rx(+PI/2) faces -Y downward
+
+    var shape = new THREE.Shape();
+    shape.moveTo(ordered[0].x, ordered[0].y);
+    for (var k = 1; k < ordered.length; k++) {
+      shape.lineTo(ordered[k].x, ordered[k].y);
+    }
+    shape.closePath();
+
+    var isInnerRoom = false;
+    if (allRooms && allRooms.length > 1) {
+      for (var ar = 0; ar < allRooms.length; ar++) {
+        var otherR = allRooms[ar];
+        if (!otherR || otherR.id === room.id || !otherR.polygon || otherR.polygon.length < 3) continue;
+        var otherCenter = (typeof Core !== 'undefined' && Core.Vec2) ? Core.Vec2.polygonCentroid(otherR.polygon) : null;
+        if (!otherCenter) continue;
+        if (otherR.areaSqMm < (room.areaSqMm || 999999999) && Core.Vec2.pointInPolygon(otherCenter, poly)) {
+          var holePoly = cleaner ? cleaner(otherR.polygon) : otherR.polygon;
+          if (holePoly && holePoly.length >= 3) {
+            var hA = 0;
+            for (var hi = 0; hi < holePoly.length; hi++) {
+              var hj = (hi + 1) % holePoly.length;
+              hA += holePoly[hi].x * holePoly[hj].y - holePoly[hj].x * holePoly[hi].y;
+            }
+            var oHole = holePoly.slice();
+            if (hA > 0) oHole.reverse();
+            var hPath = new THREE.Path();
+            hPath.moveTo(oHole[0].x, oHole[0].y);
+            for (var hk = 1; hk < oHole.length; hk++) hPath.lineTo(oHole[hk].x, oHole[hk].y);
+            hPath.closePath();
+            shape.holes.push(hPath);
+          }
+        } else if (otherR.areaSqMm > (room.areaSqMm || 0) && Core.Vec2.pointInPolygon(Core.Vec2.polygonCentroid(poly), otherR.polygon)) {
+          isInnerRoom = true;
+        }
+      }
+    }
+
+    var geo = new THREE.ShapeGeometry(shape);
+    if (typeof geo.computeVertexNormals === 'function') geo.computeVertexNormals();
+    var cMesh = new THREE.Mesh(geo, this.materials.ceiling);
+    cMesh.rotation.x = Math.PI / 2;
+    cMesh.position.y = isInnerRoom ? (ceilingH - 2) : ceilingH;
+    cMesh.receiveShadow = true;
+    cMesh.castShadow = false;
+    cMesh.name = 'Ceiling_' + (room.name || 'Room');
+    cMesh.userData = { isCeilingMesh: true, roomId: room.id };
+    return cMesh;
   };
 
   ArchitecturalRenderer.prototype.buildBoundingFloor = function (walls, furniture) {
@@ -1442,7 +1550,7 @@
       spotPositions.push({ x: cx, z: cz });
     }
 
-    var downlightIntensity = spotPositions.length > 1 ? (0.6 / spotPositions.length * 1.6) : 0.85;
+    var downlightIntensity = spotPositions.length > 1 ? Math.max(0.38, 1.15 / spotPositions.length) : 0.72;
 
     for (var s = 0; s < spotPositions.length; s++) {
       var sp = spotPositions[s];
@@ -1458,7 +1566,7 @@
         var lensMat = new THREE.MeshStandardMaterial({
           color: 0xFFFBEB,
           emissive: 0xFEF08A,
-          emissiveIntensity: 0.85,
+          emissiveIntensity: 0.95,
           roughness: 0.2
         });
         var lens = new THREE.Mesh(lensGeo, lensMat);
@@ -1466,18 +1574,25 @@
         group.add(lens);
       }
 
-      // Warm 3000K Architectural Downlight
+      // Warm 3000K Architectural Downlight (decay=1 for clean millimeter distance falloff)
       if (typeof THREE.SpotLight !== 'undefined') {
-        var spot = new THREE.SpotLight(0xFFF1DD, downlightIntensity);
-        spot.position.set(sp.x, ceilingH - 15, sp.z);
+        var spot = new THREE.SpotLight(0xFFF3DF, downlightIntensity);
+        spot.position.set(sp.x, ceilingH - 25, sp.z);
         spot.target.position.set(sp.x, 0, sp.z);
-        spot.angle = Math.PI / 3.2; // ~56 degree cone
-        spot.penumbra = 0.8;        // Soft feathered edge
-        spot.decay = 2.0;           // Physically realistic inverse-square decay
-        spot.distance = Math.max(5000, ceilingH * 2.2);
+        spot.angle = Math.PI / 2.8;
+        spot.penumbra = 0.88;
+        spot.decay = 1.0;
+        spot.distance = Math.max(6000, ceilingH * 2.4);
         group.add(spot);
         group.add(spot.target);
       }
+    }
+
+    // Soft Warm Interior Radiosity / Bounce Fill so vertical cabinets & corners have rich architectural depth
+    if (typeof THREE.PointLight !== 'undefined') {
+      var fillLight = new THREE.PointLight(0xFFF6E8, 0.36, Math.max(5200, Math.max(rWidth, rDepth) * 1.45), 1.0);
+      fillLight.position.set(cx, Math.max(1500, ceilingH * 0.72), cz);
+      group.add(fillLight);
     }
 
     return group;
@@ -2514,13 +2629,13 @@
      Build L-Shaped Corner Base Unit (Cookscape) - 900x900 Corner Module
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildLCornerCabinetMesh = function (furn, fg, dims, carcassMat, counterMat, plinthH, bodyH, counterH, getShutterMaterial, handleType, handleMat, isBase, isKitchen) {
-    var legW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
-    var legD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
-    var depth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || 560;
+    var legW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || (dims && dims.W) || 900;
+    var legD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || (dims && dims.W) || 900;
+    var depth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || (dims && dims.D) || 560;
     var W = legW;
     var D = legD;
-    var openW = W - depth; // 340 mm
-    var openD = D - depth; // 340 mm
+    var openW = W - depth;
+    var openD = D - depth;
 
     var plinthMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.85, metalness: 0.1 });
 
@@ -2630,25 +2745,37 @@
       fg.add(c2Mesh);
     }
 
-    // 8. Doors (Two Hinged Doors meeting at Inside 90° Corner)
+    // 8. Doors (Two Hinged Doors meeting cleanly at Inside 90° Corner, both openable)
     var shH = bodyH - 6;
     var shutterCenterY = plinthH + 3 + shH / 2;
-    var doorW = openW - 6;
+    var door1W = Math.max(80, openW - 22);
+    var door2W = Math.max(80, openD - 22);
     var shutterMat0 = getShutterMaterial(0);
     var shutterMat1 = getShutterMaterial(1);
+    var lHandleY = (isBase || plinthH > 0) ? shH * 0.25 : 0;
 
     // Door 1 (Front Door on Left Wing Face)
-    var d1LeftX = -W / 2 + 18;
+    var d1LeftX = -W / 2 + 4;
     var hinge1Group = new THREE.Group();
     hinge1Group.name = "ShutterHinge_0";
     hinge1Group.position.set(d1LeftX, shutterCenterY, -D / 2 + depth + 9);
     hinge1Group.userData = { isShutterHinge: true, shutterIdx: 0, furnitureId: furn.id };
 
-    var d1Mesh = new THREE.Mesh(new THREE.BoxGeometry(doorW, shH, 18), shutterMat0);
-    d1Mesh.position.set(doorW / 2, 0, 0);
+    var d1Mesh = new THREE.Mesh(new THREE.BoxGeometry(door1W, shH, 18), shutterMat0);
+    d1Mesh.position.set(door1W / 2, 0, 0);
     d1Mesh.castShadow = true; d1Mesh.receiveShadow = true;
     d1Mesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hinge1Group, parentGroup: fg, furnitureId: furn.id };
     hinge1Group.add(d1Mesh);
+
+    var h1Group = ArchitecturalRenderer.createHandleMesh("pull", handleMat, true, Math.min(180, shH * 0.35));
+    if (h1Group) {
+      h1Group.position.set(door1W - 28, lHandleY, 14);
+      h1Group.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hinge1Group, parentGroup: fg, furnitureId: furn.id };
+      h1Group.traverse(function (c) {
+        if (c.isMesh) c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 0, hingeGroup: hinge1Group, parentGroup: fg, furnitureId: furn.id };
+      });
+      hinge1Group.add(h1Group);
+    }
 
     var isD1Open = !!(furn.shutterStates && furn.shutterStates[0]);
     hinge1Group.rotation.y = isD1Open ? -Math.PI * 0.55 : 0;
@@ -2661,16 +2788,15 @@
     hinge2Group.position.set(W / 2 - depth - 9, shutterCenterY, d2RightZ);
     hinge2Group.userData = { isShutterHinge: true, shutterIdx: 1, furnitureId: furn.id };
 
-    var d2Mesh = new THREE.Mesh(new THREE.BoxGeometry(18, shH, doorW), shutterMat1);
-    d2Mesh.position.set(0, 0, -doorW / 2);
+    var d2Mesh = new THREE.Mesh(new THREE.BoxGeometry(18, shH, door2W), shutterMat1);
+    d2Mesh.position.set(0, 0, -door2W / 2);
     d2Mesh.castShadow = true; d2Mesh.receiveShadow = true;
     d2Mesh.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
     hinge2Group.add(d2Mesh);
 
-    // Vertical Black Pull Handle on Door 2 near inside corner junction
     var hGroup = ArchitecturalRenderer.createHandleMesh("pull", handleMat, true, Math.min(180, shH * 0.35));
     if (hGroup) {
-      hGroup.position.set(-14, shH * 0.25, -doorW + 35);
+      hGroup.position.set(-14, lHandleY, -door2W + 28);
       hGroup.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
       hGroup.traverse(function (c) {
         if (c.isMesh) c.userData = { isFurniturePart: true, isShutter: true, isSliding: false, shutterIdx: 1, hingeGroup: hinge2Group, parentGroup: fg, furnitureId: furn.id };
@@ -2685,7 +2811,7 @@
     // Position and rotate unit
     var catL = (furn.category || '').toLowerCase();
     var nameL = (furn.name || '').toLowerCase();
-    var isWallCorner = (!isBase && (catL.indexOf('wall') !== -1 || nameL.indexOf('wall') !== -1 || /(^|\b|_|-)(wcm)($|\b|_|-|\d+)/i.test(nameL))) || (furn.elevation >= 1000) || (furn.unitConfig && furn.unitConfig.ctype === 'kwall');
+    var isWallCorner = (!isBase && (catL.indexOf('wall') !== -1 || nameL.indexOf('wall') !== -1 || /(^|\b|_|-)(wcm|wbcm)($|\b|_|-|\d+)/i.test(nameL))) || (furn.elevation >= 1000) || (furn.unitConfig && furn.unitConfig.ctype === 'kwall');
     var defElevCorner = isWallCorner ? 1500 : 0;
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
@@ -2779,7 +2905,7 @@
         var slabW = W + 20;
         var slabD = baseD + 25;
         var slabGeo = new THREE.BoxGeometry(slabW, actualCounterH, slabD);
-        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.18, metalness: 0.08 });
+        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.88, metalness: 0.0 });
         var slabMesh = new THREE.Mesh(slabGeo, sMat);
         slabMesh.position.set(0, H - actualCounterH / 2, 2.5);
         slabMesh.castShadow = true; slabMesh.receiveShadow = true;
@@ -3158,8 +3284,9 @@
     }
     var counterMat = new THREE.MeshStandardMaterial({
       color: counterHex,
-      roughness: (counterColorName === 'white' || counterColorName === 'marble' || counterColorName === 'quartz') ? 0.12 : 0.22,
-      metalness: 0.08
+      roughness: 0.88,
+      metalness: 0.0,
+      envMapIntensity: 0.28
     });
 
     var isTvOrVanity = (cat === 'tv_unit' || cat === 'vanity' || (name && (name.indexOf('tv') !== -1 || name.indexOf('vanity') !== -1)));
@@ -3216,11 +3343,12 @@
     }
 
     var isLCorner = !!(
-      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
-      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' ||
-      (furn.id && /fbcm/i.test(furn.id)) ||
-      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
-      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || furn.unitConfig.unitType === 'wbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' || furn.catalogItemId === 'fbcm-1500' ||
+      (furn.id && /fbcm|wbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm|wbcm/i.test(furn.catalogItemId)) ||
+      (furn.code && /fbcm|wbcm/i.test(furn.code)) ||
+      (furn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(furn.name))
     );
     if (isLCorner) {
       return this.buildLCornerCabinetMesh(furn, fg, dims, carcassMat, counterMat, plinthH, bodyH, counterH, getShutterMaterial, handleType, handleMat, isBase, isKitchen);
@@ -3416,10 +3544,10 @@
     // 5b. Vertical Partition (for units with multiple sections or FCM-RT/FCM-LT)
     var isFcmUnit = !!(
       (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.enabled) ||
-      (furn.unitConfig && (furn.unitConfig.unitType === 'fcm-rt' || furn.unitConfig.unitType === 'fcm-lt')) ||
+      (furn.unitConfig && (furn.unitConfig.unitType === 'fcm-rt' || furn.unitConfig.unitType === 'fcm-lt' || furn.unitConfig.unitType === 'wcm-rt' || furn.unitConfig.unitType === 'wcm-lt')) ||
       (furn.id && /fcm[-_ ]*(rt|lt)/i.test(furn.id)) ||
       (furn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(furn.catalogItemId)) ||
-      (furn.name && /fcm[-_ ]*(rt|lt)/i.test(furn.name)) ||
+      (furn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(furn.name)) ||
       furn.id === 'fcm-rt' || furn.catalogItemId === 'fcm-rt' ||
       furn.id === 'fm-rt-01' || furn.catalogItemId === 'fm-rt-01' ||
       furn.id === 'fcm-lt' || furn.catalogItemId === 'fcm-lt' ||
@@ -3569,10 +3697,10 @@
     // 8. Front Shutters (Hinged or Sliding Mechanisms)
     var hasFixedPanel = isFcmUnit || !!(
       (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.enabled) ||
-      (furn.unitConfig && furn.unitConfig.unitType === 'fcm-rt') ||
+      (furn.unitConfig && (furn.unitConfig.unitType === 'fcm-rt' || furn.unitConfig.unitType === 'wcm-rt')) ||
       (furn.id && /fcm[-_ ]*rt/i.test(furn.id)) ||
       (furn.catalogItemId && /fcm[-_ ]*rt/i.test(furn.catalogItemId)) ||
-      (furn.name && /fcm[-_ ]*rt/i.test(furn.name)) ||
+      (furn.name && /(fcm[-_ ]*rt|wcm[-_ ]*rt\s*\(cookscape\))/i.test(furn.name)) ||
       furn.id === 'fcm-rt' || furn.catalogItemId === 'fcm-rt' ||
       furn.id === 'fm-rt-01' || furn.catalogItemId === 'fm-rt-01'
     );
@@ -3642,10 +3770,10 @@
         // FCM Modular Unit with 1 Fixed Panel & 1 Movable Shutter (FCM-RT or FCM-LT)
         var isLeftOpen = !!(
           (furn.unitConfig && furn.unitConfig.openShutter && furn.unitConfig.openShutter.opening === 'left') ||
-          (furn.unitConfig && furn.unitConfig.unitType === 'fcm-lt') ||
+          (furn.unitConfig && (furn.unitConfig.unitType === 'fcm-lt' || furn.unitConfig.unitType === 'wcm-lt')) ||
           (furn.id && /fcm[-_ ]*lt/i.test(furn.id)) ||
           (furn.catalogItemId && /fcm[-_ ]*lt/i.test(furn.catalogItemId)) ||
-          (furn.name && /fcm[-_ ]*lt/i.test(furn.name)) ||
+          (furn.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(furn.name)) ||
           furn.id === 'fcm-lt' || furn.catalogItemId === 'fcm-lt' ||
           furn.id === 'fm-lt-01' || furn.catalogItemId === 'fm-lt-01'
         );

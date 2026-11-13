@@ -1243,12 +1243,26 @@
         project = { id: id, title: 'Project ' + id };
       }
 
+      var prevId = this.activeProjectId;
+      if (prevId && id && String(prevId) !== String(id)) {
+        if (typeof this.flushImmediateSave === 'function') {
+          this.flushImmediateSave();
+        }
+        if (window.S) {
+          window.S.units = [];
+          window.S.active = 0;
+        }
+      }
+
       this.activeProjectId = id;
       if (this.currentUser) {
         try {
           localStorage.setItem('orbix_active_proj_' + this.currentUser.id, id);
         } catch (e) { }
       }
+      try {
+        if (id) localStorage.setItem('orbix_active_project_id', String(id));
+      } catch (e) { }
 
       // 1. Immediately switch view and load workspace without waiting for async API!
       self._loadProjectIntoWorkspace(project, switchView);
@@ -1303,14 +1317,12 @@
           localPlanRaw = localStorage.getItem('orbix_project_anon_' + activeId) ||
             localStorage.getItem('orbix_project_default_' + activeId);
         }
-        if (!localPlanRaw) {
+        if (!localPlanRaw && activeId) {
           var draftRaw = localStorage.getItem('orbix_working_project_draft');
           if (draftRaw) {
             var draftObj = JSON.parse(draftRaw);
-            var draftMatches = !draftObj.projectId ||
-              String(draftObj.projectId) === String(activeId) ||
-              (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project === draftObj.plan);
-            if (draftObj && draftMatches && draftObj.plan) {
+            var draftMatches = !!(draftObj && draftObj.projectId && String(draftObj.projectId) === String(activeId));
+            if (draftMatches && draftObj.plan) {
               localPlanRaw = JSON.stringify(draftObj.plan);
             }
           }
@@ -1318,33 +1330,45 @@
       } catch (e) { }
 
       var planToLoad = null;
-      var curInMemoryCount = (window.OrbixUI && window.OrbixUI.project) ? countFurn(window.OrbixUI.project) : 0;
+      var inMemProj = (window.OrbixUI && window.OrbixUI.project) ? window.OrbixUI.project : null;
+      var inMemId = inMemProj ? String(inMemProj._projectId || (inMemProj.meta && inMemProj.meta.id) || inMemProj.id || '') : '';
+      var inMemSameProj = !!(activeId && inMemId && inMemId === String(activeId));
+      var curInMemoryCount = inMemSameProj ? countFurn(inMemProj) : 0;
 
       if (localPlanRaw) {
         try {
           var parsedLocal = JSON.parse(localPlanRaw);
-          var localCount = countFurn(parsedLocal);
-          var serverCount = countFurn(project);
-
-          if (localCount >= serverCount || (parsedLocal._lastModified && (!project.updatedAt || parsedLocal._lastModified > new Date(project.updatedAt).getTime()))) {
-            planToLoad = parsedLocal;
-            console.log('[Orbix Studio] Retained latest local draft across refresh/offline (' + localCount + ' units).');
+          var localProjId = String(parsedLocal._projectId || (parsedLocal.meta && parsedLocal.meta.id) || parsedLocal.id || '');
+          var belongsToProject = !activeId || !localProjId || localProjId === String(activeId);
+          if (belongsToProject) {
+            var localCount = countFurn(parsedLocal);
+            var serverCount = countFurn(project);
+            var serverUpdatedMs = project.updatedAt ? new Date(project.updatedAt).getTime() : 0;
+            var localNewer = !!(parsedLocal._lastModified && (!serverUpdatedMs || parsedLocal._lastModified >= serverUpdatedMs));
+            if (localNewer || (serverCount === 0 && localCount > 0)) {
+              planToLoad = parsedLocal;
+              console.log('[Orbix Studio] Restored project-specific local draft (' + localCount + ' units) for ' + activeId + '.');
+            }
           }
         } catch (e) { }
       }
 
-      // If in-memory OrbixUI.project already restored units from init() and server copy has 0 units, PRESERVE in-memory units!
-      if (!planToLoad && curInMemoryCount > 0) {
+      // Preserve in-memory units ONLY when refreshing the SAME project (never leak a different project's work!)
+      if (!planToLoad && inMemSameProj && curInMemoryCount > 0) {
         var serverCount2 = countFurn(project);
         if (curInMemoryCount >= serverCount2) {
-          planToLoad = window.OrbixUI.project;
-          console.log('[Orbix Studio] Preserved in-memory restored units across server load (' + curInMemoryCount + ' units).');
+          planToLoad = inMemProj;
+          console.log('[Orbix Studio] Preserved same-project in-memory units (' + curInMemoryCount + ' units).');
         }
       }
 
       if (!planToLoad) {
         if (project.data && project.data.plan && (project.data.plan.plan || project.data.plan.walls || project.data.plan.furniture)) {
-          planToLoad = project.data.plan;
+          try {
+            planToLoad = JSON.parse(JSON.stringify(project.data.plan));
+          } catch (e) {
+            planToLoad = project.data.plan;
+          }
         } else if (window.OrbixCore && typeof window.OrbixCore.createProject === 'function') {
           planToLoad = window.OrbixCore.createProject(project.title || project.name || 'Untitled Project');
         } else {
@@ -1357,21 +1381,27 @@
         }
       }
 
-      // Normalize client and quote metadata into planToLoad.meta
+      // Stamp authoritative project ID & normalize client/quote metadata into planToLoad
       if (planToLoad) {
+        if (activeId) {
+          planToLoad._projectId = String(activeId);
+          planToLoad.id = String(activeId);
+        }
         planToLoad.meta = planToLoad.meta || {};
+        if (activeId) planToLoad.meta.id = String(activeId);
+        if (project.title || project.name) planToLoad.meta.title = project.title || project.name;
         var details = (project.data && project.data.details) || {};
-        planToLoad.meta.clientName = project.client || details.clientName || planToLoad.meta.clientName || 'Vikram Singhania';
+        planToLoad.meta.clientName = project.client || details.clientName || planToLoad.meta.clientName || 'Client';
         planToLoad.meta.phone = project.contact_number || details.contactNumber || details.phone || planToLoad.meta.phone || '';
         planToLoad.meta.contactNumber = planToLoad.meta.phone;
         planToLoad.meta.siteAddress = project.location || details.location || details.siteAddress || planToLoad.meta.siteAddress || '';
         planToLoad.meta.siteLocation = planToLoad.meta.siteAddress;
         planToLoad.meta.quoteId = project.cp_code || details.cpCode || details.quoteId || planToLoad.meta.quoteId || ('ORB-' + (activeId ? String(activeId).slice(-6) : '089'));
         planToLoad.meta.cpCode = planToLoad.meta.quoteId;
-        planToLoad.meta.designerName = project.bh_name || details.bhName || details.designerName || planToLoad.meta.designerName || (self.currentUser ? self.currentUser.name : 'Sangathamizh');
+        planToLoad.meta.designerName = project.bh_name || details.bhName || details.designerName || planToLoad.meta.designerName || (self.currentUser ? self.currentUser.name : 'Designer');
         planToLoad.meta.bhName = planToLoad.meta.designerName;
         planToLoad.meta.dateCreated = project.date_time || details.dateTime || details.dateCreated || planToLoad.meta.dateCreated || new Date().toISOString();
-        planToLoad.meta.status = 'Approved Estimate';
+        planToLoad.meta.status = project.status || details.status || planToLoad.meta.status || 'Active Design';
       }
 
       // Load 2D floor plan into OrbixUI

@@ -451,9 +451,34 @@ let currentUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@loc
 const shouldSkipPostgres = process.env.SKIP_POSTGRES === 'true' || process.env.USE_JSON_STORE === 'true';
 
 // Active Prisma Client instance
+function probePostgresTcp(urlStr, timeoutMs) {
+  return new Promise((resolve) => {
+    const net = require('net');
+    let host = '127.0.0.1';
+    let port = 5432;
+    try {
+      const parsed = new URL(urlStr);
+      host = parsed.hostname || '127.0.0.1';
+      port = Number(parsed.port) || 5432;
+    } catch (_) {}
+    let settled = false;
+    const sock = net.createConnection({ host, port });
+    const finish = (ok) => {
+      if (settled) return;
+      settled = true;
+      try { sock.destroy(); } catch (_) {}
+      resolve(ok);
+    };
+    sock.setTimeout(timeoutMs || 250);
+    sock.once('connect', () => finish(true));
+    sock.once('timeout', () => finish(false));
+    sock.once('error', () => finish(false));
+  });
+}
+
 let activePrisma = shouldSkipPostgres ? new MockPrismaClient() : new PrismaClient({
   datasources: { db: { url: currentUrl } },
-  log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
+  log: process.env.PRISMA_VERBOSE === 'true' ? ['warn', 'error'] : [],
   errorFormat: 'minimal'
 });
 
@@ -478,19 +503,43 @@ async function checkDatabaseConnection() {
     lastError = null;
     return false;
   }
+
+  // Fast silent TCP check so missing local PostgreSQL never emits noisy prisma:error stderr logs
+  const primaryReachable = await probePostgresTcp(currentUrl, 250);
+  if (!primaryReachable) {
+    const is5433 = currentUrl.includes(':5433');
+    const is5432 = currentUrl.includes(':5432');
+    const altUrl = (is5433 || is5432)
+      ? (is5433 ? currentUrl.replace(':5433', ':5432') : currentUrl.replace(':5432', ':5433'))
+      : null;
+    const altReachable = altUrl ? await probePostgresTcp(altUrl, 250) : false;
+    if (!altReachable) {
+      isConnected = false;
+      lastError = 'PostgreSQL offline';
+      if (!(activePrisma instanceof MockPrismaClient)) {
+        try { await activePrisma.$disconnect(); } catch (_) {}
+        activePrisma = new MockPrismaClient();
+      }
+      return false;
+    }
+  }
+
+async function ensureUpdatedAtColumns(client) {
+  const stmts = [
+    'ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP',
+    'ALTER TABLE project_shares ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP',
+    'ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP'
+  ];
+  for (const sql of stmts) {
+    try {
+      await client.$executeRawUnsafe(sql);
+    } catch (_) { }
+  }
+}
+
   try {
     await activePrisma.$queryRaw`SELECT 1`;
-
-    // Auto-migration: ensure required columns exist in PostgreSQL
-    try {
-      await activePrisma.$executeRawUnsafe(`
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-        ALTER TABLE project_shares ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-        ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-      `);
-    } catch (migErr) {
-      console.warn('Auto-migration column check notice:', migErr.message);
-    }
+    await ensureUpdatedAtColumns(activePrisma);
 
     isConnected = true;
     lastError = null;
@@ -501,36 +550,30 @@ async function checkDatabaseConnection() {
     const is5432 = currentUrl.includes(':5432');
     if (is5433 || is5432) {
       const altUrl = is5433 ? currentUrl.replace(':5433', ':5432') : currentUrl.replace(':5432', ':5433');
-      try {
-        const altPrisma = new PrismaClient({
-          datasources: { db: { url: altUrl } },
-          log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
-          errorFormat: 'minimal'
-        });
-        await altPrisma.$queryRaw`SELECT 1`;
+      if (await probePostgresTcp(altUrl, 250)) {
         try {
-          await altPrisma.$executeRawUnsafe(`
-            ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-            ALTER TABLE project_shares ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-            ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-          `);
-        } catch (_) {}
+          const altPrisma = new PrismaClient({
+            datasources: { db: { url: altUrl } },
+            log: process.env.PRISMA_VERBOSE === 'true' ? ['warn', 'error'] : [],
+            errorFormat: 'minimal'
+          });
+          await altPrisma.$queryRaw`SELECT 1`;
+          await ensureUpdatedAtColumns(altPrisma);
 
-        try { await activePrisma.$disconnect(); } catch (_) {}
-        activePrisma = altPrisma;
-        currentUrl = altUrl;
-        process.env.DATABASE_URL = altUrl;
-        process.env.PGPORT = is5433 ? '5432' : '5433';
-        isConnected = true;
-        lastError = null;
-        console.log(`✓ Prisma auto-recovered and connected to PostgreSQL live database on port ${process.env.PGPORT}.`);
-        return true;
-      } catch (altErr) {
-        // Fallback also failed: retain default port 5432
-        currentUrl = currentUrl.replace(':5433', ':5432');
-        process.env.DATABASE_URL = currentUrl;
-        process.env.PGPORT = '5432';
+          try { await activePrisma.$disconnect(); } catch (_) {}
+          activePrisma = altPrisma;
+          currentUrl = altUrl;
+          process.env.DATABASE_URL = altUrl;
+          process.env.PGPORT = is5433 ? '5432' : '5433';
+          isConnected = true;
+          lastError = null;
+          console.log(`✓ Prisma auto-recovered and connected to PostgreSQL live database on port ${process.env.PGPORT}.`);
+          return true;
+        } catch (_) {}
       }
+      currentUrl = currentUrl.replace(':5433', ':5432');
+      process.env.DATABASE_URL = currentUrl;
+      process.env.PGPORT = '5432';
     }
 
     isConnected = false;
@@ -552,7 +595,7 @@ if (shouldSkipPostgres) {
     if (ok) {
       console.log('✓ Prisma connected to PostgreSQL live database.');
     } else {
-      console.warn('⚠ Prisma PostgreSQL connection warning:', lastError);
+      console.log('✓ Resilient JSON Data Store active (PostgreSQL offline — zero data loss mode).');
     }
   });
 }

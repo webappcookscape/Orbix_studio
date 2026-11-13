@@ -857,20 +857,47 @@
         return;
       }
 
-      // Check if clicked directly on any placed furniture unit
+      // Check if clicked a Dado Tile segment start/end resize grip handle (valid in select or dado tool)
+      if ((self.activeTool === 'select' || self.activeTool === 'dado') && typeof self.findDadoHandleAt === 'function') {
+        var dadoHit = self.findDadoHandleAt(mouseScreen);
+        if (dadoHit) {
+          var dw = dadoHit.wall;
+          if (!dw.dadoSegments || !dw.dadoSegments.length) {
+            dw.dadoTile = true;
+            dw.dadoSegments = [{ startOffset: 0, endOffset: Math.round(dadoHit.wLen) }];
+          }
+          self.selected = [{ type: 'wall', id: dw.id }];
+          self.dragState = {
+            type: 'drag_dado_handle',
+            wall: dw,
+            segIndex: dadoHit.segIndex,
+            end: dadoHit.end,
+            wLen: dadoHit.wLen,
+            hasMoved: false
+          };
+          self.onSelectionChange(self.selected);
+          self.render();
+          return;
+        }
+      }
+
+      // Check if clicked directly on any placed furniture unit (exact rotated/L-shape polygon, never oversized circle!)
+      var clickedWallCore = (self.activeTool === 'select' && typeof self.isPointOnWallBand === 'function') ? self.isPointOnWallBand(worldPt) : false;
       var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
       var matchingHits = [];
-      for (var fi = furnList.length - 1; fi >= 0; fi--) {
-        var fn = furnList[fi];
-        var fPoly = Core.getFurniturePolygon(fn);
-        if (Core.Vec2.pointInPolygon(worldPt, fPoly) || Vec2.dist(worldPt, fn.pos) < Math.max(100, (fn.dimensions ? fn.dimensions.W : 600) / 2)) {
-          matchingHits.push(fn);
+      if (!clickedWallCore) {
+        for (var fi = furnList.length - 1; fi >= 0; fi--) {
+          var fn = furnList[fi];
+          var fPoly = Core.getFurniturePolygon(fn);
+          if (Core.Vec2.pointInPolygon(worldPt, fPoly)) {
+            matchingHits.push(fn);
+          }
         }
       }
 
       // When in select tool, clicking a placed furniture unit selects and allows moving it
       if (matchingHits.length > 0 && self.activeTool === 'select') {
-        // Priority to higher elevation units (wall units AFFL 1500/2100 over base units AFFL 0)
+        // Priority to higher elevation units (wall units AFFL 1500/2100 over base units AFFL 0), tie-break by center proximity
         var getUnitElevation = function (f) {
           if (f.elevation !== undefined && f.elevation !== null) return parseFloat(f.elevation) || 0;
           if (f.pos && f.pos.z !== undefined && f.pos.z !== null) return parseFloat(f.pos.z) || 0;
@@ -881,7 +908,9 @@
           return 0;
         };
         matchingHits.sort(function (a, b) {
-          return getUnitElevation(b) - getUnitElevation(a);
+          var elevDiff = getUnitElevation(b) - getUnitElevation(a);
+          if (Math.abs(elevDiff) > 5) return elevDiff;
+          return Vec2.dist(worldPt, a.pos) - Vec2.dist(worldPt, b.pos);
         });
 
         var curSelId = (self.selected && self.selected.length === 1 && self.selected[0].type === 'furniture') ? self.selected[0].id : null;
@@ -946,7 +975,24 @@
       } else if (self.activeTool === 'dimension') {
         self.handleDimensionMouseDown(worldPt);
       } else if (self.activeTool === 'dado') {
-        self.handleDadoMouseDown(worldPt);
+        var dNear = self.findNearestWall(worldPt, 400);
+        if (!self.dadoDrawStart && dNear && !dNear.wall.isDivider) {
+          var dwLen = Core.wallLength(dNear.wall);
+          var dOff = Math.round((Math.max(0, Math.min(1, dNear.proj.t)) * dwLen) / 50) * 50;
+          self.dragState = {
+            type: 'draw_dado_swipe',
+            wall: dNear.wall,
+            wLen: dwLen,
+            anchorOffset: dOff,
+            startOffset: dOff,
+            endOffset: dOff,
+            startWorld: Vec2.clone(worldPt),
+            hasMoved: false
+          };
+          self.render();
+        } else {
+          self.handleDadoMouseDown(worldPt);
+        }
       }
     });
 
@@ -1237,6 +1283,48 @@
         return;
       }
 
+      if (self.dragState && self.dragState.type === 'drag_dado_handle') {
+        var dds = self.dragState;
+        var dw = dds.wall;
+        var dwLen = dds.wLen || Core.wallLength(dw);
+        var dProj = Core.projectPointToSegment(self.cursorWorld, dw.start, dw.end);
+        var clampedT = Math.max(0, Math.min(1, dProj.t));
+        var rawOff = clampedT * dwLen;
+        var snapOff = self.isShiftDown ? Math.round(rawOff) : Math.round(rawOff / 50) * 50;
+        snapOff = Math.max(0, Math.min(Math.round(dwLen), snapOff));
+        if (!dw.dadoSegments || !dw.dadoSegments.length) {
+          dw.dadoSegments = [{ startOffset: 0, endOffset: Math.round(dwLen) }];
+        }
+        var dSeg = dw.dadoSegments[dds.segIndex || 0] || dw.dadoSegments[0];
+        if (dds.end === 'start') {
+          dSeg.startOffset = Math.max(0, Math.min(dSeg.endOffset - 100, snapOff));
+        } else {
+          dSeg.endOffset = Math.min(Math.round(dwLen), Math.max(dSeg.startOffset + 100, snapOff));
+        }
+        dw.dadoTile = true;
+        dds.hasMoved = true;
+        self.render();
+        self.onSelectionChange(self.selected);
+        return;
+      }
+
+      if (self.dragState && self.dragState.type === 'draw_dado_swipe') {
+        var dsw = self.dragState;
+        if (!dsw.hasMoved && Vec2.dist(self.cursorWorld, dsw.startWorld) > 12) {
+          dsw.hasMoved = true;
+          self.dadoDrawStart = null;
+        }
+        if (dsw.hasMoved) {
+          var swProj = Core.projectPointToSegment(self.cursorWorld, dsw.wall.start, dsw.wall.end);
+          var swT = Math.max(0, Math.min(1, swProj.t));
+          var swCur = Math.round((swT * dsw.wLen) / 50) * 50;
+          dsw.startOffset = Math.max(0, Math.min(dsw.anchorOffset, swCur));
+          dsw.endOffset = Math.min(Math.round(dsw.wLen), Math.max(dsw.anchorOffset, swCur));
+          self.render();
+        }
+        return;
+      }
+
       if (self.dragState && self.dragState.type === 'move_opening') {
         var w = self.dragState.wall;
         var op = self.dragState.opening;
@@ -1267,7 +1355,10 @@
           }
         }
       }
-      if (overLockBadge) {
+      var overDadoHandle = (!self.dragState && typeof self.findDadoHandleAt === 'function') ? self.findDadoHandleAt(mouseScreen) : null;
+      if (overDadoHandle) {
+        self.canvas.style.cursor = 'ew-resize';
+      } else if (overLockBadge) {
         self.canvas.style.cursor = 'pointer';
       } else if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.wallChainStart || self.activeTool === 'dimension' || self.activeTool === 'dado') {
         self.canvas.style.cursor = 'crosshair';
@@ -1348,6 +1439,44 @@
             self.render();
             return;
           }
+        }
+
+        if (self.dragState.type === 'drag_dado_handle') {
+          if (self.dragState.hasMoved) {
+            self.pushHistory('Resize Dado Tile');
+            self.onSelectionChange(self.selected);
+          }
+          self.dragState = null;
+          self.render();
+          if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.render3DHome) {
+            window.OrbixUI.render3DHome(true);
+          }
+          return;
+        }
+
+        if (self.dragState.type === 'draw_dado_swipe') {
+          var swDs = self.dragState;
+          self.dragState = null;
+          if (swDs.hasMoved && (swDs.endOffset - swDs.startOffset) >= 100) {
+            swDs.wall.dadoTile = true;
+            swDs.wall.dadoSegments = [{
+              startOffset: Math.round(swDs.startOffset),
+              endOffset: Math.round(swDs.endOffset)
+            }];
+            self.selected = [{ type: 'wall', id: swDs.wall.id }];
+            self.onSelectionChange(self.selected);
+            self.pushHistory('Draw Dado Tile (' + Math.round(swDs.endOffset - swDs.startOffset) + ' mm)');
+            self.render();
+            if (typeof window.toast === 'function') {
+              window.toast('🧱 Dado Tile drawn: ' + Math.round(swDs.endOffset - swDs.startOffset) + ' mm on wall');
+            }
+            if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.render3DHome) {
+              window.OrbixUI.render3DHome(true);
+            }
+          } else {
+            self.handleDadoMouseDown(swDs.startWorld);
+          }
+          return;
         }
 
         if (self.dragState.type === 'move_furniture') {
@@ -1654,14 +1783,17 @@
       }
     }
 
-    // 2. Check if clicked a furniture unit (Supports rotated OBBs and cycling between overlapping units!)
+    // 2. Check if clicked a furniture unit (only when cursor is not inside a solid wall stripe)
+    var onWallBand = (typeof this.isPointOnWallBand === 'function') ? this.isPointOnWallBand(worldPt) : false;
     var furnList = this.project.plan.furniture || [];
     var matchingHits = [];
-    for (var f = furnList.length - 1; f >= 0; f--) {
-      var fn = furnList[f];
-      var poly = Core.getFurniturePolygon(fn);
-      if (Core.Vec2.pointInPolygon(worldPt, poly)) {
-        matchingHits.push(fn);
+    if (!onWallBand) {
+      for (var f = furnList.length - 1; f >= 0; f--) {
+        var fn = furnList[f];
+        var poly = Core.getFurniturePolygon(fn);
+        if (Core.Vec2.pointInPolygon(worldPt, poly)) {
+          matchingHits.push(fn);
+        }
       }
     }
     if (matchingHits.length > 0) {
@@ -1964,18 +2096,18 @@
     var dims = furn.dimensions || { W: 1200, D: 600 };
 
     var isLCorner = !!(
-      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || furn.unitConfig.unitType === 'wbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
       furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' || furn.catalogItemId === 'fbcm-1500' ||
-      (furn.id && /fbcm/i.test(furn.id)) ||
-      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
-      (furn.code && /fbcm/i.test(furn.code)) ||
-      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+      (furn.id && /fbcm|wbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm|wbcm/i.test(furn.catalogItemId)) ||
+      (furn.code && /fbcm|wbcm/i.test(furn.code)) ||
+      (furn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(furn.name))
     );
 
     if (isLCorner) {
-      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
-      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
-      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || 560;
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || dims.W || 900;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || dims.W || 900;
+      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || dims.D || 560;
 
       function toWorld(lx, ly, name, isMid) {
         return {
@@ -2155,18 +2287,19 @@
         var isPerp = (Math.abs(angleDiff - Math.PI / 2) < 0.45 || Math.abs(angleDiff - 3 * Math.PI / 2) < 0.45);
 
         var otherIsLCorner = !!(
-          (other.unitConfig && (other.unitConfig.geometryType === 'l_shaped_corner' || other.unitConfig.unitType === 'fbcm' || (other.unitConfig.corner && other.unitConfig.corner.enabled))) ||
+          (other.unitConfig && (other.unitConfig.geometryType === 'l_shaped_corner' || other.unitConfig.unitType === 'fbcm' || other.unitConfig.unitType === 'wbcm' || (other.unitConfig.corner && other.unitConfig.corner.enabled))) ||
           other.catalogItemId === 'fbcm' || other.id === 'fbcm' || other.id === 'f_fbcm_1' || other.catalogItemId === 'fbcm-1500' ||
-          (other.id && /fbcm/i.test(other.id)) ||
-          (other.catalogItemId && /fbcm/i.test(other.catalogItemId)) ||
-          (other.code && /fbcm/i.test(other.code)) ||
-          (other.name && /l[-_ ]*shaped.*corner/i.test(other.name))
+          (other.id && /fbcm|wbcm/i.test(other.id)) ||
+          (other.catalogItemId && /fbcm|wbcm/i.test(other.catalogItemId)) ||
+          (other.code && /fbcm|wbcm/i.test(other.code)) ||
+          (other.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(other.name))
         );
 
         if (otherIsLCorner) {
-          var cW = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legW) || 900;
-          var cD = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legD) || 900;
-          var cDepth = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.depth) || 560;
+          var oDims = other.dimensions || {};
+          var cW = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legW) || oDims.W || 900;
+          var cD = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legD) || oDims.W || 900;
+          var cDepth = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.depth) || oDims.D || 560;
 
           // 1. Arm 1 face (open joint at local X = -cW/2, Y = -cD/2 + cDepth/2, outward normal = -uO)
           var arm1FaceCenter = {
@@ -2366,18 +2499,19 @@
     var halfW = fW / 2;
 
     var furnIsLCorner = !!(
-      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
+      (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || furn.unitConfig.unitType === 'wbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
       furn.catalogItemId === 'fbcm' || furn.id === 'fbcm' || furn.id === 'f_fbcm_1' || furn.catalogItemId === 'fbcm-1500' ||
-      (furn.id && /fbcm/i.test(furn.id)) ||
-      (furn.catalogItemId && /fbcm/i.test(furn.catalogItemId)) ||
-      (furn.code && /fbcm/i.test(furn.code)) ||
-      (furn.name && /l[-_ ]*shaped.*corner/i.test(furn.name))
+      (furn.id && /fbcm|wbcm/i.test(furn.id)) ||
+      (furn.catalogItemId && /fbcm|wbcm/i.test(furn.catalogItemId)) ||
+      (furn.code && /fbcm|wbcm/i.test(furn.code)) ||
+      (furn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(furn.name))
     );
 
     if (furnIsLCorner) {
-      // Corner unit footprint dimensions are legW x legD (900 x 900)
-      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || 900;
-      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || 900;
+      // Corner unit footprint dimensions are legW x legD
+      var fDims = furn.dimensions || {};
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || fDims.W || 900;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || fDims.W || 900;
       fW = cW;
       fD = cD;
       halfW = cW / 2;
@@ -2649,11 +2783,60 @@
     this.render();
   };
 
+  PlanEditor.prototype.isPointOnWallBand = function (worldPt) {
+    var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    for (var wi = 0; wi < walls.length; wi++) {
+      var w = walls[wi];
+      if (!w || !w.start || !w.end || w.isDivider || w.thickness === 0) continue;
+      var proj = Vec2.projectOnSegment(worldPt, w.start, w.end);
+      if (proj.t >= -0.01 && proj.t <= 1.01) {
+        var halfT = (w.thickness || 150) * 0.5 + 6;
+        if (proj.dist <= halfT) return true;
+      }
+    }
+    return false;
+  };
+
+  PlanEditor.prototype.findDadoHandleAt = function (mouseScreen) {
+    var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
+    var best = null;
+    var bestDist = 14;
+    for (var wi = 0; wi < walls.length; wi++) {
+      var wItem = walls[wi];
+      if (!wItem || wItem.isDivider || wItem.thickness === 0) continue;
+      if (!wItem.dadoTile && (!wItem.dadoSegments || wItem.dadoSegments.length === 0)) continue;
+      var wLen = Core.wallLength(wItem);
+      if (wLen < 50) continue;
+      var wDir = Core.wallDirection(wItem);
+      var segs = (wItem.dadoSegments && wItem.dadoSegments.length > 0)
+        ? wItem.dadoSegments
+        : [{ startOffset: 0, endOffset: wLen }];
+      for (var si = 0; si < segs.length; si++) {
+        var seg = segs[si];
+        var sOff = Math.max(0, seg.startOffset || 0);
+        var eOff = Math.min(wLen, seg.endOffset !== undefined ? seg.endOffset : wLen);
+        var pS = this.worldToScreen({ x: wItem.start.x + wDir.x * sOff, y: wItem.start.y + wDir.y * sOff });
+        var pE = this.worldToScreen({ x: wItem.start.x + wDir.x * eOff, y: wItem.start.y + wDir.y * eOff });
+        var dS = Math.hypot(mouseScreen.x - pS.x, mouseScreen.y - pS.y);
+        if (dS <= bestDist) {
+          bestDist = dS;
+          best = { wall: wItem, segIndex: si, end: 'start', wLen: wLen };
+        }
+        var dE = Math.hypot(mouseScreen.x - pE.x, mouseScreen.y - pE.y);
+        if (dE <= bestDist) {
+          bestDist = dE;
+          best = { wall: wItem, segIndex: si, end: 'end', wLen: wLen };
+        }
+      }
+    }
+    return best;
+  };
+
   PlanEditor.prototype.handleDadoMouseDown = function (worldPt) {
     var near = this.findNearestWall(worldPt, 400);
     if (!near) {
       if (typeof window.toast === 'function') {
-        window.toast('ℹ Click on or near a wall to draw Dado Tile (Backsplash)');
+        window.toast('ℹ Click or drag along a wall to draw Dado Tile (Backsplash)');
       }
       return;
     }
@@ -2674,7 +2857,7 @@
       };
       this.render();
       if (typeof window.toast === 'function') {
-        window.toast('🧱 Dado Tile start set. Click another point on this wall to draw segment, or click again to toggle full wall.');
+        window.toast('🧱 Dado Tile start set. Click another point on this wall to draw segment, or click same spot for full wall (drag green dots anytime to resize).');
       }
       return;
     }
@@ -2682,38 +2865,48 @@
     // Second click
     var startInfo = this.dadoDrawStart;
     this.dadoDrawStart = null;
+    var wLen = Core.wallLength(w);
 
     if (startInfo.wallId === w.id) {
-      var wLen = Core.wallLength(w);
       var t1 = Math.min(startInfo.t, near.proj.t);
       var t2 = Math.max(startInfo.t, near.proj.t);
       var spanMm = (t2 - t1) * wLen;
 
       if (spanMm < 150) {
-        // Clicked nearly same point: toggle whole wall!
+        // Clicked nearly same point: toggle whole wall with explicit segment so handles appear!
         w.dadoTile = !w.dadoTile;
-        delete w.dadoSegments;
-        var msg = w.dadoTile ? '🧱 Dado Tile (Backsplash) added to full wall' : '🧱 Dado Tile removed from wall';
+        if (w.dadoTile) {
+          w.dadoSegments = [{ startOffset: 0, endOffset: Math.round(wLen) }];
+        } else {
+          delete w.dadoSegments;
+        }
+        var msg = w.dadoTile ? '🧱 Dado Tile added (drag green handles or use Inspector to adjust length)' : '🧱 Dado Tile removed from wall';
         if (typeof window.toast === 'function') window.toast(msg);
       } else {
-        // Applied segment
+        // Applied custom length segment
         w.dadoTile = true;
-        var sOffset = Math.round(t1 * wLen);
-        var eOffset = Math.round(t2 * wLen);
+        var sOffset = Math.round((t1 * wLen) / 50) * 50;
+        var eOffset = Math.min(Math.round(wLen), Math.max(sOffset + 100, Math.round((t2 * wLen) / 50) * 50));
         w.dadoSegments = [{ startOffset: sOffset, endOffset: eOffset }];
         if (typeof window.toast === 'function') {
-          window.toast('🧱 Dado Tile drawn: ' + Math.round(spanMm) + ' mm on wall');
+          window.toast('🧱 Dado Tile drawn: ' + Math.round(eOffset - sOffset) + ' mm on wall');
         }
       }
     } else {
-      // Clicked a different wall: toggle that different wall
+      // Clicked a different wall: toggle that different wall with explicit full segment
       w.dadoTile = !w.dadoTile;
-      delete w.dadoSegments;
+      if (w.dadoTile) {
+        w.dadoSegments = [{ startOffset: 0, endOffset: Math.round(wLen) }];
+      } else {
+        delete w.dadoSegments;
+      }
       if (typeof window.toast === 'function') {
-        window.toast(w.dadoTile ? '🧱 Dado Tile added to wall' : '🧱 Dado Tile removed from wall');
+        window.toast(w.dadoTile ? '🧱 Dado Tile added (drag green handles to resize)' : '🧱 Dado Tile removed from wall');
       }
     }
 
+    this.selected = [{ type: 'wall', id: w.id }];
+    this.onSelectionChange(this.selected);
     this.pushHistory('Draw Dado Tile');
     this.render();
     if (window.OrbixUI && window.OrbixUI.render3DHome) {
@@ -3430,8 +3623,70 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(badgeText, sMid.x, sMid.y);
+
+        // Draw interactive Start / End resize grip handles along wall
+        var isWallSelected = this.selected && this.selected.some(function (it) { return it.type === 'wall' && it.id === wItem.id; });
+        var gripR = (isWallSelected || this.activeTool === 'dado') ? 7 : 5.5;
+        var grips = [sp1, sp2];
+        for (var gi = 0; gi < grips.length; gi++) {
+          ctx.beginPath();
+          ctx.arc(grips[gi].x, grips[gi].y, gripR, 0, Math.PI * 2);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fill();
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = '#059669';
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(grips[gi].x, grips[gi].y, 2.2, 0, Math.PI * 2);
+          ctx.fillStyle = '#059669';
+          ctx.fill();
+        }
         ctx.restore();
       }
+    }
+
+    // Live swipe preview while dragging dado tile along wall
+    if (this.dragState && this.dragState.type === 'draw_dado_swipe' && this.dragState.hasMoved) {
+      var swWall = this.dragState.wall;
+      var swDir = Core.wallDirection(swWall);
+      var pA = { x: swWall.start.x + swDir.x * this.dragState.startOffset, y: swWall.start.y + swDir.y * this.dragState.startOffset };
+      var pB = { x: swWall.start.x + swDir.x * this.dragState.endOffset, y: swWall.start.y + swDir.y * this.dragState.endOffset };
+      var sA = this.worldToScreen(pA);
+      var sB = this.worldToScreen(pB);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.75)';
+      ctx.lineWidth = Math.max(4, (swWall.thickness || 150) * this.zoom * 0.5);
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(sA.x, sA.y);
+      ctx.lineTo(sB.x, sB.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      var sMidP = { x: (sA.x + sB.x) / 2, y: (sA.y + sB.y) / 2 };
+      var pvText = '🧱 ' + Math.round(this.dragState.endOffset - this.dragState.startOffset) + ' mm';
+      ctx.font = '700 10px "IBM Plex Sans", -apple-system, sans-serif';
+      var pw = ctx.measureText(pvText).width;
+      ctx.fillStyle = '#047857';
+      ctx.fillRect(sMidP.x - pw / 2 - 5, sMidP.y - 8, pw + 10, 16);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pvText, sMidP.x, sMidP.y);
+      ctx.restore();
+    }
+
+    // First-click anchor marker in Dado tool
+    if (this.dadoDrawStart && this.dadoDrawStart.pt) {
+      var dsPt = this.worldToScreen(this.dadoDrawStart.pt);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(dsPt.x, dsPt.y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = '#10B981';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.stroke();
+      ctx.restore();
     }
   };
 
@@ -4513,9 +4768,9 @@
         var activeCornerColor = isSelected ? '#f59e0b' : pointColor;
 
         if (isLCorner) {
-          var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || 900;
-          var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || 900;
-          var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || 560;
+          var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || (f.dimensions && f.dimensions.W) || 900;
+          var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || (f.dimensions && f.dimensions.W) || 900;
+          var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || (f.dimensions && f.dimensions.D) || 560;
           var cwPx = cW * this.zoom;
           var cdPx = cD * this.zoom;
           var depthPx = cDepth * this.zoom;

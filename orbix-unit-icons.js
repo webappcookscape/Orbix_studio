@@ -92,8 +92,11 @@
 };
 
   ICONS["fcm-rt-1500"] = ICONS["fcm-rt"];
+  ICONS["wcm-rt"] = ICONS["fcm-rt"];
   ICONS["fcm-lt-1500"] = ICONS["fcm-lt"];
+  ICONS["wcm-lt"] = ICONS["fcm-lt"];
   ICONS["fbcm-1500"] = ICONS["fbcm"];
+  ICONS["wbcm"] = ICONS["fbcm"];
 
   return {
     ICONS: ICONS,

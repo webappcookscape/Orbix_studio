@@ -710,45 +710,38 @@
         Hn.push({ cx: -u.W / 4 - 12, y: 30 + elev, w: sw, h: shh, hl: true, z: zF + T + T / 2, hd: hd, fin: fin, door: sA });
         Hn.push({ cx: u.W / 4 + 12, y: 30 + elev, w: sw, h: shh, hl: false, z: zF - 6 + T / 2, hd: hd, fin: fin, door: sB });
         fronts.push(sA, sB);
-      } else if (u.unitType === "fcm-lt" ||
-                 (u.unitConfig && u.unitConfig.unitType === "fcm-lt") ||
+      } else if (u.unitType === "fcm-lt" || u.unitType === "wcm-lt" ||
+                 (u.unitConfig && (u.unitConfig.unitType === "fcm-lt" || u.unitConfig.unitType === "wcm-lt")) ||
                  (u.openShutter && u.openShutter.opening === "left") ||
                  (u.unitConfig && u.unitConfig.openShutter && u.unitConfig.openShutter.opening === "left") ||
                  u.catalogItemId === "fcm-lt" || u.catalogItemId === "fm-lt-01" ||
                  u.id === "fcm-lt" || u.id === "fm-lt-01" ||
                  (u.id && /fcm[-_ ]*lt/i.test(u.id)) ||
-                 (u.label && /fcm[-_ ]*lt/i.test(u.label)) ||
-                 (u.name && /fcm[-_ ]*lt/i.test(u.name))) {
-        // FCM-LT (Cookscape): Left 600mm shutter is HINGED on the left (opening: "left") and opens outwards to the left.
-        // Right 600mm panel is 100% FIXED (no door, no hinge, no handle).
+                 (u.label && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(u.label)) ||
+                 (u.name && /(fcm[-_ ]*lt|wcm[-_ ]*lt\s*\(cookscape\))/i.test(u.name))) {
         var fixW = (u.fixedPanel && u.fixedPanel.width) ||
                    (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.width) ||
-                   (u.W / 2);
-        var movW = u.W - fixW - 6;
+                   Math.round(u.W / 2);
+        var movW = Math.max(40, u.W - fixW - 6);
         var movCx = -u.W / 2 + movW / 2 + 3;
         var fixCx = u.W / 2 - fixW / 2;
-        // 1. Left Movable Shutter (Hinged on the left edge, opens outward to the left)
         hinged(movCx, 3, movW, u.H - 6, zF, true, frontParts(u, ds, movCx, 3, movW, u.H - 6, zF, SC, T, "door"));
-        // 2. Static Right Fixed Panel (attached directly to carcass, never opens, NO handle)
-        frontParts(u, ds, fixCx, 3, fixW - 3, u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
-      } else if (u.unitType === "fcm-rt" || (u.fixedPanel && u.fixedPanel.enabled) ||
+        frontParts(u, ds, fixCx, 3, Math.max(40, fixW - 3), u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
+      } else if (u.unitType === "fcm-rt" || u.unitType === "wcm-rt" || (u.fixedPanel && u.fixedPanel.enabled) ||
                  (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.enabled) ||
-                 (u.unitConfig && u.unitConfig.unitType === "fcm-rt") ||
+                 (u.unitConfig && (u.unitConfig.unitType === "fcm-rt" || u.unitConfig.unitType === "wcm-rt")) ||
                  u.catalogItemId === "fcm-rt" || u.catalogItemId === "fm-rt-01" ||
                  u.id === "fcm-rt" || u.id === "fm-rt-01" ||
                  (u.id && /fcm[-_ ]*rt/i.test(u.id)) ||
-                 (u.label && /fcm[-_ ]*rt/i.test(u.label)) ||
-                 (u.name && /fcm[-_ ]*rt/i.test(u.name))) {
-        // FCM-RT (Cookscape): Left 600mm panel is 100% FIXED (no door, no hinge, no handle).
-        // Right 600mm shutter is HINGED on the right (opening: "right") and opens outwards to the right.
+                 (u.label && /(fcm[-_ ]*rt|wcm[-_ ]*rt\s*\(cookscape\))/i.test(u.label)) ||
+                 (u.name && /(fcm[-_ ]*rt|wcm[-_ ]*rt\s*\(cookscape\))/i.test(u.name))) {
         var fixW = (u.fixedPanel && u.fixedPanel.width) ||
                    (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.width) ||
-                   (u.W / 2);
-        var movW = u.W - fixW - 6;
+                   Math.round(u.W / 2);
+        var movW = Math.max(40, u.W - fixW - 6);
         var fixCx = -u.W / 2 + fixW / 2;
         var movCx = u.W / 2 - movW / 2;
-        // 1. Static Left Fixed Panel (attached directly to carcass, never opens, NO handle)
-        frontParts(u, ds, fixCx, 3, fixW - 3, u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
+        frontParts(u, ds, fixCx, 3, Math.max(40, fixW - 3), u.H - 6, zF, SC, T, "front").forEach(function (p) { bx(p); });
         // 2. Right Movable Shutter (Hinged on the right edge, opens outward to the right)
         var isHl = !!(
           (u.openShutter && u.openShutter.opening === "left") ||
@@ -787,16 +780,17 @@
       B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 38, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
     }
     if (ct === "kbase") {
-      var isFcm = (u.unitType === "fcm-rt" || u.unitType === "fcm-lt" || (u.fixedPanel && u.fixedPanel.enabled) ||
+      var isFcm = (u.unitType === "fcm-rt" || u.unitType === "fcm-lt" || u.unitType === "wcm-rt" || u.unitType === "wcm-lt" ||
+                   (u.fixedPanel && u.fixedPanel.enabled) ||
                    (u.unitConfig && u.unitConfig.fixedPanel && u.unitConfig.fixedPanel.enabled) ||
-                   (u.unitConfig && (u.unitConfig.unitType === "fcm-rt" || u.unitConfig.unitType === "fcm-lt")) ||
+                   (u.unitConfig && (u.unitConfig.unitType === "fcm-rt" || u.unitConfig.unitType === "fcm-lt" || u.unitConfig.unitType === "wcm-rt" || u.unitConfig.unitType === "wcm-lt")) ||
                    u.catalogItemId === "fcm-rt" || u.catalogItemId === "fm-rt-01" ||
                    u.catalogItemId === "fcm-lt" || u.catalogItemId === "fm-lt-01" ||
                    u.id === "fcm-rt" || u.id === "fm-rt-01" ||
                    u.id === "fcm-lt" || u.id === "fm-lt-01" ||
                    (u.id && /fcm[-_ ]*(rt|lt)/i.test(u.id)) ||
-                   (u.label && /fcm[-_ ]*(rt|lt)/i.test(u.label)) ||
-                   (u.name && /fcm[-_ ]*(rt|lt)/i.test(u.name)));
+                   (u.label && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(u.label)) ||
+                   (u.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(u.name)));
       var plinthH = (u.plinth === false) ? 0 : 100;
       if (plinthH > 0) {
         var pY = (elev > 0 && elev <= 150) ? elev : 0;
@@ -1848,10 +1842,10 @@
       if (!window.THREE) return false;
       try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" }); }
       catch (e) { return false; }
-      renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = (NEO || FX) ? 1.04 : 1.08;
+      renderer.toneMappingExposure = (NEO || FX) ? 1.06 : 1.08;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.domElement.id = "gl";
@@ -1859,23 +1853,24 @@
       stage.classList.add("gl");
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
+      scene.fog = new THREE.FogExp2(0xCBE3F5, 0.000011); // Subtle atmospheric perspective haze
       camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
       /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
       scene.environment = pmrem.fromScene(makeRoomScene(), 0.04, 10, 30000).texture;
       if (EMBED) camera.far = 80000;
-      keyL = new THREE.DirectionalLight(0xfffaec, NEO ? 1.45 : 1.35);
-      keyL.position.set(-3500, 6800, 5400); keyL.castShadow = true;
-      keyL.shadow.mapSize.set(2048, 2048);
-      var sc = keyL.shadow.camera; sc.left = -9000; sc.right = 9000; sc.top = 9000; sc.bottom = -9000; sc.near = 200; sc.far = 28000;
-      keyL.shadow.bias = -0.0004; keyL.shadow.normalBias = 2.5; keyL.shadow.radius = 2.2;
+      keyL = new THREE.DirectionalLight(0xfff7e6, NEO ? 1.48 : 1.38);
+      keyL.position.set(-3800, 7200, 5600); keyL.castShadow = true;
+      keyL.shadow.mapSize.set(4096, 4096);
+      var sc = keyL.shadow.camera; sc.left = -9500; sc.right = 9500; sc.top = 9500; sc.bottom = -9500; sc.near = 200; sc.far = 30000;
+      keyL.shadow.bias = -0.00025; keyL.shadow.normalBias = 1.6; keyL.shadow.radius = 2.8;
       scene.add(keyL); scene.add(keyL.target);
       /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
-      var fill = new THREE.DirectionalLight(0xdde9f8, 0.55); fill.position.set(2600, 1900, 4800); scene.add(fill);
-      var rim = new THREE.DirectionalLight(0xecf0f8, 0.35); rim.position.set(2400, 1600, -2600); scene.add(rim);
-      var bounceL = new THREE.DirectionalLight(0xf4ece0, 0.32); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
-      scene.add(new THREE.HemisphereLight(0x82C3EC, 0x4E8A42, 0.45)); // Sky blue overhead + grass green ground bounce
+      var fill = new THREE.DirectionalLight(0xdce8fa, 0.58); fill.position.set(2800, 2100, 5000); scene.add(fill);
+      var rim = new THREE.DirectionalLight(0xf1f4fa, 0.38); rim.position.set(2400, 1800, -2800); scene.add(rim);
+      var bounceL = new THREE.DirectionalLight(0xf7efe2, 0.34); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
+      scene.add(new THREE.HemisphereLight(0x9CD1F4, 0x567D46, 0.50)); // Sky radiance + warm ground bounce
       var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
@@ -2038,8 +2033,7 @@
         }
       }
       var t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      var polished = !/quartz|greyq/.test(kind);
-      var m = new THREE.MeshPhysicalMaterial({ map: t, roughness: polished ? 0.22 : 0.3, metalness: 0, clearcoat: polished ? 0.7 : 0.35, clearcoatRoughness: 0.12, envMapIntensity: 0.7 });
+      var m = new THREE.MeshPhysicalMaterial({ map: t, roughness: 0.88, metalness: 0, clearcoat: 0, clearcoatRoughness: 0.92, envMapIntensity: 0.25 });
       matCache[k] = m; return m;
     }
     /* wardrobe glass: clear / frosted / smoked / bronze / fluted (vertical ribs, ~20 mm pitch) */
@@ -2425,14 +2419,22 @@
         plan.furniture.forEach(function (fn) {
           var isFcm = !!(
             (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) ||
-            (fn.unitConfig && fn.unitConfig.unitType === 'fcm-rt') ||
-            (fn.id && /fcm[-_ ]*rt/i.test(fn.id)) ||
-            (fn.catalogItemId && /fcm[-_ ]*rt/i.test(fn.catalogItemId)) ||
-            (fn.name && /fcm[-_ ]*rt/i.test(fn.name)) ||
+            (fn.unitConfig && (fn.unitConfig.unitType === 'fcm-rt' || fn.unitConfig.unitType === 'fcm-lt' || fn.unitConfig.unitType === 'wcm-rt' || fn.unitConfig.unitType === 'wcm-lt')) ||
+            (fn.id && /fcm[-_ ]*(rt|lt)/i.test(fn.id)) ||
+            (fn.catalogItemId && /fcm[-_ ]*(rt|lt)/i.test(fn.catalogItemId)) ||
+            (fn.name && /(fcm[-_ ]*(rt|lt)|wcm[-_ ]*(rt|lt)\s*\(cookscape\))/i.test(fn.name)) ||
             fn.id === 'fcm-rt' || fn.catalogItemId === 'fcm-rt' ||
-            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01'
+            fn.id === 'fm-rt-01' || fn.catalogItemId === 'fm-rt-01' ||
+            fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
+            fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
-          var numShutters = isFcm ? 1 : ((fn.unitConfig && fn.unitConfig.shutters !== undefined) ? parseInt(fn.unitConfig.shutters) : ((fn.dimensions && fn.dimensions.W > 1200) ? 3 : 2));
+          var isLCorner = !!(
+            (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || fn.unitConfig.unitType === 'wbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+            (fn.id && /fbcm|wbcm/i.test(fn.id)) ||
+            (fn.catalogItemId && /fbcm|wbcm/i.test(fn.catalogItemId)) ||
+            (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(fn.name))
+          );
+          var numShutters = isFcm ? 1 : (isLCorner ? 2 : ((fn.unitConfig && fn.unitConfig.shutters !== undefined) ? parseInt(fn.unitConfig.shutters) : ((fn.dimensions && fn.dimensions.W > 1200) ? 3 : 2)));
           var numDrawers = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? parseInt(fn.unitConfig.drawers) : 0;
           fn.shutterStates = fn.shutterStates || [];
           for (var s = 0; s < numShutters; s++) fn.shutterStates[s] = allOpen;
@@ -2545,52 +2547,96 @@
       }
       clearSelect(); render(); return null;
     }
+    function getCanvasNdcRect() {
+      if (renderer && renderer.domElement) {
+        var cr = renderer.domElement.getBoundingClientRect();
+        if (cr && cr.width > 0 && cr.height > 0) return cr;
+      }
+      return stage ? stage.getBoundingClientRect() : null;
+    }
+    function isVisObj(obj, stopAt) {
+      var cur = obj;
+      while (cur) {
+        if (cur.visible === false) return false;
+        if (cur === stopAt) break;
+        cur = cur.parent;
+      }
+      return true;
+    }
+    function isObstructionObj(obj, stopAt) {
+      var cur = obj;
+      while (cur && cur !== stopAt) {
+        var ud = cur.userData;
+        if (ud && (ud.isWall || ud.isFloorMesh || ud.isCeilingMesh)) return true;
+        var nm = cur.name || '';
+        if (nm.indexOf('Wall_') === 0 || nm.indexOf('Floor_') === 0 || nm.indexOf('Ceiling_') === 0 || nm.indexOf('DividerThreshold_') === 0 || nm === 'DoorGroup' || nm === 'WindowGroup') {
+          return true;
+        }
+        cur = cur.parent;
+      }
+      return false;
+    }
     function pick(clientX, clientY) {
       if (!ok) return false;
       if (xT > 0.5) { var item = pickPanel(clientX, clientY); if (EMBED) postUp({ event: "select", item: item }); return !!item; }
       if (!ray) { ray = new THREE.Raycaster(); ndc = new THREE.Vector2(); }
-      var r = stage.getBoundingClientRect();
+      var r = getCanvasNdcRect();
+      if (!r || !r.width || !r.height) return false;
       ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(ndc, camera);
 
-      // 1. Check single unit preview in root (if active)
-      if (root && root.children.length > 0) {
+      var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+      var homeActive = !!(homeObj && homeObj.children && homeObj.children.length > 0 && isVisObj(homeObj, scene));
+
+      // 1. Check single unit preview in root only when architectural OrbixHome3D scene is not active
+      if (!homeActive && root && root.children.length > 0 && isVisObj(root, scene)) {
         var hits = ray.intersectObjects(root.children, true);
         for (var i = 0; i < hits.length; i++) {
-          var o = hits[i].object;
+          var ho0 = hits[i].object;
+          if (!ho0 || !ho0.isMesh || !isVisObj(ho0, root)) continue;
+          var o = ho0;
           while (o && !o.userData.door) o = o.parent;
           if (o) { toggleDoor(o.userData.door); return true; }
-          if (hits[i].object.userData.role && hits[i].object.userData.role !== "reveal") return false;
+          if (ho0.userData.role && ho0.userData.role !== "reveal") return false;
         }
       }
 
       // 2. Check placed modular units in 3D Home (OrbixHome3D)
-      var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
-      if (homeObj && homeObj.children && homeObj.children.length > 0) {
+      if (homeActive) {
         var homeHits = ray.intersectObjects(homeObj.children, true);
         for (var j = 0; j < homeHits.length; j++) {
           var ho = homeHits[j].object;
+          if (!ho || !ho.isMesh || !isVisObj(ho, scene)) continue;
           var part = ho;
+          var furnAncestor = null;
+          var actionPart = null;
           while (part && part !== homeObj) {
-            if (part.userData && (part.userData.isShutter || part.userData.isDrawer)) {
-              break;
+            if (!actionPart && part.userData && (part.userData.isShutter || part.userData.isDrawer)) {
+              actionPart = part;
+            }
+            if (!furnAncestor && part.userData && (part.userData.furnitureId || part.userData.isFurnitureGroup)) {
+              furnAncestor = part;
             }
             part = part.parent;
           }
-
-          if (part && part.userData && part.userData.furnitureId) {
-            var fId = part.userData.furnitureId;
+          if (!actionPart && !furnAncestor) {
+            if (isObstructionObj(ho, homeObj)) return false;
+            continue;
+          }
+          part = actionPart || furnAncestor;
+          var fId = (part.userData && part.userData.furnitureId) || (furnAncestor && furnAncestor.userData && furnAncestor.userData.furnitureId);
+          if (fId) {
             var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
             var fn = plan && plan.furniture && plan.furniture.find(function (it) { return it.id === fId; });
 
-            if (fn) {
-              if (part.userData.isShutter) {
-                var sIdx = part.userData.shutterIdx !== undefined ? part.userData.shutterIdx : 0;
+            if (fn && actionPart) {
+              if (actionPart.userData.isShutter) {
+                var sIdx = actionPart.userData.shutterIdx !== undefined ? actionPart.userData.shutterIdx : 0;
                 fn.shutterStates = fn.shutterStates || [];
                 fn.shutterStates[sIdx] = !fn.shutterStates[sIdx];
                 var isOpen = fn.shutterStates[sIdx];
-                if (part.userData.isSliding) {
-                  var sGroup = part.userData.shutterGroup || (part.parent && part.parent.userData && part.parent.userData.isSliding ? part.parent : null);
+                if (actionPart.userData.isSliding) {
+                  var sGroup = actionPart.userData.shutterGroup || (actionPart.parent && actionPart.parent.userData && actionPart.parent.userData.isSliding ? actionPart.parent : null);
                   if (sGroup && sGroup.userData && sGroup.userData.openX !== undefined) {
                     sGroup.position.x = isOpen ? sGroup.userData.openX : sGroup.userData.closedX;
                     render();
@@ -2598,7 +2644,7 @@
                     window.OrbixUI.render3DHome(true);
                   }
                 } else {
-                  var hingeGroup = part.userData.hingeGroup || (part.parent && part.parent.userData && part.parent.userData.isShutterHinge ? part.parent : null);
+                  var hingeGroup = actionPart.userData.hingeGroup || (actionPart.parent && actionPart.parent.userData && actionPart.parent.userData.isShutterHinge ? actionPart.parent : null);
                   if (hingeGroup) {
                     var hingeLeft = (hingeGroup.name === "ShutterHinge_Right" || hingeGroup.name === "ShutterHinge_1") ? false : (hingeGroup.name === "ShutterHinge_Left" || hingeGroup.name === "ShutterHinge_0" ? true : (sIdx % 2 === 0));
                     hingeGroup.rotation.y = isOpen ? (hingeLeft ? -Math.PI * 0.6 : Math.PI * 0.55) : 0;
@@ -2614,12 +2660,12 @@
                 if (window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
                 if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
                 return true;
-              } else if (part.userData.isDrawer) {
-                var dIdx = part.userData.drawerIdx !== undefined ? part.userData.drawerIdx : 0;
+              } else if (actionPart.userData.isDrawer) {
+                var dIdx = actionPart.userData.drawerIdx !== undefined ? actionPart.userData.drawerIdx : 0;
                 fn.drawerStates = fn.drawerStates || [];
                 fn.drawerStates[dIdx] = !fn.drawerStates[dIdx];
                 var isDOpen = fn.drawerStates[dIdx];
-                var drawerGroup = part.userData.drawerGroup || (part.parent && part.parent.userData && part.parent.userData.isDrawerGroup ? part.parent : null);
+                var drawerGroup = actionPart.userData.drawerGroup || (actionPart.parent && actionPart.parent.userData && actionPart.parent.userData.isDrawerGroup ? actionPart.parent : null);
                 if (drawerGroup) {
                   drawerGroup.position.z = isDOpen ? 350 : 0;
                   render();
@@ -2635,6 +2681,7 @@
                 return true;
               }
             }
+            return false;
           }
         }
       }
@@ -2644,31 +2691,53 @@
     function pickFurniture(clientX, clientY) {
       if (!ok || !scene) return null;
       if (!ray) { ray = new THREE.Raycaster(); ndc = new THREE.Vector2(); }
-      var r = stage.getBoundingClientRect();
+      var r = getCanvasNdcRect();
+      if (!r || !r.width || !r.height) return null;
       ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(ndc, camera);
 
-      var activeU = U();
-      if (activeU && activeU._furnId && root && root.children.length > 0) {
-        var rootHits = ray.intersectObjects(root.children, true);
-        if (rootHits.length > 0) {
-          return { object: root, id: activeU._furnId, hitPoint: rootHits[0].point };
+      var homeObj = scene.getObjectByName('OrbixHome3D');
+      var homeActive = !!(homeObj && homeObj.children && homeObj.children.length > 0 && isVisObj(homeObj, scene));
+
+      if (!homeActive) {
+        var activeU = U();
+        if (activeU && activeU._furnId && root && root.children.length > 0 && isVisObj(root, scene)) {
+          var rootHits = ray.intersectObjects(root.children, true);
+          for (var ri = 0; ri < rootHits.length; ri++) {
+            var ro = rootHits[ri].object;
+            if (ro && ro.isMesh && isVisObj(ro, root)) {
+              return { object: root, id: activeU._furnId, hitPoint: rootHits[ri].point };
+            }
+          }
         }
+        return null;
       }
 
-      var homeObj = scene.getObjectByName('OrbixHome3D');
-      if (!homeObj) return null;
       var hits = ray.intersectObjects(homeObj.children, true);
       for (var i = 0; i < hits.length; i++) {
-        var o = hits[i].object;
-        if (o && o.userData && o.userData.furnitureId) {
-          return { object: (o.userData.parentGroup || o), id: o.userData.furnitureId, hitPoint: hits[i].point };
+        var ho = hits[i].object;
+        if (!ho || !ho.isMesh || !isVisObj(ho, scene)) continue;
+
+        var cur = ho;
+        var matchedId = null;
+        var matchedGroup = null;
+        while (cur && cur !== homeObj) {
+          if (!matchedId && cur.userData && cur.userData.furnitureId) {
+            matchedId = cur.userData.furnitureId;
+            if (cur.userData.parentGroup) matchedGroup = cur.userData.parentGroup;
+          }
+          if (cur.userData && cur.userData.isFurnitureGroup) {
+            if (!matchedId && cur.userData.furnitureId) matchedId = cur.userData.furnitureId;
+            matchedGroup = cur;
+            break;
+          }
+          cur = cur.parent;
         }
-        while (o && o.parent && o.parent !== homeObj && (!o.userData || !o.userData.isFurnitureGroup)) {
-          o = o.parent;
+        if (matchedId) {
+          return { object: (matchedGroup || ho), id: matchedId, hitPoint: hits[i].point };
         }
-        if (o && o.userData && (o.userData.isFurniture || o.userData.isFurnitureGroup)) {
-          return { object: o, id: o.userData.furnitureId, hitPoint: hits[i].point };
+        if (isObstructionObj(ho, homeObj)) {
+          return null;
         }
       }
       return null;
@@ -3008,12 +3077,18 @@
       window.addEventListener('resize', function () {
         cachedStageRect = null;
       });
+      if (typeof ResizeObserver !== 'undefined' && stage) {
+        try {
+          new ResizeObserver(function () { cachedStageRect = null; }).observe(stage);
+        } catch (roErr) { }
+      }
     }
 
     function apply(forceSync) {
       if (!ok) return;
-      if (!cachedStageRect) {
-        cachedStageRect = stage.getBoundingClientRect();
+      var liveR = stage.getBoundingClientRect();
+      if (liveR && liveR.width > 0 && liveR.height > 0) {
+        cachedStageRect = liveR;
       }
       var r = cachedStageRect;
       if (r && r.width && r.height) {
@@ -3023,14 +3098,29 @@
         camera.aspect = r.width / r.height;
         camera.updateProjectionMatrix();
       }
+      if (target.y < 0) target.y = 0;
+      if (target.y > 6000) target.y = 6000;
+      cam.pitch = Math.max(-85, Math.min(22, cam.pitch));
+      cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom));
       var yaw = cam.yaw * Math.PI / 180, el = (-cam.pitch) * Math.PI / 180;
-      var safeZoom = Math.max(0.02, 1 + cam.zoom);
-      var d = Math.max(50, dist / safeZoom);
+      var safeZoom = Math.max(0.18, 1 + cam.zoom);
+      var d = Math.min(45000, Math.max(50, dist / safeZoom));
+      var minCamY = 85;
+      var rawCamY = target.y + d * Math.sin(el);
+      if (rawCamY < minCamY && d > 1) {
+        var minSin = Math.max(-1, Math.min(1, (minCamY - target.y) / d));
+        el = Math.asin(minSin);
+        cam.pitch = -(el * 180 / Math.PI);
+      }
       if (camera.far < d * 4) {
         camera.far = Math.max(1000000, d * 5);
         camera.updateProjectionMatrix();
       }
-      camera.position.set(target.x + d * Math.sin(yaw) * Math.cos(el), target.y + d * Math.sin(el), target.z + d * Math.cos(yaw) * Math.cos(el));
+      camera.position.set(
+        target.x + d * Math.sin(yaw) * Math.cos(el),
+        Math.max(minCamY, target.y + d * Math.sin(el)),
+        target.z + d * Math.cos(yaw) * Math.cos(el)
+      );
       camera.lookAt(target);
       updateWallCutaway();
       if (forceSync) {
@@ -3424,7 +3514,8 @@
     function gizmoPick(clientX, clientY) {
       if (!gizmoGroup || !gizmoGroup.visible) return null;
       if (!ray) { ray = new THREE.Raycaster(); ndc = new THREE.Vector2(); }
-      var r = stage.getBoundingClientRect();
+      var r = getCanvasNdcRect();
+      if (!r || !r.width || !r.height) return null;
       ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(ndc, camera);
       var hits = ray.intersectObjects(gizmoMeshes, true);
@@ -3988,8 +4079,8 @@
     scale = Math.max(0.05, Math.min((r.height * 0.72) / totalH, (r.width * 0.64) / span));
   }
   function camApply() {
-    cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
-    cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom));
+    cam.pitch = Math.max(-85, Math.min(22, cam.pitch));
+    cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom));
     if (GL.ok) { GL.apply(); return; }
     var s = scale * (1 + cam.zoom);
     world.style.transform = "rotateX(" + (-cam.pitch) + "deg) rotateY(" + cam.yaw + "deg) scale3d(" + s + "," + s + "," + s + ")";
@@ -4423,7 +4514,7 @@
       if (ids.length === 2) {
         var a = pts[ids[0]], b = pts[ids[1]];
         var d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-        if (lastD) cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom + (d - lastD) * 0.004));
+        if (lastD) cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom + (d - lastD) * 0.004));
         lastD = d;
       } else {
         var dx = e.clientX - prev.clientX;
@@ -4441,7 +4532,7 @@
             tgt.y += dy * Math.cos(pitchRad) * panSpeed;
             tgt.x += dy * Math.sin(pitchRad) * sinY * panSpeed * 0.5;
             tgt.z += dy * Math.sin(pitchRad) * cosY * panSpeed * 0.5;
-            tgt.y = Math.max(-500, Math.min(6000, tgt.y));
+            tgt.y = Math.max(50, Math.min(6000, tgt.y));
           }
         } else {
           // Orbit camera 360 degrees
@@ -4466,7 +4557,7 @@
     stage.addEventListener("wheel", function (e) {
       e.preventDefault();
       var zoomDelta = -e.deltaY * 0.0012;
-      cam.zoom = Math.max(-0.95, Math.min(25.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
+      cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
       camApply();
     }, { passive: false });
 

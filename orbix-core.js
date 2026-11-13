@@ -664,17 +664,18 @@
     var cx = (f.pos && f.pos.x) || 0, cy = (f.pos && f.pos.y) || 0;
 
     var isLCorner = !!(
-      (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
+      (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || f.unitConfig.unitType === 'wbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
       f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' ||
-      (f.id && /fbcm/i.test(f.id)) ||
-      (f.catalogItemId && /fbcm/i.test(f.catalogItemId)) ||
-      (f.name && /l[-_ ]*shaped.*corner/i.test(f.name))
+      (f.id && /fbcm|wbcm/i.test(f.id)) ||
+      (f.catalogItemId && /fbcm|wbcm/i.test(f.catalogItemId)) ||
+      (f.code && /fbcm|wbcm/i.test(f.code)) ||
+      (f.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(f.name))
     );
 
     if (isLCorner) {
-      var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || 900;
-      var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || 900;
-      var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || 560;
+      var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || (f.dimensions && f.dimensions.W) || 900;
+      var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || (f.dimensions && f.dimensions.W) || 900;
+      var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || (f.dimensions && f.dimensions.D) || 560;
       var ux = cosA, uy = sinA;
       var vx = -sinA, vy = cosA;
       function toPt(lx, ly) {
@@ -1770,15 +1771,32 @@
     var formulaDescription = '';
     var tierBadge = activeTier ? (' [' + activeTier + ' · ' + (modelDef ? modelDef.label : modelType) + ']') : '';
 
+    var fixedCfg = item.fixedPanel || (item.unitConfig && item.unitConfig.fixedPanel);
+    var openCfg = item.openShutter || (item.unitConfig && item.unitConfig.openShutter);
+    var hasSplitShutter = !!(fixedCfg && fixedCfg.enabled);
+    var cornerCfg = item.unitConfig && item.unitConfig.corner;
+    var isLShapeUnit = !!(cornerCfg && cornerCfg.enabled);
+    var dimPrefix = '';
+    if (hasSplitShutter) {
+      var fixW = parseFloat(fixedCfg.width) || Math.round(dims.W / 2);
+      var openW = (openCfg && parseFloat(openCfg.width)) || Math.max(0, dims.W - fixW);
+      dimPrefix = fixW + 'mm Fixed + ' + openW + 'mm Open = ';
+    } else if (isLShapeUnit) {
+      var legW = parseFloat(cornerCfg.legW) || dims.W || 600;
+      var legD = parseFloat(cornerCfg.legD) || dims.W || 600;
+      var cDepth = parseFloat(cornerCfg.depth) || dims.D || 300;
+      dimPrefix = 'L-Shape (' + Math.max(0, legW - cDepth) + 'mm + ' + Math.max(0, legD - cDepth) + 'mm Shutters, ' + cDepth + 'mm D): ';
+    }
+
     if (activeTier && modelDef && modelDef.pricingModel === 'front_area') {
       baseAmount = frontAreaSft * baseRate;
-      formulaDescription = dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04 = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
+      formulaDescription = dimPrefix + dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04 = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
     } else if (catConfig.pricingModel === 'front_area') {
       baseAmount = frontAreaSft * baseRate;
-      formulaDescription = dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04 = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
+      formulaDescription = dimPrefix + dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04 = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
     } else if (catConfig.pricingModel === 'running_ft') {
       baseAmount = runningFt * (catConfig.baseRatePerRft || baseRate);
-      formulaDescription = dims.W + ' mm ÷ 304.8 = ' + runningFt.toFixed(2) + ' Rft @ ' + rateCard.currencySymbol + (catConfig.baseRatePerRft || baseRate) + '/Rft' + tierBadge;
+      formulaDescription = dimPrefix + dims.W + ' mm ÷ 304.8 = ' + runningFt.toFixed(2) + ' Rft @ ' + rateCard.currencySymbol + (catConfig.baseRatePerRft || baseRate) + '/Rft' + tierBadge;
     } else if (catConfig.pricingModel === 'per_piece') {
       baseAmount = baseRate;
       formulaDescription = '1 Pc @ ' + rateCard.currencySymbol + baseRate + tierBadge;
@@ -2651,15 +2669,15 @@
     },
     {
       id: "fcm-rt-1500",
-      code: "FCM-RT 1500",
-      name: "FCM-RT 1500 (Cookscape)",
+      code: "WCM-RT",
+      name: "WCM-RT (Cookscape)",
       catalogItemId: "fcm-rt-1500",
       modelType: "kitchen_wm",
       category: "kitchen_wall",
       costCategory: "Kitchen - WM",
-      areaSqft: 9.30,
+      areaSqft: 3.88,
       icon: "🍳",
-      dimensions: { W: 1200, H: 720, D: 560 },
+      dimensions: { W: 600, H: 600, D: 300 },
       elevation: 1500,
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
@@ -2668,8 +2686,8 @@
       unitConfig: {
         ctype: "kwall",
         unitType: "fcm-rt",
-        fixedPanel: { enabled: true, width: 600, type: "fixed" },
-        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "right" },
+        fixedPanel: { enabled: true, width: 300, type: "fixed" },
+        openShutter: { enabled: true, width: 300, type: "shutter", count: 1, opening: "right" },
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
@@ -2687,20 +2705,20 @@
         carcass: "MDF 1135",
         shutterCol: "MDF 7701"
       },
-      pricingOverrides: { baseRate: 17398.79 },
-      customRate: 17398.79
+      pricingOverrides: { baseRate: 7259.28 },
+      customRate: 7259.28
     },
     {
       id: "fcm-lt-1500",
-      code: "FCM-LT 1500",
-      name: "FCM-LT 1500 (Cookscape)",
+      code: "WCM-LT",
+      name: "WCM-LT (Cookscape)",
       catalogItemId: "fcm-lt-1500",
       modelType: "kitchen_wm",
       category: "kitchen_wall",
       costCategory: "Kitchen - WM",
-      areaSqft: 9.30,
+      areaSqft: 3.88,
       icon: "🍳",
-      dimensions: { W: 1200, H: 720, D: 560 },
+      dimensions: { W: 600, H: 600, D: 300 },
       elevation: 1500,
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
@@ -2709,8 +2727,8 @@
       unitConfig: {
         ctype: "kwall",
         unitType: "fcm-lt",
-        fixedPanel: { enabled: true, width: 600, type: "fixed" },
-        openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
+        fixedPanel: { enabled: true, width: 300, type: "fixed" },
+        openShutter: { enabled: true, width: 300, type: "shutter", count: 1, opening: "left" },
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
@@ -2728,20 +2746,20 @@
         carcass: "MDF 1135",
         shutterCol: "MDF 7701"
       },
-      pricingOverrides: { baseRate: 17398.79 },
-      customRate: 17398.79
+      pricingOverrides: { baseRate: 7259.28 },
+      customRate: 7259.28
     },
     {
       id: "fbcm-1500",
-      code: "FBCM 1500",
-      name: "L-SHAPED CORNER 1500 (Cookscape)",
+      code: "WBCM",
+      name: "WBCM (Cookscape)",
       catalogItemId: "fbcm-1500",
       modelType: "kitchen_wm",
       category: "kitchen_wall",
       costCategory: "Kitchen - WM",
-      areaSqft: 8.70,
+      areaSqft: 3.88,
       icon: "🍳",
-      dimensions: { W: 900, H: 720, D: 560 },
+      dimensions: { W: 600, H: 600, D: 300 },
       elevation: 1500,
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "MDF 7701" },
@@ -2749,14 +2767,14 @@
       },
       unitConfig: {
         ctype: "kwall",
-        unitType: "fbcm",
+        unitType: "wbcm",
         geometryType: "l_shaped_corner",
         corner: {
           enabled: true,
           type: "L",
-          legW: 900,
-          legD: 900,
-          depth: 560,
+          legW: 600,
+          legD: 600,
+          depth: 300,
           orientation: "right"
         },
         shutters: 2,
@@ -2780,8 +2798,8 @@
         carcass: "MDF 1135",
         shutterCol: "MDF 7701"
       },
-      pricingOverrides: { baseRate: 16500.00 },
-      customRate: 16500.00
+      pricingOverrides: { baseRate: 7360.00 },
+      customRate: 7360.00
     },
     {
       id: "f_fbcm_1",
