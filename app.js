@@ -2899,12 +2899,29 @@
       if (!sel.value) sel.value = 'single_auto';
     }
 
-    function updateWallCutaway() {
+    var lastCutState = { yaw: -9999, pitch: -9999, zoom: -9999, tx: -9999, tz: -9999, mode: '' };
+    function updateWallCutaway(force) {
       var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
       if (!homeObj) return;
 
       var mode = window.OrbixWallMode || 'single_auto';
       if (mode === 'cutaway') mode = 'single_auto';
+
+      if (!force &&
+          Math.abs(cam.yaw - lastCutState.yaw) < 0.8 &&
+          Math.abs(cam.pitch - lastCutState.pitch) < 0.8 &&
+          Math.abs(cam.zoom - lastCutState.zoom) < 0.04 &&
+          Math.abs(target.x - lastCutState.tx) < 25 &&
+          Math.abs(target.z - lastCutState.tz) < 25 &&
+          mode === lastCutState.mode) {
+        return;
+      }
+      lastCutState.yaw = cam.yaw;
+      lastCutState.pitch = cam.pitch;
+      lastCutState.zoom = cam.zoom;
+      lastCutState.tx = target.x;
+      lastCutState.tz = target.z;
+      lastCutState.mode = mode;
 
       var wallMeshes = [];
       var furnMeshes = [];
@@ -3092,11 +3109,15 @@
       }
       var r = cachedStageRect;
       if (r && r.width && r.height) {
-        var cw0 = renderer.domElement.width;
-        renderer.setSize(r.width, r.height, false);
-        if (renderer.domElement.width !== cw0) fxResize();
-        camera.aspect = r.width / r.height;
-        camera.updateProjectionMatrix();
+        var targetW = Math.floor(r.width);
+        var targetH = Math.floor(r.height);
+        if (renderer.domElement.clientWidth !== targetW || renderer.domElement.clientHeight !== targetH) {
+          var cw0 = renderer.domElement.width;
+          renderer.setSize(targetW, targetH, false);
+          if (renderer.domElement.width !== cw0) fxResize();
+          camera.aspect = targetW / targetH;
+          camera.updateProjectionMatrix();
+        }
       }
       if (target.y < 0) target.y = 0;
       if (target.y > 6000) target.y = 6000;
@@ -3122,7 +3143,7 @@
         target.z + d * Math.cos(yaw) * Math.cos(el)
       );
       camera.lookAt(target);
-      updateWallCutaway();
+      updateWallCutaway(forceSync);
       if (forceSync) {
         render();
       } else {
@@ -4336,17 +4357,10 @@
             }
           }
         } else if (gd.moved) {
-          // Check collision on drop: if invalid placement, revert to previous position!
+          // If slight overlap was flagged during drag, clear visual highlight and retain dropped position
           if (gd.obj.userData.isOverlapped) {
-            gd.obj.position.x = gd.startPos.x;
-            gd.obj.position.z = gd.startPos.z;
-            gd.obj.position.y = gd.startPosY;
-            gd.obj.rotation.y = gd.startRot || 0;
             setUnitOverlapVisual(gd.obj, false);
-            GL.gizmoSet(gd.obj, gd.id);
-            GL.settle();
-            if (typeof toast === 'function') toast("⚠️ Invalid placement: Unit penetrates wall or overlaps adjacent unit! Placement reverted.");
-            return;
+            if (typeof toast === 'function') toast("Note: Unit placed near adjacent element");
           }
 
           var finalX = Math.round(gd.obj.position.x / 50) * 50;

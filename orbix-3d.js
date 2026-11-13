@@ -2058,13 +2058,21 @@
       (name.indexOf('plant') !== -1 || name.indexOf('pot') !== -1 || name.indexOf('tree') !== -1) ? 'plant' :
       (name.indexOf('microwave') !== -1 || name.indexOf('oven') !== -1) ? 'microwave' :
       (name.indexOf('chimney') !== -1 || name.indexOf('hood') !== -1) ? 'chimney' :
-      (name.indexOf('tv') !== -1) ? 'tv' :
-      (name.indexOf('sofa') !== -1 || name.indexOf('couch') !== -1) ? 'sofa' : 'general'
+      (name.indexOf('mariam') !== -1) ? 'mariam_bed' :
+      (name.indexOf('kid') !== -1 && name.indexOf('bed') !== -1) ? 'kid_bed' :
+      (name.indexOf('bed') !== -1) ? 'bed' :
+      (name.indexOf('collection') !== -1 || name.indexOf('sectional') !== -1) ? 'sofa_collection' :
+      (name.indexOf('sofa') !== -1 || name.indexOf('couch') !== -1) ? 'sofa' :
+      (name.indexOf('chair') !== -1 || name.indexOf('armchair') !== -1) ? 'chair' :
+      (name.indexOf('stool') !== -1) ? 'stool' :
+      (name.indexOf('mirror') !== -1) ? 'mirror' :
+      (name.indexOf('tv') !== -1) ? 'tv' : 'general'
     );
 
     var defDecorElev = (decorType === 'chimney' || decorType === 'hood') ? 1500 :
       (decorType === 'ro_purifier') ? 1200 :
       (decorType === 'microwave') ? 1200 :
+      (decorType === 'mirror') ? 800 :
       (decorType === 'sink' || decorType === 'gas_hob') ? 850 : 0;
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
@@ -2608,6 +2616,170 @@
       addChair(chairXSpacing, tableD / 2 + 190, Math.PI);
       addChair(-chairXSpacing, -tableD / 2 - 190, 0);
       addChair(chairXSpacing, -tableD / 2 - 190, 0);
+
+    } else if (decorType === 'bed' || decorType === 'master_bed' || decorType === 'mariam_bed' || decorType === 'kid_bed') {
+      var isKid = (decorType === 'kid_bed');
+      var isMariam = (decorType === 'mariam_bed');
+      var woodBedMat = new THREE.MeshStandardMaterial({ color: 0x4A3728, roughness: 0.6 });
+      var mattressMat = new THREE.MeshStandardMaterial({ color: 0xFDFBF7, roughness: 0.85 });
+      var duvetMat = new THREE.MeshStandardMaterial({ color: isKid ? 0x38BDF8 : 0x64748B, roughness: 0.75 });
+      var pillowMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.9 });
+      var lampMat = new THREE.MeshStandardMaterial({ color: 0xFEF08A, emissive: 0xFACC15, emissiveIntensity: 0.6 });
+
+      var frameH = 260;
+      var frameMesh = new THREE.Mesh(new THREE.BoxGeometry(W, frameH, D), woodBedMat);
+      frameMesh.position.set(0, frameH / 2, 0);
+      frameMesh.castShadow = true; frameMesh.receiveShadow = true;
+      fg.add(frameMesh);
+
+      var headboardH = Math.max(H, 950);
+      var headboardMesh = new THREE.Mesh(new THREE.BoxGeometry(W + 20, headboardH, 60), woodBedMat);
+      headboardMesh.position.set(0, headboardH / 2, -D / 2 + 30);
+      headboardMesh.castShadow = true;
+      fg.add(headboardMesh);
+
+      var matH = 220;
+      var matW = W - 40;
+      var matD = D - 100;
+      var matMesh = new THREE.Mesh(new THREE.BoxGeometry(matW, matH, matD), mattressMat);
+      matMesh.position.set(0, frameH + matH / 2, 30);
+      matMesh.castShadow = true; matMesh.receiveShadow = true;
+      fg.add(matMesh);
+
+      var duvetD = matD * 0.62;
+      var duvetMesh = new THREE.Mesh(new THREE.BoxGeometry(matW + 10, matH + 16, duvetD), duvetMat);
+      duvetMesh.position.set(0, frameH + matH / 2 + 8, 30 + matD / 2 - duvetD / 2);
+      duvetMesh.castShadow = true; duvetMesh.receiveShadow = true;
+      fg.add(duvetMesh);
+
+      if (isKid) {
+        var kPillow = new THREE.Mesh(new THREE.BoxGeometry(matW * 0.7, 75, 340), pillowMat);
+        kPillow.position.set(0, frameH + matH + 35, -D / 2 + 250);
+        kPillow.rotation.x = 0.15;
+        kPillow.castShadow = true;
+        fg.add(kPillow);
+      } else {
+        var pW = matW * 0.42;
+        [-matW * 0.24, matW * 0.24].forEach(function (px) {
+          var pil = new THREE.Mesh(new THREE.BoxGeometry(pW, 80, 360), pillowMat);
+          pil.position.set(px, frameH + matH + 35, -D / 2 + 250);
+          pil.rotation.x = 0.15;
+          pil.castShadow = true;
+          fg.add(pil);
+        });
+      }
+
+      if (isMariam) {
+        var nsW = 450, nsH = 450, nsD = 420;
+        [-W / 2 - nsW / 2 - 10, W / 2 + nsW / 2 + 10].forEach(function (nsX) {
+          var nsMesh = new THREE.Mesh(new THREE.BoxGeometry(nsW, nsH, nsD), woodBedMat);
+          nsMesh.position.set(nsX, nsH / 2, -D / 2 + nsD / 2 + 40);
+          nsMesh.castShadow = true;
+          fg.add(nsMesh);
+
+          var lampBase = new THREE.Mesh(new THREE.CylinderGeometry(40, 50, 40, 16), woodBedMat);
+          lampBase.position.set(nsX, nsH + 20, -D / 2 + nsD / 2 + 40);
+          fg.add(lampBase);
+
+          var shade = new THREE.Mesh(new THREE.CylinderGeometry(70, 95, 140, 16), lampMat);
+          shade.position.set(nsX, nsH + 110, -D / 2 + nsD / 2 + 40);
+          fg.add(shade);
+        });
+      }
+
+    } else if (decorType === 'sofa_collection') {
+      var colFabMat = new THREE.MeshStandardMaterial({ color: 0x1E3A8A, roughness: 0.85 });
+      var sH = Math.min(420, H * 0.5);
+
+      var mainW = W - 100;
+      var mainSeat = new THREE.Mesh(new THREE.BoxGeometry(mainW, sH * 0.65, D * 0.6), colFabMat);
+      mainSeat.position.set(0, sH * 0.65 / 2 + 80, 0);
+      mainSeat.castShadow = true;
+      fg.add(mainSeat);
+
+      var backH = H - sH;
+      var backM = new THREE.Mesh(new THREE.BoxGeometry(mainW, backH, 120), colFabMat);
+      backM.position.set(0, sH + backH / 2, -D * 0.3 + 60);
+      backM.castShadow = true;
+      fg.add(backM);
+
+      var chaiseL = new THREE.Mesh(new THREE.BoxGeometry(W * 0.35, sH * 0.65, D * 0.4), colFabMat);
+      chaiseL.position.set(-mainW / 2 + W * 0.175, sH * 0.65 / 2 + 80, D * 0.3);
+      chaiseL.castShadow = true;
+      fg.add(chaiseL);
+
+      var pilMat = new THREE.MeshStandardMaterial({ color: 0xF59E0B, roughness: 0.9 });
+      var pil1 = new THREE.Mesh(new THREE.BoxGeometry(160, 160, 60), pilMat);
+      pil1.position.set(-mainW / 2 + 120, sH + 100, -D * 0.3 + 120);
+      pil1.rotation.y = 0.35;
+      fg.add(pil1);
+
+      var pil2 = new THREE.Mesh(new THREE.BoxGeometry(160, 160, 60), pilMat);
+      pil2.position.set(mainW / 2 - 120, sH + 100, -D * 0.3 + 120);
+      pil2.rotation.y = -0.35;
+      fg.add(pil2);
+
+    } else if (decorType === 'chair') {
+      var chairFab = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.85 });
+      var chairLegMat = new THREE.MeshStandardMaterial({ color: 0x1E293B, metalness: 0.8, roughness: 0.3 });
+      var cSeatH = 420;
+      var cSeatGeo = new THREE.CylinderGeometry(Math.min(W, D) * 0.44, Math.min(W, D) * 0.42, 100, 24);
+      var cSeat = new THREE.Mesh(cSeatGeo, chairFab);
+      cSeat.position.set(0, cSeatH, 0);
+      cSeat.castShadow = true;
+      fg.add(cSeat);
+
+      var backGeo = new THREE.CylinderGeometry(Math.min(W, D) * 0.46, Math.min(W, D) * 0.46, H - cSeatH, 24, 1, true, -Math.PI * 0.75, Math.PI * 1.5);
+      var backMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.85, side: THREE.DoubleSide });
+      var cBack = new THREE.Mesh(backGeo, backMat);
+      cBack.position.set(0, cSeatH + (H - cSeatH) / 2, 0);
+      cBack.castShadow = true;
+      fg.add(cBack);
+
+      var legGeo = new THREE.CylinderGeometry(14, 9, cSeatH - 50, 12);
+      [[-W * 0.28, -D * 0.28], [W * 0.28, -D * 0.28], [-W * 0.28, D * 0.28], [W * 0.28, D * 0.28]].forEach(function (lPos) {
+        var leg = new THREE.Mesh(legGeo, chairLegMat);
+        leg.position.set(lPos[0], (cSeatH - 50) / 2, lPos[1]);
+        leg.rotation.z = lPos[0] > 0 ? -0.12 : 0.12;
+        leg.rotation.x = lPos[1] > 0 ? 0.12 : -0.12;
+        leg.castShadow = true;
+        fg.add(leg);
+      });
+
+    } else if (decorType === 'stool') {
+      var stoolTopMat = new THREE.MeshStandardMaterial({ color: 0x0F172A, roughness: 0.8 });
+      var stoolLegMat = new THREE.MeshStandardMaterial({ color: 0xD4AF37, metalness: 0.85, roughness: 0.25 });
+      var sR = Math.min(W, D) * 0.44;
+      var sTop = new THREE.Mesh(new THREE.CylinderGeometry(sR, sR * 0.95, 60, 24), stoolTopMat);
+      sTop.position.set(0, H - 30, 0);
+      sTop.castShadow = true;
+      fg.add(sTop);
+
+      var legR = 10;
+      var sLegGeo = new THREE.CylinderGeometry(legR, legR * 0.75, H - 60, 12);
+      for (var sl = 0; sl < 4; sl++) {
+        var sAng = (sl / 4) * Math.PI * 2 + Math.PI / 4;
+        var sLeg = new THREE.Mesh(sLegGeo, stoolLegMat);
+        sLeg.position.set(Math.cos(sAng) * sR * 0.72, (H - 60) / 2, Math.sin(sAng) * sR * 0.72);
+        sLeg.castShadow = true;
+        fg.add(sLeg);
+      }
+      var ring = new THREE.Mesh(new THREE.TorusGeometry(sR * 0.68, 6, 8, 24), stoolLegMat);
+      ring.position.set(0, H * 0.35, 0);
+      ring.rotation.x = Math.PI / 2;
+      fg.add(ring);
+
+    } else if (decorType === 'mirror') {
+      var mirrorFrameMat = new THREE.MeshStandardMaterial({ color: 0x1E293B, metalness: 0.8, roughness: 0.3 });
+      var glassReflectMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, metalness: 0.98, roughness: 0.04 });
+      var mFrame = new THREE.Mesh(new THREE.BoxGeometry(W, H, 24), mirrorFrameMat);
+      mFrame.position.set(0, H / 2, 0);
+      mFrame.castShadow = true;
+      fg.add(mFrame);
+
+      var mGlass = new THREE.Mesh(new THREE.BoxGeometry(W - 24, H - 24, 6), glassReflectMat);
+      mGlass.position.set(0, H / 2, 10);
+      fg.add(mGlass);
 
     } else {
       var genMat = new THREE.MeshStandardMaterial({ color: 0x64748B, roughness: 0.4, metalness: 0.2 });

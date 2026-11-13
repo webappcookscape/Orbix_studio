@@ -3255,12 +3255,14 @@
           var h = parseFloat(card.getAttribute('data-h')) || 1800;
           var d = parseFloat(card.getAttribute('data-d')) || 700;
           var elev = parseFloat(card.getAttribute('data-elev')) || 0;
+          var model = card.getAttribute('data-model') || null;
 
           self.placeDecorItem({
             name: name,
             decorType: decorType,
             dimensions: { W: w, H: h, D: d },
-            elevation: elev
+            elevation: elev,
+            modelUrl: model
           });
           self.closeDecorModal();
         });

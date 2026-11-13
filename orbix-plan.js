@@ -1493,16 +1493,11 @@
             }
           }
           if (self.dragState.hasCollision) {
-            // Revert invalid overlapping placement!
-            self.dragState.furniture.pos.x = self.dragState.origPos.x;
-            self.dragState.furniture.pos.y = self.dragState.origPos.y;
+            // Keep user placement stable without abrupt reverts
             self.dragState.hasCollision = false;
-            self.dragState = null;
-            self.render();
             if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.showToast) {
-              window.OrbixUI.showToast('Overlap detected! Placement reverted.', 'warning');
+              window.OrbixUI.showToast('Note: Unit placed near adjacent element', 'info');
             }
-            return;
           }
           self.pushHistory('Move Furniture');
         } else if (self.dragState.type === 'move_opening') {
@@ -4642,6 +4637,15 @@
           (f.name.toLowerCase().indexOf('washing') !== -1 || f.name.toLowerCase().indexOf('aeg') !== -1) ? 'washing_machine' :
           (f.name.toLowerCase().indexOf('ro') !== -1 || f.name.toLowerCase().indexOf('purifier') !== -1 || f.name.toLowerCase().indexOf('kent') !== -1) ? 'ro_purifier' :
           (f.name.toLowerCase().indexOf('dining') !== -1 || f.name.toLowerCase().indexOf('1ewt') !== -1 || (f.name.toLowerCase().indexOf('table') !== -1 && f.name.toLowerCase().indexOf('top') === -1)) ? 'dining_table' :
+          (f.name.toLowerCase().indexOf('mariam') !== -1) ? 'mariam_bed' :
+          (f.name.toLowerCase().indexOf('kid') !== -1 && f.name.toLowerCase().indexOf('bed') !== -1) ? 'kid_bed' :
+          (f.name.toLowerCase().indexOf('bed') !== -1) ? 'bed' :
+          (f.name.toLowerCase().indexOf('collection') !== -1 || f.name.toLowerCase().indexOf('sectional') !== -1) ? 'sofa_collection' :
+          (f.name.toLowerCase().indexOf('sofa') !== -1 || f.name.toLowerCase().indexOf('couch') !== -1) ? 'sofa' :
+          (f.name.toLowerCase().indexOf('chair') !== -1 || f.name.toLowerCase().indexOf('armchair') !== -1) ? 'chair' :
+          (f.name.toLowerCase().indexOf('stool') !== -1) ? 'stool' :
+          (f.name.toLowerCase().indexOf('mirror') !== -1) ? 'mirror' :
+          (f.name.toLowerCase().indexOf('tv') !== -1) ? 'tv' :
           (f.name.toLowerCase().indexOf('plant') !== -1) ? 'plant' : 'general'
         );
 
@@ -4687,6 +4691,135 @@
           ctx.strokeRect(wPx * 0.05, dPx / 2 + 2, chW, chD);
           ctx.strokeRect(-wPx * 0.35, -dPx / 2 - 10, chW, chD);
           ctx.strokeRect(wPx * 0.05, -dPx / 2 - 10, chW, chD);
+        } else if (dType === 'bed' || dType === 'master_bed' || dType === 'mariam_bed') {
+          // Architectural Master Bed CAD Symbol (Headboard, 2 Pillows, Duvet Fold-Over & Side Tables)
+          var hbH = dPx * 0.12;
+          // Headboard
+          ctx.fillStyle = isSelected ? '#047857' : '#334155';
+          ctx.fillRect(-wPx / 2, -dPx / 2, wPx, hbH);
+          ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, hbH);
+
+          // 2 King Pillows
+          var pillW = wPx * 0.38, pillH = dPx * 0.18, pillY = -dPx / 2 + hbH + 4;
+          ctx.fillStyle = isSelected ? 'rgba(4, 120, 87, 0.15)' : '#ffffff';
+          ctx.fillRect(-wPx * 0.24 - pillW / 2, pillY, pillW, pillH);
+          ctx.strokeRect(-wPx * 0.24 - pillW / 2, pillY, pillW, pillH);
+          ctx.fillRect(wPx * 0.24 - pillW / 2, pillY, pillW, pillH);
+          ctx.strokeRect(wPx * 0.24 - pillW / 2, pillY, pillW, pillH);
+
+          // Duvet / Quilt fold-over line across middle
+          var duvetY = -dPx / 2 + hbH + pillH + dPx * 0.1;
+          ctx.beginPath();
+          ctx.moveTo(-wPx / 2 + 4, duvetY);
+          ctx.quadraticCurveTo(0, duvetY + dPx * 0.12, wPx / 2 - 4, duvetY);
+          ctx.stroke();
+
+          // Bottom blanket cover
+          ctx.fillStyle = isSelected ? 'rgba(4, 120, 87, 0.12)' : 'rgba(148, 163, 184, 0.2)';
+          ctx.fillRect(-wPx / 2 + 5, duvetY + dPx * 0.08, wPx - 10, dPx / 2 - (duvetY + dPx * 0.08) - 5);
+          ctx.strokeRect(-wPx / 2 + 5, duvetY + dPx * 0.08, wPx - 10, dPx / 2 - (duvetY + dPx * 0.08) - 5);
+
+          // If Mariam bed set: render attached side nightstands with table lamps!
+          if (dType === 'mariam_bed') {
+            var nsW = Math.max(14, wPx * 0.18);
+            var nsH = dPx * 0.28;
+            // Left nightstand
+            ctx.strokeRect(-wPx / 2 - nsW, -dPx / 2, nsW, nsH);
+            ctx.beginPath(); ctx.arc(-wPx / 2 - nsW / 2, -dPx / 2 + nsH / 2, nsW * 0.28, 0, Math.PI * 2); ctx.stroke();
+            // Right nightstand
+            ctx.strokeRect(wPx / 2, -dPx / 2, nsW, nsH);
+            ctx.beginPath(); ctx.arc(wPx / 2 + nsW / 2, -dPx / 2 + nsH / 2, nsW * 0.28, 0, Math.PI * 2); ctx.stroke();
+          }
+        } else if (dType === 'kid_bed') {
+          // Kid Single Bed (Headboard, 1 Pillow & Duvet)
+          var kHbH = dPx * 0.14;
+          ctx.fillStyle = isSelected ? '#047857' : '#334155';
+          ctx.fillRect(-wPx / 2, -dPx / 2, wPx, kHbH);
+          ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, kHbH);
+
+          var kPillW = wPx * 0.65, kPillH = dPx * 0.22, kPillY = -dPx / 2 + kHbH + 4;
+          ctx.fillStyle = isSelected ? 'rgba(4, 120, 87, 0.15)' : '#ffffff';
+          ctx.fillRect(-kPillW / 2, kPillY, kPillW, kPillH);
+          ctx.strokeRect(-kPillW / 2, kPillY, kPillW, kPillH);
+
+          // Duvet fold line
+          var kDuvetY = kPillY + kPillH + dPx * 0.12;
+          ctx.beginPath();
+          ctx.moveTo(-wPx / 2 + 4, kDuvetY);
+          ctx.lineTo(wPx / 2 - 4, kDuvetY);
+          ctx.stroke();
+          ctx.strokeRect(-wPx / 2 + 6, kDuvetY + 4, wPx - 12, dPx / 2 - kDuvetY - 10);
+        } else if (dType === 'sofa_collection' || dType === 'sofa') {
+          // Architectural Sofa CAD Symbol (Backrest, Armrests, Cushions & Throw Pillows)
+          var armW = Math.max(8, wPx * 0.12);
+          var backD = Math.max(8, dPx * 0.22);
+          // Backrest
+          ctx.strokeRect(-wPx / 2, -dPx / 2, wPx, backD);
+          // Left & Right Armrests
+          ctx.strokeRect(-wPx / 2, -dPx / 2, armW, dPx);
+          ctx.strokeRect(wPx / 2 - armW, -dPx / 2, armW, dPx);
+
+          // Seat cushions (2 or 3 segments)
+          var innerW = wPx - 2 * armW;
+          var numCush = (wPx > 100) ? 3 : 2;
+          var cushW = innerW / numCush;
+          for (var c = 0; c < numCush; c++) {
+            ctx.strokeRect(-wPx / 2 + armW + c * cushW + 1, -dPx / 2 + backD + 1, cushW - 2, dPx - backD - 4);
+          }
+
+          // Accent throw cushions at armrests (angled small rectangles)
+          var pilSz = Math.min(armW * 1.4, 16);
+          ctx.save();
+          ctx.translate(-wPx / 2 + armW + 4, -dPx / 2 + backD + 6);
+          ctx.rotate(0.35);
+          ctx.strokeRect(-pilSz / 2, -pilSz / 3, pilSz, pilSz * 0.65);
+          ctx.restore();
+
+          ctx.save();
+          ctx.translate(wPx / 2 - armW - 4, -dPx / 2 + backD + 6);
+          ctx.rotate(-0.35);
+          ctx.strokeRect(-pilSz / 2, -pilSz / 3, pilSz, pilSz * 0.65);
+          ctx.restore();
+        } else if (dType === 'chair') {
+          // Architectural Accent Armchair (Curved Backrest, Armrests & Seat Cushion)
+          var chArmW = Math.max(6, wPx * 0.14);
+          var chBackD = Math.max(6, dPx * 0.25);
+          // Curved backrest arc
+          ctx.beginPath();
+          ctx.arc(0, -dPx / 2 + chBackD, wPx / 2 - 2, Math.PI, 0);
+          ctx.stroke();
+          // Armrests
+          ctx.strokeRect(-wPx / 2, -dPx / 2 + chBackD * 0.5, chArmW, dPx - chBackD * 0.5);
+          ctx.strokeRect(wPx / 2 - chArmW, -dPx / 2 + chBackD * 0.5, chArmW, dPx - chBackD * 0.5);
+          // Seat cushion
+          ctx.strokeRect(-wPx / 2 + chArmW + 2, -dPx / 2 + chBackD + 2, wPx - 2 * chArmW - 4, dPx - chBackD - 6);
+        } else if (dType === 'stool') {
+          // Architectural Bar / Dressing Stool (Circular cushion with cross bracing)
+          var stR = Math.min(wPx, dPx) * 0.42;
+          ctx.beginPath(); ctx.arc(0, 0, stR, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, stR * 0.65, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+        } else if (dType === 'mirror') {
+          // Architectural Vanity Mirror (Double reflective lines + wall clip brackets)
+          ctx.strokeRect(-wPx / 2 + 4, -dPx / 2 + 2, wPx - 8, dPx - 4);
+          // Reflective hash lines
+          [-wPx * 0.2, 0, wPx * 0.2].forEach(function (mx) {
+            ctx.beginPath();
+            ctx.moveTo(mx - 6, dPx / 2 - 4);
+            ctx.lineTo(mx + 6, -dPx / 2 + 4);
+            ctx.stroke();
+          });
+          // Mounting brackets
+          ctx.fillRect(-wPx / 2, -dPx / 2, 4, dPx);
+          ctx.fillRect(wPx / 2 - 4, -dPx / 2, 4, dPx);
+        } else if (dType === 'tv') {
+          // Modern Smart TV Screen with Console Stand
+          var scrThick = Math.max(4, dPx * 0.25);
+          ctx.fillStyle = isSelected ? '#047857' : '#0f172a';
+          ctx.fillRect(-wPx / 2 + 2, dPx / 2 - scrThick, wPx - 4, scrThick - 2);
+          ctx.strokeRect(-wPx / 2 + 2, dPx / 2 - scrThick, wPx - 4, scrThick - 2);
+          // Console credenza behind screen
+          ctx.strokeRect(-wPx / 2 + 6, -dPx / 2 + 4, wPx - 12, dPx - scrThick - 6);
         } else if (dType === 'plant') {
           ctx.beginPath(); ctx.arc(0, 0, Math.min(wPx, dPx) * 0.35, 0, Math.PI * 2); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(-wPx * 0.25, 0); ctx.lineTo(wPx * 0.25, 0); ctx.stroke();

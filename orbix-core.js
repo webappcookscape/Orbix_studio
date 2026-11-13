@@ -754,18 +754,18 @@
         parseFloat(f.pos.z) : (isWall1 ? 1500 : 0));
     var h1 = (f.dimensions && f.dimensions.H) ? parseFloat(f.dimensions.H) : (isWall1 ? 600 : 850);
     var top1 = elev1 + h1;
-    var isDecor1 = !!(f.isDecor || f.decorType || (f.name && /sink|hob|stove|cooktop|burner|tap|basin/i.test(f.name)));
+    var isDecor1 = !!(f.isDecor || f.decorType || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor' || (f.name && /sink|hob|stove|cooktop|burner|tap|basin|bed|sofa|chair|stool|mirror|tv|plant/i.test(f.name)));
     var isBase1 = !isWall1 && (f.category === 'kitchen_base' || (f.name && /base/i.test(f.name)));
 
     for (var i = 0; i < allFurn.length; i++) {
       var other = allFurn[i];
       if (other.id === f.id || (ignoreId && other.id === ignoreId)) continue;
       var isWall2 = isWallUnitCategory(other.category, other.name, other.code || other.catalogItemId, other.costCategory);
-      var isDecor2 = !!(other.isDecor || other.decorType || (other.name && /sink|hob|stove|cooktop|burner|tap|basin/i.test(other.name)));
+      var isDecor2 = !!(other.isDecor || other.decorType || other.excludeFromPricing || other.category === 'decor' || other.category === 'appliance_decor' || (other.name && /sink|hob|stove|cooktop|burner|tap|basin|bed|sofa|chair|stool|mirror|tv|plant/i.test(other.name)));
       var isBase2 = !isWall2 && (other.category === 'kitchen_base' || (other.name && /base/i.test(other.name)));
 
-      // Countertop fixtures (sinks, gas hobs) sit inside/on base units; allow without false collision!
-      if ((isDecor1 && isBase2) || (isDecor2 && isBase1)) continue;
+      // Decor items (beds, sofas, armchairs, stools, mirrors, tvs, plants, sinks, hobs) do not block or get blocked by other units
+      if (isDecor1 || isDecor2) continue;
 
       var elev2 = (other.elevation !== undefined && other.elevation !== null && other.elevation !== '') ?
         parseFloat(other.elevation) :
@@ -983,6 +983,9 @@
   // Comprehensive placement overlap detector against adjacent furniture, wall cores, and openings
   function checkPlacementOverlap(f, plan, ignoreId) {
     if (!f || !plan) return { hasOverlap: false };
+    if (f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor') {
+      return { hasOverlap: false };
+    }
     var fId = ignoreId || f.id;
 
     // 1. Check collision with other furniture units (OBB + 3D elevation)
