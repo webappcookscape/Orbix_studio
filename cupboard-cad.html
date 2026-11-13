@@ -29125,22 +29125,28 @@ window.ORBIX_DADO_TEXTURES = {
       }
     },
 
-    capturePhotorealisticRender: function () {
+    capturePhotorealisticRender: function (options) {
       var gl = window.__cc && window.__cc.gl;
       if (!gl || typeof gl.snapshot !== 'function') {
         if (typeof window.toast === 'function') window.toast('3D Studio is not active.');
         return;
       }
-      if (typeof window.toast === 'function') window.toast('📸 Rendering 8K Ultra-HD Photorealistic Snapshot...');
+      options = options || { mode: 'focused' };
+      if (typeof window.toast === 'function') {
+        window.toast(options.mode === 'current' ?
+          '📸 Rendering 8K Photorealistic Snapshot (Current View)...' :
+          '📸 Rendering 8K Photorealistic Snapshot (Wall & Units Focused)...');
+      }
       setTimeout(function () {
-        var dataUrl = gl.snapshot(7680, 4320, { format: 'png', quality: 1.0 });
+        var snapOpts = { format: 'png', quality: 1.0, mode: options.mode || 'focused' };
+        var dataUrl = gl.snapshot(7680, 4320, snapOpts);
         var resLabel = '8k';
         if (!dataUrl) {
-          dataUrl = gl.snapshot(3840, 2160, { format: 'png', quality: 1.0 });
+          dataUrl = gl.snapshot(3840, 2160, snapOpts);
           resLabel = '4k';
         }
         if (!dataUrl) {
-          dataUrl = gl.snapshot(1920, 1080);
+          dataUrl = gl.snapshot(1920, 1080, snapOpts);
           resLabel = 'hd';
         }
         if (dataUrl) {
@@ -29151,7 +29157,7 @@ window.ORBIX_DADO_TEXTURES = {
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          if (typeof window.toast === 'function') window.toast('✨ ' + resLabel.toUpperCase() + ' Photorealistic Render Downloaded!');
+          if (typeof window.toast === 'function') window.toast('✨ ' + resLabel.toUpperCase() + ' Photorealistic Wall & Units Render Downloaded!');
         }
       }, 80);
     },
@@ -33333,6 +33339,140 @@ window.ORBIX_DADO_TEXTURES = {
       tRoot = new THREE.Group(); tScene.add(tRoot);
       return true;
     }
+    function frameWallAndUnitsForRender(targetW, targetH) {
+      var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
+      if (!homeObj) return null;
+
+      // 1. Collect all placed furniture objects in the 3D home
+      var furnObjs = [];
+      var selFurnId = null;
+      if (window.OrbixUI && window.OrbixUI.editor && window.OrbixUI.editor.selected) {
+        var selItem = window.OrbixUI.editor.selected.find(function (it) { return it.type === 'furniture'; });
+        if (selItem) selFurnId = selItem.id;
+      }
+      if (!selFurnId && window.S && window.S.units && window.S.units[window.S.active]) {
+        selFurnId = window.S.units[window.S.active]._furnId;
+      }
+
+      homeObj.traverse(function (o) {
+        if (o.userData && (o.userData.isFurnitureGroup || o.userData.isFurniture || (o.name && o.name.indexOf('Furniture_') === 0))) {
+          if (selFurnId) {
+            if (o.userData.furnitureId === selFurnId) furnObjs.push(o);
+          } else {
+            furnObjs.push(o);
+          }
+        }
+      });
+
+      if (furnObjs.length === 0) {
+        homeObj.traverse(function (o) {
+          if (o.userData && (o.userData.isFurnitureGroup || o.userData.isFurniture || (o.name && o.name.indexOf('Furniture_') === 0))) {
+            furnObjs.push(o);
+          }
+        });
+      }
+      if (furnObjs.length === 0) return null;
+
+      // 2. Compute composite bounding box of units
+      var unitBox = new THREE.Box3();
+      furnObjs.forEach(function (fo) {
+        fo.updateMatrixWorld(true);
+        unitBox.expandByObject(fo);
+      });
+      if (unitBox.isEmpty()) return null;
+
+      var unitCenter = unitBox.getCenter(new THREE.Vector3());
+      var unitSize = unitBox.getSize(new THREE.Vector3());
+
+      // 3. Find the closest host wall in the plan
+      var planWalls = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls) || [];
+      var bestWall = null;
+      var bestDist = Infinity;
+      var bestNormal = null;
+
+      planWalls.forEach(function (w) {
+        if (!w.start || !w.end) return;
+        var p1 = w.start, p2 = w.end;
+        var dx = p2.x - p1.x, dy = p2.y - p1.y;
+        var lenSq = dx * dx + dy * dy;
+        if (lenSq < 10) return;
+        var t = Math.max(0, Math.min(1, ((unitCenter.x - p1.x) * dx + (unitCenter.z - p1.y) * dy) / lenSq));
+        var projX = p1.x + t * dx;
+        var projY = p1.y + t * dy;
+        var d = Math.hypot(unitCenter.x - projX, unitCenter.z - projY);
+        if (d < bestDist) {
+          bestDist = d;
+          bestWall = w;
+          var len = Math.sqrt(lenSq);
+          var nx = -dy / len;
+          var ny = dx / len;
+          var toUnitX = unitCenter.x - projX;
+          var toUnitY = unitCenter.z - projY;
+          if (nx * toUnitX + ny * toUnitY < 0) {
+            nx = -nx;
+            ny = -ny;
+          }
+          bestNormal = { x: nx, z: ny };
+        }
+      });
+
+      var viewDir = bestNormal ? bestNormal : { x: 0, z: 1 };
+      var angleRad = 0.16; // ~9.2° subtle architectural angle for depth modeling
+      var cosA = Math.cos(angleRad), sinA = Math.sin(angleRad);
+      var angledDir = {
+        x: viewDir.x * cosA - viewDir.z * sinA,
+        z: viewDir.x * sinA + viewDir.z * cosA
+      };
+
+      // 4. Calculate optimal camera distance and target
+      var aspect = (targetW && targetH) ? (targetW / targetH) : (16 / 9);
+      var fovRad = (camera.fov || 45) * Math.PI / 180;
+      var tanHalfFov = Math.tan(fovRad / 2);
+
+      var frameW = Math.max(unitSize.x, unitSize.z, 1400);
+      var frameH = Math.max(unitSize.y, 1600);
+      var distH = (frameH * 1.15) / (2 * tanHalfFov);
+      var distW = (frameW * 1.18) / (2 * tanHalfFov * aspect);
+      var shotDist = Math.max(distH, distW) + 200;
+
+      var shotTargetY = Math.max(700, Math.min(1800, unitCenter.y));
+      var shotTarget = new THREE.Vector3(unitCenter.x, shotTargetY, unitCenter.z);
+
+      var shotCamPos = new THREE.Vector3(
+        shotTarget.x + angledDir.x * shotDist,
+        Math.max(1150, Math.min(1500, shotTargetY + 60)),
+        shotTarget.z + angledDir.z * shotDist
+      );
+
+      // 5. Hide obstructing foreground walls
+      var wallVisibilityBackup = [];
+      homeObj.children.forEach(function (child) {
+        if (child.userData && child.userData.isWall) {
+          wallVisibilityBackup.push({ mesh: child, visible: child.visible });
+          var isHostWall = (bestWall && child.userData.wallId === bestWall.id);
+          if (isHostWall) {
+            child.visible = true;
+          } else if (child.userData && child.userData.start && child.userData.end) {
+            var hit = testRayWallIntersection(
+              { x: shotCamPos.x, y: shotCamPos.z },
+              { x: shotTarget.x, y: shotTarget.z },
+              child.userData.start,
+              child.userData.end
+            );
+            if (hit) {
+              child.visible = false;
+            }
+          }
+        }
+      });
+
+      return {
+        target: shotTarget,
+        camPos: shotCamPos,
+        wallVisibilityBackup: wallVisibilityBackup
+      };
+    }
+
     function snapshot(w, h, opts) {
       if (!ok) return null;
       opts = opts || {};
@@ -33341,35 +33481,86 @@ window.ORBIX_DADO_TEXTURES = {
       var targetW = Math.min(w || 3840, maxDim);
       var targetH = Math.min(h || 2160, maxDim);
 
+      var origCamPos = camera.position.clone();
+      var origCamTarget = target.clone();
+      var origAspect = camera.aspect;
+      var origFov = camera.fov;
+      var origExp = renderer.toneMappingExposure;
+      var origTone = renderer.toneMapping;
+      var origKeyBias = keyL ? keyL.shadow.bias : 0;
+
+      var frameSetup = null;
+      if (opts.mode !== 'current') {
+        frameSetup = frameWallAndUnitsForRender(targetW, targetH);
+        if (frameSetup) {
+          camera.position.copy(frameSetup.camPos);
+          target.copy(frameSetup.target);
+          camera.lookAt(target);
+        }
+      }
+
       renderer.setPixelRatio(1);
       renderer.setSize(targetW, targetH, false);
       camera.aspect = targetW / targetH;
       camera.updateProjectionMatrix();
 
-      var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0));
+      // Photorealistic Tone Mapping & Exposure
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
 
-      if (hasArchHome) {
-        scene.background = new THREE.Color(0x82C3EC); // Crisp radiant sky blue
-        if (floor) { floor.visible = true; }
-        renderer.setClearColor(0x82C3EC, 1);
+      if (keyL) {
+        keyL.shadow.bias = -0.0003;
+        keyL.shadow.radius = 2.2;
+      }
+
+      var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0));
+      if (!frameSetup) {
+        if (hasArchHome) {
+          scene.background = new THREE.Color(0x82C3EC);
+          if (floor) { floor.visible = true; }
+          renderer.setClearColor(0x82C3EC, 1);
+        } else {
+          renderer.setClearColor(0xE6E4DF, 1);
+        }
       } else {
-        renderer.setClearColor(0xE6E4DF, 1);
+        // Warm architectural interior studio tone for wall & units focused shot
+        scene.background = new THREE.Color(0xF1ECE6);
+        renderer.setClearColor(0xF1ECE6, 1);
+        if (floor) floor.visible = false; // Exclude exterior ground plane during focused interior wall shot
       }
 
       fxResize();
       render();
 
       var mime = (opts.format === 'png') ? "image/png" : "image/jpeg";
-      var quality = (opts.quality !== undefined) ? opts.quality : 0.96;
+      var quality = (opts.quality !== undefined) ? opts.quality : 0.98;
       var url = null;
       try { url = cv.toDataURL(mime, quality); } catch (err) { }
+
+      // Restore camera, target, and viewport
+      camera.position.copy(origCamPos);
+      target.copy(origCamTarget);
+      camera.fov = origFov;
+      camera.aspect = origAspect;
+      camera.lookAt(target);
+      camera.updateProjectionMatrix();
+
+      if (frameSetup && frameSetup.wallVisibilityBackup) {
+        frameSetup.wallVisibilityBackup.forEach(function (wb) {
+          wb.mesh.visible = wb.visible;
+        });
+      }
+
+      if (floor) floor.visible = origFloorVis;
+      if (keyL) keyL.shadow.bias = origKeyBias;
+      renderer.toneMapping = origTone;
+      renderer.toneMappingExposure = origExp;
 
       renderer.setClearColor(0x000000, 0);
       renderer.setPixelRatio(pr);
       renderer.setSize(cw, ch, false);
       fxResize();
-      camera.aspect = cw / ch;
-      camera.updateProjectionMatrix();
+      updateWallCutaway(true);
       render();
       return url;
     }

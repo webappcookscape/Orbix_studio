@@ -5320,22 +5320,28 @@
       }
     },
 
-    capturePhotorealisticRender: function () {
+    capturePhotorealisticRender: function (options) {
       var gl = window.__cc && window.__cc.gl;
       if (!gl || typeof gl.snapshot !== 'function') {
         if (typeof window.toast === 'function') window.toast('3D Studio is not active.');
         return;
       }
-      if (typeof window.toast === 'function') window.toast('📸 Rendering 8K Ultra-HD Photorealistic Snapshot...');
+      options = options || { mode: 'focused' };
+      if (typeof window.toast === 'function') {
+        window.toast(options.mode === 'current' ?
+          '📸 Rendering 8K Photorealistic Snapshot (Current View)...' :
+          '📸 Rendering 8K Photorealistic Snapshot (Wall & Units Focused)...');
+      }
       setTimeout(function () {
-        var dataUrl = gl.snapshot(7680, 4320, { format: 'png', quality: 1.0 });
+        var snapOpts = { format: 'png', quality: 1.0, mode: options.mode || 'focused' };
+        var dataUrl = gl.snapshot(7680, 4320, snapOpts);
         var resLabel = '8k';
         if (!dataUrl) {
-          dataUrl = gl.snapshot(3840, 2160, { format: 'png', quality: 1.0 });
+          dataUrl = gl.snapshot(3840, 2160, snapOpts);
           resLabel = '4k';
         }
         if (!dataUrl) {
-          dataUrl = gl.snapshot(1920, 1080);
+          dataUrl = gl.snapshot(1920, 1080, snapOpts);
           resLabel = 'hd';
         }
         if (dataUrl) {
@@ -5346,7 +5352,7 @@
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          if (typeof window.toast === 'function') window.toast('✨ ' + resLabel.toUpperCase() + ' Photorealistic Render Downloaded!');
+          if (typeof window.toast === 'function') window.toast('✨ ' + resLabel.toUpperCase() + ' Photorealistic Wall & Units Render Downloaded!');
         }
       }, 80);
     },
