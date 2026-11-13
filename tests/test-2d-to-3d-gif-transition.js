@@ -53,3 +53,4 @@ console.log('✓ Single-file dist-single.html has base64 inlined GIF verified');
 console.log('======================================================');
 console.log('ALL 2D-TO-3D DESIGN JOURNEY GIF TESTS PASSED WITH 0 ERRORS!');
 console.log('======================================================');
+
