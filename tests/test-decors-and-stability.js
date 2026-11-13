@@ -81,7 +81,7 @@ newDecors.forEach(function (d) {
 // Check that app.js does not unconditionally call setSize in apply()
 console.log('--- Verifying 3D Lag Fix in app.js ---');
 var appCode = fs.readFileSync('app.js', 'utf8');
-assert.ok(appCode.indexOf('renderer.domElement.clientWidth !== targetW') !== -1, 'app.js must guard setSize with size comparison');
+assert.ok(appCode.indexOf('renderer.domElement.width !== expectedBufW') !== -1, 'app.js must guard setSize with buffer comparison');
 assert.ok(appCode.indexOf('Math.abs(cam.yaw - lastCutState.yaw) <') !== -1, 'app.js must throttle updateWallCutaway');
 assert.ok(appCode.indexOf('Overlap detected! Placement reverted.') === -1, 'orbix-plan.js must not revert placement on overlap');
 console.log('✔ 3D Lag guards and Unit Revert elimination verified');

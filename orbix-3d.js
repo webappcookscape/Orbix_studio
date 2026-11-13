@@ -631,7 +631,7 @@
       bumpScale: 0.02
     });
 
-    this.materials.doorHandle = new THREE.MeshStandardMaterial({
+    this.materials.doorHandle = new THREE.MeshPhysicalMaterial({
       color: 0xD4AF37, // Polished Architectural Brass
       roughness: 0.22,
       metalness: 0.88,

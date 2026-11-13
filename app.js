@@ -3111,11 +3111,16 @@
       if (r && r.width && r.height) {
         var targetW = Math.floor(r.width);
         var targetH = Math.floor(r.height);
-        if (renderer.domElement.clientWidth !== targetW || renderer.domElement.clientHeight !== targetH) {
-          var cw0 = renderer.domElement.width;
+        var pr = renderer.getPixelRatio ? renderer.getPixelRatio() : 1;
+        var expectedBufW = Math.round(targetW * pr);
+        var expectedBufH = Math.round(targetH * pr);
+        var curAspect = targetW / targetH;
+        if (renderer.domElement.width !== expectedBufW ||
+            renderer.domElement.height !== expectedBufH ||
+            Math.abs(camera.aspect - curAspect) > 0.001) {
           renderer.setSize(targetW, targetH, false);
-          if (renderer.domElement.width !== cw0) fxResize();
-          camera.aspect = targetW / targetH;
+          if (typeof fxResize === 'function') fxResize();
+          camera.aspect = curAspect;
           camera.updateProjectionMatrix();
         }
       }
@@ -3318,80 +3323,84 @@
       var origExp = renderer.toneMappingExposure;
       var origTone = renderer.toneMapping;
       var origKeyBias = keyL ? keyL.shadow.bias : 0;
+      var origFloorVis = floor ? floor.visible : true;
 
       var frameSetup = null;
-      if (opts.mode !== 'current') {
-        frameSetup = frameWallAndUnitsForRender(targetW, targetH);
-        if (frameSetup) {
-          camera.position.copy(frameSetup.camPos);
-          target.copy(frameSetup.target);
-          camera.lookAt(target);
-        }
-      }
-
-      renderer.setPixelRatio(1);
-      renderer.setSize(targetW, targetH, false);
-      camera.aspect = targetW / targetH;
-      camera.updateProjectionMatrix();
-
-      // Photorealistic Tone Mapping & Exposure
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.08;
-
-      if (keyL) {
-        keyL.shadow.bias = -0.0003;
-        keyL.shadow.radius = 2.2;
-      }
-
-      var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0));
-      if (!frameSetup) {
-        if (hasArchHome) {
-          scene.background = new THREE.Color(0x82C3EC);
-          if (floor) { floor.visible = true; }
-          renderer.setClearColor(0x82C3EC, 1);
-        } else {
-          renderer.setClearColor(0xE6E4DF, 1);
-        }
-      } else {
-        // Warm architectural interior studio tone for wall & units focused shot
-        scene.background = new THREE.Color(0xF1ECE6);
-        renderer.setClearColor(0xF1ECE6, 1);
-        if (floor) floor.visible = false; // Exclude exterior ground plane during focused interior wall shot
-      }
-
-      fxResize();
-      render();
-
-      var mime = (opts.format === 'png') ? "image/png" : "image/jpeg";
-      var quality = (opts.quality !== undefined) ? opts.quality : 0.98;
       var url = null;
-      try { url = cv.toDataURL(mime, quality); } catch (err) { }
 
-      // Restore camera, target, and viewport
-      camera.position.copy(origCamPos);
-      target.copy(origCamTarget);
-      camera.fov = origFov;
-      camera.aspect = origAspect;
-      camera.lookAt(target);
-      camera.updateProjectionMatrix();
+      try {
+        if (opts.mode !== 'current') {
+          frameSetup = frameWallAndUnitsForRender(targetW, targetH);
+          if (frameSetup) {
+            camera.position.copy(frameSetup.camPos);
+            target.copy(frameSetup.target);
+            camera.lookAt(target);
+          }
+        }
 
-      if (frameSetup && frameSetup.wallVisibilityBackup) {
-        frameSetup.wallVisibilityBackup.forEach(function (wb) {
-          wb.mesh.visible = wb.visible;
-        });
+        renderer.setPixelRatio(1);
+        renderer.setSize(targetW, targetH, false);
+        camera.aspect = targetW / targetH;
+        camera.updateProjectionMatrix();
+
+        // Photorealistic Tone Mapping & Exposure
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.08;
+
+        if (keyL) {
+          keyL.shadow.bias = -0.0003;
+          keyL.shadow.radius = 2.2;
+        }
+
+        var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0));
+        if (!frameSetup) {
+          if (hasArchHome) {
+            scene.background = new THREE.Color(0x82C3EC);
+            if (floor) { floor.visible = true; }
+            renderer.setClearColor(0x82C3EC, 1);
+          } else {
+            renderer.setClearColor(0xE6E4DF, 1);
+          }
+        } else {
+          // Warm architectural interior studio tone for wall & units focused shot
+          scene.background = new THREE.Color(0xF1ECE6);
+          renderer.setClearColor(0xF1ECE6, 1);
+          if (floor) floor.visible = false; // Exclude exterior ground plane during focused interior wall shot
+        }
+
+        fxResize();
+        render();
+
+        var mime = (opts.format === 'png') ? "image/png" : "image/jpeg";
+        var quality = (opts.quality !== undefined) ? opts.quality : 0.98;
+        try { url = cv.toDataURL(mime, quality); } catch (err) { }
+      } finally {
+        // ALWAYS restore camera, target, and viewport
+        camera.position.copy(origCamPos);
+        target.copy(origCamTarget);
+        camera.fov = origFov;
+        camera.aspect = origAspect;
+        camera.lookAt(target);
+        camera.updateProjectionMatrix();
+
+        if (frameSetup && frameSetup.wallVisibilityBackup) {
+          frameSetup.wallVisibilityBackup.forEach(function (wb) {
+            wb.mesh.visible = wb.visible;
+          });
+        }
+
+        if (floor) floor.visible = origFloorVis;
+        if (keyL) keyL.shadow.bias = origKeyBias;
+        renderer.toneMapping = origTone;
+        renderer.toneMappingExposure = origExp;
+
+        renderer.setClearColor(0x000000, 0);
+        renderer.setPixelRatio(pr);
+        renderer.setSize(cw, ch, false);
+        fxResize();
+        updateWallCutaway(true);
+        render();
       }
-
-      if (floor) floor.visible = origFloorVis;
-      if (keyL) keyL.shadow.bias = origKeyBias;
-      renderer.toneMapping = origTone;
-      renderer.toneMappingExposure = origExp;
-
-      renderer.setClearColor(0x000000, 0);
-      renderer.setPixelRatio(pr);
-      renderer.setSize(cw, ch, false);
-      fxResize();
-      updateWallCutaway(true);
-      render();
       return url;
     }
     function thumb(u) {
