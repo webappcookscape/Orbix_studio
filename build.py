@@ -34,6 +34,12 @@ if os.path.exists(cook_icon_path):
     b64_cook = 'data:image/png;base64,' + base64.b64encode(open(cook_icon_path, 'rb').read()).decode('utf-8')
     frag = frag.replace('src="icon-cookscape-unit.png"', 'src="' + b64_cook + '"')
 
+gif_journey_path = os.path.join(here, 'cookscape-2d-to-3d-journey.gif')
+if os.path.exists(gif_journey_path):
+    b64_gif = 'data:image/gif;base64,' + base64.b64encode(open(gif_journey_path, 'rb').read()).decode('utf-8')
+    frag = frag.replace('src="cookscape-2d-to-3d-journey.gif"', 'src="' + b64_gif + '"')
+    frag = frag.replace('src="assets/cookscape-2d-to-3d-journey.gif"', 'src="' + b64_gif + '"')
+
 frag = re.sub(r'<link rel="stylesheet" href="style\.css[^"]*">', '<style>\n' + css + '\n</style>', frag)
 all_js = '<script>\n' + orbix_unit_icons + '\n' + orbix_projects + '\n' + orbix_core + '\n' + orbix_plan + '\n' + orbix_dado_tex + '\n' + orbix_3d + '\n' + orbix_ui + '\n' + js + '\n' + pwa_js + '\n</script>'
 pattern = r'(?:<script src="orbix-unit-icons\.js[^"]*"></script>\s*)?<script src="orbix-projects\.js[^"]*"></script>\s*<script src="orbix-core\.js[^"]*"></script>\s*<script src="orbix-plan\.js[^"]*"></script>\s*(?:<script src="orbix-dado-textures\.js[^"]*"></script>\s*)?<script src="orbix-3d\.js[^"]*"></script>\s*<script src="orbix-ui\.js[^"]*"></script>\s*<script src="app\.js[^"]*"></script>\s*<script src="pwa\.js[^"]*"></script>'

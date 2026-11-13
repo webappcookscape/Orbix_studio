@@ -5444,25 +5444,88 @@
     });
     $all(".view").forEach(function (s) { s.classList.toggle("is-on", s.id === "view-" + v); });
     if (v === "design") {
-      if (window.OrbixUI && typeof window.OrbixUI.update3DStudioRoomOptions === 'function') {
-        window.OrbixUI.update3DStudioRoomOptions();
-      }
-      if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
-        window.OrbixUI.syncProjectUnitsTo3DStudio();
-      }
-      if (typeof buildScene === 'function') buildScene();
-      if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') window.OrbixUI.render3DHome(true);
+      var overlay = document.getElementById("transition2DTo3DOverlay");
+      var statusEl = document.getElementById("djStatusText");
+      var barEl = document.getElementById("djProgressBar");
+      var gifEl = document.getElementById("djJourneyGif");
 
-      // Frame camera on the active unit
-      var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
-      var actU = U(), rot = 0;
-      if (actU && actU._furnId && plan && plan.furniture) {
-        var f = plan.furniture.find(function (it) { return it.id === actU._furnId; });
-        if (f) rot = f.rotY || 0;
+      var run3DBackendWork = function () {
+        if (window.OrbixUI && typeof window.OrbixUI.update3DStudioRoomOptions === 'function') {
+          window.OrbixUI.update3DStudioRoomOptions();
+        }
+        if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
+          window.OrbixUI.syncProjectUnitsTo3DStudio();
+        }
+        if (typeof buildScene === 'function') buildScene();
+        if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') window.OrbixUI.render3DHome(true);
+
+        // Frame camera on the active unit or whole home
+        var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+        var actU = U(), rot = 0;
+        if (actU && actU._furnId && plan && plan.furniture) {
+          var f = plan.furniture.find(function (it) { return it.id === actU._furnId; });
+          if (f) rot = f.rotY || 0;
+        }
+        cam.yaw = -(rot * 180 / Math.PI) - 24;
+        cam.pitch = -10;
+        fit(); camApply();
+        if (GL.ok && GL.settle) GL.settle();
+      };
+
+      if (overlay && !window._isTransitioningTo3D) {
+        window._isTransitioningTo3D = true;
+
+        // Restart GIF animation for complete design journey experience
+        if (gifEl && gifEl.src && gifEl.src.indexOf('data:') === -1) {
+          var cleanSrc = gifEl.src.split('?')[0];
+          gifEl.src = cleanSrc + '?t=' + Date.now();
+        }
+
+        overlay.style.display = "flex";
+        requestAnimationFrame(function () {
+          overlay.classList.add("is-active");
+          overlay.setAttribute("aria-hidden", "false");
+        });
+
+        if (barEl) barEl.style.width = "22%";
+        if (statusEl) statusEl.textContent = "Analyzing 2D floor plan & room boundaries...";
+
+        // Step 1: Initial plan geometry sync
+        setTimeout(function () {
+          if (barEl) barEl.style.width = "52%";
+          if (statusEl) statusEl.textContent = "Constructing 3D walls, openings & room geometry...";
+
+          // Step 2: Execute all 3D backend generation in background while GIF plays!
+          setTimeout(function () {
+            try {
+              run3DBackendWork();
+            } catch (err) {
+              console.error("3D Backend Work Error:", err);
+            }
+
+            if (barEl) barEl.style.width = "88%";
+            if (statusEl) statusEl.textContent = "Applying photorealistic lighting, materials & textures...";
+
+            // Step 3: Polish and reveal 3D scene smoothly
+            setTimeout(function () {
+              if (barEl) barEl.style.width = "100%";
+              if (statusEl) statusEl.textContent = "Welcome to 3D Studio!";
+
+              setTimeout(function () {
+                overlay.classList.remove("is-active");
+                overlay.setAttribute("aria-hidden", "true");
+                setTimeout(function () {
+                  overlay.style.display = "none";
+                  if (barEl) barEl.style.width = "15%";
+                  window._isTransitioningTo3D = false;
+                }, 380);
+              }, 400);
+            }, 550);
+          }, 450);
+        }, 350);
+      } else {
+        run3DBackendWork();
       }
-      cam.yaw = -(rot * 180 / Math.PI) - 24;
-      cam.pitch = -10;
-      fit(); camApply();
     }
     if (v === "panels") renderPanels();
     if (v === "nest") { renderNestOpts(); renderNest(); }
