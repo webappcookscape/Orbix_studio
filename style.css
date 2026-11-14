@@ -3402,6 +3402,50 @@ body.role-employee #adminCreateEmpBox,
   transition: width 0.35s ease;
 }
 
+/* ══════════ 8K RENDER MODE SELECTOR ══════════ */
+.render-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+.render-dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 5px);
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
+  z-index: 99999;
+  min-width: 275px;
+  padding: 8px;
+  backdrop-filter: blur(10px);
+}
+.render-dropdown-menu.is-open {
+  display: block;
+}
+.render-menu-opt {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #f8fafc;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: background 0.15s, transform 0.1s;
+}
+.render-menu-opt:hover {
+  background: #334155 !important;
+}
+.render-menu-opt:active {
+  transform: scale(0.98);
+}
+
+
 
 
 

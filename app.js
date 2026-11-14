@@ -3178,35 +3178,35 @@
       var homeObj = scene ? scene.getObjectByName('OrbixHome3D') : null;
       if (!homeObj) return null;
 
-      // 1. Collect all placed furniture objects in the 3D home
+      // 1. Collect all placed furniture and decor objects in the 3D home
       var furnObjs = [];
-      var selFurnId = null;
-      if (window.OrbixUI && window.OrbixUI.editor && window.OrbixUI.editor.selected) {
-        var selItem = window.OrbixUI.editor.selected.find(function (it) { return it.type === 'furniture'; });
-        if (selItem) selFurnId = selItem.id;
-      }
-      if (!selFurnId && window.S && window.S.units && window.S.units[window.S.active]) {
-        selFurnId = window.S.units[window.S.active]._furnId;
-      }
-
       homeObj.traverse(function (o) {
         if (o.userData && (o.userData.isFurnitureGroup || o.userData.isFurniture || (o.name && o.name.indexOf('Furniture_') === 0))) {
-          if (selFurnId) {
-            if (o.userData.furnitureId === selFurnId) furnObjs.push(o);
-          } else {
-            furnObjs.push(o);
-          }
+          furnObjs.push(o);
         }
       });
 
+      // If no furniture placed yet, frame the room walls gracefully
       if (furnObjs.length === 0) {
-        homeObj.traverse(function (o) {
-          if (o.userData && (o.userData.isFurnitureGroup || o.userData.isFurniture || (o.name && o.name.indexOf('Furniture_') === 0))) {
-            furnObjs.push(o);
+        var wallBox = new THREE.Box3();
+        homeObj.children.forEach(function (child) {
+          if (child.userData && child.userData.isWall && child.visible) {
+            wallBox.expandByObject(child);
           }
         });
+        if (!wallBox.isEmpty()) {
+          var wCenter = wallBox.getCenter(new THREE.Vector3());
+          var wSize = wallBox.getSize(new THREE.Vector3());
+          var maxWDim = Math.max(wSize.x, wSize.z, 2400);
+          var shotDist = maxWDim * 1.35;
+          return {
+            target: new THREE.Vector3(wCenter.x, Math.max(900, wCenter.y), wCenter.z),
+            camPos: new THREE.Vector3(wCenter.x + shotDist * 0.7, 1800, wCenter.z + shotDist * 0.7),
+            wallVisibilityBackup: []
+          };
+        }
+        return null;
       }
-      if (furnObjs.length === 0) return null;
 
       // 2. Compute composite bounding box of units
       var unitBox = new THREE.Box3();
@@ -3311,25 +3311,40 @@
     function snapshot(w, h, opts) {
       if (!ok) return null;
       opts = opts || {};
+      var isAuto = (opts.mode === 'auto' || opts.mode === 'focused');
       var cv = renderer.domElement, pr = renderer.getPixelRatio(), cw = cv.width / pr, ch = cv.height / pr;
       var maxDim = (renderer.capabilities && renderer.capabilities.maxTextureSize) ? renderer.capabilities.maxTextureSize : 8192;
+      
+      var origAspect = camera.aspect;
+      var curAspect = (cw && ch) ? (cw / ch) : origAspect;
+      
       var targetW = Math.min(w || 3840, maxDim);
-      var targetH = Math.min(h || 2160, maxDim);
+      var targetH;
+      if (isAuto) {
+        targetH = Math.min(h || Math.round(targetW * 9 / 16), maxDim);
+      } else {
+        // Custom view: preserve exact current screen framing
+        targetH = Math.min(h || Math.round(targetW / curAspect), maxDim);
+      }
 
       var origCamPos = camera.position.clone();
       var origCamTarget = target.clone();
-      var origAspect = camera.aspect;
       var origFov = camera.fov;
       var origExp = renderer.toneMappingExposure;
       var origTone = renderer.toneMapping;
       var origKeyBias = keyL ? keyL.shadow.bias : 0;
+      var origKeyRadius = keyL ? keyL.shadow.radius : 1;
       var origFloorVis = floor ? floor.visible : true;
+      var origBg = scene.background;
+      var origClearColor = new THREE.Color();
+      var origClearAlpha = (renderer.getClearAlpha ? renderer.getClearAlpha() : 0);
+      if (renderer.getClearColor) renderer.getClearColor(origClearColor);
 
       var frameSetup = null;
       var url = null;
 
       try {
-        if (opts.mode !== 'current') {
+        if (isAuto) {
           frameSetup = frameWallAndUnitsForRender(targetW, targetH);
           if (frameSetup) {
             camera.position.copy(frameSetup.camPos);
@@ -3353,29 +3368,36 @@
         }
 
         var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0));
-        if (!frameSetup) {
-          if (hasArchHome) {
+        if (isAuto) {
+          // Warm architectural interior studio tone for auto-placement wall & units shot
+          scene.background = new THREE.Color(0xF1ECE6);
+          renderer.setClearColor(0xF1ECE6, 1);
+          if (floor && hasArchHome) floor.visible = false; // Exclude exterior ground plane
+        } else {
+          // Custom view retains current scene environment (sky 0x82C3EC or studio) and floor
+          if (hasArchHome && !scene.background) {
             scene.background = new THREE.Color(0x82C3EC);
             if (floor) { floor.visible = true; }
             renderer.setClearColor(0x82C3EC, 1);
-          } else {
-            renderer.setClearColor(0xE6E4DF, 1);
           }
-        } else {
-          // Warm architectural interior studio tone for wall & units focused shot
-          scene.background = new THREE.Color(0xF1ECE6);
-          renderer.setClearColor(0xF1ECE6, 1);
-          if (floor) floor.visible = false; // Exclude exterior ground plane during focused interior wall shot
         }
 
-        fxResize();
-        render();
+        // Render directly with WebGLRenderer to bypass huge 650MB composer render targets at 8K
+        renderer.render(scene, camera);
 
-        var mime = (opts.format === 'png') ? "image/png" : "image/jpeg";
+        var mime = (opts.format === 'jpeg' || opts.format === 'jpg') ? "image/jpeg" : "image/png";
         var quality = (opts.quality !== undefined) ? opts.quality : 0.98;
-        try { url = cv.toDataURL(mime, quality); } catch (err) { }
+        try {
+          url = cv.toDataURL(mime, quality);
+          // If PNG failed or returned blank data URL on high resolution, fallback to high-quality JPEG
+          if ((!url || url.length < 50 || url === 'data:,') && mime !== 'image/jpeg') {
+            url = cv.toDataURL('image/jpeg', 0.98);
+          }
+        } catch (err) {
+          try { url = cv.toDataURL('image/jpeg', 0.95); } catch (e2) {}
+        }
       } finally {
-        // ALWAYS restore camera, target, and viewport
+        // ALWAYS restore camera, target, viewport, lighting, and scene state
         camera.position.copy(origCamPos);
         target.copy(origCamTarget);
         camera.fov = origFov;
@@ -3390,14 +3412,18 @@
         }
 
         if (floor) floor.visible = origFloorVis;
-        if (keyL) keyL.shadow.bias = origKeyBias;
+        scene.background = origBg;
+        if (renderer.setClearColor) renderer.setClearColor(origClearColor, origClearAlpha);
+        if (keyL) {
+          keyL.shadow.bias = origKeyBias;
+          keyL.shadow.radius = origKeyRadius;
+        }
         renderer.toneMapping = origTone;
         renderer.toneMappingExposure = origExp;
 
-        renderer.setClearColor(0x000000, 0);
         renderer.setPixelRatio(pr);
         renderer.setSize(cw, ch, false);
-        fxResize();
+        if (typeof fxResize === 'function') fxResize();
         updateWallCutaway(true);
         render();
       }

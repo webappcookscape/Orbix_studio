@@ -445,11 +445,58 @@
         });
       }
 
-      // 3D Studio Photorealistic HD Render Button
+      // 3D Studio Photorealistic HD Render Button & Mode Selector
       var photoRenderBtn = document.getElementById('photoRenderBtn');
-      if (photoRenderBtn) {
+      var photoRenderMenu = document.getElementById('photoRenderMenu');
+      var renderAutoPlacementBtn = document.getElementById('renderAutoPlacementBtn');
+      var renderCustomViewBtn = document.getElementById('renderCustomViewBtn');
+      var photoRenderCaret = document.getElementById('photoRenderCaret');
+
+      function closePhotoRenderMenu() {
+        if (photoRenderMenu) {
+          photoRenderMenu.classList.remove('is-open');
+          photoRenderMenu.style.display = 'none';
+        }
+        if (photoRenderCaret) photoRenderCaret.style.transform = 'rotate(0deg)';
+      }
+
+      if (photoRenderBtn && photoRenderMenu) {
+        photoRenderBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var isOpen = photoRenderMenu.classList.contains('is-open') || photoRenderMenu.style.display === 'block';
+          if (isOpen) {
+            closePhotoRenderMenu();
+          } else {
+            photoRenderMenu.classList.add('is-open');
+            photoRenderMenu.style.display = 'block';
+            if (photoRenderCaret) photoRenderCaret.style.transform = 'rotate(180deg)';
+          }
+        });
+
+        document.addEventListener('click', function (e) {
+          if (!photoRenderMenu.contains(e.target) && e.target !== photoRenderBtn && !photoRenderBtn.contains(e.target)) {
+            closePhotoRenderMenu();
+          }
+        });
+      } else if (photoRenderBtn) {
         photoRenderBtn.addEventListener('click', function () {
-          self.capturePhotorealisticRender();
+          self.capturePhotorealisticRender({ mode: 'auto' });
+        });
+      }
+
+      if (renderAutoPlacementBtn) {
+        renderAutoPlacementBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          closePhotoRenderMenu();
+          self.capturePhotorealisticRender({ mode: 'auto' });
+        });
+      }
+
+      if (renderCustomViewBtn) {
+        renderCustomViewBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          closePhotoRenderMenu();
+          self.capturePhotorealisticRender({ mode: 'custom' });
         });
       }
 
@@ -5326,14 +5373,14 @@
         if (typeof window.toast === 'function') window.toast('3D Studio is not active.');
         return;
       }
-      options = options || { mode: 'focused' };
+      options = options || { mode: 'auto' };
+      var isAuto = (options.mode === 'auto' || options.mode === 'focused');
+      var modeTitle = isAuto ? 'Auto-Placement' : 'Custom View';
       if (typeof window.toast === 'function') {
-        window.toast(options.mode === 'current' ?
-          '📸 Rendering 8K Photorealistic Snapshot (Current View)...' :
-          '📸 Rendering 8K Photorealistic Snapshot (Wall & Units Focused)...');
+        window.toast('📸 Rendering 8K Photorealistic Snapshot (' + modeTitle + ')...');
       }
       setTimeout(function () {
-        var snapOpts = { format: 'png', quality: 1.0, mode: options.mode || 'focused' };
+        var snapOpts = { format: 'png', quality: 1.0, mode: isAuto ? 'auto' : 'custom' };
         var dataUrl = gl.snapshot(7680, 4320, snapOpts);
         var resLabel = '8k';
         if (!dataUrl) {
@@ -5348,11 +5395,20 @@
           var a = document.createElement('a');
           a.href = dataUrl;
           var projTitle = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.meta && window.OrbixUI.project.meta.title) || 'orbix-studio';
-          a.download = projTitle.toLowerCase().replace(/\s+/g, '-') + '-' + resLabel + '-render.png';
+          var modeSlug = isAuto ? 'auto-placement' : 'custom-view';
+          var isJpg = dataUrl.indexOf('data:image/jpeg') === 0;
+          var ext = isJpg ? '.jpg' : '.png';
+          a.download = projTitle.toLowerCase().replace(/\s+/g, '-') + '-' + modeSlug + '-' + resLabel + '-render' + ext;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          if (typeof window.toast === 'function') window.toast('✨ ' + resLabel.toUpperCase() + ' Photorealistic Wall & Units Render Downloaded!');
+          if (typeof window.toast === 'function') {
+            window.toast('✨ ' + resLabel.toUpperCase() + ' ' + modeTitle + ' Render Downloaded!');
+          }
+        } else {
+          if (typeof window.toast === 'function') {
+            window.toast('⚠️ Snapshot could not be generated on this device.');
+          }
         }
       }, 80);
     },
