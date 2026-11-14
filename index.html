@@ -219,6 +219,20 @@
                 <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
               </div>
 
+              <div class="lighting-controls-group" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.92);padding:2px 8px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;color:#1e293b;">
+                <span title="Sunlight Brightness" style="display:inline-flex;align-items:center;gap:3px;">
+                  <span>☀️ Sun</span>
+                  <input type="range" id="sunlightSlider" min="0" max="3" step="0.1" value="1.4" style="width:60px;cursor:pointer;vertical-align:middle;">
+                  <span id="sunlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">1.4</span>
+                </span>
+                <span style="color:#cbd5e1;">|</span>
+                <span title="Spotlight Brightness" style="display:inline-flex;align-items:center;gap:3px;">
+                  <span>💡 Spot</span>
+                  <input type="range" id="spotlightSlider" min="0" max="3" step="0.1" value="1.0" style="width:60px;cursor:pointer;vertical-align:middle;">
+                  <span id="spotlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">1.0</span>
+                </span>
+              </div>
+
               <div class="render-dropdown-container" id="photoRenderContainer">
                 <button class="minibtn" id="photoRenderBtn" title="Choose 8K Render Mode: Auto-Placement or Custom View" style="background:linear-gradient(135deg, #1e293b, #0f172a);color:#f8fafc;border:1px solid #334155;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 14px;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,0.25);">
                   <span>📸 8K Render</span>
@@ -498,16 +512,11 @@
             <input type="text" class="furn-side-search-input" id="furnSideQuickSearch" placeholder="Type to filter..." style="display:none;">
           </div>
           <div class="furn-side-cat-list" id="furnSideCatList">
-            <div class="furn-side-cat-item" data-cat="all">All</div>
-            <div class="furn-side-cat-item is-active" data-cat="base_unit">Base Units (All)</div>
-            <div class="furn-side-cat-item" data-cat="kitchen_fm">🍳 Kitchen FM</div>
-            <div class="furn-side-cat-item" data-cat="kitchen_corner">📐 Corner Units</div>
-            <div class="furn-side-cat-item" data-cat="kitchen_drawers">🗄️ Kitchen Drawers</div>
-            <div class="furn-side-cat-item" data-cat="kitchen_tall">🏛️ Tall Unit</div>
-            <div class="furn-side-cat-item" data-cat="kitchen_wall">🎛️ Wall Unit</div>
-            <div class="furn-side-cat-item" data-cat="crockery">🍷 Crockery &amp; TV</div>
-            <div class="furn-side-cat-item" data-cat="wardrobe">🚪 Wardrobe</div>
-            <div class="furn-side-cat-item" data-cat="loft">📦 Loft</div>
+            <div class="furn-side-cat-item is-active" data-cat="kitchen">🍳 KITCHEN</div>
+            <div class="furn-side-cat-item" data-cat="tv_crockery">🍷 TV &amp; CROCKERY UNITS</div>
+            <div class="furn-side-cat-item" data-cat="wardrobe">🚪 WARDROBE</div>
+            <div class="furn-side-cat-item" data-cat="loft">📦 LOFT</div>
+            <div class="furn-side-cat-item" data-cat="wall_paneling">🖼️ WALL PANELLING</div>
           </div>
         </aside>
 

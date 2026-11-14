@@ -36,9 +36,9 @@ console.log('✔ Fix 2, 4, 5 Verified: Wall snapping, divider bypass & room part
 const coreJs = fs.readFileSync(path.join(__dirname, '../orbix-core.js'), 'utf8');
 const osMatches = coreJs.match(/["']?isOnlyShutter["']?:\s*true/g);
 assert.ok(osMatches && osMatches.length >= 6, 'Must define all Only Shutter units with isOnlyShutter: true');
-assert.ok(coreJs.includes('loft-1d-os') && (coreJs.includes('D: 600') || coreJs.includes('"D": 600')), 'Loft O/S must have 600mm carcass depth zone');
-assert.ok(coreJs.includes('fm-120 o/s') && (coreJs.includes('D: 550') || coreJs.includes('"D": 550')), 'Floor O/S must have 550mm carcass depth zone');
-assert.ok(coreJs.includes('wm-60 o/s') && (coreJs.includes('D: 320') || coreJs.includes('"D": 320')), 'Wall O/S must have 320mm carcass depth zone');
+assert.ok(coreJs.includes('loft-1d-os') && (coreJs.includes('D: 18') || coreJs.includes('"D": 18')), 'Loft O/S must have 18mm depth per user request');
+assert.ok(coreJs.includes('fm-120 o/s') && (coreJs.includes('D: 18') || coreJs.includes('"D": 18')), 'Floor O/S must have 18mm depth per user request');
+assert.ok(coreJs.includes('wm-60 o/s') && (coreJs.includes('D: 18') || coreJs.includes('"D": 18')), 'Wall O/S must have 18mm depth per user request');
 
 const threeDJs = fs.readFileSync(path.join(__dirname, '../orbix-3d.js'), 'utf8');
 assert.ok(threeDJs.includes('frontZ = baseD / 2 - 9'), '3D shutter frontZ must be aligned to front face');
@@ -58,8 +58,8 @@ console.log('✔ Fix 7 Verified: 3D direct unit floor drag & camera orbit bypass
 
 // 8. Verify Realistic 3D Rendering (Materials, Shadows, Tone Mapping)
 assert.ok(appJs.includes('THREE.ACESFilmicToneMapping'), 'Must enable ACES Filmic tone mapping');
-assert.ok(appJs.includes('0xF1F5F9') || appJs.includes('0xD8E8F5'), 'Must use elegant daylight architectural sky');
-assert.ok(threeDJs.includes('0xF2EFE9') || threeDJs.includes('Warm architectural alabaster'), 'Must use warm alabaster wall plaster material');
+assert.ok(appJs.includes('0xF1F5F9') || appJs.includes('0xD8E8F5') || appJs.includes('0x82C3EC'), 'Must use elegant daylight architectural sky');
+assert.ok(threeDJs.includes('0xF2EFE9') || threeDJs.includes('0xB89F82') || threeDJs.includes('Warm architectural alabaster') || threeDJs.includes('Dark Beige'), 'Must use architectural wall plaster material');
 console.log('✔ Fix 8 Verified: Photorealistic 3D tone mapping, sky & alabaster materials');
 
 // 9. Verify OpenAI API Render Modal & Integration

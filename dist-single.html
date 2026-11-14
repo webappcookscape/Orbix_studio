@@ -3680,6 +3680,20 @@ body.role-employee #adminCreateEmpBox,
                 <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
               </div>
 
+              <div class="lighting-controls-group" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.92);padding:2px 8px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;color:#1e293b;">
+                <span title="Sunlight Brightness" style="display:inline-flex;align-items:center;gap:3px;">
+                  <span>☀️ Sun</span>
+                  <input type="range" id="sunlightSlider" min="0" max="3" step="0.1" value="1.4" style="width:60px;cursor:pointer;vertical-align:middle;">
+                  <span id="sunlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">1.4</span>
+                </span>
+                <span style="color:#cbd5e1;">|</span>
+                <span title="Spotlight Brightness" style="display:inline-flex;align-items:center;gap:3px;">
+                  <span>💡 Spot</span>
+                  <input type="range" id="spotlightSlider" min="0" max="3" step="0.1" value="1.0" style="width:60px;cursor:pointer;vertical-align:middle;">
+                  <span id="spotlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">1.0</span>
+                </span>
+              </div>
+
               <div class="render-dropdown-container" id="photoRenderContainer">
                 <button class="minibtn" id="photoRenderBtn" title="Choose 8K Render Mode: Auto-Placement or Custom View" style="background:linear-gradient(135deg, #1e293b, #0f172a);color:#f8fafc;border:1px solid #334155;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 14px;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,0.25);">
                   <span>📸 8K Render</span>
@@ -3959,16 +3973,11 @@ body.role-employee #adminCreateEmpBox,
             <input type="text" class="furn-side-search-input" id="furnSideQuickSearch" placeholder="Type to filter..." style="display:none;">
           </div>
           <div class="furn-side-cat-list" id="furnSideCatList">
-            <div class="furn-side-cat-item" data-cat="all">All</div>
-            <div class="furn-side-cat-item is-active" data-cat="base_unit">Base Units (All)</div>
-            <div class="furn-side-cat-item" data-cat="kitchen_fm">🍳 Kitchen FM</div>
-            <div class="furn-side-cat-item" data-cat="kitchen_corner">📐 Corner Units</div>
-            <div class="furn-side-cat-item" data-cat="kitchen_drawers">🗄️ Kitchen Drawers</div>
-            <div class="furn-side-cat-item" data-cat="kitchen_tall">🏛️ Tall Unit</div>
-            <div class="furn-side-cat-item" data-cat="kitchen_wall">🎛️ Wall Unit</div>
-            <div class="furn-side-cat-item" data-cat="crockery">🍷 Crockery &amp; TV</div>
-            <div class="furn-side-cat-item" data-cat="wardrobe">🚪 Wardrobe</div>
-            <div class="furn-side-cat-item" data-cat="loft">📦 Loft</div>
+            <div class="furn-side-cat-item is-active" data-cat="kitchen">🍳 KITCHEN</div>
+            <div class="furn-side-cat-item" data-cat="tv_crockery">🍷 TV &amp; CROCKERY UNITS</div>
+            <div class="furn-side-cat-item" data-cat="wardrobe">🚪 WARDROBE</div>
+            <div class="furn-side-cat-item" data-cat="loft">📦 LOFT</div>
+            <div class="furn-side-cat-item" data-cat="wall_paneling">🖼️ WALL PANELLING</div>
           </div>
         </aside>
 
@@ -8768,6 +8777,16 @@ body.role-employee #adminCreateEmpBox,
     var nm = (opts.name || '').toLowerCase();
     var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name, opts.code || opts.catalogItemId, opts.costCategory);
     var isLoft = (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1);
+    var isGL = /(^|\b|_|-|\s)gl(\b|_|-|\s|\d+|$)/i.test(String(opts.name || '') + ' ' + String(opts.code || '') + ' ' + String(opts.id || ''));
+    var isOS = !!(
+      (cat && (cat === 'loft_os' || cat === 'kitchen_o_s' || cat.indexOf('o/s') !== -1 || cat.indexOf('os') !== -1)) ||
+      (opts.costCategory && opts.costCategory.indexOf('O/S') !== -1) ||
+      (opts.modelType && /o_s|os/i.test(opts.modelType)) ||
+      (nm && /\bo\/?s\b/i.test(nm)) ||
+      (opts.id && /\bo_?s\b/i.test(opts.id)) ||
+      (opts.code && /\bo_?s\b/i.test(opts.code)) ||
+      (opts.unitConfig && opts.unitConfig.isOnlyShutter)
+    );
     var defElev = isLoft ? 2100 : (isWallUnit ? 1500 : 0);
     var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
       parseFloat(opts.elevation) :
@@ -8806,7 +8825,7 @@ body.role-employee #adminCreateEmpBox,
       dimensions: {
         W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
         H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : (cat.indexOf('base') !== -1 || cat.indexOf('fm') !== -1 || cat.indexOf('d2') !== -1 || cat.indexOf('d3') !== -1 || cat.indexOf('tv') !== -1 ? 850 : 2100)),
-        D: opts.dimensions ? opts.dimensions.D : (isWallUnit ? 350 : 600)
+        D: isOS ? 18 : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600))
       },
       shutterColors: initColors,
       shutterMaterials: initMats,
@@ -8823,7 +8842,18 @@ body.role-employee #adminCreateEmpBox,
         }
       },
       // Links directly to Cupboard CAD parametric configuration
-      unitConfig: opts.unitConfig || null,
+      unitConfig: (function() {
+        var cfg = opts.unitConfig ? Object.assign({}, opts.unitConfig) : {};
+        if (isGL && (!cfg.dstyle || cfg.dstyle === 'slab')) {
+          cfg.dstyle = 'glass';
+          cfg.glassTint = cfg.glassTint || 'clear';
+        }
+        if (isOS) {
+          cfg.isOnlyShutter = true;
+          cfg.shutterThickness = 18;
+        }
+        return cfg;
+      })(),
       pricingOverrides: opts.pricingOverrides || null,
       isDecor: isDecor,
       excludeFromPricing: isDecor,
@@ -12219,7 +12249,7 @@ body.role-employee #adminCreateEmpBox,
         "unitConfig": {
           "shutters": 2,
           "doorType": "hinged",
-          "dstyle": "slab",
+          "dstyle": "glass",
           "glassTint": "none",
           "profileColor": "none",
           "sections": 0,
@@ -12315,7 +12345,7 @@ body.role-employee #adminCreateEmpBox,
         "unitConfig": {
           "shutters": 2,
           "doorType": "hinged",
-          "dstyle": "slab",
+          "dstyle": "glass",
           "glassTint": "none",
           "profileColor": "none",
           "sections": 0,
@@ -12411,7 +12441,7 @@ body.role-employee #adminCreateEmpBox,
         "unitConfig": {
           "shutters": 2,
           "doorType": "hinged",
-          "dstyle": "slab",
+          "dstyle": "glass",
           "glassTint": "none",
           "profileColor": "none",
           "sections": 0,
@@ -12492,7 +12522,7 @@ body.role-employee #adminCreateEmpBox,
         "dimensions": {
           "W": 450,
           "H": 750,
-          "D": 600
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -13426,7 +13456,7 @@ body.role-employee #adminCreateEmpBox,
         "unitConfig": {
           "shutters": 1,
           "doorType": "hinged",
-          "dstyle": "slab",
+          "dstyle": "glass",
           "glassTint": "none",
           "profileColor": "none",
           "sections": 0,
@@ -13603,7 +13633,7 @@ body.role-employee #adminCreateEmpBox,
         "dimensions": {
           "W": 750,
           "H": 750,
-          "D": 600
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -13849,7 +13879,7 @@ body.role-employee #adminCreateEmpBox,
         "dimensions": {
           "W": 1200,
           "H": 750,
-          "D": 550
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -13899,7 +13929,7 @@ body.role-employee #adminCreateEmpBox,
         "dimensions": {
           "W": 600,
           "H": 750,
-          "D": 550
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -13949,7 +13979,7 @@ body.role-employee #adminCreateEmpBox,
         "dimensions": {
           "W": 600,
           "H": 600,
-          "D": 320
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -13999,7 +14029,7 @@ body.role-employee #adminCreateEmpBox,
         "dimensions": {
           "W": 300,
           "H": 600,
-          "D": 320
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -15129,13 +15159,31 @@ body.role-employee #adminCreateEmpBox,
       self.render();
     }, { passive: false });
 
-    this.canvas.addEventListener('dblclick', function () {
+    this.canvas.addEventListener('dblclick', function (e) {
       if (self.wallChainStart) {
         self.wallChainStart = null;
         self.wallChainFirstPoint = null;
         self.numericInputBuffer = '';
         if (Core.detectRooms) Core.detectRooms(self.project);
         self.pushHistory('Finish Wall Chain');
+        self.render();
+        return;
+      }
+      var rect = self.canvas.getBoundingClientRect();
+      var mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      var worldPt = self.screenToWorld(mouseScreen);
+      var rooms = (self.project && self.project.plan && self.project.plan.rooms) || [];
+      var hitRooms = [];
+      for (var r = 0; r < rooms.length; r++) {
+        if (rooms[r].polygon && rooms[r].polygon.length >= 3 && Core.Vec2.pointInPolygon(worldPt, rooms[r].polygon)) {
+          hitRooms.push(rooms[r]);
+        }
+      }
+      if (hitRooms.length > 0) {
+        hitRooms.sort(function (a, b) { return (a.areaSqM || 0) - (b.areaSqM || 0); });
+        var targetRoom = hitRooms[0];
+        self.selected = [{ type: 'room', id: targetRoom.id }];
+        self.onSelectionChange(self.selected);
         self.render();
       }
     });
@@ -16263,13 +16311,17 @@ body.role-employee #adminCreateEmpBox,
         };
       } else {
         this.dragState = null;
+        if (!isShift) {
+          this.selected = [];
+          this.onSelectionChange(this.selected);
+        }
       }
 
       this.render();
       return;
     }
 
-    // Check if clicked inside a room polygon (Prioritizes inner rooms like Pooja room over outer enclosing rooms)
+    // Single-click inside a room polygon does NOT select room or open room edit tool (requires double-click)
     var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
     var hitRooms = [];
     for (var r = 0; r < rooms.length; r++) {
@@ -16278,19 +16330,12 @@ body.role-employee #adminCreateEmpBox,
       }
     }
     if (hitRooms.length > 0) {
-      // Sort ascending by area so inner rooms (e.g. Pooja room) take selection priority over enclosing rooms
       hitRooms.sort(function (a, b) { return (a.areaSqM || 0) - (b.areaSqM || 0); });
       var targetRoom = hitRooms[0];
-
       var curSelRoomId = (this.selected && this.selected.length === 1 && this.selected[0].type === 'room') ? this.selected[0].id : null;
       var isAlreadySelected = (curSelRoomId === targetRoom.id);
 
-      if (!isShift) this.selected = [];
-      this.selected.push({ type: 'room', id: targetRoom.id });
-      this.onSelectionChange(this.selected);
-
-      // "when moving a unit it have to clicked before move"
-      // If already selected, allow moving the room and its divider boundaries straight parallel & perpendicular!
+      // Only if room was ALREADY selected via double-click, allow dragging
       if (isAlreadySelected) {
         var allWalls = this.project.plan.walls || [];
         var roomDividerWalls = [];
@@ -17797,7 +17842,7 @@ body.role-employee #adminCreateEmpBox,
       var poly = Core.wallPolygon(w);
       if (!poly || poly.length < 4) continue;
 
-      ctx.fillStyle = isSelected ? '#2563eb' : '#334155';
+      ctx.fillStyle = isSelected ? '#2563eb' : '#8A735C'; // Rich Dark Beige Poche
       ctx.beginPath();
       var sp0 = this.worldToScreen(poly[0]);
       ctx.moveTo(sp0.x, sp0.y);
@@ -17844,7 +17889,7 @@ body.role-employee #adminCreateEmpBox,
       var startConnsK = getConnected(wk.start, wk.id);
       var endConnsK = getConnected(wk.end, wk.id);
 
-      ctx.strokeStyle = isSelK ? '#3b82f6' : '#0f172a';
+      ctx.strokeStyle = isSelK ? '#3b82f6' : '#5C4A38'; // Dark Beige Wall Outline
       ctx.lineWidth = isSelK ? 2.5 : 1.5;
 
       // Stroke Longitudinal Side 1 (p0 to p1)
@@ -17998,16 +18043,34 @@ body.role-employee #adminCreateEmpBox,
       if (wItem.end && isUniqueCorner(wItem.end)) columnPts.push(wItem.end);
     }
 
-    var colSizeMm = 220; // Authentic 220mm structural RCC column
-    var colSizePx = colSizeMm * this.zoom;
-    if (colSizePx >= 4) {
-      ctx.fillStyle = '#0f172a'; // Deep architectural black
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 1;
-      for (var cpi = 0; cpi < columnPts.length; cpi++) {
-        var sCol = this.worldToScreen(columnPts[cpi]);
+    for (var cpi = 0; cpi < columnPts.length; cpi++) {
+      var colPt = columnPts[cpi];
+      var meetingWalls = walls.filter(function (w) {
+        if (w.isDivider || w.thickness === 0) return false;
+        return (w.start && Vec2.dist(colPt, w.start) < 40) || (w.end && Vec2.dist(colPt, w.end) < 40);
+      });
+      var wallThick = meetingWalls.length > 0 ? (meetingWalls[0].thickness || 150) : 150;
+      var colSizeMm = Math.min(wallThick, 150); // RCC Column stays strictly WITHIN the wall width!
+      var colSizePx = colSizeMm * this.zoom;
+      if (colSizePx >= 3) {
+        var sCol = this.worldToScreen(colPt);
+        ctx.save();
+        ctx.fillStyle = '#1e293b'; // Deep architectural graphite poche
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 1;
         ctx.fillRect(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2, colSizePx, colSizePx);
         ctx.strokeRect(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2, colSizePx, colSizePx);
+        if (colSizePx >= 12) {
+          ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2);
+          ctx.lineTo(sCol.x + colSizePx / 2, sCol.y + colSizePx / 2);
+          ctx.moveTo(sCol.x + colSizePx / 2, sCol.y - colSizePx / 2);
+          ctx.lineTo(sCol.x - colSizePx / 2, sCol.y + colSizePx / 2);
+          ctx.stroke();
+        }
+        ctx.restore();
       }
     }
     this.renderDadoTiles(ctx);
@@ -18954,7 +19017,8 @@ body.role-employee #adminCreateEmpBox,
       var f = furnList[i];
       var isSelected = this.isSelected('furniture', f.id);
       var wMm = (f.dimensions && f.dimensions.W) || 1200;
-      var dMm = (f.dimensions && f.dimensions.D) || 600;
+      var isOS = !!((f.unitConfig && f.unitConfig.isOnlyShutter) || (f.name && /\bo\/?s\b/i.test(f.name)) || (f.costCategory && f.costCategory.indexOf('O/S') !== -1));
+      var dMm = isOS ? 18 : ((f.dimensions && f.dimensions.D) || 600);
       var wPx = wMm * this.zoom;
       var dPx = dMm * this.zoom;
       var sPos = this.worldToScreen(f.pos);
@@ -21285,9 +21349,9 @@ window.ORBIX_DADO_TEXTURES = {
     if (typeof THREE === 'undefined') return;
 
     var wallBump = ArchitecturalRenderer.createWallBumpTexture();
-    // Wall Plaster (Warm architectural alabaster ivory plaster - photorealistic and clean)
+    // Wall Plaster (Rich Architectural Dark Beige Plaster)
     this.materials.wall = new THREE.MeshStandardMaterial({
-      color: 0xF2EFE9, // Warm architectural alabaster
+      color: 0xB89F82, // Elegant authentic Dark Beige plaster
       roughness: 0.88,
       metalness: 0.01,
       bumpMap: wallBump,
@@ -21296,7 +21360,7 @@ window.ORBIX_DADO_TEXTURES = {
 
     // Wall Core (Cutaway section interior)
     this.materials.wallCore = new THREE.MeshStandardMaterial({
-      color: 0xDCD7CD, // Clean architectural plaster core
+      color: 0x9E836A, // Dark beige plaster core
       roughness: 0.9,
       metalness: 0.0
     });
@@ -23756,13 +23820,14 @@ window.ORBIX_DADO_TEXTURES = {
     var nameOS = (furn.name || '').toLowerCase();
     var isLoftOS = (catOS.indexOf('loft') !== -1 || nameOS.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
     var isWallOS = (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)));
-    var isBaseOS = isBase || catOS === 'kitchen_base' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS);
+    var isTrueOnlyShutter = !!(furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1);
+    var isBaseOS = !isTrueOnlyShutter && (isBase || catOS === 'kitchen_base' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS));
 
     var actualPlinthH = isBaseOS ? ((plinthH !== undefined && plinthH > 0) ? plinthH : 100) : 0;
     var actualCounterH = isBaseOS ? ((counterH !== undefined && counterH > 0) ? counterH : 35) : 0;
-    var baseD = (dims.D && dims.D > 100) ? dims.D : 560;
+    var baseD = isTrueOnlyShutter ? 18 : ((dims.D && dims.D < 100) ? dims.D : (isBaseOS ? 560 : 18));
 
-    if (isBaseOS) {
+    if (isBaseOS && !isTrueOnlyShutter && baseD > 50) {
       // 1. Plinth Kickboard & Adjustable Cabinet Legs
       if (actualPlinthH > 0) {
         var pGeo = new THREE.BoxGeometry(W - 30, actualPlinthH, baseD - 50);
@@ -24152,7 +24217,9 @@ window.ORBIX_DADO_TEXTURES = {
     var carcassMat = ArchitecturalRenderer.resolveLaminateMaterial(carcassRaw, 0xEDEBE4, carcassIsGloss);
 
     // Door style & type
-    var dstyle = (furn.unitConfig && furn.unitConfig.dstyle) || 'slab';
+    var isGLUnit = /(^|\b|_|-|\s)gl(\b|_|-|\s|\d+|$)/i.test(String(name || '') + ' ' + String(furn.code || '') + ' ' + String(furn.id || ''));
+    var dstyle = (furn.unitConfig && furn.unitConfig.dstyle) || (isGLUnit ? 'glass' : 'slab');
+    if (isGLUnit && (!dstyle || dstyle === 'slab')) dstyle = 'glass';
     var doorType = (furn.unitConfig && (furn.unitConfig.doorType || furn.unitConfig.type)) || 'hinged';
 
     // Handle Configuration & Material
@@ -24198,7 +24265,8 @@ window.ORBIX_DADO_TEXTURES = {
     }
     var plinthH = hasLegs ? 100 : 0;
     var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
-    var bodyH = Math.max(100, dims.H - plinthH - counterH);
+    var bodyH = (dims.H <= 350) ? dims.H : Math.max(100, dims.H - plinthH - counterH);
+    var topOfCarcass = plinthH + bodyH;
     var innerW = dims.W - 36;
     var innerD = dims.D - 20;
 
@@ -24524,7 +24592,8 @@ window.ORBIX_DADO_TEXTURES = {
     if (counterH > 0) {
       var cGeo = new THREE.BoxGeometry(dims.W + 20, counterH, dims.D + 25);
       var cMesh = new THREE.Mesh(cGeo, counterMat);
-      cMesh.position.set(0, dims.H - counterH / 2, 2.5);
+      var topOfCarcass = plinthH + bodyH;
+      cMesh.position.set(0, topOfCarcass + counterH / 2, 2.5);
       cMesh.castShadow = true;
       cMesh.receiveShadow = true;
       cMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
@@ -25657,6 +25726,26 @@ window.ORBIX_DADO_TEXTURES = {
         });
       }
 
+      // Sunlight & Spotlight intensity sliders
+      var sunSlider = document.getElementById('sunlightSlider');
+      var sunLabel = document.getElementById('sunlightValLabel');
+      if (sunSlider) {
+        sunSlider.addEventListener('input', function () {
+          var v = parseFloat(sunSlider.value);
+          if (sunLabel) sunLabel.textContent = v.toFixed(1);
+          if (window.GL && window.GL.setSunlightIntensity) window.GL.setSunlightIntensity(v);
+        });
+      }
+      var spotSlider = document.getElementById('spotlightSlider');
+      var spotLabel = document.getElementById('spotlightValLabel');
+      if (spotSlider) {
+        spotSlider.addEventListener('input', function () {
+          var v = parseFloat(spotSlider.value);
+          if (spotLabel) spotLabel.textContent = v.toFixed(1);
+          if (window.GL && window.GL.setSpotlightIntensity) window.GL.setSpotlightIntensity(v);
+        });
+      }
+
       // 3D Studio Photorealistic HD Render Button & Mode Selector
       var photoRenderBtn = document.getElementById('photoRenderBtn');
       var photoRenderMenu = document.getElementById('photoRenderMenu');
@@ -26695,7 +26784,9 @@ window.ORBIX_DADO_TEXTURES = {
         var curHFinish = (fn.unitConfig && (fn.unitConfig.hfinish || fn.unitConfig.handleFinish)) || fn.handleFinish || 'black';
         var shuttersCount = (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1);
         var drawersCount = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? fn.unitConfig.drawers : 0;
-        var doorStyle = (fn.unitConfig && fn.unitConfig.dstyle) || 'slab';
+        var isGLUnit = /(^|\b|_|-|\s)gl(\b|_|-|\s|\d+|$)/i.test(String(fn.name || '') + ' ' + String(fn.code || '') + ' ' + String(fn.id || ''));
+        var doorStyle = (fn.unitConfig && fn.unitConfig.dstyle) || (isGLUnit ? 'glass' : 'slab');
+        if (isGLUnit && (!doorStyle || doorStyle === 'slab')) doorStyle = 'glass';
         var handleType = (fn.unitConfig && fn.unitConfig.handle) || 'gprof';
         var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
           window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) :
@@ -29312,8 +29403,8 @@ window.ORBIX_DADO_TEXTURES = {
       if (!sidePanel || !bottomTray) return;
 
       var Core = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : ((typeof root !== 'undefined' && root.OrbixCore) ? root.OrbixCore : {});
-      var currentCat = 'base_unit';
-      var currentTab = 'cookscape_fm';
+      var currentCat = 'kitchen';
+      var currentTab = 'kitchen_fm';
       var isCollapsed = false;
       var isFurnishMenuOpen = false;
 
@@ -29321,46 +29412,28 @@ window.ORBIX_DADO_TEXTURES = {
         all: [
           { id: 'all_units', label: 'All Units & Cabinets', count: '180+' }
         ],
-        base_unit: [
+        kitchen: [
           { id: 'kitchen_fm', label: 'KITCHEN FM', count: '8' },
-          { id: 'kitchen_corner', label: 'KITCHEN CORNER UNITS', count: '3' },
+          { id: 'kitchen_corner', label: 'KITCHEN CORNER', count: '3' },
           { id: 'kitchen_drawers', label: 'KITCHEN DRAWERS', count: '11' },
-          { id: 'kitchen_tall', label: 'KITCHEN TALL UNIT', count: '2' },
-          { id: 'cookscape_crockery', label: 'CROCKERY & TV BASE', count: '8' }
+          { id: 'kitchen_tall', label: 'KITCHEN TALL UNITS', count: '2' },
+          { id: 'kitchen_wall_spice', label: 'KITCHEN WALL UNITS (SPICE RACK)', count: '18' }
         ],
-        kitchen_fm: [
-          { id: 'kitchen_fm', label: 'All Kitchen FM Units', count: '8' }
-        ],
-        kitchen_corner: [
-          { id: 'kitchen_corner', label: 'Kitchen Corner Units (FCM / FBCM)', count: '3' }
-        ],
-        kitchen_drawers: [
-          { id: 'kitchen_drawers', label: 'Kitchen Drawer Units (D2 / D3 / DS)', count: '11' }
-        ],
-        kitchen_tall: [
-          { id: 'kitchen_tall', label: 'Kitchen Tall Units (TBM 60 / Oven)', count: '2' }
-        ],
-        crockery: [
-          { id: 'crockery_all', label: 'All Crockery Units', count: '15' },
-          { id: 'crockery_base', label: 'Crockery Base Units', count: '8' },
-          { id: 'crockery_wall', label: 'Crockery Wall Units', count: '7' }
-        ],
-        tv_unit: [
-          { id: 'tv_all', label: 'All TV Units', count: '14' },
-          { id: 'tv_base', label: 'TV Base Consoles', count: '8' },
-          { id: 'tv_wall', label: 'TV Wall Panels & Units', count: '6' }
+        tv_crockery: [
+          { id: 'tv_crockery_base', label: 'BASE', count: '8' },
+          { id: 'tv_crockery_wall', label: 'WALL', count: '6' },
+          { id: 'tv_crockery_drawers', label: 'DRAWERS', count: '6' },
+          { id: 'tv_crockery_openbox', label: 'OPENBOX', count: '4' }
         ],
         wardrobe: [
-          { id: 'wr_sliding', label: 'Sliding Wardrobes', count: '18' },
-          { id: 'wr_hinged', label: 'Hinged 2-Door Wardrobes', count: '26' },
-          { id: 'wr_lofts', label: 'Wardrobe Modular Lofts', count: '15' },
-          { id: 'wr_panels', label: 'Wall Paneling', count: '10' }
+          { id: 'wardrobe_all', label: 'WARDROBES ALL', count: '34' }
         ],
-        wall_unit: [
-          { id: 'kitchen_wm', label: 'KITCHEN - WM (Wall Units)', count: '24' },
-          { id: 'wall_os', label: 'KITCHEN WALL O/S', count: '8' },
-          { id: 'spice_racks', label: 'Spice Racks & Open Box', count: '14' },
-          { id: 'pooja_wall', label: 'Pooja & Crockery Wall', count: '12' }
+        loft: [
+          { id: 'loft_all', label: 'ALL LOFT', count: '15' }
+        ],
+        wall_paneling: [
+          { id: 'panel_back', label: 'BACK PANEL', count: '6' },
+          { id: 'panel_ledges', label: 'LEDGES', count: '4' }
         ]
       };
 
@@ -29399,56 +29472,87 @@ window.ORBIX_DADO_TEXTURES = {
 
         if (cat === 'all' || tabId === 'all_units') {
           res = catalog.map(mapItemToCard);
-        } else if (cat === 'kitchen_fm' || (cat === 'base_unit' && (tabId === 'kitchen_fm' || tabId === 'cookscape_fm'))) {
-          res = catalog.filter(function (it) { return it.category === 'kitchen_fm'; }).map(mapItemToCard);
-        } else if (cat === 'kitchen_corner' || (cat === 'base_unit' && (tabId === 'kitchen_corner' || tabId === 'cookscape_corner'))) {
-          res = catalog.filter(function (it) { return it.category === 'kitchen_corner'; }).map(mapItemToCard);
-        } else if (cat === 'kitchen_drawers' || (cat === 'base_unit' && (tabId === 'kitchen_drawers' || tabId === 'cookscape_drawers' || tabId === 'drawer_units'))) {
-          res = catalog.filter(function (it) { return it.category === 'kitchen_drawers'; }).map(mapItemToCard);
-        } else if (cat === 'kitchen_tall' || (cat === 'base_unit' && tabId === 'kitchen_tall')) {
-          res = catalog.filter(function (it) { return it.category === 'kitchen_tall'; }).map(mapItemToCard);
-        } else if (cat === 'base_unit') {
-          if (tabId === 'cookscape_crockery') {
+        } else if (cat === 'kitchen') {
+          if (tabId === 'kitchen_fm') {
             res = catalog.filter(function (it) {
-              return (it.category === 'crockery' || it.category === 'tv_unit') && (!it.elevation || it.elevation === 0);
+              return it.category === 'kitchen_fm' || (it.id && it.id.indexOf('fm') === 0 && it.category !== 'kitchen_corner' && it.category !== 'kitchen_drawers');
+            });
+          } else if (tabId === 'kitchen_corner') {
+            res = catalog.filter(function (it) {
+              return it.category === 'kitchen_corner' || (it.id && /(fcm|fbcm)/i.test(it.id)) || (it.name && /(corner|fcm|fbcm)/i.test(it.name));
+            });
+          } else if (tabId === 'kitchen_drawers') {
+            res = catalog.filter(function (it) {
+              return it.category === 'kitchen_drawers' || (it.id && /(d2|d3|ds)/i.test(it.id)) || (it.name && /drawer/i.test(it.name) && it.category && it.category.indexOf('kitchen') !== -1);
+            });
+          } else if (tabId === 'kitchen_tall') {
+            res = catalog.filter(function (it) {
+              return it.category === 'kitchen_tall' || (it.name && /(tall|tbm|oven)/i.test(it.name));
+            });
+          } else if (tabId === 'kitchen_wall_spice') {
+            res = catalog.filter(function (it) {
+              var c = (it.category || '').toLowerCase();
+              var n = (it.name || '').toLowerCase();
+              return c === 'kitchen_wall' || c === 'spice_rack' || n.indexOf('wm') !== -1 || n.indexOf('spice') !== -1 || n.indexOf('wall') !== -1;
+            });
+          } else {
+            res = catalog.filter(function (it) { return (it.category || '').indexOf('kitchen') !== -1; });
+          }
+          res = res.map(mapItemToCard);
+        } else if (cat === 'tv_crockery') {
+          if (tabId === 'tv_crockery_base') {
+            res = catalog.filter(function (it) {
+              var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+              return (n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1) && (n.indexOf('base') !== -1 || (!it.elevation || it.elevation === 0));
+            });
+          } else if (tabId === 'tv_crockery_wall') {
+            res = catalog.filter(function (it) {
+              var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+              return (n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1) && (n.indexOf('wall') !== -1 || (it.elevation && it.elevation >= 1000));
+            });
+          } else if (tabId === 'tv_crockery_drawers') {
+            res = catalog.filter(function (it) {
+              var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+              return (n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1) && (n.indexOf('drawer') !== -1 || (it.unitConfig && it.unitConfig.drawers > 0));
+            });
+          } else if (tabId === 'tv_crockery_openbox') {
+            res = catalog.filter(function (it) {
+              var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+              return (n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1) && (n.indexOf('open') !== -1 || n.indexOf('box') !== -1 || n.indexOf('niche') !== -1 || (it.unitConfig && it.unitConfig.doorType === 'open'));
+            });
+          } else {
+            res = catalog.filter(function (it) {
+              var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+              return n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1;
+            });
+          }
+          res = res.map(mapItemToCard);
+        } else if (cat === 'wardrobe') {
+          res = catalog.filter(function (it) {
+            var c = (it.category || '').toLowerCase();
+            var n = (it.name || '').toLowerCase();
+            return (c === 'wardrobe' || n.indexOf('wardrobe') !== -1 || n.indexOf('wr') !== -1 || n.indexOf('sliding') !== -1) && n.indexOf('loft') === -1 && c.indexOf('loft') === -1;
+          }).map(mapItemToCard);
+        } else if (cat === 'loft') {
+          res = catalog.filter(function (it) {
+            var c = (it.category || '').toLowerCase();
+            var n = (it.name || '').toLowerCase();
+            return c.indexOf('loft') !== -1 || n.indexOf('loft') !== -1;
+          }).map(mapItemToCard);
+        } else if (cat === 'wall_paneling') {
+          if (tabId === 'panel_ledges') {
+            res = catalog.filter(function (it) {
+              var n = (it.name || '').toLowerCase();
+              return n.indexOf('ledge') !== -1 || n.indexOf('shelf') !== -1;
             });
           } else {
             res = catalog.filter(function (it) {
               var c = (it.category || '').toLowerCase();
-              return c === 'kitchen_fm' || c === 'kitchen_corner' || c === 'kitchen_drawers' || c === 'kitchen_tall' || c === 'kitchen_base';
+              var n = (it.name || '').toLowerCase();
+              return c === 'wall_paneling' || it.id === 'pnl-back' || n.indexOf('back panel') !== -1 || n.indexOf('wall panel') !== -1;
             });
           }
           res = res.map(mapItemToCard);
-        } else if (cat === 'wall_unit') {
-          var wallUnits = catalog.filter(function (it) {
-            var c = (it.category || '').toLowerCase();
-            var n = (it.name || '').toLowerCase();
-            var cfg = it.unitConfig || {};
-            return c === 'kitchen_wall' || c === 'spice_rack' || c === 'pooja' || cfg.ctype === 'kwall' ||
-              n.indexOf('wall') !== -1 || n.indexOf('wm') !== -1 || (it.id && it.id.indexOf('wm') === 0) || (it.id && it.id.indexOf('ctvw') === 0) ||
-              n.indexOf('spice') !== -1 || n.indexOf('pooja') !== -1;
-          });
-          res = wallUnits.map(mapItemToCard);
-        } else if (cat === 'wardrobe') {
-          var wrUnits = catalog.filter(function (it) {
-            var c = (it.category || '').toLowerCase();
-            var n = (it.name || '').toLowerCase();
-            return c.indexOf('wardrobe') !== -1 || c.indexOf('loft') !== -1 || c.indexOf('panel') !== -1 ||
-              n.indexOf('wardrobe') !== -1 || n.indexOf('wr') !== -1 || n.indexOf('loft') !== -1 || n.indexOf('sliding') !== -1;
-          });
-          res = wrUnits.map(mapItemToCard);
-        } else if (cat === 'crockery') {
-          var crUnits = catalog.filter(function (it) {
-            var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
-            return n.indexOf('crockery') !== -1 || (it.id && (it.id.indexOf('ctvb') === 0 || it.id.indexOf('ctvw') === 0));
-          });
-          res = crUnits.map(mapItemToCard);
-        } else if (cat === 'tv_unit') {
-          var tvUnits = catalog.filter(function (it) {
-            var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
-            return n.indexOf('tv') !== -1 || (it.id && (it.id.indexOf('ctvb') === 0 || it.id.indexOf('ctvw') === 0));
-          });
-          res = tvUnits.map(mapItemToCard);
         } else {
           res = catalog.map(mapItemToCard);
         }
@@ -30003,7 +30107,6 @@ window.ORBIX_DADO_TEXTURES = {
 
       var html = '<div class="boq-sheet">' +
         '<div class="boq-actions no-print">' +
-        '<button class="btn primary" id="boqPrintBtn">📄 Download PDF</button>' +
         '<button class="btn" id="boqXlsxBtn" style="background:#107C41;color:#fff;border-color:#107C41;font-weight:600">📊 Download Excel (.xlsx)</button>' +
         '<button class="btn" id="boqEditDetailsBtn" style="font-weight:600;border-color:#2563EB;color:#2563EB">✏️ Edit Client Details</button>' +
         '<button class="btn" id="boqLockVersionBtn">Issue Quotation Snapshot</button>' +
@@ -33807,35 +33910,48 @@ window.ORBIX_DADO_TEXTURES = {
       return m;
     }
     function makeGrassGroundMat() {
-      if (matCache["sp|archStudioGround"]) return matCache["sp|archStudioGround"];
+      if (matCache["sp|grassGround"]) return matCache["sp|grassGround"];
       var c = document.createElement("canvas"); c.width = c.height = 512;
       var g = c.getContext("2d");
       if (g) {
-        // Subtle warm architectural studio ground plane
-        g.fillStyle = "#EAE8E3";
+        // Rich natural lawn grass green base
+        g.fillStyle = "#46813A";
         g.fillRect(0, 0, 512, 512);
 
-        // Micro-fine architectural plaster / terrazzo noise
-        for (var i = 0; i < 2000; i++) {
-          var nx = Math.random() * 512, ny = Math.random() * 512;
-          g.fillStyle = (i % 2 === 0) ? "rgba(255,255,255,0.4)" : "rgba(180,175,165,0.25)";
-          g.fillRect(nx, ny, 1.5, 1.5);
+        // Organic grass sod tone variations
+        var lawnTones = ["#3D7333", "#4A883E", "#559947", "#3E7834", "#4F9042", "#5C9F4E"];
+        for (var i = 0; i < 400; i++) {
+          var x = Math.random() * 512, y = Math.random() * 512, rad = 8 + Math.random() * 24;
+          var grad = g.createRadialGradient(x, y, 0, x, y, rad);
+          var col = lawnTones[Math.floor(Math.random() * lawnTones.length)];
+          grad.addColorStop(0, col);
+          grad.addColorStop(1, "rgba(70, 129, 58, 0)");
+          g.fillStyle = grad;
+          g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
+        }
+
+        // Fine lawn grass blades
+        for (var b = 0; b < 2500; b++) {
+          var bx = Math.random() * 512, by = Math.random() * 512, blen = 3 + Math.random() * 7;
+          var bcol = (b % 3 === 0) ? "#65AD55" : ((b % 3 === 1) ? "#3B6E32" : "#4B893F");
+          g.strokeStyle = bcol; g.lineWidth = 1.0;
+          g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + (Math.random() - 0.5) * 3, by - blen); g.stroke();
         }
       }
 
       var tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(40, 40);
+      tex.repeat.set(160, 160);
       tex.encoding = THREE.sRGBEncoding;
 
       var m = new THREE.MeshStandardMaterial({
         map: tex,
-        color: 0xEDECE8,
-        roughness: 0.94,
+        color: 0x4E8A42,
+        roughness: 0.92,
         metalness: 0.0,
         side: THREE.DoubleSide
       });
-      matCache["sp|archStudioGround"] = m;
+      matCache["sp|grassGround"] = m;
       return m;
     }
     function makeNeutralGroundMat() {
@@ -33855,8 +33971,7 @@ window.ORBIX_DADO_TEXTURES = {
       stage.appendChild(renderer.domElement);
       stage.classList.add("gl");
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xF1F5F9); // Clean architectural studio sky
-      scene.fog = new THREE.FogExp2(0xE2E8F0, 0.000008); // Subtle studio atmospheric depth
+      scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
       camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
@@ -33873,7 +33988,7 @@ window.ORBIX_DADO_TEXTURES = {
       var fill = new THREE.DirectionalLight(0xedf4fc, 0.52); fill.position.set(2800, 2100, 5000); scene.add(fill);
       var rim = new THREE.DirectionalLight(0xf8fafc, 0.35); rim.position.set(2400, 1800, -2800); scene.add(rim);
       var bounceL = new THREE.DirectionalLight(0xfbf6ee, 0.38); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
-      scene.add(new THREE.HemisphereLight(0xFAFBFD, 0xEFEAE1, 0.65)); // Crisp architectural sky radiance + warm interior floor bounce (no green!)
+      scene.add(new THREE.HemisphereLight(0x82C3EC, 0x4E8A42, 0.55)); // Sky blue overhead + natural lawn grass ground bounce
       var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
@@ -33975,7 +34090,7 @@ window.ORBIX_DADO_TEXTURES = {
         case "steel": m = new THREE.MeshStandardMaterial({ color: 0xC9CCCF, metalness: 1, roughness: 0.38, envMapIntensity: 1.1 }); break;
         case "hob": m = new THREE.MeshPhysicalMaterial({ color: 0x0b0b0e, roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.3 }); break;
         case "tile": m = tileMat(); break;
-        case "wall": m = new THREE.MeshStandardMaterial({ color: 0x9E836A, roughness: 0.90, metalness: 0 }); break;
+        case "wall": m = new THREE.MeshStandardMaterial({ color: 0xB89F82, roughness: 0.88, metalness: 0.01 }); break;
         case "window": m = new THREE.MeshBasicMaterial({ color: NEO ? 0xFFF1DA : 0xFFFDF7 }); break;
         case "floor": m = floorMat(); break;
       }
@@ -35371,18 +35486,14 @@ window.ORBIX_DADO_TEXTURES = {
         }
 
         var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0));
-        if (isAuto) {
-          // Warm architectural interior studio tone for auto-placement wall & units shot
-          scene.background = new THREE.Color(0xF1ECE6);
-          renderer.setClearColor(0xF1ECE6, 1);
-          if (floor && hasArchHome) floor.visible = false; // Exclude exterior ground plane
+        if (hasArchHome) {
+          scene.background = new THREE.Color(0x82C3EC);
+          renderer.setClearColor(0x82C3EC, 1);
+          if (floor) { floor.material = makeGrassGroundMat(); floor.visible = true; }
         } else {
-          // Custom view retains current scene environment (sky 0x82C3EC or studio) and floor
-          if (hasArchHome && !scene.background) {
-            scene.background = new THREE.Color(0x82C3EC);
-            if (floor) { floor.visible = true; }
-            renderer.setClearColor(0x82C3EC, 1);
-          }
+          scene.background = new THREE.Color(0x82C3EC);
+          renderer.setClearColor(0x82C3EC, 1);
+          if (floor) { floor.visible = true; }
         }
 
         // Render directly with WebGLRenderer to bypass huge 650MB composer render targets at 8K
@@ -35784,7 +35895,34 @@ window.ORBIX_DADO_TEXTURES = {
       });
       return out;
     }
-    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, makeGrassGroundMat: makeGrassGroundMat, makeNeutralGroundMat: makeGrassGroundMat, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0)); if (floor) floor.material = hasArchHome ? makeGrassGroundMat() : makeFloorMat(type); render(); } };
+    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setSunlightIntensity: function (val) {
+      val = parseFloat(val);
+      if (!isFinite(val)) return;
+      window.sunlightIntensity = val;
+      if (keyL) keyL.intensity = val;
+      if (scene) {
+        scene.traverse(function (o) {
+          if (o.isDirectionalLight && o !== keyL) o.intensity = val * 0.35;
+        });
+      }
+      render();
+    },
+    setSpotlightIntensity: function (val) {
+      val = parseFloat(val);
+      if (!isFinite(val)) return;
+      window.spotlightIntensity = val;
+      if (scene) {
+        scene.traverse(function (o) {
+          if (o.isSpotLight || (o.isLight && (o.userData.isSpotlight || o.userData.isDownlight || (o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1)))) {
+            o.intensity = val;
+          } else if (o.isPointLight && o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1) {
+            o.intensity = val * 0.45;
+          }
+        });
+      }
+      render();
+    },
+    makeGrassGroundMat: makeGrassGroundMat, makeNeutralGroundMat: makeGrassGroundMat, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0)); if (floor) floor.material = hasArchHome ? makeGrassGroundMat() : makeFloorMat(type); render(); } };
   })();
 
   /* ═══════════════════════════════════════════════════════════════
@@ -37018,8 +37156,7 @@ window.ORBIX_DADO_TEXTURES = {
       pI.innerHTML = u.rows.length + " rows from the sheet. Sizes below only place the 3D preview; the cutting list is the sheet\u2019s own rows.";
       var g5i = grp(r, "Carcass colour"); swatchGrid(g5i, u.carcass, function (c) { u.carcass = c; renderRail(); renderAll(); });
       var g6i = grp(r, "Shutter colour"); swatchGrid(g6i, u.shutterCol, function (c) { u.shutterCol = c; renderRail(); renderAll(); });
-      var g9i = grp(r, "Edge banding");
-      seg(g9i, [{ l: "Exposed edges", v: "exposed" }, { l: "All 4 edges", v: "all" }], RATES.ebMode, function (v) { RATES.ebMode = v; renderRail(); renderAll(); });
+
       var g8i = grp(r, "Unit actions");
       var nb = el("btn", g8i, "button"); nb.textContent = "Add a designed unit"; nb.style.marginRight = "6px";
       nb.addEventListener("click", function () { S.units.push(newUnit("UNIT " + (S.units.length + 1))); S.active = S.units.length - 1; renderRail(); renderAll(); });
@@ -37030,22 +37167,6 @@ window.ORBIX_DADO_TEXTURES = {
       return;
     }
     if (u.ctype === "kitchen") u.ctype = (u.elev && u.elev >= 1000) ? "kwall" : "kbase";
-    var gD = grp(r, "Door style");
-    var dg = el("tgrid", gD);
-    DSTYLES.forEach(function (s) {
-      var b = el("tbtn" + ((u.dstyle || "slab") === s.id ? " is-on" : ""), dg, "button");
-      b.textContent = s.label; b.setAttribute("aria-pressed", String((u.dstyle || "slab") === s.id));
-      b.addEventListener("click", function () { u.dstyle = s.id; renderRail(); renderAll(); });
-    });
-    if ((u.dstyle || "") === "steel") {
-      var pr = el("swgrid", gD); pr.style.marginTop = "8px";
-      PAINTS.forEach(function (p) {
-        var b = el("swb" + ((u.paint || "#5B6E7A") === p.id ? " is-on" : ""), pr, "button");
-        b.style.background = p.id; b.title = p.label; b.setAttribute("aria-label", p.label);
-        el(null, b, "i").textContent = p.label;
-        b.addEventListener("click", function () { u.paint = p.id; renderRail(); renderAll(); });
-      });
-    }
     if (u.ctype === "kitchen") {
       var gK = grp(r, "Kitchen layout");
       seg(gK, KLAYOUTS.map(function (k) { return { l: k.label, v: k.id }; }), u.klayout || "straight", function (v) { u.klayout = v; renderRail(); renderAll(); });
@@ -37156,22 +37277,7 @@ window.ORBIX_DADO_TEXTURES = {
       var rTw = el("row", gE); rTw.style.marginTop = "8px";
       seg(rTw, [{ l: "No tower", v: "none" }, { l: "Left", v: "left" }, { l: "Right", v: "right" }, { l: "Both", v: "both" }], u.drTower || "none", function (v) { u.drTower = v; renderAll(); });
     }
-    if (!/^(kitchen|tv|crockery|dresser)$/.test(u.ctype || "")) {
-      var gS = grp(r, "Shape");
-      seg(gS, [{ l: "Straight", v: "straight" }, { l: "L-corner", v: "lcorner" }, { l: "Walk-in", v: "walkin" }], u.shape || "straight",
-        function (v) { u.shape = v; renderRail(); renderAll(); });
-      if (u.shape === "lcorner") {
-        var rS = el("row", gS); rS.style.marginTop = "8px";
-        fld(rS, "Run B width", u.W2 || 1200, function (v) { u.W2 = Math.max(400, num(v, u.W2)); softAll(true); });
-      }
 
-      var g2 = grp(r, "Shutters");
-      seg(g2, [{ l: "Hinged", v: "hinged" }, { l: "Sliding", v: "sliding" }], u.type, function (v) { u.type = v; renderRail(); renderAll(); });
-      var rD = el("row", g2); rD.style.marginTop = "8px";
-      if (u.type === "hinged") fld(rD, "Shutters", u.shutters, function (v) { u.shutters = Math.max(1, num(v, u.shutters) | 0); softAll(true); });
-      fld(rD, "Sections", u.sections, function (v) { u.sections = Math.max(1, num(v, u.sections) | 0); softAll(true); });
-
-    }
     var g2c = grp(r, "Handle design");
     var hg = el("hgrid", g2c);
     HANDLES.forEach(function (hd) {
@@ -37183,8 +37289,7 @@ window.ORBIX_DADO_TEXTURES = {
       b.addEventListener("click", function () { u.handle = hd.id; renderRail(); renderAll(); });
     });
 
-    var gF = grp(r, "Handle finish");
-    seg(gF, HFINISH.map(function (f) { return { l: f.label, v: f.id }; }), u.hfinish || "chrome", function (v) { u.hfinish = v; renderRail(); renderAll(); });
+
 
     if (u.ctype !== "kitchen") {
       var g3 = grp(r, "Internals");
@@ -37199,13 +37304,7 @@ window.ORBIX_DADO_TEXTURES = {
       [18, 6].forEach(function (t) { var o = el(null, bs, "option"); o.value = t; o.textContent = t + " mm"; if (u.back === t) o.selected = true; });
       bs.addEventListener("change", function () { u.back = parseInt(bs.value, 10); softAll(true); });
 
-      var g4 = grp(r, "Loft");
-      seg(g4, [{ l: "With loft", v: true }, { l: "No loft", v: false }], u.loft, function (v) { u.loft = v; renderRail(); renderAll(); });
-      if (u.loft) {
-        var rG = el("row", g4); rG.style.marginTop = "8px";
-        fld(rG, "Loft ht", u.loftH, function (v) { u.loftH = Math.max(150, num(v, u.loftH)); softAll(true); });
-        fld(rG, "Loft shutters", u.loftShutters, function (v) { u.loftShutters = Math.max(1, num(v, u.loftShutters) | 0); softAll(true); });
-      }
+
 
       var isBaseU = (u.ctype === "kbase" || (u.counter && u.counter !== "none") || (u.label && /base/i.test(u.label)) || (u.name && /base/i.test(u.name)) || (u.H <= 900 && (!u.elev || u.elev < 1000) && u.ctype !== "kwall"));
       if (isBaseU) {
@@ -37264,10 +37363,7 @@ window.ORBIX_DADO_TEXTURES = {
       }
     }
 
-    var g9 = grp(r, "Edge banding");
-    seg(g9, [{ l: "Exposed edges", v: "exposed" }, { l: "All 4 edges", v: "all" }], RATES.ebMode, function (v) { RATES.ebMode = v; renderRail(); renderAll(); });
-    var rH = el("row", g9); rH.style.marginTop = "8px";
-    fld(rH, "Tape size", RATES.ebSize, function (v) { RATES.ebSize = v; softAll(); }, "text");
+
 
     var g7 = grp(r, "Add a laminate");
     var ac = el("addc", g7);

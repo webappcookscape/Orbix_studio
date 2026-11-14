@@ -676,9 +676,9 @@
     if (typeof THREE === 'undefined') return;
 
     var wallBump = ArchitecturalRenderer.createWallBumpTexture();
-    // Wall Plaster (Warm architectural alabaster ivory plaster - photorealistic and clean)
+    // Wall Plaster (Rich Architectural Dark Beige Plaster)
     this.materials.wall = new THREE.MeshStandardMaterial({
-      color: 0xF2EFE9, // Warm architectural alabaster
+      color: 0xB89F82, // Elegant authentic Dark Beige plaster
       roughness: 0.88,
       metalness: 0.01,
       bumpMap: wallBump,
@@ -687,7 +687,7 @@
 
     // Wall Core (Cutaway section interior)
     this.materials.wallCore = new THREE.MeshStandardMaterial({
-      color: 0xDCD7CD, // Clean architectural plaster core
+      color: 0x9E836A, // Dark beige plaster core
       roughness: 0.9,
       metalness: 0.0
     });
@@ -3147,13 +3147,14 @@
     var nameOS = (furn.name || '').toLowerCase();
     var isLoftOS = (catOS.indexOf('loft') !== -1 || nameOS.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
     var isWallOS = (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)));
-    var isBaseOS = isBase || catOS === 'kitchen_base' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS);
+    var isTrueOnlyShutter = !!(furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1);
+    var isBaseOS = !isTrueOnlyShutter && (isBase || catOS === 'kitchen_base' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS));
 
     var actualPlinthH = isBaseOS ? ((plinthH !== undefined && plinthH > 0) ? plinthH : 100) : 0;
     var actualCounterH = isBaseOS ? ((counterH !== undefined && counterH > 0) ? counterH : 35) : 0;
-    var baseD = (dims.D && dims.D > 100) ? dims.D : 560;
+    var baseD = isTrueOnlyShutter ? 18 : ((dims.D && dims.D < 100) ? dims.D : (isBaseOS ? 560 : 18));
 
-    if (isBaseOS) {
+    if (isBaseOS && !isTrueOnlyShutter && baseD > 50) {
       // 1. Plinth Kickboard & Adjustable Cabinet Legs
       if (actualPlinthH > 0) {
         var pGeo = new THREE.BoxGeometry(W - 30, actualPlinthH, baseD - 50);
@@ -3543,7 +3544,9 @@
     var carcassMat = ArchitecturalRenderer.resolveLaminateMaterial(carcassRaw, 0xEDEBE4, carcassIsGloss);
 
     // Door style & type
-    var dstyle = (furn.unitConfig && furn.unitConfig.dstyle) || 'slab';
+    var isGLUnit = /(^|\b|_|-|\s)gl(\b|_|-|\s|\d+|$)/i.test(String(name || '') + ' ' + String(furn.code || '') + ' ' + String(furn.id || ''));
+    var dstyle = (furn.unitConfig && furn.unitConfig.dstyle) || (isGLUnit ? 'glass' : 'slab');
+    if (isGLUnit && (!dstyle || dstyle === 'slab')) dstyle = 'glass';
     var doorType = (furn.unitConfig && (furn.unitConfig.doorType || furn.unitConfig.type)) || 'hinged';
 
     // Handle Configuration & Material
@@ -3589,7 +3592,8 @@
     }
     var plinthH = hasLegs ? 100 : 0;
     var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
-    var bodyH = Math.max(100, dims.H - plinthH - counterH);
+    var bodyH = (dims.H <= 350) ? dims.H : Math.max(100, dims.H - plinthH - counterH);
+    var topOfCarcass = plinthH + bodyH;
     var innerW = dims.W - 36;
     var innerD = dims.D - 20;
 
@@ -3915,7 +3919,8 @@
     if (counterH > 0) {
       var cGeo = new THREE.BoxGeometry(dims.W + 20, counterH, dims.D + 25);
       var cMesh = new THREE.Mesh(cGeo, counterMat);
-      cMesh.position.set(0, dims.H - counterH / 2, 2.5);
+      var topOfCarcass = plinthH + bodyH;
+      cMesh.position.set(0, topOfCarcass + counterH / 2, 2.5);
       cMesh.castShadow = true;
       cMesh.receiveShadow = true;
       cMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };

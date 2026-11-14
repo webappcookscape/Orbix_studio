@@ -445,6 +445,26 @@
         });
       }
 
+      // Sunlight & Spotlight intensity sliders
+      var sunSlider = document.getElementById('sunlightSlider');
+      var sunLabel = document.getElementById('sunlightValLabel');
+      if (sunSlider) {
+        sunSlider.addEventListener('input', function () {
+          var v = parseFloat(sunSlider.value);
+          if (sunLabel) sunLabel.textContent = v.toFixed(1);
+          if (window.GL && window.GL.setSunlightIntensity) window.GL.setSunlightIntensity(v);
+        });
+      }
+      var spotSlider = document.getElementById('spotlightSlider');
+      var spotLabel = document.getElementById('spotlightValLabel');
+      if (spotSlider) {
+        spotSlider.addEventListener('input', function () {
+          var v = parseFloat(spotSlider.value);
+          if (spotLabel) spotLabel.textContent = v.toFixed(1);
+          if (window.GL && window.GL.setSpotlightIntensity) window.GL.setSpotlightIntensity(v);
+        });
+      }
+
       // 3D Studio Photorealistic HD Render Button & Mode Selector
       var photoRenderBtn = document.getElementById('photoRenderBtn');
       var photoRenderMenu = document.getElementById('photoRenderMenu');
@@ -1483,7 +1503,9 @@
         var curHFinish = (fn.unitConfig && (fn.unitConfig.hfinish || fn.unitConfig.handleFinish)) || fn.handleFinish || 'black';
         var shuttersCount = (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1);
         var drawersCount = (fn.unitConfig && fn.unitConfig.drawers !== undefined) ? fn.unitConfig.drawers : 0;
-        var doorStyle = (fn.unitConfig && fn.unitConfig.dstyle) || 'slab';
+        var isGLUnit = /(^|\b|_|-|\s)gl(\b|_|-|\s|\d+|$)/i.test(String(fn.name || '') + ' ' + String(fn.code || '') + ' ' + String(fn.id || ''));
+        var doorStyle = (fn.unitConfig && fn.unitConfig.dstyle) || (isGLUnit ? 'glass' : 'slab');
+        if (isGLUnit && (!doorStyle || doorStyle === 'slab')) doorStyle = 'glass';
         var handleType = (fn.unitConfig && fn.unitConfig.handle) || 'gprof';
         var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
           window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) :
@@ -4100,8 +4122,8 @@
       if (!sidePanel || !bottomTray) return;
 
       var Core = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : ((typeof root !== 'undefined' && root.OrbixCore) ? root.OrbixCore : {});
-      var currentCat = 'base_unit';
-      var currentTab = 'cookscape_fm';
+      var currentCat = 'kitchen';
+      var currentTab = 'kitchen_fm';
       var isCollapsed = false;
       var isFurnishMenuOpen = false;
 
@@ -4109,46 +4131,28 @@
         all: [
           { id: 'all_units', label: 'All Units & Cabinets', count: '180+' }
         ],
-        base_unit: [
+        kitchen: [
           { id: 'kitchen_fm', label: 'KITCHEN FM', count: '8' },
-          { id: 'kitchen_corner', label: 'KITCHEN CORNER UNITS', count: '3' },
+          { id: 'kitchen_corner', label: 'KITCHEN CORNER', count: '3' },
           { id: 'kitchen_drawers', label: 'KITCHEN DRAWERS', count: '11' },
-          { id: 'kitchen_tall', label: 'KITCHEN TALL UNIT', count: '2' },
-          { id: 'cookscape_crockery', label: 'CROCKERY & TV BASE', count: '8' }
+          { id: 'kitchen_tall', label: 'KITCHEN TALL UNITS', count: '2' },
+          { id: 'kitchen_wall_spice', label: 'KITCHEN WALL UNITS (SPICE RACK)', count: '18' }
         ],
-        kitchen_fm: [
-          { id: 'kitchen_fm', label: 'All Kitchen FM Units', count: '8' }
-        ],
-        kitchen_corner: [
-          { id: 'kitchen_corner', label: 'Kitchen Corner Units (FCM / FBCM)', count: '3' }
-        ],
-        kitchen_drawers: [
-          { id: 'kitchen_drawers', label: 'Kitchen Drawer Units (D2 / D3 / DS)', count: '11' }
-        ],
-        kitchen_tall: [
-          { id: 'kitchen_tall', label: 'Kitchen Tall Units (TBM 60 / Oven)', count: '2' }
-        ],
-        crockery: [
-          { id: 'crockery_all', label: 'All Crockery Units', count: '15' },
-          { id: 'crockery_base', label: 'Crockery Base Units', count: '8' },
-          { id: 'crockery_wall', label: 'Crockery Wall Units', count: '7' }
-        ],
-        tv_unit: [
-          { id: 'tv_all', label: 'All TV Units', count: '14' },
-          { id: 'tv_base', label: 'TV Base Consoles', count: '8' },
-          { id: 'tv_wall', label: 'TV Wall Panels & Units', count: '6' }
+        tv_crockery: [
+          { id: 'tv_crockery_base', label: 'BASE', count: '8' },
+          { id: 'tv_crockery_wall', label: 'WALL', count: '6' },
+          { id: 'tv_crockery_drawers', label: 'DRAWERS', count: '6' },
+          { id: 'tv_crockery_openbox', label: 'OPENBOX', count: '4' }
         ],
         wardrobe: [
-          { id: 'wr_sliding', label: 'Sliding Wardrobes', count: '18' },
-          { id: 'wr_hinged', label: 'Hinged 2-Door Wardrobes', count: '26' },
-          { id: 'wr_lofts', label: 'Wardrobe Modular Lofts', count: '15' },
-          { id: 'wr_panels', label: 'Wall Paneling', count: '10' }
+          { id: 'wardrobe_all', label: 'WARDROBES ALL', count: '34' }
         ],
-        wall_unit: [
-          { id: 'kitchen_wm', label: 'KITCHEN - WM (Wall Units)', count: '24' },
-          { id: 'wall_os', label: 'KITCHEN WALL O/S', count: '8' },
-          { id: 'spice_racks', label: 'Spice Racks & Open Box', count: '14' },
-          { id: 'pooja_wall', label: 'Pooja & Crockery Wall', count: '12' }
+        loft: [
+          { id: 'loft_all', label: 'ALL LOFT', count: '15' }
+        ],
+        wall_paneling: [
+          { id: 'panel_back', label: 'BACK PANEL', count: '6' },
+          { id: 'panel_ledges', label: 'LEDGES', count: '4' }
         ]
       };
 
@@ -4187,56 +4191,87 @@
 
         if (cat === 'all' || tabId === 'all_units') {
           res = catalog.map(mapItemToCard);
-        } else if (cat === 'kitchen_fm' || (cat === 'base_unit' && (tabId === 'kitchen_fm' || tabId === 'cookscape_fm'))) {
-          res = catalog.filter(function (it) { return it.category === 'kitchen_fm'; }).map(mapItemToCard);
-        } else if (cat === 'kitchen_corner' || (cat === 'base_unit' && (tabId === 'kitchen_corner' || tabId === 'cookscape_corner'))) {
-          res = catalog.filter(function (it) { return it.category === 'kitchen_corner'; }).map(mapItemToCard);
-        } else if (cat === 'kitchen_drawers' || (cat === 'base_unit' && (tabId === 'kitchen_drawers' || tabId === 'cookscape_drawers' || tabId === 'drawer_units'))) {
-          res = catalog.filter(function (it) { return it.category === 'kitchen_drawers'; }).map(mapItemToCard);
-        } else if (cat === 'kitchen_tall' || (cat === 'base_unit' && tabId === 'kitchen_tall')) {
-          res = catalog.filter(function (it) { return it.category === 'kitchen_tall'; }).map(mapItemToCard);
-        } else if (cat === 'base_unit') {
-          if (tabId === 'cookscape_crockery') {
+        } else if (cat === 'kitchen') {
+          if (tabId === 'kitchen_fm') {
             res = catalog.filter(function (it) {
-              return (it.category === 'crockery' || it.category === 'tv_unit') && (!it.elevation || it.elevation === 0);
+              return it.category === 'kitchen_fm' || (it.id && it.id.indexOf('fm') === 0 && it.category !== 'kitchen_corner' && it.category !== 'kitchen_drawers');
+            });
+          } else if (tabId === 'kitchen_corner') {
+            res = catalog.filter(function (it) {
+              return it.category === 'kitchen_corner' || (it.id && /(fcm|fbcm)/i.test(it.id)) || (it.name && /(corner|fcm|fbcm)/i.test(it.name));
+            });
+          } else if (tabId === 'kitchen_drawers') {
+            res = catalog.filter(function (it) {
+              return it.category === 'kitchen_drawers' || (it.id && /(d2|d3|ds)/i.test(it.id)) || (it.name && /drawer/i.test(it.name) && it.category && it.category.indexOf('kitchen') !== -1);
+            });
+          } else if (tabId === 'kitchen_tall') {
+            res = catalog.filter(function (it) {
+              return it.category === 'kitchen_tall' || (it.name && /(tall|tbm|oven)/i.test(it.name));
+            });
+          } else if (tabId === 'kitchen_wall_spice') {
+            res = catalog.filter(function (it) {
+              var c = (it.category || '').toLowerCase();
+              var n = (it.name || '').toLowerCase();
+              return c === 'kitchen_wall' || c === 'spice_rack' || n.indexOf('wm') !== -1 || n.indexOf('spice') !== -1 || n.indexOf('wall') !== -1;
+            });
+          } else {
+            res = catalog.filter(function (it) { return (it.category || '').indexOf('kitchen') !== -1; });
+          }
+          res = res.map(mapItemToCard);
+        } else if (cat === 'tv_crockery') {
+          if (tabId === 'tv_crockery_base') {
+            res = catalog.filter(function (it) {
+              var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+              return (n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1) && (n.indexOf('base') !== -1 || (!it.elevation || it.elevation === 0));
+            });
+          } else if (tabId === 'tv_crockery_wall') {
+            res = catalog.filter(function (it) {
+              var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+              return (n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1) && (n.indexOf('wall') !== -1 || (it.elevation && it.elevation >= 1000));
+            });
+          } else if (tabId === 'tv_crockery_drawers') {
+            res = catalog.filter(function (it) {
+              var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+              return (n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1) && (n.indexOf('drawer') !== -1 || (it.unitConfig && it.unitConfig.drawers > 0));
+            });
+          } else if (tabId === 'tv_crockery_openbox') {
+            res = catalog.filter(function (it) {
+              var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+              return (n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1) && (n.indexOf('open') !== -1 || n.indexOf('box') !== -1 || n.indexOf('niche') !== -1 || (it.unitConfig && it.unitConfig.doorType === 'open'));
+            });
+          } else {
+            res = catalog.filter(function (it) {
+              var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
+              return n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1;
+            });
+          }
+          res = res.map(mapItemToCard);
+        } else if (cat === 'wardrobe') {
+          res = catalog.filter(function (it) {
+            var c = (it.category || '').toLowerCase();
+            var n = (it.name || '').toLowerCase();
+            return (c === 'wardrobe' || n.indexOf('wardrobe') !== -1 || n.indexOf('wr') !== -1 || n.indexOf('sliding') !== -1) && n.indexOf('loft') === -1 && c.indexOf('loft') === -1;
+          }).map(mapItemToCard);
+        } else if (cat === 'loft') {
+          res = catalog.filter(function (it) {
+            var c = (it.category || '').toLowerCase();
+            var n = (it.name || '').toLowerCase();
+            return c.indexOf('loft') !== -1 || n.indexOf('loft') !== -1;
+          }).map(mapItemToCard);
+        } else if (cat === 'wall_paneling') {
+          if (tabId === 'panel_ledges') {
+            res = catalog.filter(function (it) {
+              var n = (it.name || '').toLowerCase();
+              return n.indexOf('ledge') !== -1 || n.indexOf('shelf') !== -1;
             });
           } else {
             res = catalog.filter(function (it) {
               var c = (it.category || '').toLowerCase();
-              return c === 'kitchen_fm' || c === 'kitchen_corner' || c === 'kitchen_drawers' || c === 'kitchen_tall' || c === 'kitchen_base';
+              var n = (it.name || '').toLowerCase();
+              return c === 'wall_paneling' || it.id === 'pnl-back' || n.indexOf('back panel') !== -1 || n.indexOf('wall panel') !== -1;
             });
           }
           res = res.map(mapItemToCard);
-        } else if (cat === 'wall_unit') {
-          var wallUnits = catalog.filter(function (it) {
-            var c = (it.category || '').toLowerCase();
-            var n = (it.name || '').toLowerCase();
-            var cfg = it.unitConfig || {};
-            return c === 'kitchen_wall' || c === 'spice_rack' || c === 'pooja' || cfg.ctype === 'kwall' ||
-              n.indexOf('wall') !== -1 || n.indexOf('wm') !== -1 || (it.id && it.id.indexOf('wm') === 0) || (it.id && it.id.indexOf('ctvw') === 0) ||
-              n.indexOf('spice') !== -1 || n.indexOf('pooja') !== -1;
-          });
-          res = wallUnits.map(mapItemToCard);
-        } else if (cat === 'wardrobe') {
-          var wrUnits = catalog.filter(function (it) {
-            var c = (it.category || '').toLowerCase();
-            var n = (it.name || '').toLowerCase();
-            return c.indexOf('wardrobe') !== -1 || c.indexOf('loft') !== -1 || c.indexOf('panel') !== -1 ||
-              n.indexOf('wardrobe') !== -1 || n.indexOf('wr') !== -1 || n.indexOf('loft') !== -1 || n.indexOf('sliding') !== -1;
-          });
-          res = wrUnits.map(mapItemToCard);
-        } else if (cat === 'crockery') {
-          var crUnits = catalog.filter(function (it) {
-            var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
-            return n.indexOf('crockery') !== -1 || (it.id && (it.id.indexOf('ctvb') === 0 || it.id.indexOf('ctvw') === 0));
-          });
-          res = crUnits.map(mapItemToCard);
-        } else if (cat === 'tv_unit') {
-          var tvUnits = catalog.filter(function (it) {
-            var n = (it.name + ' ' + it.id + ' ' + (it.category || '')).toLowerCase();
-            return n.indexOf('tv') !== -1 || (it.id && (it.id.indexOf('ctvb') === 0 || it.id.indexOf('ctvw') === 0));
-          });
-          res = tvUnits.map(mapItemToCard);
         } else {
           res = catalog.map(mapItemToCard);
         }
@@ -4791,7 +4826,6 @@
 
       var html = '<div class="boq-sheet">' +
         '<div class="boq-actions no-print">' +
-        '<button class="btn primary" id="boqPrintBtn">📄 Download PDF</button>' +
         '<button class="btn" id="boqXlsxBtn" style="background:#107C41;color:#fff;border-color:#107C41;font-weight:600">📊 Download Excel (.xlsx)</button>' +
         '<button class="btn" id="boqEditDetailsBtn" style="font-weight:600;border-color:#2563EB;color:#2563EB">✏️ Edit Client Details</button>' +
         '<button class="btn" id="boqLockVersionBtn">Issue Quotation Snapshot</button>' +

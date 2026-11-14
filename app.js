@@ -1845,35 +1845,48 @@
       return m;
     }
     function makeGrassGroundMat() {
-      if (matCache["sp|archStudioGround"]) return matCache["sp|archStudioGround"];
+      if (matCache["sp|grassGround"]) return matCache["sp|grassGround"];
       var c = document.createElement("canvas"); c.width = c.height = 512;
       var g = c.getContext("2d");
       if (g) {
-        // Subtle warm architectural studio ground plane
-        g.fillStyle = "#EAE8E3";
+        // Rich natural lawn grass green base
+        g.fillStyle = "#46813A";
         g.fillRect(0, 0, 512, 512);
 
-        // Micro-fine architectural plaster / terrazzo noise
-        for (var i = 0; i < 2000; i++) {
-          var nx = Math.random() * 512, ny = Math.random() * 512;
-          g.fillStyle = (i % 2 === 0) ? "rgba(255,255,255,0.4)" : "rgba(180,175,165,0.25)";
-          g.fillRect(nx, ny, 1.5, 1.5);
+        // Organic grass sod tone variations
+        var lawnTones = ["#3D7333", "#4A883E", "#559947", "#3E7834", "#4F9042", "#5C9F4E"];
+        for (var i = 0; i < 400; i++) {
+          var x = Math.random() * 512, y = Math.random() * 512, rad = 8 + Math.random() * 24;
+          var grad = g.createRadialGradient(x, y, 0, x, y, rad);
+          var col = lawnTones[Math.floor(Math.random() * lawnTones.length)];
+          grad.addColorStop(0, col);
+          grad.addColorStop(1, "rgba(70, 129, 58, 0)");
+          g.fillStyle = grad;
+          g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
+        }
+
+        // Fine lawn grass blades
+        for (var b = 0; b < 2500; b++) {
+          var bx = Math.random() * 512, by = Math.random() * 512, blen = 3 + Math.random() * 7;
+          var bcol = (b % 3 === 0) ? "#65AD55" : ((b % 3 === 1) ? "#3B6E32" : "#4B893F");
+          g.strokeStyle = bcol; g.lineWidth = 1.0;
+          g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + (Math.random() - 0.5) * 3, by - blen); g.stroke();
         }
       }
 
       var tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(40, 40);
+      tex.repeat.set(160, 160);
       tex.encoding = THREE.sRGBEncoding;
 
       var m = new THREE.MeshStandardMaterial({
         map: tex,
-        color: 0xEDECE8,
-        roughness: 0.94,
+        color: 0x4E8A42,
+        roughness: 0.92,
         metalness: 0.0,
         side: THREE.DoubleSide
       });
-      matCache["sp|archStudioGround"] = m;
+      matCache["sp|grassGround"] = m;
       return m;
     }
     function makeNeutralGroundMat() {
@@ -1893,8 +1906,7 @@
       stage.appendChild(renderer.domElement);
       stage.classList.add("gl");
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xF1F5F9); // Clean architectural studio sky
-      scene.fog = new THREE.FogExp2(0xE2E8F0, 0.000008); // Subtle studio atmospheric depth
+      scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
       camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
@@ -1911,7 +1923,7 @@
       var fill = new THREE.DirectionalLight(0xedf4fc, 0.52); fill.position.set(2800, 2100, 5000); scene.add(fill);
       var rim = new THREE.DirectionalLight(0xf8fafc, 0.35); rim.position.set(2400, 1800, -2800); scene.add(rim);
       var bounceL = new THREE.DirectionalLight(0xfbf6ee, 0.38); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
-      scene.add(new THREE.HemisphereLight(0xFAFBFD, 0xEFEAE1, 0.65)); // Crisp architectural sky radiance + warm interior floor bounce (no green!)
+      scene.add(new THREE.HemisphereLight(0x82C3EC, 0x4E8A42, 0.55)); // Sky blue overhead + natural lawn grass ground bounce
       var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
@@ -2013,7 +2025,7 @@
         case "steel": m = new THREE.MeshStandardMaterial({ color: 0xC9CCCF, metalness: 1, roughness: 0.38, envMapIntensity: 1.1 }); break;
         case "hob": m = new THREE.MeshPhysicalMaterial({ color: 0x0b0b0e, roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.3 }); break;
         case "tile": m = tileMat(); break;
-        case "wall": m = new THREE.MeshStandardMaterial({ color: 0x9E836A, roughness: 0.90, metalness: 0 }); break;
+        case "wall": m = new THREE.MeshStandardMaterial({ color: 0xB89F82, roughness: 0.88, metalness: 0.01 }); break;
         case "window": m = new THREE.MeshBasicMaterial({ color: NEO ? 0xFFF1DA : 0xFFFDF7 }); break;
         case "floor": m = floorMat(); break;
       }
@@ -3409,18 +3421,14 @@
         }
 
         var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0));
-        if (isAuto) {
-          // Warm architectural interior studio tone for auto-placement wall & units shot
-          scene.background = new THREE.Color(0xF1ECE6);
-          renderer.setClearColor(0xF1ECE6, 1);
-          if (floor && hasArchHome) floor.visible = false; // Exclude exterior ground plane
+        if (hasArchHome) {
+          scene.background = new THREE.Color(0x82C3EC);
+          renderer.setClearColor(0x82C3EC, 1);
+          if (floor) { floor.material = makeGrassGroundMat(); floor.visible = true; }
         } else {
-          // Custom view retains current scene environment (sky 0x82C3EC or studio) and floor
-          if (hasArchHome && !scene.background) {
-            scene.background = new THREE.Color(0x82C3EC);
-            if (floor) { floor.visible = true; }
-            renderer.setClearColor(0x82C3EC, 1);
-          }
+          scene.background = new THREE.Color(0x82C3EC);
+          renderer.setClearColor(0x82C3EC, 1);
+          if (floor) { floor.visible = true; }
         }
 
         // Render directly with WebGLRenderer to bypass huge 650MB composer render targets at 8K
@@ -3822,7 +3830,34 @@
       });
       return out;
     }
-    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, makeGrassGroundMat: makeGrassGroundMat, makeNeutralGroundMat: makeGrassGroundMat, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0)); if (floor) floor.material = hasArchHome ? makeGrassGroundMat() : makeFloorMat(type); render(); } };
+    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setSunlightIntensity: function (val) {
+      val = parseFloat(val);
+      if (!isFinite(val)) return;
+      window.sunlightIntensity = val;
+      if (keyL) keyL.intensity = val;
+      if (scene) {
+        scene.traverse(function (o) {
+          if (o.isDirectionalLight && o !== keyL) o.intensity = val * 0.35;
+        });
+      }
+      render();
+    },
+    setSpotlightIntensity: function (val) {
+      val = parseFloat(val);
+      if (!isFinite(val)) return;
+      window.spotlightIntensity = val;
+      if (scene) {
+        scene.traverse(function (o) {
+          if (o.isSpotLight || (o.isLight && (o.userData.isSpotlight || o.userData.isDownlight || (o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1)))) {
+            o.intensity = val;
+          } else if (o.isPointLight && o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1) {
+            o.intensity = val * 0.45;
+          }
+        });
+      }
+      render();
+    },
+    makeGrassGroundMat: makeGrassGroundMat, makeNeutralGroundMat: makeGrassGroundMat, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0)); if (floor) floor.material = hasArchHome ? makeGrassGroundMat() : makeFloorMat(type); render(); } };
   })();
 
   /* ═══════════════════════════════════════════════════════════════
@@ -5056,8 +5091,7 @@
       pI.innerHTML = u.rows.length + " rows from the sheet. Sizes below only place the 3D preview; the cutting list is the sheet\u2019s own rows.";
       var g5i = grp(r, "Carcass colour"); swatchGrid(g5i, u.carcass, function (c) { u.carcass = c; renderRail(); renderAll(); });
       var g6i = grp(r, "Shutter colour"); swatchGrid(g6i, u.shutterCol, function (c) { u.shutterCol = c; renderRail(); renderAll(); });
-      var g9i = grp(r, "Edge banding");
-      seg(g9i, [{ l: "Exposed edges", v: "exposed" }, { l: "All 4 edges", v: "all" }], RATES.ebMode, function (v) { RATES.ebMode = v; renderRail(); renderAll(); });
+
       var g8i = grp(r, "Unit actions");
       var nb = el("btn", g8i, "button"); nb.textContent = "Add a designed unit"; nb.style.marginRight = "6px";
       nb.addEventListener("click", function () { S.units.push(newUnit("UNIT " + (S.units.length + 1))); S.active = S.units.length - 1; renderRail(); renderAll(); });
@@ -5068,22 +5102,6 @@
       return;
     }
     if (u.ctype === "kitchen") u.ctype = (u.elev && u.elev >= 1000) ? "kwall" : "kbase";
-    var gD = grp(r, "Door style");
-    var dg = el("tgrid", gD);
-    DSTYLES.forEach(function (s) {
-      var b = el("tbtn" + ((u.dstyle || "slab") === s.id ? " is-on" : ""), dg, "button");
-      b.textContent = s.label; b.setAttribute("aria-pressed", String((u.dstyle || "slab") === s.id));
-      b.addEventListener("click", function () { u.dstyle = s.id; renderRail(); renderAll(); });
-    });
-    if ((u.dstyle || "") === "steel") {
-      var pr = el("swgrid", gD); pr.style.marginTop = "8px";
-      PAINTS.forEach(function (p) {
-        var b = el("swb" + ((u.paint || "#5B6E7A") === p.id ? " is-on" : ""), pr, "button");
-        b.style.background = p.id; b.title = p.label; b.setAttribute("aria-label", p.label);
-        el(null, b, "i").textContent = p.label;
-        b.addEventListener("click", function () { u.paint = p.id; renderRail(); renderAll(); });
-      });
-    }
     if (u.ctype === "kitchen") {
       var gK = grp(r, "Kitchen layout");
       seg(gK, KLAYOUTS.map(function (k) { return { l: k.label, v: k.id }; }), u.klayout || "straight", function (v) { u.klayout = v; renderRail(); renderAll(); });
@@ -5194,22 +5212,7 @@
       var rTw = el("row", gE); rTw.style.marginTop = "8px";
       seg(rTw, [{ l: "No tower", v: "none" }, { l: "Left", v: "left" }, { l: "Right", v: "right" }, { l: "Both", v: "both" }], u.drTower || "none", function (v) { u.drTower = v; renderAll(); });
     }
-    if (!/^(kitchen|tv|crockery|dresser)$/.test(u.ctype || "")) {
-      var gS = grp(r, "Shape");
-      seg(gS, [{ l: "Straight", v: "straight" }, { l: "L-corner", v: "lcorner" }, { l: "Walk-in", v: "walkin" }], u.shape || "straight",
-        function (v) { u.shape = v; renderRail(); renderAll(); });
-      if (u.shape === "lcorner") {
-        var rS = el("row", gS); rS.style.marginTop = "8px";
-        fld(rS, "Run B width", u.W2 || 1200, function (v) { u.W2 = Math.max(400, num(v, u.W2)); softAll(true); });
-      }
 
-      var g2 = grp(r, "Shutters");
-      seg(g2, [{ l: "Hinged", v: "hinged" }, { l: "Sliding", v: "sliding" }], u.type, function (v) { u.type = v; renderRail(); renderAll(); });
-      var rD = el("row", g2); rD.style.marginTop = "8px";
-      if (u.type === "hinged") fld(rD, "Shutters", u.shutters, function (v) { u.shutters = Math.max(1, num(v, u.shutters) | 0); softAll(true); });
-      fld(rD, "Sections", u.sections, function (v) { u.sections = Math.max(1, num(v, u.sections) | 0); softAll(true); });
-
-    }
     var g2c = grp(r, "Handle design");
     var hg = el("hgrid", g2c);
     HANDLES.forEach(function (hd) {
@@ -5221,8 +5224,7 @@
       b.addEventListener("click", function () { u.handle = hd.id; renderRail(); renderAll(); });
     });
 
-    var gF = grp(r, "Handle finish");
-    seg(gF, HFINISH.map(function (f) { return { l: f.label, v: f.id }; }), u.hfinish || "chrome", function (v) { u.hfinish = v; renderRail(); renderAll(); });
+
 
     if (u.ctype !== "kitchen") {
       var g3 = grp(r, "Internals");
@@ -5237,13 +5239,7 @@
       [18, 6].forEach(function (t) { var o = el(null, bs, "option"); o.value = t; o.textContent = t + " mm"; if (u.back === t) o.selected = true; });
       bs.addEventListener("change", function () { u.back = parseInt(bs.value, 10); softAll(true); });
 
-      var g4 = grp(r, "Loft");
-      seg(g4, [{ l: "With loft", v: true }, { l: "No loft", v: false }], u.loft, function (v) { u.loft = v; renderRail(); renderAll(); });
-      if (u.loft) {
-        var rG = el("row", g4); rG.style.marginTop = "8px";
-        fld(rG, "Loft ht", u.loftH, function (v) { u.loftH = Math.max(150, num(v, u.loftH)); softAll(true); });
-        fld(rG, "Loft shutters", u.loftShutters, function (v) { u.loftShutters = Math.max(1, num(v, u.loftShutters) | 0); softAll(true); });
-      }
+
 
       var isBaseU = (u.ctype === "kbase" || (u.counter && u.counter !== "none") || (u.label && /base/i.test(u.label)) || (u.name && /base/i.test(u.name)) || (u.H <= 900 && (!u.elev || u.elev < 1000) && u.ctype !== "kwall"));
       if (isBaseU) {
@@ -5302,10 +5298,7 @@
       }
     }
 
-    var g9 = grp(r, "Edge banding");
-    seg(g9, [{ l: "Exposed edges", v: "exposed" }, { l: "All 4 edges", v: "all" }], RATES.ebMode, function (v) { RATES.ebMode = v; renderRail(); renderAll(); });
-    var rH = el("row", g9); rH.style.marginTop = "8px";
-    fld(rH, "Tape size", RATES.ebSize, function (v) { RATES.ebSize = v; softAll(); }, "text");
+
 
     var g7 = grp(r, "Add a laminate");
     var ac = el("addc", g7);

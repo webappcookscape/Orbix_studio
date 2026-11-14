@@ -569,6 +569,16 @@
     var nm = (opts.name || '').toLowerCase();
     var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name, opts.code || opts.catalogItemId, opts.costCategory);
     var isLoft = (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1);
+    var isGL = /(^|\b|_|-|\s)gl(\b|_|-|\s|\d+|$)/i.test(String(opts.name || '') + ' ' + String(opts.code || '') + ' ' + String(opts.id || ''));
+    var isOS = !!(
+      (cat && (cat === 'loft_os' || cat === 'kitchen_o_s' || cat.indexOf('o/s') !== -1 || cat.indexOf('os') !== -1)) ||
+      (opts.costCategory && opts.costCategory.indexOf('O/S') !== -1) ||
+      (opts.modelType && /o_s|os/i.test(opts.modelType)) ||
+      (nm && /\bo\/?s\b/i.test(nm)) ||
+      (opts.id && /\bo_?s\b/i.test(opts.id)) ||
+      (opts.code && /\bo_?s\b/i.test(opts.code)) ||
+      (opts.unitConfig && opts.unitConfig.isOnlyShutter)
+    );
     var defElev = isLoft ? 2100 : (isWallUnit ? 1500 : 0);
     var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
       parseFloat(opts.elevation) :
@@ -607,7 +617,7 @@
       dimensions: {
         W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
         H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : (cat.indexOf('base') !== -1 || cat.indexOf('fm') !== -1 || cat.indexOf('d2') !== -1 || cat.indexOf('d3') !== -1 || cat.indexOf('tv') !== -1 ? 850 : 2100)),
-        D: opts.dimensions ? opts.dimensions.D : (isWallUnit ? 350 : 600)
+        D: isOS ? 18 : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600))
       },
       shutterColors: initColors,
       shutterMaterials: initMats,
@@ -624,7 +634,18 @@
         }
       },
       // Links directly to Cupboard CAD parametric configuration
-      unitConfig: opts.unitConfig || null,
+      unitConfig: (function() {
+        var cfg = opts.unitConfig ? Object.assign({}, opts.unitConfig) : {};
+        if (isGL && (!cfg.dstyle || cfg.dstyle === 'slab')) {
+          cfg.dstyle = 'glass';
+          cfg.glassTint = cfg.glassTint || 'clear';
+        }
+        if (isOS) {
+          cfg.isOnlyShutter = true;
+          cfg.shutterThickness = 18;
+        }
+        return cfg;
+      })(),
       pricingOverrides: opts.pricingOverrides || null,
       isDecor: isDecor,
       excludeFromPricing: isDecor,
@@ -4020,7 +4041,7 @@
         "unitConfig": {
           "shutters": 2,
           "doorType": "hinged",
-          "dstyle": "slab",
+          "dstyle": "glass",
           "glassTint": "none",
           "profileColor": "none",
           "sections": 0,
@@ -4116,7 +4137,7 @@
         "unitConfig": {
           "shutters": 2,
           "doorType": "hinged",
-          "dstyle": "slab",
+          "dstyle": "glass",
           "glassTint": "none",
           "profileColor": "none",
           "sections": 0,
@@ -4212,7 +4233,7 @@
         "unitConfig": {
           "shutters": 2,
           "doorType": "hinged",
-          "dstyle": "slab",
+          "dstyle": "glass",
           "glassTint": "none",
           "profileColor": "none",
           "sections": 0,
@@ -4293,7 +4314,7 @@
         "dimensions": {
           "W": 450,
           "H": 750,
-          "D": 600
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -5227,7 +5248,7 @@
         "unitConfig": {
           "shutters": 1,
           "doorType": "hinged",
-          "dstyle": "slab",
+          "dstyle": "glass",
           "glassTint": "none",
           "profileColor": "none",
           "sections": 0,
@@ -5404,7 +5425,7 @@
         "dimensions": {
           "W": 750,
           "H": 750,
-          "D": 600
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -5650,7 +5671,7 @@
         "dimensions": {
           "W": 1200,
           "H": 750,
-          "D": 550
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -5700,7 +5721,7 @@
         "dimensions": {
           "W": 600,
           "H": 750,
-          "D": 550
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -5750,7 +5771,7 @@
         "dimensions": {
           "W": 600,
           "H": 600,
-          "D": 320
+          "D": 18
         },
         "materials": {
           "shutter": {
@@ -5800,7 +5821,7 @@
         "dimensions": {
           "W": 300,
           "H": 600,
-          "D": 320
+          "D": 18
         },
         "materials": {
           "shutter": {
