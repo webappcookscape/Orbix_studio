@@ -1006,6 +1006,190 @@ tr.rv-guess td{background:#FFF7D6}
 /* present mode */
 #view-design.present .rail{display:none}
 #view-design.present .stagewrap{flex:1 1 100%}
+#view-design.present .stagebar,
+#view-design.present #studioProjectDetailsBadge {
+  display: none !important;
+}
+#view-design.present #stage {
+  height: 100vh !important;
+  width: 100vw !important;
+}
+
+/* ══════════ PHOTOREALISTIC PRESENTATION ENGINE & CLIENT HUD ══════════ */
+.client-presentation-hud {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: calc(100% - 36px);
+  max-width: 1160px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  padding: 12px 18px;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: cpFadeDown 0.28s ease-out;
+}
+
+@keyframes cpFadeDown {
+  from { opacity: 0; transform: translate(-50%, -14px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.cp-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  padding-bottom: 8px;
+}
+
+.cp-hud-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cp-badge {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.cp-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+  letter-spacing: 0.2px;
+}
+
+.cp-hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cp-hud-btn {
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cp-hud-btn:hover {
+  background: rgba(255, 255, 255, 0.20);
+  color: #fff;
+}
+
+.cp-hud-close {
+  background: rgba(239, 68, 68, 0.85);
+  border-color: rgba(239, 68, 68, 1);
+}
+
+.cp-hud-close:hover {
+  background: #dc2626;
+}
+
+.cp-hud-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cp-pill-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.32);
+  padding: 3px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cp-group-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+  padding-left: 4px;
+}
+
+.cp-pill {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #cbd5e1;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cp-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.cp-pill.is-on {
+  background: #2563eb;
+  color: #fff;
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+
+.cp-compare-group .cp-pill.is-on {
+  background: #059669;
+  border-color: #10b981;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4);
+}
+
+.cp-render-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: 1px solid #f59e0b;
+  color: #1e1b4b;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+  transition: all 0.18s ease;
+}
+
+.cp-render-btn:hover {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45);
+}
+
+.render-mode-group .minibtn.is-on,
+.tod-controls-group .minibtn.is-on {
+  background: #2563eb !important;
+  color: #fff !important;
+  border-color: #1d4ed8 !important;
+}
 @media print{ #view-gallery{display:none!important} }
 /* chips (era filter and any other chip rows) */
 .chiprow{display:flex;flex-wrap:wrap;gap:7px}
@@ -3659,6 +3843,51 @@ body.role-employee #adminCreateEmpBox,
         <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
           <div id="world"></div>
         </div>
+
+        <!-- Floating Client Presentation HUD Overlay -->
+        <div id="clientPresentationHud" class="client-presentation-hud" style="display:none;">
+          <div class="cp-hud-header">
+            <div class="cp-hud-brand">
+              <span class="cp-badge">CLIENT PRESENTATION</span>
+              <span class="cp-title" id="cpHudTitle">Living &amp; Modular Kitchen Studio</span>
+            </div>
+            <div class="cp-hud-actions">
+              <button type="button" class="cp-hud-btn" id="cpFsToggleBtn" title="Toggle Fullscreen">⛶ Fullscreen</button>
+              <button type="button" class="cp-hud-btn cp-hud-close" id="cpExitBtn" title="Exit Presentation">✕ Exit</button>
+            </div>
+          </div>
+          
+          <div class="cp-hud-toolbar">
+            <!-- Camera Angles -->
+            <div class="cp-pill-group">
+              <span class="cp-group-label">Camera</span>
+              <button type="button" class="cp-pill is-on" data-cam="eye_level" id="cpCamEyeBtn">👁️ Eye-Level 1500</button>
+              <button type="button" class="cp-pill" data-cam="wide_angle" id="cpCamWideBtn">📐 Wide 75°</button>
+              <button type="button" class="cp-pill" data-cam="counter_focus" id="cpCamCounterBtn">🍳 Counter Focus</button>
+              <button type="button" class="cp-pill" data-cam="iso_45" id="cpCamIsoBtn">🏛️ 45° Iso</button>
+            </div>
+
+            <!-- Time of Day / Atmosphere -->
+            <div class="cp-pill-group">
+              <span class="cp-group-label">Atmosphere</span>
+              <button type="button" class="cp-pill is-on" data-tod="day" id="cpTodDayBtn">☀️ Day</button>
+              <button type="button" class="cp-pill" data-tod="evening" id="cpTodEveBtn">🌅 Evening</button>
+              <button type="button" class="cp-pill" data-tod="night" id="cpTodNightBtn">🌙 Night</button>
+            </div>
+
+            <!-- Material Comparison Option A vs Option B -->
+            <div class="cp-pill-group cp-compare-group">
+              <span class="cp-group-label">Finishes</span>
+              <button type="button" class="cp-pill is-on" data-opt="A" id="cpOptABtn">Option A (Current)</button>
+              <button type="button" class="cp-pill" data-opt="B" id="cpOptBBtn">Option B (Luxury Compare)</button>
+            </div>
+
+            <!-- 4K Ultra Render Export -->
+            <div class="cp-pill-group">
+              <button type="button" class="cp-render-btn" id="cpExport4KBtn">📸 Download 4K Ultra Render</button>
+            </div>
+          </div>
+        </div>
         <div class="stagebar">
           <!-- Row 1: Camera Orbit/Pan, Perspective Views, and 8K Render Menu -->
           <div class="stagebar-row camera-row">
@@ -3692,6 +3921,20 @@ body.role-employee #adminCreateEmpBox,
                   <input type="range" id="spotlightSlider" min="0" max="3" step="0.1" value="0" style="width:60px;cursor:pointer;vertical-align:middle;">
                   <span id="spotlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">0.0</span>
                 </span>
+              </div>
+
+              <!-- 3 Quality Modes: Design, Realistic, Client Presentation -->
+              <div class="render-mode-group" id="renderModeGroup" style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.92);padding:2px 4px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;">
+                <button type="button" class="minibtn" id="modeDesignBtn" title="Fast Design Drafting Mode (Basic Materials, High FPS)">⚡ Design</button>
+                <button type="button" class="minibtn is-on" id="modeRealisticBtn" title="PBR Realistic Preview (Physical Materials, Soft Shadows)">✨ Realistic</button>
+                <button type="button" class="minibtn" id="modeUltraBtn" title="Client Presentation Ultra Mode">🌟 Ultra</button>
+              </div>
+
+              <!-- Time of Day Presets -->
+              <div class="tod-controls-group" id="todControlsGroup" style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.92);padding:2px 4px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;">
+                <button type="button" class="minibtn is-on" id="todDayBtn" title="Daytime Sunlight (5400K)">☀️ Day</button>
+                <button type="button" class="minibtn" id="todEveBtn" title="Golden Hour Evening (3200K)">🌅 Eve</button>
+                <button type="button" class="minibtn" id="todNightBtn" title="Cozy Night Illumination (2700K)">🌙 Night</button>
               </div>
 
               <div class="render-dropdown-container" id="photoRenderContainer">
@@ -22693,13 +22936,40 @@ body.role-employee #adminCreateEmpBox,
       if (lamItem && lamItem.kind === 'gloss') isGloss = true;
     }
 
+    // Fast Drafting Mode (Mode 1: Design Mode)
+    var isDesignMode = (typeof window !== 'undefined' && window.orbixRenderMode === 'design');
+    if (isDesignMode) {
+      return new THREE.MeshStandardMaterial({
+        color: threeCol,
+        roughness: isGloss ? 0.25 : 0.70,
+        metalness: 0.0
+      });
+    }
+
+    // PBR Photorealistic Physical Material (Mode 2: Realistic & Mode 3: Client Presentation)
+    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+
     var matOpts = {
-      color: threeCol,
-      roughness: isGloss ? 0.15 : (isWood ? 0.45 : 0.65),
-      metalness: isGloss ? 0.04 : 0.02
+      color: threeCol
     };
 
-    if (isWood) {
+    if (isGloss) {
+      // Luxury High Gloss Acrylic / PU Finish
+      matOpts.roughness = 0.05;
+      matOpts.metalness = 0.04;
+      matOpts.clearcoat = 1.0;
+      matOpts.clearcoatRoughness = 0.04;
+      matOpts.reflectivity = 0.88;
+      matOpts.envMapIntensity = 1.25;
+    } else if (isWood) {
+      // Natural Timber Grain with Micro Bump Depth
+      matOpts.roughness = 0.48;
+      matOpts.metalness = 0.02;
+      matOpts.clearcoat = 0.12;
+      matOpts.clearcoatRoughness = 0.28;
+      matOpts.reflectivity = 0.45;
+      matOpts.envMapIntensity = 0.90;
+
       var woodTex = ArchitecturalRenderer.createWoodLaminateTexture(threeCol, str);
       var woodBump = ArchitecturalRenderer.createWoodGrainBumpTexture();
       if (woodTex) matOpts.map = woodTex;
@@ -22707,27 +22977,137 @@ body.role-employee #adminCreateEmpBox,
         matOpts.bumpMap = woodBump;
         matOpts.bumpScale = 0.035;
       }
+    } else {
+      // Velvety Architectural Matte Laminate (MDF 7707, MDF 6601, Suede/SF)
+      matOpts.roughness = 0.82;
+      matOpts.metalness = 0.0;
+      matOpts.clearcoat = 0.0;
+      matOpts.specularIntensity = 0.22;
+      matOpts.envMapIntensity = 0.55;
     }
 
-    return new THREE.MeshStandardMaterial(matOpts);
+    return new MatClass(matOpts);
   };
 
   ArchitecturalRenderer.getHandleMaterial = function (hFinish) {
     var fin = String(hFinish || 'black').toLowerCase();
+    var MatClass = (typeof THREE !== 'undefined' && typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+
     if (fin.indexOf('chrome') !== -1) {
-      return new THREE.MeshStandardMaterial({ color: 0xE2E8F0, roughness: 0.1, metalness: 0.95 });
+      return new MatClass({
+        color: 0xE2E8F0,
+        roughness: 0.08,
+        metalness: 0.96,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.04,
+        reflectivity: 0.95,
+        envMapIntensity: 1.5
+      });
     }
     if (fin.indexOf('nickel') !== -1 || fin.indexOf('silver') !== -1 || fin.indexOf('steel') !== -1 || fin.indexOf('stainless') !== -1 || fin === 'ss') {
-      return new THREE.MeshStandardMaterial({ color: 0xCBD5E1, roughness: 0.35, metalness: 0.85 });
+      return new MatClass({
+        color: 0xCBD5E1,
+        roughness: 0.32,
+        metalness: 0.88,
+        clearcoat: 0.35,
+        clearcoatRoughness: 0.22,
+        reflectivity: 0.80,
+        envMapIntensity: 1.2
+      });
     }
     if (fin.indexOf('brass') !== -1 || fin.indexOf('gold') !== -1 || fin.indexOf('champagne') !== -1) {
-      return new THREE.MeshStandardMaterial({ color: 0xD4AF37, roughness: 0.25, metalness: 0.9 });
+      return new MatClass({
+        color: 0xD4AF37,
+        roughness: 0.22,
+        metalness: 0.92,
+        clearcoat: 0.65,
+        clearcoatRoughness: 0.15,
+        reflectivity: 0.90,
+        envMapIntensity: 1.3
+      });
     }
     if (fin.indexOf('rose') !== -1 || fin.indexOf('copper') !== -1) {
-      return new THREE.MeshStandardMaterial({ color: 0xB76E79, roughness: 0.25, metalness: 0.9 });
+      return new MatClass({
+        color: 0xB76E79,
+        roughness: 0.22,
+        metalness: 0.92,
+        clearcoat: 0.65,
+        clearcoatRoughness: 0.15,
+        reflectivity: 0.90,
+        envMapIntensity: 1.3
+      });
     }
-    // Default: Matte Black
-    return new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.4, metalness: 0.7 });
+    // Default: Architectural Matte Black Powder Coat
+    return new MatClass({
+      color: 0x1A1A1A,
+      roughness: 0.65,
+      metalness: 0.35,
+      clearcoat: 0.05,
+      reflectivity: 0.30,
+      envMapIntensity: 0.45
+    });
+  };
+
+  ArchitecturalRenderer.applyMaterialComparison = function (targetGroup, option, comparisonPreset) {
+    if (!targetGroup) return;
+    option = (option || 'A').toUpperCase();
+
+    if (option === 'A') {
+      // Revert to original designer-assigned materials
+      targetGroup.traverse(function (mesh) {
+        if (mesh.isMesh && mesh.userData && mesh.userData._origMaterial) {
+          mesh.material = mesh.userData._origMaterial;
+          if (mesh.material && mesh.material.needsUpdate !== undefined) mesh.material.needsUpdate = true;
+        }
+      });
+      return;
+    }
+
+    // Option B: Luxury Contrast Presentation Scheme
+    var optBShutter = ArchitecturalRenderer.resolveLaminateMaterial(
+      (comparisonPreset && comparisonPreset.shutter) || 'High Gloss Ivory',
+      0xF6F2E9,
+      true
+    );
+    var optBCarcass = ArchitecturalRenderer.resolveLaminateMaterial(
+      (comparisonPreset && comparisonPreset.carcass) || 'American Walnut',
+      0x463325,
+      false
+    );
+    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+    var optBCounter = new MatClass({
+      color: 0xFAFAF7, // Calacatta Polished Quartz
+      roughness: 0.10,
+      metalness: 0.04,
+      clearcoat: 0.95,
+      clearcoatRoughness: 0.06,
+      reflectivity: 0.85,
+      envMapIntensity: 1.35
+    });
+
+    targetGroup.traverse(function (mesh) {
+      if (!mesh.isMesh) return;
+      if (!mesh.userData) mesh.userData = {};
+      if (!mesh.userData._origMaterial) {
+        mesh.userData._origMaterial = mesh.material;
+      }
+
+      var name = (mesh.name || '').toLowerCase();
+      var isCounter = name.indexOf('counter') !== -1 || (mesh.parent && mesh.parent.name && mesh.parent.name.toLowerCase().indexOf('counter') !== -1);
+      var isShutter = mesh.userData.isShutter || name.indexOf('shutter') !== -1 || name.indexOf('door') !== -1 || name.indexOf('drawer') !== -1;
+      var isGlassOrMirror = mesh.material && (mesh.material.transparent || mesh.material.opacity < 0.9 || mesh.material.transmission > 0.5 || name.indexOf('glass') !== -1 || name.indexOf('mirror') !== -1);
+
+      if (isGlassOrMirror) return; // preserve transparent glass & mirror
+
+      if (isCounter) {
+        mesh.material = optBCounter;
+      } else if (isShutter) {
+        mesh.material = optBShutter;
+      } else if (mesh.userData.isFurniturePart || name.indexOf('carcass') !== -1 || name.indexOf('panel') !== -1 || name.indexOf('shelf') !== -1) {
+        mesh.material = optBCarcass;
+      }
+      if (mesh.material && mesh.material.needsUpdate !== undefined) mesh.material.needsUpdate = true;
+    });
   };
 
   ArchitecturalRenderer.createHandleMesh = function (handleType, handleMat, isVertical, maxLen) {
@@ -22886,12 +23266,13 @@ body.role-employee #adminCreateEmpBox,
         new THREE.MeshPhysicalMaterial({
           color: glassTintHex,
           transparent: true,
-          opacity: (gTint.indexOf('frost') !== -1) ? 0.65 : 0.35,
-          roughness: (gTint.indexOf('frost') !== -1) ? 0.45 : 0.05,
-          metalness: 0.1,
-          transmission: 0.85,
+          opacity: (gTint.indexOf('frost') !== -1) ? 0.65 : 0.22,
+          roughness: (gTint.indexOf('frost') !== -1) ? 0.35 : 0.02,
+          metalness: 0.05,
+          transmission: (gTint.indexOf('frost') !== -1) ? 0.72 : 0.94,
           ior: 1.52,
-          reflectivity: 0.5
+          reflectivity: 0.85,
+          envMapIntensity: 1.4
         }) :
         new THREE.MeshStandardMaterial({
           color: glassTintHex,
@@ -22907,11 +23288,21 @@ body.role-employee #adminCreateEmpBox,
       group.add(glassPane);
     } else if (isMirror) {
       // Mirror Front: Ultra-high reflectivity mirror with thin border
-      var mirrorMat = new THREE.MeshStandardMaterial({
-        color: 0xF1F5F9,
-        metalness: 0.98,
-        roughness: 0.02
-      });
+      var mirrorMat = (typeof THREE.MeshPhysicalMaterial === 'function') ?
+        new THREE.MeshPhysicalMaterial({
+          color: 0xF8FAFC,
+          metalness: 0.98,
+          roughness: 0.02,
+          clearcoat: 1.0,
+          clearcoatRoughness: 0.02,
+          reflectivity: 0.98,
+          envMapIntensity: 1.6
+        }) :
+        new THREE.MeshStandardMaterial({
+          color: 0xF1F5F9,
+          metalness: 0.98,
+          roughness: 0.02
+        });
       var mMesh = new THREE.Mesh(new THREE.BoxGeometry(shW, shH, 18), mirrorMat);
       mMesh.castShadow = true; mMesh.receiveShadow = true;
       group.add(mMesh);
@@ -24157,7 +24548,16 @@ body.role-employee #adminCreateEmpBox,
         var slabW = W + 20;
         var slabD = baseD + 25;
         var slabGeo = new THREE.BoxGeometry(slabW, actualCounterH, slabD);
-        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.22, metalness: 0.08, envMapIntensity: 0.55 });
+        var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+        var sMat = counterMat || new MatClass({
+          color: 0x1A1A1D,
+          roughness: 0.14,
+          metalness: 0.06,
+          clearcoat: 0.85,
+          clearcoatRoughness: 0.08,
+          reflectivity: 0.75,
+          envMapIntensity: 1.15
+        });
         var slabMesh = new THREE.Mesh(slabGeo, sMat);
         slabMesh.position.set(0, H - actualCounterH / 2, 2.5);
         slabMesh.castShadow = true; slabMesh.receiveShadow = true;
@@ -24549,11 +24949,15 @@ body.role-employee #adminCreateEmpBox,
     else if (counterColorName !== 'none' && counterColorName !== 'black') {
       counterHex = ArchitecturalRenderer.resolveFinishColor(counterColorName, 0x1A1A1D);
     }
-    var counterMat = new THREE.MeshStandardMaterial({
+    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+    var counterMat = new MatClass({
       color: counterHex,
-      roughness: 0.22,
-      metalness: 0.08,
-      envMapIntensity: 0.55
+      roughness: 0.14,
+      metalness: 0.06,
+      clearcoat: 0.85,
+      clearcoatRoughness: 0.08,
+      reflectivity: 0.75,
+      envMapIntensity: 1.15
     });
 
     var isTvOrVanity = (cat === 'tv_unit' || cat === 'vanity' || (name && (name.indexOf('tv') !== -1 || name.indexOf('vanity') !== -1)));
@@ -26147,6 +26551,201 @@ body.role-employee #adminCreateEmpBox,
           if (typeof self.openAIRenderModal === 'function') {
             self.openAIRenderModal();
           }
+        });
+      }
+
+      // ══════════ PHOTOREALISTIC RENDERING ENGINE & CLIENT PRESENTATION ══════════
+      var modeDesignBtn = document.getElementById('modeDesignBtn');
+      var modeRealisticBtn = document.getElementById('modeRealisticBtn');
+      var modeUltraBtn = document.getElementById('modeUltraBtn');
+      var todDayBtn = document.getElementById('todDayBtn');
+      var todEveBtn = document.getElementById('todEveBtn');
+      var todNightBtn = document.getElementById('todNightBtn');
+      var cpHud = document.getElementById('clientPresentationHud');
+
+      function syncRenderModeUI(mode) {
+        [modeDesignBtn, modeRealisticBtn, modeUltraBtn].forEach(function (btn) {
+          if (btn) btn.classList.remove('is-on');
+        });
+        if (mode === 'design' && modeDesignBtn) modeDesignBtn.classList.add('is-on');
+        else if (mode === 'presentation' && modeUltraBtn) modeUltraBtn.classList.add('is-on');
+        else if (modeRealisticBtn) modeRealisticBtn.classList.add('is-on');
+      }
+
+      function setRenderMode(mode) {
+        var gl = window.GL || (window.__cc && window.__cc.gl);
+        if (gl && gl.setRenderMode) gl.setRenderMode(mode);
+        else if (typeof window.setRenderMode === 'function') window.setRenderMode(mode);
+        syncRenderModeUI(mode);
+        if (mode === 'presentation') {
+          openClientPresentation();
+        }
+      }
+
+      if (modeDesignBtn) {
+        modeDesignBtn.addEventListener('click', function () {
+          setRenderMode('design');
+          if (typeof window.toast === 'function') window.toast('⚡ Switched to Fast Design Mode');
+        });
+      }
+      if (modeRealisticBtn) {
+        modeRealisticBtn.addEventListener('click', function () {
+          setRenderMode('realistic');
+          if (typeof window.toast === 'function') window.toast('✨ Switched to PBR Realistic Mode');
+        });
+      }
+      if (modeUltraBtn) {
+        modeUltraBtn.addEventListener('click', function () {
+          setRenderMode('presentation');
+        });
+      }
+
+      function syncTimeOfDayUI(tod) {
+        [todDayBtn, todEveBtn, todNightBtn].forEach(function (btn) {
+          if (btn) btn.classList.remove('is-on');
+        });
+        var cpDay = document.getElementById('cpTodDayBtn');
+        var cpEve = document.getElementById('cpTodEveBtn');
+        var cpNight = document.getElementById('cpTodNightBtn');
+        [cpDay, cpEve, cpNight].forEach(function (btn) {
+          if (btn) btn.classList.remove('is-on');
+        });
+
+        if (tod === 'evening') {
+          if (todEveBtn) todEveBtn.classList.add('is-on');
+          if (cpEve) cpEve.classList.add('is-on');
+        } else if (tod === 'night') {
+          if (todNightBtn) todNightBtn.classList.add('is-on');
+          if (cpNight) cpNight.classList.add('is-on');
+        } else {
+          if (todDayBtn) todDayBtn.classList.add('is-on');
+          if (cpDay) cpDay.classList.add('is-on');
+        }
+      }
+
+      function setTimeOfDay(tod) {
+        var gl = window.GL || (window.__cc && window.__cc.gl);
+        if (gl && gl.setTimeOfDay) gl.setTimeOfDay(tod);
+        else if (typeof window.setTimeOfDay === 'function') window.setTimeOfDay(tod);
+        syncTimeOfDayUI(tod);
+      }
+
+      if (todDayBtn) todDayBtn.addEventListener('click', function () { setTimeOfDay('day'); });
+      if (todEveBtn) todEveBtn.addEventListener('click', function () { setTimeOfDay('evening'); });
+      if (todNightBtn) todNightBtn.addEventListener('click', function () { setTimeOfDay('night'); });
+
+      // Client Presentation Open / Close
+      function openClientPresentation() {
+        var viewDesign = document.getElementById('view-design');
+        if (viewDesign) viewDesign.classList.add('present');
+        if (cpHud) cpHud.style.display = 'flex';
+        var cpHudTitle = document.getElementById('cpHudTitle');
+        if (cpHudTitle && self.project && self.project.meta) {
+          cpHudTitle.textContent = (self.project.meta.title || 'Modular Cupboard Design') + (self.project.meta.clientName ? ' — ' + self.project.meta.clientName : '');
+        }
+        var gl = window.GL || (window.__cc && window.__cc.gl);
+        if (gl && gl.setRenderMode) gl.setRenderMode('presentation');
+        if (gl && gl.apply) gl.apply(true);
+      }
+
+      function closeClientPresentation() {
+        var viewDesign = document.getElementById('view-design');
+        if (viewDesign) viewDesign.classList.remove('present');
+        if (cpHud) cpHud.style.display = 'none';
+        var pBtn = document.getElementById('presentBtn');
+        if (pBtn) {
+          pBtn.textContent = '⛶ Present';
+          pBtn.setAttribute('aria-pressed', 'false');
+        }
+        syncRenderModeUI('realistic');
+        var gl = window.GL || (window.__cc && window.__cc.gl);
+        if (gl && gl.setRenderMode) gl.setRenderMode('realistic');
+        if (gl && gl.apply) gl.apply(true);
+      }
+
+      var presentBtn = document.getElementById('presentBtn');
+      if (presentBtn) {
+        presentBtn.addEventListener('click', function () {
+          var viewDesign = document.getElementById('view-design');
+          var isPresenting = viewDesign && viewDesign.classList.contains('present');
+          if (isPresenting) {
+            openClientPresentation();
+          } else {
+            closeClientPresentation();
+          }
+        });
+      }
+
+      var cpExitBtn = document.getElementById('cpExitBtn');
+      if (cpExitBtn) {
+        cpExitBtn.addEventListener('click', function () {
+          closeClientPresentation();
+        });
+      }
+
+      var cpFsToggleBtn = document.getElementById('cpFsToggleBtn');
+      if (cpFsToggleBtn) {
+        cpFsToggleBtn.addEventListener('click', function () {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(function () {});
+            cpFsToggleBtn.textContent = '✕ Windowed';
+          } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+            cpFsToggleBtn.textContent = '⛶ Fullscreen';
+          }
+        });
+      }
+
+      // HUD Camera Presets
+      var cpCamBtns = document.querySelectorAll('#clientPresentationHud [data-cam]');
+      cpCamBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          cpCamBtns.forEach(function (b) { b.classList.remove('is-on'); });
+          btn.classList.add('is-on');
+          var camPreset = btn.getAttribute('data-cam');
+          var gl = window.GL || (window.__cc && window.__cc.gl);
+          if (gl && gl.setCameraPreset) gl.setCameraPreset(camPreset);
+          else if (typeof window.setCameraPreset === 'function') window.setCameraPreset(camPreset);
+        });
+      });
+
+      // HUD Atmosphere (Time of Day)
+      var cpHudTodBtns = document.querySelectorAll('#clientPresentationHud [data-tod]');
+      cpHudTodBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var tod = btn.getAttribute('data-tod');
+          setTimeOfDay(tod);
+        });
+      });
+
+      // HUD Material Comparison (Option A vs Option B)
+      var cpOptABtn = document.getElementById('cpOptABtn');
+      var cpOptBBtn = document.getElementById('cpOptBBtn');
+      if (cpOptABtn && cpOptBBtn) {
+        cpOptABtn.addEventListener('click', function () {
+          cpOptABtn.classList.add('is-on');
+          cpOptBBtn.classList.remove('is-on');
+          var gl = window.GL || (window.__cc && window.__cc.gl);
+          if (gl && gl.applyMaterialComparison) gl.applyMaterialComparison('A');
+          else if (typeof window.applyMaterialComparison === 'function') window.applyMaterialComparison('A');
+          if (typeof window.toast === 'function') window.toast('Switched to Finish Option A (Current)');
+        });
+
+        cpOptBBtn.addEventListener('click', function () {
+          cpOptBBtn.classList.add('is-on');
+          cpOptABtn.classList.remove('is-on');
+          var gl = window.GL || (window.__cc && window.__cc.gl);
+          if (gl && gl.applyMaterialComparison) gl.applyMaterialComparison('B');
+          else if (typeof window.applyMaterialComparison === 'function') window.applyMaterialComparison('B');
+          if (typeof window.toast === 'function') window.toast('Switched to Finish Option B (Luxury Compare)');
+        });
+      }
+
+      // 4K Ultra Render Export from HUD
+      var cpExport4KBtn = document.getElementById('cpExport4KBtn');
+      if (cpExport4KBtn) {
+        cpExport4KBtn.addEventListener('click', function () {
+          self.capturePhotorealisticRender({ mode: 'custom', targetWidth: 3840, targetHeight: 2160, label: '4k_ultra' });
         });
       }
 
@@ -36356,12 +36955,166 @@ body.role-employee #adminCreateEmpBox,
       }
       render();
     },
+    setTimeOfDay: function (mode) {
+      mode = (mode || 'day').toLowerCase();
+      window.current3DTimeOfDay = mode;
+      if (!scene) return;
+
+      var bgCol = 0x82C3EC; // Day sky
+      var sunCol = 0xFFFBF2; // Warm 5400K sunlight
+      var sunPos = new THREE.Vector3(-3800, 7200, 5600);
+      var sunIntensity = 0.85;
+      var spotIntensity = 0.45;
+      var hemiSky = 0x82C3EC;
+      var hemiGround = 0x4E8A42;
+
+      if (mode === 'evening') {
+        bgCol = 0xDE8B59; // Golden sunset twilight
+        sunCol = 0xFFA756; // 3200K Golden hour sun
+        sunPos.set(-5800, 2400, 4800); // Low sun angle
+        sunIntensity = 0.95;
+        spotIntensity = 1.15; // Indoor lights on
+        hemiSky = 0xDE8B59;
+        hemiGround = 0x3D2C1E;
+      } else if (mode === 'night') {
+        bgCol = 0x0B1220; // Deep midnight architectural blue
+        sunCol = 0x4A6FA5; // Cool exterior moonlight
+        sunPos.set(-2000, 4500, 2000);
+        sunIntensity = 0.22;
+        spotIntensity = 1.45; // Brilliant warm interior spotlights & undercabinet LED
+        hemiSky = 0x131D33;
+        hemiGround = 0x070B14;
+      }
+
+      scene.background = new THREE.Color(bgCol);
+
+      if (keyL) {
+        keyL.color.setHex(sunCol);
+        keyL.position.copy(sunPos);
+        keyL.intensity = sunIntensity;
+        window.sunlightIntensity = sunIntensity;
+      }
+
+      scene.traverse(function (o) {
+        if (o.isHemisphereLight) {
+          o.color.setHex(hemiSky);
+          o.groundColor.setHex(hemiGround);
+        }
+        if (o.isDirectionalLight && o !== keyL) {
+          if (mode === 'night') {
+            o.intensity = 0.1;
+          } else if (mode === 'evening') {
+            o.color.setHex(0xFFD4A3);
+            o.intensity = 0.45;
+          } else {
+            o.color.setHex(0xEDF4FC);
+            o.intensity = 0.38;
+          }
+        }
+      });
+
+      window.spotlightIntensity = spotIntensity;
+      scene.traverse(function (o) {
+        if (o.isSpotLight || (o.isLight && (o.userData.isSpotlight || o.userData.isDownlight || (o.name && o.name.indexOf('Spotlight') !== -1) || (o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1)))) {
+          o.intensity = spotIntensity * 0.9;
+        } else if (o.isPointLight && (o.name === 'roomFillLight' || (o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1))) {
+          o.intensity = spotIntensity * 0.45;
+        }
+      });
+
+      var sunSlider = document.getElementById('sunlightSlider');
+      var sunLabel = document.getElementById('sunlightValLabel');
+      if (sunSlider) sunSlider.value = sunIntensity;
+      if (sunLabel) sunLabel.textContent = Number(sunIntensity).toFixed(1);
+
+      var spotSlider = document.getElementById('spotlightSlider');
+      var spotLabel = document.getElementById('spotlightValLabel');
+      if (spotSlider) spotSlider.value = spotIntensity;
+      if (spotLabel) spotLabel.textContent = Number(spotIntensity).toFixed(1);
+
+      render();
+    },
+    setRenderMode: function (mode) {
+      mode = (mode || 'realistic').toLowerCase();
+      window.orbixRenderMode = mode;
+      if (!renderer) return;
+
+      if (mode === 'design') {
+        renderer.shadowMap.enabled = false;
+        renderer.toneMappingExposure = 1.0;
+      } else if (mode === 'presentation') {
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.12;
+      } else {
+        // 'realistic'
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.08;
+      }
+
+      if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
+        window.OrbixUI.render3DHome(true);
+      }
+      render();
+    },
+    setCameraPreset: function (preset) {
+      preset = (preset || 'eye_level').toLowerCase();
+      if (!camera) return;
+
+      if (preset === 'eye_level') {
+        cam.pitch = 0;
+        cam.zoom = 0.15;
+        if (target) target.y = 1500;
+        camera.fov = 45;
+      } else if (preset === 'wide_angle') {
+        cam.pitch = -4;
+        cam.zoom = -0.3;
+        camera.fov = 75;
+      } else if (preset === 'counter_focus') {
+        cam.pitch = -18;
+        cam.yaw = -35;
+        cam.zoom = 0.45;
+        if (target) target.y = 850;
+        camera.fov = 40;
+      } else if (preset === 'iso_45') {
+        cam.pitch = -28;
+        cam.yaw = -45;
+        cam.zoom = 0.0;
+        if (target) target.y = 1200;
+        camera.fov = 35;
+      }
+      camera.updateProjectionMatrix();
+      apply(true);
+    },
+    applyMaterialComparison: function (option, preset) {
+      var homeObj = scene ? (scene.getObjectByName('OrbixHome3D') || root) : root;
+      if (window.ArchitecturalRenderer && typeof window.ArchitecturalRenderer.applyMaterialComparison === 'function') {
+        window.ArchitecturalRenderer.applyMaterialComparison(homeObj, option, preset);
+      }
+      render();
+    },
+    getCam: function () { return cam; },
+    setCam: function (c) {
+      if (c) {
+        if (c.yaw !== undefined) cam.yaw = c.yaw;
+        if (c.pitch !== undefined) cam.pitch = c.pitch;
+        if (c.zoom !== undefined) cam.zoom = c.zoom;
+      }
+      apply(true);
+    },
     makeGrassGroundMat: makeGrassGroundMat, makeNeutralGroundMat: makeGrassGroundMat, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0)); if (floor) floor.material = hasArchHome ? makeGrassGroundMat() : makeFloorMat(type); render(); } };
   })();
 
   window.GL = GL;
   window.setSunlightIntensity = GL.setSunlightIntensity;
   window.setSpotlightIntensity = GL.setSpotlightIntensity;
+  window.setTimeOfDay = GL.setTimeOfDay;
+  window.setRenderMode = GL.setRenderMode;
+  window.setCameraPreset = GL.setCameraPreset;
+  window.applyMaterialComparison = GL.applyMaterialComparison;
 
   /* ═══════════════════════════════════════════════════════════════
      DESIGN CATALOGUE — styles × formats, per cupboard type.

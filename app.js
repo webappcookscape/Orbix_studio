@@ -3849,12 +3849,166 @@
       }
       render();
     },
+    setTimeOfDay: function (mode) {
+      mode = (mode || 'day').toLowerCase();
+      window.current3DTimeOfDay = mode;
+      if (!scene) return;
+
+      var bgCol = 0x82C3EC; // Day sky
+      var sunCol = 0xFFFBF2; // Warm 5400K sunlight
+      var sunPos = new THREE.Vector3(-3800, 7200, 5600);
+      var sunIntensity = 0.85;
+      var spotIntensity = 0.45;
+      var hemiSky = 0x82C3EC;
+      var hemiGround = 0x4E8A42;
+
+      if (mode === 'evening') {
+        bgCol = 0xDE8B59; // Golden sunset twilight
+        sunCol = 0xFFA756; // 3200K Golden hour sun
+        sunPos.set(-5800, 2400, 4800); // Low sun angle
+        sunIntensity = 0.95;
+        spotIntensity = 1.15; // Indoor lights on
+        hemiSky = 0xDE8B59;
+        hemiGround = 0x3D2C1E;
+      } else if (mode === 'night') {
+        bgCol = 0x0B1220; // Deep midnight architectural blue
+        sunCol = 0x4A6FA5; // Cool exterior moonlight
+        sunPos.set(-2000, 4500, 2000);
+        sunIntensity = 0.22;
+        spotIntensity = 1.45; // Brilliant warm interior spotlights & undercabinet LED
+        hemiSky = 0x131D33;
+        hemiGround = 0x070B14;
+      }
+
+      scene.background = new THREE.Color(bgCol);
+
+      if (keyL) {
+        keyL.color.setHex(sunCol);
+        keyL.position.copy(sunPos);
+        keyL.intensity = sunIntensity;
+        window.sunlightIntensity = sunIntensity;
+      }
+
+      scene.traverse(function (o) {
+        if (o.isHemisphereLight) {
+          o.color.setHex(hemiSky);
+          o.groundColor.setHex(hemiGround);
+        }
+        if (o.isDirectionalLight && o !== keyL) {
+          if (mode === 'night') {
+            o.intensity = 0.1;
+          } else if (mode === 'evening') {
+            o.color.setHex(0xFFD4A3);
+            o.intensity = 0.45;
+          } else {
+            o.color.setHex(0xEDF4FC);
+            o.intensity = 0.38;
+          }
+        }
+      });
+
+      window.spotlightIntensity = spotIntensity;
+      scene.traverse(function (o) {
+        if (o.isSpotLight || (o.isLight && (o.userData.isSpotlight || o.userData.isDownlight || (o.name && o.name.indexOf('Spotlight') !== -1) || (o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1)))) {
+          o.intensity = spotIntensity * 0.9;
+        } else if (o.isPointLight && (o.name === 'roomFillLight' || (o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1))) {
+          o.intensity = spotIntensity * 0.45;
+        }
+      });
+
+      var sunSlider = document.getElementById('sunlightSlider');
+      var sunLabel = document.getElementById('sunlightValLabel');
+      if (sunSlider) sunSlider.value = sunIntensity;
+      if (sunLabel) sunLabel.textContent = Number(sunIntensity).toFixed(1);
+
+      var spotSlider = document.getElementById('spotlightSlider');
+      var spotLabel = document.getElementById('spotlightValLabel');
+      if (spotSlider) spotSlider.value = spotIntensity;
+      if (spotLabel) spotLabel.textContent = Number(spotIntensity).toFixed(1);
+
+      render();
+    },
+    setRenderMode: function (mode) {
+      mode = (mode || 'realistic').toLowerCase();
+      window.orbixRenderMode = mode;
+      if (!renderer) return;
+
+      if (mode === 'design') {
+        renderer.shadowMap.enabled = false;
+        renderer.toneMappingExposure = 1.0;
+      } else if (mode === 'presentation') {
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.12;
+      } else {
+        // 'realistic'
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.08;
+      }
+
+      if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
+        window.OrbixUI.render3DHome(true);
+      }
+      render();
+    },
+    setCameraPreset: function (preset) {
+      preset = (preset || 'eye_level').toLowerCase();
+      if (!camera) return;
+
+      if (preset === 'eye_level') {
+        cam.pitch = 0;
+        cam.zoom = 0.15;
+        if (target) target.y = 1500;
+        camera.fov = 45;
+      } else if (preset === 'wide_angle') {
+        cam.pitch = -4;
+        cam.zoom = -0.3;
+        camera.fov = 75;
+      } else if (preset === 'counter_focus') {
+        cam.pitch = -18;
+        cam.yaw = -35;
+        cam.zoom = 0.45;
+        if (target) target.y = 850;
+        camera.fov = 40;
+      } else if (preset === 'iso_45') {
+        cam.pitch = -28;
+        cam.yaw = -45;
+        cam.zoom = 0.0;
+        if (target) target.y = 1200;
+        camera.fov = 35;
+      }
+      camera.updateProjectionMatrix();
+      apply(true);
+    },
+    applyMaterialComparison: function (option, preset) {
+      var homeObj = scene ? (scene.getObjectByName('OrbixHome3D') || root) : root;
+      if (window.ArchitecturalRenderer && typeof window.ArchitecturalRenderer.applyMaterialComparison === 'function') {
+        window.ArchitecturalRenderer.applyMaterialComparison(homeObj, option, preset);
+      }
+      render();
+    },
+    getCam: function () { return cam; },
+    setCam: function (c) {
+      if (c) {
+        if (c.yaw !== undefined) cam.yaw = c.yaw;
+        if (c.pitch !== undefined) cam.pitch = c.pitch;
+        if (c.zoom !== undefined) cam.zoom = c.zoom;
+      }
+      apply(true);
+    },
     makeGrassGroundMat: makeGrassGroundMat, makeNeutralGroundMat: makeGrassGroundMat, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0)); if (floor) floor.material = hasArchHome ? makeGrassGroundMat() : makeFloorMat(type); render(); } };
   })();
 
   window.GL = GL;
   window.setSunlightIntensity = GL.setSunlightIntensity;
   window.setSpotlightIntensity = GL.setSpotlightIntensity;
+  window.setTimeOfDay = GL.setTimeOfDay;
+  window.setRenderMode = GL.setRenderMode;
+  window.setCameraPreset = GL.setCameraPreset;
+  window.applyMaterialComparison = GL.applyMaterialComparison;
 
   /* ═══════════════════════════════════════════════════════════════
      DESIGN CATALOGUE — styles × formats, per cupboard type.

@@ -537,6 +537,201 @@
         });
       }
 
+      // ══════════ PHOTOREALISTIC RENDERING ENGINE & CLIENT PRESENTATION ══════════
+      var modeDesignBtn = document.getElementById('modeDesignBtn');
+      var modeRealisticBtn = document.getElementById('modeRealisticBtn');
+      var modeUltraBtn = document.getElementById('modeUltraBtn');
+      var todDayBtn = document.getElementById('todDayBtn');
+      var todEveBtn = document.getElementById('todEveBtn');
+      var todNightBtn = document.getElementById('todNightBtn');
+      var cpHud = document.getElementById('clientPresentationHud');
+
+      function syncRenderModeUI(mode) {
+        [modeDesignBtn, modeRealisticBtn, modeUltraBtn].forEach(function (btn) {
+          if (btn) btn.classList.remove('is-on');
+        });
+        if (mode === 'design' && modeDesignBtn) modeDesignBtn.classList.add('is-on');
+        else if (mode === 'presentation' && modeUltraBtn) modeUltraBtn.classList.add('is-on');
+        else if (modeRealisticBtn) modeRealisticBtn.classList.add('is-on');
+      }
+
+      function setRenderMode(mode) {
+        var gl = window.GL || (window.__cc && window.__cc.gl);
+        if (gl && gl.setRenderMode) gl.setRenderMode(mode);
+        else if (typeof window.setRenderMode === 'function') window.setRenderMode(mode);
+        syncRenderModeUI(mode);
+        if (mode === 'presentation') {
+          openClientPresentation();
+        }
+      }
+
+      if (modeDesignBtn) {
+        modeDesignBtn.addEventListener('click', function () {
+          setRenderMode('design');
+          if (typeof window.toast === 'function') window.toast('⚡ Switched to Fast Design Mode');
+        });
+      }
+      if (modeRealisticBtn) {
+        modeRealisticBtn.addEventListener('click', function () {
+          setRenderMode('realistic');
+          if (typeof window.toast === 'function') window.toast('✨ Switched to PBR Realistic Mode');
+        });
+      }
+      if (modeUltraBtn) {
+        modeUltraBtn.addEventListener('click', function () {
+          setRenderMode('presentation');
+        });
+      }
+
+      function syncTimeOfDayUI(tod) {
+        [todDayBtn, todEveBtn, todNightBtn].forEach(function (btn) {
+          if (btn) btn.classList.remove('is-on');
+        });
+        var cpDay = document.getElementById('cpTodDayBtn');
+        var cpEve = document.getElementById('cpTodEveBtn');
+        var cpNight = document.getElementById('cpTodNightBtn');
+        [cpDay, cpEve, cpNight].forEach(function (btn) {
+          if (btn) btn.classList.remove('is-on');
+        });
+
+        if (tod === 'evening') {
+          if (todEveBtn) todEveBtn.classList.add('is-on');
+          if (cpEve) cpEve.classList.add('is-on');
+        } else if (tod === 'night') {
+          if (todNightBtn) todNightBtn.classList.add('is-on');
+          if (cpNight) cpNight.classList.add('is-on');
+        } else {
+          if (todDayBtn) todDayBtn.classList.add('is-on');
+          if (cpDay) cpDay.classList.add('is-on');
+        }
+      }
+
+      function setTimeOfDay(tod) {
+        var gl = window.GL || (window.__cc && window.__cc.gl);
+        if (gl && gl.setTimeOfDay) gl.setTimeOfDay(tod);
+        else if (typeof window.setTimeOfDay === 'function') window.setTimeOfDay(tod);
+        syncTimeOfDayUI(tod);
+      }
+
+      if (todDayBtn) todDayBtn.addEventListener('click', function () { setTimeOfDay('day'); });
+      if (todEveBtn) todEveBtn.addEventListener('click', function () { setTimeOfDay('evening'); });
+      if (todNightBtn) todNightBtn.addEventListener('click', function () { setTimeOfDay('night'); });
+
+      // Client Presentation Open / Close
+      function openClientPresentation() {
+        var viewDesign = document.getElementById('view-design');
+        if (viewDesign) viewDesign.classList.add('present');
+        if (cpHud) cpHud.style.display = 'flex';
+        var cpHudTitle = document.getElementById('cpHudTitle');
+        if (cpHudTitle && self.project && self.project.meta) {
+          cpHudTitle.textContent = (self.project.meta.title || 'Modular Cupboard Design') + (self.project.meta.clientName ? ' — ' + self.project.meta.clientName : '');
+        }
+        var gl = window.GL || (window.__cc && window.__cc.gl);
+        if (gl && gl.setRenderMode) gl.setRenderMode('presentation');
+        if (gl && gl.apply) gl.apply(true);
+      }
+
+      function closeClientPresentation() {
+        var viewDesign = document.getElementById('view-design');
+        if (viewDesign) viewDesign.classList.remove('present');
+        if (cpHud) cpHud.style.display = 'none';
+        var pBtn = document.getElementById('presentBtn');
+        if (pBtn) {
+          pBtn.textContent = '⛶ Present';
+          pBtn.setAttribute('aria-pressed', 'false');
+        }
+        syncRenderModeUI('realistic');
+        var gl = window.GL || (window.__cc && window.__cc.gl);
+        if (gl && gl.setRenderMode) gl.setRenderMode('realistic');
+        if (gl && gl.apply) gl.apply(true);
+      }
+
+      var presentBtn = document.getElementById('presentBtn');
+      if (presentBtn) {
+        presentBtn.addEventListener('click', function () {
+          var viewDesign = document.getElementById('view-design');
+          var isPresenting = viewDesign && viewDesign.classList.contains('present');
+          if (isPresenting) {
+            openClientPresentation();
+          } else {
+            closeClientPresentation();
+          }
+        });
+      }
+
+      var cpExitBtn = document.getElementById('cpExitBtn');
+      if (cpExitBtn) {
+        cpExitBtn.addEventListener('click', function () {
+          closeClientPresentation();
+        });
+      }
+
+      var cpFsToggleBtn = document.getElementById('cpFsToggleBtn');
+      if (cpFsToggleBtn) {
+        cpFsToggleBtn.addEventListener('click', function () {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(function () {});
+            cpFsToggleBtn.textContent = '✕ Windowed';
+          } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+            cpFsToggleBtn.textContent = '⛶ Fullscreen';
+          }
+        });
+      }
+
+      // HUD Camera Presets
+      var cpCamBtns = document.querySelectorAll('#clientPresentationHud [data-cam]');
+      cpCamBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          cpCamBtns.forEach(function (b) { b.classList.remove('is-on'); });
+          btn.classList.add('is-on');
+          var camPreset = btn.getAttribute('data-cam');
+          var gl = window.GL || (window.__cc && window.__cc.gl);
+          if (gl && gl.setCameraPreset) gl.setCameraPreset(camPreset);
+          else if (typeof window.setCameraPreset === 'function') window.setCameraPreset(camPreset);
+        });
+      });
+
+      // HUD Atmosphere (Time of Day)
+      var cpHudTodBtns = document.querySelectorAll('#clientPresentationHud [data-tod]');
+      cpHudTodBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var tod = btn.getAttribute('data-tod');
+          setTimeOfDay(tod);
+        });
+      });
+
+      // HUD Material Comparison (Option A vs Option B)
+      var cpOptABtn = document.getElementById('cpOptABtn');
+      var cpOptBBtn = document.getElementById('cpOptBBtn');
+      if (cpOptABtn && cpOptBBtn) {
+        cpOptABtn.addEventListener('click', function () {
+          cpOptABtn.classList.add('is-on');
+          cpOptBBtn.classList.remove('is-on');
+          var gl = window.GL || (window.__cc && window.__cc.gl);
+          if (gl && gl.applyMaterialComparison) gl.applyMaterialComparison('A');
+          else if (typeof window.applyMaterialComparison === 'function') window.applyMaterialComparison('A');
+          if (typeof window.toast === 'function') window.toast('Switched to Finish Option A (Current)');
+        });
+
+        cpOptBBtn.addEventListener('click', function () {
+          cpOptBBtn.classList.add('is-on');
+          cpOptABtn.classList.remove('is-on');
+          var gl = window.GL || (window.__cc && window.__cc.gl);
+          if (gl && gl.applyMaterialComparison) gl.applyMaterialComparison('B');
+          else if (typeof window.applyMaterialComparison === 'function') window.applyMaterialComparison('B');
+          if (typeof window.toast === 'function') window.toast('Switched to Finish Option B (Luxury Compare)');
+        });
+      }
+
+      // 4K Ultra Render Export from HUD
+      var cpExport4KBtn = document.getElementById('cpExport4KBtn');
+      if (cpExport4KBtn) {
+        cpExport4KBtn.addEventListener('click', function () {
+          self.capturePhotorealisticRender({ mode: 'custom', targetWidth: 3840, targetHeight: 2160, label: '4k_ultra' });
+        });
+      }
+
       var btnExportJson = document.getElementById('planExportJson');
       if (btnExportJson) {
         btnExportJson.addEventListener('click', function () {

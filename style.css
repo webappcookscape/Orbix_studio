@@ -1001,6 +1001,190 @@ tr.rv-guess td{background:#FFF7D6}
 /* present mode */
 #view-design.present .rail{display:none}
 #view-design.present .stagewrap{flex:1 1 100%}
+#view-design.present .stagebar,
+#view-design.present #studioProjectDetailsBadge {
+  display: none !important;
+}
+#view-design.present #stage {
+  height: 100vh !important;
+  width: 100vw !important;
+}
+
+/* ══════════ PHOTOREALISTIC PRESENTATION ENGINE & CLIENT HUD ══════════ */
+.client-presentation-hud {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: calc(100% - 36px);
+  max-width: 1160px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  padding: 12px 18px;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: cpFadeDown 0.28s ease-out;
+}
+
+@keyframes cpFadeDown {
+  from { opacity: 0; transform: translate(-50%, -14px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.cp-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  padding-bottom: 8px;
+}
+
+.cp-hud-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cp-badge {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.cp-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+  letter-spacing: 0.2px;
+}
+
+.cp-hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cp-hud-btn {
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cp-hud-btn:hover {
+  background: rgba(255, 255, 255, 0.20);
+  color: #fff;
+}
+
+.cp-hud-close {
+  background: rgba(239, 68, 68, 0.85);
+  border-color: rgba(239, 68, 68, 1);
+}
+
+.cp-hud-close:hover {
+  background: #dc2626;
+}
+
+.cp-hud-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cp-pill-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.32);
+  padding: 3px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cp-group-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+  padding-left: 4px;
+}
+
+.cp-pill {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #cbd5e1;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cp-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.cp-pill.is-on {
+  background: #2563eb;
+  color: #fff;
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+
+.cp-compare-group .cp-pill.is-on {
+  background: #059669;
+  border-color: #10b981;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4);
+}
+
+.cp-render-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: 1px solid #f59e0b;
+  color: #1e1b4b;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+  transition: all 0.18s ease;
+}
+
+.cp-render-btn:hover {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45);
+}
+
+.render-mode-group .minibtn.is-on,
+.tod-controls-group .minibtn.is-on {
+  background: #2563eb !important;
+  color: #fff !important;
+  border-color: #1d4ed8 !important;
+}
 @media print{ #view-gallery{display:none!important} }
 /* chips (era filter and any other chip rows) */
 .chiprow{display:flex;flex-wrap:wrap;gap:7px}

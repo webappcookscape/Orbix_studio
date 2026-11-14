@@ -1854,13 +1854,40 @@
       if (lamItem && lamItem.kind === 'gloss') isGloss = true;
     }
 
+    // Fast Drafting Mode (Mode 1: Design Mode)
+    var isDesignMode = (typeof window !== 'undefined' && window.orbixRenderMode === 'design');
+    if (isDesignMode) {
+      return new THREE.MeshStandardMaterial({
+        color: threeCol,
+        roughness: isGloss ? 0.25 : 0.70,
+        metalness: 0.0
+      });
+    }
+
+    // PBR Photorealistic Physical Material (Mode 2: Realistic & Mode 3: Client Presentation)
+    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+
     var matOpts = {
-      color: threeCol,
-      roughness: isGloss ? 0.15 : (isWood ? 0.45 : 0.65),
-      metalness: isGloss ? 0.04 : 0.02
+      color: threeCol
     };
 
-    if (isWood) {
+    if (isGloss) {
+      // Luxury High Gloss Acrylic / PU Finish
+      matOpts.roughness = 0.05;
+      matOpts.metalness = 0.04;
+      matOpts.clearcoat = 1.0;
+      matOpts.clearcoatRoughness = 0.04;
+      matOpts.reflectivity = 0.88;
+      matOpts.envMapIntensity = 1.25;
+    } else if (isWood) {
+      // Natural Timber Grain with Micro Bump Depth
+      matOpts.roughness = 0.48;
+      matOpts.metalness = 0.02;
+      matOpts.clearcoat = 0.12;
+      matOpts.clearcoatRoughness = 0.28;
+      matOpts.reflectivity = 0.45;
+      matOpts.envMapIntensity = 0.90;
+
       var woodTex = ArchitecturalRenderer.createWoodLaminateTexture(threeCol, str);
       var woodBump = ArchitecturalRenderer.createWoodGrainBumpTexture();
       if (woodTex) matOpts.map = woodTex;
@@ -1868,27 +1895,137 @@
         matOpts.bumpMap = woodBump;
         matOpts.bumpScale = 0.035;
       }
+    } else {
+      // Velvety Architectural Matte Laminate (MDF 7707, MDF 6601, Suede/SF)
+      matOpts.roughness = 0.82;
+      matOpts.metalness = 0.0;
+      matOpts.clearcoat = 0.0;
+      matOpts.specularIntensity = 0.22;
+      matOpts.envMapIntensity = 0.55;
     }
 
-    return new THREE.MeshStandardMaterial(matOpts);
+    return new MatClass(matOpts);
   };
 
   ArchitecturalRenderer.getHandleMaterial = function (hFinish) {
     var fin = String(hFinish || 'black').toLowerCase();
+    var MatClass = (typeof THREE !== 'undefined' && typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+
     if (fin.indexOf('chrome') !== -1) {
-      return new THREE.MeshStandardMaterial({ color: 0xE2E8F0, roughness: 0.1, metalness: 0.95 });
+      return new MatClass({
+        color: 0xE2E8F0,
+        roughness: 0.08,
+        metalness: 0.96,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.04,
+        reflectivity: 0.95,
+        envMapIntensity: 1.5
+      });
     }
     if (fin.indexOf('nickel') !== -1 || fin.indexOf('silver') !== -1 || fin.indexOf('steel') !== -1 || fin.indexOf('stainless') !== -1 || fin === 'ss') {
-      return new THREE.MeshStandardMaterial({ color: 0xCBD5E1, roughness: 0.35, metalness: 0.85 });
+      return new MatClass({
+        color: 0xCBD5E1,
+        roughness: 0.32,
+        metalness: 0.88,
+        clearcoat: 0.35,
+        clearcoatRoughness: 0.22,
+        reflectivity: 0.80,
+        envMapIntensity: 1.2
+      });
     }
     if (fin.indexOf('brass') !== -1 || fin.indexOf('gold') !== -1 || fin.indexOf('champagne') !== -1) {
-      return new THREE.MeshStandardMaterial({ color: 0xD4AF37, roughness: 0.25, metalness: 0.9 });
+      return new MatClass({
+        color: 0xD4AF37,
+        roughness: 0.22,
+        metalness: 0.92,
+        clearcoat: 0.65,
+        clearcoatRoughness: 0.15,
+        reflectivity: 0.90,
+        envMapIntensity: 1.3
+      });
     }
     if (fin.indexOf('rose') !== -1 || fin.indexOf('copper') !== -1) {
-      return new THREE.MeshStandardMaterial({ color: 0xB76E79, roughness: 0.25, metalness: 0.9 });
+      return new MatClass({
+        color: 0xB76E79,
+        roughness: 0.22,
+        metalness: 0.92,
+        clearcoat: 0.65,
+        clearcoatRoughness: 0.15,
+        reflectivity: 0.90,
+        envMapIntensity: 1.3
+      });
     }
-    // Default: Matte Black
-    return new THREE.MeshStandardMaterial({ color: 0x1A1A1A, roughness: 0.4, metalness: 0.7 });
+    // Default: Architectural Matte Black Powder Coat
+    return new MatClass({
+      color: 0x1A1A1A,
+      roughness: 0.65,
+      metalness: 0.35,
+      clearcoat: 0.05,
+      reflectivity: 0.30,
+      envMapIntensity: 0.45
+    });
+  };
+
+  ArchitecturalRenderer.applyMaterialComparison = function (targetGroup, option, comparisonPreset) {
+    if (!targetGroup) return;
+    option = (option || 'A').toUpperCase();
+
+    if (option === 'A') {
+      // Revert to original designer-assigned materials
+      targetGroup.traverse(function (mesh) {
+        if (mesh.isMesh && mesh.userData && mesh.userData._origMaterial) {
+          mesh.material = mesh.userData._origMaterial;
+          if (mesh.material && mesh.material.needsUpdate !== undefined) mesh.material.needsUpdate = true;
+        }
+      });
+      return;
+    }
+
+    // Option B: Luxury Contrast Presentation Scheme
+    var optBShutter = ArchitecturalRenderer.resolveLaminateMaterial(
+      (comparisonPreset && comparisonPreset.shutter) || 'High Gloss Ivory',
+      0xF6F2E9,
+      true
+    );
+    var optBCarcass = ArchitecturalRenderer.resolveLaminateMaterial(
+      (comparisonPreset && comparisonPreset.carcass) || 'American Walnut',
+      0x463325,
+      false
+    );
+    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+    var optBCounter = new MatClass({
+      color: 0xFAFAF7, // Calacatta Polished Quartz
+      roughness: 0.10,
+      metalness: 0.04,
+      clearcoat: 0.95,
+      clearcoatRoughness: 0.06,
+      reflectivity: 0.85,
+      envMapIntensity: 1.35
+    });
+
+    targetGroup.traverse(function (mesh) {
+      if (!mesh.isMesh) return;
+      if (!mesh.userData) mesh.userData = {};
+      if (!mesh.userData._origMaterial) {
+        mesh.userData._origMaterial = mesh.material;
+      }
+
+      var name = (mesh.name || '').toLowerCase();
+      var isCounter = name.indexOf('counter') !== -1 || (mesh.parent && mesh.parent.name && mesh.parent.name.toLowerCase().indexOf('counter') !== -1);
+      var isShutter = mesh.userData.isShutter || name.indexOf('shutter') !== -1 || name.indexOf('door') !== -1 || name.indexOf('drawer') !== -1;
+      var isGlassOrMirror = mesh.material && (mesh.material.transparent || mesh.material.opacity < 0.9 || mesh.material.transmission > 0.5 || name.indexOf('glass') !== -1 || name.indexOf('mirror') !== -1);
+
+      if (isGlassOrMirror) return; // preserve transparent glass & mirror
+
+      if (isCounter) {
+        mesh.material = optBCounter;
+      } else if (isShutter) {
+        mesh.material = optBShutter;
+      } else if (mesh.userData.isFurniturePart || name.indexOf('carcass') !== -1 || name.indexOf('panel') !== -1 || name.indexOf('shelf') !== -1) {
+        mesh.material = optBCarcass;
+      }
+      if (mesh.material && mesh.material.needsUpdate !== undefined) mesh.material.needsUpdate = true;
+    });
   };
 
   ArchitecturalRenderer.createHandleMesh = function (handleType, handleMat, isVertical, maxLen) {
@@ -2047,12 +2184,13 @@
         new THREE.MeshPhysicalMaterial({
           color: glassTintHex,
           transparent: true,
-          opacity: (gTint.indexOf('frost') !== -1) ? 0.65 : 0.35,
-          roughness: (gTint.indexOf('frost') !== -1) ? 0.45 : 0.05,
-          metalness: 0.1,
-          transmission: 0.85,
+          opacity: (gTint.indexOf('frost') !== -1) ? 0.65 : 0.22,
+          roughness: (gTint.indexOf('frost') !== -1) ? 0.35 : 0.02,
+          metalness: 0.05,
+          transmission: (gTint.indexOf('frost') !== -1) ? 0.72 : 0.94,
           ior: 1.52,
-          reflectivity: 0.5
+          reflectivity: 0.85,
+          envMapIntensity: 1.4
         }) :
         new THREE.MeshStandardMaterial({
           color: glassTintHex,
@@ -2068,11 +2206,21 @@
       group.add(glassPane);
     } else if (isMirror) {
       // Mirror Front: Ultra-high reflectivity mirror with thin border
-      var mirrorMat = new THREE.MeshStandardMaterial({
-        color: 0xF1F5F9,
-        metalness: 0.98,
-        roughness: 0.02
-      });
+      var mirrorMat = (typeof THREE.MeshPhysicalMaterial === 'function') ?
+        new THREE.MeshPhysicalMaterial({
+          color: 0xF8FAFC,
+          metalness: 0.98,
+          roughness: 0.02,
+          clearcoat: 1.0,
+          clearcoatRoughness: 0.02,
+          reflectivity: 0.98,
+          envMapIntensity: 1.6
+        }) :
+        new THREE.MeshStandardMaterial({
+          color: 0xF1F5F9,
+          metalness: 0.98,
+          roughness: 0.02
+        });
       var mMesh = new THREE.Mesh(new THREE.BoxGeometry(shW, shH, 18), mirrorMat);
       mMesh.castShadow = true; mMesh.receiveShadow = true;
       group.add(mMesh);
@@ -3318,7 +3466,16 @@
         var slabW = W + 20;
         var slabD = baseD + 25;
         var slabGeo = new THREE.BoxGeometry(slabW, actualCounterH, slabD);
-        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.22, metalness: 0.08, envMapIntensity: 0.55 });
+        var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+        var sMat = counterMat || new MatClass({
+          color: 0x1A1A1D,
+          roughness: 0.14,
+          metalness: 0.06,
+          clearcoat: 0.85,
+          clearcoatRoughness: 0.08,
+          reflectivity: 0.75,
+          envMapIntensity: 1.15
+        });
         var slabMesh = new THREE.Mesh(slabGeo, sMat);
         slabMesh.position.set(0, H - actualCounterH / 2, 2.5);
         slabMesh.castShadow = true; slabMesh.receiveShadow = true;
@@ -3710,11 +3867,15 @@
     else if (counterColorName !== 'none' && counterColorName !== 'black') {
       counterHex = ArchitecturalRenderer.resolveFinishColor(counterColorName, 0x1A1A1D);
     }
-    var counterMat = new THREE.MeshStandardMaterial({
+    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+    var counterMat = new MatClass({
       color: counterHex,
-      roughness: 0.22,
-      metalness: 0.08,
-      envMapIntensity: 0.55
+      roughness: 0.14,
+      metalness: 0.06,
+      clearcoat: 0.85,
+      clearcoatRoughness: 0.08,
+      reflectivity: 0.75,
+      envMapIntensity: 1.15
     });
 
     var isTvOrVanity = (cat === 'tv_unit' || cat === 'vanity' || (name && (name.indexOf('tv') !== -1 || name.indexOf('vanity') !== -1)));

@@ -6,8 +6,23 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
+    "start:desktop": "electron electron-main.js",
+    "dist:win": "electron-builder --win --x64",
     "prisma:generate": "prisma generate",
     "postinstall": "prisma generate"
+  },
+  "build": {
+    "appId": "com.orbixstudio.cad",
+    "productName": "Orbix Studio CAD",
+    "directories": {
+      "output": "dist-desktop"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    }
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
