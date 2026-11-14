@@ -1,11 +1,10 @@
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
 const path = require('path');
 
-// Force high-performance discrete/integrated GPU acceleration for 3D CAD & PBR rendering
-app.commandLine.appendSwitch('enable-gpu-rasterization');
-app.commandLine.appendSwitch('enable-zero-copy');
+// High-performance discrete/integrated GPU acceleration for 3D CAD & WebGL rendering
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
-app.commandLine.appendSwitch('enable-webgl2-compute-context');
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-webgl');
 app.commandLine.appendSwitch('high-dpi-support', '1');
 
 let mainWindow = null;

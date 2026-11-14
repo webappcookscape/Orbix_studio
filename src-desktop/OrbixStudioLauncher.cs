@@ -58,7 +58,7 @@ namespace OrbixStudio
 
                 string url = string.Format("http://127.0.0.1:{0}/index.html", port);
                 string args = string.Format(
-                    "--app=\"{0}\" --start-maximized --window-size=1600,1000 --user-data-dir=\"{1}\" --enable-gpu-rasterization --enable-zero-copy --ignore-gpu-blocklist --enable-webgl2-compute-context --high-dpi-support=1",
+                    "--app=\"{0}\" --start-maximized --window-size=1600,1000 --user-data-dir=\"{1}\" --ignore-gpu-blocklist --enable-gpu-rasterization --enable-webgl --high-dpi-support=1",
                     url,
                     profileDir
                 );
