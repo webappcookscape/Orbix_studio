@@ -3910,12 +3910,14 @@
       costCategory: "Loft - O/S",
       areaSqft: 4.359385596,
       icon: "📦",
-      dimensions: { W: 450, H: 900, D: 18 },
+      dimensions: { W: 450, H: 900, D: 600 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
@@ -4753,12 +4755,14 @@
       costCategory: "Loft - O/S",
       areaSqft: 7.26564266,
       icon: "📦",
-      dimensions: { W: 750, H: 900, D: 18 },
+      dimensions: { W: 750, H: 900, D: 600 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
-        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+        carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 2,
         doorType: "hinged",
         dstyle: "slab",
@@ -4928,12 +4932,14 @@
       costCategory: "Kitchen O/S",
       areaSqft: 9.687523546,
       icon: "🍳",
-      dimensions: { W: 1200, H: 750, D: 18 },
+      dimensions: { W: 1200, H: 750, D: 550 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 2,
         doorType: "hinged",
         dstyle: "slab",
@@ -4963,12 +4969,14 @@
       costCategory: "Kitchen O/S",
       areaSqft: 4.843761773,
       icon: "🍳",
-      dimensions: { W: 600, H: 750, D: 18 },
+      dimensions: { W: 600, H: 750, D: 550 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
@@ -4998,12 +5006,14 @@
       costCategory: "Kitchen O/S",
       areaSqft: 3.875009418,
       icon: "🍳",
-      dimensions: { W: 600, H: 600, D: 18 },
+      dimensions: { W: 600, H: 600, D: 320 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 2,
         doorType: "hinged",
         dstyle: "slab",
@@ -5033,12 +5043,14 @@
       costCategory: "Kitchen O/S",
       areaSqft: 1.937504709,
       icon: "🍳",
-      dimensions: { W: 300, H: 600, D: 18 },
+      dimensions: { W: 300, H: 600, D: 320 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",

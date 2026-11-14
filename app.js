@@ -1665,7 +1665,14 @@
   var GL = (function () {
     var ok = false, renderer, scene, camera, root, floor, pmrem, matCache = {}, texCache3 = {}, target, dist = 3000, keyL = null;
     var composer = null, ssao = null, smaa = null;
-    function render() { if (composer) composer.render(); else renderer.render(scene, camera); }
+    function render() {
+      if (typeof document !== 'undefined') {
+        var designTab = document.querySelector('.vtab[data-tab="design"]');
+        var isDesignActive = !designTab || designTab.classList.contains('is-on');
+        if (!isDesignActive && !window.__renderingSnapshot) return;
+      }
+      if (composer) composer.render(); else renderer.render(scene, camera);
+    }
     /* ── post-processing: screen-space ambient occlusion (contact shadows in every joint) + SMAA ── */
     function fxInit() {
       if (!ok || composer || !(window.THREE && THREE.EffectComposer && THREE.SSAOPass)) return false;
@@ -1852,8 +1859,8 @@
       stage.appendChild(renderer.domElement);
       stage.classList.add("gl");
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
-      scene.fog = new THREE.FogExp2(0xCBE3F5, 0.000011); // Subtle atmospheric perspective haze
+      scene.background = new THREE.Color(0xD8E8F5); // Elegant architectural daylight sky
+      scene.fog = new THREE.FogExp2(0xE8F0F8, 0.000008); // Subtle atmospheric perspective haze
       camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
@@ -1864,7 +1871,7 @@
       keyL.position.set(-3800, 7200, 5600); keyL.castShadow = true;
       keyL.shadow.mapSize.set(4096, 4096);
       var sc = keyL.shadow.camera; sc.left = -9500; sc.right = 9500; sc.top = 9500; sc.bottom = -9500; sc.near = 200; sc.far = 30000;
-      keyL.shadow.bias = -0.00025; keyL.shadow.normalBias = 1.6; keyL.shadow.radius = 2.8;
+      keyL.shadow.bias = -0.00025; keyL.shadow.normalBias = 1.6; keyL.shadow.radius = 2.2;
       scene.add(keyL); scene.add(keyL.target);
       /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
       var fill = new THREE.DirectionalLight(0xdce8fa, 0.58); fill.position.set(2800, 2100, 5000); scene.add(fill);
@@ -4382,7 +4389,7 @@
         }
       }
 
-      // 1. Click unit: Show translation arrow gizmo, DO NOT drag unit
+      // 1. Click unit: Show translation arrow gizmo and enable direct 3D floor drag
       if (GL.ok && GL.pickFurniture && e.button === 0) {
         var fHit = GL.pickFurniture(e.clientX, e.clientY);
         if (fHit) {
@@ -4396,6 +4403,21 @@
           // Show Gizmo Arrows for this unit!
           GL.gizmoSet(groupObj, fHit.id);
 
+          var fp = GL.floorPoint(e.clientX, e.clientY) || { x: groupObj.position.x, z: groupObj.position.z };
+          furnDrag = {
+            id: fHit.id,
+            obj: groupObj,
+            startX: e.clientX,
+            startY: e.clientY,
+            startPos: { x: groupObj.position.x, z: groupObj.position.z },
+            offset: { x: groupObj.position.x - fp.x, z: groupObj.position.z - fp.z },
+            dims: (groupObj.userData && groupObj.userData.dims) || { W: 1200, H: 850, D: 600 },
+            moved: false
+          };
+          try { stage.setPointerCapture(e.pointerId); } catch (_) { }
+          e.stopImmediatePropagation();
+          e.preventDefault();
+
           if (window.OrbixUI && window.OrbixUI.editor) {
             window.OrbixUI.editor.selected = [{ type: 'furniture', id: fHit.id }];
             if (window.OrbixUI.editor.render) window.OrbixUI.editor.render();
@@ -4404,6 +4426,7 @@
           if (window.OrbixUI && typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function') {
             window.OrbixUI.selectFurnitureIn3DStudio(fHit.id);
           }
+          return;
         } else {
           // Clicked background: hide gizmo
           if (!hDrag && GL.gizmoSet) GL.gizmoSet(null);
@@ -4505,7 +4528,7 @@
         }
       }
 
-      // Furniture drag in 3D (legacy fallback)
+      // Furniture drag in 3D: direct floor translation + smart wall/adjacent unit snapping
       if (furnDrag) {
         e.stopImmediatePropagation();
         e.preventDefault();
@@ -4515,8 +4538,32 @@
             furnDrag.moved = true;
             stage.style.cursor = "grabbing";
           }
-          furnDrag.obj.position.x = p.x + furnDrag.offset.x;
-          furnDrag.obj.position.z = p.z + furnDrag.offset.z;
+          var targetX = p.x + furnDrag.offset.x;
+          var targetZ = p.z + furnDrag.offset.z;
+
+          // Live snap to wall / adjacent units in 3D if plan is available
+          var planM = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+          if (window.OrbixCore && window.OrbixCore.snapFurniture && planM) {
+            var candFurn = {
+              id: furnDrag.id,
+              pos: { x: targetX, y: targetZ },
+              elevation: furnDrag.obj.position.y || 0,
+              rotY: -(furnDrag.obj.rotation.y || 0),
+              dimensions: furnDrag.dims
+            };
+            var snapped = window.OrbixCore.snapFurniture(candFurn, planM, furnDrag.id);
+            if (snapped && snapped.pos) {
+              targetX = snapped.pos.x;
+              targetZ = snapped.pos.y;
+              if (typeof snapped.rotY === 'number') {
+                furnDrag.obj.rotation.y = -snapped.rotY;
+              }
+            }
+          }
+
+          furnDrag.obj.position.x = targetX;
+          furnDrag.obj.position.z = targetZ;
+          if (GL.gizmoSet) GL.gizmoSet(furnDrag.obj, furnDrag.id);
           GL.settle();
         }
         return;

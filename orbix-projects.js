@@ -1224,6 +1224,39 @@
       });
     },
 
+    disposeSceneResources: function () {
+      try {
+        var scene = null;
+        if (window.__cc && window.__cc.gl && typeof window.__cc.gl.getScene === 'function') {
+          scene = window.__cc.gl.getScene();
+        } else if (window.GL && typeof window.GL.getScene === 'function') {
+          scene = window.GL.getScene();
+        }
+        if (scene) {
+          var homeObj = scene.getObjectByName('OrbixHome3D');
+          if (homeObj) {
+            scene.remove(homeObj);
+            homeObj.traverse(function (obj) {
+              if (obj.geometry) {
+                try { obj.geometry.dispose(); } catch (_) { }
+              }
+              if (obj.material) {
+                var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+                mats.forEach(function (m) {
+                  if (m.map) try { m.map.dispose(); } catch (_) { }
+                  if (m.bumpMap) try { m.bumpMap.dispose(); } catch (_) { }
+                  if (m.normalMap) try { m.normalMap.dispose(); } catch (_) { }
+                  try { m.dispose(); } catch (_) { }
+                });
+              }
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('[OrbixProjects] disposeSceneResources error:', err);
+      }
+    },
+
     openProject: function (idOrProj, switchView) {
       var self = this;
       var id = (typeof idOrProj === 'object' && idOrProj) ? idOrProj.id : idOrProj;
@@ -1248,6 +1281,7 @@
         if (typeof this.flushImmediateSave === 'function') {
           this.flushImmediateSave();
         }
+        this.disposeSceneResources();
         if (window.S) {
           window.S.units = [];
           window.S.active = 0;

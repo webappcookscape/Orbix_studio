@@ -569,18 +569,18 @@
     if (typeof THREE === 'undefined') return;
 
     var wallBump = ArchitecturalRenderer.createWallBumpTexture();
-    // Wall Plaster (Natural warm earthy mud plaster - deeper and richer than light beige)
+    // Wall Plaster (Warm architectural alabaster ivory plaster - photorealistic and clean)
     this.materials.wall = new THREE.MeshStandardMaterial({
-      color: 0x9E836A, // Natural warm mud plaster
-      roughness: 0.92,
+      color: 0xF2EFE9, // Warm architectural alabaster
+      roughness: 0.88,
       metalness: 0.01,
       bumpMap: wallBump,
-      bumpScale: 0.08
+      bumpScale: 0.04
     });
 
     // Wall Core (Cutaway section interior)
     this.materials.wallCore = new THREE.MeshStandardMaterial({
-      color: 0x886F58, // Rich earthy mud core
+      color: 0xDCD7CD, // Clean architectural plaster core
       roughness: 0.9,
       metalness: 0.0
     });
@@ -3093,7 +3093,7 @@
     // Shutter vertical span between plinth and countertop
     var shH = Math.max(100, H - actualPlinthH - actualCounterH - 6);
     var hingeY = actualPlinthH + 3 + shH / 2;
-    var frontZ = isBaseOS ? (baseD / 2 - 9) : 0;
+    var frontZ = baseD / 2 - 9;
     var frameZ = frontZ - 12.5;
 
     // Slim perimeter mounting frame (25mm reveal)

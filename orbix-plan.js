@@ -881,9 +881,27 @@
         }
       }
 
+      // Check rotation handle on currently selected furniture unit
+      var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
+      if (self.activeTool === 'select' && self.selected && self.selected.length === 1 && self.selected[0].type === 'furniture') {
+        var curSel = furnList.find(function (f) { return f.id === self.selected[0].id; });
+        if (curSel && typeof self.getFurnitureRotationHandleWorld === 'function') {
+          var rotHandlePos = self.getFurnitureRotationHandleWorld(curSel);
+          var rotHitDist = 22 / Math.max(0.01, self.zoom);
+          if (Vec2.dist(worldPt, rotHandlePos) < Math.max(180, rotHitDist)) {
+            self.dragState = {
+              type: 'rotate_furniture',
+              furniture: curSel,
+              startAngle: curSel.rotY || 0,
+              startWorld: Vec2.clone(worldPt)
+            };
+            return;
+          }
+        }
+      }
+
       // Check if clicked directly on any placed furniture unit (exact rotated/L-shape polygon, never oversized circle!)
       var clickedWallCore = (self.activeTool === 'select' && typeof self.isPointOnWallBand === 'function') ? self.isPointOnWallBand(worldPt) : false;
-      var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
       var matchingHits = [];
       if (!clickedWallCore) {
         for (var fi = furnList.length - 1; fi >= 0; fi--) {
@@ -1008,14 +1026,14 @@
         var dyS = mouseScreen.y - self.dragState.startScreen.y;
         self.underlay.x = self.dragState.origUnderlayPos.x + dxS / self.zoom;
         self.underlay.y = self.dragState.origUnderlayPos.y + dyS / self.zoom;
-        self.render();
+        self.requestRender();
         return;
       }
 
       if (self.dragState && self.dragState.type === 'pan') {
         self.pan.x = self.dragState.startPan.x + (mouseScreen.x - self.dragState.startScreen.x);
         self.pan.y = self.dragState.startPan.y + (mouseScreen.y - self.dragState.startScreen.y);
-        self.render();
+        self.requestRender();
         return;
       }
 
@@ -1024,7 +1042,7 @@
         if (!self.dragState.hasMoved && Vec2.dist(self.cursorWorld, self.dragState.startWorld) > 10) {
           self.dragState.hasMoved = true;
         }
-        self.render();
+        self.requestRender();
         return;
       }
 
@@ -1160,7 +1178,7 @@
           }
         }
 
-        self.render();
+        self.requestRender();
         return;
       }
 
@@ -1211,7 +1229,7 @@
           }
         }
 
-        self.render();
+        self.requestRender();
         return;
       }
 
@@ -1233,7 +1251,20 @@
           vRef.wall[vRef.endpoint].y = Math.round(vNewPt.y / 25) * 25;
         }
 
-        self.render();
+        self.requestRender();
+        return;
+      }
+
+      if (self.dragState && self.dragState.type === 'rotate_furniture') {
+        var fn = self.dragState.furniture;
+        var fCenter = fn.pos;
+        var angle = Math.atan2(self.cursorWorld.y - fCenter.y, self.cursorWorld.x - fCenter.x) - Math.PI / 2;
+        if (!self.isShiftDown) {
+          var step = Math.PI / 12; // 15° snap
+          angle = Math.round(angle / step) * step;
+        }
+        fn.rotY = angle;
+        self.requestRender();
         return;
       }
 
@@ -1279,7 +1310,7 @@
           self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
           self.dragState.collidedWith = colCheck.target || colCheck.other;
         }
-        self.render();
+        self.requestRender();
         return;
       }
 
@@ -1303,7 +1334,7 @@
         }
         dw.dadoTile = true;
         dds.hasMoved = true;
-        self.render();
+        self.requestRender();
         self.onSelectionChange(self.selected);
         return;
       }
@@ -1320,7 +1351,7 @@
           var swCur = Math.round((swT * dsw.wLen) / 50) * 50;
           dsw.startOffset = Math.max(0, Math.min(dsw.anchorOffset, swCur));
           dsw.endOffset = Math.min(Math.round(dsw.wLen), Math.max(dsw.anchorOffset, swCur));
-          self.render();
+          self.requestRender();
         }
         return;
       }
@@ -1333,7 +1364,7 @@
         var minO = Math.round(op.width / 2);
         var maxO = Math.max(minO, Math.round(wLen - op.width / 2));
         op.offset = Math.max(minO, Math.min(maxO, Math.round(proj.t * wLen)));
-        self.render();
+        self.requestRender();
         self.onSelectionChange(self.selected);
         return;
       }
@@ -1370,7 +1401,7 @@
 
       // Live drawing render
       if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.activeTool === 'dado' || self.wallChainStart) {
-        self.render();
+        self.requestRender();
       }
     });
 
@@ -1479,7 +1510,10 @@
           return;
         }
 
-        if (self.dragState.type === 'move_furniture') {
+        if (self.dragState.type === 'rotate_furniture') {
+          self.pushHistory('Rotate Furniture');
+          if (typeof self.onPlanChange === 'function') self.onPlanChange();
+        } else if (self.dragState.type === 'move_furniture') {
           if (!self.dragState.hasMoved && self.dragState.matchingHits && self.dragState.matchingHits.length > 1) {
             // User performed a stationary click on stacked units (e.g. wall unit above floor unit):
             // cycle to the next unit underneath!
@@ -2145,6 +2179,17 @@
     ];
   };
 
+  PlanEditor.prototype.getFurnitureRotationHandleWorld = function (f) {
+    var ang = f.rotY || 0;
+    var d = (f.dimensions && f.dimensions.D) || 600;
+    var stemDist = (d / 2) + (24 / Math.max(0.01, this.zoom));
+    var vx = -Math.sin(ang), vy = Math.cos(ang);
+    return {
+      x: f.pos.x + vx * stemDist,
+      y: f.pos.y + vy * stemDist
+    };
+  };
+
   // Smart Modular Snapping: 1) Adjacent Unit Jointing, 2) Plumb Stacking, 3) Wall Snatching & Overlap Prevention
   PlanEditor.prototype.snapFurniture = function (furn, candidatePos, candidateRotY) {
     var pos = { x: candidatePos.x, y: candidatePos.y };
@@ -2346,10 +2391,11 @@
         }
 
         if (!isPerp) {
-          // A. Parallel Side-by-Side: Active unit Left joints to Other unit Right (Back flush)
+          // A. Parallel Side-by-Side: Active unit Left joints to Other unit Right (Front shutter and back flush)
+          var dOffset = (fD === oD) ? 0 : ((fD - oD) / 2);
           var rightJointPos = {
-            x: oPos.x + ((oW + fW) / 2) * uO.x - ((oD - fD) / 2) * vO.x,
-            y: oPos.y + ((oW + fW) / 2) * uO.y - ((oD - fD) / 2) * vO.y
+            x: oPos.x + ((oW + fW) / 2) * uO.x + dOffset * vO.x,
+            y: oPos.y + ((oW + fW) / 2) * uO.y + dOffset * vO.y
           };
           var dRight = Math.hypot(pos.x - rightJointPos.x, pos.y - rightJointPos.y);
           if (dRight < minJointDist && dRight < (bestJoint ? bestJoint.dist : 9999)) {
@@ -2365,10 +2411,10 @@
             };
           }
 
-          // B. Parallel Side-by-Side: Active unit Right joints to Other unit Left (Back flush)
+          // B. Parallel Side-by-Side: Active unit Right joints to Other unit Left (Front shutter and back flush)
           var leftJointPos = {
-            x: oPos.x - ((oW + fW) / 2) * uO.x - ((oD - fD) / 2) * vO.x,
-            y: oPos.y - ((oW + fW) / 2) * uO.y - ((oD - fD) / 2) * vO.y
+            x: oPos.x - ((oW + fW) / 2) * uO.x + dOffset * vO.x,
+            y: oPos.y - ((oW + fW) / 2) * uO.y + dOffset * vO.y
           };
           var dLeft = Math.hypot(pos.x - leftJointPos.x, pos.y - leftJointPos.y);
           if (dLeft < minJointDist && dLeft < (bestJoint ? bestJoint.dist : 9999)) {
@@ -2489,9 +2535,20 @@
     var walls = plan.walls || [];
     var rooms = plan.rooms || [];
     var bestWallSnap = null;
-    var minWallDist = isDecorF ? 100 : 160; // snap zone (mm) - reduced to prevent aggressive snatching
+    var minWallDist = isDecorF ? 160 : 250; // generous magnetic snap zone (mm)
     var halfD = fD / 2;
     var halfW = fW / 2;
+
+    // Detect which room the cursor/drag position is currently inside to lock partition wall face
+    var cursorRoom = null;
+    if (rooms && rooms.length > 0) {
+      for (var rk = 0; rk < rooms.length; rk++) {
+        if (rooms[rk].polygon && Core.Vec2.pointInPolygon(candidatePos, rooms[rk].polygon)) {
+          cursorRoom = rooms[rk];
+          break;
+        }
+      }
+    }
 
     var furnIsLCorner = !!(
       (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || furn.unitConfig.unitType === 'wbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
@@ -2515,8 +2572,10 @@
       // Magnetic 90° corner snapping for L-shaped corner unit
       for (var wa = 0; wa < walls.length; wa++) {
         var wA = walls[wa];
+        if (wA.isDivider) continue;
         for (var wb = wa + 1; wb < walls.length; wb++) {
           var wB = walls[wb];
+          if (wB.isDivider) continue;
           var sharedPt = null, endA = null, endB = null;
           if (Vec2.dist(wA.start, wB.start) < 20) { sharedPt = wA.start; endA = wA.end; endB = wB.end; }
           else if (Vec2.dist(wA.start, wB.end) < 20) { sharedPt = wA.start; endA = wA.end; endB = wB.start; }
@@ -2562,6 +2621,7 @@
 
     for (var wIdx = 0; wIdx < walls.length; wIdx++) {
       var w = walls[wIdx];
+      if (w.isDivider) continue; // Room dividers must NEVER attract or snap furniture!
       var dx = w.end.x - w.start.x;
       var dy = w.end.y - w.start.y;
       var wLen = Math.hypot(dx, dy);
@@ -2573,9 +2633,14 @@
 
       // Inner clear segment bounds
       var innerSeg = (Core.getWallInnerSegment ? Core.getWallInnerSegment(w, plan) : null);
-      var startClear = ((innerSeg && innerSeg.startDeduction ? innerSeg.startDeduction : halfT) + halfW) / wLen;
-      var endClear = 1 - (((innerSeg && innerSeg.endDeduction ? innerSeg.endDeduction : halfT) + halfW) / wLen);
-      if (startClear > endClear) { startClear = 0.05; endClear = 0.95; }
+      var startDed = (innerSeg && innerSeg.startDeduction ? innerSeg.startDeduction : halfT);
+      var endDed = (innerSeg && innerSeg.endDeduction ? innerSeg.endDeduction : halfT);
+      var startClear = (startDed + halfW) / wLen;
+      var endClear = 1 - ((endDed + halfW) / wLen);
+      if (startClear > endClear) {
+        startClear = Math.max(0.04, Math.min(0.48, startDed / wLen));
+        endClear = Math.min(0.96, Math.max(0.52, 1 - (endDed / wLen)));
+      }
 
       // Project unit position onto wall segment
       var toCur = { x: pos.x - w.start.x, y: pos.y - w.start.y };
@@ -2588,8 +2653,15 @@
       var sign = sDist >= 0 ? 1 : -1;
       var normOut = { x: sign * wNorm.x, y: sign * wNorm.y };
 
-      // Room Interior Awareness: if one side is inside a room, orient front into that room
-      if (rooms.length > 0) {
+      // Room Interior Awareness: Lock orientation strictly to cursor's room on partition walls
+      if (cursorRoom && cursorRoom.polygon) {
+        var testPos = { x: proj.x + wNorm.x * (flushDist + 20), y: proj.y + wNorm.y * (flushDist + 20) };
+        var testNeg = { x: proj.x - wNorm.x * (flushDist + 20), y: proj.y - wNorm.y * (flushDist + 20) };
+        var posInCur = Core.Vec2.pointInPolygon(testPos, cursorRoom.polygon);
+        var negInCur = Core.Vec2.pointInPolygon(testNeg, cursorRoom.polygon);
+        if (posInCur && !negInCur) normOut = { x: wNorm.x, y: wNorm.y };
+        else if (negInCur && !posInCur) normOut = { x: -wNorm.x, y: -wNorm.y };
+      } else if (rooms.length > 0) {
         var testPos = { x: proj.x + wNorm.x * (flushDist + 20), y: proj.y + wNorm.y * (flushDist + 20) };
         var testNeg = { x: proj.x - wNorm.x * (flushDist + 20), y: proj.y - wNorm.y * (flushDist + 20) };
         var posInRoom = rooms.some(function (r) { return r.polygon && Core.Vec2.pointInPolygon(testPos, r.polygon); });
@@ -2600,8 +2672,8 @@
 
       var perpDist = Math.abs(sDist);
 
-      // Wall Snatching: when within 280mm of flush contact
-      if (perpDist < flushDist + minWallDist && t >= -0.15 && t <= 1.15) {
+      // Wall Snatching: when within magnetic snap distance of flush contact
+      if (perpDist < flushDist + minWallDist && t >= -0.2 && t <= 1.2) {
         var snapDist = Math.abs(perpDist - flushDist);
         if (snapDist < minWallDist) {
           minWallDist = snapDist;
@@ -2636,6 +2708,7 @@
     // Secondary collision clamping against any intersecting wall cores
     for (var w2 = 0; w2 < walls.length; w2++) {
       var wObj = walls[w2];
+      if (wObj.isDivider) continue; // Room dividers do not block furniture!
       var wPoly = Core.wallPolygon(wObj);
       var fDummy = { pos: pos, rotY: rotY, dimensions: fDims };
       var fPoly = Core.getFurniturePolygon(fDummy);
@@ -3041,6 +3114,21 @@
     this.pan.x = this.width / 2 - ((minX + maxX) / 2) * this.zoom;
     this.pan.y = this.height / 2 - ((minY + maxY) / 2) * this.zoom;
     this.render();
+  };
+
+  PlanEditor.prototype.requestRender = function () {
+    var self = this;
+    if (self._renderRafPending) return;
+    self._renderRafPending = true;
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(function () {
+        self._renderRafPending = false;
+        self.render();
+      });
+    } else {
+      self._renderRafPending = false;
+      self.render();
+    }
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
@@ -4955,6 +5043,45 @@
             ctx.fill();
             ctx.stroke();
           }
+        }
+
+        // Visual 4-Way Move Handle and Rotation Knob on Selected Unit
+        if (!isActivelyMovingThis) {
+          ctx.fillStyle = '#0f172a';
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.5;
+          var pillW = 56, pillH = 18;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(-pillW / 2, -pillH / 2, pillW, pillH, 9);
+          else ctx.rect(-pillW / 2, -pillH / 2, pillW, pillH);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = '700 9px "IBM Plex Sans", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('✥ MOVE', 0, 0);
+
+          var stemLen = 22;
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([3, 2]);
+          ctx.beginPath();
+          ctx.moveTo(0, dPx / 2);
+          ctx.lineTo(0, dPx / 2 + stemLen);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#38bdf8';
+          ctx.beginPath();
+          ctx.arc(0, dPx / 2 + stemLen, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = '#0f172a';
+          ctx.font = '700 8.5px sans-serif';
+          ctx.fillText('↻', 0, dPx / 2 + stemLen + 0.5);
         }
       }
 

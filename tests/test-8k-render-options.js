@@ -36,3 +36,4 @@ assert.ok(appCode.includes("keyL.shadow.radius = origKeyRadius"), 'Must restore 
 console.log('✔ 3D snapshot direct render & safe canvas fallback verified');
 
 console.log('\n🎉 ALL 8K RENDER OPTION VERIFICATION CHECKS PASSED!');
+

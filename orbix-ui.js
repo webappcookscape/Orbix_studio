@@ -500,6 +500,17 @@
         });
       }
 
+      var renderAIRenderBtn = document.getElementById('renderAIRenderBtn');
+      if (renderAIRenderBtn) {
+        renderAIRenderBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          closePhotoRenderMenu();
+          if (typeof self.openAIRenderModal === 'function') {
+            self.openAIRenderModal();
+          }
+        });
+      }
+
       var btnExportJson = document.getElementById('planExportJson');
       if (btnExportJson) {
         btnExportJson.addEventListener('click', function () {
@@ -599,6 +610,7 @@
       syncFurnDropdown();
       self.initFurnitureCatalogModal();
       if (typeof self.initDecorModal === 'function') self.initDecorModal();
+      if (typeof self.initAIRenderModal === 'function') self.initAIRenderModal();
       if (typeof self.initFurnishUI === 'function') self.initFurnishUI();
 
       if (furnSel && Core.FURNITURE_CATALOG) {
@@ -3451,6 +3463,200 @@
       }
     },
 
+    openAIRenderModal: function () {
+      var modal = document.getElementById('modalAIRender');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      modal.classList.add('is-open');
+
+      var keyInput = document.getElementById('openAIApiKeyInput');
+      if (keyInput) {
+        keyInput.value = localStorage.getItem('orbix_openai_key') || '';
+      }
+
+      this.updateAIRenderPrompt();
+    },
+
+    closeAIRenderModal: function () {
+      var modal = document.getElementById('modalAIRender');
+      if (!modal) return;
+      modal.style.display = 'none';
+      modal.classList.remove('is-open');
+    },
+
+    updateAIRenderPrompt: function () {
+      var promptEl = document.getElementById('aiRenderPromptText');
+      if (!promptEl) return;
+      var styleEl = document.getElementById('aiRenderStyle');
+      var lightEl = document.getElementById('aiRenderLighting');
+      var style = styleEl ? styleEl.value : 'luxury_architectural';
+      var lighting = lightEl ? lightEl.value : 'natural_daylight';
+
+      var plan = this.project && this.project.plan;
+      var furn = (plan && plan.furniture) || [];
+      var unitNames = [];
+      var roomTitle = 'luxury contemporary interior';
+      if (this.project && this.project.meta && this.project.meta.title) {
+        roomTitle = this.project.meta.title;
+      }
+      furn.slice(0, 8).forEach(function (f) {
+        var n = (f.name || f.code || '').trim();
+        if (n && unitNames.indexOf(n) === -1) unitNames.push(n);
+      });
+
+      var styleDesc = 'ultra-photorealistic architectural interior photograph, Architectural Digest luxury aesthetic, 8K resolution, octane render quality';
+      if (style === 'modern_minimalist') styleDesc = 'warm minimalist interior architecture, natural wood and stone textures, clean lines, calm Zen aesthetic, 8K architectural photo';
+      else if (style === 'contemporary_indian') styleDesc = 'luxury contemporary Indian home interior design, premium modular woodwork, elegant brass detailing, rich textures, 8k architectural photography';
+      else if (style === 'cinematic_warm') styleDesc = 'cinematic golden hour interior lighting, warm amber sun rays, soft atmospheric depth of field, luxury editorial architectural render';
+      else if (style === 'nordic_scandi') styleDesc = 'Scandinavian modern interior, natural white oak and matte white cabinetry, airy bright aesthetic, high-end architectural photo';
+
+      var lightDesc = 'natural daylight streaming through large windows, soft diffused ambient fill, subtle LED under-cabinet strip illumination, realistic contact shadows';
+      if (lighting === 'evening_ambient') lightDesc = 'cozy evening interior ambiance, 3000K warm architectural cove lighting, illuminated glass display shelves, soft shadow gradients';
+      else if (lighting === 'bright_studio') lightDesc = 'bright professional interior studio lighting, high color rendering index, crisp reflections on polished stone and metallic handles';
+
+      var prompt = 'Professional ' + styleDesc + ' of an Indian ' + roomTitle + ' space';
+      if (unitNames.length > 0) {
+        prompt += ', featuring ' + unitNames.join(', ');
+      }
+      prompt += '. Premium modular cabinetry with seamless edge-banding, polished countertops with subtle reflections, vitrified floor tiles, ' + lightDesc + ', highly detailed, realistic materials and physics.';
+
+      promptEl.value = prompt;
+    },
+
+    initAIRenderModal: function () {
+      var self = this;
+      var modal = document.getElementById('modalAIRender');
+      var openBtn = document.getElementById('renderAIRenderBtn');
+      if (!modal) return;
+
+      if (openBtn) {
+        openBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var menu = document.getElementById('photoRenderMenu');
+          if (menu) { menu.style.display = 'none'; menu.classList.remove('is-open'); }
+          self.openAIRenderModal();
+        });
+      }
+
+      modal.querySelectorAll('#closeAIRenderBtn, #closeAIRenderBackdrop, #cancelAIRenderBtn').forEach(function (b) {
+        b.addEventListener('click', function () { self.closeAIRenderModal(); });
+      });
+
+      var keyInput = document.getElementById('openAIApiKeyInput');
+      var saveKeyBtn = document.getElementById('saveOpenAIKeyBtn');
+      if (saveKeyBtn && keyInput) {
+        saveKeyBtn.addEventListener('click', function () {
+          var k = keyInput.value.trim();
+          if (k) {
+            localStorage.setItem('orbix_openai_key', k);
+            if (typeof window.toast === 'function') window.toast('✅ OpenAI API Key Saved Securely in Browser!');
+          } else {
+            localStorage.removeItem('orbix_openai_key');
+            if (typeof window.toast === 'function') window.toast('OpenAI API Key cleared.');
+          }
+        });
+      }
+
+      var styleEl = document.getElementById('aiRenderStyle');
+      var lightEl = document.getElementById('aiRenderLighting');
+      var refreshBtn = document.getElementById('refreshAIPromptBtn');
+      if (styleEl) styleEl.addEventListener('change', function () { self.updateAIRenderPrompt(); });
+      if (lightEl) lightEl.addEventListener('change', function () { self.updateAIRenderPrompt(); });
+      if (refreshBtn) refreshBtn.addEventListener('click', function () { self.updateAIRenderPrompt(); });
+
+      var startBtn = document.getElementById('startAIRenderBtn');
+      var downloadBtn = document.getElementById('downloadAIRenderBtn');
+      var progressCont = document.getElementById('aiRenderProgressContainer');
+      var resultCont = document.getElementById('aiRenderResultContainer');
+      var srcImg = document.getElementById('aiRenderSourceImg');
+      var outImg = document.getElementById('aiRenderOutputImg');
+
+      if (startBtn) {
+        startBtn.addEventListener('click', async function () {
+          var apiKey = (keyInput && keyInput.value.trim()) || localStorage.getItem('orbix_openai_key') || '';
+          var promptText = (document.getElementById('aiRenderPromptText') && document.getElementById('aiRenderPromptText').value.trim()) || 'Luxury architectural interior photograph';
+
+          var gl = window.__cc && window.__cc.gl;
+          if (!gl || typeof gl.snapshot !== 'function') {
+            if (typeof window.toast === 'function') window.toast('3D Studio is not active.');
+            return;
+          }
+
+          // 1. Capture Current 3D View as visual base
+          var cadSnip = gl.snapshot(1920, 1080, { mode: 'custom', quality: 0.95 });
+          if (!cadSnip) {
+            if (typeof window.toast === 'function') window.toast('Failed to capture 3D snip.');
+            return;
+          }
+
+          if (srcImg) srcImg.src = cadSnip;
+          if (progressCont) progressCont.style.display = 'block';
+          if (resultCont) resultCont.style.display = 'none';
+          if (downloadBtn) downloadBtn.style.display = 'none';
+          startBtn.disabled = true;
+
+          try {
+            if (!apiKey) {
+              if (progressCont) progressCont.style.display = 'none';
+              startBtn.disabled = false;
+              alert('Please enter your OpenAI API key above and click "Save Key" to generate live AI photorealistic renders.');
+              if (keyInput) keyInput.focus();
+              return;
+            }
+
+            // Call OpenAI DALL-E 3 API with expert architectural prompt
+            var response = await fetch('https://api.openai.com/v1/images/generations', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + apiKey
+              },
+              body: JSON.stringify({
+                model: 'dall-e-3',
+                prompt: promptText.slice(0, 1000),
+                n: 1,
+                size: '1792x1024',
+                quality: 'hd',
+                style: 'natural'
+              })
+            });
+
+            var data = await response.json();
+            if (data.error) {
+              throw new Error(data.error.message || 'OpenAI API Error');
+            }
+
+            var aiUrl = data.data && data.data[0] && (data.data[0].url || data.data[0].b64_json);
+            if (!aiUrl) throw new Error('No image returned by OpenAI');
+
+            if (outImg) {
+              outImg.src = aiUrl;
+              outImg.onclick = function () { window.open(aiUrl, '_blank'); };
+            }
+            if (resultCont) resultCont.style.display = 'block';
+            if (downloadBtn) {
+              downloadBtn.style.display = 'inline-flex';
+              downloadBtn.onclick = function () {
+                var a = document.createElement('a');
+                a.href = aiUrl;
+                a.target = '_blank';
+                a.download = 'orbix-ai-photorealistic-render.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              };
+            }
+            if (typeof window.toast === 'function') window.toast('✨ AI Photorealistic Render Generated Successfully!');
+          } catch (err) {
+            alert('AI Render generation error: ' + err.message);
+          } finally {
+            if (progressCont) progressCont.style.display = 'none';
+            startBtn.disabled = false;
+          }
+        });
+      }
+    },
+
     initFurnitureCatalogModal: function () {
       var self = this;
       var modal = document.getElementById('modalFurnitureCatalog');
@@ -5304,12 +5510,12 @@
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
 
-      // Ensure sky is radiant sky blue and outer ground outside walls is lush grass green
-      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
-        scene.background = new THREE.Color(0x82C3EC);
+      // Ensure sky is elegant architectural daylight sky and outer ground is natural
+      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0xD8E8F5) {
+        scene.background = new THREE.Color(0xD8E8F5);
       }
       if (!scene.fog && THREE.FogExp2) {
-        scene.fog = new THREE.FogExp2(0xCBE3F5, 0.000011);
+        scene.fog = new THREE.FogExp2(0xE8F0F8, 0.000008);
       }
       scene.children.forEach(function (c) {
         if (c.isMesh && c.geometry && c.geometry.type === 'PlaneGeometry' && c.geometry.parameters && c.geometry.parameters.width >= 100000) {

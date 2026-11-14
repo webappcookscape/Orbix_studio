@@ -290,11 +290,11 @@ input,select{font:inherit;color:inherit}
 
 /* stage bar */
 .stagebar{
-  flex:0 0 auto;display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;
-  padding:8px 14px;background:var(--panel);border-top:1px solid var(--rule);
-  min-width:0;
+  flex:0 0 auto;display:flex;align-items:center;gap:8px 14px;flex-wrap:nowrap;
+  overflow-x:auto;overflow-y:visible;padding:6px 14px;background:var(--panel);border-top:1px solid var(--rule);
+  min-width:0;scrollbar-width:thin;
 }
-.legend{display:flex;gap:18px;flex-wrap:wrap;min-width:0}
+.legend{display:flex;gap:18px;flex-wrap:nowrap;flex-shrink:0;min-width:0}
 .lg{display:flex;align-items:center;gap:8px;min-width:0}
 .lg-sw{
   width:30px;height:30px;flex:0 0 auto;border:1px solid rgba(0,0,0,.25);
@@ -303,7 +303,7 @@ input,select{font:inherit;color:inherit}
 .lg-t{display:flex;flex-direction:column;min-width:0}
 .lg-role{font-family:var(--cond);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
 .lg-code{font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.viewbtns{margin-left:auto;display:flex;align-items:center;gap:5px;flex-wrap:wrap;max-width:100%}
+.viewbtns{margin-left:auto;display:flex;align-items:center;gap:5px;flex-wrap:nowrap;flex-shrink:0}
 .minibtn{
   font-family:var(--cond);font-size:11px;font-weight:600;letter-spacing:.05em;
   text-transform:uppercase;padding:6px 11px;border:1px solid var(--rule);
@@ -3416,13 +3416,14 @@ body.role-employee #adminCreateEmpBox,
   display: none;
   position: absolute;
   right: 0;
-  top: calc(100% + 5px);
+  bottom: calc(100% + 8px);
+  top: auto;
   background: #1e293b;
   border: 1px solid #475569;
   border-radius: 8px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
   z-index: 99999;
-  min-width: 275px;
+  min-width: 285px;
   padding: 8px;
   backdrop-filter: blur(10px);
 }
@@ -3683,6 +3684,11 @@ body.role-employee #adminCreateEmpBox,
                 <button type="button" class="render-menu-opt" id="renderCustomViewBtn">
                   <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#a7f3d0;">📐 Custom View Render</div>
                   <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Renders exact current 3D camera angle, framing & perspective</div>
+                </button>
+                <div style="height:1px;background:#334155;margin:6px 0;"></div>
+                <button type="button" class="render-menu-opt" id="renderAIRenderBtn">
+                  <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#f472b6;">🤖 AI Photorealism Render (OpenAI)</div>
+                  <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Converts 3D snip into photo-realistic luxury render with smart prompt</div>
                 </button>
               </div>
             </div>
@@ -4955,6 +4961,103 @@ body.role-employee #adminCreateEmpBox,
       <p class="dj-subtitle" id="djStatusText">Extracting 2D floor plan & wall architecture...</p>
       <div class="dj-progress-track">
         <div class="dj-progress-bar" id="djProgressBar"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ AI PHOTOREALISTIC RENDER MODAL (OPENAI) ══════ -->
+<div class="modal" id="modalAIRender" aria-hidden="true" style="display:none;z-index:99999;">
+  <div class="modal-backdrop" id="closeAIRenderBackdrop"></div>
+  <div class="modal-card" style="max-width:760px;width:95%;border-radius:12px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,0.45);max-height:90vh;display:flex;flex-direction:column;">
+    <div class="modal-head" style="background:linear-gradient(135deg,#0f172a,#1e293b);color:#f8fafc;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:22px;">🤖</span>
+        <div>
+          <h3 style="margin:0;font-size:16px;font-weight:700;color:#f8fafc;letter-spacing:-0.2px;">AI Photorealistic Studio Render</h3>
+          <p style="margin:2px 0 0;font-size:11.5px;color:#94a3b8;">Transform 3D view into a luxury photo-realistic interior design image via OpenAI</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close" id="closeAIRenderBtn" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+
+    <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1 1 auto;background:#f8fafc;">
+      <!-- OpenAI API Key Setup -->
+      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <label style="font-size:12px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:6px;">
+            <span>🔑 OpenAI API Key</span>
+            <span style="font-size:10px;background:#dcfce7;color:#15803d;padding:1px 6px;border-radius:10px;font-weight:600;">Stored Securely in Browser</span>
+          </label>
+          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#2563eb;text-decoration:none;">Get Key ↗</a>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input type="password" id="openAIApiKeyInput" placeholder="sk-proj-..." style="flex:1;font-size:12px;padding:7px 10px;border:1px solid #cbd5e1;border-radius:6px;font-family:monospace;">
+          <button type="button" id="saveOpenAIKeyBtn" class="btn" style="background:#0f172a;color:#f8fafc;font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;">Save Key</button>
+        </div>
+      </div>
+
+      <!-- Render Style & Quality Controls -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div>
+          <label style="font-size:11.5px;font-weight:700;color:#334155;display:block;margin-bottom:5px;">Architectural Style</label>
+          <select id="aiRenderStyle" style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;font-weight:500;">
+            <option value="luxury_architectural" selected>✨ Luxury Architectural Digest (Default)</option>
+            <option value="modern_minimalist">🌿 Modern Warm Minimalist</option>
+            <option value="contemporary_indian">🇮🇳 Premium Contemporary Indian Home</option>
+            <option value="cinematic_warm">🌅 Cinematic Golden Hour Lighting</option>
+            <option value="nordic_scandi">❄️ Scandinavian Clean Oak & White</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11.5px;font-weight:700;color:#334155;display:block;margin-bottom:5px;">Lighting Environment</label>
+          <select id="aiRenderLighting" style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;font-weight:500;">
+            <option value="natural_daylight" selected>☀️ Natural Window Daylight + Warm Ceiling LEDs</option>
+            <option value="evening_ambient">🌙 Cozy Evening Accent & Strip Lighting</option>
+            <option value="bright_studio">💡 Bright Commercial Studio Lighting</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Auto-Generated Architectural Prompt -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+          <label style="font-size:11.5px;font-weight:700;color:#334155;">Generated Architectural Prompt (Customizable)</label>
+          <button type="button" id="refreshAIPromptBtn" class="link" style="font-size:11px;color:#2563eb;cursor:pointer;">↻ Refresh from Scene</button>
+        </div>
+        <textarea id="aiRenderPromptText" rows="3" style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-family:sans-serif;line-height:1.45;background:#fff;resize:vertical;"></textarea>
+      </div>
+
+      <!-- Live Generation Status / Progress -->
+      <div id="aiRenderProgressContainer" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-bottom:14px;text-align:center;">
+        <div style="font-size:13px;font-weight:600;color:#1e40af;margin-bottom:4px;" id="aiRenderProgressStatus">🎨 Synthesizing 8K Photorealistic Architectural Render...</div>
+        <div style="font-size:11px;color:#3b82f6;">Generating photorealistic ray-traced materials, reflections, and natural lighting.</div>
+      </div>
+
+      <!-- Output Comparison Area -->
+      <div id="aiRenderResultContainer" style="display:none;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:8px;">Render Comparison (CAD vs AI Photorealism):</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:4px;">Original 3D CAD Snapshot</div>
+            <img id="aiRenderSourceImg" style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:1px solid #cbd5e1;" alt="CAD 3D Snapshot">
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#15803d;margin-bottom:4px;">✨ AI Photorealistic Render</div>
+            <img id="aiRenderOutputImg" style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:2px solid #22c55e;cursor:pointer;" alt="AI Generated Render" title="Click to view full size">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button type="button" class="btn" id="cancelAIRenderBtn" style="padding:8px 16px;">Cancel</button>
+        <button type="button" class="btn primary" id="startAIRenderBtn" style="background:linear-gradient(135deg,#ec4899,#8b5cf6);border:none;color:#fff;font-weight:700;padding:8px 20px;display:inline-flex;align-items:center;gap:6px;border-radius:6px;box-shadow:0 4px 12px rgba(139,92,246,0.35);">
+          <span>✨ Generate Photorealistic Render</span>
+        </button>
+        <button type="button" class="btn" id="downloadAIRenderBtn" style="display:none;background:#15803d;color:#fff;border-color:#15803d;font-weight:700;padding:8px 18px;">
+          <span>💾 Download HD Render</span>
+        </button>
       </div>
     </div>
   </div>
@@ -6313,6 +6416,39 @@ body.role-employee #adminCreateEmpBox,
       });
     },
 
+    disposeSceneResources: function () {
+      try {
+        var scene = null;
+        if (window.__cc && window.__cc.gl && typeof window.__cc.gl.getScene === 'function') {
+          scene = window.__cc.gl.getScene();
+        } else if (window.GL && typeof window.GL.getScene === 'function') {
+          scene = window.GL.getScene();
+        }
+        if (scene) {
+          var homeObj = scene.getObjectByName('OrbixHome3D');
+          if (homeObj) {
+            scene.remove(homeObj);
+            homeObj.traverse(function (obj) {
+              if (obj.geometry) {
+                try { obj.geometry.dispose(); } catch (_) { }
+              }
+              if (obj.material) {
+                var mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+                mats.forEach(function (m) {
+                  if (m.map) try { m.map.dispose(); } catch (_) { }
+                  if (m.bumpMap) try { m.bumpMap.dispose(); } catch (_) { }
+                  if (m.normalMap) try { m.normalMap.dispose(); } catch (_) { }
+                  try { m.dispose(); } catch (_) { }
+                });
+              }
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('[OrbixProjects] disposeSceneResources error:', err);
+      }
+    },
+
     openProject: function (idOrProj, switchView) {
       var self = this;
       var id = (typeof idOrProj === 'object' && idOrProj) ? idOrProj.id : idOrProj;
@@ -6337,6 +6473,7 @@ body.role-employee #adminCreateEmpBox,
         if (typeof this.flushImmediateSave === 'function') {
           this.flushImmediateSave();
         }
+        this.disposeSceneResources();
         if (window.S) {
           window.S.units = [];
           window.S.active = 0;
@@ -11903,12 +12040,14 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Loft - O/S",
       areaSqft: 4.359385596,
       icon: "📦",
-      dimensions: { W: 450, H: 900, D: 18 },
+      dimensions: { W: 450, H: 900, D: 600 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
@@ -12746,12 +12885,14 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Loft - O/S",
       areaSqft: 7.26564266,
       icon: "📦",
-      dimensions: { W: 750, H: 900, D: 18 },
+      dimensions: { W: 750, H: 900, D: 600 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
-        carcass: { material: "BWP_18mm", finish: "Absolute White" }
+        carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 2,
         doorType: "hinged",
         dstyle: "slab",
@@ -12921,12 +13062,14 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Kitchen O/S",
       areaSqft: 9.687523546,
       icon: "🍳",
-      dimensions: { W: 1200, H: 750, D: 18 },
+      dimensions: { W: 1200, H: 750, D: 550 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 2,
         doorType: "hinged",
         dstyle: "slab",
@@ -12956,12 +13099,14 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Kitchen O/S",
       areaSqft: 4.843761773,
       icon: "🍳",
-      dimensions: { W: 600, H: 750, D: 18 },
+      dimensions: { W: 600, H: 750, D: 550 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
@@ -12991,12 +13136,14 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Kitchen O/S",
       areaSqft: 3.875009418,
       icon: "🍳",
-      dimensions: { W: 600, H: 600, D: 18 },
+      dimensions: { W: 600, H: 600, D: 320 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 2,
         doorType: "hinged",
         dstyle: "slab",
@@ -13026,12 +13173,14 @@ body.role-employee #adminCreateEmpBox,
       costCategory: "Kitchen O/S",
       areaSqft: 1.937504709,
       icon: "🍳",
-      dimensions: { W: 300, H: 600, D: 18 },
+      dimensions: { W: 300, H: 600, D: 320 },
       materials: {
         shutter: { material: "HDHMR_18mm", finish: "BLUE" },
         carcass: { material: "none", finish: "none" }
       },
       unitConfig: {
+        isOnlyShutter: true,
+        shutterThickness: 18,
         shutters: 1,
         doorType: "hinged",
         dstyle: "slab",
@@ -14203,9 +14352,27 @@ body.role-employee #adminCreateEmpBox,
         }
       }
 
+      // Check rotation handle on currently selected furniture unit
+      var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
+      if (self.activeTool === 'select' && self.selected && self.selected.length === 1 && self.selected[0].type === 'furniture') {
+        var curSel = furnList.find(function (f) { return f.id === self.selected[0].id; });
+        if (curSel && typeof self.getFurnitureRotationHandleWorld === 'function') {
+          var rotHandlePos = self.getFurnitureRotationHandleWorld(curSel);
+          var rotHitDist = 22 / Math.max(0.01, self.zoom);
+          if (Vec2.dist(worldPt, rotHandlePos) < Math.max(180, rotHitDist)) {
+            self.dragState = {
+              type: 'rotate_furniture',
+              furniture: curSel,
+              startAngle: curSel.rotY || 0,
+              startWorld: Vec2.clone(worldPt)
+            };
+            return;
+          }
+        }
+      }
+
       // Check if clicked directly on any placed furniture unit (exact rotated/L-shape polygon, never oversized circle!)
       var clickedWallCore = (self.activeTool === 'select' && typeof self.isPointOnWallBand === 'function') ? self.isPointOnWallBand(worldPt) : false;
-      var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
       var matchingHits = [];
       if (!clickedWallCore) {
         for (var fi = furnList.length - 1; fi >= 0; fi--) {
@@ -14330,14 +14497,14 @@ body.role-employee #adminCreateEmpBox,
         var dyS = mouseScreen.y - self.dragState.startScreen.y;
         self.underlay.x = self.dragState.origUnderlayPos.x + dxS / self.zoom;
         self.underlay.y = self.dragState.origUnderlayPos.y + dyS / self.zoom;
-        self.render();
+        self.requestRender();
         return;
       }
 
       if (self.dragState && self.dragState.type === 'pan') {
         self.pan.x = self.dragState.startPan.x + (mouseScreen.x - self.dragState.startScreen.x);
         self.pan.y = self.dragState.startPan.y + (mouseScreen.y - self.dragState.startScreen.y);
-        self.render();
+        self.requestRender();
         return;
       }
 
@@ -14346,7 +14513,7 @@ body.role-employee #adminCreateEmpBox,
         if (!self.dragState.hasMoved && Vec2.dist(self.cursorWorld, self.dragState.startWorld) > 10) {
           self.dragState.hasMoved = true;
         }
-        self.render();
+        self.requestRender();
         return;
       }
 
@@ -14482,7 +14649,7 @@ body.role-employee #adminCreateEmpBox,
           }
         }
 
-        self.render();
+        self.requestRender();
         return;
       }
 
@@ -14533,7 +14700,7 @@ body.role-employee #adminCreateEmpBox,
           }
         }
 
-        self.render();
+        self.requestRender();
         return;
       }
 
@@ -14555,7 +14722,20 @@ body.role-employee #adminCreateEmpBox,
           vRef.wall[vRef.endpoint].y = Math.round(vNewPt.y / 25) * 25;
         }
 
-        self.render();
+        self.requestRender();
+        return;
+      }
+
+      if (self.dragState && self.dragState.type === 'rotate_furniture') {
+        var fn = self.dragState.furniture;
+        var fCenter = fn.pos;
+        var angle = Math.atan2(self.cursorWorld.y - fCenter.y, self.cursorWorld.x - fCenter.x) - Math.PI / 2;
+        if (!self.isShiftDown) {
+          var step = Math.PI / 12; // 15° snap
+          angle = Math.round(angle / step) * step;
+        }
+        fn.rotY = angle;
+        self.requestRender();
         return;
       }
 
@@ -14601,7 +14781,7 @@ body.role-employee #adminCreateEmpBox,
           self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
           self.dragState.collidedWith = colCheck.target || colCheck.other;
         }
-        self.render();
+        self.requestRender();
         return;
       }
 
@@ -14625,7 +14805,7 @@ body.role-employee #adminCreateEmpBox,
         }
         dw.dadoTile = true;
         dds.hasMoved = true;
-        self.render();
+        self.requestRender();
         self.onSelectionChange(self.selected);
         return;
       }
@@ -14642,7 +14822,7 @@ body.role-employee #adminCreateEmpBox,
           var swCur = Math.round((swT * dsw.wLen) / 50) * 50;
           dsw.startOffset = Math.max(0, Math.min(dsw.anchorOffset, swCur));
           dsw.endOffset = Math.min(Math.round(dsw.wLen), Math.max(dsw.anchorOffset, swCur));
-          self.render();
+          self.requestRender();
         }
         return;
       }
@@ -14655,7 +14835,7 @@ body.role-employee #adminCreateEmpBox,
         var minO = Math.round(op.width / 2);
         var maxO = Math.max(minO, Math.round(wLen - op.width / 2));
         op.offset = Math.max(minO, Math.min(maxO, Math.round(proj.t * wLen)));
-        self.render();
+        self.requestRender();
         self.onSelectionChange(self.selected);
         return;
       }
@@ -14692,7 +14872,7 @@ body.role-employee #adminCreateEmpBox,
 
       // Live drawing render
       if (self.activeTool === 'wall' || self.activeTool === 'divider' || self.activeTool === 'door' || self.activeTool === 'window' || self.activeTool === 'furniture' || self.activeTool === 'calibrate' || self.activeTool === 'dado' || self.wallChainStart) {
-        self.render();
+        self.requestRender();
       }
     });
 
@@ -14801,7 +14981,10 @@ body.role-employee #adminCreateEmpBox,
           return;
         }
 
-        if (self.dragState.type === 'move_furniture') {
+        if (self.dragState.type === 'rotate_furniture') {
+          self.pushHistory('Rotate Furniture');
+          if (typeof self.onPlanChange === 'function') self.onPlanChange();
+        } else if (self.dragState.type === 'move_furniture') {
           if (!self.dragState.hasMoved && self.dragState.matchingHits && self.dragState.matchingHits.length > 1) {
             // User performed a stationary click on stacked units (e.g. wall unit above floor unit):
             // cycle to the next unit underneath!
@@ -15467,6 +15650,17 @@ body.role-employee #adminCreateEmpBox,
     ];
   };
 
+  PlanEditor.prototype.getFurnitureRotationHandleWorld = function (f) {
+    var ang = f.rotY || 0;
+    var d = (f.dimensions && f.dimensions.D) || 600;
+    var stemDist = (d / 2) + (24 / Math.max(0.01, this.zoom));
+    var vx = -Math.sin(ang), vy = Math.cos(ang);
+    return {
+      x: f.pos.x + vx * stemDist,
+      y: f.pos.y + vy * stemDist
+    };
+  };
+
   // Smart Modular Snapping: 1) Adjacent Unit Jointing, 2) Plumb Stacking, 3) Wall Snatching & Overlap Prevention
   PlanEditor.prototype.snapFurniture = function (furn, candidatePos, candidateRotY) {
     var pos = { x: candidatePos.x, y: candidatePos.y };
@@ -15668,10 +15862,11 @@ body.role-employee #adminCreateEmpBox,
         }
 
         if (!isPerp) {
-          // A. Parallel Side-by-Side: Active unit Left joints to Other unit Right (Back flush)
+          // A. Parallel Side-by-Side: Active unit Left joints to Other unit Right (Front shutter and back flush)
+          var dOffset = (fD === oD) ? 0 : ((fD - oD) / 2);
           var rightJointPos = {
-            x: oPos.x + ((oW + fW) / 2) * uO.x - ((oD - fD) / 2) * vO.x,
-            y: oPos.y + ((oW + fW) / 2) * uO.y - ((oD - fD) / 2) * vO.y
+            x: oPos.x + ((oW + fW) / 2) * uO.x + dOffset * vO.x,
+            y: oPos.y + ((oW + fW) / 2) * uO.y + dOffset * vO.y
           };
           var dRight = Math.hypot(pos.x - rightJointPos.x, pos.y - rightJointPos.y);
           if (dRight < minJointDist && dRight < (bestJoint ? bestJoint.dist : 9999)) {
@@ -15687,10 +15882,10 @@ body.role-employee #adminCreateEmpBox,
             };
           }
 
-          // B. Parallel Side-by-Side: Active unit Right joints to Other unit Left (Back flush)
+          // B. Parallel Side-by-Side: Active unit Right joints to Other unit Left (Front shutter and back flush)
           var leftJointPos = {
-            x: oPos.x - ((oW + fW) / 2) * uO.x - ((oD - fD) / 2) * vO.x,
-            y: oPos.y - ((oW + fW) / 2) * uO.y - ((oD - fD) / 2) * vO.y
+            x: oPos.x - ((oW + fW) / 2) * uO.x + dOffset * vO.x,
+            y: oPos.y - ((oW + fW) / 2) * uO.y + dOffset * vO.y
           };
           var dLeft = Math.hypot(pos.x - leftJointPos.x, pos.y - leftJointPos.y);
           if (dLeft < minJointDist && dLeft < (bestJoint ? bestJoint.dist : 9999)) {
@@ -15811,9 +16006,20 @@ body.role-employee #adminCreateEmpBox,
     var walls = plan.walls || [];
     var rooms = plan.rooms || [];
     var bestWallSnap = null;
-    var minWallDist = isDecorF ? 100 : 160; // snap zone (mm) - reduced to prevent aggressive snatching
+    var minWallDist = isDecorF ? 160 : 250; // generous magnetic snap zone (mm)
     var halfD = fD / 2;
     var halfW = fW / 2;
+
+    // Detect which room the cursor/drag position is currently inside to lock partition wall face
+    var cursorRoom = null;
+    if (rooms && rooms.length > 0) {
+      for (var rk = 0; rk < rooms.length; rk++) {
+        if (rooms[rk].polygon && Core.Vec2.pointInPolygon(candidatePos, rooms[rk].polygon)) {
+          cursorRoom = rooms[rk];
+          break;
+        }
+      }
+    }
 
     var furnIsLCorner = !!(
       (furn.unitConfig && (furn.unitConfig.geometryType === 'l_shaped_corner' || furn.unitConfig.unitType === 'fbcm' || furn.unitConfig.unitType === 'wbcm' || (furn.unitConfig.corner && furn.unitConfig.corner.enabled))) ||
@@ -15837,8 +16043,10 @@ body.role-employee #adminCreateEmpBox,
       // Magnetic 90° corner snapping for L-shaped corner unit
       for (var wa = 0; wa < walls.length; wa++) {
         var wA = walls[wa];
+        if (wA.isDivider) continue;
         for (var wb = wa + 1; wb < walls.length; wb++) {
           var wB = walls[wb];
+          if (wB.isDivider) continue;
           var sharedPt = null, endA = null, endB = null;
           if (Vec2.dist(wA.start, wB.start) < 20) { sharedPt = wA.start; endA = wA.end; endB = wB.end; }
           else if (Vec2.dist(wA.start, wB.end) < 20) { sharedPt = wA.start; endA = wA.end; endB = wB.start; }
@@ -15884,6 +16092,7 @@ body.role-employee #adminCreateEmpBox,
 
     for (var wIdx = 0; wIdx < walls.length; wIdx++) {
       var w = walls[wIdx];
+      if (w.isDivider) continue; // Room dividers must NEVER attract or snap furniture!
       var dx = w.end.x - w.start.x;
       var dy = w.end.y - w.start.y;
       var wLen = Math.hypot(dx, dy);
@@ -15895,9 +16104,14 @@ body.role-employee #adminCreateEmpBox,
 
       // Inner clear segment bounds
       var innerSeg = (Core.getWallInnerSegment ? Core.getWallInnerSegment(w, plan) : null);
-      var startClear = ((innerSeg && innerSeg.startDeduction ? innerSeg.startDeduction : halfT) + halfW) / wLen;
-      var endClear = 1 - (((innerSeg && innerSeg.endDeduction ? innerSeg.endDeduction : halfT) + halfW) / wLen);
-      if (startClear > endClear) { startClear = 0.05; endClear = 0.95; }
+      var startDed = (innerSeg && innerSeg.startDeduction ? innerSeg.startDeduction : halfT);
+      var endDed = (innerSeg && innerSeg.endDeduction ? innerSeg.endDeduction : halfT);
+      var startClear = (startDed + halfW) / wLen;
+      var endClear = 1 - ((endDed + halfW) / wLen);
+      if (startClear > endClear) {
+        startClear = Math.max(0.04, Math.min(0.48, startDed / wLen));
+        endClear = Math.min(0.96, Math.max(0.52, 1 - (endDed / wLen)));
+      }
 
       // Project unit position onto wall segment
       var toCur = { x: pos.x - w.start.x, y: pos.y - w.start.y };
@@ -15910,8 +16124,15 @@ body.role-employee #adminCreateEmpBox,
       var sign = sDist >= 0 ? 1 : -1;
       var normOut = { x: sign * wNorm.x, y: sign * wNorm.y };
 
-      // Room Interior Awareness: if one side is inside a room, orient front into that room
-      if (rooms.length > 0) {
+      // Room Interior Awareness: Lock orientation strictly to cursor's room on partition walls
+      if (cursorRoom && cursorRoom.polygon) {
+        var testPos = { x: proj.x + wNorm.x * (flushDist + 20), y: proj.y + wNorm.y * (flushDist + 20) };
+        var testNeg = { x: proj.x - wNorm.x * (flushDist + 20), y: proj.y - wNorm.y * (flushDist + 20) };
+        var posInCur = Core.Vec2.pointInPolygon(testPos, cursorRoom.polygon);
+        var negInCur = Core.Vec2.pointInPolygon(testNeg, cursorRoom.polygon);
+        if (posInCur && !negInCur) normOut = { x: wNorm.x, y: wNorm.y };
+        else if (negInCur && !posInCur) normOut = { x: -wNorm.x, y: -wNorm.y };
+      } else if (rooms.length > 0) {
         var testPos = { x: proj.x + wNorm.x * (flushDist + 20), y: proj.y + wNorm.y * (flushDist + 20) };
         var testNeg = { x: proj.x - wNorm.x * (flushDist + 20), y: proj.y - wNorm.y * (flushDist + 20) };
         var posInRoom = rooms.some(function (r) { return r.polygon && Core.Vec2.pointInPolygon(testPos, r.polygon); });
@@ -15922,8 +16143,8 @@ body.role-employee #adminCreateEmpBox,
 
       var perpDist = Math.abs(sDist);
 
-      // Wall Snatching: when within 280mm of flush contact
-      if (perpDist < flushDist + minWallDist && t >= -0.15 && t <= 1.15) {
+      // Wall Snatching: when within magnetic snap distance of flush contact
+      if (perpDist < flushDist + minWallDist && t >= -0.2 && t <= 1.2) {
         var snapDist = Math.abs(perpDist - flushDist);
         if (snapDist < minWallDist) {
           minWallDist = snapDist;
@@ -15958,6 +16179,7 @@ body.role-employee #adminCreateEmpBox,
     // Secondary collision clamping against any intersecting wall cores
     for (var w2 = 0; w2 < walls.length; w2++) {
       var wObj = walls[w2];
+      if (wObj.isDivider) continue; // Room dividers do not block furniture!
       var wPoly = Core.wallPolygon(wObj);
       var fDummy = { pos: pos, rotY: rotY, dimensions: fDims };
       var fPoly = Core.getFurniturePolygon(fDummy);
@@ -16363,6 +16585,21 @@ body.role-employee #adminCreateEmpBox,
     this.pan.x = this.width / 2 - ((minX + maxX) / 2) * this.zoom;
     this.pan.y = this.height / 2 - ((minY + maxY) / 2) * this.zoom;
     this.render();
+  };
+
+  PlanEditor.prototype.requestRender = function () {
+    var self = this;
+    if (self._renderRafPending) return;
+    self._renderRafPending = true;
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(function () {
+        self._renderRafPending = false;
+        self.render();
+      });
+    } else {
+      self._renderRafPending = false;
+      self.render();
+    }
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
@@ -18278,6 +18515,45 @@ body.role-employee #adminCreateEmpBox,
             ctx.stroke();
           }
         }
+
+        // Visual 4-Way Move Handle and Rotation Knob on Selected Unit
+        if (!isActivelyMovingThis) {
+          ctx.fillStyle = '#0f172a';
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.5;
+          var pillW = 56, pillH = 18;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(-pillW / 2, -pillH / 2, pillW, pillH, 9);
+          else ctx.rect(-pillW / 2, -pillH / 2, pillW, pillH);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = '700 9px "IBM Plex Sans", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('✥ MOVE', 0, 0);
+
+          var stemLen = 22;
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([3, 2]);
+          ctx.beginPath();
+          ctx.moveTo(0, dPx / 2);
+          ctx.lineTo(0, dPx / 2 + stemLen);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#38bdf8';
+          ctx.beginPath();
+          ctx.arc(0, dPx / 2 + stemLen, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = '#0f172a';
+          ctx.font = '700 8.5px sans-serif';
+          ctx.fillText('↻', 0, dPx / 2 + stemLen + 0.5);
+        }
       }
 
       // If actively dragging and snapped/jointed, display snap feedback badge
@@ -20002,18 +20278,18 @@ window.ORBIX_DADO_TEXTURES = {
     if (typeof THREE === 'undefined') return;
 
     var wallBump = ArchitecturalRenderer.createWallBumpTexture();
-    // Wall Plaster (Natural warm earthy mud plaster - deeper and richer than light beige)
+    // Wall Plaster (Warm architectural alabaster ivory plaster - photorealistic and clean)
     this.materials.wall = new THREE.MeshStandardMaterial({
-      color: 0x9E836A, // Natural warm mud plaster
-      roughness: 0.92,
+      color: 0xF2EFE9, // Warm architectural alabaster
+      roughness: 0.88,
       metalness: 0.01,
       bumpMap: wallBump,
-      bumpScale: 0.08
+      bumpScale: 0.04
     });
 
     // Wall Core (Cutaway section interior)
     this.materials.wallCore = new THREE.MeshStandardMaterial({
-      color: 0x886F58, // Rich earthy mud core
+      color: 0xDCD7CD, // Clean architectural plaster core
       roughness: 0.9,
       metalness: 0.0
     });
@@ -22526,7 +22802,7 @@ window.ORBIX_DADO_TEXTURES = {
     // Shutter vertical span between plinth and countertop
     var shH = Math.max(100, H - actualPlinthH - actualCounterH - 6);
     var hingeY = actualPlinthH + 3 + shH / 2;
-    var frontZ = isBaseOS ? (baseD / 2 - 9) : 0;
+    var frontZ = baseD / 2 - 9;
     var frameZ = frontZ - 12.5;
 
     // Slim perimeter mounting frame (25mm reveal)
@@ -24366,6 +24642,17 @@ window.ORBIX_DADO_TEXTURES = {
         });
       }
 
+      var renderAIRenderBtn = document.getElementById('renderAIRenderBtn');
+      if (renderAIRenderBtn) {
+        renderAIRenderBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          closePhotoRenderMenu();
+          if (typeof self.openAIRenderModal === 'function') {
+            self.openAIRenderModal();
+          }
+        });
+      }
+
       var btnExportJson = document.getElementById('planExportJson');
       if (btnExportJson) {
         btnExportJson.addEventListener('click', function () {
@@ -24465,6 +24752,7 @@ window.ORBIX_DADO_TEXTURES = {
       syncFurnDropdown();
       self.initFurnitureCatalogModal();
       if (typeof self.initDecorModal === 'function') self.initDecorModal();
+      if (typeof self.initAIRenderModal === 'function') self.initAIRenderModal();
       if (typeof self.initFurnishUI === 'function') self.initFurnishUI();
 
       if (furnSel && Core.FURNITURE_CATALOG) {
@@ -27317,6 +27605,200 @@ window.ORBIX_DADO_TEXTURES = {
       }
     },
 
+    openAIRenderModal: function () {
+      var modal = document.getElementById('modalAIRender');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      modal.classList.add('is-open');
+
+      var keyInput = document.getElementById('openAIApiKeyInput');
+      if (keyInput) {
+        keyInput.value = localStorage.getItem('orbix_openai_key') || '';
+      }
+
+      this.updateAIRenderPrompt();
+    },
+
+    closeAIRenderModal: function () {
+      var modal = document.getElementById('modalAIRender');
+      if (!modal) return;
+      modal.style.display = 'none';
+      modal.classList.remove('is-open');
+    },
+
+    updateAIRenderPrompt: function () {
+      var promptEl = document.getElementById('aiRenderPromptText');
+      if (!promptEl) return;
+      var styleEl = document.getElementById('aiRenderStyle');
+      var lightEl = document.getElementById('aiRenderLighting');
+      var style = styleEl ? styleEl.value : 'luxury_architectural';
+      var lighting = lightEl ? lightEl.value : 'natural_daylight';
+
+      var plan = this.project && this.project.plan;
+      var furn = (plan && plan.furniture) || [];
+      var unitNames = [];
+      var roomTitle = 'luxury contemporary interior';
+      if (this.project && this.project.meta && this.project.meta.title) {
+        roomTitle = this.project.meta.title;
+      }
+      furn.slice(0, 8).forEach(function (f) {
+        var n = (f.name || f.code || '').trim();
+        if (n && unitNames.indexOf(n) === -1) unitNames.push(n);
+      });
+
+      var styleDesc = 'ultra-photorealistic architectural interior photograph, Architectural Digest luxury aesthetic, 8K resolution, octane render quality';
+      if (style === 'modern_minimalist') styleDesc = 'warm minimalist interior architecture, natural wood and stone textures, clean lines, calm Zen aesthetic, 8K architectural photo';
+      else if (style === 'contemporary_indian') styleDesc = 'luxury contemporary Indian home interior design, premium modular woodwork, elegant brass detailing, rich textures, 8k architectural photography';
+      else if (style === 'cinematic_warm') styleDesc = 'cinematic golden hour interior lighting, warm amber sun rays, soft atmospheric depth of field, luxury editorial architectural render';
+      else if (style === 'nordic_scandi') styleDesc = 'Scandinavian modern interior, natural white oak and matte white cabinetry, airy bright aesthetic, high-end architectural photo';
+
+      var lightDesc = 'natural daylight streaming through large windows, soft diffused ambient fill, subtle LED under-cabinet strip illumination, realistic contact shadows';
+      if (lighting === 'evening_ambient') lightDesc = 'cozy evening interior ambiance, 3000K warm architectural cove lighting, illuminated glass display shelves, soft shadow gradients';
+      else if (lighting === 'bright_studio') lightDesc = 'bright professional interior studio lighting, high color rendering index, crisp reflections on polished stone and metallic handles';
+
+      var prompt = 'Professional ' + styleDesc + ' of an Indian ' + roomTitle + ' space';
+      if (unitNames.length > 0) {
+        prompt += ', featuring ' + unitNames.join(', ');
+      }
+      prompt += '. Premium modular cabinetry with seamless edge-banding, polished countertops with subtle reflections, vitrified floor tiles, ' + lightDesc + ', highly detailed, realistic materials and physics.';
+
+      promptEl.value = prompt;
+    },
+
+    initAIRenderModal: function () {
+      var self = this;
+      var modal = document.getElementById('modalAIRender');
+      var openBtn = document.getElementById('renderAIRenderBtn');
+      if (!modal) return;
+
+      if (openBtn) {
+        openBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var menu = document.getElementById('photoRenderMenu');
+          if (menu) { menu.style.display = 'none'; menu.classList.remove('is-open'); }
+          self.openAIRenderModal();
+        });
+      }
+
+      modal.querySelectorAll('#closeAIRenderBtn, #closeAIRenderBackdrop, #cancelAIRenderBtn').forEach(function (b) {
+        b.addEventListener('click', function () { self.closeAIRenderModal(); });
+      });
+
+      var keyInput = document.getElementById('openAIApiKeyInput');
+      var saveKeyBtn = document.getElementById('saveOpenAIKeyBtn');
+      if (saveKeyBtn && keyInput) {
+        saveKeyBtn.addEventListener('click', function () {
+          var k = keyInput.value.trim();
+          if (k) {
+            localStorage.setItem('orbix_openai_key', k);
+            if (typeof window.toast === 'function') window.toast('✅ OpenAI API Key Saved Securely in Browser!');
+          } else {
+            localStorage.removeItem('orbix_openai_key');
+            if (typeof window.toast === 'function') window.toast('OpenAI API Key cleared.');
+          }
+        });
+      }
+
+      var styleEl = document.getElementById('aiRenderStyle');
+      var lightEl = document.getElementById('aiRenderLighting');
+      var refreshBtn = document.getElementById('refreshAIPromptBtn');
+      if (styleEl) styleEl.addEventListener('change', function () { self.updateAIRenderPrompt(); });
+      if (lightEl) lightEl.addEventListener('change', function () { self.updateAIRenderPrompt(); });
+      if (refreshBtn) refreshBtn.addEventListener('click', function () { self.updateAIRenderPrompt(); });
+
+      var startBtn = document.getElementById('startAIRenderBtn');
+      var downloadBtn = document.getElementById('downloadAIRenderBtn');
+      var progressCont = document.getElementById('aiRenderProgressContainer');
+      var resultCont = document.getElementById('aiRenderResultContainer');
+      var srcImg = document.getElementById('aiRenderSourceImg');
+      var outImg = document.getElementById('aiRenderOutputImg');
+
+      if (startBtn) {
+        startBtn.addEventListener('click', async function () {
+          var apiKey = (keyInput && keyInput.value.trim()) || localStorage.getItem('orbix_openai_key') || '';
+          var promptText = (document.getElementById('aiRenderPromptText') && document.getElementById('aiRenderPromptText').value.trim()) || 'Luxury architectural interior photograph';
+
+          var gl = window.__cc && window.__cc.gl;
+          if (!gl || typeof gl.snapshot !== 'function') {
+            if (typeof window.toast === 'function') window.toast('3D Studio is not active.');
+            return;
+          }
+
+          // 1. Capture Current 3D View as visual base
+          var cadSnip = gl.snapshot(1920, 1080, { mode: 'custom', quality: 0.95 });
+          if (!cadSnip) {
+            if (typeof window.toast === 'function') window.toast('Failed to capture 3D snip.');
+            return;
+          }
+
+          if (srcImg) srcImg.src = cadSnip;
+          if (progressCont) progressCont.style.display = 'block';
+          if (resultCont) resultCont.style.display = 'none';
+          if (downloadBtn) downloadBtn.style.display = 'none';
+          startBtn.disabled = true;
+
+          try {
+            if (!apiKey) {
+              if (progressCont) progressCont.style.display = 'none';
+              startBtn.disabled = false;
+              alert('Please enter your OpenAI API key above and click "Save Key" to generate live AI photorealistic renders.');
+              if (keyInput) keyInput.focus();
+              return;
+            }
+
+            // Call OpenAI DALL-E 3 API with expert architectural prompt
+            var response = await fetch('https://api.openai.com/v1/images/generations', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + apiKey
+              },
+              body: JSON.stringify({
+                model: 'dall-e-3',
+                prompt: promptText.slice(0, 1000),
+                n: 1,
+                size: '1792x1024',
+                quality: 'hd',
+                style: 'natural'
+              })
+            });
+
+            var data = await response.json();
+            if (data.error) {
+              throw new Error(data.error.message || 'OpenAI API Error');
+            }
+
+            var aiUrl = data.data && data.data[0] && (data.data[0].url || data.data[0].b64_json);
+            if (!aiUrl) throw new Error('No image returned by OpenAI');
+
+            if (outImg) {
+              outImg.src = aiUrl;
+              outImg.onclick = function () { window.open(aiUrl, '_blank'); };
+            }
+            if (resultCont) resultCont.style.display = 'block';
+            if (downloadBtn) {
+              downloadBtn.style.display = 'inline-flex';
+              downloadBtn.onclick = function () {
+                var a = document.createElement('a');
+                a.href = aiUrl;
+                a.target = '_blank';
+                a.download = 'orbix-ai-photorealistic-render.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              };
+            }
+            if (typeof window.toast === 'function') window.toast('✨ AI Photorealistic Render Generated Successfully!');
+          } catch (err) {
+            alert('AI Render generation error: ' + err.message);
+          } finally {
+            if (progressCont) progressCont.style.display = 'none';
+            startBtn.disabled = false;
+          }
+        });
+      }
+    },
+
     initFurnitureCatalogModal: function () {
       var self = this;
       var modal = document.getElementById('modalFurnitureCatalog');
@@ -29170,12 +29652,12 @@ window.ORBIX_DADO_TEXTURES = {
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
 
-      // Ensure sky is radiant sky blue and outer ground outside walls is lush grass green
-      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
-        scene.background = new THREE.Color(0x82C3EC);
+      // Ensure sky is elegant architectural daylight sky and outer ground is natural
+      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0xD8E8F5) {
+        scene.background = new THREE.Color(0xD8E8F5);
       }
       if (!scene.fog && THREE.FogExp2) {
-        scene.fog = new THREE.FogExp2(0xCBE3F5, 0.000011);
+        scene.fog = new THREE.FogExp2(0xE8F0F8, 0.000008);
       }
       scene.children.forEach(function (c) {
         if (c.isMesh && c.geometry && c.geometry.type === 'PlaneGeometry' && c.geometry.parameters && c.geometry.parameters.width >= 100000) {
@@ -31952,7 +32434,14 @@ window.ORBIX_DADO_TEXTURES = {
   var GL = (function () {
     var ok = false, renderer, scene, camera, root, floor, pmrem, matCache = {}, texCache3 = {}, target, dist = 3000, keyL = null;
     var composer = null, ssao = null, smaa = null;
-    function render() { if (composer) composer.render(); else renderer.render(scene, camera); }
+    function render() {
+      if (typeof document !== 'undefined') {
+        var designTab = document.querySelector('.vtab[data-tab="design"]');
+        var isDesignActive = !designTab || designTab.classList.contains('is-on');
+        if (!isDesignActive && !window.__renderingSnapshot) return;
+      }
+      if (composer) composer.render(); else renderer.render(scene, camera);
+    }
     /* ── post-processing: screen-space ambient occlusion (contact shadows in every joint) + SMAA ── */
     function fxInit() {
       if (!ok || composer || !(window.THREE && THREE.EffectComposer && THREE.SSAOPass)) return false;
@@ -32139,8 +32628,8 @@ window.ORBIX_DADO_TEXTURES = {
       stage.appendChild(renderer.domElement);
       stage.classList.add("gl");
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
-      scene.fog = new THREE.FogExp2(0xCBE3F5, 0.000011); // Subtle atmospheric perspective haze
+      scene.background = new THREE.Color(0xD8E8F5); // Elegant architectural daylight sky
+      scene.fog = new THREE.FogExp2(0xE8F0F8, 0.000008); // Subtle atmospheric perspective haze
       camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
@@ -32151,7 +32640,7 @@ window.ORBIX_DADO_TEXTURES = {
       keyL.position.set(-3800, 7200, 5600); keyL.castShadow = true;
       keyL.shadow.mapSize.set(4096, 4096);
       var sc = keyL.shadow.camera; sc.left = -9500; sc.right = 9500; sc.top = 9500; sc.bottom = -9500; sc.near = 200; sc.far = 30000;
-      keyL.shadow.bias = -0.00025; keyL.shadow.normalBias = 1.6; keyL.shadow.radius = 2.8;
+      keyL.shadow.bias = -0.00025; keyL.shadow.normalBias = 1.6; keyL.shadow.radius = 2.2;
       scene.add(keyL); scene.add(keyL.target);
       /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
       var fill = new THREE.DirectionalLight(0xdce8fa, 0.58); fill.position.set(2800, 2100, 5000); scene.add(fill);
@@ -34669,7 +35158,7 @@ window.ORBIX_DADO_TEXTURES = {
         }
       }
 
-      // 1. Click unit: Show translation arrow gizmo, DO NOT drag unit
+      // 1. Click unit: Show translation arrow gizmo and enable direct 3D floor drag
       if (GL.ok && GL.pickFurniture && e.button === 0) {
         var fHit = GL.pickFurniture(e.clientX, e.clientY);
         if (fHit) {
@@ -34683,6 +35172,21 @@ window.ORBIX_DADO_TEXTURES = {
           // Show Gizmo Arrows for this unit!
           GL.gizmoSet(groupObj, fHit.id);
 
+          var fp = GL.floorPoint(e.clientX, e.clientY) || { x: groupObj.position.x, z: groupObj.position.z };
+          furnDrag = {
+            id: fHit.id,
+            obj: groupObj,
+            startX: e.clientX,
+            startY: e.clientY,
+            startPos: { x: groupObj.position.x, z: groupObj.position.z },
+            offset: { x: groupObj.position.x - fp.x, z: groupObj.position.z - fp.z },
+            dims: (groupObj.userData && groupObj.userData.dims) || { W: 1200, H: 850, D: 600 },
+            moved: false
+          };
+          try { stage.setPointerCapture(e.pointerId); } catch (_) { }
+          e.stopImmediatePropagation();
+          e.preventDefault();
+
           if (window.OrbixUI && window.OrbixUI.editor) {
             window.OrbixUI.editor.selected = [{ type: 'furniture', id: fHit.id }];
             if (window.OrbixUI.editor.render) window.OrbixUI.editor.render();
@@ -34691,6 +35195,7 @@ window.ORBIX_DADO_TEXTURES = {
           if (window.OrbixUI && typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function') {
             window.OrbixUI.selectFurnitureIn3DStudio(fHit.id);
           }
+          return;
         } else {
           // Clicked background: hide gizmo
           if (!hDrag && GL.gizmoSet) GL.gizmoSet(null);
@@ -34792,7 +35297,7 @@ window.ORBIX_DADO_TEXTURES = {
         }
       }
 
-      // Furniture drag in 3D (legacy fallback)
+      // Furniture drag in 3D: direct floor translation + smart wall/adjacent unit snapping
       if (furnDrag) {
         e.stopImmediatePropagation();
         e.preventDefault();
@@ -34802,8 +35307,32 @@ window.ORBIX_DADO_TEXTURES = {
             furnDrag.moved = true;
             stage.style.cursor = "grabbing";
           }
-          furnDrag.obj.position.x = p.x + furnDrag.offset.x;
-          furnDrag.obj.position.z = p.z + furnDrag.offset.z;
+          var targetX = p.x + furnDrag.offset.x;
+          var targetZ = p.z + furnDrag.offset.z;
+
+          // Live snap to wall / adjacent units in 3D if plan is available
+          var planM = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+          if (window.OrbixCore && window.OrbixCore.snapFurniture && planM) {
+            var candFurn = {
+              id: furnDrag.id,
+              pos: { x: targetX, y: targetZ },
+              elevation: furnDrag.obj.position.y || 0,
+              rotY: -(furnDrag.obj.rotation.y || 0),
+              dimensions: furnDrag.dims
+            };
+            var snapped = window.OrbixCore.snapFurniture(candFurn, planM, furnDrag.id);
+            if (snapped && snapped.pos) {
+              targetX = snapped.pos.x;
+              targetZ = snapped.pos.y;
+              if (typeof snapped.rotY === 'number') {
+                furnDrag.obj.rotation.y = -snapped.rotY;
+              }
+            }
+          }
+
+          furnDrag.obj.position.x = targetX;
+          furnDrag.obj.position.z = targetZ;
+          if (GL.gizmoSet) GL.gizmoSet(furnDrag.obj, furnDrag.id);
           GL.settle();
         }
         return;
