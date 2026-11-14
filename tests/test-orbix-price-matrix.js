@@ -4,24 +4,27 @@ const OrbixCore = require('../orbix-core.js');
 console.log('--- RUNNING ORBIX PRICE MATRIX & TIERS TESTS ---');
 
 // 1. Verify Price Tiers
-const expectedTiers = ['PRICE 1', 'PRICE 2', 'PRICE 3', 'PRICE 4', 'LIVE LANE', 'CC MATTE', 'CC GLOSSY', 'SURABHI', 'MR+'];
+const expectedTiers = [
+  'zappo - el pearl', 'pot&cafe', 'homespace', 'livlame',
+  'LL elite', 'CC MATTE', 'CC GLOSSY', 'SURABHI', 'MR+'
+];
 assert.deepStrictEqual(OrbixCore.PRICE_TIERS, expectedTiers, 'Price tiers list must match exactly');
 console.log('✓ Price Tiers verified (9 tiers: ' + expectedTiers.join(', ') + ')');
 
 // 2. Verify 12 Models and exact rates from the Excel sheet
 const expectedRates = {
-  kitchen_wm:    { 'PRICE 1': 1545, 'PRICE 2': 1696, 'PRICE 3': 1785, 'PRICE 4': 1950, 'LIVE LANE': 2034, 'CC MATTE': 2228, 'CC GLOSSY': 2422, 'SURABHI': 2616, 'MR+': 2929 },
-  kitchen_fm:    { 'PRICE 1': 1796, 'PRICE 2': 1969, 'PRICE 3': 1975, 'PRICE 4': 2214, 'LIVE LANE': 2500, 'CC MATTE': 2906, 'CC GLOSSY': 3113, 'SURABHI': 3391, 'MR+': 3786 },
-  kitchen_d2d3:  { 'PRICE 1': 1972, 'PRICE 2': 2196, 'PRICE 3': 2714, 'PRICE 4': 2527, 'LIVE LANE': 3600, 'CC MATTE': 3945, 'CC GLOSSY': 4172, 'SURABHI': 4469, 'MR+': 5227 },
-  kitchen_os:    { 'PRICE 1': 895,  'PRICE 2': 984,  'PRICE 3': 1184, 'PRICE 4': 1236, 'LIVE LANE': 1196, 'CC MATTE': 1250, 'CC GLOSSY': 1567, 'SURABHI': 1786, 'MR+': 1984 },
-  spice_rack:    { 'PRICE 1': 2272, 'PRICE 2': 2725, 'PRICE 3': 3996, 'PRICE 4': 4579, 'LIVE LANE': 4650, 'CC MATTE': 4969, 'CC GLOSSY': 5679, 'SURABHI': 5786, 'MR+': 6969 },
-  wr_shelves:    { 'PRICE 1': 1545, 'PRICE 2': 1696, 'PRICE 3': 1872, 'PRICE 4': 1996, 'LIVE LANE': 1827, 'CC MATTE': 1984, 'CC GLOSSY': 2072, 'SURABHI': 2227, 'MR+': 2714 },
-  wr_drawers:    { 'PRICE 1': 1740, 'PRICE 2': 1891, 'PRICE 3': 2067, 'PRICE 4': 2191, 'LIVE LANE': 2022, 'CC MATTE': 2179, 'CC GLOSSY': 2267, 'SURABHI': 2600, 'MR+': 3109 },
-  wr_sliding:    { 'PRICE 1': 1795, 'PRICE 2': 1984, 'PRICE 3': 2195, 'PRICE 4': 2295, 'LIVE LANE': 2345, 'CC MATTE': 2575, 'CC GLOSSY': 2725, 'SURABHI': 2929, 'MR+': 3366 },
-  loft_os:       { 'PRICE 1': 895,  'PRICE 2': 996,  'PRICE 3': 1069, 'PRICE 4': 1227, 'LIVE LANE': 996,  'CC MATTE': 1127, 'CC GLOSSY': 1269, 'SURABHI': 1369, 'MR+': 1567 },
-  pooja_cnc:     { 'PRICE 1': 1969, 'PRICE 2': 2196, 'PRICE 3': 2725, 'PRICE 4': 3169, 'LIVE LANE': 2100, 'CC MATTE': 2260, 'CC GLOSSY': 2433, 'SURABHI': 2848, 'MR+': 3129 },
-  tv_cabinet:    { 'PRICE 1': 1984, 'PRICE 2': 2724, 'PRICE 3': 2929, 'PRICE 4': 3786, 'LIVE LANE': 3600, 'CC MATTE': 4200, 'CC GLOSSY': 4359, 'SURABHI': 4844, 'MR+': 5679 },
-  wall_paneling: { 'PRICE 1': 796,  'PRICE 2': 845,  'PRICE 3': 936,  'PRICE 4': 969,  'LIVE LANE': 960,  'CC MATTE': 1027, 'CC GLOSSY': 1196, 'SURABHI': 1247, 'MR+': 1427 }
+  kitchen_wm:    { 'zappo - el pearl': 1545, 'pot&cafe': 1696, 'homespace': 1785, 'livlame': 1950, 'LL elite': 2034, 'CC MATTE': 2228, 'CC GLOSSY': 2422, 'SURABHI': 2616, 'MR+': 2929 },
+  kitchen_fm:    { 'zappo - el pearl': 1796, 'pot&cafe': 1969, 'homespace': 1975, 'livlame': 2214, 'LL elite': 2500, 'CC MATTE': 2906, 'CC GLOSSY': 3113, 'SURABHI': 3391, 'MR+': 3786 },
+  kitchen_d2d3:  { 'zappo - el pearl': 1972, 'pot&cafe': 2196, 'homespace': 2714, 'livlame': 2527, 'LL elite': 3600, 'CC MATTE': 3945, 'CC GLOSSY': 4172, 'SURABHI': 4469, 'MR+': 5227 },
+  kitchen_os:    { 'zappo - el pearl': 895,  'pot&cafe': 984,  'homespace': 1184, 'livlame': 1236, 'LL elite': 1196, 'CC MATTE': 1250, 'CC GLOSSY': 1567, 'SURABHI': 1786, 'MR+': 1984 },
+  spice_rack:    { 'zappo - el pearl': 2272, 'pot&cafe': 2725, 'homespace': 3996, 'livlame': 4579, 'LL elite': 4650, 'CC MATTE': 4969, 'CC GLOSSY': 5679, 'SURABHI': 5786, 'MR+': 6969 },
+  wr_shelves:    { 'zappo - el pearl': 1545, 'pot&cafe': 1696, 'homespace': 1872, 'livlame': 1996, 'LL elite': 1827, 'CC MATTE': 1984, 'CC GLOSSY': 2072, 'SURABHI': 2227, 'MR+': 2714 },
+  wr_drawers:    { 'zappo - el pearl': 1740, 'pot&cafe': 1891, 'homespace': 2067, 'livlame': 2191, 'LL elite': 2022, 'CC MATTE': 2179, 'CC GLOSSY': 2267, 'SURABHI': 2600, 'MR+': 3109 },
+  wr_sliding:    { 'zappo - el pearl': 1795, 'pot&cafe': 1984, 'homespace': 2195, 'livlame': 2295, 'LL elite': 2345, 'CC MATTE': 2575, 'CC GLOSSY': 2725, 'SURABHI': 2929, 'MR+': 3366 },
+  loft_os:       { 'zappo - el pearl': 895,  'pot&cafe': 996,  'homespace': 1069, 'livlame': 1227, 'LL elite': 996,  'CC MATTE': 1127, 'CC GLOSSY': 1269, 'SURABHI': 1369, 'MR+': 1567 },
+  pooja_cnc:     { 'zappo - el pearl': 1969, 'pot&cafe': 2196, 'homespace': 2725, 'livlame': 3169, 'LL elite': 2100, 'CC MATTE': 2260, 'CC GLOSSY': 2433, 'SURABHI': 2848, 'MR+': 3129 },
+  tv_cabinet:    { 'zappo - el pearl': 1984, 'pot&cafe': 2724, 'homespace': 2929, 'livlame': 3786, 'LL elite': 3600, 'CC MATTE': 4200, 'CC GLOSSY': 4359, 'SURABHI': 4844, 'MR+': 5679 },
+  wall_paneling: { 'zappo - el pearl': 796,  'pot&cafe': 845,  'homespace': 936,  'livlame': 969,  'LL elite': 960,  'CC MATTE': 1027, 'CC GLOSSY': 1196, 'SURABHI': 1247, 'MR+': 1427 }
 };
 
 for (const modelKey in expectedRates) {
@@ -53,12 +56,19 @@ const slidingWardrobe = OrbixCore.createFurniturePlacement({
 });
 proj.plan.furniture.push(kWall, slidingWardrobe);
 
-// Calculate with PRICE 1
+// Calculate with new renamed tier 'zappo - el pearl' (p1)
+proj.rateCard.selectedTier = 'zappo - el pearl';
+const qZappo = OrbixCore.generateFullQuotation(proj);
+assert.strictEqual(qZappo.furnitureItems[0].baseRate, 1545, 'Kitchen WM should be ₹1545 in zappo - el pearl');
+assert.strictEqual(qZappo.furnitureItems[1].baseRate, 1795, 'Sliding Wardrobe should be ₹1795 in zappo - el pearl');
+console.log('✓ zappo - el pearl (p1) quotation verified: Kitchen WM rate = ₹1545, Wardrobe sliding rate = ₹1795');
+
+// Test backward-compatibility with PRICE 1 alias
 proj.rateCard.selectedTier = 'PRICE 1';
 const qP1 = OrbixCore.generateFullQuotation(proj);
-assert.strictEqual(qP1.furnitureItems[0].baseRate, 1545, 'Kitchen WM should be ₹1545 in PRICE 1');
-assert.strictEqual(qP1.furnitureItems[1].baseRate, 1795, 'Sliding Wardrobe should be ₹1795 in PRICE 1');
-console.log('✓ PRICE 1 quotation verified: Kitchen WM rate = ₹1545, Wardrobe sliding rate = ₹1795');
+assert.strictEqual(qP1.furnitureItems[0].baseRate, 1545, 'Kitchen WM should be ₹1545 in PRICE 1 alias');
+assert.strictEqual(qP1.furnitureItems[1].baseRate, 1795, 'Sliding Wardrobe should be ₹1795 in PRICE 1 alias');
+console.log('✓ PRICE 1 alias quotation verified: Kitchen WM rate = ₹1545, Wardrobe sliding rate = ₹1795');
 
 // Switch to CC MATTE
 proj.rateCard.selectedTier = 'CC MATTE';
@@ -74,11 +84,17 @@ assert.strictEqual(qMR.furnitureItems[0].baseRate, 2929, 'Kitchen WM should be �
 assert.strictEqual(qMR.furnitureItems[1].baseRate, 3366, 'Sliding Wardrobe should be ₹3366 in MR+');
 console.log('✓ MR+ quotation verified: Kitchen WM rate = ₹2929, Wardrobe sliding rate = ₹3366');
 
-// Item level override
-kWall.tierOverride = 'LIVE LANE';
+// Item level override with new renamed tier 'LL elite' (livelane)
+kWall.tierOverride = 'LL elite';
 const qOverride = OrbixCore.generateFullQuotation(proj);
-assert.strictEqual(qOverride.furnitureItems[0].baseRate, 2034, 'Kitchen WM override to LIVE LANE should be ₹2034');
+assert.strictEqual(qOverride.furnitureItems[0].baseRate, 2034, 'Kitchen WM override to LL elite should be ₹2034');
 assert.strictEqual(qOverride.furnitureItems[1].baseRate, 3366, 'Sliding Wardrobe remains MR+ at ₹3366');
-console.log('✓ Item-level tier override verified');
+console.log('✓ Item-level tier override with LL elite verified');
+
+// Item level override with legacy 'LIVE LANE' alias
+kWall.tierOverride = 'LIVE LANE';
+const qOverrideLegacy = OrbixCore.generateFullQuotation(proj);
+assert.strictEqual(qOverrideLegacy.furnitureItems[0].baseRate, 2034, 'Kitchen WM override to LIVE LANE should be ₹2034');
+console.log('✓ Item-level tier override with LIVE LANE alias verified');
 
 console.log('ALL PRICE MATRIX TESTS PASSED SUCCESSFULLY!');

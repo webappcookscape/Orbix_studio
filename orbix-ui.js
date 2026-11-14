@@ -5165,10 +5165,10 @@
       var commSummary = this.computeCommercialSummary(quote.subtotalWoodwork, commCharges);
 
       if (!rateCard.selectedTier) {
-        rateCard.selectedTier = 'PRICE 1';
+        rateCard.selectedTier = 'zappo - el pearl';
         this.project.rateCard = rateCard;
       }
-      var currentTier = rateCard.selectedTier || 'PRICE 1';
+      var currentTier = (Core.normalizeTierName ? Core.normalizeTierName(rateCard.selectedTier) : rateCard.selectedTier) || 'zappo - el pearl';
       var tiers = Core.PRICE_TIERS || [];
 
       var html = '<div class="boq-sheet">' +
@@ -5929,7 +5929,7 @@
       var pills = boqEl.querySelectorAll('.tier-pill, .matrix-th-btn');
       pills.forEach(function (pill) {
         pill.addEventListener('click', function () {
-          var t = pill.getAttribute('data-tier') || 'PRICE 1';
+          var t = pill.getAttribute('data-tier') || 'zappo - el pearl';
           self.project.rateCard = self.project.rateCard || Core.DEFAULT_RATE_CARD;
           self.project.rateCard.selectedTier = t;
           self.project.rateCard.roomTiers = self.project.rateCard.roomTiers || {};
@@ -6255,7 +6255,7 @@
       var self = this;
       this.sync3DStudioUnits();
       var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms);
-      var currentTier = (this.project.rateCard && this.project.rateCard.selectedTier) || 'PRICE 1';
+      var currentTier = (this.project.rateCard && (Core.normalizeTierName ? Core.normalizeTierName(this.project.rateCard.selectedTier) : this.project.rateCard.selectedTier)) || 'zappo - el pearl';
       var meta = (this.project && this.project.meta) || {};
       var roomScopeText = quote.isFiltered ? ('Filtered: ' + (self.selectedBOQRooms || []).join(', ')) : 'All Rooms (Entire Home)';
 
