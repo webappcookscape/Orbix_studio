@@ -300,27 +300,37 @@
     activeProjectId: null,
     projects: [],
     users: [
-      // ── 3 Admins ──
-      { id: 'usr_admin', name: 'Cookscape Admin', username: 'admin', email: 'admin@cookscape.com', role: 'admin', designation: 'System Administrator', company: 'Cookscape', avatar: 'CA' },
-      { id: 'usr_sangathamizh', name: 'Sangathamizh', username: 'sangathamizh', email: 'designteam.cookscape@gmail.com', role: 'admin', designation: 'Business Head', company: 'Cookscape', avatar: 'S' },
-      { id: 'usr_dinesh', name: 'Dinesh Kumar', username: 'dinesh', email: 'dinesh@cookscape.com', role: 'admin', designation: 'Managing Director', company: 'Cookscape', avatar: 'DK' },
+      // ── Admin ──
+      {"id":"usr_admin","name":"Cookscape Admin","username":"admin","email":"admin@cookscape.com","password":"studio@2026","role":"admin","designation":"System Administrator","company":"Cookscape","avatar":"CA"},
 
-      // ── 15 Employees / Modular Designers / Floor Architects ──
-      { id: 'usr_elakkiya', name: 'Elakkiya', username: 'elakkiya', email: 'elakkiya.sakthivelu3089@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'E' },
-      { id: 'usr_aravind', name: 'Aravind', username: 'aravind', email: 'webapp.cookscape@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'A' },
-      { id: 'usr_dev', name: 'Dev Kancheti', username: 'dev', email: 'dev@cookscape.com', role: 'employee', designation: 'Design Lead', company: 'Cookscape', avatar: 'DK' },
-      { id: 'usr_priya', name: 'Priya Sharma', username: 'priya', email: 'priya@cookscape.com', role: 'employee', designation: 'Senior Modular Designer', company: 'Cookscape', avatar: 'PS' },
-      { id: 'usr_rahul', name: 'Rahul Verma', username: 'rahul', email: 'rahul@cookscape.com', role: 'employee', designation: 'Kitchen Specialist', company: 'Cookscape', avatar: 'RV' },
-      { id: 'usr_karthik', name: 'Karthik Raman', username: 'karthik', email: 'karthik@cookscape.com', role: 'employee', designation: 'Wardrobe CAD Engineer', company: 'Cookscape', avatar: 'KR' },
-      { id: 'usr_sneha', name: 'Sneha Patel', username: 'sneha', email: 'sneha@cookscape.com', role: 'employee', designation: 'Interior Architect', company: 'Cookscape', avatar: 'SP' },
-      { id: 'usr_vikram', name: 'Vikram Singhania', username: 'vikram', email: 'vikram@cookscape.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'VS' },
-      { id: 'usr_ananya', name: 'Ananya Iyer', username: 'ananya', email: 'ananya@cookscape.com', role: 'employee', designation: 'Space Planner', company: 'Cookscape', avatar: 'AI' },
-      { id: 'usr_rajesh', name: 'Rajesh Nair', username: 'rajesh', email: 'rajesh@cookscape.com', role: 'employee', designation: 'Modular Kitchen Designer', company: 'Cookscape', avatar: 'RN' },
-      { id: 'usr_deepa', name: 'Deepa Menon', username: 'deepa', email: 'deepa@cookscape.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'DM' },
-      { id: 'usr_suresh', name: 'Suresh Babu', username: 'suresh', email: 'suresh@cookscape.com', role: 'employee', designation: 'Cabinetry Drafter', company: 'Cookscape', avatar: 'SB' },
-      { id: 'usr_meera', name: 'Meera Krishnan', username: 'meera', email: 'meera@cookscape.com', role: 'employee', designation: '3D Visualizer & Designer', company: 'Cookscape', avatar: 'MK' },
-      { id: 'usr_pooja', name: 'Pooja Hegde', username: 'pooja', email: 'pooja@cookscape.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'PH' },
-      { id: 'usr_naveen', name: 'Naveen Prasad', username: 'naveen', email: 'naveen@cookscape.com', role: 'employee', designation: 'Modular CAD Specialist', company: 'Cookscape', avatar: 'NP' }
+      // ── 27 Employees (LA / FA) ──
+      {"id":"usr_shiraja","name":"SHIRAJA SUBRAMANIAN","username":"shiraja","email":"keyinteriors.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"SS"},
+      {"id":"usr_haseena","name":"HASEENA AYESHA","username":"haseena","email":"haseenaayeshaa@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"HA"},
+      {"id":"usr_abirami","name":"Abirami.k","username":"abirami","email":"abiramik707@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"A"},
+      {"id":"usr_vijaymanoj","name":"VIJAY MANOJ","username":"vijaymanoj","email":"vijaymanoj1214@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"VM"},
+      {"id":"usr_manikandan","name":"MANIKANDAN K","username":"manikandan","email":"manikandanidd02@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"MK"},
+      {"id":"usr_kalaimadhi","name":"Kalaimadhi D.A.","username":"kalaimadhi","email":"kalaimadhi06@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"KD"},
+      {"id":"usr_pravin","name":"Pravin M","username":"pravin","email":"pravindoss3@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"PM"},
+      {"id":"usr_suhail","name":"Suhail Akthar","username":"suhail","email":"suhailakthar555@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"SA"},
+      {"id":"usr_varshini","name":"Varshini","username":"varshini","email":"varshini.san@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"V"},
+      {"id":"usr_renukha","name":"Renukha Gopalan","username":"renukha","email":"durability.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"RG"},
+      {"id":"usr_sivakumar_r","name":"R.siva kumar","username":"sivakumar.r","email":"interact.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"RK"},
+      {"id":"usr_poonguzhali","name":"Poonguzhali Arumugam","username":"poonguzhali","email":"helpdesk.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"PA"},
+      {"id":"usr_meenakshi","name":"meenakshi","username":"meenakshi","email":"ps.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"M"},
+      {"id":"usr_abishek","name":"Abishek kumar","username":"abishek","email":"designsolution.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"AK"},
+      {"id":"usr_julia","name":"Julia Asha","username":"julia","email":"stylishomes.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"JA"},
+      {"id":"usr_niveditha","name":"Niveditha . S","username":"niveditha","email":"interior.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"N."},
+      {"id":"usr_shivaranjani","name":"Shivaranjani","username":"shivaranjani","email":"renovation.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"S"},
+      {"id":"usr_yogesh","name":"Yogesh kumar JK","username":"yogesh","email":"service.wall2wall@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"YK"},
+      {"id":"usr_keerthika","name":"Keerthika G","username":"keerthika","email":"layout.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"KG"},
+      {"id":"usr_priyadharshini","name":"Priyadharshini Thangavel","username":"priyadharshini","email":"designers.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"PT"},
+      {"id":"usr_mohsina","name":"Mohsina Noor. A","username":"mohsina","email":"khanmohsina991@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"MN"},
+      {"id":"usr_kanimozhi","name":"Kanimozhi","username":"kanimozhi","email":"kanimozhianbuchezhian04@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"K"},
+      {"id":"usr_vanitha","name":"Vanitha Kaspar","username":"vanitha","email":"vanithakaspar@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"VK"},
+      {"id":"usr_ragulnath","name":"RAGULNATH G","username":"ragulnath","email":"sketches.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"RG"},
+      {"id":"usr_sivakumar_kj","name":"SIVAKUMAR KJ","username":"sivakumar.kj","email":"designideas.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"SK"},
+      {"id":"usr_sudarmathi","name":"Sudarmathi Selvam","username":"sudarmathi","email":"drawings.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"SS"},
+      {"id":"usr_sowmiya","name":"Sowmiya. G","username":"sowmiya","email":"sowmiyaganesan17@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"SG"}
     ],
     filter: 'all',
     searchQuery: '',
@@ -2265,7 +2275,7 @@
           var name = document.getElementById('newEmpName').value.trim();
           var username = document.getElementById('newEmpUsername').value.trim();
           var email = document.getElementById('newEmpEmail').value.trim();
-          var password = document.getElementById('newEmpPassword').value.trim() || '123456';
+          var password = document.getElementById('newEmpPassword').value.trim() || 'studio@2026';
           var title = document.getElementById('newEmpTitle').value.trim() || 'Modular Designer';
           var role = document.getElementById('newEmpRole').value || 'employee';
 
@@ -2421,7 +2431,7 @@
             if (!matched && (cleanId === 'admin' || cleanId === 'admin@cookscape.com')) {
               matched = allKnown[0];
             }
-            var isPassValid = (password === 'admin123' || password === '123456' || (matched && matched.password && matched.password === password));
+            var isPassValid = (password === 'admin123' || password === 'studio@2026' || (matched && matched.password && matched.password === password));
             if (matched && isPassValid) {
               completeLogin(matched);
               return true;

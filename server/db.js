@@ -29,120 +29,316 @@ function sanitizeUser(user) {
 // Fallback seeds used only for initial dev bootstrap if database has 0 projects
 const DEFAULT_USERS = [
   {
-    id: 'usr_admin',
-    name: 'Cookscape Admin',
-    username: 'admin',
-    email: 'admin@cookscape.com',
-    password: 'admin123',
-    role: 'admin',
-    designation: 'System Administrator',
-    company: 'Cookscape',
-    avatar: 'CA'
+    "id": "usr_admin",
+    "name": "Cookscape Admin",
+    "username": "admin",
+    "email": "admin@cookscape.com",
+    "password": "studio@2026",
+    "role": "admin",
+    "designation": "System Administrator",
+    "company": "Cookscape",
+    "avatar": "CA"
   },
   {
-    id: 'usr_sangathamizh',
-    name: 'Sangathamizh',
-    username: 'sangathamizh',
-    email: 'designteam.cookscape@gmail.com',
-    password: 'admin123',
-    role: 'admin',
-    designation: 'Business Head',
-    company: 'Cookscape',
-    avatar: 'S'
+    "id": "usr_shiraja",
+    "name": "SHIRAJA SUBRAMANIAN",
+    "username": "shiraja",
+    "email": "keyinteriors.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "SS"
   },
   {
-    id: 'usr_elakkiya',
-    name: 'Elakkiya',
-    username: 'elakkiya',
-    email: 'elakkiya.sakthivelu3089@gmail.com',
-    password: '123456',
-    role: 'employee',
-    designation: 'Floor Architect / FA',
-    company: 'Cookscape',
-    avatar: 'E'
+    "id": "usr_haseena",
+    "name": "HASEENA AYESHA",
+    "username": "haseena",
+    "email": "haseenaayeshaa@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "HA"
   },
   {
-    id: 'usr_aravind',
-    name: 'Aravind',
-    username: 'aravind',
-    email: 'webapp.cookscape@gmail.com',
-    password: '123456',
-    role: 'employee',
-    designation: 'Floor Architect / FA',
-    company: 'Cookscape',
-    avatar: 'A'
+    "id": "usr_abirami",
+    "name": "Abirami.k",
+    "username": "abirami",
+    "email": "abiramik707@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "A"
+  },
+  {
+    "id": "usr_vijaymanoj",
+    "name": "VIJAY MANOJ",
+    "username": "vijaymanoj",
+    "email": "vijaymanoj1214@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "VM"
+  },
+  {
+    "id": "usr_manikandan",
+    "name": "MANIKANDAN K",
+    "username": "manikandan",
+    "email": "manikandanidd02@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "MK"
+  },
+  {
+    "id": "usr_kalaimadhi",
+    "name": "Kalaimadhi D.A.",
+    "username": "kalaimadhi",
+    "email": "kalaimadhi06@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "KD"
+  },
+  {
+    "id": "usr_pravin",
+    "name": "Pravin M",
+    "username": "pravin",
+    "email": "pravindoss3@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "PM"
+  },
+  {
+    "id": "usr_suhail",
+    "name": "Suhail Akthar",
+    "username": "suhail",
+    "email": "suhailakthar555@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "SA"
+  },
+  {
+    "id": "usr_varshini",
+    "name": "Varshini",
+    "username": "varshini",
+    "email": "varshini.san@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "V"
+  },
+  {
+    "id": "usr_renukha",
+    "name": "Renukha Gopalan",
+    "username": "renukha",
+    "email": "durability.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "RG"
+  },
+  {
+    "id": "usr_sivakumar_r",
+    "name": "R.siva kumar",
+    "username": "sivakumar.r",
+    "email": "interact.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "RK"
+  },
+  {
+    "id": "usr_poonguzhali",
+    "name": "Poonguzhali Arumugam",
+    "username": "poonguzhali",
+    "email": "helpdesk.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "PA"
+  },
+  {
+    "id": "usr_meenakshi",
+    "name": "meenakshi",
+    "username": "meenakshi",
+    "email": "ps.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "M"
+  },
+  {
+    "id": "usr_abishek",
+    "name": "Abishek kumar",
+    "username": "abishek",
+    "email": "designsolution.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "AK"
+  },
+  {
+    "id": "usr_julia",
+    "name": "Julia Asha",
+    "username": "julia",
+    "email": "stylishomes.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "JA"
+  },
+  {
+    "id": "usr_niveditha",
+    "name": "Niveditha . S",
+    "username": "niveditha",
+    "email": "interior.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "N."
+  },
+  {
+    "id": "usr_shivaranjani",
+    "name": "Shivaranjani",
+    "username": "shivaranjani",
+    "email": "renovation.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "S"
+  },
+  {
+    "id": "usr_yogesh",
+    "name": "Yogesh kumar JK",
+    "username": "yogesh",
+    "email": "service.wall2wall@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "YK"
+  },
+  {
+    "id": "usr_keerthika",
+    "name": "Keerthika G",
+    "username": "keerthika",
+    "email": "layout.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "FA",
+    "company": "Cookscape",
+    "avatar": "KG"
+  },
+  {
+    "id": "usr_priyadharshini",
+    "name": "Priyadharshini Thangavel",
+    "username": "priyadharshini",
+    "email": "designers.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "PT"
+  },
+  {
+    "id": "usr_mohsina",
+    "name": "Mohsina Noor. A",
+    "username": "mohsina",
+    "email": "khanmohsina991@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "MN"
+  },
+  {
+    "id": "usr_kanimozhi",
+    "name": "Kanimozhi",
+    "username": "kanimozhi",
+    "email": "kanimozhianbuchezhian04@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "K"
+  },
+  {
+    "id": "usr_vanitha",
+    "name": "Vanitha Kaspar",
+    "username": "vanitha",
+    "email": "vanithakaspar@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "VK"
+  },
+  {
+    "id": "usr_ragulnath",
+    "name": "RAGULNATH G",
+    "username": "ragulnath",
+    "email": "sketches.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "RG"
+  },
+  {
+    "id": "usr_sivakumar_kj",
+    "name": "SIVAKUMAR KJ",
+    "username": "sivakumar.kj",
+    "email": "designideas.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "SK"
+  },
+  {
+    "id": "usr_sudarmathi",
+    "name": "Sudarmathi Selvam",
+    "username": "sudarmathi",
+    "email": "drawings.cookscape@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "SS"
+  },
+  {
+    "id": "usr_sowmiya",
+    "name": "Sowmiya. G",
+    "username": "sowmiya",
+    "email": "sowmiyaganesan17@gmail.com",
+    "password": "studio@2026",
+    "role": "employee",
+    "designation": "LA",
+    "company": "Cookscape",
+    "avatar": "SG"
   }
 ];
 
-const DEFAULT_PROJECTS = [
-  {
-    id: 'proj_hiranandani',
-    title: 'Hiranandani Villa — Master Wardrobe & Loft',
-    client: 'Rajesh & Sunita Singhania',
-    type: 'Wardrobe',
-    status: 'In Review',
-    created_by: 'usr_admin',
-    owner_name: 'Cookscape Admin',
-    owner_email: 'admin@cookscape.com',
-    units_count: 3,
-    boards_est: 12,
-    data: {
-      units: [
-        { label: 'Master 3-Door Hinged Wardrobe', kind: 'wardrobe', w: 1800, h: 2100, d: 600, lam: 'Walnut Plank' },
-        { label: 'Overhead Storage Loft Run', kind: 'loft', w: 1800, h: 600, d: 600, lam: 'Off-White Matte' }
-      ]
-    },
-    is_shared: true,
-    fork_count: 2,
-    created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-    updated_at: new Date(Date.now() - 3600000 * 2).toISOString()
-  },
-  {
-    id: 'proj_emerald',
-    title: 'Emerald Greens — Parallel Acrylic Kitchen',
-    client: 'Vikram Mehta',
-    type: 'Kitchen',
-    status: 'CNC Ready',
-    created_by: 'usr_elakkiya',
-    owner_name: 'Elakkiya',
-    owner_email: 'elakkiya.sakthivelu3089@gmail.com',
-    units_count: 6,
-    boards_est: 18,
-    data: {
-      units: [
-        { label: 'Base Unit 2-Drawer Pot & Pan', kind: 'base', w: 900, h: 870, d: 600, lam: 'Sage Green Matte' },
-        { label: 'Sink Base Unit 2-Shutter', kind: 'base', w: 900, h: 870, d: 600, lam: 'Sage Green Matte' },
-        { label: 'Overhead Wall Glass Lift-Up', kind: 'wall', w: 900, h: 720, d: 350, lam: 'Fluted Glass' }
-      ]
-    },
-    is_shared: false,
-    fork_count: 0,
-    created_at: new Date(Date.now() - 86400000 * 7).toISOString(),
-    updated_at: new Date(Date.now() - 3600000 * 12).toISOString()
-  },
-  {
-    id: 'proj_palm_tv',
-    title: 'Palm Beach Penthouse — Fluted Walnut Media Wall',
-    client: 'Ananya Deshmukh',
-    type: 'TV Wall',
-    status: 'Draft',
-    created_by: 'usr_aravind',
-    owner_name: 'Aravind',
-    owner_email: 'webapp.cookscape@gmail.com',
-    units_count: 2,
-    boards_est: 8,
-    data: {
-      units: [
-        { label: 'Floating Media Console with 3 Drawers', kind: 'base', w: 2400, h: 400, d: 450, lam: 'Smoked Walnut' },
-        { label: 'Acoustic Fluted Panelling Backdrop', kind: 'wall', w: 2400, h: 2200, d: 50, lam: 'Smoked Walnut' }
-      ]
-    },
-    is_shared: true,
-    fork_count: 1,
-    created_at: new Date(Date.now() - 86400000 * 1).toISOString(),
-    updated_at: new Date().toISOString()
-  }
-];
+const DEFAULT_PROJECTS = [];
 
 class DBManager {
   constructor() {

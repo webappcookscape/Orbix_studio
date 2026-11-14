@@ -41,3 +41,4 @@ assert.ok(appJs.includes('gizmoDrag = null;'), 'app.js must keep gizmoDrag null'
 console.log('✔ Fix 4 Verified: 3D unit movement is disabled; pointer events strictly orbit and pan the camera');
 
 console.log('\n🎉 ALL 4 USER FIXES VERIFIED AND PASSING 100%!');
+
