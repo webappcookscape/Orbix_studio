@@ -44,11 +44,10 @@ const threeDJs = fs.readFileSync(path.join(__dirname, '../orbix-3d.js'), 'utf8')
 assert.ok(threeDJs.includes('frontZ = baseD / 2 - 9'), '3D shutter frontZ must be aligned to front face');
 console.log('✔ Fix 3 Verified: Only Shutter depth standardization & colinear front alignment');
 
-// 6. Verify 2D Move & Rotate Handles
-assert.ok(planJs.includes('getFurnitureRotationHandleWorld'), 'Must have rotation handle calculation');
-assert.ok(planJs.includes('rotate_furniture'), 'Must support rotate_furniture drag mode');
-assert.ok(planJs.includes('✥ MOVE') || planJs.includes('MOVE'), 'Must render visual 4-way move handle');
-console.log('✔ Fix 6 Verified: 2D 4-way move handle & rotation handle');
+// 6. Verify 2D Direct Unit Movement & Clean CAD View (Move/Rotate handle overlay removed per user request)
+assert.ok(!planJs.includes('✥ MOVE'), 'Visual 4-way move handle overlay must be removed from 2D');
+assert.ok(planJs.includes('move_furniture'), 'Direct 2D unit moving must remain fully supported');
+console.log('✔ Fix 6 Verified: 2D direct unit moving active, 2D move/rotate overlay removed');
 
 // 7. Verify 3D Unit Direct Floor Drag
 const appJs = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');

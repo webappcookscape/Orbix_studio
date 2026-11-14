@@ -15228,24 +15228,7 @@ body.role-employee #adminCreateEmpBox,
         }
       }
 
-      // Check rotation handle on currently selected furniture unit
       var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
-      if (self.activeTool === 'select' && self.selected && self.selected.length === 1 && self.selected[0].type === 'furniture') {
-        var curSel = furnList.find(function (f) { return f.id === self.selected[0].id; });
-        if (curSel && typeof self.getFurnitureRotationHandleWorld === 'function') {
-          var rotHandlePos = self.getFurnitureRotationHandleWorld(curSel);
-          var rotHitDist = 22 / Math.max(0.01, self.zoom);
-          if (Vec2.dist(worldPt, rotHandlePos) < Math.max(180, rotHitDist)) {
-            self.dragState = {
-              type: 'rotate_furniture',
-              furniture: curSel,
-              startAngle: curSel.rotY || 0,
-              startWorld: Vec2.clone(worldPt)
-            };
-            return;
-          }
-        }
-      }
 
       // Check if clicked directly on any placed furniture unit (exact rotated/L-shape polygon, never oversized circle!)
       var clickedWallCore = (self.activeTool === 'select' && typeof self.isPointOnWallBand === 'function') ? self.isPointOnWallBand(worldPt) : false;
@@ -19443,44 +19426,6 @@ body.role-employee #adminCreateEmpBox,
           }
         }
 
-        // Visual 4-Way Move Handle and Rotation Knob on Selected Unit
-        if (!isActivelyMovingThis) {
-          ctx.fillStyle = '#0f172a';
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 1.5;
-          var pillW = 56, pillH = 18;
-          ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(-pillW / 2, -pillH / 2, pillW, pillH, 9);
-          else ctx.rect(-pillW / 2, -pillH / 2, pillW, pillH);
-          ctx.fill();
-          ctx.stroke();
-          ctx.fillStyle = '#38bdf8';
-          ctx.font = '700 9px "IBM Plex Sans", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('✥ MOVE', 0, 0);
-
-          var stemLen = 22;
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 1.5;
-          ctx.setLineDash([3, 2]);
-          ctx.beginPath();
-          ctx.moveTo(0, dPx / 2);
-          ctx.lineTo(0, dPx / 2 + stemLen);
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          ctx.fillStyle = '#38bdf8';
-          ctx.beginPath();
-          ctx.arc(0, dPx / 2 + stemLen, 7, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-          ctx.fillStyle = '#0f172a';
-          ctx.font = '700 8.5px sans-serif';
-          ctx.fillText('↻', 0, dPx / 2 + stemLen + 0.5);
-        }
       }
 
       // If actively dragging and snapped/jointed, display snap feedback badge
