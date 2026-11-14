@@ -97,4 +97,37 @@ const qOverrideLegacy = OrbixCore.generateFullQuotation(proj);
 assert.strictEqual(qOverrideLegacy.furnitureItems[0].baseRate, 2034, 'Kitchen WM override to LIVE LANE should be ₹2034');
 console.log('✓ Item-level tier override with LIVE LANE alias verified');
 
-console.log('ALL PRICE MATRIX TESTS PASSED SUCCESSFULLY!');
+// 4. Verify Factory Tier Specifications & Bill of Materials
+console.log('\n--- Verifying Factory Tier Specifications & BOM ---');
+const llSpec = OrbixCore.getTierSpecifications('LL ELITE');
+assert(llSpec, 'LL ELITE specification must exist');
+assert.strictEqual(llSpec.hardwareBrand, 'Tyrox');
+assert.strictEqual(llSpec.handleFinish, 'Nickel Brush');
+console.log('✓ LL ELITE specification verified (Tyrox hardware & Nickel Brush handles)');
+
+const ccmSpec = OrbixCore.getTierSpecifications('CC MATTE');
+assert(ccmSpec, 'CC MATTE specification must exist');
+assert.strictEqual(ccmSpec.kitchenAccessories, 'SLEEK BRAND');
+assert.strictEqual(ccmSpec.productionTimeline, '4 Weeks from Color Drawing Physical Sign Off');
+console.log('✓ CC MATTE specification verified (Sleek kitchen accessories & 4 weeks timeline)');
+
+const ccgSpec = OrbixCore.getTierSpecifications('CAPRICOST GLOSSY');
+assert(ccgSpec, 'CAPRICOST GLOSSY specification must exist');
+assert.strictEqual(ccgSpec.kitchenAccessories, 'EBCO BRAND');
+assert.strictEqual(ccgSpec.primaryHinges, 'EBCO (12 kg)');
+console.log('✓ CAPRICOST GLOSSY specification verified (Ebco kitchen accessories & 12kg hinges)');
+
+const surSpec = OrbixCore.getTierSpecifications('ELEGANT SURABHI');
+assert(surSpec, 'ELEGANT SURABHI specification must exist');
+assert.strictEqual(surSpec.kitchenAccessories, 'HETTICH Brand');
+assert.strictEqual(surSpec.productionTimeline, '6 to 8 Weeks from Color Drawing Physical Sign Off');
+console.log('✓ ELEGANT SURABHI specification verified (Hettich accessories & 6-8 weeks timeline)');
+
+const tuffSpec = OrbixCore.getTierSpecifications('4X TUFF GLOSS');
+assert(tuffSpec, '4X TUFF GLOSS specification must exist');
+assert.strictEqual(tuffSpec.kitchenAccessories, 'HETTICH Brand');
+assert(tuffSpec.shutterFinish.includes('4X TG / MR+'));
+assert.strictEqual(tuffSpec.productionTimeline, '6 to 8 Weeks from Color Drawing Physical Sign Off');
+console.log('✓ 4X TUFF GLOSS specification verified (Hettich accessories, 4X TG finish & 6-8 weeks timeline)');
+
+console.log('ALL PRICE MATRIX & FACTORY SPECIFICATIONS TESTS PASSED SUCCESSFULLY!');

@@ -8761,10 +8761,153 @@ body.role-employee #adminCreateEmpBox,
     if (s === 'p4' || s === 'price 4' || s === 'price4' || s === 'livlame' || s === 'liv flame' || s === 'liv-lame') return 'livlame';
     if (s === 'livelane' || s === 'live lane' || s === 'll elite' || s === 'llelite') return 'LL elite';
     if (s === 'cc matte' || s === 'ccmatte') return 'CC MATTE';
-    if (s === 'cc glossy' || s === 'ccglossy') return 'CC GLOSSY';
-    if (s === 'surabhi') return 'SURABHI';
-    if (s === 'mr+' || s === 'mr plus') return 'MR+';
+    if (s === 'cc glossy' || s === 'ccglossy' || s === 'capricost glossy' || s === 'capricost') return 'CC GLOSSY';
+    if (s === 'surabhi' || s === 'elegant surabhi') return 'SURABHI';
+    if (s === 'mr+' || s === 'mr plus' || s === '4x tuff gloss' || s === '4x tg' || s === '4xtg' || s === 'tuff gloss') return 'MR+';
     return tier;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Detailed Factory Specifications & Bill of Materials (BOM) per Tier
+     ───────────────────────────────────────────────────────────────────────────── */
+  var TIER_SPECIFICATIONS = {
+    'LL elite': {
+      tierName: 'LL ELITE',
+      carcassMaterial: 'BWP Ply, Prelam Aqua Shield MDF-R, PLHMR - BSL - HYH',
+      carcassFinish: 'Frosty White',
+      shutterFinish: 'Laminate Solid Hi Gloss, Laminate Solid Suede, Prelam Aqua Shield-MDF-Clr-BSL',
+      shutterMaterial: 'Hydroguard Plus HDF, Prelam Aqua Shield-MDF-Clr-BSL, Commercial Ply, Aqua Shield-MDF-R, MDF',
+      handles: 'Dual Switch EBCO / Tyrox Nickel Brush (CH-15060 160mm, CH-15061 96mm)',
+      hardwareBrand: 'Tyrox',
+      handleFinish: 'Nickel Brush',
+      kitchenAccessories: 'Tyrox Brand',
+      productionTimeline: '4 Weeks from Color Drawing Physical Sign Off',
+      warrantySummary: 'Standard Factory Warranty'
+    },
+    'CC MATTE': {
+      tierName: 'CC MATTE',
+      carcassMaterial: 'Prelam BWP IS 710 Grade / GREENPLY Backer',
+      carcassFinish: 'Matching / Frosty White Backer',
+      shutterFinish: 'Matte Finish Flex Laminate (Merino Lam Calplus Series SF Finish / New Mica)',
+      shutterMaterial: 'BWP IS 710 Grade GURJAN Ply',
+      customization: 'Available for Inner Partitions on Additional cost',
+      primaryHinges: 'OLIVER / SLEEK',
+      hangerRods: 'Multi Profile Hager HD Rods – EBCO',
+      wardrobeLocks: 'Dual Switch EBCO',
+      legWallBracket: 'ABS / Adjustable',
+      slidingTrack: 'CNR Brand with Two Way slide',
+      liftUpPiston: 'BLUM Brand / 15 Kgs Load',
+      screwsClamps: 'HP Screws / Self threading Type',
+      skirting: 'Matching Shutter Finish Skirting',
+      mirrorsGlass: '4mm Saint Gobain',
+      installationProcess: 'Self-Drilling Screws with Screw caps',
+      installationDuration: '4 Weeks (increases if scope includes Civil/Electrical)',
+      inclusiveCost: 'Installation and Transportation',
+      taxes: 'Prices are Excluding GST',
+      laminatePasting: 'Machine Pressed Lamination',
+      edgeBanding: 'PVC imported (Machine Edge Banding)',
+      adhesives: 'FEVICOL SR / Hot Melt Pidilite SR',
+      faciaBrand: 'MERINO LAM Calplus Series SF Finish / New Mica',
+      hardwareBrand: 'Sleek / OLIVE / Evershine',
+      kitchenAccessories: 'SLEEK BRAND',
+      productionTimeline: '4 Weeks from Color Drawing Physical Sign Off'
+    },
+    'CC GLOSSY': {
+      tierName: 'CAPRICOST GLOSSY',
+      carcassMaterial: 'Prelam BWP IS 710 Grade / GREENPLY Backer',
+      carcassFinish: 'Matching / Frosty White Backer',
+      shutterFinish: 'GLOSSY Finish Flex Laminate (HGL / SGL) - MERINO LAM SF, RH Series / New Mica',
+      shutterMaterial: 'High Density High Moisture Resistant Boards (HDHMR)',
+      customization: 'Available for Inner Partitions on Additional cost',
+      primaryHinges: 'EBCO (12 kg)',
+      hangerRods: 'Multi Profile Hager HD Rods – EBCO',
+      wardrobeLocks: 'Dual Switch EBCO',
+      legWallBracket: 'ABS / Adjustable',
+      slidingTrack: 'CNR Brand with Two Way slide',
+      liftUpPiston: 'BLUM Brand / 15 Kgs Load',
+      screwsClamps: 'HP Screws / Self threading Type',
+      skirting: 'Matching Shutter Finish Skirting',
+      mirrorsGlass: '4mm Saint Gobain',
+      installationProcess: 'Self-Drilling Screws with Screw caps',
+      installationDuration: '4 Weeks (increases if scope includes Civil/Electrical)',
+      inclusiveCost: 'Installation and Transportation',
+      taxes: 'Prices are Excluding GST',
+      laminatePasting: 'Machine Pressed Lamination',
+      edgeBanding: 'E3 Brand / PVC (Hot melt Glue Machine Edge Banding)',
+      adhesives: 'FEVICOL SR / Hot Melt Pidilite SR',
+      faciaBrand: 'MERINO LAM SF, RH Series / New Mica',
+      hardwareBrand: 'EBCO (12 kg) / All Regular Hinges only',
+      kitchenAccessories: 'EBCO BRAND',
+      productionTimeline: '4 Weeks from Color Drawing Physical Sign Off'
+    },
+    'SURABHI': {
+      tierName: 'ELEGANT SURABHI',
+      carcassMaterial: 'Prelam BWP IS 710 Grade / GREENPLY Backer',
+      carcassFinish: 'Matching / Frosty White Backer',
+      shutterFinish: 'Matte Finish 1 MM CCR Laminates (Merino / CATCH LAMINATES)',
+      shutterMaterial: 'BWP IS 710 Grade GURJAN Ply / GREENPLY HDHMR',
+      customization: 'Available for Inner Partitions on Additional cost',
+      primaryHinges: 'EBCO (12 kg) — 1 Soft closing for kitchen & Auto close for Wardrobes',
+      hangerRods: 'Multi Profile Hager HD Rods – EBCO',
+      wardrobeLocks: 'Dual Switch EBCO',
+      legWallBracket: 'ABS / Adjustable',
+      slidingTrack: 'CNR Brand with Two Way slide',
+      liftUpPiston: 'BLUM Brand / 15 Kgs Load',
+      screwsClamps: 'HP Screws / Self threading Type',
+      skirting: 'Matching Shutter Finish Skirting',
+      mirrorsGlass: '4mm Saint Gobain',
+      installationProcess: 'Self-Drilling Screws with Screw caps',
+      installationDuration: '4 Weeks (increases if scope includes Civil/Electrical)',
+      inclusiveCost: 'Installation and Transportation',
+      taxes: 'Prices are Excluding GST',
+      laminatePasting: 'Machine Pressed Lamination',
+      edgeBanding: 'E3 Brand / PVC (Hot melt Glue Machine Edge Banding)',
+      adhesives: 'SYNTHETIC ADHESIVE Grade : LK453 / HOT MELT ANABOND - SU2710',
+      additionalProcess: 'Ext. Grading, Fungal Spray Coating, Multi Boring on Ply',
+      faciaBrand: 'MERINO LAM SF, RH Series / New Mica',
+      hardwareBrand: 'EBCO (12 kg Soft Close)',
+      kitchenAccessories: 'HETTICH Brand',
+      productionTimeline: '6 to 8 Weeks from Color Drawing Physical Sign Off'
+    },
+    'MR+': {
+      tierName: '4X TUFF GLOSS (MR+)',
+      carcassMaterial: 'Prelam BWP IS 710 Grade / GREENPLY Backer',
+      carcassFinish: 'Matching / Frosty White Backer',
+      shutterFinish: 'SCRATCH & STAIN FREE FINISH (4X TG / MR+) MERINO / ROYAL TOUCHE GLOSS',
+      shutterMaterial: 'BWP IS 710 Grade GURJAN Ply / GREENPLY HDHMR',
+      customization: 'Available for Inner Partitions on Additional cost',
+      primaryHinges: 'EBCO (12 kg) — 1 Soft closing for kitchen & Auto close for Wardrobes',
+      hangerRods: 'Multi Profile Hager HD Rods – EBCO',
+      wardrobeLocks: 'Dual Switch EBCO',
+      legWallBracket: 'ABS / Adjustable',
+      slidingTrack: 'CNR Brand with Two Way slide',
+      liftUpPiston: 'BLUM Brand / 15 Kgs Load',
+      screwsClamps: 'HP Screws / Self threading Type',
+      skirting: 'Matching Shutter Finish Skirting',
+      mirrorsGlass: '4mm Saint Gobain',
+      installationProcess: 'Self-Drilling Screws with Screw caps',
+      installationDuration: '4 Weeks (increases if scope includes Civil/Electrical)',
+      inclusiveCost: 'Installation and Transportation',
+      taxes: 'Prices are Excluding GST',
+      laminatePasting: 'Machine Pressed Lamination',
+      edgeBanding: 'E3 Brand / PVC (Hot melt Glue Machine Edge Banding)',
+      adhesives: 'SYNTHETIC ADHESIVE Grade : LK453 / HOT MELT ANABOND - SU2710',
+      additionalProcess: 'Ext. Grading, Fungal Spray Coating, Multi Boring on Ply',
+      faciaBrand: 'Merino MR + / Royal Touche GLOSS',
+      hardwareBrand: 'EBCO (12 kg Soft Close)',
+      kitchenAccessories: 'HETTICH Brand',
+      productionTimeline: '6 to 8 Weeks from Color Drawing Physical Sign Off'
+    }
+  };
+  // Cross-reference aliases
+  TIER_SPECIFICATIONS['LL ELITE'] = TIER_SPECIFICATIONS['LL elite'];
+  TIER_SPECIFICATIONS['CAPRICOST GLOSSY'] = TIER_SPECIFICATIONS['CC GLOSSY'];
+  TIER_SPECIFICATIONS['ELEGANT SURABHI'] = TIER_SPECIFICATIONS['SURABHI'];
+  TIER_SPECIFICATIONS['4X TUFF GLOSS'] = TIER_SPECIFICATIONS['MR+'];
+
+  function getTierSpecifications(tier) {
+    var norm = normalizeTierName(tier);
+    return TIER_SPECIFICATIONS[norm] || TIER_SPECIFICATIONS[tier] || null;
   }
 
   var MODEL_RATES_MATRIX = {
@@ -14776,6 +14919,8 @@ body.role-employee #adminCreateEmpBox,
     deserializeProject: deserializeProject,
     PRICE_TIERS: PRICE_TIERS,
     normalizeTierName: normalizeTierName,
+    TIER_SPECIFICATIONS: TIER_SPECIFICATIONS,
+    getTierSpecifications: getTierSpecifications,
     MODEL_RATES_MATRIX: MODEL_RATES_MATRIX,
     resolveModelType: resolveModelType,
     parseUnitsCSV: parseUnitsCSV,
