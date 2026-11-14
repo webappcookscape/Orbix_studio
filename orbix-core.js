@@ -540,6 +540,11 @@
     var cd = (code || '').toLowerCase();
     var cc = (costCategory || '').toLowerCase();
 
+    // Base units are never wall units
+    if (nm.indexOf('base') !== -1 || cat.indexOf('base') !== -1 || cc.indexOf('base') !== -1 || cd.indexOf('base') !== -1) {
+      return false;
+    }
+
     // Check categories and cost categories
     if (cat.indexOf('wall') !== -1 || cat.indexOf('overhead') !== -1 || cat.indexOf('spice') !== -1 ||
         cat.indexOf('loft') !== -1 || cat.indexOf('wm') !== -1 || cat.indexOf('wcm') !== -1 ||
@@ -568,6 +573,7 @@
     var cat = (opts.category || (isDecor ? 'decor' : 'wardrobe')).toLowerCase();
     var nm = (opts.name || '').toLowerCase();
     var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name, opts.code || opts.catalogItemId, opts.costCategory);
+    var isSpiceRack = !isDecor && (cat.indexOf('spice') !== -1 || nm.indexOf('spice') !== -1 || (opts.code && opts.code.toLowerCase().indexOf('spice') !== -1) || (opts.id && opts.id.toLowerCase().indexOf('spice') !== -1) || (opts.id && opts.id.toLowerCase().indexOf('sr-') === 0));
     var isLoft = (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1);
     var isGL = /(^|\b|_|-|\s)gl(\b|_|-|\s|\d+|$)/i.test(String(opts.name || '') + ' ' + String(opts.code || '') + ' ' + String(opts.id || ''));
     var isOS = !!(
@@ -579,11 +585,38 @@
       (opts.code && /\bo_?s\b/i.test(opts.code)) ||
       (opts.unitConfig && opts.unitConfig.isOnlyShutter)
     );
-    var defElev = isLoft ? 2100 : (isWallUnit ? 1500 : 0);
+    var isBaseOS = isOS && !isLoft && !isWallUnit;
+    var defElev = isLoft ? 2100 : (isSpiceRack ? 1350 : (isWallUnit ? 1500 : 0));
     var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
       parseFloat(opts.elevation) :
       ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && opts.pos.z !== 0) ?
         parseFloat(opts.pos.z) : defElev);
+
+    // Kitchen FM & Base defaults: 100mm leg, countertop, 1 shelf
+    var isKitchenFM = (cat === 'kitchen_fm' || cat === 'kitchen_base' || cat === 'kitchen_corner' || cat === 'kitchen_drawers' || opts.modelType === 'kitchen_fm' || /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(nm));
+    var isKitchenWM = isWallUnit || (cat.indexOf('wall') !== -1) || /(^|\b|_|-)(wm|wbcm)($|\b|_|-|\d+)/i.test(nm);
+    var isCrockeryOnlyDoors = (cat.indexOf('crockery') !== -1 || nm.indexOf('crockery') !== -1) && (isOS || nm.indexOf('only door') !== -1 || (opts.id && opts.id.indexOf('doors-only') !== -1));
+
+    opts.unitConfig = opts.unitConfig || {};
+    if (isKitchenFM) {
+      if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = true;
+      if (opts.unitConfig.legs === undefined) opts.unitConfig.legs = 100;
+      if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = 100;
+      if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'black';
+      if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 1;
+    }
+    if (isKitchenWM && !isLoft) {
+      if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 1;
+    }
+    if (isCrockeryOnlyDoors) {
+      opts.unitConfig.shelves = 0;
+    }
+    if (isBaseOS) {
+      if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = true;
+      if (opts.unitConfig.legs === undefined) opts.unitConfig.legs = 100;
+      if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = 100;
+      if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'black';
+    }
 
     var numShutters = (opts.unitConfig && opts.unitConfig.shutters !== undefined) ?
       parseInt(opts.unitConfig.shutters) :
@@ -617,7 +650,7 @@
       dimensions: {
         W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
         H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : (cat.indexOf('base') !== -1 || cat.indexOf('fm') !== -1 || cat.indexOf('d2') !== -1 || cat.indexOf('d3') !== -1 || cat.indexOf('tv') !== -1 ? 850 : 2100)),
-        D: isOS ? 18 : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600))
+        D: isBaseOS ? 550 : (isOS ? 18 : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
       },
       shutterColors: initColors,
       shutterMaterials: initMats,
@@ -2595,12 +2628,12 @@
         "modelType": "kitchen_fm",
         "category": "kitchen_corner",
         "costCategory": "Kitchen - FM",
-        "areaSqft": 9.3,
+        "areaSqft": 8.5,
         "icon": "🍳",
         "dimensions": {
-          "W": 1200,
-          "H": 720,
-          "D": 560
+          "W": 1050,
+          "H": 750,
+          "D": 550
         },
         "elevation": 0,
         "materials": {
@@ -2623,7 +2656,7 @@
           },
           "openShutter": {
             "enabled": true,
-            "width": 600,
+            "width": 450,
             "type": "shutter",
             "count": 1,
             "opening": "right"
@@ -2642,6 +2675,9 @@
           "handle": "pull",
           "hfinish": "black",
           "led": false,
+          "hasLegs": true,
+          "legs": 100,
+          "plinthH": 100,
           "carcass": "MDF 1135",
           "shutterCol": "MDF 7701"
         },
@@ -2657,12 +2693,12 @@
         "modelType": "kitchen_fm",
         "category": "kitchen_corner",
         "costCategory": "Kitchen - FM",
-        "areaSqft": 9.3,
+        "areaSqft": 8.5,
         "icon": "🍳",
         "dimensions": {
-          "W": 1200,
-          "H": 720,
-          "D": 560
+          "W": 1050,
+          "H": 750,
+          "D": 550
         },
         "elevation": 0,
         "materials": {
@@ -2685,7 +2721,7 @@
           },
           "openShutter": {
             "enabled": true,
-            "width": 600,
+            "width": 450,
             "type": "shutter",
             "count": 1,
             "opening": "left"
@@ -2704,6 +2740,9 @@
           "handle": "pull",
           "hfinish": "black",
           "led": false,
+          "hasLegs": true,
+          "legs": 100,
+          "plinthH": 100,
           "carcass": "MDF 1135",
           "shutterCol": "MDF 7701"
         },
@@ -2724,8 +2763,8 @@
         "icon": "🍳",
         "dimensions": {
           "W": 900,
-          "H": 720,
-          "D": 560
+          "H": 750,
+          "D": 550
         },
         "elevation": 0,
         "materials": {
@@ -2747,7 +2786,7 @@
             "type": "L",
             "legW": 900,
             "legD": 900,
-            "depth": 560,
+            "depth": 550,
             "orientation": "right"
           },
           "shutters": 2,
@@ -2770,11 +2809,14 @@
           "glassTint": "none",
           "profileColor": "none",
           "sections": 1,
-          "shelves": 2,
+          "shelves": 1,
           "drawers": 0,
           "loft": false,
           "loftH": 0,
           "counter": "black",
+          "hasLegs": true,
+          "legs": 100,
+          "plinthH": 100,
           "handle": "standard",
           "hfinish": "black",
           "led": false,
@@ -4699,7 +4741,7 @@
         "dimensions": {
           "W": 600,
           "H": 300,
-          "D": 550
+          "D": 450
         },
         "materials": {
           "shutter": {
@@ -4718,7 +4760,7 @@
           "glassTint": "none",
           "profileColor": "none",
           "sections": 0,
-          "shelves": 0,
+          "shelves": 1,
           "drawers": 0,
           "loft": false,
           "loftH": 0,
@@ -4821,7 +4863,7 @@
           "glassTint": "none",
           "profileColor": "none",
           "sections": 0,
-          "shelves": 0,
+          "shelves": 1,
           "drawers": 0,
           "loft": false,
           "loftH": 0,
@@ -4836,6 +4878,56 @@
           "baseRate": 2934.67
         },
         "customRate": 2934.67,
+        "elevation": 1500
+      },
+      {
+        "id": "ctvw-1d",
+        "code": "ctvw-1d",
+        "name": "CROCKERY/TV WALL 1 DOOR",
+        "modelType": "pooja_with_cnc",
+        "category": "crockery",
+        "costCategory": "POOJA WITH CNC",
+        "areaSqft": 1.937504709,
+        "icon": "🚪",
+        "dimensions": {
+          "W": 300,
+          "H": 600,
+          "D": 300
+        },
+        "materials": {
+          "shutter": {
+            "material": "HDHMR_18mm",
+            "finish": "BLUE"
+          },
+          "carcass": {
+            "material": "BWP_18mm",
+            "finish": "Absolute White"
+          }
+        },
+        "unitConfig": {
+          "shutters": 1,
+          "doorType": "hinged",
+          "dstyle": "slab",
+          "glassTint": "none",
+          "profileColor": "none",
+          "sections": 1,
+          "shelves": 1,
+          "drawers": 0,
+          "loft": false,
+          "loftH": 0,
+          "counter": "none",
+          "handle": "bar",
+          "hfinish": "black",
+          "led": false,
+          "carcass": "BWP_18mm",
+          "shutterCol": "BLUE",
+          "ctype": "kwall",
+          "mountType": "wall"
+        },
+        "pricingOverrides": {
+          "baseRate": 2450
+        },
+        "customRate": 2450,
         "elevation": 1500
       },
       {
@@ -5111,7 +5203,7 @@
           "profileColor": "none",
           "sections": 0,
           "shelves": 5,
-          "drawers": 2,
+          "drawers": 0,
           "loft": true,
           "loftH": 750,
           "counter": "none",

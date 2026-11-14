@@ -1917,15 +1917,42 @@
     var near = this.findNearestWall(worldPt, 250);
     if (near) {
       var w = near.wall;
-      var curSelWallId = (this.selected && this.selected.length === 1 && this.selected[0].type === 'wall') ? this.selected[0].id : null;
-      var isAlreadySelected = (curSelWallId === w.id);
-
       if (!isShift) this.selected = [];
       this.selected.push({ type: 'wall', id: w.id });
       this.onSelectionChange(this.selected);
 
-      // Move wall: Enabled! Moves parallel and perpendicular only, with connected walls moving along!
-      if (isAlreadySelected) {
+      // Check if clicking near start or end vertex to extend wall
+      var distStart = Vec2.dist(worldPt, w.start);
+      var distEnd = Vec2.dist(worldPt, w.end);
+      var isNearVertex = (distStart < 180 || distEnd < 180);
+
+      var allWalls = this.project.plan.walls || [];
+
+      if (isNearVertex) {
+        var vTarget = (distStart <= distEnd) ? w.start : w.end;
+        var connectedRefs = [];
+        for (var cvi = 0; cvi < allWalls.length; cvi++) {
+          var cwWall = allWalls[cvi];
+          if (!cwWall) continue;
+          if (cwWall.start && Vec2.dist(cwWall.start, vTarget) < 60) {
+            connectedRefs.push({ wall: cwWall, endpoint: 'start', orig: Vec2.clone(cwWall.start) });
+          }
+          if (cwWall.end && Vec2.dist(cwWall.end, vTarget) < 60) {
+            connectedRefs.push({ wall: cwWall, endpoint: 'end', orig: Vec2.clone(cwWall.end) });
+          }
+        }
+        this.dragState = {
+          type: 'move_vertex',
+          point: vTarget,
+          connectedRefs: connectedRefs,
+          startWorld: Vec2.clone(worldPt),
+          hasMoved: false
+        };
+        this.render();
+        return;
+      }
+
+      if (true) {
         var allWalls = this.project.plan.walls || [];
         var connectedStart = [];
         var connectedEnd = [];
@@ -1972,12 +1999,6 @@
           connectedTee: connectedTee,
           hasMoved: false
         };
-      } else {
-        this.dragState = null;
-        if (!isShift) {
-          this.selected = [];
-          this.onSelectionChange(this.selected);
-        }
       }
 
       this.render();

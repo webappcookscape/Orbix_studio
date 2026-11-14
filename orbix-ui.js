@@ -3465,6 +3465,13 @@
           } else if (lower.indexOf('sofa') !== -1 || lower.indexOf('couch') !== -1) {
             typeSelect.value = 'sofa';
             if (wInput) wInput.value = 1800; if (hInput) hInput.value = 850; if (dInput) dInput.value = 850;
+          } else if (lower.indexOf('bed') !== -1 || lower.indexOf('mariam') !== -1 || lower.indexOf('mattress') !== -1) {
+            var isMariamSet = (lower.indexOf('mariam') !== -1 || lower.indexOf('set') !== -1);
+            typeSelect.value = isMariamSet ? 'mariam_bed' : 'bed';
+            if (wInput) wInput.value = isMariamSet ? 2400 : 1800;
+            if (hInput) hInput.value = 1000;
+            if (dInput) dInput.value = 2050;
+            if (elevInput) elevInput.value = 0;
           }
         }
 
@@ -4285,7 +4292,7 @@
             res = catalog.filter(function (it) {
               var c = (it.category || '').toLowerCase();
               var n = (it.name || '').toLowerCase();
-              return c === 'kitchen_wall' || c === 'spice_rack' || n.indexOf('wm') !== -1 || n.indexOf('spice') !== -1 || n.indexOf('wall') !== -1;
+              return c === 'kitchen_wall' || c === 'spice_rack' || n.indexOf('wm') !== -1 || n.indexOf('spice') !== -1 || n.indexOf('wall') !== -1 || ((c === 'crockery' || n.indexOf('crockery') !== -1) && (n.indexOf('wall') !== -1 || (it.elevation && it.elevation >= 1000)));
             });
           } else {
             res = catalog.filter(function (it) { return (it.category || '').indexOf('kitchen') !== -1; });

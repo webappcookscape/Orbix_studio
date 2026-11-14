@@ -291,7 +291,8 @@
       var d = JSON.parse(raw);
       if (d.units && Array.isArray(d.units)) {
         var planObj = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
-        while (planObj && planObj.plan && (planObj.plan.furniture || planObj.plan.walls || planObj.plan.rooms)) planObj = planObj.plan;
+        var pGuard = 0;
+        while (planObj && planObj.plan && (planObj.plan.furniture || planObj.plan.walls || planObj.plan.rooms) && ++pGuard < 20) planObj = planObj.plan;
         if (planObj && planObj.furniture && planObj.furniture.length > 0) {
           var validIds = planObj.furniture.map(function (f) { return f.id; });
           S.units = d.units.filter(function (u) { return u._furnId && validIds.indexOf(u._furnId) !== -1; });
@@ -1907,22 +1908,24 @@
       stage.classList.add("gl");
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
-      camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
+      camera = new THREE.PerspectiveCamera(24, 1, 5, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
       /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
       scene.environment = pmrem.fromScene(makeRoomScene(), 0.04, 10, 30000).texture;
       if (EMBED) camera.far = 80000;
-      keyL = new THREE.DirectionalLight(0xfffbf2, NEO ? 1.48 : 1.42);
+      window.sunlightIntensity = (window.sunlightIntensity !== undefined) ? window.sunlightIntensity : 0;
+      window.spotlightIntensity = (window.spotlightIntensity !== undefined) ? window.spotlightIntensity : 0;
+      keyL = new THREE.DirectionalLight(0xfffbf2, window.sunlightIntensity);
       keyL.position.set(-3800, 7200, 5600); keyL.castShadow = true;
       keyL.shadow.mapSize.set(4096, 4096);
       var sc = keyL.shadow.camera; sc.left = -9500; sc.right = 9500; sc.top = 9500; sc.bottom = -9500; sc.near = 200; sc.far = 30000;
       keyL.shadow.bias = -0.0001; keyL.shadow.normalBias = 1.2; keyL.shadow.radius = 2.4;
       scene.add(keyL); scene.add(keyL.target);
       /* fill: lifts interiors and shaded faces */
-      var fill = new THREE.DirectionalLight(0xedf4fc, 0.52); fill.position.set(2800, 2100, 5000); scene.add(fill);
-      var rim = new THREE.DirectionalLight(0xf8fafc, 0.35); rim.position.set(2400, 1800, -2800); scene.add(rim);
-      var bounceL = new THREE.DirectionalLight(0xfbf6ee, 0.38); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
+      var fill = new THREE.DirectionalLight(0xedf4fc, window.sunlightIntensity * 0.38); fill.position.set(2800, 2100, 5000); scene.add(fill);
+      var rim = new THREE.DirectionalLight(0xf8fafc, window.sunlightIntensity * 0.25); rim.position.set(2400, 1800, -2800); scene.add(rim);
+      var bounceL = new THREE.DirectionalLight(0xfbf6ee, window.sunlightIntensity * 0.25); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
       scene.add(new THREE.HemisphereLight(0x82C3EC, 0x4E8A42, 0.55)); // Sky blue overhead + natural lawn grass ground bounce
       var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
@@ -3092,6 +3095,11 @@
           }
         }
 
+        if (camToTargDist < 1200) {
+          // Camera is close or inside room: keep walls visible so user can inspect interiors without walls popping out
+          hiddenSet.clear();
+        }
+
         wallMeshes.forEach(function (wMesh) {
           var shouldHide = hiddenSet.has(wMesh);
           wMesh.visible = !shouldHide;
@@ -3099,36 +3107,9 @@
         });
       }
 
-      // Synchronize furniture units attached to hidden walls!
+      // Furniture units must always stay visible — cutting front walls allows viewing interior units, never hides them!
       furnMeshes.forEach(function (fMesh) {
-        var wId = fMesh.userData && fMesh.userData.wallId;
-        if (wId && wallVisibility[wId] !== undefined) {
-          fMesh.visible = wallVisibility[wId];
-        } else if (fMesh.userData && fMesh.userData.wallNumber) {
-          var wNum = fMesh.userData.wallNumber;
-          var targetWallMesh = wallMeshes.find(function (wm, idx) {
-            return ((wm.userData && wm.userData.wallNumber) === wNum) || ((idx + 1) === wNum);
-          });
-          if (targetWallMesh) {
-            fMesh.visible = targetWallMesh.visible;
-          } else {
-            fMesh.visible = true;
-          }
-        } else {
-          // If no wallId assigned, check proximity to any hidden wall
-          var isNearHiddenWall = false;
-          for (var wi = 0; wi < wallMeshes.length; wi++) {
-            var wm = wallMeshes[wi];
-            if (!wm.visible && wm.userData && wm.userData.mid) {
-              var d = Math.hypot(fMesh.position.x - wm.userData.mid.x, fMesh.position.z - wm.userData.mid.y);
-              if (d < 1000) {
-                isNearHiddenWall = true;
-                break;
-              }
-            }
-          }
-          fMesh.visible = !isNearHiddenWall;
-        }
+        fMesh.visible = true;
       });
     }
 
@@ -4326,17 +4307,19 @@
   function pumpThumbs() {
     if (thumbBusy || !thumbQ.length) return;
     thumbBusy = true;
-    /* a timer, not requestAnimationFrame: rAF pauses in background or
-       hidden tabs and the catalogue would stop filling in */
+    /* Throttled async timer to maintain 60fps responsiveness and eliminate browser freezing */
     setTimeout(function () {
-      for (var n = 0; n < 2 && thumbQ.length; n++) {
+      var count = 0;
+      while (thumbQ.length && count < 1) {
         var c = thumbQ.shift(), im = c && c.querySelector(".gthumb");
         if (!c || !c.isConnected) continue;
+        count++;
         try {
           if (im) {
             var key = im.dataset.key;
-            if (thumbCache[key]) im.style.backgroundImage = "url(" + thumbCache[key] + ")";
-            else if (GL.ok) {
+            if (thumbCache[key]) {
+              im.style.backgroundImage = "url(" + thumbCache[key] + ")";
+            } else if (GL.ok) {
               var t0 = performance.now(), url = GL.thumb(presetUnit(c._preset));
               thumbLog.push({ k: key, ms: Math.round(performance.now() - t0), ok: !!url, len: url ? url.length : 0, q: thumbQ.length });
               if (url) { thumbCache[key] = url; im.style.backgroundImage = "url(" + url + ")"; }
@@ -4344,8 +4327,11 @@
           }
         } catch (e) { thumbErrors.push((c && c._preset ? c._preset.name : "?") + ": " + (e && e.message || e)); }
       }
-      thumbBusy = false; pumpThumbs();
-    });
+      thumbBusy = false;
+      if (thumbQ.length > 0) {
+        setTimeout(pumpThumbs, 60);
+      }
+    }, 16);
   }
 
   /* ══════════ CSS-3D FALLBACK ══════════ */

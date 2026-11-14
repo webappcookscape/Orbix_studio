@@ -2732,69 +2732,182 @@
     } else if (decorType === 'bed' || decorType === 'master_bed' || decorType === 'mariam_bed' || decorType === 'kid_bed') {
       var isKid = (decorType === 'kid_bed');
       var isMariam = (decorType === 'mariam_bed');
-      var woodBedMat = new THREE.MeshStandardMaterial({ color: 0x4A3728, roughness: 0.6 });
-      var mattressMat = new THREE.MeshStandardMaterial({ color: 0xFDFBF7, roughness: 0.85 });
-      var duvetMat = new THREE.MeshStandardMaterial({ color: isKid ? 0x38BDF8 : 0x64748B, roughness: 0.75 });
-      var pillowMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.9 });
-      var lampMat = new THREE.MeshStandardMaterial({ color: 0xFEF08A, emissive: 0xFACC15, emissiveIntensity: 0.6 });
+      // Premium photorealistic materials
+      var woodBedMat = new THREE.MeshStandardMaterial({ color: 0x3D2C20, roughness: 0.45, metalness: 0.05 });
+      var upholsteredHeadboardMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.88, metalness: 0.02 });
+      var tuftLineMat = new THREE.MeshStandardMaterial({ color: 0x1E293B, roughness: 0.95 });
+      var mattressMat = new THREE.MeshStandardMaterial({ color: 0xF8FAFC, roughness: 0.7 });
+      var mattressPipingMat = new THREE.MeshStandardMaterial({ color: 0xE2E8F0, roughness: 0.6 });
+      var duvetMat = new THREE.MeshStandardMaterial({ color: isKid ? 0x0284C7 : 0x475569, roughness: 0.82 });
+      var sheetFoldMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.65 });
+      var pillowBackMat = new THREE.MeshStandardMaterial({ color: 0x64748B, roughness: 0.85 });
+      var pillowMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.75 });
+      var accentPillowMat = new THREE.MeshStandardMaterial({ color: 0xD97706, roughness: 0.8 });
+      var brassMat = new THREE.MeshStandardMaterial({ color: 0xD4AF37, metalness: 0.88, roughness: 0.22 });
+      var lampShadeMat = new THREE.MeshStandardMaterial({ color: 0xFEF3C7, emissive: 0xFDE68A, emissiveIntensity: 0.7, roughness: 0.9 });
 
+      // 1. Bed Platform Frame with Leg Support
       var frameH = 260;
       var frameMesh = new THREE.Mesh(new THREE.BoxGeometry(W, frameH, D), woodBedMat);
       frameMesh.position.set(0, frameH / 2, 0);
       frameMesh.castShadow = true; frameMesh.receiveShadow = true;
+      frameMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
       fg.add(frameMesh);
 
-      var headboardH = Math.max(H, 950);
-      var headboardMesh = new THREE.Mesh(new THREE.BoxGeometry(W + 20, headboardH, 60), woodBedMat);
-      headboardMesh.position.set(0, headboardH / 2, -D / 2 + 30);
-      headboardMesh.castShadow = true;
-      fg.add(headboardMesh);
+      // Angled Tapered Legs (4 corners)
+      var legGeo = new THREE.CylinderGeometry(20, 14, 120, 16);
+      [
+        [-W / 2 + 60, -D / 2 + 80],
+        [W / 2 - 60, -D / 2 + 80],
+        [-W / 2 + 60, D / 2 - 80],
+        [W / 2 - 60, D / 2 - 80]
+      ].forEach(function(lp) {
+        var leg = new THREE.Mesh(legGeo, brassMat);
+        leg.position.set(lp[0], 60, lp[1]);
+        leg.castShadow = true;
+        fg.add(leg);
+      });
 
-      var matH = 220;
-      var matW = W - 40;
-      var matD = D - 100;
+      // 2. Photorealistic Channel-Tufted Upholstered Headboard
+      var headboardH = Math.max(H, 1100);
+      var headboardW = W + (isMariam ? 80 : 40);
+      var headboardD = 90;
+      var hbBase = new THREE.Mesh(new THREE.BoxGeometry(headboardW, headboardH, headboardD), upholsteredHeadboardMat);
+      hbBase.position.set(0, headboardH / 2, -D / 2 + headboardD / 2);
+      hbBase.castShadow = true;
+      fg.add(hbBase);
+
+      // Vertical fluted channel tufting panels along the headboard
+      var numPanels = 8;
+      var pWidth = (headboardW - 20) / numPanels;
+      for (var pi = 0; pi < numPanels; pi++) {
+        var px = -headboardW / 2 + 10 + pWidth * pi + pWidth / 2;
+        var panelGeo = new THREE.BoxGeometry(pWidth - 6, headboardH - 30, 22);
+        var panelMesh = new THREE.Mesh(panelGeo, upholsteredHeadboardMat);
+        panelMesh.position.set(px, headboardH / 2, -D / 2 + headboardD + 6);
+        panelMesh.castShadow = true;
+        fg.add(panelMesh);
+
+        var groove = new THREE.Mesh(new THREE.BoxGeometry(4, headboardH - 20, 26), tuftLineMat);
+        groove.position.set(-headboardW / 2 + 10 + pWidth * (pi + 1), headboardH / 2, -D / 2 + headboardD + 4);
+        fg.add(groove);
+      }
+
+      var hbTrimTop = new THREE.Mesh(new THREE.BoxGeometry(headboardW + 8, 20, headboardD + 18), brassMat);
+      hbTrimTop.position.set(0, headboardH - 10, -D / 2 + headboardD / 2 + 6);
+      fg.add(hbTrimTop);
+
+      // 3. Realistic Multi-Layer Comfort Mattress with Edge Piping
+      var matH = 260;
+      var matW = W - 30;
+      var matD = D - 90;
       var matMesh = new THREE.Mesh(new THREE.BoxGeometry(matW, matH, matD), mattressMat);
-      matMesh.position.set(0, frameH + matH / 2, 30);
+      matMesh.position.set(0, frameH + matH / 2, 25);
       matMesh.castShadow = true; matMesh.receiveShadow = true;
       fg.add(matMesh);
 
-      var duvetD = matD * 0.62;
-      var duvetMesh = new THREE.Mesh(new THREE.BoxGeometry(matW + 10, matH + 16, duvetD), duvetMat);
-      duvetMesh.position.set(0, frameH + matH / 2 + 8, 30 + matD / 2 - duvetD / 2);
+      var pipeTop = new THREE.Mesh(new THREE.BoxGeometry(matW + 6, 12, matD + 6), mattressPipingMat);
+      pipeTop.position.set(0, frameH + matH - 6, 25);
+      fg.add(pipeTop);
+
+      // 4. Luxury Draped Duvet / Comforter
+      var duvetD = matD * 0.65;
+      var duvetH = 45;
+      var duvetMesh = new THREE.Mesh(new THREE.BoxGeometry(matW + 24, duvetH, duvetD), duvetMat);
+      duvetMesh.position.set(0, frameH + matH + duvetH / 2, 25 + matD / 2 - duvetD / 2);
       duvetMesh.castShadow = true; duvetMesh.receiveShadow = true;
       fg.add(duvetMesh);
 
+      // Side Drapes falling over the bed edges
+      var sideDrapeGeo = new THREE.BoxGeometry(14, matH * 0.75, duvetD);
+      var leftDrape = new THREE.Mesh(sideDrapeGeo, duvetMat);
+      leftDrape.position.set(-matW / 2 - 10, frameH + matH - matH * 0.35, 25 + matD / 2 - duvetD / 2);
+      fg.add(leftDrape);
+      var rightDrape = new THREE.Mesh(sideDrapeGeo, duvetMat);
+      rightDrape.position.set(matW / 2 + 10, frameH + matH - matH * 0.35, 25 + matD / 2 - duvetD / 2);
+      fg.add(rightDrape);
+
+      // Turn-down fold showing contrast white inner sheet
+      var foldGeo = new THREE.BoxGeometry(matW + 18, 30, 180);
+      var foldMesh = new THREE.Mesh(foldGeo, sheetFoldMat);
+      foldMesh.position.set(0, frameH + matH + 15, 25 + matD / 2 - duvetD - 60);
+      foldMesh.castShadow = true;
+      fg.add(foldMesh);
+
+      // 5. Layered Pillows
       if (isKid) {
-        var kPillow = new THREE.Mesh(new THREE.BoxGeometry(matW * 0.7, 75, 340), pillowMat);
-        kPillow.position.set(0, frameH + matH + 35, -D / 2 + 250);
-        kPillow.rotation.x = 0.15;
+        var kPillow = new THREE.Mesh(new THREE.BoxGeometry(matW * 0.72, 85, 360), pillowMat);
+        kPillow.position.set(0, frameH + matH + 42, -D / 2 + 250);
+        kPillow.rotation.x = 0.22;
         kPillow.castShadow = true;
         fg.add(kPillow);
       } else {
         var pW = matW * 0.42;
-        [-matW * 0.24, matW * 0.24].forEach(function (px) {
-          var pil = new THREE.Mesh(new THREE.BoxGeometry(pW, 80, 360), pillowMat);
-          pil.position.set(px, frameH + matH + 35, -D / 2 + 250);
-          pil.rotation.x = 0.15;
+        [-matW * 0.23, matW * 0.23].forEach(function (px) {
+          var euroPil = new THREE.Mesh(new THREE.BoxGeometry(pW, 110, 320), pillowBackMat);
+          euroPil.position.set(px, frameH + matH + 65, -D / 2 + 190);
+          euroPil.rotation.x = 0.35;
+          euroPil.castShadow = true;
+          fg.add(euroPil);
+        });
+
+        [-matW * 0.23, matW * 0.23].forEach(function (px) {
+          var pil = new THREE.Mesh(new THREE.BoxGeometry(pW * 0.95, 80, 360), pillowMat);
+          pil.position.set(px, frameH + matH + 40, -D / 2 + 320);
+          pil.rotation.x = 0.12;
           pil.castShadow = true;
           fg.add(pil);
         });
+
+        var accentCushion = new THREE.Mesh(new THREE.BoxGeometry(340, 180, 90), accentPillowMat);
+        accentCushion.position.set(0, frameH + matH + 65, -D / 2 + 370);
+        accentCushion.rotation.x = 0.25;
+        accentCushion.castShadow = true;
+        fg.add(accentCushion);
       }
 
-      if (isMariam) {
-        var nsW = 450, nsH = 450, nsD = 420;
-        [-W / 2 - nsW / 2 - 10, W / 2 + nsW / 2 + 10].forEach(function (nsX) {
-          var nsMesh = new THREE.Mesh(new THREE.BoxGeometry(nsW, nsH, nsD), woodBedMat);
-          nsMesh.position.set(nsX, nsH / 2, -D / 2 + nsD / 2 + 40);
-          nsMesh.castShadow = true;
+      // 6. Nightstands & Designer Ambient Lamps for Master Bed Set
+      if (isMariam || decorType === 'master_bed') {
+        var nsW = 480, nsH = 460, nsD = 440;
+        [-W / 2 - nsW / 2 - 15, W / 2 + nsW / 2 + 15].forEach(function (nsX) {
+          var nsMesh = new THREE.Mesh(new THREE.BoxGeometry(nsW, nsH - 120, nsD), woodBedMat);
+          nsMesh.position.set(nsX, (nsH - 120) / 2 + 120, -D / 2 + nsD / 2 + 40);
+          nsMesh.castShadow = true; nsMesh.receiveShadow = true;
           fg.add(nsMesh);
 
-          var lampBase = new THREE.Mesh(new THREE.CylinderGeometry(40, 50, 40, 16), woodBedMat);
-          lampBase.position.set(nsX, nsH + 20, -D / 2 + nsD / 2 + 40);
+          [
+            [nsX - nsW / 2 + 40, -D / 2 + 70],
+            [nsX + nsW / 2 - 40, -D / 2 + 70],
+            [nsX - nsW / 2 + 40, -D / 2 + nsD],
+            [nsX + nsW / 2 - 40, -D / 2 + nsD]
+          ].forEach(function(nsp) {
+            var nsLeg = new THREE.Mesh(new THREE.CylinderGeometry(14, 9, 120, 16), brassMat);
+            nsLeg.position.set(nsp[0], 60, nsp[1]);
+            nsLeg.castShadow = true;
+            fg.add(nsLeg);
+          });
+
+          var drawerFace = new THREE.Mesh(new THREE.BoxGeometry(nsW - 16, (nsH - 140) / 2, 8), upholsteredHeadboardMat);
+          drawerFace.position.set(nsX, 120 + (nsH - 120) * 0.72, -D / 2 + nsD + 40 + 4);
+          fg.add(drawerFace);
+
+          var pullHandle = new THREE.Mesh(new THREE.BoxGeometry(100, 12, 14), brassMat);
+          pullHandle.position.set(nsX, 120 + (nsH - 120) * 0.72, -D / 2 + nsD + 40 + 12);
+          fg.add(pullHandle);
+
+          var lampZ = -D / 2 + nsD / 2 + 40;
+          var lampBase = new THREE.Mesh(new THREE.CylinderGeometry(55, 65, 30, 24), brassMat);
+          lampBase.position.set(nsX, nsH + 15, lampZ);
+          lampBase.castShadow = true;
           fg.add(lampBase);
 
-          var shade = new THREE.Mesh(new THREE.CylinderGeometry(70, 95, 140, 16), lampMat);
-          shade.position.set(nsX, nsH + 110, -D / 2 + nsD / 2 + 40);
+          var lampStem = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 140, 16), brassMat);
+          lampStem.position.set(nsX, nsH + 95, lampZ);
+          fg.add(lampStem);
+
+          var shade = new THREE.Mesh(new THREE.CylinderGeometry(75, 115, 150, 24), lampShadeMat);
+          shade.position.set(nsX, nsH + 175, lampZ);
+          shade.castShadow = true;
           fg.add(shade);
         });
       }
@@ -2996,8 +3109,8 @@
     t2Mesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(t2Mesh);
 
-    // 6. Shelves (2 Shelves, shelves: 2)
-    var numShelves = (furn.unitConfig && furn.unitConfig.shelves !== undefined) ? parseInt(furn.unitConfig.shelves) : 2;
+    // 6. Shelves (1 Shelf default, shelves: 1)
+    var numShelves = (furn.unitConfig && furn.unitConfig.shelves !== undefined) ? parseInt(furn.unitConfig.shelves) : 1;
     for (var sh = 1; sh <= numShelves; sh++) {
       var shY = plinthH + (sh * bodyH) / (numShelves + 1);
       var s1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W - 36, 18, depth - 40), carcassMat);
@@ -3161,13 +3274,13 @@
     var isLoftOS = (catOS.indexOf('loft') !== -1 || nameOS.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
     var isWallOS = (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)));
     var isTrueOnlyShutter = !!(furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1);
-    var isBaseOS = !isTrueOnlyShutter && (isBase || catOS === 'kitchen_base' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS));
+    var isBaseOS = (isBase || catOS === 'kitchen_base' || catOS === 'kitchen_fm' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || catOS === 'crockery' || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS));
 
-    var actualPlinthH = isBaseOS ? ((plinthH !== undefined && plinthH > 0) ? plinthH : 100) : 0;
-    var actualCounterH = isBaseOS ? ((counterH !== undefined && counterH > 0) ? counterH : 35) : 0;
-    var baseD = isTrueOnlyShutter ? 18 : ((dims.D && dims.D < 100) ? dims.D : (isBaseOS ? 560 : 18));
+    var baseD = (dims.D && dims.D > 100) ? dims.D : (isBaseOS ? 550 : 18);
+    var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
+    var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none') ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 35)) : 0;
 
-    if (isBaseOS && !isTrueOnlyShutter && baseD > 50) {
+    if (isBaseOS && baseD > 50) {
       // 1. Plinth Kickboard & Adjustable Cabinet Legs
       if (actualPlinthH > 0) {
         var pGeo = new THREE.BoxGeometry(W - 30, actualPlinthH, baseD - 50);
@@ -3863,14 +3976,21 @@
     }
 
     // 6. Internal Shelves
-    var explicitlyNoShelves = (furn.unitConfig && furn.unitConfig.shelves === 0);
+    var catFM = (furn.category || '').toLowerCase();
+    var nameFM = (furn.name || '').toLowerCase();
+    var isCrockeryOnlyDoors = (catFM.indexOf('crockery') !== -1 || nameFM.indexOf('crockery') !== -1) &&
+                              (nameFM.indexOf('only door') !== -1 || (furn.id && furn.id.indexOf('doors-only') !== -1) || (furn.unitConfig && furn.unitConfig.isOnlyShutter));
+    var explicitlyNoShelves = (furn.unitConfig && furn.unitConfig.shelves === 0) || isCrockeryOnlyDoors;
+    var isKitchenFMorWM = (catFM.indexOf('kitchen') !== -1 || catFM.indexOf('fm') !== -1 || catFM.indexOf('wall') !== -1 || /(^|\b|_|-)(fm|fcm|fbcm|wm|wcm|wbcm)($|\b|_|-|\d+)/i.test(nameFM) || /(^|\b|_|-)(fm|fcm|fbcm|wm|wcm|wbcm)($|\b|_|-|\d+)/i.test(furn.id || ''));
     var isInternalDrawers = (furn.unitConfig && (furn.unitConfig.internalDrawers || furn.unitConfig.drawersInCenter)) ||
                             furn.id === 'wr-drawers' || furn.id === 'wr-1-drawers' ||
                             (furn.modelType && furn.modelType.indexOf('wardrobe_modular_drawers') !== -1) ||
                             (furn.name && furn.name.toLowerCase().indexOf('wardrobe') !== -1 && furn.name.toLowerCase().indexOf('drawer') !== -1);
 
     if (!explicitlyNoShelves && (bodyH > 650 || (furn.unitConfig && furn.unitConfig.shelves > 0) || isFcmUnit)) {
-      var numShelves = (furn.unitConfig && furn.unitConfig.shelves !== undefined) ? parseInt(furn.unitConfig.shelves) : (bodyH > 1400 ? 3 : 1);
+      var numShelves = (furn.unitConfig && furn.unitConfig.shelves !== undefined) ?
+        parseInt(furn.unitConfig.shelves) :
+        (isKitchenFMorWM ? 1 : (bodyH > 1400 ? 3 : 1));
       if (isInternalDrawers) {
         // Wardrobe with internal drawers: place top shelf above hanging rod
         numShelves = 1;
