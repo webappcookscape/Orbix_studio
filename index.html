@@ -396,6 +396,7 @@
         <div class="plan-toolbar-row drawing-bar">
           <div class="plan-toolgroup">
             <button class="plan-tool-btn is-active" data-tool="select" title="Select & Move (S)">✋ Select</button>
+            <button class="plan-tool-btn" data-tool="pan" id="planPanBtn" title="Pan Floor Plan: Click and drag anywhere to pan and observe floor plan (Hotkey H or hold Spacebar / Middle Click)">✋ Pan View</button>
             <button class="plan-tool-btn" data-tool="wall" title="Draw Wall (W)">🧱 + Wall</button>
             <select class="plan-select" id="planWallThickness" title="Wall Thickness">
               <option value="100">100 mm (Drywall)</option>
@@ -458,6 +459,7 @@
 
             <div class="plan-toolgroup" id="planUnderlayControls" style="display:none;align-items:center;gap:6px;padding:2px 8px;background:#EEF5FB;border:1px solid #C2DBF0;border-radius:4px;">
               <span style="font-size:11px;font-weight:700;color:#1B4F72;">Blueprint:</span>
+              <button class="plan-tool-btn" id="planMoveUnderlayBtn" style="padding:3px 8px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;" title="Move Blueprint: Click and drag anywhere to move & position blueprint under walls (Hotkey B or hold Alt while dragging)">✋ Move</button>
               <button class="plan-tool-btn" id="planCalibrateScaleBtn" style="padding:3px 7px;font-size:11px;background:#1B4F72;color:#fff;border-color:#1B4F72;" title="Calibrate Scale: Click 2 points on a known wall dimension">📏 Calibrate</button>
               <label style="font-size:11px;color:#333;display:inline-flex;align-items:center;gap:3px;" title="Adjust Image Opacity">
                 Opacity

@@ -723,7 +723,32 @@
         });
       }
 
-      // ── Underlay Controls (Calibrate, Opacity, Toggle, Remove) ──
+      // ── Underlay Controls (Move Blueprint, Calibrate, Opacity, Toggle, Remove) ──
+      var btnMoveUnderlay = document.getElementById('planMoveUnderlayBtn');
+      if (btnMoveUnderlay) {
+        btnMoveUnderlay.addEventListener('click', function () {
+          if (!self.editor.underlay || !self.editor.underlay.img) {
+            alert('Please import a blueprint image first (click 🖼️ Import Blueprint).');
+            return;
+          }
+          var isMoving = (self.editor.activeTool === 'move_underlay');
+          if (isMoving) {
+            self.editor.setTool('select');
+            btnMoveUnderlay.classList.remove('is-active');
+            btnMoveUnderlay.style.background = '';
+            btnMoveUnderlay.style.color = '';
+          } else {
+            self.editor.setTool('move_underlay');
+            var allToolBtns = document.querySelectorAll('.plan-tool-btn');
+            allToolBtns.forEach(function (b) { b.classList.remove('is-active'); });
+            btnMoveUnderlay.classList.add('is-active');
+            btnMoveUnderlay.style.background = '#059669';
+            btnMoveUnderlay.style.color = '#ffffff';
+          }
+          self.editor.render();
+        });
+      }
+
       var btnCalib = document.getElementById('planCalibrateScaleBtn');
       if (btnCalib) {
         btnCalib.addEventListener('click', function () {

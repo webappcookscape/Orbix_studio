@@ -38,3 +38,4 @@ const js = `/* Orbix Studio Floor Tile Textures */
 
 fs.writeFileSync(outPath, js, 'utf8');
 console.log('Successfully wrote orbix-floor-textures.js. Size:', fs.statSync(outPath).size);
+
