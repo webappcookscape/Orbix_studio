@@ -2,11 +2,12 @@
   "name": "orbix-studio-cad",
   "version": "1.0.0",
   "description": "Orbix Studio — 3D Interior Cupboard CAD & Production Planning with PostgreSQL and Prisma",
-  "main": "server/server.js",
+  "main": "electron-main.js",
   "scripts": {
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
     "start:desktop": "electron electron-main.js",
+    "package:win": "electron-packager . \"OrbixStudio\" --platform=win32 --arch=x64 --out=dist-desktop --overwrite",
     "dist:win": "electron-builder --win --x64",
     "prisma:generate": "prisma generate",
     "postinstall": "prisma generate"
@@ -34,5 +35,9 @@
     "express-session": "^1.19.0",
     "pg": "^8.23.1",
     "prisma": "^6.19.3"
+  },
+  "devDependencies": {
+    "electron": "^45.3.2",
+    "electron-packager": "^17.1.2"
   }
 }

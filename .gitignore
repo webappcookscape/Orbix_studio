@@ -1,5 +1,7 @@
 # generated / local
 dist/
+dist-desktop/
+OrbixStudio.exe
 cupboard-cad-dist.zip
 shots/
 .netlify-demo.json
