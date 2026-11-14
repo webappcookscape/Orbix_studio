@@ -30,7 +30,7 @@
   ArchitecturalRenderer._floorTextures = ArchitecturalRenderer._floorTextures || {};
   ArchitecturalRenderer._floorMaterials = ArchitecturalRenderer._floorMaterials || {};
 
-  // Floor Texture Generator: supports 'tile_1', 'tile_2' (User uploads via ORBIX_FLOOR_TEXTURES), 'white_tile', 'square_tile', 'grey_tile', 'wooden'
+  // Floor Texture Generator: supports 'tile_1', 'tile_2', 'tile_3' (User uploads via ORBIX_FLOOR_TEXTURES), 'white_tile', 'square_tile', 'grey_tile', 'wooden'
   ArchitecturalRenderer.createFloorTexture = function (type) {
     type = type || 'white_tile';
     if (ArchitecturalRenderer._floorTextures[type]) return ArchitecturalRenderer._floorTextures[type];
@@ -39,10 +39,12 @@
     var b64 = null;
     if (typeof window !== 'undefined' && window.ORBIX_FLOOR_TEXTURES) {
       b64 = window.ORBIX_FLOOR_TEXTURES[type];
-      if (!b64 && (type === 'tile_1' || type === 'designer_tile_1' || type === 'custom_tile_1')) {
+      if (!b64 && (type === 'tile_1' || type === 'designer_tile_1' || type === 'custom_tile_1' || type === 'floor_tile_1')) {
         b64 = window.ORBIX_FLOOR_TEXTURES.tile_1;
-      } else if (!b64 && (type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2')) {
+      } else if (!b64 && (type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2' || type === 'floor_tile_2')) {
         b64 = window.ORBIX_FLOOR_TEXTURES.tile_2;
+      } else if (!b64 && (type === 'tile_3' || type === 'designer_tile_3' || type === 'custom_tile_3' || type === 'floor_tile_3')) {
+        b64 = window.ORBIX_FLOOR_TEXTURES.tile_3;
       }
     }
     if (b64 && typeof THREE !== 'undefined' && typeof Image !== 'undefined') {
@@ -603,10 +605,11 @@
     }
     type = type || this.selectedFloorType || 'white_tile';
     var tex = ArchitecturalRenderer.createFloorTexture(type);
-    var isWood = (type === 'wooden');
+    var isWood = (type === 'wooden' || type === 'tile_3' || type === 'designer_tile_3' || type === 'floor_tile_3');
     var isWhite = (type === 'white_tile');
-    var isCustomTile = (type === 'tile_1' || type === 'designer_tile_1' || type === 'custom_tile_1' ||
-                        type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2');
+    var isCustomTile = (type === 'tile_1' || type === 'designer_tile_1' || type === 'custom_tile_1' || type === 'floor_tile_1' ||
+                        type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2' || type === 'floor_tile_2' ||
+                        type === 'tile_3' || type === 'designer_tile_3' || type === 'custom_tile_3' || type === 'floor_tile_3');
 
     // Natural architectural matte finish — eliminates glossy mirror reflections and glare
     return new THREE.MeshStandardMaterial({
@@ -625,8 +628,9 @@
     if (type === 'square_tile') return 0xDFD7CA; // Warm travertine ivory
     if (type === 'grey_tile') return 0x3E424B;   // Charcoal basalt slate
     if (type === 'wooden') return 0xB38256;      // Warm oak hardwood
-    if (type === 'tile_1' || type === 'designer_tile_1' || type === 'custom_tile_1') return 0xE8DFD5; // Warm Crema Marfil
-    if (type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2') return 0xBFAEA0; // Warm Mocha Breccia
+    if (type === 'tile_1' || type === 'designer_tile_1' || type === 'custom_tile_1' || type === 'floor_tile_1') return 0xF1F2F1; // Statuario White Marble Tile
+    if (type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2' || type === 'floor_tile_2') return 0x98999B; // Charcoal Grey Basalt Tile
+    if (type === 'tile_3' || type === 'designer_tile_3' || type === 'custom_tile_3' || type === 'floor_tile_3') return 0x99785C; // Warm Teak Plank Flooring Tile
     return 0xEDECEF;                             // White Calacatta marble tile (default)
   };
 
@@ -1481,15 +1485,16 @@
       else if (room.floorFinish === 'marble') finishType = 'white_tile';
       else if (room.floorFinish === 'tile') finishType = 'square_tile';
       else if (room.floorFinish === 'concrete') finishType = 'grey_tile';
-      else if (room.floorFinish === 'tile_1' || room.floorFinish === 'designer_tile_1' || room.floorFinish === 'custom_tile_1') finishType = 'tile_1';
-      else if (room.floorFinish === 'tile_2' || room.floorFinish === 'designer_tile_2' || room.floorFinish === 'custom_tile_2') finishType = 'tile_2';
+      else if (room.floorFinish === 'tile_1' || room.floorFinish === 'designer_tile_1' || room.floorFinish === 'custom_tile_1' || room.floorFinish === 'floor_tile_1') finishType = 'tile_1';
+      else if (room.floorFinish === 'tile_2' || room.floorFinish === 'designer_tile_2' || room.floorFinish === 'custom_tile_2' || room.floorFinish === 'floor_tile_2') finishType = 'tile_2';
+      else if (room.floorFinish === 'tile_3' || room.floorFinish === 'designer_tile_3' || room.floorFinish === 'custom_tile_3' || room.floorFinish === 'floor_tile_3') finishType = 'tile_3';
       else finishType = room.floorFinish;
     } else if (room.type === 'bedroom' && this.selectedFloorType === 'white_tile') {
       finishType = 'wooden';
     }
 
     // Physical millimeter UV mapping so tile sizes are authentic and scale-consistent
-    var tileSize = (finishType === 'wooden') ? 1200 : (finishType === 'white_tile' ? 1600 : 1200);
+    var tileSize = (finishType === 'wooden' || finishType === 'tile_3') ? 1200 : (finishType === 'white_tile' ? 1600 : 1200);
     if (geo.attributes && geo.attributes.uv) {
       var uvAttr = geo.attributes.uv;
       for (var v = 0; v < posAttr.count; v++) {

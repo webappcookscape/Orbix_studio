@@ -415,7 +415,7 @@
 
       var dadoStyleSel = document.getElementById('dadoTileStyleSelect');
       if (dadoStyleSel) {
-        if (!window.dadoTileStyle) window.dadoTileStyle = 'rhombus_sage';
+        if (!window.dadoTileStyle) window.dadoTileStyle = 'dado_1';
         dadoStyleSel.value = window.dadoTileStyle;
         dadoStyleSel.addEventListener('change', function () {
           window.dadoTileStyle = dadoStyleSel.value;
@@ -1212,9 +1212,14 @@
           '  <div style="margin-top:8px;">' +
           '    <label style="font-size:11px;font-weight:600;color:#166534;display:block;margin-bottom:3px;">Tile Pattern</label>' +
           '    <select id="inspWallDadoStyle" style="width:100%;height:26px;font-size:11px;border:1px solid #bbf7d0;border-radius:4px;background:#ffffff;padding:0 4px;">' +
-          '      <option value="rhombus_sage"' + ((w.dadoTileStyle || window.dadoTileStyle || 'rhombus_sage') === 'rhombus_sage' ? ' selected' : '') + '>Pattern 1: Sage Diamond</option>' +
-          '      <option value="chevron_mono"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'chevron_mono' ? ' selected' : '') + '>Pattern 2: Mono Chevron</option>' +
-          '      <option value="subway_white"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'subway_white' ? ' selected' : '') + '>Pattern 3: White Subway</option>' +
+          '      <option value="dado_1"' + ((w.dadoTileStyle || window.dadoTileStyle || 'dado_1') === 'dado_1' ? ' selected' : '') + '>Dado 1: Modern Geo Stone</option>' +
+          '      <option value="dado_2"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'dado_2' ? ' selected' : '') + '>Dado 2: Sage Green Mosaic</option>' +
+          '      <option value="dado_3"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'dado_3' ? ' selected' : '') + '>Dado 3: Classic Ceramic Motif</option>' +
+          '      <option value="dado_4"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'dado_4' ? ' selected' : '') + '>Dado 4: Carrara Subway Glaze</option>' +
+          '      <option value="dado_5"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'dado_5' ? ' selected' : '') + '>Dado 5: Warm Calacatta Marble</option>' +
+          '      <option value="rhombus_sage"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'rhombus_sage' ? ' selected' : '') + '>Pattern: Sage Diamond</option>' +
+          '      <option value="chevron_mono"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'chevron_mono' ? ' selected' : '') + '>Pattern: Mono Chevron</option>' +
+          '      <option value="subway_white"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'subway_white' ? ' selected' : '') + '>Pattern: White Subway</option>' +
           '    </select>' +
           '  </div>') : '') +
           '</div>' +
@@ -2445,8 +2450,9 @@
             '<option value="marble"' + ((rm.floorFinish === 'marble') ? ' selected' : '') + '>Italian White Marble</option>' +
             '<option value="tile"' + ((rm.floorFinish === 'tile' || !rm.floorFinish) ? ' selected' : '') + '>Vitrified Light Tiles</option>' +
             '<option value="concrete"' + ((rm.floorFinish === 'concrete') ? ' selected' : '') + '>Polished Concrete</option>' +
-            '<option value="tile_1"' + ((rm.floorFinish === 'tile_1' || rm.floorFinish === 'designer_tile_1') ? ' selected' : '') + '>Designer Tile 1 (Crema Marfil)</option>' +
-            '<option value="tile_2"' + ((rm.floorFinish === 'tile_2' || rm.floorFinish === 'designer_tile_2') ? ' selected' : '') + '>Designer Tile 2 (Mocha Breccia)</option>' +
+            '<option value="tile_1"' + ((rm.floorFinish === 'tile_1' || rm.floorFinish === 'designer_tile_1' || rm.floorFinish === 'floor_tile_1') ? ' selected' : '') + '>Floor Tile 1 (Statuario White Marble)</option>' +
+            '<option value="tile_2"' + ((rm.floorFinish === 'tile_2' || rm.floorFinish === 'designer_tile_2' || rm.floorFinish === 'floor_tile_2') ? ' selected' : '') + '>Floor Tile 2 (Grey Basalt Slate)</option>' +
+            '<option value="tile_3"' + ((rm.floorFinish === 'tile_3' || rm.floorFinish === 'designer_tile_3' || rm.floorFinish === 'floor_tile_3') ? ' selected' : '') + '>Floor Tile 3 (Teak Wood Plank Tile)</option>' +
           '</select></div>' +
           '<div class="insp-row"><label>Ceiling Ht (mm)</label><input type="number" id="inspRoomHeight" value="' + (rm.ceilingHeight || 2800) + '" step="100"></div>' +
           '<div class="insp-row"><label>Area (sq.ft)</label><input type="text" value="' + areaSqFt + ' sq ft (' + areaSqM + ' m²)" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
@@ -2488,8 +2494,9 @@
             else if (fType === 'marble') fType = 'white_tile';
             else if (fType === 'tile') fType = 'square_tile';
             else if (fType === 'concrete') fType = 'grey_tile';
-            else if (fType === 'tile_1' || fType === 'designer_tile_1') fType = 'tile_1';
-            else if (fType === 'tile_2' || fType === 'designer_tile_2') fType = 'tile_2';
+            else if (fType === 'tile_1' || fType === 'designer_tile_1' || fType === 'floor_tile_1') fType = 'tile_1';
+            else if (fType === 'tile_2' || fType === 'designer_tile_2' || fType === 'floor_tile_2') fType = 'tile_2';
+            else if (fType === 'tile_3' || fType === 'designer_tile_3' || fType === 'floor_tile_3') fType = 'tile_3';
             if (self.archRenderer && typeof self.archRenderer.setFloorMaterial === 'function') {
               self.archRenderer.setFloorMaterial(fType, rm.id);
             }

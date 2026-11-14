@@ -1714,8 +1714,9 @@
       var b64 = null;
       if (typeof window !== "undefined" && window.ORBIX_FLOOR_TEXTURES) {
         b64 = window.ORBIX_FLOOR_TEXTURES[type];
-        if (!b64 && (type === "tile_1" || type === "designer_tile_1")) b64 = window.ORBIX_FLOOR_TEXTURES.tile_1;
-        if (!b64 && (type === "tile_2" || type === "designer_tile_2")) b64 = window.ORBIX_FLOOR_TEXTURES.tile_2;
+        if (!b64 && (type === "tile_1" || type === "designer_tile_1" || type === "floor_tile_1")) b64 = window.ORBIX_FLOOR_TEXTURES.tile_1;
+        if (!b64 && (type === "tile_2" || type === "designer_tile_2" || type === "floor_tile_2")) b64 = window.ORBIX_FLOOR_TEXTURES.tile_2;
+        if (!b64 && (type === "tile_3" || type === "designer_tile_3" || type === "floor_tile_3")) b64 = window.ORBIX_FLOOR_TEXTURES.tile_3;
       }
       if (b64 && typeof Image !== "undefined") {
         var img = new Image();
@@ -1750,7 +1751,7 @@
           g.strokeStyle = "rgba(180, 140, 95, 0.28)"; g.lineWidth = 1.8;
           g.beginPath(); g.moveTo(tx + 20, ty + 30); g.bezierCurveTo(tx + 95, ty + 90, tx + 140, ty + 165, tx + 230, ty + 220); g.stroke();
         }
-      } else if (type === "tile_2" || type === "designer_tile_2") {
+      } else if (type === "tile_2" || type === "designer_tile_2" || type === "floor_tile_2") {
         g.fillStyle = "#4B3F38"; g.fillRect(0, 0, 512, 512);
         for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
           var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
@@ -1760,6 +1761,15 @@
           g.strokeStyle = "rgba(255, 255, 255, 0.35)"; g.lineWidth = 1.2; g.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
           g.strokeStyle = "rgba(75, 60, 50, 0.38)"; g.lineWidth = 2.0;
           g.beginPath(); g.moveTo(tx + 25, ty + 20); g.bezierCurveTo(tx + 85, ty + 100, tx + 150, ty + 150, tx + 235, ty + 230); g.stroke();
+        }
+      } else if (type === "tile_3" || type === "designer_tile_3" || type === "floor_tile_3") {
+        g.fillStyle = "#3E2723"; g.fillRect(0, 0, 512, 512);
+        for (var i = 0; i < 4; i++) {
+          var py = i * 128 + 2, ph = 124;
+          var pGrad = g.createLinearGradient(0, py, 512, py + ph);
+          pGrad.addColorStop(0, "#8D6E63"); pGrad.addColorStop(0.5, "#A1887F"); pGrad.addColorStop(1, "#795548");
+          g.fillStyle = pGrad; g.fillRect(2, py, 508, ph);
+          g.strokeStyle = "rgba(255, 255, 255, 0.25)"; g.lineWidth = 1.0; g.strokeRect(3, py + 1, 506, ph - 2);
         }
       } else if (type === "white_tile") {
         // 800x800 Italian Carrara / Calacatta Polished Marble Slabs
