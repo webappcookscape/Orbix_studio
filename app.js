@@ -3837,7 +3837,8 @@
       if (keyL) keyL.intensity = val;
       if (scene) {
         scene.traverse(function (o) {
-          if (o.isDirectionalLight && o !== keyL) o.intensity = val * 0.35;
+          if (o.isDirectionalLight && o !== keyL) o.intensity = val * 0.38;
+          if (o.isHemisphereLight) o.intensity = Math.max(0.1, val * 0.42);
         });
       }
       render();
@@ -3848,9 +3849,9 @@
       window.spotlightIntensity = val;
       if (scene) {
         scene.traverse(function (o) {
-          if (o.isSpotLight || (o.isLight && (o.userData.isSpotlight || o.userData.isDownlight || (o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1)))) {
-            o.intensity = val;
-          } else if (o.isPointLight && o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1) {
+          if (o.isSpotLight || (o.isLight && (o.userData.isSpotlight || o.userData.isDownlight || (o.name && o.name.indexOf('Spotlight') !== -1) || (o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1)))) {
+            o.intensity = val * 0.9;
+          } else if (o.isPointLight && (o.name === 'roomFillLight' || (o.parent && o.parent.name && o.parent.name.indexOf('RoomLighting') !== -1))) {
             o.intensity = val * 0.45;
           }
         });
@@ -3859,6 +3860,10 @@
     },
     makeGrassGroundMat: makeGrassGroundMat, makeNeutralGroundMat: makeGrassGroundMat, setFloorMaterial: function (type) { window.currentFloorType = type; delete matCache["sp|floor"]; var hasArchHome = scene && (scene.getObjectByName('OrbixHome3D') || (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0)); if (floor) floor.material = hasArchHome ? makeGrassGroundMat() : makeFloorMat(type); render(); } };
   })();
+
+  window.GL = GL;
+  window.setSunlightIntensity = GL.setSunlightIntensity;
+  window.setSpotlightIntensity = GL.setSpotlightIntensity;
 
   /* ═══════════════════════════════════════════════════════════════
      DESIGN CATALOGUE — styles × formats, per cupboard type.
@@ -4427,66 +4432,11 @@
     stage.addEventListener("pointerdown", function (e) {
       downAt = { x: e.clientX, y: e.clientY, t: Date.now() };
 
-      // 0. Check 3D Gizmo translation arrows FIRST!
-      // "on clicking unit it should show arrow like this then only it should be movable"
-      if (GL.ok && GL.gizmoPick && e.button === 0) {
-        var gHit = GL.gizmoPick(e.clientX, e.clientY);
-        if (gHit) {
-          var gObj = GL.getGizmoTarget();
-          var gId = GL.getGizmoFurnId();
-          if (gObj && gId) {
-            var fp = GL.floorPoint(e.clientX, e.clientY) || { x: gObj.position.x, z: gObj.position.z };
-            gizmoDrag = {
-              axis: gHit.axis,
-              id: gId,
-              obj: gObj,
-              dims: (gObj.userData && gObj.userData.dims) || { W: 1200, H: 850, D: 600 },
-              startX: e.clientX,
-              startY: e.clientY,
-              startPos: { x: gObj.position.x, z: gObj.position.z },
-              startPosY: gObj.position.y || 0,
-              startRot: gObj.rotation.y || 0,
-              startFloor: fp,
-              moved: false
-            };
-            stage.setPointerCapture(e.pointerId);
-            stage.classList.add("grab");
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            return;
-          }
-        }
-      }
-
-      // 1. Click unit: Show translation arrow gizmo and enable direct 3D floor drag
+      // 1. Click unit: Select furniture unit in inspector without moving it in 3D
+      // Per user request: units do NOT move in 3D; mouse moves strictly orbit/pan the camera!
       if (GL.ok && GL.pickFurniture && e.button === 0) {
         var fHit = GL.pickFurniture(e.clientX, e.clientY);
         if (fHit) {
-          var homeObj = (GL.getScene && GL.getScene()) ? GL.getScene().getObjectByName('OrbixHome3D') : null;
-          var groupObj = fHit.object;
-          while (groupObj && groupObj.parent && groupObj.parent !== homeObj && (!groupObj.userData || !groupObj.userData.isFurnitureGroup)) {
-            groupObj = groupObj.parent;
-          }
-          if (!groupObj) groupObj = fHit.object;
-
-          // Show Gizmo Arrows for this unit!
-          GL.gizmoSet(groupObj, fHit.id);
-
-          var fp = GL.floorPoint(e.clientX, e.clientY) || { x: groupObj.position.x, z: groupObj.position.z };
-          furnDrag = {
-            id: fHit.id,
-            obj: groupObj,
-            startX: e.clientX,
-            startY: e.clientY,
-            startPos: { x: groupObj.position.x, z: groupObj.position.z },
-            offset: { x: groupObj.position.x - fp.x, z: groupObj.position.z - fp.z },
-            dims: (groupObj.userData && groupObj.userData.dims) || { W: 1200, H: 850, D: 600 },
-            moved: false
-          };
-          try { stage.setPointerCapture(e.pointerId); } catch (_) { }
-          e.stopImmediatePropagation();
-          e.preventDefault();
-
           if (window.OrbixUI && window.OrbixUI.editor) {
             window.OrbixUI.editor.selected = [{ type: 'furniture', id: fHit.id }];
             if (window.OrbixUI.editor.render) window.OrbixUI.editor.render();
@@ -4495,10 +4445,7 @@
           if (window.OrbixUI && typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function') {
             window.OrbixUI.selectFurnitureIn3DStudio(fHit.id);
           }
-          return;
-        } else {
-          // Clicked background: hide gizmo
-          if (!hDrag && GL.gizmoSet) GL.gizmoSet(null);
+          // Do NOT capture pointer or initiate drag: keeps units strictly fixed in 3D!
         }
       }
 
@@ -4597,46 +4544,7 @@
         }
       }
 
-      // Furniture drag in 3D: direct floor translation + smart wall/adjacent unit snapping
-      if (furnDrag) {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-        var p = GL.floorPoint(e.clientX, e.clientY);
-        if (p) {
-          if (Math.hypot(e.clientX - furnDrag.startX, e.clientY - furnDrag.startY) > 3) {
-            furnDrag.moved = true;
-            stage.style.cursor = "grabbing";
-          }
-          var targetX = p.x + furnDrag.offset.x;
-          var targetZ = p.z + furnDrag.offset.z;
-
-          // Live snap to wall / adjacent units in 3D if plan is available
-          var planM = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
-          if (window.OrbixCore && window.OrbixCore.snapFurniture && planM) {
-            var candFurn = {
-              id: furnDrag.id,
-              pos: { x: targetX, y: targetZ },
-              elevation: furnDrag.obj.position.y || 0,
-              rotY: -(furnDrag.obj.rotation.y || 0),
-              dimensions: furnDrag.dims
-            };
-            var snapped = window.OrbixCore.snapFurniture(candFurn, planM, furnDrag.id);
-            if (snapped && snapped.pos) {
-              targetX = snapped.pos.x;
-              targetZ = snapped.pos.y;
-              if (typeof snapped.rotY === 'number') {
-                furnDrag.obj.rotation.y = -snapped.rotY;
-              }
-            }
-          }
-
-          furnDrag.obj.position.x = targetX;
-          furnDrag.obj.position.z = targetZ;
-          if (GL.gizmoSet) GL.gizmoSet(furnDrag.obj, furnDrag.id);
-          GL.settle();
-        }
-        return;
-      }
+      furnDrag = null;
 
       // Room boundary handle drag
       if (hDrag) {

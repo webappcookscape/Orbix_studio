@@ -327,3 +327,4 @@ if (hasCRLF) {
 
 fs.writeFileSync('app.js', code, 'utf8');
 console.log('Successfully updated app.js');
+

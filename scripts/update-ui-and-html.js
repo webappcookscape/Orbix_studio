@@ -394,3 +394,4 @@ if (ui.includes(targetInit3DHook)) {
 if (uiCRLF) ui = ui.replace(/\n/g, '\r\n');
 fs.writeFileSync('orbix-ui.js', ui, 'utf8');
 console.log('Successfully updated orbix-ui.js');
+

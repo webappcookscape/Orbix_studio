@@ -114,3 +114,4 @@ assert(d3Js.includes('isGLUnit && (!dstyle || dstyle === \'slab\')'), 'Req 11: o
 console.log('✔ Req 11 Verified: All GL units have default door style as Glass Frame');
 
 console.log('\n🎉 ALL 11 NEW USER REQUIREMENTS 100% VERIFIED AND PASSING!');
+

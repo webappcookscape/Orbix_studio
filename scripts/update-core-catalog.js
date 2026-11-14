@@ -18,3 +18,4 @@ osIds.forEach(id => {
 
 fs.writeFileSync('orbix-core.js', code, 'utf8');
 console.log('Successfully updated orbix-core.js');
+

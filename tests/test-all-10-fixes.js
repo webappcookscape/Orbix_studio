@@ -49,12 +49,11 @@ assert.ok(!planJs.includes('✥ MOVE'), 'Visual 4-way move handle overlay must b
 assert.ok(planJs.includes('move_furniture'), 'Direct 2D unit moving must remain fully supported');
 console.log('✔ Fix 6 Verified: 2D direct unit moving active, 2D move/rotate overlay removed');
 
-// 7. Verify 3D Unit Direct Floor Drag
+// 7. Verify 3D Unit Locking (Disabled per user request: units do NOT move in 3D, strictly orbit/pan camera)
 const appJs = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
-assert.ok(appJs.includes('furnDrag = {') && appJs.includes('startPos: { x: groupObj.position.x, z: groupObj.position.z }'), 'Must initialize furnDrag on pointerdown');
-assert.ok(appJs.includes('stage.setPointerCapture'), 'Must capture pointer to prevent camera orbit');
-assert.ok(appJs.includes('Live snap to wall / adjacent units in 3D'), 'Must snap to wall/units during 3D floor drag');
-console.log('✔ Fix 7 Verified: 3D direct unit floor drag & camera orbit bypass');
+assert.ok(appJs.includes('units do NOT move in 3D'), 'Must lock 3D units in place per user request');
+assert.ok(appJs.includes('furnDrag = null;'), 'Must keep furnDrag null');
+console.log('✔ Fix 7 Verified: 3D units fixed in place, camera orbit/pan active');
 
 // 8. Verify Realistic 3D Rendering (Materials, Shadows, Tone Mapping)
 assert.ok(appJs.includes('THREE.ACESFilmicToneMapping'), 'Must enable ACES Filmic tone mapping');

@@ -452,7 +452,10 @@
         sunSlider.addEventListener('input', function () {
           var v = parseFloat(sunSlider.value);
           if (sunLabel) sunLabel.textContent = v.toFixed(1);
-          if (window.GL && window.GL.setSunlightIntensity) window.GL.setSunlightIntensity(v);
+          window.sunlightIntensity = v;
+          var gl = window.GL || (window.__cc && window.__cc.gl);
+          if (gl && gl.setSunlightIntensity) gl.setSunlightIntensity(v);
+          else if (typeof window.setSunlightIntensity === 'function') window.setSunlightIntensity(v);
         });
       }
       var spotSlider = document.getElementById('spotlightSlider');
@@ -461,7 +464,10 @@
         spotSlider.addEventListener('input', function () {
           var v = parseFloat(spotSlider.value);
           if (spotLabel) spotLabel.textContent = v.toFixed(1);
-          if (window.GL && window.GL.setSpotlightIntensity) window.GL.setSpotlightIntensity(v);
+          window.spotlightIntensity = v;
+          var gl = window.GL || (window.__cc && window.__cc.gl);
+          if (gl && gl.setSpotlightIntensity) gl.setSpotlightIntensity(v);
+          else if (typeof window.setSpotlightIntensity === 'function') window.setSpotlightIntensity(v);
         });
       }
 
@@ -5667,9 +5673,9 @@
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
 
-      // Ensure sky is clean architectural studio backdrop and outer ground is natural studio plane
-      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0xF1F5F9) {
-        scene.background = new THREE.Color(0xF1F5F9);
+      // Ensure sky is daytime radiant sky blue and outer ground is lush lawn grass
+      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
+        scene.background = new THREE.Color(0x82C3EC);
       }
       if (!scene.fog && THREE.FogExp2) {
         scene.fog = new THREE.FogExp2(0xE2E8F0, 0.000008);

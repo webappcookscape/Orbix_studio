@@ -1659,7 +1659,8 @@
       spotPositions.push({ x: cx, z: cz });
     }
 
-    var downlightIntensity = spotPositions.length > 1 ? Math.max(0.38, 1.15 / spotPositions.length) : 0.72;
+    var currentSpotMultiplier = (typeof window !== 'undefined' && window.spotlightIntensity !== undefined) ? window.spotlightIntensity : 1.0;
+    var downlightIntensity = (spotPositions.length > 1 ? Math.max(0.38, 1.15 / spotPositions.length) : 0.72) * currentSpotMultiplier;
 
     for (var s = 0; s < spotPositions.length; s++) {
       var sp = spotPositions[s];
@@ -1686,6 +1687,7 @@
       // Warm 3000K Architectural Downlight (decay=1 for clean millimeter distance falloff)
       if (typeof THREE.SpotLight !== 'undefined') {
         var spot = new THREE.SpotLight(0xFFF3DF, downlightIntensity);
+        spot.name = 'roomSpotlight';
         spot.position.set(sp.x, ceilingH - 25, sp.z);
         spot.target.position.set(sp.x, 0, sp.z);
         spot.angle = Math.PI / 2.8;
@@ -1699,7 +1701,8 @@
 
     // Soft Warm Interior Radiosity / Bounce Fill so vertical cabinets & corners have rich architectural depth
     if (typeof THREE.PointLight !== 'undefined') {
-      var fillLight = new THREE.PointLight(0xFFF6E8, 0.36, Math.max(5200, Math.max(rWidth, rDepth) * 1.45), 1.0);
+      var fillLight = new THREE.PointLight(0xFFF6E8, 0.36 * currentSpotMultiplier, Math.max(5200, Math.max(rWidth, rDepth) * 1.45), 1.0);
+      fillLight.name = 'roomFillLight';
       fillLight.position.set(cx, Math.max(1500, ceilingH * 0.72), cz);
       group.add(fillLight);
     }
@@ -3116,9 +3119,19 @@
     var H = dims.H;
     var D = Math.max(12, dims.D || 18);
 
+    // Use configured laminate finish for decorative wall panels & ledges
+    var panelMat = carcassMat;
+    var fin = (furn.materials && furn.materials.carcass && furn.materials.carcass.finish) ||
+              (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) ||
+              (furn.unitConfig && (furn.unitConfig.shutterCol || furn.unitConfig.carcass));
+    if (fin && fin !== 'none' && fin !== 'Absolute White') {
+      panelMat = ArchitecturalRenderer.resolveLaminateMaterial(fin, 0x6E4E35);
+    }
+
     var panelGeo = new THREE.BoxGeometry(W, H, D);
-    var panelMesh = new THREE.Mesh(panelGeo, carcassMat);
-    panelMesh.position.set(0, H / 2, -D / 2);
+    var panelMesh = new THREE.Mesh(panelGeo, panelMat);
+    // Center at z = 0 to match 2D plan center! In 2D, unit rectangle is centered at furn.pos.
+    panelMesh.position.set(0, H / 2, 0);
     panelMesh.castShadow = true; panelMesh.receiveShadow = true;
     panelMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(panelMesh);
@@ -3608,8 +3621,8 @@
       return ArchitecturalRenderer.resolveLaminateMaterial(matFin, 0x6E4E35);
     }
 
-    // 1. Architectural Wall Paneling / Back Panel (zero carcass)
-    var isWallPanel = (cat === 'wall_paneling' || furn.id === 'pnl-back' || furn.catalogItemId === 'pnl-back' || (name && (name.indexOf('back panel') !== -1 || name.indexOf('wall panel') !== -1 || name.indexOf('vertical ledge') !== -1)));
+    // 1. Architectural Wall Paneling / Back Panel / Ledges (zero carcass box)
+    var isWallPanel = (cat === 'wall_paneling' || /pnl[-_]?back|ledge/i.test(furn.id || '') || /pnl[-_]?back|ledge/i.test(furn.catalogItemId || '') || (name && (name.indexOf('back panel') !== -1 || name.indexOf('wall panel') !== -1 || name.indexOf('vertical ledge') !== -1 || name.indexOf('ledge') !== -1)));
     if (isWallPanel) {
       return this.buildWallPanelMesh(furn, fg, dims, carcassMat);
     }
@@ -3940,11 +3953,13 @@
     var drawersOnTop = (furn.unitConfig && furn.unitConfig.drawersOnTop !== undefined) ? !!furn.unitConfig.drawersOnTop : (numShutters > 0);
     var isSideBySide = (drawersCount === 2 && (furn.unitConfig && (furn.unitConfig.drawersSideBySide || dims.W >= 700)) && !isInternalDrawers);
 
+    var isInternalSideBySide = isInternalDrawers && (drawersCount >= 2);
+
     if (drawersCount > 0) {
       if (isInternalDrawers) {
         // Internal drawers placed inside wardrobe in vertical center:
-        drawerH = 175;
-        totalDrawersH = drawersCount * (drawerH + 6);
+        drawerH = 180;
+        totalDrawersH = isInternalSideBySide ? (drawerH + 6) : (drawersCount * (drawerH + 6));
         var drawerCenterY = plinthH + bodyH / 2;
         var drawerBaseY = drawerCenterY - (totalDrawersH / 2);
 
@@ -3960,6 +3975,15 @@
         dShelfBot.castShadow = true; dShelfBot.receiveShadow = true;
         dShelfBot.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
         fg.add(dShelfBot);
+
+        // Center vertical partition panel between side-by-side internal drawers
+        if (isInternalSideBySide) {
+          var dPart = new THREE.Mesh(new THREE.BoxGeometry(18, drawerH + 6, innerD - 15), carcassMat);
+          dPart.position.set(0, drawerCenterY, -10);
+          dPart.castShadow = true; dPart.receiveShadow = true;
+          dPart.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(dPart);
+        }
       } else if (numShutters === 0) {
         // Pure drawers unit (e.g. bedside unit, 3-pot drawer kitchen base)
         drawerH = Math.max(120, Math.floor((bodyH - (drawersCount + 1) * 3) / drawersCount));
@@ -3979,10 +4003,13 @@
       }
 
       for (var d = 0; d < drawersCount; d++) {
-        var dY = isSideBySide ? (drawerBaseY + drawerH / 2) : (drawerBaseY + d * (drawerH + 3) + drawerH / 2);
-        var drawerW = isSideBySide ? Math.floor((dims.W - 9) / 2) : (dims.W - 6);
-        var drawerBoxW = isSideBySide ? (drawerW - 16) : (innerW - 20);
-        var drawerCenterX = isSideBySide ? (d === 0 ? (-dims.W / 4) : (dims.W / 4)) : 0;
+        var isSBS = isSideBySide || isInternalSideBySide;
+        var dY = isSBS ? (drawerBaseY + drawerH / 2) : (drawerBaseY + d * (drawerH + 3) + drawerH / 2);
+        var drawerW = isInternalSideBySide ? Math.floor((innerW - 36) / 2) : (isSideBySide ? Math.floor((dims.W - 9) / 2) : (dims.W - 6));
+        var drawerBoxW = isInternalSideBySide ? (drawerW - 16) : (isSideBySide ? (drawerW - 16) : (innerW - 20));
+        var drawerCenterX = isInternalSideBySide ? (d === 0 ? (-innerW / 4 - 3) : (innerW / 4 + 3)) : (isSideBySide ? (d === 0 ? (-dims.W / 4) : (dims.W / 4)) : 0);
+        var faciaZ = isInternalDrawers ? (dims.D / 2 - 28) : (dims.D / 2 - 9);
+        var handleZ = isInternalDrawers ? (dims.D / 2 - 18) : (dims.D / 2);
 
         var isDOpen = !!(furn.drawerStates && furn.drawerStates[d]);
         var drawerGroup = new THREE.Group();
@@ -3994,7 +4021,7 @@
         var faciaGeo = new THREE.BoxGeometry(drawerW, drawerH, 18);
         var faciaMat = getShutterMaterial(d % Math.max(1, numShutters));
         var faciaMesh = new THREE.Mesh(faciaGeo, faciaMat);
-        faciaMesh.position.set(0, 0, dims.D / 2 - 9);
+        faciaMesh.position.set(0, 0, faciaZ);
         faciaMesh.castShadow = true; faciaMesh.receiveShadow = true;
         faciaMesh.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
         drawerGroup.add(faciaMesh);
@@ -4002,7 +4029,7 @@
         // Drawer Pull Handle (Horizontal)
         var dhGroup = ArchitecturalRenderer.createHandleMesh(handleType, handleMat, false, Math.min(180, (drawerW - 30) * 0.45));
         if (dhGroup) {
-          dhGroup.position.set(0, 0, dims.D / 2);
+          dhGroup.position.set(0, 0, handleZ);
           dhGroup.userData = { isFurniturePart: true, isDrawer: true, drawerIdx: d, drawerGroup: drawerGroup, parentGroup: fg, furnitureId: furn.id };
           dhGroup.traverse(function (c) {
             if (c.isMesh) {
@@ -4226,9 +4253,9 @@
           fg.add(hingeGroup);
         }
       } else {
-        // Standard Hinged Shutters
+        // Standard Hinged Shutters (Full-height outer doors when drawers are internal!)
         var shW = (dims.W - (numShutters + 1) * 3) / numShutters;
-        var shH = Math.max(150, bodyH - totalDrawersH - 6);
+        var shH = Math.max(150, bodyH - (isInternalDrawers ? 0 : totalDrawersH) - 6);
         var hingeY = shutterBaseY + shH / 2;
 
         for (var s = 0; s < numShutters; s++) {
