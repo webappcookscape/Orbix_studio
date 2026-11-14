@@ -141,10 +141,11 @@ const ctvbDoors = Core.createFurniturePlacement({
 assert.strictEqual(ctvbDoors.unitConfig.shelves, 0, 'Test 13 Failed: Crockery only doors shelves must be 0');
 console.log('✅ 13. Crockery Only Doors has 0 shelves');
 
-// 14. Kitchen wm has crockery units too
+// 14. Remove crockery units from kitchen wm
 const uiCode = fs.readFileSync('orbix-ui.js', 'utf8');
-assert(uiCode.includes("c === 'crockery' || n.indexOf('crockery') !== -1"), 'Test 14 Failed: kitchen_wall_spice filter must include crockery wall units');
-console.log('✅ 14. Kitchen WM includes Crockery units');
+assert(uiCode.includes("// Remove crockery units from kitchen wm"), 'Test 14 Failed: kitchen_wall_spice filter must exclude crockery units');
+assert(uiCode.includes("if (c === 'crockery' || c.indexOf('crockery') !== -1 || n.indexOf('crockery') !== -1"), 'Test 14 Failed: crockery filter check missing');
+console.log('✅ 14. Kitchen WM strictly excludes Crockery units');
 
 // 15. Kitchen only shuttering needs leg and counter top
 assert.strictEqual(baseOS.unitConfig.hasLegs, true, 'Test 15 Failed: hasLegs must be true');

@@ -60,3 +60,4 @@ with open('orbix-floor-textures.js', 'w', encoding='utf-8') as f:
     f.write('})();\n')
 
 print('Generated orbix-dado-textures.js and orbix-floor-textures.js successfully!')
+

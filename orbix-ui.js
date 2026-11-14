@@ -4223,11 +4223,11 @@
           { id: 'kitchen_corner', label: 'KITCHEN CORNER', count: '3' },
           { id: 'kitchen_drawers', label: 'KITCHEN DRAWERS', count: '11' },
           { id: 'kitchen_tall', label: 'KITCHEN TALL UNITS', count: '2' },
-          { id: 'kitchen_wall_spice', label: 'KITCHEN WALL UNITS (SPICE RACK)', count: '18' }
+          { id: 'kitchen_wall_spice', label: 'KITCHEN WALL UNITS (SPICE RACK)', count: '22' }
         ],
         tv_crockery: [
           { id: 'tv_crockery_base', label: 'BASE', count: '8' },
-          { id: 'tv_crockery_wall', label: 'WALL', count: '6' },
+          { id: 'tv_crockery_wall', label: 'WALL', count: '5' },
           { id: 'tv_crockery_drawers', label: 'DRAWERS', count: '6' },
           { id: 'tv_crockery_openbox', label: 'OPENBOX', count: '4' }
         ],
@@ -4299,10 +4299,25 @@
             res = catalog.filter(function (it) {
               var c = (it.category || '').toLowerCase();
               var n = (it.name || '').toLowerCase();
-              return c === 'kitchen_wall' || c === 'spice_rack' || n.indexOf('wm') !== -1 || n.indexOf('spice') !== -1 || n.indexOf('wall') !== -1 || ((c === 'crockery' || n.indexOf('crockery') !== -1) && (n.indexOf('wall') !== -1 || (it.elevation && it.elevation >= 1000)));
+              var id = (it.id || '').toLowerCase();
+              // Remove crockery units from kitchen wm
+              if (c === 'crockery' || c.indexOf('crockery') !== -1 || n.indexOf('crockery') !== -1 || id.indexOf('crockery') !== -1 || id.indexOf('ctv') !== -1 || (it.category && it.category.indexOf('tv') !== -1)) {
+                return false;
+              }
+              // Exclude non-kitchen wardrobes / lofts
+              if (c === 'wardrobe' || c === 'loft' || n.indexOf('wardrobe') !== -1 || n.indexOf('loft') !== -1) {
+                return false;
+              }
+              return c === 'kitchen_wall' || c === 'spice_rack' || n.indexOf('wm') !== -1 || n.indexOf('spice') !== -1;
             });
           } else {
-            res = catalog.filter(function (it) { return (it.category || '').indexOf('kitchen') !== -1; });
+            res = catalog.filter(function (it) {
+              var c = (it.category || '').toLowerCase();
+              var n = (it.name || '').toLowerCase();
+              var id = (it.id || '').toLowerCase();
+              if (c === 'crockery' || n.indexOf('crockery') !== -1 || id.indexOf('ctv') !== -1) return false;
+              return (it.category || '').indexOf('kitchen') !== -1 || c === 'spice_rack';
+            });
           }
           res = res.map(mapItemToCard);
         } else if (cat === 'tv_crockery') {
