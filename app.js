@@ -270,7 +270,7 @@
       drawers: 2, drawerH: 180,
       loft: true, loftH: 600, loftShutters: 3,
       back: 18, handle: "ibh10",
-      carcass: "MDF 1135", shutterCol: "MDF 3410"
+      carcass: "MDF 6601", shutterCol: "MDF 7707"
     };
   }
   var S = {
@@ -4089,7 +4089,7 @@
           corner: { enabled: true, type: "L", legW: 900, legD: 900, depth: 560, orientation: "right" },
           shutters: 2, sections: 1, shelves: 2, drawers: 0,
           handle: "standard", hfinish: "black",
-          carcass: "MDF 1135", shutterCol: "MDF 7701",
+          carcass: "MDF 6601", shutterCol: "MDF 7707",
           counter: "black", loft: false
         });
         f("1200 · FCM-LT (Cookscape)", {
@@ -4099,7 +4099,7 @@
           openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "left" },
           shutters: 1, sections: 2, shelves: 1, drawers: 0,
           handle: "pull", hfinish: "black",
-          carcass: "MDF 1135", shutterCol: "MDF 7701",
+          carcass: "MDF 6601", shutterCol: "MDF 7707",
           counter: "black", loft: false
         });
         f("1200 · FCM-RT (Cookscape)", {
@@ -4109,7 +4109,7 @@
           openShutter: { enabled: true, width: 600, type: "shutter", count: 1, opening: "right" },
           shutters: 1, sections: 2, shelves: 1, drawers: 0,
           handle: "pull", hfinish: "black",
-          carcass: "MDF 1135", shutterCol: "MDF 7701",
+          carcass: "MDF 6601", shutterCol: "MDF 7707",
           counter: "black", loft: false
         });
         [1200, 1800, 2400, 3000, 3600].forEach(function (w) { f(w + " · granite", { W: w, shutters: Math.max(2, Math.round(w / 600)), sections: Math.max(2, Math.round(w / 600)), counter: "black" }); f(w + " · marble", { W: w, shutters: Math.max(2, Math.round(w / 600)), sections: Math.max(2, Math.round(w / 600)), counter: "white" }); }); break;

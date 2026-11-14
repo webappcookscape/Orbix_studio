@@ -948,8 +948,8 @@
       };
 
       var defaultMats = {
-        shutter: { material: 'HDHMR_18MM', finish: 'Brazilian Horizontal Walnut' },
-        carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+        shutter: { material: 'HDHMR_18MM', finish: 'MDF 7707' },
+        carcass: { material: 'BWP_18MM', finish: 'MDF 6601' }
       };
 
       // 1. Master Bedroom Wardrobe (1800 x 2100 x 600 mm)
@@ -958,7 +958,7 @@
         category: 'wardrobe',
         pos: { x: 7000, y: 500 },
         dimensions: { W: 1800, H: 2100, D: 600 },
-        unitConfig: { shutterCol: 'MDF 3410', carcass: 'MDF 1135', shutters: 3 },
+        unitConfig: { shutterCol: 'MDF 7707', carcass: 'MDF 6601', shutters: 3 },
         materials: defaultMats
       }));
 
@@ -968,7 +968,7 @@
         category: 'tv_unit',
         pos: { x: 2500, y: 3600 },
         dimensions: { W: 2400, H: 1800, D: 400 },
-        unitConfig: { shutterCol: 'MDF 2204', carcass: 'MDF 1135' },
+        unitConfig: { shutterCol: 'MDF 7707', carcass: 'MDF 6601' },
         materials: defaultMats
       }));
 
@@ -978,7 +978,7 @@
         category: 'kitchen_base',
         pos: { x: 1800, y: 6600 },
         dimensions: { W: 3000, H: 850, D: 600 },
-        unitConfig: { shutterCol: 'MDF 7701', carcass: 'MDF 1135' },
+        unitConfig: { shutterCol: 'MDF 7707', carcass: 'MDF 6601' },
         materials: defaultMats
       }));
 
@@ -987,7 +987,7 @@
         category: 'kitchen_wall',
         pos: { x: 1800, y: 6600 },
         dimensions: { W: 3000, H: 700, D: 350 },
-        unitConfig: { shutterCol: 'MDF 1135', carcass: 'MDF 1135' },
+        unitConfig: { shutterCol: 'MDF 7707', carcass: 'MDF 6601' },
         materials: defaultMats
       }));
 
@@ -1000,10 +1000,10 @@
         refCode: 'fm-60',
         pos: { x: 2400, y: 6600 },
         dimensions: { W: 600, H: 750, D: 550 },
-        unitConfig: { shutterCol: 'MDF 7701', carcass: 'MDF 1135', shutters: 1, handle: 'gprof' },
+        unitConfig: { shutterCol: 'MDF 7707', carcass: 'MDF 6601', shutters: 1, handle: 'gprof' },
         materials: {
-          shutter: { material: 'HDHMR_18MM', finish: '4x Tuff Gloss' },
-          carcass: { material: 'BWP_18MM', finish: 'Absolute White' }
+          shutter: { material: 'HDHMR_18MM', finish: 'MDF 7707' },
+          carcass: { material: 'BWP_18MM', finish: 'MDF 6601' }
         }
       }));
 
@@ -1507,9 +1507,9 @@
         }
 
         var shutterFinish = (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) ||
-                            (fn.unitConfig && fn.unitConfig.shutterCol) || 'Brazilian Horizontal Walnut';
+                            (fn.unitConfig && fn.unitConfig.shutterCol) || 'Navy Blue Matte';
         var carcassFinish = (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) ||
-                            (fn.unitConfig && fn.unitConfig.carcass) || 'Absolute White';
+                            (fn.unitConfig && fn.unitConfig.carcass) || 'Gloss White';
         var curHandle = (fn.unitConfig && fn.unitConfig.handle) || fn.handleType || 'bar';
         var curHFinish = (fn.unitConfig && (fn.unitConfig.hfinish || fn.unitConfig.handleFinish)) || fn.handleFinish || 'black';
         var shuttersCount = (fn.unitConfig && fn.unitConfig.shutters !== undefined) ? fn.unitConfig.shutters : (fn.dimensions.W > 1200 ? 3 : fn.dimensions.W > 600 ? 2 : 1);
@@ -1696,7 +1696,8 @@
           '<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">' +
             '<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">🎨 Materials & Finishes</div>' +
             '<div class="insp-row" style="margin-bottom:6px;"><label>Carcass</label><select id="inspFurnCarcass">' +
-              '<option value="Absolute White"' + (carcassFinish.indexOf("White") !== -1 || carcassFinish === "MDF 1135" ? " selected" : "") + '>Absolute White (MDF 1135)</option>' +
+              '<option value="MDF 6601"' + (carcassFinish.indexOf("Gloss") !== -1 || carcassFinish.indexOf("6601") !== -1 ? " selected" : "") + '>Gloss White (MDF 6601)</option>' +
+              '<option value="Absolute White"' + (carcassFinish.indexOf("White") !== -1 && carcassFinish.indexOf("Gloss") === -1 && carcassFinish.indexOf("6601") === -1 || carcassFinish === "MDF 1135" ? " selected" : "") + '>Absolute White (MDF 1135)</option>' +
               '<option value="Brazilian Horizontal Walnut"' + (carcassFinish.indexOf("Walnut") !== -1 || carcassFinish === "MDF 3410" ? " selected" : "") + '>Walnut Woodgrain (MDF 3410)</option>' +
               '<option value="Sonoma Oak"' + (carcassFinish.indexOf("Oak") !== -1 || carcassFinish === "MDF 2204" ? " selected" : "") + '>Sonoma Oak (MDF 2204)</option>' +
               '<option value="Dark Wenge"' + (carcassFinish.indexOf("Wenge") !== -1 || carcassFinish === "MDF 3411" ? " selected" : "") + '>Dark Wenge (MDF 3411)</option>' +
@@ -1709,16 +1710,16 @@
               '<option value="Ivory Cream"' + (carcassFinish.indexOf("Ivory") !== -1 || carcassFinish === "MDF 1101" ? " selected" : "") + '>Ivory Cream (MDF 1101)</option>' +
             '</select></div>' +
             '<div class="insp-row"><label>Shutter Finish</label><select id="inspFurnShutter">' +
+              '<option value="MDF 7707"' + (shutterFinish.indexOf("Navy") !== -1 || shutterFinish.indexOf("7707") !== -1 || shutterFinish === "BLUE" ? " selected" : "") + '>Navy Blue Matte (MDF 7707)</option>' +
               '<option value="Brazilian Horizontal Walnut"' + (shutterFinish.indexOf("Walnut") !== -1 || shutterFinish === "MDF 3410" ? " selected" : "") + '>Brazilian Walnut (MDF 3410)</option>' +
               '<option value="Absolute White Gloss"' + (shutterFinish.indexOf("Gloss") !== -1 || shutterFinish === "MDF 6601" ? " selected" : "") + '>Absolute White Gloss (MDF 6601)</option>' +
-              '<option value="Absolute White Matte"' + (shutterFinish.indexOf("White") !== -1 && shutterFinish.indexOf("Gloss") === -1 || shutterFinish === "MDF 1135" ? " selected" : "") + '>White Matte (MDF 1135)</option>' +
+              '<option value="Absolute White Matte"' + (shutterFinish.indexOf("White") !== -1 && shutterFinish.indexOf("Gloss") === -1 && shutterFinish.indexOf("Navy") === -1 || shutterFinish === "MDF 1135" ? " selected" : "") + '>White Matte (MDF 1135)</option>' +
               '<option value="Sonoma Oak"' + (shutterFinish.indexOf("Oak") !== -1 || shutterFinish === "MDF 2204" ? " selected" : "") + '>Sonoma Oak (MDF 2204)</option>' +
               '<option value="Sage Green Matte"' + (shutterFinish.indexOf("Sage") !== -1 || shutterFinish === "MDF 7701" ? " selected" : "") + '>Sage Green Matte (MDF 7701)</option>' +
               '<option value="Dark Wenge"' + (shutterFinish.indexOf("Wenge") !== -1 || shutterFinish === "MDF 3411" ? " selected" : "") + '>Dark Wenge (MDF 3411)</option>' +
               '<option value="Natural Teak"' + (shutterFinish.indexOf("Teak") !== -1 || shutterFinish === "MDF 2210" ? " selected" : "") + '>Natural Teak (MDF 2210)</option>' +
               '<option value="Grey Oak Scandi"' + (shutterFinish.indexOf("Grey Oak") !== -1 || shutterFinish === "MDF 4402" ? " selected" : "") + '>Grey Oak (MDF 4402)</option>' +
               '<option value="Graphite Grey"' + (shutterFinish.indexOf("Graphite") !== -1 || shutterFinish === "MDF 5501" ? " selected" : "") + '>Graphite Grey (MDF 5501)</option>' +
-              '<option value="Navy Blue Matte"' + (shutterFinish.indexOf("Navy") !== -1 || shutterFinish === "MDF 7707" ? " selected" : "") + '>Navy Blue Matte (MDF 7707)</option>' +
               '<option value="Charcoal Matte"' + (shutterFinish.indexOf("Charcoal") !== -1 || shutterFinish === "MDF 7702" ? " selected" : "") + '>Charcoal Matte (MDF 7702)</option>' +
               '<option value="Concrete Look"' + (shutterFinish.indexOf("Concrete") !== -1 || shutterFinish === "MDF 8801" ? " selected" : "") + '>Concrete Look (MDF 8801)</option>' +
             '</select></div>' +
@@ -2364,8 +2365,8 @@
                   (fn.category === 'kitchen_wall' || (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1));
                 var isKitchen = (fn.category && fn.category.indexOf('kitchen') !== -1);
                 var isBase = !isWall && (isKitchen || fn.category === 'crockery' || fn.category === 'tv_unit' || (fn.name && fn.name.indexOf('BASE') !== -1) || isFcm);
-                var sFinish = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
-                var cFinish = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
+                var sFinish = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7707';
+                var cFinish = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 6601';
                 var newU = {
                   label: fn.name,
                   ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
@@ -2870,8 +2871,8 @@
           var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 450 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
           var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 450);
-          var sColNew = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7701';
-          var cColNew = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 1135';
+          var sColNew = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7707';
+          var cColNew = (fn.unitConfig && fn.unitConfig.carcass) || (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || 'MDF 6601';
           var u = {
             label: fn.name,
             ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),

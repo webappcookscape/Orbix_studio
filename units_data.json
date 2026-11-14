@@ -7,7 +7,7 @@
     "category": "tv_unit",
     "costCategory": "TV Unit Cabinet",
     "areaSqft": 0.9687523546,
-    "icon": "📺",
+    "icon": "\ud83d\udcfa",
     "dimensions": {
       "W": 450,
       "H": 200,
@@ -16,11 +16,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -38,8 +38,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 1922
@@ -54,7 +54,7 @@
     "category": "tv_unit",
     "costCategory": "TV Unit Cabinet",
     "areaSqft": 1.291669806,
-    "icon": "📺",
+    "icon": "\ud83d\udcfa",
     "dimensions": {
       "W": 600,
       "H": 200,
@@ -63,11 +63,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -85,8 +85,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 2562.67
@@ -101,7 +101,7 @@
     "category": "pooja",
     "costCategory": "POOJA WITH CNC",
     "areaSqft": 6.054702216,
-    "icon": "🛕",
+    "icon": "\ud83d\uded5",
     "dimensions": {
       "W": 750,
       "H": 750,
@@ -110,11 +110,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -132,8 +132,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 11921.71
@@ -148,7 +148,7 @@
     "category": "tv_unit",
     "costCategory": "TV Unit Cabinet",
     "areaSqft": 7.26564266,
-    "icon": "📺",
+    "icon": "\ud83d\udcfa",
     "dimensions": {
       "W": 900,
       "H": 750,
@@ -157,11 +157,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -179,8 +179,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 14415.04
@@ -195,7 +195,7 @@
     "category": "tv_unit",
     "costCategory": "TV Unit Cabinet",
     "areaSqft": 2.421880887,
-    "icon": "📺",
+    "icon": "\ud83d\udcfa",
     "dimensions": {
       "W": 450,
       "H": 500,
@@ -204,11 +204,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -226,8 +226,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 4805.01
@@ -242,7 +242,7 @@
     "category": "pooja",
     "costCategory": "POOJA WITH CNC",
     "areaSqft": 5.812514128,
-    "icon": "🛕",
+    "icon": "\ud83d\uded5",
     "dimensions": {
       "W": 900,
       "H": 600,
@@ -251,11 +251,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -273,8 +273,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 11444.84
@@ -289,7 +289,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 4.843761773,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 1500,
       "H": 300,
@@ -298,11 +298,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -320,8 +320,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 11005.03
@@ -336,7 +336,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 9.3,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 720,
@@ -346,11 +346,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -382,8 +382,8 @@
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 17398.79
@@ -398,7 +398,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 9.3,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 720,
@@ -408,11 +408,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -444,8 +444,8 @@
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 17398.79
@@ -460,7 +460,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 9.687523546,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 750,
@@ -469,11 +469,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -491,8 +491,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 17398.79
@@ -507,7 +507,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 3.63282133,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 450,
       "H": 750,
@@ -516,11 +516,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -538,8 +538,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 6524.55
@@ -554,7 +554,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 4.843761773,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 750,
@@ -563,11 +563,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -585,8 +585,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 8699.4
@@ -601,7 +601,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 6.054702216,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 750,
       "H": 750,
@@ -610,11 +610,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -632,8 +632,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 10874.25
@@ -648,7 +648,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 7.26564266,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 750,
@@ -657,11 +657,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -679,8 +679,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 13049.09
@@ -695,7 +695,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 3.63282133,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 450,
       "H": 750,
@@ -704,11 +704,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -726,8 +726,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 7163.92
@@ -742,7 +742,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 6.054702216,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 750,
       "H": 750,
@@ -751,11 +751,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -773,8 +773,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 11939.87
@@ -789,7 +789,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 7.26564266,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 750,
@@ -798,11 +798,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -820,8 +820,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 14327.85
@@ -836,7 +836,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 3.63282133,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 450,
       "H": 750,
@@ -845,11 +845,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -867,8 +867,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 7163.92
@@ -883,7 +883,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 6.054702216,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 750,
       "H": 750,
@@ -892,11 +892,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -914,8 +914,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 11939.87
@@ -930,7 +930,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 7.26564266,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 750,
@@ -939,11 +939,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -961,8 +961,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 14327.85
@@ -977,7 +977,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 3.63282133,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 450,
       "H": 750,
@@ -986,11 +986,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1008,8 +1008,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 6524.55
@@ -1024,7 +1024,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 4.843761773,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 750,
@@ -1033,11 +1033,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1055,8 +1055,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 8699.4
@@ -1071,7 +1071,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 7.26564266,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 750,
@@ -1080,11 +1080,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1102,8 +1102,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 13049.09
@@ -1118,7 +1118,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 0.726564266,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 450,
       "H": 150,
@@ -1127,11 +1127,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_19mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1149,8 +1149,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_19mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 1650.75
@@ -1165,7 +1165,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 1.210940443,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 750,
       "H": 150,
@@ -1174,11 +1174,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_20mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1196,8 +1196,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_20mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 2751.26
@@ -1212,7 +1212,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 1.453128532,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 900,
       "H": 150,
@@ -1221,11 +1221,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_21mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1243,8 +1243,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_21mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 3301.51
@@ -1260,7 +1260,7 @@
     "category": "kitchen_tall",
     "costCategory": "Kitchen - Tall Unit",
     "areaSqft": 13.56253296,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 600,
       "H": 2100,
@@ -1269,11 +1269,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       },
       "back": {
         "material": "BACK_9mm",
@@ -1326,8 +1326,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707",
       "counter": "none",
       "loft": false
     },
@@ -1344,7 +1344,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 1.937504709,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 300,
       "H": 600,
@@ -1353,11 +1353,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1375,8 +1375,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 2993.44
@@ -1391,7 +1391,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 2.906257064,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 450,
       "H": 600,
@@ -1400,11 +1400,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1422,8 +1422,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 4490.17
@@ -1438,7 +1438,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 3.875009418,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -1447,11 +1447,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1469,8 +1469,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 5986.89
@@ -1485,7 +1485,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 4.843761773,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 750,
       "H": 600,
@@ -1494,11 +1494,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1516,8 +1516,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 7483.61
@@ -1532,7 +1532,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 4.843761773,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 750,
       "H": 600,
@@ -1541,11 +1541,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1563,8 +1563,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 7483.61
@@ -1579,7 +1579,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 5.812514128,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 900,
       "H": 600,
@@ -1588,11 +1588,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1610,8 +1610,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 8980.33
@@ -1626,7 +1626,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 5.812514128,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 900,
       "H": 600,
@@ -1635,11 +1635,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1657,8 +1657,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 8980.33
@@ -1673,7 +1673,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - ONLY SHELVES",
     "areaSqft": 4.359385596,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 450,
       "H": 900,
@@ -1682,11 +1682,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1704,8 +1704,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 6735.25
@@ -1720,7 +1720,7 @@
     "category": "loft",
     "costCategory": "Loft - O/S",
     "areaSqft": 4.359385596,
-    "icon": "📦",
+    "icon": "\ud83d\udce6",
     "dimensions": {
       "W": 450,
       "H": 900,
@@ -1729,11 +1729,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1751,8 +1751,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "none",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 3901.65
@@ -1767,7 +1767,7 @@
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
     "areaSqft": 15.50003767,
-    "icon": "🪵",
+    "icon": "\ud83e\udeb5",
     "dimensions": {
       "W": 1200,
       "H": 1200,
@@ -1776,11 +1776,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1798,8 +1798,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 12338.03
@@ -1814,7 +1814,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 3.875009418,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -1823,11 +1823,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1845,8 +1845,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 8804.02
@@ -1861,7 +1861,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 0.9687523546,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 300,
       "H": 300,
@@ -1870,11 +1870,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1892,8 +1892,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 2201.01
@@ -1908,7 +1908,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 3.875009418,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -1917,11 +1917,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1939,8 +1939,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 8804.02
@@ -1955,7 +1955,7 @@
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
     "areaSqft": 0.2325005651,
-    "icon": "🪵",
+    "icon": "\ud83e\udeb5",
     "dimensions": {
       "W": 1200,
       "H": 18,
@@ -1964,11 +1964,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -1986,8 +1986,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 185.07
@@ -2002,7 +2002,7 @@
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
     "areaSqft": 19.37504709,
-    "icon": "🪵",
+    "icon": "\ud83e\udeb5",
     "dimensions": {
       "W": 1200,
       "H": 1500,
@@ -2011,11 +2011,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2033,8 +2033,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 15422.54
@@ -2049,7 +2049,7 @@
     "category": "loft",
     "costCategory": "Loft - O/S",
     "areaSqft": 6.054702216,
-    "icon": "📦",
+    "icon": "\ud83d\udce6",
     "dimensions": {
       "W": 750,
       "H": 750,
@@ -2058,11 +2058,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2080,8 +2080,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "none",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 5418.96
@@ -2096,7 +2096,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 1.937504709,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 600,
       "H": 300,
@@ -2105,11 +2105,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2127,8 +2127,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 4402.01
@@ -2143,7 +2143,7 @@
     "category": "loft",
     "costCategory": "Loft - O/S",
     "areaSqft": 1.937504709,
-    "icon": "📦",
+    "icon": "\ud83d\udce6",
     "dimensions": {
       "W": 300,
       "H": 600,
@@ -2152,11 +2152,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2174,8 +2174,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "none",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 1734.07
@@ -2190,7 +2190,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 1.291669806,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 600,
       "H": 200,
@@ -2199,11 +2199,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2221,8 +2221,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 2934.67
@@ -2237,7 +2237,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 2.421880887,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 300,
       "H": 750,
@@ -2246,11 +2246,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2268,8 +2268,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 4775.95
@@ -2284,7 +2284,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 4.843761773,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 750,
@@ -2293,11 +2293,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2315,8 +2315,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 9551.9
@@ -2331,7 +2331,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - D2/D3",
     "areaSqft": 4.843761773,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 750,
@@ -2340,11 +2340,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2362,8 +2362,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 9551.9
@@ -2378,7 +2378,7 @@
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
     "areaSqft": 0.1743754238,
-    "icon": "🪵",
+    "icon": "\ud83e\udeb5",
     "dimensions": {
       "W": 900,
       "H": 18,
@@ -2387,11 +2387,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2409,8 +2409,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 138.8
@@ -2425,7 +2425,7 @@
     "category": "spice_rack",
     "costCategory": "Spice Rack (OPEN BOXES)",
     "areaSqft": 0.9687523546,
-    "icon": "🧂",
+    "icon": "\ud83e\uddc2",
     "dimensions": {
       "W": 600,
       "H": 150,
@@ -2434,11 +2434,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2456,8 +2456,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 2201.01
@@ -2472,7 +2472,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - SLIDING",
     "areaSqft": 40.68759889,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 1800,
       "H": 2100,
@@ -2481,11 +2481,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2503,8 +2503,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 73034.24
@@ -2519,7 +2519,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - ONLY SHELVES",
     "areaSqft": 13.56253296,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 600,
       "H": 2100,
@@ -2528,11 +2528,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2550,8 +2550,8 @@
       "handle": "gprof",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 20954.11
@@ -2566,7 +2566,7 @@
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
     "areaSqft": 1.291669806,
-    "icon": "🪵",
+    "icon": "\ud83e\udeb5",
     "dimensions": {
       "W": 600,
       "H": 200,
@@ -2575,11 +2575,11 @@
     "materials": {
       "shutter": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2597,8 +2597,8 @@
       "handle": "none",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "none"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 1028.17
@@ -2613,7 +2613,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 2.906257064,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 450,
       "H": 600,
@@ -2622,11 +2622,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2644,8 +2644,8 @@
       "handle": "gprof",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 4490.17
@@ -2660,7 +2660,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 3.875009418,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -2669,11 +2669,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2691,8 +2691,8 @@
       "handle": "gprof",
       "hfinish": "none",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 5986.89
@@ -2707,7 +2707,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 1.937504709,
-    "icon": "🎛️",
+    "icon": "\ud83c\udf9b\ufe0f",
     "dimensions": {
       "W": 300,
       "H": 600,
@@ -2716,11 +2716,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2738,8 +2738,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 2993.44
@@ -2754,7 +2754,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - ONLY SHELVES",
     "areaSqft": 8.718771191,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 900,
       "H": 900,
@@ -2763,11 +2763,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2785,8 +2785,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 13470.5
@@ -2801,7 +2801,7 @@
     "category": "loft",
     "costCategory": "Loft - O/S",
     "areaSqft": 7.26564266,
-    "icon": "📦",
+    "icon": "\ud83d\udce6",
     "dimensions": {
       "W": 750,
       "H": 900,
@@ -2810,11 +2810,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2832,8 +2832,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 6502.75
@@ -2848,7 +2848,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - ONLY SHELVES",
     "areaSqft": 20.34379945,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 900,
       "H": 2100,
@@ -2857,11 +2857,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2879,8 +2879,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 31431.17
@@ -2895,7 +2895,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - 2 DRAWERS",
     "areaSqft": 20.34379945,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 900,
       "H": 2100,
@@ -2904,11 +2904,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2926,8 +2926,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 35398.21
@@ -2942,7 +2942,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - ONLY SHELVES",
     "areaSqft": 13.56253296,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 600,
       "H": 2100,
@@ -2951,11 +2951,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -2973,8 +2973,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 20954.11
@@ -2989,7 +2989,7 @@
     "category": "wardrobe",
     "costCategory": "Wr - Modular - 2 DRAWERS",
     "areaSqft": 13.56253296,
-    "icon": "🚪",
+    "icon": "\ud83d\udeaa",
     "dimensions": {
       "W": 600,
       "H": 2100,
@@ -2998,11 +2998,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "Absolute White"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3020,8 +3020,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "BWP_18mm",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 23598.81
@@ -3036,7 +3036,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen O/S",
     "areaSqft": 9.687523546,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 750,
@@ -3045,11 +3045,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3067,8 +3067,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "none",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 8670.33
@@ -3083,7 +3083,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen O/S",
     "areaSqft": 4.843761773,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 750,
@@ -3092,11 +3092,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3114,8 +3114,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "none",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 4335.17
@@ -3130,7 +3130,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen O/S",
     "areaSqft": 3.875009418,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 600,
       "H": 600,
@@ -3139,11 +3139,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3161,8 +3161,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "none",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 3468.13
@@ -3177,7 +3177,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen O/S",
     "areaSqft": 1.937504709,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 300,
       "H": 600,
@@ -3186,11 +3186,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "BLUE"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "none",
-        "finish": "none"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3208,8 +3208,8 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
-      "carcass": "none",
-      "shutterCol": "BLUE"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 1734.07
@@ -3225,7 +3225,7 @@
     "category": "kitchen_base",
     "costCategory": "Kitchen - FM",
     "areaSqft": 8.7,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 720,
@@ -3235,11 +3235,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3282,8 +3282,8 @@
       "handle": "standard",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 16500
@@ -3299,7 +3299,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 9.3,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 720,
@@ -3309,11 +3309,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3345,8 +3345,8 @@
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 17398.79
@@ -3362,7 +3362,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 9.3,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 720,
@@ -3372,11 +3372,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3408,8 +3408,8 @@
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 17398.79
@@ -3425,7 +3425,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 8.7,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 720,
@@ -3435,11 +3435,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3482,8 +3482,8 @@
       "handle": "standard",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 16500
@@ -3499,7 +3499,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 9.3,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 720,
@@ -3509,11 +3509,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3545,8 +3545,8 @@
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 17398.79
@@ -3562,7 +3562,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 9.3,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 720,
@@ -3572,11 +3572,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3608,8 +3608,8 @@
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 17398.79
@@ -3625,7 +3625,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 8.7,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 720,
@@ -3635,11 +3635,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3682,8 +3682,8 @@
       "handle": "standard",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 16500
@@ -3699,7 +3699,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 9.3,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 720,
@@ -3709,11 +3709,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3745,8 +3745,8 @@
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 17398.79
@@ -3762,7 +3762,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 9.3,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 1200,
       "H": 720,
@@ -3772,11 +3772,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3808,8 +3808,8 @@
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 17398.79
@@ -3825,7 +3825,7 @@
     "category": "kitchen_wall",
     "costCategory": "Kitchen - WM",
     "areaSqft": 8.7,
-    "icon": "🍳",
+    "icon": "\ud83c\udf73",
     "dimensions": {
       "W": 900,
       "H": 720,
@@ -3835,11 +3835,11 @@
     "materials": {
       "shutter": {
         "material": "HDHMR_18mm",
-        "finish": "MDF 7701"
+        "finish": "MDF 7707"
       },
       "carcass": {
         "material": "BWP_18mm",
-        "finish": "MDF 1135"
+        "finish": "MDF 6601"
       }
     },
     "unitConfig": {
@@ -3882,8 +3882,8 @@
       "handle": "standard",
       "hfinish": "black",
       "led": false,
-      "carcass": "MDF 1135",
-      "shutterCol": "MDF 7701"
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
     },
     "pricingOverrides": {
       "baseRate": 16500

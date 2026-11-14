@@ -3683,7 +3683,7 @@
     var carcassRaw = (furn.unitConfig && furn.unitConfig.carcass) ||
                      (furn.materials && furn.materials.carcass && furn.materials.carcass.finish) ||
                      furn.carcassColor ||
-                     'MDF 1135';
+                     'MDF 6601';
     var carcassIsGloss = String(carcassRaw).toLowerCase().indexOf('gloss') !== -1;
     var carcassMat = ArchitecturalRenderer.resolveLaminateMaterial(carcassRaw, 0xEDEBE4, carcassIsGloss);
 
@@ -3747,9 +3747,9 @@
                    (furn.materials && furn.materials.shutter && furn.materials.shutter.finish) ||
                    (furn.shutterMaterials && furn.shutterMaterials[sIdx]) ||
                    (furn.shutterColors && furn.shutterColors[sIdx]) ||
-                   'MDF 3410';
+                   'MDF 7707';
 
-      return ArchitecturalRenderer.resolveLaminateMaterial(matFin, 0x6E4E35);
+      return ArchitecturalRenderer.resolveLaminateMaterial(matFin, 0x2E3F5C);
     }
 
     // 1. Architectural Wall Paneling / Back Panel / Ledges (zero carcass box)
