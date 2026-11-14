@@ -157,3 +157,4 @@ assert(orbix3dSrc.includes('explicitlyNoShelves'), 'orbix-3d.js must honor shelv
 console.log('✔ 3D renderer source verified for internal drawers, hanging rod, and zero-shelves.');
 
 console.log('\n🎉 ALL 15 UNIT CHANGES TESTS PASSED 100% SUCCESSFULLY!\n');
+

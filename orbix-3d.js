@@ -27,8 +27,42 @@
     this.initMaterials();
   }
 
-  // Procedural Canvas Floor Texture Generator (White Tile, Square Tile, Grey Tile, Wooden)
+  ArchitecturalRenderer._floorTextures = ArchitecturalRenderer._floorTextures || {};
+  ArchitecturalRenderer._floorMaterials = ArchitecturalRenderer._floorMaterials || {};
+
+  // Floor Texture Generator: supports 'tile_1', 'tile_2' (User uploads via ORBIX_FLOOR_TEXTURES), 'white_tile', 'square_tile', 'grey_tile', 'wooden'
   ArchitecturalRenderer.createFloorTexture = function (type) {
+    type = type || 'white_tile';
+    if (ArchitecturalRenderer._floorTextures[type]) return ArchitecturalRenderer._floorTextures[type];
+
+    // Check if texture is in ORBIX_FLOOR_TEXTURES (base64 image from user uploads)
+    var b64 = null;
+    if (typeof window !== 'undefined' && window.ORBIX_FLOOR_TEXTURES) {
+      b64 = window.ORBIX_FLOOR_TEXTURES[type];
+      if (!b64 && (type === 'tile_1' || type === 'designer_tile_1' || type === 'custom_tile_1')) {
+        b64 = window.ORBIX_FLOOR_TEXTURES.tile_1;
+      } else if (!b64 && (type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2')) {
+        b64 = window.ORBIX_FLOOR_TEXTURES.tile_2;
+      }
+    }
+    if (b64 && typeof THREE !== 'undefined' && typeof Image !== 'undefined') {
+      var img = new Image();
+      var tex = new THREE.Texture(img);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(1, 1);
+      if (THREE.sRGBEncoding !== undefined) tex.encoding = THREE.sRGBEncoding;
+      if (tex.anisotropy !== undefined) tex.anisotropy = 8;
+      img.onload = function () {
+        tex.needsUpdate = true;
+        if (typeof window !== 'undefined' && window.__cc && window.__cc.gl && typeof window.__cc.gl.render === 'function') {
+          window.__cc.gl.render();
+        }
+      };
+      img.src = b64;
+      ArchitecturalRenderer._floorTextures[type] = tex;
+      return tex;
+    }
+
     if (typeof document === 'undefined') return null;
     var canvas = document.createElement('canvas');
     canvas.width = 512;
@@ -36,9 +70,77 @@
     var ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
-    type = type || 'white_tile';
+    if (type === 'tile_1' || type === 'designer_tile_1' || type === 'custom_tile_1') {
+      // Warm Crema Marfil / Ivory Vitrified Tile (2x2 quad, 600x600mm individual tiles)
+      ctx.fillStyle = '#C8BFA7'; // Grout line
+      ctx.fillRect(0, 0, 512, 512);
+      for (var i = 0; i < 2; i++) {
+        for (var j = 0; j < 2; j++) {
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var slabGrad = ctx.createLinearGradient(tx, ty, tx + tw, ty + th);
+          slabGrad.addColorStop(0, '#F5EDE2');
+          slabGrad.addColorStop(0.5, '#ECE2D3');
+          slabGrad.addColorStop(1, '#E4D7C5');
+          ctx.fillStyle = slabGrad;
+          ctx.fillRect(tx, ty, tw, th);
 
-    if (type === 'white_tile') {
+          // Subtle perimeter bevel highlight
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
+
+          // Delicate warm amber / gold marble veining
+          ctx.strokeStyle = 'rgba(180, 140, 95, 0.28)';
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(tx + 20, ty + 30);
+          ctx.bezierCurveTo(tx + 95, ty + 90, tx + 140, ty + 165, tx + 230, ty + 220);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(195, 160, 120, 0.22)';
+          ctx.lineWidth = 1.0;
+          ctx.beginPath();
+          ctx.moveTo(tx + 110, ty + 110);
+          ctx.bezierCurveTo(tx + 165, ty + 100, tx + 200, ty + 135, tx + 242, ty + 150);
+          ctx.stroke();
+        }
+      }
+    } else if (type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2') {
+      // Warm Mocha Breccia / Onyx Vitrified Tile (2x2 quad, 600x600mm individual tiles)
+      ctx.fillStyle = '#4B3F38'; // Dark mocha grout line
+      ctx.fillRect(0, 0, 512, 512);
+      for (var i = 0; i < 2; i++) {
+        for (var j = 0; j < 2; j++) {
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var slabGrad = ctx.createLinearGradient(tx, ty, tx + tw, ty + th);
+          slabGrad.addColorStop(0, '#C2AF9F');
+          slabGrad.addColorStop(0.5, '#B5A08F');
+          slabGrad.addColorStop(1, '#A48F7E');
+          ctx.fillStyle = slabGrad;
+          ctx.fillRect(tx, ty, tw, th);
+
+          // Subtle perimeter bevel highlight
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
+
+          // Dark slate-brown marble veining & breccia clusters
+          ctx.strokeStyle = 'rgba(75, 60, 50, 0.38)';
+          ctx.lineWidth = 2.0;
+          ctx.beginPath();
+          ctx.moveTo(tx + 25, ty + 20);
+          ctx.bezierCurveTo(tx + 85, ty + 100, tx + 150, ty + 150, tx + 235, ty + 230);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(165, 125, 90, 0.30)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(tx + 180, ty + 30);
+          ctx.bezierCurveTo(tx + 120, ty + 90, tx + 70, ty + 180, tx + 40, ty + 240);
+          ctx.stroke();
+        }
+      }
+    } else if (type === 'white_tile') {
       // 800x800 Italian Carrara / Calacatta Polished Marble Slabs
       ctx.fillStyle = '#D6D6DE'; // Micro grout line
       ctx.fillRect(0, 0, 512, 512);
@@ -188,6 +290,7 @@
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(1, 1);
     tex.encoding = THREE.sRGBEncoding;
+    ArchitecturalRenderer._floorTextures[type] = tex;
     return tex;
   };
 
@@ -502,11 +605,13 @@
     var tex = ArchitecturalRenderer.createFloorTexture(type);
     var isWood = (type === 'wooden');
     var isWhite = (type === 'white_tile');
+    var isCustomTile = (type === 'tile_1' || type === 'designer_tile_1' || type === 'custom_tile_1' ||
+                        type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2');
 
     // Natural architectural matte finish — eliminates glossy mirror reflections and glare
     return new THREE.MeshStandardMaterial({
       map: tex,
-      roughness: isWood ? 0.78 : (isWhite ? 0.82 : 0.85),
+      roughness: isWood ? 0.78 : (isCustomTile ? 0.76 : (isWhite ? 0.82 : 0.85)),
       metalness: 0.0,
       polygonOffset: true,
       polygonOffsetFactor: -1.0,
@@ -520,6 +625,8 @@
     if (type === 'square_tile') return 0xDFD7CA; // Warm travertine ivory
     if (type === 'grey_tile') return 0x3E424B;   // Charcoal basalt slate
     if (type === 'wooden') return 0xB38256;      // Warm oak hardwood
+    if (type === 'tile_1' || type === 'designer_tile_1' || type === 'custom_tile_1') return 0xE8DFD5; // Warm Crema Marfil
+    if (type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2') return 0xBFAEA0; // Warm Mocha Breccia
     return 0xEDECEF;                             // White Calacatta marble tile (default)
   };
 
@@ -1374,6 +1481,8 @@
       else if (room.floorFinish === 'marble') finishType = 'white_tile';
       else if (room.floorFinish === 'tile') finishType = 'square_tile';
       else if (room.floorFinish === 'concrete') finishType = 'grey_tile';
+      else if (room.floorFinish === 'tile_1' || room.floorFinish === 'designer_tile_1' || room.floorFinish === 'custom_tile_1') finishType = 'tile_1';
+      else if (room.floorFinish === 'tile_2' || room.floorFinish === 'designer_tile_2' || room.floorFinish === 'custom_tile_2') finishType = 'tile_2';
       else finishType = room.floorFinish;
     } else if (room.type === 'bedroom' && this.selectedFloorType === 'white_tile') {
       finishType = 'wooden';

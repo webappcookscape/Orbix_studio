@@ -1710,10 +1710,57 @@
     }
     function makeFloorMat(type) {
       type = type || window.currentFloorType || "white_tile";
+      var b64 = null;
+      if (typeof window !== "undefined" && window.ORBIX_FLOOR_TEXTURES) {
+        b64 = window.ORBIX_FLOOR_TEXTURES[type];
+        if (!b64 && (type === "tile_1" || type === "designer_tile_1")) b64 = window.ORBIX_FLOOR_TEXTURES.tile_1;
+        if (!b64 && (type === "tile_2" || type === "designer_tile_2")) b64 = window.ORBIX_FLOOR_TEXTURES.tile_2;
+      }
+      if (b64 && typeof Image !== "undefined") {
+        var img = new Image();
+        var imgTex = new THREE.Texture(img);
+        imgTex.wrapS = imgTex.wrapT = THREE.RepeatWrapping;
+        imgTex.repeat.set(120, 120);
+        imgTex.encoding = THREE.sRGBEncoding;
+        if (renderer && renderer.capabilities) imgTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        img.onload = function () {
+          imgTex.needsUpdate = true;
+          render();
+        };
+        img.src = b64;
+        return new THREE.MeshStandardMaterial({
+          map: imgTex,
+          roughness: 0.78,
+          metalness: 0.0
+        });
+      }
+
       var c = document.createElement("canvas"); c.width = c.height = 512;
       var g = c.getContext("2d");
 
-      if (type === "white_tile") {
+      if (type === "tile_1" || type === "designer_tile_1") {
+        g.fillStyle = "#C8BFA7"; g.fillRect(0, 0, 512, 512);
+        for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var slabGrad = g.createLinearGradient(tx, ty, tx + tw, ty + th);
+          slabGrad.addColorStop(0, "#F5EDE2"); slabGrad.addColorStop(0.5, "#ECE2D3"); slabGrad.addColorStop(1, "#E4D7C5");
+          g.fillStyle = slabGrad; g.fillRect(tx, ty, tw, th);
+          g.strokeStyle = "rgba(255, 255, 255, 0.65)"; g.lineWidth = 1.2; g.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
+          g.strokeStyle = "rgba(180, 140, 95, 0.28)"; g.lineWidth = 1.8;
+          g.beginPath(); g.moveTo(tx + 20, ty + 30); g.bezierCurveTo(tx + 95, ty + 90, tx + 140, ty + 165, tx + 230, ty + 220); g.stroke();
+        }
+      } else if (type === "tile_2" || type === "designer_tile_2") {
+        g.fillStyle = "#4B3F38"; g.fillRect(0, 0, 512, 512);
+        for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
+          var tx = i * 256 + 2, ty = j * 256 + 2, tw = 252, th = 252;
+          var slabGrad = g.createLinearGradient(tx, ty, tx + tw, ty + th);
+          slabGrad.addColorStop(0, "#C2AF9F"); slabGrad.addColorStop(0.5, "#B5A08F"); slabGrad.addColorStop(1, "#A48F7E");
+          g.fillStyle = slabGrad; g.fillRect(tx, ty, tw, th);
+          g.strokeStyle = "rgba(255, 255, 255, 0.35)"; g.lineWidth = 1.2; g.strokeRect(tx + 1, ty + 1, tw - 2, th - 2);
+          g.strokeStyle = "rgba(75, 60, 50, 0.38)"; g.lineWidth = 2.0;
+          g.beginPath(); g.moveTo(tx + 25, ty + 20); g.bezierCurveTo(tx + 85, ty + 100, tx + 150, ty + 150, tx + 235, ty + 230); g.stroke();
+        }
+      } else if (type === "white_tile") {
         // 800x800 Italian Carrara / Calacatta Polished Marble Slabs
         g.fillStyle = "#D6D6DE"; g.fillRect(0, 0, 512, 512);
         for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {

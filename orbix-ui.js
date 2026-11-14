@@ -2392,6 +2392,8 @@
             '<option value="marble"' + ((rm.floorFinish === 'marble') ? ' selected' : '') + '>Italian White Marble</option>' +
             '<option value="tile"' + ((rm.floorFinish === 'tile' || !rm.floorFinish) ? ' selected' : '') + '>Vitrified Light Tiles</option>' +
             '<option value="concrete"' + ((rm.floorFinish === 'concrete') ? ' selected' : '') + '>Polished Concrete</option>' +
+            '<option value="tile_1"' + ((rm.floorFinish === 'tile_1' || rm.floorFinish === 'designer_tile_1') ? ' selected' : '') + '>Designer Tile 1 (Crema Marfil)</option>' +
+            '<option value="tile_2"' + ((rm.floorFinish === 'tile_2' || rm.floorFinish === 'designer_tile_2') ? ' selected' : '') + '>Designer Tile 2 (Mocha Breccia)</option>' +
           '</select></div>' +
           '<div class="insp-row"><label>Ceiling Ht (mm)</label><input type="number" id="inspRoomHeight" value="' + (rm.ceilingHeight || 2800) + '" step="100"></div>' +
           '<div class="insp-row"><label>Area (sq.ft)</label><input type="text" value="' + areaSqFt + ' sq ft (' + areaSqM + ' m²)" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
@@ -2433,6 +2435,8 @@
             else if (fType === 'marble') fType = 'white_tile';
             else if (fType === 'tile') fType = 'square_tile';
             else if (fType === 'concrete') fType = 'grey_tile';
+            else if (fType === 'tile_1' || fType === 'designer_tile_1') fType = 'tile_1';
+            else if (fType === 'tile_2' || fType === 'designer_tile_2') fType = 'tile_2';
             if (self.archRenderer && typeof self.archRenderer.setFloorMaterial === 'function') {
               self.archRenderer.setFloorMaterial(fType, rm.id);
             }
