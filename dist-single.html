@@ -10617,6 +10617,7 @@ body.role-employee #adminCreateEmpBox,
   }
 
   function generateFullQuotation(project, selectedRoomIds) {
+    project = project || {};
     var rateCard = project.rateCard || DEFAULT_RATE_CARD;
     var plan = project;
     while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {
@@ -23224,7 +23225,7 @@ body.role-employee #adminCreateEmpBox,
       matOpts.roughness = 0.82;
       matOpts.metalness = 0.0;
       matOpts.clearcoat = 0.0;
-      matOpts.specularIntensity = 0.22;
+      matOpts.reflectivity = 0.22;
       matOpts.envMapIntensity = 0.55;
     }
 
@@ -24893,6 +24894,9 @@ body.role-employee #adminCreateEmpBox,
      3-zone structure: Bottom Storage (700mm), Oven Niche (600mm), Top Storage (800mm)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildOvenTallCabinetMesh = function (furn, fg, dims, carcassMat, getShutterMaterial, handleType, handleMat) {
+    var cat = (furn.category || 'kitchen_tall').toLowerCase();
+    var name = (furn.name || '').toLowerCase();
+    var isWall = false;
     var W = dims.W;
     var H = dims.H;
     var D = dims.D;
@@ -31416,6 +31420,7 @@ body.role-employee #adminCreateEmpBox,
       var boqEl = document.getElementById('orbixBOQTable');
       if (!boqEl) return;
 
+      this.project = this.project || (this.editor && this.editor.project) || (typeof Core !== 'undefined' ? Core.createProject('New Project') : { plan: { furniture: [], walls: [], rooms: [] } });
       this.sync3DStudioUnits();
       if (!this.selectedBOQRooms) {
         this.selectedBOQRooms = ['all'];
@@ -31423,7 +31428,7 @@ body.role-employee #adminCreateEmpBox,
 
       var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms);
       var sym = quote.currencySymbol;
-      var rateCard = this.project.rateCard || Core.DEFAULT_RATE_CARD;
+      var rateCard = (this.project && this.project.rateCard) || Core.DEFAULT_RATE_CARD;
       var self = this;
       var commCharges = this.getCommercialCharges();
       var commSummary = this.computeCommercialSummary(quote.subtotalWoodwork, commCharges);

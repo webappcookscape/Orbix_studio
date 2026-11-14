@@ -1900,7 +1900,7 @@
       matOpts.roughness = 0.82;
       matOpts.metalness = 0.0;
       matOpts.clearcoat = 0.0;
-      matOpts.specularIntensity = 0.22;
+      matOpts.reflectivity = 0.22;
       matOpts.envMapIntensity = 0.55;
     }
 
@@ -3569,6 +3569,9 @@
      3-zone structure: Bottom Storage (700mm), Oven Niche (600mm), Top Storage (800mm)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildOvenTallCabinetMesh = function (furn, fg, dims, carcassMat, getShutterMaterial, handleType, handleMat) {
+    var cat = (furn.category || 'kitchen_tall').toLowerCase();
+    var name = (furn.name || '').toLowerCase();
+    var isWall = false;
     var W = dims.W;
     var H = dims.H;
     var D = dims.D;

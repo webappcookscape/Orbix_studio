@@ -2137,6 +2137,7 @@
   }
 
   function generateFullQuotation(project, selectedRoomIds) {
+    project = project || {};
     var rateCard = project.rateCard || DEFAULT_RATE_CARD;
     var plan = project;
     while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {

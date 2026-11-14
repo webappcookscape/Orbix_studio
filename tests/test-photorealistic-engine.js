@@ -113,7 +113,7 @@ const matteMat = ArchitecturalRenderer.resolveLaminateMaterial('MDF 7707', 0x2E3
 assert(matteMat.isMeshPhysicalMaterial, 'Matte material must be MeshPhysicalMaterial');
 assert.strictEqual(matteMat.clearcoat, 0.0, 'Matte clearcoat must be 0.0');
 assert.strictEqual(matteMat.roughness, 0.82, 'Matte roughness must be 0.82');
-assert.strictEqual(matteMat.specularIntensity, 0.22, 'Matte specularIntensity must be 0.22');
+assert.strictEqual(matteMat.reflectivity, 0.22, 'Matte reflectivity must be 0.22');
 console.log('✅ 3. Matte Laminate correctly produces non-reflective architectural finish');
 
 // 4. Hardware Finishes (Handles)

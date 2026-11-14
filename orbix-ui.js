@@ -5152,6 +5152,7 @@
       var boqEl = document.getElementById('orbixBOQTable');
       if (!boqEl) return;
 
+      this.project = this.project || (this.editor && this.editor.project) || (typeof Core !== 'undefined' ? Core.createProject('New Project') : { plan: { furniture: [], walls: [], rooms: [] } });
       this.sync3DStudioUnits();
       if (!this.selectedBOQRooms) {
         this.selectedBOQRooms = ['all'];
@@ -5159,7 +5160,7 @@
 
       var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms);
       var sym = quote.currencySymbol;
-      var rateCard = this.project.rateCard || Core.DEFAULT_RATE_CARD;
+      var rateCard = (this.project && this.project.rateCard) || Core.DEFAULT_RATE_CARD;
       var self = this;
       var commCharges = this.getCommercialCharges();
       var commSummary = this.computeCommercialSummary(quote.subtotalWoodwork, commCharges);
