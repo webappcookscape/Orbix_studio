@@ -34,11 +34,11 @@ console.log('✔ Fix 2, 4, 5 Verified: Wall snapping, divider bypass & room part
 
 // 3. Verify Only Shutter (O/S) Depth & Alignment
 const coreJs = fs.readFileSync(path.join(__dirname, '../orbix-core.js'), 'utf8');
-const osMatches = coreJs.match(/isOnlyShutter:\s*true/g);
+const osMatches = coreJs.match(/["']?isOnlyShutter["']?:\s*true/g);
 assert.ok(osMatches && osMatches.length >= 6, 'Must define all Only Shutter units with isOnlyShutter: true');
-assert.ok(coreJs.includes('loft-1d-os') && coreJs.includes('D: 600'), 'Loft O/S must have 600mm carcass depth zone');
-assert.ok(coreJs.includes('fm-120 o/s') && coreJs.includes('D: 550'), 'Floor O/S must have 550mm carcass depth zone');
-assert.ok(coreJs.includes('wm-60 o/s') && coreJs.includes('D: 320'), 'Wall O/S must have 320mm carcass depth zone');
+assert.ok(coreJs.includes('loft-1d-os') && (coreJs.includes('D: 600') || coreJs.includes('"D": 600')), 'Loft O/S must have 600mm carcass depth zone');
+assert.ok(coreJs.includes('fm-120 o/s') && (coreJs.includes('D: 550') || coreJs.includes('"D": 550')), 'Floor O/S must have 550mm carcass depth zone');
+assert.ok(coreJs.includes('wm-60 o/s') && (coreJs.includes('D: 320') || coreJs.includes('"D": 320')), 'Wall O/S must have 320mm carcass depth zone');
 
 const threeDJs = fs.readFileSync(path.join(__dirname, '../orbix-3d.js'), 'utf8');
 assert.ok(threeDJs.includes('frontZ = baseD / 2 - 9'), '3D shutter frontZ must be aligned to front face');

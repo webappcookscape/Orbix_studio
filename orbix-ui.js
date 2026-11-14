@@ -3777,23 +3777,49 @@
 
       function updateCategoryCounts() {
         var catalog = Core.FURNITURE_CATALOG || [];
-        var counts = { all: catalog.length, kitchen_base: 0, kitchen_wall: 0, wardrobe: 0, tv_unit: 0, crockery: 0, vanity: 0, bed: 0 };
+        var counts = {
+          all: catalog.length,
+          kitchen_base: 0,
+          kitchen_fm: 0,
+          kitchen_corner: 0,
+          kitchen_drawers: 0,
+          kitchen_tall: 0,
+          kitchen_wall: 0,
+          wardrobe: 0,
+          loft: 0,
+          tv_unit: 0,
+          crockery: 0,
+          wall_paneling: 0,
+          vanity: 0,
+          bed: 0
+        };
         catalog.forEach(function (it) {
           var cat = (it.category || '').toLowerCase();
-          if (cat === 'kitchen_base') counts.kitchen_base++;
+          if (cat === 'kitchen_fm') { counts.kitchen_fm++; counts.kitchen_base++; }
+          else if (cat === 'kitchen_corner') { counts.kitchen_corner++; counts.kitchen_base++; }
+          else if (cat === 'kitchen_drawers') { counts.kitchen_drawers++; counts.kitchen_base++; }
+          else if (cat === 'kitchen_tall') { counts.kitchen_tall++; counts.kitchen_base++; }
+          else if (cat === 'kitchen_base') { counts.kitchen_base++; }
           else if (cat === 'kitchen_wall') counts.kitchen_wall++;
-          else if (cat.indexOf('wardrobe') !== -1 || cat.indexOf('loft') !== -1) counts.wardrobe++;
-          else if (cat.indexOf('tv') !== -1) counts.tv_unit++;
-          else if (cat.indexOf('crockery') !== -1) counts.crockery++;
+          else if (cat === 'loft') counts.loft++;
+          else if (cat.indexOf('wardrobe') !== -1) counts.wardrobe++;
+          else if (cat.indexOf('crockery') !== -1 || cat.indexOf('tv') !== -1) { counts.crockery++; counts.tv_unit++; }
+          else if (cat === 'wall_paneling') counts.wall_paneling++;
           else if (cat.indexOf('vanity') !== -1 || cat.indexOf('shoe') !== -1 || cat.indexOf('dresser') !== -1) counts.vanity++;
           else if (cat.indexOf('bed') !== -1) counts.bed++;
         });
         var elAll = document.getElementById('furnCountAll'); if (elAll) elAll.textContent = counts.all;
         var elKb = document.getElementById('furnCountKBase'); if (elKb) elKb.textContent = counts.kitchen_base;
+        var elKfm = document.getElementById('furnCountKFm'); if (elKfm) elKfm.textContent = counts.kitchen_fm;
+        var elKcn = document.getElementById('furnCountKCorner'); if (elKcn) elKcn.textContent = counts.kitchen_corner;
+        var elKdr = document.getElementById('furnCountKDrawers'); if (elKdr) elKdr.textContent = counts.kitchen_drawers;
+        var elKtl = document.getElementById('furnCountKTall'); if (elKtl) elKtl.textContent = counts.kitchen_tall;
         var elKw = document.getElementById('furnCountKWall'); if (elKw) elKw.textContent = counts.kitchen_wall;
         var elWr = document.getElementById('furnCountWardrobe'); if (elWr) elWr.textContent = counts.wardrobe;
+        var elLf = document.getElementById('furnCountLoft'); if (elLf) elLf.textContent = counts.loft;
         var elTv = document.getElementById('furnCountTV'); if (elTv) elTv.textContent = counts.tv_unit;
         var elCr = document.getElementById('furnCountCrockery'); if (elCr) elCr.textContent = counts.crockery;
+        var elWp = document.getElementById('furnCountWallPanel'); if (elWp) elWp.textContent = counts.wall_paneling;
         var elVn = document.getElementById('furnCountVanity'); if (elVn) elVn.textContent = counts.vanity;
         var elBd = document.getElementById('furnCountBed'); if (elBd) elBd.textContent = counts.bed;
       }
@@ -3848,7 +3874,7 @@
       if (spotlightBtn) {
         spotlightBtn.addEventListener('click', function () {
           var catalog = Core.FURNITURE_CATALOG || [];
-          var fcm = catalog.find(function (it) { return it.id === 'fm-rt-01'; }) || catalog[0];
+          var fcm = catalog.find(function (it) { return it.id === 'fcm-rt'; }) || catalog[0];
           selectUnitPreset(fcm);
         });
       }
@@ -3856,18 +3882,24 @@
       function renderCatalog() {
         updateCategoryCounts();
         var catalog = Core.FURNITURE_CATALOG || [];
-        var activePresetId = (self.editor && self.editor.furniturePreset && self.editor.furniturePreset.id) || 'fm-rt-01';
+        var activePresetId = (self.editor && self.editor.furniturePreset && self.editor.furniturePreset.id) || 'fcm-rt';
 
         var query = currentSearch.trim().toLowerCase();
         var filtered = catalog.filter(function (it) {
           // Category filter
           if (currentCat !== 'all') {
             var c = (it.category || '').toLowerCase();
-            if (currentCat === 'kitchen_base' && c !== 'kitchen_base') return false;
+            if (currentCat === 'kitchen_base' && c !== 'kitchen_base' && c !== 'kitchen_fm' && c !== 'kitchen_corner' && c !== 'kitchen_drawers' && c !== 'kitchen_tall') return false;
+            if (currentCat === 'kitchen_fm' && c !== 'kitchen_fm') return false;
+            if (currentCat === 'kitchen_corner' && c !== 'kitchen_corner') return false;
+            if (currentCat === 'kitchen_drawers' && c !== 'kitchen_drawers') return false;
+            if (currentCat === 'kitchen_tall' && c !== 'kitchen_tall') return false;
             if (currentCat === 'kitchen_wall' && c !== 'kitchen_wall') return false;
-            if (currentCat === 'wardrobe' && c.indexOf('wardrobe') === -1 && c.indexOf('loft') === -1) return false;
-            if (currentCat === 'tv_unit' && c.indexOf('tv') === -1) return false;
-            if (currentCat === 'crockery' && c.indexOf('crockery') === -1) return false;
+            if (currentCat === 'wardrobe' && c.indexOf('wardrobe') === -1) return false;
+            if (currentCat === 'loft' && c.indexOf('loft') === -1) return false;
+            if (currentCat === 'tv_unit' && c.indexOf('tv') === -1 && c.indexOf('crockery') === -1) return false;
+            if (currentCat === 'crockery' && c.indexOf('crockery') === -1 && c.indexOf('tv') === -1) return false;
+            if (currentCat === 'wall_paneling' && c.indexOf('wall_paneling') === -1 && c.indexOf('ledge') === -1 && c.indexOf('panel') === -1) return false;
             if (currentCat === 'vanity' && c.indexOf('vanity') === -1 && c.indexOf('shoe') === -1 && c.indexOf('dresser') === -1) return false;
             if (currentCat === 'bed' && c.indexOf('bed') === -1) return false;
           }
@@ -4049,13 +4081,23 @@
           { id: 'all_units', label: 'All Units & Cabinets', count: '180+' }
         ],
         base_unit: [
-          { id: 'cookscape_fm', label: 'COOKSCAPE (Kitchen- FM)', count: '43' },
-          { id: 'cookscape_crockery', label: 'COOKSCAPE (Tv/Study/Crockery)', count: '54' },
-          { id: 'cookscape_corner', label: 'COOKSCAPE - CORNER UNITS', count: '25' },
-          { id: 'cookscape_drawers', label: 'COOKSCAPE - DRAWERS', count: '28' },
-          { id: 'kitchen_drawers', label: 'KITCHEN - DRAWERS', count: '5' },
-          { id: 'drawer_units', label: 'Drawer Units', count: '46' },
-          { id: 'shutter_drawer', label: 'Shutter + Drawer Units', count: '153+' }
+          { id: 'kitchen_fm', label: 'KITCHEN FM', count: '8' },
+          { id: 'kitchen_corner', label: 'KITCHEN CORNER UNITS', count: '3' },
+          { id: 'kitchen_drawers', label: 'KITCHEN DRAWERS', count: '11' },
+          { id: 'kitchen_tall', label: 'KITCHEN TALL UNIT', count: '2' },
+          { id: 'cookscape_crockery', label: 'CROCKERY & TV BASE', count: '8' }
+        ],
+        kitchen_fm: [
+          { id: 'kitchen_fm', label: 'All Kitchen FM Units', count: '8' }
+        ],
+        kitchen_corner: [
+          { id: 'kitchen_corner', label: 'Kitchen Corner Units (FCM / FBCM)', count: '3' }
+        ],
+        kitchen_drawers: [
+          { id: 'kitchen_drawers', label: 'Kitchen Drawer Units (D2 / D3 / DS)', count: '11' }
+        ],
+        kitchen_tall: [
+          { id: 'kitchen_tall', label: 'Kitchen Tall Units (TBM 60 / Oven)', count: '2' }
         ],
         crockery: [
           { id: 'crockery_all', label: 'All Crockery Units', count: '15' },
@@ -4116,48 +4158,25 @@
 
         if (cat === 'all' || tabId === 'all_units') {
           res = catalog.map(mapItemToCard);
+        } else if (cat === 'kitchen_fm' || (cat === 'base_unit' && (tabId === 'kitchen_fm' || tabId === 'cookscape_fm'))) {
+          res = catalog.filter(function (it) { return it.category === 'kitchen_fm'; }).map(mapItemToCard);
+        } else if (cat === 'kitchen_corner' || (cat === 'base_unit' && (tabId === 'kitchen_corner' || tabId === 'cookscape_corner'))) {
+          res = catalog.filter(function (it) { return it.category === 'kitchen_corner'; }).map(mapItemToCard);
+        } else if (cat === 'kitchen_drawers' || (cat === 'base_unit' && (tabId === 'kitchen_drawers' || tabId === 'cookscape_drawers' || tabId === 'drawer_units'))) {
+          res = catalog.filter(function (it) { return it.category === 'kitchen_drawers'; }).map(mapItemToCard);
+        } else if (cat === 'kitchen_tall' || (cat === 'base_unit' && tabId === 'kitchen_tall')) {
+          res = catalog.filter(function (it) { return it.category === 'kitchen_tall'; }).map(mapItemToCard);
         } else if (cat === 'base_unit') {
-          var baseUnits = catalog.filter(function (it) {
-            var c = (it.category || '').toLowerCase();
-            var n = (it.name || '').toLowerCase();
-            var m = (it.modelType || '').toLowerCase();
-            var cfg = it.unitConfig || {};
-            return c === 'kitchen_base' || cfg.ctype === 'kbase' || n.indexOf('base') !== -1 || m.indexOf('base') !== -1 ||
-              n.indexOf('fm') !== -1 || (it.id && it.id.indexOf('fm') === 0) || (it.id && it.id.indexOf('tbm') === 0) || (it.id && it.id.indexOf('ctvb') === 0) ||
-              n.indexOf('corner') !== -1 || n.indexOf('fcm') !== -1;
-          });
-
-          if (tabId === 'cookscape_corner') {
-            res = baseUnits.filter(function (it) {
-              var n = (it.name + ' ' + it.id + ' ' + (it.code || '')).toLowerCase();
-              return n.indexOf('corner') !== -1 || n.indexOf('fcm') !== -1 || n.indexOf('fbcm') !== -1 || n.indexOf('wbcm') !== -1 || n.indexOf('wcm-rt (cookscape)') !== -1 || n.indexOf('wcm-lt (cookscape)') !== -1;
-            });
-          } else if (tabId === 'cookscape_drawers' || tabId === 'kitchen_drawers' || tabId === 'drawer_units') {
-            res = baseUnits.filter(function (it) {
-              var n = (it.name + ' ' + it.id).toLowerCase();
-              var cfg = it.unitConfig || {};
-              return (cfg.drawers && cfg.drawers > 0) || n.indexOf('drawer') !== -1;
-            });
-          } else if (tabId === 'cookscape_crockery') {
-            res = baseUnits.filter(function (it) {
-              var n = (it.name + ' ' + it.id).toLowerCase();
-              return n.indexOf('crockery') !== -1 || n.indexOf('tv') !== -1 || (it.id && it.id.indexOf('ctvb') === 0);
-            });
-          } else if (tabId === 'shutter_drawer') {
-            res = baseUnits.filter(function (it) {
-              var cfg = it.unitConfig || {};
-              var n = (it.name + ' ' + it.id).toLowerCase();
-              return (cfg.drawers > 0 && cfg.shutters > 0) || (n.indexOf('door') !== -1 && n.indexOf('drawer') !== -1);
-            });
-          } else if (tabId === 'cookscape_fm') {
-            res = baseUnits.filter(function (it) {
-              var n = (it.name + ' ' + it.id).toLowerCase();
-              return n.indexOf('fm') !== -1 || n.indexOf('tbm') !== -1 || (it.id && it.id.indexOf('fm') === 0) || (it.id && it.id.indexOf('tbm') === 0);
+          if (tabId === 'cookscape_crockery') {
+            res = catalog.filter(function (it) {
+              return (it.category === 'crockery' || it.category === 'tv_unit') && (!it.elevation || it.elevation === 0);
             });
           } else {
-            res = baseUnits;
+            res = catalog.filter(function (it) {
+              var c = (it.category || '').toLowerCase();
+              return c === 'kitchen_fm' || c === 'kitchen_corner' || c === 'kitchen_drawers' || c === 'kitchen_tall' || c === 'kitchen_base';
+            });
           }
-          if (!res || !res.length) res = baseUnits;
           res = res.map(mapItemToCard);
         } else if (cat === 'wall_unit') {
           var wallUnits = catalog.filter(function (it) {

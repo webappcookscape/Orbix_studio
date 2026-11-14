@@ -3305,11 +3305,11 @@
     });
     fg.add(ovenMeshGroup);
 
-    // 9. Bottom Shutter (Height: bottomH - 6)
+    // 9. Bottom Shutter (Height: bottomH - 4)
     var bShW = W - 6;
-    var bShH = Math.max(100, bottomH - 6);
+    var bShH = Math.max(100, bottomH - 4);
     var bHingeX = -W / 2 + 3;
-    var bHingeY = plinthH + bShH / 2 + 3;
+    var bHingeY = plinthH + bShH / 2 + 2;
     var bHingeZ = D / 2 - 9;
 
     var bHingeGroup = new THREE.Group();
@@ -3338,11 +3338,11 @@
     bHingeGroup.rotation.y = isBOpen ? -Math.PI * 0.6 : 0;
     fg.add(bHingeGroup);
 
-    // 10. Top Shutter (Height: topH - 6)
+    // 10. Top Shutter (Height: topH - 4, flush within unit carcass, never above roof)
     var tShW = W - 6;
-    var tShH = Math.max(100, topH - 6);
+    var tShH = Math.max(100, topH - 4);
     var tHingeX = -W / 2 + 3;
-    var tHingeY = plinthH + bottomH + ovenH + tShH / 2 + 3;
+    var tHingeY = plinthH + bottomH + ovenH + tShH / 2 + 2;
     var tHingeZ = D / 2 - 9;
 
     var tHingeGroup = new THREE.Group();
@@ -3737,17 +3737,58 @@
     }
 
     // 6. Internal Shelves
-    if (bodyH > 650 || (furn.unitConfig && furn.unitConfig.shelves > 0) || isFcmUnit) {
+    var explicitlyNoShelves = (furn.unitConfig && furn.unitConfig.shelves === 0);
+    var isInternalDrawers = (furn.unitConfig && (furn.unitConfig.internalDrawers || furn.unitConfig.drawersInCenter)) ||
+                            furn.id === 'wr-drawers' || furn.id === 'wr-1-drawers' ||
+                            (furn.modelType && furn.modelType.indexOf('wardrobe_modular_drawers') !== -1) ||
+                            (furn.name && furn.name.toLowerCase().indexOf('wardrobe') !== -1 && furn.name.toLowerCase().indexOf('drawer') !== -1);
+
+    if (!explicitlyNoShelves && (bodyH > 650 || (furn.unitConfig && furn.unitConfig.shelves > 0) || isFcmUnit)) {
       var numShelves = (furn.unitConfig && furn.unitConfig.shelves !== undefined) ? parseInt(furn.unitConfig.shelves) : (bodyH > 1400 ? 3 : 1);
-      for (var sh = 1; sh <= numShelves; sh++) {
-        var shelfY = plinthH + (sh * bodyH) / (numShelves + 1);
-        var shelfGeo = new THREE.BoxGeometry(innerW, 18, innerD - 20);
-        var shelfMesh = new THREE.Mesh(shelfGeo, carcassMat);
-        shelfMesh.position.set(0, shelfY, -10);
-        shelfMesh.castShadow = true; shelfMesh.receiveShadow = true;
-        shelfMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-        fg.add(shelfMesh);
+      if (isInternalDrawers) {
+        // Wardrobe with internal drawers: place top shelf above hanging rod
+        numShelves = 1;
+        var topShelfY = plinthH + bodyH - 280;
+        var topShelfGeo = new THREE.BoxGeometry(innerW, 18, innerD - 20);
+        var topShelfMesh = new THREE.Mesh(topShelfGeo, carcassMat);
+        topShelfMesh.position.set(0, topShelfY, -10);
+        topShelfMesh.castShadow = true; topShelfMesh.receiveShadow = true;
+        topShelfMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+        fg.add(topShelfMesh);
+      } else {
+        for (var sh = 1; sh <= numShelves; sh++) {
+          var shelfY = plinthH + (sh * bodyH) / (numShelves + 1);
+          var shelfGeo = new THREE.BoxGeometry(innerW, 18, innerD - 20);
+          var shelfMesh = new THREE.Mesh(shelfGeo, carcassMat);
+          shelfMesh.position.set(0, shelfY, -10);
+          shelfMesh.castShadow = true; shelfMesh.receiveShadow = true;
+          shelfMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+          fg.add(shelfMesh);
+        }
       }
+    }
+
+    // Top Metal Hanging Rod for Wardrobe units
+    var hasHangingRod = (furn.unitConfig && furn.unitConfig.hasHangingRod) || isInternalDrawers;
+    if (hasHangingRod && bodyH >= 1500) {
+      var rodGeo = new THREE.CylinderGeometry(12, 12, innerW - 6, 24);
+      var rodMat = new THREE.MeshStandardMaterial({ color: 0xE2E8F0, metalness: 0.95, roughness: 0.18 });
+      var rodMesh = new THREE.Mesh(rodGeo, rodMat);
+      rodMesh.rotation.z = Math.PI / 2;
+      rodMesh.position.set(0, plinthH + bodyH - 140, 0);
+      rodMesh.castShadow = true;
+      rodMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+      fg.add(rodMesh);
+
+      var flangeMat = new THREE.MeshStandardMaterial({ color: 0x94A3B8, metalness: 0.9, roughness: 0.2 });
+      [-1, 1].forEach(function(side) {
+        var flGeo = new THREE.CylinderGeometry(20, 20, 8, 24);
+        var flMesh = new THREE.Mesh(flGeo, flangeMat);
+        flMesh.rotation.z = Math.PI / 2;
+        flMesh.position.set(side * (innerW / 2 - 4), plinthH + bodyH - 140, 0);
+        flMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+        fg.add(flMesh);
+      });
     }
 
     // Plinth Base (for base units)
@@ -3776,32 +3817,52 @@
     var drawersCount = (furn.unitConfig && furn.unitConfig.drawers !== undefined) ? parseInt(furn.unitConfig.drawers) : 0;
     var numShutters = (furn.unitConfig && furn.unitConfig.shutters !== undefined) ?
       parseInt(furn.unitConfig.shutters) :
-      (isOpenBox ? 0 : ((drawersCount > 0 && dims.H < 1000) ? 0 : (dims.W > 1200 ? 3 : dims.W > 600 ? 2 : 1)));
+      (isOpenBox ? 0 : ((drawersCount > 0 && dims.H < 1000 && !isInternalDrawers) ? 0 : (dims.W > 1200 ? 3 : dims.W > 600 ? 2 : 1)));
 
     var totalDrawersH = 0;
     var drawerH = 0;
 
     // 7. Drawers Geometry & Sliding Groups
     var drawersOnTop = (furn.unitConfig && furn.unitConfig.drawersOnTop !== undefined) ? !!furn.unitConfig.drawersOnTop : (numShutters > 0);
-    var isSideBySide = (drawersCount === 2 && (furn.unitConfig && (furn.unitConfig.drawersSideBySide || dims.W >= 700)));
+    var isSideBySide = (drawersCount === 2 && (furn.unitConfig && (furn.unitConfig.drawersSideBySide || dims.W >= 700)) && !isInternalDrawers);
 
     if (drawersCount > 0) {
-      if (numShutters === 0) {
+      if (isInternalDrawers) {
+        // Internal drawers placed inside wardrobe in vertical center:
+        drawerH = 175;
+        totalDrawersH = drawersCount * (drawerH + 6);
+        var drawerCenterY = plinthH + bodyH / 2;
+        var drawerBaseY = drawerCenterY - (totalDrawersH / 2);
+
+        // Divider shelves above and below internal drawers
+        var dShelfTop = new THREE.Mesh(new THREE.BoxGeometry(innerW, 18, innerD - 15), carcassMat);
+        dShelfTop.position.set(0, drawerBaseY + totalDrawersH + 9, -10);
+        dShelfTop.castShadow = true; dShelfTop.receiveShadow = true;
+        dShelfTop.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+        fg.add(dShelfTop);
+
+        var dShelfBot = new THREE.Mesh(new THREE.BoxGeometry(innerW, 18, innerD - 15), carcassMat);
+        dShelfBot.position.set(0, drawerBaseY - 9, -10);
+        dShelfBot.castShadow = true; dShelfBot.receiveShadow = true;
+        dShelfBot.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
+        fg.add(dShelfBot);
+      } else if (numShutters === 0) {
         // Pure drawers unit (e.g. bedside unit, 3-pot drawer kitchen base)
         drawerH = Math.max(120, Math.floor((bodyH - (drawersCount + 1) * 3) / drawersCount));
         totalDrawersH = bodyH;
+        var drawerBaseY = plinthH + 3;
       } else if (isSideBySide) {
         // 2 side-by-side drawers on top!
         drawerH = Math.min(220, Math.max(140, Math.floor(bodyH * 0.35)));
         totalDrawersH = drawerH;
+        var drawerBaseY = drawersOnTop ? (plinthH + Math.max(150, bodyH - totalDrawersH - 6) + 6) : (plinthH + 3);
       } else {
         // Stacked drawers
         drawerH = Math.min(220, Math.max(140, Math.floor((bodyH * 0.38) / drawersCount)));
         totalDrawersH = drawersCount * (drawerH + 3);
+        var shutterH = Math.max(150, bodyH - totalDrawersH - 6);
+        var drawerBaseY = drawersOnTop ? (plinthH + (numShutters > 0 ? (shutterH + 6) : 3)) : (plinthH + 3);
       }
-
-      var shutterH = Math.max(150, bodyH - totalDrawersH - 6);
-      var drawerBaseY = drawersOnTop ? (plinthH + (numShutters > 0 ? (shutterH + 6) : 3)) : (plinthH + 3);
 
       for (var d = 0; d < drawersCount; d++) {
         var dY = isSideBySide ? (drawerBaseY + drawerH / 2) : (drawerBaseY + d * (drawerH + 3) + drawerH / 2);
@@ -3884,7 +3945,7 @@
                       (furn.id && /sliding/i.test(furn.id)) ||
                       (furn.name && /sliding/i.test(furn.name));
 
-      var shutterBaseY = (drawersOnTop && numShutters > 0) ? (plinthH + 3) : (plinthH + totalDrawersH + 3);
+      var shutterBaseY = isInternalDrawers ? (plinthH + 3) : ((drawersOnTop && numShutters > 0) ? (plinthH + 3) : (plinthH + totalDrawersH + 3));
 
       if (isSliding) {
         // Sliding Doors on Dual Tracks
@@ -3951,7 +4012,7 @@
         );
         var fixW = (furn.unitConfig && furn.unitConfig.fixedPanel && furn.unitConfig.fixedPanel.width) || (dims.W / 2);
         var movW = dims.W - fixW - 6;
-        var shH = Math.max(150, bodyH - totalDrawersH - 6);
+        var shH = Math.max(150, bodyH - (isInternalDrawers ? 0 : totalDrawersH) - 6);
         var shutterCenterY = shutterBaseY + shH / 2;
 
         if (isLeftOpen) {

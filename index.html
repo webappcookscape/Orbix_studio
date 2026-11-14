@@ -416,15 +416,12 @@
             <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="display:none;" aria-hidden="true">
                 <optgroup label="Cookscape Modular Units Catalog">
                   <option value="ctvb-1d-1dr" selected>ctvb-1d-1dr: CROCKERY/TV BASE 1DOOR 1 DRAWER (450×200)</option>
-                  <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (900×750)</option>
+                  <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (750×750×550, 100mm Leg)</option>
                   <option value="fcm-rt">fcm-rt: FCM-RT (Cookscape) (1200×720)</option>
-                  <option value="fm-rt-01">fm-rt-01: FCM-RT (Cookscape) (1200×720)</option>
                   <option value="fcm-rt-1500">fcm-rt-1500: WCM-RT (Cookscape) (600×600×300, 300 Fixed + 300 Open, elev: 1500)</option>
                   <option value="fcm-lt">fcm-lt: FCM-LT (Cookscape) (1200×720)</option>
-                  <option value="fm-lt-01">fm-lt-01: FCM-LT (Cookscape) (1200×720)</option>
                   <option value="fcm-lt-1500">fcm-lt-1500: WCM-LT (Cookscape) (600×600×300, 300 Open + 300 Fixed, elev: 1500)</option>
                   <option value="fbcm">fbcm: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
-                  <option value="f_fbcm_1">f_fbcm_1: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
                   <option value="fbcm-1500">fbcm-1500: WBCM (Cookscape) (600×600×300, L-Corner, elev: 1500)</option>
                   <option value="fm-120">fm-120: FM 120 Kitchen Base (1200×750)</option>
                   <option value="fm-60">fm-60: FM 60 Kitchen Base (600×750)</option>
@@ -498,11 +495,15 @@
           </div>
           <div class="furn-side-cat-list" id="furnSideCatList">
             <div class="furn-side-cat-item" data-cat="all">All</div>
-            <div class="furn-side-cat-item is-active" data-cat="base_unit">Base Unit</div>
-            <div class="furn-side-cat-item" data-cat="crockery">Crockery</div>
-            <div class="furn-side-cat-item" data-cat="tv_unit">TV Unit</div>
-            <div class="furn-side-cat-item" data-cat="wardrobe">Wardrobe</div>
-            <div class="furn-side-cat-item" data-cat="wall_unit">Wall Unit</div>
+            <div class="furn-side-cat-item is-active" data-cat="base_unit">Base Units (All)</div>
+            <div class="furn-side-cat-item" data-cat="kitchen_fm">🍳 Kitchen FM</div>
+            <div class="furn-side-cat-item" data-cat="kitchen_corner">📐 Corner Units</div>
+            <div class="furn-side-cat-item" data-cat="kitchen_drawers">🗄️ Kitchen Drawers</div>
+            <div class="furn-side-cat-item" data-cat="kitchen_tall">🏛️ Tall Unit</div>
+            <div class="furn-side-cat-item" data-cat="kitchen_wall">🎛️ Wall Unit</div>
+            <div class="furn-side-cat-item" data-cat="crockery">🍷 Crockery &amp; TV</div>
+            <div class="furn-side-cat-item" data-cat="wardrobe">🚪 Wardrobe</div>
+            <div class="furn-side-cat-item" data-cat="loft">📦 Loft</div>
           </div>
         </aside>
 
@@ -978,14 +979,16 @@
         <button type="button" class="furn-search-clear-btn" id="furnSearchClearBtn" title="Clear search" style="display:none;">✕</button>
       </div>
       <div class="furn-category-pills" id="furnCategoryPills">
-        <button type="button" class="furn-cat-pill is-active" data-cat="all">All Units <span class="pill-count" id="furnCountAll">25</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="kitchen_base">🍳 Kitchen Base <span class="pill-count" id="furnCountKBase">4</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="kitchen_wall">🎛️ Kitchen Wall <span class="pill-count" id="furnCountKWall">2</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="wardrobe">🚪 Wardrobes &amp; Lofts <span class="pill-count" id="furnCountWardrobe">6</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="tv_unit">📺 TV Media Walls <span class="pill-count" id="furnCountTV">2</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="crockery">🍷 Crockery &amp; Hutch <span class="pill-count" id="furnCountCrockery">2</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="vanity">🪞 Vanity &amp; Shoes <span class="pill-count" id="furnCountVanity">2</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="bed">🛏️ Beds <span class="pill-count" id="furnCountBed">2</span></button>
+        <button type="button" class="furn-cat-pill is-active" data-cat="all">All Units <span class="pill-count" id="furnCountAll">72</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="kitchen_fm">🍳 Kitchen FM <span class="pill-count" id="furnCountKFm">8</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="kitchen_corner">📐 Corner Units <span class="pill-count" id="furnCountKCorner">3</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="kitchen_drawers">🗄️ Kitchen Drawers <span class="pill-count" id="furnCountKDrawers">11</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="kitchen_tall">🏛️ Tall Unit <span class="pill-count" id="furnCountKTall">2</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="kitchen_wall">🎛️ Kitchen Wall <span class="pill-count" id="furnCountKWall">13</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="crockery">🍷 Crockery &amp; TV <span class="pill-count" id="furnCountCrockery">12</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="wardrobe">🚪 Wardrobes <span class="pill-count" id="furnCountWardrobe">5</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="loft">📦 Lofts <span class="pill-count" id="furnCountLoft">4</span></button>
+        <button type="button" class="furn-cat-pill" data-cat="wall_paneling">🪵 Wall Panels <span class="pill-count" id="furnCountWallPanel">5</span></button>
       </div>
     </div>
 

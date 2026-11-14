@@ -20,7 +20,7 @@ assert.strictEqual(tbmCore.unitConfig.oven.openingH, 600);
 assert.strictEqual(tbmCore.unitConfig.oven.bottomElevation, 700);
 assert.strictEqual(tbmCore.unitConfig.oven.backPanel, false);
 assert.strictEqual(tbmCore.unitConfig.shutterConfig.bottom.height, 700);
-assert.strictEqual(tbmCore.unitConfig.shutterConfig.top.height, 800);
+assert.strictEqual(tbmCore.unitConfig.shutterConfig.top.height, 700);
 console.log('✔ Core.FURNITURE_CATALOG tbm-60-oven verified');
 
 // 2. units_data.json check

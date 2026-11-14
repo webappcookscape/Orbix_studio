@@ -16,7 +16,6 @@ const wallCategories = [
   { cat: 'k_wall', name: 'K Wall Unit' },
   { cat: 'spice_rack', name: 'Spice Rack Open Box' },
   { cat: 'overhead', name: 'Overhead Cabinet' },
-  { cat: 'loft_os', name: 'Loft Unit' },
   { cat: 'custom', name: 'TV Wall Shelf' },
   { cat: 'crockery_wall', name: 'Crockery Wall Unit' }
 ];

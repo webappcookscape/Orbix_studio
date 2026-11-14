@@ -19,13 +19,10 @@ assert.strictEqual(fcmCore.unitConfig.openShutter.opening, 'right');
 assert.strictEqual(fcmCore.unitConfig.handle, 'pull');
 console.log('✔ Core.FURNITURE_CATALOG fcm-rt verified');
 
+// Verify duplicate fm-rt-01 is removed and canonical fcm-rt is used
 const fmRtCore = Core.FURNITURE_CATALOG.find(u => u.id === 'fm-rt-01');
-assert(fmRtCore, 'fm-rt-01 must exist in Core.FURNITURE_CATALOG');
-assert.strictEqual(fmRtCore.name, 'FCM-RT (Cookscape)');
-assert.deepStrictEqual(fmRtCore.dimensions, { W: 1200, H: 720, D: 560 });
-assert.strictEqual(fmRtCore.unitConfig.openShutter.opening, 'right');
-assert.strictEqual(fmRtCore.unitConfig.handle, 'pull');
-console.log('✔ Core.FURNITURE_CATALOG fm-rt-01 verified');
+assert.strictEqual(fmRtCore, undefined, 'fm-rt-01 must NOT exist in Core.FURNITURE_CATALOG (duplicate removed)');
+console.log('✔ Core.FURNITURE_CATALOG duplicate fm-rt-01 removed, canonical fcm-rt verified');
 
 // 2. units_data.json check
 const unitsData = JSON.parse(fs.readFileSync('units_data.json', 'utf8'));
