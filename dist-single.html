@@ -164,7 +164,7 @@ input,select{font:inherit;color:inherit}
 .stagewrap{flex:1 1 auto;display:flex;flex-direction:column;min-width:0}
 #stage{
   flex:1 1 auto;position:relative;min-height:0;
-  background: linear-gradient(180deg, #6BB2E6 0%, #8CC2EB 35%, #B8DCF5 70%, #DDF0FD 100%);
+  background: radial-gradient(circle at 50% 35%, #F8FAFC 0%, #E2E8F0 55%, #CBD5E1 100%);
   perspective:2600px;perspective-origin:50% 46%;
   overflow:hidden;cursor:grab;touch-action:none;
 }
@@ -290,9 +290,31 @@ input,select{font:inherit;color:inherit}
 
 /* stage bar */
 .stagebar{
-  flex:0 0 auto;display:flex;align-items:center;gap:8px 14px;flex-wrap:nowrap;
-  overflow-x:auto;overflow-y:visible;padding:6px 14px;background:var(--panel);border-top:1px solid var(--rule);
-  min-width:0;scrollbar-width:thin;
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:6px 14px;
+  background:var(--panel);
+  border-top:1px solid var(--rule);
+  min-width:0;
+  overflow:visible !important;
+  position:relative;
+  z-index:50;
+}
+.stagebar-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px 12px;
+  flex-wrap:wrap;
+  width:100%;
+  overflow:visible !important;
+  position:relative;
+}
+.stagebar-row.finishes-row{
+  border-top:1px solid rgba(0,0,0,0.06);
+  padding-top:4px;
 }
 .legend{display:flex;gap:18px;flex-wrap:nowrap;flex-shrink:0;min-width:0}
 .lg{display:flex;align-items:center;gap:8px;min-width:0}
@@ -303,7 +325,16 @@ input,select{font:inherit;color:inherit}
 .lg-t{display:flex;flex-direction:column;min-width:0}
 .lg-role{font-family:var(--cond);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
 .lg-code{font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.viewbtns{margin-left:auto;display:flex;align-items:center;gap:5px;flex-wrap:nowrap;flex-shrink:0}
+.viewbtns{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  flex-wrap:wrap;
+  flex-shrink:0;
+  overflow:visible !important;
+  position:relative;
+}
 .minibtn{
   font-family:var(--cond);font-size:11px;font-weight:600;letter-spacing:.05em;
   text-transform:uppercase;padding:6px 11px;border:1px solid var(--rule);
@@ -3411,21 +3442,24 @@ body.role-employee #adminCreateEmpBox,
 .render-dropdown-container {
   position: relative;
   display: inline-block;
+  overflow: visible !important;
+  z-index: 1000;
 }
 .render-dropdown-menu {
   display: none;
   position: absolute;
   right: 0;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 10px);
   top: auto;
   background: #1e293b;
   border: 1px solid #475569;
   border-radius: 8px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
-  z-index: 99999;
-  min-width: 285px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255,255,255,0.08);
+  z-index: 999999;
+  min-width: 300px;
   padding: 8px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  overflow: visible !important;
 }
 .render-dropdown-menu.is-open {
   display: block;
@@ -3524,6 +3558,10 @@ body.role-employee #adminCreateEmpBox,
         </button>
         <button class="auth-logout-btn" id="userLogoutBtn" title="Sign out of this session">Logout</button>
       </div>
+      <button class="btn" id="openAIKeyTopBtn" title="Configure OpenAI API Key for Photorealistic 8K Renders" style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1px solid #cbd5e1;font-weight:600;font-size:11.5px;color:#1e293b;border-radius:6px;padding:4px 10px;cursor:pointer;">
+        <span>🔑 OpenAI Key:</span>
+        <span id="topAIKeyStatus" style="font-weight:700;color:#dc2626;">Not Set</span>
+      </button>
       <button class="btn" id="exportSkpTopBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#fff;font-weight:600;border-color:#0284c7;">📐 Export .skp</button>
     </div>
   </header>
@@ -3622,75 +3660,92 @@ body.role-employee #adminCreateEmpBox,
           <div id="world"></div>
         </div>
         <div class="stagebar">
-          <div class="legend" id="legend"></div>
-          <div class="viewbtns">
-            <button class="minibtn is-on" id="viewFocusUnitBtn" title="Toggle between focusing on the active modular unit or viewing the full architectural home" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus Unit</button>
-            <button class="minibtn is-on" id="camRotateModeBtn" title="Rotate View: Left-click and drag anywhere to orbit 3D view smoothly" style="font-weight:600;">🔄 Rotate View</button>
-            <button class="minibtn" id="camPanModeBtn" title="Move Centre: Left-click and drag to pan / move camera floor centre" style="font-weight:600;">✋ Move Centre</button>
-            <button class="minibtn" id="camInteractModeBtn" title="Move Unit: Left-click and drag to reposition furniture units" style="font-weight:600;">📦 Move Unit</button>
-            <button class="minibtn" id="camResetCentreBtn" title="Re-centre 3D camera on room centre" style="font-weight:600;">🎯 Re-Centre</button>
-            <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
-            <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
-            <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera or click to cycle Wall 1, 2, 3, 4" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
-            <select class="minibtn" id="wallCutSelect" title="Single wall cutoff: hide Wall 1, 2, 3, 4, or auto-cut camera wall (attached units hide too)" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
-              <option value="single_auto">👁 Auto-Cut (1 Wall)</option>
-              <option value="wall_1">Wall 1 Hidden</option>
-              <option value="wall_2">Wall 2 Hidden</option>
-              <option value="wall_3">Wall 3 Hidden</option>
-              <option value="wall_4">Wall 4 Hidden</option>
-              <option value="all">🏛 All Walls Visible</option>
-              <option value="hidden">🚫 All Walls Hidden</option>
-            </select>
-            <!-- 3D Floor Finish Switcher -->
-            <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
-              <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White Tile</button>
-              <button class="minibtn" data-floor="square_tile" title="Square Ceramic Tile">▦ Square Tile</button>
-              <button class="minibtn" data-floor="grey_tile" title="Charcoal Grey Stone Tile">▩ Grey Tile</button>
-              <button class="minibtn" data-floor="wooden" title="Warm Hardwood Parquet">🪵 Wooden</button>
-            </div>
-            <!-- 3D Dado Tile Option -->
-            <button class="minibtn is-on" id="toggleDadoTileBtn" title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
-              <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
-            </button>
-            <button class="minibtn" id="toggleCeilingBtn" title="Toggle Architectural Ceiling Slab ON / OFF" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;">
-              <span>🏠 Ceiling: <b id="ceilingStatus">OFF</b></span>
-            </button>
-            <select class="minibtn" id="dadoTileStyleSelect" title="Dado Tile Pattern & Color" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
-              <option value="rhombus_sage" selected>🧱 Pattern 1: Sage Diamond</option>
-              <option value="chevron_mono">🧱 Pattern 2: Mono Chevron</option>
-              <option value="subway_white">🧱 Pattern 3: Subway White</option>
-            </select>
-            <!-- 3D Room Selector -->
-            <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
-              <option value="all">🏠 All Rooms</option>
-            </select>
-            <button class="minibtn" id="frontBtn" title="Front Elevation View">👁 Front</button>
-            <button class="minibtn" id="isoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
-            <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
-            <button class="minibtn" id="openBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
-            <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
-            <div class="render-dropdown-container" id="photoRenderContainer">
-              <button class="minibtn" id="photoRenderBtn" title="Choose 8K Render Mode: Auto-Placement or Custom View" style="background:linear-gradient(135deg, #1e293b, #0f172a);color:#f8fafc;border:1px solid #334155;font-weight:600;display:inline-flex;align-items:center;gap:5px;cursor:pointer;">
-                <span>📸 8K Render</span>
-                <span id="photoRenderCaret" style="font-size:10px;opacity:0.8;display:inline-block;transition:transform 0.2s;">▾</span>
-              </button>
-              <div id="photoRenderMenu" class="render-dropdown-menu">
-                <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px 8px 6px;">Select 8K Render Mode</div>
-                <button type="button" class="render-menu-opt" id="renderAutoPlacementBtn">
-                  <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#38bdf8;">🎯 Auto-Placement Render</div>
-                  <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Auto-frames host wall & placed units with studio depth & cutaway</div>
-                </button>
-                <div style="height:1px;background:#334155;margin:6px 0;"></div>
-                <button type="button" class="render-menu-opt" id="renderCustomViewBtn">
-                  <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#a7f3d0;">📐 Custom View Render</div>
-                  <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Renders exact current 3D camera angle, framing & perspective</div>
-                </button>
-                <div style="height:1px;background:#334155;margin:6px 0;"></div>
-                <button type="button" class="render-menu-opt" id="renderAIRenderBtn">
-                  <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#f472b6;">🤖 AI Photorealism Render (OpenAI)</div>
-                  <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Converts 3D snip into photo-realistic luxury render with smart prompt</div>
-                </button>
+          <!-- Row 1: Camera Orbit/Pan, Perspective Views, and 8K Render Menu -->
+          <div class="stagebar-row camera-row">
+            <div class="legend" id="legend"></div>
+            <div class="viewbtns">
+              <div style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
+                <button class="minibtn is-on" id="viewFocusUnitBtn" title="Toggle between focusing on the active modular unit or viewing the full architectural home" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus Unit</button>
+                <button class="minibtn is-on" id="camRotateModeBtn" title="Rotate View: Left-click and drag anywhere to orbit 3D view smoothly" style="font-weight:600;">🔄 Rotate View</button>
+                <button class="minibtn" id="camPanModeBtn" title="Move Centre: Left-click and drag to pan / move camera floor centre" style="font-weight:600;">✋ Move Centre</button>
+                <button class="minibtn" id="camInteractModeBtn" title="Move Unit: Left-click and drag to reposition furniture units" style="font-weight:600;">📦 Move Unit</button>
+                <button class="minibtn" id="camResetCentreBtn" title="Re-centre 3D camera on room centre" style="font-weight:600;">🎯 Re-Centre</button>
               </div>
+
+              <div style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
+                <button class="minibtn" id="frontBtn" title="Front Elevation View">👁 Front</button>
+                <button class="minibtn" id="isoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
+                <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
+                <button class="minibtn" id="openBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
+                <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
+              </div>
+
+              <div class="render-dropdown-container" id="photoRenderContainer">
+                <button class="minibtn" id="photoRenderBtn" title="Choose 8K Render Mode: Auto-Placement or Custom View" style="background:linear-gradient(135deg, #1e293b, #0f172a);color:#f8fafc;border:1px solid #334155;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 14px;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,0.25);">
+                  <span>📸 8K Render</span>
+                  <span id="photoRenderCaret" style="font-size:10px;opacity:0.8;display:inline-block;transition:transform 0.2s;">▾</span>
+                </button>
+                <div id="photoRenderMenu" class="render-dropdown-menu">
+                  <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px 8px 6px;">Select 8K Render Mode</div>
+                  <button type="button" class="render-menu-opt" id="renderAutoPlacementBtn">
+                    <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#38bdf8;">🎯 Auto-Placement Render</div>
+                    <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Auto-frames host wall & placed units with studio depth & cutaway</div>
+                  </button>
+                  <div style="height:1px;background:#334155;margin:6px 0;"></div>
+                  <button type="button" class="render-menu-opt" id="renderCustomViewBtn">
+                    <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#a7f3d0;">📐 Custom View Render</div>
+                    <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Renders exact current 3D camera angle, framing & perspective</div>
+                  </button>
+                  <div style="height:1px;background:#334155;margin:6px 0;"></div>
+                  <button type="button" class="render-menu-opt" id="renderAIRenderBtn">
+                    <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#f472b6;">🤖 AI Photorealism Render (OpenAI)</div>
+                    <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Converts 3D snip into photo-realistic luxury render with smart prompt</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 2: Architecture Walls, Dado, Floor Finish & Room Selector -->
+          <div class="stagebar-row finishes-row">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera or click to cycle Wall 1, 2, 3, 4" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
+              <select class="minibtn" id="wallCutSelect" title="Single wall cutoff: hide Wall 1, 2, 3, 4, or auto-cut camera wall (attached units hide too)" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                <option value="single_auto">👁 Auto-Cut (1 Wall)</option>
+                <option value="wall_1">Wall 1 Hidden</option>
+                <option value="wall_2">Wall 2 Hidden</option>
+                <option value="wall_3">Wall 3 Hidden</option>
+                <option value="wall_4">Wall 4 Hidden</option>
+                <option value="all">🏛 All Walls Visible</option>
+                <option value="hidden">🚫 All Walls Hidden</option>
+              </select>
+              <!-- 3D Floor Finish Switcher -->
+              <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
+                <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White Tile</button>
+                <button class="minibtn" data-floor="square_tile" title="Square Ceramic Tile">▦ Square Tile</button>
+                <button class="minibtn" data-floor="grey_tile" title="Charcoal Grey Stone Tile">▩ Grey Tile</button>
+                <button class="minibtn" data-floor="wooden" title="Warm Hardwood Parquet">🪵 Wooden</button>
+              </div>
+              <!-- 3D Dado Tile Option -->
+              <button class="minibtn is-on" id="toggleDadoTileBtn" title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
+                <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
+              </button>
+              <button class="minibtn" id="toggleCeilingBtn" title="Toggle Architectural Ceiling Slab ON / OFF" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+                <span>🏠 Ceiling: <b id="ceilingStatus">OFF</b></span>
+              </button>
+              <select class="minibtn" id="dadoTileStyleSelect" title="Dado Tile Pattern & Color" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                <option value="rhombus_sage" selected>🧱 Pattern 1: Sage Diamond</option>
+                <option value="chevron_mono">🧱 Pattern 2: Mono Chevron</option>
+                <option value="subway_white">🧱 Pattern 3: Subway White</option>
+              </select>
+              <!-- 3D Room Selector -->
+              <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                <option value="all">🏠 All Rooms</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+              <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
+              <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
             </div>
           </div>
         </div>
@@ -4983,17 +5038,24 @@ body.role-employee #adminCreateEmpBox,
 
     <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1 1 auto;background:#f8fafc;">
       <!-- OpenAI API Key Setup -->
-      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <label style="font-size:12px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:6px;">
-            <span>🔑 OpenAI API Key</span>
-            <span style="font-size:10px;background:#dcfce7;color:#15803d;padding:1px 6px;border-radius:10px;font-weight:600;">Stored Securely in Browser</span>
-          </label>
-          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#2563eb;text-decoration:none;">Get Key ↗</a>
+      <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:10px;padding:14px 16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:13px;font-weight:700;color:#0f172a;">🔑 OpenAI API Key Configuration</span>
+            <span id="aiKeyStatusBadge" style="font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:12px;background:#fee2e2;color:#b91c1c;">○ Key Not Set</span>
+          </div>
+          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style="font-size:11.5px;font-weight:600;color:#2563eb;text-decoration:none;">Get OpenAI Key ↗</a>
         </div>
-        <div style="display:flex;gap:8px;">
-          <input type="password" id="openAIApiKeyInput" placeholder="sk-proj-..." style="flex:1;font-size:12px;padding:7px 10px;border:1px solid #cbd5e1;border-radius:6px;font-family:monospace;">
-          <button type="button" id="saveOpenAIKeyBtn" class="btn" style="background:#0f172a;color:#f8fafc;font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;">Save Key</button>
+        <p style="font-size:11px;color:#64748b;margin:0 0 10px;line-height:1.4;">
+          Enter your OpenAI secret API key (starts with <code style="background:#f1f5f9;padding:1px 4px;border-radius:4px;color:#0f172a;">sk-...</code>). It is securely stored in your browser's local storage and used directly to generate 8K photorealistic luxury architectural renders.
+        </p>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="position:relative;flex:1;">
+            <input type="password" id="openAIApiKeyInput" placeholder="sk-proj-..." style="width:100%;font-size:12px;padding:8px 38px 8px 10px;border:1.5px solid #cbd5e1;border-radius:6px;font-family:monospace;box-sizing:border-box;">
+            <button type="button" id="toggleAIKeyVisBtn" title="Show / Hide Key" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;color:#64748b;padding:0;">👁</button>
+          </div>
+          <button type="button" id="saveOpenAIKeyBtn" class="btn" style="background:#0f172a;color:#f8fafc;font-size:12px;font-weight:700;padding:8px 16px;border-radius:6px;cursor:pointer;">Save Key</button>
+          <button type="button" id="clearOpenAIKeyBtn" class="btn" style="background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;font-size:12px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;">Clear</button>
         </div>
       </div>
 
@@ -22786,7 +22848,7 @@ window.ORBIX_DADO_TEXTURES = {
         var slabW = W + 20;
         var slabD = baseD + 25;
         var slabGeo = new THREE.BoxGeometry(slabW, actualCounterH, slabD);
-        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.88, metalness: 0.0 });
+        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.22, metalness: 0.08, envMapIntensity: 0.55 });
         var slabMesh = new THREE.Mesh(slabGeo, sMat);
         slabMesh.position.set(0, H - actualCounterH / 2, 2.5);
         slabMesh.castShadow = true; slabMesh.receiveShadow = true;
@@ -23165,9 +23227,9 @@ window.ORBIX_DADO_TEXTURES = {
     }
     var counterMat = new THREE.MeshStandardMaterial({
       color: counterHex,
-      roughness: 0.88,
-      metalness: 0.0,
-      envMapIntensity: 0.28
+      roughness: 0.22,
+      metalness: 0.08,
+      envMapIntensity: 0.55
     });
 
     var isTvOrVanity = (cat === 'tv_unit' || cat === 'vanity' || (name && (name.indexOf('tv') !== -1 || name.indexOf('vanity') !== -1)));
@@ -27612,11 +27674,54 @@ window.ORBIX_DADO_TEXTURES = {
       modal.classList.add('is-open');
 
       var keyInput = document.getElementById('openAIApiKeyInput');
+      var k = localStorage.getItem('orbix_openai_key') || localStorage.getItem('orbix_openai_api_key') || '';
       if (keyInput) {
-        keyInput.value = localStorage.getItem('orbix_openai_key') || '';
+        keyInput.value = k;
       }
-
+      this.updateAIKeyStatusUI(k);
       this.updateAIRenderPrompt();
+    },
+
+    updateAIKeyStatusUI: function (keyVal) {
+      var k = (keyVal !== undefined) ? keyVal : (localStorage.getItem('orbix_openai_key') || localStorage.getItem('orbix_openai_api_key') || '');
+      var hasKey = !!(k && k.trim().length > 10);
+      var badge = document.getElementById('aiKeyStatusBadge');
+      if (badge) {
+        if (hasKey) {
+          badge.textContent = '● Key Connected (' + k.slice(0, 7) + '...)';
+          badge.style.background = '#dcfce7';
+          badge.style.color = '#15803d';
+        } else {
+          badge.textContent = '○ Key Not Set (Required)';
+          badge.style.background = '#fee2e2';
+          badge.style.color = '#b91c1c';
+        }
+      }
+      var topStatus = document.getElementById('topAIKeyStatus');
+      if (topStatus) {
+        if (hasKey) {
+          topStatus.textContent = 'Active';
+          topStatus.style.color = '#15803d';
+        } else {
+          topStatus.textContent = 'Not Set';
+          topStatus.style.color = '#dc2626';
+        }
+      }
+    },
+
+    setOpenAIKey: function (k) {
+      if (k) {
+        localStorage.setItem('orbix_openai_key', k.trim());
+        localStorage.setItem('orbix_openai_api_key', k.trim());
+        this.updateAIKeyStatusUI(k.trim());
+        var keyInput = document.getElementById('openAIApiKeyInput');
+        if (keyInput) keyInput.value = k.trim();
+        if (typeof window.toast === 'function') window.toast('✅ OpenAI API Key Saved Securely!');
+      }
+    },
+
+    getOpenAIKey: function () {
+      return localStorage.getItem('orbix_openai_key') || localStorage.getItem('orbix_openai_api_key') || '';
     },
 
     closeAIRenderModal: function () {
@@ -27671,6 +27776,15 @@ window.ORBIX_DADO_TEXTURES = {
       var openBtn = document.getElementById('renderAIRenderBtn');
       if (!modal) return;
 
+      self.updateAIKeyStatusUI();
+
+      var topKeyBtn = document.getElementById('openAIKeyTopBtn');
+      if (topKeyBtn) {
+        topKeyBtn.addEventListener('click', function () {
+          self.openAIRenderModal();
+        });
+      }
+
       if (openBtn) {
         openBtn.addEventListener('click', function (e) {
           e.stopPropagation();
@@ -27686,14 +27800,37 @@ window.ORBIX_DADO_TEXTURES = {
 
       var keyInput = document.getElementById('openAIApiKeyInput');
       var saveKeyBtn = document.getElementById('saveOpenAIKeyBtn');
+      var toggleVisBtn = document.getElementById('toggleAIKeyVisBtn');
+      var clearKeyBtn = document.getElementById('clearOpenAIKeyBtn');
+
+      if (toggleVisBtn && keyInput) {
+        toggleVisBtn.addEventListener('click', function () {
+          keyInput.type = (keyInput.type === 'password') ? 'text' : 'password';
+        });
+      }
+
+      if (clearKeyBtn && keyInput) {
+        clearKeyBtn.addEventListener('click', function () {
+          keyInput.value = '';
+          localStorage.removeItem('orbix_openai_key');
+          localStorage.removeItem('orbix_openai_api_key');
+          self.updateAIKeyStatusUI('');
+          if (typeof window.toast === 'function') window.toast('OpenAI API Key cleared.');
+        });
+      }
+
       if (saveKeyBtn && keyInput) {
         saveKeyBtn.addEventListener('click', function () {
           var k = keyInput.value.trim();
           if (k) {
             localStorage.setItem('orbix_openai_key', k);
+            localStorage.setItem('orbix_openai_api_key', k);
+            self.updateAIKeyStatusUI(k);
             if (typeof window.toast === 'function') window.toast('✅ OpenAI API Key Saved Securely in Browser!');
           } else {
             localStorage.removeItem('orbix_openai_key');
+            localStorage.removeItem('orbix_openai_api_key');
+            self.updateAIKeyStatusUI('');
             if (typeof window.toast === 'function') window.toast('OpenAI API Key cleared.');
           }
         });
@@ -29652,12 +29789,12 @@ window.ORBIX_DADO_TEXTURES = {
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
 
-      // Ensure sky is elegant architectural daylight sky and outer ground is natural
-      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0xD8E8F5) {
-        scene.background = new THREE.Color(0xD8E8F5);
+      // Ensure sky is clean architectural studio backdrop and outer ground is natural studio plane
+      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0xF1F5F9) {
+        scene.background = new THREE.Color(0xF1F5F9);
       }
       if (!scene.fog && THREE.FogExp2) {
-        scene.fog = new THREE.FogExp2(0xE8F0F8, 0.000008);
+        scene.fog = new THREE.FogExp2(0xE2E8F0, 0.000008);
       }
       scene.children.forEach(function (c) {
         if (c.isMesh && c.geometry && c.geometry.type === 'PlaneGeometry' && c.geometry.parameters && c.geometry.parameters.width >= 100000) {
@@ -29667,7 +29804,7 @@ window.ORBIX_DADO_TEXTURES = {
             c.material = gl.makeNeutralGroundMat();
           } else if (c.material) {
             c.material.map = null;
-            if (c.material.color) c.material.color.setHex(0x4E8A42);
+            if (c.material.color) c.material.color.setHex(0xEDECE8);
             c.material.needsUpdate = true;
           }
         }
@@ -32567,48 +32704,35 @@ window.ORBIX_DADO_TEXTURES = {
       return m;
     }
     function makeGrassGroundMat() {
-      if (matCache["sp|grassGround"]) return matCache["sp|grassGround"];
+      if (matCache["sp|archStudioGround"]) return matCache["sp|archStudioGround"];
       var c = document.createElement("canvas"); c.width = c.height = 512;
       var g = c.getContext("2d");
       if (g) {
-        // Rich natural lawn grass green base
-        g.fillStyle = "#46813A";
+        // Subtle warm architectural studio ground plane
+        g.fillStyle = "#EAE8E3";
         g.fillRect(0, 0, 512, 512);
 
-        // Organic grass sod tone variations
-        var lawnTones = ["#3D7333", "#4A883E", "#559947", "#3E7834", "#4F9042", "#5C9F4E"];
-        for (var i = 0; i < 400; i++) {
-          var x = Math.random() * 512, y = Math.random() * 512, rad = 8 + Math.random() * 24;
-          var grad = g.createRadialGradient(x, y, 0, x, y, rad);
-          var col = lawnTones[Math.floor(Math.random() * lawnTones.length)];
-          grad.addColorStop(0, col);
-          grad.addColorStop(1, "rgba(70, 129, 58, 0)");
-          g.fillStyle = grad;
-          g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
-        }
-
-        // Fine lawn grass blades
-        for (var b = 0; b < 2500; b++) {
-          var bx = Math.random() * 512, by = Math.random() * 512, blen = 3 + Math.random() * 7;
-          var bcol = (b % 3 === 0) ? "#65AD55" : ((b % 3 === 1) ? "#3B6E32" : "#4B893F");
-          g.strokeStyle = bcol; g.lineWidth = 1.0;
-          g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + (Math.random() - 0.5) * 3, by - blen); g.stroke();
+        // Micro-fine architectural plaster / terrazzo noise
+        for (var i = 0; i < 2000; i++) {
+          var nx = Math.random() * 512, ny = Math.random() * 512;
+          g.fillStyle = (i % 2 === 0) ? "rgba(255,255,255,0.4)" : "rgba(180,175,165,0.25)";
+          g.fillRect(nx, ny, 1.5, 1.5);
         }
       }
 
       var tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(160, 160);
+      tex.repeat.set(40, 40);
       tex.encoding = THREE.sRGBEncoding;
 
       var m = new THREE.MeshStandardMaterial({
         map: tex,
-        color: 0x4E8A42,
-        roughness: 0.92,
+        color: 0xEDECE8,
+        roughness: 0.94,
         metalness: 0.0,
         side: THREE.DoubleSide
       });
-      matCache["sp|grassGround"] = m;
+      matCache["sp|archStudioGround"] = m;
       return m;
     }
     function makeNeutralGroundMat() {
@@ -32628,25 +32752,25 @@ window.ORBIX_DADO_TEXTURES = {
       stage.appendChild(renderer.domElement);
       stage.classList.add("gl");
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xD8E8F5); // Elegant architectural daylight sky
-      scene.fog = new THREE.FogExp2(0xE8F0F8, 0.000008); // Subtle atmospheric perspective haze
+      scene.background = new THREE.Color(0xF1F5F9); // Clean architectural studio sky
+      scene.fog = new THREE.FogExp2(0xE2E8F0, 0.000008); // Subtle studio atmospheric depth
       camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
       /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
       scene.environment = pmrem.fromScene(makeRoomScene(), 0.04, 10, 30000).texture;
       if (EMBED) camera.far = 80000;
-      keyL = new THREE.DirectionalLight(0xfff7e6, NEO ? 1.48 : 1.38);
+      keyL = new THREE.DirectionalLight(0xfffbf2, NEO ? 1.48 : 1.42);
       keyL.position.set(-3800, 7200, 5600); keyL.castShadow = true;
       keyL.shadow.mapSize.set(4096, 4096);
       var sc = keyL.shadow.camera; sc.left = -9500; sc.right = 9500; sc.top = 9500; sc.bottom = -9500; sc.near = 200; sc.far = 30000;
-      keyL.shadow.bias = -0.00025; keyL.shadow.normalBias = 1.6; keyL.shadow.radius = 2.2;
+      keyL.shadow.bias = -0.0001; keyL.shadow.normalBias = 1.2; keyL.shadow.radius = 2.4;
       scene.add(keyL); scene.add(keyL.target);
-      /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
-      var fill = new THREE.DirectionalLight(0xdce8fa, 0.58); fill.position.set(2800, 2100, 5000); scene.add(fill);
-      var rim = new THREE.DirectionalLight(0xf1f4fa, 0.38); rim.position.set(2400, 1800, -2800); scene.add(rim);
-      var bounceL = new THREE.DirectionalLight(0xf7efe2, 0.34); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
-      scene.add(new THREE.HemisphereLight(0x9CD1F4, 0x567D46, 0.50)); // Sky radiance + warm ground bounce
+      /* fill: lifts interiors and shaded faces */
+      var fill = new THREE.DirectionalLight(0xedf4fc, 0.52); fill.position.set(2800, 2100, 5000); scene.add(fill);
+      var rim = new THREE.DirectionalLight(0xf8fafc, 0.35); rim.position.set(2400, 1800, -2800); scene.add(rim);
+      var bounceL = new THREE.DirectionalLight(0xfbf6ee, 0.38); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
+      scene.add(new THREE.HemisphereLight(0xFAFBFD, 0xEFEAE1, 0.65)); // Crisp architectural sky radiance + warm interior floor bounce (no green!)
       var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);

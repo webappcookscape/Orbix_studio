@@ -97,6 +97,10 @@
         </button>
         <button class="auth-logout-btn" id="userLogoutBtn" title="Sign out of this session">Logout</button>
       </div>
+      <button class="btn" id="openAIKeyTopBtn" title="Configure OpenAI API Key for Photorealistic 8K Renders" style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1px solid #cbd5e1;font-weight:600;font-size:11.5px;color:#1e293b;border-radius:6px;padding:4px 10px;cursor:pointer;">
+        <span>🔑 OpenAI Key:</span>
+        <span id="topAIKeyStatus" style="font-weight:700;color:#dc2626;">Not Set</span>
+      </button>
       <button class="btn" id="exportSkpTopBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#fff;font-weight:600;border-color:#0284c7;">📐 Export .skp</button>
     </div>
   </header>
@@ -195,75 +199,92 @@
           <div id="world"></div>
         </div>
         <div class="stagebar">
-          <div class="legend" id="legend"></div>
-          <div class="viewbtns">
-            <button class="minibtn is-on" id="viewFocusUnitBtn" title="Toggle between focusing on the active modular unit or viewing the full architectural home" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus Unit</button>
-            <button class="minibtn is-on" id="camRotateModeBtn" title="Rotate View: Left-click and drag anywhere to orbit 3D view smoothly" style="font-weight:600;">🔄 Rotate View</button>
-            <button class="minibtn" id="camPanModeBtn" title="Move Centre: Left-click and drag to pan / move camera floor centre" style="font-weight:600;">✋ Move Centre</button>
-            <button class="minibtn" id="camInteractModeBtn" title="Move Unit: Left-click and drag to reposition furniture units" style="font-weight:600;">📦 Move Unit</button>
-            <button class="minibtn" id="camResetCentreBtn" title="Re-centre 3D camera on room centre" style="font-weight:600;">🎯 Re-Centre</button>
-            <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
-            <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
-            <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera or click to cycle Wall 1, 2, 3, 4" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
-            <select class="minibtn" id="wallCutSelect" title="Single wall cutoff: hide Wall 1, 2, 3, 4, or auto-cut camera wall (attached units hide too)" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
-              <option value="single_auto">👁 Auto-Cut (1 Wall)</option>
-              <option value="wall_1">Wall 1 Hidden</option>
-              <option value="wall_2">Wall 2 Hidden</option>
-              <option value="wall_3">Wall 3 Hidden</option>
-              <option value="wall_4">Wall 4 Hidden</option>
-              <option value="all">🏛 All Walls Visible</option>
-              <option value="hidden">🚫 All Walls Hidden</option>
-            </select>
-            <!-- 3D Floor Finish Switcher -->
-            <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
-              <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White Tile</button>
-              <button class="minibtn" data-floor="square_tile" title="Square Ceramic Tile">▦ Square Tile</button>
-              <button class="minibtn" data-floor="grey_tile" title="Charcoal Grey Stone Tile">▩ Grey Tile</button>
-              <button class="minibtn" data-floor="wooden" title="Warm Hardwood Parquet">🪵 Wooden</button>
-            </div>
-            <!-- 3D Dado Tile Option -->
-            <button class="minibtn is-on" id="toggleDadoTileBtn" title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
-              <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
-            </button>
-            <button class="minibtn" id="toggleCeilingBtn" title="Toggle Architectural Ceiling Slab ON / OFF" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;">
-              <span>🏠 Ceiling: <b id="ceilingStatus">OFF</b></span>
-            </button>
-            <select class="minibtn" id="dadoTileStyleSelect" title="Dado Tile Pattern & Color" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
-              <option value="rhombus_sage" selected>🧱 Pattern 1: Sage Diamond</option>
-              <option value="chevron_mono">🧱 Pattern 2: Mono Chevron</option>
-              <option value="subway_white">🧱 Pattern 3: Subway White</option>
-            </select>
-            <!-- 3D Room Selector -->
-            <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
-              <option value="all">🏠 All Rooms</option>
-            </select>
-            <button class="minibtn" id="frontBtn" title="Front Elevation View">👁 Front</button>
-            <button class="minibtn" id="isoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
-            <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
-            <button class="minibtn" id="openBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
-            <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
-            <div class="render-dropdown-container" id="photoRenderContainer">
-              <button class="minibtn" id="photoRenderBtn" title="Choose 8K Render Mode: Auto-Placement or Custom View" style="background:linear-gradient(135deg, #1e293b, #0f172a);color:#f8fafc;border:1px solid #334155;font-weight:600;display:inline-flex;align-items:center;gap:5px;cursor:pointer;">
-                <span>📸 8K Render</span>
-                <span id="photoRenderCaret" style="font-size:10px;opacity:0.8;display:inline-block;transition:transform 0.2s;">▾</span>
-              </button>
-              <div id="photoRenderMenu" class="render-dropdown-menu">
-                <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px 8px 6px;">Select 8K Render Mode</div>
-                <button type="button" class="render-menu-opt" id="renderAutoPlacementBtn">
-                  <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#38bdf8;">🎯 Auto-Placement Render</div>
-                  <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Auto-frames host wall & placed units with studio depth & cutaway</div>
-                </button>
-                <div style="height:1px;background:#334155;margin:6px 0;"></div>
-                <button type="button" class="render-menu-opt" id="renderCustomViewBtn">
-                  <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#a7f3d0;">📐 Custom View Render</div>
-                  <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Renders exact current 3D camera angle, framing & perspective</div>
-                </button>
-                <div style="height:1px;background:#334155;margin:6px 0;"></div>
-                <button type="button" class="render-menu-opt" id="renderAIRenderBtn">
-                  <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#f472b6;">🤖 AI Photorealism Render (OpenAI)</div>
-                  <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Converts 3D snip into photo-realistic luxury render with smart prompt</div>
-                </button>
+          <!-- Row 1: Camera Orbit/Pan, Perspective Views, and 8K Render Menu -->
+          <div class="stagebar-row camera-row">
+            <div class="legend" id="legend"></div>
+            <div class="viewbtns">
+              <div style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
+                <button class="minibtn is-on" id="viewFocusUnitBtn" title="Toggle between focusing on the active modular unit or viewing the full architectural home" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus Unit</button>
+                <button class="minibtn is-on" id="camRotateModeBtn" title="Rotate View: Left-click and drag anywhere to orbit 3D view smoothly" style="font-weight:600;">🔄 Rotate View</button>
+                <button class="minibtn" id="camPanModeBtn" title="Move Centre: Left-click and drag to pan / move camera floor centre" style="font-weight:600;">✋ Move Centre</button>
+                <button class="minibtn" id="camInteractModeBtn" title="Move Unit: Left-click and drag to reposition furniture units" style="font-weight:600;">📦 Move Unit</button>
+                <button class="minibtn" id="camResetCentreBtn" title="Re-centre 3D camera on room centre" style="font-weight:600;">🎯 Re-Centre</button>
               </div>
+
+              <div style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
+                <button class="minibtn" id="frontBtn" title="Front Elevation View">👁 Front</button>
+                <button class="minibtn" id="isoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
+                <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
+                <button class="minibtn" id="openBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
+                <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
+              </div>
+
+              <div class="render-dropdown-container" id="photoRenderContainer">
+                <button class="minibtn" id="photoRenderBtn" title="Choose 8K Render Mode: Auto-Placement or Custom View" style="background:linear-gradient(135deg, #1e293b, #0f172a);color:#f8fafc;border:1px solid #334155;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 14px;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,0.25);">
+                  <span>📸 8K Render</span>
+                  <span id="photoRenderCaret" style="font-size:10px;opacity:0.8;display:inline-block;transition:transform 0.2s;">▾</span>
+                </button>
+                <div id="photoRenderMenu" class="render-dropdown-menu">
+                  <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px 8px 6px;">Select 8K Render Mode</div>
+                  <button type="button" class="render-menu-opt" id="renderAutoPlacementBtn">
+                    <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#38bdf8;">🎯 Auto-Placement Render</div>
+                    <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Auto-frames host wall & placed units with studio depth & cutaway</div>
+                  </button>
+                  <div style="height:1px;background:#334155;margin:6px 0;"></div>
+                  <button type="button" class="render-menu-opt" id="renderCustomViewBtn">
+                    <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#a7f3d0;">📐 Custom View Render</div>
+                    <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Renders exact current 3D camera angle, framing & perspective</div>
+                  </button>
+                  <div style="height:1px;background:#334155;margin:6px 0;"></div>
+                  <button type="button" class="render-menu-opt" id="renderAIRenderBtn">
+                    <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#f472b6;">🤖 AI Photorealism Render (OpenAI)</div>
+                    <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Converts 3D snip into photo-realistic luxury render with smart prompt</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 2: Architecture Walls, Dado, Floor Finish & Room Selector -->
+          <div class="stagebar-row finishes-row">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera or click to cycle Wall 1, 2, 3, 4" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
+              <select class="minibtn" id="wallCutSelect" title="Single wall cutoff: hide Wall 1, 2, 3, 4, or auto-cut camera wall (attached units hide too)" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                <option value="single_auto">👁 Auto-Cut (1 Wall)</option>
+                <option value="wall_1">Wall 1 Hidden</option>
+                <option value="wall_2">Wall 2 Hidden</option>
+                <option value="wall_3">Wall 3 Hidden</option>
+                <option value="wall_4">Wall 4 Hidden</option>
+                <option value="all">🏛 All Walls Visible</option>
+                <option value="hidden">🚫 All Walls Hidden</option>
+              </select>
+              <!-- 3D Floor Finish Switcher -->
+              <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
+                <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White Tile</button>
+                <button class="minibtn" data-floor="square_tile" title="Square Ceramic Tile">▦ Square Tile</button>
+                <button class="minibtn" data-floor="grey_tile" title="Charcoal Grey Stone Tile">▩ Grey Tile</button>
+                <button class="minibtn" data-floor="wooden" title="Warm Hardwood Parquet">🪵 Wooden</button>
+              </div>
+              <!-- 3D Dado Tile Option -->
+              <button class="minibtn is-on" id="toggleDadoTileBtn" title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
+                <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
+              </button>
+              <button class="minibtn" id="toggleCeilingBtn" title="Toggle Architectural Ceiling Slab ON / OFF" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+                <span>🏠 Ceiling: <b id="ceilingStatus">OFF</b></span>
+              </button>
+              <select class="minibtn" id="dadoTileStyleSelect" title="Dado Tile Pattern & Color" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                <option value="rhombus_sage" selected>🧱 Pattern 1: Sage Diamond</option>
+                <option value="chevron_mono">🧱 Pattern 2: Mono Chevron</option>
+                <option value="subway_white">🧱 Pattern 3: Subway White</option>
+              </select>
+              <!-- 3D Room Selector -->
+              <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                <option value="all">🏠 All Rooms</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+              <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
+              <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
             </div>
           </div>
         </div>
@@ -1556,17 +1577,24 @@
 
     <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1 1 auto;background:#f8fafc;">
       <!-- OpenAI API Key Setup -->
-      <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <label style="font-size:12px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:6px;">
-            <span>🔑 OpenAI API Key</span>
-            <span style="font-size:10px;background:#dcfce7;color:#15803d;padding:1px 6px;border-radius:10px;font-weight:600;">Stored Securely in Browser</span>
-          </label>
-          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#2563eb;text-decoration:none;">Get Key ↗</a>
+      <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:10px;padding:14px 16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:13px;font-weight:700;color:#0f172a;">🔑 OpenAI API Key Configuration</span>
+            <span id="aiKeyStatusBadge" style="font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:12px;background:#fee2e2;color:#b91c1c;">○ Key Not Set</span>
+          </div>
+          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style="font-size:11.5px;font-weight:600;color:#2563eb;text-decoration:none;">Get OpenAI Key ↗</a>
         </div>
-        <div style="display:flex;gap:8px;">
-          <input type="password" id="openAIApiKeyInput" placeholder="sk-proj-..." style="flex:1;font-size:12px;padding:7px 10px;border:1px solid #cbd5e1;border-radius:6px;font-family:monospace;">
-          <button type="button" id="saveOpenAIKeyBtn" class="btn" style="background:#0f172a;color:#f8fafc;font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;">Save Key</button>
+        <p style="font-size:11px;color:#64748b;margin:0 0 10px;line-height:1.4;">
+          Enter your OpenAI secret API key (starts with <code style="background:#f1f5f9;padding:1px 4px;border-radius:4px;color:#0f172a;">sk-...</code>). It is securely stored in your browser's local storage and used directly to generate 8K photorealistic luxury architectural renders.
+        </p>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div style="position:relative;flex:1;">
+            <input type="password" id="openAIApiKeyInput" placeholder="sk-proj-..." style="width:100%;font-size:12px;padding:8px 38px 8px 10px;border:1.5px solid #cbd5e1;border-radius:6px;font-family:monospace;box-sizing:border-box;">
+            <button type="button" id="toggleAIKeyVisBtn" title="Show / Hide Key" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;color:#64748b;padding:0;">👁</button>
+          </div>
+          <button type="button" id="saveOpenAIKeyBtn" class="btn" style="background:#0f172a;color:#f8fafc;font-size:12px;font-weight:700;padding:8px 16px;border-radius:6px;cursor:pointer;">Save Key</button>
+          <button type="button" id="clearOpenAIKeyBtn" class="btn" style="background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;font-size:12px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;">Clear</button>
         </div>
       </div>
 

@@ -3470,11 +3470,54 @@
       modal.classList.add('is-open');
 
       var keyInput = document.getElementById('openAIApiKeyInput');
+      var k = localStorage.getItem('orbix_openai_key') || localStorage.getItem('orbix_openai_api_key') || '';
       if (keyInput) {
-        keyInput.value = localStorage.getItem('orbix_openai_key') || '';
+        keyInput.value = k;
       }
-
+      this.updateAIKeyStatusUI(k);
       this.updateAIRenderPrompt();
+    },
+
+    updateAIKeyStatusUI: function (keyVal) {
+      var k = (keyVal !== undefined) ? keyVal : (localStorage.getItem('orbix_openai_key') || localStorage.getItem('orbix_openai_api_key') || '');
+      var hasKey = !!(k && k.trim().length > 10);
+      var badge = document.getElementById('aiKeyStatusBadge');
+      if (badge) {
+        if (hasKey) {
+          badge.textContent = '● Key Connected (' + k.slice(0, 7) + '...)';
+          badge.style.background = '#dcfce7';
+          badge.style.color = '#15803d';
+        } else {
+          badge.textContent = '○ Key Not Set (Required)';
+          badge.style.background = '#fee2e2';
+          badge.style.color = '#b91c1c';
+        }
+      }
+      var topStatus = document.getElementById('topAIKeyStatus');
+      if (topStatus) {
+        if (hasKey) {
+          topStatus.textContent = 'Active';
+          topStatus.style.color = '#15803d';
+        } else {
+          topStatus.textContent = 'Not Set';
+          topStatus.style.color = '#dc2626';
+        }
+      }
+    },
+
+    setOpenAIKey: function (k) {
+      if (k) {
+        localStorage.setItem('orbix_openai_key', k.trim());
+        localStorage.setItem('orbix_openai_api_key', k.trim());
+        this.updateAIKeyStatusUI(k.trim());
+        var keyInput = document.getElementById('openAIApiKeyInput');
+        if (keyInput) keyInput.value = k.trim();
+        if (typeof window.toast === 'function') window.toast('✅ OpenAI API Key Saved Securely!');
+      }
+    },
+
+    getOpenAIKey: function () {
+      return localStorage.getItem('orbix_openai_key') || localStorage.getItem('orbix_openai_api_key') || '';
     },
 
     closeAIRenderModal: function () {
@@ -3529,6 +3572,15 @@
       var openBtn = document.getElementById('renderAIRenderBtn');
       if (!modal) return;
 
+      self.updateAIKeyStatusUI();
+
+      var topKeyBtn = document.getElementById('openAIKeyTopBtn');
+      if (topKeyBtn) {
+        topKeyBtn.addEventListener('click', function () {
+          self.openAIRenderModal();
+        });
+      }
+
       if (openBtn) {
         openBtn.addEventListener('click', function (e) {
           e.stopPropagation();
@@ -3544,14 +3596,37 @@
 
       var keyInput = document.getElementById('openAIApiKeyInput');
       var saveKeyBtn = document.getElementById('saveOpenAIKeyBtn');
+      var toggleVisBtn = document.getElementById('toggleAIKeyVisBtn');
+      var clearKeyBtn = document.getElementById('clearOpenAIKeyBtn');
+
+      if (toggleVisBtn && keyInput) {
+        toggleVisBtn.addEventListener('click', function () {
+          keyInput.type = (keyInput.type === 'password') ? 'text' : 'password';
+        });
+      }
+
+      if (clearKeyBtn && keyInput) {
+        clearKeyBtn.addEventListener('click', function () {
+          keyInput.value = '';
+          localStorage.removeItem('orbix_openai_key');
+          localStorage.removeItem('orbix_openai_api_key');
+          self.updateAIKeyStatusUI('');
+          if (typeof window.toast === 'function') window.toast('OpenAI API Key cleared.');
+        });
+      }
+
       if (saveKeyBtn && keyInput) {
         saveKeyBtn.addEventListener('click', function () {
           var k = keyInput.value.trim();
           if (k) {
             localStorage.setItem('orbix_openai_key', k);
+            localStorage.setItem('orbix_openai_api_key', k);
+            self.updateAIKeyStatusUI(k);
             if (typeof window.toast === 'function') window.toast('✅ OpenAI API Key Saved Securely in Browser!');
           } else {
             localStorage.removeItem('orbix_openai_key');
+            localStorage.removeItem('orbix_openai_api_key');
+            self.updateAIKeyStatusUI('');
             if (typeof window.toast === 'function') window.toast('OpenAI API Key cleared.');
           }
         });
@@ -5510,12 +5585,12 @@
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
 
-      // Ensure sky is elegant architectural daylight sky and outer ground is natural
-      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0xD8E8F5) {
-        scene.background = new THREE.Color(0xD8E8F5);
+      // Ensure sky is clean architectural studio backdrop and outer ground is natural studio plane
+      if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0xF1F5F9) {
+        scene.background = new THREE.Color(0xF1F5F9);
       }
       if (!scene.fog && THREE.FogExp2) {
-        scene.fog = new THREE.FogExp2(0xE8F0F8, 0.000008);
+        scene.fog = new THREE.FogExp2(0xE2E8F0, 0.000008);
       }
       scene.children.forEach(function (c) {
         if (c.isMesh && c.geometry && c.geometry.type === 'PlaneGeometry' && c.geometry.parameters && c.geometry.parameters.width >= 100000) {
@@ -5525,7 +5600,7 @@
             c.material = gl.makeNeutralGroundMat();
           } else if (c.material) {
             c.material.map = null;
-            if (c.material.color) c.material.color.setHex(0x4E8A42);
+            if (c.material.color) c.material.color.setHex(0xEDECE8);
             c.material.needsUpdate = true;
           }
         }

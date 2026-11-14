@@ -3077,7 +3077,7 @@
         var slabW = W + 20;
         var slabD = baseD + 25;
         var slabGeo = new THREE.BoxGeometry(slabW, actualCounterH, slabD);
-        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.88, metalness: 0.0 });
+        var sMat = counterMat || new THREE.MeshStandardMaterial({ color: 0x1A1A1D, roughness: 0.22, metalness: 0.08, envMapIntensity: 0.55 });
         var slabMesh = new THREE.Mesh(slabGeo, sMat);
         slabMesh.position.set(0, H - actualCounterH / 2, 2.5);
         slabMesh.castShadow = true; slabMesh.receiveShadow = true;
@@ -3456,9 +3456,9 @@
     }
     var counterMat = new THREE.MeshStandardMaterial({
       color: counterHex,
-      roughness: 0.88,
-      metalness: 0.0,
-      envMapIntensity: 0.28
+      roughness: 0.22,
+      metalness: 0.08,
+      envMapIntensity: 0.55
     });
 
     var isTvOrVanity = (cat === 'tv_unit' || cat === 'vanity' || (name && (name.indexOf('tv') !== -1 || name.indexOf('vanity') !== -1)));

@@ -1798,48 +1798,35 @@
       return m;
     }
     function makeGrassGroundMat() {
-      if (matCache["sp|grassGround"]) return matCache["sp|grassGround"];
+      if (matCache["sp|archStudioGround"]) return matCache["sp|archStudioGround"];
       var c = document.createElement("canvas"); c.width = c.height = 512;
       var g = c.getContext("2d");
       if (g) {
-        // Rich natural lawn grass green base
-        g.fillStyle = "#46813A";
+        // Subtle warm architectural studio ground plane
+        g.fillStyle = "#EAE8E3";
         g.fillRect(0, 0, 512, 512);
 
-        // Organic grass sod tone variations
-        var lawnTones = ["#3D7333", "#4A883E", "#559947", "#3E7834", "#4F9042", "#5C9F4E"];
-        for (var i = 0; i < 400; i++) {
-          var x = Math.random() * 512, y = Math.random() * 512, rad = 8 + Math.random() * 24;
-          var grad = g.createRadialGradient(x, y, 0, x, y, rad);
-          var col = lawnTones[Math.floor(Math.random() * lawnTones.length)];
-          grad.addColorStop(0, col);
-          grad.addColorStop(1, "rgba(70, 129, 58, 0)");
-          g.fillStyle = grad;
-          g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
-        }
-
-        // Fine lawn grass blades
-        for (var b = 0; b < 2500; b++) {
-          var bx = Math.random() * 512, by = Math.random() * 512, blen = 3 + Math.random() * 7;
-          var bcol = (b % 3 === 0) ? "#65AD55" : ((b % 3 === 1) ? "#3B6E32" : "#4B893F");
-          g.strokeStyle = bcol; g.lineWidth = 1.0;
-          g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + (Math.random() - 0.5) * 3, by - blen); g.stroke();
+        // Micro-fine architectural plaster / terrazzo noise
+        for (var i = 0; i < 2000; i++) {
+          var nx = Math.random() * 512, ny = Math.random() * 512;
+          g.fillStyle = (i % 2 === 0) ? "rgba(255,255,255,0.4)" : "rgba(180,175,165,0.25)";
+          g.fillRect(nx, ny, 1.5, 1.5);
         }
       }
 
       var tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(160, 160);
+      tex.repeat.set(40, 40);
       tex.encoding = THREE.sRGBEncoding;
 
       var m = new THREE.MeshStandardMaterial({
         map: tex,
-        color: 0x4E8A42,
-        roughness: 0.92,
+        color: 0xEDECE8,
+        roughness: 0.94,
         metalness: 0.0,
         side: THREE.DoubleSide
       });
-      matCache["sp|grassGround"] = m;
+      matCache["sp|archStudioGround"] = m;
       return m;
     }
     function makeNeutralGroundMat() {
@@ -1859,25 +1846,25 @@
       stage.appendChild(renderer.domElement);
       stage.classList.add("gl");
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xD8E8F5); // Elegant architectural daylight sky
-      scene.fog = new THREE.FogExp2(0xE8F0F8, 0.000008); // Subtle atmospheric perspective haze
+      scene.background = new THREE.Color(0xF1F5F9); // Clean architectural studio sky
+      scene.fog = new THREE.FogExp2(0xE2E8F0, 0.000008); // Subtle studio atmospheric depth
       camera = new THREE.PerspectiveCamera(24, 1, 50, 1000000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
       /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
       scene.environment = pmrem.fromScene(makeRoomScene(), 0.04, 10, 30000).texture;
       if (EMBED) camera.far = 80000;
-      keyL = new THREE.DirectionalLight(0xfff7e6, NEO ? 1.48 : 1.38);
+      keyL = new THREE.DirectionalLight(0xfffbf2, NEO ? 1.48 : 1.42);
       keyL.position.set(-3800, 7200, 5600); keyL.castShadow = true;
       keyL.shadow.mapSize.set(4096, 4096);
       var sc = keyL.shadow.camera; sc.left = -9500; sc.right = 9500; sc.top = 9500; sc.bottom = -9500; sc.near = 200; sc.far = 30000;
-      keyL.shadow.bias = -0.00025; keyL.shadow.normalBias = 1.6; keyL.shadow.radius = 2.2;
+      keyL.shadow.bias = -0.0001; keyL.shadow.normalBias = 1.2; keyL.shadow.radius = 2.4;
       scene.add(keyL); scene.add(keyL.target);
-      /* fill: what a photographer's reflector does — lifts interiors and shaded faces, casts nothing */
-      var fill = new THREE.DirectionalLight(0xdce8fa, 0.58); fill.position.set(2800, 2100, 5000); scene.add(fill);
-      var rim = new THREE.DirectionalLight(0xf1f4fa, 0.38); rim.position.set(2400, 1800, -2800); scene.add(rim);
-      var bounceL = new THREE.DirectionalLight(0xf7efe2, 0.34); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
-      scene.add(new THREE.HemisphereLight(0x9CD1F4, 0x567D46, 0.50)); // Sky radiance + warm ground bounce
+      /* fill: lifts interiors and shaded faces */
+      var fill = new THREE.DirectionalLight(0xedf4fc, 0.52); fill.position.set(2800, 2100, 5000); scene.add(fill);
+      var rim = new THREE.DirectionalLight(0xf8fafc, 0.35); rim.position.set(2400, 1800, -2800); scene.add(rim);
+      var bounceL = new THREE.DirectionalLight(0xfbf6ee, 0.38); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
+      scene.add(new THREE.HemisphereLight(0xFAFBFD, 0xEFEAE1, 0.65)); // Crisp architectural sky radiance + warm interior floor bounce (no green!)
       var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
