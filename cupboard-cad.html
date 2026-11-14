@@ -51,11 +51,14 @@ input,select{font:inherit;color:inherit}
 
 /* ══════════ TOP BAR ══════════ */
 .topbar{
-  flex:0 0 56px;display:flex;align-items:center;gap:14px;
-  padding:0 16px;height:56px;
+  flex:0 0 auto;min-height:56px;display:flex;align-items:center;gap:14px;
+  padding:0 16px;
   background:var(--panel);border-bottom:1px solid var(--rule);
-  overflow:hidden;position:relative;z-index:100;
+  position:relative;z-index:100;
+  overflow-x:auto;overflow-y:hidden;
 }
+.topbar::-webkit-scrollbar{height:4px}
+.topbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:4px}
 .tool{
   display:flex;align-items:center;gap:12px;
   flex:0 0 auto;min-width:0;
@@ -92,7 +95,7 @@ input,select{font:inherit;color:inherit}
 }
 .vtab:hover{color:var(--ink);background:var(--rule-2)}
 .vtab.is-on{color:var(--blue);background:var(--blue-soft);border-color:#FECACA}
-.topacts{margin-left:auto;display:flex;gap:6px}
+.topacts{margin-left:auto;display:flex;align-items:center;gap:6px;flex-shrink:0}
 .btn{
   font-family:var(--cond);font-size:12px;font-weight:600;
   letter-spacing:.05em;text-transform:uppercase;
@@ -298,18 +301,21 @@ input,select{font:inherit;color:inherit}
   background:var(--panel);
   border-top:1px solid var(--rule);
   min-width:0;
-  overflow:visible !important;
+  overflow-x:auto;
+  overflow-y:hidden;
   position:relative;
   z-index:50;
 }
+.stagebar::-webkit-scrollbar{height:4px}
+.stagebar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:4px}
 .stagebar-row{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:8px 12px;
-  flex-wrap:wrap;
+  flex-wrap:nowrap;
+  min-width:max-content;
   width:100%;
-  overflow:visible !important;
   position:relative;
 }
 .stagebar-row.finishes-row{
@@ -1219,10 +1225,14 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
   flex:0 0 auto;display:flex;flex-direction:column;
   background:#FFFFFF;border-bottom:1.5px solid #CBD5E1;box-shadow:0 2px 6px rgba(0,0,0,.04);
   z-index:10;
+  overflow-x:auto;overflow-y:hidden;
 }
+.plan-toolbar::-webkit-scrollbar{height:4px}
+.plan-toolbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:4px}
 .plan-toolbar-row{
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;
   padding:6px 14px;gap:8px 12px;
+  min-width:max-content;
 }
 .plan-toolbar-row.drawing-bar{
   background:#FFFFFF;border-bottom:1px solid #E2E8F0;
@@ -1231,7 +1241,8 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
   background:#F8FAFC;padding:5px 14px;
 }
 .plan-toolgroup{
-  display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+  display:flex;align-items:center;flex-wrap:nowrap;gap:6px;
+  flex-shrink:0;
 }
 .plan-tool-divider{
   width:1px;height:20px;background:#CBD5E1;margin:0 4px;
@@ -9043,7 +9054,7 @@ body.role-employee #adminCreateEmpBox,
     var nm = (opts.name || '').toLowerCase();
     var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name, opts.code || opts.catalogItemId, opts.costCategory);
     var isSpiceRack = !isDecor && (cat.indexOf('spice') !== -1 || nm.indexOf('spice') !== -1 || (opts.code && opts.code.toLowerCase().indexOf('spice') !== -1) || (opts.id && opts.id.toLowerCase().indexOf('spice') !== -1) || (opts.id && opts.id.toLowerCase().indexOf('sr-') === 0));
-    var isLoft = (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1);
+    var isLoft = (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1 || (opts.id && String(opts.id).indexOf('loft') !== -1) || (opts.code && String(opts.code).indexOf('loft') !== -1));
     var isGL = /(^|\b|_|-|\s)gl(\b|_|-|\s|\d+|$)/i.test(String(opts.name || '') + ' ' + String(opts.code || '') + ' ' + String(opts.id || ''));
     var isOS = !!(
       (cat && (cat === 'loft_os' || cat === 'kitchen_o_s' || cat.indexOf('o/s') !== -1 || cat.indexOf('os') !== -1)) ||
@@ -9056,9 +9067,9 @@ body.role-employee #adminCreateEmpBox,
     );
     var isBaseOS = isOS && !isLoft && !isWallUnit;
     var defElev = isLoft ? 2100 : (isSpiceRack ? 1350 : (isWallUnit ? 1500 : 0));
-    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
+    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '' && (!isWallUnit && !isLoft && !isSpiceRack || parseFloat(opts.elevation) > 0)) ?
       parseFloat(opts.elevation) :
-      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && opts.pos.z !== 0) ?
+      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && (!isWallUnit && !isLoft && !isSpiceRack || parseFloat(opts.pos.z) > 0)) ?
         parseFloat(opts.pos.z) : defElev);
 
     // Kitchen FM & Base defaults: 100mm leg, countertop, 1 shelf
@@ -17519,9 +17530,12 @@ body.role-employee #adminCreateEmpBox,
       false;
     var catPlan = (this.furniturePreset.category || '').toLowerCase();
     var nmPlan = (this.furniturePreset.name || '').toLowerCase();
-    var isLoftPlan = (catPlan.indexOf('loft') !== -1 || nmPlan.indexOf('loft') !== -1);
-    var defPlanElev = isLoftPlan ? 2100 : (isWall ? 1500 : 0);
-    var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '') ?
+    var idPlan = (this.furniturePreset.id || '').toLowerCase();
+    var cdPlan = (this.furniturePreset.code || '').toLowerCase();
+    var isLoftPlan = (catPlan.indexOf('loft') !== -1 || nmPlan.indexOf('loft') !== -1 || idPlan.indexOf('loft') !== -1 || cdPlan.indexOf('loft') !== -1);
+    var isSpicePlan = (catPlan.indexOf('spice') !== -1 || nmPlan.indexOf('spice') !== -1 || idPlan.indexOf('spice') !== -1 || idPlan.indexOf('sr-') === 0);
+    var defPlanElev = isLoftPlan ? 2100 : (isSpicePlan ? 1350 : (isWall ? 1500 : 0));
+    var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '' && (!isWall && !isLoftPlan && !isSpicePlan || parseFloat(this.furniturePreset.elevation) > 0)) ?
       parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
     var furn = Core.createFurniturePlacement({
@@ -24852,10 +24866,14 @@ body.role-employee #adminCreateEmpBox,
     fg.add(tHingeGroup);
 
     // Position and rotate unit
-    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+    var isLoftCab = (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || (furn.id && String(furn.id).indexOf('loft') !== -1));
+    var isSpiceCab = (cat.indexOf('spice') !== -1 || name.indexOf('spice') !== -1 || (furn.id && String(furn.id).indexOf('spice') !== -1));
+    var isWallCab = !isLoftCab && (isWall || cat.indexOf('wall') !== -1 || name.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name));
+    var defElevCab = isLoftCab ? 2100 : (isSpiceCab ? 1350 : (isWallCab ? 1500 : 0));
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '' && (!isWallCab && !isLoftCab && !isSpiceCab || parseFloat(furn.elevation) > 0)) ?
       parseFloat(furn.elevation) :
-      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : 0);
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && (!isWallCab && !isLoftCab && !isSpiceCab || parseFloat(furn.pos.z) > 0)) ?
+        parseFloat(furn.pos.z) : defElevCab);
     var posX = (furn.pos && furn.pos.x) || 0;
     var posY = (furn.pos && furn.pos.y) || 0;
     fg.position.set(posX, elev, posY);
@@ -25688,11 +25706,12 @@ body.role-employee #adminCreateEmpBox,
     }
 
     // Position and rotate unit (with elevation from finished floor level!)
-    var isLoftUnit = (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
-    var defElevUnit = isLoftUnit ? 2100 : (isWall ? 1500 : 0);
-    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+    var isLoftUnit = (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || (furn.id && String(furn.id).indexOf('loft') !== -1) || (furn.code && String(furn.code).indexOf('loft') !== -1));
+    var isSpiceUnit = (cat.indexOf('spice') !== -1 || name.indexOf('spice') !== -1 || (furn.id && String(furn.id).indexOf('spice') !== -1) || (furn.id && String(furn.id).indexOf('sr-') === 0));
+    var defElevUnit = isLoftUnit ? 2100 : (isSpiceUnit ? 1350 : (isWall ? 1500 : 0));
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '' && (!isWall && !isLoftUnit && !isSpiceUnit || parseFloat(furn.elevation) > 0)) ?
       parseFloat(furn.elevation) :
-      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && (!isWall && !isLoftUnit && !isSpiceUnit || parseFloat(furn.pos.z) > 0)) ?
         parseFloat(furn.pos.z) :
         defElevUnit);
 
@@ -27754,9 +27773,18 @@ body.role-employee #adminCreateEmpBox,
         if (!fn.shutterMaterials) fn.shutterMaterials = [];
         if (!fn.shutterStates) fn.shutterStates = [];
 
-        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
-          fn.elevation :
-          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
+        var catInsp = (fn.category || '').toLowerCase();
+        var nmInsp = (fn.name || '').toLowerCase();
+        var idInsp = (fn.id || '').toLowerCase();
+        var cdInsp = (fn.code || fn.catalogItemId || '').toLowerCase();
+        var isLoftInsp = (catInsp.indexOf('loft') !== -1 || nmInsp.indexOf('loft') !== -1 || idInsp.indexOf('loft') !== -1 || cdInsp.indexOf('loft') !== -1);
+        var isSpiceInsp = (catInsp.indexOf('spice') !== -1 || nmInsp.indexOf('spice') !== -1 || idInsp.indexOf('spice') !== -1 || idInsp.indexOf('sr-') === 0);
+        var isWallInsp = !isLoftInsp && isWall;
+        var defInspElev = isLoftInsp ? 2100 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0));
+
+        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '' && (!isWallInsp && !isLoftInsp && !isSpiceInsp || parseFloat(fn.elevation) > 0)) ?
+          parseFloat(fn.elevation) :
+          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && (!isWallInsp && !isLoftInsp && !isSpiceInsp || parseFloat(fn.pos.z) > 0)) ? parseFloat(fn.pos.z) : defInspElev);
 
         var hasLegs = false;
         if (!isWall) {
@@ -29367,18 +29395,22 @@ body.role-employee #adminCreateEmpBox,
         cX += (offsetCount * 300);
       }
 
-      var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+      var pCat = (preset.category || '').toLowerCase();
+      var pNm = (preset.name || '').toLowerCase();
+      var pId = String(preset.id || '').toLowerCase();
+      var isLoft = (pCat.indexOf('loft') !== -1 || pNm.indexOf('loft') !== -1 || pId.indexOf('loft') !== -1);
+      var isSpice = (pCat.indexOf('spice') !== -1 || pNm.indexOf('spice') !== -1 || pId.indexOf('spice') !== -1);
+      var isWall = !isLoft && ((window.OrbixCore && window.OrbixCore.isWallUnit) ?
         window.OrbixCore.isWallUnit(preset.category, preset.name, preset.code || preset.catalogItemId, preset.costCategory) :
-        ((preset.category && preset.category.toLowerCase().indexOf('wall') !== -1) ||
-         (preset.name && preset.name.toLowerCase().indexOf('wall') !== -1) ||
-         /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(preset.name));
-      var initElev = (preset.elevation !== undefined && preset.elevation !== null) ?
-        preset.elevation : (isWall ? 1500 : 0);
+        (pCat.indexOf('wall') !== -1 || pNm.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(pNm)));
+      var defElev = isLoft ? 2100 : (isSpice ? 1350 : (isWall ? 1500 : 0));
+      var initElev = (preset.elevation !== undefined && preset.elevation !== null && parseFloat(preset.elevation) > 0) ?
+        parseFloat(preset.elevation) : defElev;
 
       var newFurn = Core.createFurniturePlacement({
         id: fId,
         name: preset.name || 'Modular Unit',
-        category: preset.category || 'wardrobe',
+        category: preset.category || (isLoft ? 'loft' : (isWall ? 'kitchen_wall' : 'wardrobe')),
         catalogItemId: preset.id || preset.code || null,
         modelType: preset.modelType || null,
         costCategory: preset.costCategory || null,
@@ -29386,7 +29418,7 @@ body.role-employee #adminCreateEmpBox,
         elevation: initElev,
         pos: { x: cX, y: cY, z: initElev },
         rotY: 0,
-        dimensions: Object.assign({ W: 1200, H: isWall ? 600 : 2100, D: isWall ? 350 : 600 }, preset.dimensions || {}),
+        dimensions: Object.assign({ W: 1200, H: isLoft ? 400 : (isWall ? 600 : 2100), D: isWall ? 350 : 600 }, preset.dimensions || {}),
         unitConfig: Object.assign({
           shutters: isWall ? 2 : 2,
           handle: 'bar',
@@ -30477,6 +30509,20 @@ body.role-employee #adminCreateEmpBox,
         else if (w === 1800) variants = [1500, 1800, 2100, 2400];
         var code = it.code || (it.id ? it.id.toUpperCase() : 'UNIT');
         var name = it.name || code;
+        var cat = (it.category || '').toLowerCase();
+        var n = name.toLowerCase();
+        var id = (it.id || '').toLowerCase();
+        var cd = String(code).toLowerCase();
+        var isLoft = (cat.indexOf('loft') !== -1 || n.indexOf('loft') !== -1 || id.indexOf('loft') !== -1 || cd.indexOf('loft') !== -1);
+        var isSpice = (cat.indexOf('spice') !== -1 || n.indexOf('spice') !== -1 || id.indexOf('spice') !== -1 || id.indexOf('sr-') === 0);
+        var isWall = !isLoft && (
+          cat === 'kitchen_wall' || cat === 'wall_unit' || cat.indexOf('wall') !== -1 ||
+          n.indexOf('wm') !== -1 || n.indexOf('wall') !== -1 || id.indexOf('wm-') === 0 || id.indexOf('wcm-') === 0 || cd.indexOf('wm-') === 0
+        );
+        var defElev = isLoft ? 2100 : (isSpice ? 1350 : (isWall ? 1500 : 0));
+        var elev = (it.elevation !== undefined && it.elevation !== null && parseFloat(it.elevation) > 0) ?
+          parseFloat(it.elevation) : defElev;
+
         return {
           id: it.id,
           code: code,
@@ -30484,7 +30530,8 @@ body.role-employee #adminCreateEmpBox,
           badge: String(variants.length),
           selectedLabel: code || name,
           dimensions: { W: w, H: h, D: d },
-          category: it.category || 'base_unit',
+          category: it.category || (isWall ? 'kitchen_wall' : (isLoft ? 'loft' : 'base_unit')),
+          elevation: elev,
           unitConfig: it.unitConfig || {},
           materials: it.materials || {},
           variants: variants
@@ -30675,12 +30722,26 @@ body.role-employee #adminCreateEmpBox,
             trayCards.querySelectorAll('.furn-card').forEach(function (c) { c.classList.remove('is-active'); });
             card.classList.add('is-active');
 
+            var cId = (cardData.id || '').toLowerCase();
+            var cName = (cardData.name || '').toLowerCase();
+            var cCat = (cardData.category || '').toLowerCase();
+            var isLoftUnit = (cCat.indexOf('loft') !== -1 || cName.indexOf('loft') !== -1 || cId.indexOf('loft') !== -1 || cat === 'loft');
+            var isSpiceUnit = (cCat.indexOf('spice') !== -1 || cName.indexOf('spice') !== -1 || cId.indexOf('spice') !== -1 || cId.indexOf('sr-') === 0);
+            var isWallUnit = !isLoftUnit && (
+              cCat === 'kitchen_wall' || cCat === 'wall_unit' || cCat.indexOf('wall') !== -1 ||
+              cName.indexOf('wm') !== -1 || cName.indexOf('wall') !== -1 || cId.indexOf('wm-') === 0 || cId.indexOf('wcm-') === 0 ||
+              cat === 'wall_unit' || currentTab === 'kitchen_wall_spice'
+            );
+            var defElev = isLoftUnit ? 2100 : (isSpiceUnit ? 1350 : (isWallUnit ? 1500 : 0));
+            var finalElev = (cardData.elevation !== undefined && cardData.elevation !== null && parseFloat(cardData.elevation) > 0) ?
+              parseFloat(cardData.elevation) : defElev;
+
             var itemToPlace = {
               id: cardData.id,
               name: cardData.name,
-              category: cardData.category || (cat === 'base_unit' ? 'kitchen_base' : (cat === 'wall_unit' ? 'kitchen_wall' : cat)),
-              dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: 750, D: 560 }),
-              elevation: (cardData.elevation !== undefined && cardData.elevation !== null) ? cardData.elevation : (cat === 'wall_unit' ? 1500 : 0),
+              category: cardData.category || (isWallUnit ? 'kitchen_wall' : (isLoftUnit ? 'loft' : (cat === 'base_unit' ? 'kitchen_base' : cat))),
+              dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: (isLoftUnit ? 400 : (isWallUnit ? 600 : 750)), D: (isWallUnit ? 350 : 560) }),
+              elevation: finalElev,
               unitConfig: Object.assign({}, cardData.unitConfig || {})
             };
             if (cardData.isDecor) {

@@ -3770,10 +3770,14 @@
     fg.add(tHingeGroup);
 
     // Position and rotate unit
-    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+    var isLoftCab = (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || (furn.id && String(furn.id).indexOf('loft') !== -1));
+    var isSpiceCab = (cat.indexOf('spice') !== -1 || name.indexOf('spice') !== -1 || (furn.id && String(furn.id).indexOf('spice') !== -1));
+    var isWallCab = !isLoftCab && (isWall || cat.indexOf('wall') !== -1 || name.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name));
+    var defElevCab = isLoftCab ? 2100 : (isSpiceCab ? 1350 : (isWallCab ? 1500 : 0));
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '' && (!isWallCab && !isLoftCab && !isSpiceCab || parseFloat(furn.elevation) > 0)) ?
       parseFloat(furn.elevation) :
-      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : 0);
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && (!isWallCab && !isLoftCab && !isSpiceCab || parseFloat(furn.pos.z) > 0)) ?
+        parseFloat(furn.pos.z) : defElevCab);
     var posX = (furn.pos && furn.pos.x) || 0;
     var posY = (furn.pos && furn.pos.y) || 0;
     fg.position.set(posX, elev, posY);
@@ -4606,11 +4610,12 @@
     }
 
     // Position and rotate unit (with elevation from finished floor level!)
-    var isLoftUnit = (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
-    var defElevUnit = isLoftUnit ? 2100 : (isWall ? 1500 : 0);
-    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+    var isLoftUnit = (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || (furn.id && String(furn.id).indexOf('loft') !== -1) || (furn.code && String(furn.code).indexOf('loft') !== -1));
+    var isSpiceUnit = (cat.indexOf('spice') !== -1 || name.indexOf('spice') !== -1 || (furn.id && String(furn.id).indexOf('spice') !== -1) || (furn.id && String(furn.id).indexOf('sr-') === 0));
+    var defElevUnit = isLoftUnit ? 2100 : (isSpiceUnit ? 1350 : (isWall ? 1500 : 0));
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '' && (!isWall && !isLoftUnit && !isSpiceUnit || parseFloat(furn.elevation) > 0)) ?
       parseFloat(furn.elevation) :
-      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && (!isWall && !isLoftUnit && !isSpiceUnit || parseFloat(furn.pos.z) > 0)) ?
         parseFloat(furn.pos.z) :
         defElevUnit);
 

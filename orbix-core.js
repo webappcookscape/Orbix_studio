@@ -574,7 +574,7 @@
     var nm = (opts.name || '').toLowerCase();
     var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name, opts.code || opts.catalogItemId, opts.costCategory);
     var isSpiceRack = !isDecor && (cat.indexOf('spice') !== -1 || nm.indexOf('spice') !== -1 || (opts.code && opts.code.toLowerCase().indexOf('spice') !== -1) || (opts.id && opts.id.toLowerCase().indexOf('spice') !== -1) || (opts.id && opts.id.toLowerCase().indexOf('sr-') === 0));
-    var isLoft = (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1);
+    var isLoft = (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1 || (opts.id && String(opts.id).indexOf('loft') !== -1) || (opts.code && String(opts.code).indexOf('loft') !== -1));
     var isGL = /(^|\b|_|-|\s)gl(\b|_|-|\s|\d+|$)/i.test(String(opts.name || '') + ' ' + String(opts.code || '') + ' ' + String(opts.id || ''));
     var isOS = !!(
       (cat && (cat === 'loft_os' || cat === 'kitchen_o_s' || cat.indexOf('o/s') !== -1 || cat.indexOf('os') !== -1)) ||
@@ -587,9 +587,9 @@
     );
     var isBaseOS = isOS && !isLoft && !isWallUnit;
     var defElev = isLoft ? 2100 : (isSpiceRack ? 1350 : (isWallUnit ? 1500 : 0));
-    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
+    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '' && (!isWallUnit && !isLoft && !isSpiceRack || parseFloat(opts.elevation) > 0)) ?
       parseFloat(opts.elevation) :
-      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && opts.pos.z !== 0) ?
+      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && (!isWallUnit && !isLoft && !isSpiceRack || parseFloat(opts.pos.z) > 0)) ?
         parseFloat(opts.pos.z) : defElev);
 
     // Kitchen FM & Base defaults: 100mm leg, countertop, 1 shelf

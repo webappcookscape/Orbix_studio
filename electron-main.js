@@ -18,6 +18,7 @@ function createWindow() {
     minHeight: 700,
     title: 'Orbix Studio — 3D Interior Cupboard CAD',
     backgroundColor: '#0F172A',
+    autoHideMenuBar: true,
     show: false,
     webPreferences: {
       nodeIntegration: false,
@@ -101,3 +102,4 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+

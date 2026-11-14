@@ -1,6 +1,7 @@
 # generated / local
 dist/
 dist-desktop/
+dist-desktop-build/
 OrbixStudio.exe
 cupboard-cad-dist.zip
 shots/

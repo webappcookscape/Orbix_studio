@@ -1737,9 +1737,18 @@
         if (!fn.shutterMaterials) fn.shutterMaterials = [];
         if (!fn.shutterStates) fn.shutterStates = [];
 
-        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
-          fn.elevation :
-          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? fn.pos.z : (isWall ? 1500 : 0));
+        var catInsp = (fn.category || '').toLowerCase();
+        var nmInsp = (fn.name || '').toLowerCase();
+        var idInsp = (fn.id || '').toLowerCase();
+        var cdInsp = (fn.code || fn.catalogItemId || '').toLowerCase();
+        var isLoftInsp = (catInsp.indexOf('loft') !== -1 || nmInsp.indexOf('loft') !== -1 || idInsp.indexOf('loft') !== -1 || cdInsp.indexOf('loft') !== -1);
+        var isSpiceInsp = (catInsp.indexOf('spice') !== -1 || nmInsp.indexOf('spice') !== -1 || idInsp.indexOf('spice') !== -1 || idInsp.indexOf('sr-') === 0);
+        var isWallInsp = !isLoftInsp && isWall;
+        var defInspElev = isLoftInsp ? 2100 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0));
+
+        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '' && (!isWallInsp && !isLoftInsp && !isSpiceInsp || parseFloat(fn.elevation) > 0)) ?
+          parseFloat(fn.elevation) :
+          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && (!isWallInsp && !isLoftInsp && !isSpiceInsp || parseFloat(fn.pos.z) > 0)) ? parseFloat(fn.pos.z) : defInspElev);
 
         var hasLegs = false;
         if (!isWall) {
@@ -3350,18 +3359,22 @@
         cX += (offsetCount * 300);
       }
 
-      var isWall = (window.OrbixCore && window.OrbixCore.isWallUnit) ?
+      var pCat = (preset.category || '').toLowerCase();
+      var pNm = (preset.name || '').toLowerCase();
+      var pId = String(preset.id || '').toLowerCase();
+      var isLoft = (pCat.indexOf('loft') !== -1 || pNm.indexOf('loft') !== -1 || pId.indexOf('loft') !== -1);
+      var isSpice = (pCat.indexOf('spice') !== -1 || pNm.indexOf('spice') !== -1 || pId.indexOf('spice') !== -1);
+      var isWall = !isLoft && ((window.OrbixCore && window.OrbixCore.isWallUnit) ?
         window.OrbixCore.isWallUnit(preset.category, preset.name, preset.code || preset.catalogItemId, preset.costCategory) :
-        ((preset.category && preset.category.toLowerCase().indexOf('wall') !== -1) ||
-         (preset.name && preset.name.toLowerCase().indexOf('wall') !== -1) ||
-         /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(preset.name));
-      var initElev = (preset.elevation !== undefined && preset.elevation !== null) ?
-        preset.elevation : (isWall ? 1500 : 0);
+        (pCat.indexOf('wall') !== -1 || pNm.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(pNm)));
+      var defElev = isLoft ? 2100 : (isSpice ? 1350 : (isWall ? 1500 : 0));
+      var initElev = (preset.elevation !== undefined && preset.elevation !== null && parseFloat(preset.elevation) > 0) ?
+        parseFloat(preset.elevation) : defElev;
 
       var newFurn = Core.createFurniturePlacement({
         id: fId,
         name: preset.name || 'Modular Unit',
-        category: preset.category || 'wardrobe',
+        category: preset.category || (isLoft ? 'loft' : (isWall ? 'kitchen_wall' : 'wardrobe')),
         catalogItemId: preset.id || preset.code || null,
         modelType: preset.modelType || null,
         costCategory: preset.costCategory || null,
@@ -3369,7 +3382,7 @@
         elevation: initElev,
         pos: { x: cX, y: cY, z: initElev },
         rotY: 0,
-        dimensions: Object.assign({ W: 1200, H: isWall ? 600 : 2100, D: isWall ? 350 : 600 }, preset.dimensions || {}),
+        dimensions: Object.assign({ W: 1200, H: isLoft ? 400 : (isWall ? 600 : 2100), D: isWall ? 350 : 600 }, preset.dimensions || {}),
         unitConfig: Object.assign({
           shutters: isWall ? 2 : 2,
           handle: 'bar',
@@ -4460,6 +4473,20 @@
         else if (w === 1800) variants = [1500, 1800, 2100, 2400];
         var code = it.code || (it.id ? it.id.toUpperCase() : 'UNIT');
         var name = it.name || code;
+        var cat = (it.category || '').toLowerCase();
+        var n = name.toLowerCase();
+        var id = (it.id || '').toLowerCase();
+        var cd = String(code).toLowerCase();
+        var isLoft = (cat.indexOf('loft') !== -1 || n.indexOf('loft') !== -1 || id.indexOf('loft') !== -1 || cd.indexOf('loft') !== -1);
+        var isSpice = (cat.indexOf('spice') !== -1 || n.indexOf('spice') !== -1 || id.indexOf('spice') !== -1 || id.indexOf('sr-') === 0);
+        var isWall = !isLoft && (
+          cat === 'kitchen_wall' || cat === 'wall_unit' || cat.indexOf('wall') !== -1 ||
+          n.indexOf('wm') !== -1 || n.indexOf('wall') !== -1 || id.indexOf('wm-') === 0 || id.indexOf('wcm-') === 0 || cd.indexOf('wm-') === 0
+        );
+        var defElev = isLoft ? 2100 : (isSpice ? 1350 : (isWall ? 1500 : 0));
+        var elev = (it.elevation !== undefined && it.elevation !== null && parseFloat(it.elevation) > 0) ?
+          parseFloat(it.elevation) : defElev;
+
         return {
           id: it.id,
           code: code,
@@ -4467,7 +4494,8 @@
           badge: String(variants.length),
           selectedLabel: code || name,
           dimensions: { W: w, H: h, D: d },
-          category: it.category || 'base_unit',
+          category: it.category || (isWall ? 'kitchen_wall' : (isLoft ? 'loft' : 'base_unit')),
+          elevation: elev,
           unitConfig: it.unitConfig || {},
           materials: it.materials || {},
           variants: variants
@@ -4658,12 +4686,26 @@
             trayCards.querySelectorAll('.furn-card').forEach(function (c) { c.classList.remove('is-active'); });
             card.classList.add('is-active');
 
+            var cId = (cardData.id || '').toLowerCase();
+            var cName = (cardData.name || '').toLowerCase();
+            var cCat = (cardData.category || '').toLowerCase();
+            var isLoftUnit = (cCat.indexOf('loft') !== -1 || cName.indexOf('loft') !== -1 || cId.indexOf('loft') !== -1 || cat === 'loft');
+            var isSpiceUnit = (cCat.indexOf('spice') !== -1 || cName.indexOf('spice') !== -1 || cId.indexOf('spice') !== -1 || cId.indexOf('sr-') === 0);
+            var isWallUnit = !isLoftUnit && (
+              cCat === 'kitchen_wall' || cCat === 'wall_unit' || cCat.indexOf('wall') !== -1 ||
+              cName.indexOf('wm') !== -1 || cName.indexOf('wall') !== -1 || cId.indexOf('wm-') === 0 || cId.indexOf('wcm-') === 0 ||
+              cat === 'wall_unit' || currentTab === 'kitchen_wall_spice'
+            );
+            var defElev = isLoftUnit ? 2100 : (isSpiceUnit ? 1350 : (isWallUnit ? 1500 : 0));
+            var finalElev = (cardData.elevation !== undefined && cardData.elevation !== null && parseFloat(cardData.elevation) > 0) ?
+              parseFloat(cardData.elevation) : defElev;
+
             var itemToPlace = {
               id: cardData.id,
               name: cardData.name,
-              category: cardData.category || (cat === 'base_unit' ? 'kitchen_base' : (cat === 'wall_unit' ? 'kitchen_wall' : cat)),
-              dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: 750, D: 560 }),
-              elevation: (cardData.elevation !== undefined && cardData.elevation !== null) ? cardData.elevation : (cat === 'wall_unit' ? 1500 : 0),
+              category: cardData.category || (isWallUnit ? 'kitchen_wall' : (isLoftUnit ? 'loft' : (cat === 'base_unit' ? 'kitchen_base' : cat))),
+              dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: (isLoftUnit ? 400 : (isWallUnit ? 600 : 750)), D: (isWallUnit ? 350 : 560) }),
+              elevation: finalElev,
               unitConfig: Object.assign({}, cardData.unitConfig || {})
             };
             if (cardData.isDecor) {

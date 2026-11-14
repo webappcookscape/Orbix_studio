@@ -7,3 +7,4 @@ contextBridge.exposeInMainWorld('OrbixDesktop', {
     ipcRenderer.on('menu-action', (event, action) => callback(action));
   }
 });
+
