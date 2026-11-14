@@ -3663,8 +3663,21 @@
        cat.indexOf('loft') !== -1 || name.indexOf('wall') !== -1 || name.indexOf('overhead') !== -1 ||
        name.indexOf('spice rack') !== -1 || name.indexOf('loft') !== -1 ||
        /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(name)));
-    var isKitchen = (cat === 'kitchen_base' || cat === 'kitchen_wall');
-    var isBase = !isWall && (cat === 'kitchen_base' || cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1 || cat === 'tv_unit' || (name && name.toLowerCase().indexOf('base') !== -1));
+    var isKitchenBase = !isWall && (
+      cat === 'kitchen_base' || cat === 'kitchen_fm' || cat === 'kitchen_corner' || cat === 'kitchen_drawers' ||
+      cat === 'kitchen_os' ||
+      /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(name) ||
+      (furn.id && /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(furn.id)) ||
+      (furn.catalogItemId && /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(furn.catalogItemId)) ||
+      (furn.costCategory && (furn.costCategory.indexOf('FM') !== -1 || furn.costCategory.indexOf('Base') !== -1 || furn.costCategory.indexOf('D2/D3') !== -1 || furn.costCategory.indexOf('Kitchen O/S') !== -1))
+    );
+    var isKitchen = isKitchenBase || (cat.indexOf('kitchen') !== -1 || cat === 'kitchen_base' || cat === 'kitchen_wall' || cat === 'kitchen_fm' || cat === 'kitchen_corner' || cat === 'kitchen_drawers' || cat === 'kitchen_tall');
+    var isBase = !isWall && (
+      isKitchenBase ||
+      cat === 'kitchen_base' || cat === 'kitchen_fm' || cat === 'kitchen_corner' || cat === 'kitchen_drawers' ||
+      cat === 'crockery' || cat === 'vanity' || cat.indexOf('base') !== -1 || cat === 'tv_unit' ||
+      (name && name.toLowerCase().indexOf('base') !== -1)
+    );
 
     // Carcass Materials (Resolves finish name, laminate code, or hex + rich wood grains)
     var carcassRaw = (furn.unitConfig && furn.unitConfig.carcass) ||
@@ -4057,6 +4070,7 @@
     if (counterH > 0) {
       var cGeo = new THREE.BoxGeometry(dims.W + 20, counterH, dims.D + 25);
       var cMesh = new THREE.Mesh(cGeo, counterMat);
+      cMesh.name = 'Countertop';
       var topOfCarcass = plinthH + bodyH;
       cMesh.position.set(0, topOfCarcass + counterH / 2, 2.5);
       cMesh.castShadow = true;

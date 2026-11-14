@@ -1525,7 +1525,14 @@
            fn.category === 'kitchen_wall' ||
            /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(fn.name));
 
-        var isBaseUnit = !isWall && (fn.category === 'kitchen_base' || fn.category === 'crockery' || fn.category === 'vanity' || fn.category === 'tv_unit' || (fn.category && fn.category.indexOf('base') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('base') !== -1));
+        var isKitchenBase = !isWall && (
+          fn.category === 'kitchen_base' || fn.category === 'kitchen_fm' || fn.category === 'kitchen_corner' || fn.category === 'kitchen_drawers' ||
+          /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(fn.name) ||
+          (fn.id && /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(fn.id)) ||
+          (fn.catalogItemId && /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(fn.catalogItemId)) ||
+          (fn.costCategory && (fn.costCategory.indexOf('FM') !== -1 || fn.costCategory.indexOf('Base') !== -1 || fn.costCategory.indexOf('D2/D3') !== -1))
+        );
+        var isBaseUnit = !isWall && (isKitchenBase || fn.category === 'kitchen_base' || fn.category === 'kitchen_fm' || fn.category === 'kitchen_corner' || fn.category === 'kitchen_drawers' || fn.category === 'crockery' || fn.category === 'vanity' || fn.category === 'tv_unit' || (fn.category && fn.category.indexOf('base') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('base') !== -1));
         var isTvOrVanity = (fn.category === 'tv_unit' || fn.category === 'vanity' || (fn.name && (fn.name.toLowerCase().indexOf('tv') !== -1 || fn.name.toLowerCase().indexOf('vanity') !== -1)));
         var isWardrobeOrTall = (fn.category === 'wardrobe' || fn.category === 'kitchen_tall' || (fn.name && (fn.name.toLowerCase().indexOf('wardrobe') !== -1 || fn.name.toLowerCase().indexOf('tall') !== -1 || fn.name.toLowerCase().indexOf('tbm') !== -1)));
         var counterType = (fn.unitConfig && fn.unitConfig.counter) || (isBaseUnit ? 'black' : 'none');
