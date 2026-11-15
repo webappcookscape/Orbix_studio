@@ -41,3 +41,4 @@ if "orbix-decors-catalog.js" not in content:
 
 open(html_path, "w", encoding="utf-8").write(content)
 print("Successfully patched index.html with dynamic decor grid & orbix-decors-catalog.js script tag!")
+

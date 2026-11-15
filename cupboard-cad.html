@@ -5288,6 +5288,8 @@ body.role-employee #adminCreateEmpBox,
   </div>
 </div>
 
+<script src="assets/three.min.js"></script>
+<script src="assets/GLTFLoader.js"></script>
 <script>
 /**
  * Orbix Unit Icons: High-Resolution 2.5D Isometric SVG Thumbnails for Cookscape Modular Units
@@ -25433,12 +25435,16 @@ body.role-employee #adminCreateEmpBox,
         }
       });
 
-      // Scale proportionally if user customized unit dimensions in UI
-      if (dims && dims.W && dims.H && dims.D && size.x > 1 && size.y > 1 && size.z > 1) {
+      // Scale proportionally: maintain true aspect ratio without squishing
+      if (dims && dims.W && dims.H && dims.D && size.x > 0.01 && size.y > 0.01 && size.z > 0.01) {
         var sx = dims.W / size.x;
         var sy = dims.H / size.y;
         var sz = dims.D / size.z;
-        if (Math.abs(sx - 1) > 0.05 || Math.abs(sy - 1) > 0.05 || Math.abs(sz - 1) > 0.05) {
+        var maxRatio = Math.max(sx / sy, sy / sx, sx / sz, sz / sx, sy / sz, sz / sy);
+        if (maxRatio > 1.35) {
+          var sUniform = Math.min(sx, sy, sz);
+          wrapper.scale.set(sUniform, sUniform, sUniform);
+        } else if (Math.abs(sx - 1) > 0.05 || Math.abs(sy - 1) > 0.05 || Math.abs(sz - 1) > 0.05) {
           wrapper.scale.set(sx, sy, sz);
         }
       }
@@ -25466,13 +25472,13 @@ body.role-employee #adminCreateEmpBox,
       return;
     }
 
-    // Add lightweight bounding box placeholder while loading asynchronously
+    // Add lightweight wireframe outline placeholder instead of solid/translucent block
     var placeW = (dims && dims.W) || 600;
     var placeH = (dims && dims.H) || 800;
     var placeD = (dims && dims.D) || 600;
-    var ph = new THREE.Mesh(
-      new THREE.BoxGeometry(placeW, placeH, placeD),
-      new THREE.MeshStandardMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.25 })
+    var ph = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(placeW, placeH, placeD)),
+      new THREE.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.35 })
     );
     ph.name = '__decor_placeholder__';
     ph.position.set(0, placeH / 2, 0);
@@ -25486,7 +25492,11 @@ body.role-employee #adminCreateEmpBox,
 
     function doLoad() {
       if (!window.THREE || !window.THREE.GLTFLoader) {
-        setTimeout(doLoad, 80);
+        if (typeof window.ensureGLTFLoader === 'function') {
+          window.ensureGLTFLoader(doLoad);
+        } else {
+          setTimeout(doLoad, 80);
+        }
         return;
       }
       var loader = new THREE.GLTFLoader();
@@ -25499,7 +25509,10 @@ body.role-employee #adminCreateEmpBox,
         });
       }, undefined, function (err) {
         console.warn('[Orbix 3D] Failed to load decor model:', url, err);
+        var ph = parentGroup ? parentGroup.getObjectByName('__decor_placeholder__') : null;
+        if (ph && parentGroup) parentGroup.remove(ph);
         delete ArchitecturalRenderer._gltfPending[url];
+        if (self.requestRender) self.requestRender();
       });
     }
 
@@ -43030,15 +43043,64 @@ body.role-employee #adminCreateEmpBox,
       }
     }, true);
   })();
-  /* three.js is fetched in the background: the page paints at once on the
-     CSS fallback and upgrades to WebGL the moment the library lands */
-  function loadThree(cb) {
-    if (window.THREE) { cb(); return; }
+  /* three.js and GLTFLoader are loaded from local assets (offline-ready) with CDN fallback */
+  function ensureGLTFLoader(cb) {
+    if (window.THREE && window.THREE.GLTFLoader) {
+      if (cb) cb();
+      return;
+    }
+    if (!window.THREE) {
+      loadThree(function () {
+        ensureGLTFLoader(cb);
+      });
+      return;
+    }
     var s = document.createElement("script");
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
-    s.async = true; s.onload = cb; s.onerror = function () { toast("3D library blocked — showing the basic preview"); };
+    s.src = "assets/GLTFLoader.js";
+    s.onload = function () {
+      if (cb) cb();
+    };
+    s.onerror = function () {
+      var cdn = document.createElement("script");
+      cdn.src = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js";
+      cdn.onload = function () { if (cb) cb(); };
+      cdn.onerror = function () {
+        console.warn("Could not load GLTFLoader from local assets or CDN");
+        if (cb) cb();
+      };
+      document.head.appendChild(cdn);
+    };
     document.head.appendChild(s);
   }
+  window.ensureGLTFLoader = ensureGLTFLoader;
+
+  function loadThree(cb) {
+    function finish() {
+      ensureGLTFLoader(function () {
+        if (cb) cb();
+      });
+    }
+
+    if (window.THREE) {
+      finish();
+      return;
+    }
+    var s = document.createElement("script");
+    s.src = "assets/three.min.js";
+    s.onload = finish;
+    s.onerror = function () {
+      var cdn = document.createElement("script");
+      cdn.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+      cdn.onload = finish;
+      cdn.onerror = function () {
+        if (typeof toast === "function") toast("3D library blocked — showing the basic preview");
+        if (cb) cb();
+      };
+      document.head.appendChild(cdn);
+    };
+    document.head.appendChild(s);
+  }
+  window.loadThree = loadThree;
   /* ══════════ EMBED MODE (Neo and other hosts) ══════════
      ?embed=1&room=<id>&theme=neo&tour=1  — only the 3D stage is shown, the page is driven
      through window.postMessage and reports back with {event:"ready"|"stats"}. */

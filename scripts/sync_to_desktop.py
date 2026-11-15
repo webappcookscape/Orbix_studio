@@ -34,10 +34,15 @@ for target in targets:
             shutil.copy2(src, dst)
             print(f"  Copied {f}")
             
-    # Copy assets/decors and assets/GLTFLoader.js
+    # Copy assets/three.min.js and assets/GLTFLoader.js
     target_assets = os.path.join(target, "assets")
     os.makedirs(target_assets, exist_ok=True)
     
+    src_three = os.path.join(here, "assets", "three.min.js")
+    if os.path.exists(src_three):
+        shutil.copy2(src_three, os.path.join(target_assets, "three.min.js"))
+        print("  Copied assets/three.min.js")
+
     src_gltf = os.path.join(here, "assets", "GLTFLoader.js")
     if os.path.exists(src_gltf):
         shutil.copy2(src_gltf, os.path.join(target_assets, "GLTFLoader.js"))
@@ -60,3 +65,4 @@ for target in targets:
     print(f"  Synced {count} decor assets (.glb, .png, .json) to target assets/decors and decors/")
 
 print("\nDesktop sync complete!")
+

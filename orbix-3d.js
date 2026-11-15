@@ -2356,12 +2356,16 @@
         }
       });
 
-      // Scale proportionally if user customized unit dimensions in UI
-      if (dims && dims.W && dims.H && dims.D && size.x > 1 && size.y > 1 && size.z > 1) {
+      // Scale proportionally: maintain true aspect ratio without squishing
+      if (dims && dims.W && dims.H && dims.D && size.x > 0.01 && size.y > 0.01 && size.z > 0.01) {
         var sx = dims.W / size.x;
         var sy = dims.H / size.y;
         var sz = dims.D / size.z;
-        if (Math.abs(sx - 1) > 0.05 || Math.abs(sy - 1) > 0.05 || Math.abs(sz - 1) > 0.05) {
+        var maxRatio = Math.max(sx / sy, sy / sx, sx / sz, sz / sx, sy / sz, sz / sy);
+        if (maxRatio > 1.35) {
+          var sUniform = Math.min(sx, sy, sz);
+          wrapper.scale.set(sUniform, sUniform, sUniform);
+        } else if (Math.abs(sx - 1) > 0.05 || Math.abs(sy - 1) > 0.05 || Math.abs(sz - 1) > 0.05) {
           wrapper.scale.set(sx, sy, sz);
         }
       }
@@ -2389,13 +2393,13 @@
       return;
     }
 
-    // Add lightweight bounding box placeholder while loading asynchronously
+    // Add lightweight wireframe outline placeholder instead of solid/translucent block
     var placeW = (dims && dims.W) || 600;
     var placeH = (dims && dims.H) || 800;
     var placeD = (dims && dims.D) || 600;
-    var ph = new THREE.Mesh(
-      new THREE.BoxGeometry(placeW, placeH, placeD),
-      new THREE.MeshStandardMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.25 })
+    var ph = new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(placeW, placeH, placeD)),
+      new THREE.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.35 })
     );
     ph.name = '__decor_placeholder__';
     ph.position.set(0, placeH / 2, 0);
@@ -2409,7 +2413,11 @@
 
     function doLoad() {
       if (!window.THREE || !window.THREE.GLTFLoader) {
-        setTimeout(doLoad, 80);
+        if (typeof window.ensureGLTFLoader === 'function') {
+          window.ensureGLTFLoader(doLoad);
+        } else {
+          setTimeout(doLoad, 80);
+        }
         return;
       }
       var loader = new THREE.GLTFLoader();
@@ -2422,7 +2430,10 @@
         });
       }, undefined, function (err) {
         console.warn('[Orbix 3D] Failed to load decor model:', url, err);
+        var ph = parentGroup ? parentGroup.getObjectByName('__decor_placeholder__') : null;
+        if (ph && parentGroup) parentGroup.remove(ph);
         delete ArchitecturalRenderer._gltfPending[url];
+        if (self.requestRender) self.requestRender();
       });
     }
 

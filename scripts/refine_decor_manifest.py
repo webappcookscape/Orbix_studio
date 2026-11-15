@@ -402,3 +402,4 @@ with open(js_manifest_path, "w", encoding="utf-8") as f:
     f.write("})();\n")
 
 print(f"Refined {len(items)} items in manifest and generated {js_manifest_path}")
+

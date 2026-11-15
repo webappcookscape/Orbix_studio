@@ -7324,15 +7324,64 @@
       }
     }, true);
   })();
-  /* three.js is fetched in the background: the page paints at once on the
-     CSS fallback and upgrades to WebGL the moment the library lands */
-  function loadThree(cb) {
-    if (window.THREE) { cb(); return; }
+  /* three.js and GLTFLoader are loaded from local assets (offline-ready) with CDN fallback */
+  function ensureGLTFLoader(cb) {
+    if (window.THREE && window.THREE.GLTFLoader) {
+      if (cb) cb();
+      return;
+    }
+    if (!window.THREE) {
+      loadThree(function () {
+        ensureGLTFLoader(cb);
+      });
+      return;
+    }
     var s = document.createElement("script");
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
-    s.async = true; s.onload = cb; s.onerror = function () { toast("3D library blocked — showing the basic preview"); };
+    s.src = "assets/GLTFLoader.js";
+    s.onload = function () {
+      if (cb) cb();
+    };
+    s.onerror = function () {
+      var cdn = document.createElement("script");
+      cdn.src = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js";
+      cdn.onload = function () { if (cb) cb(); };
+      cdn.onerror = function () {
+        console.warn("Could not load GLTFLoader from local assets or CDN");
+        if (cb) cb();
+      };
+      document.head.appendChild(cdn);
+    };
     document.head.appendChild(s);
   }
+  window.ensureGLTFLoader = ensureGLTFLoader;
+
+  function loadThree(cb) {
+    function finish() {
+      ensureGLTFLoader(function () {
+        if (cb) cb();
+      });
+    }
+
+    if (window.THREE) {
+      finish();
+      return;
+    }
+    var s = document.createElement("script");
+    s.src = "assets/three.min.js";
+    s.onload = finish;
+    s.onerror = function () {
+      var cdn = document.createElement("script");
+      cdn.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+      cdn.onload = finish;
+      cdn.onerror = function () {
+        if (typeof toast === "function") toast("3D library blocked — showing the basic preview");
+        if (cb) cb();
+      };
+      document.head.appendChild(cdn);
+    };
+    document.head.appendChild(s);
+  }
+  window.loadThree = loadThree;
   /* ══════════ EMBED MODE (Neo and other hosts) ══════════
      ?embed=1&room=<id>&theme=neo&tour=1  — only the 3D stage is shown, the page is driven
      through window.postMessage and reports back with {event:"ready"|"stats"}. */
