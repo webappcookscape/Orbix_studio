@@ -1374,7 +1374,7 @@
           Core.checkPlacementOverlap(self.dragState.furniture, self.project.plan, self.dragState.furniture.id) :
           Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
 
-        if (snapRes.type === 'unit_joint') {
+        if (snapRes.type === 'unit_joint' || (snapRes.type === 'wall_snap' && colCheck.type === 'wall')) {
           self.dragState.hasCollision = false;
           self.dragState.collidedWith = null;
         } else {
@@ -2295,9 +2295,11 @@
     var fDims = furn.dimensions || { W: 1200, D: 600, H: 2100 };
     var fW = fDims.W || 1200;
     var fD = fDims.D || 600;
+    var isWallU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : false;
     var isOS_F = !!((furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1));
-    var isBaseOS_F = isOS_F && (furn.category === 'kitchen_fm' || furn.category === 'kitchen_base' || /fm/i.test(furn.name || '') || /fm/i.test(furn.id || '') || (Core.isWallUnit ? !Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : true));
-    if (isBaseOS_F && (!fD || fD < 100)) fD = 550;
+    if (isOS_F && (!fD || fD < 100)) {
+      fD = isWallU ? 350 : 550;
+    }
     var plan = this.project && this.project.plan;
     if (!plan) return { pos: pos, rotY: rotY };
 
@@ -2351,13 +2353,13 @@
         var oDims = other.dimensions || { W: 1200, D: 600, H: 2100 };
         var oW = oDims.W || 1200;
         var oD = oDims.D || 600;
+        var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
         var isOS_O = !!((other.unitConfig && other.unitConfig.isOnlyShutter) || (other.name && /\bo\/?s\b/i.test(other.name)) || (other.costCategory && other.costCategory.indexOf('O/S') !== -1));
-        var isBaseOS_O = isOS_O && (other.category === 'kitchen_fm' || other.category === 'kitchen_base' || /fm/i.test(other.name || '') || /fm/i.test(other.id || '') || (Core.isWallUnit ? !Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : true));
-        if (isBaseOS_O && (!oD || oD < 100)) oD = 550;
+        if (isOS_O && (!oD || oD < 100)) {
+          oD = isWallO ? 350 : 550;
+        }
         var oRot = other.rotY || 0;
         var oPos = other.pos || { x: 0, y: 0 };
-
-        var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
         var isOpenBoxO = (
           (other.name && /open[-_ ]*box/i.test(other.name)) ||
           (other.id && /^(ob-|open-box|ctvw-open|ctvw-obs)/i.test(other.id)) ||
@@ -2634,7 +2636,9 @@
               var dummyF = { pos: testSnappedPos, rotY: rotY, dimensions: fDims };
               var polyF = Core.getFurniturePolygon(dummyF);
               var polyO = Core.getFurniturePolygon(other);
-              if (!Core.polygonsIntersect(polyF, polyO, 5)) {
+              var isCivilF = furn.category === 'wall_paneling' || (furn.name && /ledge|rcc|civil/i.test(furn.name)) || (furn.id && /ledge|rcc|civil/i.test(furn.id));
+              var isCivilO = other.category === 'wall_paneling' || (other.name && /ledge|rcc|civil/i.test(other.name)) || (other.id && /ledge|rcc|civil/i.test(other.id));
+              if (isCivilF || isCivilO || !Core.polygonsIntersect(polyF, polyO, 5)) {
                 bestJoint = {
                   pos: testSnappedPos,
                   rotY: rotY,
@@ -2886,6 +2890,9 @@
       parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
     var furn = Core.createFurniturePlacement({
+      id: this.furniturePreset.id,
+      catalogItemId: this.furniturePreset.catalogItemId || this.furniturePreset.id,
+      modelType: this.furniturePreset.modelType,
       name: this.furniturePreset.name,
       category: this.furniturePreset.category,
       code: this.furniturePreset.code,
@@ -4764,7 +4771,11 @@
       var wMm = (f.dimensions && f.dimensions.W) || 1200;
       var isOS = !!((f.unitConfig && f.unitConfig.isOnlyShutter) || (f.name && /\bo\/?s\b/i.test(f.name)) || (f.costCategory && f.costCategory.indexOf('O/S') !== -1));
       var isBaseOS = isOS && (f.category === 'kitchen_fm' || f.category === 'kitchen_base' || /fm/i.test(f.name || '') || /fm/i.test(f.id || '') || (Core.isWallUnit ? !Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : true));
+      var isWallUnitF = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
       var dMm = isBaseOS ? ((f.dimensions && f.dimensions.D && f.dimensions.D > 100) ? f.dimensions.D : 550) : (isOS ? 18 : ((f.dimensions && f.dimensions.D) || 600));
+      if (isOS && (!dMm || dMm < 100)) {
+        dMm = isWallUnitF ? 350 : 550;
+      }
       var wPx = wMm * this.zoom;
       var dPx = dMm * this.zoom;
       var sPos = this.worldToScreen(f.pos);

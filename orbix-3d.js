@@ -3425,11 +3425,11 @@
     var catOS = (furn.category || '').toLowerCase();
     var nameOS = (furn.name || '').toLowerCase();
     var isLoftOS = (catOS.indexOf('loft') !== -1 || nameOS.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
-    var isWallOS = !isLoftOS && (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)));
+    var isWallOS = !isLoftOS && (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)) || (furn.code && /(wm|wcm)/i.test(furn.code)));
     var isTrueOnlyShutter = !!(furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1);
     var isBaseOS = (isBase || catOS === 'kitchen_base' || catOS === 'kitchen_fm' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || nameOS.indexOf('fm') !== -1 || (furn.id && /fm/i.test(furn.id)) || catOS === 'crockery' || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS));
 
-    var baseD = (dims.D && dims.D > 100) ? dims.D : (isBaseOS ? 550 : 18);
+    var baseD = (dims.D && dims.D > 100) ? dims.D : (isWallOS ? 350 : (isBaseOS || isLoftOS ? 550 : 350));
     var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
     var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none') ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 35)) : 0;
 
@@ -4172,7 +4172,9 @@
     var isCrockeryOnlyDoors = (catFM.indexOf('crockery') !== -1 || nameFM.indexOf('crockery') !== -1) &&
                               (nameFM.indexOf('only door') !== -1 || (furn.id && furn.id.indexOf('doors-only') !== -1) || (furn.unitConfig && furn.unitConfig.isOnlyShutter));
     var isSpiceRackCabinet = (catFM.indexOf('spice') !== -1 || nameFM.indexOf('spice') !== -1 || (furn.id && /^(sr-|spice)/i.test(furn.id)));
+    var isCrockeryOpenBox = (furn.id === 'ctvw-open-box') || (/crockery.*open.*box.*storage(?!\s*2)/i.test(nameFM));
     var explicitlyNoShelves = (furn.unitConfig && furn.unitConfig.shelves === 0) || isCrockeryOnlyDoors || isSpiceRackCabinet;
+    if (isCrockeryOpenBox) explicitlyNoShelves = true;
     var isKitchenFMorWM = (catFM.indexOf('kitchen') !== -1 || catFM.indexOf('fm') !== -1 || catFM.indexOf('wall') !== -1 || /(^|\b|_|-)(fm|fcm|fbcm|wm|wcm|wbcm)($|\b|_|-|\d+)/i.test(nameFM) || /(^|\b|_|-)(fm|fcm|fbcm|wm|wcm|wbcm)($|\b|_|-|\d+)/i.test(furn.id || ''));
     var isInternalDrawers = (furn.unitConfig && (furn.unitConfig.internalDrawers || furn.unitConfig.drawersInCenter)) ||
                             furn.id === 'wr-drawers' || furn.id === 'wr-1-drawers' ||

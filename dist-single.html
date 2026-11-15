@@ -9478,6 +9478,26 @@ body.role-employee #adminCreateEmpBox,
         opts.elevation = 1500;
       }
     }
+    // Specific Crocker/TV Open Box / Open Storage dimensions & configs
+    if (opts.id === 'ctvw-obs-02' || (nm.indexOf('open box storage 2') !== -1)) {
+      opts.dimensions = opts.dimensions || {};
+      opts.dimensions.D = 300;
+    }
+    if (opts.id === 'ctvw-open-box' || (nm.indexOf('open box storage') !== -1 && nm.indexOf('storage 2') === -1)) {
+      opts.unitConfig.shelves = 0;
+    }
+    if (opts.id === 'ctvb-open-storage' || (nm.indexOf('crockery') !== -1 && nm.indexOf('base open storage') !== -1)) {
+      opts.dimensions = opts.dimensions || {};
+      opts.dimensions.H = 750;
+    }
+    if (isOS) {
+      opts.unitConfig.isOnlyShutter = true;
+      if (opts.dimensions) {
+        if (opts.dimensions.D === undefined || opts.dimensions.D < 100) {
+          opts.dimensions.D = isWallUnit ? 350 : 550;
+        }
+      }
+    }
     var isFmD2 = /(^|\b|_|-)(fm[-_ ]*d2)($|\b|_|-|\d+)/i.test(nm || opts.id || opts.code || '');
     var isFmD3 = /(^|\b|_|-)(fm[-_ ]*d3)($|\b|_|-|\d+)/i.test(nm || opts.id || opts.code || '');
     if (isFmD2) {
@@ -9536,7 +9556,9 @@ body.role-employee #adminCreateEmpBox,
       dimensions: {
         W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
         H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : (cat.indexOf('base') !== -1 || cat.indexOf('fm') !== -1 || cat.indexOf('d2') !== -1 || cat.indexOf('d3') !== -1 || cat.indexOf('tv') !== -1 ? 850 : 2100)),
-        D: isBaseOS ? 550 : (isOS ? 18 : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
+        D: (opts.dimensions && opts.dimensions.D !== undefined && opts.dimensions.D > 100) ?
+          opts.dimensions.D :
+          (isOS ? (isWallUnit ? 350 : 550) : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
       },
       shutterColors: initColors,
       shutterMaterials: initMats,
@@ -9701,6 +9723,7 @@ body.role-employee #adminCreateEmpBox,
     var h1 = (f.dimensions && f.dimensions.H) ? parseFloat(f.dimensions.H) : (isWall1 ? 600 : 850);
     var top1 = elev1 + h1;
     var isDecor1 = !!(f.isDecor || f.decorType || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor' || (f.name && /sink|hob|stove|cooktop|burner|tap|basin|bed|sofa|chair|stool|mirror|tv|plant/i.test(f.name)));
+    var isCivilOrLedge1 = (f.category === 'wall_paneling' || (f.name && /ledge|rcc|civil|panel/i.test(f.name)) || (f.id && /ledge|rcc|civil/i.test(f.id)));
     var isBase1 = !isWall1 && (f.category === 'kitchen_base' || (f.name && /base/i.test(f.name)));
 
     for (var i = 0; i < allFurn.length; i++) {
@@ -9708,10 +9731,11 @@ body.role-employee #adminCreateEmpBox,
       if (other.id === f.id || (ignoreId && other.id === ignoreId)) continue;
       var isWall2 = isWallUnitCategory(other.category, other.name, other.code || other.catalogItemId, other.costCategory);
       var isDecor2 = !!(other.isDecor || other.decorType || other.excludeFromPricing || other.category === 'decor' || other.category === 'appliance_decor' || (other.name && /sink|hob|stove|cooktop|burner|tap|basin|bed|sofa|chair|stool|mirror|tv|plant/i.test(other.name)));
+      var isCivilOrLedge2 = (other.category === 'wall_paneling' || (other.name && /ledge|rcc|civil|panel/i.test(other.name)) || (other.id && /ledge|rcc|civil/i.test(other.id)));
       var isBase2 = !isWall2 && (other.category === 'kitchen_base' || (other.name && /base/i.test(other.name)));
 
-      // Decor items (beds, sofas, armchairs, stools, mirrors, tvs, plants, sinks, hobs) do not block or get blocked by other units
-      if (isDecor1 || isDecor2) continue;
+      // Decor items and civil RCC elements (ledges, countertops, vertical slabs) do not block or get blocked by other units
+      if (isDecor1 || isDecor2 || isCivilOrLedge1 || isCivilOrLedge2) continue;
 
       var elev2 = (other.elevation !== undefined && other.elevation !== null && other.elevation !== '') ?
         parseFloat(other.elevation) :
@@ -9929,7 +9953,8 @@ body.role-employee #adminCreateEmpBox,
   // Comprehensive placement overlap detector against adjacent furniture, wall cores, and openings
   function checkPlacementOverlap(f, plan, ignoreId) {
     if (!f || !plan) return { hasOverlap: false };
-    if (f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor') {
+    if (f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor' ||
+        f.category === 'wall_paneling' || (f.name && /ledge|rcc|civil/i.test(f.name)) || (f.id && /ledge|rcc|civil/i.test(f.id))) {
       return { hasOverlap: false };
     }
     var fId = ignoreId || f.id;
@@ -9945,6 +9970,7 @@ body.role-employee #adminCreateEmpBox,
     var walls = plan.walls || [];
     var polyF = getFurniturePolygon(f);
     var isWallU = isWallUnitCategory(f.category, f.name, f.code || f.catalogItemId, f.costCategory);
+    var isOS_f = !!((f.unitConfig && f.unitConfig.isOnlyShutter) || (f.name && /\bo\/?s\b/i.test(f.name)) || (f.costCategory && f.costCategory.indexOf('O/S') !== -1));
     var elev1 = (f.elevation !== undefined && f.elevation !== null && f.elevation !== "") ?
       parseFloat(f.elevation) :
       ((f.pos && f.pos.z !== undefined && f.pos.z !== null && f.pos.z !== 0) ?
@@ -9958,9 +9984,10 @@ body.role-employee #adminCreateEmpBox,
       if (top1 <= 0 || elev1 >= wallH) continue;
 
       var wallPoly = wallPolygon(w);
-      // Tolerance = 25mm: touching the wall surface (intentional contact) does NOT collide;
-      // penetration deeper than 25mm into the wall core triggers overlap
-      if (polygonsIntersect(polyF, wallPoly, 25)) {
+      // Tolerance = 25mm (or 60mm for only-shutter): touching the wall surface (intentional contact) does NOT collide;
+      // penetration deeper than tolerance into the wall core triggers overlap
+      var tol = isOS_f ? 60 : 25;
+      if (polygonsIntersect(polyF, wallPoly, tol)) {
         return { hasOverlap: true, type: "wall", target: w };
       }
     }
@@ -11481,7 +11508,7 @@ body.role-employee #adminCreateEmpBox,
     "dimensions": {
       "W": 600,
       "H": 600,
-      "D": 450
+      "D": 300
     },
     "materials": {
       "shutter": {
@@ -13255,7 +13282,7 @@ body.role-employee #adminCreateEmpBox,
     "dimensions": {
       "W": 450,
       "H": 750,
-      "D": 18
+      "D": 550
     },
     "materials": {
       "shutter": {
@@ -13638,11 +13665,11 @@ body.role-employee #adminCreateEmpBox,
     "modelType": "spice_rack",
     "category": "crockery",
     "costCategory": "Spice Rack (OPEN BOXES)",
-    "areaSqft": 1.937504709,
+    "areaSqft": 4.843761773,
     "icon": "🧂",
     "dimensions": {
       "W": 600,
-      "H": 300,
+      "H": 750,
       "D": 450
     },
     "materials": {
@@ -13765,7 +13792,7 @@ body.role-employee #adminCreateEmpBox,
       "glassTint": "none",
       "profileColor": "none",
       "sections": 0,
-      "shelves": 1,
+      "shelves": 0,
       "drawers": 0,
       "loft": false,
       "loftH": 0,
@@ -14426,7 +14453,7 @@ body.role-employee #adminCreateEmpBox,
     "dimensions": {
       "W": 750,
       "H": 750,
-      "D": 18
+      "D": 550
     },
     "materials": {
       "shutter": {
@@ -14780,7 +14807,7 @@ body.role-employee #adminCreateEmpBox,
     "dimensions": {
       "W": 600,
       "H": 600,
-      "D": 18
+      "D": 350
     },
     "materials": {
       "shutter": {
@@ -14830,7 +14857,7 @@ body.role-employee #adminCreateEmpBox,
     "dimensions": {
       "W": 300,
       "H": 600,
-      "D": 18
+      "D": 350
     },
     "materials": {
       "shutter": {
@@ -16516,7 +16543,7 @@ body.role-employee #adminCreateEmpBox,
           Core.checkPlacementOverlap(self.dragState.furniture, self.project.plan, self.dragState.furniture.id) :
           Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
 
-        if (snapRes.type === 'unit_joint') {
+        if (snapRes.type === 'unit_joint' || (snapRes.type === 'wall_snap' && colCheck.type === 'wall')) {
           self.dragState.hasCollision = false;
           self.dragState.collidedWith = null;
         } else {
@@ -17437,9 +17464,11 @@ body.role-employee #adminCreateEmpBox,
     var fDims = furn.dimensions || { W: 1200, D: 600, H: 2100 };
     var fW = fDims.W || 1200;
     var fD = fDims.D || 600;
+    var isWallU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : false;
     var isOS_F = !!((furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1));
-    var isBaseOS_F = isOS_F && (furn.category === 'kitchen_fm' || furn.category === 'kitchen_base' || /fm/i.test(furn.name || '') || /fm/i.test(furn.id || '') || (Core.isWallUnit ? !Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : true));
-    if (isBaseOS_F && (!fD || fD < 100)) fD = 550;
+    if (isOS_F && (!fD || fD < 100)) {
+      fD = isWallU ? 350 : 550;
+    }
     var plan = this.project && this.project.plan;
     if (!plan) return { pos: pos, rotY: rotY };
 
@@ -17493,13 +17522,13 @@ body.role-employee #adminCreateEmpBox,
         var oDims = other.dimensions || { W: 1200, D: 600, H: 2100 };
         var oW = oDims.W || 1200;
         var oD = oDims.D || 600;
+        var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
         var isOS_O = !!((other.unitConfig && other.unitConfig.isOnlyShutter) || (other.name && /\bo\/?s\b/i.test(other.name)) || (other.costCategory && other.costCategory.indexOf('O/S') !== -1));
-        var isBaseOS_O = isOS_O && (other.category === 'kitchen_fm' || other.category === 'kitchen_base' || /fm/i.test(other.name || '') || /fm/i.test(other.id || '') || (Core.isWallUnit ? !Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : true));
-        if (isBaseOS_O && (!oD || oD < 100)) oD = 550;
+        if (isOS_O && (!oD || oD < 100)) {
+          oD = isWallO ? 350 : 550;
+        }
         var oRot = other.rotY || 0;
         var oPos = other.pos || { x: 0, y: 0 };
-
-        var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
         var isOpenBoxO = (
           (other.name && /open[-_ ]*box/i.test(other.name)) ||
           (other.id && /^(ob-|open-box|ctvw-open|ctvw-obs)/i.test(other.id)) ||
@@ -17776,7 +17805,9 @@ body.role-employee #adminCreateEmpBox,
               var dummyF = { pos: testSnappedPos, rotY: rotY, dimensions: fDims };
               var polyF = Core.getFurniturePolygon(dummyF);
               var polyO = Core.getFurniturePolygon(other);
-              if (!Core.polygonsIntersect(polyF, polyO, 5)) {
+              var isCivilF = furn.category === 'wall_paneling' || (furn.name && /ledge|rcc|civil/i.test(furn.name)) || (furn.id && /ledge|rcc|civil/i.test(furn.id));
+              var isCivilO = other.category === 'wall_paneling' || (other.name && /ledge|rcc|civil/i.test(other.name)) || (other.id && /ledge|rcc|civil/i.test(other.id));
+              if (isCivilF || isCivilO || !Core.polygonsIntersect(polyF, polyO, 5)) {
                 bestJoint = {
                   pos: testSnappedPos,
                   rotY: rotY,
@@ -18028,6 +18059,9 @@ body.role-employee #adminCreateEmpBox,
       parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
     var furn = Core.createFurniturePlacement({
+      id: this.furniturePreset.id,
+      catalogItemId: this.furniturePreset.catalogItemId || this.furniturePreset.id,
+      modelType: this.furniturePreset.modelType,
       name: this.furniturePreset.name,
       category: this.furniturePreset.category,
       code: this.furniturePreset.code,
@@ -19906,7 +19940,11 @@ body.role-employee #adminCreateEmpBox,
       var wMm = (f.dimensions && f.dimensions.W) || 1200;
       var isOS = !!((f.unitConfig && f.unitConfig.isOnlyShutter) || (f.name && /\bo\/?s\b/i.test(f.name)) || (f.costCategory && f.costCategory.indexOf('O/S') !== -1));
       var isBaseOS = isOS && (f.category === 'kitchen_fm' || f.category === 'kitchen_base' || /fm/i.test(f.name || '') || /fm/i.test(f.id || '') || (Core.isWallUnit ? !Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : true));
+      var isWallUnitF = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
       var dMm = isBaseOS ? ((f.dimensions && f.dimensions.D && f.dimensions.D > 100) ? f.dimensions.D : 550) : (isOS ? 18 : ((f.dimensions && f.dimensions.D) || 600));
+      if (isOS && (!dMm || dMm < 100)) {
+        dMm = isWallUnitF ? 350 : 550;
+      }
       var wPx = wMm * this.zoom;
       var dPx = dMm * this.zoom;
       var sPos = this.worldToScreen(f.pos);
@@ -25011,11 +25049,11 @@ body.role-employee #adminCreateEmpBox,
     var catOS = (furn.category || '').toLowerCase();
     var nameOS = (furn.name || '').toLowerCase();
     var isLoftOS = (catOS.indexOf('loft') !== -1 || nameOS.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
-    var isWallOS = !isLoftOS && (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)));
+    var isWallOS = !isLoftOS && (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)) || (furn.code && /(wm|wcm)/i.test(furn.code)));
     var isTrueOnlyShutter = !!(furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1);
     var isBaseOS = (isBase || catOS === 'kitchen_base' || catOS === 'kitchen_fm' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || nameOS.indexOf('fm') !== -1 || (furn.id && /fm/i.test(furn.id)) || catOS === 'crockery' || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS));
 
-    var baseD = (dims.D && dims.D > 100) ? dims.D : (isBaseOS ? 550 : 18);
+    var baseD = (dims.D && dims.D > 100) ? dims.D : (isWallOS ? 350 : (isBaseOS || isLoftOS ? 550 : 350));
     var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
     var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none') ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 35)) : 0;
 
@@ -25758,7 +25796,9 @@ body.role-employee #adminCreateEmpBox,
     var isCrockeryOnlyDoors = (catFM.indexOf('crockery') !== -1 || nameFM.indexOf('crockery') !== -1) &&
                               (nameFM.indexOf('only door') !== -1 || (furn.id && furn.id.indexOf('doors-only') !== -1) || (furn.unitConfig && furn.unitConfig.isOnlyShutter));
     var isSpiceRackCabinet = (catFM.indexOf('spice') !== -1 || nameFM.indexOf('spice') !== -1 || (furn.id && /^(sr-|spice)/i.test(furn.id)));
+    var isCrockeryOpenBox = (furn.id === 'ctvw-open-box') || (/crockery.*open.*box.*storage(?!\s*2)/i.test(nameFM));
     var explicitlyNoShelves = (furn.unitConfig && furn.unitConfig.shelves === 0) || isCrockeryOnlyDoors || isSpiceRackCabinet;
+    if (isCrockeryOpenBox) explicitlyNoShelves = true;
     var isKitchenFMorWM = (catFM.indexOf('kitchen') !== -1 || catFM.indexOf('fm') !== -1 || catFM.indexOf('wall') !== -1 || /(^|\b|_|-)(fm|fcm|fbcm|wm|wcm|wbcm)($|\b|_|-|\d+)/i.test(nameFM) || /(^|\b|_|-)(fm|fcm|fbcm|wm|wcm|wbcm)($|\b|_|-|\d+)/i.test(furn.id || ''));
     var isInternalDrawers = (furn.unitConfig && (furn.unitConfig.internalDrawers || furn.unitConfig.drawersInCenter)) ||
                             furn.id === 'wr-drawers' || furn.id === 'wr-1-drawers' ||

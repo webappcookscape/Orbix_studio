@@ -863,6 +863,26 @@
         opts.elevation = 1500;
       }
     }
+    // Specific Crocker/TV Open Box / Open Storage dimensions & configs
+    if (opts.id === 'ctvw-obs-02' || (nm.indexOf('open box storage 2') !== -1)) {
+      opts.dimensions = opts.dimensions || {};
+      opts.dimensions.D = 300;
+    }
+    if (opts.id === 'ctvw-open-box' || (nm.indexOf('open box storage') !== -1 && nm.indexOf('storage 2') === -1)) {
+      opts.unitConfig.shelves = 0;
+    }
+    if (opts.id === 'ctvb-open-storage' || (nm.indexOf('crockery') !== -1 && nm.indexOf('base open storage') !== -1)) {
+      opts.dimensions = opts.dimensions || {};
+      opts.dimensions.H = 750;
+    }
+    if (isOS) {
+      opts.unitConfig.isOnlyShutter = true;
+      if (opts.dimensions) {
+        if (opts.dimensions.D === undefined || opts.dimensions.D < 100) {
+          opts.dimensions.D = isWallUnit ? 350 : 550;
+        }
+      }
+    }
     var isFmD2 = /(^|\b|_|-)(fm[-_ ]*d2)($|\b|_|-|\d+)/i.test(nm || opts.id || opts.code || '');
     var isFmD3 = /(^|\b|_|-)(fm[-_ ]*d3)($|\b|_|-|\d+)/i.test(nm || opts.id || opts.code || '');
     if (isFmD2) {
@@ -921,7 +941,9 @@
       dimensions: {
         W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
         H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : (cat.indexOf('base') !== -1 || cat.indexOf('fm') !== -1 || cat.indexOf('d2') !== -1 || cat.indexOf('d3') !== -1 || cat.indexOf('tv') !== -1 ? 850 : 2100)),
-        D: isBaseOS ? 550 : (isOS ? 18 : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
+        D: (opts.dimensions && opts.dimensions.D !== undefined && opts.dimensions.D > 100) ?
+          opts.dimensions.D :
+          (isOS ? (isWallUnit ? 350 : 550) : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
       },
       shutterColors: initColors,
       shutterMaterials: initMats,
@@ -1086,6 +1108,7 @@
     var h1 = (f.dimensions && f.dimensions.H) ? parseFloat(f.dimensions.H) : (isWall1 ? 600 : 850);
     var top1 = elev1 + h1;
     var isDecor1 = !!(f.isDecor || f.decorType || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor' || (f.name && /sink|hob|stove|cooktop|burner|tap|basin|bed|sofa|chair|stool|mirror|tv|plant/i.test(f.name)));
+    var isCivilOrLedge1 = (f.category === 'wall_paneling' || (f.name && /ledge|rcc|civil|panel/i.test(f.name)) || (f.id && /ledge|rcc|civil/i.test(f.id)));
     var isBase1 = !isWall1 && (f.category === 'kitchen_base' || (f.name && /base/i.test(f.name)));
 
     for (var i = 0; i < allFurn.length; i++) {
@@ -1093,10 +1116,11 @@
       if (other.id === f.id || (ignoreId && other.id === ignoreId)) continue;
       var isWall2 = isWallUnitCategory(other.category, other.name, other.code || other.catalogItemId, other.costCategory);
       var isDecor2 = !!(other.isDecor || other.decorType || other.excludeFromPricing || other.category === 'decor' || other.category === 'appliance_decor' || (other.name && /sink|hob|stove|cooktop|burner|tap|basin|bed|sofa|chair|stool|mirror|tv|plant/i.test(other.name)));
+      var isCivilOrLedge2 = (other.category === 'wall_paneling' || (other.name && /ledge|rcc|civil|panel/i.test(other.name)) || (other.id && /ledge|rcc|civil/i.test(other.id)));
       var isBase2 = !isWall2 && (other.category === 'kitchen_base' || (other.name && /base/i.test(other.name)));
 
-      // Decor items (beds, sofas, armchairs, stools, mirrors, tvs, plants, sinks, hobs) do not block or get blocked by other units
-      if (isDecor1 || isDecor2) continue;
+      // Decor items and civil RCC elements (ledges, countertops, vertical slabs) do not block or get blocked by other units
+      if (isDecor1 || isDecor2 || isCivilOrLedge1 || isCivilOrLedge2) continue;
 
       var elev2 = (other.elevation !== undefined && other.elevation !== null && other.elevation !== '') ?
         parseFloat(other.elevation) :
@@ -1314,7 +1338,8 @@
   // Comprehensive placement overlap detector against adjacent furniture, wall cores, and openings
   function checkPlacementOverlap(f, plan, ignoreId) {
     if (!f || !plan) return { hasOverlap: false };
-    if (f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor') {
+    if (f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor' ||
+        f.category === 'wall_paneling' || (f.name && /ledge|rcc|civil/i.test(f.name)) || (f.id && /ledge|rcc|civil/i.test(f.id))) {
       return { hasOverlap: false };
     }
     var fId = ignoreId || f.id;
@@ -1330,6 +1355,7 @@
     var walls = plan.walls || [];
     var polyF = getFurniturePolygon(f);
     var isWallU = isWallUnitCategory(f.category, f.name, f.code || f.catalogItemId, f.costCategory);
+    var isOS_f = !!((f.unitConfig && f.unitConfig.isOnlyShutter) || (f.name && /\bo\/?s\b/i.test(f.name)) || (f.costCategory && f.costCategory.indexOf('O/S') !== -1));
     var elev1 = (f.elevation !== undefined && f.elevation !== null && f.elevation !== "") ?
       parseFloat(f.elevation) :
       ((f.pos && f.pos.z !== undefined && f.pos.z !== null && f.pos.z !== 0) ?
@@ -1343,9 +1369,10 @@
       if (top1 <= 0 || elev1 >= wallH) continue;
 
       var wallPoly = wallPolygon(w);
-      // Tolerance = 25mm: touching the wall surface (intentional contact) does NOT collide;
-      // penetration deeper than 25mm into the wall core triggers overlap
-      if (polygonsIntersect(polyF, wallPoly, 25)) {
+      // Tolerance = 25mm (or 60mm for only-shutter): touching the wall surface (intentional contact) does NOT collide;
+      // penetration deeper than tolerance into the wall core triggers overlap
+      var tol = isOS_f ? 60 : 25;
+      if (polygonsIntersect(polyF, wallPoly, tol)) {
         return { hasOverlap: true, type: "wall", target: w };
       }
     }
@@ -2866,7 +2893,7 @@
     "dimensions": {
       "W": 600,
       "H": 600,
-      "D": 450
+      "D": 300
     },
     "materials": {
       "shutter": {
@@ -4640,7 +4667,7 @@
     "dimensions": {
       "W": 450,
       "H": 750,
-      "D": 18
+      "D": 550
     },
     "materials": {
       "shutter": {
@@ -5023,11 +5050,11 @@
     "modelType": "spice_rack",
     "category": "crockery",
     "costCategory": "Spice Rack (OPEN BOXES)",
-    "areaSqft": 1.937504709,
+    "areaSqft": 4.843761773,
     "icon": "🧂",
     "dimensions": {
       "W": 600,
-      "H": 300,
+      "H": 750,
       "D": 450
     },
     "materials": {
@@ -5150,7 +5177,7 @@
       "glassTint": "none",
       "profileColor": "none",
       "sections": 0,
-      "shelves": 1,
+      "shelves": 0,
       "drawers": 0,
       "loft": false,
       "loftH": 0,
@@ -5811,7 +5838,7 @@
     "dimensions": {
       "W": 750,
       "H": 750,
-      "D": 18
+      "D": 550
     },
     "materials": {
       "shutter": {
@@ -6165,7 +6192,7 @@
     "dimensions": {
       "W": 600,
       "H": 600,
-      "D": 18
+      "D": 350
     },
     "materials": {
       "shutter": {
@@ -6215,7 +6242,7 @@
     "dimensions": {
       "W": 300,
       "H": 600,
-      "D": 18
+      "D": 350
     },
     "materials": {
       "shutter": {
