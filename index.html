@@ -217,6 +217,14 @@
           </div>
           
           <div class="cp-hud-toolbar">
+            <!-- Three Unified Rendering Modes in Client HUD -->
+            <div class="cp-pill-group cp-mode-group" title="Three Unified Rendering Modes">
+              <span class="cp-group-label">Mode</span>
+              <button type="button" class="cp-pill" data-mode="design" id="cpModeDesignBtn" title="⚡ Design Mode: Lightweight standard materials, shadows disabled, maximum 60 FPS for fluid dragging, resizing, and cabinet positioning">⚡ Design</button>
+              <button type="button" class="cp-pill is-on" data-mode="realistic" id="cpModeRealisticBtn" title="✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows, studio HDRI reflection map">✨ Realistic</button>
+              <button type="button" class="cp-pill" data-mode="presentation" id="cpModeUltraBtn" title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic view & HUD">🌟 Client Ultra</button>
+            </div>
+
             <!-- Camera Angles -->
             <div class="cp-pill-group">
               <span class="cp-group-label">Camera</span>
@@ -252,6 +260,14 @@
           <div class="stagebar-row camera-row">
             <div class="legend" id="legend"></div>
             <div class="viewbtns">
+              <!-- Three Unified Rendering Modes in 3D Studio Toolbar -->
+              <div class="render-mode-group" id="renderModeGroup" title="Three Unified Rendering Modes">
+                <span class="render-mode-label">Mode:</span>
+                <button type="button" class="minibtn" id="modeDesignBtn" title="⚡ Design Mode: Lightweight standard materials, shadows disabled, maximum 60 FPS for fluid dragging, resizing, and cabinet positioning">⚡ Design</button>
+                <button type="button" class="minibtn is-on" id="modeRealisticBtn" title="✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows, and studio HDRI environment reflection map">✨ Realistic</button>
+                <button type="button" class="minibtn" id="modeUltraBtn" title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic camera view, and presentation HUD overlay">🌟 Client Ultra</button>
+              </div>
+
               <div style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
                 <button class="minibtn is-on" id="viewFocusUnitBtn" title="Toggle between focusing on the active modular unit or viewing the full architectural home" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus Unit</button>
                 <button class="minibtn is-on" id="camRotateModeBtn" title="Rotate View: Left-click and drag anywhere to orbit 3D view smoothly" style="font-weight:600;">🔄 Rotate View</button>
@@ -281,13 +297,6 @@
                   <input type="range" id="spotlightSlider" min="0" max="3" step="0.1" value="0" style="width:60px;cursor:pointer;vertical-align:middle;">
                   <span id="spotlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">0.0</span>
                 </span>
-              </div>
-
-              <!-- 3 Quality Modes: Design, Realistic, Client Presentation -->
-              <div class="render-mode-group" id="renderModeGroup" style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.92);padding:2px 4px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;">
-                <button type="button" class="minibtn" id="modeDesignBtn" title="Fast Design Drafting Mode (Basic Materials, High FPS)">⚡ Design</button>
-                <button type="button" class="minibtn is-on" id="modeRealisticBtn" title="PBR Realistic Preview (Physical Materials, Soft Shadows)">✨ Realistic</button>
-                <button type="button" class="minibtn" id="modeUltraBtn" title="Client Presentation Ultra Mode">🌟 Ultra</button>
               </div>
 
               <!-- Time of Day Presets -->

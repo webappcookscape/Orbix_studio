@@ -313,8 +313,8 @@ input,select{font:inherit;color:inherit}
   align-items:center;
   justify-content:space-between;
   gap:8px 12px;
-  flex-wrap:nowrap;
-  min-width:max-content;
+  flex-wrap:wrap;
+  min-width:0;
   width:100%;
   position:relative;
 }
@@ -335,11 +335,45 @@ input,select{font:inherit;color:inherit}
   margin-left:auto;
   display:flex;
   align-items:center;
-  gap:5px;
+  gap:6px;
   flex-wrap:wrap;
   flex-shrink:0;
   overflow:visible !important;
   position:relative;
+}
+.render-mode-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #ffffff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  font-size: 11.5px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.render-mode-group .render-mode-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-right: 2px;
+}
+.render-mode-group .minibtn.is-on {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.35);
+}
+.cp-mode-group .cp-pill.is-on {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+  color: #ffffff !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.5) !important;
 }
 .minibtn{
   font-family:var(--cond);font-size:11px;font-weight:600;letter-spacing:.05em;
@@ -3957,6 +3991,14 @@ body.role-employee #adminCreateEmpBox,
           </div>
           
           <div class="cp-hud-toolbar">
+            <!-- Three Unified Rendering Modes in Client HUD -->
+            <div class="cp-pill-group cp-mode-group" title="Three Unified Rendering Modes">
+              <span class="cp-group-label">Mode</span>
+              <button type="button" class="cp-pill" data-mode="design" id="cpModeDesignBtn" title="⚡ Design Mode: Lightweight standard materials, shadows disabled, maximum 60 FPS for fluid dragging, resizing, and cabinet positioning">⚡ Design</button>
+              <button type="button" class="cp-pill is-on" data-mode="realistic" id="cpModeRealisticBtn" title="✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows, studio HDRI reflection map">✨ Realistic</button>
+              <button type="button" class="cp-pill" data-mode="presentation" id="cpModeUltraBtn" title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic view & HUD">🌟 Client Ultra</button>
+            </div>
+
             <!-- Camera Angles -->
             <div class="cp-pill-group">
               <span class="cp-group-label">Camera</span>
@@ -3992,6 +4034,14 @@ body.role-employee #adminCreateEmpBox,
           <div class="stagebar-row camera-row">
             <div class="legend" id="legend"></div>
             <div class="viewbtns">
+              <!-- Three Unified Rendering Modes in 3D Studio Toolbar -->
+              <div class="render-mode-group" id="renderModeGroup" title="Three Unified Rendering Modes">
+                <span class="render-mode-label">Mode:</span>
+                <button type="button" class="minibtn" id="modeDesignBtn" title="⚡ Design Mode: Lightweight standard materials, shadows disabled, maximum 60 FPS for fluid dragging, resizing, and cabinet positioning">⚡ Design</button>
+                <button type="button" class="minibtn is-on" id="modeRealisticBtn" title="✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows, and studio HDRI environment reflection map">✨ Realistic</button>
+                <button type="button" class="minibtn" id="modeUltraBtn" title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic camera view, and presentation HUD overlay">🌟 Client Ultra</button>
+              </div>
+
               <div style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
                 <button class="minibtn is-on" id="viewFocusUnitBtn" title="Toggle between focusing on the active modular unit or viewing the full architectural home" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus Unit</button>
                 <button class="minibtn is-on" id="camRotateModeBtn" title="Rotate View: Left-click and drag anywhere to orbit 3D view smoothly" style="font-weight:600;">🔄 Rotate View</button>
@@ -4021,13 +4071,6 @@ body.role-employee #adminCreateEmpBox,
                   <input type="range" id="spotlightSlider" min="0" max="3" step="0.1" value="0" style="width:60px;cursor:pointer;vertical-align:middle;">
                   <span id="spotlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">0.0</span>
                 </span>
-              </div>
-
-              <!-- 3 Quality Modes: Design, Realistic, Client Presentation -->
-              <div class="render-mode-group" id="renderModeGroup" style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.92);padding:2px 4px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;">
-                <button type="button" class="minibtn" id="modeDesignBtn" title="Fast Design Drafting Mode (Basic Materials, High FPS)">⚡ Design</button>
-                <button type="button" class="minibtn is-on" id="modeRealisticBtn" title="PBR Realistic Preview (Physical Materials, Soft Shadows)">✨ Realistic</button>
-                <button type="button" class="minibtn" id="modeUltraBtn" title="Client Presentation Ultra Mode">🌟 Ultra</button>
               </div>
 
               <!-- Time of Day Presets -->
@@ -26926,46 +26969,83 @@ body.role-employee #adminCreateEmpBox,
       var modeDesignBtn = document.getElementById('modeDesignBtn');
       var modeRealisticBtn = document.getElementById('modeRealisticBtn');
       var modeUltraBtn = document.getElementById('modeUltraBtn');
+      var cpModeDesignBtn = document.getElementById('cpModeDesignBtn');
+      var cpModeRealisticBtn = document.getElementById('cpModeRealisticBtn');
+      var cpModeUltraBtn = document.getElementById('cpModeUltraBtn');
       var todDayBtn = document.getElementById('todDayBtn');
       var todEveBtn = document.getElementById('todEveBtn');
       var todNightBtn = document.getElementById('todNightBtn');
       var cpHud = document.getElementById('clientPresentationHud');
 
       function syncRenderModeUI(mode) {
-        [modeDesignBtn, modeRealisticBtn, modeUltraBtn].forEach(function (btn) {
+        mode = (mode || 'realistic').toLowerCase();
+        if (mode === 'ultra') mode = 'presentation';
+
+        [modeDesignBtn, modeRealisticBtn, modeUltraBtn, cpModeDesignBtn, cpModeRealisticBtn, cpModeUltraBtn].forEach(function (btn) {
           if (btn) btn.classList.remove('is-on');
         });
-        if (mode === 'design' && modeDesignBtn) modeDesignBtn.classList.add('is-on');
-        else if (mode === 'presentation' && modeUltraBtn) modeUltraBtn.classList.add('is-on');
-        else if (modeRealisticBtn) modeRealisticBtn.classList.add('is-on');
+
+        if (mode === 'design') {
+          if (modeDesignBtn) modeDesignBtn.classList.add('is-on');
+          if (cpModeDesignBtn) cpModeDesignBtn.classList.add('is-on');
+        } else if (mode === 'presentation') {
+          if (modeUltraBtn) modeUltraBtn.classList.add('is-on');
+          if (cpModeUltraBtn) cpModeUltraBtn.classList.add('is-on');
+        } else {
+          // realistic
+          if (modeRealisticBtn) modeRealisticBtn.classList.add('is-on');
+          if (cpModeRealisticBtn) cpModeRealisticBtn.classList.add('is-on');
+        }
       }
 
       function setRenderMode(mode) {
+        mode = (mode || 'realistic').toLowerCase();
+        if (mode === 'ultra') mode = 'presentation';
         var gl = window.GL || (window.__cc && window.__cc.gl);
         if (gl && gl.setRenderMode) gl.setRenderMode(mode);
         else if (typeof window.setRenderMode === 'function') window.setRenderMode(mode);
         syncRenderModeUI(mode);
+
         if (mode === 'presentation') {
           openClientPresentation();
+          if (typeof window.toast === 'function') {
+            window.toast('🌟 Client Ultra Mode: High-res PCF soft shadow maps (4096×4096), ACES Filmic (1.12), panoramic view & HUD');
+          }
+        } else if (mode === 'design') {
+          var viewDesign = document.getElementById('view-design');
+          if (viewDesign && viewDesign.classList.contains('present')) {
+            closeClientPresentation();
+          }
+          if (typeof window.toast === 'function') {
+            window.toast('⚡ Design Mode: Lightweight standard materials, shadows disabled, maximum 60 FPS');
+          }
+        } else {
+          // realistic
+          if (typeof window.toast === 'function') {
+            window.toast('✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows & HDRI reflections');
+          }
         }
       }
 
       if (modeDesignBtn) {
-        modeDesignBtn.addEventListener('click', function () {
-          setRenderMode('design');
-          if (typeof window.toast === 'function') window.toast('⚡ Switched to Fast Design Mode');
-        });
+        modeDesignBtn.addEventListener('click', function () { setRenderMode('design'); });
       }
+      if (cpModeDesignBtn) {
+        cpModeDesignBtn.addEventListener('click', function () { setRenderMode('design'); });
+      }
+
       if (modeRealisticBtn) {
-        modeRealisticBtn.addEventListener('click', function () {
-          setRenderMode('realistic');
-          if (typeof window.toast === 'function') window.toast('✨ Switched to PBR Realistic Mode');
-        });
+        modeRealisticBtn.addEventListener('click', function () { setRenderMode('realistic'); });
       }
+      if (cpModeRealisticBtn) {
+        cpModeRealisticBtn.addEventListener('click', function () { setRenderMode('realistic'); });
+      }
+
       if (modeUltraBtn) {
-        modeUltraBtn.addEventListener('click', function () {
-          setRenderMode('presentation');
-        });
+        modeUltraBtn.addEventListener('click', function () { setRenderMode('presentation'); });
+      }
+      if (cpModeUltraBtn) {
+        cpModeUltraBtn.addEventListener('click', function () { setRenderMode('presentation'); });
       }
 
       function syncTimeOfDayUI(tod) {
@@ -27011,6 +27091,12 @@ body.role-employee #adminCreateEmpBox,
         if (cpHudTitle && self.project && self.project.meta) {
           cpHudTitle.textContent = (self.project.meta.title || 'Modular Cupboard Design') + (self.project.meta.clientName ? ' — ' + self.project.meta.clientName : '');
         }
+        var pBtn = document.getElementById('presentBtn');
+        if (pBtn) {
+          pBtn.textContent = 'Exit present';
+          pBtn.setAttribute('aria-pressed', 'true');
+        }
+        syncRenderModeUI('presentation');
         var gl = window.GL || (window.__cc && window.__cc.gl);
         if (gl && gl.setRenderMode) gl.setRenderMode('presentation');
         if (gl && gl.apply) gl.apply(true);
@@ -27025,9 +27111,10 @@ body.role-employee #adminCreateEmpBox,
           pBtn.textContent = '⛶ Present';
           pBtn.setAttribute('aria-pressed', 'false');
         }
-        syncRenderModeUI('realistic');
+        var currentMode = (window.orbixRenderMode === 'design') ? 'design' : 'realistic';
+        syncRenderModeUI(currentMode);
         var gl = window.GL || (window.__cc && window.__cc.gl);
-        if (gl && gl.setRenderMode) gl.setRenderMode('realistic');
+        if (gl && gl.setRenderMode) gl.setRenderMode(currentMode);
         if (gl && gl.apply) gl.apply(true);
       }
 
@@ -37451,28 +37538,60 @@ body.role-employee #adminCreateEmpBox,
     },
     setRenderMode: function (mode) {
       mode = (mode || 'realistic').toLowerCase();
+      if (mode === 'ultra') mode = 'presentation';
       window.orbixRenderMode = mode;
       if (!renderer) return;
 
       if (mode === 'design') {
         renderer.shadowMap.enabled = false;
         renderer.toneMappingExposure = 1.0;
+        if (keyL) keyL.castShadow = false;
+        if (camera) {
+          camera.fov = 45;
+          camera.updateProjectionMatrix();
+        }
       } else if (mode === 'presentation') {
+        // 🌟 Client Ultra Mode: High-res PCF soft shadow maps (4096×4096), ACES Filmic (1.12), panoramic view
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.12;
+        if (keyL) {
+          keyL.castShadow = true;
+          keyL.shadow.mapSize.set(4096, 4096);
+          if (keyL.shadow.map) {
+            try { keyL.shadow.map.dispose(); } catch (e) { }
+            keyL.shadow.map = null;
+          }
+        }
+        if (camera) {
+          camera.fov = 65; // Panoramic camera perspective
+          camera.updateProjectionMatrix();
+        }
       } else {
-        // 'realistic'
+        // ✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows, HDRI reflections
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.08;
+        if (keyL) {
+          keyL.castShadow = true;
+          keyL.shadow.mapSize.set(2048, 2048);
+          if (keyL.shadow.map) {
+            try { keyL.shadow.map.dispose(); } catch (e) { }
+            keyL.shadow.map = null;
+          }
+        }
+        if (camera) {
+          camera.fov = 45;
+          camera.updateProjectionMatrix();
+        }
       }
 
       if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
         window.OrbixUI.render3DHome(true);
       }
+      apply(true);
       render();
     },
     setCameraPreset: function (preset) {

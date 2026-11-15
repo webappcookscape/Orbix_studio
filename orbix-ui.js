@@ -541,46 +541,83 @@
       var modeDesignBtn = document.getElementById('modeDesignBtn');
       var modeRealisticBtn = document.getElementById('modeRealisticBtn');
       var modeUltraBtn = document.getElementById('modeUltraBtn');
+      var cpModeDesignBtn = document.getElementById('cpModeDesignBtn');
+      var cpModeRealisticBtn = document.getElementById('cpModeRealisticBtn');
+      var cpModeUltraBtn = document.getElementById('cpModeUltraBtn');
       var todDayBtn = document.getElementById('todDayBtn');
       var todEveBtn = document.getElementById('todEveBtn');
       var todNightBtn = document.getElementById('todNightBtn');
       var cpHud = document.getElementById('clientPresentationHud');
 
       function syncRenderModeUI(mode) {
-        [modeDesignBtn, modeRealisticBtn, modeUltraBtn].forEach(function (btn) {
+        mode = (mode || 'realistic').toLowerCase();
+        if (mode === 'ultra') mode = 'presentation';
+
+        [modeDesignBtn, modeRealisticBtn, modeUltraBtn, cpModeDesignBtn, cpModeRealisticBtn, cpModeUltraBtn].forEach(function (btn) {
           if (btn) btn.classList.remove('is-on');
         });
-        if (mode === 'design' && modeDesignBtn) modeDesignBtn.classList.add('is-on');
-        else if (mode === 'presentation' && modeUltraBtn) modeUltraBtn.classList.add('is-on');
-        else if (modeRealisticBtn) modeRealisticBtn.classList.add('is-on');
+
+        if (mode === 'design') {
+          if (modeDesignBtn) modeDesignBtn.classList.add('is-on');
+          if (cpModeDesignBtn) cpModeDesignBtn.classList.add('is-on');
+        } else if (mode === 'presentation') {
+          if (modeUltraBtn) modeUltraBtn.classList.add('is-on');
+          if (cpModeUltraBtn) cpModeUltraBtn.classList.add('is-on');
+        } else {
+          // realistic
+          if (modeRealisticBtn) modeRealisticBtn.classList.add('is-on');
+          if (cpModeRealisticBtn) cpModeRealisticBtn.classList.add('is-on');
+        }
       }
 
       function setRenderMode(mode) {
+        mode = (mode || 'realistic').toLowerCase();
+        if (mode === 'ultra') mode = 'presentation';
         var gl = window.GL || (window.__cc && window.__cc.gl);
         if (gl && gl.setRenderMode) gl.setRenderMode(mode);
         else if (typeof window.setRenderMode === 'function') window.setRenderMode(mode);
         syncRenderModeUI(mode);
+
         if (mode === 'presentation') {
           openClientPresentation();
+          if (typeof window.toast === 'function') {
+            window.toast('🌟 Client Ultra Mode: High-res PCF soft shadow maps (4096×4096), ACES Filmic (1.12), panoramic view & HUD');
+          }
+        } else if (mode === 'design') {
+          var viewDesign = document.getElementById('view-design');
+          if (viewDesign && viewDesign.classList.contains('present')) {
+            closeClientPresentation();
+          }
+          if (typeof window.toast === 'function') {
+            window.toast('⚡ Design Mode: Lightweight standard materials, shadows disabled, maximum 60 FPS');
+          }
+        } else {
+          // realistic
+          if (typeof window.toast === 'function') {
+            window.toast('✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows & HDRI reflections');
+          }
         }
       }
 
       if (modeDesignBtn) {
-        modeDesignBtn.addEventListener('click', function () {
-          setRenderMode('design');
-          if (typeof window.toast === 'function') window.toast('⚡ Switched to Fast Design Mode');
-        });
+        modeDesignBtn.addEventListener('click', function () { setRenderMode('design'); });
       }
+      if (cpModeDesignBtn) {
+        cpModeDesignBtn.addEventListener('click', function () { setRenderMode('design'); });
+      }
+
       if (modeRealisticBtn) {
-        modeRealisticBtn.addEventListener('click', function () {
-          setRenderMode('realistic');
-          if (typeof window.toast === 'function') window.toast('✨ Switched to PBR Realistic Mode');
-        });
+        modeRealisticBtn.addEventListener('click', function () { setRenderMode('realistic'); });
       }
+      if (cpModeRealisticBtn) {
+        cpModeRealisticBtn.addEventListener('click', function () { setRenderMode('realistic'); });
+      }
+
       if (modeUltraBtn) {
-        modeUltraBtn.addEventListener('click', function () {
-          setRenderMode('presentation');
-        });
+        modeUltraBtn.addEventListener('click', function () { setRenderMode('presentation'); });
+      }
+      if (cpModeUltraBtn) {
+        cpModeUltraBtn.addEventListener('click', function () { setRenderMode('presentation'); });
       }
 
       function syncTimeOfDayUI(tod) {
@@ -626,6 +663,12 @@
         if (cpHudTitle && self.project && self.project.meta) {
           cpHudTitle.textContent = (self.project.meta.title || 'Modular Cupboard Design') + (self.project.meta.clientName ? ' — ' + self.project.meta.clientName : '');
         }
+        var pBtn = document.getElementById('presentBtn');
+        if (pBtn) {
+          pBtn.textContent = 'Exit present';
+          pBtn.setAttribute('aria-pressed', 'true');
+        }
+        syncRenderModeUI('presentation');
         var gl = window.GL || (window.__cc && window.__cc.gl);
         if (gl && gl.setRenderMode) gl.setRenderMode('presentation');
         if (gl && gl.apply) gl.apply(true);
@@ -640,9 +683,10 @@
           pBtn.textContent = '⛶ Present';
           pBtn.setAttribute('aria-pressed', 'false');
         }
-        syncRenderModeUI('realistic');
+        var currentMode = (window.orbixRenderMode === 'design') ? 'design' : 'realistic';
+        syncRenderModeUI(currentMode);
         var gl = window.GL || (window.__cc && window.__cc.gl);
-        if (gl && gl.setRenderMode) gl.setRenderMode('realistic');
+        if (gl && gl.setRenderMode) gl.setRenderMode(currentMode);
         if (gl && gl.apply) gl.apply(true);
       }
 

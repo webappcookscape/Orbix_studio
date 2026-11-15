@@ -51,3 +51,4 @@ assert(desktopAppIndex.includes('id="railFloatingExpandBtn"'), 'Desktop build mu
 console.log('✓ PASS: Desktop build dist-desktop is fully synchronized');
 
 console.log('ALL COLLAPSIBLE SIDEBAR TESTS PASSED 100%!');
+

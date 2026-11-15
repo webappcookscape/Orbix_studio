@@ -3930,28 +3930,60 @@
     },
     setRenderMode: function (mode) {
       mode = (mode || 'realistic').toLowerCase();
+      if (mode === 'ultra') mode = 'presentation';
       window.orbixRenderMode = mode;
       if (!renderer) return;
 
       if (mode === 'design') {
         renderer.shadowMap.enabled = false;
         renderer.toneMappingExposure = 1.0;
+        if (keyL) keyL.castShadow = false;
+        if (camera) {
+          camera.fov = 45;
+          camera.updateProjectionMatrix();
+        }
       } else if (mode === 'presentation') {
+        // 🌟 Client Ultra Mode: High-res PCF soft shadow maps (4096×4096), ACES Filmic (1.12), panoramic view
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.12;
+        if (keyL) {
+          keyL.castShadow = true;
+          keyL.shadow.mapSize.set(4096, 4096);
+          if (keyL.shadow.map) {
+            try { keyL.shadow.map.dispose(); } catch (e) { }
+            keyL.shadow.map = null;
+          }
+        }
+        if (camera) {
+          camera.fov = 65; // Panoramic camera perspective
+          camera.updateProjectionMatrix();
+        }
       } else {
-        // 'realistic'
+        // ✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows, HDRI reflections
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.08;
+        if (keyL) {
+          keyL.castShadow = true;
+          keyL.shadow.mapSize.set(2048, 2048);
+          if (keyL.shadow.map) {
+            try { keyL.shadow.map.dispose(); } catch (e) { }
+            keyL.shadow.map = null;
+          }
+        }
+        if (camera) {
+          camera.fov = 45;
+          camera.updateProjectionMatrix();
+        }
       }
 
       if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
         window.OrbixUI.render3DHome(true);
       }
+      apply(true);
       render();
     },
     setCameraPreset: function (preset) {
