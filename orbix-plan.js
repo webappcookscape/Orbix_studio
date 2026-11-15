@@ -2982,9 +2982,10 @@
     var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '' && (!isWall && !isLoftPlan && !isSpicePlan || parseFloat(this.furniturePreset.elevation) > 0)) ?
       parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
+    var furnId = (Core.uid ? Core.uid('furn') : ('furn_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5)));
     var furn = Core.createFurniturePlacement({
-      id: this.furniturePreset.id,
-      catalogItemId: this.furniturePreset.catalogItemId || this.furniturePreset.id,
+      id: furnId,
+      catalogItemId: this.furniturePreset.catalogItemId || this.furniturePreset.id || this.furniturePreset.code,
       modelType: this.furniturePreset.modelType,
       name: this.furniturePreset.name,
       category: this.furniturePreset.category,

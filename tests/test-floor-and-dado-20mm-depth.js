@@ -124,3 +124,4 @@ assert.strictEqual(floorMesh.userData.floorFinish, 'wooden');
 console.log('✓ Dynamic material and UV mapping updated smoothly on 20mm extruded slab!');
 
 console.log('\nALL 20mm FLOOR & DADO TILE DEPTH CHECKS PASSED PERFECTLY!');
+

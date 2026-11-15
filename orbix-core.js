@@ -791,8 +791,17 @@
     if (typeof opts === 'string') {
       var found = FURNITURE_CATALOG.find(function (c) { return c.id === opts; });
       opts = found ? Object.assign({}, found) : { id: opts, name: opts };
+      // When instantiated from catalog string, preserve catalog template ID as catalogItemId, and generate unique instance id
+      opts.catalogItemId = opts.catalogItemId || opts.id;
+      delete opts.id;
     }
     opts = opts || {};
+    var isCatalogTemplate = opts.id ? FURNITURE_CATALOG.some(function (c) { return c.id === opts.id; }) : false;
+    var catalogItemId = opts.catalogItemId || (isCatalogTemplate ? opts.id : (opts.code || null));
+    var instanceId = opts.id;
+    if (!instanceId || isCatalogTemplate) {
+      instanceId = uid('furn');
+    }
     var isDecor = !!(opts.isDecor || opts.excludeFromPricing || opts.category === 'decor' || opts.category === 'appliance_decor');
     var cat = (opts.category || (isDecor ? 'decor' : 'wardrobe')).toLowerCase();
     var nm = (opts.name || '').toLowerCase();
@@ -945,10 +954,10 @@
     while (initDrawerStates.length < numDrawers) initDrawerStates.push(false);
 
     return {
-      id: opts.id || uid('furn'),
+      id: instanceId,
       name: opts.name || 'Modular Unit',
       category: opts.category || 'wardrobe',
-      catalogItemId: opts.catalogItemId || opts.code || null,
+      catalogItemId: catalogItemId || opts.catalogItemId || opts.code || null,
       modelType: opts.modelType || null,
       costCategory: opts.costCategory || null,
       roomId: opts.roomId || null,
@@ -2539,6 +2548,18 @@
     if (!data.plan) data.plan = { walls: [], openings: [], rooms: [], furniture: [] };
     if (!data.rateCard) data.rateCard = JSON.parse(JSON.stringify(DEFAULT_RATE_CARD));
     if (!data.commercialCharges) data.commercialCharges = {};
+    // Ensure all furniture items have guaranteed unique instance IDs (de-duplicate legacy projects)
+    if (data.plan && Array.isArray(data.plan.furniture)) {
+      var seenFurnIds = {};
+      for (var fi = 0; fi < data.plan.furniture.length; fi++) {
+        var fn = data.plan.furniture[fi];
+        if (!fn.id || seenFurnIds[fn.id]) {
+          if (!fn.catalogItemId) fn.catalogItemId = fn.id || fn.code;
+          fn.id = uid('furn');
+        }
+        seenFurnIds[fn.id] = true;
+      }
+    }
     return data;
   }
 
