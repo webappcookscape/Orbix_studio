@@ -1619,6 +1619,7 @@
             self.pushHistory('Move Room');
           }
         }
+        var wasMovingUnderlay = (self.dragState && self.dragState.type === 'move_underlay');
         self.dragState = null;
         if (self.canvas) {
           if (self.activeTool === 'pan' || self.activeTool === 'move_underlay') {
@@ -1627,6 +1628,9 @@
         }
         self.render();
         if (typeof window !== 'undefined' && window.OrbixUI) {
+          if (wasMovingUnderlay && typeof window.OrbixUI.persistUnderlay === 'function') {
+            window.OrbixUI.persistUnderlay();
+          }
           if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
           if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
         }
@@ -2696,23 +2700,60 @@
       var fDims = furn.dimensions || {};
       var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || fDims.W || 900;
       var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || fDims.W || 900;
+      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || fDims.D || 560;
       fW = cW;
       fD = cD;
       halfW = cW / 2;
       halfD = cD / 2;
 
-      // Magnetic 90° corner snapping for L-shaped corner unit
+      // ── ROBUST 90° CORNER DETECTION & MAGNETIC SNAPPING FOR L-CORNER UNITS ──
+      var cornerCandidates = [];
+
+      // A. Inner room corners from room polygons
+      if (rooms && rooms.length > 0) {
+        for (var ri = 0; ri < rooms.length; ri++) {
+          var poly = rooms[ri].polygon;
+          if (!poly || poly.length < 3) continue;
+          var nPts = poly.length;
+          for (var pi = 0; pi < nPts; pi++) {
+            var currPt = poly[pi];
+            var prevPt = poly[(pi - 1 + nPts) % nPts];
+            var nextPt = poly[(pi + 1) % nPts];
+
+            var v1 = { x: nextPt.x - currPt.x, y: nextPt.y - currPt.y };
+            var v2 = { x: prevPt.x - currPt.x, y: prevPt.y - currPt.y };
+            var l1 = Math.hypot(v1.x, v1.y);
+            var l2 = Math.hypot(v2.x, v2.y);
+            if (l1 < 100 || l2 < 100) continue;
+            var u1 = { x: v1.x / l1, y: v1.y / l1 };
+            var u2 = { x: v2.x / l2, y: v2.y / l2 };
+            var dot = u1.x * u2.x + u1.y * u2.y;
+            // Near 90° interior corner (dot product between -0.4 and 0.4)
+            if (Math.abs(dot) < 0.4) {
+              cornerCandidates.push({
+                cornerPt: currPt,
+                dir1: u1,
+                dir2: u2,
+                room: rooms[ri]
+              });
+            }
+          }
+        }
+      }
+
+      // B. Candidate corners from intersecting / meeting walls (tolerance up to 120mm)
       for (var wa = 0; wa < walls.length; wa++) {
         var wA = walls[wa];
         if (wA.isDivider) continue;
         for (var wb = wa + 1; wb < walls.length; wb++) {
           var wB = walls[wb];
           if (wB.isDivider) continue;
+
           var sharedPt = null, endA = null, endB = null;
-          if (Vec2.dist(wA.start, wB.start) < 20) { sharedPt = wA.start; endA = wA.end; endB = wB.end; }
-          else if (Vec2.dist(wA.start, wB.end) < 20) { sharedPt = wA.start; endA = wA.end; endB = wB.start; }
-          else if (Vec2.dist(wA.end, wB.start) < 20) { sharedPt = wA.end; endA = wA.start; endB = wB.end; }
-          else if (Vec2.dist(wA.end, wB.end) < 20) { sharedPt = wA.end; endA = wA.start; endB = wB.start; }
+          if (Vec2.dist(wA.start, wB.start) < 120) { sharedPt = wA.start; endA = wA.end; endB = wB.end; }
+          else if (Vec2.dist(wA.start, wB.end) < 120) { sharedPt = wA.start; endA = wA.end; endB = wB.start; }
+          else if (Vec2.dist(wA.end, wB.start) < 120) { sharedPt = wA.end; endA = wA.start; endB = wB.end; }
+          else if (Vec2.dist(wA.end, wB.end) < 120) { sharedPt = wA.end; endA = wA.start; endB = wB.start; }
 
           if (sharedPt) {
             var vA = { x: endA.x - sharedPt.x, y: endA.y - sharedPt.y };
@@ -2723,31 +2764,81 @@
               var uA = { x: vA.x / lenA, y: vA.y / lenA };
               var uB = { x: vB.x / lenB, y: vB.y / lenB };
               var dotAB = uA.x * uB.x + uA.y * uB.y;
-              if (Math.abs(dotAB) < 0.25) {
+              if (Math.abs(dotAB) < 0.4) {
                 var halfTA = (wA.thickness || 150) / 2;
                 var halfTB = (wB.thickness || 150) / 2;
                 var innerCornerPt = {
                   x: sharedPt.x + halfTB * uA.x + halfTA * uB.x,
                   y: sharedPt.y + halfTB * uA.y + halfTA * uB.y
                 };
-                var cornerCenter = {
-                  x: innerCornerPt.x + (cW / 2) * uA.x + (cD / 2) * uB.x,
-                  y: innerCornerPt.y + (cW / 2) * uA.y + (cD / 2) * uB.y
-                };
-                var distCorner = Math.hypot(pos.x - cornerCenter.x, pos.y - cornerCenter.y);
-                if (distCorner < 350) {
-                  var rotAngle = Math.atan2(uA.y, uA.x);
-                  return {
-                    pos: cornerCenter,
-                    rotY: rotAngle,
-                    type: 'wall_snap',
-                    badgeLabel: '✓ Snapped Flush into Room Corner (90°)'
-                  };
-                }
+                cornerCandidates.push({
+                  cornerPt: innerCornerPt,
+                  dir1: uA,
+                  dir2: uB,
+                  wallA: wA,
+                  wallB: wB
+                });
               }
             }
           }
         }
+      }
+
+      // Find best matching corner candidate
+      var bestCornerSnap = null;
+      var minCornerDist = 480; // mm magnetic snap radius
+
+      for (var ci = 0; ci < cornerCandidates.length; ci++) {
+        var cc = cornerCandidates[ci];
+        var cPt = cc.cornerPt;
+        var dirA = cc.dir1;
+        var dirB = cc.dir2;
+
+        // In Cookscape L-corner coordinate system:
+        // Arm 1 (width cW) extends from outer corner along local -u
+        // Arm 2 (depth cD) extends from outer corner along local +v
+        // Outer corner is at (+cW/2, -cD/2)
+        // Center = C_outer - (cW/2) * u + (cD/2) * v
+        // Evaluate the 4 orthogonal rotations: 0, π/2, π, 3π/2
+        var angles = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
+        for (var ai = 0; ai < angles.length; ai++) {
+          var aTest = angles[ai];
+          var u = { x: Math.cos(aTest), y: Math.sin(aTest) };
+          var v = { x: -Math.sin(aTest), y: Math.cos(aTest) };
+          var arm1Dir = { x: -u.x, y: -u.y };
+          var arm2Dir = { x: v.x, y: v.y };
+
+          // Verify if Arm 1 aligns with dirA and Arm 2 aligns with dirB, OR vice versa
+          var dot1A = arm1Dir.x * dirA.x + arm1Dir.y * dirA.y;
+          var dot2B = arm2Dir.x * dirB.x + arm2Dir.y * dirB.y;
+          var dot1B = arm1Dir.x * dirB.x + arm1Dir.y * dirB.y;
+          var dot2A = arm2Dir.x * dirA.x + arm2Dir.y * dirA.y;
+
+          var matchesConfigA = (dot1A > 0.75 && dot2B > 0.75);
+          var matchesConfigB = (dot1B > 0.75 && dot2A > 0.75);
+
+          if (matchesConfigA || matchesConfigB) {
+            var candidateCenter = {
+              x: cPt.x - (cW / 2) * u.x + (cD / 2) * v.x,
+              y: cPt.y - (cW / 2) * u.y + (cD / 2) * v.y
+            };
+            var dCursor = Math.hypot(pos.x - candidateCenter.x, pos.y - candidateCenter.y);
+            if (dCursor < minCornerDist) {
+              minCornerDist = dCursor;
+              bestCornerSnap = {
+                pos: candidateCenter,
+                rotY: aTest,
+                type: 'wall_snap',
+                badgeLabel: '✓ Snapped Flush into Room Corner (90°)',
+                cornerPt: cPt
+              };
+            }
+          }
+        }
+      }
+
+      if (bestCornerSnap) {
+        return bestCornerSnap;
       }
     }
 

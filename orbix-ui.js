@@ -48,6 +48,74 @@
     return fb;
   };
 
+  // IndexedDB Persistence for Blueprint Underlays (avoids LocalStorage 5MB quota)
+  var OrbixUnderlayDB = (function () {
+    var DB_NAME = 'orbix_underlays_db';
+    var STORE_NAME = 'underlays';
+    var dbPromise = null;
+
+    function getDB() {
+      if (dbPromise) return dbPromise;
+      if (typeof indexedDB === 'undefined') return Promise.resolve(null);
+      dbPromise = new Promise(function (resolve) {
+        try {
+          var req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = function (e) {
+            var db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+              db.createObjectStore(STORE_NAME, { keyPath: 'projectId' });
+            }
+          };
+          req.onsuccess = function (e) { resolve(e.target.result); };
+          req.onerror = function () { resolve(null); };
+        } catch (_) { resolve(null); }
+      });
+      return dbPromise;
+    }
+
+    return {
+      save: function (projectId, underlayData) {
+        if (!projectId || !underlayData) return;
+        getDB().then(function (db) {
+          if (!db) return;
+          try {
+            var tx = db.transaction([STORE_NAME], 'readwrite');
+            var store = tx.objectStore(STORE_NAME);
+            store.put({ projectId: String(projectId), data: underlayData, timestamp: Date.now() });
+          } catch (_) {}
+        });
+      },
+      get: function (projectId, callback) {
+        if (!projectId) { if (callback) callback(null); return; }
+        getDB().then(function (db) {
+          if (!db) { if (callback) callback(null); return; }
+          try {
+            var tx = db.transaction([STORE_NAME], 'readonly');
+            var store = tx.objectStore(STORE_NAME);
+            var req = store.get(String(projectId));
+            req.onsuccess = function () {
+              var res = req.result ? req.result.data : null;
+              if (callback) callback(res);
+            };
+            req.onerror = function () { if (callback) callback(null); };
+          } catch (_) { if (callback) callback(null); }
+        });
+      },
+      remove: function (projectId) {
+        if (!projectId) return;
+        getDB().then(function (db) {
+          if (!db) return;
+          try {
+            var tx = db.transaction([STORE_NAME], 'readwrite');
+            var store = tx.objectStore(STORE_NAME);
+            store.delete(String(projectId));
+          } catch (_) {}
+        });
+      }
+    };
+  })();
+  if (typeof window !== 'undefined') window.OrbixUnderlayDB = OrbixUnderlayDB;
+
   var OrbixUI = {
     editor: null,
     project: null,
@@ -173,6 +241,7 @@
       this.bindToolbar();
       this.updateUI();
       this.renderBOQ();
+      this.restoreUnderlay(this.project);
 
       window.addEventListener('beforeunload', function () {
         if (self.flushAutoSave) self.flushAutoSave();
@@ -209,6 +278,7 @@
         if (typeof this.editor.zoomFit === 'function') {
           this.editor.zoomFit();
         }
+        this.restoreUnderlay(proj);
       }
       this.updateUI();
       this.renderBOQ();
@@ -291,6 +361,125 @@
           localStorage.setItem('orbix_active_project_id', String(activeId));
         }
       } catch (e) {}
+    },
+
+    persistUnderlay: function () {
+      if (!this.editor || !this.editor.underlay) return;
+      var u = this.editor.underlay;
+      var pId = (this.project && (this.project.id || this.project._projectId || (this.project.meta && this.project.meta.id))) || '';
+      var uData = null;
+      if (u.img && (u.dataUrl || u.img.src)) {
+        uData = {
+          dataUrl: u.dataUrl || u.img.src,
+          width: u.width || u.img.naturalWidth || 1000,
+          height: u.height || u.img.naturalHeight || 1000,
+          scale: u.scale || 10,
+          x: u.x || 0,
+          y: u.y || 0,
+          visible: u.visible !== false,
+          opacity: u.opacity !== undefined ? u.opacity : 0.45
+        };
+      }
+      if (this.project && this.project.plan) {
+        this.project.plan.underlay = uData;
+      }
+      if (this.editor && this.editor.project && this.editor.project.plan) {
+        this.editor.project.plan.underlay = uData;
+      }
+      if (pId) {
+        if (uData) {
+          try {
+            localStorage.setItem('orbix_underlay_' + pId, JSON.stringify(uData));
+          } catch (_) {}
+          if (window.OrbixUnderlayDB) {
+            window.OrbixUnderlayDB.save(pId, uData);
+          }
+        } else {
+          try {
+            localStorage.removeItem('orbix_underlay_' + pId);
+          } catch (_) {}
+          if (window.OrbixUnderlayDB) {
+            window.OrbixUnderlayDB.remove(pId);
+          }
+        }
+      }
+      if (typeof this.queueAutoSave === 'function') {
+        this.queueAutoSave();
+      }
+    },
+
+    restoreUnderlay: function (proj) {
+      var self = this;
+      if (!self.editor) return;
+      proj = proj || self.project;
+      if (!proj) return;
+      var pId = proj.id || proj._projectId || (proj.meta && proj.meta.id) || '';
+
+      function applyUnderlayData(uData) {
+        if (!uData || (!uData.dataUrl && !uData.imgSrc)) {
+          self.editor.underlay = { img: null, calibPoints: [] };
+          var ctrl = document.getElementById('planUnderlayControls');
+          if (ctrl) ctrl.style.display = 'none';
+          self.editor.render();
+          return;
+        }
+        var src = uData.dataUrl || uData.imgSrc;
+        var img = new Image();
+        img.onload = function () {
+          self.editor.underlay = {
+            img: img,
+            dataUrl: src,
+            width: uData.width || img.naturalWidth,
+            height: uData.height || img.naturalHeight,
+            scale: uData.scale || 10,
+            x: uData.x || 0,
+            y: uData.y || 0,
+            visible: uData.visible !== false,
+            opacity: uData.opacity !== undefined ? uData.opacity : 0.45,
+            calibPoints: []
+          };
+          var controls = document.getElementById('planUnderlayControls');
+          if (controls) controls.style.display = 'inline-flex';
+          var opSlider = document.getElementById('planUnderlayOpacity');
+          if (opSlider) opSlider.value = String(self.editor.underlay.opacity);
+          var btnToggle = document.getElementById('planToggleUnderlayBtn');
+          if (btnToggle) btnToggle.textContent = self.editor.underlay.visible ? '👁 Show' : '👁‍🗨 Hide';
+          self.editor.render();
+        };
+        img.src = src;
+      }
+
+      // 1. Check in-project plan underlay
+      var uPlan = proj.plan && proj.plan.underlay;
+      if (uPlan && (uPlan.dataUrl || uPlan.imgSrc)) {
+        applyUnderlayData(uPlan);
+        return;
+      }
+
+      // 2. Check localStorage cached underlay
+      if (pId) {
+        try {
+          var cached = localStorage.getItem('orbix_underlay_' + pId);
+          if (cached) {
+            var parsed = JSON.parse(cached);
+            if (parsed && (parsed.dataUrl || parsed.imgSrc)) {
+              if (proj.plan) proj.plan.underlay = parsed;
+              applyUnderlayData(parsed);
+              return;
+            }
+          }
+        } catch (_) {}
+
+        // 3. Check IndexedDB fallback (handles 10MB+ images without quota limit)
+        if (window.OrbixUnderlayDB) {
+          window.OrbixUnderlayDB.get(pId, function (dbData) {
+            if (dbData && (dbData.dataUrl || dbData.imgSrc)) {
+              if (proj.plan) proj.plan.underlay = dbData;
+              applyUnderlayData(dbData);
+            }
+          });
+        }
+      }
     },
 
     bindToolbar: function () {
@@ -1011,9 +1200,11 @@
           if (!file) return;
           var reader = new FileReader();
           reader.onload = function (ev) {
+            var dataUrl = ev.target.result;
             var img = new Image();
             img.onload = function () {
               self.editor.underlay.img = img;
+              self.editor.underlay.dataUrl = dataUrl;
               self.editor.underlay.width = img.naturalWidth;
               self.editor.underlay.height = img.naturalHeight;
               self.editor.underlay.scale = 10; // Default: 10 mm per pixel (1000px = 10m)
@@ -1022,6 +1213,8 @@
               self.editor.underlay.visible = true;
               self.editor.underlay.opacity = 0.45;
               self.editor.underlay.calibPoints = [];
+
+              self.persistUnderlay();
 
               var controls = document.getElementById('planUnderlayControls');
               if (controls) controls.style.display = 'inline-flex';
@@ -1032,7 +1225,7 @@
               self.editor.zoomFit();
               self.editor.render();
             };
-            img.src = ev.target.result;
+            img.src = dataUrl;
           };
           reader.readAsDataURL(file);
           planImgInput.value = '';
@@ -1053,6 +1246,7 @@
             btnMoveUnderlay.classList.remove('is-active');
             btnMoveUnderlay.style.background = '';
             btnMoveUnderlay.style.color = '';
+            self.persistUnderlay();
           } else {
             self.editor.setTool('move_underlay');
             var allToolBtns = document.querySelectorAll('.plan-tool-btn');
@@ -1086,6 +1280,7 @@
         opSlider.addEventListener('input', function (e) {
           if (self.editor.underlay) {
             self.editor.underlay.opacity = parseFloat(e.target.value);
+            self.persistUnderlay();
             self.editor.render();
           }
         });
@@ -1097,6 +1292,7 @@
           if (self.editor.underlay) {
             self.editor.underlay.visible = !self.editor.underlay.visible;
             btnToggleUnderlay.textContent = self.editor.underlay.visible ? '👁 Show' : '👁‍🗨 Hide';
+            self.persistUnderlay();
             self.editor.render();
           }
         });
@@ -1108,6 +1304,7 @@
           if (confirm('Remove the imported floor plan background image?')) {
             if (self.editor.underlay) {
               self.editor.underlay.img = null;
+              self.editor.underlay.dataUrl = null;
               self.editor.underlay.calibPoints = [];
             }
             if (self.editor.activeTool === 'calibrate') {
@@ -1118,6 +1315,7 @@
                 selBtn.classList.add('is-active');
               }
             }
+            self.persistUnderlay();
             var controls = document.getElementById('planUnderlayControls');
             if (controls) controls.style.display = 'none';
             self.editor.render();
@@ -1138,6 +1336,7 @@
           if (realMm > 50 && pixelDist > 0) {
             var newScale = realMm / pixelDist;
             self.editor.underlay.scale = newScale;
+            self.persistUnderlay();
             self.closeCalibrateModal();
             self.editor.zoomFit();
             self.editor.render();
