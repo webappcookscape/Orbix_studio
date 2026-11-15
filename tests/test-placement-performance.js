@@ -61,3 +61,4 @@ console.log('✓ PASS: Placed 50 units in ' + elapsedMs + ' ms (budget: < 50ms, 
 assert(elapsedMs < 100, '50 unit placements must execute in under 100ms');
 
 console.log('ALL PLACEMENT PERFORMANCE TESTS PASSED 100%!');
+

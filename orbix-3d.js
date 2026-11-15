@@ -3425,9 +3425,9 @@
     var catOS = (furn.category || '').toLowerCase();
     var nameOS = (furn.name || '').toLowerCase();
     var isLoftOS = (catOS.indexOf('loft') !== -1 || nameOS.indexOf('loft') !== -1 || (furn.id && furn.id.indexOf('loft') !== -1));
-    var isWallOS = (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)));
+    var isWallOS = !isLoftOS && (catOS.indexOf('wall') !== -1 || nameOS.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(nameOS) || (furn.id && /(wm|wcm)/i.test(furn.id)));
     var isTrueOnlyShutter = !!(furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1);
-    var isBaseOS = (isBase || catOS === 'kitchen_base' || catOS === 'kitchen_fm' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || catOS === 'crockery' || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS));
+    var isBaseOS = (isBase || catOS === 'kitchen_base' || catOS === 'kitchen_fm' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || nameOS.indexOf('fm') !== -1 || (furn.id && /fm/i.test(furn.id)) || catOS === 'crockery' || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS));
 
     var baseD = (dims.D && dims.D > 100) ? dims.D : (isBaseOS ? 550 : 18);
     var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
@@ -3813,10 +3813,13 @@
       return this.buildDecorMesh(furn, fg, dims);
     }
     var isBed = (cat === 'bed' || name.indexOf('bed') !== -1);
-    var isOpenBox = (cat === 'spice_rack' ||
-                     (cat.indexOf('open') !== -1 && cat.indexOf('shutter') === -1) ||
-                     (name.indexOf('open box') !== -1 || name.indexOf('open storage') !== -1) ||
-                     (furn.unitConfig && (furn.unitConfig.doorType === 'open' || furn.unitConfig.type === 'open')));
+    var isOpenBox = !isDecor && (
+      name.indexOf('open box') !== -1 || name.indexOf('open storage') !== -1 ||
+      (furn.id && /^(ob-|open-box|ctvw-open|ctvw-obs)/i.test(furn.id)) ||
+      (furn.code && /^(ob-|open-box)/i.test(furn.code)) ||
+      (cat.indexOf('open') !== -1 && cat.indexOf('shutter') === -1) ||
+      (furn.unitConfig && (furn.unitConfig.doorType === 'open' || furn.unitConfig.type === 'open'))
+    );
     var isElevatedUnit = (furn.elevation !== undefined && parseFloat(furn.elevation) >= 1000) ||
       (furn.pos && parseFloat(furn.pos.z) >= 1000) ||
       (furn.unitConfig && (furn.unitConfig.ctype === 'kwall' || furn.unitConfig.ctype === 'wall')) ||
@@ -4168,7 +4171,8 @@
     var nameFM = (furn.name || '').toLowerCase();
     var isCrockeryOnlyDoors = (catFM.indexOf('crockery') !== -1 || nameFM.indexOf('crockery') !== -1) &&
                               (nameFM.indexOf('only door') !== -1 || (furn.id && furn.id.indexOf('doors-only') !== -1) || (furn.unitConfig && furn.unitConfig.isOnlyShutter));
-    var explicitlyNoShelves = (furn.unitConfig && furn.unitConfig.shelves === 0) || isCrockeryOnlyDoors;
+    var isSpiceRackCabinet = (catFM.indexOf('spice') !== -1 || nameFM.indexOf('spice') !== -1 || (furn.id && /^(sr-|spice)/i.test(furn.id)));
+    var explicitlyNoShelves = (furn.unitConfig && furn.unitConfig.shelves === 0) || isCrockeryOnlyDoors || isSpiceRackCabinet;
     var isKitchenFMorWM = (catFM.indexOf('kitchen') !== -1 || catFM.indexOf('fm') !== -1 || catFM.indexOf('wall') !== -1 || /(^|\b|_|-)(fm|fcm|fbcm|wm|wcm|wbcm)($|\b|_|-|\d+)/i.test(nameFM) || /(^|\b|_|-)(fm|fcm|fbcm|wm|wcm|wbcm)($|\b|_|-|\d+)/i.test(furn.id || ''));
     var isInternalDrawers = (furn.unitConfig && (furn.unitConfig.internalDrawers || furn.unitConfig.drawersInCenter)) ||
                             furn.id === 'wr-drawers' || furn.id === 'wr-1-drawers' ||
@@ -4251,16 +4255,24 @@
 
 // Realistic Drawers & Hinged Shutters with Interactive Open/Close & Individual Finishes
     var drawersCount = (furn.unitConfig && furn.unitConfig.drawers !== undefined) ? parseInt(furn.unitConfig.drawers) : 0;
+    var isFmD2 = /(^|\b|_|-)(fm[-_ ]*d2)($|\b|_|-|\d+)/i.test(String(name || '') + ' ' + String(furn.id || '') + ' ' + String(furn.code || ''));
+    var isFmD3 = /(^|\b|_|-)(fm[-_ ]*d3)($|\b|_|-|\d+)/i.test(String(name || '') + ' ' + String(furn.id || '') + ' ' + String(furn.code || ''));
+    var isD2orD3 = isFmD2 || isFmD3;
     var numShutters = (furn.unitConfig && furn.unitConfig.shutters !== undefined) ?
       parseInt(furn.unitConfig.shutters) :
       (isOpenBox ? 0 : ((drawersCount > 0 && dims.H < 1000 && !isInternalDrawers) ? 0 : (dims.W > 1200 ? 3 : dims.W > 600 ? 2 : 1)));
+    if (isD2orD3) {
+      numShutters = 0;
+      if (isFmD2 && drawersCount === 0) drawersCount = 2;
+      if (isFmD3 && drawersCount === 0) drawersCount = 3;
+    }
 
     var totalDrawersH = 0;
     var drawerH = 0;
 
     // 7. Drawers Geometry & Sliding Groups
     var drawersOnTop = (furn.unitConfig && furn.unitConfig.drawersOnTop !== undefined) ? !!furn.unitConfig.drawersOnTop : (numShutters > 0);
-    var isSideBySide = (drawersCount === 2 && (furn.unitConfig && (furn.unitConfig.drawersSideBySide || dims.W >= 700)) && !isInternalDrawers);
+    var isSideBySide = !isFmD2 && (drawersCount === 2 && (furn.unitConfig && furn.unitConfig.drawersSideBySide === true) && !isInternalDrawers);
 
     var isInternalSideBySide = isInternalDrawers && (drawersCount >= 2);
 
@@ -4616,11 +4628,13 @@
 
     // Position and rotate unit (with elevation from finished floor level!)
     var isLoftUnit = (cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || (furn.id && String(furn.id).indexOf('loft') !== -1) || (furn.code && String(furn.code).indexOf('loft') !== -1));
-    var isSpiceUnit = (cat.indexOf('spice') !== -1 || name.indexOf('spice') !== -1 || (furn.id && String(furn.id).indexOf('spice') !== -1) || (furn.id && String(furn.id).indexOf('sr-') === 0));
-    var defElevUnit = isLoftUnit ? 2100 : (isSpiceUnit ? 1350 : (isWall ? 1500 : 0));
-    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '' && (!isWall && !isLoftUnit && !isSpiceUnit || parseFloat(furn.elevation) > 0)) ?
+    var isOpenBoxUnit = isOpenBox || (name.indexOf('open box') !== -1 || (furn.id && /^(ob-|open-box|ctvw-open|ctvw-obs)/i.test(furn.id)));
+    var isSpiceUnit = !isOpenBoxUnit && (cat.indexOf('spice') !== -1 || name.indexOf('spice') !== -1 || (furn.id && String(furn.id).indexOf('spice') !== -1) || (furn.id && String(furn.id).indexOf('sr-') === 0));
+    var defElevUnit = isLoftUnit ? 2100 : (isOpenBoxUnit ? 1500 : (isSpiceUnit ? 1350 : (isWall ? 1500 : 0)));
+    var isElevatedTypeUnit = isWall || isLoftUnit || isSpiceUnit || isOpenBoxUnit;
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '' && (!isElevatedTypeUnit || parseFloat(furn.elevation) > 0)) ?
       parseFloat(furn.elevation) :
-      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && (!isWall && !isLoftUnit && !isSpiceUnit || parseFloat(furn.pos.z) > 0)) ?
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && (!isElevatedTypeUnit || parseFloat(furn.pos.z) > 0)) ?
         parseFloat(furn.pos.z) :
         defElevUnit);
 

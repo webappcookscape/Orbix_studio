@@ -758,8 +758,10 @@
     var cd = (code || '').toLowerCase();
     var cc = (costCategory || '').toLowerCase();
 
-    // Base units are never wall units
-    if (nm.indexOf('base') !== -1 || cat.indexOf('base') !== -1 || cc.indexOf('base') !== -1 || cd.indexOf('base') !== -1) {
+    // Base units (including FM floor mounted kitchen units) are never wall units
+    if (nm.indexOf('base') !== -1 || cat.indexOf('base') !== -1 || cc.indexOf('base') !== -1 || cd.indexOf('base') !== -1 ||
+        cat === 'kitchen_fm' || nm.indexOf('fm') !== -1 || /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(nm) ||
+        /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(cd) || cc.indexOf('fm') !== -1) {
       return false;
     }
 
@@ -767,7 +769,7 @@
     if (cat.indexOf('wall') !== -1 || cat.indexOf('overhead') !== -1 || cat.indexOf('spice') !== -1 ||
         cat.indexOf('loft') !== -1 || cat.indexOf('wm') !== -1 || cat.indexOf('wcm') !== -1 ||
         cat === 'k_wall' || cat === 'kitchen_wall' || cat === 'crockery_wall' || cat === 'spice_rack' ||
-        cat === 'loft_os' || cat === 'kitchen_os' || cat === 'kitchen_wm') {
+        cat === 'loft_os' || cat === 'kitchen_wm') {
       return true;
     }
     if (cc.indexOf('wall') !== -1 || cc.indexOf('overhead') !== -1 || cc.indexOf('spice') !== -1 ||
@@ -795,7 +797,18 @@
     var cat = (opts.category || (isDecor ? 'decor' : 'wardrobe')).toLowerCase();
     var nm = (opts.name || '').toLowerCase();
     var isWallUnit = !isDecor && isWallUnitCategory(opts.category, opts.name, opts.code || opts.catalogItemId, opts.costCategory);
-    var isSpiceRack = !isDecor && (cat.indexOf('spice') !== -1 || nm.indexOf('spice') !== -1 || (opts.code && opts.code.toLowerCase().indexOf('spice') !== -1) || (opts.id && opts.id.toLowerCase().indexOf('spice') !== -1) || (opts.id && opts.id.toLowerCase().indexOf('sr-') === 0));
+    var isOpenBox = !isDecor && (
+      nm.indexOf('open box') !== -1 || nm.indexOf('open_box') !== -1 ||
+      (opts.id && /^(ob-|open-box|ctvw-open|ctvw-obs)/i.test(opts.id)) ||
+      (opts.code && /^(ob-|open-box)/i.test(opts.code))
+    );
+    var isSpiceRack = !isDecor && !isOpenBox && (
+      nm.indexOf('spice') !== -1 ||
+      (opts.code && opts.code.toLowerCase().indexOf('spice') !== -1) ||
+      (opts.id && opts.id.toLowerCase().indexOf('spice') !== -1) ||
+      (opts.id && /^sr-/i.test(opts.id)) ||
+      (cat === 'spice_rack' && !isOpenBox)
+    );
     var isLoft = (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1 || (opts.id && String(opts.id).indexOf('loft') !== -1) || (opts.code && String(opts.code).indexOf('loft') !== -1));
     var isGL = /(^|\b|_|-|\s)gl(\b|_|-|\s|\d+|$)/i.test(String(opts.name || '') + ' ' + String(opts.code || '') + ' ' + String(opts.id || ''));
     var isOS = !!(
@@ -808,10 +821,11 @@
       (opts.unitConfig && opts.unitConfig.isOnlyShutter)
     );
     var isBaseOS = isOS && !isLoft && !isWallUnit;
-    var defElev = isLoft ? 2100 : (isSpiceRack ? 1350 : (isWallUnit ? 1500 : 0));
-    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '' && (!isWallUnit && !isLoft && !isSpiceRack || parseFloat(opts.elevation) > 0)) ?
+    var defElev = isLoft ? 2100 : (isOpenBox ? 1500 : (isSpiceRack ? 1350 : (isWallUnit ? 1500 : 0)));
+    var isElevatedType = isWallUnit || isLoft || isSpiceRack || isOpenBox;
+    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '' && (!isElevatedType || parseFloat(opts.elevation) > 0)) ?
       parseFloat(opts.elevation) :
-      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && (!isWallUnit && !isLoft && !isSpiceRack || parseFloat(opts.pos.z) > 0)) ?
+      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && (!isElevatedType || parseFloat(opts.pos.z) > 0)) ?
         parseFloat(opts.pos.z) : defElev);
 
     // Kitchen FM & Base defaults: 100mm leg, countertop, 1 shelf
@@ -826,6 +840,9 @@
       if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = 100;
       if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'black';
       if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 1;
+      if (opts.dimensions && (opts.dimensions.D === undefined || opts.dimensions.D < 100)) {
+        opts.dimensions.D = 550;
+      }
     }
     if (isKitchenWM && !isLoft) {
       if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 1;
@@ -833,11 +850,40 @@
     if (isCrockeryOnlyDoors) {
       opts.unitConfig.shelves = 0;
     }
+    if (isSpiceRack) {
+      opts.unitConfig.shelves = 0;
+      opts.unitConfig.shutters = 0;
+      if (opts.elevation === undefined || opts.elevation === null || opts.elevation === 0) {
+        opts.elevation = 1350;
+      }
+    }
+    if (isOpenBox) {
+      opts.unitConfig.shutters = 0;
+      if (opts.elevation === undefined || opts.elevation === null || opts.elevation === 0) {
+        opts.elevation = 1500;
+      }
+    }
+    var isFmD2 = /(^|\b|_|-)(fm[-_ ]*d2)($|\b|_|-|\d+)/i.test(nm || opts.id || opts.code || '');
+    var isFmD3 = /(^|\b|_|-)(fm[-_ ]*d3)($|\b|_|-|\d+)/i.test(nm || opts.id || opts.code || '');
+    if (isFmD2) {
+      opts.unitConfig.drawers = 2;
+      opts.unitConfig.shutters = 0;
+      opts.unitConfig.doorType = 'none';
+      opts.unitConfig.drawersSideBySide = false;
+    }
+    if (isFmD3) {
+      opts.unitConfig.drawers = 3;
+      opts.unitConfig.shutters = 0;
+      opts.unitConfig.doorType = 'none';
+    }
     if (isBaseOS) {
       if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = true;
       if (opts.unitConfig.legs === undefined) opts.unitConfig.legs = 100;
       if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = 100;
       if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'black';
+      if (opts.dimensions && (opts.dimensions.D === undefined || opts.dimensions.D < 100)) {
+        opts.dimensions.D = 550;
+      }
     }
 
     var numShutters = (opts.unitConfig && opts.unitConfig.shutters !== undefined) ?
@@ -4011,7 +4057,8 @@
     "pricingOverrides": {
       "baseRate": 1650.75
     },
-    "customRate": 1650.75
+    "customRate": 1650.75,
+    "elevation": 1350
   },
   {
     "id": "sr-75",
@@ -4058,7 +4105,8 @@
     "pricingOverrides": {
       "baseRate": 2751.26
     },
-    "customRate": 2751.26
+    "customRate": 2751.26,
+    "elevation": 1350
   },
   {
     "id": "sr-90",
@@ -4105,7 +4153,8 @@
     "pricingOverrides": {
       "baseRate": 3301.51
     },
-    "customRate": 3301.51
+    "customRate": 3301.51,
+    "elevation": 1350
   },
   {
     "id": "tbm-60-oven",
@@ -4721,7 +4770,8 @@
     "pricingOverrides": {
       "baseRate": 8804.02
     },
-    "customRate": 8804.02
+    "customRate": 8804.02,
+    "elevation": 1500
   },
   {
     "id": "ob-200-300",
@@ -4768,7 +4818,8 @@
     "pricingOverrides": {
       "baseRate": 2201.01
     },
-    "customRate": 2201.01
+    "customRate": 2201.01,
+    "elevation": 1500
   },
   {
     "id": "ob-300-600",
@@ -4815,7 +4866,8 @@
     "pricingOverrides": {
       "baseRate": 8804.02
     },
-    "customRate": 8804.02
+    "customRate": 8804.02,
+    "elevation": 1500
   },
   {
     "id": "ledge-std",
@@ -5241,8 +5293,8 @@
       }
     },
     "unitConfig": {
-      "shutters": 2,
-      "doorType": "sliding",
+      "shutters": 0,
+      "doorType": "none",
       "dstyle": "slab",
       "glassTint": "none",
       "profileColor": "none",
@@ -5255,6 +5307,9 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
+      "hasLegs": true,
+      "legs": 100,
+      "mountType": "floor",
       "carcass": "MDF 6601",
       "shutterCol": "MDF 7707"
     },
@@ -5289,8 +5344,8 @@
       }
     },
     "unitConfig": {
-      "shutters": 3,
-      "doorType": "sliding",
+      "shutters": 0,
+      "doorType": "none",
       "dstyle": "slab",
       "glassTint": "none",
       "profileColor": "none",
@@ -5303,6 +5358,9 @@
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
+      "hasLegs": true,
+      "legs": 100,
+      "mountType": "floor",
       "carcass": "MDF 6601",
       "shutterCol": "MDF 7707"
     },
@@ -5404,7 +5462,8 @@
     "pricingOverrides": {
       "baseRate": 2201.01
     },
-    "customRate": 2201.01
+    "customRate": 2201.01,
+    "elevation": 1350
   },
   {
     "id": "wr-sliding",
@@ -5998,7 +6057,7 @@
     "dimensions": {
       "W": 1200,
       "H": 750,
-      "D": 18
+      "D": 550
     },
     "materials": {
       "shutter": {
@@ -6023,7 +6082,11 @@
       "drawers": 0,
       "loft": false,
       "loftH": 0,
-      "counter": "none",
+      "counter": "black",
+      "hasLegs": true,
+      "legs": 100,
+      "plinthH": 100,
+      "mountType": "floor",
       "handle": "gprof",
       "hfinish": "black",
       "led": false,
@@ -6048,7 +6111,7 @@
     "dimensions": {
       "W": 600,
       "H": 750,
-      "D": 18
+      "D": 550
     },
     "materials": {
       "shutter": {
@@ -6073,7 +6136,11 @@
       "drawers": 0,
       "loft": false,
       "loftH": 0,
-      "counter": "none",
+      "counter": "black",
+      "hasLegs": true,
+      "legs": 100,
+      "plinthH": 100,
+      "mountType": "floor",
       "handle": "gprof",
       "hfinish": "black",
       "led": false,

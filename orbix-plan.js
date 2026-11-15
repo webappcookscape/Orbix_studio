@@ -2295,6 +2295,9 @@
     var fDims = furn.dimensions || { W: 1200, D: 600, H: 2100 };
     var fW = fDims.W || 1200;
     var fD = fDims.D || 600;
+    var isOS_F = !!((furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1));
+    var isBaseOS_F = isOS_F && (furn.category === 'kitchen_fm' || furn.category === 'kitchen_base' || /fm/i.test(furn.name || '') || /fm/i.test(furn.id || '') || (Core.isWallUnit ? !Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : true));
+    if (isBaseOS_F && (!fD || fD < 100)) fD = 550;
     var plan = this.project && this.project.plan;
     if (!plan) return { pos: pos, rotY: rotY };
 
@@ -2319,10 +2322,21 @@
     );
 
     var isWallU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : false;
+    var isOpenBoxF = !isDecorF && (
+      (furn.name && /open[-_ ]*box/i.test(furn.name)) ||
+      (furn.id && /^(ob-|open-box|ctvw-open|ctvw-obs)/i.test(furn.id)) ||
+      (furn.code && /^(ob-|open-box)/i.test(furn.code))
+    );
+    var isSpiceRackF = !isDecorF && !isOpenBoxF && (
+      (furn.name && /spice/i.test(furn.name)) ||
+      (furn.id && /^sr-/i.test(furn.id)) ||
+      (furn.category === 'spice_rack' && !isOpenBoxF)
+    );
+    var defElevF = isOpenBoxF ? 1500 : (isSpiceRackF ? 1350 : (isWallU ? 1500 : 0));
     var fElev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : (isWallU ? 1500 : 0));
+        parseFloat(furn.pos.z) : defElevF);
     var fH = (furn.dimensions && furn.dimensions.H) ? parseFloat(furn.dimensions.H) : (isWallU ? 600 : 850);
     var fTop = fElev + fH;
 
@@ -2337,14 +2351,28 @@
         var oDims = other.dimensions || { W: 1200, D: 600, H: 2100 };
         var oW = oDims.W || 1200;
         var oD = oDims.D || 600;
+        var isOS_O = !!((other.unitConfig && other.unitConfig.isOnlyShutter) || (other.name && /\bo\/?s\b/i.test(other.name)) || (other.costCategory && other.costCategory.indexOf('O/S') !== -1));
+        var isBaseOS_O = isOS_O && (other.category === 'kitchen_fm' || other.category === 'kitchen_base' || /fm/i.test(other.name || '') || /fm/i.test(other.id || '') || (Core.isWallUnit ? !Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : true));
+        if (isBaseOS_O && (!oD || oD < 100)) oD = 550;
         var oRot = other.rotY || 0;
         var oPos = other.pos || { x: 0, y: 0 };
 
         var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
+        var isOpenBoxO = (
+          (other.name && /open[-_ ]*box/i.test(other.name)) ||
+          (other.id && /^(ob-|open-box|ctvw-open|ctvw-obs)/i.test(other.id)) ||
+          (other.code && /^(ob-|open-box)/i.test(other.code))
+        );
+        var isSpiceRackO = !isOpenBoxO && (
+          (other.name && /spice/i.test(other.name)) ||
+          (other.id && /^sr-/i.test(other.id)) ||
+          (other.category === 'spice_rack' && !isOpenBoxO)
+        );
+        var defElevO = isOpenBoxO ? 1500 : (isSpiceRackO ? 1350 : (isWallO ? 1500 : 0));
         var oElev = (other.elevation !== undefined && other.elevation !== null && other.elevation !== '') ?
           parseFloat(other.elevation) :
           ((other.pos && other.pos.z !== undefined && other.pos.z !== null && other.pos.z !== 0) ?
-          parseFloat(other.pos.z) : (isWallO ? 1500 : 0));
+          parseFloat(other.pos.z) : defElevO);
       var oH = (other.dimensions && other.dimensions.H) ? parseFloat(other.dimensions.H) : (isWallO ? 600 : 850);
       var oTop = oElev + oH;
 
@@ -4735,7 +4763,8 @@
       var isSelected = this.isSelected('furniture', f.id);
       var wMm = (f.dimensions && f.dimensions.W) || 1200;
       var isOS = !!((f.unitConfig && f.unitConfig.isOnlyShutter) || (f.name && /\bo\/?s\b/i.test(f.name)) || (f.costCategory && f.costCategory.indexOf('O/S') !== -1));
-      var dMm = isOS ? 18 : ((f.dimensions && f.dimensions.D) || 600);
+      var isBaseOS = isOS && (f.category === 'kitchen_fm' || f.category === 'kitchen_base' || /fm/i.test(f.name || '') || /fm/i.test(f.id || '') || (Core.isWallUnit ? !Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : true));
+      var dMm = isBaseOS ? ((f.dimensions && f.dimensions.D && f.dimensions.D > 100) ? f.dimensions.D : 550) : (isOS ? 18 : ((f.dimensions && f.dimensions.D) || 600));
       var wPx = wMm * this.zoom;
       var dPx = dMm * this.zoom;
       var sPos = this.worldToScreen(f.pos);

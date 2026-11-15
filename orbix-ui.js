@@ -1837,13 +1837,14 @@
         var idInsp = (fn.id || '').toLowerCase();
         var cdInsp = (fn.code || fn.catalogItemId || '').toLowerCase();
         var isLoftInsp = (catInsp.indexOf('loft') !== -1 || nmInsp.indexOf('loft') !== -1 || idInsp.indexOf('loft') !== -1 || cdInsp.indexOf('loft') !== -1);
-        var isSpiceInsp = (catInsp.indexOf('spice') !== -1 || nmInsp.indexOf('spice') !== -1 || idInsp.indexOf('spice') !== -1 || idInsp.indexOf('sr-') === 0);
+        var isOpenBoxInsp = (nmInsp.indexOf('open box') !== -1 || nmInsp.indexOf('open_box') !== -1 || idInsp.indexOf('ob-') === 0 || idInsp.indexOf('open-box') !== -1 || cdInsp.indexOf('ob-') === 0);
+        var isSpiceInsp = !isOpenBoxInsp && (catInsp.indexOf('spice') !== -1 || nmInsp.indexOf('spice') !== -1 || idInsp.indexOf('spice') !== -1 || idInsp.indexOf('sr-') === 0);
         var isWallInsp = !isLoftInsp && isWall;
-        var defInspElev = isLoftInsp ? 2100 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0));
+        var defInspElev = isLoftInsp ? 2100 : (isOpenBoxInsp ? 1500 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0)));
 
-        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '' && (!isWallInsp && !isLoftInsp && !isSpiceInsp || parseFloat(fn.elevation) > 0)) ?
+        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '' && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp || parseFloat(fn.elevation) > 0)) ?
           parseFloat(fn.elevation) :
-          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && (!isWallInsp && !isLoftInsp && !isSpiceInsp || parseFloat(fn.pos.z) > 0)) ? parseFloat(fn.pos.z) : defInspElev);
+          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp || parseFloat(fn.pos.z) > 0)) ? parseFloat(fn.pos.z) : defInspElev);
 
         var hasLegs = false;
         if (!isWall) {
@@ -3460,11 +3461,12 @@
       var pNm = (preset.name || '').toLowerCase();
       var pId = String(preset.id || '').toLowerCase();
       var isLoft = (pCat.indexOf('loft') !== -1 || pNm.indexOf('loft') !== -1 || pId.indexOf('loft') !== -1);
-      var isSpice = (pCat.indexOf('spice') !== -1 || pNm.indexOf('spice') !== -1 || pId.indexOf('spice') !== -1);
+      var isOpenBox = (pNm.indexOf('open box') !== -1 || pNm.indexOf('open_box') !== -1 || pId.indexOf('ob-') === 0 || pId.indexOf('open-box') !== -1);
+      var isSpice = !isOpenBox && (pCat.indexOf('spice') !== -1 || pNm.indexOf('spice') !== -1 || pId.indexOf('spice') !== -1 || pId.indexOf('sr-') === 0);
       var isWall = !isLoft && ((window.OrbixCore && window.OrbixCore.isWallUnit) ?
         window.OrbixCore.isWallUnit(preset.category, preset.name, preset.code || preset.catalogItemId, preset.costCategory) :
         (pCat.indexOf('wall') !== -1 || pNm.indexOf('wall') !== -1 || /(^|\b|_|-)(wm|wcm)($|\b|_|-|\d+)/i.test(pNm)));
-      var defElev = isLoft ? 2100 : (isSpice ? 1350 : (isWall ? 1500 : 0));
+      var defElev = isLoft ? 2100 : (isOpenBox ? 1500 : (isSpice ? 1350 : (isWall ? 1500 : 0)));
       var initElev = (preset.elevation !== undefined && preset.elevation !== null && parseFloat(preset.elevation) > 0) ?
         parseFloat(preset.elevation) : defElev;
 
@@ -4586,12 +4588,13 @@
         var id = (it.id || '').toLowerCase();
         var cd = String(code).toLowerCase();
         var isLoft = (cat.indexOf('loft') !== -1 || n.indexOf('loft') !== -1 || id.indexOf('loft') !== -1 || cd.indexOf('loft') !== -1);
-        var isSpice = (cat.indexOf('spice') !== -1 || n.indexOf('spice') !== -1 || id.indexOf('spice') !== -1 || id.indexOf('sr-') === 0);
+        var isOpenBox = (n.indexOf('open box') !== -1 || n.indexOf('open_box') !== -1 || id.indexOf('ob-') === 0 || id.indexOf('open-box') !== -1 || cd.indexOf('ob-') === 0);
+        var isSpice = !isOpenBox && (cat.indexOf('spice') !== -1 || n.indexOf('spice') !== -1 || id.indexOf('spice') !== -1 || id.indexOf('sr-') === 0);
         var isWall = !isLoft && (
           cat === 'kitchen_wall' || cat === 'wall_unit' || cat.indexOf('wall') !== -1 ||
           n.indexOf('wm') !== -1 || n.indexOf('wall') !== -1 || id.indexOf('wm-') === 0 || id.indexOf('wcm-') === 0 || cd.indexOf('wm-') === 0
         );
-        var defElev = isLoft ? 2100 : (isSpice ? 1350 : (isWall ? 1500 : 0));
+        var defElev = isLoft ? 2100 : (isOpenBox ? 1500 : (isSpice ? 1350 : (isWall ? 1500 : 0)));
         var elev = (it.elevation !== undefined && it.elevation !== null && parseFloat(it.elevation) > 0) ?
           parseFloat(it.elevation) : defElev;
 
@@ -4798,13 +4801,14 @@
             var cName = (cardData.name || '').toLowerCase();
             var cCat = (cardData.category || '').toLowerCase();
             var isLoftUnit = (cCat.indexOf('loft') !== -1 || cName.indexOf('loft') !== -1 || cId.indexOf('loft') !== -1 || cat === 'loft');
-            var isSpiceUnit = (cCat.indexOf('spice') !== -1 || cName.indexOf('spice') !== -1 || cId.indexOf('spice') !== -1 || cId.indexOf('sr-') === 0);
+            var isOpenBoxUnit = (cName.indexOf('open box') !== -1 || cName.indexOf('open_box') !== -1 || cId.indexOf('ob-') === 0 || cId.indexOf('open-box') !== -1);
+            var isSpiceUnit = !isOpenBoxUnit && (cCat.indexOf('spice') !== -1 || cName.indexOf('spice') !== -1 || cId.indexOf('spice') !== -1 || cId.indexOf('sr-') === 0);
             var isWallUnit = !isLoftUnit && (
               cCat === 'kitchen_wall' || cCat === 'wall_unit' || cCat.indexOf('wall') !== -1 ||
               cName.indexOf('wm') !== -1 || cName.indexOf('wall') !== -1 || cId.indexOf('wm-') === 0 || cId.indexOf('wcm-') === 0 ||
               cat === 'wall_unit' || currentTab === 'kitchen_wall_spice'
             );
-            var defElev = isLoftUnit ? 2100 : (isSpiceUnit ? 1350 : (isWallUnit ? 1500 : 0));
+            var defElev = isLoftUnit ? 2100 : (isOpenBoxUnit ? 1500 : (isSpiceUnit ? 1350 : (isWallUnit ? 1500 : 0)));
             var finalElev = (cardData.elevation !== undefined && cardData.elevation !== null && parseFloat(cardData.elevation) > 0) ?
               parseFloat(cardData.elevation) : defElev;
 

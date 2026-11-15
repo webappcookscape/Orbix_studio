@@ -3078,42 +3078,25 @@
           scoredWalls.push({ mesh: wMesh, score: score, isInner: isInner });
         });
 
-        var hiddenSet = new Set();
+        // Strict 1-wall cutaway: While zooming or rotating, cut strictly ONE front wall (the primary line-of-sight barrier).
+        // All other 3 walls in the room stay 100% visible at all zoom levels.
+        var singleCutWall = null;
 
-        if (mode === 'all_obstructing') {
-          // Hide all walls (outer & inner) that directly block line of sight
-          if (intersectingWalls.length > 0) {
-            intersectingWalls.forEach(function (iw) { hiddenSet.add(iw.mesh); });
-          } else if (scoredWalls.length > 0) {
-            scoredWalls.sort(function (a, b) { return b.score - a.score; });
-            if (scoredWalls[0].score > -999900) hiddenSet.add(scoredWalls[0].mesh);
+        if (intersectingWalls.length > 0) {
+          // Sort by closest intersecting barrier to camera
+          intersectingWalls.sort(function (a, b) { return a.distToCam - b.distToCam; });
+          singleCutWall = intersectingWalls[0].mesh;
+        } else if (scoredWalls.length > 0) {
+          scoredWalls.sort(function (a, b) { return b.score - a.score; });
+          if (scoredWalls[0].score > -999900) {
+            singleCutWall = scoredWalls[0].mesh;
           }
-        } else {
-          // 'single_auto': Choose the single most obstructing wall.
-          // When looking at an inner room/unit or across an inner partition, cut the inner wall!
-          if (intersectingWalls.length > 0) {
-            var innerHit = intersectingWalls.find(function (iw) { return iw.isInner; });
-            if (innerHit && (camToTargDist < 6000 || innerHit.distToCam < 3500 || innerHit.distToTarg < 2500)) {
-              hiddenSet.add(innerHit.mesh);
-            } else {
-              intersectingWalls.sort(function (a, b) { return a.t - b.t; });
-              hiddenSet.add(intersectingWalls[0].mesh);
-            }
-          } else if (scoredWalls.length > 0) {
-            scoredWalls.sort(function (a, b) { return b.score - a.score; });
-            if (scoredWalls[0].score > -999900) hiddenSet.add(scoredWalls[0].mesh);
-          }
-        }
-
-        if (camToTargDist < 1200) {
-          // Camera is close or inside room: keep walls visible so user can inspect interiors without walls popping out
-          hiddenSet.clear();
         }
 
         wallMeshes.forEach(function (wMesh) {
-          var shouldHide = hiddenSet.has(wMesh);
-          wMesh.visible = !shouldHide;
-          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !shouldHide;
+          var isCut = (singleCutWall && wMesh === singleCutWall);
+          wMesh.visible = !isCut;
+          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !isCut;
         });
       }
 
