@@ -23834,10 +23834,19 @@ body.role-employee #adminCreateEmpBox,
           if (o.geometry && o.geometry.attributes && o.geometry.attributes.position && o.geometry.attributes.uv) {
             var posAttr = o.geometry.attributes.position;
             var uvAttr = o.geometry.attributes.uv;
+            var normAttr = o.geometry.attributes.normal;
+            var fDepth = (o.userData && o.userData.floorDepth) || 20;
             for (var v = 0; v < posAttr.count; v++) {
               var vx = posAttr.getX(v);
               var vy = posAttr.getY(v);
-              uvAttr.setXY(v, vx / tileSize, -vy / tileSize);
+              var vz = posAttr.getZ(v);
+              var nz = normAttr ? Math.abs(normAttr.getZ(v)) : 1;
+              if (nz > 0.5) {
+                uvAttr.setXY(v, vx / tileSize, -vy / tileSize);
+              } else {
+                var horiz = Math.hypot(vx, vy);
+                uvAttr.setXY(v, horiz / tileSize, vz / Math.max(1, fDepth));
+              }
             }
             uvAttr.needsUpdate = true;
           }
@@ -24243,7 +24252,7 @@ body.role-employee #adminCreateEmpBox,
         var dadoTop = Math.min(maxH !== undefined ? maxH : 1500, wHeight - 50);
         if (dadoTop <= dadoBottom + 50) return;
         var dadoH = dadoTop - dadoBottom;
-        var dadoT = 6;
+        var dadoT = 20; // Exact 20mm authentic ceramic & mortar bed tile depth (no paper-thin look)
         var DADO_TILE_MM = 609.6; // Exact 2ft x 2ft (609.6mm x 609.6mm) ceramic tile scale
         var dadoGeo = new THREE.BoxGeometry(subLen, dadoH, dadoT);
         if (dadoGeo.attributes && dadoGeo.attributes.uv && dadoGeo.attributes.position) {
@@ -24268,11 +24277,15 @@ body.role-employee #adminCreateEmpBox,
         }
         var tileF = new THREE.Mesh(dadoGeo, tileMat);
         tileF.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, wThick / 2 + dadoT / 2);
+        tileF.castShadow = true;
         tileF.receiveShadow = true;
+        tileF.userData = { isDadoTile: true, thickness: dadoT, wallId: wall.id };
         group.add(tileF);
         var tileB = new THREE.Mesh(dadoGeo, tileMat);
         tileB.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, -wThick / 2 - dadoT / 2);
+        tileB.castShadow = true;
         tileB.receiveShadow = true;
+        tileB.userData = { isDadoTile: true, thickness: dadoT, wallId: wall.id };
         group.add(tileB);
       }
     }
@@ -24610,11 +24623,25 @@ body.role-employee #adminCreateEmpBox,
     }
 
     var geo = null;
+    var floorDepth = 20; // 20mm physical architectural slab depth (eliminates paper-thin floor)
     try {
-      geo = new THREE.ShapeGeometry(shape);
+      if (typeof THREE.ExtrudeGeometry === 'function') {
+        geo = new THREE.ExtrudeGeometry(shape, {
+          depth: floorDepth,
+          bevelEnabled: false
+        });
+      } else {
+        geo = new THREE.ShapeGeometry(shape);
+        floorDepth = 0;
+      }
     } catch (e) {
-      console.warn('[Orbix 3D] ShapeGeometry failed, skipping degenerate floor:', e);
-      return null;
+      try {
+        geo = new THREE.ShapeGeometry(shape);
+        floorDepth = 0;
+      } catch (err) {
+        console.warn('[Orbix 3D] ExtrudeGeometry and ShapeGeometry failed, skipping degenerate floor:', err);
+        return null;
+      }
     }
 
     if (!geo || !geo.attributes || !geo.attributes.position || geo.attributes.position.count < 3) {
@@ -24665,28 +24692,43 @@ body.role-employee #adminCreateEmpBox,
 
     // Physical millimeter UV mapping so tile sizes are authentic and scale-consistent
     var tileSize = (finishType === 'wooden' || finishType === 'tile_3') ? 1200 : (finishType === 'white_tile' ? 1600 : 1200);
-    if (geo.attributes && geo.attributes.uv) {
+    if (typeof geo.computeVertexNormals === 'function') {
+      geo.computeVertexNormals();
+    }
+    if (geo.attributes && geo.attributes.uv && geo.attributes.position) {
       var uvAttr = geo.attributes.uv;
+      var posAttr = geo.attributes.position;
+      var normAttr = geo.attributes.normal;
       for (var v = 0; v < posAttr.count; v++) {
         var vx = posAttr.getX(v);
         var vy = posAttr.getY(v);
-        uvAttr.setXY(v, vx / tileSize, -vy / tileSize);
+        var vz = posAttr.getZ(v);
+        var nz = normAttr ? Math.abs(normAttr.getZ(v)) : 1;
+        if (nz > 0.5) {
+          // Top & bottom horizontal surfaces: standard planar tile texture repeat
+          uvAttr.setXY(v, vx / tileSize, -vy / tileSize);
+        } else {
+          // Vertical 20mm slab edge perimeter faces
+          var horiz = Math.hypot(vx, vy);
+          uvAttr.setXY(v, horiz / tileSize, vz / Math.max(1, floorDepth));
+        }
       }
       uvAttr.needsUpdate = true;
-    }
-    if (typeof geo.computeVertexNormals === 'function') {
-      geo.computeVertexNormals();
     }
 
     var mat = this.createFloorMaterial(finishType);
     var mesh = new THREE.Mesh(geo, mat);
 
-    // Rotate flat into X-Z floor plane with normal facing straight UP (+Y)
+    // Rotate flat into X-Z floor plane
     mesh.rotation.x = -Math.PI / 2;
-    mesh.position.y = isInnerRoom ? 1.08 : 1.0; // Subtle elevation for inner divided room to eliminate coplanar Z-fighting
+    // With 20mm depth, extruding along local +Z produces +Y in world space after Rx(-PI/2).
+    // Placing top face flush at Y = 1.0 (or 1.08 for inner rooms) extends the 20mm slab downwards to Y = -19.0.
+    // This gives realistic solid 20mm depth without clipping or submerging floor units/cabinets!
+    mesh.position.y = isInnerRoom ? (1.08 - floorDepth) : (1.0 - floorDepth);
+    mesh.castShadow = true;
     mesh.receiveShadow = true;
     mesh.name = 'Floor_' + (room.name || 'Room');
-    mesh.userData = { isFloorMesh: true, floorFinish: finishType, roomId: room.id, boundingRoom: room };
+    mesh.userData = { isFloorMesh: true, floorFinish: finishType, roomId: room.id, boundingRoom: room, floorDepth: floorDepth };
 
     return mesh;
   };
