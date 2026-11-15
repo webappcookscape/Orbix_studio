@@ -682,7 +682,7 @@
     return best;
   };
 
-  PlanEditor.prototype.pushHistory = function (actionName) {
+  PlanEditor.prototype.pushHistory = function (actionName, targetItem) {
     if (this.historyIndex < this.history.length - 1) {
       this.history = this.history.slice(0, this.historyIndex + 1);
     }
@@ -695,9 +695,20 @@
       this.history.shift();
       this.historyIndex--;
     }
-    // Update rooms and notify listener
-    Core.detectRooms(this.project);
-    this.onProjectChange(this.project);
+    // Room cycle detection is ONLY needed when wall/divider topology changes!
+    // Placing/moving furniture, decor, or dimensions never changes wall polygonal boundaries.
+    var wallActionRegex = /wall|divider|chain|split|room|vertex|opening/i;
+    var isWallTopologyAction = !actionName || wallActionRegex.test(actionName);
+    if (isWallTopologyAction && typeof Core.detectRooms === 'function') {
+      try { Core.detectRooms(this.project); } catch (e) { console.warn('[Orbix Plan] detectRooms error:', e); }
+    }
+    var changeContext = null;
+    if (targetItem && targetItem.id) {
+      changeContext = { targetFurn: targetItem, actionName: actionName };
+    } else if (actionName) {
+      changeContext = { actionName: actionName };
+    }
+    this.onProjectChange(this.project, changeContext);
   };
 
   PlanEditor.prototype.undo = function () {
@@ -785,15 +796,34 @@
     }
 
     if (deletedSomething) {
-      if (typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
+      var hasWallOrRoomOrOpening = false;
+      for (var s2 = 0; s2 < this.selected.length; s2++) {
+        var t2 = this.selected[s2].type;
+        if (t2 === 'wall' || t2 === 'room' || t2 === 'opening') {
+          hasWallOrRoomOrOpening = true;
+          break;
+        }
+      }
+      if (hasWallOrRoomOrOpening && typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
         Core.detectRooms(this.project);
       }
+      var deletedFurnIds = this.selected.filter(function (it) { return it.type === 'furniture'; }).map(function (it) { return it.id; });
       this.selected = [];
       this.onSelectionChange(this.selected);
-      this.pushHistory('Delete');
+      this.pushHistory(hasWallOrRoomOrOpening ? 'Delete' : 'Delete Furniture');
       this.render();
-      if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.render3DHome) {
-        window.OrbixUI.render3DHome();
+
+      var isDesignActive = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+      if (isDesignActive && typeof window !== 'undefined' && window.OrbixUI) {
+        if (deletedFurnIds.length > 0 && !hasWallOrRoomOrOpening && window.OrbixUI.archRenderer && typeof window.OrbixUI.archRenderer.removeFurnitureMesh === 'function') {
+          deletedFurnIds.forEach(function (fId) {
+            window.OrbixUI.archRenderer.removeFurnitureMesh(fId);
+          });
+        } else if (window.OrbixUI.render3DHome) {
+          window.OrbixUI.render3DHome();
+        }
+      } else if (typeof window !== 'undefined' && window.OrbixUI) {
+        window.OrbixUI._3dDirty = true;
       }
     }
   };
@@ -2841,7 +2871,7 @@
     });
 
     this.project.plan.furniture.push(furn);
-    this.pushHistory('Place ' + furn.name);
+    this.pushHistory('Place ' + furn.name, furn);
     if (typeof this.setTool === 'function') this.setTool('select');
     else this.activeTool = 'select';
     this.selected = [{ type: 'furniture', id: furn.id }];

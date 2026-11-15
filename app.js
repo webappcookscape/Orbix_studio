@@ -6155,7 +6155,7 @@
     if (v === "report") renderReport();
     if (v === "gallery") renderGallery();
     if (v === "plan" && window.OrbixUI && window.OrbixUI.editor) { window.OrbixUI.editor.resize(); window.OrbixUI.editor.render(); }
-    if (v === "boq" && window.OrbixUI) { window.OrbixUI.renderBOQ(); }
+    if (v === "boq" && window.OrbixUI) { window.OrbixUI.renderBOQ(true); }
   }
   window.setView = setView;
   $all(".vtab").forEach(function (b) {

@@ -132,18 +132,34 @@
       var self = this;
       this.editor = new PlanEditor(planContainer, {
         project: this.project,
-        onProjectChange: function (proj) {
+        onProjectChange: function (proj, changeContext) {
           self.project = proj;
-          self.saveToLocalStorage();
+          self.queueAutoSave();
           self.updateUI();
-          self.renderBOQ();
+
+          // Lazy BOQ: only compute & build quotation table if BOQ view is currently visible
+          var isBoqActive = document.getElementById('view-boq') && document.getElementById('view-boq').classList.contains('is-on');
+          if (isBoqActive) {
+            self.renderBOQ();
+            self._boqDirty = false;
+          } else {
+            self._boqDirty = true;
+          }
+
           if (self.syncProjectUnitsTo3DStudio) self.syncProjectUnitsTo3DStudio();
-          if (self.render3DHome) self.render3DHome(true);
-          if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) {
-            window.OrbixProjects.saveActiveProject({
-              plan: proj,
-              units: window.S ? window.S.units : []
-            });
+
+          // Lazy / Incremental 3D: only update if 3D Studio is currently visible
+          var isDesignActive = document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+          if (isDesignActive) {
+            var targetFurn = changeContext && changeContext.targetFurn;
+            if (targetFurn && self.archRenderer && self.archRenderer.group && typeof self.archRenderer.addOrUpdateFurnitureMesh === 'function') {
+              self.archRenderer.addOrUpdateFurnitureMesh(targetFurn);
+            } else if (self.render3DHome) {
+              self.render3DHome(true);
+            }
+            self._3dDirty = false;
+          } else {
+            self._3dDirty = true;
           }
         },
         onSelectionChange: function (selected) {
@@ -157,6 +173,10 @@
       this.bindToolbar();
       this.updateUI();
       this.renderBOQ();
+
+      window.addEventListener('beforeunload', function () {
+        if (self.flushAutoSave) self.flushAutoSave();
+      });
     },
 
     loadProject: function (proj) {
@@ -209,6 +229,37 @@
       var fresh = Core.createProject(title || 'Untitled Project');
       this.loadProject(fresh);
       return fresh;
+    },
+
+    queueAutoSave: function (delayMs) {
+      var self = this;
+      if (this._autoSaveTimer) {
+        clearTimeout(this._autoSaveTimer);
+      }
+      this._autoSaveTimer = setTimeout(function () {
+        self._autoSaveTimer = null;
+        self.saveToLocalStorage();
+        if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+          root.OrbixProjects.saveActiveProject({
+            plan: self.project,
+            units: window.S ? window.S.units : []
+          });
+        }
+      }, delayMs !== undefined ? delayMs : 250);
+    },
+
+    flushAutoSave: function () {
+      if (this._autoSaveTimer) {
+        clearTimeout(this._autoSaveTimer);
+        this._autoSaveTimer = null;
+      }
+      this.saveToLocalStorage();
+      if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+        root.OrbixProjects.saveActiveProject({
+          plan: this.project,
+          units: window.S ? window.S.units : []
+        });
+      }
     },
 
     saveToLocalStorage: function () {
@@ -3183,9 +3234,12 @@
         targetIdx = window.S.active;
       }
       window.S.active = targetIdx;
-      if (typeof window.renderRail === 'function') window.renderRail();
-      if (typeof window.renderLegend === 'function') window.renderLegend();
-      if (typeof window.renderFoot === 'function') window.renderFoot();
+      var isDesignActive = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+      if (isDesignActive) {
+        if (typeof window.renderRail === 'function') window.renderRail();
+        if (typeof window.renderLegend === 'function') window.renderLegend();
+        if (typeof window.renderFoot === 'function') window.renderFoot();
+      }
     },
 
     selectFurnitureIn3DStudio: function (furnId) {
@@ -3208,7 +3262,6 @@
       if (typeof window.renderLegend === 'function') window.renderLegend();
       if (typeof window.renderFoot === 'function') window.renderFoot();
       if (typeof window.buildScene === 'function') window.buildScene();
-      if (typeof this.render3DHome === 'function') this.render3DHome(true);
 
       // Unit selection in 3D preserves camera angle and position perfectly (no unwanted teleport)
       this.highlight3DFurniture(furnId);
@@ -3444,18 +3497,22 @@
 
       plan.furniture.push(newFurn);
       this.project.units_count = plan.furniture.length;
-      this.saveToLocalStorage();
-      if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
-        root.OrbixProjects.saveActiveProject({ plan: this.project });
-      }
-      if (root.OrbixProjects && root.OrbixProjects.saveActiveProject) {
-        root.OrbixProjects.saveActiveProject();
-      }
+      this.queueAutoSave();
+
       if (this.editor) {
         this.editor.selected = [{ type: 'furniture', id: fId }];
         this.editor.render();
       }
       this.selectFurnitureIn3DStudio(fId);
+
+      // Fast incremental 3D addition (< 1ms instant responsiveness)
+      if (this.archRenderer && this.archRenderer.group && typeof this.archRenderer.addOrUpdateFurnitureMesh === 'function') {
+        this.archRenderer.addOrUpdateFurnitureMesh(newFurn);
+      } else if (this.render3DHome) {
+        this.render3DHome(true, undefined, fId);
+      }
+      this.highlight3DFurniture(fId);
+
       if (typeof window.showToast === 'function') {
         window.showToast('Placed ' + newFurn.name + ' in 3D room');
       }
@@ -3563,13 +3620,8 @@
         }
       }
 
-      this.saveToLocalStorage();
-      if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
-        root.OrbixProjects.saveActiveProject({ plan: this.project });
-      }
-      if (root.OrbixProjects && root.OrbixProjects.saveActiveProject) {
-        root.OrbixProjects.saveActiveProject();
-      }
+      this.queueAutoSave();
+
       if (this.editor) {
         if (typeof this.editor.setTool === 'function') {
           this.editor.setTool('select');
@@ -3586,7 +3638,19 @@
       document.querySelectorAll('.plan-tool-btn').forEach(function (b) {
         b.classList.toggle('is-active', b.dataset.tool === 'select');
       });
-      if (this.render3DHome) this.render3DHome(true);
+
+      var isDesignActive = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+      if (isDesignActive) {
+        if (this.archRenderer && this.archRenderer.group && typeof this.archRenderer.addOrUpdateFurnitureMesh === 'function') {
+          this.archRenderer.addOrUpdateFurnitureMesh(newDecor);
+        } else if (this.render3DHome) {
+          this.render3DHome(true, undefined, fId);
+        }
+        this.highlight3DFurniture(fId);
+      } else {
+        this._3dDirty = true;
+      }
+
       if (typeof window.showToast === 'function') {
         window.showToast('🌿 Placed ' + newDecor.name + ' (Excluded from Woodwork Pricing)');
       }
@@ -5192,7 +5256,14 @@
       };
     },
 
-    renderBOQ: function () {
+    renderBOQ: function (force) {
+      var boqView = document.getElementById('view-boq');
+      var isBoqActive = boqView && boqView.classList.contains('is-on');
+      if (!isBoqActive && !force) {
+        this._boqDirty = true;
+        return;
+      }
+      this._boqDirty = false;
       var boqEl = document.getElementById('orbixBOQTable');
       if (!boqEl) return;
 
@@ -6053,11 +6124,18 @@
       this.syncProjectUnitsTo3DStudio();
     },
 
-    render3DHome: function (keepCamera, isolatedRoomId) {
+    render3DHome: function (keepCamera, isolatedRoomId, targetFurnId) {
       if (typeof THREE === 'undefined' || !window.__cc || !window.__cc.gl) return;
       var gl = window.__cc.gl;
       var scene = gl.getScene ? gl.getScene() : null;
       if (!scene) return;
+
+      var isDesignActive = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+      if (!isDesignActive) {
+        this._3dDirty = true;
+        return;
+      }
+      this._3dDirty = false;
 
       // Ensure sky is daytime radiant sky blue and outer ground is lush lawn grass
       if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
@@ -6085,6 +6163,21 @@
       }
       if (this.archRenderer) {
         var proj = this.project || (this.editor && this.editor.project);
+        var homeObj = scene.getObjectByName('OrbixHome3D');
+
+        // Fast-path: If single furniture/decor item placed or modified and 3D home exists, use instant incremental mesh addition!
+        if (targetFurnId && homeObj && this.archRenderer.group && typeof this.archRenderer.addOrUpdateFurnitureMesh === 'function') {
+          var plan = this.getPlan();
+          var targetFurn = plan && plan.furniture && plan.furniture.find(function (it) { return it.id === targetFurnId; });
+          if (targetFurn) {
+            this.archRenderer.addOrUpdateFurnitureMesh(targetFurn);
+            if (typeof this.updateProjectDetailsBadges === 'function') this.updateProjectDetailsBadges();
+            if (gl.apply) gl.apply();
+            if (gl.settle) gl.settle();
+            return;
+          }
+        }
+
         if (isolatedRoomId !== undefined) {
           this.currentIsolatedRoomId = (isolatedRoomId === 'all' || !isolatedRoomId) ? null : isolatedRoomId;
         }

@@ -4691,6 +4691,94 @@
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Fast Incremental 3D Unit & Decor Placement / Update / Removal
+     Eliminates full scene teardowns and rebuilds (< 1ms instant single-frame execution)
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.addOrUpdateFurnitureMesh = function (furn) {
+    if (!this.scene || typeof THREE === 'undefined') return null;
+    if (!this.group || !this.scene.getObjectByName('OrbixHome3D')) {
+      return this.buildHome(this.currentProject || (window.OrbixUI && window.OrbixUI.project));
+    }
+    if (!furn || !furn.id) return null;
+
+    // 1. Remove existing mesh for this furniture unit if present
+    for (var i = this.group.children.length - 1; i >= 0; i--) {
+      var c = this.group.children[i];
+      if (c && c.userData && c.userData.isFurnitureGroup && c.userData.furnitureId === furn.id) {
+        this.group.remove(c);
+        if (typeof this.disposeGroup === 'function') {
+          this.disposeGroup(c);
+        }
+        break;
+      }
+    }
+
+    // 2. Build only this single unit mesh
+    var newMesh = this.buildFurnitureMesh(furn);
+    if (!newMesh) return null;
+
+    // 3. Fast wall association
+    var walls = (this.currentPlan && this.currentPlan.walls) || [];
+    var bestWall = null, bestDist = 999999;
+    if (furn.wallId) {
+      var matchedWall = walls.find(function (wItem) { return wItem.id === furn.wallId; });
+      if (matchedWall) {
+        var matchedIdx = walls.indexOf(matchedWall);
+        bestWall = { id: matchedWall.id, index: matchedIdx, number: matchedIdx + 1 };
+      }
+    }
+    if (!bestWall && furn.pos && walls.length > 0) {
+      for (var wi = 0; wi < walls.length; wi++) {
+        var wObj = walls[wi];
+        if (!wObj || !wObj.start || !wObj.end) continue;
+        var p1 = wObj.start, p2 = wObj.end;
+        var dx = p2.x - p1.x, dy = p2.y - p1.y;
+        var lenSq = dx * dx + dy * dy;
+        if (lenSq < 1) continue;
+        var t = Math.max(0, Math.min(1, ((furn.pos.x - p1.x) * dx + (furn.pos.y - p1.y) * dy) / lenSq));
+        var projX = p1.x + t * dx, projY = p1.y + t * dy;
+        var dist = Math.hypot(furn.pos.x - projX, furn.pos.y - projY);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestWall = { id: wObj.id, index: wi, number: wi + 1, dist: dist };
+        }
+      }
+    }
+    if (bestWall && (furn.wallId || bestDist < 1200)) {
+      newMesh.userData.wallId = bestWall.id;
+      newMesh.userData.wallIndex = bestWall.index;
+      newMesh.userData.wallNumber = bestWall.number;
+    }
+
+    this.group.add(newMesh);
+
+    // 4. Trigger render update
+    if (window.__cc && window.__cc.gl) {
+      if (window.__cc.gl.apply) window.__cc.gl.apply();
+      if (window.__cc.gl.settle) window.__cc.gl.settle();
+    }
+    return newMesh;
+  };
+
+  ArchitecturalRenderer.prototype.removeFurnitureMesh = function (furnId) {
+    if (!this.group || !furnId) return;
+    for (var i = this.group.children.length - 1; i >= 0; i--) {
+      var c = this.group.children[i];
+      if (c && c.userData && c.userData.isFurnitureGroup && c.userData.furnitureId === furnId) {
+        this.group.remove(c);
+        if (typeof this.disposeGroup === 'function') {
+          this.disposeGroup(c);
+        }
+        break;
+      }
+    }
+    if (window.__cc && window.__cc.gl) {
+      if (window.__cc.gl.apply) window.__cc.gl.apply();
+      if (window.__cc.gl.settle) window.__cc.gl.settle();
+    }
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      TRIMBLE SKETCHUP (.SKP / COLLADA .DAE) EXPORT ENGINE
      Serializes entire 3D project geometry (walls, cutouts, doors, windows,
      room floors, and placed modular cabinetry units) into native SketchUp

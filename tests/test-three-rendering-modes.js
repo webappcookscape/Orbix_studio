@@ -48,3 +48,4 @@ assert(appJs.includes('renderer.toneMappingExposure = 1.12'), 'setRenderMode mus
 console.log('✓ PASS: app.js implements exact specifications for Design, Realistic, and Client Ultra modes');
 
 console.log('ALL THREE RENDERING MODES TESTS PASSED 100%!');
+
