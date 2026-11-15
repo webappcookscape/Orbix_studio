@@ -2297,7 +2297,8 @@
     var fD = fDims.D || 600;
     var isWallU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : false;
     var isOS_F = !!((furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1));
-    if (isOS_F && (!fD || fD < 100)) {
+    var isWrbOS_F = isOS_F && (furn.category === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(furn.name || furn.id || ''));
+    if (isOS_F && (!fD || (fD < 100 && !isWrbOS_F))) {
       fD = isWallU ? 350 : 550;
     }
     var plan = this.project && this.project.plan;
@@ -2355,7 +2356,8 @@
         var oD = oDims.D || 600;
         var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
         var isOS_O = !!((other.unitConfig && other.unitConfig.isOnlyShutter) || (other.name && /\bo\/?s\b/i.test(other.name)) || (other.costCategory && other.costCategory.indexOf('O/S') !== -1));
-        if (isOS_O && (!oD || oD < 100)) {
+        var isWrbOS_O = isOS_O && (other.category === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(other.name || other.id || ''));
+        if (isOS_O && (!oD || (oD < 100 && !isWrbOS_O))) {
           oD = isWallO ? 350 : 550;
         }
         var oRot = other.rotY || 0;
@@ -4772,8 +4774,11 @@
       var isOS = !!((f.unitConfig && f.unitConfig.isOnlyShutter) || (f.name && /\bo\/?s\b/i.test(f.name)) || (f.costCategory && f.costCategory.indexOf('O/S') !== -1));
       var isBaseOS = isOS && (f.category === 'kitchen_fm' || f.category === 'kitchen_base' || /fm/i.test(f.name || '') || /fm/i.test(f.id || '') || (Core.isWallUnit ? !Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : true));
       var isWallUnitF = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
+      var isWrbOS = isOS && (f.category === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(f.name || f.id || ''));
       var dMm = isBaseOS ? ((f.dimensions && f.dimensions.D && f.dimensions.D > 100) ? f.dimensions.D : 550) : (isOS ? 18 : ((f.dimensions && f.dimensions.D) || 600));
-      if (isOS && (!dMm || dMm < 100)) {
+      if (isWrbOS) {
+        dMm = (f.dimensions && f.dimensions.D) ? f.dimensions.D : 18;
+      } else if (isOS && (!dMm || dMm < 100)) {
         dMm = isWallUnitF ? 350 : 550;
       }
       var wPx = wMm * this.zoom;

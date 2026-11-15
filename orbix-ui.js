@@ -4375,7 +4375,8 @@
           var catMatch = (it.category || '').toLowerCase().indexOf(query) !== -1;
           var dimsMatch = it.dimensions ? (String(it.dimensions.W).indexOf(query) !== -1 || String(it.dimensions.H).indexOf(query) !== -1 || String(it.dimensions.D).indexOf(query) !== -1) : false;
           var matMatch = (it.materials && it.materials.shutter && it.materials.shutter.finish && it.materials.shutter.finish.toLowerCase().indexOf(query) !== -1);
-          return nameMatch || codeMatch || catMatch || dimsMatch || matMatch;
+          var descMatch = (it.description || '').toLowerCase().indexOf(query) !== -1 || (it.costCategory || '').toLowerCase().indexOf(query) !== -1;
+          return nameMatch || codeMatch || catMatch || dimsMatch || matMatch || descMatch;
         });
 
         var countEl = document.getElementById('furnShowingCount');

@@ -820,7 +820,8 @@
       (opts.code && /\bo_?s\b/i.test(opts.code)) ||
       (opts.unitConfig && opts.unitConfig.isOnlyShutter)
     );
-    var isBaseOS = isOS && !isLoft && !isWallUnit;
+    var isWrbOS = isOS && (cat === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(nm || opts.id || ''));
+    var isBaseOS = isOS && !isLoft && !isWallUnit && !isWrbOS;
     var defElev = isLoft ? 2100 : (isOpenBox ? 1500 : (isSpiceRack ? 1350 : (isWallUnit ? 1500 : 0)));
     var isElevatedType = isWallUnit || isLoft || isSpiceRack || isOpenBox;
     var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '' && (!isElevatedType || parseFloat(opts.elevation) > 0)) ?
@@ -875,7 +876,23 @@
       opts.dimensions = opts.dimensions || {};
       opts.dimensions.H = 750;
     }
-    if (isOS) {
+    if (isWrbOS) {
+      opts.unitConfig.isOnlyShutter = true;
+      opts.dimensions = opts.dimensions || {};
+      opts.dimensions.H = (opts.dimensions.H !== undefined && opts.dimensions.H !== null) ? opts.dimensions.H : 2100;
+      opts.dimensions.D = (opts.dimensions.D !== undefined && opts.dimensions.D !== null) ? opts.dimensions.D : 18;
+      if (!opts.dimensions.W) {
+        opts.dimensions.W = (opts.id && opts.id.indexOf('120') !== -1 || nm.indexOf('120') !== -1) ? 1200 : 600;
+      }
+      opts.elevation = 0;
+      opts.unitConfig.counter = 'none';
+      opts.unitConfig.hasLegs = false;
+      opts.unitConfig.legs = 0;
+      opts.unitConfig.plinthH = 0;
+      opts.unitConfig.shelves = 0;
+      opts.unitConfig.drawers = 0;
+      opts.unitConfig.shutters = opts.dimensions.W > 600 ? 2 : 1;
+    } else if (isOS) {
       opts.unitConfig.isOnlyShutter = true;
       if (opts.dimensions) {
         if (opts.dimensions.D === undefined || opts.dimensions.D < 100) {
@@ -941,9 +958,9 @@
       dimensions: {
         W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
         H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : (cat.indexOf('base') !== -1 || cat.indexOf('fm') !== -1 || cat.indexOf('d2') !== -1 || cat.indexOf('d3') !== -1 || cat.indexOf('tv') !== -1 ? 850 : 2100)),
-        D: (opts.dimensions && opts.dimensions.D !== undefined && opts.dimensions.D > 100) ?
+        D: (opts.dimensions && opts.dimensions.D !== undefined && (opts.dimensions.D > 100 || isWrbOS)) ?
           opts.dimensions.D :
-          (isOS ? (isWallUnit ? 350 : 550) : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
+          (isOS ? (isWallUnit ? 350 : (isWrbOS ? 18 : 550)) : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
       },
       shutterColors: initColors,
       shutterMaterials: initMats,
@@ -2006,6 +2023,10 @@
       'Wr - Modular - 2 DRAWERS': 'wr_drawers',
       'Wr - Modular - SLIDING': 'wr_sliding',
       'Loft - O/S': 'loft_os',
+      'Wardrobe - O/S': 'loft_os',
+      'Wardrobe O/S': 'loft_os',
+      'Wardrobe o/s': 'loft_os',
+      'Wr - O/S': 'loft_os',
       'POOJA WITH CNC': 'pooja_cnc',
       'TV Unit Cabinet': 'tv_cabinet',
       'Wall Paneling': 'wall_paneling'
@@ -2051,7 +2072,12 @@
     if (id.indexOf('slide') !== -1 || name.indexOf('sliding') !== -1) return 'wr_sliding';
     if (cat === 'wall_paneling' || id.indexOf('pnl-') === 0 || name.indexOf('panel') !== -1 || id.indexOf('ledge') === 0 || name.indexOf('ledge') !== -1) return 'wall_paneling';
     if (id.indexOf('fm-d2') !== -1 || id.indexOf('fm-d3') !== -1 || id.indexOf('kitchen_d2d3') !== -1 || (cat === 'kitchen_base' && (name.indexOf('d2') !== -1 || name.indexOf('d3') !== -1))) return 'kitchen_d2d3';
-    if ((name.indexOf('o/s') !== -1 || id.indexOf('o/s') !== -1 || name.indexOf('only shutter') !== -1 || id.indexOf('only-shutter') !== -1 || id === 'kitchen_os') && id.indexOf('loft') === -1 && name.indexOf('loft') === -1) return 'kitchen_os';
+    if ((name.indexOf('o/s') !== -1 || id.indexOf('o/s') !== -1 || name.indexOf('only shutter') !== -1 || id.indexOf('only-shutter') !== -1 || id === 'kitchen_os') && id.indexOf('loft') === -1 && name.indexOf('loft') === -1) {
+      if (cat === 'wardrobe' || id.indexOf('wrb') !== -1 || name.indexOf('wrb') !== -1 || id.indexOf('wr-') === 0 || name.indexOf('wardrobe') !== -1) {
+        return 'loft_os';
+      }
+      return 'kitchen_os';
+    }
     if (name.indexOf('open shel') !== -1 || id.indexOf('open-shel') !== -1 || id.indexOf('sr-') === 0 || cat === 'spice_rack' || name.indexOf('spice') !== -1 || id.indexOf('ob-') === 0 || id.indexOf('open-box') !== -1 || id.indexOf('open-storage') !== -1 || name.indexOf('open box') !== -1 || name.indexOf('open storage') !== -1) return 'spice_rack';
     if (name.indexOf('pooja') !== -1 || id.indexOf('pooja') !== -1 || cat === 'pooja' || cat === 'mandir') return 'pooja_cnc';
     if (id.indexOf('ctvb') !== -1 || id.indexOf('ctvw') !== -1 || cat === 'tv_unit' || name.indexOf('tv') !== -1 || name.indexOf('crockery') !== -1 || cat === 'crockery') return 'tv_cabinet';
@@ -6071,6 +6097,116 @@
       "baseRate": 23598.81
     },
     "customRate": 23598.81
+  },
+  {
+    "id": "wrb-60 o/s",
+    "code": "wrb-60 o/s",
+    "name": "WRB 60 O/S",
+    "description": "WRB ONLY SHUTTER 60",
+    "modelType": "loft_os",
+    "category": "wardrobe",
+    "costCategory": "Wardrobe - O/S",
+    "areaSqft": 13.56253296,
+    "icon": "🚪",
+    "dimensions": {
+      "W": 600,
+      "H": 2100,
+      "D": 18
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "none",
+        "finish": "none"
+      }
+    },
+    "unitConfig": {
+      "isOnlyShutter": true,
+      "shutterThickness": 18,
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 0,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "hasLegs": false,
+      "legs": 0,
+      "plinthH": 0,
+      "mountType": "floor",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "none",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 13508.28
+    },
+    "customRate": 13508.28,
+    "elevation": 0
+  },
+  {
+    "id": "wrb-120 o/s",
+    "code": "wrb-120 o/s",
+    "name": "WRB 120 O/S",
+    "description": "WRB ONLY SHUTTER 120",
+    "modelType": "loft_os",
+    "category": "wardrobe",
+    "costCategory": "Wardrobe - O/S",
+    "areaSqft": 27.12506593,
+    "icon": "🚪",
+    "dimensions": {
+      "W": 1200,
+      "H": 2100,
+      "D": 18
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "none",
+        "finish": "none"
+      }
+    },
+    "unitConfig": {
+      "isOnlyShutter": true,
+      "shutterThickness": 18,
+      "shutters": 2,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 0,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "hasLegs": false,
+      "legs": 0,
+      "plinthH": 0,
+      "mountType": "floor",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "carcass": "none",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 27016.57
+    },
+    "customRate": 27016.57,
+    "elevation": 0
   },
   {
     "id": "fm-120 o/s",

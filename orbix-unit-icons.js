@@ -97,6 +97,10 @@
   ICONS["wcm-lt"] = ICONS["fcm-lt"];
   ICONS["fbcm-1500"] = ICONS["fbcm"];
   ICONS["wbcm"] = ICONS["fbcm"];
+  ICONS["wrb-60-o-s"] = ICONS["wr-1-shelves"];
+  ICONS["wrb-60-os"] = ICONS["wr-1-shelves"];
+  ICONS["wrb-120-o-s"] = ICONS["wr-shelves"];
+  ICONS["wrb-120-os"] = ICONS["wr-shelves"];
 
   return {
     ICONS: ICONS,
