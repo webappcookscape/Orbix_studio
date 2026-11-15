@@ -2305,12 +2305,188 @@
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Photorealistic 3D SketchUp GLTF Decor Loader & Asset Cache
+     Loads textured .glb models converted from native Trimble SketchUp (.skp)
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer._gltfCache = ArchitecturalRenderer._gltfCache || {};
+  ArchitecturalRenderer._gltfPending = ArchitecturalRenderer._gltfPending || {};
+
+  ArchitecturalRenderer.prototype.loadAndAttachGLB = function (url, parentGroup, dims, onLoaded) {
+    var self = this;
+    if (!url || typeof THREE === 'undefined') return;
+
+    function applyModel(sourceScene) {
+      if (!parentGroup) return;
+      var ph = parentGroup.getObjectByName('__decor_placeholder__');
+      if (ph) parentGroup.remove(ph);
+
+      // Deep clone the cached scene
+      var model = sourceScene.clone(true);
+      model.name = '__decor_model__';
+
+      // Compute bounding box
+      var bbox = new THREE.Box3().setFromObject(model);
+      var size = new THREE.Vector3();
+      bbox.getSize(size);
+      var center = new THREE.Vector3();
+      bbox.getCenter(center);
+
+      var wrapper = new THREE.Group();
+      wrapper.name = '__decor_wrapper__';
+
+      // Center horizontally, ground bottom to 0
+      model.position.set(-center.x, -bbox.min.y, -center.z);
+
+      // Enable realistic shadows and materials
+      model.traverse(function (child) {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          child.userData = child.userData || {};
+          child.userData.isGltfMesh = true;
+          if (child.material) {
+            child.material.side = THREE.DoubleSide;
+            if (child.material.isMeshStandardMaterial || child.material.isMeshPhysicalMaterial) {
+              child.material.roughness = Math.min(Math.max(child.material.roughness, 0.2), 0.95);
+              child.material.metalness = Math.min(Math.max(child.material.metalness, 0.0), 0.9);
+              child.material.envMapIntensity = 1.0;
+              child.material.needsUpdate = true;
+            }
+          }
+        }
+      });
+
+      // Scale proportionally if user customized unit dimensions in UI
+      if (dims && dims.W && dims.H && dims.D && size.x > 1 && size.y > 1 && size.z > 1) {
+        var sx = dims.W / size.x;
+        var sy = dims.H / size.y;
+        var sz = dims.D / size.z;
+        if (Math.abs(sx - 1) > 0.05 || Math.abs(sy - 1) > 0.05 || Math.abs(sz - 1) > 0.05) {
+          wrapper.scale.set(sx, sy, sz);
+        }
+      }
+
+      wrapper.add(model);
+      parentGroup.add(wrapper);
+
+      // Ground contact shadow under floor decors
+      if (typeof ArchitecturalRenderer.createContactShadowPlane === 'function') {
+        var shadowW = (dims && dims.W) || size.x;
+        var shadowD = (dims && dims.D) || size.z;
+        var shadowPlane = ArchitecturalRenderer.createContactShadowPlane(shadowW, shadowD);
+        if (shadowPlane) {
+          shadowPlane.position.set(0, 1.2, 0);
+          parentGroup.add(shadowPlane);
+        }
+      }
+
+      if (self.requestRender) self.requestRender();
+      if (typeof onLoaded === 'function') onLoaded(wrapper);
+    }
+
+    if (ArchitecturalRenderer._gltfCache[url]) {
+      applyModel(ArchitecturalRenderer._gltfCache[url]);
+      return;
+    }
+
+    // Add lightweight bounding box placeholder while loading asynchronously
+    var placeW = (dims && dims.W) || 600;
+    var placeH = (dims && dims.H) || 800;
+    var placeD = (dims && dims.D) || 600;
+    var ph = new THREE.Mesh(
+      new THREE.BoxGeometry(placeW, placeH, placeD),
+      new THREE.MeshStandardMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.25 })
+    );
+    ph.name = '__decor_placeholder__';
+    ph.position.set(0, placeH / 2, 0);
+    parentGroup.add(ph);
+
+    if (ArchitecturalRenderer._gltfPending[url]) {
+      ArchitecturalRenderer._gltfPending[url].push(applyModel);
+      return;
+    }
+    ArchitecturalRenderer._gltfPending[url] = [applyModel];
+
+    function doLoad() {
+      if (!window.THREE || !window.THREE.GLTFLoader) {
+        setTimeout(doLoad, 80);
+        return;
+      }
+      var loader = new THREE.GLTFLoader();
+      loader.load(url, function (gltf) {
+        ArchitecturalRenderer._gltfCache[url] = gltf.scene;
+        var cbs = ArchitecturalRenderer._gltfPending[url] || [];
+        delete ArchitecturalRenderer._gltfPending[url];
+        cbs.forEach(function (cb) {
+          try { cb(gltf.scene); } catch (e) { console.error(e); }
+        });
+      }, undefined, function (err) {
+        console.warn('[Orbix 3D] Failed to load decor model:', url, err);
+        delete ArchitecturalRenderer._gltfPending[url];
+      });
+    }
+
+    doLoad();
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build Decor & Appliance Mesh (Excluded from Pricing)
-     Supports Fridge, Ice Box / Chiller, Plants, Microwave, Chimney, TV, Sofa, etc.
+     Renders Photorealistic Textured 3D SketchUp GLTF Models or Procedural Fallback
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildDecorMesh = function (furn, fg, dims) {
     var cat = (furn.category || 'decor').toLowerCase();
     var name = (furn.name || '').toLowerCase();
+    var id = (furn.id || '').toLowerCase();
+    var code = (furn.code || furn.catalogItemId || '').toLowerCase();
+
+    // 1. Resolve exact .glb model URL
+    var glbUrl = furn.modelUrl || furn.glbPath || null;
+    if (glbUrl && typeof glbUrl === 'string' && /\.skp$/i.test(glbUrl)) {
+      // Map old .skp path to new .glb model
+      var base = glbUrl.replace(/^.*[\\\/]/, '').replace(/\.skp$/i, '');
+      var slug = base.replace(/[\+\s\-]+/g, '_').replace(/[^\w\.]/g, '').replace(/_+/g, '_').toLowerCase();
+      glbUrl = 'assets/decors/' + slug + '.glb';
+    }
+
+    // 2. Lookup in window.ORBIX_DECORS_CATALOG (46 models)
+    if (!glbUrl && typeof window !== 'undefined' && window.ORBIX_DECORS_CATALOG && Array.isArray(window.ORBIX_DECORS_CATALOG)) {
+      var match = window.ORBIX_DECORS_CATALOG.find(function (d) {
+        if (furn.slug && d.slug === furn.slug) return true;
+        if (d.id === furn.id || d.id === furn.catalogItemId || d.id === furn.code) return true;
+        if (d.name && d.name.toLowerCase() === name) return true;
+        return false;
+      });
+      if (match && match.modelUrl) {
+        glbUrl = match.modelUrl;
+      }
+    }
+
+    // 3. Fallback smart mapping from keywords to rich SketchUp models
+    if (!glbUrl) {
+      if (name.indexOf('windsor') !== -1) glbUrl = 'assets/decors/bed_windsor_1.glb';
+      else if (name.indexOf('cama') !== -1) glbUrl = 'assets/decors/cama_3.glb';
+      else if (name.indexOf('girls') !== -1 && name.indexOf('bed') !== -1) glbUrl = 'assets/decors/girls_bed.glb';
+      else if (name.indexOf('ashley') !== -1) glbUrl = 'assets/decors/ashley_padova_3_seater_sofa.glb';
+      else if (name.indexOf('boucle') !== -1 || name.indexOf('ovo') !== -1) glbUrl = 'assets/decors/sofa_ovo_z_pojemnikiem_beżowa_boucle.glb';
+      else if (name.indexOf('hob') !== -1 && name.indexOf('3') !== -1) glbUrl = 'assets/decors/hob_1.glb';
+      else if (name.indexOf('hob') !== -1) glbUrl = 'assets/decors/hob.glb';
+      else if (name.indexOf('dishwasher') !== -1) glbUrl = 'assets/decors/kitchenaid_dishwasher.glb';
+      else if (name.indexOf('lamp') !== -1) glbUrl = 'assets/decors/floor_lamp.glb';
+      else if (name.indexOf('jaali') !== -1) glbUrl = 'assets/decors/jaali_partition.glb';
+      else if (name.indexOf('partition') !== -1) glbUrl = 'assets/decors/partition_wall.glb';
+      else if (name.indexOf('vegetables') !== -1) glbUrl = 'assets/decors/vegetables.glb';
+      else if (name.indexOf('teapot') !== -1) glbUrl = 'assets/decors/teapot.glb';
+      else if (name.indexOf('fig') !== -1 || (name.indexOf('plant') !== -1 && name.indexOf('tall') !== -1)) glbUrl = 'assets/decors/flower_pot_12.glb';
+      else if (name.indexOf('succulent') !== -1) glbUrl = 'assets/decors/succulent_decoration.glb';
+      else if (name.indexOf('cutlery') !== -1) glbUrl = 'assets/decors/cutlery.glb';
+      else if (name.indexOf('dining') !== -1 && name.indexOf('4') !== -1) glbUrl = 'assets/decors/dining_table_4.glb';
+      else if (name.indexOf('dining') !== -1) glbUrl = 'assets/decors/dining_table2.glb';
+      else if (name.indexOf('tv') !== -1 || name.indexOf('television') !== -1) glbUrl = 'assets/decors/7_mi_tv.glb';
+      else if (name.indexOf('refrigerator') !== -1 || name.indexOf('fridge') !== -1) glbUrl = 'assets/decors/r7250_refrigerator_freezer_20_cubic_feet.glb';
+      else if (name.indexOf('washing') !== -1 || name.indexOf('sansung') !== -1) glbUrl = 'assets/decors/maquina_de_lavar_roupas_sansung.glb';
+      else if (name.indexOf('chimney') !== -1 || name.indexOf('hood') !== -1) glbUrl = 'assets/decors/chimney.glb';
+    }
+
     var decorType = furn.decorType || (
       (name.indexOf('sink') !== -1) ? 'sink' :
       (name.indexOf('hob') !== -1 || name.indexOf('stove') !== -1 || name.indexOf('burner') !== -1 || name.indexOf('cooktop') !== -1 || name.indexOf('component_2') !== -1) ? 'gas_hob' :
@@ -2343,6 +2519,17 @@
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
         parseFloat(furn.pos.z) : defDecorElev);
+
+    // If photorealistic SketchUp GLB model is available, attach it directly!
+    if (glbUrl) {
+      this.loadAndAttachGLB(glbUrl, fg, dims);
+      var posX = (furn.pos && furn.pos.x) || 0;
+      var posY = (furn.pos && furn.pos.y) || 0;
+      fg.position.set(posX, elev, posY);
+      fg.rotation.y = -(furn.rotY || 0);
+      fg.visible = true;
+      return fg;
+    }
 
     var W = dims.W, H = dims.H, D = dims.D;
 
@@ -4696,6 +4883,7 @@
   ArchitecturalRenderer.prototype.disposeGroup = function (group) {
     if (!group) return;
     group.traverse(function (obj) {
+      if (obj.userData && obj.userData.isGltfMesh) return;
       if (obj.geometry) obj.geometry.dispose();
       if (obj.material) {
         if (Array.isArray(obj.material)) {

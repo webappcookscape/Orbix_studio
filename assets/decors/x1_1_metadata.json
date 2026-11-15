@@ -1,0 +1,542 @@
+{
+  "format_version": "1.0",
+  "source_file": "x1_1",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.1.194}",
+  "total_definitions": 1,
+  "total_meshes": 5,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "[Color C05]",
+      "color": {
+        "r": 203,
+        "g": 169,
+        "b": 125
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "G:\\RAJESH NIRALE\\DESIGN TOOLS\\MATERILAS\\VENEER\\2.jpg",
+        "x_scale": 6.781563126252506,
+        "y_scale": 12.0
+      }
+    },
+    {
+      "name": "X1",
+      "color": {
+        "r": 210,
+        "g": 212,
+        "b": 214
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 220.31913536427123,
+        "y_scale": 217.97531477528963
+      }
+    },
+    {
+      "name": "X2",
+      "color": {
+        "r": 217,
+        "g": 227,
+        "b": 219
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 8.854434153999678,
+        "y_scale": 10.157480314960624
+      }
+    },
+    {
+      "name": "[Color M01]",
+      "color": {
+        "r": 226,
+        "g": 226,
+        "b": 226
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color M02]",
+      "color": {
+        "r": 198,
+        "g": 198,
+        "b": 198
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "X3",
+      "color": {
+        "r": 188,
+        "g": 187,
+        "b": 182
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 253.53622231013213,
+        "y_scale": 199.2705747279635
+      }
+    },
+    {
+      "name": "[Color M09]",
+      "color": {
+        "r": 210,
+        "g": 182,
+        "b": 92
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "G:\\RAJESH NIRALE\\DESIGN TOOLS\\MATERILAS\\METAL\\4.jpg",
+        "x_scale": 3939.8425196850394,
+        "y_scale": 2705.8113856457603
+      }
+    },
+    {
+      "name": "X4",
+      "color": {
+        "r": 217,
+        "g": 216,
+        "b": 215
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 614.6249122943791,
+        "y_scale": 675.6692913385826
+      }
+    },
+    {
+      "name": "X5",
+      "color": {
+        "r": 217,
+        "g": 217,
+        "b": 208
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 26.881641639414948,
+        "y_scale": 24.303295904906232
+      }
+    },
+    {
+      "name": "[Color M06]",
+      "color": {
+        "r": 86,
+        "g": 86,
+        "b": 86
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color M08]",
+      "color": {
+        "r": 202,
+        "g": 158,
+        "b": 102
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "G:\\RAJESH NIRALE\\DESIGN TOOLS\\MATERILAS\\METAL\\1.jpg",
+        "x_scale": 2705.8267716535433,
+        "y_scale": 2705.8267716535433
+      }
+    },
+    {
+      "name": "X6",
+      "color": {
+        "r": 232,
+        "g": 232,
+        "b": 224
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 1222.5713540577665,
+        "y_scale": 1222.5713540577665
+      }
+    },
+    {
+      "name": "[Color M09]1",
+      "color": {
+        "r": 203,
+        "g": 169,
+        "b": 125
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "G:\\RAJESH NIRALE\\DESIGN TOOLS\\MATERILAS\\VENEER\\2.jpg",
+        "x_scale": 1529.1445883893773,
+        "y_scale": 2705.8267716535433
+      }
+    },
+    {
+      "name": "X7",
+      "color": {
+        "r": 178,
+        "g": 151,
+        "b": 111
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 1781.4173228346458,
+        "y_scale": 1781.4173228346458
+      }
+    },
+    {
+      "name": "X8",
+      "color": {
+        "r": 122,
+        "g": 125,
+        "b": 129
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 1887.4939440758912,
+        "y_scale": 2159.051687362121
+      }
+    },
+    {
+      "name": "[Color M00]",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "X9",
+      "color": {
+        "r": 162,
+        "g": 167,
+        "b": 159
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 3416.3779527559054,
+        "y_scale": 3416.3779527559054
+      }
+    },
+    {
+      "name": "[Color M05]",
+      "color": {
+        "r": 202,
+        "g": 158,
+        "b": 102
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "G:\\RAJESH NIRALE\\DESIGN TOOLS\\MATERILAS\\METAL\\1.jpg",
+        "x_scale": 2705.8267716535433,
+        "y_scale": 2705.8267716535433
+      }
+    },
+    {
+      "name": "X10",
+      "color": {
+        "r": 172,
+        "g": 170,
+        "b": 158
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 4099.53157257105,
+        "y_scale": 4099.53157257105
+      }
+    },
+    {
+      "name": "X11",
+      "color": {
+        "r": 93,
+        "g": 86,
+        "b": 74
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 6495.944881889764,
+        "y_scale": 6495.944881889764
+      }
+    },
+    {
+      "name": "[Color M07]",
+      "color": {
+        "r": 58,
+        "g": 58,
+        "b": 58
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color M08]1",
+      "color": {
+        "r": 202,
+        "g": 158,
+        "b": 102
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "G:\\RAJESH NIRALE\\DESIGN TOOLS\\MATERILAS\\METAL\\1.jpg",
+        "x_scale": 2705.8267716535433,
+        "y_scale": 2029.3700787401576
+      }
+    },
+    {
+      "name": "X12",
+      "color": {
+        "r": 169,
+        "g": 163,
+        "b": 154
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 4605.399837279535,
+        "y_scale": 4662.55905511811
+      }
+    },
+    {
+      "name": "X13",
+      "color": {
+        "r": 217,
+        "g": 212,
+        "b": 201
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 7144.5275590551155,
+        "y_scale": 7144.5275590551155
+      }
+    },
+    {
+      "name": "X14",
+      "color": {
+        "r": 113,
+        "g": 115,
+        "b": 115
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 6030.538254494797,
+        "y_scale": 7144.5275590551155
+      }
+    },
+    {
+      "name": "[Color M08]2",
+      "color": {
+        "r": 30,
+        "g": 30,
+        "b": 30
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "X15",
+      "color": {
+        "r": 71,
+        "g": 69,
+        "b": 59
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\X1.jpg",
+        "x_scale": 15052.027559055117,
+        "y_scale": 10034.685039370079
+      }
+    },
+    {
+      "name": "[Color M09]2",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT_Layer0_71_69_59_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_1_ROOT_Layer0_255_84_84_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_2_ROOT_Layer0_30_30_30_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_3_ROOT__Component_49_Layer0_71_69_59_ss": {
+      "name": "Component_49",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        80339.51,
+        96077.04,
+        -3515.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_49"
+    },
+    "mesh_4_ROOT__Component_49_Layer0_255_84_84_ss": {
+      "name": "Component_49",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        80339.51,
+        96077.04,
+        -3515.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_49"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_49",
+        "definition_name": "Group#1",
+        "layer": "Layer0",
+        "position_mm": [
+          80339.51,
+          96077.04,
+          -3515.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

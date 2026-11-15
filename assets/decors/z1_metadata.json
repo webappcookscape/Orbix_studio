@@ -1,0 +1,159 @@
+{
+  "format_version": "1.0",
+  "source_file": "z1",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.1.194}",
+  "total_definitions": 0,
+  "total_meshes": 3,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "Y1",
+      "color": {
+        "r": 231,
+        "g": 227,
+        "b": 219
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\Y1.jpg",
+        "x_scale": 935.4330708661416,
+        "y_scale": 935.4330708661416
+      }
+    },
+    {
+      "name": "[Metal Steel Textured]",
+      "color": {
+        "r": 202,
+        "g": 158,
+        "b": 102
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "G:\\RAJESH NIRALE\\DESIGN TOOLS\\MATERILAS\\METAL\\1.jpg",
+        "x_scale": 236.61417322834646,
+        "y_scale": 236.61417322834646
+      }
+    },
+    {
+      "name": "[Color M09]",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color M08]",
+      "color": {
+        "r": 30,
+        "g": 30,
+        "b": 30
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "z1",
+      "color": {
+        "r": 147,
+        "g": 146,
+        "b": 137
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\z1.jpg",
+        "x_scale": 1011.2204724409448,
+        "y_scale": 1011.2204724409448
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT_Layer0_255_84_84_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_1_ROOT_Layer0_30_30_30_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_2_ROOT_Layer0_147_146_137_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": []
+  }
+}

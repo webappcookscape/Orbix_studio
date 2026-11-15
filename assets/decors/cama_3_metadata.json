@@ -1,0 +1,763 @@
+{
+  "format_version": "1.0",
+  "source_file": "cama_3",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 11,
+  "total_meshes": 16,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "Stacy_Skin",
+      "color": {
+        "r": 210,
+        "g": 180,
+        "b": 140
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Stacy_Shirt",
+      "color": {
+        "r": 102,
+        "g": 102,
+        "b": 102
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Stacy_Shoe",
+      "color": {
+        "r": 230,
+        "g": 43,
+        "b": 44
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Stacy_Shoe_Laces_Sole",
+      "color": {
+        "r": 226,
+        "g": 226,
+        "b": 226
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Stacy_Hair",
+      "color": {
+        "r": 36,
+        "g": 19,
+        "b": 7
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Stacy_Pants",
+      "color": {
+        "r": 40,
+        "g": 58,
+        "b": 94
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*",
+      "color": {
+        "r": 51,
+        "g": 51,
+        "b": 51
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*1",
+      "color": {
+        "r": 63,
+        "g": 63,
+        "b": 63
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "tela1",
+      "color": {
+        "r": 232,
+        "g": 233,
+        "b": 234
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "/Users/luis.echeverria/Desktop/DISCRE/Proyectos Actuales/01 Texturas/tela.jpg",
+        "x_scale": 39.37007874015748,
+        "y_scale": 39.37007874015748
+      }
+    },
+    {
+      "name": "Tela Gris",
+      "color": {
+        "r": 159,
+        "g": 159,
+        "b": 158
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "/Users/luis.echeverria/Desktop/DISCRE/Proyectos Actuales/01 Texturas/Tela Gris.jpg",
+        "x_scale": 39.37007874016,
+        "y_scale": 26.22652937614
+      }
+    },
+    {
+      "name": "Tela Gris1",
+      "color": {
+        "r": 159,
+        "g": 159,
+        "b": 158
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "/Users/luis.echeverria/Desktop/DISCRE/Proyectos Actuales/01 Texturas/Tela Gris.jpg",
+        "x_scale": 39.37007874016,
+        "y_scale": 26.22652937614
+      }
+    },
+    {
+      "name": "Tela de Algodon gris",
+      "color": {
+        "r": 65,
+        "g": 66,
+        "b": 61
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "/Users/luis.echeverria/Desktop/DISCRE/Proyectos Actuales/01 Texturas/Tela de Algodon gris.jpg",
+        "x_scale": 39.37007874016,
+        "y_scale": 26.2467191601
+      }
+    },
+    {
+      "name": "Tela de Algodon gris1",
+      "color": {
+        "r": 65,
+        "g": 66,
+        "b": 61
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "/Users/luis.echeverria/Desktop/DISCRE/Proyectos Actuales/01 Texturas/Tela de Algodon gris.jpg",
+        "x_scale": 39.37007874016,
+        "y_scale": 26.2467191601
+      }
+    },
+    {
+      "name": "Tela de Algodon Corinta",
+      "color": {
+        "r": 56,
+        "g": 43,
+        "b": 29
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "/Users/luis.echeverria/Desktop/DISCRE/Proyectos Actuales/01 Texturas/Tela de Algodon Corinta.jpg",
+        "x_scale": 39.37007874016,
+        "y_scale": 26.2467191601
+      }
+    },
+    {
+      "name": "Tela de Algodon Corinta1",
+      "color": {
+        "r": 56,
+        "g": 43,
+        "b": 29
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "/Users/luis.echeverria/Desktop/DISCRE/Proyectos Actuales/01 Texturas/Tela de Algodon Corinta.jpg",
+        "x_scale": 39.37007874016,
+        "y_scale": 26.2467191601
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_1815627__Component_1815624__Component_1815620_Layer0": {
+      "name": "Component_1815620",
+      "definition_name": "Group#5",
+      "layer": "Layer0",
+      "position_mm": [
+        1506.17,
+        1372.5,
+        412.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / Component_1815624 / Component_1815620"
+    },
+    "mesh_1_ROOT__Component_1815627__Component_1815624__Component_1815620_Layer0": {
+      "name": "Component_1815620",
+      "definition_name": "Group#5",
+      "layer": "Layer0",
+      "position_mm": [
+        163.66,
+        1372.5,
+        412.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / Component_1815624 / Component_1815620"
+    },
+    "mesh_2_ROOT__Component_1815627__Component_1815624__Component_1815620_Layer0": {
+      "name": "Component_1815620",
+      "definition_name": "Group#5",
+      "layer": "Layer0",
+      "position_mm": [
+        1248.58,
+        1107.72,
+        424.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / Component_1815624 / Component_1815620"
+    },
+    "mesh_3_ROOT__Component_1815627__Component_1815624__Component_1815620_Layer0": {
+      "name": "Component_1815620",
+      "definition_name": "Group#5",
+      "layer": "Layer0",
+      "position_mm": [
+        371.42,
+        1107.72,
+        424.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / Component_1815624 / Component_1815620"
+    },
+    "mesh_4_ROOT__Component_1815627__m__Component_1815619_Layer0_56_43_29_ss": {
+      "name": "Component_1815619",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        1340.47,
+        926.92,
+        436.16
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / m / Component_1815619"
+    },
+    "mesh_5_ROOT__Component_1815627__m__Component_1815619_Layer0_255_84_84_ss": {
+      "name": "Component_1815619",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        1340.47,
+        926.92,
+        436.16
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / m / Component_1815619"
+    },
+    "mesh_6_ROOT__Component_1815627__m__Component_1815619_Layer0_56_43_29_ss": {
+      "name": "Component_1815619",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        279.53,
+        926.92,
+        436.16
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / m / Component_1815619"
+    },
+    "mesh_7_ROOT__Component_1815627__m__Component_1815619_Layer0_255_84_84_ss": {
+      "name": "Component_1815619",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        279.53,
+        926.92,
+        436.16
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / m / Component_1815619"
+    },
+    "mesh_8_ROOT__Component_1815627__Component_1815623_Layer0": {
+      "name": "Component_1815623",
+      "definition_name": "Group#2",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / Component_1815623"
+    },
+    "mesh_9_ROOT__Component_1815627__Component_1815622_Layer0": {
+      "name": "Component_1815622",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        60.0,
+        66.5,
+        280.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / Component_1815622"
+    },
+    "mesh_10_ROOT__Component_1815627__Component_1815625_Layer0": {
+      "name": "Component_1815625",
+      "definition_name": "Group#8",
+      "layer": "Layer0",
+      "position_mm": [
+        60.0,
+        66.5,
+        140.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / Component_1815625"
+    },
+    "mesh_11_ROOT__Component_1815627__Component_1815620_Layer0": {
+      "name": "Component_1815620",
+      "definition_name": "Group#5",
+      "layer": "Layer0",
+      "position_mm": [
+        650.35,
+        949.17,
+        424.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / Component_1815620"
+    },
+    "mesh_12_ROOT__Component_1815627__Component_1815621_Layer0": {
+      "name": "Component_1815621",
+      "definition_name": "Group#6",
+      "layer": "Layer0",
+      "position_mm": [
+        106.59,
+        1966.5,
+        946.2
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1815627 / Component_1815621"
+    },
+    "mesh_13_ROOT__Component_1815628_Layer0_65_66_61_ss": {
+      "name": "Component_1815628",
+      "definition_name": "Group#11",
+      "layer": "Layer0",
+      "position_mm": [
+        -352.69,
+        254.83,
+        575.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {
+        "ClothWorks": {
+          "Enable Drag": "",
+          "Enable Self Collision": "",
+          "Thickness": "0.0541",
+          "Type": "1"
+        }
+      },
+      "path": "ROOT / Component_1815628"
+    },
+    "mesh_14_ROOT__Component_1815628_Layer0_232_233_234_ss": {
+      "name": "Component_1815628",
+      "definition_name": "Group#11",
+      "layer": "Layer0",
+      "position_mm": [
+        -352.69,
+        254.83,
+        575.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {
+        "ClothWorks": {
+          "Enable Drag": "",
+          "Enable Self Collision": "",
+          "Thickness": "0.0541",
+          "Type": "1"
+        }
+      },
+      "path": "ROOT / Component_1815628"
+    },
+    "mesh_15_ROOT__Component_1815629_Layer0": {
+      "name": "Component_1815629",
+      "definition_name": "Group#10",
+      "layer": "Layer0",
+      "position_mm": [
+        -150.0,
+        -180.5,
+        555.91
+      ],
+      "properties": {},
+      "attribute_dictionaries": {
+        "ClothWorks": {
+          "Enable Drag": "",
+          "Enable Self Collision": "",
+          "Type": "1"
+        }
+      },
+      "path": "ROOT / Component_1815629"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_1815627",
+        "definition_name": "Group#7",
+        "layer": "Layer0",
+        "position_mm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {
+          "ClothWorks": {
+            "Type": "0"
+          }
+        },
+        "children": [
+          {
+            "name": "Component_1815624",
+            "definition_name": "Component#3",
+            "layer": "Layer0",
+            "position_mm": [
+              1530.51,
+              11.25,
+              412.01
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_1815620",
+                "definition_name": "Group#5",
+                "layer": "Layer0",
+                "position_mm": [
+                  1506.17,
+                  1372.5,
+                  412.01
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_1815624",
+            "definition_name": "Component#3",
+            "layer": "Layer0",
+            "position_mm": [
+              139.31,
+              11.25,
+              412.01
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_1815620",
+                "definition_name": "Group#5",
+                "layer": "Layer0",
+                "position_mm": [
+                  163.66,
+                  1372.5,
+                  412.01
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_1815624",
+            "definition_name": "Component#3",
+            "layer": "Layer0",
+            "position_mm": [
+              1263.98,
+              43.91,
+              16.23
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_1815620",
+                "definition_name": "Group#5",
+                "layer": "Layer0",
+                "position_mm": [
+                  1248.58,
+                  1107.72,
+                  424.6
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_1815624",
+            "definition_name": "Component#3",
+            "layer": "Layer0",
+            "position_mm": [
+              356.02,
+              43.91,
+              16.23
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_1815620",
+                "definition_name": "Group#5",
+                "layer": "Layer0",
+                "position_mm": [
+                  371.42,
+                  1107.72,
+                  424.6
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "m",
+            "definition_name": "m",
+            "layer": "Layer0",
+            "position_mm": [
+              1461.18,
+              926.92,
+              436.16
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_1815619",
+                "definition_name": "Group#3",
+                "layer": "Layer0",
+                "position_mm": [
+                  1340.47,
+                  926.92,
+                  436.16
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "m",
+            "definition_name": "m",
+            "layer": "Layer0",
+            "position_mm": [
+              158.82,
+              926.92,
+              436.16
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_1815619",
+                "definition_name": "Group#3",
+                "layer": "Layer0",
+                "position_mm": [
+                  279.53,
+                  926.92,
+                  436.16
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_1815623",
+            "definition_name": "Group#2",
+            "layer": "Layer0",
+            "position_mm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_1815622",
+            "definition_name": "Group#1",
+            "layer": "Layer0",
+            "position_mm": [
+              60.0,
+              66.5,
+              280.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_1815625",
+            "definition_name": "Group#8",
+            "layer": "Layer0",
+            "position_mm": [
+              60.0,
+              66.5,
+              140.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_1815620",
+            "definition_name": "Group#5",
+            "layer": "Layer0",
+            "position_mm": [
+              650.35,
+              949.17,
+              424.6
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_1815621",
+            "definition_name": "Group#6",
+            "layer": "Layer0",
+            "position_mm": [
+              106.59,
+              1966.5,
+              946.2
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Component_1815628",
+        "definition_name": "Group#11",
+        "layer": "Layer0",
+        "position_mm": [
+          -352.69,
+          254.83,
+          575.74
+        ],
+        "properties": {},
+        "attribute_dictionaries": {
+          "ClothWorks": {
+            "Enable Drag": "",
+            "Enable Self Collision": "",
+            "Thickness": "0.0541",
+            "Type": "1"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "Component_1815629",
+        "definition_name": "Group#10",
+        "layer": "Layer0",
+        "position_mm": [
+          -150.0,
+          -180.5,
+          555.91
+        ],
+        "properties": {},
+        "attribute_dictionaries": {
+          "ClothWorks": {
+            "Enable Drag": "",
+            "Enable Self Collision": "",
+            "Type": "1"
+          }
+        },
+        "children": []
+      }
+    ]
+  }
+}

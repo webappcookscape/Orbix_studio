@@ -1,0 +1,249 @@
+{
+  "format_version": "1.0",
+  "source_file": "vegetables",
+  "model_source": "sketchup",
+  "sketchup_version": "{25.0.660}",
+  "total_definitions": 4,
+  "total_meshes": 5,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "Material__8",
+      "color": {
+        "r": 192,
+        "g": 65,
+        "b": 40
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Rosanna/AppData/Local/Temp/ChaosGroupTextureCache/682a57f6ac4dfbe5d50bfc1f3a05abf7.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material__5",
+      "color": {
+        "r": 90,
+        "g": 71,
+        "b": 45
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Rosanna/AppData/Local/Temp/ChaosGroupTextureCache/845f08c3cc72355876e868ddb162d364.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material__6",
+      "color": {
+        "r": 148,
+        "g": 91,
+        "b": 2
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Rosanna/AppData/Local/Temp/ChaosGroupTextureCache/7560560ec72099362c6cd75a6e072473.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material__4",
+      "color": {
+        "r": 112,
+        "g": 27,
+        "b": 16
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Rosanna/AppData/Local/Temp/ChaosGroupTextureCache/5067ae244569413c9f16f9dcd44ba30b.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material__7",
+      "color": {
+        "r": 53,
+        "g": 7,
+        "b": 1
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Rosanna/AppData/Local/Temp/ChaosGroupTextureCache/02840052b26e87effc3d13fc51df382c.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Vegetables__Tomato_Layer0": {
+      "name": "Tomato",
+      "definition_name": "Tomato",
+      "layer": "Layer0",
+      "position_mm": [
+        106.73,
+        -0.0,
+        0.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Vegetables / Tomato"
+    },
+    "mesh_1_ROOT__Vegetables__Pepper_Layer0": {
+      "name": "Pepper",
+      "definition_name": "Pepper",
+      "layer": "Layer0",
+      "position_mm": [
+        131.79,
+        94.55,
+        1.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Vegetables / Pepper"
+    },
+    "mesh_2_ROOT__Vegetables__Bell_pepper_Layer0_90_71_45_ds": {
+      "name": "Bell pepper",
+      "definition_name": "Bell pepper",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        11.71,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Vegetables / Bell pepper"
+    },
+    "mesh_3_ROOT__Vegetables__Bell_pepper_Layer0_112_27_16_ds": {
+      "name": "Bell pepper",
+      "definition_name": "Bell pepper",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        11.71,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Vegetables / Bell pepper"
+    },
+    "mesh_4_ROOT__Vegetables__Bell_pepper_Layer0_148_91_2_ds": {
+      "name": "Bell pepper",
+      "definition_name": "Bell pepper",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        11.71,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Vegetables / Bell pepper"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Vegetables",
+        "definition_name": "Vegetables",
+        "layer": "Layer0",
+        "position_mm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Tomato",
+            "definition_name": "Tomato",
+            "layer": "Layer0",
+            "position_mm": [
+              106.73,
+              -0.0,
+              0.24
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Pepper",
+            "definition_name": "Pepper",
+            "layer": "Layer0",
+            "position_mm": [
+              131.79,
+              94.55,
+              1.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Bell pepper",
+            "definition_name": "Bell pepper",
+            "layer": "Layer0",
+            "position_mm": [
+              0.0,
+              11.71,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

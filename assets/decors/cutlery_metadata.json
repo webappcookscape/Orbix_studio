@@ -1,0 +1,777 @@
+{
+  "format_version": "1.0",
+  "source_file": "cutlery",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.1.194}",
+  "total_definitions": 13,
+  "total_meshes": 36,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "01 - Default1",
+      "color": {
+        "r": 173,
+        "g": 128,
+        "b": 89
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "1",
+      "color": {
+        "r": 3,
+        "g": 3,
+        "b": 3
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Standard_1",
+      "color": {
+        "r": 91,
+        "g": 91,
+        "b": 91
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Standard_2",
+      "color": {
+        "r": 20,
+        "g": 20,
+        "b": 20
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Standard_3",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "best1",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "middle1",
+      "color": {
+        "r": 240,
+        "g": 240,
+        "b": 241
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "worst1",
+      "color": {
+        "r": 57,
+        "g": 57,
+        "b": 57
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__skpC3FA__1_Layer0_57_57_57_ss": {
+      "name": "1",
+      "definition_name": "1",
+      "layer": "Layer0",
+      "position_mm": [
+        356.63,
+        82.42,
+        40.81
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 1"
+    },
+    "mesh_1_ROOT__skpC3FA__1_Layer0_255_84_84_ss": {
+      "name": "1",
+      "definition_name": "1",
+      "layer": "Layer0",
+      "position_mm": [
+        356.63,
+        82.42,
+        40.81
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 1"
+    },
+    "mesh_2_ROOT__skpC3FA__1_Layer0_240_240_241_ss": {
+      "name": "1",
+      "definition_name": "1",
+      "layer": "Layer0",
+      "position_mm": [
+        356.63,
+        82.42,
+        40.81
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 1"
+    },
+    "mesh_3_ROOT__skpC3FA__1_Layer0_0_0_0_ss": {
+      "name": "1",
+      "definition_name": "1",
+      "layer": "Layer0",
+      "position_mm": [
+        356.63,
+        82.42,
+        40.81
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 1"
+    },
+    "mesh_4_ROOT__skpC3FA__1_Layer0_3_3_3_ss": {
+      "name": "1",
+      "definition_name": "1",
+      "layer": "Layer0",
+      "position_mm": [
+        356.63,
+        82.42,
+        40.81
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 1"
+    },
+    "mesh_5_ROOT__skpC3FA__1#1_Layer0_57_57_57_ss": {
+      "name": "1#1",
+      "definition_name": "1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        355.45,
+        31.2,
+        46.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 1#1"
+    },
+    "mesh_6_ROOT__skpC3FA__1#1_Layer0_255_84_84_ss": {
+      "name": "1#1",
+      "definition_name": "1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        355.45,
+        31.2,
+        46.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 1#1"
+    },
+    "mesh_7_ROOT__skpC3FA__1#1_Layer0_240_240_241_ss": {
+      "name": "1#1",
+      "definition_name": "1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        355.45,
+        31.2,
+        46.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 1#1"
+    },
+    "mesh_8_ROOT__skpC3FA__1#1_Layer0_0_0_0_ss": {
+      "name": "1#1",
+      "definition_name": "1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        355.45,
+        31.2,
+        46.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 1#1"
+    },
+    "mesh_9_ROOT__skpC3FA__1#1_Layer0_3_3_3_ss": {
+      "name": "1#1",
+      "definition_name": "1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        355.45,
+        31.2,
+        46.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 1#1"
+    },
+    "mesh_10_ROOT__skpC3FA__2#1_Layer0_240_240_241_ss": {
+      "name": "2#1",
+      "definition_name": "2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        222.34,
+        82.19,
+        48.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 2#1"
+    },
+    "mesh_11_ROOT__skpC3FA__2#1_Layer0_255_84_84_ss": {
+      "name": "2#1",
+      "definition_name": "2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        222.34,
+        82.19,
+        48.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 2#1"
+    },
+    "mesh_12_ROOT__skpC3FA__2#1_Layer0_0_0_0_ss": {
+      "name": "2#1",
+      "definition_name": "2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        222.34,
+        82.19,
+        48.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 2#1"
+    },
+    "mesh_13_ROOT__skpC3FA__2#1_Layer0_57_57_57_ss": {
+      "name": "2#1",
+      "definition_name": "2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        222.34,
+        82.19,
+        48.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 2#1"
+    },
+    "mesh_14_ROOT__skpC3FA__2#1_Layer0_3_3_3_ss": {
+      "name": "2#1",
+      "definition_name": "2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        222.34,
+        82.19,
+        48.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 2#1"
+    },
+    "mesh_15_ROOT__skpC3FA__2#2_Layer0_240_240_241_ss": {
+      "name": "2#2",
+      "definition_name": "2#2",
+      "layer": "Layer0",
+      "position_mm": [
+        217.14,
+        57.07,
+        57.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 2#2"
+    },
+    "mesh_16_ROOT__skpC3FA__2#2_Layer0_255_84_84_ss": {
+      "name": "2#2",
+      "definition_name": "2#2",
+      "layer": "Layer0",
+      "position_mm": [
+        217.14,
+        57.07,
+        57.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 2#2"
+    },
+    "mesh_17_ROOT__skpC3FA__2#2_Layer0_0_0_0_ss": {
+      "name": "2#2",
+      "definition_name": "2#2",
+      "layer": "Layer0",
+      "position_mm": [
+        217.14,
+        57.07,
+        57.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 2#2"
+    },
+    "mesh_18_ROOT__skpC3FA__2#2_Layer0_57_57_57_ss": {
+      "name": "2#2",
+      "definition_name": "2#2",
+      "layer": "Layer0",
+      "position_mm": [
+        217.14,
+        57.07,
+        57.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 2#2"
+    },
+    "mesh_19_ROOT__skpC3FA__2#2_Layer0_3_3_3_ss": {
+      "name": "2#2",
+      "definition_name": "2#2",
+      "layer": "Layer0",
+      "position_mm": [
+        217.14,
+        57.07,
+        57.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / 2#2"
+    },
+    "mesh_20_ROOT__skpC3FA__Cylinder01_Layer0_20_20_20_ss": {
+      "name": "Cylinder01",
+      "definition_name": "Cylinder01",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Cylinder01"
+    },
+    "mesh_21_ROOT__skpC3FA__Cylinder01_Layer0_255_84_84_ss": {
+      "name": "Cylinder01",
+      "definition_name": "Cylinder01",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Cylinder01"
+    },
+    "mesh_22_ROOT__skpC3FA__Cylinder02_Layer0_20_20_20_ss": {
+      "name": "Cylinder02",
+      "definition_name": "Cylinder02",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Cylinder02"
+    },
+    "mesh_23_ROOT__skpC3FA__Cylinder02_Layer0_255_84_84_ss": {
+      "name": "Cylinder02",
+      "definition_name": "Cylinder02",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Cylinder02"
+    },
+    "mesh_24_ROOT__skpC3FA__Cylinder03_Layer0_20_20_20_ss": {
+      "name": "Cylinder03",
+      "definition_name": "Cylinder03",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Cylinder03"
+    },
+    "mesh_25_ROOT__skpC3FA__Cylinder03_Layer0_255_84_84_ss": {
+      "name": "Cylinder03",
+      "definition_name": "Cylinder03",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Cylinder03"
+    },
+    "mesh_26_ROOT__skpC3FA__Cylinder04_Layer0_20_20_20_ss": {
+      "name": "Cylinder04",
+      "definition_name": "Cylinder04",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Cylinder04"
+    },
+    "mesh_27_ROOT__skpC3FA__Cylinder04_Layer0_255_84_84_ss": {
+      "name": "Cylinder04",
+      "definition_name": "Cylinder04",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Cylinder04"
+    },
+    "mesh_28_ROOT__skpC3FA__Rectangle0_Layer0_173_128_89_ss": {
+      "name": "Rectangle0",
+      "definition_name": "Rectangle0",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Rectangle0"
+    },
+    "mesh_29_ROOT__skpC3FA__Rectangle0_Layer0_255_84_84_ss": {
+      "name": "Rectangle0",
+      "definition_name": "Rectangle0",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Rectangle0"
+    },
+    "mesh_30_ROOT__skpC3FA__Rectangle1_Layer0_91_91_91_ss": {
+      "name": "Rectangle1",
+      "definition_name": "Rectangle1",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Rectangle1"
+    },
+    "mesh_31_ROOT__skpC3FA__Rectangle1_Layer0_255_84_84_ss": {
+      "name": "Rectangle1",
+      "definition_name": "Rectangle1",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Rectangle1"
+    },
+    "mesh_32_ROOT__skpC3FA__Rectangle2_Layer0_255_255_255_ss": {
+      "name": "Rectangle2",
+      "definition_name": "Rectangle2",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Rectangle2"
+    },
+    "mesh_33_ROOT__skpC3FA__Rectangle2_Layer0_255_84_84_ss": {
+      "name": "Rectangle2",
+      "definition_name": "Rectangle2",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Rectangle2"
+    },
+    "mesh_34_ROOT__skpC3FA__Rectangle5_Layer0_255_255_255_ss": {
+      "name": "Rectangle5",
+      "definition_name": "Rectangle5",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Rectangle5"
+    },
+    "mesh_35_ROOT__skpC3FA__Rectangle5_Layer0_255_84_84_ss": {
+      "name": "Rectangle5",
+      "definition_name": "Rectangle5",
+      "layer": "Layer0",
+      "position_mm": [
+        188.25,
+        33.43,
+        20.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / skpC3FA / Rectangle5"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "skpC3FA",
+        "definition_name": "skpC3FA",
+        "layer": "Layer0",
+        "position_mm": [
+          188.25,
+          33.43,
+          20.43
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "1",
+            "definition_name": "1",
+            "layer": "Layer0",
+            "position_mm": [
+              356.63,
+              82.42,
+              40.81
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "1#1",
+            "definition_name": "1#1",
+            "layer": "Layer0",
+            "position_mm": [
+              355.45,
+              31.2,
+              46.46
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "2#1",
+            "definition_name": "2#1",
+            "layer": "Layer0",
+            "position_mm": [
+              222.34,
+              82.19,
+              48.41
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "2#2",
+            "definition_name": "2#2",
+            "layer": "Layer0",
+            "position_mm": [
+              217.14,
+              57.07,
+              57.34
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Cylinder01",
+            "definition_name": "Cylinder01",
+            "layer": "Layer0",
+            "position_mm": [
+              188.25,
+              33.43,
+              20.43
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Cylinder02",
+            "definition_name": "Cylinder02",
+            "layer": "Layer0",
+            "position_mm": [
+              188.25,
+              33.43,
+              20.43
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Cylinder03",
+            "definition_name": "Cylinder03",
+            "layer": "Layer0",
+            "position_mm": [
+              188.25,
+              33.43,
+              20.43
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Cylinder04",
+            "definition_name": "Cylinder04",
+            "layer": "Layer0",
+            "position_mm": [
+              188.25,
+              33.43,
+              20.43
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Rectangle0",
+            "definition_name": "Rectangle0",
+            "layer": "Layer0",
+            "position_mm": [
+              188.25,
+              33.43,
+              20.43
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Rectangle1",
+            "definition_name": "Rectangle1",
+            "layer": "Layer0",
+            "position_mm": [
+              188.25,
+              33.43,
+              20.43
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Rectangle2",
+            "definition_name": "Rectangle2",
+            "layer": "Layer0",
+            "position_mm": [
+              188.25,
+              33.43,
+              20.43
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Rectangle5",
+            "definition_name": "Rectangle5",
+            "layer": "Layer0",
+            "position_mm": [
+              188.25,
+              33.43,
+              20.43
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

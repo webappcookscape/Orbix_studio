@@ -1,0 +1,307 @@
+{
+  "format_version": "1.0",
+  "source_file": "kitchenaid_dishwasher",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 3,
+  "total_meshes": 10,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "[Color_005]",
+      "color": {
+        "r": 114,
+        "g": 114,
+        "b": 114
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color_008]",
+      "color": {
+        "r": 30,
+        "g": 30,
+        "b": 30
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Metal_Corrogated_Shiny]2",
+      "color": {
+        "r": 193,
+        "g": 193,
+        "b": 193
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Metal_Corrogated_Shiny.jpg",
+        "x_scale": 30.0,
+        "y_scale": 30.0
+      }
+    },
+    {
+      "name": "forsketchup",
+      "color": {
+        "r": 129,
+        "g": 129,
+        "b": 129
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "F:\\ARCHITECTURE\\Logos\\KitchenAid Brand\\forsketchup.jpg",
+        "x_scale": 3.6904761904761902,
+        "y_scale": 0.625
+      }
+    },
+    {
+      "name": "[Metal_Corrogated_Shiny]4",
+      "color": {
+        "r": 193,
+        "g": 193,
+        "b": 193
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Metal_Corrogated_Shiny.jpg",
+        "x_scale": 25.0,
+        "y_scale": 25.0
+      }
+    },
+    {
+      "name": "[Metal_Corrogated_Shiny]3",
+      "color": {
+        "r": 163,
+        "g": 163,
+        "b": 163
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Metal_Corrogated_Shiny.jpg",
+        "x_scale": 12.0,
+        "y_scale": 12.0
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT_Layer0_255_84_84_ds": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_1_ROOT_Layer0_114_114_114_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_2_ROOT_Layer0_255_84_84_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_3_ROOT_Layer0_30_30_30_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_4_ROOT_Layer0_193_193_193_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_5_ROOT__H1_Layer0_193_193_193_ss": {
+      "name": "H1",
+      "definition_name": "H1",
+      "layer": "Layer0",
+      "position_mm": [
+        568.14,
+        0.0,
+        768.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / H1"
+    },
+    "mesh_6_ROOT__H1_Layer0_255_84_84_ss": {
+      "name": "H1",
+      "definition_name": "H1",
+      "layer": "Layer0",
+      "position_mm": [
+        568.14,
+        0.0,
+        768.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / H1"
+    },
+    "mesh_7_ROOT__logo_badge__badge_Layer0_163_163_163_ds": {
+      "name": "badge",
+      "definition_name": "badge",
+      "layer": "Layer0",
+      "position_mm": [
+        247.65,
+        57.21,
+        170.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / logo badge / badge"
+    },
+    "mesh_8_ROOT__logo_badge__badge_Layer0_129_129_129_ss": {
+      "name": "badge",
+      "definition_name": "badge",
+      "layer": "Layer0",
+      "position_mm": [
+        247.65,
+        57.21,
+        170.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / logo badge / badge"
+    },
+    "mesh_9_ROOT__logo_badge__badge_Layer0_163_163_163_ss": {
+      "name": "badge",
+      "definition_name": "badge",
+      "layer": "Layer0",
+      "position_mm": [
+        247.65,
+        57.21,
+        170.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / logo badge / badge"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "H1",
+        "definition_name": "H1",
+        "layer": "Layer0",
+        "position_mm": [
+          568.14,
+          0.0,
+          768.35
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "logo badge",
+        "definition_name": "logo badge",
+        "layer": "Layer0",
+        "position_mm": [
+          249.44,
+          49.66,
+          171.13
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "badge",
+            "definition_name": "badge",
+            "layer": "Layer0",
+            "position_mm": [
+              247.65,
+              57.21,
+              170.73
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,710 @@
+{
+  "format_version": "1.0",
+  "source_file": "glass_apothecary_jar",
+  "model_source": "sketchup",
+  "sketchup_version": "{24.0.103}",
+  "total_definitions": 14,
+  "total_meshes": 21,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "1306576471823",
+      "color": {
+        "r": 225,
+        "g": 225,
+        "b": 223
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Usuario/AppData/Local/Temp/ChaosGroupTextureCache/59973b2b7a3dffa25455f482b078f4f4.jpg",
+        "x_scale": 12.0,
+        "y_scale": 8.025
+      }
+    },
+    {
+      "name": "Steve_Shirt1",
+      "color": {
+        "r": 128,
+        "g": 128,
+        "b": 128
+      },
+      "transparency": 0.10000002384200002,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "coffee_beans",
+      "color": {
+        "r": 93,
+        "g": 58,
+        "b": 38
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Usuario/AppData/Local/Temp/ChaosGroupTextureCache/b65a2da1e7c11a33db473ae081a4306a.jpeg",
+        "x_scale": 5.0,
+        "y_scale": 3.75
+      }
+    },
+    {
+      "name": "Sugartext",
+      "color": {
+        "r": 227,
+        "g": 227,
+        "b": 227
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Usuario/AppData/Local/Temp/ChaosGroupTextureCache/02f56e7322f3ba1a520a97ae8910ea23.jpg",
+        "x_scale": 12.011842105263158,
+        "y_scale": 11.1875
+      }
+    },
+    {
+      "name": "Flour",
+      "color": {
+        "r": 84,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Usuario/AppData/Local/Temp/ChaosGroupTextureCache/d89e3859c9e0367b663ab37b7762c16d.jpg",
+        "x_scale": 5.0,
+        "y_scale": 2.0
+      }
+    },
+    {
+      "name": "Sugar",
+      "color": {
+        "r": 87,
+        "g": 87,
+        "b": 87
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Usuario/AppData/Local/Temp/ChaosGroupTextureCache/270703df935c63876ce23b68b39d3c78.jpg",
+        "x_scale": 5.0,
+        "y_scale": 2.0
+      }
+    },
+    {
+      "name": "Coffee",
+      "color": {
+        "r": 87,
+        "g": 87,
+        "b": 87
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/Usuario/AppData/Local/Temp/ChaosGroupTextureCache/0f9a6e606c60c0714aa10d8db107feff.jpg",
+        "x_scale": 5.0,
+        "y_scale": 2.0
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_1529322__3qt_Base_Layer0": {
+      "name": "3qt Base",
+      "definition_name": "3qt Base",
+      "layer": "Layer0",
+      "position_mm": [
+        80.61,
+        -192.41,
+        -0.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1529322 / 3qt Base"
+    },
+    "mesh_1_ROOT__Component_1529322__Lid__Component_1584505_Layer0": {
+      "name": "Component_1584505",
+      "definition_name": "Group#223",
+      "layer": "Layer0",
+      "position_mm": [
+        158.69,
+        -115.15,
+        188.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1529322 / Lid / Component_1584505"
+    },
+    "mesh_2_ROOT__Component_1529322__Lid__Component_1586476_Layer0": {
+      "name": "Component_1586476",
+      "definition_name": "Group#222",
+      "layer": "Layer0",
+      "position_mm": [
+        82.79,
+        -191.05,
+        153.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1529322 / Lid / Component_1586476"
+    },
+    "mesh_3_ROOT__Component_1529322__Component_1529323_Layer0_93_58_38_ss": {
+      "name": "Component_1529323",
+      "definition_name": "Group#233",
+      "layer": "Layer0",
+      "position_mm": [
+        83.08,
+        -189.95,
+        4.91
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1529322 / Component_1529323"
+    },
+    "mesh_4_ROOT__Component_1529322__Component_1529323_Layer0_227_227_227_ss": {
+      "name": "Component_1529323",
+      "definition_name": "Group#233",
+      "layer": "Layer0",
+      "position_mm": [
+        83.08,
+        -189.95,
+        4.91
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1529322 / Component_1529323"
+    },
+    "mesh_5_ROOT__Component_1529322__Component_1552519_Layer0_87_87_87_ss": {
+      "name": "Component_1552519",
+      "definition_name": "Group#227",
+      "layer": "Layer0",
+      "position_mm": [
+        106.65,
+        -192.81,
+        47.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1529322 / Component_1552519"
+    },
+    "mesh_6_ROOT__Component_1529322__Component_1552519_Layer0_255_84_84_ss": {
+      "name": "Component_1552519",
+      "definition_name": "Group#227",
+      "layer": "Layer0",
+      "position_mm": [
+        106.65,
+        -192.81,
+        47.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1529322 / Component_1552519"
+    },
+    "mesh_7_ROOT__Component_1552564__Lid__Component_1584505_Layer0": {
+      "name": "Component_1584505",
+      "definition_name": "Group#223",
+      "layer": "Layer0",
+      "position_mm": [
+        -103.66,
+        -104.24,
+        183.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1552564 / Lid / Component_1584505"
+    },
+    "mesh_8_ROOT__Component_1552564__Lid__Component_1586476_Layer0": {
+      "name": "Component_1586476",
+      "definition_name": "Group#222",
+      "layer": "Layer0",
+      "position_mm": [
+        -179.56,
+        -180.14,
+        156.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1552564 / Lid / Component_1586476"
+    },
+    "mesh_9_ROOT__Component_1552564__1_Gallon_Base_Layer0": {
+      "name": "1 Gallon Base",
+      "definition_name": "1 Gallon Base",
+      "layer": "Layer0",
+      "position_mm": [
+        -180.53,
+        -181.11,
+        -0.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1552564 / 1 Gallon Base"
+    },
+    "mesh_10_ROOT__Component_1552564__Component_1564394_Layer0_84_84_84_ss": {
+      "name": "Component_1564394",
+      "definition_name": "Group#234",
+      "layer": "Layer0",
+      "position_mm": [
+        -154.5,
+        -181.51,
+        55.04
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1552564 / Component_1564394"
+    },
+    "mesh_11_ROOT__Component_1552564__Component_1564394_Layer0_255_84_84_ss": {
+      "name": "Component_1564394",
+      "definition_name": "Group#234",
+      "layer": "Layer0",
+      "position_mm": [
+        -154.5,
+        -181.51,
+        55.04
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1552564 / Component_1564394"
+    },
+    "mesh_12_ROOT__Component_1552564__Component_1564435_Layer0_225_225_223_ss": {
+      "name": "Component_1564435",
+      "definition_name": "Group#226",
+      "layer": "Layer0",
+      "position_mm": [
+        -178.07,
+        -178.65,
+        1.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1552564 / Component_1564435"
+    },
+    "mesh_13_ROOT__Component_1552564__Component_1564435_Layer0_255_84_84_ss": {
+      "name": "Component_1564435",
+      "definition_name": "Group#226",
+      "layer": "Layer0",
+      "position_mm": [
+        -178.07,
+        -178.65,
+        1.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1552564 / Component_1564435"
+    },
+    "mesh_14_ROOT__Component_1552564__Component_1564435_Layer0_128_128_128_ss": {
+      "name": "Component_1564435",
+      "definition_name": "Group#226",
+      "layer": "Layer0",
+      "position_mm": [
+        -178.07,
+        -178.65,
+        1.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1552564 / Component_1564435"
+    },
+    "mesh_15_ROOT__Component_1575798__3qt_Base_Layer0": {
+      "name": "3qt Base",
+      "definition_name": "3qt Base",
+      "layer": "Layer0",
+      "position_mm": [
+        323.26,
+        -182.09,
+        -0.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1575798 / 3qt Base"
+    },
+    "mesh_16_ROOT__Component_1575798__Lid__Component_1584505_Layer0": {
+      "name": "Component_1584505",
+      "definition_name": "Group#223",
+      "layer": "Layer0",
+      "position_mm": [
+        400.13,
+        -105.21,
+        188.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1575798 / Lid / Component_1584505"
+    },
+    "mesh_17_ROOT__Component_1575798__Lid__Component_1586476_Layer0": {
+      "name": "Component_1586476",
+      "definition_name": "Group#222",
+      "layer": "Layer0",
+      "position_mm": [
+        324.23,
+        -181.11,
+        153.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1575798 / Lid / Component_1586476"
+    },
+    "mesh_18_ROOT__Component_1575798__Component_1596333_Layer0": {
+      "name": "Component_1596333",
+      "definition_name": "Group#231",
+      "layer": "Layer0",
+      "position_mm": [
+        324.73,
+        -180.01,
+        4.91
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1575798 / Component_1596333"
+    },
+    "mesh_19_ROOT__Component_1575798__Component_1598995_Layer0_87_87_87_ss": {
+      "name": "Component_1598995",
+      "definition_name": "Group#232",
+      "layer": "Layer0",
+      "position_mm": [
+        349.3,
+        -182.48,
+        47.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1575798 / Component_1598995"
+    },
+    "mesh_20_ROOT__Component_1575798__Component_1598995_Layer0_255_84_84_ss": {
+      "name": "Component_1598995",
+      "definition_name": "Group#232",
+      "layer": "Layer0",
+      "position_mm": [
+        349.3,
+        -182.48,
+        47.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_1575798 / Component_1598995"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_1529322",
+        "definition_name": "Group#278",
+        "layer": "Layer0",
+        "position_mm": [
+          80.61,
+          -192.81,
+          -0.01
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "3qt Base",
+            "definition_name": "3qt Base",
+            "layer": "Layer0",
+            "position_mm": [
+              80.61,
+              -192.41,
+              -0.01
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Lid",
+            "definition_name": "Lid",
+            "layer": "Layer0",
+            "position_mm": [
+              82.79,
+              -191.05,
+              153.78
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_1584505",
+                "definition_name": "Group#223",
+                "layer": "Layer0",
+                "position_mm": [
+                  158.69,
+                  -115.15,
+                  188.37
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_1586476",
+                "definition_name": "Group#222",
+                "layer": "Layer0",
+                "position_mm": [
+                  82.79,
+                  -191.05,
+                  153.78
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_1529323",
+            "definition_name": "Group#233",
+            "layer": "Layer0",
+            "position_mm": [
+              83.08,
+              -189.95,
+              4.91
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_1552519",
+            "definition_name": "Group#227",
+            "layer": "Layer0",
+            "position_mm": [
+              106.65,
+              -192.81,
+              47.44
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Component_1552564",
+        "definition_name": "Group#280",
+        "layer": "Layer0",
+        "position_mm": [
+          -180.53,
+          -181.51,
+          -0.01
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Lid",
+            "definition_name": "Lid",
+            "layer": "Layer0",
+            "position_mm": [
+              -179.56,
+              -180.14,
+              156.6
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_1584505",
+                "definition_name": "Group#223",
+                "layer": "Layer0",
+                "position_mm": [
+                  -103.66,
+                  -104.24,
+                  183.93
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_1586476",
+                "definition_name": "Group#222",
+                "layer": "Layer0",
+                "position_mm": [
+                  -179.56,
+                  -180.14,
+                  156.6
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "1 Gallon Base",
+            "definition_name": "1 Gallon Base",
+            "layer": "Layer0",
+            "position_mm": [
+              -180.53,
+              -181.11,
+              -0.01
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_1564394",
+            "definition_name": "Group#234",
+            "layer": "Layer0",
+            "position_mm": [
+              -154.5,
+              -181.51,
+              55.04
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_1564435",
+            "definition_name": "Group#226",
+            "layer": "Layer0",
+            "position_mm": [
+              -178.07,
+              -178.65,
+              1.94
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Component_1575798",
+        "definition_name": "Group#279",
+        "layer": "Layer0",
+        "position_mm": [
+          323.26,
+          -182.48,
+          -0.01
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "3qt Base",
+            "definition_name": "3qt Base",
+            "layer": "Layer0",
+            "position_mm": [
+              323.26,
+              -182.09,
+              -0.01
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Lid",
+            "definition_name": "Lid",
+            "layer": "Layer0",
+            "position_mm": [
+              324.23,
+              -181.11,
+              153.78
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_1584505",
+                "definition_name": "Group#223",
+                "layer": "Layer0",
+                "position_mm": [
+                  400.13,
+                  -105.21,
+                  188.37
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_1586476",
+                "definition_name": "Group#222",
+                "layer": "Layer0",
+                "position_mm": [
+                  324.23,
+                  -181.11,
+                  153.78
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_1596333",
+            "definition_name": "Group#231",
+            "layer": "Layer0",
+            "position_mm": [
+              324.73,
+              -180.01,
+              4.91
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_1598995",
+            "definition_name": "Group#232",
+            "layer": "Layer0",
+            "position_mm": [
+              349.3,
+              -182.48,
+              47.44
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

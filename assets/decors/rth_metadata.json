@@ -1,0 +1,2980 @@
+{
+  "format_version": "1.0",
+  "source_file": "rth",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.1.194}",
+  "total_definitions": 33,
+  "total_meshes": 125,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "floret1",
+      "color": {
+        "r": 249,
+        "g": 119,
+        "b": 9
+      },
+      "transparency": 0.8,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Documents and Settings\\ME\\Desktop\\floret.jpg",
+        "x_scale": 2.4663284693914145,
+        "y_scale": 4.932656938782829
+      }
+    },
+    {
+      "name": "[Color_000]",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Translucent_Glass_Blue]3",
+      "color": {
+        "r": 128,
+        "g": 128,
+        "b": 128
+      },
+      "transparency": 0.12,
+      "colorized": false,
+      "colorize_type": 1
+    },
+    {
+      "name": "[Groundcover_Sand_Raked]",
+      "color": {
+        "r": 165,
+        "g": 158,
+        "b": 150
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Groundcover_Sand_Raked.jpg",
+        "x_scale": 10.0,
+        "y_scale": 10.0
+      }
+    },
+    {
+      "name": "<OliveDrab>",
+      "color": {
+        "r": 76,
+        "g": 142,
+        "b": 35
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "bract",
+      "color": {
+        "r": 116,
+        "g": 80,
+        "b": 50
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Documents and Settings\\ME\\Desktop\\bract.jpg",
+        "x_scale": 6.890160747331555,
+        "y_scale": 3.4450803736657774
+      }
+    },
+    {
+      "name": "heliconia",
+      "color": {
+        "r": 103,
+        "g": 148,
+        "b": 66
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\3d pokok\\heliconia.png",
+        "x_scale": 21.65148845533834,
+        "y_scale": 64.75190349817227
+      }
+    },
+    {
+      "name": "[Color_A01]",
+      "color": {
+        "r": 74,
+        "g": 119,
+        "b": 28
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_14407__birdofparadise#1_Layer0_116_80_50_ss": {
+      "name": "birdofparadise#1",
+      "definition_name": "birdofparadise#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2184.02,
+        921.49,
+        16.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1"
+    },
+    "mesh_1_ROOT__Component_14407__birdofparadise#1_Layer0_255_84_84_ss": {
+      "name": "birdofparadise#1",
+      "definition_name": "birdofparadise#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2184.02,
+        921.49,
+        16.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1"
+    },
+    "mesh_2_ROOT__Component_14407__birdofparadise#1_Layer0_76_142_35_ss": {
+      "name": "birdofparadise#1",
+      "definition_name": "birdofparadise#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2184.02,
+        921.49,
+        16.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1"
+    },
+    "mesh_3_ROOT__Component_14407__birdofparadise#1__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2294.18,
+        1025.86,
+        452.77
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / floret1#1"
+    },
+    "mesh_4_ROOT__Component_14407__birdofparadise#1__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2290.17,
+        1027.2,
+        452.33
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / floret1#1"
+    },
+    "mesh_5_ROOT__Component_14407__birdofparadise#1__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2303.93,
+        1023.58,
+        459.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / floret2#1"
+    },
+    "mesh_6_ROOT__Component_14407__birdofparadise#1__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2306.76,
+        1029.95,
+        457.16
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / floret2#1"
+    },
+    "mesh_7_ROOT__Component_14407__birdofparadise#1__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2300.12,
+        1026.47,
+        457.21
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / floret2#1"
+    },
+    "mesh_8_ROOT__Component_14407__birdofparadise#1__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2289.58,
+        1024.98,
+        456.03
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / floret1#1"
+    },
+    "mesh_9_ROOT__Component_14407__birdofparadise#1__Component_13306_Layer0_76_142_35_ss": {
+      "name": "Component_13306",
+      "definition_name": "Group#14",
+      "layer": "Layer0",
+      "position_mm": [
+        1989.64,
+        853.53,
+        16.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306"
+    },
+    "mesh_10_ROOT__Component_14407__birdofparadise#1__Component_13306_Layer0_255_84_84_ss": {
+      "name": "Component_13306",
+      "definition_name": "Group#14",
+      "layer": "Layer0",
+      "position_mm": [
+        1989.64,
+        853.53,
+        16.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306"
+    },
+    "mesh_11_ROOT__Component_14407__birdofparadise#1__Component_13306_Layer0_116_80_50_ss": {
+      "name": "Component_13306",
+      "definition_name": "Group#14",
+      "layer": "Layer0",
+      "position_mm": [
+        1989.64,
+        853.53,
+        16.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306"
+    },
+    "mesh_12_ROOT__Component_14407__birdofparadise#1__Component_13306__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2085.45,
+        880.68,
+        551.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306 / floret1#1"
+    },
+    "mesh_13_ROOT__Component_14407__birdofparadise#1__Component_13306__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2070.8,
+        893.04,
+        559.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306 / floret2#1"
+    },
+    "mesh_14_ROOT__Component_14407__birdofparadise#1__Component_13306__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2081.95,
+        884.7,
+        552.08
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306 / floret1#1"
+    },
+    "mesh_15_ROOT__Component_14407__birdofparadise#1__Component_13306__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2064.55,
+        888.39,
+        555.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306 / floret2#1"
+    },
+    "mesh_16_ROOT__Component_14407__birdofparadise#1__Component_13306__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2073.67,
+        887.64,
+        556.92
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306 / floret2#1"
+    },
+    "mesh_17_ROOT__Component_14407__birdofparadise#1__Component_13306__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2086.06,
+        882.31,
+        557.16
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306 / floret1#1"
+    },
+    "mesh_18_ROOT__Component_14407__birdofparadise#1__Component_13306__Component_547_Layer0_74_119_28_ss": {
+      "name": "Component_547",
+      "definition_name": "Group#15",
+      "layer": "Layer0",
+      "position_mm": [
+        2030.06,
+        872.77,
+        582.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306 / Component_547"
+    },
+    "mesh_19_ROOT__Component_14407__birdofparadise#1__Component_13306__Component_547_Layer0_255_84_84_ss": {
+      "name": "Component_547",
+      "definition_name": "Group#15",
+      "layer": "Layer0",
+      "position_mm": [
+        2030.06,
+        872.77,
+        582.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13306 / Component_547"
+    },
+    "mesh_20_ROOT__Component_14407__birdofparadise#1__Component_13121_Layer0_76_142_35_ss": {
+      "name": "Component_13121",
+      "definition_name": "Group#10",
+      "layer": "Layer0",
+      "position_mm": [
+        2056.6,
+        1050.46,
+        0.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121"
+    },
+    "mesh_21_ROOT__Component_14407__birdofparadise#1__Component_13121_Layer0_255_84_84_ss": {
+      "name": "Component_13121",
+      "definition_name": "Group#10",
+      "layer": "Layer0",
+      "position_mm": [
+        2056.6,
+        1050.46,
+        0.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121"
+    },
+    "mesh_22_ROOT__Component_14407__birdofparadise#1__Component_13121_Layer0_116_80_50_ss": {
+      "name": "Component_13121",
+      "definition_name": "Group#10",
+      "layer": "Layer0",
+      "position_mm": [
+        2056.6,
+        1050.46,
+        0.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121"
+    },
+    "mesh_23_ROOT__Component_14407__birdofparadise#1__Component_13121__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2092.17,
+        1053.05,
+        497.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121 / floret1#1"
+    },
+    "mesh_24_ROOT__Component_14407__birdofparadise#1__Component_13121__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2094.91,
+        1071.23,
+        503.16
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121 / floret2#1"
+    },
+    "mesh_25_ROOT__Component_14407__birdofparadise#1__Component_13121__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2093.77,
+        1057.69,
+        497.63
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121 / floret1#1"
+    },
+    "mesh_26_ROOT__Component_14407__birdofparadise#1__Component_13121__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2088.57,
+        1073.54,
+        498.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121 / floret2#1"
+    },
+    "mesh_27_ROOT__Component_14407__birdofparadise#1__Component_13121__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2092.05,
+        1066.19,
+        501.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121 / floret2#1"
+    },
+    "mesh_28_ROOT__Component_14407__birdofparadise#1__Component_13121__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2093.45,
+        1053.97,
+        502.66
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121 / floret1#1"
+    },
+    "mesh_29_ROOT__Component_14407__birdofparadise#1__Component_13121__Component_483_Layer0_74_119_28_ss": {
+      "name": "Component_483",
+      "definition_name": "Group#13",
+      "layer": "Layer0",
+      "position_mm": [
+        2058.84,
+        1096.96,
+        520.64
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121 / Component_483"
+    },
+    "mesh_30_ROOT__Component_14407__birdofparadise#1__Component_13121__Component_483_Layer0_255_84_84_ss": {
+      "name": "Component_483",
+      "definition_name": "Group#13",
+      "layer": "Layer0",
+      "position_mm": [
+        2058.84,
+        1096.96,
+        520.64
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13121 / Component_483"
+    },
+    "mesh_31_ROOT__Component_14407__birdofparadise#1__Component_13491_Layer0": {
+      "name": "Component_13491",
+      "definition_name": "Group#16",
+      "layer": "Layer0",
+      "position_mm": [
+        2318.41,
+        1050.25,
+        481.75
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_13491"
+    },
+    "mesh_32_ROOT__Component_14407__birdofparadise#1__Component_12502_Layer0_76_142_35_ss": {
+      "name": "Component_12502",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        2290.46,
+        1075.79,
+        18.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502"
+    },
+    "mesh_33_ROOT__Component_14407__birdofparadise#1__Component_12502_Layer0_255_84_84_ss": {
+      "name": "Component_12502",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        2290.46,
+        1075.79,
+        18.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502"
+    },
+    "mesh_34_ROOT__Component_14407__birdofparadise#1__Component_12502_Layer0_116_80_50_ss": {
+      "name": "Component_12502",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        2290.46,
+        1075.79,
+        18.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502"
+    },
+    "mesh_35_ROOT__Component_14407__birdofparadise#1__Component_12502__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2241.91,
+        988.85,
+        553.81
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502 / floret1#1"
+    },
+    "mesh_36_ROOT__Component_14407__birdofparadise#1__Component_12502__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2261.01,
+        990.47,
+        561.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502 / floret2#1"
+    },
+    "mesh_37_ROOT__Component_14407__birdofparadise#1__Component_12502__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2247.23,
+        988.48,
+        554.02
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502 / floret1#1"
+    },
+    "mesh_38_ROOT__Component_14407__birdofparadise#1__Component_12502__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2262.15,
+        998.18,
+        557.26
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502 / floret2#1"
+    },
+    "mesh_39_ROOT__Component_14407__birdofparadise#1__Component_12502__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2255.17,
+        992.26,
+        558.86
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502 / floret2#1"
+    },
+    "mesh_40_ROOT__Component_14407__birdofparadise#1__Component_12502__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2242.63,
+        987.26,
+        559.1
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502 / floret1#1"
+    },
+    "mesh_41_ROOT__Component_14407__birdofparadise#1__Component_12502__Component_419_Layer0_74_119_28_ss": {
+      "name": "Component_419",
+      "definition_name": "Group#12",
+      "layer": "Layer0",
+      "position_mm": [
+        2275.49,
+        1033.61,
+        584.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502 / Component_419"
+    },
+    "mesh_42_ROOT__Component_14407__birdofparadise#1__Component_12502__Component_419_Layer0_255_84_84_ss": {
+      "name": "Component_419",
+      "definition_name": "Group#12",
+      "layer": "Layer0",
+      "position_mm": [
+        2275.49,
+        1033.61,
+        584.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_12502 / Component_419"
+    },
+    "mesh_43_ROOT__Component_14407__birdofparadise#1__Component_11102_Layer0_76_142_35_ss": {
+      "name": "Component_11102",
+      "definition_name": "Group#32",
+      "layer": "Layer0",
+      "position_mm": [
+        2243.69,
+        755.9,
+        16.86
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102"
+    },
+    "mesh_44_ROOT__Component_14407__birdofparadise#1__Component_11102_Layer0_255_84_84_ss": {
+      "name": "Component_11102",
+      "definition_name": "Group#32",
+      "layer": "Layer0",
+      "position_mm": [
+        2243.69,
+        755.9,
+        16.86
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102"
+    },
+    "mesh_45_ROOT__Component_14407__birdofparadise#1__Component_11102_Layer0_116_80_50_ss": {
+      "name": "Component_11102",
+      "definition_name": "Group#32",
+      "layer": "Layer0",
+      "position_mm": [
+        2243.69,
+        755.9,
+        16.86
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102"
+    },
+    "mesh_46_ROOT__Component_14407__birdofparadise#1__Component_11102__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2192.67,
+        841.42,
+        552.17
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102 / floret1#1"
+    },
+    "mesh_47_ROOT__Component_14407__birdofparadise#1__Component_11102__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2184.53,
+        824.07,
+        559.66
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102 / floret2#1"
+    },
+    "mesh_48_ROOT__Component_14407__birdofparadise#1__Component_11102__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2189.69,
+        837.0,
+        552.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102 / floret1#1"
+    },
+    "mesh_49_ROOT__Component_14407__birdofparadise#1__Component_11102__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2190.64,
+        819.23,
+        555.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102 / floret2#1"
+    },
+    "mesh_50_ROOT__Component_14407__birdofparadise#1__Component_11102__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2189.0,
+        828.23,
+        557.23
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102 / floret2#1"
+    },
+    "mesh_51_ROOT__Component_14407__birdofparadise#1__Component_11102__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2190.94,
+        841.58,
+        557.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102 / floret1#1"
+    },
+    "mesh_52_ROOT__Component_14407__birdofparadise#1__Component_11102__Component_81_Layer0_74_119_28_ss": {
+      "name": "Component_81",
+      "definition_name": "Group#11",
+      "layer": "Layer0",
+      "position_mm": [
+        2214.65,
+        789.96,
+        582.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102 / Component_81"
+    },
+    "mesh_53_ROOT__Component_14407__birdofparadise#1__Component_11102__Component_81_Layer0_255_84_84_ss": {
+      "name": "Component_81",
+      "definition_name": "Group#11",
+      "layer": "Layer0",
+      "position_mm": [
+        2214.65,
+        789.96,
+        582.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#1 / Component_11102 / Component_81"
+    },
+    "mesh_54_ROOT__Component_14407__birdofparadise#2_Layer0_116_80_50_ss": {
+      "name": "birdofparadise#2",
+      "definition_name": "birdofparadise#2",
+      "layer": "Layer0",
+      "position_mm": [
+        2180.58,
+        924.8,
+        14.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2"
+    },
+    "mesh_55_ROOT__Component_14407__birdofparadise#2_Layer0_255_84_84_ss": {
+      "name": "birdofparadise#2",
+      "definition_name": "birdofparadise#2",
+      "layer": "Layer0",
+      "position_mm": [
+        2180.58,
+        924.8,
+        14.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2"
+    },
+    "mesh_56_ROOT__Component_14407__birdofparadise#2_Layer0_76_142_35_ss": {
+      "name": "birdofparadise#2",
+      "definition_name": "birdofparadise#2",
+      "layer": "Layer0",
+      "position_mm": [
+        2180.58,
+        924.8,
+        14.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2"
+    },
+    "mesh_57_ROOT__Component_14407__birdofparadise#2__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2326.04,
+        881.58,
+        451.06
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / floret1#1"
+    },
+    "mesh_58_ROOT__Component_14407__birdofparadise#2__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2325.19,
+        885.72,
+        450.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / floret1#1"
+    },
+    "mesh_59_ROOT__Component_14407__birdofparadise#2__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2328.94,
+        872.0,
+        457.42
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / floret2#1"
+    },
+    "mesh_60_ROOT__Component_14407__birdofparadise#2__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2335.87,
+        872.73,
+        455.45
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / floret2#1"
+    },
+    "mesh_61_ROOT__Component_14407__birdofparadise#2__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2329.54,
+        876.74,
+        455.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / floret2#1"
+    },
+    "mesh_62_ROOT__Component_14407__birdofparadise#2__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2322.98,
+        885.12,
+        454.33
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / floret1#1"
+    },
+    "mesh_63_ROOT__Component_14407__birdofparadise#2__Component_12751_Layer0_76_142_35_ss": {
+      "name": "Component_12751",
+      "definition_name": "Group#6",
+      "layer": "Layer0",
+      "position_mm": [
+        2024.53,
+        1059.15,
+        14.84
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751"
+    },
+    "mesh_64_ROOT__Component_14407__birdofparadise#2__Component_12751_Layer0_255_84_84_ss": {
+      "name": "Component_12751",
+      "definition_name": "Group#6",
+      "layer": "Layer0",
+      "position_mm": [
+        2024.53,
+        1059.15,
+        14.84
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751"
+    },
+    "mesh_65_ROOT__Component_14407__birdofparadise#2__Component_12751_Layer0_116_80_50_ss": {
+      "name": "Component_12751",
+      "definition_name": "Group#6",
+      "layer": "Layer0",
+      "position_mm": [
+        2024.53,
+        1059.15,
+        14.84
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751"
+    },
+    "mesh_66_ROOT__Component_14407__birdofparadise#2__Component_12751__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2095.94,
+        989.75,
+        550.16
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751 / floret1#1"
+    },
+    "mesh_67_ROOT__Component_14407__birdofparadise#2__Component_12751__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2099.32,
+        1008.62,
+        557.65
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751 / floret2#1"
+    },
+    "mesh_68_ROOT__Component_14407__birdofparadise#2__Component_12751__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2097.67,
+        994.8,
+        550.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751 / floret1#1"
+    },
+    "mesh_69_ROOT__Component_14407__birdofparadise#2__Component_12751__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2092.17,
+        1011.71,
+        553.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751 / floret2#1"
+    },
+    "mesh_70_ROOT__Component_14407__birdofparadise#2__Component_12751__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2096.08,
+        1003.44,
+        555.21
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751 / floret2#1"
+    },
+    "mesh_71_ROOT__Component_14407__birdofparadise#2__Component_12751__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2097.66,
+        990.04,
+        555.45
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751 / floret1#1"
+    },
+    "mesh_72_ROOT__Component_14407__birdofparadise#2__Component_12751__Component_291_Layer0_74_119_28_ss": {
+      "name": "Component_291",
+      "definition_name": "Group#7",
+      "layer": "Layer0",
+      "position_mm": [
+        2061.4,
+        1033.77,
+        580.72
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751 / Component_291"
+    },
+    "mesh_73_ROOT__Component_14407__birdofparadise#2__Component_12751__Component_291_Layer0_255_84_84_ss": {
+      "name": "Component_291",
+      "definition_name": "Group#7",
+      "layer": "Layer0",
+      "position_mm": [
+        2061.4,
+        1033.77,
+        580.72
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12751 / Component_291"
+    },
+    "mesh_74_ROOT__Component_14407__birdofparadise#2__Component_12936_Layer0_76_142_35_ss": {
+      "name": "Component_12936",
+      "definition_name": "Group#8",
+      "layer": "Layer0",
+      "position_mm": [
+        2228.56,
+        1099.63,
+        -1.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12936"
+    },
+    "mesh_75_ROOT__Component_14407__birdofparadise#2__Component_12936_Layer0_255_84_84_ss": {
+      "name": "Component_12936",
+      "definition_name": "Group#8",
+      "layer": "Layer0",
+      "position_mm": [
+        2228.56,
+        1099.63,
+        -1.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12936"
+    },
+    "mesh_76_ROOT__Component_14407__birdofparadise#2__Component_12936_Layer0_116_80_50_ss": {
+      "name": "Component_12936",
+      "definition_name": "Group#8",
+      "layer": "Layer0",
+      "position_mm": [
+        2228.56,
+        1099.63,
+        -1.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12936"
+    },
+    "mesh_77_ROOT__Component_14407__birdofparadise#2__Component_12936__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2248.58,
+        1070.12,
+        496.08
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12936 / floret1#1"
+    },
+    "mesh_78_ROOT__Component_14407__birdofparadise#2__Component_12936__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2265.69,
+        1076.84,
+        501.45
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12936 / floret2#1"
+    },
+    "mesh_79_ROOT__Component_14407__birdofparadise#2__Component_12936__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2253.4,
+        1071.06,
+        495.92
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12936 / floret1#1"
+    },
+    "mesh_80_ROOT__Component_14407__birdofparadise#2__Component_12936__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2264.53,
+        1083.49,
+        497.22
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12936 / floret2#1"
+    },
+    "mesh_81_ROOT__Component_14407__birdofparadise#2__Component_12936__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2259.9,
+        1076.79,
+        499.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12936 / floret2#1"
+    },
+    "mesh_82_ROOT__Component_14407__birdofparadise#2__Component_12936__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2250.02,
+        1069.47,
+        500.96
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12936 / floret1#1"
+    },
+    "mesh_83_ROOT__Component_14407__birdofparadise#2__Component_12936__Component_355_Layer0": {
+      "name": "Component_355",
+      "definition_name": "Group#9",
+      "layer": "Layer0",
+      "position_mm": [
+        2269.95,
+        1120.94,
+        518.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12936 / Component_355"
+    },
+    "mesh_84_ROOT__Component_14407__birdofparadise#2__Component_12687_Layer0_74_119_28_ss": {
+      "name": "Component_12687",
+      "definition_name": "Group#4",
+      "layer": "Layer0",
+      "position_mm": [
+        2359.27,
+        872.79,
+        480.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12687"
+    },
+    "mesh_85_ROOT__Component_14407__birdofparadise#2__Component_12687_Layer0_255_84_84_ss": {
+      "name": "Component_12687",
+      "definition_name": "Group#4",
+      "layer": "Layer0",
+      "position_mm": [
+        2359.27,
+        872.79,
+        480.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12687"
+    },
+    "mesh_86_ROOT__Component_14407__birdofparadise#2__Component_10917_Layer0_76_142_35_ss": {
+      "name": "Component_10917",
+      "definition_name": "Group#30",
+      "layer": "Layer0",
+      "position_mm": [
+        2367.42,
+        909.77,
+        16.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917"
+    },
+    "mesh_87_ROOT__Component_14407__birdofparadise#2__Component_10917_Layer0_255_84_84_ss": {
+      "name": "Component_10917",
+      "definition_name": "Group#30",
+      "layer": "Layer0",
+      "position_mm": [
+        2367.42,
+        909.77,
+        16.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917"
+    },
+    "mesh_88_ROOT__Component_14407__birdofparadise#2__Component_10917_Layer0_116_80_50_ss": {
+      "name": "Component_10917",
+      "definition_name": "Group#30",
+      "layer": "Layer0",
+      "position_mm": [
+        2367.42,
+        909.77,
+        16.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917"
+    },
+    "mesh_89_ROOT__Component_14407__birdofparadise#2__Component_10917__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2267.85,
+        908.34,
+        552.1
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917 / floret1#1"
+    },
+    "mesh_90_ROOT__Component_14407__birdofparadise#2__Component_10917__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2278.8,
+        892.61,
+        559.59
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917 / floret2#1"
+    },
+    "mesh_91_ROOT__Component_14407__birdofparadise#2__Component_10917__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2270.19,
+        903.55,
+        552.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917 / floret1#1"
+    },
+    "mesh_92_ROOT__Component_14407__birdofparadise#2__Component_10917__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2286.05,
+        895.48,
+        555.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917 / floret2#1"
+    },
+    "mesh_93_ROOT__Component_14407__birdofparadise#2__Component_10917__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2277.43,
+        898.56,
+        557.15
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917 / floret2#1"
+    },
+    "mesh_94_ROOT__Component_14407__birdofparadise#2__Component_10917__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2266.84,
+        906.92,
+        557.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917 / floret1#1"
+    },
+    "mesh_95_ROOT__Component_14407__birdofparadise#2__Component_10917__Component_163_Layer0_74_119_28_ss": {
+      "name": "Component_163",
+      "definition_name": "Group#2",
+      "layer": "Layer0",
+      "position_mm": [
+        2323.4,
+        901.64,
+        582.66
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917 / Component_163"
+    },
+    "mesh_96_ROOT__Component_14407__birdofparadise#2__Component_10917__Component_163_Layer0_255_84_84_ss": {
+      "name": "Component_163",
+      "definition_name": "Group#2",
+      "layer": "Layer0",
+      "position_mm": [
+        2323.4,
+        901.64,
+        582.66
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_10917 / Component_163"
+    },
+    "mesh_97_ROOT__Component_14407__birdofparadise#2__Component_12317_Layer0_76_142_35_ss": {
+      "name": "Component_12317",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2067.0,
+        790.32,
+        15.15
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317"
+    },
+    "mesh_98_ROOT__Component_14407__birdofparadise#2__Component_12317_Layer0_255_84_84_ss": {
+      "name": "Component_12317",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2067.0,
+        790.32,
+        15.15
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317"
+    },
+    "mesh_99_ROOT__Component_14407__birdofparadise#2__Component_12317_Layer0_116_80_50_ss": {
+      "name": "Component_12317",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2067.0,
+        790.32,
+        15.15
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317"
+    },
+    "mesh_100_ROOT__Component_14407__birdofparadise#2__Component_12317__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2115.55,
+        877.27,
+        550.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317 / floret1#1"
+    },
+    "mesh_101_ROOT__Component_14407__birdofparadise#2__Component_12317__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2096.45,
+        875.65,
+        557.95
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317 / floret2#1"
+    },
+    "mesh_102_ROOT__Component_14407__birdofparadise#2__Component_12317__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2110.23,
+        877.64,
+        550.68
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317 / floret1#1"
+    },
+    "mesh_103_ROOT__Component_14407__birdofparadise#2__Component_12317__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2095.32,
+        867.94,
+        553.91
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317 / floret2#1"
+    },
+    "mesh_104_ROOT__Component_14407__birdofparadise#2__Component_12317__floret2#1_Layer0": {
+      "name": "floret2#1",
+      "definition_name": "floret2#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2102.3,
+        873.86,
+        555.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317 / floret2#1"
+    },
+    "mesh_105_ROOT__Component_14407__birdofparadise#2__Component_12317__floret1#1_Layer0": {
+      "name": "floret1#1",
+      "definition_name": "floret1#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2114.83,
+        878.85,
+        555.76
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317 / floret1#1"
+    },
+    "mesh_106_ROOT__Component_14407__birdofparadise#2__Component_12317__Component_227_Layer0_74_119_28_ss": {
+      "name": "Component_227",
+      "definition_name": "Group#5",
+      "layer": "Layer0",
+      "position_mm": [
+        2081.98,
+        832.51,
+        581.02
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317 / Component_227"
+    },
+    "mesh_107_ROOT__Component_14407__birdofparadise#2__Component_12317__Component_227_Layer0_255_84_84_ss": {
+      "name": "Component_227",
+      "definition_name": "Group#5",
+      "layer": "Layer0",
+      "position_mm": [
+        2081.98,
+        832.51,
+        581.02
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / birdofparadise#2 / Component_12317 / Component_227"
+    },
+    "mesh_108_ROOT__Component_14407__vaso#1__ESPADA+S_O+JORGE#1_Layer0_255_255_255_ss": {
+      "name": "ESPADA+S_O+JORGE#1",
+      "definition_name": "ESPADA+S_O+JORGE#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2195.01,
+        935.77,
+        -1.04
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / vaso#1 / ESPADA+S_O+JORGE#1"
+    },
+    "mesh_109_ROOT__Component_14407__vaso#1__ESPADA+S_O+JORGE#1_Layer0_128_128_128_ss": {
+      "name": "ESPADA+S_O+JORGE#1",
+      "definition_name": "ESPADA+S_O+JORGE#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2195.01,
+        935.77,
+        -1.04
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / vaso#1 / ESPADA+S_O+JORGE#1"
+    },
+    "mesh_110_ROOT__Component_14407__vaso#1__ESPADA+S_O+JORGE#1_Layer0_165_158_150_ss": {
+      "name": "ESPADA+S_O+JORGE#1",
+      "definition_name": "ESPADA+S_O+JORGE#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2195.01,
+        935.77,
+        -1.04
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / vaso#1 / ESPADA+S_O+JORGE#1"
+    },
+    "mesh_111_ROOT__Component_14407__Component_14399__Component_11547_Layer0_103_148_66_ds": {
+      "name": "Component_11547",
+      "definition_name": "Group#376",
+      "layer": "Layer0",
+      "position_mm": [
+        2214.55,
+        975.37,
+        201.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_11547"
+    },
+    "mesh_112_ROOT__Component_14407__Component_14399__Component_11547_Layer0_74_119_28_ds": {
+      "name": "Component_11547",
+      "definition_name": "Group#376",
+      "layer": "Layer0",
+      "position_mm": [
+        2214.55,
+        975.37,
+        201.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_11547"
+    },
+    "mesh_113_ROOT__Component_14407__Component_14399__Component_11867_Layer0_103_148_66_ds": {
+      "name": "Component_11867",
+      "definition_name": "Group#373",
+      "layer": "Layer0",
+      "position_mm": [
+        2164.16,
+        946.54,
+        201.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_11867"
+    },
+    "mesh_114_ROOT__Component_14407__Component_14399__Component_11867_Layer0_74_119_28_ds": {
+      "name": "Component_11867",
+      "definition_name": "Group#373",
+      "layer": "Layer0",
+      "position_mm": [
+        2164.16,
+        946.54,
+        201.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_11867"
+    },
+    "mesh_115_ROOT__Component_14407__Component_14399__Component_12057_Layer0_103_148_66_ds": {
+      "name": "Component_12057",
+      "definition_name": "Group#372",
+      "layer": "Layer0",
+      "position_mm": [
+        2144.14,
+        857.76,
+        183.22
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_12057"
+    },
+    "mesh_116_ROOT__Component_14407__Component_14399__Component_12057_Layer0_74_119_28_ds": {
+      "name": "Component_12057",
+      "definition_name": "Group#372",
+      "layer": "Layer0",
+      "position_mm": [
+        2144.14,
+        857.76,
+        183.22
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_12057"
+    },
+    "mesh_117_ROOT__Component_14407__Component_14399__Component_11287_Layer0_103_148_66_ds": {
+      "name": "Component_11287",
+      "definition_name": "Group#378",
+      "layer": "Layer0",
+      "position_mm": [
+        2269.4,
+        894.65,
+        177.14
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_11287"
+    },
+    "mesh_118_ROOT__Component_14407__Component_14399__Component_11287_Layer0_74_119_28_ds": {
+      "name": "Component_11287",
+      "definition_name": "Group#378",
+      "layer": "Layer0",
+      "position_mm": [
+        2269.4,
+        894.65,
+        177.14
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_11287"
+    },
+    "mesh_119_ROOT__Component_14407__Component_14399__Component_12187_Layer0_103_148_66_ds": {
+      "name": "Component_12187",
+      "definition_name": "Group#371",
+      "layer": "Layer0",
+      "position_mm": [
+        2159.27,
+        1006.78,
+        183.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_12187"
+    },
+    "mesh_120_ROOT__Component_14407__Component_14399__Component_12187_Layer0_74_119_28_ds": {
+      "name": "Component_12187",
+      "definition_name": "Group#371",
+      "layer": "Layer0",
+      "position_mm": [
+        2159.27,
+        1006.78,
+        183.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_12187"
+    },
+    "mesh_121_ROOT__Component_14407__Component_14399__Component_11737_Layer0_103_148_66_ds": {
+      "name": "Component_11737",
+      "definition_name": "Group#374",
+      "layer": "Layer0",
+      "position_mm": [
+        2237.56,
+        1071.75,
+        167.22
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_11737"
+    },
+    "mesh_122_ROOT__Component_14407__Component_14399__Component_11737_Layer0_74_119_28_ds": {
+      "name": "Component_11737",
+      "definition_name": "Group#374",
+      "layer": "Layer0",
+      "position_mm": [
+        2237.56,
+        1071.75,
+        167.22
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_11737"
+    },
+    "mesh_123_ROOT__Component_14407__Component_14399__Component_11417_Layer0_103_148_66_ds": {
+      "name": "Component_11417",
+      "definition_name": "Group#377",
+      "layer": "Layer0",
+      "position_mm": [
+        2197.54,
+        825.74,
+        167.22
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_11417"
+    },
+    "mesh_124_ROOT__Component_14407__Component_14399__Component_11417_Layer0_74_119_28_ds": {
+      "name": "Component_11417",
+      "definition_name": "Group#377",
+      "layer": "Layer0",
+      "position_mm": [
+        2197.54,
+        825.74,
+        167.22
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_14407 / Component_14399 / Component_11417"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_14407",
+        "definition_name": "Component#9",
+        "layer": "Layer0",
+        "position_mm": [
+          1968.14,
+          730.93,
+          8.83
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "birdofparadise#1",
+            "definition_name": "birdofparadise#1",
+            "layer": "Layer0",
+            "position_mm": [
+              2184.02,
+              921.49,
+              16.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "floret1#1",
+                "definition_name": "floret1#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2294.18,
+                  1025.86,
+                  452.77
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "floret1#1",
+                "definition_name": "floret1#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2290.17,
+                  1027.2,
+                  452.33
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "floret2#1",
+                "definition_name": "floret2#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2303.93,
+                  1023.58,
+                  459.13
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "floret2#1",
+                "definition_name": "floret2#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2306.76,
+                  1029.95,
+                  457.16
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "floret2#1",
+                "definition_name": "floret2#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2300.12,
+                  1026.47,
+                  457.21
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "floret1#1",
+                "definition_name": "floret1#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2289.58,
+                  1024.98,
+                  456.03
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_13306",
+                "definition_name": "Group#14",
+                "layer": "Layer0",
+                "position_mm": [
+                  1989.64,
+                  853.53,
+                  16.55
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2085.45,
+                      880.68,
+                      551.87
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2070.8,
+                      893.04,
+                      559.35
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2081.95,
+                      884.7,
+                      552.08
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2064.55,
+                      888.39,
+                      555.32
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2073.67,
+                      887.64,
+                      556.92
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2086.06,
+                      882.31,
+                      557.16
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_547",
+                    "definition_name": "Group#15",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2030.06,
+                      872.77,
+                      582.43
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Component_13121",
+                "definition_name": "Group#10",
+                "layer": "Layer0",
+                "position_mm": [
+                  2056.6,
+                  1050.46,
+                  0.34
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2092.17,
+                      1053.05,
+                      497.79
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2094.91,
+                      1071.23,
+                      503.16
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2093.77,
+                      1057.69,
+                      497.63
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2088.57,
+                      1073.54,
+                      498.93
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2092.05,
+                      1066.19,
+                      501.25
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2093.45,
+                      1053.97,
+                      502.66
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_483",
+                    "definition_name": "Group#13",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2058.84,
+                      1096.96,
+                      520.64
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Component_13491",
+                "definition_name": "Group#16",
+                "layer": "Layer0",
+                "position_mm": [
+                  2318.41,
+                  1050.25,
+                  481.75
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_12502",
+                "definition_name": "Group#3",
+                "layer": "Layer0",
+                "position_mm": [
+                  2290.46,
+                  1075.79,
+                  18.49
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2241.91,
+                      988.85,
+                      553.81
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2261.01,
+                      990.47,
+                      561.3
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2247.23,
+                      988.48,
+                      554.02
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2262.15,
+                      998.18,
+                      557.26
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2255.17,
+                      992.26,
+                      558.86
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2242.63,
+                      987.26,
+                      559.1
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_419",
+                    "definition_name": "Group#12",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2275.49,
+                      1033.61,
+                      584.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Component_11102",
+                "definition_name": "Group#32",
+                "layer": "Layer0",
+                "position_mm": [
+                  2243.69,
+                  755.9,
+                  16.86
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2192.67,
+                      841.42,
+                      552.17
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2184.53,
+                      824.07,
+                      559.66
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2189.69,
+                      837.0,
+                      552.39
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2190.64,
+                      819.23,
+                      555.62
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2189.0,
+                      828.23,
+                      557.23
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2190.94,
+                      841.58,
+                      557.47
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_81",
+                    "definition_name": "Group#11",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2214.65,
+                      789.96,
+                      582.73
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "birdofparadise#2",
+            "definition_name": "birdofparadise#2",
+            "layer": "Layer0",
+            "position_mm": [
+              2180.58,
+              924.8,
+              14.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "floret1#1",
+                "definition_name": "floret1#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2326.04,
+                  881.58,
+                  451.06
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "floret1#1",
+                "definition_name": "floret1#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2325.19,
+                  885.72,
+                  450.62
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "floret2#1",
+                "definition_name": "floret2#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2328.94,
+                  872.0,
+                  457.42
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "floret2#1",
+                "definition_name": "floret2#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2335.87,
+                  872.73,
+                  455.45
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "floret2#1",
+                "definition_name": "floret2#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2329.54,
+                  876.74,
+                  455.5
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "floret1#1",
+                "definition_name": "floret1#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2322.98,
+                  885.12,
+                  454.33
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_12751",
+                "definition_name": "Group#6",
+                "layer": "Layer0",
+                "position_mm": [
+                  2024.53,
+                  1059.15,
+                  14.84
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2095.94,
+                      989.75,
+                      550.16
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2099.32,
+                      1008.62,
+                      557.65
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2097.67,
+                      994.8,
+                      550.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2092.17,
+                      1011.71,
+                      553.61
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2096.08,
+                      1003.44,
+                      555.21
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2097.66,
+                      990.04,
+                      555.45
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_291",
+                    "definition_name": "Group#7",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2061.4,
+                      1033.77,
+                      580.72
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Component_12936",
+                "definition_name": "Group#8",
+                "layer": "Layer0",
+                "position_mm": [
+                  2228.56,
+                  1099.63,
+                  -1.36
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2248.58,
+                      1070.12,
+                      496.08
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2265.69,
+                      1076.84,
+                      501.45
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2253.4,
+                      1071.06,
+                      495.92
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2264.53,
+                      1083.49,
+                      497.22
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2259.9,
+                      1076.79,
+                      499.54
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2250.02,
+                      1069.47,
+                      500.96
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_355",
+                    "definition_name": "Group#9",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2269.95,
+                      1120.94,
+                      518.93
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Component_12687",
+                "definition_name": "Group#4",
+                "layer": "Layer0",
+                "position_mm": [
+                  2359.27,
+                  872.79,
+                  480.05
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_10917",
+                "definition_name": "Group#30",
+                "layer": "Layer0",
+                "position_mm": [
+                  2367.42,
+                  909.77,
+                  16.78
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2267.85,
+                      908.34,
+                      552.1
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2278.8,
+                      892.61,
+                      559.59
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2270.19,
+                      903.55,
+                      552.32
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2286.05,
+                      895.48,
+                      555.55
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2277.43,
+                      898.56,
+                      557.15
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2266.84,
+                      906.92,
+                      557.39
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_163",
+                    "definition_name": "Group#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2323.4,
+                      901.64,
+                      582.66
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Component_12317",
+                "definition_name": "Group#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2067.0,
+                  790.32,
+                  15.15
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2115.55,
+                      877.27,
+                      550.46
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2096.45,
+                      875.65,
+                      557.95
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2110.23,
+                      877.64,
+                      550.68
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2095.32,
+                      867.94,
+                      553.91
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret2#1",
+                    "definition_name": "floret2#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2102.3,
+                      873.86,
+                      555.52
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "floret1#1",
+                    "definition_name": "floret1#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2114.83,
+                      878.85,
+                      555.76
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_227",
+                    "definition_name": "Group#5",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2081.98,
+                      832.51,
+                      581.02
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "vaso#1",
+            "definition_name": "vaso#1",
+            "layer": "Layer0",
+            "position_mm": [
+              2280.84,
+              1650.82,
+              -0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "ESPADA+S_O+JORGE#1",
+                "definition_name": "ESPADA+S_O+JORGE#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2195.01,
+                  935.77,
+                  -1.04
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_14399",
+            "definition_name": "Group#385",
+            "layer": "Layer0",
+            "position_mm": [
+              2499.75,
+              955.07,
+              191.42
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_11547",
+                "definition_name": "Group#376",
+                "layer": "Layer0",
+                "position_mm": [
+                  2214.55,
+                  975.37,
+                  201.36
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_11867",
+                "definition_name": "Group#373",
+                "layer": "Layer0",
+                "position_mm": [
+                  2164.16,
+                  946.54,
+                  201.36
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_12057",
+                "definition_name": "Group#372",
+                "layer": "Layer0",
+                "position_mm": [
+                  2144.14,
+                  857.76,
+                  183.22
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_11287",
+                "definition_name": "Group#378",
+                "layer": "Layer0",
+                "position_mm": [
+                  2269.4,
+                  894.65,
+                  177.14
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_12187",
+                "definition_name": "Group#371",
+                "layer": "Layer0",
+                "position_mm": [
+                  2159.27,
+                  1006.78,
+                  183.46
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_11737",
+                "definition_name": "Group#374",
+                "layer": "Layer0",
+                "position_mm": [
+                  2237.56,
+                  1071.75,
+                  167.22
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_11417",
+                "definition_name": "Group#377",
+                "layer": "Layer0",
+                "position_mm": [
+                  2197.54,
+                  825.74,
+                  167.22
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,697 @@
+{
+  "format_version": "1.0",
+  "source_file": "cutlery_1",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 10,
+  "total_meshes": 31,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "Material #126",
+      "color": {
+        "r": 61,
+        "g": 66,
+        "b": 66
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material #125",
+      "color": {
+        "r": 237,
+        "g": 233,
+        "b": 228
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material #127",
+      "color": {
+        "r": 33,
+        "g": 38,
+        "b": 38
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__组#1__fork_Layer0_61_66_66_ss": {
+      "name": "fork",
+      "definition_name": "fork",
+      "layer": "Layer0",
+      "position_mm": [
+        319.85,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / fork"
+    },
+    "mesh_1_ROOT__组#1__fork_Layer0_255_84_84_ss": {
+      "name": "fork",
+      "definition_name": "fork",
+      "layer": "Layer0",
+      "position_mm": [
+        319.85,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / fork"
+    },
+    "mesh_2_ROOT__组#1__ladle_Layer0_61_66_66_ss": {
+      "name": "ladle",
+      "definition_name": "ladle",
+      "layer": "Layer0",
+      "position_mm": [
+        322.17,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / ladle"
+    },
+    "mesh_3_ROOT__组#1__ladle_Layer0_255_84_84_ss": {
+      "name": "ladle",
+      "definition_name": "ladle",
+      "layer": "Layer0",
+      "position_mm": [
+        322.17,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / ladle"
+    },
+    "mesh_4_ROOT__组#1__skimmer_Layer0_61_66_66_ss": {
+      "name": "skimmer",
+      "definition_name": "skimmer",
+      "layer": "Layer0",
+      "position_mm": [
+        306.6,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / skimmer"
+    },
+    "mesh_5_ROOT__组#1__skimmer_Layer0_255_84_84_ss": {
+      "name": "skimmer",
+      "definition_name": "skimmer",
+      "layer": "Layer0",
+      "position_mm": [
+        306.6,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / skimmer"
+    },
+    "mesh_6_ROOT__组#1__spaghetti__Layer0_61_66_66_ss": {
+      "name": "spaghetti ",
+      "definition_name": "spaghetti ",
+      "layer": "Layer0",
+      "position_mm": [
+        308.2,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / spaghetti "
+    },
+    "mesh_7_ROOT__组#1__spaghetti__Layer0_255_84_84_ss": {
+      "name": "spaghetti ",
+      "definition_name": "spaghetti ",
+      "layer": "Layer0",
+      "position_mm": [
+        308.2,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / spaghetti "
+    },
+    "mesh_8_ROOT__组#1__spatula_Layer0_61_66_66_ss": {
+      "name": "spatula",
+      "definition_name": "spatula",
+      "layer": "Layer0",
+      "position_mm": [
+        313.44,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / spatula"
+    },
+    "mesh_9_ROOT__组#1__spatula_Layer0_255_84_84_ss": {
+      "name": "spatula",
+      "definition_name": "spatula",
+      "layer": "Layer0",
+      "position_mm": [
+        313.44,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / spatula"
+    },
+    "mesh_10_ROOT__组#1__spoon_Layer0_61_66_66_ss": {
+      "name": "spoon",
+      "definition_name": "spoon",
+      "layer": "Layer0",
+      "position_mm": [
+        295.86,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / spoon"
+    },
+    "mesh_11_ROOT__组#1__spoon_Layer0_255_84_84_ss": {
+      "name": "spoon",
+      "definition_name": "spoon",
+      "layer": "Layer0",
+      "position_mm": [
+        295.86,
+        1.75,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / spoon"
+    },
+    "mesh_12_ROOT__组#1__utensil_ra_Layer0_61_66_66_ss": {
+      "name": "utensil ra",
+      "definition_name": "utensil ra",
+      "layer": "Layer0",
+      "position_mm": [
+        314.87,
+        -14.25,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra"
+    },
+    "mesh_13_ROOT__组#1__utensil_ra_Layer0_255_84_84_ss": {
+      "name": "utensil ra",
+      "definition_name": "utensil ra",
+      "layer": "Layer0",
+      "position_mm": [
+        314.87,
+        -14.25,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra"
+    },
+    "mesh_14_ROOT__组#1__utensil_ra_Layer0_33_38_38_ss": {
+      "name": "utensil ra",
+      "definition_name": "utensil ra",
+      "layer": "Layer0",
+      "position_mm": [
+        314.87,
+        -14.25,
+        193.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra"
+    },
+    "mesh_15_ROOT__组#1__utensil_ra__Component_112995_Layer0_237_233_228_ss": {
+      "name": "Component_112995",
+      "definition_name": "Component#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -0.0,
+        -25.27,
+        339.8
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112995"
+    },
+    "mesh_16_ROOT__组#1__utensil_ra__Component_112995_Layer0_255_84_84_ss": {
+      "name": "Component_112995",
+      "definition_name": "Component#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -0.0,
+        -25.27,
+        339.8
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112995"
+    },
+    "mesh_17_ROOT__组#1__utensil_ra__Component_112994_Layer0_237_233_228_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        357.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_18_ROOT__组#1__utensil_ra__Component_112994_Layer0_255_84_84_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        357.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_19_ROOT__组#1__utensil_ra__Component_112995_Layer0_237_233_228_ss": {
+      "name": "Component_112995",
+      "definition_name": "Component#1",
+      "layer": "Layer0",
+      "position_mm": [
+        629.75,
+        -25.27,
+        390.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112995"
+    },
+    "mesh_20_ROOT__组#1__utensil_ra__Component_112995_Layer0_255_84_84_ss": {
+      "name": "Component_112995",
+      "definition_name": "Component#1",
+      "layer": "Layer0",
+      "position_mm": [
+        629.75,
+        -25.27,
+        390.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112995"
+    },
+    "mesh_21_ROOT__组#1__utensil_ra__Component_112994_Layer0_237_233_228_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        257.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_22_ROOT__组#1__utensil_ra__Component_112994_Layer0_255_84_84_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        257.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_23_ROOT__组#1__utensil_ra__Component_112994_Layer0_237_233_228_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        157.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_24_ROOT__组#1__utensil_ra__Component_112994_Layer0_255_84_84_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        157.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_25_ROOT__组#1__utensil_ra__Component_112994_Layer0_237_233_228_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        57.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_26_ROOT__组#1__utensil_ra__Component_112994_Layer0_255_84_84_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        57.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_27_ROOT__组#1__utensil_ra__Component_112994_Layer0_237_233_228_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        457.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_28_ROOT__组#1__utensil_ra__Component_112994_Layer0_255_84_84_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        457.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_29_ROOT__组#1__utensil_ra__Component_112994_Layer0_237_233_228_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        557.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    },
+    "mesh_30_ROOT__组#1__utensil_ra__Component_112994_Layer0_255_84_84_ss": {
+      "name": "Component_112994",
+      "definition_name": "Component#2",
+      "layer": "Layer0",
+      "position_mm": [
+        557.76,
+        -39.22,
+        341.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / utensil ra / Component_112994"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "组#1",
+        "definition_name": "组#1",
+        "layer": "Layer0",
+        "position_mm": [
+          -0.0,
+          -72.36,
+          -3.44
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "fork",
+            "definition_name": "fork",
+            "layer": "Layer0",
+            "position_mm": [
+              319.85,
+              1.75,
+              193.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "ladle",
+            "definition_name": "ladle",
+            "layer": "Layer0",
+            "position_mm": [
+              322.17,
+              1.75,
+              193.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "skimmer",
+            "definition_name": "skimmer",
+            "layer": "Layer0",
+            "position_mm": [
+              306.6,
+              1.75,
+              193.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "spaghetti ",
+            "definition_name": "spaghetti ",
+            "layer": "Layer0",
+            "position_mm": [
+              308.2,
+              1.75,
+              193.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "spatula",
+            "definition_name": "spatula",
+            "layer": "Layer0",
+            "position_mm": [
+              313.44,
+              1.75,
+              193.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "spoon",
+            "definition_name": "spoon",
+            "layer": "Layer0",
+            "position_mm": [
+              295.86,
+              1.75,
+              193.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "utensil ra",
+            "definition_name": "utensil ra",
+            "layer": "Layer0",
+            "position_mm": [
+              314.87,
+              -14.25,
+              193.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_112995",
+                "definition_name": "Component#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -0.0,
+                  -25.27,
+                  339.8
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_112994",
+                "definition_name": "Component#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  357.76,
+                  -39.22,
+                  341.47
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_112995",
+                "definition_name": "Component#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  629.75,
+                  -25.27,
+                  390.73
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_112994",
+                "definition_name": "Component#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  257.76,
+                  -39.22,
+                  341.47
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_112994",
+                "definition_name": "Component#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  157.76,
+                  -39.22,
+                  341.47
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_112994",
+                "definition_name": "Component#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  57.76,
+                  -39.22,
+                  341.47
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_112994",
+                "definition_name": "Component#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  457.76,
+                  -39.22,
+                  341.47
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_112994",
+                "definition_name": "Component#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  557.76,
+                  -39.22,
+                  341.47
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

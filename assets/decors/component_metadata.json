@@ -1,0 +1,529 @@
+{
+  "format_version": "1.0",
+  "source_file": "component",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 8,
+  "total_meshes": 24,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "[Color M00]",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Metal_Corrogated_Shiny]1",
+      "color": {
+        "r": 158,
+        "g": 158,
+        "b": 158
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Metal_Corrogated_Shiny.jpg",
+        "x_scale": 78.74015748031,
+        "y_scale": 78.74015748031
+      }
+    },
+    {
+      "name": "[Chris_Shoe_Sole]",
+      "color": {
+        "r": 123,
+        "g": 118,
+        "b": 118
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Translucent Glass Safety]",
+      "color": {
+        "r": 15,
+        "g": 15,
+        "b": 15
+      },
+      "transparency": 0.9299999999999999,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__组#1_Layer0_158_158_158_ss": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        788.6,
+        24.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_1_ROOT__组#1_Layer0_255_84_84_ss": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        788.6,
+        24.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_2_ROOT__组#1_Layer0_123_118_118_ss": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        788.6,
+        24.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_3_ROOT__组#1_Layer0_255_84_84_ds": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        788.6,
+        24.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_4_ROOT__组#2_Layer0_158_158_158_ss": {
+      "name": "组#2",
+      "definition_name": "组#2",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        708.6,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#2"
+    },
+    "mesh_5_ROOT__组#2_Layer0_255_84_84_ss": {
+      "name": "组#2",
+      "definition_name": "组#2",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        708.6,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#2"
+    },
+    "mesh_6_ROOT__组#2_Layer0_255_84_84_ds": {
+      "name": "组#2",
+      "definition_name": "组#2",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        708.6,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#2"
+    },
+    "mesh_7_ROOT__组#3_Layer0": {
+      "name": "组#3",
+      "definition_name": "组#3",
+      "layer": "Layer0",
+      "position_mm": [
+        1958.78,
+        748.6,
+        34.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#3"
+    },
+    "mesh_8_ROOT__组#4_Layer0": {
+      "name": "组#4",
+      "definition_name": "组#4",
+      "layer": "Layer0",
+      "position_mm": [
+        1958.78,
+        748.6,
+        509.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4"
+    },
+    "mesh_9_ROOT__组#5_Layer0_158_158_158_ss": {
+      "name": "组#5",
+      "definition_name": "组#5",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        788.6,
+        499.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#5"
+    },
+    "mesh_10_ROOT__组#5_Layer0_255_84_84_ss": {
+      "name": "组#5",
+      "definition_name": "组#5",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        788.6,
+        499.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#5"
+    },
+    "mesh_11_ROOT__组#5_Layer0_123_118_118_ss": {
+      "name": "组#5",
+      "definition_name": "组#5",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        788.6,
+        499.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#5"
+    },
+    "mesh_12_ROOT__组#5_Layer0_255_84_84_ds": {
+      "name": "组#5",
+      "definition_name": "组#5",
+      "layer": "Layer0",
+      "position_mm": [
+        1968.78,
+        788.6,
+        499.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#5"
+    },
+    "mesh_13_ROOT__组#6_Layer0_158_158_158_ss": {
+      "name": "组#6",
+      "definition_name": "组#6",
+      "layer": "Layer0",
+      "position_mm": [
+        1653.78,
+        788.6,
+        1389.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#6"
+    },
+    "mesh_14_ROOT__组#6_Layer0_255_84_84_ss": {
+      "name": "组#6",
+      "definition_name": "组#6",
+      "layer": "Layer0",
+      "position_mm": [
+        1653.78,
+        788.6,
+        1389.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#6"
+    },
+    "mesh_15_ROOT__组#6_Layer0_123_118_118_ss": {
+      "name": "组#6",
+      "definition_name": "组#6",
+      "layer": "Layer0",
+      "position_mm": [
+        1653.78,
+        788.6,
+        1389.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#6"
+    },
+    "mesh_16_ROOT__组#6_Layer0_255_84_84_ds": {
+      "name": "组#6",
+      "definition_name": "组#6",
+      "layer": "Layer0",
+      "position_mm": [
+        1653.78,
+        788.6,
+        1389.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#6"
+    },
+    "mesh_17_ROOT__组#8_Layer0": {
+      "name": "组#8",
+      "definition_name": "组#8",
+      "layer": "Layer0",
+      "position_mm": [
+        1653.78,
+        748.61,
+        1379.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#8"
+    },
+    "mesh_18_ROOT__组#7_Layer0_158_158_158_ss": {
+      "name": "组#7",
+      "definition_name": "组#7",
+      "layer": "Layer0",
+      "position_mm": [
+        1643.78,
+        788.6,
+        1389.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#7"
+    },
+    "mesh_19_ROOT__组#7_Layer0_255_84_84_ss": {
+      "name": "组#7",
+      "definition_name": "组#7",
+      "layer": "Layer0",
+      "position_mm": [
+        1643.78,
+        788.6,
+        1389.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#7"
+    },
+    "mesh_20_ROOT__组#7_Layer0_123_118_118_ss": {
+      "name": "组#7",
+      "definition_name": "组#7",
+      "layer": "Layer0",
+      "position_mm": [
+        1643.78,
+        788.6,
+        1389.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#7"
+    },
+    "mesh_21_ROOT__组#7_Layer0_255_84_84_ds": {
+      "name": "组#7",
+      "definition_name": "组#7",
+      "layer": "Layer0",
+      "position_mm": [
+        1643.78,
+        788.6,
+        1389.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#7"
+    },
+    "mesh_22_ROOT__组#7_Layer0_15_15_15_ds": {
+      "name": "组#7",
+      "definition_name": "组#7",
+      "layer": "Layer0",
+      "position_mm": [
+        1643.78,
+        788.6,
+        1389.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#7"
+    },
+    "mesh_23_ROOT__组#8_Layer0": {
+      "name": "组#8",
+      "definition_name": "组#8",
+      "layer": "Layer0",
+      "position_mm": [
+        1643.78,
+        748.61,
+        1379.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#8"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "组#1",
+        "definition_name": "组#1",
+        "layer": "Layer0",
+        "position_mm": [
+          1968.78,
+          788.6,
+          24.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "组#2",
+        "definition_name": "组#2",
+        "layer": "Layer0",
+        "position_mm": [
+          1968.78,
+          708.6,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "组#3",
+        "definition_name": "组#3",
+        "layer": "Layer0",
+        "position_mm": [
+          1958.78,
+          748.6,
+          34.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "组#4",
+        "definition_name": "组#4",
+        "layer": "Layer0",
+        "position_mm": [
+          1958.78,
+          748.6,
+          509.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "组#5",
+        "definition_name": "组#5",
+        "layer": "Layer0",
+        "position_mm": [
+          1968.78,
+          788.6,
+          499.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "组#6",
+        "definition_name": "组#6",
+        "layer": "Layer0",
+        "position_mm": [
+          1653.78,
+          788.6,
+          1389.09
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "组#8",
+        "definition_name": "组#8",
+        "layer": "Layer0",
+        "position_mm": [
+          1653.78,
+          748.61,
+          1379.09
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "组#7",
+        "definition_name": "组#7",
+        "layer": "Layer0",
+        "position_mm": [
+          1643.78,
+          788.6,
+          1389.09
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "组#8",
+        "definition_name": "组#8",
+        "layer": "Layer0",
+        "position_mm": [
+          1643.78,
+          748.61,
+          1379.09
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

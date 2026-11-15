@@ -1,0 +1,245 @@
+{
+  "format_version": "1.0",
+  "source_file": "y1",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.1.194}",
+  "total_definitions": 0,
+  "total_meshes": 3,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "Y1",
+      "color": {
+        "r": 152,
+        "g": 150,
+        "b": 140
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\Y1.jpg",
+        "x_scale": 1078.4645669291338,
+        "y_scale": 1078.4645669291338
+      }
+    },
+    {
+      "name": "[Color M08]",
+      "color": {
+        "r": 30,
+        "g": 30,
+        "b": 30
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color M09]",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Y2",
+      "color": {
+        "r": 123,
+        "g": 122,
+        "b": 119
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\Y1.jpg",
+        "x_scale": 412.9133858267717,
+        "y_scale": 412.9133858267717
+      }
+    },
+    {
+      "name": "[Color M00]",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Y3",
+      "color": {
+        "r": 139,
+        "g": 145,
+        "b": 140
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\Y1.jpg",
+        "x_scale": 137.48561348911454,
+        "y_scale": 143.3464566929134
+      }
+    },
+    {
+      "name": "Y4",
+      "color": {
+        "r": 184,
+        "g": 183,
+        "b": 162
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\Y1.jpg",
+        "x_scale": 115.50132297345664,
+        "y_scale": 115.50132297345664
+      }
+    },
+    {
+      "name": "Y5",
+      "color": {
+        "r": 127,
+        "g": 125,
+        "b": 121
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\Y1.jpg",
+        "x_scale": 124.99999999999999,
+        "y_scale": 124.99999999999999
+      }
+    },
+    {
+      "name": "Y6",
+      "color": {
+        "r": 179,
+        "g": 175,
+        "b": 159
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\Y1.jpg",
+        "x_scale": 116.32017455657478,
+        "y_scale": 116.32017455657478
+      }
+    },
+    {
+      "name": "[Color M07]",
+      "color": {
+        "r": 58,
+        "g": 58,
+        "b": 58
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Y7",
+      "color": {
+        "r": 174,
+        "g": 167,
+        "b": 163
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Admin\\Desktop\\Y1.jpg",
+        "x_scale": 112.51968503937007,
+        "y_scale": 112.51968503937007
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT_Layer0_0_0_0_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_1_ROOT_Layer0_255_84_84_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_2_ROOT_Layer0_174_167_163_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": []
+  }
+}

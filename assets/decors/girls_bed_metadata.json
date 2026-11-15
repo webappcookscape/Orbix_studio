@@ -1,0 +1,759 @@
+{
+  "format_version": "1.0",
+  "source_file": "girls_bed",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 17,
+  "total_meshes": 24,
+  "total_layers": 2,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    },
+    {
+      "name": "Cama",
+      "color": {
+        "r": 0,
+        "g": 153,
+        "b": 135
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "Cama": false
+  },
+  "materials": [
+    {
+      "name": "b_500_02",
+      "color": {
+        "r": 95,
+        "g": 80,
+        "b": 83
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/user/AppData/Local/Temp/ChaosGroupTextureCache/2425ee9ed28d6d7cb9591808d98798e3.jpg",
+        "x_scale": 78.74015748031496,
+        "y_scale": 78.74015748031496
+      }
+    },
+    {
+      "name": "HCON110128_frame1",
+      "color": {
+        "r": 235,
+        "g": 234,
+        "b": 217
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/user/AppData/Local/Temp/ChaosGroupTextureCache/9e0627f7a7aadd741262353ca5f5e2b5.jpg",
+        "x_scale": 787.4015748031496,
+        "y_scale": 787.4015748031496
+      }
+    },
+    {
+      "name": "6ZFG26D",
+      "color": {
+        "r": 143,
+        "g": 123,
+        "b": 116
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/user/AppData/Local/Temp/ChaosGroupTextureCache/ec0569537962bad48195e2ef9d1d5be5.JPG",
+        "x_scale": 39.37007874015748,
+        "y_scale": 39.370078740157474
+      }
+    },
+    {
+      "name": "[Color_008]",
+      "color": {
+        "r": 29,
+        "g": 29,
+        "b": 29
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "<MediumVioletRed>1",
+      "color": {
+        "r": 195,
+        "g": 195,
+        "b": 195
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/user/AppData/Local/Temp/ChaosGroupTextureCache/31cf54180fb71ee7eb2e04fb83fbef12.jpg",
+        "x_scale": 11.811023622047244,
+        "y_scale": 11.811023622047244
+      }
+    },
+    {
+      "name": "*19",
+      "color": {
+        "r": 168,
+        "g": 159,
+        "b": 144
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/user/AppData/Local/Temp/ChaosGroupTextureCache/74f171242e7c6a1b99f82bc2943e9ef4.jpg",
+        "x_scale": 49.21259842519685,
+        "y_scale": 26.814556834241877
+      }
+    },
+    {
+      "name": "[Color_A01]",
+      "color": {
+        "r": 226,
+        "g": 226,
+        "b": 226
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*5",
+      "color": {
+        "r": 183,
+        "g": 176,
+        "b": 162
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/user/AppData/Local/Temp/ChaosGroupTextureCache/04207896a6afb6067d66a7e8f8a65443.jpg",
+        "x_scale": 49.21259842519685,
+        "y_scale": 49.21259842519685
+      }
+    },
+    {
+      "name": "4fbc684df2fb4a99103d4d1a2b5fc68a",
+      "color": {
+        "r": 206,
+        "g": 204,
+        "b": 192
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/user/AppData/Local/Temp/ChaosGroupTextureCache/4ba40fb12cfdfbddc25cd40784098cce.jpg",
+        "x_scale": 118.11023622047244,
+        "y_scale": 118.11023622047244
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Cama",
+      "color": {
+        "r": 0,
+        "g": 153,
+        "b": 135
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_48__arthur-SUFDM-012-007#2__Component_6237_Layer0": {
+      "name": "Component_6237",
+      "definition_name": "Group#139",
+      "layer": "Layer0",
+      "position_mm": [
+        136.76,
+        -597.65,
+        34.4
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / arthur-SUFDM-012-007#2 / Component_6237"
+    },
+    "mesh_1_ROOT__Component_48__Component_23084_Layer0_226_226_226_ss": {
+      "name": "Component_23084",
+      "definition_name": "Component#12",
+      "layer": "Layer0",
+      "position_mm": [
+        288.65,
+        -427.27,
+        447.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_23084"
+    },
+    "mesh_2_ROOT__Component_48__Component_23084_Layer0_255_84_84_ss": {
+      "name": "Component_23084",
+      "definition_name": "Component#12",
+      "layer": "Layer0",
+      "position_mm": [
+        288.65,
+        -427.27,
+        447.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_23084"
+    },
+    "mesh_3_ROOT__Component_48__Component_49__Component_4626__Groupe#7_Cama_168_159_144_ss": {
+      "name": "Groupe#7",
+      "definition_name": "Groupe#7",
+      "layer": "Cama",
+      "position_mm": [
+        1935.19,
+        -455.13,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_4626 / Groupe#7"
+    },
+    "mesh_4_ROOT__Component_48__Component_49__Component_4626__Groupe#7_Cama_0_153_135_ss": {
+      "name": "Groupe#7",
+      "definition_name": "Groupe#7",
+      "layer": "Cama",
+      "position_mm": [
+        1935.19,
+        -455.13,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_4626 / Groupe#7"
+    },
+    "mesh_5_ROOT__Component_48__Component_49__Component_4626__Groupe#7_Cama_0_153_135_ds": {
+      "name": "Groupe#7",
+      "definition_name": "Groupe#7",
+      "layer": "Cama",
+      "position_mm": [
+        1935.19,
+        -455.13,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_4626 / Groupe#7"
+    },
+    "mesh_6_ROOT__Component_48__Component_49__Component_4626__Groupe#7__Component_4628_Cama_0_153_135_ss": {
+      "name": "Component_4628",
+      "definition_name": "Group27#1",
+      "layer": "Cama",
+      "position_mm": [
+        -39439.09,
+        -24421.48,
+        0.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_4626 / Groupe#7 / Component_4628"
+    },
+    "mesh_7_ROOT__Component_48__Component_49__Component_4626__Groupe#7__Component_4628_Cama_168_159_144_ss": {
+      "name": "Component_4628",
+      "definition_name": "Group27#1",
+      "layer": "Cama",
+      "position_mm": [
+        -39439.09,
+        -24421.48,
+        0.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_4626 / Groupe#7 / Component_4628"
+    },
+    "mesh_8_ROOT__Component_48__Component_49__Component_4626__Groupe#5_Cama_226_226_226_ss": {
+      "name": "Groupe#5",
+      "definition_name": "Groupe#5",
+      "layer": "Cama",
+      "position_mm": [
+        24.25,
+        -455.13,
+        247.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_4626 / Groupe#5"
+    },
+    "mesh_9_ROOT__Component_48__Component_49__Component_4626__Groupe#5_Cama_0_153_135_ss": {
+      "name": "Groupe#5",
+      "definition_name": "Groupe#5",
+      "layer": "Cama",
+      "position_mm": [
+        24.25,
+        -455.13,
+        247.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_4626 / Groupe#5"
+    },
+    "mesh_10_ROOT__Component_48__Component_49__Component_50__Grupo#2_Layer0_168_159_144_ss": {
+      "name": "Grupo#2",
+      "definition_name": "Grupo#2",
+      "layer": "Layer0",
+      "position_mm": [
+        -126.22,
+        468.87,
+        426.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_50 / Grupo#2"
+    },
+    "mesh_11_ROOT__Component_48__Component_49__Component_50__Grupo#2_Layer0_255_84_84_ss": {
+      "name": "Grupo#2",
+      "definition_name": "Grupo#2",
+      "layer": "Layer0",
+      "position_mm": [
+        -126.22,
+        468.87,
+        426.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_50 / Grupo#2"
+    },
+    "mesh_12_ROOT__Component_48__Component_49__Component_50__Component_4555_Layer0_29_29_29_ss": {
+      "name": "Component_4555",
+      "definition_name": "Group#194",
+      "layer": "Layer0",
+      "position_mm": [
+        24.25,
+        -1426.85,
+        199.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_50 / Component_4555"
+    },
+    "mesh_13_ROOT__Component_48__Component_49__Component_50__Component_4555_Layer0_255_84_84_ss": {
+      "name": "Component_4555",
+      "definition_name": "Group#194",
+      "layer": "Layer0",
+      "position_mm": [
+        24.25,
+        -1426.85,
+        199.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_49 / Component_50 / Component_4555"
+    },
+    "mesh_14_ROOT__Component_48__Component_10404__Component_10405_Layer0_143_123_116_ss": {
+      "name": "Component_10405",
+      "definition_name": "Group#146",
+      "layer": "Layer0",
+      "position_mm": [
+        1970.05,
+        -8.7,
+        196.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_10404 / Component_10405"
+    },
+    "mesh_15_ROOT__Component_48__Component_10404__Component_10405_Layer0_255_84_84_ss": {
+      "name": "Component_10405",
+      "definition_name": "Group#146",
+      "layer": "Layer0",
+      "position_mm": [
+        1970.05,
+        -8.7,
+        196.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_10404 / Component_10405"
+    },
+    "mesh_16_ROOT__Component_48__Component_10404__Component_10405_Layer0_143_123_116_ss": {
+      "name": "Component_10405",
+      "definition_name": "Group#146",
+      "layer": "Layer0",
+      "position_mm": [
+        1970.05,
+        -8.7,
+        196.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_10404 / Component_10405"
+    },
+    "mesh_17_ROOT__Component_48__Component_10404__Component_10405_Layer0_255_84_84_ss": {
+      "name": "Component_10405",
+      "definition_name": "Group#146",
+      "layer": "Layer0",
+      "position_mm": [
+        1970.05,
+        -8.7,
+        196.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / Component_10404 / Component_10405"
+    },
+    "mesh_18_ROOT__Component_48__群组#20_Layer0_206_204_192_ss": {
+      "name": "群组#20",
+      "definition_name": "群组#20",
+      "layer": "Layer0",
+      "position_mm": [
+        480.11,
+        -405.14,
+        458.51
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / 群组#20"
+    },
+    "mesh_19_ROOT__Component_48__群组#20_Layer0_255_84_84_ss": {
+      "name": "群组#20",
+      "definition_name": "群组#20",
+      "layer": "Layer0",
+      "position_mm": [
+        480.11,
+        -405.14,
+        458.51
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / 群组#20"
+    },
+    "mesh_20_ROOT__Component_48__群组#21_Layer0_95_80_83_ss": {
+      "name": "群组#21",
+      "definition_name": "群组#21",
+      "layer": "Layer0",
+      "position_mm": [
+        603.57,
+        -225.09,
+        459.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / 群组#21"
+    },
+    "mesh_21_ROOT__Component_48__群组#21_Layer0_255_84_84_ss": {
+      "name": "群组#21",
+      "definition_name": "群组#21",
+      "layer": "Layer0",
+      "position_mm": [
+        603.57,
+        -225.09,
+        459.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / 群组#21"
+    },
+    "mesh_22_ROOT__Component_48__群组#21__Component_53099_Layer0_95_80_83_ss": {
+      "name": "Component_53099",
+      "definition_name": "Group#150",
+      "layer": "Layer0",
+      "position_mm": [
+        603.57,
+        -225.09,
+        459.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / 群组#21 / Component_53099"
+    },
+    "mesh_23_ROOT__Component_48__群组#21__Component_53099_Layer0_255_84_84_ss": {
+      "name": "Component_53099",
+      "definition_name": "Group#150",
+      "layer": "Layer0",
+      "position_mm": [
+        603.57,
+        -225.09,
+        459.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_48 / 群组#21 / Component_53099"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_48",
+        "definition_name": "Group#144",
+        "layer": "Layer0",
+        "position_mm": [
+          2210.68,
+          653.66,
+          -0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "arthur-SUFDM-012-007#2",
+            "definition_name": "arthur-SUFDM-012-007#2",
+            "layer": "Layer0",
+            "position_mm": [
+              69.51,
+              -521.09,
+              35.87
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_6237",
+                "definition_name": "Group#139",
+                "layer": "Layer0",
+                "position_mm": [
+                  136.76,
+                  -597.65,
+                  34.4
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_23084",
+            "definition_name": "Component#12",
+            "layer": "Layer0",
+            "position_mm": [
+              288.65,
+              -427.27,
+              447.35
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_49",
+            "definition_name": "Group#51",
+            "layer": "Layer0",
+            "position_mm": [
+              -152.97,
+              -556.97,
+              -0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_4626",
+                "definition_name": "Group#41",
+                "layer": "Layer0",
+                "position_mm": [
+                  -7.97,
+                  -259.18,
+                  -0.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Groupe#7",
+                    "definition_name": "Groupe#7",
+                    "layer": "Cama",
+                    "position_mm": [
+                      1935.19,
+                      -455.13,
+                      -0.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_4628",
+                        "definition_name": "Group27#1",
+                        "layer": "Cama",
+                        "position_mm": [
+                          -39439.09,
+                          -24421.48,
+                          0.74
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Groupe#5",
+                    "definition_name": "Groupe#5",
+                    "layer": "Cama",
+                    "position_mm": [
+                      24.25,
+                      -455.13,
+                      247.34
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Component_50",
+                "definition_name": "Group#67",
+                "layer": "Layer0",
+                "position_mm": [
+                  63.98,
+                  -1288.08,
+                  199.99
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Grupo#2",
+                    "definition_name": "Grupo#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -126.22,
+                      468.87,
+                      426.61
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_4555",
+                    "definition_name": "Group#194",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      24.25,
+                      -1426.85,
+                      199.99
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Component_10404",
+            "definition_name": "Group#57",
+            "layer": "Layer0",
+            "position_mm": [
+              1970.05,
+              921.37,
+              196.41
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_10405",
+                "definition_name": "Group#146",
+                "layer": "Layer0",
+                "position_mm": [
+                  1970.05,
+                  -8.7,
+                  196.41
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_10405",
+                "definition_name": "Group#146",
+                "layer": "Layer0",
+                "position_mm": [
+                  1970.05,
+                  -8.7,
+                  196.41
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "群组#20",
+            "definition_name": "群组#20",
+            "layer": "Layer0",
+            "position_mm": [
+              480.11,
+              -405.14,
+              458.51
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "群组#21",
+            "definition_name": "群组#21",
+            "layer": "Layer0",
+            "position_mm": [
+              603.57,
+              -225.09,
+              459.78
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_53099",
+                "definition_name": "Group#150",
+                "layer": "Layer0",
+                "position_mm": [
+                  603.57,
+                  -225.09,
+                  459.78
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

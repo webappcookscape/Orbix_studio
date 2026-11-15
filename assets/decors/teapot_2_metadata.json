@@ -1,0 +1,353 @@
+{
+  "format_version": "1.0",
+  "source_file": "teapot_2",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.1.194}",
+  "total_definitions": 7,
+  "total_meshes": 9,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "tpot",
+      "color": {
+        "r": 106,
+        "g": 96,
+        "b": 96
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Mike\\AppData\\Local\\Temp\\tpot(1).jpg",
+        "x_scale": 55.314960629921266,
+        "y_scale": 40.142857142857146
+      }
+    },
+    {
+      "name": "tpot1",
+      "color": {
+        "r": 93,
+        "g": 85,
+        "b": 86
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Mike\\Pictures\\Textures\\tpot.jpg",
+        "x_scale": 47.240925959650184,
+        "y_scale": 34.28341483928899
+      }
+    },
+    {
+      "name": "[0012_Bisque]",
+      "color": {
+        "r": 135,
+        "g": 120,
+        "b": 103
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "tpot1#1",
+      "color": {
+        "r": 127,
+        "g": 114,
+        "b": 112
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "tpot1.jpg",
+        "x_scale": 54.74334819464664,
+        "y_scale": 40.025994095524254
+      }
+    },
+    {
+      "name": "Image1",
+      "color": {
+        "r": 56,
+        "g": 30,
+        "b": 30
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Mike\\Pictures\\Lifeboat\\234px-WhiteStarLogo.svg.png",
+        "x_scale": 234.0,
+        "y_scale": 189.0
+      }
+    },
+    {
+      "name": "Image2",
+      "color": {
+        "r": 122,
+        "g": 110,
+        "b": 104
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Mike\\Pictures\\Lyn\\PoddleyLogo.png",
+        "x_scale": 721.0,
+        "y_scale": 170.0
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_28970__Component_25157_Layer0_93_85_86_ss": {
+      "name": "Component_25157",
+      "definition_name": "Group#4",
+      "layer": "Layer0",
+      "position_mm": [
+        -711.86,
+        -89.16,
+        216.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28970 / Component_25157"
+    },
+    "mesh_1_ROOT__Component_28970__Component_25157_Layer0_135_120_103_ss": {
+      "name": "Component_25157",
+      "definition_name": "Group#4",
+      "layer": "Layer0",
+      "position_mm": [
+        -711.86,
+        -89.16,
+        216.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28970 / Component_25157"
+    },
+    "mesh_2_ROOT__Component_28970__Component_25157_Layer0_93_85_86_ds": {
+      "name": "Component_25157",
+      "definition_name": "Group#4",
+      "layer": "Layer0",
+      "position_mm": [
+        -711.86,
+        -89.16,
+        216.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28970 / Component_25157"
+    },
+    "mesh_3_ROOT__Component_28970__Component_25154__Component_20874_Layer0_93_85_86_ss": {
+      "name": "Component_20874",
+      "definition_name": "Group#5",
+      "layer": "Layer0",
+      "position_mm": [
+        342.02,
+        15.74,
+        148.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28970 / Component_25154 / Component_20874"
+    },
+    "mesh_4_ROOT__Component_28970__Component_25154__Component_20874_Layer0_255_84_84_ss": {
+      "name": "Component_20874",
+      "definition_name": "Group#5",
+      "layer": "Layer0",
+      "position_mm": [
+        342.02,
+        15.74,
+        148.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28970 / Component_25154 / Component_20874"
+    },
+    "mesh_5_ROOT__Component_28970__Component_25154__Component_20874_Layer0_93_85_86_ds": {
+      "name": "Component_20874",
+      "definition_name": "Group#5",
+      "layer": "Layer0",
+      "position_mm": [
+        342.02,
+        15.74,
+        148.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28970 / Component_25154 / Component_20874"
+    },
+    "mesh_6_ROOT__Component_28970__Component_25154__Component_54_Layer0": {
+      "name": "Component_54",
+      "definition_name": "Group#2",
+      "layer": "Layer0",
+      "position_mm": [
+        -456.25,
+        -421.62,
+        -15.96
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28970 / Component_25154 / Component_54"
+    },
+    "mesh_7_ROOT__Component_28970__Component_25154__Component_54__Image_Layer0": {
+      "name": "Image",
+      "definition_name": "Image",
+      "layer": "Layer0",
+      "position_mm": [
+        -55.67,
+        47.25,
+        -15.95
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28970 / Component_25154 / Component_54 / Image"
+    },
+    "mesh_8_ROOT__Component_28970__Component_25154__Component_54__Image#1_Layer0": {
+      "name": "Image#1",
+      "definition_name": "Image#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -80.53,
+        84.72,
+        -15.95
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28970 / Component_25154 / Component_54 / Image#1"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_28970",
+        "definition_name": "Group#1",
+        "layer": "Layer0",
+        "position_mm": [
+          -710.71,
+          -421.62,
+          -15.96
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Component_25157",
+            "definition_name": "Group#4",
+            "layer": "Layer0",
+            "position_mm": [
+              -711.86,
+              -89.16,
+              216.47
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_25154",
+            "definition_name": "Group#6",
+            "layer": "Layer0",
+            "position_mm": [
+              -456.25,
+              -421.62,
+              -15.96
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_20874",
+                "definition_name": "Group#5",
+                "layer": "Layer0",
+                "position_mm": [
+                  342.02,
+                  15.74,
+                  148.38
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_54",
+                "definition_name": "Group#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -456.25,
+                  -421.62,
+                  -15.96
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Image",
+                    "definition_name": "Image",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -55.67,
+                      47.25,
+                      -15.95
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Image#1",
+                    "definition_name": "Image#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -80.53,
+                      84.72,
+                      -15.95
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

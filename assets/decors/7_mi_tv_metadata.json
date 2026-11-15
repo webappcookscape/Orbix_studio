@@ -1,0 +1,222 @@
+{
+  "format_version": "1.0",
+  "source_file": "7_mi_tv",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 1,
+  "total_meshes": 8,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "*",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*1",
+      "color": {
+        "r": 51,
+        "g": 51,
+        "b": 51
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Metal Corrugated Shiny]",
+      "color": {
+        "r": 193,
+        "g": 193,
+        "b": 193
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Metal_Corrogated_Shiny.jpg",
+        "x_scale": 4.0,
+        "y_scale": 4.0
+      }
+    },
+    {
+      "name": "界面",
+      "color": {
+        "r": 57,
+        "g": 46,
+        "b": 52
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "/Users/coolsunhung/Downloads/界面.jpg",
+        "x_scale": 39.37007874015748,
+        "y_scale": 21.90428978222525
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__组#1_Layer0_255_84_84_ds": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        875.3,
+        1249.15,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_1_ROOT__组#1_Layer0_0_0_0_ss": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        875.3,
+        1249.15,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_2_ROOT__组#1_Layer0_255_84_84_ss": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        875.3,
+        1249.15,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_3_ROOT__组#1_Layer0_193_193_193_ds": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        875.3,
+        1249.15,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_4_ROOT__组#1_Layer0_193_193_193_ss": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        875.3,
+        1249.15,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_5_ROOT__组#1_Layer0_51_51_51_ss": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        875.3,
+        1249.15,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_6_ROOT__组#1_Layer0_57_46_52_ss": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        875.3,
+        1249.15,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    },
+    "mesh_7_ROOT__组#1_Layer0_51_51_51_ds": {
+      "name": "组#1",
+      "definition_name": "组#1",
+      "layer": "Layer0",
+      "position_mm": [
+        875.3,
+        1249.15,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "组#1",
+        "definition_name": "组#1",
+        "layer": "Layer0",
+        "position_mm": [
+          875.3,
+          1249.15,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,505 @@
+{
+  "format_version": "1.0",
+  "source_file": "023",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.1.194}",
+  "total_definitions": 10,
+  "total_meshes": 16,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "Pot_2",
+      "color": {
+        "r": 94,
+        "g": 31,
+        "b": 12
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Philodendron",
+      "color": {
+        "r": 57,
+        "g": 84,
+        "b": 28
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\3DSMAX\\tree\\PLANT MAXBRUTE (17)\\Philodendron_1_dif_1.jpg",
+        "x_scale": 1000.0,
+        "y_scale": 1000.0
+      }
+    },
+    {
+      "name": "Soil",
+      "color": {
+        "r": 20,
+        "g": 16,
+        "b": 13
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Soil_Hanging_Wall_1_Layer0": {
+      "name": "Soil_Hanging_Wall_1",
+      "definition_name": "Soil_Hanging_Wall_1_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        303008.63,
+        -32430.58,
+        384504.88
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Soil_Hanging_Wall_1"
+    },
+    "mesh_1_ROOT__Philodendron_Hanging_Wall_2_Layer0": {
+      "name": "Philodendron_Hanging_Wall_2",
+      "definition_name": "Philodendron_Hanging_Wall_2_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        335490.22,
+        -32395.3,
+        -737966.63
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Philodendron_Hanging_Wall_2"
+    },
+    "mesh_2_ROOT__Soil_Hanging_Wall_3_Layer0": {
+      "name": "Soil_Hanging_Wall_3",
+      "definition_name": "Soil_Hanging_Wall_3_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        -18999.37,
+        -32560.22,
+        907488.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Soil_Hanging_Wall_3"
+    },
+    "mesh_3_ROOT__Philodendron_Hanging_Wall_1_Layer0": {
+      "name": "Philodendron_Hanging_Wall_1",
+      "definition_name": "Philodendron_Hanging_Wall_1_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        293713.03,
+        -32258.22,
+        -1265030.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Philodendron_Hanging_Wall_1"
+    },
+    "mesh_4_ROOT__Pot_Hanging_Wall_3_Layer0": {
+      "name": "Pot_Hanging_Wall_3",
+      "definition_name": "Pot_Hanging_Wall_3_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        -18999.5,
+        -55226.72,
+        886137.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Pot_Hanging_Wall_3"
+    },
+    "mesh_5_ROOT__Philodendron_Hanging_Wall_3_Layer0": {
+      "name": "Philodendron_Hanging_Wall_3",
+      "definition_name": "Philodendron_Hanging_Wall_3_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        -19279.16,
+        -32370.52,
+        -737967.12
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Philodendron_Hanging_Wall_3"
+    },
+    "mesh_6_ROOT__Pot_Hanging_Wall_4_Layer0": {
+      "name": "Pot_Hanging_Wall_4",
+      "definition_name": "Pot_Hanging_Wall_4_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        -354332.28,
+        -55127.11,
+        886115.28
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Pot_Hanging_Wall_4"
+    },
+    "mesh_7_ROOT__Soil_Hanging_Wall_4_Layer0": {
+      "name": "Soil_Hanging_Wall_4",
+      "definition_name": "Soil_Hanging_Wall_4_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        -354330.2,
+        -32469.89,
+        907488.2
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Soil_Hanging_Wall_4"
+    },
+    "mesh_8_ROOT__Philodendron_Hanging_Wall_4_Layer0": {
+      "name": "Philodendron_Hanging_Wall_4",
+      "definition_name": "Philodendron_Hanging_Wall_4_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        -354609.74,
+        -32287.27,
+        -737996.91
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Philodendron_Hanging_Wall_4"
+    },
+    "mesh_9_ROOT__Pot_Hanging_Wall_1_Layer0": {
+      "name": "Pot_Hanging_Wall_1",
+      "definition_name": "Pot_Hanging_Wall_1_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        303008.65,
+        -32430.58,
+        348784.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Pot_Hanging_Wall_1"
+    },
+    "mesh_10_ROOT__Soil_Hanging_Wall_1_Layer0": {
+      "name": "Soil_Hanging_Wall_1",
+      "definition_name": "Soil_Hanging_Wall_1_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        -26820.07,
+        -32430.58,
+        908917.57
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Soil_Hanging_Wall_1"
+    },
+    "mesh_11_ROOT__Pot_Hanging_Wall_1_Layer0": {
+      "name": "Pot_Hanging_Wall_1",
+      "definition_name": "Pot_Hanging_Wall_1_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        318987.85,
+        -32430.58,
+        873196.98
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Pot_Hanging_Wall_1"
+    },
+    "mesh_12_ROOT__Soil_Hanging_Wall_1_Layer0": {
+      "name": "Soil_Hanging_Wall_1",
+      "definition_name": "Soil_Hanging_Wall_1_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        318987.83,
+        -32430.58,
+        908917.57
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Soil_Hanging_Wall_1"
+    },
+    "mesh_13_ROOT__Soil_Hanging_Wall_1_Layer0": {
+      "name": "Soil_Hanging_Wall_1",
+      "definition_name": "Soil_Hanging_Wall_1_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        -357844.07,
+        -32430.58,
+        908917.57
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Soil_Hanging_Wall_1"
+    },
+    "mesh_14_ROOT__Pot_Hanging_Wall_1_Layer0": {
+      "name": "Pot_Hanging_Wall_1",
+      "definition_name": "Pot_Hanging_Wall_1_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        -26820.06,
+        -32430.58,
+        873196.98
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Pot_Hanging_Wall_1"
+    },
+    "mesh_15_ROOT__Pot_Hanging_Wall_1_Layer0": {
+      "name": "Pot_Hanging_Wall_1",
+      "definition_name": "Pot_Hanging_Wall_1_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        -357844.06,
+        -32430.58,
+        873196.98
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Pot_Hanging_Wall_1"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Soil_Hanging_Wall_1",
+        "definition_name": "Soil_Hanging_Wall_1_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          303008.63,
+          -32430.58,
+          384504.88
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Philodendron_Hanging_Wall_2",
+        "definition_name": "Philodendron_Hanging_Wall_2_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          335490.22,
+          -32395.3,
+          -737966.63
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Soil_Hanging_Wall_3",
+        "definition_name": "Soil_Hanging_Wall_3_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          -18999.37,
+          -32560.22,
+          907488.44
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Philodendron_Hanging_Wall_1",
+        "definition_name": "Philodendron_Hanging_Wall_1_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          293713.03,
+          -32258.22,
+          -1265030.35
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Pot_Hanging_Wall_3",
+        "definition_name": "Pot_Hanging_Wall_3_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          -18999.5,
+          -55226.72,
+          886137.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Philodendron_Hanging_Wall_3",
+        "definition_name": "Philodendron_Hanging_Wall_3_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          -19279.16,
+          -32370.52,
+          -737967.12
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Pot_Hanging_Wall_4",
+        "definition_name": "Pot_Hanging_Wall_4_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          -354332.28,
+          -55127.11,
+          886115.28
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Soil_Hanging_Wall_4",
+        "definition_name": "Soil_Hanging_Wall_4_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          -354330.2,
+          -32469.89,
+          907488.2
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Philodendron_Hanging_Wall_4",
+        "definition_name": "Philodendron_Hanging_Wall_4_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          -354609.74,
+          -32287.27,
+          -737996.91
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Pot_Hanging_Wall_1",
+        "definition_name": "Pot_Hanging_Wall_1_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          303008.65,
+          -32430.58,
+          348784.3
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Soil_Hanging_Wall_1",
+        "definition_name": "Soil_Hanging_Wall_1_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          -26820.07,
+          -32430.58,
+          908917.57
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Pot_Hanging_Wall_1",
+        "definition_name": "Pot_Hanging_Wall_1_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          318987.85,
+          -32430.58,
+          873196.98
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Soil_Hanging_Wall_1",
+        "definition_name": "Soil_Hanging_Wall_1_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          318987.83,
+          -32430.58,
+          908917.57
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Soil_Hanging_Wall_1",
+        "definition_name": "Soil_Hanging_Wall_1_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          -357844.07,
+          -32430.58,
+          908917.57
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Pot_Hanging_Wall_1",
+        "definition_name": "Pot_Hanging_Wall_1_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          -26820.06,
+          -32430.58,
+          873196.98
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Pot_Hanging_Wall_1",
+        "definition_name": "Pot_Hanging_Wall_1_Defintion",
+        "layer": "Layer0",
+        "position_mm": [
+          -357844.06,
+          -32430.58,
+          873196.98
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

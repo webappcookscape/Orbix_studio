@@ -1,0 +1,1097 @@
+{
+  "format_version": "1.0",
+  "source_file": "conc_flower_pot",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.1.194}",
+  "total_definitions": 15,
+  "total_meshes": 22,
+  "total_layers": 8,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    },
+    {
+      "name": "BANANA1",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    },
+    {
+      "name": "APPLE2-OBJ34",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    },
+    {
+      "name": "APPLE2-OBJ28",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    },
+    {
+      "name": "BANANA",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    },
+    {
+      "name": "APPLE1-OBJ35",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    },
+    {
+      "name": "APPLE-OBJ35",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    },
+    {
+      "name": "OBJ36",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "BANANA1": false,
+    "APPLE2-OBJ34": false,
+    "APPLE2-OBJ28": false,
+    "BANANA": false,
+    "APPLE1-OBJ35": false,
+    "APPLE-OBJ35": false,
+    "OBJ36": false
+  },
+  "materials": [
+    {
+      "name": "[Chris_Shirt]",
+      "color": {
+        "r": 40,
+        "g": 38,
+        "b": 52
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Chris_Shoe]",
+      "color": {
+        "r": 23,
+        "g": 22,
+        "b": 22
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Chris_Skin]",
+      "color": {
+        "r": 192,
+        "g": 164,
+        "b": 115
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Chris_Shoe_Sole]",
+      "color": {
+        "r": 123,
+        "g": 118,
+        "b": 118
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Chris_Hair]",
+      "color": {
+        "r": 71,
+        "g": 76,
+        "b": 74
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Chris_Pants]",
+      "color": {
+        "r": 112,
+        "g": 100,
+        "b": 74
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*92",
+      "color": {
+        "r": 61,
+        "g": 95,
+        "b": 34
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material #2",
+      "color": {
+        "r": 171,
+        "g": 180,
+        "b": 141
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Documents and Settings\\Administrador\\Desktop\\KOTYOUT.jpg",
+        "x_scale": 0.9842519685039369,
+        "y_scale": 0.9842519685039369
+      }
+    },
+    {
+      "name": "[Color_C17]",
+      "color": {
+        "r": 102,
+        "g": 61,
+        "b": 20
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Vegetation_Juniper2]",
+      "color": {
+        "r": 99,
+        "g": 128,
+        "b": 70
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Vegetation_Juniper2.jpg",
+        "x_scale": 3.9370078740157477,
+        "y_scale": 3.9370078740157477
+      }
+    },
+    {
+      "name": "*93",
+      "color": {
+        "r": 0,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[light-sketch-stone]",
+      "color": {
+        "r": 95,
+        "g": 149,
+        "b": 170
+      },
+      "transparency": 0.4,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "light-sketch-stone.jpg",
+        "x_scale": 4724.4094488188975,
+        "y_scale": 4724.4094488188975
+      }
+    },
+    {
+      "name": "*97",
+      "color": {
+        "r": 76,
+        "g": 153,
+        "b": 76
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*98",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color_C13]",
+      "color": {
+        "r": 153,
+        "g": 107,
+        "b": 61
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Concrete_Aggregate_Smoke]",
+      "color": {
+        "r": 213,
+        "g": 210,
+        "b": 205
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/ALEXAN~1.CAR/AppData/Local/Temp/ChaosGroupTextureCache/Concreto_de_pedras_trituradas_esfumaçadas_extractedTex.jpg",
+        "x_scale": 3.9370078740157486,
+        "y_scale": 3.9370078740157486
+      }
+    },
+    {
+      "name": "[Color_005]",
+      "color": {
+        "r": 114,
+        "g": 114,
+        "b": 114
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_BANANA1",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_APPLE2-OBJ34",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_APPLE2-OBJ28",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_BANANA",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_APPLE1-OBJ35",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_APPLE-OBJ35",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_OBJ36",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_4762__Conjunto_de_Vasos_Atacama_Layer0_255_84_84_ds": {
+      "name": "Conjunto de Vasos Atacama",
+      "definition_name": "Conjunto de Vasos Atacama",
+      "layer": "Layer0",
+      "position_mm": [
+        -4259.88,
+        -386.79,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Conjunto de Vasos Atacama"
+    },
+    "mesh_1_ROOT__Component_4762__Conjunto_de_Vasos_Atacama_Layer0_255_84_84_ss": {
+      "name": "Conjunto de Vasos Atacama",
+      "definition_name": "Conjunto de Vasos Atacama",
+      "layer": "Layer0",
+      "position_mm": [
+        -4259.88,
+        -386.79,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Conjunto de Vasos Atacama"
+    },
+    "mesh_2_ROOT__Component_4762__Conjunto_de_Vasos_Atacama_Layer0_213_210_205_ss": {
+      "name": "Conjunto de Vasos Atacama",
+      "definition_name": "Conjunto de Vasos Atacama",
+      "layer": "Layer0",
+      "position_mm": [
+        -4259.88,
+        -386.79,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Conjunto de Vasos Atacama"
+    },
+    "mesh_3_ROOT__Component_4762__Conjunto_de_Vasos_Atacama_Layer0_114_114_114_ss": {
+      "name": "Conjunto de Vasos Atacama",
+      "definition_name": "Conjunto de Vasos Atacama",
+      "layer": "Layer0",
+      "position_mm": [
+        -4259.88,
+        -386.79,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Conjunto de Vasos Atacama"
+    },
+    "mesh_4_ROOT__Component_4762__Component_4761__Agrupar#6__skeEFFD__bowlfruit.dxf_OBJ36": {
+      "name": "bowlfruit.dxf",
+      "definition_name": "bowlfruit.dxf",
+      "layer": "OBJ36",
+      "position_mm": [
+        -117.99,
+        -116.01,
+        176.84
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / skeEFFD / bowlfruit.dxf"
+    },
+    "mesh_5_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_61_95_34_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        162.49,
+        176.9,
+        520.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_6_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_255_84_84_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        162.49,
+        176.9,
+        520.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_7_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_171_180_141_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        162.49,
+        176.9,
+        520.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_8_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_255_84_84_ds": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        162.49,
+        176.9,
+        520.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_9_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_61_95_34_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -21.23,
+        62.22,
+        519.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_10_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_255_84_84_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -21.23,
+        62.22,
+        519.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_11_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_171_180_141_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -21.23,
+        62.22,
+        519.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_12_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_255_84_84_ds": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -21.23,
+        62.22,
+        519.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_13_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_61_95_34_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        18.36,
+        110.09,
+        582.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_14_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_255_84_84_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        18.36,
+        110.09,
+        582.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_15_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_171_180_141_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        18.36,
+        110.09,
+        582.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_16_ROOT__Component_4762__Component_4761__Agrupar#6__ske728E__orquidea_vaso_redondo__Layer0_255_84_84_ds": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        18.36,
+        110.09,
+        582.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / ske728E / orquidea vaso redondo / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_17_ROOT__Component_4762__Component_4761__Agrupar#6__orquidea_vaso_redondo#1__Compon_Layer0_61_95_34_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        111.71,
+        22.83,
+        554.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / orquidea vaso redondo#1 / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_18_ROOT__Component_4762__Component_4761__Agrupar#6__orquidea_vaso_redondo#1__Compon_Layer0_255_84_84_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        111.71,
+        22.83,
+        554.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / orquidea vaso redondo#1 / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_19_ROOT__Component_4762__Component_4761__Agrupar#6__orquidea_vaso_redondo#1__Compon_Layer0_171_180_141_ss": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        111.71,
+        22.83,
+        554.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / orquidea vaso redondo#1 / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_20_ROOT__Component_4762__Component_4761__Agrupar#6__orquidea_vaso_redondo#1__Compon_Layer0_255_84_84_ds": {
+      "name": "object#1",
+      "definition_name": "object#1",
+      "layer": "Layer0",
+      "position_mm": [
+        111.71,
+        22.83,
+        554.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / orquidea vaso redondo#1 / Component_67576 / Component_67575 / skpBF#1 / object#1"
+    },
+    "mesh_21_ROOT__Component_4762__Component_4761__Agrupar#6__Agrupar#96_Layer0": {
+      "name": "Agrupar#96",
+      "definition_name": "Agrupar#96",
+      "layer": "Layer0",
+      "position_mm": [
+        -56.24,
+        -54.06,
+        218.83
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4762 / Component_4761 / Agrupar#6 / Agrupar#96"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_4762",
+        "definition_name": "Group#36",
+        "layer": "Layer0",
+        "position_mm": [
+          -204.76,
+          -214.94,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Conjunto de Vasos Atacama",
+            "definition_name": "Conjunto de Vasos Atacama",
+            "layer": "Layer0",
+            "position_mm": [
+              -4259.88,
+              -386.79,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_4761",
+            "definition_name": "Component#20",
+            "layer": "Layer0",
+            "position_mm": [
+              2590.9,
+              -5346.34,
+              176.84
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Agrupar#6",
+                "definition_name": "Agrupar#6",
+                "layer": "Layer0",
+                "position_mm": [
+                  -204.76,
+                  -214.94,
+                  176.84
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "skeEFFD",
+                    "definition_name": "skeEFFD",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -117.99,
+                      -116.01,
+                      176.84
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "bowlfruit.dxf",
+                        "definition_name": "bowlfruit.dxf",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          -117.99,
+                          -116.01,
+                          176.84
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "ske728E",
+                    "definition_name": "ske728E",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      331.2,
+                      300.93,
+                      96.66
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "orquidea vaso redondo",
+                        "definition_name": "orquidea vaso redondo",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          150.03,
+                          181.07,
+                          96.66
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "Component_67576",
+                            "definition_name": "Component#88",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              234.89,
+                              493.26,
+                              96.66
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": [
+                              {
+                                "name": "Component_67575",
+                                "definition_name": "Component#85",
+                                "layer": "Layer0",
+                                "position_mm": [
+                                  234.89,
+                                  493.26,
+                                  77.71
+                                ],
+                                "properties": {},
+                                "attribute_dictionaries": {},
+                                "children": [
+                                  {
+                                    "name": "skpBF#1",
+                                    "definition_name": "skpBF#1",
+                                    "layer": "Layer0",
+                                    "position_mm": [
+                                      162.49,
+                                      176.9,
+                                      520.47
+                                    ],
+                                    "properties": {},
+                                    "attribute_dictionaries": {},
+                                    "children": [
+                                      {
+                                        "name": "object#1",
+                                        "definition_name": "object#1",
+                                        "layer": "Layer0",
+                                        "position_mm": [
+                                          162.49,
+                                          176.9,
+                                          520.47
+                                        ],
+                                        "properties": {},
+                                        "attribute_dictionaries": {},
+                                        "children": []
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "ske728E",
+                    "definition_name": "ske728E",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -168.35,
+                      179.99,
+                      96.96
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "orquidea vaso redondo",
+                        "definition_name": "orquidea vaso redondo",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          -21.95,
+                          50.42,
+                          96.96
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "Component_67576",
+                            "definition_name": "Component#88",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              -313.11,
+                              51.47,
+                              96.96
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": [
+                              {
+                                "name": "Component_67575",
+                                "definition_name": "Component#85",
+                                "layer": "Layer0",
+                                "position_mm": [
+                                  -313.11,
+                                  51.47,
+                                  78.06
+                                ],
+                                "properties": {},
+                                "attribute_dictionaries": {},
+                                "children": [
+                                  {
+                                    "name": "skpBF#1",
+                                    "definition_name": "skpBF#1",
+                                    "layer": "Layer0",
+                                    "position_mm": [
+                                      -21.23,
+                                      62.22,
+                                      519.6
+                                    ],
+                                    "properties": {},
+                                    "attribute_dictionaries": {},
+                                    "children": [
+                                      {
+                                        "name": "object#1",
+                                        "definition_name": "object#1",
+                                        "layer": "Layer0",
+                                        "position_mm": [
+                                          -21.23,
+                                          62.22,
+                                          519.6
+                                        ],
+                                        "properties": {},
+                                        "attribute_dictionaries": {},
+                                        "children": []
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "ske728E",
+                    "definition_name": "ske728E",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      94.04,
+                      282.68,
+                      75.26
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "orquidea vaso redondo",
+                        "definition_name": "orquidea vaso redondo",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          6.77,
+                          107.74,
+                          75.26
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "Component_67576",
+                            "definition_name": "Component#88",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              -67.58,
+                              389.24,
+                              75.26
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": [
+                              {
+                                "name": "Component_67575",
+                                "definition_name": "Component#85",
+                                "layer": "Layer0",
+                                "position_mm": [
+                                  -67.58,
+                                  389.24,
+                                  52.58
+                                ],
+                                "properties": {},
+                                "attribute_dictionaries": {},
+                                "children": [
+                                  {
+                                    "name": "skpBF#1",
+                                    "definition_name": "skpBF#1",
+                                    "layer": "Layer0",
+                                    "position_mm": [
+                                      18.36,
+                                      110.09,
+                                      582.43
+                                    ],
+                                    "properties": {},
+                                    "attribute_dictionaries": {},
+                                    "children": [
+                                      {
+                                        "name": "object#1",
+                                        "definition_name": "object#1",
+                                        "layer": "Layer0",
+                                        "position_mm": [
+                                          18.36,
+                                          110.09,
+                                          582.43
+                                        ],
+                                        "properties": {},
+                                        "attribute_dictionaries": {},
+                                        "children": []
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "orquidea vaso redondo#1",
+                    "definition_name": "orquidea vaso redondo#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      120.42,
+                      12.99,
+                      84.91
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_67576",
+                        "definition_name": "Component#88",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          -109.16,
+                          -214.94,
+                          84.91
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "Component_67575",
+                            "definition_name": "Component#85",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              -109.16,
+                              -214.94,
+                              63.91
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": [
+                              {
+                                "name": "skpBF#1",
+                                "definition_name": "skpBF#1",
+                                "layer": "Layer0",
+                                "position_mm": [
+                                  111.71,
+                                  22.83,
+                                  554.5
+                                ],
+                                "properties": {},
+                                "attribute_dictionaries": {},
+                                "children": [
+                                  {
+                                    "name": "object#1",
+                                    "definition_name": "object#1",
+                                    "layer": "Layer0",
+                                    "position_mm": [
+                                      111.71,
+                                      22.83,
+                                      554.5
+                                    ],
+                                    "properties": {},
+                                    "attribute_dictionaries": {},
+                                    "children": []
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Agrupar#96",
+                    "definition_name": "Agrupar#96",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -56.24,
+                      -54.06,
+                      218.83
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

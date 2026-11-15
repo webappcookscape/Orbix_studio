@@ -1,0 +1,187 @@
+{
+  "format_version": "1.0",
+  "source_file": "r7250_refrigerator_freezer_20_cubic_feet",
+  "model_source": "sketchup",
+  "sketchup_version": "{24.0.506}",
+  "total_definitions": 1,
+  "total_meshes": 5,
+  "total_layers": 2,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    },
+    {
+      "name": "Fridge One Door",
+      "color": {
+        "r": 127,
+        "g": 255,
+        "b": 127
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "Fridge One Door": false
+  },
+  "materials": [
+    {
+      "name": "Material6",
+      "color": {
+        "r": 151,
+        "g": 151,
+        "b": 151
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Mirror 01]",
+      "color": {
+        "r": 185,
+        "g": 185,
+        "b": 185
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Mirror_01.jpg",
+        "x_scale": 120.0,
+        "y_scale": 120.0
+      }
+    },
+    {
+      "name": "Material7",
+      "color": {
+        "r": 20,
+        "g": 19,
+        "b": 20
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Fridge One Door",
+      "color": {
+        "r": 127,
+        "g": 255,
+        "b": 127
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__R7250_-_Refrigerator-Freezer,_20_Cubic_Feet_Fridge One Door_127_255_127_ds": {
+      "name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+      "definition_name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+      "layer": "Fridge One Door",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / R7250 - Refrigerator-Freezer, 20 Cubic Feet"
+    },
+    "mesh_1_ROOT__R7250_-_Refrigerator-Freezer,_20_Cubic_Feet_Fridge One Door_151_151_151_ss": {
+      "name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+      "definition_name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+      "layer": "Fridge One Door",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / R7250 - Refrigerator-Freezer, 20 Cubic Feet"
+    },
+    "mesh_2_ROOT__R7250_-_Refrigerator-Freezer,_20_Cubic_Feet_Fridge One Door_127_255_127_ss": {
+      "name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+      "definition_name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+      "layer": "Fridge One Door",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / R7250 - Refrigerator-Freezer, 20 Cubic Feet"
+    },
+    "mesh_3_ROOT__R7250_-_Refrigerator-Freezer,_20_Cubic_Feet_Fridge One Door_185_185_185_ss": {
+      "name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+      "definition_name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+      "layer": "Fridge One Door",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / R7250 - Refrigerator-Freezer, 20 Cubic Feet"
+    },
+    "mesh_4_ROOT__R7250_-_Refrigerator-Freezer,_20_Cubic_Feet_Fridge One Door_20_19_20_ss": {
+      "name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+      "definition_name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+      "layer": "Fridge One Door",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / R7250 - Refrigerator-Freezer, 20 Cubic Feet"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+        "definition_name": "R7250 - Refrigerator-Freezer, 20 Cubic Feet",
+        "layer": "Fridge One Door",
+        "position_mm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

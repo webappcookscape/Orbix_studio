@@ -1,0 +1,308 @@
+{
+  "format_version": "1.0",
+  "source_file": "chimney",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 6,
+  "total_meshes": 9,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "Brush Stainles Steel",
+      "color": {
+        "r": 21,
+        "g": 26,
+        "b": 31
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "stainless-steel2",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material60",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 8
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/LIVSPA~1.GAR/AppData/Local/Temp/ChaosGroupTextureCache/e1c9eae852739467aed5d116691908b1.jpg",
+        "x_scale": 3.937007874015748,
+        "y_scale": 3.937007874015748
+      }
+    },
+    {
+      "name": "[Color_I06]1",
+      "color": {
+        "r": 12,
+        "g": 0,
+        "b": 204
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "chrome_matte",
+      "color": {
+        "r": 28,
+        "g": 28,
+        "b": 28
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__-___0___+_Layer0_12_0_204_ss": {
+      "name": "-   0   +",
+      "definition_name": "-   0   +",
+      "layer": "Layer0",
+      "position_mm": [
+        377.48,
+        19.94,
+        445.2
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / -   0   +"
+    },
+    "mesh_1_ROOT__-___0___+_Layer0_255_255_255_ss": {
+      "name": "-   0   +",
+      "definition_name": "-   0   +",
+      "layer": "Layer0",
+      "position_mm": [
+        377.48,
+        19.94,
+        445.2
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / -   0   +"
+    },
+    "mesh_2_ROOT__BERG_Spring_90__komin__komin_dół#1_Layer0_0_0_0_ss": {
+      "name": "komin dół#1",
+      "definition_name": "komin dół#1",
+      "layer": "Layer0",
+      "position_mm": [
+        317.81,
+        144.54,
+        461.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / BERG Spring 90 / komin / komin dół#1"
+    },
+    "mesh_3_ROOT__BERG_Spring_90__komin__komin_dół#1_Layer0_21_26_31_ss": {
+      "name": "komin dół#1",
+      "definition_name": "komin dół#1",
+      "layer": "Layer0",
+      "position_mm": [
+        317.81,
+        144.54,
+        461.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / BERG Spring 90 / komin / komin dół#1"
+    },
+    "mesh_4_ROOT__BERG_Spring_90__korpus_Layer0_0_0_0_ss": {
+      "name": "korpus",
+      "definition_name": "korpus",
+      "layer": "Layer0",
+      "position_mm": [
+        195.57,
+        46.75,
+        36.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / BERG Spring 90 / korpus"
+    },
+    "mesh_5_ROOT__BERG_Spring_90__korpus_Layer0_255_255_255_ss": {
+      "name": "korpus",
+      "definition_name": "korpus",
+      "layer": "Layer0",
+      "position_mm": [
+        195.57,
+        46.75,
+        36.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / BERG Spring 90 / korpus"
+    },
+    "mesh_6_ROOT__BERG_Spring_90__panel_przód_Layer0_0_0_8_ss": {
+      "name": "panel przód",
+      "definition_name": "panel przód",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / BERG Spring 90 / panel przód"
+    },
+    "mesh_7_ROOT__BERG_Spring_90__panel_przód_Layer0_255_255_255_ss": {
+      "name": "panel przód",
+      "definition_name": "panel przód",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / BERG Spring 90 / panel przód"
+    },
+    "mesh_8_ROOT__BERG_Spring_90__panel_przód_Layer0_0_0_0_ss": {
+      "name": "panel przód",
+      "definition_name": "panel przód",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / BERG Spring 90 / panel przód"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "-   0   +",
+        "definition_name": "-   0   +",
+        "layer": "Layer0",
+        "position_mm": [
+          377.48,
+          19.94,
+          445.2
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "BERG Spring 90",
+        "definition_name": "BERG Spring 90",
+        "layer": "Layer0",
+        "position_mm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "komin",
+            "definition_name": "komin",
+            "layer": "Layer0",
+            "position_mm": [
+              317.81,
+              144.54,
+              461.74
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "komin dół#1",
+                "definition_name": "komin dół#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  317.81,
+                  144.54,
+                  461.74
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "korpus",
+            "definition_name": "korpus",
+            "layer": "Layer0",
+            "position_mm": [
+              195.57,
+              46.75,
+              36.37
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "panel przód",
+            "definition_name": "panel przód",
+            "layer": "Layer0",
+            "position_mm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

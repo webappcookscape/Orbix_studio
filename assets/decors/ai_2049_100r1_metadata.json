@@ -1,0 +1,155 @@
+{
+  "format_version": "1.0",
+  "source_file": "ai_2049_100r1",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.0.433}",
+  "total_definitions": 3,
+  "total_meshes": 2,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "6000k, EMISSIVE ",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 209
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material~1",
+      "color": {
+        "r": 207,
+        "g": 186,
+        "b": 187
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/station29/Desktop/foodpanda material 3d/foodpanda material 3d/London/London_64153.jpg",
+        "x_scale": 2.1653543307086616,
+        "y_scale": 2.1653543307086616
+      }
+    },
+    {
+      "name": "Material~2",
+      "color": {
+        "r": 110,
+        "g": 110,
+        "b": 110
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__06_Linteloo_Plaza_armchair__3DGeom~1_Layer0": {
+      "name": "3DGeom~1",
+      "definition_name": "3DGeom~1_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        540.23,
+        2962.72,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 06 Linteloo Plaza armchair / 3DGeom~1"
+    },
+    "mesh_1_ROOT__06_Linteloo_Plaza_armchair__3DGeom~2_Layer0": {
+      "name": "3DGeom~2",
+      "definition_name": "3DGeom~2_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        540.23,
+        2962.72,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 06 Linteloo Plaza armchair / 3DGeom~2"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "06 Linteloo Plaza armchair",
+        "definition_name": "Group10#4",
+        "layer": "Layer0",
+        "position_mm": [
+          2892.23,
+          2962.72,
+          -0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "3DGeom~1",
+            "definition_name": "3DGeom~1_Defintion",
+            "layer": "Layer0",
+            "position_mm": [
+              540.23,
+              2962.72,
+              -0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "3DGeom~2",
+            "definition_name": "3DGeom~2_Defintion#1",
+            "layer": "Layer0",
+            "position_mm": [
+              540.23,
+              2962.72,
+              -0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

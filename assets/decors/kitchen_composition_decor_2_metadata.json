@@ -1,0 +1,1802 @@
+{
+  "format_version": "1.0",
+  "source_file": "kitchen_composition_decor_2",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.1.194}",
+  "total_definitions": 31,
+  "total_meshes": 59,
+  "total_layers": 3,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    },
+    {
+      "name": "1: KEUKEN",
+      "color": {
+        "r": 102,
+        "g": 68,
+        "b": 0
+      }
+    },
+    {
+      "name": "decorations",
+      "color": {
+        "r": 102,
+        "g": 68,
+        "b": 0
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "1: KEUKEN": false,
+    "decorations": false
+  },
+  "materials": [
+    {
+      "name": "*",
+      "color": {
+        "r": 99,
+        "g": 71,
+        "b": 51
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/User/Desktop/RAQUEL BEJARANO/3. Texturas/Madera/parota.jpg",
+        "x_scale": 19.68503937007874,
+        "y_scale": 39.37007874015748
+      }
+    },
+    {
+      "name": "*1",
+      "color": {
+        "r": 189,
+        "g": 167,
+        "b": 121
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/User/Desktop/RAQUEL BEJARANO/3. Texturas/Metales/champagne bronze.jpg",
+        "x_scale": 20.0,
+        "y_scale": 20.0
+      }
+    },
+    {
+      "name": "drizzle_receptor",
+      "color": {
+        "r": 28,
+        "g": 28,
+        "b": 28
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "vidro",
+      "color": {
+        "r": 128,
+        "g": 128,
+        "b": 128
+      },
+      "transparency": 0.040000000000000036,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[<Gold>]",
+      "color": {
+        "r": 173,
+        "g": 173,
+        "b": 173
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 1
+    },
+    {
+      "name": "Glass_Basic_01",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 0.25,
+      "colorized": false,
+      "colorize_type": 1
+    },
+    {
+      "name": "Glass_Basic_1",
+      "color": {
+        "r": 30,
+        "g": 24,
+        "b": 20
+      },
+      "transparency": 0.71,
+      "colorized": false,
+      "colorize_type": 1
+    },
+    {
+      "name": "Glass_Basic_2",
+      "color": {
+        "r": 132,
+        "g": 113,
+        "b": 57
+      },
+      "transparency": 0.85,
+      "colorized": false,
+      "colorize_type": 1
+    },
+    {
+      "name": "Image2",
+      "color": {
+        "r": 205,
+        "g": 205,
+        "b": 180
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/thais/AppData/Local/Temp/ChaosGroupTextureCache/98be148625f69f817c3b3d26ba7d6679.jpg",
+        "x_scale": 224.0,
+        "y_scale": 635.0
+      }
+    },
+    {
+      "name": "bottle_cap",
+      "color": {
+        "r": 41,
+        "g": 47,
+        "b": 46
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/thais/AppData/Local/Temp/ChaosGroupTextureCache/bfb50a1bc14c43bb84bdf3b39c4bece6.jpg",
+        "x_scale": 6.5,
+        "y_scale": 16.0
+      }
+    },
+    {
+      "name": "*2",
+      "color": {
+        "r": 81,
+        "g": 61,
+        "b": 48
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/User/Desktop/RAQUEL BEJARANO/3. Texturas/Madera/nogal.jpg",
+        "x_scale": 39.37007874015748,
+        "y_scale": 59.05511811023622
+      }
+    },
+    {
+      "name": "book_2_kem2",
+      "color": {
+        "r": 214,
+        "g": 214,
+        "b": 214
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\Descargas\\Decor shelf set 8 H&M\\Decor_shelf_set_hm_8\\book_2_2_kem.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "book_kem__4",
+      "color": {
+        "r": 202,
+        "g": 197,
+        "b": 186
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/00. BIBLIOTECA DE BLOQUES/CONVERTED BLOCKS/Decor shelf set 8 H&MSU_Textures/2860.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "book_2_kem3",
+      "color": {
+        "r": 221,
+        "g": 215,
+        "b": 206
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\Descargas\\Decor shelf set 8 H&M\\Decor_shelf_set_hm_8\\book_2_3_kem.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "book_4_kem1",
+      "color": {
+        "r": 180,
+        "g": 163,
+        "b": 137
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\Descargas\\Decor shelf set 8 H&M\\Decor_shelf_set_hm_8\\book_4_1_kem.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "book_kem",
+      "color": {
+        "r": 180,
+        "g": 172,
+        "b": 156
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/00. BIBLIOTECA DE BLOQUES/CONVERTED BLOCKS/Decor shelf set 8 H&MSU_Textures/3502.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~5",
+      "color": {
+        "r": 99,
+        "g": 105,
+        "b": 13
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\292\\DWF\\SimLabTempFile\\Texture 2.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~1",
+      "color": {
+        "r": 65,
+        "g": 79,
+        "b": 26
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\292\\DWF\\SimLabTempFile\\Texture 1.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "*3",
+      "color": {
+        "r": 145,
+        "g": 105,
+        "b": 79
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/User/Desktop/RAQUEL BEJARANO/3. Texturas/Ceramica/barro.jpg",
+        "x_scale": 9.84251968503937,
+        "y_scale": 19.68503937007874
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_1: KEUKEN",
+      "color": {
+        "r": 102,
+        "g": 68,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_decorations",
+      "color": {
+        "r": 102,
+        "g": 68,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_145678__book_4_k_Layer0_180_163_137_ds": {
+      "name": "book_4_k",
+      "definition_name": "book_4_k#1",
+      "layer": "Layer0",
+      "position_mm": [
+        165.79,
+        80.42,
+        89.58
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / book_4_k"
+    },
+    "mesh_1_ROOT__Component_145678__book_4_k_Layer0_180_172_156_ds": {
+      "name": "book_4_k",
+      "definition_name": "book_4_k#1",
+      "layer": "Layer0",
+      "position_mm": [
+        165.79,
+        80.42,
+        89.58
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / book_4_k"
+    },
+    "mesh_2_ROOT__Component_145678__olive_oil#2__oil#1_decorations": {
+      "name": "oil#1",
+      "definition_name": "oil#1",
+      "layer": "decorations",
+      "position_mm": [
+        281.44,
+        160.1,
+        1.26
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive_oil#2 / oil#1"
+    },
+    "mesh_3_ROOT__Component_145678__olive_oil#2__Component_62577_decorations_41_47_46_ss": {
+      "name": "Component_62577",
+      "definition_name": "Component#92",
+      "layer": "decorations",
+      "position_mm": [
+        289.59,
+        81.85,
+        206.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive_oil#2 / Component_62577"
+    },
+    "mesh_4_ROOT__Component_145678__olive_oil#2__Component_62577_decorations_102_68_0_ss": {
+      "name": "Component_62577",
+      "definition_name": "Component#92",
+      "layer": "decorations",
+      "position_mm": [
+        289.59,
+        81.85,
+        206.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive_oil#2 / Component_62577"
+    },
+    "mesh_5_ROOT__Component_145678__olive_oil#2__Component_62577__Component_57847_decorations": {
+      "name": "Component_57847",
+      "definition_name": "Component#90",
+      "layer": "decorations",
+      "position_mm": [
+        295.56,
+        93.49,
+        164.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive_oil#2 / Component_62577 / Component_57847"
+    },
+    "mesh_6_ROOT__Component_145678__olive_oil#2__Component_58380_decorations_128_128_128_ds": {
+      "name": "Component_58380",
+      "definition_name": "Component#88",
+      "layer": "decorations",
+      "position_mm": [
+        279.11,
+        71.37,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive_oil#2 / Component_58380"
+    },
+    "mesh_7_ROOT__Component_145678__olive_oil#2__Component_58380_decorations_205_205_180_ss": {
+      "name": "Component_58380",
+      "definition_name": "Component#88",
+      "layer": "decorations",
+      "position_mm": [
+        279.11,
+        71.37,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive_oil#2 / Component_58380"
+    },
+    "mesh_8_ROOT__Component_145678__olive_oil#2__Component_58380_decorations_128_128_128_ss": {
+      "name": "Component_58380",
+      "definition_name": "Component#88",
+      "layer": "decorations",
+      "position_mm": [
+        279.11,
+        71.37,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive_oil#2 / Component_58380"
+    },
+    "mesh_9_ROOT__Component_145678__olive_oil#2__Component_61706_decorations": {
+      "name": "Component_61706",
+      "definition_name": "Component#89",
+      "layer": "decorations",
+      "position_mm": [
+        292.35,
+        84.61,
+        222.29
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive_oil#2 / Component_61706"
+    },
+    "mesh_10_ROOT__Component_145678__Component_57448_Layer0_99_71_51_ss": {
+      "name": "Component_57448",
+      "definition_name": "Component#125",
+      "layer": "Layer0",
+      "position_mm": [
+        246.26,
+        138.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_57448"
+    },
+    "mesh_11_ROOT__Component_145678__Component_57448_Layer0_255_255_255_ss": {
+      "name": "Component_57448",
+      "definition_name": "Component#125",
+      "layer": "Layer0",
+      "position_mm": [
+        246.26,
+        138.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_57448"
+    },
+    "mesh_12_ROOT__Component_145678__Component_56305_Layer0_99_71_51_ss": {
+      "name": "Component_56305",
+      "definition_name": "Component#122",
+      "layer": "Layer0",
+      "position_mm": [
+        122.96,
+        157.99,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_56305"
+    },
+    "mesh_13_ROOT__Component_145678__Component_56305_Layer0_255_255_255_ss": {
+      "name": "Component_56305",
+      "definition_name": "Component#122",
+      "layer": "Layer0",
+      "position_mm": [
+        122.96,
+        157.99,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_56305"
+    },
+    "mesh_14_ROOT__Component_145678__olive+oil__olive_oil#1__oil_decorations_255_255_255_ss": {
+      "name": "oil",
+      "definition_name": "oil",
+      "layer": "decorations",
+      "position_mm": [
+        221.44,
+        160.1,
+        1.26
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive+oil / olive_oil#1 / oil"
+    },
+    "mesh_15_ROOT__Component_145678__olive+oil__olive_oil#1__oil_decorations_132_113_57_ss": {
+      "name": "oil",
+      "definition_name": "oil",
+      "layer": "decorations",
+      "position_mm": [
+        221.44,
+        160.1,
+        1.26
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive+oil / olive_oil#1 / oil"
+    },
+    "mesh_16_ROOT__Component_145678__olive+oil__olive_oil#1__Component_62577_decorations_41_47_46_ss": {
+      "name": "Component_62577",
+      "definition_name": "Component#92",
+      "layer": "decorations",
+      "position_mm": [
+        229.59,
+        81.85,
+        206.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive+oil / olive_oil#1 / Component_62577"
+    },
+    "mesh_17_ROOT__Component_145678__olive+oil__olive_oil#1__Component_62577_decorations_102_68_0_ss": {
+      "name": "Component_62577",
+      "definition_name": "Component#92",
+      "layer": "decorations",
+      "position_mm": [
+        229.59,
+        81.85,
+        206.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive+oil / olive_oil#1 / Component_62577"
+    },
+    "mesh_18_ROOT__Component_145678__olive+oil__olive_oil#1__Component_62577__Component_57847_decorations": {
+      "name": "Component_57847",
+      "definition_name": "Component#90",
+      "layer": "decorations",
+      "position_mm": [
+        235.56,
+        93.49,
+        164.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive+oil / olive_oil#1 / Component_62577 / Component_57847"
+    },
+    "mesh_19_ROOT__Component_145678__olive+oil__olive_oil#1__Component_58380_decorations_128_128_128_ds": {
+      "name": "Component_58380",
+      "definition_name": "Component#88",
+      "layer": "decorations",
+      "position_mm": [
+        219.11,
+        71.37,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive+oil / olive_oil#1 / Component_58380"
+    },
+    "mesh_20_ROOT__Component_145678__olive+oil__olive_oil#1__Component_58380_decorations_205_205_180_ss": {
+      "name": "Component_58380",
+      "definition_name": "Component#88",
+      "layer": "decorations",
+      "position_mm": [
+        219.11,
+        71.37,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive+oil / olive_oil#1 / Component_58380"
+    },
+    "mesh_21_ROOT__Component_145678__olive+oil__olive_oil#1__Component_58380_decorations_128_128_128_ss": {
+      "name": "Component_58380",
+      "definition_name": "Component#88",
+      "layer": "decorations",
+      "position_mm": [
+        219.11,
+        71.37,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive+oil / olive_oil#1 / Component_58380"
+    },
+    "mesh_22_ROOT__Component_145678__olive+oil__olive_oil#1__Component_61706_decorations": {
+      "name": "Component_61706",
+      "definition_name": "Component#89",
+      "layer": "decorations",
+      "position_mm": [
+        232.35,
+        84.61,
+        222.29
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / olive+oil / olive_oil#1 / Component_61706"
+    },
+    "mesh_23_ROOT__Component_145678__moulin_a_poivre_et_sel__Composant#6_1: KEUKEN_99_71_51_ds": {
+      "name": "Composant#6",
+      "definition_name": "Composant#6",
+      "layer": "1: KEUKEN",
+      "position_mm": [
+        377.73,
+        130.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / moulin a poivre et sel / Composant#6"
+    },
+    "mesh_24_ROOT__Component_145678__moulin_a_poivre_et_sel__Composant#6_1: KEUKEN_99_71_51_ss": {
+      "name": "Composant#6",
+      "definition_name": "Composant#6",
+      "layer": "1: KEUKEN",
+      "position_mm": [
+        377.73,
+        130.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / moulin a poivre et sel / Composant#6"
+    },
+    "mesh_25_ROOT__Component_145678__moulin_a_poivre_et_sel__Composant#6_1: KEUKEN_189_167_121_ss": {
+      "name": "Composant#6",
+      "definition_name": "Composant#6",
+      "layer": "1: KEUKEN",
+      "position_mm": [
+        377.73,
+        130.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / moulin a poivre et sel / Composant#6"
+    },
+    "mesh_26_ROOT__Component_145678__moulin_a_poivre_et_sel__Composant#6_1: KEUKEN_102_68_0_ss": {
+      "name": "Composant#6",
+      "definition_name": "Composant#6",
+      "layer": "1: KEUKEN",
+      "position_mm": [
+        377.73,
+        130.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / moulin a poivre et sel / Composant#6"
+    },
+    "mesh_27_ROOT__Component_145678__moulin_a_poivre_et_sel__Composant#6_1: KEUKEN_99_71_51_ds": {
+      "name": "Composant#6",
+      "definition_name": "Composant#6",
+      "layer": "1: KEUKEN",
+      "position_mm": [
+        373.69,
+        130.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / moulin a poivre et sel / Composant#6"
+    },
+    "mesh_28_ROOT__Component_145678__moulin_a_poivre_et_sel__Composant#6_1: KEUKEN_99_71_51_ss": {
+      "name": "Composant#6",
+      "definition_name": "Composant#6",
+      "layer": "1: KEUKEN",
+      "position_mm": [
+        373.69,
+        130.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / moulin a poivre et sel / Composant#6"
+    },
+    "mesh_29_ROOT__Component_145678__moulin_a_poivre_et_sel__Composant#6_1: KEUKEN_189_167_121_ss": {
+      "name": "Composant#6",
+      "definition_name": "Composant#6",
+      "layer": "1: KEUKEN",
+      "position_mm": [
+        373.69,
+        130.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / moulin a poivre et sel / Composant#6"
+    },
+    "mesh_30_ROOT__Component_145678__moulin_a_poivre_et_sel__Composant#6_1: KEUKEN_102_68_0_ss": {
+      "name": "Composant#6",
+      "definition_name": "Composant#6",
+      "layer": "1: KEUKEN",
+      "position_mm": [
+        373.69,
+        130.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / moulin a poivre et sel / Composant#6"
+    },
+    "mesh_31_ROOT__Component_145678__patas_tabla_Layer0_81_61_48_ss": {
+      "name": "patas tabla",
+      "definition_name": "patas tabla",
+      "layer": "Layer0",
+      "position_mm": [
+        420.0,
+        170.0,
+        -20.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / patas tabla"
+    },
+    "mesh_32_ROOT__Component_145678__patas_tabla_Layer0_255_255_255_ss": {
+      "name": "patas tabla",
+      "definition_name": "patas tabla",
+      "layer": "Layer0",
+      "position_mm": [
+        420.0,
+        170.0,
+        -20.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / patas tabla"
+    },
+    "mesh_33_ROOT__Component_145678__patas_tabla_Layer0_81_61_48_ss": {
+      "name": "patas tabla",
+      "definition_name": "patas tabla",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        170.0,
+        -20.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / patas tabla"
+    },
+    "mesh_34_ROOT__Component_145678__patas_tabla_Layer0_255_255_255_ss": {
+      "name": "patas tabla",
+      "definition_name": "patas tabla",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        170.0,
+        -20.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / patas tabla"
+    },
+    "mesh_35_ROOT__Component_145678__patas_tabla_Layer0_81_61_48_ss": {
+      "name": "patas tabla",
+      "definition_name": "patas tabla",
+      "layer": "Layer0",
+      "position_mm": [
+        420.0,
+        10.0,
+        -20.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / patas tabla"
+    },
+    "mesh_36_ROOT__Component_145678__patas_tabla_Layer0_255_255_255_ss": {
+      "name": "patas tabla",
+      "definition_name": "patas tabla",
+      "layer": "Layer0",
+      "position_mm": [
+        420.0,
+        10.0,
+        -20.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / patas tabla"
+    },
+    "mesh_37_ROOT__Component_145678__patas_tabla_Layer0_81_61_48_ss": {
+      "name": "patas tabla",
+      "definition_name": "patas tabla",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        10.0,
+        -20.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / patas tabla"
+    },
+    "mesh_38_ROOT__Component_145678__patas_tabla_Layer0_255_255_255_ss": {
+      "name": "patas tabla",
+      "definition_name": "patas tabla",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        10.0,
+        -20.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / patas tabla"
+    },
+    "mesh_39_ROOT__Component_145678__book_2_k131465_Layer0_221_215_206_ds": {
+      "name": "book_2_k131465",
+      "definition_name": "Group23#1",
+      "layer": "Layer0",
+      "position_mm": [
+        195.43,
+        81.42,
+        89.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / book_2_k131465"
+    },
+    "mesh_40_ROOT__Component_145678__book_2_k131465_Layer0_202_197_186_ds": {
+      "name": "book_2_k131465",
+      "definition_name": "Group23#1",
+      "layer": "Layer0",
+      "position_mm": [
+        195.43,
+        81.42,
+        89.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / book_2_k131465"
+    },
+    "mesh_41_ROOT__Component_145678__book_2_k155797_Layer0_214_214_214_ds": {
+      "name": "book_2_k155797",
+      "definition_name": "Group22",
+      "layer": "Layer0",
+      "position_mm": [
+        181.28,
+        81.42,
+        89.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / book_2_k155797"
+    },
+    "mesh_42_ROOT__Component_145678__book_2_k155797_Layer0_202_197_186_ds": {
+      "name": "book_2_k155797",
+      "definition_name": "Group22",
+      "layer": "Layer0",
+      "position_mm": [
+        181.28,
+        81.42,
+        89.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / book_2_k155797"
+    },
+    "mesh_43_ROOT__Component_145678__Component_132541__Plane299__Component_145673__3DGeom~31_Layer0": {
+      "name": "3DGeom~31",
+      "definition_name": "3DGeom~31_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        48.76,
+        124.18,
+        242.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_145673 / 3DGeom~31"
+    },
+    "mesh_44_ROOT__Component_145678__Component_132541__Plane299__Component_145675__3DGeom~32_Layer0": {
+      "name": "3DGeom~32",
+      "definition_name": "3DGeom~32_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        48.76,
+        124.18,
+        242.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_145675 / 3DGeom~32"
+    },
+    "mesh_45_ROOT__Component_145678__Component_132541__Plane299__Component_132509__3DGeom~33_Layer0_99_105_13_ds": {
+      "name": "3DGeom~33",
+      "definition_name": "3DGeom~33_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        48.76,
+        124.18,
+        242.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_132509 / 3DGeom~33"
+    },
+    "mesh_46_ROOT__Component_145678__Component_132541__Plane299__Component_132509__3DGeom~33_Layer0_99_105_13_ds": {
+      "name": "3DGeom~33",
+      "definition_name": "3DGeom~33_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        48.76,
+        124.18,
+        242.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_132509 / 3DGeom~33"
+    },
+    "mesh_47_ROOT__Component_145678__Component_132541__Plane299__Component_132511__3DGeom~31_Layer0": {
+      "name": "3DGeom~31",
+      "definition_name": "3DGeom~31_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        39.86,
+        30.74,
+        272.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_132511 / 3DGeom~31"
+    },
+    "mesh_48_ROOT__Component_145678__Component_132541__Plane299__Component_132513__3DGeom~32_Layer0": {
+      "name": "3DGeom~32",
+      "definition_name": "3DGeom~32_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        39.86,
+        30.74,
+        272.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_132513 / 3DGeom~32"
+    },
+    "mesh_49_ROOT__Component_145678__Component_132541__Plane299__Component_132509__3DGeom~33_Layer0_99_105_13_ds": {
+      "name": "3DGeom~33",
+      "definition_name": "3DGeom~33_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        39.86,
+        30.74,
+        272.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_132509 / 3DGeom~33"
+    },
+    "mesh_50_ROOT__Component_145678__Component_132541__Plane299__Component_132509__3DGeom~33_Layer0_99_105_13_ds": {
+      "name": "3DGeom~33",
+      "definition_name": "3DGeom~33_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        39.86,
+        30.74,
+        272.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_132509 / 3DGeom~33"
+    },
+    "mesh_51_ROOT__Component_145678__Component_132541__Plane299__Component_145673__3DGeom~31_Layer0": {
+      "name": "3DGeom~31",
+      "definition_name": "3DGeom~31_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        123.29,
+        132.61,
+        232.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_145673 / 3DGeom~31"
+    },
+    "mesh_52_ROOT__Component_145678__Component_132541__Plane299__Component_145675__3DGeom~32_Layer0": {
+      "name": "3DGeom~32",
+      "definition_name": "3DGeom~32_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        123.29,
+        132.61,
+        232.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_145675 / 3DGeom~32"
+    },
+    "mesh_53_ROOT__Component_145678__Component_132541__Plane299__Component_132509__3DGeom~33_Layer0_99_105_13_ds": {
+      "name": "3DGeom~33",
+      "definition_name": "3DGeom~33_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        123.29,
+        132.61,
+        232.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_132509 / 3DGeom~33"
+    },
+    "mesh_54_ROOT__Component_145678__Component_132541__Plane299__Component_132509__3DGeom~33_Layer0_99_105_13_ds": {
+      "name": "3DGeom~33",
+      "definition_name": "3DGeom~33_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        123.29,
+        132.61,
+        232.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Plane299 / Component_132509 / 3DGeom~33"
+    },
+    "mesh_55_ROOT__Component_145678__Component_132541__Component_145668_Layer0": {
+      "name": "Component_145668",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        88.56,
+        -30.32,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_132541 / Component_145668"
+    },
+    "mesh_56_ROOT__Component_145678__Component_57846_Layer0_81_61_48_ss": {
+      "name": "Component_57846",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        200.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_57846"
+    },
+    "mesh_57_ROOT__Component_145678__Component_57846_Layer0_99_71_51_ss": {
+      "name": "Component_57846",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        200.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_57846"
+    },
+    "mesh_58_ROOT__Component_145678__Component_57846_Layer0_81_61_48_ds": {
+      "name": "Component_57846",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        200.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_145678 / Component_57846"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_145678",
+        "definition_name": "Group#4",
+        "layer": "Layer0",
+        "position_mm": [
+          -31.74,
+          -0.0,
+          -35.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "book_4_k",
+            "definition_name": "book_4_k#1",
+            "layer": "Layer0",
+            "position_mm": [
+              165.79,
+              80.42,
+              89.58
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "olive_oil#2",
+            "definition_name": "olive_oil#2",
+            "layer": "decorations",
+            "position_mm": [
+              279.11,
+              71.37,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "oil#1",
+                "definition_name": "oil#1",
+                "layer": "decorations",
+                "position_mm": [
+                  281.44,
+                  160.1,
+                  1.26
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_62577",
+                "definition_name": "Component#92",
+                "layer": "decorations",
+                "position_mm": [
+                  289.59,
+                  81.85,
+                  206.54
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_57847",
+                    "definition_name": "Component#90",
+                    "layer": "decorations",
+                    "position_mm": [
+                      295.56,
+                      93.49,
+                      164.35
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Component_58380",
+                "definition_name": "Component#88",
+                "layer": "decorations",
+                "position_mm": [
+                  279.11,
+                  71.37,
+                  0.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_61706",
+                "definition_name": "Component#89",
+                "layer": "decorations",
+                "position_mm": [
+                  292.35,
+                  84.61,
+                  222.29
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_57448",
+            "definition_name": "Component#125",
+            "layer": "Layer0",
+            "position_mm": [
+              246.26,
+              138.0,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_56305",
+            "definition_name": "Component#122",
+            "layer": "Layer0",
+            "position_mm": [
+              122.96,
+              157.99,
+              -0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "olive+oil",
+            "definition_name": "olive+oil",
+            "layer": "decorations",
+            "position_mm": [
+              219.11,
+              71.37,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "olive_oil#1",
+                "definition_name": "olive_oil#1",
+                "layer": "decorations",
+                "position_mm": [
+                  219.11,
+                  71.37,
+                  0.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "oil",
+                    "definition_name": "oil",
+                    "layer": "decorations",
+                    "position_mm": [
+                      221.44,
+                      160.1,
+                      1.26
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_62577",
+                    "definition_name": "Component#92",
+                    "layer": "decorations",
+                    "position_mm": [
+                      229.59,
+                      81.85,
+                      206.54
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_57847",
+                        "definition_name": "Component#90",
+                        "layer": "decorations",
+                        "position_mm": [
+                          235.56,
+                          93.49,
+                          164.35
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_58380",
+                    "definition_name": "Component#88",
+                    "layer": "decorations",
+                    "position_mm": [
+                      219.11,
+                      71.37,
+                      0.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_61706",
+                    "definition_name": "Component#89",
+                    "layer": "decorations",
+                    "position_mm": [
+                      232.35,
+                      84.61,
+                      222.29
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "moulin a poivre et sel",
+            "definition_name": "moulin a poivre et sel",
+            "layer": "1: KEUKEN",
+            "position_mm": [
+              425.8,
+              118.87,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Composant#6",
+                "definition_name": "Composant#6",
+                "layer": "1: KEUKEN",
+                "position_mm": [
+                  377.73,
+                  130.08,
+                  0.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Composant#6",
+                "definition_name": "Composant#6",
+                "layer": "1: KEUKEN",
+                "position_mm": [
+                  373.69,
+                  130.08,
+                  0.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "patas tabla",
+            "definition_name": "patas tabla",
+            "layer": "Layer0",
+            "position_mm": [
+              420.0,
+              170.0,
+              -20.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "patas tabla",
+            "definition_name": "patas tabla",
+            "layer": "Layer0",
+            "position_mm": [
+              10.0,
+              170.0,
+              -20.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "patas tabla",
+            "definition_name": "patas tabla",
+            "layer": "Layer0",
+            "position_mm": [
+              420.0,
+              10.0,
+              -20.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "patas tabla",
+            "definition_name": "patas tabla",
+            "layer": "Layer0",
+            "position_mm": [
+              10.0,
+              10.0,
+              -20.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "book_2_k131465",
+            "definition_name": "Group23#1",
+            "layer": "Layer0",
+            "position_mm": [
+              195.43,
+              81.42,
+              89.74
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "book_2_k155797",
+            "definition_name": "Group22",
+            "layer": "Layer0",
+            "position_mm": [
+              181.28,
+              81.42,
+              89.74
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_132541",
+            "definition_name": "Group#2",
+            "layer": "Layer0",
+            "position_mm": [
+              -31.74,
+              0.0,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Plane299",
+                "definition_name": "Group99#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  110.86,
+                  -52.69,
+                  45.82
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_145673",
+                    "definition_name": "Group100#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      110.86,
+                      -52.69,
+                      45.82
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~31",
+                        "definition_name": "3DGeom~31_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          48.76,
+                          124.18,
+                          242.19
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_145675",
+                    "definition_name": "Group101#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      110.86,
+                      -52.69,
+                      45.82
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~32",
+                        "definition_name": "3DGeom~32_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          48.76,
+                          124.18,
+                          242.19
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_132509",
+                    "definition_name": "Group102#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      110.86,
+                      -52.69,
+                      45.82
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~33",
+                        "definition_name": "3DGeom~33_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          48.76,
+                          124.18,
+                          242.19
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Plane299",
+                "definition_name": "Group99#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  220.12,
+                  82.2,
+                  75.82
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_132511",
+                    "definition_name": "Group100#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      220.12,
+                      82.2,
+                      75.82
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~31",
+                        "definition_name": "3DGeom~31_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          39.86,
+                          30.74,
+                          272.19
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_132513",
+                    "definition_name": "Group101#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      220.12,
+                      82.2,
+                      75.82
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~32",
+                        "definition_name": "3DGeom~32_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          39.86,
+                          30.74,
+                          272.19
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_132509",
+                    "definition_name": "Group102#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      220.12,
+                      82.2,
+                      75.82
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~33",
+                        "definition_name": "3DGeom~33_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          39.86,
+                          30.74,
+                          272.19
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Plane299",
+                "definition_name": "Group99#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -63.94,
+                  42.55,
+                  57.62
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_145673",
+                    "definition_name": "Group100#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -63.94,
+                      42.55,
+                      57.62
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~31",
+                        "definition_name": "3DGeom~31_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          123.29,
+                          132.61,
+                          232.37
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_145675",
+                    "definition_name": "Group101#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -63.94,
+                      42.55,
+                      57.62
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~32",
+                        "definition_name": "3DGeom~32_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          123.29,
+                          132.61,
+                          232.37
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_132509",
+                    "definition_name": "Group102#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -63.94,
+                      42.55,
+                      57.62
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~33",
+                        "definition_name": "3DGeom~33_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          123.29,
+                          132.61,
+                          232.37
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Component_145668",
+                "definition_name": "Group#3",
+                "layer": "Layer0",
+                "position_mm": [
+                  88.56,
+                  -30.32,
+                  0.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_57846",
+            "definition_name": "Group#1",
+            "layer": "Layer0",
+            "position_mm": [
+              0.0,
+              200.0,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

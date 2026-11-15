@@ -1,0 +1,4756 @@
+{
+  "format_version": "1.0",
+  "source_file": "jaali_partition",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 12,
+  "total_meshes": 240,
+  "total_layers": 2,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    },
+    {
+      "name": "FURNITURE",
+      "color": {
+        "r": 0,
+        "g": 255,
+        "b": 255
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "FURNITURE": false
+  },
+  "materials": [
+    {
+      "name": "Stacy_Skin",
+      "color": {
+        "r": 210,
+        "g": 180,
+        "b": 140
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Stacy_Shirt",
+      "color": {
+        "r": 102,
+        "g": 102,
+        "b": 102
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Stacy_Shoe",
+      "color": {
+        "r": 230,
+        "g": 43,
+        "b": 44
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Stacy_Shoe_Laces_Sole",
+      "color": {
+        "r": 226,
+        "g": 226,
+        "b": 226
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Stacy_Hair",
+      "color": {
+        "r": 36,
+        "g": 19,
+        "b": 7
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Stacy_Pants",
+      "color": {
+        "r": 40,
+        "g": 58,
+        "b": 94
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Iron_Blurry_5cm",
+      "color": {
+        "r": 43,
+        "g": 43,
+        "b": 43
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Concrete_Reflective_B01_2m",
+      "color": {
+        "r": 124,
+        "g": 122,
+        "b": 120
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Program Files\\Chaos Group\\V-Ray\\V-Ray for SketchUp\\extension\\materials\\Concrete\\maps\\Concrete_B_Diff.jpg",
+        "x_scale": 120.0,
+        "y_scale": 120.0
+      }
+    },
+    {
+      "name": "*113",
+      "color": {
+        "r": 175,
+        "g": 85,
+        "b": 55
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "F:\\Running Projects\\Architects office ideas\\terracotta red 1.jpg",
+        "x_scale": 360.0,
+        "y_scale": 242.99999999999994
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_FURNITURE",
+      "color": {
+        "r": 0,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_2172_Layer0": {
+      "name": "Component_2172",
+      "definition_name": "Group#365",
+      "layer": "Layer0",
+      "position_mm": [
+        1020.34,
+        123.84,
+        38.1
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2172"
+    },
+    "mesh_1_ROOT__Component_2199__Component_2200_Layer0": {
+      "name": "Component_2200",
+      "definition_name": "Group#75",
+      "layer": "Layer0",
+      "position_mm": [
+        38.1,
+        73.04,
+        2275.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2200"
+    },
+    "mesh_2_ROOT__Component_2199__Component_2227_Layer0": {
+      "name": "Component_2227",
+      "definition_name": "Group#48",
+      "layer": "Layer0",
+      "position_mm": [
+        35.54,
+        73.04,
+        38.1
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2227"
+    },
+    "mesh_3_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        119.49,
+        1148.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_4_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        119.49,
+        1148.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_5_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        120.69,
+        1148.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_6_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        120.69,
+        1148.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_7_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        120.69,
+        1148.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_8_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        119.49,
+        718.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_9_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        119.49,
+        718.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_10_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        120.69,
+        718.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_11_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        120.69,
+        718.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_12_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        120.69,
+        718.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_13_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        1166.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_14_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        1166.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_15_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        1166.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_16_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        1166.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_17_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        119.49,
+        1372.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_18_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        119.49,
+        1372.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_19_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        120.69,
+        1372.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_20_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        120.69,
+        1372.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_21_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        120.69,
+        1372.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_22_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        733.64,
+        119.49,
+        495.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_23_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        733.64,
+        119.49,
+        495.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_24_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        733.64,
+        120.69,
+        495.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_25_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        733.64,
+        120.69,
+        495.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_26_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        733.64,
+        120.69,
+        495.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_27_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        119.49,
+        1147.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_28_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        119.49,
+        1147.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_29_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        1147.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_30_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        1147.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_31_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        1147.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_32_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        269.92,
+        119.49,
+        1147.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_33_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        269.92,
+        119.49,
+        1147.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_34_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        269.92,
+        120.69,
+        1147.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_35_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        269.92,
+        120.69,
+        1147.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_36_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        269.92,
+        120.69,
+        1147.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_37_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        1166.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_38_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        1166.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_39_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        1166.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_40_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        1166.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_41_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        119.49,
+        1371.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_42_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        119.49,
+        1371.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_43_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        1371.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_44_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        1371.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_45_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        1371.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_46_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        495.12
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_47_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        495.12
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_48_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        495.12
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_49_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        495.12
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_50_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        119.49,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_51_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        119.49,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_52_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        120.69,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_53_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        120.69,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_54_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        120.69,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_55_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        718.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_56_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        718.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_57_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        718.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_58_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        718.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_59_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_60_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_61_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_62_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_63_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        119.49,
+        1371.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_64_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        119.49,
+        1371.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_65_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        1371.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_66_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        1371.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_67_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        1371.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_68_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        119.49,
+        699.82
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_69_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        119.49,
+        699.82
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_70_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        699.82
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_71_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        699.82
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_72_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        699.82
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_73_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        119.49,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_74_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        119.49,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_75_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        120.69,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_76_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        120.69,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_77_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        120.69,
+        718.94
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_78_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        958.8,
+        119.49,
+        701.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_79_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        958.8,
+        119.49,
+        701.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_80_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.8,
+        120.69,
+        701.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_81_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.8,
+        120.69,
+        701.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_82_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.8,
+        120.69,
+        701.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_83_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        493.74,
+        119.49,
+        1147.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_84_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        493.74,
+        119.49,
+        1147.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_85_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        493.74,
+        120.69,
+        1147.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_86_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        493.74,
+        120.69,
+        1147.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_87_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        493.74,
+        120.69,
+        1147.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_88_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        511.31,
+        60.34,
+        942.68
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_89_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        511.31,
+        60.34,
+        942.68
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_90_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        511.31,
+        60.34,
+        942.68
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_91_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        511.31,
+        60.34,
+        942.68
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_92_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        119.49,
+        701.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_93_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        119.49,
+        701.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_94_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        120.69,
+        701.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_95_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        120.69,
+        701.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_96_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        120.69,
+        701.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_97_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        47.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_98_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        47.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_99_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        47.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_100_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        47.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_101_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        119.49,
+        253.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_102_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        119.49,
+        253.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_103_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        120.69,
+        253.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_104_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        120.69,
+        253.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_105_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        120.69,
+        253.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_106_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        47.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_107_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        47.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_108_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        47.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_109_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        47.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_110_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        119.49,
+        252.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_111_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        119.49,
+        252.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_112_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        252.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_113_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        252.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_114_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        252.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_115_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        119.49,
+        252.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_116_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        119.49,
+        252.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_117_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        252.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_118_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        252.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_119_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        252.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_120_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        958.8,
+        119.49,
+        1596.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_121_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        958.8,
+        119.49,
+        1596.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_122_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.8,
+        120.69,
+        1596.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_123_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.8,
+        120.69,
+        1596.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_124_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.8,
+        120.69,
+        1596.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_125_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        119.49,
+        1594.88
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_126_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        119.49,
+        1594.88
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_127_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        1594.88
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_128_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        1594.88
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_129_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        1594.88
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_130_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        119.49,
+        1596.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_131_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        119.49,
+        1596.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_132_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        120.69,
+        1596.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_133_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        120.69,
+        1596.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_134_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        120.69,
+        1596.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_135_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        119.49,
+        2043.85
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_136_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        119.49,
+        2043.85
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_137_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        120.69,
+        2043.85
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_138_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        120.69,
+        2043.85
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_139_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        120.69,
+        2043.85
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_140_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        511.31,
+        60.34,
+        1837.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_141_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        511.31,
+        60.34,
+        1837.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_142_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        511.31,
+        60.34,
+        1837.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_143_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        511.31,
+        60.34,
+        1837.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_144_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        1613.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_145_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        1613.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_146_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        1613.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_147_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        1613.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_148_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        2061.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_149_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        2061.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_150_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        2061.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_151_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        63.74,
+        60.34,
+        2061.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_152_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        269.92,
+        119.49,
+        2042.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_153_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        269.92,
+        119.49,
+        2042.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_154_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        269.92,
+        120.69,
+        2042.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_155_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        269.92,
+        120.69,
+        2042.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_156_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        269.92,
+        120.69,
+        2042.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_157_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        119.49,
+        2267.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_158_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        119.49,
+        2267.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_159_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        120.69,
+        2267.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_160_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        120.69,
+        2267.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_161_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        120.69,
+        2267.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_162_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        119.49,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_163_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        119.49,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_164_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        120.69,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_165_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        120.69,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_166_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        120.69,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_167_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        119.49,
+        2042.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_168_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        119.49,
+        2042.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_169_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        2042.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_170_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        2042.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_171_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        2042.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_172_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        1390.18
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_173_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        1390.18
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_174_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        1390.18
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_175_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.56,
+        60.34,
+        1390.18
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_176_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        119.49,
+        1613.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_177_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        119.49,
+        1613.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_178_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        120.69,
+        1613.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_179_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        120.69,
+        1613.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_180_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        120.69,
+        1613.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_181_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        119.49,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_182_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        119.49,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_183_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        120.69,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_184_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        120.69,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_185_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        509.9,
+        120.69,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_186_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.49,
+        60.34,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_187_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.49,
+        60.34,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_188_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.49,
+        60.34,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_189_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        287.49,
+        60.34,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_190_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        119.49,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_191_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        119.49,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_192_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        120.69,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_193_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        120.69,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_194_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        120.69,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_195_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        119.49,
+        2266.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_196_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        119.49,
+        2266.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_197_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        2266.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_198_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        2266.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_199_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        941.3,
+        120.69,
+        2266.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_200_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        119.49,
+        271.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_201_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        119.49,
+        271.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_202_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        120.69,
+        271.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_203_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        120.69,
+        271.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_204_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        957.39,
+        120.69,
+        271.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_205_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        733.64,
+        119.49,
+        1390.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_206_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        733.64,
+        119.49,
+        1390.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_207_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        733.64,
+        120.69,
+        1390.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_208_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        733.64,
+        120.69,
+        1390.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_209_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        733.64,
+        120.69,
+        1390.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_210_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        271.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_211_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        271.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_212_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        271.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_213_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        271.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_214_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        2061.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_215_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        2061.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_216_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        2061.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_217_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        958.94,
+        60.34,
+        2061.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_218_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_219_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_255_84_84_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_220_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_124_122_120_ss": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_221_ROOT__Component_2199__Component_2254__FOUR_PETAL#1__Component_2434_Layer0_175_85_55_ds": {
+      "name": "Component_2434",
+      "definition_name": "Group#64",
+      "layer": "Layer0",
+      "position_mm": [
+        735.05,
+        60.34,
+        1614.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / FOUR PETAL#1 / Component_2434"
+    },
+    "mesh_222_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        493.74,
+        119.49,
+        2042.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_223_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        493.74,
+        119.49,
+        2042.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_224_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        493.74,
+        120.69,
+        2042.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_225_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        493.74,
+        120.69,
+        2042.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_226_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        493.74,
+        120.69,
+        2042.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_227_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        119.49,
+        2266.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_228_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        119.49,
+        2266.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_229_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        2266.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_230_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        2266.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_231_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        717.48,
+        120.69,
+        2266.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_232_ROOT__Component_2199__Component_2254__CAMP_Layer0_124_122_120_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        119.49,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_233_ROOT__Component_2199__Component_2254__CAMP_Layer0_255_84_84_ss": {
+      "name": "CAMP",
+      "definition_name": "CAMP",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        119.49,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP"
+    },
+    "mesh_234_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_175_85_55_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        120.69,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_235_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_255_84_84_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        120.69,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_236_ROOT__Component_2199__Component_2254__CAMP__Component_2256_Layer0_124_122_120_ss": {
+      "name": "Component_2256",
+      "definition_name": "Group#66",
+      "layer": "Layer0",
+      "position_mm": [
+        62.33,
+        120.69,
+        271.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2199 / Component_2254 / CAMP / Component_2256"
+    },
+    "mesh_237_ROOT__Component_5395_Layer0": {
+      "name": "Component_5395",
+      "definition_name": "Group#89",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        123.84,
+        2115.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_5395"
+    },
+    "mesh_238_ROOT__Component_2172_Layer0": {
+      "name": "Component_2172",
+      "definition_name": "Group#365",
+      "layer": "Layer0",
+      "position_mm": [
+        1020.34,
+        123.84,
+        2322.91
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2172"
+    },
+    "mesh_239_ROOT__Component_5422_Layer0": {
+      "name": "Component_5422",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1173.16,
+        123.84,
+        1994.72
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_5422"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_2172",
+        "definition_name": "Group#365",
+        "layer": "Layer0",
+        "position_mm": [
+          1020.34,
+          123.84,
+          38.1
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Component_2199",
+        "definition_name": "Group#214",
+        "layer": "Layer0",
+        "position_mm": [
+          35.54,
+          0.0,
+          38.03
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Component_2200",
+            "definition_name": "Group#75",
+            "layer": "Layer0",
+            "position_mm": [
+              38.1,
+              73.04,
+              2275.71
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_2227",
+            "definition_name": "Group#48",
+            "layer": "Layer0",
+            "position_mm": [
+              35.54,
+              73.04,
+              38.1
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_2254",
+            "definition_name": "Group#68",
+            "layer": "Layer0",
+            "position_mm": [
+              54.15,
+              0.0,
+              38.03
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  958.94,
+                  119.49,
+                  1148.79
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      958.94,
+                      120.69,
+                      1148.79
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  509.9,
+                  119.49,
+                  718.87
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      509.9,
+                      120.69,
+                      718.87
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  63.74,
+                  60.34,
+                  1166.43
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      63.74,
+                      60.34,
+                      1166.43
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  287.56,
+                  119.49,
+                  1372.54
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      287.56,
+                      120.69,
+                      1372.54
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  733.64,
+                  119.49,
+                  495.19
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      733.64,
+                      120.69,
+                      495.19
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  941.3,
+                  119.49,
+                  1147.31
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      941.3,
+                      120.69,
+                      1147.31
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  269.92,
+                  119.49,
+                  1147.38
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      269.92,
+                      120.69,
+                      1147.38
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  958.94,
+                  60.34,
+                  1166.43
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      958.94,
+                      60.34,
+                      1166.43
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  941.3,
+                  119.49,
+                  1371.13
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      941.3,
+                      120.69,
+                      1371.13
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  287.56,
+                  60.34,
+                  495.12
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      287.56,
+                      60.34,
+                      495.12
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  957.39,
+                  119.49,
+                  718.94
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      957.39,
+                      120.69,
+                      718.94
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  287.56,
+                  60.34,
+                  718.87
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      287.56,
+                      60.34,
+                      718.87
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  735.05,
+                  60.34,
+                  718.94
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      735.05,
+                      60.34,
+                      718.94
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  717.48,
+                  119.49,
+                  1371.13
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      717.48,
+                      120.69,
+                      1371.13
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  717.48,
+                  119.49,
+                  699.82
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      717.48,
+                      120.69,
+                      699.82
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  62.33,
+                  119.49,
+                  718.94
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      62.33,
+                      120.69,
+                      718.94
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  958.8,
+                  119.49,
+                  701.3
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      958.8,
+                      120.69,
+                      701.3
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  493.74,
+                  119.49,
+                  1147.31
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      493.74,
+                      120.69,
+                      1147.31
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  511.31,
+                  60.34,
+                  942.68
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      511.31,
+                      60.34,
+                      942.68
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  63.74,
+                  119.49,
+                  701.3
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      63.74,
+                      120.69,
+                      701.3
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  63.74,
+                  60.34,
+                  47.62
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      63.74,
+                      60.34,
+                      47.62
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  287.56,
+                  119.49,
+                  253.73
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      287.56,
+                      120.69,
+                      253.73
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  958.94,
+                  60.34,
+                  47.62
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      958.94,
+                      60.34,
+                      47.62
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  941.3,
+                  119.49,
+                  252.32
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      941.3,
+                      120.69,
+                      252.32
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  717.48,
+                  119.49,
+                  252.32
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      717.48,
+                      120.69,
+                      252.32
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  958.8,
+                  119.49,
+                  1596.36
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      958.8,
+                      120.69,
+                      1596.36
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  717.48,
+                  119.49,
+                  1594.88
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      717.48,
+                      120.69,
+                      1594.88
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  63.74,
+                  119.49,
+                  1596.36
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      63.74,
+                      120.69,
+                      1596.36
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  958.94,
+                  119.49,
+                  2043.85
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      958.94,
+                      120.69,
+                      2043.85
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  511.31,
+                  60.34,
+                  1837.74
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      511.31,
+                      60.34,
+                      1837.74
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  287.56,
+                  60.34,
+                  1613.93
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      287.56,
+                      60.34,
+                      1613.93
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  63.74,
+                  60.34,
+                  2061.49
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      63.74,
+                      60.34,
+                      2061.49
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  269.92,
+                  119.49,
+                  2042.44
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      269.92,
+                      120.69,
+                      2042.44
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  287.56,
+                  119.49,
+                  2267.6
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      287.56,
+                      120.69,
+                      2267.6
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  62.33,
+                  119.49,
+                  1614.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      62.33,
+                      120.69,
+                      1614.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  941.3,
+                  119.49,
+                  2042.37
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      941.3,
+                      120.69,
+                      2042.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  287.56,
+                  60.34,
+                  1390.18
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      287.56,
+                      60.34,
+                      1390.18
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  509.9,
+                  119.49,
+                  1613.93
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      509.9,
+                      120.69,
+                      1613.93
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  509.9,
+                  119.49,
+                  271.37
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      509.9,
+                      120.69,
+                      271.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  287.49,
+                  60.34,
+                  271.37
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      287.49,
+                      60.34,
+                      271.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  957.39,
+                  119.49,
+                  1614.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      957.39,
+                      120.69,
+                      1614.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  941.3,
+                  119.49,
+                  2266.19
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      941.3,
+                      120.69,
+                      2266.19
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  957.39,
+                  119.49,
+                  271.44
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      957.39,
+                      120.69,
+                      271.44
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  733.64,
+                  119.49,
+                  1390.25
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      733.64,
+                      120.69,
+                      1390.25
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  735.05,
+                  60.34,
+                  271.44
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      735.05,
+                      60.34,
+                      271.44
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  958.94,
+                  60.34,
+                  2061.49
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      958.94,
+                      60.34,
+                      2061.49
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FOUR PETAL#1",
+                "definition_name": "FOUR PETAL#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  735.05,
+                  60.34,
+                  1614.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2434",
+                    "definition_name": "Group#64",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      735.05,
+                      60.34,
+                      1614.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  493.74,
+                  119.49,
+                  2042.37
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      493.74,
+                      120.69,
+                      2042.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  717.48,
+                  119.49,
+                  2266.19
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      717.48,
+                      120.69,
+                      2266.19
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CAMP",
+                "definition_name": "CAMP",
+                "layer": "Layer0",
+                "position_mm": [
+                  62.33,
+                  119.49,
+                  271.37
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_2256",
+                    "definition_name": "Group#66",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      62.33,
+                      120.69,
+                      271.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Component_5395",
+        "definition_name": "Group#89",
+        "layer": "Layer0",
+        "position_mm": [
+          0.0,
+          123.84,
+          2115.35
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Component_2172",
+        "definition_name": "Group#365",
+        "layer": "Layer0",
+        "position_mm": [
+          1020.34,
+          123.84,
+          2322.91
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Component_5422",
+        "definition_name": "Group#1",
+        "layer": "Layer0",
+        "position_mm": [
+          1173.16,
+          123.84,
+          1994.72
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

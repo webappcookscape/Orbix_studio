@@ -1,0 +1,627 @@
+{
+  "format_version": "1.0",
+  "source_file": "cuttlery_dishrack",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 8,
+  "total_meshes": 22,
+  "total_layers": 4,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 153,
+        "b": 204
+      }
+    },
+    {
+      "name": "Light switches",
+      "color": {
+        "r": 0,
+        "g": 102,
+        "b": 153
+      }
+    },
+    {
+      "name": "Plants",
+      "color": {
+        "r": 102,
+        "g": 68,
+        "b": 0
+      }
+    },
+    {
+      "name": "FormFonts",
+      "color": {
+        "r": 0,
+        "g": 153,
+        "b": 135
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "Light switches": false,
+    "Plants": false,
+    "FormFonts": false
+  },
+  "materials": [
+    {
+      "name": "Kitchen Plate Porcelain_A01_White_10cm",
+      "color": {
+        "r": 208,
+        "g": 208,
+        "b": 208
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Program Files\\Chaos Group\\V-Ray\\V-Ray for SketchUp\\extension\\materials\\Ceramic & Porcelain\\maps\\Porcelain_B_Bump_01.jpg",
+        "x_scale": 3.937007874015748,
+        "y_scale": 3.937007874015748
+      }
+    },
+    {
+      "name": "Kitchen Cutlery Plastic_Simple_Shiny_Gray",
+      "color": {
+        "r": 163,
+        "g": 163,
+        "b": 163
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Kitchen Cutlery Silver_Polished",
+      "color": {
+        "r": 71,
+        "g": 67,
+        "b": 64
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Kitchen Cutlery Holder Plastic_Simple",
+      "color": {
+        "r": 237,
+        "g": 237,
+        "b": 237
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Kitchen Cutlery Holder White Plastic_Simple_Shiny_Gray#1",
+      "color": {
+        "r": 226,
+        "g": 225,
+        "b": 221
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 153,
+        "b": 204
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Light switches",
+      "color": {
+        "r": 0,
+        "g": 102,
+        "b": 153
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Plants",
+      "color": {
+        "r": 102,
+        "g": 68,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_FormFonts",
+      "color": {
+        "r": 0,
+        "g": 153,
+        "b": 135
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_9280485_FormFonts_226_225_221_ss": {
+      "name": "Component_9280485",
+      "definition_name": "Component#65",
+      "layer": "FormFonts",
+      "position_mm": [
+        0.0,
+        1.38,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_9280485"
+    },
+    "mesh_1_ROOT__Component_9280485_FormFonts_0_153_135_ss": {
+      "name": "Component_9280485",
+      "definition_name": "Component#65",
+      "layer": "FormFonts",
+      "position_mm": [
+        0.0,
+        1.38,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_9280485"
+    },
+    "mesh_2_ROOT__FF_ceramic_large_dish_orange_FMH_FormFonts": {
+      "name": "FF_ceramic_large_dish_orange_FMH",
+      "definition_name": "FF_ceramic_large_dish_orange_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        281.75,
+        134.52,
+        280.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_ceramic_large_dish_orange_FMH"
+    },
+    "mesh_3_ROOT__Component_9280487_FormFonts": {
+      "name": "Component_9280487",
+      "definition_name": "Component#64",
+      "layer": "FormFonts",
+      "position_mm": [
+        12.39,
+        8.15,
+        34.67
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_9280487"
+    },
+    "mesh_4_ROOT__FF_flatware_wood_grip_placed_FMH__FF_dining_knife_FMH_FormFonts_163_163_163_ds": {
+      "name": "FF_dining_knife_FMH",
+      "definition_name": "FF_dining_knife_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        25.9,
+        100.91,
+        37.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_flatware_wood_grip_placed_FMH / FF_dining_knife_FMH"
+    },
+    "mesh_5_ROOT__FF_flatware_wood_grip_placed_FMH__FF_dining_knife_FMH_FormFonts_71_67_64_ds": {
+      "name": "FF_dining_knife_FMH",
+      "definition_name": "FF_dining_knife_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        25.9,
+        100.91,
+        37.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_flatware_wood_grip_placed_FMH / FF_dining_knife_FMH"
+    },
+    "mesh_6_ROOT__FF_flatware_wood_grip_placed_FMH__FF_dining_spoon_FMH_FormFonts_71_67_64_ds": {
+      "name": "FF_dining_spoon_FMH",
+      "definition_name": "FF_dining_spoon_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        66.77,
+        103.39,
+        34.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_flatware_wood_grip_placed_FMH / FF_dining_spoon_FMH"
+    },
+    "mesh_7_ROOT__FF_flatware_wood_grip_placed_FMH__FF_dining_spoon_FMH_FormFonts_163_163_163_ds": {
+      "name": "FF_dining_spoon_FMH",
+      "definition_name": "FF_dining_spoon_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        66.77,
+        103.39,
+        34.31
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_flatware_wood_grip_placed_FMH / FF_dining_spoon_FMH"
+    },
+    "mesh_8_ROOT__FF_flatware_wood_grip_placed_FMH__FF_dining_fork_FMH_FormFonts_71_67_64_ds": {
+      "name": "FF_dining_fork_FMH",
+      "definition_name": "FF_dining_fork_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        55.0,
+        130.79,
+        77.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_flatware_wood_grip_placed_FMH / FF_dining_fork_FMH"
+    },
+    "mesh_9_ROOT__FF_flatware_wood_grip_placed_FMH__FF_dining_fork_FMH_FormFonts_163_163_163_ds": {
+      "name": "FF_dining_fork_FMH",
+      "definition_name": "FF_dining_fork_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        55.0,
+        130.79,
+        77.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_flatware_wood_grip_placed_FMH / FF_dining_fork_FMH"
+    },
+    "mesh_10_ROOT__FF_dining_knife_FMH_FormFonts_163_163_163_ds": {
+      "name": "FF_dining_knife_FMH",
+      "definition_name": "FF_dining_knife_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        23.31,
+        54.38,
+        44.23
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_dining_knife_FMH"
+    },
+    "mesh_11_ROOT__FF_dining_knife_FMH_FormFonts_71_67_64_ds": {
+      "name": "FF_dining_knife_FMH",
+      "definition_name": "FF_dining_knife_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        23.31,
+        54.38,
+        44.23
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_dining_knife_FMH"
+    },
+    "mesh_12_ROOT__FF_ceramic_large_dish_orange_FMH_FormFonts": {
+      "name": "FF_ceramic_large_dish_orange_FMH",
+      "definition_name": "FF_ceramic_large_dish_orange_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        308.69,
+        134.52,
+        280.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_ceramic_large_dish_orange_FMH"
+    },
+    "mesh_13_ROOT__FF_dining_spoon_FMH_FormFonts_71_67_64_ds": {
+      "name": "FF_dining_spoon_FMH",
+      "definition_name": "FF_dining_spoon_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        60.12,
+        65.96,
+        38.28
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_dining_spoon_FMH"
+    },
+    "mesh_14_ROOT__FF_dining_spoon_FMH_FormFonts_163_163_163_ds": {
+      "name": "FF_dining_spoon_FMH",
+      "definition_name": "FF_dining_spoon_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        60.12,
+        65.96,
+        38.28
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_dining_spoon_FMH"
+    },
+    "mesh_15_ROOT__FF_dining_fork_FMH_FormFonts_71_67_64_ds": {
+      "name": "FF_dining_fork_FMH",
+      "definition_name": "FF_dining_fork_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        58.27,
+        35.99,
+        81.83
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_dining_fork_FMH"
+    },
+    "mesh_16_ROOT__FF_dining_fork_FMH_FormFonts_163_163_163_ds": {
+      "name": "FF_dining_fork_FMH",
+      "definition_name": "FF_dining_fork_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        58.27,
+        35.99,
+        81.83
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_dining_fork_FMH"
+    },
+    "mesh_17_ROOT__FF_ceramic_large_dish_orange_FMH_FormFonts": {
+      "name": "FF_ceramic_large_dish_orange_FMH",
+      "definition_name": "FF_ceramic_large_dish_orange_FMH",
+      "layer": "FormFonts",
+      "position_mm": [
+        262.02,
+        134.52,
+        280.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / FF_ceramic_large_dish_orange_FMH"
+    },
+    "mesh_18_ROOT__Component_9280484_FormFonts_226_225_221_ds": {
+      "name": "Component_9280484",
+      "definition_name": "Group#119",
+      "layer": "FormFonts",
+      "position_mm": [
+        10.14,
+        406.85,
+        1.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_9280484"
+    },
+    "mesh_19_ROOT__Component_9280484_FormFonts_226_225_221_ss": {
+      "name": "Component_9280484",
+      "definition_name": "Group#119",
+      "layer": "FormFonts",
+      "position_mm": [
+        10.14,
+        406.85,
+        1.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_9280484"
+    },
+    "mesh_20_ROOT__Component_9280484_FormFonts_0_153_135_ss": {
+      "name": "Component_9280484",
+      "definition_name": "Group#119",
+      "layer": "FormFonts",
+      "position_mm": [
+        10.14,
+        406.85,
+        1.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_9280484"
+    },
+    "mesh_21_ROOT__Component_9280484_FormFonts_0_153_135_ds": {
+      "name": "Component_9280484",
+      "definition_name": "Group#119",
+      "layer": "FormFonts",
+      "position_mm": [
+        10.14,
+        406.85,
+        1.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_9280484"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_9280485",
+        "definition_name": "Component#65",
+        "layer": "Plants",
+        "position_mm": [
+          0.0,
+          1.38,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "FF_ceramic_large_dish_orange_FMH",
+        "definition_name": "FF_ceramic_large_dish_orange_FMH",
+        "layer": "FormFonts",
+        "position_mm": [
+          281.75,
+          134.52,
+          280.43
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Component_9280487",
+        "definition_name": "Component#64",
+        "layer": "Plants",
+        "position_mm": [
+          12.39,
+          8.15,
+          34.67
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "FF_flatware_wood_grip_placed_FMH",
+        "definition_name": "FF_flatware_wood_grip_placed_FMH",
+        "layer": "FormFonts",
+        "position_mm": [
+          35.97,
+          91.85,
+          38.13
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "FF_dining_knife_FMH",
+            "definition_name": "FF_dining_knife_FMH",
+            "layer": "FormFonts",
+            "position_mm": [
+              25.9,
+              100.91,
+              37.24
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "FF_dining_spoon_FMH",
+            "definition_name": "FF_dining_spoon_FMH",
+            "layer": "FormFonts",
+            "position_mm": [
+              66.77,
+              103.39,
+              34.31
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "FF_dining_fork_FMH",
+            "definition_name": "FF_dining_fork_FMH",
+            "layer": "FormFonts",
+            "position_mm": [
+              55.0,
+              130.79,
+              77.99
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "FF_dining_knife_FMH",
+        "definition_name": "FF_dining_knife_FMH",
+        "layer": "FormFonts",
+        "position_mm": [
+          23.31,
+          54.38,
+          44.23
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "FF_ceramic_large_dish_orange_FMH",
+        "definition_name": "FF_ceramic_large_dish_orange_FMH",
+        "layer": "FormFonts",
+        "position_mm": [
+          308.69,
+          134.52,
+          280.43
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "FF_dining_spoon_FMH",
+        "definition_name": "FF_dining_spoon_FMH",
+        "layer": "FormFonts",
+        "position_mm": [
+          60.12,
+          65.96,
+          38.28
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "FF_dining_fork_FMH",
+        "definition_name": "FF_dining_fork_FMH",
+        "layer": "FormFonts",
+        "position_mm": [
+          58.27,
+          35.99,
+          81.83
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "FF_ceramic_large_dish_orange_FMH",
+        "definition_name": "FF_ceramic_large_dish_orange_FMH",
+        "layer": "FormFonts",
+        "position_mm": [
+          262.02,
+          134.52,
+          280.43
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Component_9280484",
+        "definition_name": "Group#119",
+        "layer": "Plants",
+        "position_mm": [
+          10.14,
+          406.85,
+          1.62
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

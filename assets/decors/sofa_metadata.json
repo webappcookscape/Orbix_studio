@@ -1,0 +1,1628 @@
+{
+  "format_version": "1.0",
+  "source_file": "sofa",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 28,
+  "total_meshes": 54,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "Laura_Skin",
+      "color": {
+        "r": 210,
+        "g": 184,
+        "b": 168
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Laura_Pants",
+      "color": {
+        "r": 40,
+        "g": 61,
+        "b": 76
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Laura_Shirt",
+      "color": {
+        "r": 165,
+        "g": 29,
+        "b": 37
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Laura_Shoes",
+      "color": {
+        "r": 147,
+        "g": 103,
+        "b": 74
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Laura_Shirt2",
+      "color": {
+        "r": 87,
+        "g": 18,
+        "b": 22
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Laura_Belt",
+      "color": {
+        "r": 95,
+        "g": 75,
+        "b": 62
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Laura_Hair",
+      "color": {
+        "r": 160,
+        "g": 135,
+        "b": 94
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Laura_Glasses",
+      "color": {
+        "r": 100,
+        "g": 102,
+        "b": 120
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color M07]",
+      "color": {
+        "r": 58,
+        "g": 58,
+        "b": 58
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*92",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color_003]",
+      "color": {
+        "r": 170,
+        "g": 170,
+        "b": 170
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*91",
+      "color": {
+        "r": 215,
+        "g": 183,
+        "b": 130
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "C:\\_DATA\\Ľubica\\živnosť\\2021\\MARIÁN MECHURA, MARTINA GREGOROVÁ\\MATERIÁLY\\124_light wood fine texture-seamless.jpg",
+        "x_scale": 11.811023622047244,
+        "y_scale": 31.496062992125985
+      }
+    },
+    {
+      "name": "*5",
+      "color": {
+        "r": 221,
+        "g": 199,
+        "b": 163
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "C:\\_DATA\\Ľubica\\živnosť\\2021\\MARIÁN MECHURA, MARTINA GREGOROVÁ\\MATERIÁLY\\124_light wood fine texture-seamless.jpg",
+        "x_scale": 11.811023622047244,
+        "y_scale": 31.496062992125985
+      }
+    },
+    {
+      "name": "*49",
+      "color": {
+        "r": 236,
+        "g": 229,
+        "b": 212
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\_DATA\\Ľubica\\živnosť\\2021\\MARIÁN MECHURA, MARTINA GREGOROVÁ\\MATERIÁLY\\79_brushed canvas fabric texture-seamless.jpg",
+        "x_scale": 11.811023622047244,
+        "y_scale": 11.811023622047244
+      }
+    },
+    {
+      "name": "*36",
+      "color": {
+        "r": 246,
+        "g": 231,
+        "b": 166
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\_DATA\\Ľubica\\živnosť\\2021\\MARIÁN MECHURA, MARTINA GREGOROVÁ\\MATERIÁLY\\20_dobby fabric texture-seamless.jpg",
+        "x_scale": 3.937007874015748,
+        "y_scale": 3.937007874015748
+      }
+    },
+    {
+      "name": "*69",
+      "color": {
+        "r": 206,
+        "g": 206,
+        "b": 206
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "C:\\_DATA\\Ľubica\\živnosť\\2021\\MARIÁN MECHURA, MARTINA GREGOROVÁ\\MATERIÁLY\\vankus1.jpg",
+        "x_scale": 11.811023622047244,
+        "y_scale": 7.867726598073004
+      }
+    },
+    {
+      "name": "Material~28",
+      "color": {
+        "r": 201,
+        "g": 201,
+        "b": 200
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/PHUONG~1/AppData/Local/Temp/ChaosGroupTextureCache/59801caa09ee96613d7eea52275e5703.jpeg",
+        "x_scale": 0.3937007874015748,
+        "y_scale": 0.3937007874015748
+      }
+    },
+    {
+      "name": "*75",
+      "color": {
+        "r": 191,
+        "g": 208,
+        "b": 178
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "C:\\_DATA\\Ľubica\\živnosť\\2021\\MARIÁN MECHURA, MARTINA GREGOROVÁ\\MATERIÁLY\\20_dobby fabric texture-seamless.jpg",
+        "x_scale": 9.84251968503937,
+        "y_scale": 9.84251968503937
+      }
+    },
+    {
+      "name": "Natuzzi 1",
+      "color": {
+        "r": 48,
+        "g": 48,
+        "b": 48
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\Documents\\SketchUp\\3DW\\Natuzzi\\textures\\SOFTCOVER\\jpeg\\78016603.jpg",
+        "x_scale": 5.905511811023622,
+        "y_scale": 5.905511811023622
+      }
+    },
+    {
+      "name": "*80",
+      "color": {
+        "r": 247,
+        "g": 247,
+        "b": 247
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "C:\\_DATA\\Ľubica\\živnosť\\2021\\MARIÁN MECHURA, MARTINA GREGOROVÁ\\MATERIÁLY\\20_dobby fabric texture-seamless.jpg",
+        "x_scale": 9.84251968503937,
+        "y_scale": 9.84251968503937
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_27742__Component_27743_Layer0_191_208_178_ss": {
+      "name": "Component_27743",
+      "definition_name": "Group#142",
+      "layer": "Layer0",
+      "position_mm": [
+        2691.14,
+        2351.28,
+        495.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_27743"
+    },
+    "mesh_1_ROOT__Component_27742__Component_27743_Layer0_201_201_200_ss": {
+      "name": "Component_27743",
+      "definition_name": "Group#142",
+      "layer": "Layer0",
+      "position_mm": [
+        2691.14,
+        2351.28,
+        495.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_27743"
+    },
+    "mesh_2_ROOT__Component_27742__Component_42848_Layer0_206_206_206_ss": {
+      "name": "Component_42848",
+      "definition_name": "Group#437",
+      "layer": "Layer0",
+      "position_mm": [
+        3364.27,
+        2070.35,
+        453.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_42848"
+    },
+    "mesh_3_ROOT__Component_27742__Component_42848_Layer0_201_201_200_ss": {
+      "name": "Component_42848",
+      "definition_name": "Group#437",
+      "layer": "Layer0",
+      "position_mm": [
+        3364.27,
+        2070.35,
+        453.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_42848"
+    },
+    "mesh_4_ROOT__Component_27742__Component_57953_Layer0_206_206_206_ss": {
+      "name": "Component_57953",
+      "definition_name": "Group#522",
+      "layer": "Layer0",
+      "position_mm": [
+        1580.4,
+        2215.47,
+        456.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_57953"
+    },
+    "mesh_5_ROOT__Component_27742__Component_57953_Layer0_201_201_200_ss": {
+      "name": "Component_57953",
+      "definition_name": "Group#522",
+      "layer": "Layer0",
+      "position_mm": [
+        1580.4,
+        2215.47,
+        456.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_57953"
+    },
+    "mesh_6_ROOT__Component_27742__Component_27743_Layer0_191_208_178_ss": {
+      "name": "Component_27743",
+      "definition_name": "Group#142",
+      "layer": "Layer0",
+      "position_mm": [
+        690.92,
+        2161.24,
+        501.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_27743"
+    },
+    "mesh_7_ROOT__Component_27742__Component_27743_Layer0_201_201_200_ss": {
+      "name": "Component_27743",
+      "definition_name": "Group#142",
+      "layer": "Layer0",
+      "position_mm": [
+        690.92,
+        2161.24,
+        501.32
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_27743"
+    },
+    "mesh_8_ROOT__Component_27742__Component_73058__Component_73059_Layer0": {
+      "name": "Component_73059",
+      "definition_name": "Group#348",
+      "layer": "Layer0",
+      "position_mm": [
+        1225.89,
+        2033.36,
+        395.92
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_73058 / Component_73059"
+    },
+    "mesh_9_ROOT__Component_27742__Component_73058__Component_84820_Layer0": {
+      "name": "Component_84820",
+      "definition_name": "Group#349",
+      "layer": "Layer0",
+      "position_mm": [
+        1650.45,
+        2033.36,
+        395.92
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_73058 / Component_84820"
+    },
+    "mesh_10_ROOT__Component_27742__Component_76453_Layer0_236_229_212_ss": {
+      "name": "Component_76453",
+      "definition_name": "Group#350",
+      "layer": "Layer0",
+      "position_mm": [
+        793.91,
+        1458.75,
+        142.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_76453"
+    },
+    "mesh_11_ROOT__Component_27742__Component_76453_Layer0_255_84_84_ss": {
+      "name": "Component_76453",
+      "definition_name": "Group#350",
+      "layer": "Layer0",
+      "position_mm": [
+        793.91,
+        1458.75,
+        142.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_76453"
+    },
+    "mesh_12_ROOT__Component_27742__Component_78804_Layer0_236_229_212_ss": {
+      "name": "Component_78804",
+      "definition_name": "Group#351",
+      "layer": "Layer0",
+      "position_mm": [
+        3475.23,
+        620.6,
+        142.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_78804"
+    },
+    "mesh_13_ROOT__Component_27742__Component_78804_Layer0_255_84_84_ss": {
+      "name": "Component_78804",
+      "definition_name": "Group#351",
+      "layer": "Layer0",
+      "position_mm": [
+        3475.23,
+        620.6,
+        142.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_78804"
+    },
+    "mesh_14_ROOT__Component_27742__Component_81032__Component_81033_Layer0": {
+      "name": "Component_81033",
+      "definition_name": "Group#328",
+      "layer": "Layer0",
+      "position_mm": [
+        810.35,
+        2102.82,
+        254.2
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_81032 / Component_81033"
+    },
+    "mesh_15_ROOT__Component_27742__Component_81032__Component_82077_Layer0": {
+      "name": "Component_82077",
+      "definition_name": "Group#327",
+      "layer": "Layer0",
+      "position_mm": [
+        1225.89,
+        2102.82,
+        254.2
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_81032 / Component_82077"
+    },
+    "mesh_16_ROOT__Component_27742__Component_83123__Component_83124_Layer0": {
+      "name": "Component_83124",
+      "definition_name": "Group#399",
+      "layer": "Layer0",
+      "position_mm": [
+        2071.1,
+        2034.31,
+        400.59
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_83123 / Component_83124"
+    },
+    "mesh_17_ROOT__Component_27742__Component_83123__Component_84820_Layer0": {
+      "name": "Component_84820",
+      "definition_name": "Group#349",
+      "layer": "Layer0",
+      "position_mm": [
+        2508.26,
+        2034.31,
+        400.59
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_83123 / Component_84820"
+    },
+    "mesh_18_ROOT__Component_27742__Component_81032__Component_81033_Layer0": {
+      "name": "Component_81033",
+      "definition_name": "Group#328",
+      "layer": "Layer0",
+      "position_mm": [
+        1643.23,
+        2103.86,
+        253.92
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_81032 / Component_81033"
+    },
+    "mesh_19_ROOT__Component_27742__Component_81032__Component_82077_Layer0": {
+      "name": "Component_82077",
+      "definition_name": "Group#327",
+      "layer": "Layer0",
+      "position_mm": [
+        2071.1,
+        2103.86,
+        253.92
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_81032 / Component_82077"
+    },
+    "mesh_20_ROOT__Component_27742__Component_81032__Component_81033_Layer0": {
+      "name": "Component_81033",
+      "definition_name": "Group#328",
+      "layer": "Layer0",
+      "position_mm": [
+        2495.7,
+        2104.04,
+        247.97
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_81032 / Component_81033"
+    },
+    "mesh_21_ROOT__Component_27742__Component_81032__Component_82077_Layer0": {
+      "name": "Component_82077",
+      "definition_name": "Group#327",
+      "layer": "Layer0",
+      "position_mm": [
+        2884.97,
+        2104.04,
+        247.97
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_81032 / Component_82077"
+    },
+    "mesh_22_ROOT__Component_27742__Component_83123__Component_83124_Layer0": {
+      "name": "Component_83124",
+      "definition_name": "Group#399",
+      "layer": "Layer0",
+      "position_mm": [
+        2891.11,
+        2034.47,
+        390.83
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_83123 / Component_83124"
+    },
+    "mesh_23_ROOT__Component_27742__Component_83123__Component_84820_Layer0": {
+      "name": "Component_84820",
+      "definition_name": "Group#349",
+      "layer": "Layer0",
+      "position_mm": [
+        3281.52,
+        2034.47,
+        390.83
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_83123 / Component_84820"
+    },
+    "mesh_24_ROOT__Component_27742__Component_81032__Component_81033_Layer0": {
+      "name": "Component_81033",
+      "definition_name": "Group#328",
+      "layer": "Layer0",
+      "position_mm": [
+        2492.79,
+        1445.24,
+        247.97
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_81032 / Component_81033"
+    },
+    "mesh_25_ROOT__Component_27742__Component_81032__Component_82077_Layer0": {
+      "name": "Component_82077",
+      "definition_name": "Group#327",
+      "layer": "Layer0",
+      "position_mm": [
+        2982.78,
+        1445.24,
+        247.97
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_81032 / Component_82077"
+    },
+    "mesh_26_ROOT__Component_27742__Component_86518_Layer0_236_229_212_ss": {
+      "name": "Component_86518",
+      "definition_name": "Group#386",
+      "layer": "Layer0",
+      "position_mm": [
+        780.96,
+        2185.05,
+        146.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_86518"
+    },
+    "mesh_27_ROOT__Component_27742__Component_86518_Layer0_255_84_84_ss": {
+      "name": "Component_86518",
+      "definition_name": "Group#386",
+      "layer": "Layer0",
+      "position_mm": [
+        780.96,
+        2185.05,
+        146.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_86518"
+    },
+    "mesh_28_ROOT__Component_27742__Component_86518__Component_96190_Layer0_236_229_212_ss": {
+      "name": "Component_96190",
+      "definition_name": "Group#275",
+      "layer": "Layer0",
+      "position_mm": [
+        799.31,
+        2185.69,
+        154.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_86518 / Component_96190"
+    },
+    "mesh_29_ROOT__Component_27742__Component_86518__Component_96190_Layer0_255_84_84_ss": {
+      "name": "Component_96190",
+      "definition_name": "Group#275",
+      "layer": "Layer0",
+      "position_mm": [
+        799.31,
+        2185.69,
+        154.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_86518 / Component_96190"
+    },
+    "mesh_30_ROOT__Component_27742__Component_89214_Layer0_48_48_48_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        565.7,
+        2305.51,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_31_ROOT__Component_27742__Component_89214_Layer0_255_84_84_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        565.7,
+        2305.51,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_32_ROOT__Component_27742__Component_96189_Layer0_236_229_212_ss": {
+      "name": "Component_96189",
+      "definition_name": "Group#281",
+      "layer": "Layer0",
+      "position_mm": [
+        2484.9,
+        2191.46,
+        145.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_96189"
+    },
+    "mesh_33_ROOT__Component_27742__Component_96189_Layer0_255_84_84_ss": {
+      "name": "Component_96189",
+      "definition_name": "Group#281",
+      "layer": "Layer0",
+      "position_mm": [
+        2484.9,
+        2191.46,
+        145.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_96189"
+    },
+    "mesh_34_ROOT__Component_27742__Component_96189__Component_96190_Layer0_236_229_212_ss": {
+      "name": "Component_96190",
+      "definition_name": "Group#275",
+      "layer": "Layer0",
+      "position_mm": [
+        2493.0,
+        2192.1,
+        153.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_96189 / Component_96190"
+    },
+    "mesh_35_ROOT__Component_27742__Component_96189__Component_96190_Layer0_255_84_84_ss": {
+      "name": "Component_96190",
+      "definition_name": "Group#275",
+      "layer": "Layer0",
+      "position_mm": [
+        2493.0,
+        2192.1,
+        153.47
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_96189 / Component_96190"
+    },
+    "mesh_36_ROOT__Component_27742__Component_98885__Component_98886_Layer0": {
+      "name": "Component_98886",
+      "definition_name": "Group#510",
+      "layer": "Layer0",
+      "position_mm": [
+        806.33,
+        1463.63,
+        146.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_98885 / Component_98886"
+    },
+    "mesh_37_ROOT__Component_27742__Component_98885__Component_99565_Layer0": {
+      "name": "Component_99565",
+      "definition_name": "Group#513",
+      "layer": "Layer0",
+      "position_mm": [
+        806.86,
+        1454.45,
+        140.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_98885 / Component_99565"
+    },
+    "mesh_38_ROOT__Component_27742__Component_98885__Component_98886_Layer0": {
+      "name": "Component_98886",
+      "definition_name": "Group#510",
+      "layer": "Layer0",
+      "position_mm": [
+        3233.3,
+        1454.19,
+        146.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_98885 / Component_98886"
+    },
+    "mesh_39_ROOT__Component_27742__Component_98885__Component_99565_Layer0": {
+      "name": "Component_99565",
+      "definition_name": "Group#513",
+      "layer": "Layer0",
+      "position_mm": [
+        3232.78,
+        1445.01,
+        140.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_98885 / Component_99565"
+    },
+    "mesh_40_ROOT__Component_27742__Component_89214_Layer0_48_48_48_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        573.22,
+        1463.36,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_41_ROOT__Component_27742__Component_89214_Layer0_255_84_84_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        573.22,
+        1463.36,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_42_ROOT__Component_27742__Component_89214_Layer0_48_48_48_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        2536.36,
+        623.56,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_43_ROOT__Component_27742__Component_89214_Layer0_255_84_84_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        2536.36,
+        623.56,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_44_ROOT__Component_27742__Component_89214_Layer0_48_48_48_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        3459.62,
+        629.06,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_45_ROOT__Component_27742__Component_89214_Layer0_255_84_84_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        3459.62,
+        629.06,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_46_ROOT__Component_27742__Component_89214_Layer0_48_48_48_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        3467.98,
+        2296.51,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_47_ROOT__Component_27742__Component_89214_Layer0_255_84_84_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        3467.98,
+        2296.51,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_48_ROOT__Component_27742__Component_89214_Layer0_48_48_48_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        2495.59,
+        2298.57,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_49_ROOT__Component_27742__Component_89214_Layer0_255_84_84_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        2495.59,
+        2298.57,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_50_ROOT__Component_27742__Component_89214_Layer0_48_48_48_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        2547.01,
+        1487.81,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_51_ROOT__Component_27742__Component_89214_Layer0_255_84_84_ss": {
+      "name": "Component_89214",
+      "definition_name": "Group#464",
+      "layer": "Layer0",
+      "position_mm": [
+        2547.01,
+        1487.81,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_89214"
+    },
+    "mesh_52_ROOT__Component_27742__Component_101583_Layer0_247_247_247_ss": {
+      "name": "Component_101583",
+      "definition_name": "Group#410",
+      "layer": "Layer0",
+      "position_mm": [
+        1877.65,
+        2342.03,
+        455.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_101583"
+    },
+    "mesh_53_ROOT__Component_27742__Component_101583_Layer0_201_201_200_ss": {
+      "name": "Component_101583",
+      "definition_name": "Group#410",
+      "layer": "Layer0",
+      "position_mm": [
+        1877.65,
+        2342.03,
+        455.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_27742 / Component_101583"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_27742",
+        "definition_name": "Group#447",
+        "layer": "Layer0",
+        "position_mm": [
+          712.57,
+          2333.04,
+          -6.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Component_27743",
+            "definition_name": "Group#142",
+            "layer": "Layer0",
+            "position_mm": [
+              2691.14,
+              2351.28,
+              495.74
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_42848",
+            "definition_name": "Group#437",
+            "layer": "Layer0",
+            "position_mm": [
+              3364.27,
+              2070.35,
+              453.54
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_57953",
+            "definition_name": "Group#522",
+            "layer": "Layer0",
+            "position_mm": [
+              1580.4,
+              2215.47,
+              456.19
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_27743",
+            "definition_name": "Group#142",
+            "layer": "Layer0",
+            "position_mm": [
+              690.92,
+              2161.24,
+              501.32
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_73058",
+            "definition_name": "Group#335",
+            "layer": "Layer0",
+            "position_mm": [
+              1650.45,
+              2033.36,
+              395.92
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_73059",
+                "definition_name": "Group#348",
+                "layer": "Layer0",
+                "position_mm": [
+                  1225.89,
+                  2033.36,
+                  395.92
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_84820",
+                "definition_name": "Group#349",
+                "layer": "Layer0",
+                "position_mm": [
+                  1650.45,
+                  2033.36,
+                  395.92
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_76453",
+            "definition_name": "Group#350",
+            "layer": "Layer0",
+            "position_mm": [
+              793.91,
+              1458.75,
+              142.25
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_78804",
+            "definition_name": "Group#351",
+            "layer": "Layer0",
+            "position_mm": [
+              3475.23,
+              620.6,
+              142.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_81032",
+            "definition_name": "Group#336",
+            "layer": "Layer0",
+            "position_mm": [
+              810.35,
+              2102.82,
+              254.2
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_81033",
+                "definition_name": "Group#328",
+                "layer": "Layer0",
+                "position_mm": [
+                  810.35,
+                  2102.82,
+                  254.2
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_82077",
+                "definition_name": "Group#327",
+                "layer": "Layer0",
+                "position_mm": [
+                  1225.89,
+                  2102.82,
+                  254.2
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_83123",
+            "definition_name": "Group#397",
+            "layer": "Layer0",
+            "position_mm": [
+              2508.26,
+              2034.31,
+              400.59
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_83124",
+                "definition_name": "Group#399",
+                "layer": "Layer0",
+                "position_mm": [
+                  2071.1,
+                  2034.31,
+                  400.59
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_84820",
+                "definition_name": "Group#349",
+                "layer": "Layer0",
+                "position_mm": [
+                  2508.26,
+                  2034.31,
+                  400.59
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_81032",
+            "definition_name": "Group#336",
+            "layer": "Layer0",
+            "position_mm": [
+              1643.23,
+              2103.86,
+              253.92
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_81033",
+                "definition_name": "Group#328",
+                "layer": "Layer0",
+                "position_mm": [
+                  1643.23,
+                  2103.86,
+                  253.92
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_82077",
+                "definition_name": "Group#327",
+                "layer": "Layer0",
+                "position_mm": [
+                  2071.1,
+                  2103.86,
+                  253.92
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_81032",
+            "definition_name": "Group#336",
+            "layer": "Layer0",
+            "position_mm": [
+              2495.7,
+              2104.04,
+              247.97
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_81033",
+                "definition_name": "Group#328",
+                "layer": "Layer0",
+                "position_mm": [
+                  2495.7,
+                  2104.04,
+                  247.97
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_82077",
+                "definition_name": "Group#327",
+                "layer": "Layer0",
+                "position_mm": [
+                  2884.97,
+                  2104.04,
+                  247.97
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_83123",
+            "definition_name": "Group#397",
+            "layer": "Layer0",
+            "position_mm": [
+              3281.52,
+              2034.47,
+              390.83
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_83124",
+                "definition_name": "Group#399",
+                "layer": "Layer0",
+                "position_mm": [
+                  2891.11,
+                  2034.47,
+                  390.83
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_84820",
+                "definition_name": "Group#349",
+                "layer": "Layer0",
+                "position_mm": [
+                  3281.52,
+                  2034.47,
+                  390.83
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_81032",
+            "definition_name": "Group#336",
+            "layer": "Layer0",
+            "position_mm": [
+              2492.79,
+              1445.24,
+              247.97
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_81033",
+                "definition_name": "Group#328",
+                "layer": "Layer0",
+                "position_mm": [
+                  2492.79,
+                  1445.24,
+                  247.97
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_82077",
+                "definition_name": "Group#327",
+                "layer": "Layer0",
+                "position_mm": [
+                  2982.78,
+                  1445.24,
+                  247.97
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_86518",
+            "definition_name": "Group#386",
+            "layer": "Layer0",
+            "position_mm": [
+              780.96,
+              2185.05,
+              146.49
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_96190",
+                "definition_name": "Group#275",
+                "layer": "Layer0",
+                "position_mm": [
+                  799.31,
+                  2185.69,
+                  154.55
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_89214",
+            "definition_name": "Group#464",
+            "layer": "Layer0",
+            "position_mm": [
+              565.7,
+              2305.51,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_96189",
+            "definition_name": "Group#281",
+            "layer": "Layer0",
+            "position_mm": [
+              2484.9,
+              2191.46,
+              145.41
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_96190",
+                "definition_name": "Group#275",
+                "layer": "Layer0",
+                "position_mm": [
+                  2493.0,
+                  2192.1,
+                  153.47
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_98885",
+            "definition_name": "Group#343",
+            "layer": "Layer0",
+            "position_mm": [
+              558.22,
+              2317.7,
+              140.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_98886",
+                "definition_name": "Group#510",
+                "layer": "Layer0",
+                "position_mm": [
+                  806.33,
+                  1463.63,
+                  146.73
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_99565",
+                "definition_name": "Group#513",
+                "layer": "Layer0",
+                "position_mm": [
+                  806.86,
+                  1454.45,
+                  140.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_98885",
+            "definition_name": "Group#343",
+            "layer": "Layer0",
+            "position_mm": [
+              3481.42,
+              2308.26,
+              140.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_98886",
+                "definition_name": "Group#510",
+                "layer": "Layer0",
+                "position_mm": [
+                  3233.3,
+                  1454.19,
+                  146.73
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Component_99565",
+                "definition_name": "Group#513",
+                "layer": "Layer0",
+                "position_mm": [
+                  3232.78,
+                  1445.01,
+                  140.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_89214",
+            "definition_name": "Group#464",
+            "layer": "Layer0",
+            "position_mm": [
+              573.22,
+              1463.36,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_89214",
+            "definition_name": "Group#464",
+            "layer": "Layer0",
+            "position_mm": [
+              2536.36,
+              623.56,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_89214",
+            "definition_name": "Group#464",
+            "layer": "Layer0",
+            "position_mm": [
+              3459.62,
+              629.06,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_89214",
+            "definition_name": "Group#464",
+            "layer": "Layer0",
+            "position_mm": [
+              3467.98,
+              2296.51,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_89214",
+            "definition_name": "Group#464",
+            "layer": "Layer0",
+            "position_mm": [
+              2495.59,
+              2298.57,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_89214",
+            "definition_name": "Group#464",
+            "layer": "Layer0",
+            "position_mm": [
+              2547.01,
+              1487.81,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_101583",
+            "definition_name": "Group#410",
+            "layer": "Layer0",
+            "position_mm": [
+              1877.65,
+              2342.03,
+              455.55
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

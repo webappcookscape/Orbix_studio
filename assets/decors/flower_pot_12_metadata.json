@@ -1,0 +1,206 @@
+{
+  "format_version": "1.0",
+  "source_file": "flower_pot_12",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.339}",
+  "total_definitions": 3,
+  "total_meshes": 4,
+  "total_layers": 2,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    },
+    {
+      "name": "Layer_1",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "Layer_1": false
+  },
+  "materials": [
+    {
+      "name": "<auto>",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "73ac69d1426945da5c62d44aa1",
+      "color": {
+        "r": 223,
+        "g": 223,
+        "b": 217
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\Modeling_Rendering\\All\\3D_models\\My 3D Warehouse models\\Slike za modele\\73ac69d1426945da5c62d44aa8815716.png",
+        "x_scale": 89.7811926357067,
+        "y_scale": 100.39322853823863
+      }
+    },
+    {
+      "name": "73ac69d1426945da5c62d44aa8815716",
+      "color": {
+        "r": 227,
+        "g": 227,
+        "b": 222
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\Modeling_Rendering\\All\\3D_models\\My 3D Warehouse models\\Slike za modele\\73ac69d1426945da5c62d44aa8815716.jpg",
+        "x_scale": 93.33976235770976,
+        "y_scale": 153.41482217304423
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer_1",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Plant__plant_04.dxf_Layer0": {
+      "name": "plant 04.dxf",
+      "definition_name": "plant 04.dxf",
+      "layer": "Layer0",
+      "position_mm": [
+        -869.42,
+        -492.84,
+        1108.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Plant / plant 04.dxf"
+    },
+    "mesh_1_ROOT__Base_Layer0_227_227_222_ss": {
+      "name": "Base",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -327.92,
+        -315.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Base"
+    },
+    "mesh_2_ROOT__Base_Layer0_255_84_84_ss": {
+      "name": "Base",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -327.92,
+        -315.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Base"
+    },
+    "mesh_3_ROOT__Base_Layer0_255_84_84_ds": {
+      "name": "Base",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -327.92,
+        -315.08,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Base"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Plant",
+        "definition_name": "Plant",
+        "layer": "Layer0",
+        "position_mm": [
+          21.87,
+          8.82,
+          1105.86
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "plant 04.dxf",
+            "definition_name": "plant 04.dxf",
+            "layer": "Layer0",
+            "position_mm": [
+              -869.42,
+              -492.84,
+              1108.05
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Base",
+        "definition_name": "Group#1",
+        "layer": "Layer0",
+        "position_mm": [
+          -327.92,
+          -315.08,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

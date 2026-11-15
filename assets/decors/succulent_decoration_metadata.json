@@ -1,0 +1,919 @@
+{
+  "format_version": "1.0",
+  "source_file": "succulent_decoration",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 14,
+  "total_meshes": 32,
+  "total_layers": 2,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    },
+    {
+      "name": "1 furniture",
+      "color": {
+        "r": 153,
+        "g": 0,
+        "b": 255
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "1 furniture": false
+  },
+  "materials": [
+    {
+      "name": "Sophie_Skin",
+      "color": {
+        "r": 181,
+        "g": 151,
+        "b": 108
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Sophie_Shirt_Red",
+      "color": {
+        "r": 100,
+        "g": 11,
+        "b": 21
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Sophie_Shoes2",
+      "color": {
+        "r": 35,
+        "g": 35,
+        "b": 35
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Sophie_Shirt_Gray",
+      "color": {
+        "r": 96,
+        "g": 96,
+        "b": 96
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Sophie_Skirt",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Sophie_Hair",
+      "color": {
+        "r": 7,
+        "g": 3,
+        "b": 2
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Sophie_Shoes",
+      "color": {
+        "r": 51,
+        "g": 45,
+        "b": 40
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Sophie_Shirt_Blue",
+      "color": {
+        "r": 52,
+        "g": 73,
+        "b": 104
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Screen shot 2013-05-15 at 17.48.48",
+      "color": {
+        "r": 140,
+        "g": 96,
+        "b": 63
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "/Users/macuser/Desktop/Screen shot 2013-05-15 at 17.48.48.png",
+        "x_scale": 0.18493773291504073,
+        "y_scale": 0.17014271428183747
+      }
+    },
+    {
+      "name": "[Color_H01]1",
+      "color": {
+        "r": 0,
+        "g": 165,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*188",
+      "color": {
+        "r": 51,
+        "g": 51,
+        "b": 51
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Region capture 44",
+      "color": {
+        "r": 216,
+        "g": 216,
+        "b": 216
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "/Users/macuser/Desktop/Region capture 10.png",
+        "x_scale": 7.401574803149599,
+        "y_scale": 7.401574803149599
+      }
+    },
+    {
+      "name": "Image19",
+      "color": {
+        "r": 206,
+        "g": 204,
+        "b": 199
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\ZERO\\Desktop\\ccc2.png",
+        "x_scale": 303.0,
+        "y_scale": 303.0
+      }
+    },
+    {
+      "name": "Image18",
+      "color": {
+        "r": 187,
+        "g": 184,
+        "b": 175
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\ZERO\\Desktop\\cccc.png",
+        "x_scale": 303.0,
+        "y_scale": 303.0
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_1 furniture",
+      "color": {
+        "r": 153,
+        "g": 0,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_953__Component_954__Component_7134__Component_7135_Layer0_0_165_255_ss": {
+      "name": "Component_7135",
+      "definition_name": "Group#1340",
+      "layer": "Layer0",
+      "position_mm": [
+        1006.98,
+        1115.72,
+        486.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_7134 / Component_7135"
+    },
+    "mesh_1_ROOT__Component_953__Component_954__Component_7134__Component_7135_Layer0_140_96_63_ss": {
+      "name": "Component_7135",
+      "definition_name": "Group#1340",
+      "layer": "Layer0",
+      "position_mm": [
+        1006.98,
+        1115.72,
+        486.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_7134 / Component_7135"
+    },
+    "mesh_2_ROOT__Component_953__Component_954__Component_7134__Component_7135__Component_71_Layer0_140_96_63_ss": {
+      "name": "Component_7136",
+      "definition_name": "Group#1338",
+      "layer": "Layer0",
+      "position_mm": [
+        1012.37,
+        1137.12,
+        500.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_7134 / Component_7135 / Component_7136"
+    },
+    "mesh_3_ROOT__Component_953__Component_954__Component_7134__Component_7135__Component_71_Layer0_0_165_255_ss": {
+      "name": "Component_7136",
+      "definition_name": "Group#1338",
+      "layer": "Layer0",
+      "position_mm": [
+        1012.37,
+        1137.12,
+        500.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_7134 / Component_7135 / Component_7136"
+    },
+    "mesh_4_ROOT__Component_953__Component_954__Component_7134__Component_9321_Layer0_0_165_255_ss": {
+      "name": "Component_9321",
+      "definition_name": "Group#1339",
+      "layer": "Layer0",
+      "position_mm": [
+        1345.38,
+        1115.72,
+        486.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_7134 / Component_9321"
+    },
+    "mesh_5_ROOT__Component_953__Component_954__Component_7134__Component_9321_Layer0_140_96_63_ss": {
+      "name": "Component_9321",
+      "definition_name": "Group#1339",
+      "layer": "Layer0",
+      "position_mm": [
+        1345.38,
+        1115.72,
+        486.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_7134 / Component_9321"
+    },
+    "mesh_6_ROOT__Component_953__Component_954__Component_7134__Component_9321_Layer0_0_165_255_ds": {
+      "name": "Component_9321",
+      "definition_name": "Group#1339",
+      "layer": "Layer0",
+      "position_mm": [
+        1345.38,
+        1115.72,
+        486.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_7134 / Component_9321"
+    },
+    "mesh_7_ROOT__Component_953__Component_954__Component_7134__Component_9321__Component_93_Layer0_140_96_63_ss": {
+      "name": "Component_9322",
+      "definition_name": "Group#1337",
+      "layer": "Layer0",
+      "position_mm": [
+        1339.99,
+        1137.12,
+        500.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_7134 / Component_9321 / Component_9322"
+    },
+    "mesh_8_ROOT__Component_953__Component_954__Component_7134__Component_9321__Component_93_Layer0_0_165_255_ss": {
+      "name": "Component_9322",
+      "definition_name": "Group#1337",
+      "layer": "Layer0",
+      "position_mm": [
+        1339.99,
+        1137.12,
+        500.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_7134 / Component_9321 / Component_9322"
+    },
+    "mesh_9_ROOT__Component_953__Component_954__Component_5330_1 furniture_51_51_51_ss": {
+      "name": "Component_5330",
+      "definition_name": "Group#1343",
+      "layer": "1 furniture",
+      "position_mm": [
+        1401.11,
+        1094.51,
+        108.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_5330"
+    },
+    "mesh_10_ROOT__Component_953__Component_954__Component_5330_1 furniture_153_0_255_ss": {
+      "name": "Component_5330",
+      "definition_name": "Group#1343",
+      "layer": "1 furniture",
+      "position_mm": [
+        1401.11,
+        1094.51,
+        108.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_5330"
+    },
+    "mesh_11_ROOT__Component_953__Component_954__Component_5330_1 furniture_216_216_216_ss": {
+      "name": "Component_5330",
+      "definition_name": "Group#1343",
+      "layer": "1 furniture",
+      "position_mm": [
+        1401.11,
+        1094.51,
+        108.73
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_5330"
+    },
+    "mesh_12_ROOT__Component_953__Component_954__Component_5330__Image#17_1 furniture": {
+      "name": "Image#17",
+      "definition_name": "Image#17",
+      "layer": "1 furniture",
+      "position_mm": [
+        956.04,
+        1119.51,
+        108.29
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_5330 / Image#17"
+    },
+    "mesh_13_ROOT__Component_953__Component_954__Component_11818_Layer0_51_51_51_ds": {
+      "name": "Component_11818",
+      "definition_name": "Group#1342",
+      "layer": "Layer0",
+      "position_mm": [
+        1183.11,
+        1104.91,
+        766.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_11818"
+    },
+    "mesh_14_ROOT__Component_953__Component_954__Component_11818_Layer0_51_51_51_ss": {
+      "name": "Component_11818",
+      "definition_name": "Group#1342",
+      "layer": "Layer0",
+      "position_mm": [
+        1183.11,
+        1104.91,
+        766.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_11818"
+    },
+    "mesh_15_ROOT__Component_953__Component_954__Component_11818_Layer0_255_84_84_ss": {
+      "name": "Component_11818",
+      "definition_name": "Group#1342",
+      "layer": "Layer0",
+      "position_mm": [
+        1183.11,
+        1104.91,
+        766.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_954 / Component_11818"
+    },
+    "mesh_16_ROOT__Component_953__Component_7133__Component_7134__Component_7135_Layer0_0_165_255_ss": {
+      "name": "Component_7135",
+      "definition_name": "Group#1340",
+      "layer": "Layer0",
+      "position_mm": [
+        611.69,
+        1128.79,
+        249.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_7134 / Component_7135"
+    },
+    "mesh_17_ROOT__Component_953__Component_7133__Component_7134__Component_7135_Layer0_140_96_63_ss": {
+      "name": "Component_7135",
+      "definition_name": "Group#1340",
+      "layer": "Layer0",
+      "position_mm": [
+        611.69,
+        1128.79,
+        249.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_7134 / Component_7135"
+    },
+    "mesh_18_ROOT__Component_953__Component_7133__Component_7134__Component_7135__Component_7_Layer0_140_96_63_ss": {
+      "name": "Component_7136",
+      "definition_name": "Group#1338",
+      "layer": "Layer0",
+      "position_mm": [
+        615.24,
+        1142.92,
+        258.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_7134 / Component_7135 / Component_7136"
+    },
+    "mesh_19_ROOT__Component_953__Component_7133__Component_7134__Component_7135__Component_7_Layer0_0_165_255_ss": {
+      "name": "Component_7136",
+      "definition_name": "Group#1338",
+      "layer": "Layer0",
+      "position_mm": [
+        615.24,
+        1142.92,
+        258.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_7134 / Component_7135 / Component_7136"
+    },
+    "mesh_20_ROOT__Component_953__Component_7133__Component_7134__Component_9321_Layer0_0_165_255_ss": {
+      "name": "Component_9321",
+      "definition_name": "Group#1339",
+      "layer": "Layer0",
+      "position_mm": [
+        835.03,
+        1128.79,
+        249.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_7134 / Component_9321"
+    },
+    "mesh_21_ROOT__Component_953__Component_7133__Component_7134__Component_9321_Layer0_140_96_63_ss": {
+      "name": "Component_9321",
+      "definition_name": "Group#1339",
+      "layer": "Layer0",
+      "position_mm": [
+        835.03,
+        1128.79,
+        249.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_7134 / Component_9321"
+    },
+    "mesh_22_ROOT__Component_953__Component_7133__Component_7134__Component_9321_Layer0_0_165_255_ds": {
+      "name": "Component_9321",
+      "definition_name": "Group#1339",
+      "layer": "Layer0",
+      "position_mm": [
+        835.03,
+        1128.79,
+        249.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_7134 / Component_9321"
+    },
+    "mesh_23_ROOT__Component_953__Component_7133__Component_7134__Component_9321__Component_9_Layer0_140_96_63_ss": {
+      "name": "Component_9322",
+      "definition_name": "Group#1337",
+      "layer": "Layer0",
+      "position_mm": [
+        831.47,
+        1142.92,
+        258.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_7134 / Component_9321 / Component_9322"
+    },
+    "mesh_24_ROOT__Component_953__Component_7133__Component_7134__Component_9321__Component_9_Layer0_0_165_255_ss": {
+      "name": "Component_9322",
+      "definition_name": "Group#1337",
+      "layer": "Layer0",
+      "position_mm": [
+        831.47,
+        1142.92,
+        258.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_7134 / Component_9321 / Component_9322"
+    },
+    "mesh_25_ROOT__Component_953__Component_7133__Component_11509_1 furniture_51_51_51_ss": {
+      "name": "Component_11509",
+      "definition_name": "Group#1347",
+      "layer": "1 furniture",
+      "position_mm": [
+        871.81,
+        1114.8,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_11509"
+    },
+    "mesh_26_ROOT__Component_953__Component_7133__Component_11509_1 furniture_153_0_255_ss": {
+      "name": "Component_11509",
+      "definition_name": "Group#1347",
+      "layer": "1 furniture",
+      "position_mm": [
+        871.81,
+        1114.8,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_11509"
+    },
+    "mesh_27_ROOT__Component_953__Component_7133__Component_11509_1 furniture_216_216_216_ss": {
+      "name": "Component_11509",
+      "definition_name": "Group#1347",
+      "layer": "1 furniture",
+      "position_mm": [
+        871.81,
+        1114.8,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_11509"
+    },
+    "mesh_28_ROOT__Component_953__Component_7133__Component_11509__Image#18_1 furniture": {
+      "name": "Image#18",
+      "definition_name": "Image#18",
+      "layer": "1 furniture",
+      "position_mm": [
+        579.72,
+        1122.0,
+        5.53
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_11509 / Image#18"
+    },
+    "mesh_29_ROOT__Component_953__Component_7133__Component_11818_Layer0_51_51_51_ds": {
+      "name": "Component_11818",
+      "definition_name": "Group#1342",
+      "layer": "Layer0",
+      "position_mm": [
+        727.93,
+        1121.66,
+        434.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_11818"
+    },
+    "mesh_30_ROOT__Component_953__Component_7133__Component_11818_Layer0_51_51_51_ss": {
+      "name": "Component_11818",
+      "definition_name": "Group#1342",
+      "layer": "Layer0",
+      "position_mm": [
+        727.93,
+        1121.66,
+        434.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_11818"
+    },
+    "mesh_31_ROOT__Component_953__Component_7133__Component_11818_Layer0_255_84_84_ss": {
+      "name": "Component_11818",
+      "definition_name": "Group#1342",
+      "layer": "Layer0",
+      "position_mm": [
+        727.93,
+        1121.66,
+        434.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_953 / Component_7133 / Component_11818"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_953",
+        "definition_name": "Group#1348",
+        "layer": "Layer0",
+        "position_mm": [
+          574.81,
+          1147.8,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Component_954",
+            "definition_name": "Group#1345",
+            "layer": "Layer0",
+            "position_mm": [
+              1401.11,
+              1094.51,
+              108.73
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_7134",
+                "definition_name": "Group#1341",
+                "layer": "Layer0",
+                "position_mm": [
+                  1345.38,
+                  1115.72,
+                  486.46
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_7135",
+                    "definition_name": "Group#1340",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1006.98,
+                      1115.72,
+                      486.46
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_7136",
+                        "definition_name": "Group#1338",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          1012.37,
+                          1137.12,
+                          500.55
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_9321",
+                    "definition_name": "Group#1339",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1345.38,
+                      1115.72,
+                      486.46
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_9322",
+                        "definition_name": "Group#1337",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          1339.99,
+                          1137.12,
+                          500.55
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Component_5330",
+                "definition_name": "Group#1343",
+                "layer": "Layer0",
+                "position_mm": [
+                  1401.11,
+                  1094.51,
+                  108.73
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Image#17",
+                    "definition_name": "Image#17",
+                    "layer": "1 furniture",
+                    "position_mm": [
+                      956.04,
+                      1119.51,
+                      108.29
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Component_11818",
+                "definition_name": "Group#1342",
+                "layer": "Layer0",
+                "position_mm": [
+                  1183.11,
+                  1104.91,
+                  766.87
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Component_7133",
+            "definition_name": "Group#1346",
+            "layer": "Layer0",
+            "position_mm": [
+              871.81,
+              1114.8,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_7134",
+                "definition_name": "Group#1341",
+                "layer": "Layer0",
+                "position_mm": [
+                  835.03,
+                  1128.79,
+                  249.3
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_7135",
+                    "definition_name": "Group#1340",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      611.69,
+                      1128.79,
+                      249.3
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_7136",
+                        "definition_name": "Group#1338",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          615.24,
+                          1142.92,
+                          258.6
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_9321",
+                    "definition_name": "Group#1339",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      835.03,
+                      1128.79,
+                      249.3
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_9322",
+                        "definition_name": "Group#1337",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          831.47,
+                          1142.92,
+                          258.6
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Component_11509",
+                "definition_name": "Group#1347",
+                "layer": "Layer0",
+                "position_mm": [
+                  871.81,
+                  1114.8,
+                  0.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Image#18",
+                    "definition_name": "Image#18",
+                    "layer": "1 furniture",
+                    "position_mm": [
+                      579.72,
+                      1122.0,
+                      5.53
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Component_11818",
+                "definition_name": "Group#1342",
+                "layer": "Layer0",
+                "position_mm": [
+                  727.93,
+                  1121.66,
+                  434.38
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

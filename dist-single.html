@@ -4153,6 +4153,7 @@ body.role-employee #adminCreateEmpBox,
             </div>
             <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
               <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
+              <button class="minibtn" id="placeDecor3DBtn" title="Add 3D Decors &amp; Appliances from SketchUp Catalog" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🌿 Add Decor</button>
               <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
             </div>
           </div>
@@ -5039,7 +5040,7 @@ body.role-employee #adminCreateEmpBox,
     <!-- Navigation Tabs -->
     <div style="display:flex;gap:8px;padding:12px 20px;border-bottom:1px solid #e2e8f0;background:#fafafa;">
       <button type="button" class="btn decor-tab-btn is-active" data-tab="presets" style="font-size:12px;font-weight:600;padding:6px 14px;">
-        🏛️ Built-in Decor Catalog (24 Presets)
+        🏛️ Built-in Decor Catalog (46 SketchUp Models)
       </button>
       <button type="button" class="btn decor-tab-btn" data-tab="custom" style="font-size:12px;font-weight:600;padding:6px 14px;">
         📁 Import Custom .skp / .obj / 3D Model
@@ -5047,276 +5048,25 @@ body.role-employee #adminCreateEmpBox,
     </div>
 
     <div class="modal-body" style="padding:16px 20px;max-height:68vh;overflow-y:auto;">
-      <!-- Tab 1: Built-in Catalog -->
+            <!-- Tab 1: Built-in Catalog -->
       <div id="decorTabPresets">
-        <div style="font-size:11.5px;font-weight:600;color:#64748b;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">
-          Click any preset to place directly onto your plan (100% ₹0.00 Woodwork BOQ):
+        <div style="display:flex;gap:10px;margin-bottom:12px;align-items:center;">
+          <input type="text" id="decorSearchInput" class="form-input" placeholder="🔍 Search 46 3D models (beds, sofas, tables, appliances, plants...)" style="width:100%;padding:8px 14px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;box-sizing:border-box;">
         </div>
-        <div class="decor-preset-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(210px, 1fr));gap:12px;">
-          <!-- 1. Fridge Double Door -->
-          <div class="decor-preset-card" data-name="Refrigerator (Double Door)" data-type="fridge" data-w="900" data-h="1800" data-d="700" data-elev="0">
-            <div class="decor-card-icon">❄️</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Refrigerator Double Door</div>
-              <div class="decor-card-dims">900 × 1800 × 700 mm</div>
-              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 2. Fridge Single Door -->
-          <div class="decor-preset-card" data-name="Refrigerator (Single Door)" data-type="fridge" data-w="600" data-h="1650" data-d="650" data-elev="0">
-            <div class="decor-card-icon">❄️</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Refrigerator Single Door</div>
-              <div class="decor-card-dims">600 × 1650 × 650 mm</div>
-              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 3. Ice Box / Chiller -->
-          <div class="decor-preset-card" data-name="Ice Box / Beverage Chiller" data-type="ice_box" data-w="500" data-h="850" data-d="550" data-elev="0">
-            <div class="decor-card-icon">🧊</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Ice Box / Beverage Chiller</div>
-              <div class="decor-card-dims">500 × 850 × 550 mm</div>
-              <div class="decor-card-elev">Glass Door · 0 mm (Floor)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 4. Floor Plant -->
-          <div class="decor-preset-card" data-name="Indoor Floor Plant" data-type="plant" data-w="500" data-h="1200" data-d="500" data-elev="0">
-            <div class="decor-card-icon">🌿</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Indoor Floor Plant</div>
-              <div class="decor-card-dims">500 × 1200 × 500 mm</div>
-              <div class="decor-card-elev">Monstera / Fiddle · 0 mm</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 5. Tabletop Plant -->
-          <div class="decor-preset-card" data-name="Tabletop Planter" data-type="plant" data-w="300" data-h="400" data-d="300" data-elev="850">
-            <div class="decor-card-icon">🪴</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Tabletop Planter</div>
-              <div class="decor-card-dims">300 × 400 × 300 mm</div>
-              <div class="decor-card-elev">Elevation: 850 mm (Counter)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 6. Microwave / Oven -->
-          <div class="decor-preset-card" data-name="Microwave / Built-in Oven" data-type="microwave" data-w="600" data-h="450" data-d="500" data-elev="850">
-            <div class="decor-card-icon">🍲</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Microwave / Built-in Oven</div>
-              <div class="decor-card-dims">600 × 450 × 500 mm</div>
-              <div class="decor-card-elev">Elevation: 850 mm (Mid)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 7. Chimney / Hood -->
-          <div class="decor-preset-card" data-name="Kitchen Chimney" data-type="chimney" data-w="600" data-h="750" data-d="500" data-elev="1500">
-            <div class="decor-card-icon">💨</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Kitchen Chimney / Hood</div>
-              <div class="decor-card-dims">600 × 750 × 500 mm</div>
-              <div class="decor-card-elev">Elevation: 1500 mm (Wall)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 8. Wall-Mounted TV -->
-          <div class="decor-preset-card" data-name="Wall-Mounted OLED TV" data-type="tv" data-w="1200" data-h="720" data-d="80" data-elev="1100">
-            <div class="decor-card-icon">📺</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Wall-Mounted OLED TV</div>
-              <div class="decor-card-dims">1200 × 720 × 80 mm</div>
-              <div class="decor-card-elev">Elevation: 1100 mm (Wall)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 9. Living Room Sofa -->
-          <div class="decor-preset-card" data-name="Living Room Sofa" data-type="sofa" data-w="1800" data-h="850" data-d="850" data-elev="0">
-            <div class="decor-card-icon">🛋️</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Living Room Sofa</div>
-              <div class="decor-card-dims">1800 × 850 × 850 mm</div>
-              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 10. Washing Machine -->
-          <div class="decor-preset-card" data-name="AEG Washing Machine" data-type="washing_machine" data-w="600" data-h="850" data-d="600" data-elev="0">
-            <div class="decor-card-icon">🧺</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">AEG Washing Machine</div>
-              <div class="decor-card-dims">600 × 850 × 600 mm</div>
-              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 11. Kitchen Sink -->
-          <div class="decor-preset-card" data-name="Kitchen Sink (Satin Finish)" data-type="sink" data-w="800" data-h="400" data-d="500" data-elev="850">
-            <div class="decor-card-icon">🚰</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Kitchen Sink with Faucet</div>
-              <div class="decor-card-dims">800 × 400 × 500 mm</div>
-              <div class="decor-card-elev">Elevation: 850 mm (Counter)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 12. Gas Hob / Stove -->
-          <div class="decor-preset-card" data-name="2-Burner Gas Hob" data-type="gas_hob" data-w="750" data-h="120" data-d="500" data-elev="850">
-            <div class="decor-card-icon">🔥</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">2-Burner Glass Gas Hob</div>
-              <div class="decor-card-dims">750 × 120 × 500 mm</div>
-              <div class="decor-card-elev">Elevation: 850 mm (Counter)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 13. Built-in Dishwasher -->
-          <div class="decor-preset-card" data-name="Siemens Dishwasher" data-type="dishwasher" data-w="600" data-h="820" data-d="600" data-elev="0">
-            <div class="decor-card-icon">🍽️</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Siemens Dishwasher</div>
-              <div class="decor-card-dims">600 × 820 × 600 mm</div>
-              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 14. Kent Mineral RO Purifier -->
-          <div class="decor-preset-card" data-name="Kent Mineral RO Purifier" data-type="ro_purifier" data-w="400" data-h="520" data-d="260" data-elev="1200">
-            <div class="decor-card-icon">💧</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Kent Mineral RO Purifier</div>
-              <div class="decor-card-dims">400 × 520 × 260 mm</div>
-              <div class="decor-card-elev">Elevation: 1200 mm (Wall)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 15. 4-Seater Dining Table Set -->
-          <div class="decor-preset-card" data-name="4-Seater Dining Table Set" data-type="dining_table" data-w="1200" data-h="760" data-d="800" data-elev="0">
-            <div class="decor-card-icon">🪑</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Dining Table + 4 Chairs</div>
-              <div class="decor-card-dims">1200 × 760 × 800 mm</div>
-              <div class="decor-card-elev">Elevation: 0 mm (Floor)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 16. Master Bed (BED_01) -->
-          <div class="decor-preset-card" data-name="Master King Bed" data-type="bed" data-w="1800" data-h="1000" data-d="2000" data-elev="0" data-model="assets/decors/BED_01.skp">
-            <div class="decor-card-icon">🛏️</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Master King Bed</div>
-              <div class="decor-card-dims">1800 × 1000 × 2000 mm</div>
-              <div class="decor-card-elev">Headboard &amp; Duvet · 0 mm</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 17. Mariam Bed Set (Mariam+bed+set+01) -->
-          <div class="decor-preset-card" data-name="Mariam King Bed Set" data-type="mariam_bed" data-w="2400" data-h="1100" data-d="2100" data-elev="0" data-model="assets/decors/Mariam+bed+set+01.skp">
-            <div class="decor-card-icon">🛏️</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Mariam Bed + Side Tables</div>
-              <div class="decor-card-dims">2400 × 1100 × 2100 mm</div>
-              <div class="decor-card-elev">Dual Nightstands · 0 mm</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 18. Kid Bedroom Setup (KID+BEDROOM+001) -->
-          <div class="decor-preset-card" data-name="Kid Bedroom Bed Setup" data-type="kid_bed" data-w="1200" data-h="1200" data-d="1950" data-elev="0" data-model="assets/decors/KID+BEDROOM+001.skp">
-            <div class="decor-card-icon">🧒</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Kid Single Bed Setup</div>
-              <div class="decor-card-dims">1200 × 1200 × 1950 mm</div>
-              <div class="decor-card-elev">Youth Bedframe · 0 mm</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 19. Sectional Sofa Set Collection -->
-          <div class="decor-preset-card" data-name="Sectional Sofa Set Collection" data-type="sofa_collection" data-w="2600" data-h="850" data-d="1800" data-elev="0" data-model="assets/decors/Sofa+Set+Collection+(51) (1).skp">
-            <div class="decor-card-icon">🛋️</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Sectional Sofa Collection</div>
-              <div class="decor-card-dims">2600 × 850 × 1800 mm</div>
-              <div class="decor-card-elev">L-Shape Chaise · 0 mm</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 20. Luxury Interior Sofa -->
-          <div class="decor-preset-card" data-name="Luxury Interior Sofa" data-type="sofa" data-w="2200" data-h="850" data-d="900" data-elev="0" data-model="assets/decors/Interior+decoration+sofa+no+pictures.skp">
-            <div class="decor-card-icon">🛋️</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Luxury 3-Seater Sofa</div>
-              <div class="decor-card-dims">2200 × 850 × 900 mm</div>
-              <div class="decor-card-elev">Living Room · 0 mm</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 21. Accent Armchair -->
-          <div class="decor-preset-card" data-name="Modern Accent Armchair" data-type="chair" data-w="750" data-h="850" data-d="750" data-elev="0" data-model="assets/decors/chair (1).skp">
-            <div class="decor-card-icon">🪑</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Accent Armchair</div>
-              <div class="decor-card-dims">750 × 850 × 750 mm</div>
-              <div class="decor-card-elev">Barrel Back · 0 mm</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 22. Dressing Stool -->
-          <div class="decor-preset-card" data-name="Dressing / Counter Stool" data-type="stool" data-w="450" data-h="450" data-d="450" data-elev="0" data-model="assets/decors/Stool.skp">
-            <div class="decor-card-icon">🪑</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Dressing / Bar Stool</div>
-              <div class="decor-card-dims">450 × 450 × 450 mm</div>
-              <div class="decor-card-elev">Vanity Stool · 0 mm</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 23. Vanity Mirror -->
-          <div class="decor-preset-card" data-name="Dressing / Vanity Mirror" data-type="mirror" data-w="600" data-h="1200" data-d="40" data-elev="800" data-model="assets/decors/mirror 2.skp">
-            <div class="decor-card-icon">🪞</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Dressing Vanity Mirror</div>
-              <div class="decor-card-dims">600 × 1200 × 40 mm</div>
-              <div class="decor-card-elev">Elevation: 800 mm (Wall)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
-
-          <!-- 24. Smart TV + Stand -->
-          <div class="decor-preset-card" data-name="Modern Smart TV &amp; Console" data-type="tv" data-w="1400" data-h="800" data-d="80" data-elev="1000" data-model="assets/decors/tv (2).skp">
-            <div class="decor-card-icon">📺</div>
-            <div class="decor-card-info">
-              <div class="decor-card-title">Smart TV + Media Console</div>
-              <div class="decor-card-dims">1400 × 800 × 80 mm</div>
-              <div class="decor-card-elev">Elevation: 1000 mm (Wall)</div>
-            </div>
-            <div class="decor-card-badge">Place ➔</div>
-          </div>
+        <div id="decorCategoryFilter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+          <button type="button" class="btn decor-cat-pill is-active" data-cat="all" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#15803d;color:#ffffff;border:none;cursor:pointer;">All (46)</button>
+          <button type="button" class="btn decor-cat-pill" data-cat="Beds & Bedroom" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🛏️ Beds</button>
+          <button type="button" class="btn decor-cat-pill" data-cat="Sofas & Seating" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🛋️ Sofas</button>
+          <button type="button" class="btn decor-cat-pill" data-cat="Dining Tables" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🪑 Dining</button>
+          <button type="button" class="btn decor-cat-pill" data-cat="Kitchen Appliances" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🍳 Appliances</button>
+          <button type="button" class="btn decor-cat-pill" data-cat="Kitchen Styling" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🥗 Kitchen Styling</button>
+          <button type="button" class="btn decor-cat-pill" data-cat="Plants & Pots" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🪴 Plants</button>
+          <button type="button" class="btn decor-cat-pill" data-cat="Partitions & Walls" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🧱 Partitions</button>
+          <button type="button" class="btn decor-cat-pill" data-cat="Lighting" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">💡 Lighting</button>
+          <button type="button" class="btn decor-cat-pill" data-cat="Electronics & TV" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">📺 Electronics</button>
+          <button type="button" class="btn decor-cat-pill" data-cat="Accents & Styling" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">✨ Accents</button>
         </div>
+        <div id="decorPresetGrid" class="decor-preset-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(215px, 1fr));gap:12px;"></div>
       </div>
 
       <!-- Tab 2: Custom 3D Model Upload -->
@@ -8617,6 +8367,1532 @@ body.role-employee #adminCreateEmpBox,
 
 })(window);
 
+/* Auto-generated & Curated Orbix Decors Catalog from 46 SketchUp Models */
+(function() {
+  var catalog = [
+  {
+    "id": "decor_023",
+    "slug": "023",
+    "original_filename": "023.skp",
+    "name": "Master Suite Bed & Nightstands 023",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/023.glb",
+    "thumbnailUrl": "assets/decors/023_thumb.png",
+    "dimensions": {
+      "W": 2400,
+      "H": 1050,
+      "D": 2150
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -520031.0,
+        88310.5,
+        -3704.0
+      ],
+      "max": [
+        497751.1,
+        1059173.1,
+        247167.8
+      ]
+    },
+    "fileSizeGlb": 13408864,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_7_mi_tv",
+    "slug": "7_mi_tv",
+    "original_filename": "7_MI+TV.skp",
+    "name": "Xiaomi Mi 65\" Smart 4K TV",
+    "category": "decor",
+    "decorType": "tv",
+    "subCategory": "Electronics & TV",
+    "icon": "📺",
+    "modelUrl": "assets/decors/7_mi_tv.glb",
+    "thumbnailUrl": "assets/decors/7_mi_tv_thumb.png",
+    "dimensions": {
+      "W": 1450,
+      "H": 860,
+      "D": 65
+    },
+    "elevation": 950,
+    "bounds": {
+      "min": [
+        875.3,
+        0.0,
+        -1278.9
+      ],
+      "max": [
+        2551.3,
+        978.0,
+        -1249.2
+      ]
+    },
+    "fileSizeGlb": 127316,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_ai_2049_100r1",
+    "slug": "ai_2049_100r1",
+    "original_filename": "AI_2049_100(R1).skp",
+    "name": "Modern Contemporary Armchair",
+    "category": "decor",
+    "decorType": "chair",
+    "subCategory": "Sofas & Seating",
+    "icon": "🛋️",
+    "modelUrl": "assets/decors/ai_2049_100r1.glb",
+    "thumbnailUrl": "assets/decors/ai_2049_100r1_thumb.png",
+    "dimensions": {
+      "W": 1050,
+      "H": 880,
+      "D": 1000
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -24.7,
+        -0.0,
+        -3495.7
+      ],
+      "max": [
+        1105.1,
+        883.0,
+        -2429.8
+      ]
+    },
+    "fileSizeGlb": 2750032,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_ashley_padova_3_seater_sofa",
+    "slug": "ashley_padova_3_seater_sofa",
+    "original_filename": "Ashley+Padova+3+Seater+Sofa.skp",
+    "name": "Ashley Padova 3-Seater Sofa",
+    "category": "decor",
+    "decorType": "sofa",
+    "subCategory": "Sofas & Seating",
+    "icon": "🛋️",
+    "modelUrl": "assets/decors/ashley_padova_3_seater_sofa.glb",
+    "thumbnailUrl": "assets/decors/ashley_padova_3_seater_sofa_thumb.png",
+    "dimensions": {
+      "W": 2400,
+      "H": 980,
+      "D": 1020
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        13.5,
+        -0.0,
+        -1046.3
+      ],
+      "max": [
+        2435.6,
+        1020.7,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 11752004,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_conc_flower_pot",
+    "slug": "conc_flower_pot",
+    "original_filename": "CONC+FLOWER+POT.skp",
+    "name": "Concrete Architectural Planter",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/conc_flower_pot.glb",
+    "thumbnailUrl": "assets/decors/conc_flower_pot_thumb.png",
+    "dimensions": {
+      "W": 590,
+      "H": 780,
+      "D": 610
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -204.8,
+        0.0,
+        -395.9
+      ],
+      "max": [
+        384.1,
+        779.2,
+        214.9
+      ]
+    },
+    "fileSizeGlb": 11631972,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_cama_3",
+    "slug": "cama_3",
+    "original_filename": "Cama+3.skp",
+    "name": "Cama Modern Upholstered Bed",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/cama_3.glb",
+    "thumbnailUrl": "assets/decors/cama_3_thumb.png",
+    "dimensions": {
+      "W": 1800,
+      "H": 970,
+      "D": 2100
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -85.2,
+        -0.0,
+        -2071.6
+      ],
+      "max": [
+        1715.9,
+        971.2,
+        52.9
+      ]
+    },
+    "fileSizeGlb": 10915672,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_component",
+    "slug": "component",
+    "original_filename": "Component.skp",
+    "name": "Architectural Display Column",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "🏛️",
+    "modelUrl": "assets/decors/component.glb",
+    "thumbnailUrl": "assets/decors/component_thumb.png",
+    "dimensions": {
+      "W": 640,
+      "H": 1800,
+      "D": 680
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        1328.8,
+        0.0,
+        -788.6
+      ],
+      "max": [
+        1968.8,
+        1804.0,
+        -107.1
+      ]
+    },
+    "fileSizeGlb": 1486952,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_component_12",
+    "slug": "component_12",
+    "original_filename": "Component_12.skp",
+    "name": "Vanity Dressing Stool",
+    "category": "decor",
+    "decorType": "stool",
+    "subCategory": "Accents & Styling",
+    "icon": "🪑",
+    "modelUrl": "assets/decors/component_12.glb",
+    "thumbnailUrl": "assets/decors/component_12_thumb.png",
+    "dimensions": {
+      "W": 450,
+      "H": 520,
+      "D": 450
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -800.0
+      ],
+      "max": [
+        450.0,
+        524.1,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 201144,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_component_3",
+    "slug": "component_3",
+    "original_filename": "Component_3.skp",
+    "name": "Decorative Ceramic Table Planter",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/component_3.glb",
+    "thumbnailUrl": "assets/decors/component_3_thumb.png",
+    "dimensions": {
+      "W": 480,
+      "H": 430,
+      "D": 480
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -480.0
+      ],
+      "max": [
+        480.0,
+        433.8,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1013872,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_cutlery",
+    "slug": "cutlery",
+    "original_filename": "Cutlery.skp",
+    "name": "Countertop Cutlery Organizer",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🍴",
+    "modelUrl": "assets/decors/cutlery.glb",
+    "thumbnailUrl": "assets/decors/cutlery_thumb.png",
+    "dimensions": {
+      "W": 170,
+      "H": 290,
+      "D": 160
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        102.5,
+        22.0,
+        -112.5
+      ],
+      "max": [
+        274.8,
+        309.7,
+        45.6
+      ]
+    },
+    "fileSizeGlb": 2100952,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_cuttlery_dishrack",
+    "slug": "cuttlery_dishrack",
+    "original_filename": "Cuttlery+Dishrack.skp",
+    "name": "Cutlery & Dish Drying Rack",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🍽️",
+    "modelUrl": "assets/decors/cuttlery_dishrack.glb",
+    "thumbnailUrl": "assets/decors/cuttlery_dishrack_thumb.png",
+    "dimensions": {
+      "W": 310,
+      "H": 280,
+      "D": 400
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -0.0,
+        0.0,
+        -406.9
+      ],
+      "max": [
+        310.0,
+        282.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 2544848,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_dining_table2",
+    "slug": "dining_table2",
+    "original_filename": "DINING+TABLE2.skp",
+    "name": "Luxury 6-Seater Dining Table Set",
+    "category": "decor",
+    "decorType": "dining_table",
+    "subCategory": "Dining Tables",
+    "icon": "🪑",
+    "modelUrl": "assets/decors/dining_table2.glb",
+    "thumbnailUrl": "assets/decors/dining_table2_thumb.png",
+    "dimensions": {
+      "W": 1500,
+      "H": 760,
+      "D": 1000
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -263.6,
+        0.0,
+        -1000.0
+      ],
+      "max": [
+        1218.5,
+        1307.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 33694308,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_floor_lamp",
+    "slug": "floor_lamp",
+    "original_filename": "Floor+lamp.skp",
+    "name": "Nordic Curved Arc Floor Lamp",
+    "category": "decor",
+    "decorType": "floor_lamp",
+    "subCategory": "Lighting",
+    "icon": "💡",
+    "modelUrl": "assets/decors/floor_lamp.glb",
+    "thumbnailUrl": "assets/decors/floor_lamp_thumb.png",
+    "dimensions": {
+      "W": 500,
+      "H": 2100,
+      "D": 1400
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        30.0,
+        0.0,
+        -1692.9
+      ],
+      "max": [
+        394.6,
+        2367.8,
+        184.3
+      ]
+    },
+    "fileSizeGlb": 688912,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_flower_pot_12",
+    "slug": "flower_pot_12",
+    "original_filename": "Flower+pot+12.skp",
+    "name": "Tall Indoor Fiddle Fig Tree",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🌿",
+    "modelUrl": "assets/decors/flower_pot_12.glb",
+    "thumbnailUrl": "assets/decors/flower_pot_12_thumb.png",
+    "dimensions": {
+      "W": 800,
+      "H": 1850,
+      "D": 800
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -869.4,
+        0.0,
+        -465.0
+      ],
+      "max": [
+        832.3,
+        3483.9,
+        492.9
+      ]
+    },
+    "fileSizeGlb": 1551032,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_glass_apothecary_jar",
+    "slug": "glass_apothecary_jar",
+    "original_filename": "Glass_Apothecary_Jar.skp",
+    "name": "Glass Apothecary Canisters",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🫙",
+    "modelUrl": "assets/decors/glass_apothecary_jar.glb",
+    "thumbnailUrl": "assets/decors/glass_apothecary_jar_thumb.png",
+    "dimensions": {
+      "W": 450,
+      "H": 210,
+      "D": 190
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -180.5,
+        -0.0,
+        3.3
+      ],
+      "max": [
+        501.1,
+        209.5,
+        192.8
+      ]
+    },
+    "fileSizeGlb": 2287836,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_group_338",
+    "slug": "group_338",
+    "original_filename": "Group_338.skp",
+    "name": "Styling Decor Vignette 338",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/group_338.glb",
+    "thumbnailUrl": "assets/decors/group_338_thumb.png",
+    "dimensions": {
+      "W": 420,
+      "H": 650,
+      "D": 500
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -0.0,
+        0.0,
+        -900.0
+      ],
+      "max": [
+        426.4,
+        837.4,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1398764,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_hob_1",
+    "slug": "hob_1",
+    "original_filename": "HOB-1.skp",
+    "name": "Built-in 3-Burner Gas Hob",
+    "category": "decor",
+    "decorType": "gas_hob",
+    "subCategory": "Kitchen Appliances",
+    "icon": "🍳",
+    "modelUrl": "assets/decors/hob_1.glb",
+    "thumbnailUrl": "assets/decors/hob_1_thumb.png",
+    "dimensions": {
+      "W": 750,
+      "H": 80,
+      "D": 500
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -870.0
+      ],
+      "max": [
+        525.0,
+        96.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1277280,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_jaali_partition",
+    "slug": "jaali_partition",
+    "original_filename": "Jaali+Partition.skp",
+    "name": "Decorative Geometric Jaali Screen",
+    "category": "decor",
+    "decorType": "partition",
+    "subCategory": "Partitions & Walls",
+    "icon": "🧱",
+    "modelUrl": "assets/decors/jaali_partition.glb",
+    "thumbnailUrl": "assets/decors/jaali_partition_thumb.png",
+    "dimensions": {
+      "W": 1200,
+      "H": 2300,
+      "D": 120
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -123.8
+      ],
+      "max": [
+        1211.3,
+        2322.9,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1407792,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_kitchen_composition_decor_2",
+    "slug": "kitchen_composition_decor_2",
+    "original_filename": "Kitchen+composition+decor+2.skp",
+    "name": "Kitchen Counter Decor Composition",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🍶",
+    "modelUrl": "assets/decors/kitchen_composition_decor_2.glb",
+    "thumbnailUrl": "assets/decors/kitchen_composition_decor_2_thumb.png",
+    "dimensions": {
+      "W": 480,
+      "H": 380,
+      "D": 200
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -31.7,
+        -35.0,
+        -200.0
+      ],
+      "max": [
+        450.0,
+        349.3,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 6223628,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_kitchenaid_dishwasher",
+    "slug": "kitchenaid_dishwasher",
+    "original_filename": "KitchenAid+Dishwasher.skp",
+    "name": "KitchenAid Built-in Dishwasher",
+    "category": "decor",
+    "decorType": "dishwasher",
+    "subCategory": "Kitchen Appliances",
+    "icon": "🍽️",
+    "modelUrl": "assets/decors/kitchenaid_dishwasher.glb",
+    "thumbnailUrl": "assets/decors/kitchenaid_dishwasher_thumb.png",
+    "dimensions": {
+      "W": 600,
+      "H": 850,
+      "D": 640
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -641.3
+      ],
+      "max": [
+        596.9,
+        857.2,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 82448,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_partition_wall",
+    "slug": "partition_wall",
+    "original_filename": "PARTITION+WALL.skp",
+    "name": "Modern Fluted Divider Wall",
+    "category": "decor",
+    "decorType": "partition",
+    "subCategory": "Partitions & Walls",
+    "icon": "🧱",
+    "modelUrl": "assets/decors/partition_wall.glb",
+    "thumbnailUrl": "assets/decors/partition_wall_thumb.png",
+    "dimensions": {
+      "W": 2000,
+      "H": 2400,
+      "D": 250
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        371.9,
+        0.0,
+        -2331.5
+      ],
+      "max": [
+        2950.0,
+        3352.8,
+        -121.3
+      ]
+    },
+    "fileSizeGlb": 9412464,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_partition",
+    "slug": "partition",
+    "original_filename": "PARTITION.skp",
+    "name": "Architectural Vertical Wood Slats",
+    "category": "decor",
+    "decorType": "partition",
+    "subCategory": "Partitions & Walls",
+    "icon": "🧱",
+    "modelUrl": "assets/decors/partition.glb",
+    "thumbnailUrl": "assets/decors/partition_thumb.png",
+    "dimensions": {
+      "W": 1450,
+      "H": 2400,
+      "D": 200
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        167.8,
+        0.0,
+        -827.9
+      ],
+      "max": [
+        1615.6,
+        2743.2,
+        -213.1
+      ]
+    },
+    "fileSizeGlb": 53180976,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_pv977nss_geprofile",
+    "slug": "pv977nss_geprofile",
+    "original_filename": "PV977NSS_GEProfile.skp",
+    "name": "GE Profile Glass Canopy Chimney",
+    "category": "decor",
+    "decorType": "chimney",
+    "subCategory": "Kitchen Appliances",
+    "icon": "💨",
+    "modelUrl": "assets/decors/pv977nss_geprofile.glb",
+    "thumbnailUrl": "assets/decors/pv977nss_geprofile_thumb.png",
+    "dimensions": {
+      "W": 900,
+      "H": 810,
+      "D": 550
+    },
+    "elevation": 1500,
+    "bounds": {
+      "min": [
+        -455.6,
+        -6.4,
+        -2.2
+      ],
+      "max": [
+        457.5,
+        808.5,
+        700.1
+      ]
+    },
+    "fileSizeGlb": 944560,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_r7250_refrigerator_freezer_20_cubic_feet",
+    "slug": "r7250_refrigerator_freezer_20_cubic_feet",
+    "original_filename": "R7250+-+Refrigerator-Freezer_+20+Cubic+Feet.skp",
+    "name": "Double Door Refrigerator-Freezer (20 Cu Ft)",
+    "category": "decor",
+    "decorType": "fridge",
+    "subCategory": "Kitchen Appliances",
+    "icon": "❄️",
+    "modelUrl": "assets/decors/r7250_refrigerator_freezer_20_cubic_feet.glb",
+    "thumbnailUrl": "assets/decors/r7250_refrigerator_freezer_20_cubic_feet_thumb.png",
+    "dimensions": {
+      "W": 760,
+      "H": 1730,
+      "D": 620
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        76.2,
+        25.4,
+        -622.3
+      ],
+      "max": [
+        838.2,
+        1758.9,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 38292,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_sofa_ovo_z_pojemnikiem_beżowa_boucle",
+    "slug": "sofa_ovo_z_pojemnikiem_beżowa_boucle",
+    "original_filename": "SOFA+Ovo+z+pojemnikiem+beżowa+boucle.skp",
+    "name": "Ovo Beige Bouclé Storage Sofa",
+    "category": "decor",
+    "decorType": "sofa",
+    "subCategory": "Sofas & Seating",
+    "icon": "🛋️",
+    "modelUrl": "assets/decors/sofa_ovo_z_pojemnikiem_beżowa_boucle.glb",
+    "thumbnailUrl": "assets/decors/sofa_ovo_z_pojemnikiem_beżowa_boucle_thumb.png",
+    "dimensions": {
+      "W": 2200,
+      "H": 850,
+      "D": 950
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        -185.0,
+        -1655.1
+      ],
+      "max": [
+        17065.2,
+        3439.2,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 11923720,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_succulent_decoration",
+    "slug": "succulent_decoration",
+    "original_filename": "Succulent+decoration.skp",
+    "name": "Succulent Botanical Dish Arrangement",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/succulent_decoration.glb",
+    "thumbnailUrl": "assets/decors/succulent_decoration_thumb.png",
+    "dimensions": {
+      "W": 350,
+      "H": 250,
+      "D": 350
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        574.8,
+        0.0,
+        -1147.8
+      ],
+      "max": [
+        1401.1,
+        785.4,
+        -1094.5
+      ]
+    },
+    "fileSizeGlb": 777976,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_teapot_1",
+    "slug": "teapot_1",
+    "original_filename": "Teapot (1).skp",
+    "name": "Nordic Matte Ceramic Teapot",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🫖",
+    "modelUrl": "assets/decors/teapot_1.glb",
+    "thumbnailUrl": "assets/decors/teapot_1_thumb.png",
+    "dimensions": {
+      "W": 210,
+      "H": 170,
+      "D": 180
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -0.0,
+        0.0,
+        -0.0
+      ],
+      "max": [
+        213.5,
+        167.2,
+        343.3
+      ]
+    },
+    "fileSizeGlb": 89108,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_teapot_2",
+    "slug": "teapot_2",
+    "original_filename": "Teapot (2).skp",
+    "name": "Artisan Tea Server Set with Cups",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🫖",
+    "modelUrl": "assets/decors/teapot_2.glb",
+    "thumbnailUrl": "assets/decors/teapot_2_thumb.png",
+    "dimensions": {
+      "W": 350,
+      "H": 220,
+      "D": 250
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -710.7,
+        -16.0,
+        -478.7
+      ],
+      "max": [
+        755.4,
+        921.5,
+        421.6
+      ]
+    },
+    "fileSizeGlb": 1584168,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_teapot",
+    "slug": "teapot",
+    "original_filename": "Teapot.skp",
+    "name": "Classic Porcelain Teapot",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🫖",
+    "modelUrl": "assets/decors/teapot.glb",
+    "thumbnailUrl": "assets/decors/teapot_thumb.png",
+    "dimensions": {
+      "W": 240,
+      "H": 160,
+      "D": 170
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        392.4,
+        1.2,
+        -548.9
+      ],
+      "max": [
+        629.1,
+        158.8,
+        -380.9
+      ]
+    },
+    "fileSizeGlb": 4282800,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_untitled",
+    "slug": "untitled",
+    "original_filename": "Untitled.skp",
+    "name": "Sculptural Ficus Botanical Display",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🌿",
+    "modelUrl": "assets/decors/untitled.glb",
+    "thumbnailUrl": "assets/decors/untitled_thumb.png",
+    "dimensions": {
+      "W": 800,
+      "H": 1850,
+      "D": 800
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -843.5,
+        0.0,
+        -843.5
+      ],
+      "max": [
+        843.5,
+        3940.6,
+        843.5
+      ]
+    },
+    "fileSizeGlb": 34871580,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_vegetables",
+    "slug": "vegetables",
+    "original_filename": "Vegetables.skp",
+    "name": "Fresh Harvest Kitchen Vegetable Bowl",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🥗",
+    "modelUrl": "assets/decors/vegetables.glb",
+    "thumbnailUrl": "assets/decors/vegetables_thumb.png",
+    "dimensions": {
+      "W": 300,
+      "H": 150,
+      "D": 300
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -216.8
+      ],
+      "max": [
+        247.6,
+        89.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 16711244,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_washing_machine",
+    "slug": "washing_machine",
+    "original_filename": "Washing+Machine.skp",
+    "name": "Modern Front Load Washing Machine",
+    "category": "decor",
+    "decorType": "washing_machine",
+    "subCategory": "Appliances",
+    "icon": "🧺",
+    "modelUrl": "assets/decors/washing_machine.glb",
+    "thumbnailUrl": "assets/decors/washing_machine_thumb.png",
+    "dimensions": {
+      "W": 600,
+      "H": 850,
+      "D": 600
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        113.7,
+        -0.0,
+        -500.0
+      ],
+      "max": [
+        968.5,
+        950.0,
+        3.0
+      ]
+    },
+    "fileSizeGlb": 1898364,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_x1_1",
+    "slug": "x1_1",
+    "original_filename": "X1 (1).skp",
+    "name": "Architectural Accent Decor X2",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/x1_1.glb",
+    "thumbnailUrl": "assets/decors/x1_1_thumb.png",
+    "dimensions": {
+      "W": 900,
+      "H": 800,
+      "D": 400
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -64320.3,
+        -3515.0,
+        -282668.4
+      ],
+      "max": [
+        557602.7,
+        20.0,
+        10199.6
+      ]
+    },
+    "fileSizeGlb": 38568,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_x1",
+    "slug": "x1",
+    "original_filename": "X1.skp",
+    "name": "Architectural Accent Decor X1",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/x1.glb",
+    "thumbnailUrl": "assets/decors/x1_thumb.png",
+    "dimensions": {
+      "W": 800,
+      "H": 750,
+      "D": 350
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        2421.3,
+        -317.0,
+        -22090.2
+      ],
+      "max": [
+        18209.1,
+        20.0,
+        -13789.0
+      ]
+    },
+    "fileSizeGlb": 67192,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_y1",
+    "slug": "y1",
+    "original_filename": "Y1.skp",
+    "name": "Architectural Wall Relief Panel Y1",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "🖼️",
+    "modelUrl": "assets/decors/y1.glb",
+    "thumbnailUrl": "assets/decors/y1_thumb.png",
+    "dimensions": {
+      "W": 1200,
+      "H": 600,
+      "D": 50
+    },
+    "elevation": 1200,
+    "bounds": {
+      "min": [
+        130.8,
+        -0.0,
+        -2404.8
+      ],
+      "max": [
+        2722.9,
+        20.0,
+        -1269.1
+      ]
+    },
+    "fileSizeGlb": 55028,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_bed_windsor_1",
+    "slug": "bed_windsor_1",
+    "original_filename": "bed+windsor (1).skp",
+    "name": "Windsor King Bed Set",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/bed_windsor_1.glb",
+    "thumbnailUrl": "assets/decors/bed_windsor_1_thumb.png",
+    "dimensions": {
+      "W": 2050,
+      "H": 1150,
+      "D": 2150
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        93.7,
+        0.0,
+        -3154.4
+      ],
+      "max": [
+        4835.5,
+        1793.6,
+        84.5
+      ]
+    },
+    "fileSizeGlb": 504276,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_chimney",
+    "slug": "chimney",
+    "original_filename": "chimney.skp",
+    "name": "Stainless Steel Slim Chimney",
+    "category": "decor",
+    "decorType": "chimney",
+    "subCategory": "Kitchen Appliances",
+    "icon": "💨",
+    "modelUrl": "assets/decors/chimney.glb",
+    "thumbnailUrl": "assets/decors/chimney_thumb.png",
+    "dimensions": {
+      "W": 880,
+      "H": 750,
+      "D": 480
+    },
+    "elevation": 1500,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -389.0
+      ],
+      "max": [
+        880.1,
+        911.9,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 66412,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_cutlery_1",
+    "slug": "cutlery_1",
+    "original_filename": "cutlery (1).skp",
+    "name": "Formal Dining Cutlery Set",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🍴",
+    "modelUrl": "assets/decors/cutlery_1.glb",
+    "thumbnailUrl": "assets/decors/cutlery_1_thumb.png",
+    "dimensions": {
+      "W": 630,
+      "H": 80,
+      "D": 390
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -0.0,
+        -3.4,
+        -0.0
+      ],
+      "max": [
+        629.7,
+        391.0,
+        72.4
+      ]
+    },
+    "fileSizeGlb": 8531204,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_dining_table_4",
+    "slug": "dining_table_4",
+    "original_filename": "dining+table+4.skp",
+    "name": "Modern 4-Seater Dining Set",
+    "category": "decor",
+    "decorType": "dining_table",
+    "subCategory": "Dining Tables",
+    "icon": "🪑",
+    "modelUrl": "assets/decors/dining_table_4.glb",
+    "thumbnailUrl": "assets/decors/dining_table_4_thumb.png",
+    "dimensions": {
+      "W": 1350,
+      "H": 760,
+      "D": 1200
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -406.2,
+        -0.0,
+        -1590.0
+      ],
+      "max": [
+        951.9,
+        1272.6,
+        50.0
+      ]
+    },
+    "fileSizeGlb": 44852128,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_drfxnj",
+    "slug": "drfxnj",
+    "original_filename": "drfxnj.skp",
+    "name": "Sculptural Accent Centerpiece",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/drfxnj.glb",
+    "thumbnailUrl": "assets/decors/drfxnj_thumb.png",
+    "dimensions": {
+      "W": 600,
+      "H": 500,
+      "D": 450
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -558.8
+      ],
+      "max": [
+        838.2,
+        626.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1441832,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_girls_bed",
+    "slug": "girls_bed",
+    "original_filename": "girls+bed.skp",
+    "name": "Youth / Girl Single Bed",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/girls_bed.glb",
+    "thumbnailUrl": "assets/decors/girls_bed_thumb.png",
+    "dimensions": {
+      "W": 1200,
+      "H": 1150,
+      "D": 2000
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -43.6,
+        -0.0,
+        -570.2
+      ],
+      "max": [
+        2210.7,
+        1149.9,
+        597.6
+      ]
+    },
+    "fileSizeGlb": 4925316,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_hob",
+    "slug": "hob",
+    "original_filename": "hob.skp",
+    "name": "Built-in 4-Burner Glass Cooktop",
+    "category": "decor",
+    "decorType": "gas_hob",
+    "subCategory": "Kitchen Appliances",
+    "icon": "🍳",
+    "modelUrl": "assets/decors/hob.glb",
+    "thumbnailUrl": "assets/decors/hob_thumb.png",
+    "dimensions": {
+      "W": 865,
+      "H": 60,
+      "D": 510
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        -5.0,
+        -510.0
+      ],
+      "max": [
+        865.0,
+        47.5,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1421944,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_maquina_de_lavar_roupas_sansung",
+    "slug": "maquina_de_lavar_roupas_sansung",
+    "original_filename": "maquina_de_lavar_roupas_Sansung.skp",
+    "name": "Samsung EcoBubble Front Load Washer",
+    "category": "decor",
+    "decorType": "washing_machine",
+    "subCategory": "Appliances",
+    "icon": "🧺",
+    "modelUrl": "assets/decors/maquina_de_lavar_roupas_sansung.glb",
+    "thumbnailUrl": "assets/decors/maquina_de_lavar_roupas_sansung_thumb.png",
+    "dimensions": {
+      "W": 600,
+      "H": 850,
+      "D": 630
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -600.0
+      ],
+      "max": [
+        600.0,
+        850.0,
+        30.0
+      ]
+    },
+    "fileSizeGlb": 46960,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_rth",
+    "slug": "rth",
+    "original_filename": "rth.skp",
+    "name": "Artisan Ceramic Table Vase",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "🏺",
+    "modelUrl": "assets/decors/rth.glb",
+    "thumbnailUrl": "assets/decors/rth_thumb.png",
+    "dimensions": {
+      "W": 350,
+      "H": 500,
+      "D": 350
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        1986.9,
+        0.0,
+        -1178.2
+      ],
+      "max": [
+        2392.7,
+        649.2,
+        -730.9
+      ]
+    },
+    "fileSizeGlb": 1300976,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_sofa",
+    "slug": "sofa",
+    "original_filename": "sofa.skp",
+    "name": "Contemporary Deep Lounge Sofa",
+    "category": "decor",
+    "decorType": "sofa",
+    "subCategory": "Sofas & Seating",
+    "icon": "🛋️",
+    "modelUrl": "assets/decors/sofa.glb",
+    "thumbnailUrl": "assets/decors/sofa_thumb.png",
+    "dimensions": {
+      "W": 2400,
+      "H": 860,
+      "D": 1000
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        558.2,
+        0.0,
+        -2333.0
+      ],
+      "max": [
+        3481.4,
+        861.6,
+        -594.8
+      ]
+    },
+    "fileSizeGlb": 8326600,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_z1",
+    "slug": "z1",
+    "original_filename": "z1.skp",
+    "name": "Architectural Graphic Wall Feature Z1",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "🖼️",
+    "modelUrl": "assets/decors/z1.glb",
+    "thumbnailUrl": "assets/decors/z1_thumb.png",
+    "dimensions": {
+      "W": 1200,
+      "H": 800,
+      "D": 60
+    },
+    "elevation": 900,
+    "bounds": {
+      "min": [
+        1334.5,
+        -0.0,
+        -22013.6
+      ],
+      "max": [
+        24255.2,
+        20.0,
+        -12041.5
+      ]
+    },
+    "fileSizeGlb": 73880,
+    "excludeFromPricing": true,
+    "isDecor": true
+  }
+];
+  if (typeof window !== 'undefined') { window.ORBIX_DECORS_CATALOG = catalog; }
+  if (typeof module !== 'undefined' && module.exports) { module.exports = catalog; }
+})();
+
 /* ═══════════════════════════════════════════════════════════════════════════════
    ORBIX STUDIO — Architectural Model, Project Schema & Geometry Core
    Version: 1.0.0
@@ -9618,6 +10894,8 @@ body.role-employee #adminCreateEmpBox,
       isDecor: isDecor,
       excludeFromPricing: isDecor,
       decorType: opts.decorType || null,
+      slug: opts.slug || null,
+      thumbnailUrl: opts.thumbnailUrl || null,
       modelUrl: opts.modelUrl || null,
       modelFormat: opts.modelFormat || null,
       notes: opts.notes || ''
@@ -15197,6 +16475,35 @@ body.role-employee #adminCreateEmpBox,
     return String(id || '').replace(/[\/\\:\*\?"<>\|\s]+/g, '-').toLowerCase();
   }
 
+  function registerDecorsCatalog(catalog) {
+    if (!Array.isArray(catalog)) return;
+    for (var i = 0; i < catalog.length; i++) {
+      var d = catalog[i];
+      var existingIdx = -1;
+      for (var j = 0; j < FURNITURE_CATALOG.length; j++) {
+        if (FURNITURE_CATALOG[j].id === d.id || (d.slug && FURNITURE_CATALOG[j].slug === d.slug)) {
+          existingIdx = j;
+          break;
+        }
+      }
+      var entry = Object.assign({}, d, {
+        category: 'decor',
+        isDecor: true,
+        excludeFromPricing: true,
+        areaSqft: 0
+      });
+      if (existingIdx >= 0) {
+        FURNITURE_CATALOG[existingIdx] = entry;
+      } else {
+        FURNITURE_CATALOG.push(entry);
+      }
+    }
+  }
+
+  if (typeof window !== 'undefined' && window.ORBIX_DECORS_CATALOG && Array.isArray(window.ORBIX_DECORS_CATALOG)) {
+    registerDecorsCatalog(window.ORBIX_DECORS_CATALOG);
+  }
+
   function getUnitIcon(item) {
     if (!item) return 'icon-cookscape-unit.png';
     if (typeof OrbixUnitIcons !== 'undefined' && OrbixUnitIcons.getIcon) {
@@ -15303,6 +16610,7 @@ body.role-employee #adminCreateEmpBox,
     checkPlacementOverlap: checkPlacementOverlap,
     getUnitIcon: getUnitIcon,
     sanitizeIconId: sanitizeIconId,
+    registerDecorsCatalog: registerDecorsCatalog,
     toValidHexColor: toValidHexColor
   };
 });
@@ -24074,12 +25382,188 @@ body.role-employee #adminCreateEmpBox,
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
+     Photorealistic 3D SketchUp GLTF Decor Loader & Asset Cache
+     Loads textured .glb models converted from native Trimble SketchUp (.skp)
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer._gltfCache = ArchitecturalRenderer._gltfCache || {};
+  ArchitecturalRenderer._gltfPending = ArchitecturalRenderer._gltfPending || {};
+
+  ArchitecturalRenderer.prototype.loadAndAttachGLB = function (url, parentGroup, dims, onLoaded) {
+    var self = this;
+    if (!url || typeof THREE === 'undefined') return;
+
+    function applyModel(sourceScene) {
+      if (!parentGroup) return;
+      var ph = parentGroup.getObjectByName('__decor_placeholder__');
+      if (ph) parentGroup.remove(ph);
+
+      // Deep clone the cached scene
+      var model = sourceScene.clone(true);
+      model.name = '__decor_model__';
+
+      // Compute bounding box
+      var bbox = new THREE.Box3().setFromObject(model);
+      var size = new THREE.Vector3();
+      bbox.getSize(size);
+      var center = new THREE.Vector3();
+      bbox.getCenter(center);
+
+      var wrapper = new THREE.Group();
+      wrapper.name = '__decor_wrapper__';
+
+      // Center horizontally, ground bottom to 0
+      model.position.set(-center.x, -bbox.min.y, -center.z);
+
+      // Enable realistic shadows and materials
+      model.traverse(function (child) {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          child.userData = child.userData || {};
+          child.userData.isGltfMesh = true;
+          if (child.material) {
+            child.material.side = THREE.DoubleSide;
+            if (child.material.isMeshStandardMaterial || child.material.isMeshPhysicalMaterial) {
+              child.material.roughness = Math.min(Math.max(child.material.roughness, 0.2), 0.95);
+              child.material.metalness = Math.min(Math.max(child.material.metalness, 0.0), 0.9);
+              child.material.envMapIntensity = 1.0;
+              child.material.needsUpdate = true;
+            }
+          }
+        }
+      });
+
+      // Scale proportionally if user customized unit dimensions in UI
+      if (dims && dims.W && dims.H && dims.D && size.x > 1 && size.y > 1 && size.z > 1) {
+        var sx = dims.W / size.x;
+        var sy = dims.H / size.y;
+        var sz = dims.D / size.z;
+        if (Math.abs(sx - 1) > 0.05 || Math.abs(sy - 1) > 0.05 || Math.abs(sz - 1) > 0.05) {
+          wrapper.scale.set(sx, sy, sz);
+        }
+      }
+
+      wrapper.add(model);
+      parentGroup.add(wrapper);
+
+      // Ground contact shadow under floor decors
+      if (typeof ArchitecturalRenderer.createContactShadowPlane === 'function') {
+        var shadowW = (dims && dims.W) || size.x;
+        var shadowD = (dims && dims.D) || size.z;
+        var shadowPlane = ArchitecturalRenderer.createContactShadowPlane(shadowW, shadowD);
+        if (shadowPlane) {
+          shadowPlane.position.set(0, 1.2, 0);
+          parentGroup.add(shadowPlane);
+        }
+      }
+
+      if (self.requestRender) self.requestRender();
+      if (typeof onLoaded === 'function') onLoaded(wrapper);
+    }
+
+    if (ArchitecturalRenderer._gltfCache[url]) {
+      applyModel(ArchitecturalRenderer._gltfCache[url]);
+      return;
+    }
+
+    // Add lightweight bounding box placeholder while loading asynchronously
+    var placeW = (dims && dims.W) || 600;
+    var placeH = (dims && dims.H) || 800;
+    var placeD = (dims && dims.D) || 600;
+    var ph = new THREE.Mesh(
+      new THREE.BoxGeometry(placeW, placeH, placeD),
+      new THREE.MeshStandardMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.25 })
+    );
+    ph.name = '__decor_placeholder__';
+    ph.position.set(0, placeH / 2, 0);
+    parentGroup.add(ph);
+
+    if (ArchitecturalRenderer._gltfPending[url]) {
+      ArchitecturalRenderer._gltfPending[url].push(applyModel);
+      return;
+    }
+    ArchitecturalRenderer._gltfPending[url] = [applyModel];
+
+    function doLoad() {
+      if (!window.THREE || !window.THREE.GLTFLoader) {
+        setTimeout(doLoad, 80);
+        return;
+      }
+      var loader = new THREE.GLTFLoader();
+      loader.load(url, function (gltf) {
+        ArchitecturalRenderer._gltfCache[url] = gltf.scene;
+        var cbs = ArchitecturalRenderer._gltfPending[url] || [];
+        delete ArchitecturalRenderer._gltfPending[url];
+        cbs.forEach(function (cb) {
+          try { cb(gltf.scene); } catch (e) { console.error(e); }
+        });
+      }, undefined, function (err) {
+        console.warn('[Orbix 3D] Failed to load decor model:', url, err);
+        delete ArchitecturalRenderer._gltfPending[url];
+      });
+    }
+
+    doLoad();
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
      Build Decor & Appliance Mesh (Excluded from Pricing)
-     Supports Fridge, Ice Box / Chiller, Plants, Microwave, Chimney, TV, Sofa, etc.
+     Renders Photorealistic Textured 3D SketchUp GLTF Models or Procedural Fallback
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildDecorMesh = function (furn, fg, dims) {
     var cat = (furn.category || 'decor').toLowerCase();
     var name = (furn.name || '').toLowerCase();
+    var id = (furn.id || '').toLowerCase();
+    var code = (furn.code || furn.catalogItemId || '').toLowerCase();
+
+    // 1. Resolve exact .glb model URL
+    var glbUrl = furn.modelUrl || furn.glbPath || null;
+    if (glbUrl && typeof glbUrl === 'string' && /\.skp$/i.test(glbUrl)) {
+      // Map old .skp path to new .glb model
+      var base = glbUrl.replace(/^.*[\\\/]/, '').replace(/\.skp$/i, '');
+      var slug = base.replace(/[\+\s\-]+/g, '_').replace(/[^\w\.]/g, '').replace(/_+/g, '_').toLowerCase();
+      glbUrl = 'assets/decors/' + slug + '.glb';
+    }
+
+    // 2. Lookup in window.ORBIX_DECORS_CATALOG (46 models)
+    if (!glbUrl && typeof window !== 'undefined' && window.ORBIX_DECORS_CATALOG && Array.isArray(window.ORBIX_DECORS_CATALOG)) {
+      var match = window.ORBIX_DECORS_CATALOG.find(function (d) {
+        if (furn.slug && d.slug === furn.slug) return true;
+        if (d.id === furn.id || d.id === furn.catalogItemId || d.id === furn.code) return true;
+        if (d.name && d.name.toLowerCase() === name) return true;
+        return false;
+      });
+      if (match && match.modelUrl) {
+        glbUrl = match.modelUrl;
+      }
+    }
+
+    // 3. Fallback smart mapping from keywords to rich SketchUp models
+    if (!glbUrl) {
+      if (name.indexOf('windsor') !== -1) glbUrl = 'assets/decors/bed_windsor_1.glb';
+      else if (name.indexOf('cama') !== -1) glbUrl = 'assets/decors/cama_3.glb';
+      else if (name.indexOf('girls') !== -1 && name.indexOf('bed') !== -1) glbUrl = 'assets/decors/girls_bed.glb';
+      else if (name.indexOf('ashley') !== -1) glbUrl = 'assets/decors/ashley_padova_3_seater_sofa.glb';
+      else if (name.indexOf('boucle') !== -1 || name.indexOf('ovo') !== -1) glbUrl = 'assets/decors/sofa_ovo_z_pojemnikiem_beżowa_boucle.glb';
+      else if (name.indexOf('hob') !== -1 && name.indexOf('3') !== -1) glbUrl = 'assets/decors/hob_1.glb';
+      else if (name.indexOf('hob') !== -1) glbUrl = 'assets/decors/hob.glb';
+      else if (name.indexOf('dishwasher') !== -1) glbUrl = 'assets/decors/kitchenaid_dishwasher.glb';
+      else if (name.indexOf('lamp') !== -1) glbUrl = 'assets/decors/floor_lamp.glb';
+      else if (name.indexOf('jaali') !== -1) glbUrl = 'assets/decors/jaali_partition.glb';
+      else if (name.indexOf('partition') !== -1) glbUrl = 'assets/decors/partition_wall.glb';
+      else if (name.indexOf('vegetables') !== -1) glbUrl = 'assets/decors/vegetables.glb';
+      else if (name.indexOf('teapot') !== -1) glbUrl = 'assets/decors/teapot.glb';
+      else if (name.indexOf('fig') !== -1 || (name.indexOf('plant') !== -1 && name.indexOf('tall') !== -1)) glbUrl = 'assets/decors/flower_pot_12.glb';
+      else if (name.indexOf('succulent') !== -1) glbUrl = 'assets/decors/succulent_decoration.glb';
+      else if (name.indexOf('cutlery') !== -1) glbUrl = 'assets/decors/cutlery.glb';
+      else if (name.indexOf('dining') !== -1 && name.indexOf('4') !== -1) glbUrl = 'assets/decors/dining_table_4.glb';
+      else if (name.indexOf('dining') !== -1) glbUrl = 'assets/decors/dining_table2.glb';
+      else if (name.indexOf('tv') !== -1 || name.indexOf('television') !== -1) glbUrl = 'assets/decors/7_mi_tv.glb';
+      else if (name.indexOf('refrigerator') !== -1 || name.indexOf('fridge') !== -1) glbUrl = 'assets/decors/r7250_refrigerator_freezer_20_cubic_feet.glb';
+      else if (name.indexOf('washing') !== -1 || name.indexOf('sansung') !== -1) glbUrl = 'assets/decors/maquina_de_lavar_roupas_sansung.glb';
+      else if (name.indexOf('chimney') !== -1 || name.indexOf('hood') !== -1) glbUrl = 'assets/decors/chimney.glb';
+    }
+
     var decorType = furn.decorType || (
       (name.indexOf('sink') !== -1) ? 'sink' :
       (name.indexOf('hob') !== -1 || name.indexOf('stove') !== -1 || name.indexOf('burner') !== -1 || name.indexOf('cooktop') !== -1 || name.indexOf('component_2') !== -1) ? 'gas_hob' :
@@ -24112,6 +25596,17 @@ body.role-employee #adminCreateEmpBox,
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
         parseFloat(furn.pos.z) : defDecorElev);
+
+    // If photorealistic SketchUp GLB model is available, attach it directly!
+    if (glbUrl) {
+      this.loadAndAttachGLB(glbUrl, fg, dims);
+      var posX = (furn.pos && furn.pos.x) || 0;
+      var posY = (furn.pos && furn.pos.y) || 0;
+      fg.position.set(posX, elev, posY);
+      fg.rotation.y = -(furn.rotY || 0);
+      fg.visible = true;
+      return fg;
+    }
 
     var W = dims.W, H = dims.H, D = dims.D;
 
@@ -26465,6 +27960,7 @@ body.role-employee #adminCreateEmpBox,
   ArchitecturalRenderer.prototype.disposeGroup = function (group) {
     if (!group) return;
     group.traverse(function (obj) {
+      if (obj.userData && obj.userData.isGltfMesh) return;
       if (obj.geometry) obj.geometry.dispose();
       if (obj.material) {
         if (Array.isArray(obj.material)) {
@@ -30385,6 +31881,9 @@ body.role-employee #adminCreateEmpBox,
       if (modal) {
         modal.classList.add('is-open');
         modal.style.display = 'flex';
+        if (typeof this._refreshDecorGrid === 'function') {
+          this._refreshDecorGrid();
+        }
       }
     },
 
@@ -30436,13 +31935,15 @@ body.role-employee #adminCreateEmpBox,
 
       var newDecor = Core.createFurniturePlacement({
         id: fId,
+        slug: preset.slug || null,
         name: preset.name || 'Decor Item',
         category: 'decor',
         isDecor: true,
         excludeFromPricing: true,
         decorType: preset.decorType || 'general',
         modelUrl: preset.modelUrl || null,
-        modelFormat: preset.modelFormat || null,
+        thumbnailUrl: preset.thumbnailUrl || null,
+        modelFormat: preset.modelFormat || (preset.modelUrl && /\.glb$/i.test(preset.modelUrl) ? 'glb' : null),
         elevation: initElev,
         pos: { x: cX, y: cY, z: initElev },
         rotY: 0,
@@ -30504,10 +32005,16 @@ body.role-employee #adminCreateEmpBox,
       var self = this;
       var modal = document.getElementById('modalImportDecor');
       var openBtn = document.getElementById('openDecorModalBtn');
+      var open3DBtn = document.getElementById('placeDecor3DBtn');
       if (!modal) return;
 
       if (openBtn) {
         openBtn.addEventListener('click', function () {
+          self.openDecorModal();
+        });
+      }
+      if (open3DBtn) {
+        open3DBtn.addEventListener('click', function () {
           self.openDecorModal();
         });
       }
@@ -30537,27 +32044,106 @@ body.role-employee #adminCreateEmpBox,
         });
       });
 
-      // Built-in decor card selection
-      modal.querySelectorAll('.decor-preset-card').forEach(function (card) {
-        card.addEventListener('click', function () {
-          var name = card.getAttribute('data-name');
-          var decorType = card.getAttribute('data-type');
-          var w = parseFloat(card.getAttribute('data-w')) || 900;
-          var h = parseFloat(card.getAttribute('data-h')) || 1800;
-          var d = parseFloat(card.getAttribute('data-d')) || 700;
-          var elev = parseFloat(card.getAttribute('data-elev')) || 0;
-          var model = card.getAttribute('data-model') || null;
+      // Dynamic 46 SketchUp Decor Catalog Rendering with Search & Category Filtering
+      var activeFilter = 'all';
+      var searchQuery = '';
 
-          self.placeDecorItem({
-            name: name,
-            decorType: decorType,
-            dimensions: { W: w, H: h, D: d },
-            elevation: elev,
-            modelUrl: model
-          });
-          self.closeDecorModal();
+      function renderGrid() {
+        var grid = document.getElementById('decorPresetGrid');
+        if (!grid) return;
+        var catalog = window.ORBIX_DECORS_CATALOG || [];
+        var filtered = catalog.filter(function (it) {
+          var matchCat = (activeFilter === 'all' || it.subCategory === activeFilter);
+          var matchQuery = true;
+          if (searchQuery) {
+            var q = searchQuery.toLowerCase();
+            var text = ((it.name || '') + ' ' + (it.subCategory || '') + ' ' + (it.original_filename || '')).toLowerCase();
+            matchQuery = text.indexOf(q) !== -1;
+          }
+          return matchCat && matchQuery;
         });
-      });
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;font-size:13px;">No 3D models match your search.</div>';
+          return;
+        }
+
+        grid.innerHTML = filtered.map(function (it) {
+          var dims = it.dimensions || { W: 900, H: 800, D: 600 };
+          var thumbHtml = it.thumbnailUrl
+            ? '<img src="' + it.thumbnailUrl + '" alt="' + it.name + '" style="width:100%;height:120px;object-fit:cover;display:block;">'
+            : '<div style="font-size:42px;">' + (it.icon || '✨') + '</div>';
+          return '<div class="decor-preset-card" data-slug="' + it.slug + '" style="cursor:pointer;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;transition:all 0.18s ease;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,0.05);">'
+            + '<div style="height:120px;background:#f8fafc;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-bottom:1px solid #f1f5f9;">'
+            + thumbHtml
+            + '<span style="position:absolute;top:6px;right:6px;font-size:10px;background:rgba(255,255,255,0.92);padding:2px 7px;border-radius:4px;font-weight:700;color:#334155;border:1px solid rgba(226,232,240,0.8);">' + it.subCategory + '</span>'
+            + '</div>'
+            + '<div style="padding:10px 12px;flex:1;display:flex;flex-direction:column;">'
+            + '<div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:4px;line-height:1.25;">' + it.name + '</div>'
+            + '<div style="font-size:11px;font-family:monospace;color:#64748b;margin-bottom:6px;">' + Math.round(dims.W) + ' × ' + Math.round(dims.H) + ' × ' + Math.round(dims.D) + ' mm</div>'
+            + '<div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px dashed #f1f5f9;">'
+            + '<span style="font-size:10.5px;color:#15803d;font-weight:600;">' + (it.elevation > 0 ? ('▲ ' + it.elevation + ' mm') : 'Floor 0 mm') + '</span>'
+            + '<span class="decor-card-badge" style="font-size:11px;font-weight:700;background:#dcfce7;color:#15803d;padding:3px 9px;border-radius:4px;border:1px solid #86efac;">Place ➔</span>'
+            + '</div>'
+            + '</div>'
+            + '</div>';
+        }).join('');
+
+        // Attach click handlers to place
+        grid.querySelectorAll('.decor-preset-card').forEach(function (card) {
+          card.addEventListener('click', function () {
+            var slug = card.getAttribute('data-slug');
+            var item = (window.ORBIX_DECORS_CATALOG || []).find(function (d) { return d.slug === slug; });
+            if (!item) return;
+
+            self.placeDecorItem({
+              id: item.id,
+              slug: item.slug,
+              name: item.name,
+              category: 'decor',
+              decorType: item.decorType,
+              dimensions: item.dimensions,
+              elevation: item.elevation,
+              modelUrl: item.modelUrl,
+              thumbnailUrl: item.thumbnailUrl
+            });
+            self.closeDecorModal();
+          });
+        });
+      }
+
+      self._refreshDecorGrid = renderGrid;
+
+      var searchInp = document.getElementById('decorSearchInput');
+      if (searchInp) {
+        searchInp.addEventListener('input', function () {
+          searchQuery = searchInp.value.trim();
+          renderGrid();
+        });
+      }
+
+      var catFilter = document.getElementById('decorCategoryFilter');
+      if (catFilter) {
+        catFilter.querySelectorAll('.decor-cat-pill').forEach(function (pill) {
+          pill.addEventListener('click', function () {
+            catFilter.querySelectorAll('.decor-cat-pill').forEach(function (p) {
+              p.classList.remove('is-active');
+              p.style.background = '#f1f5f9';
+              p.style.color = '#334155';
+              p.style.border = '1px solid #cbd5e1';
+            });
+            pill.classList.add('is-active');
+            pill.style.background = '#15803d';
+            pill.style.color = '#ffffff';
+            pill.style.border = 'none';
+            activeFilter = pill.getAttribute('data-cat') || 'all';
+            renderGrid();
+          });
+        });
+      }
+
+      // Initial populate
+      renderGrid();
 
       // Elevation presets in custom tab
       modal.querySelectorAll('.decor-elev-preset-btn').forEach(function (btn) {

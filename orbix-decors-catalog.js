@@ -1,0 +1,1525 @@
+/* Auto-generated & Curated Orbix Decors Catalog from 46 SketchUp Models */
+(function() {
+  var catalog = [
+  {
+    "id": "decor_023",
+    "slug": "023",
+    "original_filename": "023.skp",
+    "name": "Master Suite Bed & Nightstands 023",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/023.glb",
+    "thumbnailUrl": "assets/decors/023_thumb.png",
+    "dimensions": {
+      "W": 2400,
+      "H": 1050,
+      "D": 2150
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -520031.0,
+        88310.5,
+        -3704.0
+      ],
+      "max": [
+        497751.1,
+        1059173.1,
+        247167.8
+      ]
+    },
+    "fileSizeGlb": 13408864,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_7_mi_tv",
+    "slug": "7_mi_tv",
+    "original_filename": "7_MI+TV.skp",
+    "name": "Xiaomi Mi 65\" Smart 4K TV",
+    "category": "decor",
+    "decorType": "tv",
+    "subCategory": "Electronics & TV",
+    "icon": "📺",
+    "modelUrl": "assets/decors/7_mi_tv.glb",
+    "thumbnailUrl": "assets/decors/7_mi_tv_thumb.png",
+    "dimensions": {
+      "W": 1450,
+      "H": 860,
+      "D": 65
+    },
+    "elevation": 950,
+    "bounds": {
+      "min": [
+        875.3,
+        0.0,
+        -1278.9
+      ],
+      "max": [
+        2551.3,
+        978.0,
+        -1249.2
+      ]
+    },
+    "fileSizeGlb": 127316,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_ai_2049_100r1",
+    "slug": "ai_2049_100r1",
+    "original_filename": "AI_2049_100(R1).skp",
+    "name": "Modern Contemporary Armchair",
+    "category": "decor",
+    "decorType": "chair",
+    "subCategory": "Sofas & Seating",
+    "icon": "🛋️",
+    "modelUrl": "assets/decors/ai_2049_100r1.glb",
+    "thumbnailUrl": "assets/decors/ai_2049_100r1_thumb.png",
+    "dimensions": {
+      "W": 1050,
+      "H": 880,
+      "D": 1000
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -24.7,
+        -0.0,
+        -3495.7
+      ],
+      "max": [
+        1105.1,
+        883.0,
+        -2429.8
+      ]
+    },
+    "fileSizeGlb": 2750032,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_ashley_padova_3_seater_sofa",
+    "slug": "ashley_padova_3_seater_sofa",
+    "original_filename": "Ashley+Padova+3+Seater+Sofa.skp",
+    "name": "Ashley Padova 3-Seater Sofa",
+    "category": "decor",
+    "decorType": "sofa",
+    "subCategory": "Sofas & Seating",
+    "icon": "🛋️",
+    "modelUrl": "assets/decors/ashley_padova_3_seater_sofa.glb",
+    "thumbnailUrl": "assets/decors/ashley_padova_3_seater_sofa_thumb.png",
+    "dimensions": {
+      "W": 2400,
+      "H": 980,
+      "D": 1020
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        13.5,
+        -0.0,
+        -1046.3
+      ],
+      "max": [
+        2435.6,
+        1020.7,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 11752004,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_conc_flower_pot",
+    "slug": "conc_flower_pot",
+    "original_filename": "CONC+FLOWER+POT.skp",
+    "name": "Concrete Architectural Planter",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/conc_flower_pot.glb",
+    "thumbnailUrl": "assets/decors/conc_flower_pot_thumb.png",
+    "dimensions": {
+      "W": 590,
+      "H": 780,
+      "D": 610
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -204.8,
+        0.0,
+        -395.9
+      ],
+      "max": [
+        384.1,
+        779.2,
+        214.9
+      ]
+    },
+    "fileSizeGlb": 11631972,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_cama_3",
+    "slug": "cama_3",
+    "original_filename": "Cama+3.skp",
+    "name": "Cama Modern Upholstered Bed",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/cama_3.glb",
+    "thumbnailUrl": "assets/decors/cama_3_thumb.png",
+    "dimensions": {
+      "W": 1800,
+      "H": 970,
+      "D": 2100
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -85.2,
+        -0.0,
+        -2071.6
+      ],
+      "max": [
+        1715.9,
+        971.2,
+        52.9
+      ]
+    },
+    "fileSizeGlb": 10915672,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_component",
+    "slug": "component",
+    "original_filename": "Component.skp",
+    "name": "Architectural Display Column",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "🏛️",
+    "modelUrl": "assets/decors/component.glb",
+    "thumbnailUrl": "assets/decors/component_thumb.png",
+    "dimensions": {
+      "W": 640,
+      "H": 1800,
+      "D": 680
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        1328.8,
+        0.0,
+        -788.6
+      ],
+      "max": [
+        1968.8,
+        1804.0,
+        -107.1
+      ]
+    },
+    "fileSizeGlb": 1486952,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_component_12",
+    "slug": "component_12",
+    "original_filename": "Component_12.skp",
+    "name": "Vanity Dressing Stool",
+    "category": "decor",
+    "decorType": "stool",
+    "subCategory": "Accents & Styling",
+    "icon": "🪑",
+    "modelUrl": "assets/decors/component_12.glb",
+    "thumbnailUrl": "assets/decors/component_12_thumb.png",
+    "dimensions": {
+      "W": 450,
+      "H": 520,
+      "D": 450
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -800.0
+      ],
+      "max": [
+        450.0,
+        524.1,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 201144,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_component_3",
+    "slug": "component_3",
+    "original_filename": "Component_3.skp",
+    "name": "Decorative Ceramic Table Planter",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/component_3.glb",
+    "thumbnailUrl": "assets/decors/component_3_thumb.png",
+    "dimensions": {
+      "W": 480,
+      "H": 430,
+      "D": 480
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -480.0
+      ],
+      "max": [
+        480.0,
+        433.8,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1013872,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_cutlery",
+    "slug": "cutlery",
+    "original_filename": "Cutlery.skp",
+    "name": "Countertop Cutlery Organizer",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🍴",
+    "modelUrl": "assets/decors/cutlery.glb",
+    "thumbnailUrl": "assets/decors/cutlery_thumb.png",
+    "dimensions": {
+      "W": 170,
+      "H": 290,
+      "D": 160
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        102.5,
+        22.0,
+        -112.5
+      ],
+      "max": [
+        274.8,
+        309.7,
+        45.6
+      ]
+    },
+    "fileSizeGlb": 2100952,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_cuttlery_dishrack",
+    "slug": "cuttlery_dishrack",
+    "original_filename": "Cuttlery+Dishrack.skp",
+    "name": "Cutlery & Dish Drying Rack",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🍽️",
+    "modelUrl": "assets/decors/cuttlery_dishrack.glb",
+    "thumbnailUrl": "assets/decors/cuttlery_dishrack_thumb.png",
+    "dimensions": {
+      "W": 310,
+      "H": 280,
+      "D": 400
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -0.0,
+        0.0,
+        -406.9
+      ],
+      "max": [
+        310.0,
+        282.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 2544848,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_dining_table2",
+    "slug": "dining_table2",
+    "original_filename": "DINING+TABLE2.skp",
+    "name": "Luxury 6-Seater Dining Table Set",
+    "category": "decor",
+    "decorType": "dining_table",
+    "subCategory": "Dining Tables",
+    "icon": "🪑",
+    "modelUrl": "assets/decors/dining_table2.glb",
+    "thumbnailUrl": "assets/decors/dining_table2_thumb.png",
+    "dimensions": {
+      "W": 1500,
+      "H": 760,
+      "D": 1000
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -263.6,
+        0.0,
+        -1000.0
+      ],
+      "max": [
+        1218.5,
+        1307.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 33694308,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_floor_lamp",
+    "slug": "floor_lamp",
+    "original_filename": "Floor+lamp.skp",
+    "name": "Nordic Curved Arc Floor Lamp",
+    "category": "decor",
+    "decorType": "floor_lamp",
+    "subCategory": "Lighting",
+    "icon": "💡",
+    "modelUrl": "assets/decors/floor_lamp.glb",
+    "thumbnailUrl": "assets/decors/floor_lamp_thumb.png",
+    "dimensions": {
+      "W": 500,
+      "H": 2100,
+      "D": 1400
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        30.0,
+        0.0,
+        -1692.9
+      ],
+      "max": [
+        394.6,
+        2367.8,
+        184.3
+      ]
+    },
+    "fileSizeGlb": 688912,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_flower_pot_12",
+    "slug": "flower_pot_12",
+    "original_filename": "Flower+pot+12.skp",
+    "name": "Tall Indoor Fiddle Fig Tree",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🌿",
+    "modelUrl": "assets/decors/flower_pot_12.glb",
+    "thumbnailUrl": "assets/decors/flower_pot_12_thumb.png",
+    "dimensions": {
+      "W": 800,
+      "H": 1850,
+      "D": 800
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -869.4,
+        0.0,
+        -465.0
+      ],
+      "max": [
+        832.3,
+        3483.9,
+        492.9
+      ]
+    },
+    "fileSizeGlb": 1551032,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_glass_apothecary_jar",
+    "slug": "glass_apothecary_jar",
+    "original_filename": "Glass_Apothecary_Jar.skp",
+    "name": "Glass Apothecary Canisters",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🫙",
+    "modelUrl": "assets/decors/glass_apothecary_jar.glb",
+    "thumbnailUrl": "assets/decors/glass_apothecary_jar_thumb.png",
+    "dimensions": {
+      "W": 450,
+      "H": 210,
+      "D": 190
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -180.5,
+        -0.0,
+        3.3
+      ],
+      "max": [
+        501.1,
+        209.5,
+        192.8
+      ]
+    },
+    "fileSizeGlb": 2287836,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_group_338",
+    "slug": "group_338",
+    "original_filename": "Group_338.skp",
+    "name": "Styling Decor Vignette 338",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/group_338.glb",
+    "thumbnailUrl": "assets/decors/group_338_thumb.png",
+    "dimensions": {
+      "W": 420,
+      "H": 650,
+      "D": 500
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -0.0,
+        0.0,
+        -900.0
+      ],
+      "max": [
+        426.4,
+        837.4,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1398764,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_hob_1",
+    "slug": "hob_1",
+    "original_filename": "HOB-1.skp",
+    "name": "Built-in 3-Burner Gas Hob",
+    "category": "decor",
+    "decorType": "gas_hob",
+    "subCategory": "Kitchen Appliances",
+    "icon": "🍳",
+    "modelUrl": "assets/decors/hob_1.glb",
+    "thumbnailUrl": "assets/decors/hob_1_thumb.png",
+    "dimensions": {
+      "W": 750,
+      "H": 80,
+      "D": 500
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -870.0
+      ],
+      "max": [
+        525.0,
+        96.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1277280,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_jaali_partition",
+    "slug": "jaali_partition",
+    "original_filename": "Jaali+Partition.skp",
+    "name": "Decorative Geometric Jaali Screen",
+    "category": "decor",
+    "decorType": "partition",
+    "subCategory": "Partitions & Walls",
+    "icon": "🧱",
+    "modelUrl": "assets/decors/jaali_partition.glb",
+    "thumbnailUrl": "assets/decors/jaali_partition_thumb.png",
+    "dimensions": {
+      "W": 1200,
+      "H": 2300,
+      "D": 120
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -123.8
+      ],
+      "max": [
+        1211.3,
+        2322.9,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1407792,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_kitchen_composition_decor_2",
+    "slug": "kitchen_composition_decor_2",
+    "original_filename": "Kitchen+composition+decor+2.skp",
+    "name": "Kitchen Counter Decor Composition",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🍶",
+    "modelUrl": "assets/decors/kitchen_composition_decor_2.glb",
+    "thumbnailUrl": "assets/decors/kitchen_composition_decor_2_thumb.png",
+    "dimensions": {
+      "W": 480,
+      "H": 380,
+      "D": 200
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -31.7,
+        -35.0,
+        -200.0
+      ],
+      "max": [
+        450.0,
+        349.3,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 6223628,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_kitchenaid_dishwasher",
+    "slug": "kitchenaid_dishwasher",
+    "original_filename": "KitchenAid+Dishwasher.skp",
+    "name": "KitchenAid Built-in Dishwasher",
+    "category": "decor",
+    "decorType": "dishwasher",
+    "subCategory": "Kitchen Appliances",
+    "icon": "🍽️",
+    "modelUrl": "assets/decors/kitchenaid_dishwasher.glb",
+    "thumbnailUrl": "assets/decors/kitchenaid_dishwasher_thumb.png",
+    "dimensions": {
+      "W": 600,
+      "H": 850,
+      "D": 640
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -641.3
+      ],
+      "max": [
+        596.9,
+        857.2,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 82448,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_partition_wall",
+    "slug": "partition_wall",
+    "original_filename": "PARTITION+WALL.skp",
+    "name": "Modern Fluted Divider Wall",
+    "category": "decor",
+    "decorType": "partition",
+    "subCategory": "Partitions & Walls",
+    "icon": "🧱",
+    "modelUrl": "assets/decors/partition_wall.glb",
+    "thumbnailUrl": "assets/decors/partition_wall_thumb.png",
+    "dimensions": {
+      "W": 2000,
+      "H": 2400,
+      "D": 250
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        371.9,
+        0.0,
+        -2331.5
+      ],
+      "max": [
+        2950.0,
+        3352.8,
+        -121.3
+      ]
+    },
+    "fileSizeGlb": 9412464,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_partition",
+    "slug": "partition",
+    "original_filename": "PARTITION.skp",
+    "name": "Architectural Vertical Wood Slats",
+    "category": "decor",
+    "decorType": "partition",
+    "subCategory": "Partitions & Walls",
+    "icon": "🧱",
+    "modelUrl": "assets/decors/partition.glb",
+    "thumbnailUrl": "assets/decors/partition_thumb.png",
+    "dimensions": {
+      "W": 1450,
+      "H": 2400,
+      "D": 200
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        167.8,
+        0.0,
+        -827.9
+      ],
+      "max": [
+        1615.6,
+        2743.2,
+        -213.1
+      ]
+    },
+    "fileSizeGlb": 53180976,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_pv977nss_geprofile",
+    "slug": "pv977nss_geprofile",
+    "original_filename": "PV977NSS_GEProfile.skp",
+    "name": "GE Profile Glass Canopy Chimney",
+    "category": "decor",
+    "decorType": "chimney",
+    "subCategory": "Kitchen Appliances",
+    "icon": "💨",
+    "modelUrl": "assets/decors/pv977nss_geprofile.glb",
+    "thumbnailUrl": "assets/decors/pv977nss_geprofile_thumb.png",
+    "dimensions": {
+      "W": 900,
+      "H": 810,
+      "D": 550
+    },
+    "elevation": 1500,
+    "bounds": {
+      "min": [
+        -455.6,
+        -6.4,
+        -2.2
+      ],
+      "max": [
+        457.5,
+        808.5,
+        700.1
+      ]
+    },
+    "fileSizeGlb": 944560,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_r7250_refrigerator_freezer_20_cubic_feet",
+    "slug": "r7250_refrigerator_freezer_20_cubic_feet",
+    "original_filename": "R7250+-+Refrigerator-Freezer_+20+Cubic+Feet.skp",
+    "name": "Double Door Refrigerator-Freezer (20 Cu Ft)",
+    "category": "decor",
+    "decorType": "fridge",
+    "subCategory": "Kitchen Appliances",
+    "icon": "❄️",
+    "modelUrl": "assets/decors/r7250_refrigerator_freezer_20_cubic_feet.glb",
+    "thumbnailUrl": "assets/decors/r7250_refrigerator_freezer_20_cubic_feet_thumb.png",
+    "dimensions": {
+      "W": 760,
+      "H": 1730,
+      "D": 620
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        76.2,
+        25.4,
+        -622.3
+      ],
+      "max": [
+        838.2,
+        1758.9,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 38292,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_sofa_ovo_z_pojemnikiem_beżowa_boucle",
+    "slug": "sofa_ovo_z_pojemnikiem_beżowa_boucle",
+    "original_filename": "SOFA+Ovo+z+pojemnikiem+beżowa+boucle.skp",
+    "name": "Ovo Beige Bouclé Storage Sofa",
+    "category": "decor",
+    "decorType": "sofa",
+    "subCategory": "Sofas & Seating",
+    "icon": "🛋️",
+    "modelUrl": "assets/decors/sofa_ovo_z_pojemnikiem_beżowa_boucle.glb",
+    "thumbnailUrl": "assets/decors/sofa_ovo_z_pojemnikiem_beżowa_boucle_thumb.png",
+    "dimensions": {
+      "W": 2200,
+      "H": 850,
+      "D": 950
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        -185.0,
+        -1655.1
+      ],
+      "max": [
+        17065.2,
+        3439.2,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 11923720,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_succulent_decoration",
+    "slug": "succulent_decoration",
+    "original_filename": "Succulent+decoration.skp",
+    "name": "Succulent Botanical Dish Arrangement",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/succulent_decoration.glb",
+    "thumbnailUrl": "assets/decors/succulent_decoration_thumb.png",
+    "dimensions": {
+      "W": 350,
+      "H": 250,
+      "D": 350
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        574.8,
+        0.0,
+        -1147.8
+      ],
+      "max": [
+        1401.1,
+        785.4,
+        -1094.5
+      ]
+    },
+    "fileSizeGlb": 777976,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_teapot_1",
+    "slug": "teapot_1",
+    "original_filename": "Teapot (1).skp",
+    "name": "Nordic Matte Ceramic Teapot",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🫖",
+    "modelUrl": "assets/decors/teapot_1.glb",
+    "thumbnailUrl": "assets/decors/teapot_1_thumb.png",
+    "dimensions": {
+      "W": 210,
+      "H": 170,
+      "D": 180
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -0.0,
+        0.0,
+        -0.0
+      ],
+      "max": [
+        213.5,
+        167.2,
+        343.3
+      ]
+    },
+    "fileSizeGlb": 89108,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_teapot_2",
+    "slug": "teapot_2",
+    "original_filename": "Teapot (2).skp",
+    "name": "Artisan Tea Server Set with Cups",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🫖",
+    "modelUrl": "assets/decors/teapot_2.glb",
+    "thumbnailUrl": "assets/decors/teapot_2_thumb.png",
+    "dimensions": {
+      "W": 350,
+      "H": 220,
+      "D": 250
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -710.7,
+        -16.0,
+        -478.7
+      ],
+      "max": [
+        755.4,
+        921.5,
+        421.6
+      ]
+    },
+    "fileSizeGlb": 1584168,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_teapot",
+    "slug": "teapot",
+    "original_filename": "Teapot.skp",
+    "name": "Classic Porcelain Teapot",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🫖",
+    "modelUrl": "assets/decors/teapot.glb",
+    "thumbnailUrl": "assets/decors/teapot_thumb.png",
+    "dimensions": {
+      "W": 240,
+      "H": 160,
+      "D": 170
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        392.4,
+        1.2,
+        -548.9
+      ],
+      "max": [
+        629.1,
+        158.8,
+        -380.9
+      ]
+    },
+    "fileSizeGlb": 4282800,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_untitled",
+    "slug": "untitled",
+    "original_filename": "Untitled.skp",
+    "name": "Sculptural Ficus Botanical Display",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🌿",
+    "modelUrl": "assets/decors/untitled.glb",
+    "thumbnailUrl": "assets/decors/untitled_thumb.png",
+    "dimensions": {
+      "W": 800,
+      "H": 1850,
+      "D": 800
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -843.5,
+        0.0,
+        -843.5
+      ],
+      "max": [
+        843.5,
+        3940.6,
+        843.5
+      ]
+    },
+    "fileSizeGlb": 34871580,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_vegetables",
+    "slug": "vegetables",
+    "original_filename": "Vegetables.skp",
+    "name": "Fresh Harvest Kitchen Vegetable Bowl",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🥗",
+    "modelUrl": "assets/decors/vegetables.glb",
+    "thumbnailUrl": "assets/decors/vegetables_thumb.png",
+    "dimensions": {
+      "W": 300,
+      "H": 150,
+      "D": 300
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -216.8
+      ],
+      "max": [
+        247.6,
+        89.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 16711244,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_washing_machine",
+    "slug": "washing_machine",
+    "original_filename": "Washing+Machine.skp",
+    "name": "Modern Front Load Washing Machine",
+    "category": "decor",
+    "decorType": "washing_machine",
+    "subCategory": "Appliances",
+    "icon": "🧺",
+    "modelUrl": "assets/decors/washing_machine.glb",
+    "thumbnailUrl": "assets/decors/washing_machine_thumb.png",
+    "dimensions": {
+      "W": 600,
+      "H": 850,
+      "D": 600
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        113.7,
+        -0.0,
+        -500.0
+      ],
+      "max": [
+        968.5,
+        950.0,
+        3.0
+      ]
+    },
+    "fileSizeGlb": 1898364,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_x1_1",
+    "slug": "x1_1",
+    "original_filename": "X1 (1).skp",
+    "name": "Architectural Accent Decor X2",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/x1_1.glb",
+    "thumbnailUrl": "assets/decors/x1_1_thumb.png",
+    "dimensions": {
+      "W": 900,
+      "H": 800,
+      "D": 400
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -64320.3,
+        -3515.0,
+        -282668.4
+      ],
+      "max": [
+        557602.7,
+        20.0,
+        10199.6
+      ]
+    },
+    "fileSizeGlb": 38568,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_x1",
+    "slug": "x1",
+    "original_filename": "X1.skp",
+    "name": "Architectural Accent Decor X1",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/x1.glb",
+    "thumbnailUrl": "assets/decors/x1_thumb.png",
+    "dimensions": {
+      "W": 800,
+      "H": 750,
+      "D": 350
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        2421.3,
+        -317.0,
+        -22090.2
+      ],
+      "max": [
+        18209.1,
+        20.0,
+        -13789.0
+      ]
+    },
+    "fileSizeGlb": 67192,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_y1",
+    "slug": "y1",
+    "original_filename": "Y1.skp",
+    "name": "Architectural Wall Relief Panel Y1",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "🖼️",
+    "modelUrl": "assets/decors/y1.glb",
+    "thumbnailUrl": "assets/decors/y1_thumb.png",
+    "dimensions": {
+      "W": 1200,
+      "H": 600,
+      "D": 50
+    },
+    "elevation": 1200,
+    "bounds": {
+      "min": [
+        130.8,
+        -0.0,
+        -2404.8
+      ],
+      "max": [
+        2722.9,
+        20.0,
+        -1269.1
+      ]
+    },
+    "fileSizeGlb": 55028,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_bed_windsor_1",
+    "slug": "bed_windsor_1",
+    "original_filename": "bed+windsor (1).skp",
+    "name": "Windsor King Bed Set",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/bed_windsor_1.glb",
+    "thumbnailUrl": "assets/decors/bed_windsor_1_thumb.png",
+    "dimensions": {
+      "W": 2050,
+      "H": 1150,
+      "D": 2150
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        93.7,
+        0.0,
+        -3154.4
+      ],
+      "max": [
+        4835.5,
+        1793.6,
+        84.5
+      ]
+    },
+    "fileSizeGlb": 504276,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_chimney",
+    "slug": "chimney",
+    "original_filename": "chimney.skp",
+    "name": "Stainless Steel Slim Chimney",
+    "category": "decor",
+    "decorType": "chimney",
+    "subCategory": "Kitchen Appliances",
+    "icon": "💨",
+    "modelUrl": "assets/decors/chimney.glb",
+    "thumbnailUrl": "assets/decors/chimney_thumb.png",
+    "dimensions": {
+      "W": 880,
+      "H": 750,
+      "D": 480
+    },
+    "elevation": 1500,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -389.0
+      ],
+      "max": [
+        880.1,
+        911.9,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 66412,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_cutlery_1",
+    "slug": "cutlery_1",
+    "original_filename": "cutlery (1).skp",
+    "name": "Formal Dining Cutlery Set",
+    "category": "decor",
+    "decorType": "kitchen_decor",
+    "subCategory": "Kitchen Styling",
+    "icon": "🍴",
+    "modelUrl": "assets/decors/cutlery_1.glb",
+    "thumbnailUrl": "assets/decors/cutlery_1_thumb.png",
+    "dimensions": {
+      "W": 630,
+      "H": 80,
+      "D": 390
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -0.0,
+        -3.4,
+        -0.0
+      ],
+      "max": [
+        629.7,
+        391.0,
+        72.4
+      ]
+    },
+    "fileSizeGlb": 8531204,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_dining_table_4",
+    "slug": "dining_table_4",
+    "original_filename": "dining+table+4.skp",
+    "name": "Modern 4-Seater Dining Set",
+    "category": "decor",
+    "decorType": "dining_table",
+    "subCategory": "Dining Tables",
+    "icon": "🪑",
+    "modelUrl": "assets/decors/dining_table_4.glb",
+    "thumbnailUrl": "assets/decors/dining_table_4_thumb.png",
+    "dimensions": {
+      "W": 1350,
+      "H": 760,
+      "D": 1200
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -406.2,
+        -0.0,
+        -1590.0
+      ],
+      "max": [
+        951.9,
+        1272.6,
+        50.0
+      ]
+    },
+    "fileSizeGlb": 44852128,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_drfxnj",
+    "slug": "drfxnj",
+    "original_filename": "drfxnj.skp",
+    "name": "Sculptural Accent Centerpiece",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/drfxnj.glb",
+    "thumbnailUrl": "assets/decors/drfxnj_thumb.png",
+    "dimensions": {
+      "W": 600,
+      "H": 500,
+      "D": 450
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -558.8
+      ],
+      "max": [
+        838.2,
+        626.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1441832,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_girls_bed",
+    "slug": "girls_bed",
+    "original_filename": "girls+bed.skp",
+    "name": "Youth / Girl Single Bed",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/girls_bed.glb",
+    "thumbnailUrl": "assets/decors/girls_bed_thumb.png",
+    "dimensions": {
+      "W": 1200,
+      "H": 1150,
+      "D": 2000
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -43.6,
+        -0.0,
+        -570.2
+      ],
+      "max": [
+        2210.7,
+        1149.9,
+        597.6
+      ]
+    },
+    "fileSizeGlb": 4925316,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_hob",
+    "slug": "hob",
+    "original_filename": "hob.skp",
+    "name": "Built-in 4-Burner Glass Cooktop",
+    "category": "decor",
+    "decorType": "gas_hob",
+    "subCategory": "Kitchen Appliances",
+    "icon": "🍳",
+    "modelUrl": "assets/decors/hob.glb",
+    "thumbnailUrl": "assets/decors/hob_thumb.png",
+    "dimensions": {
+      "W": 865,
+      "H": 60,
+      "D": 510
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        -5.0,
+        -510.0
+      ],
+      "max": [
+        865.0,
+        47.5,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1421944,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_maquina_de_lavar_roupas_sansung",
+    "slug": "maquina_de_lavar_roupas_sansung",
+    "original_filename": "maquina_de_lavar_roupas_Sansung.skp",
+    "name": "Samsung EcoBubble Front Load Washer",
+    "category": "decor",
+    "decorType": "washing_machine",
+    "subCategory": "Appliances",
+    "icon": "🧺",
+    "modelUrl": "assets/decors/maquina_de_lavar_roupas_sansung.glb",
+    "thumbnailUrl": "assets/decors/maquina_de_lavar_roupas_sansung_thumb.png",
+    "dimensions": {
+      "W": 600,
+      "H": 850,
+      "D": 630
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -600.0
+      ],
+      "max": [
+        600.0,
+        850.0,
+        30.0
+      ]
+    },
+    "fileSizeGlb": 46960,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_rth",
+    "slug": "rth",
+    "original_filename": "rth.skp",
+    "name": "Artisan Ceramic Table Vase",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "🏺",
+    "modelUrl": "assets/decors/rth.glb",
+    "thumbnailUrl": "assets/decors/rth_thumb.png",
+    "dimensions": {
+      "W": 350,
+      "H": 500,
+      "D": 350
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        1986.9,
+        0.0,
+        -1178.2
+      ],
+      "max": [
+        2392.7,
+        649.2,
+        -730.9
+      ]
+    },
+    "fileSizeGlb": 1300976,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_sofa",
+    "slug": "sofa",
+    "original_filename": "sofa.skp",
+    "name": "Contemporary Deep Lounge Sofa",
+    "category": "decor",
+    "decorType": "sofa",
+    "subCategory": "Sofas & Seating",
+    "icon": "🛋️",
+    "modelUrl": "assets/decors/sofa.glb",
+    "thumbnailUrl": "assets/decors/sofa_thumb.png",
+    "dimensions": {
+      "W": 2400,
+      "H": 860,
+      "D": 1000
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        558.2,
+        0.0,
+        -2333.0
+      ],
+      "max": [
+        3481.4,
+        861.6,
+        -594.8
+      ]
+    },
+    "fileSizeGlb": 8326600,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_z1",
+    "slug": "z1",
+    "original_filename": "z1.skp",
+    "name": "Architectural Graphic Wall Feature Z1",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "🖼️",
+    "modelUrl": "assets/decors/z1.glb",
+    "thumbnailUrl": "assets/decors/z1_thumb.png",
+    "dimensions": {
+      "W": 1200,
+      "H": 800,
+      "D": 60
+    },
+    "elevation": 900,
+    "bounds": {
+      "min": [
+        1334.5,
+        -0.0,
+        -22013.6
+      ],
+      "max": [
+        24255.2,
+        20.0,
+        -12041.5
+      ]
+    },
+    "fileSizeGlb": 73880,
+    "excludeFromPricing": true,
+    "isDecor": true
+  }
+];
+  if (typeof window !== 'undefined') { window.ORBIX_DECORS_CATALOG = catalog; }
+  if (typeof module !== 'undefined' && module.exports) { module.exports = catalog; }
+})();

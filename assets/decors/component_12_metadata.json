@@ -1,0 +1,462 @@
+{
+  "format_version": "1.0",
+  "source_file": "component_12",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 3,
+  "total_meshes": 13,
+  "total_layers": 3,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 0,
+        "g": 102,
+        "b": 153
+      }
+    },
+    {
+      "name": "Кухня",
+      "color": {
+        "r": 0,
+        "g": 153,
+        "b": 135
+      }
+    },
+    {
+      "name": "мебели",
+      "color": {
+        "r": 102,
+        "g": 68,
+        "b": 0
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "Кухня": false,
+    "мебели": false
+  },
+  "materials": [
+    {
+      "name": "*5",
+      "color": {
+        "r": 193,
+        "g": 193,
+        "b": 193
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Metal_Corrogated_Shiny.jpg",
+        "x_scale": 15.811023622047246,
+        "y_scale": 15.811023622047246
+      }
+    },
+    {
+      "name": "*10",
+      "color": {
+        "r": 193,
+        "g": 193,
+        "b": 193
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Metal_Corrogated_Shiny.jpg",
+        "x_scale": 122.11023622047244,
+        "y_scale": 122.11023622047244
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 0,
+        "g": 102,
+        "b": 153
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Кухня",
+      "color": {
+        "r": 0,
+        "g": 153,
+        "b": 135
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_мебели",
+      "color": {
+        "r": 102,
+        "g": 68,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_3_мебели": {
+      "name": "Component_3",
+      "definition_name": "Component_3",
+      "layer": "мебели",
+      "position_mm": [
+        0.0,
+        0.0,
+        228.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3"
+    },
+    "mesh_1_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        177.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_2_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        345.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_3_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        153.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_4_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        129.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_5_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        105.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_6_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        201.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_7_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        249.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_8_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        273.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_9_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        297.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_10_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        321.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_11_ROOT__Component_3__Component_31_мебели": {
+      "name": "Component_31",
+      "definition_name": "Component#11",
+      "layer": "мебели",
+      "position_mm": [
+        225.15,
+        432.55,
+        227.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_3 / Component_31"
+    },
+    "mesh_12_ROOT__Component_55_мебели": {
+      "name": "Component_55",
+      "definition_name": "Component_55",
+      "layer": "мебели",
+      "position_mm": [
+        45.77,
+        416.51,
+        228.6
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_55"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_3",
+        "definition_name": "Component_3",
+        "layer": "Кухня",
+        "position_mm": [
+          0.0,
+          0.0,
+          228.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              177.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              345.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              153.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              129.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              105.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              201.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              249.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              273.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              297.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              321.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_31",
+            "definition_name": "Component#11",
+            "layer": "мебели",
+            "position_mm": [
+              225.15,
+              432.55,
+              227.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Component_55",
+        "definition_name": "Component_55",
+        "layer": "Кухня",
+        "position_mm": [
+          45.77,
+          416.51,
+          228.6
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

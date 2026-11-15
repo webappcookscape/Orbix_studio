@@ -3543,6 +3543,9 @@
       if (modal) {
         modal.classList.add('is-open');
         modal.style.display = 'flex';
+        if (typeof this._refreshDecorGrid === 'function') {
+          this._refreshDecorGrid();
+        }
       }
     },
 
@@ -3594,13 +3597,15 @@
 
       var newDecor = Core.createFurniturePlacement({
         id: fId,
+        slug: preset.slug || null,
         name: preset.name || 'Decor Item',
         category: 'decor',
         isDecor: true,
         excludeFromPricing: true,
         decorType: preset.decorType || 'general',
         modelUrl: preset.modelUrl || null,
-        modelFormat: preset.modelFormat || null,
+        thumbnailUrl: preset.thumbnailUrl || null,
+        modelFormat: preset.modelFormat || (preset.modelUrl && /\.glb$/i.test(preset.modelUrl) ? 'glb' : null),
         elevation: initElev,
         pos: { x: cX, y: cY, z: initElev },
         rotY: 0,
@@ -3662,10 +3667,16 @@
       var self = this;
       var modal = document.getElementById('modalImportDecor');
       var openBtn = document.getElementById('openDecorModalBtn');
+      var open3DBtn = document.getElementById('placeDecor3DBtn');
       if (!modal) return;
 
       if (openBtn) {
         openBtn.addEventListener('click', function () {
+          self.openDecorModal();
+        });
+      }
+      if (open3DBtn) {
+        open3DBtn.addEventListener('click', function () {
           self.openDecorModal();
         });
       }
@@ -3695,27 +3706,106 @@
         });
       });
 
-      // Built-in decor card selection
-      modal.querySelectorAll('.decor-preset-card').forEach(function (card) {
-        card.addEventListener('click', function () {
-          var name = card.getAttribute('data-name');
-          var decorType = card.getAttribute('data-type');
-          var w = parseFloat(card.getAttribute('data-w')) || 900;
-          var h = parseFloat(card.getAttribute('data-h')) || 1800;
-          var d = parseFloat(card.getAttribute('data-d')) || 700;
-          var elev = parseFloat(card.getAttribute('data-elev')) || 0;
-          var model = card.getAttribute('data-model') || null;
+      // Dynamic 46 SketchUp Decor Catalog Rendering with Search & Category Filtering
+      var activeFilter = 'all';
+      var searchQuery = '';
 
-          self.placeDecorItem({
-            name: name,
-            decorType: decorType,
-            dimensions: { W: w, H: h, D: d },
-            elevation: elev,
-            modelUrl: model
-          });
-          self.closeDecorModal();
+      function renderGrid() {
+        var grid = document.getElementById('decorPresetGrid');
+        if (!grid) return;
+        var catalog = window.ORBIX_DECORS_CATALOG || [];
+        var filtered = catalog.filter(function (it) {
+          var matchCat = (activeFilter === 'all' || it.subCategory === activeFilter);
+          var matchQuery = true;
+          if (searchQuery) {
+            var q = searchQuery.toLowerCase();
+            var text = ((it.name || '') + ' ' + (it.subCategory || '') + ' ' + (it.original_filename || '')).toLowerCase();
+            matchQuery = text.indexOf(q) !== -1;
+          }
+          return matchCat && matchQuery;
         });
-      });
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8;font-size:13px;">No 3D models match your search.</div>';
+          return;
+        }
+
+        grid.innerHTML = filtered.map(function (it) {
+          var dims = it.dimensions || { W: 900, H: 800, D: 600 };
+          var thumbHtml = it.thumbnailUrl
+            ? '<img src="' + it.thumbnailUrl + '" alt="' + it.name + '" style="width:100%;height:120px;object-fit:cover;display:block;">'
+            : '<div style="font-size:42px;">' + (it.icon || '✨') + '</div>';
+          return '<div class="decor-preset-card" data-slug="' + it.slug + '" style="cursor:pointer;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;transition:all 0.18s ease;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,0.05);">'
+            + '<div style="height:120px;background:#f8fafc;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-bottom:1px solid #f1f5f9;">'
+            + thumbHtml
+            + '<span style="position:absolute;top:6px;right:6px;font-size:10px;background:rgba(255,255,255,0.92);padding:2px 7px;border-radius:4px;font-weight:700;color:#334155;border:1px solid rgba(226,232,240,0.8);">' + it.subCategory + '</span>'
+            + '</div>'
+            + '<div style="padding:10px 12px;flex:1;display:flex;flex-direction:column;">'
+            + '<div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:4px;line-height:1.25;">' + it.name + '</div>'
+            + '<div style="font-size:11px;font-family:monospace;color:#64748b;margin-bottom:6px;">' + Math.round(dims.W) + ' × ' + Math.round(dims.H) + ' × ' + Math.round(dims.D) + ' mm</div>'
+            + '<div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px dashed #f1f5f9;">'
+            + '<span style="font-size:10.5px;color:#15803d;font-weight:600;">' + (it.elevation > 0 ? ('▲ ' + it.elevation + ' mm') : 'Floor 0 mm') + '</span>'
+            + '<span class="decor-card-badge" style="font-size:11px;font-weight:700;background:#dcfce7;color:#15803d;padding:3px 9px;border-radius:4px;border:1px solid #86efac;">Place ➔</span>'
+            + '</div>'
+            + '</div>'
+            + '</div>';
+        }).join('');
+
+        // Attach click handlers to place
+        grid.querySelectorAll('.decor-preset-card').forEach(function (card) {
+          card.addEventListener('click', function () {
+            var slug = card.getAttribute('data-slug');
+            var item = (window.ORBIX_DECORS_CATALOG || []).find(function (d) { return d.slug === slug; });
+            if (!item) return;
+
+            self.placeDecorItem({
+              id: item.id,
+              slug: item.slug,
+              name: item.name,
+              category: 'decor',
+              decorType: item.decorType,
+              dimensions: item.dimensions,
+              elevation: item.elevation,
+              modelUrl: item.modelUrl,
+              thumbnailUrl: item.thumbnailUrl
+            });
+            self.closeDecorModal();
+          });
+        });
+      }
+
+      self._refreshDecorGrid = renderGrid;
+
+      var searchInp = document.getElementById('decorSearchInput');
+      if (searchInp) {
+        searchInp.addEventListener('input', function () {
+          searchQuery = searchInp.value.trim();
+          renderGrid();
+        });
+      }
+
+      var catFilter = document.getElementById('decorCategoryFilter');
+      if (catFilter) {
+        catFilter.querySelectorAll('.decor-cat-pill').forEach(function (pill) {
+          pill.addEventListener('click', function () {
+            catFilter.querySelectorAll('.decor-cat-pill').forEach(function (p) {
+              p.classList.remove('is-active');
+              p.style.background = '#f1f5f9';
+              p.style.color = '#334155';
+              p.style.border = '1px solid #cbd5e1';
+            });
+            pill.classList.add('is-active');
+            pill.style.background = '#15803d';
+            pill.style.color = '#ffffff';
+            pill.style.border = 'none';
+            activeFilter = pill.getAttribute('data-cat') || 'all';
+            renderGrid();
+          });
+        });
+      }
+
+      // Initial populate
+      renderGrid();
 
       // Elevation presets in custom tab
       modal.querySelectorAll('.decor-elev-preset-btn').forEach(function (btn) {

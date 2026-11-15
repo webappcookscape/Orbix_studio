@@ -1,0 +1,2564 @@
+{
+  "format_version": "1.0",
+  "source_file": "pv977nss_geprofile",
+  "model_source": "sketchup",
+  "sketchup_version": "{24.0.103}",
+  "total_definitions": 13,
+  "total_meshes": 31,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "_GEProfile_StainlessSteel",
+      "color": {
+        "r": 203,
+        "g": 202,
+        "b": 202
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "_Black",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "_GEProfile_Lamp",
+      "color": {
+        "r": 255,
+        "g": 242,
+        "b": 189
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Chimney_Layer0": {
+      "name": "Chimney",
+      "definition_name": "Group#11",
+      "layer": "Layer0",
+      "position_mm": [
+        -166.69,
+        -203.2,
+        47.62
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_iscollapsed": "false",
+        "_lastmodified": "2021-01-07 15:34",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "13.125\"",
+        "_lenx_formula": "13.125\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "10.870004\"",
+        "_leny_formula": "10.870004\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "29.957\"",
+        "_lenz_formula": "29.957\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Chimney",
+        "_x_error": "0+-1*<span class=subformula-success>13.125</span>/2",
+        "_x_formula": "-LenX/2",
+        "_x_label": "X",
+        "_y_error": "0+-8",
+        "_y_formula": "-8",
+        "_y_label": "Y",
+        "_z_error": "1.875",
+        "_z_formula": "1.875",
+        "_z_label": "Z",
+        "lenx": "13.125",
+        "leny": "10.870004",
+        "lenz": "29.957",
+        "material": "_Monogram_StainlessSteel",
+        "x": "-6.5625",
+        "y": "-8.0",
+        "z": "1.875"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "13.125",
+          "_last_leny": "10.870004",
+          "_last_lenz": "29.957"
+        }
+      },
+      "path": "ROOT / Chimney"
+    },
+    "mesh_1_ROOT__Hood_Low_Layer0": {
+      "name": "Hood Low",
+      "definition_name": "Group#8",
+      "layer": "Layer0",
+      "position_mm": [
+        -345.44,
+        0.0,
+        0.0
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_iscollapsed": "false",
+        "_lastmodified": "2021-01-07 15:34",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "27.2",
+        "_lenx_formula": "27.2",
+        "_lenx_label": "LenX",
+        "_leny_error": "23",
+        "_leny_formula": "23",
+        "_leny_label": "LenY",
+        "_lenz_error": "1.25",
+        "_lenz_formula": "1.25",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Hood Low",
+        "_x_error": "0+-1*<span class=subformula-success>27.2</span>/2",
+        "_x_formula": "-LenX/2",
+        "_x_label": "X",
+        "_y_error": "0",
+        "_y_formula": "0",
+        "_y_label": "Y",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "lenx": "27.2",
+        "leny": "23.0",
+        "lenz": "1.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "-13.6",
+        "y": "0.0",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "27.199999999999996",
+          "_last_leny": "22.999999999999993",
+          "_last_lenz": "1.2500006608141676"
+        }
+      },
+      "path": "ROOT / Hood Low"
+    },
+    "mesh_2_ROOT__Hood_Low__Text_Layer0": {
+      "name": "Text",
+      "definition_name": "Group#14",
+      "layer": "Layer0",
+      "position_mm": [
+        -58.54,
+        -584.16,
+        3.4
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "0.0",
+        "_lastmodified": "2020-12-18 10:55",
+        "_lengthunits": "INCHES",
+        "_lenx_label": "LenX",
+        "_leny_label": "LenY",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Text",
+        "_x_label": "X",
+        "_y_label": "Y",
+        "_z_label": "Z",
+        "lenx": "4.672379984197114",
+        "leny": "0.3759316414366944",
+        "lenz": "0.0006249999999994316",
+        "material": "_Black",
+        "x": "12.634370409888033",
+        "y": "-17.812500062888333",
+        "z": "0.38379960433074456"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "4.672379984197114",
+          "_last_leny": "0.3759316414366945",
+          "_last_lenz": "0.0006249999999994316"
+        }
+      },
+      "path": "ROOT / Hood Low / Text"
+    },
+    "mesh_3_ROOT__Lamp_Layer0_203_202_202_ds": {
+      "name": "Lamp",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        254.0,
+        -469.9,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:43",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp",
+        "_x_error": "10",
+        "_x_formula": "10",
+        "_x_label": "X",
+        "_y_error": "0+-18.5",
+        "_y_formula": "-18.5",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "10.0",
+        "y": "-18.5",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.9544239999999995",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp"
+    },
+    "mesh_4_ROOT__Lamp_Layer0_255_242_189_ss": {
+      "name": "Lamp",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        254.0,
+        -469.9,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:43",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp",
+        "_x_error": "10",
+        "_x_formula": "10",
+        "_x_label": "X",
+        "_y_error": "0+-18.5",
+        "_y_formula": "-18.5",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "10.0",
+        "y": "-18.5",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.9544239999999995",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp"
+    },
+    "mesh_5_ROOT__Lamp_Layer0_203_202_202_ss": {
+      "name": "Lamp",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        254.0,
+        -469.9,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:43",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp",
+        "_x_error": "10",
+        "_x_formula": "10",
+        "_x_label": "X",
+        "_y_error": "0+-18.5",
+        "_y_formula": "-18.5",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "10.0",
+        "y": "-18.5",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.9544239999999995",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp"
+    },
+    "mesh_6_ROOT__Hood_High_Layer0": {
+      "name": "Hood High",
+      "definition_name": "Group#10",
+      "layer": "Layer0",
+      "position_mm": [
+        -453.71,
+        2.11,
+        -6.35
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "0.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:30",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "35.875",
+        "_lenx_formula": "35.875",
+        "_lenx_label": "LenX",
+        "_leny_error": "27.625",
+        "_leny_formula": "27.625",
+        "_leny_label": "LenY",
+        "_lenz_error": "2.5",
+        "_lenz_formula": "2.5",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Hood High",
+        "_x_label": "X",
+        "_y_label": "Y",
+        "_z_label": "Z",
+        "lenx": "35.875",
+        "leny": "27.625",
+        "lenz": "2.5",
+        "material": "_Monogram_StainlessSteel",
+        "x": "14.937497580514357",
+        "y": "-7.381637345815761e-08",
+        "z": "0.25000007072313873"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "35.875000000000014",
+          "_last_leny": "27.624999999999993",
+          "_last_lenz": "2.4999999999999996"
+        }
+      },
+      "path": "ROOT / Hood High"
+    },
+    "mesh_7_ROOT__Sign_Layer0_0_0_0_ss": {
+      "name": "Sign",
+      "definition_name": "Group#12",
+      "layer": "Layer0",
+      "position_mm": [
+        -145.67,
+        -587.25,
+        8.28
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "0.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-08 14:51",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2\"",
+        "_lenx_formula": "2\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "0.0156\"",
+        "_leny_formula": "0.0156\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.666663\"",
+        "_lenz_formula": "0.666663\"",
+        "_lenz_label": "LenZ",
+        "_name": "Sign",
+        "_x_label": "X",
+        "_y_label": "Y",
+        "_z_label": "Z",
+        "lenx": "2.0",
+        "leny": "0.0156",
+        "lenz": "0.666663",
+        "x": "56.875",
+        "y": "-23.12",
+        "z": "0.75"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.0",
+          "_last_leny": "0.015599999999996445",
+          "_last_lenz": "0.6666629999999999"
+        }
+      },
+      "path": "ROOT / Sign"
+    },
+    "mesh_8_ROOT__Sign_Layer0_255_84_84_ss": {
+      "name": "Sign",
+      "definition_name": "Group#12",
+      "layer": "Layer0",
+      "position_mm": [
+        -145.67,
+        -587.25,
+        8.28
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "0.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-08 14:51",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2\"",
+        "_lenx_formula": "2\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "0.0156\"",
+        "_leny_formula": "0.0156\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.666663\"",
+        "_lenz_formula": "0.666663\"",
+        "_lenz_label": "LenZ",
+        "_name": "Sign",
+        "_x_label": "X",
+        "_y_label": "Y",
+        "_z_label": "Z",
+        "lenx": "2.0",
+        "leny": "0.0156",
+        "lenz": "0.666663",
+        "x": "56.875",
+        "y": "-23.12",
+        "z": "0.75"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.0",
+          "_last_leny": "0.015599999999996445",
+          "_last_lenz": "0.6666629999999999"
+        }
+      },
+      "path": "ROOT / Sign"
+    },
+    "mesh_9_ROOT__Sign_Layer0_203_202_202_ss": {
+      "name": "Sign",
+      "definition_name": "Group#12",
+      "layer": "Layer0",
+      "position_mm": [
+        -145.67,
+        -587.25,
+        8.28
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "0.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-08 14:51",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2\"",
+        "_lenx_formula": "2\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "0.0156\"",
+        "_leny_formula": "0.0156\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.666663\"",
+        "_lenz_formula": "0.666663\"",
+        "_lenz_label": "LenZ",
+        "_name": "Sign",
+        "_x_label": "X",
+        "_y_label": "Y",
+        "_z_label": "Z",
+        "lenx": "2.0",
+        "leny": "0.0156",
+        "lenz": "0.666663",
+        "x": "56.875",
+        "y": "-23.12",
+        "z": "0.75"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.0",
+          "_last_leny": "0.015599999999996445",
+          "_last_lenz": "0.6666629999999999"
+        }
+      },
+      "path": "ROOT / Sign"
+    },
+    "mesh_10_ROOT__Filter_Layer0": {
+      "name": "Filter",
+      "definition_name": "Group#13",
+      "layer": "Layer0",
+      "position_mm": [
+        -193.67,
+        -50.8,
+        0.0
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:38",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "15.25\"",
+        "_lenx_formula": "15.25\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "18",
+        "_leny_formula": "18",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.500001\"",
+        "_lenz_formula": "0.500001\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Filter",
+        "_x_error": "0+-1*<span class=subformula-success>15.25</span>/2",
+        "_x_formula": "-LenX/2",
+        "_x_label": "X",
+        "_y_error": "0+-2",
+        "_y_formula": "-2",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "lenx": "15.25",
+        "leny": "18.0",
+        "lenz": "0.500001",
+        "material": "_Monogram_StainlessSteel",
+        "x": "-7.625",
+        "y": "-2.0",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "15.25",
+          "_last_leny": "18.0",
+          "_last_lenz": "0.500001"
+        }
+      },
+      "path": "ROOT / Filter"
+    },
+    "mesh_11_ROOT__Color_Layer0_255_84_84_ss": {
+      "name": "Color",
+      "definition_name": "Group#9",
+      "layer": "Layer0",
+      "position_mm": [
+        -0.0,
+        2.22,
+        -0.0
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "0.0",
+        "_hidden_label": "Hidden",
+        "_lastmodified": "2020-12-18 11:03",
+        "_lengthunits": "INCHES",
+        "_name": "Color",
+        "hidden": "1"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "1.1846999999999994",
+          "_last_leny": "3.4139000000000004",
+          "_last_lenz": "2.250009143825218"
+        }
+      },
+      "path": "ROOT / Color"
+    },
+    "mesh_12_ROOT__Color_Layer0_203_202_202_ss": {
+      "name": "Color",
+      "definition_name": "Group#9",
+      "layer": "Layer0",
+      "position_mm": [
+        -0.0,
+        2.22,
+        -0.0
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "0.0",
+        "_hidden_label": "Hidden",
+        "_lastmodified": "2020-12-18 11:03",
+        "_lengthunits": "INCHES",
+        "_name": "Color",
+        "hidden": "1"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "1.1846999999999994",
+          "_last_leny": "3.4139000000000004",
+          "_last_lenz": "2.250009143825218"
+        }
+      },
+      "path": "ROOT / Color"
+    },
+    "mesh_13_ROOT__Color_Layer0_255_242_189_ss": {
+      "name": "Color",
+      "definition_name": "Group#9",
+      "layer": "Layer0",
+      "position_mm": [
+        -0.0,
+        2.22,
+        -0.0
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "0.0",
+        "_hidden_label": "Hidden",
+        "_lastmodified": "2020-12-18 11:03",
+        "_lengthunits": "INCHES",
+        "_name": "Color",
+        "hidden": "1"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "1.1846999999999994",
+          "_last_leny": "3.4139000000000004",
+          "_last_lenz": "2.250009143825218"
+        }
+      },
+      "path": "ROOT / Color"
+    },
+    "mesh_14_ROOT__Color_Layer0_0_0_0_ss": {
+      "name": "Color",
+      "definition_name": "Group#9",
+      "layer": "Layer0",
+      "position_mm": [
+        -0.0,
+        2.22,
+        -0.0
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "0.0",
+        "_hidden_label": "Hidden",
+        "_lastmodified": "2020-12-18 11:03",
+        "_lengthunits": "INCHES",
+        "_name": "Color",
+        "hidden": "1"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "1.1846999999999994",
+          "_last_leny": "3.4139000000000004",
+          "_last_lenz": "2.250009143825218"
+        }
+      },
+      "path": "ROOT / Color"
+    },
+    "mesh_15_ROOT__RightSide_Layer0": {
+      "name": "RightSide",
+      "definition_name": "Group#15",
+      "layer": "Layer0",
+      "position_mm": [
+        455.61,
+        -700.09,
+        -6.35
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:31",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "0.0625\"",
+        "_lenx_formula": "0.0625\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "27.625",
+        "_leny_formula": "27.625",
+        "_leny_label": "LenY",
+        "_lenz_error": "1",
+        "_lenz_formula": "1",
+        "_lenz_label": "LenZ",
+        "_name": "RightSide",
+        "_x_error": "<span class=subformula-success>35.875</span>/2",
+        "_x_formula": "PARENT!LenX/2",
+        "_x_label": "X",
+        "_y_error": "0+-1*<span class=subformula-success>27.625</span>+0.0625",
+        "_y_formula": "-LenY+0.0625",
+        "_y_label": "Y",
+        "_z_error": "0+-0.25",
+        "_z_formula": "-0.25",
+        "_z_label": "Z",
+        "lenx": "0.0625",
+        "leny": "27.625",
+        "lenz": "1.0",
+        "x": "17.9375",
+        "y": "-27.5625",
+        "z": "-0.25"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "0.0625",
+          "_last_leny": "27.624999999999996",
+          "_last_lenz": "1.0"
+        }
+      },
+      "path": "ROOT / RightSide"
+    },
+    "mesh_16_ROOT__LeftSide_Layer0": {
+      "name": "LeftSide",
+      "definition_name": "Group#16",
+      "layer": "Layer0",
+      "position_mm": [
+        -455.61,
+        -700.09,
+        -6.35
+      ],
+      "properties": {
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_iscollapsed": "false",
+        "_lastmodified": "2021-01-07 15:30",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "0.0625\"",
+        "_lenx_formula": "0.0625\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "27.625",
+        "_leny_formula": "27.625",
+        "_leny_label": "LenY",
+        "_lenz_error": "1",
+        "_lenz_formula": "1",
+        "_lenz_label": "LenZ",
+        "_name": "LeftSide",
+        "_x_error": "0+-1*<span class=subformula-success>35.875</span>/2",
+        "_x_formula": "-PARENT!LenX/2",
+        "_x_label": "X",
+        "_y_error": "0+-1*<span class=subformula-success>27.625</span>+0.0625",
+        "_y_formula": "-LenY+0.0625",
+        "_y_label": "Y",
+        "_z_error": "0+-0.25",
+        "_z_formula": "-0.25",
+        "_z_label": "Z",
+        "lenx": "0.0625",
+        "leny": "27.625",
+        "lenz": "1.0",
+        "x": "-17.9375",
+        "y": "-27.5625",
+        "z": "-0.25"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "0.0625",
+          "_last_leny": "27.624999999999996",
+          "_last_lenz": "1.125"
+        }
+      },
+      "path": "ROOT / LeftSide"
+    },
+    "mesh_17_ROOT__Lamp2_Layer0_203_202_202_ds": {
+      "name": "Lamp2",
+      "definition_name": "Group#6",
+      "layer": "Layer0",
+      "position_mm": [
+        -254.0,
+        -469.9,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:42",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp2",
+        "_x_error": "0+-10",
+        "_x_formula": "-10",
+        "_x_label": "X",
+        "_y_error": "0+-18.5",
+        "_y_formula": "-18.5",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "-10.0",
+        "y": "-18.5",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.9544239999999995",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp2"
+    },
+    "mesh_18_ROOT__Lamp2_Layer0_255_242_189_ss": {
+      "name": "Lamp2",
+      "definition_name": "Group#6",
+      "layer": "Layer0",
+      "position_mm": [
+        -254.0,
+        -469.9,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:42",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp2",
+        "_x_error": "0+-10",
+        "_x_formula": "-10",
+        "_x_label": "X",
+        "_y_error": "0+-18.5",
+        "_y_formula": "-18.5",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "-10.0",
+        "y": "-18.5",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.9544239999999995",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp2"
+    },
+    "mesh_19_ROOT__Lamp2_Layer0_203_202_202_ss": {
+      "name": "Lamp2",
+      "definition_name": "Group#6",
+      "layer": "Layer0",
+      "position_mm": [
+        -254.0,
+        -469.9,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:42",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp2",
+        "_x_error": "0+-10",
+        "_x_formula": "-10",
+        "_x_label": "X",
+        "_y_error": "0+-18.5",
+        "_y_formula": "-18.5",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "-10.0",
+        "y": "-18.5",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.9544239999999995",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp2"
+    },
+    "mesh_20_ROOT__Knobs__Knob_Layer0": {
+      "name": "Knob",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -51.31,
+        -584.16,
+        21.13
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_iscollapsed": "false",
+        "_lastmodified": "2021-01-07 15:12",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "0.5",
+        "_lenx_formula": "0.5",
+        "_lenx_label": "LenX",
+        "_leny_error": "0.25",
+        "_leny_formula": "0.25",
+        "_leny_label": "LenY",
+        "_lenz_formula": "0.5",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Knob",
+        "_spacing_formulaunits": "INCHES",
+        "_spacing_label": "Spacing",
+        "_x_error": "0+-2",
+        "_x_formula": "-2",
+        "_x_label": "X",
+        "_y_error": "0+-17.755004\"",
+        "_y_formula": "-17.755004\"",
+        "_y_label": "Y",
+        "_z_error": "0.75",
+        "_z_formula": "0.75",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "0.5",
+        "leny": "0.25",
+        "lenz": "0.5",
+        "material": "_Monogram_StainlessSteel",
+        "spacing": "1",
+        "x": "-2.0",
+        "y": "-17.755004",
+        "z": "0.75"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "0.5",
+          "_last_leny": "0.25",
+          "_last_lenz": "0.49828747126061157"
+        }
+      },
+      "path": "ROOT / Knobs / Knob"
+    },
+    "mesh_21_ROOT__Knobs__Knob5_Layer0": {
+      "name": "Knob5",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        50.29,
+        -584.16,
+        21.13
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_iscollapsed": "false",
+        "_lastmodified": "2021-01-07 15:14",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "0.5",
+        "_lenx_formula": "0.5",
+        "_lenx_label": "LenX",
+        "_leny_error": "0.25",
+        "_leny_formula": "0.25",
+        "_leny_label": "LenY",
+        "_lenz_formula": "0.5",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Knob5",
+        "_spacing_formulaunits": "INCHES",
+        "_spacing_label": "Spacing",
+        "_x_error": "2",
+        "_x_formula": "2",
+        "_x_label": "X",
+        "_y_error": "0+-17.755004\"",
+        "_y_formula": "-17.755004\"",
+        "_y_label": "Y",
+        "_z_error": "0.75",
+        "_z_formula": "0.75",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "0.5",
+        "leny": "0.25",
+        "lenz": "0.5",
+        "material": "_Monogram_StainlessSteel",
+        "spacing": "1",
+        "x": "2.0",
+        "y": "-17.755004",
+        "z": "0.75"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "0.5",
+          "_last_leny": "0.25",
+          "_last_lenz": "0.5"
+        }
+      },
+      "path": "ROOT / Knobs / Knob5"
+    },
+    "mesh_22_ROOT__Knobs__Knob2_Layer0": {
+      "name": "Knob2",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -25.91,
+        -584.16,
+        21.13
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_iscollapsed": "false",
+        "_lastmodified": "2021-01-07 15:12",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "0.5",
+        "_lenx_formula": "0.5",
+        "_lenx_label": "LenX",
+        "_leny_error": "0.25",
+        "_leny_formula": "0.25",
+        "_leny_label": "LenY",
+        "_lenz_formula": "0.5",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Knob2",
+        "_spacing_formulaunits": "INCHES",
+        "_spacing_label": "Spacing",
+        "_x_error": "0+-1",
+        "_x_formula": "-1",
+        "_x_label": "X",
+        "_y_error": "0+-17.755004\"",
+        "_y_formula": "-17.755004\"",
+        "_y_label": "Y",
+        "_z_error": "0.75",
+        "_z_formula": "0.75",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "0.5",
+        "leny": "0.25",
+        "lenz": "0.5",
+        "material": "_Monogram_StainlessSteel",
+        "spacing": "1",
+        "x": "-1.0",
+        "y": "-17.755004",
+        "z": "0.75"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "0.5",
+          "_last_leny": "0.25",
+          "_last_lenz": "0.5"
+        }
+      },
+      "path": "ROOT / Knobs / Knob2"
+    },
+    "mesh_23_ROOT__Knobs__Knob3_Layer0": {
+      "name": "Knob3",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -0.51,
+        -584.16,
+        21.13
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_iscollapsed": "false",
+        "_lastmodified": "2021-01-07 15:12",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "0.5",
+        "_lenx_formula": "0.5",
+        "_lenx_label": "LenX",
+        "_leny_error": "0.25",
+        "_leny_formula": "0.25",
+        "_leny_label": "LenY",
+        "_lenz_formula": "0.5",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Knob3",
+        "_spacing_formulaunits": "INCHES",
+        "_spacing_label": "Spacing",
+        "_x_error": "0",
+        "_x_formula": "0",
+        "_x_label": "X",
+        "_y_error": "0+-17.755004\"",
+        "_y_formula": "-17.755004\"",
+        "_y_label": "Y",
+        "_z_error": "0.75",
+        "_z_formula": "0.75",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "0.5",
+        "leny": "0.25",
+        "lenz": "0.5",
+        "material": "_Monogram_StainlessSteel",
+        "spacing": "1",
+        "x": "0.0",
+        "y": "-17.755004",
+        "z": "0.75"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "0.5",
+          "_last_leny": "0.25",
+          "_last_lenz": "0.5"
+        }
+      },
+      "path": "ROOT / Knobs / Knob3"
+    },
+    "mesh_24_ROOT__Knobs__Knob4_Layer0": {
+      "name": "Knob4",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        24.89,
+        -584.16,
+        21.13
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_iscollapsed": "false",
+        "_lastmodified": "2021-01-07 15:14",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "0.5",
+        "_lenx_formula": "0.5",
+        "_lenx_label": "LenX",
+        "_leny_error": "0.25",
+        "_leny_formula": "0.25",
+        "_leny_label": "LenY",
+        "_lenz_formula": "0.5",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Knob4",
+        "_spacing_formulaunits": "INCHES",
+        "_spacing_label": "Spacing",
+        "_x_error": "1",
+        "_x_formula": "1",
+        "_x_label": "X",
+        "_y_error": "0+-17.755004\"",
+        "_y_formula": "-17.755004\"",
+        "_y_label": "Y",
+        "_z_error": "0.75",
+        "_z_formula": "0.75",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "0.5",
+        "leny": "0.25",
+        "lenz": "0.5",
+        "material": "_Monogram_StainlessSteel",
+        "spacing": "1",
+        "x": "1.0",
+        "y": "-17.755004",
+        "z": "0.75"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "0.5",
+          "_last_leny": "0.25",
+          "_last_lenz": "0.5"
+        }
+      },
+      "path": "ROOT / Knobs / Knob4"
+    },
+    "mesh_25_ROOT__Lamp3_Layer0_203_202_202_ds": {
+      "name": "Lamp3",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        254.0,
+        -101.6,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:42",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp3",
+        "_x_error": "10",
+        "_x_formula": "10",
+        "_x_label": "X",
+        "_y_error": "0+-4",
+        "_y_formula": "-4",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "10.0",
+        "y": "-4.0",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.9544239999999995",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp3"
+    },
+    "mesh_26_ROOT__Lamp3_Layer0_255_242_189_ss": {
+      "name": "Lamp3",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        254.0,
+        -101.6,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:42",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp3",
+        "_x_error": "10",
+        "_x_formula": "10",
+        "_x_label": "X",
+        "_y_error": "0+-4",
+        "_y_formula": "-4",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "10.0",
+        "y": "-4.0",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.9544239999999995",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp3"
+    },
+    "mesh_27_ROOT__Lamp3_Layer0_203_202_202_ss": {
+      "name": "Lamp3",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        254.0,
+        -101.6,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:42",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp3",
+        "_x_error": "10",
+        "_x_formula": "10",
+        "_x_label": "X",
+        "_y_error": "0+-4",
+        "_y_formula": "-4",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "10.0",
+        "y": "-4.0",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.9544239999999995",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp3"
+    },
+    "mesh_28_ROOT__Lamp4_Layer0_203_202_202_ds": {
+      "name": "Lamp4",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        -254.0,
+        -101.6,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:43",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp4",
+        "_x_error": "0+-10",
+        "_x_formula": "-10",
+        "_x_label": "X",
+        "_y_error": "0+-4",
+        "_y_formula": "-4",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "-10.0",
+        "y": "-4.0",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.954424",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp4"
+    },
+    "mesh_29_ROOT__Lamp4_Layer0_255_242_189_ss": {
+      "name": "Lamp4",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        -254.0,
+        -101.6,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:43",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp4",
+        "_x_error": "0+-10",
+        "_x_formula": "-10",
+        "_x_label": "X",
+        "_y_error": "0+-4",
+        "_y_formula": "-4",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "-10.0",
+        "y": "-4.0",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.954424",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp4"
+    },
+    "mesh_30_ROOT__Lamp4_Layer0_203_202_202_ss": {
+      "name": "Lamp4",
+      "definition_name": "Group#3",
+      "layer": "Layer0",
+      "position_mm": [
+        -254.0,
+        -101.6,
+        0.0
+      ],
+      "properties": {
+        "_copies_label": "Copies",
+        "_formatversion": "1.0",
+        "_has_movetool_behaviors": "1.0",
+        "_hasbehaviors": "1.0",
+        "_lastmodified": "2021-01-07 15:43",
+        "_lengthunits": "INCHES",
+        "_lenx_error": "2.954424\"",
+        "_lenx_formula": "2.954424\"",
+        "_lenx_label": "LenX",
+        "_leny_error": "2.954428\"",
+        "_leny_formula": "2.954428\"",
+        "_leny_label": "LenY",
+        "_lenz_error": "0.25\"",
+        "_lenz_formula": "0.25\"",
+        "_lenz_label": "LenZ",
+        "_material_label": "Material",
+        "_name": "Lamp4",
+        "_x_error": "0+-10",
+        "_x_formula": "-10",
+        "_x_label": "X",
+        "_y_error": "0+-4",
+        "_y_formula": "-4",
+        "_y_label": "Y",
+        "_z_error": "0",
+        "_z_formula": "0",
+        "_z_label": "Z",
+        "copies": "0",
+        "lenx": "2.954424",
+        "leny": "2.954428",
+        "lenz": "0.25",
+        "material": "_Monogram_StainlessSteel",
+        "x": "-10.0",
+        "y": "-4.0",
+        "z": "0.0"
+      },
+      "attribute_dictionaries": {
+        "": {
+          "_last_lenx": "2.954424",
+          "_last_leny": "2.954428",
+          "_last_lenz": "0.25"
+        }
+      },
+      "path": "ROOT / Lamp4"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Chimney",
+        "definition_name": "Group#11",
+        "layer": "Layer0",
+        "position_mm": [
+          -166.69,
+          -203.2,
+          47.62
+        ],
+        "properties": {
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "1.0",
+          "_hasbehaviors": "1.0",
+          "_iscollapsed": "false",
+          "_lastmodified": "2021-01-07 15:34",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "13.125\"",
+          "_lenx_formula": "13.125\"",
+          "_lenx_label": "LenX",
+          "_leny_error": "10.870004\"",
+          "_leny_formula": "10.870004\"",
+          "_leny_label": "LenY",
+          "_lenz_error": "29.957\"",
+          "_lenz_formula": "29.957\"",
+          "_lenz_label": "LenZ",
+          "_material_label": "Material",
+          "_name": "Chimney",
+          "_x_error": "0+-1*<span class=subformula-success>13.125</span>/2",
+          "_x_formula": "-LenX/2",
+          "_x_label": "X",
+          "_y_error": "0+-8",
+          "_y_formula": "-8",
+          "_y_label": "Y",
+          "_z_error": "1.875",
+          "_z_formula": "1.875",
+          "_z_label": "Z",
+          "lenx": "13.125",
+          "leny": "10.870004",
+          "lenz": "29.957",
+          "material": "_Monogram_StainlessSteel",
+          "x": "-6.5625",
+          "y": "-8.0",
+          "z": "1.875"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "13.125",
+            "_last_leny": "10.870004",
+            "_last_lenz": "29.957"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "Hood Low",
+        "definition_name": "Group#8",
+        "layer": "Layer0",
+        "position_mm": [
+          -345.44,
+          0.0,
+          0.0
+        ],
+        "properties": {
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "1.0",
+          "_hasbehaviors": "1.0",
+          "_iscollapsed": "false",
+          "_lastmodified": "2021-01-07 15:34",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "27.2",
+          "_lenx_formula": "27.2",
+          "_lenx_label": "LenX",
+          "_leny_error": "23",
+          "_leny_formula": "23",
+          "_leny_label": "LenY",
+          "_lenz_error": "1.25",
+          "_lenz_formula": "1.25",
+          "_lenz_label": "LenZ",
+          "_material_label": "Material",
+          "_name": "Hood Low",
+          "_x_error": "0+-1*<span class=subformula-success>27.2</span>/2",
+          "_x_formula": "-LenX/2",
+          "_x_label": "X",
+          "_y_error": "0",
+          "_y_formula": "0",
+          "_y_label": "Y",
+          "_z_formula": "0",
+          "_z_label": "Z",
+          "lenx": "27.2",
+          "leny": "23.0",
+          "lenz": "1.25",
+          "material": "_Monogram_StainlessSteel",
+          "x": "-13.6",
+          "y": "0.0",
+          "z": "0.0"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "27.199999999999996",
+            "_last_leny": "22.999999999999993",
+            "_last_lenz": "1.2500006608141676"
+          }
+        },
+        "children": [
+          {
+            "name": "Text",
+            "definition_name": "Group#14",
+            "layer": "Layer0",
+            "position_mm": [
+              -58.54,
+              -584.16,
+              3.4
+            ],
+            "properties": {
+              "_formatversion": "1.0",
+              "_has_movetool_behaviors": "0.0",
+              "_lastmodified": "2020-12-18 10:55",
+              "_lengthunits": "INCHES",
+              "_lenx_label": "LenX",
+              "_leny_label": "LenY",
+              "_lenz_label": "LenZ",
+              "_material_label": "Material",
+              "_name": "Text",
+              "_x_label": "X",
+              "_y_label": "Y",
+              "_z_label": "Z",
+              "lenx": "4.672379984197114",
+              "leny": "0.3759316414366944",
+              "lenz": "0.0006249999999994316",
+              "material": "_Black",
+              "x": "12.634370409888033",
+              "y": "-17.812500062888333",
+              "z": "0.38379960433074456"
+            },
+            "attribute_dictionaries": {
+              "": {
+                "_last_lenx": "4.672379984197114",
+                "_last_leny": "0.3759316414366945",
+                "_last_lenz": "0.0006249999999994316"
+              }
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Lamp",
+        "definition_name": "Group#3",
+        "layer": "Layer0",
+        "position_mm": [
+          254.0,
+          -469.9,
+          0.0
+        ],
+        "properties": {
+          "_copies_label": "Copies",
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "1.0",
+          "_hasbehaviors": "1.0",
+          "_lastmodified": "2021-01-07 15:43",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "2.954424\"",
+          "_lenx_formula": "2.954424\"",
+          "_lenx_label": "LenX",
+          "_leny_error": "2.954428\"",
+          "_leny_formula": "2.954428\"",
+          "_leny_label": "LenY",
+          "_lenz_error": "0.25\"",
+          "_lenz_formula": "0.25\"",
+          "_lenz_label": "LenZ",
+          "_material_label": "Material",
+          "_name": "Lamp",
+          "_x_error": "10",
+          "_x_formula": "10",
+          "_x_label": "X",
+          "_y_error": "0+-18.5",
+          "_y_formula": "-18.5",
+          "_y_label": "Y",
+          "_z_error": "0",
+          "_z_formula": "0",
+          "_z_label": "Z",
+          "copies": "0",
+          "lenx": "2.954424",
+          "leny": "2.954428",
+          "lenz": "0.25",
+          "material": "_Monogram_StainlessSteel",
+          "x": "10.0",
+          "y": "-18.5",
+          "z": "0.0"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "2.9544239999999995",
+            "_last_leny": "2.954428",
+            "_last_lenz": "0.25"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "Hood High",
+        "definition_name": "Group#10",
+        "layer": "Layer0",
+        "position_mm": [
+          -453.71,
+          2.11,
+          -6.35
+        ],
+        "properties": {
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "0.0",
+          "_hasbehaviors": "1.0",
+          "_lastmodified": "2021-01-07 15:30",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "35.875",
+          "_lenx_formula": "35.875",
+          "_lenx_label": "LenX",
+          "_leny_error": "27.625",
+          "_leny_formula": "27.625",
+          "_leny_label": "LenY",
+          "_lenz_error": "2.5",
+          "_lenz_formula": "2.5",
+          "_lenz_label": "LenZ",
+          "_material_label": "Material",
+          "_name": "Hood High",
+          "_x_label": "X",
+          "_y_label": "Y",
+          "_z_label": "Z",
+          "lenx": "35.875",
+          "leny": "27.625",
+          "lenz": "2.5",
+          "material": "_Monogram_StainlessSteel",
+          "x": "14.937497580514357",
+          "y": "-7.381637345815761e-08",
+          "z": "0.25000007072313873"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "35.875000000000014",
+            "_last_leny": "27.624999999999993",
+            "_last_lenz": "2.4999999999999996"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "Sign",
+        "definition_name": "Group#12",
+        "layer": "Layer0",
+        "position_mm": [
+          -145.67,
+          -587.25,
+          8.28
+        ],
+        "properties": {
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "0.0",
+          "_hasbehaviors": "1.0",
+          "_lastmodified": "2021-01-08 14:51",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "2\"",
+          "_lenx_formula": "2\"",
+          "_lenx_label": "LenX",
+          "_leny_error": "0.0156\"",
+          "_leny_formula": "0.0156\"",
+          "_leny_label": "LenY",
+          "_lenz_error": "0.666663\"",
+          "_lenz_formula": "0.666663\"",
+          "_lenz_label": "LenZ",
+          "_name": "Sign",
+          "_x_label": "X",
+          "_y_label": "Y",
+          "_z_label": "Z",
+          "lenx": "2.0",
+          "leny": "0.0156",
+          "lenz": "0.666663",
+          "x": "56.875",
+          "y": "-23.12",
+          "z": "0.75"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "2.0",
+            "_last_leny": "0.015599999999996445",
+            "_last_lenz": "0.6666629999999999"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "Filter",
+        "definition_name": "Group#13",
+        "layer": "Layer0",
+        "position_mm": [
+          -193.67,
+          -50.8,
+          0.0
+        ],
+        "properties": {
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "1.0",
+          "_hasbehaviors": "1.0",
+          "_lastmodified": "2021-01-07 15:38",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "15.25\"",
+          "_lenx_formula": "15.25\"",
+          "_lenx_label": "LenX",
+          "_leny_error": "18",
+          "_leny_formula": "18",
+          "_leny_label": "LenY",
+          "_lenz_error": "0.500001\"",
+          "_lenz_formula": "0.500001\"",
+          "_lenz_label": "LenZ",
+          "_material_label": "Material",
+          "_name": "Filter",
+          "_x_error": "0+-1*<span class=subformula-success>15.25</span>/2",
+          "_x_formula": "-LenX/2",
+          "_x_label": "X",
+          "_y_error": "0+-2",
+          "_y_formula": "-2",
+          "_y_label": "Y",
+          "_z_error": "0",
+          "_z_formula": "0",
+          "_z_label": "Z",
+          "lenx": "15.25",
+          "leny": "18.0",
+          "lenz": "0.500001",
+          "material": "_Monogram_StainlessSteel",
+          "x": "-7.625",
+          "y": "-2.0",
+          "z": "0.0"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "15.25",
+            "_last_leny": "18.0",
+            "_last_lenz": "0.500001"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "Color",
+        "definition_name": "Group#9",
+        "layer": "Layer0",
+        "position_mm": [
+          -0.0,
+          2.22,
+          -0.0
+        ],
+        "properties": {
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "0.0",
+          "_hidden_label": "Hidden",
+          "_lastmodified": "2020-12-18 11:03",
+          "_lengthunits": "INCHES",
+          "_name": "Color",
+          "hidden": "1"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "1.1846999999999994",
+            "_last_leny": "3.4139000000000004",
+            "_last_lenz": "2.250009143825218"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "RightSide",
+        "definition_name": "Group#15",
+        "layer": "Layer0",
+        "position_mm": [
+          455.61,
+          -700.09,
+          -6.35
+        ],
+        "properties": {
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "1.0",
+          "_hasbehaviors": "1.0",
+          "_lastmodified": "2021-01-07 15:31",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "0.0625\"",
+          "_lenx_formula": "0.0625\"",
+          "_lenx_label": "LenX",
+          "_leny_error": "27.625",
+          "_leny_formula": "27.625",
+          "_leny_label": "LenY",
+          "_lenz_error": "1",
+          "_lenz_formula": "1",
+          "_lenz_label": "LenZ",
+          "_name": "RightSide",
+          "_x_error": "<span class=subformula-success>35.875</span>/2",
+          "_x_formula": "PARENT!LenX/2",
+          "_x_label": "X",
+          "_y_error": "0+-1*<span class=subformula-success>27.625</span>+0.0625",
+          "_y_formula": "-LenY+0.0625",
+          "_y_label": "Y",
+          "_z_error": "0+-0.25",
+          "_z_formula": "-0.25",
+          "_z_label": "Z",
+          "lenx": "0.0625",
+          "leny": "27.625",
+          "lenz": "1.0",
+          "x": "17.9375",
+          "y": "-27.5625",
+          "z": "-0.25"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "0.0625",
+            "_last_leny": "27.624999999999996",
+            "_last_lenz": "1.0"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "LeftSide",
+        "definition_name": "Group#16",
+        "layer": "Layer0",
+        "position_mm": [
+          -455.61,
+          -700.09,
+          -6.35
+        ],
+        "properties": {
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "1.0",
+          "_hasbehaviors": "1.0",
+          "_iscollapsed": "false",
+          "_lastmodified": "2021-01-07 15:30",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "0.0625\"",
+          "_lenx_formula": "0.0625\"",
+          "_lenx_label": "LenX",
+          "_leny_error": "27.625",
+          "_leny_formula": "27.625",
+          "_leny_label": "LenY",
+          "_lenz_error": "1",
+          "_lenz_formula": "1",
+          "_lenz_label": "LenZ",
+          "_name": "LeftSide",
+          "_x_error": "0+-1*<span class=subformula-success>35.875</span>/2",
+          "_x_formula": "-PARENT!LenX/2",
+          "_x_label": "X",
+          "_y_error": "0+-1*<span class=subformula-success>27.625</span>+0.0625",
+          "_y_formula": "-LenY+0.0625",
+          "_y_label": "Y",
+          "_z_error": "0+-0.25",
+          "_z_formula": "-0.25",
+          "_z_label": "Z",
+          "lenx": "0.0625",
+          "leny": "27.625",
+          "lenz": "1.0",
+          "x": "-17.9375",
+          "y": "-27.5625",
+          "z": "-0.25"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "0.0625",
+            "_last_leny": "27.624999999999996",
+            "_last_lenz": "1.125"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "Lamp2",
+        "definition_name": "Group#6",
+        "layer": "Layer0",
+        "position_mm": [
+          -254.0,
+          -469.9,
+          0.0
+        ],
+        "properties": {
+          "_copies_label": "Copies",
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "1.0",
+          "_hasbehaviors": "1.0",
+          "_lastmodified": "2021-01-07 15:42",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "2.954424\"",
+          "_lenx_formula": "2.954424\"",
+          "_lenx_label": "LenX",
+          "_leny_error": "2.954428\"",
+          "_leny_formula": "2.954428\"",
+          "_leny_label": "LenY",
+          "_lenz_error": "0.25\"",
+          "_lenz_formula": "0.25\"",
+          "_lenz_label": "LenZ",
+          "_material_label": "Material",
+          "_name": "Lamp2",
+          "_x_error": "0+-10",
+          "_x_formula": "-10",
+          "_x_label": "X",
+          "_y_error": "0+-18.5",
+          "_y_formula": "-18.5",
+          "_y_label": "Y",
+          "_z_error": "0",
+          "_z_formula": "0",
+          "_z_label": "Z",
+          "copies": "0",
+          "lenx": "2.954424",
+          "leny": "2.954428",
+          "lenz": "0.25",
+          "material": "_Monogram_StainlessSteel",
+          "x": "-10.0",
+          "y": "-18.5",
+          "z": "0.0"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "2.9544239999999995",
+            "_last_leny": "2.954428",
+            "_last_lenz": "0.25"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "Knobs",
+        "definition_name": "Group#2",
+        "layer": "Layer0",
+        "position_mm": [
+          -0.51,
+          -133.18,
+          2.08
+        ],
+        "properties": {
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "0.0",
+          "_hasbehaviors": "1.0",
+          "_lastmodified": "2021-01-08 14:49",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "4.5\"",
+          "_lenx_formula": "4.5\"",
+          "_lenx_label": "LenX",
+          "_lenx_nominal": "4.5",
+          "_leny_error": "0.25\"",
+          "_leny_formula": "0.25\"",
+          "_leny_label": "LenY",
+          "_leny_nominal": "0.25",
+          "_lenz_error": "0.5\"",
+          "_lenz_formula": "0.5\"",
+          "_lenz_label": "LenZ",
+          "_lenz_nominal": "0.5",
+          "_name": "Knobs",
+          "_x_label": "X",
+          "_y_label": "Y",
+          "_z_label": "Z",
+          "lenx": "4.5",
+          "leny": "0.25",
+          "lenz": "0.5",
+          "x": "29.9",
+          "y": "-5.3",
+          "z": "0.5"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "4.5",
+            "_last_leny": "0.25",
+            "_last_lenz": "0.4999999999999999"
+          }
+        },
+        "children": [
+          {
+            "name": "Knob",
+            "definition_name": "Group#1",
+            "layer": "Layer0",
+            "position_mm": [
+              -51.31,
+              -584.16,
+              21.13
+            ],
+            "properties": {
+              "_copies_label": "Copies",
+              "_formatversion": "1.0",
+              "_has_movetool_behaviors": "1.0",
+              "_hasbehaviors": "1.0",
+              "_iscollapsed": "false",
+              "_lastmodified": "2021-01-07 15:12",
+              "_lengthunits": "INCHES",
+              "_lenx_error": "0.5",
+              "_lenx_formula": "0.5",
+              "_lenx_label": "LenX",
+              "_leny_error": "0.25",
+              "_leny_formula": "0.25",
+              "_leny_label": "LenY",
+              "_lenz_formula": "0.5",
+              "_lenz_label": "LenZ",
+              "_material_label": "Material",
+              "_name": "Knob",
+              "_spacing_formulaunits": "INCHES",
+              "_spacing_label": "Spacing",
+              "_x_error": "0+-2",
+              "_x_formula": "-2",
+              "_x_label": "X",
+              "_y_error": "0+-17.755004\"",
+              "_y_formula": "-17.755004\"",
+              "_y_label": "Y",
+              "_z_error": "0.75",
+              "_z_formula": "0.75",
+              "_z_label": "Z",
+              "copies": "0",
+              "lenx": "0.5",
+              "leny": "0.25",
+              "lenz": "0.5",
+              "material": "_Monogram_StainlessSteel",
+              "spacing": "1",
+              "x": "-2.0",
+              "y": "-17.755004",
+              "z": "0.75"
+            },
+            "attribute_dictionaries": {
+              "": {
+                "_last_lenx": "0.5",
+                "_last_leny": "0.25",
+                "_last_lenz": "0.49828747126061157"
+              }
+            },
+            "children": []
+          },
+          {
+            "name": "Knob5",
+            "definition_name": "Group#1",
+            "layer": "Layer0",
+            "position_mm": [
+              50.29,
+              -584.16,
+              21.13
+            ],
+            "properties": {
+              "_copies_label": "Copies",
+              "_formatversion": "1.0",
+              "_has_movetool_behaviors": "1.0",
+              "_hasbehaviors": "1.0",
+              "_iscollapsed": "false",
+              "_lastmodified": "2021-01-07 15:14",
+              "_lengthunits": "INCHES",
+              "_lenx_error": "0.5",
+              "_lenx_formula": "0.5",
+              "_lenx_label": "LenX",
+              "_leny_error": "0.25",
+              "_leny_formula": "0.25",
+              "_leny_label": "LenY",
+              "_lenz_formula": "0.5",
+              "_lenz_label": "LenZ",
+              "_material_label": "Material",
+              "_name": "Knob5",
+              "_spacing_formulaunits": "INCHES",
+              "_spacing_label": "Spacing",
+              "_x_error": "2",
+              "_x_formula": "2",
+              "_x_label": "X",
+              "_y_error": "0+-17.755004\"",
+              "_y_formula": "-17.755004\"",
+              "_y_label": "Y",
+              "_z_error": "0.75",
+              "_z_formula": "0.75",
+              "_z_label": "Z",
+              "copies": "0",
+              "lenx": "0.5",
+              "leny": "0.25",
+              "lenz": "0.5",
+              "material": "_Monogram_StainlessSteel",
+              "spacing": "1",
+              "x": "2.0",
+              "y": "-17.755004",
+              "z": "0.75"
+            },
+            "attribute_dictionaries": {
+              "": {
+                "_last_lenx": "0.5",
+                "_last_leny": "0.25",
+                "_last_lenz": "0.5"
+              }
+            },
+            "children": []
+          },
+          {
+            "name": "Knob2",
+            "definition_name": "Group#1",
+            "layer": "Layer0",
+            "position_mm": [
+              -25.91,
+              -584.16,
+              21.13
+            ],
+            "properties": {
+              "_copies_label": "Copies",
+              "_formatversion": "1.0",
+              "_has_movetool_behaviors": "1.0",
+              "_hasbehaviors": "1.0",
+              "_iscollapsed": "false",
+              "_lastmodified": "2021-01-07 15:12",
+              "_lengthunits": "INCHES",
+              "_lenx_error": "0.5",
+              "_lenx_formula": "0.5",
+              "_lenx_label": "LenX",
+              "_leny_error": "0.25",
+              "_leny_formula": "0.25",
+              "_leny_label": "LenY",
+              "_lenz_formula": "0.5",
+              "_lenz_label": "LenZ",
+              "_material_label": "Material",
+              "_name": "Knob2",
+              "_spacing_formulaunits": "INCHES",
+              "_spacing_label": "Spacing",
+              "_x_error": "0+-1",
+              "_x_formula": "-1",
+              "_x_label": "X",
+              "_y_error": "0+-17.755004\"",
+              "_y_formula": "-17.755004\"",
+              "_y_label": "Y",
+              "_z_error": "0.75",
+              "_z_formula": "0.75",
+              "_z_label": "Z",
+              "copies": "0",
+              "lenx": "0.5",
+              "leny": "0.25",
+              "lenz": "0.5",
+              "material": "_Monogram_StainlessSteel",
+              "spacing": "1",
+              "x": "-1.0",
+              "y": "-17.755004",
+              "z": "0.75"
+            },
+            "attribute_dictionaries": {
+              "": {
+                "_last_lenx": "0.5",
+                "_last_leny": "0.25",
+                "_last_lenz": "0.5"
+              }
+            },
+            "children": []
+          },
+          {
+            "name": "Knob3",
+            "definition_name": "Group#1",
+            "layer": "Layer0",
+            "position_mm": [
+              -0.51,
+              -584.16,
+              21.13
+            ],
+            "properties": {
+              "_copies_label": "Copies",
+              "_formatversion": "1.0",
+              "_has_movetool_behaviors": "1.0",
+              "_hasbehaviors": "1.0",
+              "_iscollapsed": "false",
+              "_lastmodified": "2021-01-07 15:12",
+              "_lengthunits": "INCHES",
+              "_lenx_error": "0.5",
+              "_lenx_formula": "0.5",
+              "_lenx_label": "LenX",
+              "_leny_error": "0.25",
+              "_leny_formula": "0.25",
+              "_leny_label": "LenY",
+              "_lenz_formula": "0.5",
+              "_lenz_label": "LenZ",
+              "_material_label": "Material",
+              "_name": "Knob3",
+              "_spacing_formulaunits": "INCHES",
+              "_spacing_label": "Spacing",
+              "_x_error": "0",
+              "_x_formula": "0",
+              "_x_label": "X",
+              "_y_error": "0+-17.755004\"",
+              "_y_formula": "-17.755004\"",
+              "_y_label": "Y",
+              "_z_error": "0.75",
+              "_z_formula": "0.75",
+              "_z_label": "Z",
+              "copies": "0",
+              "lenx": "0.5",
+              "leny": "0.25",
+              "lenz": "0.5",
+              "material": "_Monogram_StainlessSteel",
+              "spacing": "1",
+              "x": "0.0",
+              "y": "-17.755004",
+              "z": "0.75"
+            },
+            "attribute_dictionaries": {
+              "": {
+                "_last_lenx": "0.5",
+                "_last_leny": "0.25",
+                "_last_lenz": "0.5"
+              }
+            },
+            "children": []
+          },
+          {
+            "name": "Knob4",
+            "definition_name": "Group#1",
+            "layer": "Layer0",
+            "position_mm": [
+              24.89,
+              -584.16,
+              21.13
+            ],
+            "properties": {
+              "_copies_label": "Copies",
+              "_formatversion": "1.0",
+              "_has_movetool_behaviors": "1.0",
+              "_hasbehaviors": "1.0",
+              "_iscollapsed": "false",
+              "_lastmodified": "2021-01-07 15:14",
+              "_lengthunits": "INCHES",
+              "_lenx_error": "0.5",
+              "_lenx_formula": "0.5",
+              "_lenx_label": "LenX",
+              "_leny_error": "0.25",
+              "_leny_formula": "0.25",
+              "_leny_label": "LenY",
+              "_lenz_formula": "0.5",
+              "_lenz_label": "LenZ",
+              "_material_label": "Material",
+              "_name": "Knob4",
+              "_spacing_formulaunits": "INCHES",
+              "_spacing_label": "Spacing",
+              "_x_error": "1",
+              "_x_formula": "1",
+              "_x_label": "X",
+              "_y_error": "0+-17.755004\"",
+              "_y_formula": "-17.755004\"",
+              "_y_label": "Y",
+              "_z_error": "0.75",
+              "_z_formula": "0.75",
+              "_z_label": "Z",
+              "copies": "0",
+              "lenx": "0.5",
+              "leny": "0.25",
+              "lenz": "0.5",
+              "material": "_Monogram_StainlessSteel",
+              "spacing": "1",
+              "x": "1.0",
+              "y": "-17.755004",
+              "z": "0.75"
+            },
+            "attribute_dictionaries": {
+              "": {
+                "_last_lenx": "0.5",
+                "_last_leny": "0.25",
+                "_last_lenz": "0.5"
+              }
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Lamp3",
+        "definition_name": "Group#3",
+        "layer": "Layer0",
+        "position_mm": [
+          254.0,
+          -101.6,
+          0.0
+        ],
+        "properties": {
+          "_copies_label": "Copies",
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "1.0",
+          "_hasbehaviors": "1.0",
+          "_lastmodified": "2021-01-07 15:42",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "2.954424\"",
+          "_lenx_formula": "2.954424\"",
+          "_lenx_label": "LenX",
+          "_leny_error": "2.954428\"",
+          "_leny_formula": "2.954428\"",
+          "_leny_label": "LenY",
+          "_lenz_error": "0.25\"",
+          "_lenz_formula": "0.25\"",
+          "_lenz_label": "LenZ",
+          "_material_label": "Material",
+          "_name": "Lamp3",
+          "_x_error": "10",
+          "_x_formula": "10",
+          "_x_label": "X",
+          "_y_error": "0+-4",
+          "_y_formula": "-4",
+          "_y_label": "Y",
+          "_z_error": "0",
+          "_z_formula": "0",
+          "_z_label": "Z",
+          "copies": "0",
+          "lenx": "2.954424",
+          "leny": "2.954428",
+          "lenz": "0.25",
+          "material": "_Monogram_StainlessSteel",
+          "x": "10.0",
+          "y": "-4.0",
+          "z": "0.0"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "2.9544239999999995",
+            "_last_leny": "2.954428",
+            "_last_lenz": "0.25"
+          }
+        },
+        "children": []
+      },
+      {
+        "name": "Lamp4",
+        "definition_name": "Group#3",
+        "layer": "Layer0",
+        "position_mm": [
+          -254.0,
+          -101.6,
+          0.0
+        ],
+        "properties": {
+          "_copies_label": "Copies",
+          "_formatversion": "1.0",
+          "_has_movetool_behaviors": "1.0",
+          "_hasbehaviors": "1.0",
+          "_lastmodified": "2021-01-07 15:43",
+          "_lengthunits": "INCHES",
+          "_lenx_error": "2.954424\"",
+          "_lenx_formula": "2.954424\"",
+          "_lenx_label": "LenX",
+          "_leny_error": "2.954428\"",
+          "_leny_formula": "2.954428\"",
+          "_leny_label": "LenY",
+          "_lenz_error": "0.25\"",
+          "_lenz_formula": "0.25\"",
+          "_lenz_label": "LenZ",
+          "_material_label": "Material",
+          "_name": "Lamp4",
+          "_x_error": "0+-10",
+          "_x_formula": "-10",
+          "_x_label": "X",
+          "_y_error": "0+-4",
+          "_y_formula": "-4",
+          "_y_label": "Y",
+          "_z_error": "0",
+          "_z_formula": "0",
+          "_z_label": "Z",
+          "copies": "0",
+          "lenx": "2.954424",
+          "leny": "2.954428",
+          "lenz": "0.25",
+          "material": "_Monogram_StainlessSteel",
+          "x": "-10.0",
+          "y": "-4.0",
+          "z": "0.0"
+        },
+        "attribute_dictionaries": {
+          "": {
+            "_last_lenx": "2.954424",
+            "_last_leny": "2.954428",
+            "_last_lenz": "0.25"
+          }
+        },
+        "children": []
+      }
+    ]
+  }
+}

@@ -999,6 +999,8 @@
       isDecor: isDecor,
       excludeFromPricing: isDecor,
       decorType: opts.decorType || null,
+      slug: opts.slug || null,
+      thumbnailUrl: opts.thumbnailUrl || null,
       modelUrl: opts.modelUrl || null,
       modelFormat: opts.modelFormat || null,
       notes: opts.notes || ''
@@ -6578,6 +6580,35 @@
     return String(id || '').replace(/[\/\\:\*\?"<>\|\s]+/g, '-').toLowerCase();
   }
 
+  function registerDecorsCatalog(catalog) {
+    if (!Array.isArray(catalog)) return;
+    for (var i = 0; i < catalog.length; i++) {
+      var d = catalog[i];
+      var existingIdx = -1;
+      for (var j = 0; j < FURNITURE_CATALOG.length; j++) {
+        if (FURNITURE_CATALOG[j].id === d.id || (d.slug && FURNITURE_CATALOG[j].slug === d.slug)) {
+          existingIdx = j;
+          break;
+        }
+      }
+      var entry = Object.assign({}, d, {
+        category: 'decor',
+        isDecor: true,
+        excludeFromPricing: true,
+        areaSqft: 0
+      });
+      if (existingIdx >= 0) {
+        FURNITURE_CATALOG[existingIdx] = entry;
+      } else {
+        FURNITURE_CATALOG.push(entry);
+      }
+    }
+  }
+
+  if (typeof window !== 'undefined' && window.ORBIX_DECORS_CATALOG && Array.isArray(window.ORBIX_DECORS_CATALOG)) {
+    registerDecorsCatalog(window.ORBIX_DECORS_CATALOG);
+  }
+
   function getUnitIcon(item) {
     if (!item) return 'icon-cookscape-unit.png';
     if (typeof OrbixUnitIcons !== 'undefined' && OrbixUnitIcons.getIcon) {
@@ -6684,6 +6715,7 @@
     checkPlacementOverlap: checkPlacementOverlap,
     getUnitIcon: getUnitIcon,
     sanitizeIconId: sanitizeIconId,
+    registerDecorsCatalog: registerDecorsCatalog,
     toValidHexColor: toValidHexColor
   };
 });

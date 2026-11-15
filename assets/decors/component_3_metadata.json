@@ -1,0 +1,214 @@
+{
+  "format_version": "1.0",
+  "source_file": "component_3",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 2,
+  "total_meshes": 6,
+  "total_layers": 2,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    },
+    {
+      "name": "кухня",
+      "color": {
+        "r": 102,
+        "g": 68,
+        "b": 0
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "кухня": false
+  },
+  "materials": [
+    {
+      "name": "*4",
+      "color": {
+        "r": 193,
+        "g": 193,
+        "b": 193
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Metal_Corrogated_Shiny.jpg",
+        "x_scale": 15.811023622047246,
+        "y_scale": 15.811023622047246
+      }
+    },
+    {
+      "name": "[Color_002]",
+      "color": {
+        "r": 198,
+        "g": 198,
+        "b": 198
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color_003]",
+      "color": {
+        "r": 170,
+        "g": 170,
+        "b": 170
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_кухня",
+      "color": {
+        "r": 102,
+        "g": 68,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT_Layer0": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_1_ROOT__Component_28_Layer0_170_170_170_ss": {
+      "name": "Component_28",
+      "definition_name": "Component#6",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28"
+    },
+    "mesh_2_ROOT__Component_28_Layer0_255_84_84_ss": {
+      "name": "Component_28",
+      "definition_name": "Component#6",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28"
+    },
+    "mesh_3_ROOT__Component_28__Component_29_Layer0_255_84_84_ss": {
+      "name": "Component_29",
+      "definition_name": "Component#5",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28 / Component_29"
+    },
+    "mesh_4_ROOT__Component_28__Component_29_Layer0_198_198_198_ss": {
+      "name": "Component_29",
+      "definition_name": "Component#5",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28 / Component_29"
+    },
+    "mesh_5_ROOT__Component_28__Component_29_Layer0_198_198_198_ds": {
+      "name": "Component_29",
+      "definition_name": "Component#5",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_28 / Component_29"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_28",
+        "definition_name": "Component#6",
+        "layer": "Layer0",
+        "position_mm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Component_29",
+            "definition_name": "Component#5",
+            "layer": "Layer0",
+            "position_mm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

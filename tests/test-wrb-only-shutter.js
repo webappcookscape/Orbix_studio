@@ -98,3 +98,4 @@ assert(orbixPlanSrc.includes('dMm = (f.dimensions && f.dimensions.D) ? f.dimensi
 console.log('✓ 2D floor plan source verified: renders at exact 18mm depth.');
 
 console.log('\nALL WRB ONLY SHUTTER TESTS PASSED 100%!');
+

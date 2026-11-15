@@ -1,0 +1,154 @@
+{
+  "format_version": "1.0",
+  "source_file": "maquina_de_lavar_roupas_sansung",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 0,
+  "total_meshes": 4,
+  "total_layers": 2,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    },
+    {
+      "name": "VISTA 04",
+      "color": {
+        "r": 0,
+        "g": 255,
+        "b": 255
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "VISTA 04": false
+  },
+  "materials": [
+    {
+      "name": "[Metal_Corrogated_Shiny]4",
+      "color": {
+        "r": 193,
+        "g": 193,
+        "b": 193
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/ALLANR~1/AppData/Local/Temp/VfSTextureCache/[Metal_Corrogated_Shiny]4_extractedTex7370.jpg",
+        "x_scale": 19.68503937007874,
+        "y_scale": 19.68503937007874
+      }
+    },
+    {
+      "name": "Image4_extractedTex4427",
+      "color": {
+        "r": 140,
+        "g": 140,
+        "b": 141
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/ALLANR~1/AppData/Local/Temp/VfSTextureCache/Image4_extractedTex4427.bmp",
+        "x_scale": 23.62204724409449,
+        "y_scale": 32.55768152849305
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_VISTA 04",
+      "color": {
+        "r": 0,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT_VISTA 04_0_255_255_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "VISTA 04",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_1_ROOT_VISTA 04_193_193_193_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "VISTA 04",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_2_ROOT_VISTA 04_140_140_141_ds": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "VISTA 04",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_3_ROOT_VISTA 04_140_140_141_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "VISTA 04",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": []
+  }
+}
