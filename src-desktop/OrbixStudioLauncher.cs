@@ -58,7 +58,7 @@ namespace OrbixStudio
 
                 string url = string.Format("http://127.0.0.1:{0}/index.html", port);
                 string args = string.Format(
-                    "--app=\"{0}\" --start-maximized --window-size=1600,1000 --user-data-dir=\"{1}\" --ignore-gpu-blocklist --enable-gpu-rasterization --enable-webgl --high-dpi-support=1",
+                    "--app={0} --start-maximized --window-size=1600,1000 --user-data-dir=\"{1}\" --ignore-gpu-blocklist --enable-gpu-rasterization --enable-webgl --high-dpi-support=1",
                     url,
                     profileDir
                 );
@@ -139,7 +139,7 @@ namespace OrbixStudio
                     rawUrl = "/index.html";
                 }
 
-                rawUrl = rawUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                rawUrl = Uri.UnescapeDataString(rawUrl).TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
                 string filePath = Path.Combine(_baseDir, rawUrl);
 
                 if (File.Exists(filePath))
@@ -154,11 +154,14 @@ namespace OrbixStudio
                     else if (ext == ".json") mime = "application/json; charset=utf-8";
                     else if (ext == ".png") mime = "image/png";
                     else if (ext == ".jpg" || ext == ".jpeg") mime = "image/jpeg";
+                    else if (ext == ".webp") mime = "image/webp";
                     else if (ext == ".svg") mime = "image/svg+xml";
+                    else if (ext == ".ico") mime = "image/x-icon";
                     else if (ext == ".gif") mime = "image/gif";
                     else if (ext == ".woff2") mime = "font/woff2";
                     else if (ext == ".woff") mime = "font/woff";
                     else if (ext == ".ttf") mime = "font/ttf";
+                    else if (ext == ".wasm") mime = "application/wasm";
 
                     context.Response.ContentType = mime;
                     context.Response.ContentLength64 = data.Length;

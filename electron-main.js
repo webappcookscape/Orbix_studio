@@ -36,6 +36,21 @@ function createWindow() {
     mainWindow.show();
   });
 
+  // F12 or Ctrl+Shift+I toggles DevTools easily in desktop exe
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12' || (input.control && input.shift && input.key.toLowerCase() === 'i')) {
+      mainWindow.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
+
+  mainWindow.webContents.on('render-process-gone', (event, detailed) => {
+    console.error('[Orbix Studio Desktop] Renderer process exited:', detailed);
+    if (detailed && detailed.reason !== 'clean-exit') {
+      mainWindow.reload();
+    }
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });

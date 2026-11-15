@@ -193,7 +193,11 @@
 
     <!-- ══════ DESIGN ══════ -->
     <section class="view" id="view-design">
-      <div class="stagewrap">
+      <div class="stagewrap" id="stagewrap">
+        <button type="button" class="rail-floating-expand-btn" id="railFloatingExpandBtn" title="Show Unit Properties &amp; Inspector (Shortcut: [ or Ctrl+B)">
+          <span>⚙️ Unit Inspector</span>
+          <span style="font-size:14px;line-height:1;">⇤</span>
+        </button>
         <div class="project-details-bar project-details-3d" id="studioProjectDetailsBadge" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:5px 14px;background:linear-gradient(90deg,#f8fafc,#eef5fb);border-bottom:1px solid #dbeafe;font-size:11.5px;color:#1e293b;z-index:5;"></div>
         <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
           <div id="world"></div>
@@ -262,6 +266,7 @@
                 <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
                 <button class="minibtn" id="openBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
                 <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
+                <button class="minibtn is-on" id="stagebarToggleRailBtn" aria-pressed="true" title="Toggle Unit Inspector Sidebar (Hide to maximize 3D canvas) [Shortcut: [ or Ctrl+B]" style="font-weight:600;">📑 Inspector</button>
               </div>
 
               <div class="lighting-controls-group" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.92);padding:2px 8px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;color:#1e293b;">
@@ -372,9 +377,12 @@
       </div>
 
       <aside class="rail" id="rail">
-        <div class="units-rail-header" id="unitsRailHeader" title="Click to collapse or expand the units switcher bar">
+        <div class="units-rail-header" id="unitsRailHeader" title="Unit Inspector Sidebar">
           <span class="units-rail-title" id="unitsRailTitle">📦 Units (<span id="unitsRailCount">0</span>)</span>
-          <button type="button" class="units-rail-toggle-btn" id="unitsRailToggleBtn" title="Toggle Units Bar">▾ Collapse</button>
+          <div class="rail-header-actions">
+            <button type="button" class="units-rail-toggle-btn" id="unitsRailToggleBtn" title="Toggle Units Chips Row">▾ Chips</button>
+            <button type="button" class="rail-collapse-btn" id="railCollapseBtn" title="Collapse Sidebar / Maximize 3D View [Shortcut: [ or Ctrl+B]">⇥ Collapse</button>
+          </div>
         </div>
         <div class="units" id="units"></div>
         <div class="railscroll" id="railScroll"></div>

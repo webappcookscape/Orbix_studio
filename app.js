@@ -5001,7 +5001,12 @@
   /* ══════════ RAIL ══════════ */
   function grp(parent, title) {
     var g = el("grp", parent);
-    el("grp-h", g).textContent = title;
+    var gh = el("grp-h", g);
+    gh.textContent = title;
+    gh.title = "Click to collapse / expand this section";
+    gh.addEventListener("click", function () {
+      g.classList.toggle("is-collapsed");
+    });
     return g;
   }
   function fld(parent, label, value, onChange, type) {
@@ -5035,6 +5040,50 @@
     });
     return g;
   }
+
+  function toggleRailCollapse(forceState) {
+    var viewDesign = document.getElementById("view-design");
+    var rail = document.getElementById("rail");
+    var btnStagebar = document.getElementById("stagebarToggleRailBtn");
+    if (!viewDesign || !rail) return;
+
+    var willCollapse;
+    if (typeof forceState === "boolean") {
+      willCollapse = forceState;
+    } else {
+      willCollapse = !rail.classList.contains("is-collapsed");
+    }
+
+    if (willCollapse) {
+      rail.classList.add("is-collapsed");
+      viewDesign.classList.add("rail-collapsed");
+      if (btnStagebar) {
+        btnStagebar.classList.remove("is-on");
+        btnStagebar.setAttribute("aria-pressed", "false");
+      }
+    } else {
+      rail.classList.remove("is-collapsed");
+      viewDesign.classList.remove("rail-collapsed");
+      if (btnStagebar) {
+        btnStagebar.classList.add("is-on");
+        btnStagebar.setAttribute("aria-pressed", "true");
+      }
+    }
+
+    try {
+      localStorage.setItem("orbix_rail_collapsed", willCollapse ? "true" : "false");
+    } catch (e) { }
+
+    window.dispatchEvent(new Event("resize"));
+    if (window.GL && typeof window.GL.resize === "function") {
+      window.GL.resize();
+    }
+    if (typeof softAll === "function") {
+      softAll();
+    }
+  }
+  window.toggleRailCollapse = toggleRailCollapse;
+
   function updateUnitsRailHeader() {
     var cnt = document.getElementById("unitsRailCount");
     var btn = document.getElementById("unitsRailToggleBtn");
@@ -5048,25 +5097,109 @@
     if (title) {
       title.innerHTML = isCollapsed ?
         ('📦 Units (' + S.units.length + ') · <span style="color:#059669;font-weight:600;text-transform:none;">' + activeLabel + '</span>') :
-        ('📦 Units in Project (<span id="unitsRailCount">' + S.units.length + '</span>)');
+        ('📦 Units (<span id="unitsRailCount">' + S.units.length + '</span>)');
     }
-    if (btn) btn.textContent = isCollapsed ? "▸ Expand" : "▾ Collapse";
+    if (btn) btn.textContent = isCollapsed ? "▸ Chips" : "▾ Chips";
   }
+
+  function initRailCollapseControls() {
+    var btnCollapse = document.getElementById("railCollapseBtn");
+    if (btnCollapse && !btnCollapse._wired) {
+      btnCollapse._wired = true;
+      btnCollapse.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleRailCollapse(true);
+      });
+    }
+
+    var btnFloating = document.getElementById("railFloatingExpandBtn");
+    if (btnFloating && !btnFloating._wired) {
+      btnFloating._wired = true;
+      btnFloating.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleRailCollapse(false);
+      });
+    }
+
+    var btnStagebar = document.getElementById("stagebarToggleRailBtn");
+    if (btnStagebar && !btnStagebar._wired) {
+      btnStagebar._wired = true;
+      btnStagebar.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleRailCollapse();
+      });
+    }
+
+    var btnChipsToggle = document.getElementById("unitsRailToggleBtn");
+    if (btnChipsToggle && !btnChipsToggle._wired) {
+      btnChipsToggle._wired = true;
+      btnChipsToggle.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var uw = document.getElementById("units");
+        if (uw) {
+          var nowCol = uw.classList.toggle("is-collapsed");
+          try { localStorage.setItem("orbix_units_rail_collapsed", String(nowCol)); } catch (err) { }
+          updateUnitsRailHeader();
+        }
+      });
+    }
+
+    var titleEl = document.getElementById("unitsRailTitle");
+    if (titleEl && !titleEl._wired) {
+      titleEl._wired = true;
+      titleEl.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var uw = document.getElementById("units");
+        if (uw) {
+          var nowCol = uw.classList.toggle("is-collapsed");
+          try { localStorage.setItem("orbix_units_rail_collapsed", String(nowCol)); } catch (err) { }
+          updateUnitsRailHeader();
+        }
+      });
+    }
+
+    // Keyboard shortcut: [ or Ctrl+B / Cmd+B to toggle sidebar
+    if (!window._railKeyHandlerAttached) {
+      window._railKeyHandlerAttached = true;
+      window.addEventListener("keydown", function (e) {
+        var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+        if (tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+        if (e.key === "[" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b")) {
+          var viewDesign = document.getElementById("view-design");
+          if (viewDesign && viewDesign.classList.contains("is-on")) {
+            e.preventDefault();
+            toggleRailCollapse();
+          }
+        }
+      });
+    }
+
+    // Restore saved sidebar collapsed state
+    try {
+      var savedRailCol = localStorage.getItem("orbix_rail_collapsed");
+      if (savedRailCol === "true") {
+        var viewDesign = document.getElementById("view-design");
+        var rail = document.getElementById("rail");
+        if (viewDesign && rail) {
+          rail.classList.add("is-collapsed");
+          viewDesign.classList.add("rail-collapsed");
+          if (btnStagebar) {
+            btnStagebar.classList.remove("is-on");
+            btnStagebar.setAttribute("aria-pressed", "false");
+          }
+        }
+      }
+    } catch (e) { }
+  }
+  setTimeout(initRailCollapseControls, 60);
 
   function renderRail() {
     var uw = $("#units"); uw.innerHTML = "";
     var savedCol = null;
     try { savedCol = localStorage.getItem("orbix_units_rail_collapsed"); } catch (e) { }
     if (savedCol === "true") uw.classList.add("is-collapsed");
-    var hdr = document.getElementById("unitsRailHeader");
-    if (hdr && !hdr._wired) {
-      hdr._wired = true;
-      hdr.addEventListener("click", function () {
-        var nowCol = uw.classList.toggle("is-collapsed");
-        try { localStorage.setItem("orbix_units_rail_collapsed", String(nowCol)); } catch (e) { }
-        updateUnitsRailHeader();
-      });
-    }
+
+    initRailCollapseControls();
 
     S.units.forEach(function (u, i) {
       var c = el("uchip" + (i === S.active ? " is-on" : ""), uw, "button");

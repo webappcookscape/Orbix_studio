@@ -6044,7 +6044,11 @@
         if (isolatedRoomId !== undefined) {
           this.currentIsolatedRoomId = (isolatedRoomId === 'all' || !isolatedRoomId) ? null : isolatedRoomId;
         }
-        this.archRenderer.buildHome(proj, this.currentIsolatedRoomId);
+        try {
+          this.archRenderer.buildHome(proj, this.currentIsolatedRoomId);
+        } catch (homeErr) {
+          console.error('[Orbix UI] Error building 3D home:', homeErr);
+        }
         var homeObj = scene.getObjectByName('OrbixHome3D');
         var selFurnId = null;
         if (window.S && window.S.units && window.S.units[window.S.active]) {

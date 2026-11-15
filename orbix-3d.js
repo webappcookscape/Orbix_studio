@@ -3794,9 +3794,11 @@
      Build Placed 3D Furniture Unit
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
-    var fg = new THREE.Group();
-    fg.name = 'Furniture_' + furn.id;
-    fg.userData = { isFurniture: true, isFurnitureGroup: true, furnitureId: furn.id, furniture: furn };
+    if (!furn) return new THREE.Group();
+    try {
+      var fg = new THREE.Group();
+      fg.name = 'Furniture_' + furn.id;
+      fg.userData = { isFurniture: true, isFurnitureGroup: true, furnitureId: furn.id, furniture: furn };
 
     var dims = furn.dimensions || { W: 1200, H: 2100, D: 600 };
     dims = {
@@ -4649,7 +4651,30 @@
     fg.visible = true;
 
     return fg;
-  };
+  } catch (err) {
+    console.error('[Orbix 3D] Error building furniture mesh for', (furn && (furn.name || furn.id)), err);
+    var fallback = new THREE.Group();
+    fallback.name = 'Furniture_' + ((furn && furn.id) || 'fallback');
+    fallback.userData = { isFurniture: true, isFurnitureGroup: true, furnitureId: furn && furn.id, furniture: furn };
+    var dims = (furn && furn.dimensions) || { W: 600, H: 800, D: 600 };
+    var fW = parseFloat(dims.W) || 600, fH = parseFloat(dims.H) || 800, fD = parseFloat(dims.D) || 600;
+    var boxMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(fW, fH, fD),
+      new THREE.MeshStandardMaterial({ color: 0x94A3B8, roughness: 0.5 })
+    );
+    boxMesh.position.set(0, fH / 2, 0);
+    boxMesh.castShadow = true;
+    boxMesh.receiveShadow = true;
+    fallback.add(boxMesh);
+    var posX = (furn && furn.pos && furn.pos.x) || 0;
+    var posY = (furn && furn.pos && furn.pos.y) || 0;
+    var elev = (furn && furn.elevation !== undefined) ? parseFloat(furn.elevation) : 0;
+    fallback.position.set(posX, elev, posY);
+    fallback.rotation.y = -(furn && furn.rotY || 0);
+    fallback.visible = true;
+    return fallback;
+  }
+};
 
   ArchitecturalRenderer.prototype.disposeGroup = function (group) {
     if (!group) return;

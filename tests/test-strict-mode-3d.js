@@ -23,3 +23,4 @@ for (let i = 0; i < lines.length; i++) {
   }
 }
 console.log('✅ 2. Variable checks passed.');
+

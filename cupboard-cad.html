@@ -393,7 +393,56 @@ input,select{font:inherit;color:inherit}
 .rail{
   flex:0 0 330px;display:flex;flex-direction:column;min-height:0;
   background:var(--panel);border-left:1px solid var(--rule);
+  position:relative;z-index:10;
+  transition:flex-basis 0.2s ease, width 0.2s ease;
 }
+.rail.is-collapsed,
+#view-design.rail-collapsed .rail {
+  display: none !important;
+  width: 0 !important;
+  flex: 0 0 0 !important;
+  border-left: none !important;
+  overflow: hidden !important;
+}
+#view-design.rail-collapsed .stagewrap {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Floating button when rail is collapsed */
+.rail-floating-expand-btn {
+  display: none;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 45;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+.rail-floating-expand-btn:hover {
+  background: #1e293b;
+  border-color: #38bdf8;
+  color: #38bdf8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+#view-design.rail-collapsed .rail-floating-expand-btn {
+  display: inline-flex !important;
+}
+
 .units-rail-header {
   display: flex;
   align-items: center;
@@ -401,7 +450,6 @@ input,select{font:inherit;color:inherit}
   padding: 8px 12px;
   background: #f8fafc;
   border-bottom: 1px solid var(--rule);
-  cursor: pointer;
   user-select: none;
 }
 .units-rail-title {
@@ -414,6 +462,32 @@ input,select{font:inherit;color:inherit}
   display: flex;
   align-items: center;
   gap: 6px;
+  cursor: pointer;
+}
+.rail-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.rail-collapse-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  padding: 2.5px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+.rail-collapse-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 .units-rail-toggle-btn {
   background: transparent;
@@ -422,7 +496,7 @@ input,select{font:inherit;color:inherit}
   font-weight: 700;
   color: var(--ink-2);
   cursor: pointer;
-  padding: 2px 7px;
+  padding: 2.5px 7px;
   border-radius: 4px;
   transition: all 0.15s ease;
 }
@@ -451,9 +525,19 @@ input,select{font:inherit;color:inherit}
 .grp{padding:14px 0 4px;border-bottom:1px solid var(--rule-2)}
 .grp:last-child{border-bottom:0}
 .grp-h{
-  font-family:var(--cond);font-size:10px;font-weight:600;letter-spacing:.15em;
+  font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:.15em;
   text-transform:uppercase;color:var(--blue);margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;user-select:none;
 }
+.grp-h:hover{color:#0284c7}
+.grp-h::after{
+  content:'▾';font-size:11px;color:var(--ink-3);
+  transition:transform 0.15s ease;
+}
+.grp.is-collapsed .grp-h{margin-bottom:0}
+.grp.is-collapsed .grp-h::after{transform:rotate(-90deg)}
+.grp.is-collapsed > :not(.grp-h){display:none!important}
 .row{display:flex;gap:8px;margin-bottom:8px}
 .fld{flex:1 1 0;min-width:0}
 .fld label{
@@ -3849,7 +3933,11 @@ body.role-employee #adminCreateEmpBox,
 
     <!-- ══════ DESIGN ══════ -->
     <section class="view" id="view-design">
-      <div class="stagewrap">
+      <div class="stagewrap" id="stagewrap">
+        <button type="button" class="rail-floating-expand-btn" id="railFloatingExpandBtn" title="Show Unit Properties &amp; Inspector (Shortcut: [ or Ctrl+B)">
+          <span>⚙️ Unit Inspector</span>
+          <span style="font-size:14px;line-height:1;">⇤</span>
+        </button>
         <div class="project-details-bar project-details-3d" id="studioProjectDetailsBadge" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:5px 14px;background:linear-gradient(90deg,#f8fafc,#eef5fb);border-bottom:1px solid #dbeafe;font-size:11.5px;color:#1e293b;z-index:5;"></div>
         <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
           <div id="world"></div>
@@ -3918,6 +4006,7 @@ body.role-employee #adminCreateEmpBox,
                 <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
                 <button class="minibtn" id="openBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
                 <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
+                <button class="minibtn is-on" id="stagebarToggleRailBtn" aria-pressed="true" title="Toggle Unit Inspector Sidebar (Hide to maximize 3D canvas) [Shortcut: [ or Ctrl+B]" style="font-weight:600;">📑 Inspector</button>
               </div>
 
               <div class="lighting-controls-group" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.92);padding:2px 8px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;color:#1e293b;">
@@ -4028,9 +4117,12 @@ body.role-employee #adminCreateEmpBox,
       </div>
 
       <aside class="rail" id="rail">
-        <div class="units-rail-header" id="unitsRailHeader" title="Click to collapse or expand the units switcher bar">
+        <div class="units-rail-header" id="unitsRailHeader" title="Unit Inspector Sidebar">
           <span class="units-rail-title" id="unitsRailTitle">📦 Units (<span id="unitsRailCount">0</span>)</span>
-          <button type="button" class="units-rail-toggle-btn" id="unitsRailToggleBtn" title="Toggle Units Bar">▾ Collapse</button>
+          <div class="rail-header-actions">
+            <button type="button" class="units-rail-toggle-btn" id="unitsRailToggleBtn" title="Toggle Units Chips Row">▾ Chips</button>
+            <button type="button" class="rail-collapse-btn" id="railCollapseBtn" title="Collapse Sidebar / Maximize 3D View [Shortcut: [ or Ctrl+B]">⇥ Collapse</button>
+          </div>
         </div>
         <div class="units" id="units"></div>
         <div class="railscroll" id="railScroll"></div>
@@ -25119,9 +25211,11 @@ body.role-employee #adminCreateEmpBox,
      Build Placed 3D Furniture Unit
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
-    var fg = new THREE.Group();
-    fg.name = 'Furniture_' + furn.id;
-    fg.userData = { isFurniture: true, isFurnitureGroup: true, furnitureId: furn.id, furniture: furn };
+    if (!furn) return new THREE.Group();
+    try {
+      var fg = new THREE.Group();
+      fg.name = 'Furniture_' + furn.id;
+      fg.userData = { isFurniture: true, isFurnitureGroup: true, furnitureId: furn.id, furniture: furn };
 
     var dims = furn.dimensions || { W: 1200, H: 2100, D: 600 };
     dims = {
@@ -25974,7 +26068,30 @@ body.role-employee #adminCreateEmpBox,
     fg.visible = true;
 
     return fg;
-  };
+  } catch (err) {
+    console.error('[Orbix 3D] Error building furniture mesh for', (furn && (furn.name || furn.id)), err);
+    var fallback = new THREE.Group();
+    fallback.name = 'Furniture_' + ((furn && furn.id) || 'fallback');
+    fallback.userData = { isFurniture: true, isFurnitureGroup: true, furnitureId: furn && furn.id, furniture: furn };
+    var dims = (furn && furn.dimensions) || { W: 600, H: 800, D: 600 };
+    var fW = parseFloat(dims.W) || 600, fH = parseFloat(dims.H) || 800, fD = parseFloat(dims.D) || 600;
+    var boxMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(fW, fH, fD),
+      new THREE.MeshStandardMaterial({ color: 0x94A3B8, roughness: 0.5 })
+    );
+    boxMesh.position.set(0, fH / 2, 0);
+    boxMesh.castShadow = true;
+    boxMesh.receiveShadow = true;
+    fallback.add(boxMesh);
+    var posX = (furn && furn.pos && furn.pos.x) || 0;
+    var posY = (furn && furn.pos && furn.pos.y) || 0;
+    var elev = (furn && furn.elevation !== undefined) ? parseFloat(furn.elevation) : 0;
+    fallback.position.set(posX, elev, posY);
+    fallback.rotation.y = -(furn && furn.rotY || 0);
+    fallback.visible = true;
+    return fallback;
+  }
+};
 
   ArchitecturalRenderer.prototype.disposeGroup = function (group) {
     if (!group) return;
@@ -32312,7 +32429,11 @@ body.role-employee #adminCreateEmpBox,
         if (isolatedRoomId !== undefined) {
           this.currentIsolatedRoomId = (isolatedRoomId === 'all' || !isolatedRoomId) ? null : isolatedRoomId;
         }
-        this.archRenderer.buildHome(proj, this.currentIsolatedRoomId);
+        try {
+          this.archRenderer.buildHome(proj, this.currentIsolatedRoomId);
+        } catch (homeErr) {
+          console.error('[Orbix UI] Error building 3D home:', homeErr);
+        }
         var homeObj = scene.getObjectByName('OrbixHome3D');
         var selFurnId = null;
         if (window.S && window.S.units && window.S.units[window.S.active]) {
@@ -38401,7 +38522,12 @@ body.role-employee #adminCreateEmpBox,
   /* ══════════ RAIL ══════════ */
   function grp(parent, title) {
     var g = el("grp", parent);
-    el("grp-h", g).textContent = title;
+    var gh = el("grp-h", g);
+    gh.textContent = title;
+    gh.title = "Click to collapse / expand this section";
+    gh.addEventListener("click", function () {
+      g.classList.toggle("is-collapsed");
+    });
     return g;
   }
   function fld(parent, label, value, onChange, type) {
@@ -38435,6 +38561,50 @@ body.role-employee #adminCreateEmpBox,
     });
     return g;
   }
+
+  function toggleRailCollapse(forceState) {
+    var viewDesign = document.getElementById("view-design");
+    var rail = document.getElementById("rail");
+    var btnStagebar = document.getElementById("stagebarToggleRailBtn");
+    if (!viewDesign || !rail) return;
+
+    var willCollapse;
+    if (typeof forceState === "boolean") {
+      willCollapse = forceState;
+    } else {
+      willCollapse = !rail.classList.contains("is-collapsed");
+    }
+
+    if (willCollapse) {
+      rail.classList.add("is-collapsed");
+      viewDesign.classList.add("rail-collapsed");
+      if (btnStagebar) {
+        btnStagebar.classList.remove("is-on");
+        btnStagebar.setAttribute("aria-pressed", "false");
+      }
+    } else {
+      rail.classList.remove("is-collapsed");
+      viewDesign.classList.remove("rail-collapsed");
+      if (btnStagebar) {
+        btnStagebar.classList.add("is-on");
+        btnStagebar.setAttribute("aria-pressed", "true");
+      }
+    }
+
+    try {
+      localStorage.setItem("orbix_rail_collapsed", willCollapse ? "true" : "false");
+    } catch (e) { }
+
+    window.dispatchEvent(new Event("resize"));
+    if (window.GL && typeof window.GL.resize === "function") {
+      window.GL.resize();
+    }
+    if (typeof softAll === "function") {
+      softAll();
+    }
+  }
+  window.toggleRailCollapse = toggleRailCollapse;
+
   function updateUnitsRailHeader() {
     var cnt = document.getElementById("unitsRailCount");
     var btn = document.getElementById("unitsRailToggleBtn");
@@ -38448,25 +38618,109 @@ body.role-employee #adminCreateEmpBox,
     if (title) {
       title.innerHTML = isCollapsed ?
         ('📦 Units (' + S.units.length + ') · <span style="color:#059669;font-weight:600;text-transform:none;">' + activeLabel + '</span>') :
-        ('📦 Units in Project (<span id="unitsRailCount">' + S.units.length + '</span>)');
+        ('📦 Units (<span id="unitsRailCount">' + S.units.length + '</span>)');
     }
-    if (btn) btn.textContent = isCollapsed ? "▸ Expand" : "▾ Collapse";
+    if (btn) btn.textContent = isCollapsed ? "▸ Chips" : "▾ Chips";
   }
+
+  function initRailCollapseControls() {
+    var btnCollapse = document.getElementById("railCollapseBtn");
+    if (btnCollapse && !btnCollapse._wired) {
+      btnCollapse._wired = true;
+      btnCollapse.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleRailCollapse(true);
+      });
+    }
+
+    var btnFloating = document.getElementById("railFloatingExpandBtn");
+    if (btnFloating && !btnFloating._wired) {
+      btnFloating._wired = true;
+      btnFloating.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleRailCollapse(false);
+      });
+    }
+
+    var btnStagebar = document.getElementById("stagebarToggleRailBtn");
+    if (btnStagebar && !btnStagebar._wired) {
+      btnStagebar._wired = true;
+      btnStagebar.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleRailCollapse();
+      });
+    }
+
+    var btnChipsToggle = document.getElementById("unitsRailToggleBtn");
+    if (btnChipsToggle && !btnChipsToggle._wired) {
+      btnChipsToggle._wired = true;
+      btnChipsToggle.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var uw = document.getElementById("units");
+        if (uw) {
+          var nowCol = uw.classList.toggle("is-collapsed");
+          try { localStorage.setItem("orbix_units_rail_collapsed", String(nowCol)); } catch (err) { }
+          updateUnitsRailHeader();
+        }
+      });
+    }
+
+    var titleEl = document.getElementById("unitsRailTitle");
+    if (titleEl && !titleEl._wired) {
+      titleEl._wired = true;
+      titleEl.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var uw = document.getElementById("units");
+        if (uw) {
+          var nowCol = uw.classList.toggle("is-collapsed");
+          try { localStorage.setItem("orbix_units_rail_collapsed", String(nowCol)); } catch (err) { }
+          updateUnitsRailHeader();
+        }
+      });
+    }
+
+    // Keyboard shortcut: [ or Ctrl+B / Cmd+B to toggle sidebar
+    if (!window._railKeyHandlerAttached) {
+      window._railKeyHandlerAttached = true;
+      window.addEventListener("keydown", function (e) {
+        var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+        if (tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+        if (e.key === "[" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b")) {
+          var viewDesign = document.getElementById("view-design");
+          if (viewDesign && viewDesign.classList.contains("is-on")) {
+            e.preventDefault();
+            toggleRailCollapse();
+          }
+        }
+      });
+    }
+
+    // Restore saved sidebar collapsed state
+    try {
+      var savedRailCol = localStorage.getItem("orbix_rail_collapsed");
+      if (savedRailCol === "true") {
+        var viewDesign = document.getElementById("view-design");
+        var rail = document.getElementById("rail");
+        if (viewDesign && rail) {
+          rail.classList.add("is-collapsed");
+          viewDesign.classList.add("rail-collapsed");
+          if (btnStagebar) {
+            btnStagebar.classList.remove("is-on");
+            btnStagebar.setAttribute("aria-pressed", "false");
+          }
+        }
+      }
+    } catch (e) { }
+  }
+  setTimeout(initRailCollapseControls, 60);
 
   function renderRail() {
     var uw = $("#units"); uw.innerHTML = "";
     var savedCol = null;
     try { savedCol = localStorage.getItem("orbix_units_rail_collapsed"); } catch (e) { }
     if (savedCol === "true") uw.classList.add("is-collapsed");
-    var hdr = document.getElementById("unitsRailHeader");
-    if (hdr && !hdr._wired) {
-      hdr._wired = true;
-      hdr.addEventListener("click", function () {
-        var nowCol = uw.classList.toggle("is-collapsed");
-        try { localStorage.setItem("orbix_units_rail_collapsed", String(nowCol)); } catch (e) { }
-        updateUnitsRailHeader();
-      });
-    }
+
+    initRailCollapseControls();
 
     S.units.forEach(function (u, i) {
       var c = el("uchip" + (i === S.active ? " is-on" : ""), uw, "button");
