@@ -6974,6 +6974,17 @@
     return 'unit-icons/' + sanitizeIconId(id) + '.svg';
   }
 
+  function formatFeetInches(mm) {
+    if (typeof mm !== 'number' || isNaN(mm)) return '0"';
+    var totalInches = mm / 25.4;
+    var feet = Math.floor(totalInches / 12);
+    var remInches = Math.round(totalInches % 12);
+    if (remInches === 12) { feet += 1; remInches = 0; }
+    if (feet === 0) return remInches + '"';
+    if (remInches === 0) return feet + '\'';
+    return feet + '\' ' + remInches + '"';
+  }
+
   function toValidHexColor(val, fallback) {
     var fb = (typeof fallback === 'string' && /^#[0-9a-fA-F]{6}$/.test(fallback)) ? fallback : '#edebe4';
     if (!val || typeof val !== 'string') return fb;
@@ -7070,6 +7081,7 @@
     getUnitIcon: getUnitIcon,
     sanitizeIconId: sanitizeIconId,
     registerDecorsCatalog: registerDecorsCatalog,
+    formatFeetInches: formatFeetInches,
     toValidHexColor: toValidHexColor
   };
 });

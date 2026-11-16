@@ -2380,9 +2380,10 @@
       }
     }
 
-    // 4. Check if clicked a wall (direct click selection for individual separate wall segments!)
-    var near = this.findNearestWall(worldPt, 220);
-    if (near && near.dist <= Math.max(120, (near.wall.thickness || 150) / 2 + 60)) {
+    // 4. Check if clicked a wall -> ONLY when Shift key is held (Shift + Click)!
+    if (isShift) {
+      var near = this.findNearestWall(worldPt, 250);
+      if (near) {
         var w = near.wall;
         this.selected = [{ type: 'wall', id: w.id }];
         this.onSelectionChange(this.selected);
@@ -2470,6 +2471,7 @@
         this.render();
         return;
       }
+    }
 
     // Single-click inside a room polygon does NOT select room or open room edit tool (requires double-click)
     var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
@@ -4163,7 +4165,7 @@
 
       var nameTxt = (r.name || ('Room ' + (i + 1))).toUpperCase();
       var dimTxt = (this.unitSystem === 'imperial')
-        ? (Core.formatFeetInches(rwMm) + ' × ' + Core.formatFeetInches(rhMm))
+        ? (this.formatDim(rwMm) + ' × ' + this.formatDim(rhMm))
         : ((rwMm / 1000).toFixed(1) + 'm × ' + (rhMm / 1000).toFixed(1) + 'm  ·  ' + (r.areaSqM || 0).toFixed(1) + ' m²');
 
       // Sleek architectural typography directly on floor with soft translucent halo pill
