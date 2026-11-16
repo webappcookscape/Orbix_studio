@@ -1855,46 +1855,49 @@
       });
       return m;
     }
-    function makeGrassGroundMat() {
+        function makeGrassGroundMat() {
       if (matCache["sp|grassGround"]) return matCache["sp|grassGround"];
       var c = document.createElement("canvas"); c.width = c.height = 512;
       var g = c.getContext("2d");
       if (g) {
-        // Rich natural lawn grass green base
-        g.fillStyle = "#46813A";
+        // Architectural soft pastel warm ecru / linen ground base
+        g.fillStyle = "#E6E2D8";
         g.fillRect(0, 0, 512, 512);
 
-        // Organic grass sod tone variations
-        var lawnTones = ["#3D7333", "#4A883E", "#559947", "#3E7834", "#4F9042", "#5C9F4E"];
-        for (var i = 0; i < 400; i++) {
-          var x = Math.random() * 512, y = Math.random() * 512, rad = 8 + Math.random() * 24;
+        // Subtle organic tone variations in warm pastel
+        var pastelTones = ["#DFDBD0", "#E2DED4", "#E8E5DC", "#EDEAE2", "#D8DFD2", "#E4E0D6"];
+        for (var i = 0; i < 450; i++) {
+          var x = Math.random() * 512, y = Math.random() * 512, rad = 10 + Math.random() * 26;
           var grad = g.createRadialGradient(x, y, 0, x, y, rad);
-          var col = lawnTones[Math.floor(Math.random() * lawnTones.length)];
+          var col = pastelTones[Math.floor(Math.random() * pastelTones.length)];
           grad.addColorStop(0, col);
-          grad.addColorStop(1, "rgba(70, 129, 58, 0)");
+          grad.addColorStop(1, "rgba(230, 226, 216, 0)");
           g.fillStyle = grad;
           g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
         }
 
-        // Fine lawn grass blades
+        // Fine stippled matte finish
         for (var b = 0; b < 2500; b++) {
-          var bx = Math.random() * 512, by = Math.random() * 512, blen = 3 + Math.random() * 7;
-          var bcol = (b % 3 === 0) ? "#65AD55" : ((b % 3 === 1) ? "#3B6E32" : "#4B893F");
-          g.strokeStyle = bcol; g.lineWidth = 1.0;
-          g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + (Math.random() - 0.5) * 3, by - blen); g.stroke();
+          var bx = Math.random() * 512, by = Math.random() * 512;
+          var bcol = (b % 3 === 0) ? "#D6D1C4" : ((b % 2 === 0) ? "#EAE6DE" : "#DFDBD0");
+          g.fillStyle = bcol;
+          g.fillRect(bx, by, 1.5, 1.5);
         }
       }
 
       var tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(160, 160);
+      tex.repeat.set(120, 120);
       tex.encoding = THREE.sRGBEncoding;
 
       var m = new THREE.MeshStandardMaterial({
         map: tex,
-        color: 0x4E8A42,
-        roughness: 0.92,
+        color: 0xE6E2D8, // Soft pastel exterior ground
+        roughness: 0.94,
         metalness: 0.0,
+        polygonOffset: true,
+        polygonOffsetFactor: 2.0,
+        polygonOffsetUnits: 2.0,
         side: THREE.DoubleSide
       });
       matCache["sp|grassGround"] = m;
@@ -1905,7 +1908,7 @@
     }
     function init() {
       if (!window.THREE) return false;
-      try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" }); }
+      try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance", logarithmicDepthBuffer: true }); }
       catch (e) { return false; }
       renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
       renderer.outputEncoding = THREE.sRGBEncoding;
@@ -1918,7 +1921,7 @@
       stage.classList.add("gl");
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
-      camera = new THREE.PerspectiveCamera(24, 1, 5, 1000000);
+      camera = new THREE.PerspectiveCamera(24, 1, 15, 600000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
       /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
@@ -1936,10 +1939,10 @@
       var fill = new THREE.DirectionalLight(0xedf4fc, window.sunlightIntensity * 0.38); fill.position.set(2800, 2100, 5000); scene.add(fill);
       var rim = new THREE.DirectionalLight(0xf8fafc, window.sunlightIntensity * 0.25); rim.position.set(2400, 1800, -2800); scene.add(rim);
       var bounceL = new THREE.DirectionalLight(0xfbf6ee, window.sunlightIntensity * 0.25); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
-      scene.add(new THREE.HemisphereLight(0x82C3EC, 0x4E8A42, 0.55)); // Sky blue overhead + natural lawn grass ground bounce
+      scene.add(new THREE.HemisphereLight(0x82C3EC, 0xE6E2D8, 0.55)); // Sky blue overhead + natural lawn grass ground bounce
       var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
-      floor.rotation.x = -Math.PI / 2; floor.position.y = -1; floor.receiveShadow = true; scene.add(floor);
+      floor.rotation.x = -Math.PI / 2; floor.position.y = -105; floor.receiveShadow = true; scene.add(floor);
       root = new THREE.Group(); scene.add(root);
       ok = true; return true;
     }

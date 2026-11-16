@@ -4187,7 +4187,17 @@
       var poly = Core.wallPolygon(w);
       if (!poly || poly.length < 4) continue;
 
-      ctx.fillStyle = isSelected ? '#2563eb' : '#8A735C'; // Rich Dark Beige Poche
+      // Wall Color / Wallpaper Fill in 2D Blueprint
+      var wallFillColor = isSelected ? '#2563eb' : (w.paintColor || '#8A735C');
+      if (!isSelected && w.wallpaper && w.wallpaper !== 'none') {
+        if (w.wallpaper === 'floral_blush') wallFillColor = '#f472b6';
+        else if (w.wallpaper === 'geometric_teal') wallFillColor = '#0d9488';
+        else if (w.wallpaper === 'stripe_gold') wallFillColor = '#d97706';
+        else if (w.wallpaper === 'herringbone_grey') wallFillColor = '#64748b';
+        else if (w.wallpaper === 'damask_cream') wallFillColor = '#b45309';
+        else if (w.wallpaper === 'tropical_leaf') wallFillColor = '#059669';
+      }
+      ctx.fillStyle = wallFillColor;
       ctx.beginPath();
       var sp0 = this.worldToScreen(poly[0]);
       ctx.moveTo(sp0.x, sp0.y);
@@ -4197,6 +4207,18 @@
       }
       ctx.closePath();
       ctx.fill();
+
+      // If wallpaper pattern is active, render a decorative center dashed line
+      if (!isSelected && w.wallpaper && w.wallpaper !== 'none') {
+        var spStart = this.worldToScreen(w.start);
+        var spEnd = this.worldToScreen(w.end);
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.lineWidth = Math.max(1, 2 * this.zoom);
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(spStart.x, spStart.y); ctx.lineTo(spEnd.x, spEnd.y); ctx.stroke();
+        ctx.restore();
+      }
 
       // Fill L-corner junction miter quads where two walls meet
       var startConns = getConnected(w.start, w.id);

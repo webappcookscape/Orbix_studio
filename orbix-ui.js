@@ -1768,7 +1768,15 @@
           '    </select>' +
           '  </div>') : '') +
           '</div>' +
-          '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
+          '
+          '<div style="margin-top:10px;padding:8px 10px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;">' +
+          '  <label style="font-size:11px;font-weight:700;color:#1e293b;display:block;margin-bottom:4px;">🧱 RCC Column Joint (Separate Wall)</label>' +
+          '  <div style="font-size:10.5px;color:#64748b;margin-bottom:6px;">Split this straight wall into separate walls at an RCC joint:</div>' +
+          '  <div style="display:flex;gap:6px;">' +
+          '    <button type="button" class="btn small full" id="inspWallSplitMid" style="background:#0f172a;color:#ffffff;font-size:11px;">➕ RCC Joint at Midpoint (' + Math.round(lenMm / 2) + 'mm)</button>' +
+          '  </div>' +
+          '</div>' +
+          <button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
 
         var elInner = document.getElementById('inspWallInnerLen');
         if (elInner) {
@@ -1902,7 +1910,12 @@
         if (elWallColor) {
           elWallColor.addEventListener('input', function () {
             w.paintColor = this.value;
+            ed.render();
             if (self.render3DHome) self.render3DHome(true);
+          });
+          elWallColor.addEventListener('change', function () {
+            ed.pushHistory('Change Wall Color');
+            if (self.saveToLocalStorage) self.saveToLocalStorage();
           });
         }
         var elWallFinishType = document.getElementById('inspWallFinishType');
@@ -1910,7 +1923,9 @@
           elWallFinishType.addEventListener('change', function () {
             w.wallFinishType = this.value;
             ed.pushHistory('Change Wall Finish');
+            ed.render();
             if (self.render3DHome) self.render3DHome(true);
+            if (self.saveToLocalStorage) self.saveToLocalStorage();
           });
         }
         var elWallpaper = document.getElementById('inspWallpaper');
@@ -1918,7 +1933,29 @@
           elWallpaper.addEventListener('change', function () {
             w.wallpaper = this.value;
             ed.pushHistory('Change Wall Wallpaper');
+            ed.render();
             if (self.render3DHome) self.render3DHome(true);
+            if (self.saveToLocalStorage) self.saveToLocalStorage();
+          });
+        }
+
+        
+        var elSplitMid = document.getElementById('inspWallSplitMid');
+        if (elSplitMid) {
+          elSplitMid.addEventListener('click', function () {
+            var midPt = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
+            var res = Core.splitWall(ed.project, w.id, midPt);
+            if (res) {
+              if (Core.detectRooms) Core.detectRooms(ed.project);
+              ed.pushHistory('Insert RCC Column Joint');
+              ed.selected = [{ type: 'wall', id: res.wall1.id }];
+              ed.render();
+              self.renderInspector(ed.selected);
+              if (self.render3DHome) self.render3DHome(true);
+              if (typeof window.toast === 'function') {
+                window.toast('🧱 RCC Joint inserted: Wall separated into two individual walls');
+              }
+            }
           });
         }
 
@@ -7284,13 +7321,14 @@
       }
       scene.children.forEach(function (c) {
         if (c.isMesh && c.geometry && c.geometry.type === 'PlaneGeometry' && c.geometry.parameters && c.geometry.parameters.width >= 100000) {
+          c.position.y = -105; // Safely below 100mm physical concrete slab
           if (typeof gl.makeGrassGroundMat === 'function') {
             c.material = gl.makeGrassGroundMat();
           } else if (typeof gl.makeNeutralGroundMat === 'function') {
             c.material = gl.makeNeutralGroundMat();
           } else if (c.material) {
             c.material.map = null;
-            if (c.material.color) c.material.color.setHex(0xEDECE8);
+            if (c.material.color) c.material.color.setHex(0xE6E2D8);
             c.material.needsUpdate = true;
           }
         }

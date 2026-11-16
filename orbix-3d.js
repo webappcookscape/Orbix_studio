@@ -829,7 +829,7 @@
     if (typeof THREE === 'undefined') return null;
     if (type === 'neutral_ground' || type === 'grass') {
       return new THREE.MeshStandardMaterial({
-        color: 0x4E8A42, // Lush grass green
+        color: 0xE6E2D8, // Soft pastel exterior ground (warm ecru / sage)
         roughness: 0.92,
         metalness: 0.0,
         side: THREE.DoubleSide
@@ -1225,111 +1225,108 @@
      Build 3D Wall with Real Openings (Subdivided Blocks)
      ───────────────────────────────────────────────────────────────────────────── */
   
+  
   ArchitecturalRenderer.prototype.createWallFinishMaterial = function (wall) {
     if (typeof THREE === 'undefined') return this.materials.wall;
+    if (!wall) return this.materials.wall;
     var wallpaper = wall.wallpaper || 'none';
     var finishType = wall.wallFinishType || 'paint';
     var paintHex = wall.paintColor || '#B89F82';
+    var wLen = Core.wallLength(wall) || 3000;
+    var wH = wall.height || 2800;
 
-    // Convert CSS hex color to Three.js hex integer
     function hexToInt(hex) {
-      var h = hex.replace('#', '');
+      if (!hex) return 0xB89F82;
+      var h = String(hex).replace('#', '');
       if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-      return parseInt(h, 16);
+      var val = parseInt(h, 16);
+      return isNaN(val) ? 0xB89F82 : val;
     }
 
-    // If wallpaper is active, generate a canvas texture
     if (wallpaper && wallpaper !== 'none') {
-      var wallpaperPatterns = {
-        floral_blush: function(ctx, W, H) {
-          ctx.fillStyle = '#fce7f3'; ctx.fillRect(0, 0, W, H);
-          for (var r = 0; r < 5; r++) {
-            for (var c = 0; c < 5; c++) {
-              var cx = c * W/4 + W/8; var cy = r * H/4 + H/8;
-              ctx.fillStyle = '#f9a8d4'; ctx.beginPath(); ctx.arc(cx, cy, 12, 0, Math.PI*2); ctx.fill();
-              ctx.fillStyle = '#fda4af'; ctx.beginPath(); ctx.arc(cx+15, cy-8, 7, 0, Math.PI*2); ctx.fill();
-            }
-          }
-        },
-        geometric_teal: function(ctx, W, H) {
-          ctx.fillStyle = '#e0f2fe'; ctx.fillRect(0, 0, W, H);
-          ctx.strokeStyle = '#0e7490'; ctx.lineWidth = 2.5;
-          for (var i2 = 0; i2 < 8; i2++) {
-            for (var j2 = 0; j2 < 8; j2++) {
-              var gx = i2 * W/6; var gy = j2 * H/6;
-              ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + W/12, gy + H/12); ctx.lineTo(gx + W/6, gy); ctx.closePath(); ctx.stroke();
-            }
-          }
-        },
-        stripe_gold: function(ctx, W, H) {
-          ctx.fillStyle = '#fffbeb'; ctx.fillRect(0, 0, W, H);
-          ctx.fillStyle = '#fbbf24';
-          for (var sg = 0; sg < 8; sg++) { ctx.fillRect(sg * W/6, 0, 8, H); }
-        },
-        herringbone_grey: function(ctx, W, H) {
-          ctx.fillStyle = '#f1f5f9'; ctx.fillRect(0, 0, W, H);
-          ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
-          for (var hb = 0; hb < 10; hb++) {
-            var hx = hb * W/8;
-            ctx.beginPath(); ctx.moveTo(hx, 0); ctx.lineTo(hx + W/8, H/2); ctx.lineTo(hx + W/8*2, 0); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(hx, H); ctx.lineTo(hx + W/8, H/2); ctx.lineTo(hx + W/8*2, H); ctx.stroke();
-          }
-        },
-        damask_cream: function(ctx, W, H) {
-          ctx.fillStyle = '#fefce8'; ctx.fillRect(0, 0, W, H);
-          ctx.fillStyle = '#fde68a'; ctx.font = 'bold ' + Math.round(W/5) + 'px serif';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          for (var dR = 0; dR < 4; dR++) {
-            for (var dC = 0; dC < 4; dC++) {
-              ctx.fillText('✦', dC * W/3 + W/6, dR * H/3 + H/6);
-            }
-          }
-        },
-        tropical_leaf: function(ctx, W, H) {
-          ctx.fillStyle = '#ecfdf5'; ctx.fillRect(0, 0, W, H);
-          ctx.fillStyle = '#6ee7b7'; ctx.font = Math.round(W/3) + 'px serif';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          var leafPos = [[W*0.2, H*0.25], [W*0.7, H*0.6], [W*0.5, H*0.1], [W*0.1, H*0.7], [W*0.85, H*0.3]];
-          for (var lp = 0; lp < leafPos.length; lp++) ctx.fillText('🌿', leafPos[lp][0], leafPos[lp][1]);
-        }
-      };
-
-      var canvas = document.createElement ? document.createElement('canvas') : null;
-      if (canvas) {
-        canvas.width = 256; canvas.height = 256;
-        var ctx2 = canvas.getContext('2d');
+      var c = document.createElement ? document.createElement('canvas') : null;
+      if (c) {
+        c.width = 512; c.height = 512;
+        var ctx2 = c.getContext('2d');
         if (ctx2) {
-          var drawFn = wallpaperPatterns[wallpaper];
-          if (drawFn) {
-            try { drawFn(ctx2, 256, 256); } catch(err) {}
+          if (wallpaper === 'floral_blush') {
+            ctx2.fillStyle = '#fdf2f8'; ctx2.fillRect(0, 0, 512, 512);
+            for (var r = 0; r < 4; r++) {
+              for (var col = 0; col < 4; col++) {
+                var cx = col * 128 + 64, cy = r * 128 + 64;
+                ctx2.fillStyle = '#f472b6'; ctx2.beginPath(); ctx2.arc(cx, cy, 22, 0, Math.PI * 2); ctx2.fill();
+                ctx2.fillStyle = '#fb7185'; ctx2.beginPath(); ctx2.arc(cx + 26, cy - 14, 14, 0, Math.PI * 2); ctx2.fill();
+                ctx2.fillStyle = '#fef08a'; ctx2.beginPath(); ctx2.arc(cx, cy, 8, 0, Math.PI * 2); ctx2.fill();
+              }
+            }
+          } else if (wallpaper === 'geometric_teal') {
+            ctx2.fillStyle = '#f0fdfa'; ctx2.fillRect(0, 0, 512, 512);
+            ctx2.strokeStyle = '#0f766e'; ctx2.lineWidth = 3.5;
+            for (var i2 = 0; i2 <= 4; i2++) {
+              for (var j2 = 0; j2 <= 4; j2++) {
+                var gx = i2 * 128, gy = j2 * 128;
+                ctx2.strokeRect(gx + 16, gy + 16, 96, 96);
+                ctx2.strokeRect(gx + 36, gy + 36, 56, 56);
+              }
+            }
+          } else if (wallpaper === 'stripe_gold') {
+            ctx2.fillStyle = '#fefce8'; ctx2.fillRect(0, 0, 512, 512);
+            ctx2.fillStyle = '#ca8a04';
+            for (var s = 0; s < 8; s++) { ctx2.fillRect(s * 64 + 18, 0, 28, 512); }
+          } else if (wallpaper === 'herringbone_grey') {
+            ctx2.fillStyle = '#f8fafc'; ctx2.fillRect(0, 0, 512, 512);
+            ctx2.strokeStyle = '#64748b'; ctx2.lineWidth = 3;
+            for (var h = 0; h < 6; h++) {
+              var hx = h * 90;
+              ctx2.beginPath(); ctx2.moveTo(hx, 0); ctx2.lineTo(hx + 45, 128); ctx2.lineTo(hx + 90, 0); ctx2.stroke();
+              ctx2.beginPath(); ctx2.moveTo(hx, 128); ctx2.lineTo(hx + 45, 256); ctx2.lineTo(hx + 90, 128); ctx2.stroke();
+              ctx2.beginPath(); ctx2.moveTo(hx, 256); ctx2.lineTo(hx + 45, 384); ctx2.lineTo(hx + 90, 256); ctx2.stroke();
+              ctx2.beginPath(); ctx2.moveTo(hx, 384); ctx2.lineTo(hx + 45, 512); ctx2.lineTo(hx + 90, 384); ctx2.stroke();
+            }
+          } else if (wallpaper === 'damask_cream') {
+            ctx2.fillStyle = '#fffbeb'; ctx2.fillRect(0, 0, 512, 512);
+            ctx2.fillStyle = '#d97706'; ctx2.font = 'bold 72px serif';
+            ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+            for (var dr = 0; dr < 3; dr++) {
+              for (var dc = 0; dc < 3; dc++) {
+                ctx2.fillText('✦', dc * 170 + 85, dr * 170 + 85);
+              }
+            }
+          } else if (wallpaper === 'tropical_leaf') {
+            ctx2.fillStyle = '#f0fdf4'; ctx2.fillRect(0, 0, 512, 512);
+            ctx2.fillStyle = '#059669'; ctx2.font = '110px serif';
+            ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+            ctx2.fillText('🌿', 128, 128); ctx2.fillText('🍃', 384, 128);
+            ctx2.fillText('🍃', 128, 384); ctx2.fillText('🌿', 384, 384);
           }
-          var tex = new THREE.CanvasTexture(canvas);
-          tex.wrapS = THREE.RepeatWrapping;
-          tex.wrapT = THREE.RepeatWrapping;
-          tex.repeat.set(0.5, 0.5); // tile size in UV space
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(Math.max(1, wLen / 1000), Math.max(1, wH / 1000));
           return new THREE.MeshStandardMaterial({
             map: tex,
-            roughness: 0.82,
+            roughness: 0.85,
             metalness: 0.0
           });
         }
       }
     }
 
-    // No wallpaper: use finish type with custom paint color
     var roughness = 0.88;
     var bump = ArchitecturalRenderer.createWallBumpTexture ? ArchitecturalRenderer.createWallBumpTexture() : null;
     if (finishType === 'concrete') roughness = 0.95;
     else if (finishType === 'brick') roughness = 0.95;
-    else if (finishType === 'marble') roughness = 0.25;
+    else if (finishType === 'marble') roughness = 0.22;
     else if (finishType === 'texture') roughness = 0.92;
 
     var matParams = {
       color: hexToInt(paintHex),
       roughness: roughness,
-      metalness: finishType === 'marble' ? 0.05 : 0.0
+      metalness: finishType === 'marble' ? 0.08 : 0.0
     };
-    if (bump) { matParams.bumpMap = bump; matParams.bumpScale = finishType === 'texture' ? 0.08 : 0.03; }
+    if (bump) {
+      matParams.bumpMap = bump;
+      matParams.bumpScale = finishType === 'texture' ? 0.09 : 0.035;
+    }
     return new THREE.MeshStandardMaterial(matParams);
   };
 
@@ -1361,6 +1358,7 @@
 
     var group = new THREE.Group();
     group.name = 'Wall_' + wall.id;
+    var wallMat = this.createWallFinishMaterial ? this.createWallFinishMaterial(wall) : this.materials.wall;
 
     var wLen = Core.wallLength(wall);
     if (!wLen || wLen < 50) return null;
@@ -1474,7 +1472,7 @@
     if (validOps.length === 0) {
       // Solid Wall: Single extruded box
       var geo = new THREE.BoxGeometry(wLen, wHeight, wThick);
-      var mesh = new THREE.Mesh(geo, this.materials.wall);
+      var mesh = new THREE.Mesh(geo, wallMat);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       mesh.position.set(wLen / 2, wHeight / 2, 0);
@@ -1499,7 +1497,7 @@
         if (opStart > currX + 1) {
           var segW = opStart - currX;
           var segGeo = new THREE.BoxGeometry(segW, wHeight, wThick);
-          var segMesh = new THREE.Mesh(segGeo, this.materials.wall);
+          var segMesh = new THREE.Mesh(segGeo, wallMat);
           segMesh.position.set(currX + segW / 2, wHeight / 2, 0);
           segMesh.castShadow = true;
           segMesh.receiveShadow = true;
@@ -1511,7 +1509,7 @@
         // 2. Below window sill segment (if window with sillHeight > 0)
         if (sillH > 0) {
           var sillGeo = new THREE.BoxGeometry(opWidth, sillH, wThick);
-          var sillMesh = new THREE.Mesh(sillGeo, this.materials.wall);
+          var sillMesh = new THREE.Mesh(sillGeo, wallMat);
           sillMesh.position.set(opStart + opWidth / 2, sillH / 2, 0);
           sillMesh.castShadow = true;
           sillMesh.receiveShadow = true;
@@ -1527,7 +1525,7 @@
         if (wHeight > opTop + 1) {
           var lintelH = wHeight - opTop;
           var lintelGeo = new THREE.BoxGeometry(opWidth, lintelH, wThick);
-          var lintelMesh = new THREE.Mesh(lintelGeo, this.materials.wall);
+          var lintelMesh = new THREE.Mesh(lintelGeo, wallMat);
           lintelMesh.position.set(opStart + opWidth / 2, opTop + lintelH / 2, 0);
           lintelMesh.castShadow = true;
           lintelMesh.receiveShadow = true;
@@ -1552,7 +1550,7 @@
       if (wLen > currX + 1) {
         var lastW = wLen - currX;
         var lastGeo = new THREE.BoxGeometry(lastW, wHeight, wThick);
-        var lastMesh = new THREE.Mesh(lastGeo, this.materials.wall);
+        var lastMesh = new THREE.Mesh(lastGeo, wallMat);
         lastMesh.position.set(currX + lastW / 2, wHeight / 2, 0);
         lastMesh.castShadow = true;
         lastMesh.receiveShadow = true;
@@ -2010,7 +2008,7 @@
     // With 20mm depth, extruding along local +Z produces +Y in world space after Rx(-PI/2).
     // Placing top face flush at Y = 1.0 (or 1.08 for inner rooms) extends the 20mm slab downwards to Y = -19.0.
     // This gives realistic solid 20mm depth without clipping or submerging floor units/cabinets!
-    mesh.position.y = isInnerRoom ? (1.08 - floorDepth) : (1.0 - floorDepth);
+    mesh.position.y = isInnerRoom ? (0.3 - floorDepth) : (0.0 - floorDepth);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     mesh.name = 'Floor_' + (room.name || 'Room');

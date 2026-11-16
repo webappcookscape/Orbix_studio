@@ -1087,38 +1087,85 @@
   /*  autoSplitWallAtJunctions – when endpoint of a wall lands on the interior of
       another wall, split the target wall at the T-junction so the graph is properly
       connected and the room-detection algorithm can find all enclosures correctly.  */
+  
+  /*  Comprehensive autoSplitWallAtJunctions:
+      1. T-Junctions: Wall endpoint touching interior of straight wall -> split wall
+      2. X-Junctions: Crossing walls -> split at intersection
+      3. RCC Joint Columns: Structural RCC pillars / columns along straight wall -> split wall into separate walls
+  */
   function autoSplitWallAtJunctions(project) {
     var walls = project && project.plan && project.plan.walls;
-    if (!walls || walls.length < 2) return false;
-    var TOL = 60; // mm: within 60mm of wall centre-line counts as a junction
+    if (!walls || walls.length === 0) return false;
     var changed = false;
-    var maxPasses = 5;
-    for (var pass = 0; pass < maxPasses; pass++) {
+
+    // ── 1. Split walls at RCC Columns / Structural Pillars on straight walls ──
+    var furnList = (project.plan && project.plan.furniture) || [];
+    var rccItems = furnList.filter(function (f) {
+      return f && (f.category === 'structural' || f.category === 'civil' ||
+        (f.name && /rcc|column|pillar|post/i.test(f.name)) ||
+        (f.id && /rcc|column|pillar|post/i.test(f.id)) ||
+        (f.catalogItemId && /rcc|column|pillar|post/i.test(f.catalogItemId)));
+    });
+
+    for (var ri = 0; ri < rccItems.length; ri++) {
+      var rcc = rccItems[ri];
+      if (!rcc.pos) continue;
+      for (var wi = 0; wi < project.plan.walls.length; wi++) {
+        var wObj = project.plan.walls[wi];
+        if (wObj.isDivider) continue;
+        var pRcc = Vec2.projectOnSegment(rcc.pos, wObj.start, wObj.end);
+        var wL = wallLength(wObj);
+        var distEnds = Math.min(pRcc.t * wL, (1 - pRcc.t) * wL);
+        // If RCC column is within wall thickness distance and not at the very endpoints:
+        if (pRcc.dist <= Math.max(80, (wObj.thickness || 150) / 2 + 50) && distEnds >= 50) {
+          var resRcc = splitWall(project, wObj.id, pRcc.pt);
+          if (resRcc) {
+            changed = true;
+            break;
+          }
+        }
+      }
+    }
+
+    // ── 2. Split walls at T-Junctions & Crossing X-Junctions ──
+    var TOL = 80; // mm
+    for (var pass = 0; pass < 6; pass++) {
       var didSplit = false;
-      var current = project.plan.walls.slice();
-      for (var i = 0; i < current.length && !didSplit; i++) {
-        var wi = current[i];
-        // Check both endpoints of wi against interior of wj
+      var curWalls = project.plan.walls.slice();
+      for (var i = 0; i < curWalls.length && !didSplit; i++) {
+        var wi = curWalls[i];
+        // Test endpoints of wi against interior of wj (T-joint)
         var testPts = [wi.start, wi.end];
         for (var tp = 0; tp < testPts.length && !didSplit; tp++) {
           var pt = testPts[tp];
-          for (var j = 0; j < current.length && !didSplit; j++) {
+          for (var j = 0; j < curWalls.length && !didSplit; j++) {
             if (j === i) continue;
-            var wj = current[j];
-            // Skip if pt is already a vertex of wj
+            var wj = curWalls[j];
             var dS = Vec2.dist(pt, wj.start);
             var dE = Vec2.dist(pt, wj.end);
             if (dS < TOL || dE < TOL) continue;
-            // Check if pt lies on the interior of wj
             var proj = Vec2.projectOnSegment(pt, wj.start, wj.end);
-            if (proj.dist < TOL && proj.t > 0.02 && proj.t < 0.98) {
-              // Snap the split point exactly to the wall line
-              var snapPt = proj.pt;
-              var res = splitWall(project, wj.id, snapPt);
-              if (res) {
+            var wjLen = wallLength(wj);
+            var distEndWj = Math.min(proj.t * wjLen, (1 - proj.t) * wjLen);
+            if (proj.dist < TOL && distEndWj >= 50) {
+              var resT = splitWall(project, wj.id, proj.pt);
+              if (resT) {
                 didSplit = true;
                 changed = true;
               }
+            }
+          }
+        }
+        // Test crossing intersection between wi and wj (X-joint)
+        for (var j2 = i + 1; j2 < curWalls.length && !didSplit; j2++) {
+          var wj2 = curWalls[j2];
+          var inter = segmentIntersection(wi.start, wi.end, wj2.start, wj2.end);
+          if (inter && inter.t1 > 0.05 && inter.t1 < 0.95 && inter.t2 > 0.05 && inter.t2 < 0.95) {
+            var resX = splitWall(project, wi.id, inter.pt);
+            if (resX) {
+              splitWall(project, wj2.id, inter.pt);
+              didSplit = true;
+              changed = true;
             }
           }
         }
@@ -1659,7 +1706,7 @@
     var proj = Vec2.projectOnSegment(splitPt, w.start, w.end);
     var splitOffset = proj.t * l;
 
-    if (splitOffset < 200 || splitOffset > l - 200) {
+    if (splitOffset < 40 || splitOffset > l - 40) {
       // Too close to either endpoint, do not split
       return null;
     }
@@ -1679,6 +1726,14 @@
       height: w.height,
       material: w.material
     });
+
+    // Inherit wall paint color, finish type, and wallpaper
+    w1.paintColor = w.paintColor;
+    w1.wallpaper = w.wallpaper;
+    w1.wallFinishType = w.wallFinishType;
+    w2.paintColor = w.paintColor;
+    w2.wallpaper = w.wallpaper;
+    w2.wallFinishType = w.wallFinishType;
 
     // Re-assign openings
     for (var j = 0; j < project.plan.openings.length; j++) {
