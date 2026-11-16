@@ -10,17 +10,17 @@ assert(bs, 'BS (Blank Shutter) must exist in Core.FURNITURE_CATALOG');
 console.log('Found Unit:', bs.name, 'ID:', bs.id);
 assert.strictEqual(bs.id, 'bs-60');
 assert.strictEqual(bs.category, 'wall_paneling');
-assert.strictEqual(bs.dimensions.W, 600, 'Width must be 600mm (60)');
+assert.strictEqual(bs.dimensions.W, 60, 'Width must be 60mm');
 assert.strictEqual(bs.dimensions.H, 750, 'Height must be 750mm');
 assert.strictEqual(bs.dimensions.D, 18, 'Depth must be 18mm');
 
-console.log('✓ Catalog dimensions: W = 600mm, H = 750mm, D = 18mm');
+console.log('✓ Catalog dimensions: W = 60mm, H = 750mm, D = 18mm');
 
 // 2. Create placement instance
 const placed = Core.createFurniturePlacement('bs-60');
 assert(placed, 'Must create furniture placement for bs-60');
 assert.strictEqual(placed.name, 'BS (BLANK SHUTTER)');
-assert.strictEqual(placed.dimensions.W, 600);
+assert.strictEqual(placed.dimensions.W, 60);
 assert.strictEqual(placed.dimensions.H, 750);
 assert.strictEqual(placed.dimensions.D, 18);
 
@@ -31,10 +31,10 @@ const poly = Core.getFurniturePolygon(placed);
 assert.strictEqual(poly.length, 4, 'Must have 4-vertex rectangle polygon');
 const width2d = Math.hypot(poly[1].x - poly[0].x, poly[1].y - poly[0].y);
 const depth2d = Math.hypot(poly[2].x - poly[1].x, poly[2].y - poly[1].y);
-assert(Math.abs(width2d - 600) < 1, `2D Width must be 600mm, got ${width2d}`);
+assert(Math.abs(width2d - 60) < 1, `2D Width must be 60mm, got ${width2d}`);
 assert(Math.abs(depth2d - 18) < 1, `2D Depth must be 18mm, got ${depth2d}`);
 
-console.log('✓ 2D polygon footprint is accurately 600mm x 18mm!');
+console.log('✓ 2D polygon footprint is accurately 60mm x 18mm!');
 
 // 4. Test Icon resolution
 const icon = Core.getUnitIcon(bs);

@@ -1,514 +1,654 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Design in 3D and generate factory process sheets, panel cutting lists, edge banding, and CNC drilling with Orbix Studio.">
-<title>Orbix Studio</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="icon.svg">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Orbix Studio">
-<meta name="application-name" content="Orbix Studio">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Orbix Studio — 3D Interior Design, Cutting Plans & Quotations">
-<meta property="og:description" content="Pick a design or upload your process sheet. See your designs in 3D with real laminates, then get nesting, drilling, DXF and accurate BOQ quotes.">
-<meta property="og:image" content="icon-512.png">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Orbix Studio">
-<meta name="twitter:description" content="3D Interior Design, cutting plans, nesting and quotations.">
-<meta name="twitter:image" content="icon-512.png">
-<meta name="theme-color" content="#D32F2F">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Design in 3D and generate factory process sheets, panel cutting lists, edge banding, and CNC drilling with Orbix Studio.">
+  <title>Orbix Studio</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Orbix Studio">
+  <meta name="application-name" content="Orbix Studio">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Orbix Studio — 3D Interior Design, Cutting Plans & Quotations">
+  <meta property="og:description"
+    content="Pick a design or upload your process sheet. See your designs in 3D with real laminates, then get nesting, drilling, DXF and accurate BOQ quotes.">
+  <meta property="og:image" content="icon-512.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Orbix Studio">
+  <meta name="twitter:description" content="3D Interior Design, cutting plans, nesting and quotations.">
+  <meta name="twitter:image" content="icon-512.png">
+  <meta name="theme-color" content="#D32F2F">
 </head>
+
 <body>
-<!-- ARTIFACT-START -->
-<title>Orbix Studio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=6">
+  <!-- ARTIFACT-START -->
+  <title>Orbix Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=6">
 
-<!-- ══════ FULL AUTH / LOGIN SCREEN ══════ -->
-<div id="authScreen" class="auth-screen" style="display:none;">
-  <div class="auth-card" style="position:relative;">
-    <button type="button" id="closeAuthScreenBtn" style="position:absolute;top:16px;right:18px;font-size:24px;line-height:1;color:#64748B;cursor:pointer;background:none;border:none;">&times;</button>
-    <div class="auth-brand">
-      <img src="logo.jpeg" alt="Orbix Studio" class="auth-logo">
-      <h1 class="auth-title">Orbix Studio</h1>
-      <p class="auth-sub">Modular Interior CAD &amp; Production Workspace</p>
+  <!-- ══════ FULL AUTH / LOGIN SCREEN ══════ -->
+  <div id="authScreen" class="auth-screen" style="display:none;">
+    <div class="auth-card" style="position:relative;">
+      <button type="button" id="closeAuthScreenBtn"
+        style="position:absolute;top:16px;right:18px;font-size:24px;line-height:1;color:#64748B;cursor:pointer;background:none;border:none;">&times;</button>
+      <div class="auth-brand">
+        <img src="logo.jpeg" alt="Orbix Studio" class="auth-logo">
+        <h1 class="auth-title">Orbix Studio</h1>
+        <p class="auth-sub">Modular Interior CAD &amp; Production Workspace</p>
+      </div>
+
+      <form id="authLoginForm" class="auth-form">
+        <div id="authScreenError" class="auth-error-alert" style="display:none;"></div>
+
+        <div class="form-group">
+          <label class="form-label" for="authIdentifier">Username or Email Address *</label>
+          <input type="text" id="authIdentifier" class="form-input" placeholder="e.g. admin or alex@orbixstudio.io"
+            required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="authPassword">Password *</label>
+          <input type="password" id="authPassword" class="form-input" placeholder="Enter password" required
+            autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn primary big auth-submit-btn" id="authScreenSubmitBtn">
+          Sign In to Workspace
+        </button>
+      </form>
     </div>
-
-    <form id="authLoginForm" class="auth-form">
-      <div id="authScreenError" class="auth-error-alert" style="display:none;"></div>
-
-      <div class="form-group">
-        <label class="form-label" for="authIdentifier">Username or Email Address *</label>
-        <input type="text" id="authIdentifier" class="form-input" placeholder="e.g. admin or alex@orbixstudio.io" required autocomplete="username">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="authPassword">Password *</label>
-        <input type="password" id="authPassword" class="form-input" placeholder="Enter password" required autocomplete="current-password">
-      </div>
-
-      <button type="submit" class="btn primary big auth-submit-btn" id="authScreenSubmitBtn">
-        Sign In to Workspace
-      </button>
-    </form>
   </div>
-</div>
 
-<div id="app" style="display:flex;">
+  <div id="app" style="display:flex;">
 
-  <header class="topbar">
-    <div class="tool">
-      <img src="logo.jpeg" alt="Orbix Studio" class="tool-logo">
-      <span class="tool-name">Orbix&nbsp;Studio</span>
-    </div>
-    <nav class="views" aria-label="View">
-      <button class="vtab is-on" data-view="home">Home</button>
-      <button class="vtab" data-view="plan">Floor Plan (2D)</button>
-      <button class="vtab" data-view="design">3D Studio</button>
-      <button class="vtab" data-view="boq">Pricing</button>
-    </nav>
-    <div class="topacts">
-      <button class="btn pwa-install-btn" id="pwaInstallBtn" hidden title="Install Orbix Studio on your PC or Phone">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Install App</span>
-      </button>
-      <div id="autoSaveIndicator" class="autosave-pill" title="Auto-saves working projects every 15 seconds to PostgreSQL">
-        <span class="save-dot"></span>
-        <span class="save-text">Auto-save 15s</span>
+    <header class="topbar">
+      <div class="tool">
+        <img src="logo.jpeg" alt="Orbix Studio" class="tool-logo">
+        <span class="tool-name">Orbix&nbsp;Studio</span>
       </div>
-      <div class="topbar-auth-group">
-        <button class="user-avatar-btn" id="userAvatarBtn" title="Current User & Profile">
-          <span class="u-avatar">CA</span>
-          <span class="u-name">Cookscape Admin</span>
+      <nav class="views" aria-label="View">
+        <button class="vtab is-on" data-view="home">Home</button>
+        <button class="vtab" data-view="plan">Floor Plan (2D)</button>
+        <button class="vtab" data-view="design">3D Studio</button>
+        <button class="vtab" data-view="boq">Pricing</button>
+      </nav>
+      <div class="topacts">
+        <button class="btn pwa-install-btn" id="pwaInstallBtn" hidden title="Install Orbix Studio on your PC or Phone">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>Install App</span>
         </button>
-        <button class="auth-logout-btn" id="userLogoutBtn" title="Sign out of this session">Logout</button>
+        <div id="autoSaveIndicator" class="autosave-pill"
+          title="Auto-saves working projects every 15 seconds to PostgreSQL">
+          <span class="save-dot"></span>
+          <span class="save-text">Auto-save 15s</span>
+        </div>
+        <div class="topbar-auth-group">
+          <button class="user-avatar-btn" id="userAvatarBtn" title="Current User & Profile">
+            <span class="u-avatar">CA</span>
+            <span class="u-name">Cookscape Admin</span>
+          </button>
+          <button class="auth-logout-btn" id="userLogoutBtn" title="Sign out of this session">Logout</button>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main id="main">
+    <main id="main">
 
-    <!-- ══════ HOME ══════ -->
-    <section class="view is-on" id="view-home">
-      <div class="home">
-        
+      <!-- ══════ HOME ══════ -->
+      <section class="view is-on" id="view-home">
+        <div class="home">
 
 
-        <!-- Shared Project Copy Alert Banner -->
-        <div id="sharedCopyAlertContainer" class="shared-alert-container"></div>
 
-        <!-- ══════ PROJECTS DASHBOARD ══════ -->
-        <div class="projects-section" id="homeProjectsSection">
-          <div class="psection-header">
-            <div class="psection-title-wrap">
-              <span class="section-tag">POSTGRESQL CAD WORKSPACE</span>
-              <div class="psection-title-row">
-                <h2 class="section-title">All Projects</h2>
-                <span class="pcount-badge" id="projectCountLabel">Loading...</span>
+          <!-- Shared Project Copy Alert Banner -->
+          <div id="sharedCopyAlertContainer" class="shared-alert-container"></div>
+
+          <!-- ══════ PROJECTS DASHBOARD ══════ -->
+          <div class="projects-section" id="homeProjectsSection">
+            <div class="psection-header">
+              <div class="psection-title-wrap">
+                <span class="section-tag">POSTGRESQL CAD WORKSPACE</span>
+                <div class="psection-title-row">
+                  <h2 class="section-title">All Projects</h2>
+                  <span class="pcount-badge" id="projectCountLabel">Loading...</span>
+                </div>
               </div>
-            </div>
-            <div class="psection-acts">
-              <button class="btn primary big" id="homeCreateProjectBtn">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                <span>Create New Project</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Filter & Search Toolbar -->
-          <div class="ptoolbar">
-            <div class="psearch-box">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" id="projectSearchInput" placeholder="Search projects by title, client or owner..." autocomplete="off">
-            </div>
-            <div class="pfilters">
-              <button class="pfilter-btn is-active" data-filter="all">All Projects</button>
-              <button class="pfilter-btn" data-filter="mine">My Projects</button>
-              <button class="pfilter-btn" data-filter="shared">Shared with Me</button>
-            </div>
-          </div>
-
-          <!-- Projects Grid -->
-          <div class="projects-grid" id="projectsGrid"></div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ══════ UPLOAD ══════ -->
-    <section class="view" id="view-upload">
-      <div class="sheetwrap">
-        <div class="vbar">
-          <h2 class="vtitle">Upload a process sheet</h2>
-          <p class="vsub">PDF or CSV. We read rows of <b>Height · Width · Qty · Remarks · Colour</b>, the unit headings between them, the board list you ordered and your cutting and edge-banding rates — so the report compares against your real order, not a guess.</p>
-        </div>
-        <div class="dropzone" id="dropzone">
-          <input type="file" id="fileIn" accept=".pdf,.csv,.txt" hidden>
-          <p class="dz-big">Drop a PDF or CSV here, or <button class="link" id="pickFile">choose a file</button></p>
-          <p class="dz-small">Or paste rows — one panel per line: <code>height width qty remarks colour</code></p>
-        </div>
-        <textarea id="pasteIn" rows="7" spellcheck="false" placeholder="MBR&#10;1000 520 1 Shutter MDF 1135&#10;2400 100 2 Dummy MDF 1135&#10;1795 800 1 Sliding Shutter 10&quot; IBH MDF 3410"></textarea>
-        <div class="uprow">
-          <button class="btn primary" id="importPaste">Import pasted rows</button>
-          <button class="btn" id="trySample2">Load the sample job</button>
-          <span class="upstatus" id="upStatus"></span>
-        </div>
-        <div class="uplog" id="upLog"></div>
-        <div class="upreview" id="upReview" hidden></div>
-      </div>
-    </section>
-
-    <!-- ══════ GALLERY ══════ -->
-    <section class="view" id="view-gallery">
-      <div class="sheetwrap wide">
-        <div class="vbar">
-          <h2 class="vtitle">Design catalogue</h2>
-          <p class="vsub">Every model in every look we build — from the steel almirahs of the 70s to reeded oak and cane, and full modular kitchens in straight, L, U, parallel and island layouts. Pick one to open it in the studio; every card is rendered live from the same engine.</p>
-          <div class="units" id="galTypes"></div>
-          <div class="chiprow" id="galEras" style="margin-top:10px"></div>
-          <div class="galcount" id="galCount"></div>
-        </div>
-        <div class="galgrid" id="galGrid"></div>
-      </div>
-    </section>
-
-    <!-- ══════ DESIGN ══════ -->
-    <section class="view" id="view-design">
-      <div class="stagewrap" id="stagewrap">
-        <button type="button" class="rail-floating-expand-btn" id="railFloatingExpandBtn" title="Show Unit Properties &amp; Inspector (Shortcut: [ or Ctrl+B)">
-          <span>⚙️ Unit Inspector</span>
-          <span style="font-size:14px;line-height:1;">⇤</span>
-        </button>
-        <div class="project-details-bar project-details-3d" id="studioProjectDetailsBadge" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:5px 14px;background:linear-gradient(90deg,#f8fafc,#eef5fb);border-bottom:1px solid #dbeafe;font-size:11.5px;color:#1e293b;z-index:5;"></div>
-        <div id="stage" role="region" aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
-          <div id="world"></div>
-        </div>
-
-        <!-- Floating Client Presentation HUD Overlay -->
-        <div id="clientPresentationHud" class="client-presentation-hud" style="display:none;">
-          <div class="cp-hud-header">
-            <div class="cp-hud-brand">
-              <span class="cp-badge">CLIENT PRESENTATION</span>
-              <span class="cp-title" id="cpHudTitle">Living &amp; Modular Kitchen Studio</span>
-            </div>
-            <div class="cp-hud-actions">
-              <button type="button" class="cp-hud-btn" id="cpFsToggleBtn" title="Toggle Fullscreen">⛶ Fullscreen</button>
-              <button type="button" class="cp-hud-btn cp-hud-close" id="cpExitBtn" title="Exit Presentation">✕ Exit</button>
-            </div>
-          </div>
-          
-          <div class="cp-hud-toolbar">
-            <!-- Three Unified Rendering Modes in Client HUD -->
-            <div class="cp-pill-group cp-mode-group" title="Three Unified Rendering Modes">
-              <span class="cp-group-label">Mode</span>
-              <button type="button" class="cp-pill" data-mode="design" id="cpModeDesignBtn" title="⚡ Design Mode: Lightweight standard materials, shadows disabled, maximum 60 FPS for fluid dragging, resizing, and cabinet positioning">⚡ Design</button>
-              <button type="button" class="cp-pill is-on" data-mode="realistic" id="cpModeRealisticBtn" title="✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows, studio HDRI reflection map">✨ Realistic</button>
-              <button type="button" class="cp-pill" data-mode="presentation" id="cpModeUltraBtn" title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic view & HUD">🌟 Client Ultra</button>
-            </div>
-
-            <!-- Camera Angles -->
-            <div class="cp-pill-group">
-              <span class="cp-group-label">Camera</span>
-              <button type="button" class="cp-pill is-on" data-cam="eye_level" id="cpCamEyeBtn">👁️ Eye-Level 1500</button>
-              <button type="button" class="cp-pill" data-cam="wide_angle" id="cpCamWideBtn">📐 Wide 75°</button>
-              <button type="button" class="cp-pill" data-cam="counter_focus" id="cpCamCounterBtn">🍳 Counter Focus</button>
-              <button type="button" class="cp-pill" data-cam="iso_45" id="cpCamIsoBtn">🏛️ 45° Iso</button>
-            </div>
-
-            <!-- Time of Day / Atmosphere -->
-            <div class="cp-pill-group">
-              <span class="cp-group-label">Atmosphere</span>
-              <button type="button" class="cp-pill is-on" data-tod="day" id="cpTodDayBtn">☀️ Day</button>
-              <button type="button" class="cp-pill" data-tod="evening" id="cpTodEveBtn">🌅 Evening</button>
-              <button type="button" class="cp-pill" data-tod="night" id="cpTodNightBtn">🌙 Night</button>
-            </div>
-
-            <!-- Material Comparison Option A vs Option B -->
-            <div class="cp-pill-group cp-compare-group">
-              <span class="cp-group-label">Finishes</span>
-              <button type="button" class="cp-pill is-on" data-opt="A" id="cpOptABtn">Option A (Current)</button>
-              <button type="button" class="cp-pill" data-opt="B" id="cpOptBBtn">Option B (Luxury Compare)</button>
-            </div>
-
-            <!-- 4K Ultra Render Export -->
-            <div class="cp-pill-group">
-              <button type="button" class="cp-render-btn" id="cpExport4KBtn">📸 Download 4K Ultra Render</button>
-            </div>
-          </div>
-        </div>
-        <div class="stagebar">
-          <!-- Row 1: Camera Orbit/Pan, Perspective Views, and 8K Render Menu -->
-          <div class="stagebar-row camera-row">
-            <div class="legend" id="legend"></div>
-            <div class="viewbtns">
-              <!-- Three Unified Rendering Modes in 3D Studio Toolbar -->
-              <div class="render-mode-group" id="renderModeGroup" title="Three Unified Rendering Modes">
-                <span class="render-mode-label">Mode:</span>
-                <button type="button" class="minibtn" id="modeDesignBtn" title="⚡ Design Mode: Lightweight standard materials, shadows disabled, maximum 60 FPS for fluid dragging, resizing, and cabinet positioning">⚡ Design</button>
-                <button type="button" class="minibtn is-on" id="modeRealisticBtn" title="✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows, and studio HDRI environment reflection map">✨ Realistic</button>
-                <button type="button" class="minibtn" id="modeUltraBtn" title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic camera view, and presentation HUD overlay">🌟 Client Ultra</button>
-              </div>
-
-              <div style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
-                <button class="minibtn is-on" id="viewFocusUnitBtn" title="Toggle between focusing on the active modular unit or viewing the full architectural home" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus Unit</button>
-                <button class="minibtn is-on" id="camRotateModeBtn" title="Rotate View: Left-click and drag anywhere to orbit 3D view smoothly" style="font-weight:600;">🔄 Rotate View</button>
-                <button class="minibtn" id="camPanModeBtn" title="Move Centre: Left-click and drag to pan / move camera floor centre" style="font-weight:600;">✋ Move Centre</button>
-                <button class="minibtn" id="camInteractModeBtn" title="Move Unit: Left-click and drag to reposition furniture units" style="font-weight:600;">📦 Move Unit</button>
-                <button class="minibtn" id="camResetCentreBtn" title="Re-centre 3D camera on room centre" style="font-weight:600;">🎯 Re-Centre</button>
-              </div>
-
-              <div style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
-                <button class="minibtn" id="frontBtn" title="Front Elevation View">👁 Front</button>
-                <button class="minibtn" id="isoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
-                <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
-                <button class="minibtn" id="openBtn" aria-pressed="false" title="Open or Close All Shutters & Drawers">🚪 Open all</button>
-                <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶ Present</button>
-                <button class="minibtn is-on" id="stagebarToggleRailBtn" aria-pressed="true" title="Toggle Unit Inspector Sidebar (Hide to maximize 3D canvas) [Shortcut: [ or Ctrl+B]" style="font-weight:600;">📑 Inspector</button>
-              </div>
-
-              <div class="lighting-controls-group" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.92);padding:2px 8px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;color:#1e293b;">
-                <span title="Sunlight Brightness" style="display:inline-flex;align-items:center;gap:3px;">
-                  <span>☀️ Sun</span>
-                  <input type="range" id="sunlightSlider" min="0" max="3" step="0.1" value="0" style="width:60px;cursor:pointer;vertical-align:middle;">
-                  <span id="sunlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">0.0</span>
-                </span>
-                <span style="color:#cbd5e1;">|</span>
-                <span title="Spotlight Brightness" style="display:inline-flex;align-items:center;gap:3px;">
-                  <span>💡 Spot</span>
-                  <input type="range" id="spotlightSlider" min="0" max="3" step="0.1" value="0" style="width:60px;cursor:pointer;vertical-align:middle;">
-                  <span id="spotlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">0.0</span>
-                </span>
-              </div>
-
-              <!-- Time of Day Presets -->
-              <div class="tod-controls-group" id="todControlsGroup" style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.92);padding:2px 4px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;">
-                <button type="button" class="minibtn is-on" id="todDayBtn" title="Daytime Sunlight (5400K)">☀️ Day</button>
-                <button type="button" class="minibtn" id="todEveBtn" title="Golden Hour Evening (3200K)">🌅 Eve</button>
-                <button type="button" class="minibtn" id="todNightBtn" title="Cozy Night Illumination (2700K)">🌙 Night</button>
-              </div>
-
-              <div class="render-dropdown-container" id="photoRenderContainer">
-                <button class="minibtn" id="photoRenderBtn" title="Choose 8K Render Mode: Auto-Placement or Custom View" style="background:linear-gradient(135deg, #1e293b, #0f172a);color:#f8fafc;border:1px solid #334155;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 14px;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,0.25);">
-                  <span>📸 8K Render</span>
-                  <span id="photoRenderCaret" style="font-size:10px;opacity:0.8;display:inline-block;transition:transform 0.2s;">▾</span>
+              <div class="psection-acts">
+                <button class="btn primary big" id="homeCreateProjectBtn">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  <span>Create New Project</span>
                 </button>
-                <div id="photoRenderMenu" class="render-dropdown-menu">
-                  <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px 8px 6px;">Select 8K Render Mode</div>
-                  <button type="button" class="render-menu-opt" id="renderAutoPlacementBtn">
-                    <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#38bdf8;">🎯 Auto-Placement Render</div>
-                    <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Auto-frames host wall & placed units with studio depth & cutaway</div>
+              </div>
+            </div>
+
+            <!-- Filter & Search Toolbar -->
+            <div class="ptoolbar">
+              <div class="psearch-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" id="projectSearchInput" placeholder="Search projects by title, client or owner..."
+                  autocomplete="off">
+              </div>
+              <div class="pfilters">
+                <button class="pfilter-btn is-active" data-filter="all">All Projects</button>
+                <button class="pfilter-btn" data-filter="mine">My Projects</button>
+                <button class="pfilter-btn" data-filter="shared">Shared with Me</button>
+              </div>
+            </div>
+
+            <!-- Projects Grid -->
+            <div class="projects-grid" id="projectsGrid"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══════ UPLOAD ══════ -->
+      <section class="view" id="view-upload">
+        <div class="sheetwrap">
+          <div class="vbar">
+            <h2 class="vtitle">Upload a process sheet</h2>
+            <p class="vsub">PDF or CSV. We read rows of <b>Height · Width · Qty · Remarks · Colour</b>, the unit
+              headings between them, the board list you ordered and your cutting and edge-banding rates — so the report
+              compares against your real order, not a guess.</p>
+          </div>
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="fileIn" accept=".pdf,.csv,.txt" hidden>
+            <p class="dz-big">Drop a PDF or CSV here, or <button class="link" id="pickFile">choose a file</button></p>
+            <p class="dz-small">Or paste rows — one panel per line: <code>height width qty remarks colour</code></p>
+          </div>
+          <textarea id="pasteIn" rows="7" spellcheck="false"
+            placeholder="MBR&#10;1000 520 1 Shutter MDF 1135&#10;2400 100 2 Dummy MDF 1135&#10;1795 800 1 Sliding Shutter 10&quot; IBH MDF 3410"></textarea>
+          <div class="uprow">
+            <button class="btn primary" id="importPaste">Import pasted rows</button>
+            <button class="btn" id="trySample2">Load the sample job</button>
+            <span class="upstatus" id="upStatus"></span>
+          </div>
+          <div class="uplog" id="upLog"></div>
+          <div class="upreview" id="upReview" hidden></div>
+        </div>
+      </section>
+
+      <!-- ══════ GALLERY ══════ -->
+      <section class="view" id="view-gallery">
+        <div class="sheetwrap wide">
+          <div class="vbar">
+            <h2 class="vtitle">Design catalogue</h2>
+            <p class="vsub">Every model in every look we build — from the steel almirahs of the 70s to reeded oak and
+              cane, and full modular kitchens in straight, L, U, parallel and island layouts. Pick one to open it in the
+              studio; every card is rendered live from the same engine.</p>
+            <div class="units" id="galTypes"></div>
+            <div class="chiprow" id="galEras" style="margin-top:10px"></div>
+            <div class="galcount" id="galCount"></div>
+          </div>
+          <div class="galgrid" id="galGrid"></div>
+        </div>
+      </section>
+
+      <!-- ══════ DESIGN ══════ -->
+      <section class="view" id="view-design">
+        <div class="stagewrap" id="stagewrap">
+          <button type="button" class="rail-floating-expand-btn" id="railFloatingExpandBtn"
+            title="Show Unit Properties &amp; Inspector (Shortcut: [ or Ctrl+B)">
+            <span>⚙️ Unit Inspector</span>
+            <span style="font-size:14px;line-height:1;">⇤</span>
+          </button>
+          <div class="project-details-bar project-details-3d" id="studioProjectDetailsBadge"
+            style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:5px 14px;background:linear-gradient(90deg,#f8fafc,#eef5fb);border-bottom:1px solid #dbeafe;font-size:11.5px;color:#1e293b;z-index:5;">
+          </div>
+          <div id="stage" role="region"
+            aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
+            <div id="world"></div>
+          </div>
+
+          <!-- Floating Client Presentation HUD Overlay -->
+          <div id="clientPresentationHud" class="client-presentation-hud" style="display:none;">
+            <div class="cp-hud-header">
+              <div class="cp-hud-brand">
+                <span class="cp-badge">CLIENT PRESENTATION</span>
+                <span class="cp-title" id="cpHudTitle">Living &amp; Modular Kitchen Studio</span>
+              </div>
+              <div class="cp-hud-actions">
+                <button type="button" class="cp-hud-btn" id="cpFsToggleBtn" title="Toggle Fullscreen">⛶
+                  Fullscreen</button>
+                <button type="button" class="cp-hud-btn cp-hud-close" id="cpExitBtn" title="Exit Presentation">✕
+                  Exit</button>
+              </div>
+            </div>
+
+            <div class="cp-hud-toolbar">
+              <!-- Three Unified Rendering Modes in Client HUD -->
+              <div class="cp-pill-group cp-mode-group" title="Three Unified Rendering Modes">
+                <span class="cp-group-label">Mode</span>
+                <button type="button" class="cp-pill" data-mode="design" id="cpModeDesignBtn"
+                  title="⚡ Design Mode: Lightweight standard materials, shadows disabled, maximum 60 FPS for fluid dragging, resizing, and cabinet positioning">⚡
+                  Design</button>
+                <button type="button" class="cp-pill is-on" data-mode="realistic" id="cpModeRealisticBtn"
+                  title="✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows, studio HDRI reflection map">✨
+                  Realistic</button>
+                <button type="button" class="cp-pill" data-mode="presentation" id="cpModeUltraBtn"
+                  title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic view & HUD">🌟
+                  Client Ultra</button>
+              </div>
+
+              <!-- Camera Angles -->
+              <div class="cp-pill-group">
+                <span class="cp-group-label">Camera</span>
+                <button type="button" class="cp-pill is-on" data-cam="eye_level" id="cpCamEyeBtn">👁️ Eye-Level
+                  1500</button>
+                <button type="button" class="cp-pill" data-cam="wide_angle" id="cpCamWideBtn">📐 Wide 75°</button>
+                <button type="button" class="cp-pill" data-cam="counter_focus" id="cpCamCounterBtn">🍳 Counter
+                  Focus</button>
+                <button type="button" class="cp-pill" data-cam="iso_45" id="cpCamIsoBtn">🏛️ 45° Iso</button>
+              </div>
+
+              <!-- Time of Day / Atmosphere -->
+              <div class="cp-pill-group">
+                <span class="cp-group-label">Atmosphere</span>
+                <button type="button" class="cp-pill is-on" data-tod="day" id="cpTodDayBtn">☀️ Day</button>
+                <button type="button" class="cp-pill" data-tod="evening" id="cpTodEveBtn">🌅 Evening</button>
+                <button type="button" class="cp-pill" data-tod="night" id="cpTodNightBtn">🌙 Night</button>
+              </div>
+
+              <!-- Material Comparison Option A vs Option B -->
+              <div class="cp-pill-group cp-compare-group">
+                <span class="cp-group-label">Finishes</span>
+                <button type="button" class="cp-pill is-on" data-opt="A" id="cpOptABtn">Option A (Current)</button>
+                <button type="button" class="cp-pill" data-opt="B" id="cpOptBBtn">Option B (Luxury Compare)</button>
+              </div>
+
+              <!-- 4K Ultra Render Export -->
+              <div class="cp-pill-group">
+                <button type="button" class="cp-render-btn" id="cpExport4KBtn">📸 Download 4K Ultra Render</button>
+              </div>
+            </div>
+          </div>
+          <div class="stagebar">
+            <!-- Row 1: Camera Orbit/Pan, Perspective Views, and 8K Render Menu -->
+            <div class="stagebar-row camera-row">
+              <div class="legend" id="legend"></div>
+              <div class="viewbtns">
+                <!-- Three Unified Rendering Modes in 3D Studio Toolbar -->
+                <div class="render-mode-group" id="renderModeGroup" title="Three Unified Rendering Modes">
+                  <span class="render-mode-label">Mode:</span>
+                  <button type="button" class="minibtn" id="modeDesignBtn"
+                    title="⚡ Design Mode: Lightweight standard materials, shadows disabled, maximum 60 FPS for fluid dragging, resizing, and cabinet positioning">⚡
+                    Design</button>
+                  <button type="button" class="minibtn is-on" id="modeRealisticBtn"
+                    title="✨ Realistic Mode: Real-time PBR preview, MeshPhysicalMaterial, PCF soft contact shadows, and studio HDRI environment reflection map">✨
+                    Realistic</button>
+                  <button type="button" class="minibtn" id="modeUltraBtn"
+                    title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic camera view, and presentation HUD overlay">🌟
+                    Client Ultra</button>
+                </div>
+
+                <div
+                  style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
+                  <button class="minibtn is-on" id="viewFocusUnitBtn"
+                    title="Toggle between focusing on the active modular unit or viewing the full architectural home"
+                    style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🎯 Focus
+                    Unit</button>
+                  <button class="minibtn is-on" id="camRotateModeBtn"
+                    title="Rotate View: Left-click and drag anywhere to orbit 3D view smoothly"
+                    style="font-weight:600;">🔄 Rotate View</button>
+                  <button class="minibtn" id="camPanModeBtn"
+                    title="Move Centre: Left-click and drag to pan / move camera floor centre"
+                    style="font-weight:600;">✋ Move Centre</button>
+                  <button class="minibtn" id="camInteractModeBtn"
+                    title="Move Unit: Left-click and drag to reposition furniture units" style="font-weight:600;">📦
+                    Move Unit</button>
+                  <button class="minibtn" id="camResetCentreBtn" title="Re-centre 3D camera on room centre"
+                    style="font-weight:600;">🎯 Re-Centre</button>
+                </div>
+
+                <div
+                  style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
+                  <button class="minibtn" id="frontBtn" title="Front Elevation View">👁 Front</button>
+                  <button class="minibtn" id="isoBtn" title="3/4 Isometric Perspective">📐 3/4</button>
+                  <button class="minibtn" id="sideBtn" title="Side Elevation View">◨ Side</button>
+                  <button class="minibtn" id="openBtn" aria-pressed="false"
+                    title="Open or Close All Shutters & Drawers">🚪 Open all</button>
+                  <button class="minibtn" id="presentBtn" aria-pressed="false" title="Fullscreen Presentation Mode">⛶
+                    Present</button>
+                  <button class="minibtn is-on" id="stagebarToggleRailBtn" aria-pressed="true"
+                    title="Toggle Unit Inspector Sidebar (Hide to maximize 3D canvas) [Shortcut: [ or Ctrl+B]"
+                    style="font-weight:600;">📑 Inspector</button>
+                </div>
+
+                <div class="lighting-controls-group"
+                  style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.92);padding:2px 8px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;color:#1e293b;">
+                  <span title="Sunlight Brightness" style="display:inline-flex;align-items:center;gap:3px;">
+                    <span>☀️ Sun</span>
+                    <input type="range" id="sunlightSlider" min="0" max="3" step="0.1" value="0"
+                      style="width:60px;cursor:pointer;vertical-align:middle;">
+                    <span id="sunlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">0.0</span>
+                  </span>
+                  <span style="color:#cbd5e1;">|</span>
+                  <span title="Spotlight Brightness" style="display:inline-flex;align-items:center;gap:3px;">
+                    <span>💡 Spot</span>
+                    <input type="range" id="spotlightSlider" min="0" max="3" step="0.1" value="0"
+                      style="width:60px;cursor:pointer;vertical-align:middle;">
+                    <span id="spotlightValLabel" style="font-size:10.5px;color:#475569;min-width:20px;">0.0</span>
+                  </span>
+                </div>
+
+                <!-- Time of Day Presets -->
+                <div class="tod-controls-group" id="todControlsGroup"
+                  style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.92);padding:2px 4px;border-radius:6px;border:1px solid #cbd5e1;font-size:11.5px;font-weight:600;">
+                  <button type="button" class="minibtn is-on" id="todDayBtn" title="Daytime Sunlight (5400K)">☀️
+                    Day</button>
+                  <button type="button" class="minibtn" id="todEveBtn" title="Golden Hour Evening (3200K)">🌅
+                    Eve</button>
+                  <button type="button" class="minibtn" id="todNightBtn" title="Cozy Night Illumination (2700K)">🌙
+                    Night</button>
+                </div>
+
+                <div class="render-dropdown-container" id="photoRenderContainer">
+                  <button class="minibtn" id="photoRenderBtn"
+                    title="Choose 8K Render Mode: Auto-Placement or Custom View"
+                    style="background:linear-gradient(135deg, #1e293b, #0f172a);color:#f8fafc;border:1px solid #334155;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 14px;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,0.25);">
+                    <span>📸 8K Render</span>
+                    <span id="photoRenderCaret"
+                      style="font-size:10px;opacity:0.8;display:inline-block;transition:transform 0.2s;">▾</span>
                   </button>
-                  <div style="height:1px;background:#334155;margin:6px 0;"></div>
-                  <button type="button" class="render-menu-opt" id="renderCustomViewBtn">
-                    <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#a7f3d0;">📐 Custom View Render</div>
-                    <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Renders exact current 3D camera angle, framing & perspective</div>
-                  </button>
-                  <div style="height:1px;background:#334155;margin:6px 0;"></div>
-                  <button type="button" class="render-menu-opt" id="renderAIRenderBtn">
-                    <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#f472b6;">🤖 AI Photorealism Render (OpenAI)</div>
-                    <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Converts 3D snip into photo-realistic luxury render with smart prompt</div>
-                  </button>
+                  <div id="photoRenderMenu" class="render-dropdown-menu">
+                    <div
+                      style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;padding:4px 8px 6px;">
+                      Select 8K Render Mode</div>
+                    <button type="button" class="render-menu-opt" id="renderAutoPlacementBtn">
+                      <div
+                        style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#38bdf8;">🎯
+                        Auto-Placement Render</div>
+                      <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Auto-frames host wall & placed units
+                        with studio depth & cutaway</div>
+                    </button>
+                    <div style="height:1px;background:#334155;margin:6px 0;"></div>
+                    <button type="button" class="render-menu-opt" id="renderCustomViewBtn">
+                      <div
+                        style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#a7f3d0;">📐
+                        Custom View Render</div>
+                      <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Renders exact current 3D camera angle,
+                        framing & perspective</div>
+                    </button>
+                    <div style="height:1px;background:#334155;margin:6px 0;"></div>
+                    <button type="button" class="render-menu-opt" id="renderAIRenderBtn">
+                      <div
+                        style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;color:#f472b6;">🤖
+                        AI Photorealism Render (OpenAI)</div>
+                      <div style="font-size:11px;color:#cbd5e1;line-height:1.3;">Converts 3D snip into photo-realistic
+                        luxury render with smart prompt</div>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Row 2: Architecture Walls, Dado, Floor Finish & Room Selector -->
-          <div class="stagebar-row finishes-row">
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-              <button class="minibtn is-on" id="toggleWallCutawayBtn" title="Auto-hide obstructing walls facing camera or click to cycle Wall 1, 2, 3, 4" style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
-              <select class="minibtn" id="wallCutSelect" title="Single wall cutoff: hide Wall 1, 2, 3, 4, or auto-cut camera wall (attached units hide too)" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
-                <option value="single_auto">👁 Auto-Cut (1 Wall)</option>
-                <option value="wall_1">Wall 1 Hidden</option>
-                <option value="wall_2">Wall 2 Hidden</option>
-                <option value="wall_3">Wall 3 Hidden</option>
-                <option value="wall_4">Wall 4 Hidden</option>
-                <option value="all">🏛 All Walls Visible</option>
-                <option value="hidden">🚫 All Walls Hidden</option>
-              </select>
-              <!-- 3D Floor Finish Switcher -->
-              <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
-                <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White Tile</button>
-                <button class="minibtn" data-floor="square_tile" title="Square Ceramic Tile">▦ Square Tile</button>
-                <button class="minibtn" data-floor="grey_tile" title="Charcoal Grey Stone Tile">▩ Grey Tile</button>
-                <button class="minibtn" data-floor="wooden" title="Warm Hardwood Parquet">🪵 Wooden</button>
-                <button class="minibtn" data-floor="tile_1" title="Floor Tile 1 (Statuario White Marble)">🏛️ Tile 1</button>
-                <button class="minibtn" data-floor="tile_2" title="Floor Tile 2 (Grey Basalt Slate)">✨ Tile 2</button>
-                <button class="minibtn" data-floor="tile_3" title="Floor Tile 3 (Teak Wood Plank Tile)">🪵 Tile 3</button>
+            <!-- Row 2: Architecture Walls, Dado, Floor Finish & Room Selector -->
+            <div class="stagebar-row finishes-row">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <button class="minibtn is-on" id="toggleWallCutawayBtn"
+                  title="Auto-hide obstructing walls facing camera or click to cycle Wall 1, 2, 3, 4"
+                  style="font-weight:600;">👁 Walls: Auto-Cutaway</button>
+                <select class="minibtn" id="wallCutSelect"
+                  title="Single wall cutoff: hide Wall 1, 2, 3, 4, or auto-cut camera wall (attached units hide too)"
+                  style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                  <option value="single_auto">👁 Auto-Cut (1 Wall)</option>
+                  <option value="wall_1">Wall 1 Hidden</option>
+                  <option value="wall_2">Wall 2 Hidden</option>
+                  <option value="wall_3">Wall 3 Hidden</option>
+                  <option value="wall_4">Wall 4 Hidden</option>
+                  <option value="all">🏛 All Walls Visible</option>
+                  <option value="hidden">🚫 All Walls Hidden</option>
+                </select>
+                <!-- 3D Floor Finish Switcher -->
+                <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
+                  <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White
+                    Tile</button>
+                  <button class="minibtn" data-floor="square_tile" title="Square Ceramic Tile">▦ Square Tile</button>
+                  <button class="minibtn" data-floor="grey_tile" title="Charcoal Grey Stone Tile">▩ Grey Tile</button>
+                  <button class="minibtn" data-floor="wooden" title="Warm Hardwood Parquet">🪵 Wooden</button>
+                  <button class="minibtn" data-floor="tile_1" title="Floor Tile 1 (Statuario White Marble)">🏛️ Tile
+                    1</button>
+                  <button class="minibtn" data-floor="tile_2" title="Floor Tile 2 (Grey Basalt Slate)">✨ Tile 2</button>
+                  <button class="minibtn" data-floor="tile_3" title="Floor Tile 3 (Teak Wood Plank Tile)">🪵 Tile
+                    3</button>
+                </div>
+                <!-- 3D Dado Tile Option -->
+                <button class="minibtn is-on" id="toggleDadoTileBtn"
+                  title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls"
+                  style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
+                  <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
+                </button>
+                <button class="minibtn" id="toggleCeilingBtn" title="Toggle Architectural Ceiling Slab ON / OFF"
+                  style="font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+                  <span>🏠 Ceiling: <b id="ceilingStatus">OFF</b></span>
+                </button>
+                <select class="minibtn" id="dadoTileStyleSelect" title="Dado Tile Pattern & Color"
+                  style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                  <option value="dado_1" selected>🧱 Dado 1: Modern Geo Stone</option>
+                  <option value="dado_2">🧱 Dado 2: Sage Green Mosaic</option>
+                  <option value="dado_3">🧱 Dado 3: Classic Ceramic Motif</option>
+                  <option value="dado_4">🧱 Dado 4: Carrara Subway Glaze</option>
+                  <option value="dado_5">🧱 Dado 5: Warm Calacatta Marble</option>
+                  <option value="rhombus_sage">🧱 Pattern: Sage Diamond</option>
+                  <option value="chevron_mono">🧱 Pattern: Mono Chevron</option>
+                  <option value="subway_white">🧱 Pattern: Subway White</option>
+                </select>
+                <!-- 3D Room Selector -->
+                <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D"
+                  style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                  <option value="all">🏠 All Rooms</option>
+                </select>
               </div>
-              <!-- 3D Dado Tile Option -->
-              <button class="minibtn is-on" id="toggleDadoTileBtn" title="Toggle Dado Tile / Backsplash on Kitchen & Bathroom Walls" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;background:#059669;color:#ffffff;border-color:#047857;">
-                <span>🧱 Dado Tile: <b id="dadoTileStatus">ON</b></span>
-              </button>
-              <button class="minibtn" id="toggleCeilingBtn" title="Toggle Architectural Ceiling Slab ON / OFF" style="font-weight:600;display:inline-flex;align-items:center;gap:4px;">
-                <span>🏠 Ceiling: <b id="ceilingStatus">OFF</b></span>
-              </button>
-              <select class="minibtn" id="dadoTileStyleSelect" title="Dado Tile Pattern & Color" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
-                <option value="dado_1" selected>🧱 Dado 1: Modern Geo Stone</option>
-                <option value="dado_2">🧱 Dado 2: Sage Green Mosaic</option>
-                <option value="dado_3">🧱 Dado 3: Classic Ceramic Motif</option>
-                <option value="dado_4">🧱 Dado 4: Carrara Subway Glaze</option>
-                <option value="dado_5">🧱 Dado 5: Warm Calacatta Marble</option>
-                <option value="rhombus_sage">🧱 Pattern: Sage Diamond</option>
-                <option value="chevron_mono">🧱 Pattern: Mono Chevron</option>
-                <option value="subway_white">🧱 Pattern: Subway White</option>
-              </select>
-              <!-- 3D Room Selector -->
-              <select class="minibtn" id="studioRoomSelect" title="Select a room to view that room only in 3D" style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
-                <option value="all">🏠 All Rooms</option>
-              </select>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-              <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
-              <button class="minibtn" id="placeDecor3DBtn" title="Add 3D Decors &amp; Appliances from SketchUp Catalog" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🌿 Add Decor</button>
+              <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+                <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room"
+                  style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
+                <button class="minibtn" id="placeDecor3DBtn"
+                  title="Add 3D Decors &amp; Appliances from SketchUp Catalog"
+                  style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🌿 Add Decor</button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <aside class="rail" id="rail">
-        <div class="units-rail-header" id="unitsRailHeader" title="Unit Inspector Sidebar">
-          <span class="units-rail-title" id="unitsRailTitle">📦 Units (<span id="unitsRailCount">0</span>)</span>
-          <div class="rail-header-actions">
-            <button type="button" class="units-rail-toggle-btn" id="unitsRailToggleBtn" title="Toggle Units Chips Row">▾ Chips</button>
-            <button type="button" class="rail-collapse-btn" id="railCollapseBtn" title="Collapse Sidebar / Maximize 3D View [Shortcut: [ or Ctrl+B]">⇥ Collapse</button>
+        <aside class="rail" id="rail">
+          <div class="units-rail-header" id="unitsRailHeader" title="Unit Inspector Sidebar">
+            <span class="units-rail-title" id="unitsRailTitle">📦 Units (<span id="unitsRailCount">0</span>)</span>
+            <div class="rail-header-actions">
+              <button type="button" class="units-rail-toggle-btn" id="unitsRailToggleBtn"
+                title="Toggle Units Chips Row">▾ Chips</button>
+              <button type="button" class="rail-collapse-btn" id="railCollapseBtn"
+                title="Collapse Sidebar / Maximize 3D View [Shortcut: [ or Ctrl+B]">⇥ Collapse</button>
+            </div>
+          </div>
+          <div class="units" id="units"></div>
+          <div class="railscroll" id="railScroll"></div>
+          <div class="railfoot">
+            <div class="rf-line"><span>Panels</span><b id="rfPanels">—</b></div>
+            <div class="rf-line"><span>Area</span><b id="rfSft">—</b></div>
+            <div class="rf-line"><span>Boards 8×4</span><b id="rfSheets">—</b></div>
+            <div class="rf-line"><span>E/B</span><b id="rfEb">—</b></div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- ══════ PROCESS SHEET ══════ -->
+      <section class="view" id="view-sheet">
+        <div class="paper" id="paper">
+          <h1 class="ps-title">Process Sheet</h1>
+
+          <div class="ps-head">
+            <table class="ps-meta">
+              <tr>
+                <td class="k">Dealer Name:</td>
+                <td><input id="f_dealer" placeholder="—"></td>
+              </tr>
+              <tr>
+                <td class="k">Place :</td>
+                <td><input id="f_place" placeholder="—"></td>
+              </tr>
+              <tr>
+                <td class="k">Dealer Order No:</td>
+                <td><input id="f_dorder" placeholder="—"></td>
+              </tr>
+              <tr>
+                <td class="k">Customer Name :</td>
+                <td><input id="f_cust" placeholder="—"></td>
+              </tr>
+            </table>
+            <table class="ps-meta right">
+              <tr>
+                <td class="k">Proc By:</td>
+                <td><input id="f_proc" placeholder="—"></td>
+              </tr>
+              <tr>
+                <td class="k">Order No:</td>
+                <td><input id="f_order" placeholder="—"></td>
+              </tr>
+              <tr>
+                <td class="k">Date :</td>
+                <td><input id="f_date" placeholder="—"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="ps-banner">
+            <div class="hl big">Jobwork</div>
+            <div class="sub">No Packing</div>
+            <div class="hl">Sticker Name : "<input id="f_sticker" class="inl" placeholder="—">"</div>
+            <div class="redline"><input id="f_supply" class="inl red" value="MDF Boards Provided by Party"></div>
+          </div>
+
+          <h2 class="ps-sec">Jobwork — Cutting and <span id="f_ebLabel">2mm</span> E/B</h2>
+          <p class="ps-note">E/B code — 4S: all four edges · 2L: both long edges · 1L: one long edge · 1L1S: one long +
+            one short · — : none. E/B Ft is banded running feet for that row.</p>
+          <div class="tscroll">
+            <table class="ps-table" id="psTable"></table>
+          </div>
+
+          <h2 class="ps-sec small">65mm Plywood Laminate Frames</h2>
+          <div class="tscroll">
+            <table class="ps-table" id="frTable"></table>
+          </div>
+
+          <div class="tscroll">
+            <table class="ps-table charge" id="chTable"></table>
+          </div>
+
+          <div class="tscroll">
+            <table class="ps-table charge" id="bdTable"></table>
           </div>
         </div>
-        <div class="units" id="units"></div>
-        <div class="railscroll" id="railScroll"></div>
-        <div class="railfoot">
-          <div class="rf-line"><span>Panels</span><b id="rfPanels">—</b></div>
-          <div class="rf-line"><span>Area</span><b id="rfSft">—</b></div>
-          <div class="rf-line"><span>Boards 8×4</span><b id="rfSheets">—</b></div>
-          <div class="rf-line"><span>E/B</span><b id="rfEb">—</b></div>
+      </section>
+
+      <!-- ══════ ELEVATION ══════ -->
+      <section class="view" id="view-elev">
+        <div class="drafting" id="draft"></div>
+      </section>
+
+      <!-- ══════ PANELS + DRILLING ══════ -->
+      <section class="view" id="view-panels">
+        <div class="sheetwrap">
+          <div class="vbar">
+            <h2 class="vtitle">Panel &amp; drilling schedule</h2>
+            <p class="vsub">System 32 boring. Hinge cup <b>&Oslash;35</b> at <b>22.5&nbsp;mm</b> from the hinge edge;
+              shelf pins <b>&Oslash;5</b> on a <b>32&nbsp;mm</b> pitch, <b>37&nbsp;mm</b> in from front and back; runner
+              fixings <b>&Oslash;5</b> at <b>37&nbsp;mm</b> from the front edge. Every hole below is exported on the
+              DRILL layer of the DXF.</p>
+          </div>
+          <div class="panelgrid" id="panelGrid"></div>
         </div>
-      </aside>
-    </section>
+      </section>
 
-    <!-- ══════ PROCESS SHEET ══════ -->
-    <section class="view" id="view-sheet">
-      <div class="paper" id="paper">
-        <h1 class="ps-title">Process Sheet</h1>
-
-        <div class="ps-head">
-          <table class="ps-meta">
-            <tr><td class="k">Dealer Name:</td><td><input id="f_dealer" placeholder="—"></td></tr>
-            <tr><td class="k">Place :</td><td><input id="f_place" placeholder="—"></td></tr>
-            <tr><td class="k">Dealer Order No:</td><td><input id="f_dorder" placeholder="—"></td></tr>
-            <tr><td class="k">Customer Name :</td><td><input id="f_cust" placeholder="—"></td></tr>
-          </table>
-          <table class="ps-meta right">
-            <tr><td class="k">Proc By:</td><td><input id="f_proc" placeholder="—"></td></tr>
-            <tr><td class="k">Order No:</td><td><input id="f_order" placeholder="—"></td></tr>
-            <tr><td class="k">Date :</td><td><input id="f_date" placeholder="—"></td></tr>
-          </table>
+      <!-- ══════ NESTING ══════ -->
+      <section class="view" id="view-nest">
+        <div class="sheetwrap">
+          <div class="vbar">
+            <h2 class="vtitle">Sheet nesting</h2>
+            <p class="vsub">Guillotine-cut optimisation on 2440&nbsp;&times;&nbsp;1220 boards. Woodgrain laminates are
+              locked to grain direction; plain and gloss may rotate.</p>
+            <div class="nestopts" id="nestOpts"></div>
+          </div>
+          <div class="neststats" id="nestStats"></div>
+          <div class="nestsheets" id="nestSheets"></div>
         </div>
+      </section>
 
-        <div class="ps-banner">
-          <div class="hl big">Jobwork</div>
-          <div class="sub">No Packing</div>
-          <div class="hl">Sticker Name : "<input id="f_sticker" class="inl" placeholder="—">"</div>
-          <div class="redline"><input id="f_supply" class="inl red" value="MDF Boards Provided by Party"></div>
+      <!-- ══════ REPORT ══════ -->
+      <section class="view" id="view-report">
+        <div class="sheetwrap">
+          <div class="paper" id="reportPaper"></div>
         </div>
+      </section>
 
-        <h2 class="ps-sec">Jobwork — Cutting and <span id="f_ebLabel">2mm</span> E/B</h2>
-        <p class="ps-note">E/B code — 4S: all four edges · 2L: both long edges · 1L: one long edge · 1L1S: one long + one short · — : none. E/B Ft is banded running feet for that row.</p>
-        <div class="tscroll">
-          <table class="ps-table" id="psTable"></table>
-        </div>
-
-        <h2 class="ps-sec small">65mm Plywood Laminate Frames</h2>
-        <div class="tscroll">
-          <table class="ps-table" id="frTable"></table>
-        </div>
-
-        <div class="tscroll">
-          <table class="ps-table charge" id="chTable"></table>
-        </div>
-
-        <div class="tscroll">
-          <table class="ps-table charge" id="bdTable"></table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ══════ ELEVATION ══════ -->
-    <section class="view" id="view-elev">
-      <div class="drafting" id="draft"></div>
-    </section>
-
-    <!-- ══════ PANELS + DRILLING ══════ -->
-    <section class="view" id="view-panels">
-      <div class="sheetwrap">
-        <div class="vbar">
-          <h2 class="vtitle">Panel &amp; drilling schedule</h2>
-          <p class="vsub">System 32 boring. Hinge cup <b>&Oslash;35</b> at <b>22.5&nbsp;mm</b> from the hinge edge; shelf pins <b>&Oslash;5</b> on a <b>32&nbsp;mm</b> pitch, <b>37&nbsp;mm</b> in from front and back; runner fixings <b>&Oslash;5</b> at <b>37&nbsp;mm</b> from the front edge. Every hole below is exported on the DRILL layer of the DXF.</p>
-        </div>
-        <div class="panelgrid" id="panelGrid"></div>
-      </div>
-    </section>
-
-    <!-- ══════ NESTING ══════ -->
-    <section class="view" id="view-nest">
-      <div class="sheetwrap">
-        <div class="vbar">
-          <h2 class="vtitle">Sheet nesting</h2>
-          <p class="vsub">Guillotine-cut optimisation on 2440&nbsp;&times;&nbsp;1220 boards. Woodgrain laminates are locked to grain direction; plain and gloss may rotate.</p>
-          <div class="nestopts" id="nestOpts"></div>
-        </div>
-        <div class="neststats" id="nestStats"></div>
-        <div class="nestsheets" id="nestSheets"></div>
-      </div>
-    </section>
-
-    <!-- ══════ REPORT ══════ -->
-    <section class="view" id="view-report">
-      <div class="sheetwrap"><div class="paper" id="reportPaper"></div></div>
-    </section>
-
-    <!-- ══════ ORBIX FLOOR PLAN (2D) ══════ -->
-    <section class="view" id="view-plan">
-      <div class="plan-toolbar">
-        <!-- Row 1: Architectural Drawing Studio & Live Quote -->
-        <div class="plan-toolbar-row drawing-bar">
-          <div class="plan-toolgroup">
-            <button class="plan-tool-btn is-active" data-tool="select" title="Select & Move (S)">✋ Select</button>
-            <button class="plan-tool-btn" data-tool="pan" id="planPanBtn" title="Pan Floor Plan: Click and drag anywhere to pan and observe floor plan (Hotkey H or hold Spacebar / Middle Click)">✋ Pan View</button>
-            <button class="plan-tool-btn" data-tool="wall" title="Draw Wall (W)">🧱 + Wall</button>
-            <select class="plan-select" id="planWallThickness" title="Wall Thickness">
-              <option value="100">100 mm (Drywall)</option>
-              <option value="150" selected>150 mm (Partition)</option>
-              <option value="200">200 mm (External)</option>
-              <option value="230">230 mm (Brick)</option>
-            </select>
-            <button class="plan-tool-btn" data-tool="divider" id="planDividerBtn" title="Room Divider: Divide rooms without solid walls (Hotkey R)">✂ Room Divider</button>
-            <button class="plan-tool-btn" data-tool="door" title="Place Door (D)">🚪 + Door</button>
-            <button class="plan-tool-btn" data-tool="window" title="Place Window (Win)">🪟 + Window</button>
-            <!-- Tape Measurement Tool (Straight Ortho Lock) -->
-            <button class="plan-tool-btn" data-tool="dimension" id="planDimensionBtn" title="Tape Measure: Measure straight distance between two points (Hotkey M)">📏 Tape</button>
-            <!-- Dado Tile / Backsplash Tool -->
-            <button class="plan-tool-btn" data-tool="dado" id="planDadoBtn" title="Draw Dado Tile: Click or drag on walls to draw kitchen backsplash & bathroom dado tiles (Hotkey T)">🧱 + Dado Tile</button>
-            <!-- Furnish: Modular Units & Furniture Catalog Tool -->
-            <button class="plan-tool-btn furn-place-btn" data-tool="furniture" id="planFurnitureBtn" onclick="window.toggleFurnishMenu && window.toggleFurnishMenu(event)" title="Furnish: Modular Units & Furniture Catalog (Hotkey F)">
-              <img src="icon-furniture.png" alt="Furnish" class="furn-tool-img-icon" style="width:18px;height:22px;object-fit:contain;vertical-align:middle;margin-right:5px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.12));">
-              <span class="furn-tool-text">Furnish</span>
-            </button>
-            <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="display:none;" aria-hidden="true">
+      <!-- ══════ ORBIX FLOOR PLAN (2D) ══════ -->
+      <section class="view" id="view-plan">
+        <div class="plan-toolbar">
+          <!-- Row 1: Architectural Drawing Studio & Live Quote -->
+          <div class="plan-toolbar-row drawing-bar">
+            <div class="plan-toolgroup">
+              <button class="plan-tool-btn is-active" data-tool="select" title="Select & Move (S)">✋ Select</button>
+              <button class="plan-tool-btn" data-tool="pan" id="planPanBtn"
+                title="Pan Floor Plan: Click and drag anywhere to pan and observe floor plan (Hotkey H or hold Spacebar / Middle Click)">✋
+                Pan View</button>
+              <button class="plan-tool-btn" data-tool="wall" title="Draw Wall (W)">🧱 + Wall</button>
+              <select class="plan-select" id="planWallThickness" title="Wall Thickness">
+                <option value="100">100 mm (Drywall)</option>
+                <option value="150" selected>150 mm (Partition)</option>
+                <option value="200">200 mm (External)</option>
+                <option value="230">230 mm (Brick)</option>
+              </select>
+              <button class="plan-tool-btn" data-tool="divider" id="planDividerBtn"
+                title="Room Divider: Divide rooms without solid walls (Hotkey R)">✂ Room Divider</button>
+              <button class="plan-tool-btn" data-tool="door" title="Place Door (D)">🚪 + Door</button>
+              <button class="plan-tool-btn" data-tool="window" title="Place Window (Win)">🪟 + Window</button>
+              <!-- Tape Measurement Tool (Straight Ortho Lock) -->
+              <button class="plan-tool-btn" data-tool="dimension" id="planDimensionBtn"
+                title="Tape Measure: Measure straight distance between two points (Hotkey M)">📏 Tape</button>
+              <!-- Dado Tile / Backsplash Tool -->
+              <button class="plan-tool-btn" data-tool="dado" id="planDadoBtn"
+                title="Draw Dado Tile: Click or drag on walls to draw kitchen backsplash & bathroom dado tiles (Hotkey T)">🧱
+                + Dado Tile</button>
+              <!-- Furnish: Modular Units & Furniture Catalog Tool -->
+              <button class="plan-tool-btn furn-place-btn" data-tool="furniture" id="planFurnitureBtn"
+                onclick="window.toggleFurnishMenu && window.toggleFurnishMenu(event)"
+                title="Furnish: Modular Units & Furniture Catalog (Hotkey F)">
+                <img src="icon-furniture.png" alt="Furnish" class="furn-tool-img-icon"
+                  style="width:18px;height:22px;object-fit:contain;vertical-align:middle;margin-right:5px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.12));">
+                <span class="furn-tool-text">Furnish</span>
+              </button>
+              <select class="plan-select" id="planFurnSelect" title="Select Furniture to Place" style="display:none;"
+                aria-hidden="true">
                 <optgroup label="Cookscape Modular Units Catalog">
                   <option value="ctvb-1d-1dr" selected>ctvb-1d-1dr: CROCKERY/TV BASE 1DOOR 1 DRAWER (450×200)</option>
                   <option value="ctvb-2d">ctvb-2d: CROCKERY/TV BASE 2 DOOR (750×750×550, 100mm Leg)</option>
                   <option value="fcm-rt">fcm-rt: FCM-RT (Cookscape) (1200×720)</option>
-                  <option value="fcm-rt-1500">fcm-rt-1500: WCM-RT (Cookscape) (600×600×300, 300 Fixed + 300 Open, elev: 1500)</option>
+                  <option value="fcm-rt-1500">fcm-rt-1500: WCM-RT (Cookscape) (600×600×300, 300 Fixed + 300 Open, elev:
+                    1500)</option>
                   <option value="fcm-lt">fcm-lt: FCM-LT (Cookscape) (1200×720)</option>
-                  <option value="fcm-lt-1500">fcm-lt-1500: WCM-LT (Cookscape) (600×600×300, 300 Open + 300 Fixed, elev: 1500)</option>
+                  <option value="fcm-lt-1500">fcm-lt-1500: WCM-LT (Cookscape) (600×600×300, 300 Open + 300 Fixed, elev:
+                    1500)</option>
                   <option value="fbcm">fbcm: L-SHAPED CORNER BASE UNIT (Cookscape) (900×720)</option>
                   <option value="fbcm-1500">fbcm-1500: WBCM (Cookscape) (600×600×300, L-Corner, elev: 1500)</option>
                   <option value="fm-120">fm-120: FM 120 Kitchen Base (1200×750)</option>
@@ -519,1002 +659,1175 @@
                   <option value="wr-drawers">wr-drawers: WR 2 DOOR WITH DRAWERS (900×2100)</option>
                 </optgroup>
               </select>
-            <!-- Import Custom 3D Decors & .skp (Excluded from Woodwork Pricing) -->
-            <button class="plan-tool-btn" id="openDecorModalBtn" type="button" title="Import Decors, Appliances &amp; .skp 3D Models (Excluded from Woodwork Pricing: Fridge, Ice Box, Plants, Microwave, Chimney, TV, etc.)" style="background:#f0fdf4;color:#166534;border-color:#86efac;font-weight:600;display:inline-flex;align-items:center;gap:5px;">
-              <span>🌿 + Decors / .skp</span>
-              <span style="font-size:9.5px;font-weight:700;background:#dcfce7;color:#15803d;padding:1px 5px;border-radius:10px;border:1px solid #bbf7d0;">₹0 BOQ</span>
-            </button>
-          </div>
-
-          <div class="plan-toolgroup" style="margin-left:auto;gap:10px;">
-            <button class="plan-tool-btn" id="planUnitToggleBtn" style="font-weight:700;color:#1B4F72;border-color:#1B4F72;background:#F0F7FF;" title="Switch 2D measurement unit between Millimeters (mm) and Feet & Inches (ft-in)">📐 Unit: mm</button>
-            <div class="live-quote-badge" id="liveQuotationBadge" style="margin:0;">
-              <span class="badge-label">Estimated:</span>
-              <span class="badge-amount">₹ 0</span>
-            </div>
-            <button class="plan-tool-btn" id="planView3D" style="background:#1B4F72;color:#fff;border-color:#1B4F72;font-weight:700;" title="View Whole Home in 3D">🏠 View 3D Home ➔</button>
-          </div>
-        </div>
-
-        <!-- Row 2: Blueprint Image, Undo/Redo, Templates & File Actions -->
-        <div class="plan-toolbar-row action-bar">
-          <div class="plan-toolgroup">
-            <button class="plan-tool-btn" id="planImportImageBtn" title="Import floor plan blueprint (PNG, JPG, WEBP) to trace walls">🖼️ Import Blueprint</button>
-            <input type="file" id="planImageFileInput" accept="image/png,image/jpeg,image/webp" hidden>
-
-            <div class="plan-toolgroup" id="planUnderlayControls" style="display:none;align-items:center;gap:6px;padding:2px 8px;background:#EEF5FB;border:1px solid #C2DBF0;border-radius:4px;">
-              <span style="font-size:11px;font-weight:700;color:#1B4F72;">Blueprint:</span>
-              <button class="plan-tool-btn" id="planMoveUnderlayBtn" style="padding:3px 8px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;" title="Move Blueprint: Click and drag anywhere to move & position blueprint under walls (Hotkey B or hold Alt while dragging)">✋ Move</button>
-              <button class="plan-tool-btn" id="planCalibrateScaleBtn" style="padding:3px 7px;font-size:11px;background:#1B4F72;color:#fff;border-color:#1B4F72;" title="Calibrate Scale: Click 2 points on a known wall dimension">📏 Calibrate</button>
-              <label style="font-size:11px;color:#333;display:inline-flex;align-items:center;gap:3px;" title="Adjust Image Opacity">
-                Opacity
-                <input type="range" id="planUnderlayOpacity" min="0.1" max="1" step="0.05" value="0.45" style="width:50px;cursor:pointer;">
-              </label>
-              <button class="plan-tool-btn" id="planToggleUnderlayBtn" style="padding:3px 7px;font-size:11px;" title="Show / Hide Background Plan Image">👁 Show</button>
-              <button class="plan-tool-btn" id="planRemoveUnderlayBtn" style="padding:3px 7px;font-size:11px;color:#d9534f;" title="Remove Background Plan Image">✕</button>
+              <!-- Import Custom 3D Decors & .skp (Excluded from Woodwork Pricing) -->
+              <button class="plan-tool-btn" id="openDecorModalBtn" type="button"
+                title="Import Decors, Appliances &amp; .skp 3D Models (Excluded from Woodwork Pricing: Fridge, Ice Box, Plants, Microwave, Chimney, TV, etc.)"
+                style="background:#f0fdf4;color:#166534;border-color:#86efac;font-weight:600;display:inline-flex;align-items:center;gap:5px;">
+                <span>🌿 + Decors / .skp</span>
+                <span
+                  style="font-size:9.5px;font-weight:700;background:#dcfce7;color:#15803d;padding:1px 5px;border-radius:10px;border:1px solid #bbf7d0;">₹0
+                  BOQ</span>
+              </button>
             </div>
 
-            <div class="plan-tool-divider"></div>
-
-            <button class="plan-tool-btn" id="planUndo" title="Undo (Ctrl+Z)">↶ Undo</button>
-            <button class="plan-tool-btn" id="planRedo" title="Redo (Ctrl+Y)">↷ Redo</button>
-            <button class="plan-tool-btn" id="planDelete" title="Delete Selected (Del)" style="color:#DC2626;">✕ Delete</button>
-
-            <div class="plan-tool-divider"></div>
-
-            <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen">🔍 Fit</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="project-details-bar project-details-2d" id="planProjectDetailsBar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:5px 14px;background:linear-gradient(90deg,#f8fafc,#eef5fb);border-bottom:1px solid #dbeafe;font-size:11.5px;color:#1e293b;"></div>
-
-      <div class="plan-layout">
-        <!-- ══════ LEFT FURNISH SUB-MENU PANEL ══════ -->
-        <aside class="furn-side-panel" id="furnishSidePanel" style="display:none;">
-          <div class="furn-side-header">
-            <span class="furn-side-title">Furnish</span>
-            <button type="button" class="furn-side-search-icon-btn" id="furnSideSearchBtn" title="Search Catalog">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </button>
-          </div>
-          <div class="furn-side-search-row">
-            <a href="#" class="furn-side-search-link" id="furnSideSearchLink">Search Catalog</a>
-            <input type="text" class="furn-side-search-input" id="furnSideQuickSearch" placeholder="Type to filter..." style="display:none;">
-          </div>
-          <div class="furn-side-cat-list" id="furnSideCatList">
-            <div class="furn-side-cat-item is-active" data-cat="kitchen">🍳 KITCHEN</div>
-            <div class="furn-side-cat-item" data-cat="tv_crockery">🍷 TV &amp; CROCKERY UNITS</div>
-            <div class="furn-side-cat-item" data-cat="wardrobe">🚪 WARDROBE</div>
-            <div class="furn-side-cat-item" data-cat="loft">📦 LOFT</div>
-            <div class="furn-side-cat-item" data-cat="wall_paneling">🖼️ WALL PANELLING</div>
-          </div>
-        </aside>
-
-        <div id="planCanvasContainer"></div>
-
-        <!-- ══════ BOTTOM FURNISH UNIT DRAWER / TRAY ══════ -->
-        <div class="furn-bottom-tray" id="furnishBottomTray" style="display:none;">
-          <div class="furn-tray-header">
-            <div class="furn-tray-cat-pill" id="furnTrayCatPill" title="Current Category">
-              <span id="furnTrayCatTitle">Base Unit</span>
-              <span class="furn-tray-chevron">▾</span>
-            </div>
-            <div class="furn-tray-search-wrap" id="furnTraySearchWrap">
-              <span class="furn-tray-search-icon" id="furnTraySearchIcon">🔍</span>
-              <input type="text" id="furnTraySearchInput" class="furn-tray-search-input" placeholder="Search units in Base Unit..." autocomplete="off">
-              <button type="button" id="furnTraySearchClear" class="furn-tray-search-clear" title="Clear search" style="display:none;">✕</button>
-            </div>
-            <div class="furn-tray-tabs-scroll" id="furnTrayTabs">
-              <!-- Dynamically rendered tabs -->
-            </div>
-            <div class="furn-tray-actions">
-              <button type="button" class="furn-tray-action-btn" id="furnTrayFilterBtn" title="Filter Units">🔻</button>
-              <button type="button" class="furn-tray-action-btn" id="furnTrayMinBtn" title="Minimize / Expand Bar">➖</button>
-              <button type="button" class="furn-tray-action-btn" id="furnTrayCloseBtn" title="Close Furnish Tray">✖</button>
+            <div class="plan-toolgroup" style="margin-left:auto;gap:10px;">
+              <button class="plan-tool-btn" id="planUnitToggleBtn"
+                style="font-weight:700;color:#1B4F72;border-color:#1B4F72;background:#F0F7FF;"
+                title="Switch 2D measurement unit between Millimeters (mm) and Feet & Inches (ft-in)">📐 Unit:
+                mm</button>
+              <div class="live-quote-badge" id="liveQuotationBadge" style="margin:0;">
+                <span class="badge-label">Estimated:</span>
+                <span class="badge-amount">₹ 0</span>
+              </div>
+              <button class="plan-tool-btn" id="planView3D"
+                style="background:#1B4F72;color:#fff;border-color:#1B4F72;font-weight:700;"
+                title="View Whole Home in 3D">🏠 View 3D Home ➔</button>
             </div>
           </div>
-          <div class="furn-tray-cards-container" id="furnTrayCards">
-            <!-- Dynamically populated unit cards -->
+
+          <!-- Row 2: Blueprint Image, Undo/Redo, Templates & File Actions -->
+          <div class="plan-toolbar-row action-bar">
+            <div class="plan-toolgroup">
+              <button class="plan-tool-btn" id="planImportImageBtn"
+                title="Import floor plan blueprint (PNG, JPG, WEBP) to trace walls">🖼️ Import Blueprint</button>
+              <input type="file" id="planImageFileInput" accept="image/png,image/jpeg,image/webp" hidden>
+
+              <div class="plan-toolgroup" id="planUnderlayControls"
+                style="display:none;align-items:center;gap:6px;padding:2px 8px;background:#EEF5FB;border:1px solid #C2DBF0;border-radius:4px;">
+                <span style="font-size:11px;font-weight:700;color:#1B4F72;">Blueprint:</span>
+                <button class="plan-tool-btn" id="planMoveUnderlayBtn"
+                  style="padding:3px 8px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;"
+                  title="Move Blueprint: Click and drag anywhere to move & position blueprint under walls (Hotkey B or hold Alt while dragging)">✋
+                  Move</button>
+                <button class="plan-tool-btn" id="planCalibrateScaleBtn"
+                  style="padding:3px 7px;font-size:11px;background:#1B4F72;color:#fff;border-color:#1B4F72;"
+                  title="Calibrate Scale: Click 2 points on a known wall dimension">📏 Calibrate</button>
+                <label style="font-size:11px;color:#333;display:inline-flex;align-items:center;gap:3px;"
+                  title="Adjust Image Opacity">
+                  Opacity
+                  <input type="range" id="planUnderlayOpacity" min="0.1" max="1" step="0.05" value="0.45"
+                    style="width:50px;cursor:pointer;">
+                </label>
+                <button class="plan-tool-btn" id="planToggleUnderlayBtn" style="padding:3px 7px;font-size:11px;"
+                  title="Show / Hide Background Plan Image">👁 Show</button>
+                <button class="plan-tool-btn" id="planRemoveUnderlayBtn"
+                  style="padding:3px 7px;font-size:11px;color:#d9534f;" title="Remove Background Plan Image">✕</button>
+              </div>
+
+              <div class="plan-tool-divider"></div>
+
+              <button class="plan-tool-btn" id="planUndo" title="Undo (Ctrl+Z)">↶ Undo</button>
+              <button class="plan-tool-btn" id="planRedo" title="Redo (Ctrl+Y)">↷ Redo</button>
+              <button class="plan-tool-btn" id="planDelete" title="Delete Selected (Del)" style="color:#DC2626;">✕
+                Delete</button>
+
+              <div class="plan-tool-divider"></div>
+
+              <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen">🔍 Fit</button>
+            </div>
           </div>
         </div>
-        <aside class="plan-inspector">
-          <div id="planInspectorContent"></div>
-        </aside>
-      </div>
 
-      <div class="plan-stats-bar" id="planStats">
-        0 Rooms · 0 sq ft · 0 Walls · 0 Units
-      </div>
-    </section>
-
-    <!-- ══════ ORBIX BOQ / QUOTATION ══════ -->
-    <section class="view" id="view-boq">
-      <div id="orbixBOQTable"></div>
-    </section>
-
-    <!-- ══════ QUOTE ══════ -->
-    <section class="view" id="view-quote">
-      <div class="sheetwrap">
-        <div class="paper" id="quotePaper"></div>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<!-- Colleague Copy Notification Banner -->
-<div id="colleagueCopyBanner" class="colleague-copy-banner"></div>
-
-<!-- ══════ MODAL: VPS CLOUD SYNCHRONIZATION ══════ -->
-<div class="orbix-modal" id="vpsSyncModal">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog">
-    <div class="modal-head">
-      <div>
-        <h3 class="modal-title">☁️ VPS Cloud Synchronization</h3>
-        <p class="modal-sub">Projects, drawings, quotes and colleague copies are synchronized with your production VPS</p>
-      </div>
-      <button class="modal-close-btn" type="button">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="vps-status-card" id="vpsStatusCard">
-        <div class="vsc-row">
-          <span class="vsc-label">Server Target:</span>
-          <strong class="vsc-val" id="vpsServerDisplay">https://studio.orbixdesigns.com</strong>
+        <div class="project-details-bar project-details-2d" id="planProjectDetailsBar"
+          style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:5px 14px;background:linear-gradient(90deg,#f8fafc,#eef5fb);border-bottom:1px solid #dbeafe;font-size:11.5px;color:#1e293b;">
         </div>
-        <div class="vsc-row">
-          <span class="vsc-label">Connection Status:</span>
-          <span class="vsc-status-pill connected" id="vpsStatusPill">Connected (Live Sync)</span>
+
+        <div class="plan-layout">
+          <!-- ══════ LEFT FURNISH SUB-MENU PANEL ══════ -->
+          <aside class="furn-side-panel" id="furnishSidePanel" style="display:none;">
+            <div class="furn-side-header">
+              <span class="furn-side-title">Furnish</span>
+              <button type="button" class="furn-side-search-icon-btn" id="furnSideSearchBtn" title="Search Catalog">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="furn-side-search-row">
+              <a href="#" class="furn-side-search-link" id="furnSideSearchLink">Search Catalog</a>
+              <input type="text" class="furn-side-search-input" id="furnSideQuickSearch" placeholder="Type to filter..."
+                style="display:none;">
+            </div>
+            <div class="furn-side-cat-list" id="furnSideCatList">
+              <div class="furn-side-cat-item is-active" data-cat="kitchen">🍳 KITCHEN</div>
+              <div class="furn-side-cat-item" data-cat="tv_crockery">🍷 TV &amp; CROCKERY UNITS</div>
+              <div class="furn-side-cat-item" data-cat="wardrobe">🚪 WARDROBE</div>
+              <div class="furn-side-cat-item" data-cat="loft">📦 LOFT</div>
+              <div class="furn-side-cat-item" data-cat="wall_paneling">🖼️ WALL PANELLING</div>
+            </div>
+          </aside>
+
+          <div id="planCanvasContainer"></div>
+
+          <!-- ══════ BOTTOM FURNISH UNIT DRAWER / TRAY ══════ -->
+          <div class="furn-bottom-tray" id="furnishBottomTray" style="display:none;">
+            <div class="furn-tray-header">
+              <div class="furn-tray-cat-pill" id="furnTrayCatPill" title="Current Category">
+                <span id="furnTrayCatTitle">Base Unit</span>
+                <span class="furn-tray-chevron">▾</span>
+              </div>
+              <div class="furn-tray-search-wrap" id="furnTraySearchWrap">
+                <span class="furn-tray-search-icon" id="furnTraySearchIcon">🔍</span>
+                <input type="text" id="furnTraySearchInput" class="furn-tray-search-input"
+                  placeholder="Search units in Base Unit..." autocomplete="off">
+                <button type="button" id="furnTraySearchClear" class="furn-tray-search-clear" title="Clear search"
+                  style="display:none;">✕</button>
+              </div>
+              <div class="furn-tray-tabs-scroll" id="furnTrayTabs">
+                <!-- Dynamically rendered tabs -->
+              </div>
+              <div class="furn-tray-actions">
+                <button type="button" class="furn-tray-action-btn" id="furnTrayFilterBtn"
+                  title="Filter Units">🔻</button>
+                <button type="button" class="furn-tray-action-btn" id="furnTrayMinBtn"
+                  title="Minimize / Expand Bar">➖</button>
+                <button type="button" class="furn-tray-action-btn" id="furnTrayCloseBtn"
+                  title="Close Furnish Tray">✖</button>
+              </div>
+            </div>
+            <div class="furn-tray-cards-container" id="furnTrayCards">
+              <!-- Dynamically populated unit cards -->
+            </div>
+          </div>
+          <aside class="plan-inspector">
+            <div id="planInspectorContent"></div>
+          </aside>
         </div>
-        <div class="vsc-row">
-          <span class="vsc-label">Active Team:</span>
-          <span class="vsc-val">18 Accounts (3 Admins + 15 Designers)</span>
+
+        <div class="plan-stats-bar" id="planStats">
+          0 Rooms · 0 sq ft · 0 Walls · 0 Units
         </div>
-        <div class="vsc-row">
-          <span class="vsc-label">Last Cloud Sync:</span>
-          <span class="vsc-val" id="vpsLastSyncTime">Just now</span>
+      </section>
+
+      <!-- ══════ ORBIX BOQ / QUOTATION ══════ -->
+      <section class="view" id="view-boq">
+        <div id="orbixBOQTable"></div>
+      </section>
+
+      <!-- ══════ QUOTE ══════ -->
+      <section class="view" id="view-quote">
+        <div class="sheetwrap">
+          <div class="paper" id="quotePaper"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Colleague Copy Notification Banner -->
+  <div id="colleagueCopyBanner" class="colleague-copy-banner"></div>
+
+  <!-- ══════ MODAL: VPS CLOUD SYNCHRONIZATION ══════ -->
+  <div class="orbix-modal" id="vpsSyncModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">☁️ VPS Cloud Synchronization</h3>
+          <p class="modal-sub">Projects, drawings, quotes and colleague copies are synchronized with your production VPS
+          </p>
+        </div>
+        <button class="modal-close-btn" type="button">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="vps-status-card" id="vpsStatusCard">
+          <div class="vsc-row">
+            <span class="vsc-label">Server Target:</span>
+            <strong class="vsc-val" id="vpsServerDisplay">https://studio.orbixdesigns.com</strong>
+          </div>
+          <div class="vsc-row">
+            <span class="vsc-label">Connection Status:</span>
+            <span class="vsc-status-pill connected" id="vpsStatusPill">Connected (Live Sync)</span>
+          </div>
+          <div class="vsc-row">
+            <span class="vsc-label">Active Team:</span>
+            <span class="vsc-val">18 Accounts (3 Admins + 15 Designers)</span>
+          </div>
+          <div class="vsc-row">
+            <span class="vsc-label">Last Cloud Sync:</span>
+            <span class="vsc-val" id="vpsLastSyncTime">Just now</span>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:14px;">
+          <label class="form-label" for="vpsServerUrlInput">Custom VPS Server URL (optional):</label>
+          <input type="url" id="vpsServerUrlInput" class="form-input" placeholder="https://studio.orbixdesigns.com"
+            value="">
+          <span class="form-hint" style="font-size:11px;color:#64748b;margin-top:4px;display:block;">Default:
+            <code>https://studio.orbixdesigns.com</code>. Change only if your VPS IP or domain changes.</span>
+        </div>
+
+        <div id="vpsDiagAlert"
+          style="margin-top:12px;padding:10px 14px;border-radius:6px;font-size:12px;line-height:1.5;display:none;">
         </div>
       </div>
-
-      <div class="form-group" style="margin-top:14px;">
-        <label class="form-label" for="vpsServerUrlInput">Custom VPS Server URL (optional):</label>
-        <input type="url" id="vpsServerUrlInput" class="form-input" placeholder="https://studio.orbixdesigns.com" value="">
-        <span class="form-hint" style="font-size:11px;color:#64748b;margin-top:4px;display:block;">Default: <code>https://studio.orbixdesigns.com</code>. Change only if your VPS IP or domain changes.</span>
+      <div class="modal-foot"
+        style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid #e2e8f0;">
+        <button type="button" class="btn" id="vpsTestConnBtn">⚡ Test Connection</button>
+        <button type="button" class="btn primary" id="vpsSyncNowBtn">🔄 Sync All Projects Now</button>
       </div>
-
-      <div id="vpsDiagAlert" style="margin-top:12px;padding:10px 14px;border-radius:6px;font-size:12px;line-height:1.5;display:none;"></div>
-    </div>
-    <div class="modal-foot" style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid #e2e8f0;">
-      <button type="button" class="btn" id="vpsTestConnBtn">⚡ Test Connection</button>
-      <button type="button" class="btn primary" id="vpsSyncNowBtn">🔄 Sync All Projects Now</button>
     </div>
   </div>
-</div>
 
-<!-- ══════ MODAL: CREATE NEW PROJECT ══════ -->
-<div class="orbix-modal" id="createProjectModal">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog">
-    <div class="modal-head">
-      <div>
-        <h3 class="modal-title">Create New Project</h3>
-        <p class="modal-sub">Initialize project in PostgreSQL database & start designing</p>
+  <!-- ══════ MODAL: CREATE NEW PROJECT ══════ -->
+  <div class="orbix-modal" id="createProjectModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">Create New Project</h3>
+          <p class="modal-sub">Initialize project in PostgreSQL database & start designing</p>
+        </div>
+        <button class="modal-close-btn" type="button">&times;</button>
       </div>
-      <button class="modal-close-btn" type="button">&times;</button>
+      <form id="createProjectForm">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="newProjClient">Client Name <span class="req">*</span></label>
+              <input type="text" id="newProjClient" class="form-input" placeholder="e.g. Vikram Singhania" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newProjContact">Contact Number <span class="req">*</span></label>
+              <input type="tel" id="newProjContact" class="form-input" placeholder="e.g. +91 98765 43210" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="newProjLocation">Location <span class="req">*</span></label>
+              <input type="text" id="newProjLocation" class="form-input" placeholder="e.g. Whitefield, Bengaluru"
+                required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newProjBhName">BH Name <span class="req">*</span></label>
+              <select id="newProjBhName" class="form-input" required>
+                <option value="" disabled selected>-- Select Business Head (BH) --</option>
+                <option value="Sangathamizh">Sangathamizh (Business Head)</option>
+                <option value="Cookscape Admin">Cookscape Admin (System Head)</option>
+                <option value="Aravind">Aravind (Floor Architect / FA)</option>
+                <option value="Elakkiya">Elakkiya (Floor Architect / FA)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="newProjDateTime">Date &amp; Time <span class="req">*</span></label>
+              <input type="datetime-local" id="newProjDateTime" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="newProjCpCode">CP Code</label>
+              <input type="text" id="newProjCpCode" class="form-input" placeholder="e.g. CP-9042">
+            </div>
+          </div>
+          <div class="modal-hint">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <span>Creates an active project and opens directly into 2D Floor Plan.</span>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn modal-close-btn">Cancel</button>
+          <button type="submit" class="btn primary big">Create &amp; Open 2D Plan &rarr;</button>
+        </div>
+      </form>
     </div>
-    <form id="createProjectForm">
+  </div>
+
+  <!-- ══════ MODAL: EDIT PROJECT & CLIENT DETAILS ══════ -->
+  <div class="orbix-modal" id="editProjectMetaModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">Edit Client &amp; Project Details</h3>
+          <p class="modal-sub">Updates commercial quotation header &amp; exported spreadsheets</p>
+        </div>
+        <button class="modal-close-btn" type="button">&times;</button>
+      </div>
+      <form id="editProjectMetaForm">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="editProjClient">Client Name <span class="req">*</span></label>
+              <input type="text" id="editProjClient" class="form-input" placeholder="e.g. Vikram Singhania" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="editProjContact">Contact Number <span class="req">*</span></label>
+              <input type="tel" id="editProjContact" class="form-input" placeholder="e.g. +91 98765 43210" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="editProjLocation">Location <span class="req">*</span></label>
+              <input type="text" id="editProjLocation" class="form-input" placeholder="e.g. Whitefield, Bengaluru"
+                required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="editProjBhName">BH Name <span class="req">*</span></label>
+              <select id="editProjBhName" class="form-input" required>
+                <option value="" disabled selected>-- Select Business Head (BH) --</option>
+                <option value="Sangathamizh">Sangathamizh (Business Head)</option>
+                <option value="Cookscape Admin">Cookscape Admin (System Head)</option>
+                <option value="Aravind">Aravind (Floor Architect / FA)</option>
+                <option value="Elakkiya">Elakkiya (Floor Architect / FA)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="editProjDateTime">Date &amp; Time <span class="req">*</span></label>
+              <input type="text" id="editProjDateTime" class="form-input" placeholder="e.g. 05-11-2026 23:36" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="editProjCpCode">CP Code / Quote Ref</label>
+              <input type="text" id="editProjCpCode" class="form-input" placeholder="e.g. CP-9042">
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn modal-close-btn">Cancel</button>
+          <button type="submit" class="btn primary big">Save Changes &rarr;</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════ MODAL: SHARE WITH COLLEAGUE ══════ -->
+  <div class="orbix-modal" id="shareModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">Share Project with Colleague</h3>
+          <p class="modal-sub" id="shareProjTitle">Project Title</p>
+        </div>
+        <button class="modal-close-btn" type="button">&times;</button>
+      </div>
       <div class="modal-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="newProjClient">Client Name <span class="req">*</span></label>
-            <input type="text" id="newProjClient" class="form-input" placeholder="e.g. Vikram Singhania" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="newProjContact">Contact Number <span class="req">*</span></label>
-            <input type="tel" id="newProjContact" class="form-input" placeholder="e.g. +91 98765 43210" required>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="newProjLocation">Location <span class="req">*</span></label>
-            <input type="text" id="newProjLocation" class="form-input" placeholder="e.g. Whitefield, Bengaluru" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="newProjBhName">BH Name <span class="req">*</span></label>
-            <select id="newProjBhName" class="form-input" required>
-              <option value="" disabled selected>-- Select Business Head (BH) --</option>
-              <option value="Sangathamizh">Sangathamizh (Business Head)</option>
-              <option value="Cookscape Admin">Cookscape Admin (System Head)</option>
-              <option value="Aravind">Aravind (Floor Architect / FA)</option>
-              <option value="Elakkiya">Elakkiya (Floor Architect / FA)</option>
-            </select>
+        <!-- Colleague Works in Copy Guarantee Notice -->
+        <div class="copy-guarantee-box">
+          <div class="cg-icon">⑂</div>
+          <div class="cg-text">
+            <strong>Colleague Works in Copy</strong>
+            <p>When colleagues open or receive this project, Orbix automatically creates an isolated copy for them. Your
+              master project remains untouched.</p>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="newProjDateTime">Date &amp; Time <span class="req">*</span></label>
-            <input type="datetime-local" id="newProjDateTime" class="form-input" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="newProjCpCode">CP Code</label>
-            <input type="text" id="newProjCpCode" class="form-input" placeholder="e.g. CP-9042">
+
+        <div class="form-group" style="margin-top:16px;">
+          <label class="form-label">Direct Shareable Link (Copy-on-Open)</label>
+          <div class="share-link-row">
+            <input type="text" id="shareLinkInput" class="form-input" readonly>
+            <button type="button" class="btn primary" id="copyShareLinkBtn">Copy Link</button>
           </div>
         </div>
-        <div class="modal-hint">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          <span>Creates an active project and opens directly into 2D Floor Plan.</span>
+
+        <div class="form-group" style="margin-top:20px;">
+          <label class="form-label">Send Isolated Copy to a Colleague</label>
+          <div class="colleagues-list" id="colleaguesList"></div>
         </div>
       </div>
       <div class="modal-foot">
-        <button type="button" class="btn modal-close-btn">Cancel</button>
-        <button type="submit" class="btn primary big">Create &amp; Open 2D Plan &rarr;</button>
+        <button type="button" class="btn modal-close-btn">Done</button>
       </div>
-    </form>
-  </div>
-</div>
-
-<!-- ══════ MODAL: EDIT PROJECT & CLIENT DETAILS ══════ -->
-<div class="orbix-modal" id="editProjectMetaModal">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog">
-    <div class="modal-head">
-      <div>
-        <h3 class="modal-title">Edit Client &amp; Project Details</h3>
-        <p class="modal-sub">Updates commercial quotation header &amp; exported spreadsheets</p>
-      </div>
-      <button class="modal-close-btn" type="button">&times;</button>
     </div>
-    <form id="editProjectMetaForm">
+  </div>
+
+  <!-- ══════ MODAL: USER PROFILE & SWITCHER ══════ -->
+  <div class="orbix-modal" id="userModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">User Profile &amp; Workspace</h3>
+          <p class="modal-sub">Switch user profile or manage modular studio team</p>
+        </div>
+        <button class="modal-close-btn" type="button">&times;</button>
+      </div>
       <div class="modal-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="editProjClient">Client Name <span class="req">*</span></label>
-            <input type="text" id="editProjClient" class="form-input" placeholder="e.g. Vikram Singhania" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="editProjContact">Contact Number <span class="req">*</span></label>
-            <input type="tel" id="editProjContact" class="form-input" placeholder="e.g. +91 98765 43210" required>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="editProjLocation">Location <span class="req">*</span></label>
-            <input type="text" id="editProjLocation" class="form-input" placeholder="e.g. Whitefield, Bengaluru" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="editProjBhName">BH Name <span class="req">*</span></label>
-            <select id="editProjBhName" class="form-input" required>
-              <option value="" disabled selected>-- Select Business Head (BH) --</option>
-              <option value="Sangathamizh">Sangathamizh (Business Head)</option>
-              <option value="Cookscape Admin">Cookscape Admin (System Head)</option>
-              <option value="Aravind">Aravind (Floor Architect / FA)</option>
-              <option value="Elakkiya">Elakkiya (Floor Architect / FA)</option>
-            </select>
+        <div class="user-current-card">
+          <div class="ucc-avatar"><span class="u-avatar big">DK</span></div>
+          <div class="ucc-info">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <h4 id="curUserName" style="margin:0;">Dev Kancheti</h4>
+              <span class="role-badge" id="curUserBadge">Admin</span>
+            </div>
+            <span class="ucc-email" id="curUserEmail">dev@orbixstudio.io</span>
+            <span class="ucc-role" id="curUserRole">Studio Head</span>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="editProjDateTime">Date &amp; Time <span class="req">*</span></label>
-            <input type="text" id="editProjDateTime" class="form-input" placeholder="e.g. 05-11-2026 23:36" required>
+
+        <!-- Admin Only: Create Employee Form -->
+        <div class="admin-create-emp-box" id="adminCreateEmpBox" style="display:none;">
+          <h4 class="modal-section-title">➕ Create New Employee Account</h4>
+          <p class="modal-section-desc">Create login accounts for your team. Employees get access to Home, Floor Plan
+            (2D), 3D Studio &amp; Pricing.</p>
+
+          <!-- Success Alert with Credentials -->
+          <div class="emp-created-alert" id="empCreatedAlert" style="display:none;">
+            <div class="eca-icon">✓</div>
+            <div class="eca-content">
+              <div class="eca-title">Employee Account Created Successfully!</div>
+              <div class="eca-desc">Share these login credentials with the employee:</div>
+              <div class="eca-cred-grid">
+                <div class="eca-item"><span>Name:</span> <strong id="ecaName"></strong></div>
+                <div class="eca-item"><span>Username:</span> <strong id="ecaUsername"></strong></div>
+                <div class="eca-item"><span>Email:</span> <strong id="ecaEmail"></strong></div>
+                <div class="eca-item"><span>Password:</span> <strong id="ecaPassword"></strong></div>
+                <div class="eca-item"><span>Role:</span> <strong id="ecaRole">Employee</strong></div>
+              </div>
+            </div>
+            <button type="button" class="eca-dismiss-btn" id="ecaDismissBtn" title="Dismiss">✕</button>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="editProjCpCode">CP Code / Quote Ref</label>
-            <input type="text" id="editProjCpCode" class="form-input" placeholder="e.g. CP-9042">
-          </div>
+
+          <form id="createEmployeeForm" class="create-emp-form">
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label class="form-label">Employee Full Name *</label>
+                <input type="text" id="newEmpName" class="form-input" placeholder="e.g. Rahul Verma" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Username *</label>
+                <input type="text" id="newEmpUsername" class="form-input" placeholder="e.g. rahul" required>
+              </div>
+            </div>
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label class="form-label">Email Address *</label>
+                <input type="email" id="newEmpEmail" class="form-input" placeholder="e.g. rahul@orbixstudio.io"
+                  required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Initial Password *</label>
+                <input type="text" id="newEmpPassword" class="form-input" placeholder="e.g. rahul123" value="123456"
+                  required>
+              </div>
+            </div>
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label class="form-label">Job Title / Designation</label>
+                <input type="text" id="newEmpTitle" class="form-input" placeholder="e.g. Modular CAD Designer">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Role</label>
+                <select id="newEmpRole" class="form-input">
+                  <option value="employee" selected>Employee (Home, 2D Plan, 3D, Pricing)</option>
+                  <option value="admin">Admin (All Menus &amp; All Projects)</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn primary" id="submitNewEmpBtn">+ Create Employee Account</button>
+          </form>
+        </div>
+
+        <!-- Admin Only: Team Profiles Switcher -->
+        <div id="adminTeamProfilesSection" style="display:none;">
+          <h4 class="modal-section-title" style="margin-top:20px;">Team Profiles</h4>
+          <p class="modal-section-desc">Active studio team accounts:</p>
+          <div class="switch-users-list" id="switchUsersList"></div>
         </div>
       </div>
       <div class="modal-foot">
-        <button type="button" class="btn modal-close-btn">Cancel</button>
-        <button type="submit" class="btn primary big">Save Changes &rarr;</button>
+        <button type="button" class="btn" id="modalSignOutBtn">Sign Out</button>
+        <button type="button" class="btn primary modal-close-btn">Done</button>
       </div>
-    </form>
-  </div>
-</div>
-
-<!-- ══════ MODAL: SHARE WITH COLLEAGUE ══════ -->
-<div class="orbix-modal" id="shareModal">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog">
-    <div class="modal-head">
-      <div>
-        <h3 class="modal-title">Share Project with Colleague</h3>
-        <p class="modal-sub" id="shareProjTitle">Project Title</p>
-      </div>
-      <button class="modal-close-btn" type="button">&times;</button>
-    </div>
-    <div class="modal-body">
-      <!-- Colleague Works in Copy Guarantee Notice -->
-      <div class="copy-guarantee-box">
-        <div class="cg-icon">⑂</div>
-        <div class="cg-text">
-          <strong>Colleague Works in Copy</strong>
-          <p>When colleagues open or receive this project, Orbix automatically creates an isolated copy for them. Your master project remains untouched.</p>
-        </div>
-      </div>
-
-      <div class="form-group" style="margin-top:16px;">
-        <label class="form-label">Direct Shareable Link (Copy-on-Open)</label>
-        <div class="share-link-row">
-          <input type="text" id="shareLinkInput" class="form-input" readonly>
-          <button type="button" class="btn primary" id="copyShareLinkBtn">Copy Link</button>
-        </div>
-      </div>
-
-      <div class="form-group" style="margin-top:20px;">
-        <label class="form-label">Send Isolated Copy to a Colleague</label>
-        <div class="colleagues-list" id="colleaguesList"></div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button type="button" class="btn modal-close-btn">Done</button>
     </div>
   </div>
-</div>
 
-<!-- ══════ MODAL: USER PROFILE & SWITCHER ══════ -->
-<div class="orbix-modal" id="userModal">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog">
-    <div class="modal-head">
-      <div>
-        <h3 class="modal-title">User Profile &amp; Workspace</h3>
-        <p class="modal-sub">Switch user profile or manage modular studio team</p>
-      </div>
-      <button class="modal-close-btn" type="button">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="user-current-card">
-        <div class="ucc-avatar"><span class="u-avatar big">DK</span></div>
-        <div class="ucc-info">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <h4 id="curUserName" style="margin:0;">Dev Kancheti</h4>
-            <span class="role-badge" id="curUserBadge">Admin</span>
-          </div>
-          <span class="ucc-email" id="curUserEmail">dev@orbixstudio.io</span>
-          <span class="ucc-role" id="curUserRole">Studio Head</span>
+  <!-- ══════ MODAL: EDIT USER (ADMIN ONLY) ══════ -->
+  <div class="orbix-modal" id="editUserModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog" style="max-width:540px;">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">✏️ Edit Team Account</h3>
+          <p class="modal-sub">Update employee details, password, and system role</p>
         </div>
+        <button class="modal-close-btn" type="button">&times;</button>
       </div>
+      <form id="editUserForm">
+        <div class="modal-body">
+          <input type="hidden" id="editUserId">
 
-      <!-- Admin Only: Create Employee Form -->
-      <div class="admin-create-emp-box" id="adminCreateEmpBox" style="display:none;">
-        <h4 class="modal-section-title">➕ Create New Employee Account</h4>
-        <p class="modal-section-desc">Create login accounts for your team. Employees get access to Home, Floor Plan (2D), 3D Studio &amp; Pricing.</p>
-        
-        <!-- Success Alert with Credentials -->
-        <div class="emp-created-alert" id="empCreatedAlert" style="display:none;">
-          <div class="eca-icon">✓</div>
-          <div class="eca-content">
-            <div class="eca-title">Employee Account Created Successfully!</div>
-            <div class="eca-desc">Share these login credentials with the employee:</div>
-            <div class="eca-cred-grid">
-              <div class="eca-item"><span>Name:</span> <strong id="ecaName"></strong></div>
-              <div class="eca-item"><span>Username:</span> <strong id="ecaUsername"></strong></div>
-              <div class="eca-item"><span>Email:</span> <strong id="ecaEmail"></strong></div>
-              <div class="eca-item"><span>Password:</span> <strong id="ecaPassword"></strong></div>
-              <div class="eca-item"><span>Role:</span> <strong id="ecaRole">Employee</strong></div>
-            </div>
-          </div>
-          <button type="button" class="eca-dismiss-btn" id="ecaDismissBtn" title="Dismiss">✕</button>
-        </div>
-
-        <form id="createEmployeeForm" class="create-emp-form">
           <div class="form-row-2col">
             <div class="form-group">
-              <label class="form-label">Employee Full Name *</label>
-              <input type="text" id="newEmpName" class="form-input" placeholder="e.g. Rahul Verma" required>
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="editUserName" class="form-input" placeholder="e.g. Rahul Verma" required>
             </div>
             <div class="form-group">
               <label class="form-label">Username *</label>
-              <input type="text" id="newEmpUsername" class="form-input" placeholder="e.g. rahul" required>
+              <input type="text" id="editUserUsername" class="form-input" placeholder="e.g. rahul" required>
             </div>
           </div>
+
           <div class="form-row-2col">
             <div class="form-group">
               <label class="form-label">Email Address *</label>
-              <input type="email" id="newEmpEmail" class="form-input" placeholder="e.g. rahul@orbixstudio.io" required>
+              <input type="email" id="editUserEmail" class="form-input" placeholder="e.g. rahul@cookscape.com" required>
             </div>
             <div class="form-group">
-              <label class="form-label">Initial Password *</label>
-              <input type="text" id="newEmpPassword" class="form-input" placeholder="e.g. rahul123" value="123456" required>
+              <label class="form-label">New Password</label>
+              <input type="text" id="editUserPassword" class="form-input" placeholder="Leave blank to keep current">
             </div>
           </div>
+
           <div class="form-row-2col">
             <div class="form-group">
               <label class="form-label">Job Title / Designation</label>
-              <input type="text" id="newEmpTitle" class="form-input" placeholder="e.g. Modular CAD Designer">
+              <input type="text" id="editUserTitle" class="form-input" placeholder="e.g. Modular CAD Designer">
             </div>
             <div class="form-group">
               <label class="form-label">Role</label>
-              <select id="newEmpRole" class="form-input">
-                <option value="employee" selected>Employee (Home, 2D Plan, 3D, Pricing)</option>
+              <select id="editUserRole" class="form-input">
+                <option value="employee">Employee (Home, 2D Plan, 3D, Pricing)</option>
                 <option value="admin">Admin (All Menus &amp; All Projects)</option>
               </select>
             </div>
           </div>
-          <button type="submit" class="btn primary" id="submitNewEmpBtn">+ Create Employee Account</button>
-        </form>
-      </div>
-
-      <!-- Admin Only: Team Profiles Switcher -->
-      <div id="adminTeamProfilesSection" style="display:none;">
-        <h4 class="modal-section-title" style="margin-top:20px;">Team Profiles</h4>
-        <p class="modal-section-desc">Active studio team accounts:</p>
-        <div class="switch-users-list" id="switchUsersList"></div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button type="button" class="btn" id="modalSignOutBtn">Sign Out</button>
-      <button type="button" class="btn primary modal-close-btn">Done</button>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn modal-close-btn">Cancel</button>
+          <button type="submit" class="btn primary" id="saveEditUserBtn">Save Changes</button>
+        </div>
+      </form>
     </div>
   </div>
-</div>
 
-<!-- ══════ MODAL: EDIT USER (ADMIN ONLY) ══════ -->
-<div class="orbix-modal" id="editUserModal">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog" style="max-width:540px;">
-    <div class="modal-head">
-      <div>
-        <h3 class="modal-title">✏️ Edit Team Account</h3>
-        <p class="modal-sub">Update employee details, password, and system role</p>
+  <!-- ══════ MODAL: LOGIN / SIGN IN ══════ -->
+  <div class="orbix-modal" id="loginModal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog" style="max-width:440px;">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">Sign In to Orbix Studio</h3>
+          <p class="modal-sub">Login with your username or email and password</p>
+        </div>
+        <button class="modal-close-btn" type="button">&times;</button>
       </div>
-      <button class="modal-close-btn" type="button">&times;</button>
+      <form id="loginForm">
+        <div class="modal-body">
+          <div id="loginErrorAlert" class="auth-error-alert" style="display:none;"></div>
+
+          <div class="form-group">
+            <label class="form-label">Username or Email Address *</label>
+            <input type="text" id="loginIdentifier" class="form-input" placeholder="e.g. admin or alex@orbixstudio.io"
+              required autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password *</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="Enter password" required
+              autocomplete="current-password">
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn modal-close-btn">Cancel</button>
+          <button type="submit" class="btn primary" id="loginSubmitBtn">Sign In</button>
+        </div>
+      </form>
     </div>
-    <form id="editUserForm">
+  </div>
+
+  <!-- ══════ MODAL: MODULAR FURNITURE CATALOG & LIVE SEARCH ══════ -->
+  <div class="orbix-modal" id="modalFurnitureCatalog">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog furn-catalog-dialog">
+      <div class="modal-head furn-modal-head">
+        <div class="furn-modal-title-area">
+          <div class="furn-modal-tag"><span class="pulse-dot"></span> Cookscape Units Library</div>
+          <h3 class="modal-title">Cookscape Modular Units Catalog</h3>
+          <p class="modal-sub">Browse standard &amp; imported units with parametric 3D CAD customization &amp; real-time
+            costing</p>
+        </div>
+        <button class="modal-close-btn" type="button" id="closeFurnCatalogModal" title="Close (Esc)">&times;</button>
+      </div>
+
+      <!-- Search & Filter Controls -->
+      <div class="furn-catalog-filter-bar">
+        <div class="furn-search-input-wrap">
+          <span class="furn-search-icon">🔍</span>
+          <input type="text" id="furnCatalogSearch" class="furn-search-input"
+            placeholder="Search by unit name, code, category, or dimensions (e.g. FCM, FM 600, 1200, Wardrobe, Kitchen, TV)..."
+            autocomplete="off" spellcheck="false">
+          <button type="button" class="furn-search-clear-btn" id="furnSearchClearBtn" title="Clear search"
+            style="display:none;">✕</button>
+        </div>
+        <div class="furn-category-pills" id="furnCategoryPills">
+          <button type="button" class="furn-cat-pill is-active" data-cat="all">All Units <span class="pill-count"
+              id="furnCountAll">72</span></button>
+          <button type="button" class="furn-cat-pill" data-cat="kitchen_fm">🍳 Kitchen FM <span class="pill-count"
+              id="furnCountKFm">8</span></button>
+          <button type="button" class="furn-cat-pill" data-cat="kitchen_corner">📐 Corner Units <span class="pill-count"
+              id="furnCountKCorner">3</span></button>
+          <button type="button" class="furn-cat-pill" data-cat="kitchen_drawers">🗄️ Kitchen Drawers <span
+              class="pill-count" id="furnCountKDrawers">11</span></button>
+          <button type="button" class="furn-cat-pill" data-cat="kitchen_tall">🏛️ Tall Unit <span class="pill-count"
+              id="furnCountKTall">2</span></button>
+          <button type="button" class="furn-cat-pill" data-cat="kitchen_wall">🎛️ Kitchen Wall <span class="pill-count"
+              id="furnCountKWall">13</span></button>
+          <button type="button" class="furn-cat-pill" data-cat="crockery">🍷 Crockery &amp; TV <span class="pill-count"
+              id="furnCountCrockery">12</span></button>
+          <button type="button" class="furn-cat-pill" data-cat="wardrobe">🚪 Wardrobes <span class="pill-count"
+              id="furnCountWardrobe">5</span></button>
+          <button type="button" class="furn-cat-pill" data-cat="loft">📦 Lofts <span class="pill-count"
+              id="furnCountLoft">4</span></button>
+          <button type="button" class="furn-cat-pill" data-cat="wall_paneling">🪵 Wall Panels <span class="pill-count"
+              id="furnCountWallPanel">5</span></button>
+        </div>
+      </div>
+
+      <div class="modal-body furn-catalog-body">
+        <!-- Featured Spotlight Card: FCM-RT (Cookscape) (1200×720) -->
+        <div class="furn-spotlight-card" id="furnSpotlightCard">
+          <div class="spotlight-left">
+            <div class="spotlight-icon">🍳</div>
+            <div class="spotlight-info">
+              <div class="spotlight-badge-row">
+                <span class="spotlight-pill">⭐ FEATURED KITCHEN BASE</span>
+                <span class="spotlight-code">code: fcm-rt</span>
+              </div>
+              <h4 class="spotlight-title">FCM-RT (Cookscape)</h4>
+              <div class="spotlight-dims">
+                <span class="dim-chip"><b>W</b> 1200 mm</span>
+                <span class="dim-chip"><b>H</b> 720 mm</span>
+                <span class="dim-chip"><b>D</b> 560 mm</span>
+                <span class="spec-chip">600mm Fixed Panel + 600mm Movable Shutter · Slab · G-Profile Handle</span>
+              </div>
+              <div class="spotlight-materials">
+                <span>Shutter: <b>HDHMR 18mm (MDF 7701)</b></span>
+                <span>Carcass: <b>BWP 18mm Waterproof (MDF 1135)</b></span>
+              </div>
+            </div>
+          </div>
+          <div class="spotlight-action">
+            <div class="spotlight-price">₹ 17,398.79 <small>Est. base</small></div>
+            <button type="button" class="btn primary furn-select-btn" id="spotlightSelectFCMBtn"
+              data-furn-id="fcm-rt">🎯 Select &amp; Place</button>
+          </div>
+        </div>
+
+        <!-- Live Units Count & Search Status -->
+        <div class="furn-results-status" id="furnResultsStatus">
+          Showing <b id="furnShowingCount">25</b> units in catalog
+        </div>
+
+        <!-- Dynamic Cards Grid -->
+        <div class="furn-catalog-grid" id="furnCatalogGrid"></div>
+
+        <!-- Empty Results State -->
+        <div class="furn-empty-state" id="furnEmptyState" style="display:none;">
+          <div class="empty-icon">🔍</div>
+          <h4>No modular units found</h4>
+          <p>No units matched your query "<span id="furnSearchQueryTerm"></span>". Try searching for "FCM", "FM 600",
+            "Wardrobe", "1200", or "Kitchen".</p>
+          <button type="button" class="btn small" id="furnResetSearchBtn">Reset Search Filters</button>
+        </div>
+      </div>
+
+      <div class="modal-foot furn-modal-foot">
+        <div class="furn-modal-foot-hint">
+          💡 <b>Tip:</b> Click any unit to select it for 2D floor plan drawing or 3D CAD customization.
+        </div>
+        <button type="button" class="btn modal-close-btn-foot" id="closeFurnCatalogFootBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ MODAL: PLACE UNIT IN 3D STUDIO ══════ -->
+  <div class="orbix-modal" id="modalPlaceUnit3D">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog" style="max-width:680px;">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">Place Modular Unit in 3D Studio</h3>
+          <p class="modal-sub">Choose a unit to place into the 3D room, customize, and calculate cutting list</p>
+        </div>
+        <button class="modal-close-btn" type="button">&times;</button>
+      </div>
       <div class="modal-body">
-        <input type="hidden" id="editUserId">
-        
-        <div class="form-row-2col">
-          <div class="form-group">
-            <label class="form-label">Full Name *</label>
-            <input type="text" id="editUserName" class="form-input" placeholder="e.g. Rahul Verma" required>
+        <div class="unit-catalog-grid" id="placeUnitCatalogGrid"
+          style="display:grid;grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));gap:12px;"></div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn modal-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ MODAL: CALIBRATE FLOOR PLAN IMAGE SCALE ══════ -->
+  <div class="orbix-modal" id="modalCalibrateScale">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog" style="max-width:440px;">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title">Calibrate Plan Scale</h3>
+          <p class="modal-sub">Set the true real-world dimension between your two calibration points</p>
+        </div>
+        <button class="modal-close-btn" type="button" id="closeCalibrateScaleModal">&times;</button>
+      </div>
+      <form id="calibrateScaleForm">
+        <div class="modal-body">
+          <div
+            style="background:#F0F7FF;border:1px solid #BAE6FD;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#0369A1;line-height:1.5;">
+            Distance measured on image: <b id="calibratePixelDistSpan">0</b> px (<span
+              id="calibrateCurrentWorldDistSpan">0 mm</span>)
           </div>
           <div class="form-group">
-            <label class="form-label">Username *</label>
-            <input type="text" id="editUserUsername" class="form-input" placeholder="e.g. rahul" required>
+            <label class="form-label" id="calibratePromptLabel">Real-World Dimension *</label>
+            <input type="text" id="calibrateRealDistInput" class="form-input" placeholder="e.g. 3000 mm or 10' 6&quot;"
+              required autofocus>
+            <span style="font-size:11px;color:#64748B;margin-top:4px;display:block;">Type millimeters (e.g.
+              <code>3000</code> or <code>3000mm</code>) or feet/inches (e.g. <code>10'</code> or <code>10' 6"</code> or
+              <code>120"</code>).</span>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn modal-close-btn" id="cancelCalibrateScaleBtn">Cancel</button>
+          <button type="submit" class="btn primary" id="applyCalibrationBtn">Set 1:1 Scale</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════ MODAL: EXPORT TO TRIMBLE SKETCHUP (.SKP) ══════ -->
+  <div class="orbix-modal" id="modalExportSkp" style="display:none;">
+    <div class="modal-backdrop" id="backdropExportSkp"></div>
+    <div class="modal-dialog" style="max-width:520px;">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title" style="display:flex;align-items:center;gap:8px;">
+            <span>📐 Export to Trimble SketchUp</span>
+            <span
+              style="font-size:11px;background:#E0F2FE;color:#0284C7;padding:2px 8px;border-radius:10px;font-weight:600;">.skp
+              / .dae</span>
+          </h3>
+          <p class="modal-sub">Export your entire 3D project with walls, doors, windows &amp; modular units for SketchUp
+          </p>
+        </div>
+        <button class="modal-close-btn" type="button" id="closeExportSkpModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="skpExportSummaryBox"
+          style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 16px;margin-bottom:16px;">
+          <div
+            style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">
+            Project 3D Assets Included</div>
+          <div id="skpExportStats" style="display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#0F172A;">
+            <span>🧱 Walls &amp; Cutouts</span>
+            <span>🚪 Doors &amp; Frames</span>
+            <span>🪟 Windows &amp; Glass</span>
+            <span>🪵 Modular Cabinetry</span>
+            <span>📐 Real mm Scale</span>
           </div>
         </div>
 
-        <div class="form-row-2col">
-          <div class="form-group">
-            <label class="form-label">Email Address *</label>
-            <input type="email" id="editUserEmail" class="form-input" placeholder="e.g. rahul@cookscape.com" required>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button type="button" class="btn primary big" id="skpDownloadDaeBtn"
+            style="justify-content:center;background:#0284C7;border-color:#0284C7;padding:12px;">
+            <span style="font-size:14px;font-weight:600;">⬇️ Download SketchUp Model (.dae / .skp)</span>
+            <span style="font-size:11px;opacity:0.9;display:block;margin-top:2px;">(Native Trimble SketchUp 3D Exchange
+              — Opens directly in SketchUp 2017–2026)</span>
+          </button>
+          <button type="button" class="btn big" id="skpDownloadSkpBtn" style="justify-content:center;padding:10px;">
+            <span>⬇️ Download as .skp</span>
+          </button>
+        </div>
+
+        <div
+          style="margin-top:16px;padding:12px 14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;font-size:12px;color:#166534;line-height:1.5;">
+          <b>💡 How to open in Trimble SketchUp:</b>
+          <ol style="margin:6px 0 0 16px;padding:0;">
+            <li>Open SketchUp on your computer</li>
+            <li>Click <b>File ➔ Import...</b></li>
+            <li>Select the downloaded file — your whole home, 3D walls, openings, and modular cabinetry will appear
+              instantly in 1:1 true millimeter scale!</li>
+          </ol>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn modal-close-btn" id="cancelExportSkpBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ MODAL: IMPORT CUSTOM .SKP & DECORS (EXCLUDED FROM PRICING) ══════ -->
+  <div class="orbix-modal" id="modalImportDecor" style="display:none;">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog decor-modal-dialog" style="max-width:760px;width:95vw;">
+      <div class="modal-head" style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;padding:14px 20px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <h3 class="modal-title" style="color:#166534;margin:0;font-size:16px;">🌿 Import 3D Decors &amp; .skp Models
+            </h3>
+            <span
+              style="font-size:11px;font-weight:700;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;border:1px solid #86efac;">
+              Excluded from Pricing (₹0 BOQ)
+            </span>
           </div>
-          <div class="form-group">
-            <label class="form-label">New Password</label>
-            <input type="text" id="editUserPassword" class="form-input" placeholder="Leave blank to keep current">
+          <p class="modal-sub" style="margin:0;color:#15803d;font-size:12px;">
+            Add appliances, styling decors, and custom SketchUp 3D models (Fridge, Ice Box, Plants, TV, Oven) without
+            affecting woodwork quotation or cutting lists.
+          </p>
+        </div>
+        <button class="modal-close-btn" type="button" id="closeDecorModalBtn" title="Close (Esc)">&times;</button>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div style="display:flex;gap:8px;padding:12px 20px;border-bottom:1px solid #e2e8f0;background:#fafafa;">
+        <button type="button" class="btn decor-tab-btn is-active" data-tab="presets"
+          style="font-size:12px;font-weight:600;padding:6px 14px;">
+          🏛️ Built-in Decor Catalog (46 SketchUp Models)
+        </button>
+        <button type="button" class="btn decor-tab-btn" data-tab="custom"
+          style="font-size:12px;font-weight:600;padding:6px 14px;">
+          📁 Import Custom .skp / .obj / 3D Model
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding:16px 20px;max-height:68vh;overflow-y:auto;">
+        <!-- Tab 1: Built-in Catalog -->
+        <div id="decorTabPresets">
+          <div style="display:flex;gap:10px;margin-bottom:12px;align-items:center;">
+            <input type="text" id="decorSearchInput" class="form-input"
+              placeholder="🔍 Search 46 3D models (beds, sofas, tables, appliances, plants...)"
+              style="width:100%;padding:8px 14px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;box-sizing:border-box;">
+          </div>
+          <div id="decorCategoryFilter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+            <button type="button" class="btn decor-cat-pill is-active" data-cat="all"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#15803d;color:#ffffff;border:none;cursor:pointer;">All
+              (46)</button>
+            <button type="button" class="btn decor-cat-pill" data-cat="Beds & Bedroom"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🛏️
+              Beds</button>
+            <button type="button" class="btn decor-cat-pill" data-cat="Sofas & Seating"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🛋️
+              Sofas</button>
+            <button type="button" class="btn decor-cat-pill" data-cat="Dining Tables"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🪑
+              Dining</button>
+            <button type="button" class="btn decor-cat-pill" data-cat="Kitchen Appliances"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🍳
+              Appliances</button>
+            <button type="button" class="btn decor-cat-pill" data-cat="Kitchen Styling"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🥗
+              Kitchen Styling</button>
+            <button type="button" class="btn decor-cat-pill" data-cat="Plants & Pots"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🪴
+              Plants</button>
+            <button type="button" class="btn decor-cat-pill" data-cat="Partitions & Walls"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🧱
+              Partitions</button>
+            <button type="button" class="btn decor-cat-pill" data-cat="Lighting"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">💡
+              Lighting</button>
+            <button type="button" class="btn decor-cat-pill" data-cat="Electronics & TV"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">📺
+              Electronics</button>
+            <button type="button" class="btn decor-cat-pill" data-cat="Accents & Styling"
+              style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">✨
+              Accents</button>
+          </div>
+          <div id="decorPresetGrid" class="decor-preset-grid"
+            style="display:grid;grid-template-columns:repeat(auto-fill, minmax(215px, 1fr));gap:12px;"></div>
+        </div>
+
+        <!-- Tab 2: Custom 3D Model Upload -->
+        <div id="decorTabCustom" style="display:none;">
+          <!-- File Drop Zone -->
+          <div id="customDecorDropZone" class="decor-dropzone"
+            style="border:2px dashed #94a3b8;border-radius:8px;padding:20px;text-align:center;background:#f8fafc;cursor:pointer;margin-bottom:14px;transition:all 0.2s;">
+            <div style="font-size:28px;margin-bottom:6px;">📁</div>
+            <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:4px;">Drag &amp; Drop custom .skp,
+              .dae, .obj, or .glb 3D model here</div>
+            <div style="font-size:11.5px;color:#64748b;">or click to browse from your computer</div>
+            <input type="file" id="customDecorFileInput" accept=".skp,.dae,.obj,.glb,.gltf" style="display:none;">
+          </div>
+
+          <div id="customDecorFileStatus"
+            style="display:none;padding:8px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:12px;color:#166534;margin-bottom:12px;">
+          </div>
+
+          <!-- Parameters Card -->
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:14px;">
+            <div
+              style="font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">
+              📐 Decor Dimensions &amp; Mounting Height</div>
+
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px;">
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Item Name /
+                  Label</label>
+                <input type="text" id="customDecorName" value="Custom Decor Item"
+                  style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Decor
+                  Visual Style</label>
+                <select id="customDecorType"
+                  style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+                  <option value="sink">🚰 Kitchen Sink (Faucet &amp; Drain)</option>
+                  <option value="gas_hob">🔥 Gas Hob / Stove (2 Burners)</option>
+                  <option value="dishwasher">🍽️ Dishwasher (Built-in)</option>
+                  <option value="washing_machine">🧺 Washing Machine (AEG Front-Load)</option>
+                  <option value="ro_purifier">💧 Kent Mineral RO Purifier</option>
+                  <option value="dining_table">🪑 Dining Table Set (4 Chairs)</option>
+                  <option value="fridge">❄️ Refrigerator / Chiller</option>
+                  <option value="ice_box">🧊 Ice Box / Wine Cooler</option>
+                  <option value="plant">🌿 Indoor Plant / Foliage</option>
+                  <option value="microwave">🍲 Microwave / Oven</option>
+                  <option value="chimney">💨 Kitchen Chimney</option>
+                  <option value="tv">📺 TV Display</option>
+                  <option value="sofa">🛋️ Sofa / Furniture</option>
+                  <option value="mariam_bed">🛏️ Mariam Luxury Master Bed Set (Headboard + Nightstands)</option>
+                  <option value="bed">🛏️ Master Bed (Mattress + Pillows + Duvet)</option>
+                  <option value="general" selected>📦 General 3D Model</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Dimensions W x H x D -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Width
+                  (mm)</label>
+                <input type="number" id="customDecorW" value="900" step="50"
+                  style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Height
+                  (mm)</label>
+                <input type="number" id="customDecorH" value="1800" step="50"
+                  style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Depth
+                  (mm)</label>
+                <input type="number" id="customDecorD" value="700" step="50"
+                  style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+              </div>
+            </div>
+
+            <!-- Elevation AFFL -->
+            <div style="margin-bottom:6px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <label style="font-size:11px;font-weight:600;color:#475569;">Elevation off Floor (mm AFFL)</label>
+                <span style="font-size:10px;color:#64748b;">Height above finished floor level</span>
+              </div>
+              <input type="number" id="customDecorElev" value="0" step="50"
+                style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;margin-bottom:6px;">
+
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button type="button" class="btn small decor-elev-preset-btn is-active" data-elev="0"
+                  style="font-size:10.5px;padding:3px 8px;">0 mm (Floor level)</button>
+                <button type="button" class="btn small decor-elev-preset-btn" data-elev="850"
+                  style="font-size:10.5px;padding:3px 8px;">850 mm (Countertop)</button>
+                <button type="button" class="btn small decor-elev-preset-btn" data-elev="1100"
+                  style="font-size:10.5px;padding:3px 8px;">1100 mm (Eye level / TV)</button>
+                <button type="button" class="btn small decor-elev-preset-btn" data-elev="1500"
+                  style="font-size:10.5px;padding:3px 8px;">1500 mm (Wall unit)</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOQ Notice & Place Button -->
+          <div
+            style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:11.5px;color:#166534;line-height:1.4;">
+            <b>✅ 100% Excluded from Woodwork Pricing:</b> This item will be placed on your 2D Floor Plan and 3D Studio
+            for realistic visualization and styling, but will contribute <b>₹0.00</b> to your woodwork BOQ and will NOT
+            be cut on beam saw machines.
+          </div>
+
+          <button type="button" class="btn primary big full" id="customDecorPlaceBtn"
+            style="background:#166534;border-color:#166534;justify-content:center;padding:10px;font-size:13px;font-weight:700;">
+            🌿 Place Custom 3D Decor on Plan (₹0 BOQ)
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-foot" style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:10px 20px;">
+        <button type="button" class="btn modal-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 2D TO 3D DESIGN JOURNEY TRANSITION OVERLAY ══════ -->
+  <div id="transition2DTo3DOverlay" class="design-journey-overlay" aria-hidden="true" style="display:none;">
+    <div class="dj-backdrop"></div>
+    <div class="dj-modal-card">
+      <div class="dj-gif-wrapper">
+        <img src="cookscape-2d-to-3d-journey.gif" alt="Cookscape 2D to 3D Design Journey" class="dj-journey-gif"
+          id="djJourneyGif">
+        <div class="dj-badge-pill">
+          <span class="dj-pulse-dot"></span>
+          <span>Cookscape 2D &rarr; 3D Design Journey</span>
+        </div>
+      </div>
+      <div class="dj-content">
+        <h3 class="dj-title">Transforming 2D Plan to Photorealistic 3D</h3>
+        <p class="dj-subtitle" id="djStatusText">Extracting 2D floor plan & wall architecture...</p>
+        <div class="dj-progress-track">
+          <div class="dj-progress-bar" id="djProgressBar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ AI PHOTOREALISTIC RENDER MODAL (OPENAI) ══════ -->
+  <div class="modal" id="modalAIRender" aria-hidden="true" style="display:none;z-index:99999;">
+    <div class="modal-backdrop" id="closeAIRenderBackdrop"></div>
+    <div class="modal-card"
+      style="max-width:760px;width:95%;border-radius:12px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,0.45);max-height:90vh;display:flex;flex-direction:column;">
+      <div class="modal-head"
+        style="background:linear-gradient(135deg,#0f172a,#1e293b);color:#f8fafc;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:22px;">🤖</span>
+          <div>
+            <h3 style="margin:0;font-size:16px;font-weight:700;color:#f8fafc;letter-spacing:-0.2px;">AI Photorealistic
+              Studio Render</h3>
+            <p style="margin:2px 0 0;font-size:11.5px;color:#94a3b8;">Transform 3D view into a luxury photo-realistic
+              interior design image via OpenAI</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" id="closeAIRenderBtn"
+          style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1 1 auto;background:#f8fafc;">
+        <!-- OpenAI API Key Setup -->
+        <div
+          style="background:#ffffff;border:1px solid #cbd5e1;border-radius:10px;padding:14px 16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,0.03);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:13px;font-weight:700;color:#0f172a;">🔑 OpenAI API Key Configuration</span>
+              <span id="aiKeyStatusBadge"
+                style="font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:12px;background:#dcfce7;color:#15803d;">●
+                Key Connected (Active)</span>
+            </div>
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer"
+              style="font-size:11.5px;font-weight:600;color:#2563eb;text-decoration:none;">Get OpenAI Key ↗</a>
+          </div>
+          <p style="font-size:11px;color:#64748b;margin:0 0 10px;line-height:1.4;">
+            Your OpenAI secret API key is preconfigured and securely stored in your browser's local storage to generate
+            8K photorealistic luxury architectural renders directly with DALL-E 3 / GPT-4o Vision.
+          </p>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div style="position:relative;flex:1;">
+              <input type="password" id="openAIApiKeyInput" placeholder="sk-proj-..."
+                style="width:100%;font-size:12px;padding:8px 38px 8px 10px;border:1.5px solid #cbd5e1;border-radius:6px;font-family:monospace;box-sizing:border-box;">
+              <button type="button" id="toggleAIKeyVisBtn" title="Show / Hide Key"
+                style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;color:#64748b;padding:0;">👁</button>
+            </div>
+            <button type="button" id="saveOpenAIKeyBtn" class="btn"
+              style="background:#0f172a;color:#f8fafc;font-size:12px;font-weight:700;padding:8px 16px;border-radius:6px;cursor:pointer;">Save
+              Key</button>
+            <button type="button" id="clearOpenAIKeyBtn" class="btn"
+              style="background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;font-size:12px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;">Clear</button>
           </div>
         </div>
 
-        <div class="form-row-2col">
-          <div class="form-group">
-            <label class="form-label">Job Title / Designation</label>
-            <input type="text" id="editUserTitle" class="form-input" placeholder="e.g. Modular CAD Designer">
+        <!-- Render Style & Quality Controls -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+          <div>
+            <label style="font-size:11.5px;font-weight:700;color:#334155;display:block;margin-bottom:5px;">Architectural
+              Style</label>
+            <select id="aiRenderStyle"
+              style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;font-weight:500;">
+              <option value="luxury_architectural" selected>✨ Luxury Architectural Digest (Default)</option>
+              <option value="modern_minimalist">🌿 Modern Warm Minimalist</option>
+              <option value="contemporary_indian">🇮🇳 Premium Contemporary Indian Home</option>
+              <option value="cinematic_warm">🌅 Cinematic Golden Hour Lighting</option>
+              <option value="nordic_scandi">❄️ Scandinavian Clean Oak & White</option>
+            </select>
           </div>
-          <div class="form-group">
-            <label class="form-label">Role</label>
-            <select id="editUserRole" class="form-input">
-              <option value="employee">Employee (Home, 2D Plan, 3D, Pricing)</option>
-              <option value="admin">Admin (All Menus &amp; All Projects)</option>
+          <div>
+            <label style="font-size:11.5px;font-weight:700;color:#334155;display:block;margin-bottom:5px;">Lighting
+              Environment</label>
+            <select id="aiRenderLighting"
+              style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;font-weight:500;">
+              <option value="natural_daylight" selected>☀️ Natural Window Daylight + Warm Ceiling LEDs</option>
+              <option value="evening_ambient">🌙 Cozy Evening Accent & Strip Lighting</option>
+              <option value="bright_studio">💡 Bright Commercial Studio Lighting</option>
             </select>
           </div>
         </div>
-      </div>
-      <div class="modal-foot">
-        <button type="button" class="btn modal-close-btn">Cancel</button>
-        <button type="submit" class="btn primary" id="saveEditUserBtn">Save Changes</button>
-      </div>
-    </form>
-  </div>
-</div>
 
-<!-- ══════ MODAL: LOGIN / SIGN IN ══════ -->
-<div class="orbix-modal" id="loginModal">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog" style="max-width:440px;">
-    <div class="modal-head">
-      <div>
-        <h3 class="modal-title">Sign In to Orbix Studio</h3>
-        <p class="modal-sub">Login with your username or email and password</p>
-      </div>
-      <button class="modal-close-btn" type="button">&times;</button>
-    </div>
-    <form id="loginForm">
-      <div class="modal-body">
-        <div id="loginErrorAlert" class="auth-error-alert" style="display:none;"></div>
-        
-        <div class="form-group">
-          <label class="form-label">Username or Email Address *</label>
-          <input type="text" id="loginIdentifier" class="form-input" placeholder="e.g. admin or alex@orbixstudio.io" required autocomplete="username">
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Password *</label>
-          <input type="password" id="loginPassword" class="form-input" placeholder="Enter password" required autocomplete="current-password">
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button type="button" class="btn modal-close-btn">Cancel</button>
-        <button type="submit" class="btn primary" id="loginSubmitBtn">Sign In</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ══════ MODAL: MODULAR FURNITURE CATALOG & LIVE SEARCH ══════ -->
-<div class="orbix-modal" id="modalFurnitureCatalog">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog furn-catalog-dialog">
-    <div class="modal-head furn-modal-head">
-      <div class="furn-modal-title-area">
-        <div class="furn-modal-tag"><span class="pulse-dot"></span> Cookscape Units Library</div>
-        <h3 class="modal-title">Cookscape Modular Units Catalog</h3>
-        <p class="modal-sub">Browse standard &amp; imported units with parametric 3D CAD customization &amp; real-time costing</p>
-      </div>
-      <button class="modal-close-btn" type="button" id="closeFurnCatalogModal" title="Close (Esc)">&times;</button>
-    </div>
-
-    <!-- Search & Filter Controls -->
-    <div class="furn-catalog-filter-bar">
-      <div class="furn-search-input-wrap">
-        <span class="furn-search-icon">🔍</span>
-        <input type="text" id="furnCatalogSearch" class="furn-search-input" placeholder="Search by unit name, code, category, or dimensions (e.g. FCM, FM 600, 1200, Wardrobe, Kitchen, TV)..." autocomplete="off" spellcheck="false">
-        <button type="button" class="furn-search-clear-btn" id="furnSearchClearBtn" title="Clear search" style="display:none;">✕</button>
-      </div>
-      <div class="furn-category-pills" id="furnCategoryPills">
-        <button type="button" class="furn-cat-pill is-active" data-cat="all">All Units <span class="pill-count" id="furnCountAll">72</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="kitchen_fm">🍳 Kitchen FM <span class="pill-count" id="furnCountKFm">8</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="kitchen_corner">📐 Corner Units <span class="pill-count" id="furnCountKCorner">3</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="kitchen_drawers">🗄️ Kitchen Drawers <span class="pill-count" id="furnCountKDrawers">11</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="kitchen_tall">🏛️ Tall Unit <span class="pill-count" id="furnCountKTall">2</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="kitchen_wall">🎛️ Kitchen Wall <span class="pill-count" id="furnCountKWall">13</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="crockery">🍷 Crockery &amp; TV <span class="pill-count" id="furnCountCrockery">12</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="wardrobe">🚪 Wardrobes <span class="pill-count" id="furnCountWardrobe">5</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="loft">📦 Lofts <span class="pill-count" id="furnCountLoft">4</span></button>
-        <button type="button" class="furn-cat-pill" data-cat="wall_paneling">🪵 Wall Panels <span class="pill-count" id="furnCountWallPanel">5</span></button>
-      </div>
-    </div>
-
-    <div class="modal-body furn-catalog-body">
-      <!-- Featured Spotlight Card: FCM-RT (Cookscape) (1200×720) -->
-      <div class="furn-spotlight-card" id="furnSpotlightCard">
-        <div class="spotlight-left">
-          <div class="spotlight-icon">🍳</div>
-          <div class="spotlight-info">
-            <div class="spotlight-badge-row">
-              <span class="spotlight-pill">⭐ FEATURED KITCHEN BASE</span>
-              <span class="spotlight-code">code: fcm-rt</span>
-            </div>
-            <h4 class="spotlight-title">FCM-RT (Cookscape)</h4>
-            <div class="spotlight-dims">
-              <span class="dim-chip"><b>W</b> 1200 mm</span>
-              <span class="dim-chip"><b>H</b> 720 mm</span>
-              <span class="dim-chip"><b>D</b> 560 mm</span>
-              <span class="spec-chip">600mm Fixed Panel + 600mm Movable Shutter · Slab · G-Profile Handle</span>
-            </div>
-            <div class="spotlight-materials">
-              <span>Shutter: <b>HDHMR 18mm (MDF 7701)</b></span>
-              <span>Carcass: <b>BWP 18mm Waterproof (MDF 1135)</b></span>
-            </div>
+        <!-- Auto-Generated Architectural Prompt -->
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <label style="font-size:11.5px;font-weight:700;color:#334155;">Generated Architectural Prompt
+              (Customizable)</label>
+            <button type="button" id="refreshAIPromptBtn" class="link"
+              style="font-size:11px;color:#2563eb;cursor:pointer;">↻ Refresh from Scene</button>
           </div>
-        </div>
-        <div class="spotlight-action">
-          <div class="spotlight-price">₹ 17,398.79 <small>Est. base</small></div>
-          <button type="button" class="btn primary furn-select-btn" id="spotlightSelectFCMBtn" data-furn-id="fcm-rt">🎯 Select &amp; Place</button>
-        </div>
-      </div>
-
-      <!-- Live Units Count & Search Status -->
-      <div class="furn-results-status" id="furnResultsStatus">
-        Showing <b id="furnShowingCount">25</b> units in catalog
-      </div>
-
-      <!-- Dynamic Cards Grid -->
-      <div class="furn-catalog-grid" id="furnCatalogGrid"></div>
-
-      <!-- Empty Results State -->
-      <div class="furn-empty-state" id="furnEmptyState" style="display:none;">
-        <div class="empty-icon">🔍</div>
-        <h4>No modular units found</h4>
-        <p>No units matched your query "<span id="furnSearchQueryTerm"></span>". Try searching for "FCM", "FM 600", "Wardrobe", "1200", or "Kitchen".</p>
-        <button type="button" class="btn small" id="furnResetSearchBtn">Reset Search Filters</button>
-      </div>
-    </div>
-
-    <div class="modal-foot furn-modal-foot">
-      <div class="furn-modal-foot-hint">
-        💡 <b>Tip:</b> Click any unit to select it for 2D floor plan drawing or 3D CAD customization.
-      </div>
-      <button type="button" class="btn modal-close-btn-foot" id="closeFurnCatalogFootBtn">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ MODAL: PLACE UNIT IN 3D STUDIO ══════ -->
-<div class="orbix-modal" id="modalPlaceUnit3D">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog" style="max-width:680px;">
-    <div class="modal-head">
-      <div>
-        <h3 class="modal-title">Place Modular Unit in 3D Studio</h3>
-        <p class="modal-sub">Choose a unit to place into the 3D room, customize, and calculate cutting list</p>
-      </div>
-      <button class="modal-close-btn" type="button">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="unit-catalog-grid" id="placeUnitCatalogGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));gap:12px;"></div>
-    </div>
-    <div class="modal-foot">
-      <button type="button" class="btn modal-close-btn">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ MODAL: CALIBRATE FLOOR PLAN IMAGE SCALE ══════ -->
-<div class="orbix-modal" id="modalCalibrateScale">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog" style="max-width:440px;">
-    <div class="modal-head">
-      <div>
-        <h3 class="modal-title">Calibrate Plan Scale</h3>
-        <p class="modal-sub">Set the true real-world dimension between your two calibration points</p>
-      </div>
-      <button class="modal-close-btn" type="button" id="closeCalibrateScaleModal">&times;</button>
-    </div>
-    <form id="calibrateScaleForm">
-      <div class="modal-body">
-        <div style="background:#F0F7FF;border:1px solid #BAE6FD;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#0369A1;line-height:1.5;">
-          Distance measured on image: <b id="calibratePixelDistSpan">0</b> px (<span id="calibrateCurrentWorldDistSpan">0 mm</span>)
-        </div>
-        <div class="form-group">
-          <label class="form-label" id="calibratePromptLabel">Real-World Dimension *</label>
-          <input type="text" id="calibrateRealDistInput" class="form-input" placeholder="e.g. 3000 mm or 10' 6&quot;" required autofocus>
-          <span style="font-size:11px;color:#64748B;margin-top:4px;display:block;">Type millimeters (e.g. <code>3000</code> or <code>3000mm</code>) or feet/inches (e.g. <code>10'</code> or <code>10' 6"</code> or <code>120"</code>).</span>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button type="button" class="btn modal-close-btn" id="cancelCalibrateScaleBtn">Cancel</button>
-        <button type="submit" class="btn primary" id="applyCalibrationBtn">Set 1:1 Scale</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ══════ MODAL: EXPORT TO TRIMBLE SKETCHUP (.SKP) ══════ -->
-<div class="orbix-modal" id="modalExportSkp" style="display:none;">
-  <div class="modal-backdrop" id="backdropExportSkp"></div>
-  <div class="modal-dialog" style="max-width:520px;">
-    <div class="modal-head">
-      <div>
-        <h3 class="modal-title" style="display:flex;align-items:center;gap:8px;">
-          <span>📐 Export to Trimble SketchUp</span>
-          <span style="font-size:11px;background:#E0F2FE;color:#0284C7;padding:2px 8px;border-radius:10px;font-weight:600;">.skp / .dae</span>
-        </h3>
-        <p class="modal-sub">Export your entire 3D project with walls, doors, windows &amp; modular units for SketchUp</p>
-      </div>
-      <button class="modal-close-btn" type="button" id="closeExportSkpModal">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div id="skpExportSummaryBox" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:12px 16px;margin-bottom:16px;">
-        <div style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Project 3D Assets Included</div>
-        <div id="skpExportStats" style="display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:#0F172A;">
-          <span>🧱 Walls &amp; Cutouts</span>
-          <span>🚪 Doors &amp; Frames</span>
-          <span>🪟 Windows &amp; Glass</span>
-          <span>🪵 Modular Cabinetry</span>
-          <span>📐 Real mm Scale</span>
-        </div>
-      </div>
-
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <button type="button" class="btn primary big" id="skpDownloadDaeBtn" style="justify-content:center;background:#0284C7;border-color:#0284C7;padding:12px;">
-          <span style="font-size:14px;font-weight:600;">⬇️ Download SketchUp Model (.dae / .skp)</span>
-          <span style="font-size:11px;opacity:0.9;display:block;margin-top:2px;">(Native Trimble SketchUp 3D Exchange — Opens directly in SketchUp 2017–2026)</span>
-        </button>
-        <button type="button" class="btn big" id="skpDownloadSkpBtn" style="justify-content:center;padding:10px;">
-          <span>⬇️ Download as .skp</span>
-        </button>
-      </div>
-
-      <div style="margin-top:16px;padding:12px 14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:6px;font-size:12px;color:#166534;line-height:1.5;">
-        <b>💡 How to open in Trimble SketchUp:</b>
-        <ol style="margin:6px 0 0 16px;padding:0;">
-          <li>Open SketchUp on your computer</li>
-          <li>Click <b>File ➔ Import...</b></li>
-          <li>Select the downloaded file — your whole home, 3D walls, openings, and modular cabinetry will appear instantly in 1:1 true millimeter scale!</li>
-        </ol>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button type="button" class="btn modal-close-btn" id="cancelExportSkpBtn">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ MODAL: IMPORT CUSTOM .SKP & DECORS (EXCLUDED FROM PRICING) ══════ -->
-<div class="orbix-modal" id="modalImportDecor" style="display:none;">
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog decor-modal-dialog" style="max-width:760px;width:95vw;">
-    <div class="modal-head" style="background:#f0fdf4;border-bottom:1px solid #bbf7d0;padding:14px 20px;">
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-          <h3 class="modal-title" style="color:#166534;margin:0;font-size:16px;">🌿 Import 3D Decors &amp; .skp Models</h3>
-          <span style="font-size:11px;font-weight:700;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;border:1px solid #86efac;">
-            Excluded from Pricing (₹0 BOQ)
-          </span>
-        </div>
-        <p class="modal-sub" style="margin:0;color:#15803d;font-size:12px;">
-          Add appliances, styling decors, and custom SketchUp 3D models (Fridge, Ice Box, Plants, TV, Oven) without affecting woodwork quotation or cutting lists.
-        </p>
-      </div>
-      <button class="modal-close-btn" type="button" id="closeDecorModalBtn" title="Close (Esc)">&times;</button>
-    </div>
-
-    <!-- Navigation Tabs -->
-    <div style="display:flex;gap:8px;padding:12px 20px;border-bottom:1px solid #e2e8f0;background:#fafafa;">
-      <button type="button" class="btn decor-tab-btn is-active" data-tab="presets" style="font-size:12px;font-weight:600;padding:6px 14px;">
-        🏛️ Built-in Decor Catalog (46 SketchUp Models)
-      </button>
-      <button type="button" class="btn decor-tab-btn" data-tab="custom" style="font-size:12px;font-weight:600;padding:6px 14px;">
-        📁 Import Custom .skp / .obj / 3D Model
-      </button>
-    </div>
-
-    <div class="modal-body" style="padding:16px 20px;max-height:68vh;overflow-y:auto;">
-            <!-- Tab 1: Built-in Catalog -->
-      <div id="decorTabPresets">
-        <div style="display:flex;gap:10px;margin-bottom:12px;align-items:center;">
-          <input type="text" id="decorSearchInput" class="form-input" placeholder="🔍 Search 46 3D models (beds, sofas, tables, appliances, plants...)" style="width:100%;padding:8px 14px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;box-sizing:border-box;">
-        </div>
-        <div id="decorCategoryFilter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
-          <button type="button" class="btn decor-cat-pill is-active" data-cat="all" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#15803d;color:#ffffff;border:none;cursor:pointer;">All (46)</button>
-          <button type="button" class="btn decor-cat-pill" data-cat="Beds & Bedroom" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🛏️ Beds</button>
-          <button type="button" class="btn decor-cat-pill" data-cat="Sofas & Seating" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🛋️ Sofas</button>
-          <button type="button" class="btn decor-cat-pill" data-cat="Dining Tables" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🪑 Dining</button>
-          <button type="button" class="btn decor-cat-pill" data-cat="Kitchen Appliances" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🍳 Appliances</button>
-          <button type="button" class="btn decor-cat-pill" data-cat="Kitchen Styling" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🥗 Kitchen Styling</button>
-          <button type="button" class="btn decor-cat-pill" data-cat="Plants & Pots" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🪴 Plants</button>
-          <button type="button" class="btn decor-cat-pill" data-cat="Partitions & Walls" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">🧱 Partitions</button>
-          <button type="button" class="btn decor-cat-pill" data-cat="Lighting" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">💡 Lighting</button>
-          <button type="button" class="btn decor-cat-pill" data-cat="Electronics & TV" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">📺 Electronics</button>
-          <button type="button" class="btn decor-cat-pill" data-cat="Accents & Styling" style="font-size:11px;padding:4px 10px;border-radius:14px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer;">✨ Accents</button>
-        </div>
-        <div id="decorPresetGrid" class="decor-preset-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(215px, 1fr));gap:12px;"></div>
-      </div>
-
-      <!-- Tab 2: Custom 3D Model Upload -->
-      <div id="decorTabCustom" style="display:none;">
-        <!-- File Drop Zone -->
-        <div id="customDecorDropZone" class="decor-dropzone" style="border:2px dashed #94a3b8;border-radius:8px;padding:20px;text-align:center;background:#f8fafc;cursor:pointer;margin-bottom:14px;transition:all 0.2s;">
-          <div style="font-size:28px;margin-bottom:6px;">📁</div>
-          <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:4px;">Drag &amp; Drop custom .skp, .dae, .obj, or .glb 3D model here</div>
-          <div style="font-size:11.5px;color:#64748b;">or click to browse from your computer</div>
-          <input type="file" id="customDecorFileInput" accept=".skp,.dae,.obj,.glb,.gltf" style="display:none;">
+          <textarea id="aiRenderPromptText" rows="3"
+            style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-family:sans-serif;line-height:1.45;background:#fff;resize:vertical;"></textarea>
         </div>
 
-        <div id="customDecorFileStatus" style="display:none;padding:8px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:12px;color:#166534;margin-bottom:12px;"></div>
+        <!-- Live Generation Status / Progress -->
+        <div id="aiRenderProgressContainer"
+          style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-bottom:14px;text-align:center;">
+          <div style="font-size:13px;font-weight:600;color:#1e40af;margin-bottom:4px;" id="aiRenderProgressStatus">🎨
+            Synthesizing 8K Photorealistic Architectural Render...</div>
+          <div style="font-size:11px;color:#3b82f6;">Generating photorealistic ray-traced materials, reflections, and
+            natural lighting.</div>
+        </div>
 
-        <!-- Parameters Card -->
-        <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:14px;">
-          <div style="font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">📐 Decor Dimensions &amp; Mounting Height</div>
-
-          <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px;">
+        <!-- Output Comparison Area -->
+        <div id="aiRenderResultContainer" style="display:none;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:8px;">Render Comparison (CAD vs AI
+            Photorealism):</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div>
-              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Item Name / Label</label>
-              <input type="text" id="customDecorName" value="Custom Decor Item" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
+              <div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:4px;">Original 3D CAD Snapshot
+              </div>
+              <img id="aiRenderSourceImg"
+                style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:1px solid #cbd5e1;"
+                alt="CAD 3D Snapshot">
             </div>
             <div>
-              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Decor Visual Style</label>
-              <select id="customDecorType" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
-                <option value="sink">🚰 Kitchen Sink (Faucet &amp; Drain)</option>
-                <option value="gas_hob">🔥 Gas Hob / Stove (2 Burners)</option>
-                <option value="dishwasher">🍽️ Dishwasher (Built-in)</option>
-                <option value="washing_machine">🧺 Washing Machine (AEG Front-Load)</option>
-                <option value="ro_purifier">💧 Kent Mineral RO Purifier</option>
-                <option value="dining_table">🪑 Dining Table Set (4 Chairs)</option>
-                <option value="fridge">❄️ Refrigerator / Chiller</option>
-                <option value="ice_box">🧊 Ice Box / Wine Cooler</option>
-                <option value="plant">🌿 Indoor Plant / Foliage</option>
-                <option value="microwave">🍲 Microwave / Oven</option>
-                <option value="chimney">💨 Kitchen Chimney</option>
-                <option value="tv">📺 TV Display</option>
-                <option value="sofa">🛋️ Sofa / Furniture</option>
-                <option value="mariam_bed">🛏️ Mariam Luxury Master Bed Set (Headboard + Nightstands)</option>
-                <option value="bed">🛏️ Master Bed (Mattress + Pillows + Duvet)</option>
-                <option value="general" selected>📦 General 3D Model</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Dimensions W x H x D -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
-            <div>
-              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Width (mm)</label>
-              <input type="number" id="customDecorW" value="900" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
-            </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Height (mm)</label>
-              <input type="number" id="customDecorH" value="1800" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
-            </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Depth (mm)</label>
-              <input type="number" id="customDecorD" value="700" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;">
-            </div>
-          </div>
-
-          <!-- Elevation AFFL -->
-          <div style="margin-bottom:6px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <label style="font-size:11px;font-weight:600;color:#475569;">Elevation off Floor (mm AFFL)</label>
-              <span style="font-size:10px;color:#64748b;">Height above finished floor level</span>
-            </div>
-            <input type="number" id="customDecorElev" value="0" step="50" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;margin-bottom:6px;">
-            
-            <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              <button type="button" class="btn small decor-elev-preset-btn is-active" data-elev="0" style="font-size:10.5px;padding:3px 8px;">0 mm (Floor level)</button>
-              <button type="button" class="btn small decor-elev-preset-btn" data-elev="850" style="font-size:10.5px;padding:3px 8px;">850 mm (Countertop)</button>
-              <button type="button" class="btn small decor-elev-preset-btn" data-elev="1100" style="font-size:10.5px;padding:3px 8px;">1100 mm (Eye level / TV)</button>
-              <button type="button" class="btn small decor-elev-preset-btn" data-elev="1500" style="font-size:10.5px;padding:3px 8px;">1500 mm (Wall unit)</button>
+              <div style="font-size:11px;font-weight:600;color:#15803d;margin-bottom:4px;">✨ AI Photorealistic Render
+              </div>
+              <img id="aiRenderOutputImg"
+                style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:2px solid #22c55e;cursor:pointer;"
+                alt="AI Generated Render" title="Click to view full size">
             </div>
           </div>
         </div>
 
-        <!-- BOQ Notice & Place Button -->
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:11.5px;color:#166534;line-height:1.4;">
-          <b>✅ 100% Excluded from Woodwork Pricing:</b> This item will be placed on your 2D Floor Plan and 3D Studio for realistic visualization and styling, but will contribute <b>₹0.00</b> to your woodwork BOQ and will NOT be cut on beam saw machines.
+        <!-- Action Buttons -->
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button type="button" class="btn" id="cancelAIRenderBtn" style="padding:8px 16px;">Cancel</button>
+          <button type="button" class="btn primary" id="startAIRenderBtn"
+            style="background:linear-gradient(135deg,#ec4899,#8b5cf6);border:none;color:#fff;font-weight:700;padding:8px 20px;display:inline-flex;align-items:center;gap:6px;border-radius:6px;box-shadow:0 4px 12px rgba(139,92,246,0.35);">
+            <span>✨ Generate Photorealistic Render</span>
+          </button>
+          <button type="button" class="btn" id="downloadAIRenderBtn"
+            style="display:none;background:#15803d;color:#fff;border-color:#15803d;font-weight:700;padding:8px 18px;">
+            <span>💾 Download HD Render</span>
+          </button>
         </div>
-
-        <button type="button" class="btn primary big full" id="customDecorPlaceBtn" style="background:#166534;border-color:#166534;justify-content:center;padding:10px;font-size:13px;font-weight:700;">
-          🌿 Place Custom 3D Decor on Plan (₹0 BOQ)
-        </button>
-      </div>
-    </div>
-
-    <div class="modal-foot" style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:10px 20px;">
-      <button type="button" class="btn modal-close-btn">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════ 2D TO 3D DESIGN JOURNEY TRANSITION OVERLAY ══════ -->
-<div id="transition2DTo3DOverlay" class="design-journey-overlay" aria-hidden="true" style="display:none;">
-  <div class="dj-backdrop"></div>
-  <div class="dj-modal-card">
-    <div class="dj-gif-wrapper">
-      <img src="cookscape-2d-to-3d-journey.gif" alt="Cookscape 2D to 3D Design Journey" class="dj-journey-gif" id="djJourneyGif">
-      <div class="dj-badge-pill">
-        <span class="dj-pulse-dot"></span>
-        <span>Cookscape 2D &rarr; 3D Design Journey</span>
-      </div>
-    </div>
-    <div class="dj-content">
-      <h3 class="dj-title">Transforming 2D Plan to Photorealistic 3D</h3>
-      <p class="dj-subtitle" id="djStatusText">Extracting 2D floor plan & wall architecture...</p>
-      <div class="dj-progress-track">
-        <div class="dj-progress-bar" id="djProgressBar"></div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ══════ AI PHOTOREALISTIC RENDER MODAL (OPENAI) ══════ -->
-<div class="modal" id="modalAIRender" aria-hidden="true" style="display:none;z-index:99999;">
-  <div class="modal-backdrop" id="closeAIRenderBackdrop"></div>
-  <div class="modal-card" style="max-width:760px;width:95%;border-radius:12px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,0.45);max-height:90vh;display:flex;flex-direction:column;">
-    <div class="modal-head" style="background:linear-gradient(135deg,#0f172a,#1e293b);color:#f8fafc;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:22px;">🤖</span>
-        <div>
-          <h3 style="margin:0;font-size:16px;font-weight:700;color:#f8fafc;letter-spacing:-0.2px;">AI Photorealistic Studio Render</h3>
-          <p style="margin:2px 0 0;font-size:11.5px;color:#94a3b8;">Transform 3D view into a luxury photo-realistic interior design image via OpenAI</p>
-        </div>
-      </div>
-      <button type="button" class="btn-close" id="closeAIRenderBtn" style="background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;">✕</button>
-    </div>
-
-    <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1 1 auto;background:#f8fafc;">
-      <!-- OpenAI API Key Setup -->
-      <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:10px;padding:14px 16px;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,0.03);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:13px;font-weight:700;color:#0f172a;">🔑 OpenAI API Key Configuration</span>
-            <span id="aiKeyStatusBadge" style="font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:12px;background:#dcfce7;color:#15803d;">● Key Connected (Active)</span>
-          </div>
-          <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style="font-size:11.5px;font-weight:600;color:#2563eb;text-decoration:none;">Get OpenAI Key ↗</a>
-        </div>
-        <p style="font-size:11px;color:#64748b;margin:0 0 10px;line-height:1.4;">
-          Your OpenAI secret API key is preconfigured and securely stored in your browser's local storage to generate 8K photorealistic luxury architectural renders directly with DALL-E 3 / GPT-4o Vision.
-        </p>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <div style="position:relative;flex:1;">
-            <input type="password" id="openAIApiKeyInput" placeholder="sk-proj-..." style="width:100%;font-size:12px;padding:8px 38px 8px 10px;border:1.5px solid #cbd5e1;border-radius:6px;font-family:monospace;box-sizing:border-box;">
-            <button type="button" id="toggleAIKeyVisBtn" title="Show / Hide Key" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;color:#64748b;padding:0;">👁</button>
-          </div>
-          <button type="button" id="saveOpenAIKeyBtn" class="btn" style="background:#0f172a;color:#f8fafc;font-size:12px;font-weight:700;padding:8px 16px;border-radius:6px;cursor:pointer;">Save Key</button>
-          <button type="button" id="clearOpenAIKeyBtn" class="btn" style="background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;font-size:12px;font-weight:600;padding:8px 12px;border-radius:6px;cursor:pointer;">Clear</button>
-        </div>
-      </div>
-
-      <!-- Render Style & Quality Controls -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
-        <div>
-          <label style="font-size:11.5px;font-weight:700;color:#334155;display:block;margin-bottom:5px;">Architectural Style</label>
-          <select id="aiRenderStyle" style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;font-weight:500;">
-            <option value="luxury_architectural" selected>✨ Luxury Architectural Digest (Default)</option>
-            <option value="modern_minimalist">🌿 Modern Warm Minimalist</option>
-            <option value="contemporary_indian">🇮🇳 Premium Contemporary Indian Home</option>
-            <option value="cinematic_warm">🌅 Cinematic Golden Hour Lighting</option>
-            <option value="nordic_scandi">❄️ Scandinavian Clean Oak & White</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:11.5px;font-weight:700;color:#334155;display:block;margin-bottom:5px;">Lighting Environment</label>
-          <select id="aiRenderLighting" style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;font-weight:500;">
-            <option value="natural_daylight" selected>☀️ Natural Window Daylight + Warm Ceiling LEDs</option>
-            <option value="evening_ambient">🌙 Cozy Evening Accent & Strip Lighting</option>
-            <option value="bright_studio">💡 Bright Commercial Studio Lighting</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Auto-Generated Architectural Prompt -->
-      <div style="margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-          <label style="font-size:11.5px;font-weight:700;color:#334155;">Generated Architectural Prompt (Customizable)</label>
-          <button type="button" id="refreshAIPromptBtn" class="link" style="font-size:11px;color:#2563eb;cursor:pointer;">↻ Refresh from Scene</button>
-        </div>
-        <textarea id="aiRenderPromptText" rows="3" style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-family:sans-serif;line-height:1.45;background:#fff;resize:vertical;"></textarea>
-      </div>
-
-      <!-- Live Generation Status / Progress -->
-      <div id="aiRenderProgressContainer" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-bottom:14px;text-align:center;">
-        <div style="font-size:13px;font-weight:600;color:#1e40af;margin-bottom:4px;" id="aiRenderProgressStatus">🎨 Synthesizing 8K Photorealistic Architectural Render...</div>
-        <div style="font-size:11px;color:#3b82f6;">Generating photorealistic ray-traced materials, reflections, and natural lighting.</div>
-      </div>
-
-      <!-- Output Comparison Area -->
-      <div id="aiRenderResultContainer" style="display:none;margin-bottom:14px;">
-        <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:8px;">Render Comparison (CAD vs AI Photorealism):</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div>
-            <div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:4px;">Original 3D CAD Snapshot</div>
-            <img id="aiRenderSourceImg" style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:1px solid #cbd5e1;" alt="CAD 3D Snapshot">
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:600;color:#15803d;margin-bottom:4px;">✨ AI Photorealistic Render</div>
-            <img id="aiRenderOutputImg" style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:2px solid #22c55e;cursor:pointer;" alt="AI Generated Render" title="Click to view full size">
-          </div>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button type="button" class="btn" id="cancelAIRenderBtn" style="padding:8px 16px;">Cancel</button>
-        <button type="button" class="btn primary" id="startAIRenderBtn" style="background:linear-gradient(135deg,#ec4899,#8b5cf6);border:none;color:#fff;font-weight:700;padding:8px 20px;display:inline-flex;align-items:center;gap:6px;border-radius:6px;box-shadow:0 4px 12px rgba(139,92,246,0.35);">
-          <span>✨ Generate Photorealistic Render</span>
-        </button>
-        <button type="button" class="btn" id="downloadAIRenderBtn" style="display:none;background:#15803d;color:#fff;border-color:#15803d;font-weight:700;padding:8px 18px;">
-          <span>💾 Download HD Render</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script src="assets/three.min.js"></script>
-<script src="assets/GLTFLoader.js"></script>
-<script src="orbix-unit-icons.js?v=14"></script>
-<script src="orbix-projects.js?v=14"></script>
-<script src="orbix-decors-catalog.js?v=14"></script>
-<script src="orbix-core.js?v=14"></script>
-<script src="orbix-plan.js?v=14"></script>
-<script src="orbix-dado-textures.js"></script>
-<script src="orbix-floor-textures.js"></script>
-<script src="orbix-3d.js?v=14"></script>
-<script src="orbix-ui.js?v=14"></script>
-<script src="app.js?v=14"></script>
-<script src="pwa.js?v=14"></script>
-<!-- ARTIFACT-END -->
+  <script src="assets/three.min.js"></script>
+  <script src="assets/GLTFLoader.js"></script>
+  <script src="orbix-unit-icons.js?v=14"></script>
+  <script src="orbix-projects.js?v=14"></script>
+  <script src="orbix-decors-catalog.js?v=14"></script>
+  <script src="orbix-core.js?v=14"></script>
+  <script src="orbix-plan.js?v=14"></script>
+  <script src="orbix-dado-textures.js"></script>
+  <script src="orbix-floor-textures.js"></script>
+  <script src="orbix-3d.js?v=14"></script>
+  <script src="orbix-ui.js?v=14"></script>
+  <script src="app.js?v=14"></script>
+  <script src="pwa.js?v=14"></script>
+  <!-- ARTIFACT-END -->
 </body>
+
 </html>

@@ -5692,10 +5692,10 @@
     "modelType": "wall_paneling",
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
-    "areaSqft": 4.84375,
+    "areaSqft": 0.484376,
     "icon": "🪵",
     "dimensions": {
-      "W": 600,
+      "W": 60,
       "H": 750,
       "D": 18
     },
