@@ -1377,7 +1377,7 @@
     var h1 = (f.dimensions && f.dimensions.H) ? parseFloat(f.dimensions.H) : (isWall1 ? 600 : 850);
     var top1 = elev1 + h1;
     var isDecor1 = !!(f.isDecor || f.decorType || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor' || (f.name && /sink|hob|stove|cooktop|burner|tap|basin|bed|sofa|chair|stool|mirror|tv|plant/i.test(f.name)));
-    var isCivilOrLedge1 = (f.category === 'wall_paneling' || (f.name && /ledge|rcc|civil|panel/i.test(f.name)) || (f.id && /ledge|rcc|civil/i.test(f.id)));
+    var isCivilOrLedge1 = (f.category === 'wall_paneling' || f.category === 'structural' || f.category === 'civil' || (f.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(f.name)) || (f.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(f.id)));
     var isBase1 = !isWall1 && (f.category === 'kitchen_base' || (f.name && /base/i.test(f.name)));
 
     for (var i = 0; i < allFurn.length; i++) {
@@ -1385,7 +1385,7 @@
       if (other.id === f.id || (ignoreId && other.id === ignoreId)) continue;
       var isWall2 = isWallUnitCategory(other.category, other.name, other.code || other.catalogItemId, other.costCategory);
       var isDecor2 = !!(other.isDecor || other.decorType || other.excludeFromPricing || other.category === 'decor' || other.category === 'appliance_decor' || (other.name && /sink|hob|stove|cooktop|burner|tap|basin|bed|sofa|chair|stool|mirror|tv|plant/i.test(other.name)));
-      var isCivilOrLedge2 = (other.category === 'wall_paneling' || (other.name && /ledge|rcc|civil|panel/i.test(other.name)) || (other.id && /ledge|rcc|civil/i.test(other.id)));
+      var isCivilOrLedge2 = (other.category === 'wall_paneling' || other.category === 'structural' || other.category === 'civil' || (other.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(other.name)) || (other.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(other.id)));
       var isBase2 = !isWall2 && (other.category === 'kitchen_base' || (other.name && /base/i.test(other.name)));
 
       // Decor items and civil RCC elements (ledges, countertops, vertical slabs) do not block or get blocked by other units
@@ -1621,7 +1621,13 @@
     // 1. Check collision with other furniture units (OBB + 3D elevation)
     var furnList = plan.furniture || [];
     var furnCol = checkFurnitureCollision(f, furnList, fId);
-    if (furnCol.collided) {
+    var isOtherCivil = furnCol.other && (
+      furnCol.other.category === 'structural' || furnCol.other.category === 'civil' ||
+      furnCol.other.category === 'wall_paneling' ||
+      /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(furnCol.other.name || '') ||
+      /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(furnCol.other.id || '')
+    );
+    if (furnCol.collided && !isOtherCivil) {
       return { hasOverlap: true, type: "furniture", target: furnCol.other };
     }
 
@@ -1948,13 +1954,6 @@
      ───────────────────────────────────────────────────────────────────────────── */
   function detectRooms(project) {
     if (!project || !project.plan) return [];
-    if (typeof autoSplitWallAtJunctions === 'function') {
-      try {
-        autoSplitWallAtJunctions(project);
-      } catch (e) {
-        console.warn('autoSplitWallAtJunctions error:', e);
-      }
-    }
     var walls = project.plan.walls || [];
     if (walls.length < 3) {
       project.plan.rooms = [];
@@ -2814,6 +2813,66 @@
     return JSON.stringify(project, null, 2);
   }
 
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Heal & Merge Collinear Walls (reunites straight wall segments that share orientation)
+     ───────────────────────────────────────────────────────────────────────────── */
+  function healCollinearWalls(project) {
+    if (!project || !project.plan || !project.plan.walls || project.plan.walls.length < 2) return false;
+    var walls = project.plan.walls;
+    var furnList = project.plan.furniture || [];
+    var changed = false;
+    for (var pass = 0; pass < 6; pass++) {
+      var didMerge = false;
+      for (var i = 0; i < walls.length && !didMerge; i++) {
+        var w1 = walls[i];
+        if (!w1 || w1.isDivider) continue;
+        var dir1 = wallDirection(w1);
+        for (var j = 0; j < walls.length && !didMerge; j++) {
+          if (i === j) continue;
+          var w2 = walls[j];
+          if (!w2 || w2.isDivider) continue;
+          if (w1.thickness !== w2.thickness || w1.height !== w2.height) continue;
+          if (w1.paintColor !== w2.paintColor || w1.wallpaper !== w2.wallpaper) continue;
+
+          // Check if w1.end connects to w2.start
+          var distEndStart = Math.hypot(w1.end.x - w2.start.x, w1.end.y - w2.start.y);
+          if (distEndStart < 15) {
+            var dir2 = wallDirection(w2);
+            var dot = dir1.x * dir2.x + dir1.y * dir2.y;
+            if (dot > 0.99) { // Collinear straight line
+              // Do not merge if there is an intentional structural RCC column at the joint
+              var hasRccPillar = furnList.some(function (f) {
+                if (!f || !f.pos) return false;
+                var isRcc = (f.category === 'structural' || f.category === 'civil' ||
+                  /rcc|column|pillar|post/i.test(f.name || '') ||
+                  /rcc|column|pillar|post/i.test(f.id || ''));
+                return isRcc && Math.hypot(f.pos.x - w1.end.x, f.pos.y - w1.end.y) < 120;
+              });
+              if (!hasRccPillar) {
+                var w1Len = wallLength(w1);
+                w1.end.x = w2.end.x;
+                w1.end.y = w2.end.y;
+                if (project.plan.openings) {
+                  project.plan.openings.forEach(function (op) {
+                    if (op.wallId === w2.id) {
+                      op.wallId = w1.id;
+                      op.offset = (op.offset || 0) + w1Len;
+                    }
+                  });
+                }
+                walls.splice(j, 1);
+                didMerge = true;
+                changed = true;
+              }
+            }
+          }
+        }
+      }
+      if (!didMerge) break;
+    }
+    return changed;
+  }
+
   function deserializeProject(jsonStr) {
     var data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
     if (!data.schemaVersion) {
@@ -2834,6 +2893,11 @@
         }
         seenFurnIds[fn.id] = true;
       }
+    }
+    try {
+      healCollinearWalls(data);
+    } catch (e) {
+      console.warn('healCollinearWalls error:', e);
     }
     return data;
   }
@@ -7081,6 +7145,7 @@
     getUnitIcon: getUnitIcon,
     sanitizeIconId: sanitizeIconId,
     registerDecorsCatalog: registerDecorsCatalog,
+    healCollinearWalls: healCollinearWalls,
     formatFeetInches: formatFeetInches,
     toValidHexColor: toValidHexColor
   };

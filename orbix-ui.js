@@ -258,6 +258,9 @@
         window.S.active = 0;
       }
       this.project = proj;
+      if (typeof Core !== 'undefined' && typeof Core.healCollinearWalls === 'function') {
+        try { Core.healCollinearWalls(this.project); } catch (e) { }
+      }
       if (typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
         try { Core.detectRooms(this.project); } catch (e) { console.warn('[Orbix UI] detectRooms on load:', e); }
       }

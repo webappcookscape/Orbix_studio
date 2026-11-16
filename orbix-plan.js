@@ -1760,8 +1760,19 @@
           self.dragState.hasCollision = false;
           self.dragState.collidedWith = null;
         } else {
-          self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
-          self.dragState.collidedWith = colCheck.target || colCheck.other;
+          var isCollidedRcc = colCheck.other && (
+            colCheck.other.category === 'structural' || colCheck.other.category === 'civil' ||
+            colCheck.other.category === 'wall_paneling' ||
+            /rcc|column|pillar|post|structural/i.test(colCheck.other.name || '') ||
+            /rcc|column|pillar|post|structural/i.test(colCheck.other.id || '')
+          );
+          if (isCollidedRcc) {
+            self.dragState.hasCollision = false;
+            self.dragState.collidedWith = null;
+          } else {
+            self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
+            self.dragState.collidedWith = colCheck.target || colCheck.other;
+          }
         }
         self.requestRender();
         return;
@@ -2549,7 +2560,6 @@
               height: this.wallPreset.height
             });
         this.project.plan.walls.push(newW);
-        if (Core.autoSplitWallAtJunctions) Core.autoSplitWallAtJunctions(this.project);
         this.pushHistory(isDivider ? 'Draw Room Divider' : 'Draw Wall');
 
         // Check if loop closed (connected back to start of chain)
@@ -3355,21 +3365,10 @@
       var halfT = (w.thickness || 150) / 2;
       var flushDist = halfT + halfD;
 
-      // Inner clear segment bounds
-      var innerSeg = (Core.getWallInnerSegment ? Core.getWallInnerSegment(w, plan) : null);
-      var startDed = (innerSeg && innerSeg.startDeduction ? innerSeg.startDeduction : halfT);
-      var endDed = (innerSeg && innerSeg.endDeduction ? innerSeg.endDeduction : halfT);
-      var startClear = (startDed + halfW) / wLen;
-      var endClear = 1 - ((endDed + halfW) / wLen);
-      if (startClear > endClear) {
-        startClear = Math.max(0.04, Math.min(0.48, startDed / wLen));
-        endClear = Math.min(0.96, Math.max(0.52, 1 - (endDed / wLen)));
-      }
-
-      // Project unit position onto wall segment
+      // Project unit position onto wall segment (freely allows placing right up to corner and RCC points!)
       var toCur = { x: pos.x - w.start.x, y: pos.y - w.start.y };
       var t = (toCur.x * wDir.x + toCur.y * wDir.y) / wLen;
-      var tClamped = Math.max(startClear, Math.min(endClear, t));
+      var tClamped = Math.max(0, Math.min(1, t));
       var proj = { x: w.start.x + tClamped * dx, y: w.start.y + tClamped * dy };
 
       var toCurProj = { x: pos.x - proj.x, y: pos.y - proj.y };
@@ -3396,9 +3395,16 @@
 
       var perpDist = Math.abs(sDist);
 
+      // Distance beyond endpoints along the wall line (0 when cursor is within the wall span)
+      var longDist = 0;
+      if (t < 0) longDist = -t * wLen;
+      else if (t > 1) longDist = (t - 1) * wLen;
+
+      // Combined distance: prioritizing whichever segment the cursor is directly opposite
+      var snapDist = Math.hypot(Math.abs(perpDist - flushDist), longDist);
+
       // Wall Snatching: when within magnetic snap distance of flush contact
-      if (perpDist < flushDist + minWallDist && t >= -0.2 && t <= 1.2) {
-        var snapDist = Math.abs(perpDist - flushDist);
+      if (perpDist < flushDist + minWallDist && t >= -0.3 && t <= 1.3) {
         if (snapDist < minWallDist) {
           minWallDist = snapDist;
           var wallSnapPos = {

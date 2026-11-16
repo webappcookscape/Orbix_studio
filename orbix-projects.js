@@ -1448,6 +1448,11 @@
         planToLoad.meta.status = project.status || details.status || planToLoad.meta.status || 'Active Design';
       }
 
+      // Heal any sliced collinear walls before loading into workspace
+      if (window.OrbixCore && planToLoad && typeof window.OrbixCore.healCollinearWalls === 'function') {
+        try { window.OrbixCore.healCollinearWalls(planToLoad); } catch (e) { }
+      }
+
       // Load 2D floor plan into OrbixUI
       if (window.OrbixUI && planToLoad && typeof window.OrbixUI.loadProject === 'function') {
         window.OrbixUI.loadProject(planToLoad);
