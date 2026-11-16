@@ -1036,6 +1036,9 @@
       } else if (item.type === 'furniture') {
         this.project.plan.furniture = this.project.plan.furniture.filter(function (f) { return f.id !== item.id; });
         deletedSomething = true;
+      } else if (item.type === 'stair') {
+        this.project.plan.stairs = (this.project.plan.stairs || []).filter(function (st) { return st.id !== item.id; });
+        deletedSomething = true;
       } else if (item.type === 'dimension') {
         this.project.plan.dimensions = (this.project.plan.dimensions || []).filter(function (d) { return d.id !== item.id; });
         deletedSomething = true;
@@ -1252,6 +1255,26 @@
         }
       }
 
+            // Check if clicked directly on a staircase
+      var stairsList = (self.project && self.project.plan && self.project.plan.stairs) || [];
+      for (var si = stairsList.length - 1; si >= 0; si--) {
+        var stObj = stairsList[si];
+        var stPoly = Core.getStaircasePolygon ? Core.getStaircasePolygon(stObj) : [];
+        if (Core.Vec2.pointInPolygon(worldPt, stPoly) || Vec2.dist(worldPt, stObj.pos) < (stObj.width || 900) / 2) {
+          self.selected = [{ type: 'stair', id: stObj.id }];
+          self.dragState = {
+            type: 'move_stair',
+            stair: stObj,
+            startWorld: Vec2.clone(worldPt),
+            origPos: Vec2.clone(stObj.pos),
+            hasMoved: false
+          };
+          self.onSelectionChange(self.selected);
+          self.render();
+          return;
+        }
+      }
+
       var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
 
       // Check if clicked directly on any placed furniture unit (exact rotated/L-shape polygon, never oversized circle!)
@@ -1340,7 +1363,33 @@
         self.handleWallMouseDown(worldPt);
       } else if (self.activeTool === 'door' || self.activeTool === 'window') {
         self.handleOpeningMouseDown(worldPt, self.activeTool);
-      } else if (self.activeTool === 'furniture') {
+      } else       if (self.activeTool === 'stair') {
+        var snapped = self.snapPoint(worldPt);
+        var preset = self.stairPreset || { type: 'l_shape', turnDirection: 'right', width: 900, finish: 'marble', railing: 'glass_steel' };
+        var newStair = Core.createStaircasePlacement({
+          type: preset.type || 'l_shape',
+          turnDirection: preset.turnDirection || 'right',
+          width: preset.width || 900,
+          finish: preset.finish || 'marble',
+          railing: preset.railing || 'glass_steel',
+          pos: { x: Math.round(snapped.pt.x / 25) * 25, y: Math.round(snapped.pt.y / 25) * 25 },
+          rotY: self.stairRotY || 0
+        });
+        self.project.plan.stairs = self.project.plan.stairs || [];
+        self.project.plan.stairs.push(newStair);
+        self.pushHistory('Place Staircase', newStair);
+        if (typeof self.setTool === 'function') self.setTool('select');
+        else self.activeTool = 'select';
+        self.selected = [{ type: 'stair', id: newStair.id }];
+        self.onSelectionChange(self.selected);
+        self.render();
+        if (typeof window !== 'undefined' && window.OrbixUI && window.OrbixUI.render3DHome) {
+          window.OrbixUI.render3DHome(true);
+        }
+        return;
+      }
+
+      if (self.activeTool === 'furniture') {
         self.handleFurnitureMouseDown(worldPt);
       } else if (self.activeTool === 'split') {
         self.handleSplitMouseDown(worldPt);
@@ -1620,6 +1669,22 @@
           angle = Math.round(angle / step) * step;
         }
         fn.rotY = angle;
+        self.requestRender();
+        return;
+      }
+
+            if (self.dragState && self.dragState.type === 'move_stair') {
+        if (!self.dragState.hasMoved) {
+          if (Vec2.dist(self.cursorWorld, self.dragState.startWorld) > 8) {
+            self.dragState.hasMoved = true;
+          } else {
+            return;
+          }
+        }
+        var dx = self.cursorWorld.x - self.dragState.startWorld.x;
+        var dy = self.cursorWorld.y - self.dragState.startWorld.y;
+        self.dragState.stair.pos.x = Math.round((self.dragState.origPos.x + dx) / 25) * 25;
+        self.dragState.stair.pos.y = Math.round((self.dragState.origPos.y + dy) / 25) * 25;
         self.requestRender();
         return;
       }
@@ -1997,6 +2062,11 @@
         return;
       }
 
+      if (e.key.toLowerCase() === 'k' && !e.ctrlKey && !e.metaKey) {
+        var stBtn = document.getElementById('planStairBtn');
+        if (stBtn) stBtn.click();
+        return;
+      }
       if (e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey) {
         var dadoBtn = document.getElementById('planDadoBtn');
         if (dadoBtn) dadoBtn.click();
@@ -2127,6 +2197,16 @@
                 }
                 return;
               }
+            }
+          }
+        }
+        // Staircase rotation
+        for (var sIdx = 0; sIdx < self.selected.length; sIdx++) {
+          if (self.selected[sIdx].type === 'stair') {
+            var stObj = (self.project.plan.stairs || []).find(function (st) { return st.id === self.selected[sIdx].id; });
+            if (stObj) {
+              stObj.rotY = ((stObj.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+              rotated = true;
             }
           }
         }
@@ -3804,6 +3884,9 @@
     // 5. Furniture Units (2D footprints)
     this.renderFurniture(ctx);
 
+    // 5a. Staircases (Treads, Intermediate Landing, UP Arrow)
+    this.renderStairs(ctx);
+
     // 5b. Placed CAD Dimension Lines (mm / cm / ft & in)
     this.renderDimensions(ctx);
 
@@ -5056,7 +5139,236 @@
     }
   };
 
-  PlanEditor.prototype.renderOpenings = function (ctx) {
+    /* ─────────────────────────────────────────────────────────────────────────────
+     Architectural 2D Staircase Rendering (Treads, Intermediate Landing, UP Arrow)
+     ───────────────────────────────────────────────────────────────────────────── */
+  PlanEditor.prototype.renderStaircase = function (ctx, stair, isSelected) {
+    if (!stair) return;
+    var pos = stair.pos || { x: 0, y: 0 };
+    var rot = stair.rotY || 0;
+    var W = stair.width || 900;
+    var D = stair.treadDepth || 250;
+    var f1 = stair.flight1Steps || 8;
+    var f2 = stair.flight2Steps || 8;
+    var type = stair.type || 'l_shape';
+    var turnDir = stair.turnDirection || 'right';
+    var sign = turnDir === 'left' ? -1 : 1;
+    var lW = stair.landingWidth || W;
+    var lD = stair.landingDepth || W;
+
+    var sCenter = this.worldToScreen(pos);
+
+    ctx.save();
+    ctx.translate(sCenter.x, sCenter.y);
+    ctx.rotate(rot);
+    var scale = this.zoom;
+
+    // Outer boundary fill & styling
+    ctx.fillStyle = isSelected ? 'rgba(2, 132, 199, 0.08)' : 'rgba(248, 250, 252, 0.95)';
+    ctx.strokeStyle = isSelected ? '#0284c7' : '#1e293b';
+    ctx.lineWidth = isSelected ? 2.5 : 1.8;
+
+    // Draw Flight 1 (Start to Landing)
+    var f1L = f1 * D;
+    var f2L = f2 * D;
+    var bL = (type === 'straight') ? (f1L + (f2 > 0 ? f2L + lD : 0)) : (f1L + lD);
+    var startY = -bL / 2;
+
+    // Flight 1 Treads
+    for (var i = 0; i < f1; i++) {
+      var stepY = (startY + i * D) * scale;
+      var stepH = D * scale;
+      var stepW = W * scale;
+      var stepX = (-W / 2) * scale;
+
+      // Tread fill
+      ctx.fillStyle = (i % 2 === 0) ? '#ffffff' : '#f8fafc';
+      ctx.fillRect(stepX, stepY, stepW, stepH);
+      ctx.strokeRect(stepX, stepY, stepW, stepH);
+
+      // Step number
+      if (this.zoom >= 0.06) {
+        ctx.fillStyle = '#64748b';
+        ctx.font = '600 ' + Math.max(8, Math.round(9 * scale * 10)) + 'px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(i + 1), stepX + 6 * scale, stepY + stepH / 2);
+      }
+    }
+
+    // Landing Platform (The Turn)
+    var landY = (startY + f1L) * scale;
+    var landH = lD * scale;
+    var landW = (type === 'u_shape' ? (W * 2 + 100) : lW) * scale;
+    var landX = (-W / 2) * scale;
+
+    ctx.fillStyle = '#f1f5f9';
+    ctx.fillRect(landX, landY, landW, landH);
+    ctx.strokeRect(landX, landY, landW, landH);
+
+    // Landing Label
+    if (this.zoom >= 0.05) {
+      ctx.fillStyle = '#334155';
+      ctx.font = '700 ' + Math.max(9, Math.round(11 * scale * 10)) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('LANDING', landX + landW / 2, landY + landH / 2);
+    }
+
+    // Flight 2 Treads (Landing to End)
+    if (f2 > 0) {
+      if (type === 'l_shape') {
+        for (var j = 0; j < f2; j++) {
+          var sX = (sign === 1) ? (landX + W * scale + j * D * scale) : (landX - (j + 1) * D * scale);
+          var sY = landY;
+          var sWidth = D * scale;
+          var sHeight = W * scale;
+
+          // Above eye-level cut plane (dashed)
+          ctx.setLineDash(j >= 3 ? [4, 4] : []);
+          ctx.fillStyle = (j % 2 === 0) ? '#ffffff' : '#f8fafc';
+          ctx.fillRect(sX, sY, sWidth, sHeight);
+          ctx.strokeRect(sX, sY, sWidth, sHeight);
+          ctx.setLineDash([]);
+
+          if (this.zoom >= 0.06) {
+            ctx.fillStyle = '#64748b';
+            ctx.font = '600 ' + Math.max(8, Math.round(9 * scale * 10)) + 'px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(String(f1 + j + 1), sX + sWidth / 2, sY + sHeight / 2);
+          }
+        }
+      } else if (type === 'u_shape') {
+        // Return flight parallel in reverse
+        for (var k = 0; k < f2; k++) {
+          var uStepY = (startY + (f1 - 1 - k) * D) * scale;
+          var uStepH = D * scale;
+          var uStepW = W * scale;
+          var uStepX = (W / 2 + 100 - W) * scale;
+
+          ctx.setLineDash(k >= 3 ? [4, 4] : []);
+          ctx.fillStyle = (k % 2 === 0) ? '#ffffff' : '#f8fafc';
+          ctx.fillRect(uStepX, uStepY, uStepW, uStepH);
+          ctx.strokeRect(uStepX, uStepY, uStepW, uStepH);
+          ctx.setLineDash([]);
+
+          if (this.zoom >= 0.06) {
+            ctx.fillStyle = '#64748b';
+            ctx.font = '600 ' + Math.max(8, Math.round(9 * scale * 10)) + 'px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(String(f1 + k + 1), uStepX + 6 * scale, uStepY + uStepH / 2);
+          }
+        }
+      } else if (type === 'straight') {
+        for (var s = 0; s < f2; s++) {
+          var strStepY = (landY + landH + s * D * scale);
+          var strStepH = D * scale;
+          var strStepW = W * scale;
+          var strStepX = (-W / 2) * scale;
+
+          ctx.setLineDash(s >= 2 ? [4, 4] : []);
+          ctx.fillStyle = (s % 2 === 0) ? '#ffffff' : '#f8fafc';
+          ctx.fillRect(strStepX, strStepY, strStepW, strStepH);
+          ctx.strokeRect(strStepX, strStepY, strStepW, strStepH);
+          ctx.setLineDash([]);
+        }
+      }
+    }
+
+    // Architectural Break / Cut Line at mid Flight 1
+    if (this.zoom >= 0.04) {
+      var cutY = (startY + Math.min(f1 - 1, 5) * D + D / 2) * scale;
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo((-W / 2 - 15) * scale, cutY - 12 * scale);
+      ctx.lineTo((-W / 2 + W / 3) * scale, cutY - 12 * scale);
+      ctx.lineTo((-W / 2 + W / 2) * scale, cutY + 12 * scale);
+      ctx.lineTo((W / 2 + 15) * scale, cutY + 12 * scale);
+      ctx.stroke();
+    }
+
+    // Directional UP Walking Line & Arrow (Start ➔ Turn ➔ End)
+    ctx.strokeStyle = '#0284c7';
+    ctx.lineWidth = 2.2;
+    ctx.fillStyle = '#0284c7';
+
+    // Start point circle at step 1
+    var arrowStartX = 0;
+    var arrowStartY = (startY + D / 2) * scale;
+    ctx.beginPath();
+    ctx.arc(arrowStartX, arrowStartY, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(arrowStartX, arrowStartY);
+    // Line up Flight 1 into Landing (Turn)
+    var arrowTurnY = (startY + f1L + lD / 2) * scale;
+    ctx.lineTo(arrowStartX, arrowTurnY);
+
+    if (f2 > 0 && type === 'l_shape') {
+      var arrowEndX = (sign === 1) ? (arrowStartX + W * scale + f2L * scale) : (arrowStartX - W * scale - f2L * scale);
+      ctx.lineTo(arrowEndX, arrowTurnY);
+      ctx.stroke();
+
+      // Arrowhead at End
+      var arrowHeadSign = sign === 1 ? 1 : -1;
+      ctx.beginPath();
+      ctx.moveTo(arrowEndX, arrowTurnY);
+      ctx.lineTo(arrowEndX - 10 * arrowHeadSign, arrowTurnY - 6);
+      ctx.lineTo(arrowEndX - 10 * arrowHeadSign, arrowTurnY + 6);
+      ctx.closePath();
+      ctx.fill();
+    } else if (f2 > 0 && type === 'u_shape') {
+      var uTurnX = (W / 2 + 50) * scale;
+      ctx.lineTo(uTurnX, arrowTurnY);
+      var arrowTopY = (startY + D / 2) * scale;
+      ctx.lineTo(uTurnX, arrowTopY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(uTurnX, arrowTopY);
+      ctx.lineTo(uTurnX - 6, arrowTopY + 10);
+      ctx.lineTo(uTurnX + 6, arrowTopY + 10);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      ctx.stroke();
+      // Arrowhead straight
+      ctx.beginPath();
+      ctx.moveTo(arrowStartX, arrowTurnY);
+      ctx.lineTo(arrowStartX - 6, arrowTurnY - 10);
+      ctx.lineTo(arrowStartX + 6, arrowTurnY - 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // "UP ➔" Tag & Riser Schedule Label
+    if (this.zoom >= 0.05) {
+      ctx.fillStyle = '#0369a1';
+      ctx.font = '700 ' + Math.max(10, Math.round(12 * scale * 10)) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('UP ➔', arrowStartX + 28 * scale, arrowStartY + 45 * scale);
+
+      ctx.fillStyle = isSelected ? '#0284c7' : '#475569';
+      ctx.font = '600 ' + Math.max(9, Math.round(10 * scale * 10)) + 'px sans-serif';
+      var stairTag = (stair.riserCount || 16) + ' Risers @ ' + (stair.riserHeight || 175) + 'mm';
+      ctx.fillText(stairTag, arrowStartX, (startY - 14) * scale);
+    }
+
+    ctx.restore();
+  };
+
+  PlanEditor.prototype.renderStairs = function (ctx) {
+    var stairs = (this.project && this.project.plan && this.project.plan.stairs) || [];
+    for (var i = 0; i < stairs.length; i++) {
+      var st = stairs[i];
+      var isSel = this.selected && this.selected.some(function (s) { return s.type === 'stair' && s.id === st.id; });
+      this.renderStaircase(ctx, st, isSel);
+    }
+  };
+
+PlanEditor.prototype.renderOpenings = function (ctx) {
     var openings = this.project.plan.openings || [];
     for (var i = 0; i < openings.length; i++) {
       var op = openings[i];
@@ -7297,6 +7609,7 @@
       this.renderAllWallDimensions(oCtx);
       this.renderCornerAngles(oCtx);
       this.renderFurniture(oCtx);
+      this.renderStairs(oCtx);
       this.renderDimensions(oCtx);
 
       // Detailed Room Clear Inner Span & Carpet Area Callouts on Plan

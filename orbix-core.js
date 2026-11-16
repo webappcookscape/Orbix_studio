@@ -1040,6 +1040,118 @@
     };
   }
 
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Architectural Staircase Generation & Geometry Helpers
+     Auto-calculates Start ➔ Turn (Landing) ➔ End (Ceiling Level) Steps
+     ───────────────────────────────────────────────────────────────────────────── */
+  function createStaircasePlacement(opts) {
+    opts = opts || {};
+    var type = opts.type || 'l_shape'; // 'l_shape' | 'u_shape' | 'straight'
+    var turnDir = opts.turnDirection || 'right'; // 'right' | 'left'
+    var width = opts.width || 900;
+    var totalH = opts.totalHeight || 2800; // Ceiling level
+    var riserCount = opts.riserCount || 16;
+    var riserH = totalH / riserCount; // 175mm
+    var treadD = opts.treadDepth || 250;
+    var flight1 = opts.flight1Steps || (type === 'straight' ? riserCount : Math.floor(riserCount / 2));
+    var flight2 = type === 'straight' ? 0 : (riserCount - flight1);
+    var landingW = opts.landingWidth || width;
+    var landingD = opts.landingDepth || (type === 'u_shape' ? width * 2 + 100 : width);
+
+    return {
+      id: opts.id || uid('stair'),
+      type: type,
+      turnDirection: turnDir,
+      pos: opts.pos ? { x: opts.pos.x, y: opts.pos.y } : { x: 0, y: 0 },
+      rotY: opts.rotY || 0,
+      width: width,
+      totalHeight: totalH,
+      riserCount: riserCount,
+      riserHeight: Math.round(riserH * 10) / 10,
+      treadDepth: treadD,
+      flight1Steps: flight1,
+      flight2Steps: flight2,
+      landingWidth: landingW,
+      landingDepth: landingD,
+      finish: opts.finish || 'marble', // 'marble' | 'wood' | 'concrete'
+      railing: opts.railing || 'glass_steel', // 'glass_steel' | 'black_metal' | 'wood'
+      stringer: opts.stringer !== undefined ? opts.stringer : true,
+      elevation: opts.elevation || 0,
+      roomId: opts.roomId || null,
+      excludeFromPricing: true,
+      isStaircase: true
+    };
+  }
+
+  function getStaircasePolygon(stair) {
+    if (!stair) return [];
+    var pos = stair.pos || { x: 0, y: 0 };
+    var rot = stair.rotY || 0;
+    var W = stair.width || 900;
+    var D = stair.treadDepth || 250;
+    var f1 = stair.flight1Steps || 8;
+    var f2 = stair.flight2Steps || 8;
+    var type = stair.type || 'l_shape';
+    var turnDir = stair.turnDirection || 'right';
+    var sign = turnDir === 'left' ? -1 : 1;
+    var lW = stair.landingWidth || W;
+    var lD = stair.landingDepth || W;
+
+    var pts = [];
+    if (type === 'straight') {
+      var totalL = f1 * D + (f2 > 0 ? f2 * D + lD : 0);
+      pts = [
+        { x: -W / 2, y: -totalL / 2 },
+        { x: W / 2, y: -totalL / 2 },
+        { x: W / 2, y: totalL / 2 },
+        { x: -W / 2, y: totalL / 2 }
+      ];
+    } else if (type === 'u_shape') {
+      var well = 100;
+      var totalW = W * 2 + well;
+      var totalL = Math.max(f1, f2) * D + lD;
+      pts = [
+        { x: -totalW / 2, y: -totalL / 2 },
+        { x: totalW / 2, y: -totalL / 2 },
+        { x: totalW / 2, y: totalL / 2 },
+        { x: -totalW / 2, y: totalL / 2 }
+      ];
+    } else {
+      // L-shape
+      var f1L = f1 * D;
+      var f2L = f2 * D;
+      var bW = W + f2L;
+      var bL = f1L + lD;
+      if (sign === 1) { // right turn
+        pts = [
+          { x: -W / 2, y: -bL / 2 },
+          { x: W / 2, y: -bL / 2 },
+          { x: W / 2, y: bL / 2 - lD },
+          { x: -W / 2 + bW, y: bL / 2 - lD },
+          { x: -W / 2 + bW, y: bL / 2 },
+          { x: -W / 2, y: bL / 2 }
+        ];
+      } else { // left turn
+        pts = [
+          { x: -W / 2, y: -bL / 2 },
+          { x: W / 2, y: -bL / 2 },
+          { x: W / 2, y: bL / 2 },
+          { x: W / 2 - bW, y: bL / 2 },
+          { x: W / 2 - bW, y: bL / 2 - lD },
+          { x: -W / 2, y: bL / 2 - lD }
+        ];
+      }
+    }
+
+    var cosA = Math.cos(rot), sinA = Math.sin(rot);
+    return pts.map(function (p) {
+      return {
+        x: pos.x + p.x * cosA - p.y * sinA,
+        y: pos.y + p.x * sinA + p.y * cosA
+      };
+    });
+  }
+
   // Calculates corner angle in degrees between two walls meeting at jointPt
   function calculateCornerAngle(w1, w2, jointPt) {
     if (!w1 || !w2 || !jointPt) return 90;
@@ -1222,7 +1334,8 @@
         walls: [],
         openings: [],
         rooms: [],
-        furniture: []
+        furniture: [],
+        stairs: []
       },
       rateCard: JSON.parse(JSON.stringify(DEFAULT_RATE_CARD)),
       quotationHistory: []
@@ -2586,7 +2699,8 @@
     if (!data.schemaVersion) {
       data.schemaVersion = '1.0.0';
     }
-    if (!data.plan) data.plan = { walls: [], openings: [], rooms: [], furniture: [] };
+    if (!data.plan) data.plan = { walls: [], openings: [], rooms: [], furniture: [], stairs: [] };
+    if (!data.plan.stairs) data.plan.stairs = [];
     if (!data.rateCard) data.rateCard = JSON.parse(JSON.stringify(DEFAULT_RATE_CARD));
     if (!data.commercialCharges) data.commercialCharges = {};
     // Ensure all furniture items have guaranteed unique instance IDs (de-duplicate legacy projects)
@@ -6794,6 +6908,8 @@
     createOpening: createOpening,
     createRoom: createRoom,
     createFurniturePlacement: createFurniturePlacement,
+    createStaircasePlacement: createStaircasePlacement,
+    getStaircasePolygon: getStaircasePolygon,
     wallLength: wallLength,
     wallAngle: wallAngle,
     wallDirection: wallDirection,

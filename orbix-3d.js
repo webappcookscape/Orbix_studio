@@ -1132,6 +1132,16 @@
       }
     }
 
+        // 2b. Build Architectural Staircases in 3D
+    var stairs = (plan && plan.stairs) || [];
+    for (var sIdx = 0; sIdx < stairs.length; sIdx++) {
+      var stairObj = stairs[sIdx];
+      var stairMeshGroup = this.buildStaircaseMesh(stairObj);
+      if (stairMeshGroup) {
+        this.group.add(stairMeshGroup);
+      }
+    }
+
     // 3. Build Placed Furniture Units in 3D & associate with closest wall
     for (var f = 0; f < furniture.length; f++) {
       var furn = furniture[f];
@@ -4383,7 +4393,223 @@
   /* ─────────────────────────────────────────────────────────────────────────────
      Build Placed 3D Furniture Unit
      ───────────────────────────────────────────────────────────────────────────── */
-  ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
+    /* ─────────────────────────────────────────────────────────────────────────────
+     Build Photorealistic 3D Staircase (Treads, Riser Steps, Landing Slab & Railing)
+     Ascends seamlessly from floor Y=0 to ceiling level Y=2800
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildStaircaseMesh = function (stair) {
+    if (!stair) return null;
+    var sg = new THREE.Group();
+    sg.name = 'Staircase_' + stair.id;
+
+    var type = stair.type || 'l_shape';
+    var turnDir = stair.turnDirection || 'right';
+    var sign = turnDir === 'left' ? -1 : 1;
+    var W = stair.width || 900;
+    var D = stair.treadDepth || 250;
+    var totalH = stair.totalHeight || 2800;
+    var riserCount = stair.riserCount || 16;
+    var riserH = totalH / riserCount; // 175mm
+    var f1 = stair.flight1Steps || 8;
+    var f2 = stair.flight2Steps || 8;
+    var lW = stair.landingWidth || W;
+    var lD = stair.landingDepth || W;
+
+    // Materials based on stair.finish
+    var finish = stair.finish || 'marble';
+    var treadColor = 0xF5F3EE; // Statuario white marble
+    var treadRoughness = 0.25;
+    if (finish === 'wood') {
+      treadColor = 0x8C5E3B; // Warm Teak Wood
+      treadRoughness = 0.55;
+    } else if (finish === 'concrete') {
+      treadColor = 0x94A3B8; // Architectural Grey Basalt Stone
+      treadRoughness = 0.8;
+    }
+    var treadMat = new THREE.MeshStandardMaterial({
+      color: treadColor,
+      roughness: treadRoughness,
+      metalness: 0.05
+    });
+
+    // Riser / underbody material
+    var riserMat = new THREE.MeshStandardMaterial({
+      color: 0xE2E8F0,
+      roughness: 0.6,
+      metalness: 0.02
+    });
+
+    // Stainless steel handrail material
+    var railMat = new THREE.MeshStandardMaterial({
+      color: 0xCBD5E1,
+      metalness: 0.85,
+      roughness: 0.2
+    });
+
+    // Balustrade tempered glass material
+    var glassMat = (typeof THREE.MeshPhysicalMaterial === 'function') ?
+      new THREE.MeshPhysicalMaterial({
+        color: 0xE0F2FE,
+        transparent: true,
+        opacity: 0.45,
+        roughness: 0.05,
+        transmission: 0.85,
+        ior: 1.5
+      }) :
+      new THREE.MeshStandardMaterial({
+        color: 0xBAE6FD,
+        transparent: true,
+        opacity: 0.4
+      });
+
+    // Flight 1 Steps (Ascending from Y=0 to landing at Y=f1*riserH)
+    var f1L = f1 * D;
+    var f2L = f2 * D;
+    var bL = (type === 'straight') ? (f1L + (f2 > 0 ? f2L + lD : 0)) : (f1L + lD);
+    var startZ = -bL / 2;
+
+    for (var i = 0; i < f1; i++) {
+      var curY = i * riserH;
+      var curZ = startZ + i * D;
+
+      // Solid step box
+      var stepGeo = new THREE.BoxGeometry(W, riserH, D + 20); // 20mm bullnose overhang
+      var stepMesh = new THREE.Mesh(stepGeo, treadMat);
+      stepMesh.position.set(0, curY + riserH / 2, curZ + D / 2);
+      stepMesh.castShadow = true;
+      stepMesh.receiveShadow = true;
+      sg.add(stepMesh);
+
+      // Solid riser under step
+      if (curY > 0) {
+        var baseGeo = new THREE.BoxGeometry(W - 10, curY, D);
+        var baseMesh = new THREE.Mesh(baseGeo, riserMat);
+        baseMesh.position.set(0, curY / 2, curZ + D / 2);
+        baseMesh.castShadow = true;
+        baseMesh.receiveShadow = true;
+        sg.add(baseMesh);
+      }
+    }
+
+    // Mid Landing Platform (The Turn) at Y = f1 * riserH (1400mm)
+    var landY = f1 * riserH;
+    var landZ = startZ + f1L;
+    var landWidth = (type === 'u_shape' ? (W * 2 + 100) : lW);
+    var landX = (type === 'u_shape' ? 50 : 0);
+
+    var landingGeo = new THREE.BoxGeometry(landWidth, riserH, lD);
+    var landingMesh = new THREE.Mesh(landingGeo, treadMat);
+    landingMesh.position.set(landX, landY - riserH / 2, landZ + lD / 2);
+    landingMesh.castShadow = true;
+    landingMesh.receiveShadow = true;
+    sg.add(landingMesh);
+
+    // Landing solid support base
+    var landBaseGeo = new THREE.BoxGeometry(landWidth - 10, landY - riserH, lD - 10);
+    var landBaseMesh = new THREE.Mesh(landBaseGeo, riserMat);
+    landBaseMesh.position.set(landX, (landY - riserH) / 2, landZ + lD / 2);
+    landBaseMesh.castShadow = true;
+    landBaseMesh.receiveShadow = true;
+    sg.add(landBaseMesh);
+
+    // Flight 2 Steps (Ascending from landing Y=1400 to ceiling Y=2800)
+    if (f2 > 0) {
+      if (type === 'l_shape') {
+        for (var j = 0; j < f2; j++) {
+          var step2Y = landY + j * riserH;
+          var step2X = (sign === 1) ? (W / 2 + j * D) : (-W / 2 - j * D);
+          var step2Z = landZ + lD / 2;
+
+          var f2Geo = new THREE.BoxGeometry(D + 20, riserH, W);
+          var f2Mesh = new THREE.Mesh(f2Geo, treadMat);
+          f2Mesh.position.set(step2X + (sign === 1 ? D / 2 : -D / 2), step2Y + riserH / 2, step2Z);
+          f2Mesh.castShadow = true;
+          f2Mesh.receiveShadow = true;
+          sg.add(f2Mesh);
+
+          // Support riser under flight 2
+          var f2BaseGeo = new THREE.BoxGeometry(D, step2Y, W - 10);
+          var f2BaseMesh = new THREE.Mesh(f2BaseGeo, riserMat);
+          f2BaseMesh.position.set(step2X + (sign === 1 ? D / 2 : -D / 2), step2Y / 2, step2Z);
+          f2BaseMesh.castShadow = true;
+          f2BaseMesh.receiveShadow = true;
+          sg.add(f2BaseMesh);
+        }
+      } else if (type === 'u_shape') {
+        for (var k = 0; k < f2; k++) {
+          var uStepY = landY + k * riserH;
+          var uStepZ = landZ - k * D;
+          var uStepX = W + 100 / 2;
+
+          var uGeo = new THREE.BoxGeometry(W, riserH, D + 20);
+          var uMesh = new THREE.Mesh(uGeo, treadMat);
+          uMesh.position.set(uStepX, uStepY + riserH / 2, uStepZ - D / 2);
+          uMesh.castShadow = true;
+          uMesh.receiveShadow = true;
+          sg.add(uMesh);
+        }
+      } else if (type === 'straight') {
+        for (var s = 0; s < f2; s++) {
+          var strY = landY + s * riserH;
+          var strZ = landZ + lD + s * D;
+
+          var strGeo = new THREE.BoxGeometry(W, riserH, D + 20);
+          var strMesh = new THREE.Mesh(strGeo, treadMat);
+          strMesh.position.set(0, strY + riserH / 2, strZ + D / 2);
+          strMesh.castShadow = true;
+          strMesh.receiveShadow = true;
+          sg.add(strMesh);
+        }
+      }
+    }
+
+    // Modern Balustrades & Stainless Steel Handrails
+    var railH = 900; // mm handrail height above treads
+    var railT = 40; // mm handrail diameter / width
+
+    // Flight 1 Handrail (Angled sloping rail)
+    var f1Angle = Math.atan2(landY, f1L);
+    var f1SlopeLen = Math.hypot(landY, f1L);
+    var rail1Geo = new THREE.BoxGeometry(railT, railT, f1SlopeLen);
+    var rail1Mesh = new THREE.Mesh(rail1Geo, railMat);
+    rail1Mesh.position.set(-W / 2 + railT / 2, landY / 2 + railH, startZ + f1L / 2);
+    rail1Mesh.rotation.x = f1Angle;
+    rail1Mesh.castShadow = true;
+    sg.add(rail1Mesh);
+
+    // Flight 1 Glass Balustrade Panel
+    var glass1Geo = new THREE.BoxGeometry(12, railH - 100, f1SlopeLen - 60);
+    var glass1Mesh = new THREE.Mesh(glass1Geo, glassMat);
+    glass1Mesh.position.set(-W / 2 + railT / 2, landY / 2 + railH / 2, startZ + f1L / 2);
+    glass1Mesh.rotation.x = f1Angle;
+    sg.add(glass1Mesh);
+
+    // Newel Posts at bottom and landing
+    var postGeo = new THREE.CylinderGeometry(20, 20, railH, 16);
+    var post1 = new THREE.Mesh(postGeo, railMat);
+    post1.position.set(-W / 2 + railT / 2, railH / 2, startZ + D / 2);
+    sg.add(post1);
+
+    var post2 = new THREE.Mesh(postGeo, railMat);
+    post2.position.set(-W / 2 + railT / 2, landY + railH / 2, landZ);
+    sg.add(post2);
+
+    // Set position and rotation in Three.js world
+    sg.position.set(stair.pos.x, stair.elevation || 0, stair.pos.y);
+    sg.rotation.y = -(stair.rotY || 0);
+
+    sg.userData = {
+      isStaircase: true,
+      isFurniture: true,
+      isFurnitureGroup: true,
+      stairId: stair.id,
+      stair: stair
+    };
+
+    return sg;
+  };
+
+ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     if (!furn) return new THREE.Group();
     try {
       var fg = new THREE.Group();
