@@ -17612,7 +17612,7 @@ body.role-employee #adminCreateEmpBox,
       var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
 
       // Check if clicked directly on any placed furniture unit (exact rotated/L-shape polygon, never oversized circle!)
-      var clickedWallCore = (self.activeTool === 'select' && typeof self.isPointOnWallBand === 'function') ? self.isPointOnWallBand(worldPt) : false;
+      var clickedWallCore = (e.shiftKey && self.activeTool === 'select' && typeof self.isPointOnWallBand === 'function') ? self.isPointOnWallBand(worldPt) : false;
       var matchingHits = [];
       if (!clickedWallCore) {
         for (var fi = furnList.length - 1; fi >= 0; fi--) {
@@ -18536,8 +18536,8 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // 2. Check if clicked a furniture unit (only when cursor is not inside a solid wall stripe)
-    var onWallBand = (typeof this.isPointOnWallBand === 'function') ? this.isPointOnWallBand(worldPt) : false;
+    // 2. Check if clicked a furniture unit (only when cursor is not inside a solid wall stripe being Shift-selected)
+    var onWallBand = (isShift && typeof this.isPointOnWallBand === 'function') ? this.isPointOnWallBand(worldPt) : false;
     var furnList = this.project.plan.furniture || [];
     var matchingHits = [];
     if (!onWallBand) {
@@ -18587,96 +18587,97 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // 4. Check if clicked a wall -> Select first, or move parallel/perpendicular if already selected
-    var near = this.findNearestWall(worldPt, 250);
-    if (near) {
-      var w = near.wall;
-      if (!isShift) this.selected = [];
-      this.selected.push({ type: 'wall', id: w.id });
-      this.onSelectionChange(this.selected);
+    // 4. Check if clicked a wall -> ONLY when Shift key is held (Shift + Click)!
+    if (isShift) {
+      var near = this.findNearestWall(worldPt, 250);
+      if (near) {
+        var w = near.wall;
+        this.selected = [{ type: 'wall', id: w.id }];
+        this.onSelectionChange(this.selected);
 
-      // Check if clicking near start or end vertex to extend wall
-      var distStart = Vec2.dist(worldPt, w.start);
-      var distEnd = Vec2.dist(worldPt, w.end);
-      var isNearVertex = (distStart < 180 || distEnd < 180);
+        // Check if clicking near start or end vertex to extend wall
+        var distStart = Vec2.dist(worldPt, w.start);
+        var distEnd = Vec2.dist(worldPt, w.end);
+        var isNearVertex = (distStart < 180 || distEnd < 180);
 
-      var allWalls = this.project.plan.walls || [];
+        var allWalls = this.project.plan.walls || [];
 
-      if (isNearVertex) {
-        var vTarget = (distStart <= distEnd) ? w.start : w.end;
-        var connectedRefs = [];
-        for (var cvi = 0; cvi < allWalls.length; cvi++) {
-          var cwWall = allWalls[cvi];
-          if (!cwWall) continue;
-          if (cwWall.start && Vec2.dist(cwWall.start, vTarget) < 60) {
-            connectedRefs.push({ wall: cwWall, endpoint: 'start', orig: Vec2.clone(cwWall.start) });
+        if (isNearVertex) {
+          var vTarget = (distStart <= distEnd) ? w.start : w.end;
+          var connectedRefs = [];
+          for (var cvi = 0; cvi < allWalls.length; cvi++) {
+            var cwWall = allWalls[cvi];
+            if (!cwWall) continue;
+            if (cwWall.start && Vec2.dist(cwWall.start, vTarget) < 60) {
+              connectedRefs.push({ wall: cwWall, endpoint: 'start', orig: Vec2.clone(cwWall.start) });
+            }
+            if (cwWall.end && Vec2.dist(cwWall.end, vTarget) < 60) {
+              connectedRefs.push({ wall: cwWall, endpoint: 'end', orig: Vec2.clone(cwWall.end) });
+            }
           }
-          if (cwWall.end && Vec2.dist(cwWall.end, vTarget) < 60) {
-            connectedRefs.push({ wall: cwWall, endpoint: 'end', orig: Vec2.clone(cwWall.end) });
-          }
+          this.dragState = {
+            type: 'move_vertex',
+            point: vTarget,
+            connectedRefs: connectedRefs,
+            startWorld: Vec2.clone(worldPt),
+            hasMoved: false
+          };
+          this.render();
+          return;
         }
-        this.dragState = {
-          type: 'move_vertex',
-          point: vTarget,
-          connectedRefs: connectedRefs,
-          startWorld: Vec2.clone(worldPt),
-          hasMoved: false
-        };
+
+        if (true) {
+          var allWalls = this.project.plan.walls || [];
+          var connectedStart = [];
+          var connectedEnd = [];
+          var connectedTee = [];
+          for (var cw = 0; cw < allWalls.length; cw++) {
+            var other = allWalls[cw];
+            if (!other || other.id === w.id) continue;
+            if (other.start && Vec2.dist(w.start, other.start) < 60) {
+              connectedStart.push({ wall: other, endpoint: 'start', orig: Vec2.clone(other.start) });
+            } else if (other.end && Vec2.dist(w.start, other.end) < 60) {
+              connectedStart.push({ wall: other, endpoint: 'end', orig: Vec2.clone(other.end) });
+            }
+            if (other.start && Vec2.dist(w.end, other.start) < 60) {
+              connectedEnd.push({ wall: other, endpoint: 'start', orig: Vec2.clone(other.start) });
+            } else if (other.end && Vec2.dist(w.end, other.end) < 60) {
+              connectedEnd.push({ wall: other, endpoint: 'end', orig: Vec2.clone(other.end) });
+            }
+
+            // Also check all intermediate T-junction walls connected along the wall body
+            if (other.start && Vec2.dist(w.start, other.start) >= 60 && Vec2.dist(w.end, other.start) >= 60) {
+              var prS = Vec2.projectOnSegment(other.start, w.start, w.end);
+              if (prS.dist < 60 && prS.t > 0.02 && prS.t < 0.98) {
+                connectedTee.push({ wall: other, endpoint: 'start', orig: Vec2.clone(other.start), t: prS.t });
+              }
+            }
+            if (other.end && Vec2.dist(w.end, other.end) >= 60 && Vec2.dist(w.end, other.end) >= 60) {
+              var prE = Vec2.projectOnSegment(other.end, w.start, w.end);
+              if (prE.dist < 60 && prE.t > 0.02 && prE.t < 0.98) {
+                connectedTee.push({ wall: other, endpoint: 'end', orig: Vec2.clone(other.end), t: prE.t });
+              }
+            }
+          }
+
+          this.dragState = {
+            type: 'move_wall',
+            wall: w,
+            startWorld: Vec2.clone(worldPt),
+            origStart: Vec2.clone(w.start),
+            origEnd: Vec2.clone(w.end),
+            origDir: Core.wallDirection(w),
+            origNorm: Core.wallNormal(w),
+            connectedStart: connectedStart,
+            connectedEnd: connectedEnd,
+            connectedTee: connectedTee,
+            hasMoved: false
+          };
+        }
+
         this.render();
         return;
       }
-
-      if (true) {
-        var allWalls = this.project.plan.walls || [];
-        var connectedStart = [];
-        var connectedEnd = [];
-        var connectedTee = [];
-        for (var cw = 0; cw < allWalls.length; cw++) {
-          var other = allWalls[cw];
-          if (!other || other.id === w.id) continue;
-          if (other.start && Vec2.dist(w.start, other.start) < 60) {
-            connectedStart.push({ wall: other, endpoint: 'start', orig: Vec2.clone(other.start) });
-          } else if (other.end && Vec2.dist(w.start, other.end) < 60) {
-            connectedStart.push({ wall: other, endpoint: 'end', orig: Vec2.clone(other.end) });
-          }
-          if (other.start && Vec2.dist(w.end, other.start) < 60) {
-            connectedEnd.push({ wall: other, endpoint: 'start', orig: Vec2.clone(other.start) });
-          } else if (other.end && Vec2.dist(w.end, other.end) < 60) {
-            connectedEnd.push({ wall: other, endpoint: 'end', orig: Vec2.clone(other.end) });
-          }
-
-          // Also check all intermediate T-junction walls connected along the wall body
-          if (other.start && Vec2.dist(w.start, other.start) >= 60 && Vec2.dist(w.end, other.start) >= 60) {
-            var prS = Vec2.projectOnSegment(other.start, w.start, w.end);
-            if (prS.dist < 60 && prS.t > 0.02 && prS.t < 0.98) {
-              connectedTee.push({ wall: other, endpoint: 'start', orig: Vec2.clone(other.start), t: prS.t });
-            }
-          }
-          if (other.end && Vec2.dist(w.start, other.end) >= 60 && Vec2.dist(w.end, other.end) >= 60) {
-            var prE = Vec2.projectOnSegment(other.end, w.start, w.end);
-            if (prE.dist < 60 && prE.t > 0.02 && prE.t < 0.98) {
-              connectedTee.push({ wall: other, endpoint: 'end', orig: Vec2.clone(other.end), t: prE.t });
-            }
-          }
-        }
-
-        this.dragState = {
-          type: 'move_wall',
-          wall: w,
-          startWorld: Vec2.clone(worldPt),
-          origStart: Vec2.clone(w.start),
-          origEnd: Vec2.clone(w.end),
-          origDir: Core.wallDirection(w),
-          origNorm: Core.wallNormal(w),
-          connectedStart: connectedStart,
-          connectedEnd: connectedEnd,
-          connectedTee: connectedTee,
-          hasMoved: false
-        };
-      }
-
-      this.render();
-      return;
     }
 
     // Single-click inside a room polygon does NOT select room or open room edit tool (requires double-click)
