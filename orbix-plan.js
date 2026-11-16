@@ -69,6 +69,9 @@
     this.history = [];
     this.historyIndex = -1;
 
+    // Active Elevation Tier Filter: 'all' | 'floor' | 'wall' | 'loft'
+    this.unitTierFilter = 'all';
+
     this.initDOM();
     this.bindEvents();
     this.pushHistory('Init');
@@ -208,6 +211,203 @@
     this.numInputEl.style.pointerEvents = 'none';
     this.numInputEl.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
     this.container.appendChild(this.numInputEl);
+
+    // Visual Elevation Tier Filter Buttons (All / Floor / Wall / Loft)
+    this.createTierFilterBar();
+  };
+
+  // Classify a modular furniture unit into its Elevation Tier: 'floor' | 'wall' | 'loft'
+  PlanEditor.prototype.getUnitTier = function (furn) {
+    if (!furn) return 'floor';
+    var cat = (furn.category || '').toLowerCase();
+    var nm = (furn.name || '').toLowerCase();
+    var id = (furn.id || '').toLowerCase();
+    var cd = (furn.code || furn.catalogItemId || '').toLowerCase();
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+      parseFloat(furn.elevation) :
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ? parseFloat(furn.pos.z) : 0);
+
+    // 1. Loft Tier (Elev >= 2000mm or loft in name/category)
+    if (cat.indexOf('loft') !== -1 || nm.indexOf('loft') !== -1 || id.indexOf('loft') !== -1 || cd.indexOf('loft') !== -1 || elev >= 2000) {
+      return 'loft';
+    }
+
+    // 2. Wall Unit Tier (Upper cabinets, wall open box at 1500, spice rack at 1350, or Core.isWallUnit)
+    var isWall = (Core && Core.isWallUnit) ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : false;
+    if (isWall || cat.indexOf('wall') !== -1 || cat === 'kitchen_wm' || /(^|\b|_|-)(wm|wbcm)($|\b|_|-|\d+)/i.test(nm) || (elev >= 1000 && elev < 2000)) {
+      return 'wall';
+    }
+
+    // 3. Floor Unit Tier (Base cabinets, FM, Tall units, Floor open box, Wardrobes)
+    return 'floor';
+  };
+
+  // Switch Active Elevation Tier: 'all' | 'floor' | 'wall' | 'loft'
+  PlanEditor.prototype.setUnitTierFilter = function (tier) {
+    var validTiers = ['all', 'floor', 'wall', 'loft'];
+    if (validTiers.indexOf(tier) === -1) tier = 'all';
+    this.unitTierFilter = tier;
+
+    // Update buttons in UI pill bar
+    if (this.tierFilterBar && typeof this.tierFilterBar.querySelectorAll === 'function') {
+      var btns = this.tierFilterBar.querySelectorAll('.orbix-tier-btn');
+      for (var b = 0; b < btns.length; b++) {
+        var btn = btns[b];
+        var bTier = (typeof btn.getAttribute === 'function') ? btn.getAttribute('data-tier') : (btn['data-tier'] || '');
+        if (bTier === tier) {
+          btn.style.background = '#2563eb';
+          btn.style.color = '#ffffff';
+          btn.style.fontWeight = '600';
+          btn.style.boxShadow = '0 1px 4px rgba(37,99,235,0.45)';
+        } else {
+          btn.style.background = 'transparent';
+          btn.style.color = '#94a3b8';
+          btn.style.fontWeight = '500';
+          btn.style.boxShadow = 'none';
+        }
+      }
+    }
+
+    // If currently selected unit does not match new tier, unselect it
+    if (this.selected && this.selected.length > 0 && tier !== 'all') {
+      var furnList = (this.project && this.project.plan && this.project.plan.furniture) || [];
+      var filteredSel = [];
+      for (var s = 0; s < this.selected.length; s++) {
+        var sel = this.selected[s];
+        if (sel.type === 'furniture') {
+          var fObj = furnList.find(function(f) { return f.id === sel.id; });
+          if (fObj && this.getUnitTier(fObj) === tier) {
+            filteredSel.push(sel);
+          }
+        } else {
+          filteredSel.push(sel);
+        }
+      }
+      if (filteredSel.length !== this.selected.length) {
+        this.selected = filteredSel;
+        this.onSelectionChange(this.selected);
+      }
+    }
+
+    this.render();
+  };
+
+  // Creates the floating segmented elevation filter pill bar above 2D plan canvas
+  PlanEditor.prototype.createTierFilterBar = function () {
+    if (!this.container || typeof document === 'undefined') return;
+    var existing = this.container.querySelector('.orbix-tier-filter-bar');
+    if (existing) existing.remove();
+
+    var bar = document.createElement('div');
+    bar.className = 'orbix-tier-filter-bar';
+    bar.style.position = 'absolute';
+    bar.style.top = '12px';
+    bar.style.left = '50%';
+    bar.style.transform = 'translateX(-50%)';
+    bar.style.display = 'flex';
+    bar.style.alignItems = 'center';
+    bar.style.gap = '3px';
+    bar.style.background = 'rgba(15, 23, 42, 0.92)';
+    bar.style.backdropFilter = 'blur(8px)';
+    bar.style.padding = '3px 5px';
+    bar.style.borderRadius = '24px';
+    bar.style.border = '1px solid rgba(255, 255, 255, 0.14)';
+    bar.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.35)';
+    bar.style.zIndex = '25';
+    bar.style.userSelect = 'none';
+
+    var tiers = [
+      { id: 'all', label: 'All (Alt+A)', title: 'Select & move all units (Alt+A)' },
+      { id: 'floor', label: 'Floor (Alt+F)', title: 'Select & move floor/base units only (Alt+F)' },
+      { id: 'wall', label: 'Wall (Alt+W)', title: 'Select & move wall/upper units only (Alt+W)' },
+      { id: 'loft', label: 'Loft (Alt+L)', title: 'Select & move loft units only (Alt+L)' }
+    ];
+
+    var self = this;
+    tiers.forEach(function (t) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'orbix-tier-btn';
+      btn['data-tier'] = t.id;
+      if (typeof btn.setAttribute === 'function') btn.setAttribute('data-tier', t.id);
+      btn.title = t.title;
+      btn.textContent = t.label;
+      btn.style.border = 'none';
+      btn.style.outline = 'none';
+      btn.style.cursor = 'pointer';
+      btn.style.padding = '5px 11px';
+      btn.style.borderRadius = '18px';
+      btn.style.fontSize = '11px';
+      btn.style.fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      btn.style.transition = 'all 0.15s ease';
+
+      if (t.id === self.unitTierFilter) {
+        btn.style.background = '#2563eb';
+        btn.style.color = '#ffffff';
+        btn.style.fontWeight = '600';
+        btn.style.boxShadow = '0 1px 4px rgba(37,99,235,0.45)';
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.color = '#94a3b8';
+        btn.style.fontWeight = '500';
+      }
+
+      btn.addEventListener('mouseenter', function () {
+        if (self.unitTierFilter !== t.id) {
+          btn.style.color = '#f8fafc';
+          btn.style.background = 'rgba(255, 255, 255, 0.08)';
+        }
+      });
+      btn.addEventListener('mouseleave', function () {
+        if (self.unitTierFilter !== t.id) {
+          btn.style.color = '#94a3b8';
+          btn.style.background = 'transparent';
+        }
+      });
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        self.setUnitTierFilter(t.id);
+      });
+
+      if (typeof bar.appendChild === 'function') bar.appendChild(btn);
+    });
+
+    if (typeof this.container.appendChild === 'function') {
+      this.container.appendChild(bar);
+    }
+    this.tierFilterBar = bar;
+  };
+
+  // Render On-Screen Banner when Elevation Tier is Filtered
+  PlanEditor.prototype.renderTierFilterBanner = function (ctx) {
+    if (!this.unitTierFilter || this.unitTierFilter === 'all') return;
+    var tierInfo = {
+      floor: { title: 'FLOOR UNITS ACTIVE', sub: 'Wall & Loft units locked • Press Alt+A to unlock all' },
+      wall: { title: 'WALL UNITS ACTIVE', sub: 'Floor & Loft units locked • Press Alt+A to unlock all' },
+      loft: { title: 'LOFT UNITS ACTIVE', sub: 'Floor & Wall units locked • Press Alt+A to unlock all' }
+    }[this.unitTierFilter] || { title: 'TIER FILTER ACTIVE', sub: 'Press Alt+A to reset' };
+
+    ctx.save();
+    var bannerW = 410;
+    var bannerH = 26;
+    var bx = (this.width - bannerW) / 2;
+    var by = 48;
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(bx, by, bannerW, bannerH, 13);
+    else ctx.rect(bx, by, bannerW, bannerH);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = '600 11px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = '#60a5fa';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⚡ ' + tierInfo.title + ' — ' + tierInfo.sub, this.width / 2, by + bannerH / 2);
+    ctx.restore();
   };
 
   // World to Screen and Screen to World
@@ -977,6 +1177,9 @@
       if (!clickedWallCore) {
         for (var fi = furnList.length - 1; fi >= 0; fi--) {
           var fn = furnList[fi];
+          if (self.unitTierFilter && self.unitTierFilter !== 'all') {
+            if (self.getUnitTier(fn) !== self.unitTierFilter) continue;
+          }
           var fPoly = Core.getFurniturePolygon(fn);
           if (Core.Vec2.pointInPolygon(worldPt, fPoly)) {
             matchingHits.push(fn);
@@ -1648,6 +1851,31 @@
     window.addEventListener('keydown', function (e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
+      // Elevation Tier Shortcuts: Alt + (F, W, L, A) or Ctrl + (F, L, A, W)
+      if (e.altKey || e.ctrlKey || e.metaKey) {
+        var k = e.key.toLowerCase();
+        if (k === 'w' && (e.altKey || e.ctrlKey)) {
+          e.preventDefault();
+          self.setUnitTierFilter('wall');
+          return;
+        }
+        if (k === 'f' && (e.altKey || e.ctrlKey)) {
+          e.preventDefault();
+          self.setUnitTierFilter('floor');
+          return;
+        }
+        if (k === 'l' && (e.altKey || e.ctrlKey)) {
+          e.preventDefault();
+          self.setUnitTierFilter('loft');
+          return;
+        }
+        if (k === 'a' && (e.altKey || e.ctrlKey)) {
+          e.preventDefault();
+          self.setUnitTierFilter('all');
+          return;
+        }
+      }
+
       if (e.key === 'Shift') {
         self.isShiftDown = true;
         if (self.wallChainStart) self.render();
@@ -1903,6 +2131,9 @@
     if (!onWallBand) {
       for (var f = furnList.length - 1; f >= 0; f--) {
         var fn = furnList[f];
+        if (this.unitTierFilter && this.unitTierFilter !== 'all') {
+          if (this.getUnitTier(fn) !== this.unitTierFilter) continue;
+        }
         var poly = Core.getFurniturePolygon(fn);
         if (Core.Vec2.pointInPolygon(worldPt, poly)) {
           matchingHits.push(fn);
@@ -2486,7 +2717,7 @@
             y: arm1FaceCenter.y - (fW / 2) * uO.y
           };
           var dArm1 = Math.hypot(pos.x - targetPosArm1.x, pos.y - targetPosArm1.y);
-          if (dArm1 < minJointDist + 80 && dArm1 < (bestJoint ? bestJoint.dist : 9999)) {
+          if (dArm1 < minJointDist + 180 && dArm1 < (bestJoint ? bestJoint.dist : 9999)) {
             bestJoint = {
               pos: targetPosArm1,
               rotY: oRot,
@@ -2511,7 +2742,7 @@
             y: arm2FaceCenter.y + (fW / 2) * uArm2.y
           };
           var dArm2 = Math.hypot(pos.x - targetPosArm2.x, pos.y - targetPosArm2.y);
-          if (dArm2 < minJointDist + 80 && dArm2 < (bestJoint ? bestJoint.dist : 9999)) {
+          if (dArm2 < minJointDist + 180 && dArm2 < (bestJoint ? bestJoint.dist : 9999)) {
             bestJoint = {
               pos: targetPosArm2,
               rotY: rotArm2,
@@ -2787,7 +3018,7 @@
 
       // Find best matching corner candidate
       var bestCornerSnap = null;
-      var minCornerDist = 480; // mm magnetic snap radius
+      var minCornerDist = 850; // mm generous magnetic snap radius for room corners
 
       for (var ci = 0; ci < cornerCandidates.length; ci++) {
         var cc = cornerCandidates[ci];
@@ -2815,17 +3046,19 @@
           var dot1B = arm1Dir.x * dirB.x + arm1Dir.y * dirB.y;
           var dot2A = arm2Dir.x * dirA.x + arm2Dir.y * dirA.y;
 
-          var matchesConfigA = (dot1A > 0.75 && dot2B > 0.75);
-          var matchesConfigB = (dot1B > 0.75 && dot2A > 0.75);
+          var matchesConfigA = (dot1A > 0.65 && dot2B > 0.65);
+          var matchesConfigB = (dot1B > 0.65 && dot2A > 0.65);
 
           if (matchesConfigA || matchesConfigB) {
             var candidateCenter = {
               x: cPt.x - (cW / 2) * u.x + (cD / 2) * v.x,
               y: cPt.y - (cW / 2) * u.y + (cD / 2) * v.y
             };
-            var dCursor = Math.hypot(pos.x - candidateCenter.x, pos.y - candidateCenter.y);
-            if (dCursor < minCornerDist) {
-              minCornerDist = dCursor;
+            var dToCorner = Math.hypot(pos.x - cPt.x, pos.y - cPt.y);
+            var dToCenter = Math.hypot(pos.x - candidateCenter.x, pos.y - candidateCenter.y);
+            var dDist = Math.min(dToCorner, dToCenter);
+            if (dDist < minCornerDist) {
+              minCornerDist = dDist;
               bestCornerSnap = {
                 pos: candidateCenter,
                 rotY: aTest,
@@ -3406,6 +3639,9 @@
 
     // 7. Architectural North Arrow & Title Block (as in reference plan)
     this.renderTitleAndNorthArrow(ctx);
+
+    // 8. Elevation Tier Filter Banner (when filtered to Floor, Wall, or Loft)
+    this.renderTierFilterBanner(ctx);
   };
 
   PlanEditor.prototype.renderTitleAndNorthArrow = function (ctx) {
@@ -4884,6 +5120,12 @@
       ctx.save();
       ctx.translate(sPos.x, sPos.y);
       ctx.rotate(f.rotY || 0);
+
+      var uTier = (typeof this.getUnitTier === 'function') ? this.getUnitTier(f) : 'floor';
+      var isTierFiltered = (this.unitTierFilter && this.unitTierFilter !== 'all' && uTier !== this.unitTierFilter);
+      if (isTierFiltered) {
+        ctx.globalAlpha = 0.28;
+      }
 
       // Check if L-shaped corner base unit
       var isLCorner = !!(
