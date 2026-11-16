@@ -1107,29 +1107,34 @@
         (f.catalogItemId && /rcc|column|pillar|post/i.test(f.catalogItemId)));
     });
 
-    for (var ri = 0; ri < rccItems.length; ri++) {
-      var rcc = rccItems[ri];
-      if (!rcc.pos) continue;
-      for (var wi = 0; wi < project.plan.walls.length; wi++) {
-        var wObj = project.plan.walls[wi];
-        if (wObj.isDivider) continue;
-        var pRcc = Vec2.projectOnSegment(rcc.pos, wObj.start, wObj.end);
-        var wL = wallLength(wObj);
-        var distEnds = Math.min(pRcc.t * wL, (1 - pRcc.t) * wL);
-        // If RCC column is within wall thickness distance and not at the very endpoints:
-        if (pRcc.dist <= Math.max(80, (wObj.thickness || 150) / 2 + 50) && distEnds >= 50) {
-          var resRcc = splitWall(project, wObj.id, pRcc.pt);
-          if (resRcc) {
-            changed = true;
-            break;
+    for (var rccPass = 0; rccPass < 6; rccPass++) {
+      var didSplitRcc = false;
+      for (var ri = 0; ri < rccItems.length && !didSplitRcc; ri++) {
+        var rcc = rccItems[ri];
+        if (!rcc.pos) continue;
+        for (var wi = 0; wi < project.plan.walls.length; wi++) {
+          var wObj = project.plan.walls[wi];
+          if (wObj.isDivider) continue;
+          var pRcc = Vec2.projectOnSegment(rcc.pos, wObj.start, wObj.end);
+          var wL = wallLength(wObj);
+          var distEnds = Math.min(pRcc.t * wL, (1 - pRcc.t) * wL);
+          // If RCC column is within wall thickness distance and not at the very endpoints:
+          if (pRcc.dist <= Math.max(80, (wObj.thickness || 150) / 2 + 60) && distEnds >= 50) {
+            var resRcc = splitWall(project, wObj.id, pRcc.pt);
+            if (resRcc) {
+              didSplitRcc = true;
+              changed = true;
+              break;
+            }
           }
         }
       }
+      if (!didSplitRcc) break;
     }
 
     // ── 2. Split walls at T-Junctions & Crossing X-Junctions ──
-    var TOL = 80; // mm
-    for (var pass = 0; pass < 6; pass++) {
+    var TOL = 100; // mm
+    for (var pass = 0; pass < 8; pass++) {
       var didSplit = false;
       var curWalls = project.plan.walls.slice();
       for (var i = 0; i < curWalls.length && !didSplit; i++) {
@@ -1143,13 +1148,21 @@
             var wj = curWalls[j];
             var dS = Vec2.dist(pt, wj.start);
             var dE = Vec2.dist(pt, wj.end);
-            if (dS < TOL || dE < TOL) continue;
+            if (dS < 40 || dE < 40) continue; // Already at vertex
             var proj = Vec2.projectOnSegment(pt, wj.start, wj.end);
             var wjLen = wallLength(wj);
             var distEndWj = Math.min(proj.t * wjLen, (1 - proj.t) * wjLen);
             if (proj.dist < TOL && distEndWj >= 50) {
               var resT = splitWall(project, wj.id, proj.pt);
               if (resT) {
+                // Snap touching endpoint of wi directly to proj.pt so they form a perfect joint!
+                if (tp === 0) {
+                  wi.start.x = proj.pt.x;
+                  wi.start.y = proj.pt.y;
+                } else {
+                  wi.end.x = proj.pt.x;
+                  wi.end.y = proj.pt.y;
+                }
                 didSplit = true;
                 changed = true;
               }
@@ -1160,7 +1173,7 @@
         for (var j2 = i + 1; j2 < curWalls.length && !didSplit; j2++) {
           var wj2 = curWalls[j2];
           var inter = segmentIntersection(wi.start, wi.end, wj2.start, wj2.end);
-          if (inter && inter.t1 > 0.05 && inter.t1 < 0.95 && inter.t2 > 0.05 && inter.t2 < 0.95) {
+          if (inter && inter.t1 > 0.03 && inter.t1 < 0.97 && inter.t2 > 0.03 && inter.t2 < 0.97) {
             var resX = splitWall(project, wi.id, inter.pt);
             if (resX) {
               splitWall(project, wj2.id, inter.pt);
@@ -1935,6 +1948,13 @@
      ───────────────────────────────────────────────────────────────────────────── */
   function detectRooms(project) {
     if (!project || !project.plan) return [];
+    if (typeof autoSplitWallAtJunctions === 'function') {
+      try {
+        autoSplitWallAtJunctions(project);
+      } catch (e) {
+        console.warn('autoSplitWallAtJunctions error:', e);
+      }
+    }
     var walls = project.plan.walls || [];
     if (walls.length < 3) {
       project.plan.rooms = [];

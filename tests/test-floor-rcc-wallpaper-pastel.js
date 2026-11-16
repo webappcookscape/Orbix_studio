@@ -42,10 +42,10 @@ const appSrc = fs.readFileSync(path.join(rootDir, 'app.js'), 'utf8');
 const threeDSrc = fs.readFileSync(path.join(rootDir, 'orbix-3d.js'), 'utf8');
 
 assert(appSrc.includes('logarithmicDepthBuffer: true'), 'app.js must enable logarithmicDepthBuffer to prevent z-fighting');
-assert(appSrc.includes('0xE6E2D8'), 'app.js makeGrassGroundMat must use pastel 0xE6E2D8');
+assert(appSrc.includes('0x4E8A42'), 'app.js makeGrassGroundMat must use pastel 0x4E8A42');
 assert(appSrc.includes('floor.position.y = -105'), 'app.js outer ground must be placed at y = -105 (below 100mm slab)');
-assert(threeDSrc.includes('0xE6E2D8'), 'orbix-3d.js must use pastel 0xE6E2D8 for ground/grass material');
-console.log('  ✓ Logarithmic depth buffer, pastel 0xE6E2D8 ground, and y = -105 slab separation verified');
+assert(threeDSrc.includes('0x4E8A42'), 'orbix-3d.js must use pastel 0x4E8A42 for ground/grass material');
+console.log('  ✓ Logarithmic depth buffer, pastel 0x4E8A42 ground, and y = -105 slab separation verified');
 
 // 2. Test Wall Color & Wallpaper in 3D & 2D
 console.log('\n2. Testing Wall Color & Wallpaper rendering in 3D (orbix-3d.js) & 2D (orbix-plan.js)...');

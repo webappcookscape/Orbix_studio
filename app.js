@@ -1860,40 +1860,40 @@
       var c = document.createElement("canvas"); c.width = c.height = 512;
       var g = c.getContext("2d");
       if (g) {
-        // Architectural soft pastel warm ecru / linen ground base
-        g.fillStyle = "#E6E2D8";
+        // Rich natural lawn grass green base
+        g.fillStyle = "#46813A";
         g.fillRect(0, 0, 512, 512);
 
-        // Subtle organic tone variations in warm pastel
-        var pastelTones = ["#DFDBD0", "#E2DED4", "#E8E5DC", "#EDEAE2", "#D8DFD2", "#E4E0D6"];
-        for (var i = 0; i < 450; i++) {
-          var x = Math.random() * 512, y = Math.random() * 512, rad = 10 + Math.random() * 26;
+        // Organic grass sod tone variations
+        var lawnTones = ["#3D7333", "#4A883E", "#559947", "#3E7834", "#4F9042", "#5C9F4E"];
+        for (var i = 0; i < 400; i++) {
+          var x = Math.random() * 512, y = Math.random() * 512, rad = 8 + Math.random() * 24;
           var grad = g.createRadialGradient(x, y, 0, x, y, rad);
-          var col = pastelTones[Math.floor(Math.random() * pastelTones.length)];
+          var col = lawnTones[Math.floor(Math.random() * lawnTones.length)];
           grad.addColorStop(0, col);
-          grad.addColorStop(1, "rgba(230, 226, 216, 0)");
+          grad.addColorStop(1, "rgba(70, 129, 58, 0)");
           g.fillStyle = grad;
           g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
         }
 
-        // Fine stippled matte finish
+        // Fine lawn grass blades
         for (var b = 0; b < 2500; b++) {
-          var bx = Math.random() * 512, by = Math.random() * 512;
-          var bcol = (b % 3 === 0) ? "#D6D1C4" : ((b % 2 === 0) ? "#EAE6DE" : "#DFDBD0");
-          g.fillStyle = bcol;
-          g.fillRect(bx, by, 1.5, 1.5);
+          var bx = Math.random() * 512, by = Math.random() * 512, blen = 3 + Math.random() * 7;
+          var bcol = (b % 3 === 0) ? "#65AD55" : ((b % 3 === 1) ? "#3B6E32" : "#4B893F");
+          g.strokeStyle = bcol; g.lineWidth = 1.0;
+          g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + (Math.random() - 0.5) * 3, by - blen); g.stroke();
         }
       }
 
       var tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(120, 120);
+      tex.repeat.set(160, 160);
       tex.encoding = THREE.sRGBEncoding;
 
       var m = new THREE.MeshStandardMaterial({
         map: tex,
-        color: 0xE6E2D8, // Soft pastel exterior ground
-        roughness: 0.94,
+        color: 0x4E8A42, // Rich natural lawn grass green
+        roughness: 0.92,
         metalness: 0.0,
         polygonOffset: true,
         polygonOffsetFactor: 2.0,
@@ -1939,7 +1939,7 @@
       var fill = new THREE.DirectionalLight(0xedf4fc, window.sunlightIntensity * 0.38); fill.position.set(2800, 2100, 5000); scene.add(fill);
       var rim = new THREE.DirectionalLight(0xf8fafc, window.sunlightIntensity * 0.25); rim.position.set(2400, 1800, -2800); scene.add(rim);
       var bounceL = new THREE.DirectionalLight(0xfbf6ee, window.sunlightIntensity * 0.25); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
-      scene.add(new THREE.HemisphereLight(0x82C3EC, 0xE6E2D8, 0.55)); // Sky blue overhead + natural lawn grass ground bounce
+      scene.add(new THREE.HemisphereLight(0x82C3EC, 0x4E8A42, 0.55)); // Sky blue overhead + natural lawn grass ground bounce
       var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
       floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -105; floor.receiveShadow = true; scene.add(floor);
@@ -2807,6 +2807,41 @@
         }
         if (isObstructionObj(ho, homeObj)) {
           return null;
+        }
+      }
+      return null;
+    }
+    function pickWall(clientX, clientY) {
+      if (!ok || !scene) return null;
+      if (!ray) { ray = new THREE.Raycaster(); ndc = new THREE.Vector2(); }
+      var r = getCanvasNdcRect();
+      if (!r || !r.width || !r.height) return null;
+      ndc.set(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
+      ray.setFromCamera(ndc, camera);
+
+      var homeObj = scene.getObjectByName('OrbixHome3D');
+      if (!homeObj || !homeObj.children || homeObj.children.length === 0 || !isVisObj(homeObj, scene)) return null;
+
+      var hits = ray.intersectObjects(homeObj.children, true);
+      for (var i = 0; i < hits.length; i++) {
+        var ho = hits[i].object;
+        if (!ho || !ho.isMesh || !isVisObj(ho, scene)) continue;
+
+        var cur = ho;
+        var wallId = null;
+        while (cur && cur !== homeObj) {
+          if (cur.userData && cur.userData.wallId) {
+            wallId = cur.userData.wallId;
+            break;
+          }
+          if (cur.name && cur.name.indexOf('Wall_') === 0) {
+            wallId = cur.name.replace('Wall_', '');
+            break;
+          }
+          cur = cur.parent;
+        }
+        if (wallId) {
+          return { object: ho, wallId: wallId, hitPoint: hits[i].point };
         }
       }
       return null;
@@ -3811,7 +3846,7 @@
       });
       return out;
     }
-    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setSunlightIntensity: function (val) {
+    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickWall: pickWall, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setSunlightIntensity: function (val) {
       val = parseFloat(val);
       if (!isFinite(val)) return;
       window.sunlightIntensity = val;
@@ -4618,6 +4653,15 @@
             window.OrbixUI.selectFurnitureIn3DStudio(fHit.id);
           }
           // Do NOT capture pointer or initiate drag: keeps units strictly fixed in 3D!
+        } else if (GL.pickWall) {
+          var wHit = GL.pickWall(e.clientX, e.clientY);
+          if (wHit && wHit.wallId) {
+            if (window.OrbixUI && window.OrbixUI.editor) {
+              window.OrbixUI.editor.selected = [{ type: 'wall', id: wHit.wallId }];
+              if (window.OrbixUI.editor.render) window.OrbixUI.editor.render();
+              if (window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
+            }
+          }
         }
       }
 
@@ -4979,7 +5023,17 @@
       lastD = 0;
       if (!Object.keys(pts).length) stage.classList.remove("grab");
       if (downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) < 5 && Date.now() - downAt.t < 500) {
-        GL.pick(e.clientX, e.clientY);
+        var didPick = GL.pick(e.clientX, e.clientY);
+        if (!didPick && GL.pickWall) {
+          var wHit = GL.pickWall(e.clientX, e.clientY);
+          if (wHit && wHit.wallId) {
+            if (window.OrbixUI && window.OrbixUI.editor) {
+              window.OrbixUI.editor.selected = [{ type: 'wall', id: wHit.wallId }];
+              if (window.OrbixUI.editor.render) window.OrbixUI.editor.render();
+              if (window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
+            }
+          }
+        }
       }
       downAt = null;
     }

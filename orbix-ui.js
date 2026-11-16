@@ -1774,6 +1774,10 @@
           '  <div style="display:flex;gap:6px;">' +
           '    <button type="button" class="btn small full" id="inspWallSplitMid" style="background:#0f172a;color:#ffffff;font-size:11px;">➕ RCC Joint at Midpoint (' + Math.round(lenMm / 2) + 'mm)</button>' +
           '  </div>' +
+          '  <div style="display:flex;gap:6px;margin-top:6px;align-items:center;">' +
+          '    <input type="number" id="inspWallSplitDist" class="input small" placeholder="Offset mm" style="width:105px;height:26px;font-size:11px;padding:0 5px;" value="' + Math.round(lenMm / 2) + '" min="100" max="' + Math.max(100, Math.round(lenMm) - 100) + '">' +
+          '    <button type="button" class="btn small" id="inspWallSplitCustom" style="background:#2563eb;color:#ffffff;font-size:11px;flex:1;height:26px;padding:0 6px;">➕ Split at Offset</button>' +
+          '  </div>' +
           '</div>' +
           '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>'
 
@@ -1953,6 +1957,30 @@
               if (self.render3DHome) self.render3DHome(true);
               if (typeof window.toast === 'function') {
                 window.toast('🧱 RCC Joint inserted: Wall separated into two individual walls');
+              }
+            }
+          });
+        }
+
+        var elSplitCustom = document.getElementById('inspWallSplitCustom');
+        var elSplitDist = document.getElementById('inspWallSplitDist');
+        if (elSplitCustom && elSplitDist) {
+          elSplitCustom.addEventListener('click', function () {
+            var dist = parseFloat(elSplitDist.value);
+            if (!isNaN(dist) && dist > 50 && dist < lenMm - 50) {
+              var dir = Core.wallDirection(w);
+              var splitPt = { x: w.start.x + dir.x * dist, y: w.start.y + dir.y * dist };
+              var res = Core.splitWall(ed.project, w.id, splitPt);
+              if (res) {
+                if (Core.detectRooms) Core.detectRooms(ed.project);
+                ed.pushHistory('Insert RCC Column Joint');
+                ed.selected = [{ type: 'wall', id: res.wall1.id }];
+                ed.render();
+                self.renderInspector(ed.selected);
+                if (self.render3DHome) self.render3DHome(true);
+                if (typeof window.toast === 'function') {
+                  window.toast('🧱 Wall separated into two individual walls at ' + Math.round(dist) + 'mm');
+                }
               }
             }
           });
@@ -7327,7 +7355,7 @@
             c.material = gl.makeNeutralGroundMat();
           } else if (c.material) {
             c.material.map = null;
-            if (c.material.color) c.material.color.setHex(0xE6E2D8);
+            if (c.material.color) c.material.color.setHex(0x4E8A42);
             c.material.needsUpdate = true;
           }
         }

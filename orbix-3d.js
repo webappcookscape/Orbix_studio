@@ -829,7 +829,7 @@
     if (typeof THREE === 'undefined') return null;
     if (type === 'neutral_ground' || type === 'grass') {
       return new THREE.MeshStandardMaterial({
-        color: 0xE6E2D8, // Soft pastel exterior ground (warm ecru / sage)
+        color: 0x4E8A42, // Lush natural grass green (warm ecru / sage)
         roughness: 0.92,
         metalness: 0.0,
         side: THREE.DoubleSide
@@ -1571,6 +1571,13 @@
       isDivider: !!wall.isDivider,
       mid: { x: (start.x + wall.end.x) / 2, y: (start.y + wall.end.y) / 2 }
     };
+    group.traverse(function (child) {
+      if (child.isMesh) {
+        child.userData = child.userData || {};
+        child.userData.isWall = true;
+        child.userData.wallId = wall.id;
+      }
+    });
     return group;
   };
 

@@ -1151,6 +1151,32 @@
       var rect = self.canvas.getBoundingClientRect();
       var mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       var worldPt = self.screenToWorld(mouseScreen);
+
+      // Check if double-clicked a wall to split into separate walls at joint!
+      var nearWall = self.findNearestWall(worldPt, 220);
+      if (nearWall && nearWall.dist <= Math.max(120, (nearWall.wall.thickness || 150) / 2 + 50)) {
+        var w = nearWall.wall;
+        var splitPt = nearWall.proj.pt;
+        var distS = Vec2.dist(w.start, splitPt);
+        var distE = Vec2.dist(w.end, splitPt);
+        if (distS > 100 && distE > 100) {
+          if (Core.splitWall) {
+            var res = Core.splitWall(self.project, w.id, splitPt);
+            if (res && res.wall1 && res.wall2) {
+              if (Core.detectRooms) Core.detectRooms(self.project);
+              self.selected = [{ type: 'wall', id: res.wall2.id }];
+              self.onSelectionChange(self.selected);
+              self.pushHistory('Split Wall at Joint');
+              self.render();
+              if (typeof window !== 'undefined' && typeof window.toast === 'function') {
+                window.toast('🧱 Wall split into separate walls at joint (' + Math.round(distS) + 'mm)');
+              }
+              return;
+            }
+          }
+        }
+      }
+
       var rooms = (self.project && self.project.plan && self.project.plan.rooms) || [];
       var hitRooms = [];
       for (var r = 0; r < rooms.length; r++) {
@@ -1960,6 +1986,15 @@
               window.OrbixUI.showToast('Note: Unit placed near adjacent element', 'info');
             }
           }
+          if (self.dragState.furniture) {
+            var isRcc = self.dragState.furniture.category === 'structural' ||
+                        self.dragState.furniture.category === 'civil' ||
+                        /rcc|column|pillar|post/i.test(self.dragState.furniture.name || '') ||
+                        /rcc|column|pillar|post/i.test(self.dragState.furniture.id || '');
+            if (isRcc && Core.detectRooms) {
+              Core.detectRooms(self.project);
+            }
+          }
           self.pushHistory('Move Furniture');
         } else if (self.dragState.type === 'move_opening') {
           Core.detectRooms(self.project);
@@ -2345,10 +2380,9 @@
       }
     }
 
-    // 4. Check if clicked a wall -> ONLY when Shift key is held (Shift + Click)!
-    if (isShift) {
-      var near = this.findNearestWall(worldPt, 250);
-      if (near) {
+    // 4. Check if clicked a wall (direct click selection for individual separate wall segments!)
+    var near = this.findNearestWall(worldPt, 220);
+    if (near && near.dist <= Math.max(120, (near.wall.thickness || 150) / 2 + 60)) {
         var w = near.wall;
         this.selected = [{ type: 'wall', id: w.id }];
         this.onSelectionChange(this.selected);
@@ -2436,7 +2470,6 @@
         this.render();
         return;
       }
-    }
 
     // Single-click inside a room polygon does NOT select room or open room edit tool (requires double-click)
     var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
@@ -2514,6 +2547,7 @@
               height: this.wallPreset.height
             });
         this.project.plan.walls.push(newW);
+        if (Core.autoSplitWallAtJunctions) Core.autoSplitWallAtJunctions(this.project);
         this.pushHistory(isDivider ? 'Draw Room Divider' : 'Draw Wall');
 
         // Check if loop closed (connected back to start of chain)
