@@ -76,12 +76,12 @@
         map: tex,
         bumpMap: tex,
         bumpScale: 0.015,
-        roughness: 0.12,
-        metalness: 0.05,
-        clearcoat: 0.95,
-        clearcoatRoughness: 0.05,
-        reflectivity: 0.85,
-        envMapIntensity: 1.25
+        roughness: 0.65,
+        metalness: 0.02,
+        clearcoat: 0.0,
+        clearcoatRoughness: 0.0,
+        reflectivity: 0.20,
+        envMapIntensity: 0.45
       });
     }
 
@@ -101,12 +101,12 @@
 
     return new MatClass({
       color: counterHex,
-      roughness: 0.14,
-      metalness: 0.06,
-      clearcoat: 0.90,
-      clearcoatRoughness: 0.07,
-      reflectivity: 0.80,
-      envMapIntensity: 1.2
+      roughness: 0.65,
+      metalness: 0.02,
+      clearcoat: 0.0,
+      clearcoatRoughness: 0.0,
+      reflectivity: 0.20,
+      envMapIntensity: 0.45
     });
   };
 
@@ -1458,11 +1458,12 @@
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
-     Build 3D Door (Frame, Leaf, 4-Way Swing, Hardware Handle)
+     Build 3D Door (Frame, Leaves: Single Closed, Double, Sliding, Frame-Only)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildDoor3D = function (op, width, height, wallThick) {
     var dg = new THREE.Group();
     var frameT = 60, frameD = wallThick + 10;
+    var dType = (op && op.doorType) || 'single_closed';
 
     // Left & Right Jambs
     var jambGeo = new THREE.BoxGeometry(frameT, height, frameD);
@@ -1486,119 +1487,223 @@
     head.receiveShadow = true;
     dg.add(head);
 
-    // Door Shutter Leaf (Rotatable on Hinge)
+    // Subtype 1: ONLY DOOR FRAME (cased opening without door leaves)
+    if (dType === 'frame_only') {
+      return dg;
+    }
+
     var leafW = width - frameT * 2;
     var leafH = height - frameT;
     var leafThick = 40;
-
-    var leafGeo = new THREE.BoxGeometry(leafW, leafH, leafThick);
-    var leafMesh = new THREE.Mesh(leafGeo, this.materials.doorWood);
-    leafMesh.castShadow = true;
-    leafMesh.receiveShadow = true;
-
-    // Hinge Pivot Group with Left/Right and Inward/Outward swing
-    var hinge = new THREE.Group();
-    var swing = (op && op.swing) || 'in-left';
-    var isRight = swing.indexOf('right') !== -1;
-    var isOut = swing.indexOf('out') !== -1;
-
-    var swingAngle;
-    if (isRight) {
-      hinge.position.set(width - frameT, 0, 0);
-      leafMesh.position.set(-leafW / 2, leafH / 2, 0);
-      swingAngle = isOut ? Math.PI / 3.5 : -Math.PI / 3.5;
-    } else {
-      hinge.position.set(frameT, 0, 0);
-      leafMesh.position.set(leafW / 2, leafH / 2, 0);
-      swingAngle = isOut ? -Math.PI / 3.5 : Math.PI / 3.5;
-    }
-    hinge.rotation.y = swingAngle;
-    hinge.add(leafMesh);
-
-    // Architectural Door Handle Hardware
     var handleGeo = new THREE.CylinderGeometry(7, 7, 130, 12);
     var handleMat = this.materials.doorHandle || this.materials.doorWood;
+
+    // Subtype 2: DOUBLE DOOR (two meeting leaves closed flush)
+    if (dType === 'double') {
+      var halfW = (leafW - 4) / 2;
+      var dLeafGeo = new THREE.BoxGeometry(halfW, leafH, leafThick);
+
+      var leftLeaf = new THREE.Mesh(dLeafGeo, this.materials.doorWood);
+      leftLeaf.position.set(frameT + halfW / 2, leafH / 2, 0);
+      leftLeaf.castShadow = true; leftLeaf.receiveShadow = true;
+      dg.add(leftLeaf);
+
+      var rightLeaf = new THREE.Mesh(dLeafGeo, this.materials.doorWood);
+      rightLeaf.position.set(width - frameT - halfW / 2, leafH / 2, 0);
+      rightLeaf.castShadow = true; rightLeaf.receiveShadow = true;
+      dg.add(rightLeaf);
+
+      // Left & right meeting brass handles
+      [-1, 1].forEach(function (side) {
+        var hX = width / 2 + side * 35;
+        var hFront = new THREE.Mesh(handleGeo, handleMat);
+        hFront.position.set(hX, leafH * 0.48, leafThick / 2 + 12);
+        hFront.rotation.x = Math.PI / 2;
+        hFront.castShadow = true;
+        dg.add(hFront);
+
+        var hBack = new THREE.Mesh(handleGeo, handleMat);
+        hBack.position.set(hX, leafH * 0.48, -leafThick / 2 - 12);
+        hBack.rotation.x = Math.PI / 2;
+        dg.add(hBack);
+      });
+
+      return dg;
+    }
+
+    // Subtype 3: SLIDING DOOR (bypass sliding panels with top rail)
+    if (dType === 'sliding') {
+      var slideW = leafW * 0.55;
+      var sLeafGeo = new THREE.BoxGeometry(slideW, leafH - 10, leafThick - 4);
+
+      // Top guide track
+      var railGeo = new THREE.BoxGeometry(width - frameT * 2, 22, frameD * 0.7);
+      var rail = new THREE.Mesh(railGeo, this.materials.doorFrame);
+      rail.position.set(width / 2, height - frameT - 11, 0);
+      dg.add(rail);
+
+      // Leaf 1 (Front track)
+      var sLeaf1 = new THREE.Mesh(sLeafGeo, this.materials.doorWood);
+      sLeaf1.position.set(frameT + slideW / 2, (leafH - 10) / 2, 16);
+      sLeaf1.castShadow = true; sLeaf1.receiveShadow = true;
+      dg.add(sLeaf1);
+
+      // Leaf 2 (Rear track)
+      var sLeaf2 = new THREE.Mesh(sLeafGeo, this.materials.doorWood);
+      sLeaf2.position.set(width - frameT - slideW / 2, (leafH - 10) / 2, -16);
+      sLeaf2.castShadow = true; sLeaf2.receiveShadow = true;
+      dg.add(sLeaf2);
+
+      // Recessed sliding pull hardware
+      var pullGeo = new THREE.BoxGeometry(16, 120, 8);
+      var pull1 = new THREE.Mesh(pullGeo, handleMat);
+      pull1.position.set(frameT + slideW - 35, (leafH - 10) * 0.5, 33);
+      dg.add(pull1);
+      var pull2 = new THREE.Mesh(pullGeo, handleMat);
+      pull2.position.set(width - frameT - slideW + 35, (leafH - 10) * 0.5, -33);
+      dg.add(pull2);
+
+      return dg;
+    }
+
+    // Subtype 4: SINGLE DOOR — ALWAYS CLOSED
+    var leafGeo = new THREE.BoxGeometry(leafW, leafH, leafThick);
+    var leafMesh = new THREE.Mesh(leafGeo, this.materials.doorWood);
+    leafMesh.position.set(width / 2, leafH / 2, 0);
+    leafMesh.castShadow = true;
+    leafMesh.receiveShadow = true;
+    dg.add(leafMesh);
+
+    // Architectural Door Handle Hardware (closed state)
+    var swing = (op && op.swing) || 'in-left';
+    var isRight = swing.indexOf('right') !== -1;
+    var handleX = isRight ? frameT + 45 : width - frameT - 45;
+
     var handleMesh = new THREE.Mesh(handleGeo, handleMat);
-    var handleX = isRight ? -leafW + 45 : leafW - 45;
     handleMesh.position.set(handleX, leafH * 0.48, leafThick / 2 + 12);
     handleMesh.rotation.x = Math.PI / 2;
     handleMesh.castShadow = true;
-    hinge.add(handleMesh);
+    dg.add(handleMesh);
 
     var backHandle = new THREE.Mesh(handleGeo, handleMat);
     backHandle.position.set(handleX, leafH * 0.48, -leafThick / 2 - 12);
     backHandle.rotation.x = Math.PI / 2;
-    hinge.add(backHandle);
+    dg.add(backHandle);
 
-    dg.add(hinge);
     return dg;
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
-     Build 3D Window (Outer Frame, Mullion Bars, Glass Pane, Stone Sill)
+     Build 3D Window (Sliding, Flap-Up Awning, or Standard Fixed)
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildWindow3D = function (op, width, height, sillH, wallThick) {
     var wg = new THREE.Group();
     var frameT = 50, frameD = wallThick - 10;
+    var wType = (op && op.windowType) || 'sliding';
 
     // Outer Frame Border
     var hGeo = new THREE.BoxGeometry(width, frameT, frameD);
     var topF = new THREE.Mesh(hGeo, this.materials.windowFrame);
     topF.position.set(width / 2, height - frameT / 2, 0);
-    topF.castShadow = true;
-    topF.receiveShadow = true;
+    topF.castShadow = true; topF.receiveShadow = true;
     wg.add(topF);
 
     var botF = new THREE.Mesh(hGeo, this.materials.windowFrame);
     botF.position.set(width / 2, frameT / 2, 0);
-    botF.castShadow = true;
-    botF.receiveShadow = true;
+    botF.castShadow = true; botF.receiveShadow = true;
     wg.add(botF);
 
     var vGeo = new THREE.BoxGeometry(frameT, height - frameT * 2, frameD);
     var leftF = new THREE.Mesh(vGeo, this.materials.windowFrame);
     leftF.position.set(frameT / 2, height / 2, 0);
-    leftF.castShadow = true;
-    leftF.receiveShadow = true;
+    leftF.castShadow = true; leftF.receiveShadow = true;
     wg.add(leftF);
 
     var rightF = new THREE.Mesh(vGeo, this.materials.windowFrame);
     rightF.position.set(width - frameT / 2, height / 2, 0);
-    rightF.castShadow = true;
-    rightF.receiveShadow = true;
+    rightF.castShadow = true; rightF.receiveShadow = true;
     wg.add(rightF);
-
-    // Glass Pane
-    var glassGeo = new THREE.BoxGeometry(width - frameT * 2, height - frameT * 2, 10);
-    var glassMesh = new THREE.Mesh(glassGeo, this.materials.glass);
-    glassMesh.position.set(width / 2, height / 2, 0);
-    wg.add(glassMesh);
-
-    // Center Vertical Mullion Bar
-    if (width > 750) {
-      var mulVGeo = new THREE.BoxGeometry(28, height - frameT * 2, frameD * 0.7);
-      var mulVMesh = new THREE.Mesh(mulVGeo, this.materials.windowFrame);
-      mulVMesh.position.set(width / 2, height / 2, 0);
-      mulVMesh.castShadow = true;
-      wg.add(mulVMesh);
-    }
-
-    // Horizontal Transom Bar
-    if (height > 1200) {
-      var mulHGeo = new THREE.BoxGeometry(width - frameT * 2, 24, frameD * 0.7);
-      var mulHMesh = new THREE.Mesh(mulHGeo, this.materials.windowFrame);
-      mulHMesh.position.set(width / 2, height * 0.65, 0);
-      mulHMesh.castShadow = true;
-      wg.add(mulHMesh);
-    }
 
     // Exterior Stone Sill Ledge
     var sillLedgeGeo = new THREE.BoxGeometry(width + 50, 28, wallThick + 40);
     var sillLedge = new THREE.Mesh(sillLedgeGeo, this.materials.sillStone || this.materials.wall);
     sillLedge.position.set(width / 2, 14, 0);
-    sillLedge.castShadow = true;
-    sillLedge.receiveShadow = true;
+    sillLedge.castShadow = true; sillLedge.receiveShadow = true;
     wg.add(sillLedge);
+
+    var innerW = width - frameT * 2;
+    var innerH = height - frameT * 2;
+
+    if (wType === 'sliding') {
+      // 2-Track Bypass Sliding Window Sashes
+      var sashW = innerW * 0.54;
+      var sashT = 32;
+
+      // Left sash (Front track)
+      var s1Group = new THREE.Group();
+      var s1Glass = new THREE.Mesh(new THREE.BoxGeometry(sashW - 36, innerH - 36, 6), this.materials.glass);
+      s1Glass.position.set(0, 0, 0);
+      s1Group.add(s1Glass);
+      var s1Frame = new THREE.Mesh(new THREE.BoxGeometry(sashW, innerH, sashT), this.materials.windowFrame);
+      s1Frame.position.set(0, 0, 0);
+      // Punch hole for glass or render border
+      s1Group.position.set(frameT + sashW / 2, height / 2, 14);
+      wg.add(s1Group);
+      wg.add(s1Glass);
+
+      // Right sash (Rear track)
+      var s2Glass = new THREE.Mesh(new THREE.BoxGeometry(sashW - 36, innerH - 36, 6), this.materials.glass);
+      s2Glass.position.set(width - frameT - sashW / 2, height / 2, -14);
+      wg.add(s2Glass);
+
+      // Center interlock vertical stile
+      var stileGeo = new THREE.BoxGeometry(26, innerH, frameD * 0.6);
+      var stile = new THREE.Mesh(stileGeo, this.materials.windowFrame);
+      stile.position.set(width / 2, height / 2, 0);
+      wg.add(stile);
+
+    } else if (wType === 'flapup') {
+      // Flap-up Awning Window (top-hung awning sash tilted slightly outward)
+      var awningGroup = new THREE.Group();
+      awningGroup.position.set(width / 2, height - frameT, 0);
+      awningGroup.rotation.x = -Math.PI / 14; // ~13° outward awning angle
+
+      var aFrameGeo = new THREE.BoxGeometry(innerW, innerH, 30);
+      var aGlassGeo = new THREE.BoxGeometry(innerW - 36, innerH - 36, 6);
+      var aGlass = new THREE.Mesh(aGlassGeo, this.materials.glass);
+      aGlass.position.set(0, -innerH / 2, 0);
+      awningGroup.add(aGlass);
+
+      // Top hinge hardware
+      var hPin = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, innerW, 12), this.materials.doorHandle || this.materials.windowFrame);
+      hPin.rotation.z = Math.PI / 2;
+      hPin.position.set(0, 0, 0);
+      awningGroup.add(hPin);
+
+      wg.add(awningGroup);
+
+    } else {
+      // Standard Fixed Window with Mullion Bars
+      var glassGeo = new THREE.BoxGeometry(innerW, innerH, 10);
+      var glassMesh = new THREE.Mesh(glassGeo, this.materials.glass);
+      glassMesh.position.set(width / 2, height / 2, 0);
+      wg.add(glassMesh);
+
+      if (width > 750) {
+        var mulVGeo = new THREE.BoxGeometry(28, innerH, frameD * 0.7);
+        var mulVMesh = new THREE.Mesh(mulVGeo, this.materials.windowFrame);
+        mulVMesh.position.set(width / 2, height / 2, 0);
+        mulVMesh.castShadow = true;
+        wg.add(mulVMesh);
+      }
+      if (height > 1200) {
+        var mulHGeo = new THREE.BoxGeometry(innerW, 24, frameD * 0.7);
+        var mulHMesh = new THREE.Mesh(mulHGeo, this.materials.windowFrame);
+        mulHMesh.position.set(width / 2, height * 0.65, 0);
+        mulHMesh.castShadow = true;
+        wg.add(mulHMesh);
+      }
+    }
 
     return wg;
   };
@@ -1849,7 +1954,11 @@
       }
     }
 
-    var geo = new THREE.ShapeGeometry(shape);
+    // Extrude ceiling slab with strictly 100mm architectural thickness
+    var ceilingThick = 100;
+    var geo = (typeof THREE.ExtrudeGeometry === 'function') ?
+      new THREE.ExtrudeGeometry(shape, { depth: ceilingThick, bevelEnabled: false }) :
+      new THREE.ShapeGeometry(shape);
     if (typeof geo.computeVertexNormals === 'function') geo.computeVertexNormals();
     var cMesh = new THREE.Mesh(geo, this.materials.ceiling);
     cMesh.rotation.x = Math.PI / 2;
@@ -1857,7 +1966,7 @@
     cMesh.receiveShadow = true;
     cMesh.castShadow = false;
     cMesh.name = 'Ceiling_' + (room.name || 'Room');
-    cMesh.userData = { isCeilingMesh: true, roomId: room.id };
+    cMesh.userData = { isCeilingMesh: true, roomId: room.id, thickness: ceilingThick };
     return cMesh;
   };
 
@@ -4387,8 +4496,8 @@
       return ArchitecturalRenderer.resolveLaminateMaterial(matFin, 0x2E3F5C);
     }
 
-    // 1. Architectural Wall Paneling / Back Panel / Ledges (zero carcass box)
-    var isWallPanel = (cat === 'wall_paneling' || /pnl[-_]?back|ledge/i.test(furn.id || '') || /pnl[-_]?back|ledge/i.test(furn.catalogItemId || '') || (name && (name.indexOf('back panel') !== -1 || name.indexOf('wall panel') !== -1 || name.indexOf('vertical ledge') !== -1 || name.indexOf('ledge') !== -1)));
+    // 1. Architectural Wall Paneling / Back Panel / Ledges / Blank Shutters (zero carcass box)
+    var isWallPanel = (cat === 'wall_paneling' || /pnl[-_]?back|ledge|bs-60/i.test(furn.id || '') || /pnl[-_]?back|ledge|bs-60/i.test(furn.catalogItemId || '') || (name && (name.indexOf('back panel') !== -1 || name.indexOf('wall panel') !== -1 || name.indexOf('vertical ledge') !== -1 || name.indexOf('ledge') !== -1 || name.indexOf('blank shutter') !== -1 || /\bbs\b/i.test(name))));
     if (isWallPanel) {
       return this.buildWallPanelMesh(furn, fg, dims, carcassMat);
     }

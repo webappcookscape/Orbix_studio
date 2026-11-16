@@ -1906,12 +1906,21 @@
           '<div class="insp-row"><label>Offset along wall (mm)</label><input type="number" id="inspOpOff" value="' + Math.round(op.offset) + '" min="' + minOff + '" max="' + maxOff + '" step="50"></div>' +
           '<div style="font-size:10.5px;color:#64748B;margin:-4px 0 10px 0;">Total Wall Length: ' + wallL + ' mm</div>' +
           (op.type === 'door' ?
-            '<div class="insp-row"><label>Swing</label><select id="inspOpSwing">' +
-            '<option value="in-left"' + ((op.swing || 'in-left') === 'in-left' ? ' selected' : '') + '>Inward Left</option>' +
-            '<option value="in-right"' + (op.swing === 'in-right' ? ' selected' : '') + '>Inward Right</option>' +
-            '<option value="out-left"' + (op.swing === 'out-left' ? ' selected' : '') + '>Outward Left</option>' +
-            '<option value="out-right"' + (op.swing === 'out-right' ? ' selected' : '') + '>Outward Right</option>' +
+            '<div class="insp-row"><label>Door Subtype</label><select id="inspOpDoorType">' +
+            '<option value="single_closed"' + ((op.doorType || 'single_closed') === 'single_closed' ? ' selected' : '') + '>Single Door (Closed)</option>' +
+            '<option value="double"' + (op.doorType === 'double' ? ' selected' : '') + '>Double Door</option>' +
+            '<option value="sliding"' + (op.doorType === 'sliding' ? ' selected' : '') + '>Sliding Door</option>' +
+            '<option value="frame_only"' + (op.doorType === 'frame_only' ? ' selected' : '') + '>Only Door Frame (Cased)</option>' +
+            '</select></div>' +
+            '<div class="insp-row"><label>Hinge / Handle Side</label><select id="inspOpSwing">' +
+            '<option value="in-left"' + ((op.swing || 'in-left') === 'in-left' ? ' selected' : '') + '>Left Hinge / Right Handle</option>' +
+            '<option value="in-right"' + (op.swing === 'in-right' ? ' selected' : '') + '>Right Hinge / Left Handle</option>' +
             '</select></div>' :
+            '<div class="insp-row"><label>Window Subtype</label><select id="inspOpWindowType">' +
+            '<option value="sliding"' + ((op.windowType || 'sliding') === 'sliding' ? ' selected' : '') + '>Sliding Window (Bypass)</option>' +
+            '<option value="flapup"' + (op.windowType === 'flapup' ? ' selected' : '') + '>Flap-up (Awning/Hopper)</option>' +
+            '<option value="standard"' + (op.windowType === 'standard' ? ' selected' : '') + '>Standard / Fixed</option>' +
+            '</select></div>' +
             '<div class="insp-row"><label>Sill Height (mm)</label><input type="number" id="inspOpSill" value="' + (op.sillHeight || 900) + '" min="0" max="2500" step="50"></div>'
           ) +
           '<button class="btn danger full" id="inspDelOp" style="margin-top:12px">Delete ' + (op.type === 'door' ? 'Door' : 'Window') + '</button>';
@@ -1931,6 +1940,16 @@
 
           if (!isNaN(offVal)) {
             op.offset = Math.max(curMin, Math.min(curMax, offVal));
+          }
+
+          var dTypeEl = document.getElementById('inspOpDoorType');
+          if (dTypeEl) {
+            op.doorType = dTypeEl.value;
+          }
+
+          var wTypeEl = document.getElementById('inspOpWindowType');
+          if (wTypeEl) {
+            op.windowType = wTypeEl.value;
           }
 
           var swingEl = document.getElementById('inspOpSwing');
@@ -1987,6 +2006,10 @@
           if (elH) elH.addEventListener(evt, updateOp);
           var elOff = document.getElementById('inspOpOff');
           if (elOff) elOff.addEventListener(evt, updateOp);
+          var elDT = document.getElementById('inspOpDoorType');
+          if (elDT) elDT.addEventListener(evt, updateOp);
+          var elWT = document.getElementById('inspOpWindowType');
+          if (elWT) elWT.addEventListener(evt, updateOp);
           var elSw = document.getElementById('inspOpSwing');
           if (elSw) elSw.addEventListener(evt, updateOp);
           var elSi = document.getElementById('inspOpSill');
@@ -3855,6 +3878,10 @@
         modal.classList.remove('is-open');
         modal.style.display = 'none';
       }
+      if (this.editor) {
+        this.editor.resize();
+        this.editor.render();
+      }
     },
 
     initAIDecorModal: function () {
@@ -3938,11 +3965,47 @@
         targetRoom = rooms.find(function (r) { return r.id === self.editor.selected[0].id; });
       }
 
-      if (!targetRoom && rooms.length === 1) {
+      if (!targetRoom && explicitCategory && rooms.length > 0) {
+        targetRoom = rooms.find(function (r) {
+          var n = (r.name || '').toLowerCase();
+          if (explicitCategory === 'kitchen') return n.indexOf('kitchen') !== -1 || n.indexOf('cook') !== -1 || n.indexOf('pantry') !== -1;
+          if (explicitCategory === 'bedroom') return n.indexOf('bed') !== -1 || n.indexOf('master') !== -1 || n.indexOf('guest') !== -1 || n.indexOf('kids') !== -1;
+          if (explicitCategory === 'living') return n.indexOf('living') !== -1 || n.indexOf('hall') !== -1 || n.indexOf('drawing') !== -1 || n.indexOf('lounge') !== -1;
+          return false;
+        });
+      }
+
+      if (!targetRoom && rooms.length > 0) {
         targetRoom = rooms[0];
       }
 
-      // If no room specified and multiple rooms exist, open AI Decor modal so user can pick!
+      // Fallback if no rooms detected yet but walls exist
+      if (!targetRoom && (!rooms || !rooms.length) && plan.walls && plan.walls.length >= 3) {
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        plan.walls.forEach(function (w) {
+          if (w.start && w.end) {
+            minX = Math.min(minX, w.start.x, w.end.x);
+            maxX = Math.max(maxX, w.start.x, w.end.x);
+            minY = Math.min(minY, w.start.y, w.end.y);
+            maxY = Math.max(maxY, w.start.y, w.end.y);
+          }
+        });
+        if (isFinite(minX) && isFinite(maxX) && maxX > minX + 500) {
+          targetRoom = {
+            id: 'room_auto_decor_' + Date.now(),
+            name: explicitCategory ? (explicitCategory.toUpperCase() + ' ROOM') : 'LIVING ROOM',
+            polygon: [
+              { x: minX + 200, y: minY + 200 },
+              { x: maxX - 200, y: minY + 200 },
+              { x: maxX - 200, y: maxY - 200 },
+              { x: minX + 200, y: maxY - 200 }
+            ]
+          };
+          rooms = [targetRoom];
+        }
+      }
+
+      // If still no room or walls, open AI Decor modal so user can pick when ready
       if (!targetRoom && !explicitCategory) {
         this.openAIDecorModal();
         return;
@@ -4265,6 +4328,7 @@
       this.syncProjectUnitsTo3DStudio();
       this.saveToLocalStorage();
       if (this.editor) {
+        this.editor.resize();
         this.editor.pushHistory('AI Decor - ' + (targetRoom ? targetRoom.name : 'All Rooms'));
         this.editor.render();
       }
@@ -5658,7 +5722,8 @@
             var isLoftUnit = (cCat.indexOf('loft') !== -1 || cName.indexOf('loft') !== -1 || cId.indexOf('loft') !== -1 || cat === 'loft');
             var isOpenBoxUnit = (cName.indexOf('open box') !== -1 || cName.indexOf('open_box') !== -1 || cId.indexOf('ob-') === 0 || cId.indexOf('open-box') !== -1);
             var isSpiceUnit = !isOpenBoxUnit && (cCat.indexOf('spice') !== -1 || cName.indexOf('spice') !== -1 || cId.indexOf('spice') !== -1 || cId.indexOf('sr-') === 0);
-            var isWallUnit = !isLoftUnit && (
+            var isPanelOrLedge = (cCat === 'wall_paneling' || cCat === 'ledges' || cId === 'bs-60' || cId.indexOf('bs-') === 0 || cName.indexOf('blank shutter') !== -1 || cName.indexOf('ledge') !== -1 || cName.indexOf('panel') !== -1);
+            var isWallUnit = !isLoftUnit && !isPanelOrLedge && (
               cCat === 'kitchen_wall' || cCat === 'wall_unit' || cCat.indexOf('wall') !== -1 ||
               cName.indexOf('wm') !== -1 || cName.indexOf('wall') !== -1 || cId.indexOf('wm-') === 0 || cId.indexOf('wcm-') === 0 ||
               cat === 'wall_unit' || currentTab === 'kitchen_wall_spice'
@@ -5670,7 +5735,7 @@
             var itemToPlace = {
               id: cardData.id,
               name: cardData.name,
-              category: cardData.category || (isWallUnit ? 'kitchen_wall' : (isLoftUnit ? 'loft' : (cat === 'base_unit' ? 'kitchen_base' : cat))),
+              category: cardData.category || (isPanelOrLedge ? 'wall_paneling' : (isWallUnit ? 'kitchen_wall' : (isLoftUnit ? 'loft' : (cat === 'base_unit' ? 'kitchen_base' : cat)))),
               dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: (isLoftUnit ? 400 : (isWallUnit ? 600 : 750)), D: (isWallUnit ? 350 : 560) }),
               elevation: finalElev,
               unitConfig: Object.assign({}, cardData.unitConfig || {})
@@ -5856,8 +5921,13 @@
           var selectBtn = document.querySelector ? document.querySelector('.plan-tool-btn[data-tool="select"]') : null;
           if (selectBtn) selectBtn.classList.add('is-active');
         }
-        if (self.editor && self.editor.resize) {
-          setTimeout(function () { self.editor.resize(); }, 150);
+        if (self.editor) {
+          if (self.editor.resize) self.editor.resize();
+          if (self.editor.render) self.editor.render();
+          setTimeout(function () {
+            if (self.editor.resize) self.editor.resize();
+            if (self.editor.render) self.editor.render();
+          }, 80);
         }
       };
 

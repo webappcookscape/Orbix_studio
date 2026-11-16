@@ -168,11 +168,11 @@ console.log('✓ All 3 downloaded realistic granite textures loaded in counterto
 // Test PBR Countertop Material creation
 var matGalaxy = ArchitecturalRenderer.getCountertopMaterial('granite_black_galaxy', { W: 600, D: 600 });
 assert.ok(matGalaxy, 'getCountertopMaterial should return material');
-assert.strictEqual(matGalaxy.clearcoat, 0.95, 'High-gloss clearcoat should be 0.95');
-assert.strictEqual(matGalaxy.roughness, 0.12, 'Polished stone roughness should be 0.12');
+assert.strictEqual(matGalaxy.clearcoat, 0.0, 'Matte finish clearcoat should be 0.0');
+assert.strictEqual(matGalaxy.roughness, 0.65, 'Matte honed stone roughness should be 0.65');
 assert.ok(matGalaxy.map, 'Material should have diffuse map attached from granite texture');
 assert.ok(matGalaxy.bumpMap, 'Material should have bumpMap attached for micro-crystalline depth');
-console.log('✓ getCountertopMaterial builds authentic high-clearcoat PBR granite material');
+console.log('✓ getCountertopMaterial builds authentic matte honed PBR granite material');
 
 // Test Built-in HOB & Sink Builders
 var mockFg = new THREE.Group();

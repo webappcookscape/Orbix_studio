@@ -727,6 +727,8 @@
       width: opts.width !== undefined ? opts.width : (type === 'door' ? 900 : 1200),
       height: opts.height !== undefined ? opts.height : (type === 'door' ? 2100 : 1200),
       sillHeight: opts.sillHeight !== undefined ? opts.sillHeight : (type === 'door' ? 0 : 900),
+      doorType: opts.doorType || (type === 'door' ? 'single_closed' : undefined), // 'single_closed' | 'double' | 'sliding' | 'frame_only'
+      windowType: opts.windowType || (type === 'window' ? 'sliding' : undefined), // 'sliding' | 'flapup' | 'standard'
       swing: opts.swing || 'in-left', // 'in-left' | 'in-right' | 'out-left' | 'out-right' | 'sliding'
       frameThick: opts.frameThick !== undefined ? opts.frameThick : 75,
       label: opts.label || (type === 'door' ? 'D1' : 'W1'),
@@ -757,6 +759,12 @@
     var nm = (name || '').toLowerCase();
     var cd = (code || '').toLowerCase();
     var cc = (costCategory || '').toLowerCase();
+
+    // Wall Paneling, Back Panels, Ledges, and Blank Shutters (bs-60) are decorative/filler panels, NOT wall cabinets
+    if (cat === 'wall_paneling' || cat === 'ledges' || cc === 'wall paneling' || cd === 'bs-60' ||
+        /blank[-_ ]*shutter|ledge|pnl[-_]?back/i.test(nm) || /blank[-_ ]*shutter|ledge|pnl[-_]?back/i.test(cd)) {
+      return false;
+    }
 
     // Base units (including FM floor mounted kitchen units) are never wall units
     if (nm.indexOf('base') !== -1 || cat.indexOf('base') !== -1 || cc.indexOf('base') !== -1 || cd.indexOf('base') !== -1 ||
@@ -2150,7 +2158,16 @@
     var catConfig = rateCard.categories[catKey] || rateCard.categories.wardrobe;
     var dims = item.dimensions || { W: 1200, H: 2100, D: 600 };
 
-    var frontAreaSft = (dims.W * dims.H) / SFT_FACTOR;
+    var isLedge = (
+      catKey === 'ledges' ||
+      item.category === 'ledges' ||
+      /ledge|shelf/i.test(item.name || '') ||
+      /ledge|shelf/i.test(item.id || '') ||
+      /ledge|shelf/i.test(item.catalogItemId || '') ||
+      /ledge|shelf/i.test(item.code || '')
+    );
+    var isLedgeFace = isLedge && (dims.H <= 50 || /ledge-std|ledge-ctop/i.test(item.id || '') || (item.name && item.name.indexOf('VERTICAL') === -1));
+    var frontAreaSft = isLedgeFace ? ((dims.W * dims.D) / SFT_FACTOR) : ((dims.W * dims.H) / SFT_FACTOR);
     var runningFt = (dims.W / 304.8);
 
     var modelType = resolveModelType(item);
@@ -2191,12 +2208,16 @@
       dimPrefix = 'L-Shape (' + Math.max(0, legW - cDepth) + 'mm + ' + Math.max(0, legD - cDepth) + 'mm Shutters, ' + cDepth + 'mm D): ';
     }
 
+    var dimFormula = isLedgeFace ?
+      (dims.W + ' mm (L) × ' + dims.D + ' mm (D) ÷ 92903.04') :
+      (dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04');
+
     if (activeTier && modelDef && modelDef.pricingModel === 'front_area') {
       baseAmount = frontAreaSft * baseRate;
-      formulaDescription = dimPrefix + dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04 = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
+      formulaDescription = dimPrefix + dimFormula + ' = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
     } else if (catConfig.pricingModel === 'front_area') {
       baseAmount = frontAreaSft * baseRate;
-      formulaDescription = dimPrefix + dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04 = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
+      formulaDescription = dimPrefix + dimFormula + ' = ' + frontAreaSft.toFixed(2) + ' SFT @ ' + rateCard.currencySymbol + baseRate + '/SFT' + tierBadge;
     } else if (catConfig.pricingModel === 'running_ft') {
       baseAmount = runningFt * (catConfig.baseRatePerRft || baseRate);
       formulaDescription = dimPrefix + dims.W + ' mm ÷ 304.8 = ' + runningFt.toFixed(2) + ' Rft @ ' + rateCard.currencySymbol + (catConfig.baseRatePerRft || baseRate) + '/Rft' + tierBadge;
@@ -4954,7 +4975,7 @@
     "modelType": "wall_paneling",
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
-    "areaSqft": 0.2325005651,
+    "areaSqft": 2.583344,
     "icon": "🪵",
     "dimensions": {
       "W": 1200,
@@ -5455,7 +5476,7 @@
     "modelType": "wall_paneling",
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
-    "areaSqft": 0.1743754238,
+    "areaSqft": 5.328136,
     "icon": "🪵",
     "dimensions": {
       "W": 900,
@@ -6767,6 +6788,7 @@
     cleanPolygon: Vec2.cleanPolygon,
     interiorVisualCenter: Vec2.interiorVisualCenter,
     calculateItemCost: calculateItemCost,
+    calculateItemPricing: calculateItemCost,
     generateFullQuotation: generateFullQuotation,
     lockQuotationVersion: lockQuotationVersion,
     serializeProject: serializeProject,

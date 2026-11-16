@@ -3244,6 +3244,7 @@
 
     if (!this.dimensionStart) {
       this.dimensionStart = { x: pt.x, y: pt.y };
+      this.lastTapeMeasure = null;
       this.render();
       return;
     }
@@ -3506,6 +3507,7 @@
     this.ctx.scale(dpr, dpr);
     this.width = w;
     this.height = h;
+    this.render();
   };
 
   // Center & fit entire plan in view
@@ -4645,76 +4647,205 @@
     }
 
     if (op.type === 'door') {
-      // Draw Door Swing Arc (Inward Left, Inward Right, Outward Left, Outward Right)
-      var swing = op.swing || 'in-left';
-      var isRight = swing.indexOf('right') !== -1;
-      var isOut = swing.indexOf('out') !== -1;
+      var dType = op.doorType || 'single_closed';
+      var jambW = 45;
+      var pStartJamb = this.worldToScreen({ x: opStart.x + wDir.x * jambW, y: opStart.y + wDir.y * jambW });
+      var pEndJamb = this.worldToScreen({ x: opEnd.x - wDir.x * jambW, y: opEnd.y - wDir.y * jambW });
 
-      var hingePt = isRight ? opEnd : opStart;
-      var sHinge = isRight ? sEnd : sStart;
-      var swingRadiusPx = op.width * this.zoom;
-
-      var normDir = isOut ? { x: -wNorm.x, y: -wNorm.y } : { x: wNorm.x, y: wNorm.y };
-      var leafDir = isRight ? { x: -wDir.x, y: -wDir.y } : { x: wDir.x, y: wDir.y };
-
-      var leafEndWorld = { x: hingePt.x + normDir.x * op.width, y: hingePt.y + normDir.y * op.width };
-      var sLeaf = this.worldToScreen(leafEndWorld);
-
-      // Door leaf (rich dark wood slab as in reference plan)
-      ctx.strokeStyle = isSelected ? '#2563eb' : (isGhost ? '#0284c7' : '#451a03');
-      ctx.lineWidth = isSelected ? 2.5 : 2;
-      ctx.beginPath();
-      ctx.moveTo(sHinge.x, sHinge.y);
-      ctx.lineTo(sLeaf.x, sLeaf.y);
-      ctx.stroke();
-
-      // Hinge node
-      ctx.fillStyle = isSelected ? '#1d4ed8' : '#78350f';
-      ctx.beginPath();
-      ctx.arc(sHinge.x, sHinge.y, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Swing arc (thin crimson architectural arc as in reference plan)
-      var startAngle = Math.atan2(leafDir.y, leafDir.x);
-      var endAngle = Math.atan2(normDir.y, normDir.x);
-      var diff = endAngle - startAngle;
-      while (diff < -Math.PI) diff += Math.PI * 2;
-      while (diff > Math.PI) diff -= Math.PI * 2;
-
-      ctx.strokeStyle = isSelected ? '#2563eb' : (isGhost ? '#0284c7' : '#b91c1c');
+      // Frame Jamb Blocks on both sides
+      ctx.fillStyle = isSelected ? '#1d4ed8' : '#334155';
+      ctx.strokeStyle = isSelected ? '#2563eb' : '#0f172a';
       ctx.lineWidth = 1.2;
+
+      // Jamb 1 at opStart
+      var j1_1 = this.worldToScreen({ x: opStart.x + wNorm.x * halfT, y: opStart.y + wNorm.y * halfT });
+      var j1_2 = this.worldToScreen({ x: opStart.x + wDir.x * jambW + wNorm.x * halfT, y: opStart.y + wDir.y * jambW + wNorm.y * halfT });
+      var j1_3 = this.worldToScreen({ x: opStart.x + wDir.x * jambW - wNorm.x * halfT, y: opStart.y + wDir.y * jambW - wNorm.y * halfT });
+      var j1_4 = this.worldToScreen({ x: opStart.x - wNorm.x * halfT, y: opStart.y - wNorm.y * halfT });
       ctx.beginPath();
-      ctx.arc(sHinge.x, sHinge.y, swingRadiusPx, startAngle, endAngle, diff < 0);
-      ctx.stroke();
+      ctx.moveTo(j1_1.x, j1_1.y); ctx.lineTo(j1_2.x, j1_2.y); ctx.lineTo(j1_3.x, j1_3.y); ctx.lineTo(j1_4.x, j1_4.y);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      // Jamb 2 at opEnd
+      var j2_1 = this.worldToScreen({ x: opEnd.x - wDir.x * jambW + wNorm.x * halfT, y: opEnd.y - wDir.y * jambW + wNorm.y * halfT });
+      var j2_2 = this.worldToScreen({ x: opEnd.x + wNorm.x * halfT, y: opEnd.y + wNorm.y * halfT });
+      var j2_3 = this.worldToScreen({ x: opEnd.x - wNorm.x * halfT, y: opEnd.y - wNorm.y * halfT });
+      var j2_4 = this.worldToScreen({ x: opEnd.x - wDir.x * jambW - wNorm.x * halfT, y: opEnd.y - wDir.y * jambW - wNorm.y * halfT });
+      ctx.beginPath();
+      ctx.moveTo(j2_1.x, j2_1.y); ctx.lineTo(j2_2.x, j2_2.y); ctx.lineTo(j2_3.x, j2_3.y); ctx.lineTo(j2_4.x, j2_4.y);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      if (dType === 'frame_only') {
+        // Cased Opening (Only Frame): no door leaf, clear open passage with dashed threshold
+        ctx.strokeStyle = isSelected ? '#2563eb' : '#94a3b8';
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(pStartJamb.x, pStartJamb.y); ctx.lineTo(pEndJamb.x, pEndJamb.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else if (dType === 'double') {
+        // Double Door: two meeting leaves closed flush at the center
+        var leafT = 18;
+        var pMid1 = this.worldToScreen({ x: centerPt.x - wDir.x * 2 + wNorm.x * leafT, y: centerPt.y - wDir.y * 2 + wNorm.y * leafT });
+        var pMid1B = this.worldToScreen({ x: centerPt.x - wDir.x * 2 - wNorm.x * leafT, y: centerPt.y - wDir.y * 2 - wNorm.y * leafT });
+        var pMid2 = this.worldToScreen({ x: centerPt.x + wDir.x * 2 + wNorm.x * leafT, y: centerPt.y + wDir.y * 2 + wNorm.y * leafT });
+        var pMid2B = this.worldToScreen({ x: centerPt.x + wDir.x * 2 - wNorm.x * leafT, y: centerPt.y + wDir.y * 2 - wNorm.y * leafT });
+
+        ctx.fillStyle = isSelected ? 'rgba(37, 99, 235, 0.25)' : '#451a03';
+        ctx.strokeStyle = isSelected ? '#2563eb' : '#291102';
+        ctx.lineWidth = 2;
+
+        // Left closed leaf
+        var l1 = this.worldToScreen({ x: opStart.x + wDir.x * jambW + wNorm.x * leafT, y: opStart.y + wDir.y * jambW + wNorm.y * leafT });
+        var l2 = this.worldToScreen({ x: opStart.x + wDir.x * jambW - wNorm.x * leafT, y: opStart.y + wDir.y * jambW - wNorm.y * leafT });
+        ctx.beginPath();
+        ctx.moveTo(l1.x, l1.y); ctx.lineTo(pMid1.x, pMid1.y); ctx.lineTo(pMid1B.x, pMid1B.y); ctx.lineTo(l2.x, l2.y);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // Right closed leaf
+        var r1 = this.worldToScreen({ x: opEnd.x - wDir.x * jambW + wNorm.x * leafT, y: opEnd.y - wDir.y * jambW + wNorm.y * leafT });
+        var r2 = this.worldToScreen({ x: opEnd.x - wDir.x * jambW - wNorm.x * leafT, y: opEnd.y - wDir.y * jambW - wNorm.y * leafT });
+        ctx.beginPath();
+        ctx.moveTo(pMid2.x, pMid2.y); ctx.lineTo(r1.x, r1.y); ctx.lineTo(r2.x, r2.y); ctx.lineTo(pMid2B.x, pMid2B.y);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // Meeting handles at center
+        ctx.fillStyle = '#d97706';
+        var hL = this.worldToScreen({ x: centerPt.x - wDir.x * 35, y: centerPt.y - wDir.y * 35 });
+        var hR = this.worldToScreen({ x: centerPt.x + wDir.x * 35, y: centerPt.y + wDir.y * 35 });
+        ctx.beginPath(); ctx.arc(hL.x, hL.y, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(hR.x, hR.y, 3, 0, Math.PI * 2); ctx.fill();
+
+      } else if (dType === 'sliding') {
+        // Sliding Door: two overlapping bypass leaves with direction arrows
+        var slideLeafW = op.width * 0.54;
+        var sLeaf1Start = this.worldToScreen({ x: opStart.x + wDir.x * 25 + wNorm.x * 16, y: opStart.y + wDir.y * 25 + wNorm.y * 16 });
+        var sLeaf1End = this.worldToScreen({ x: opStart.x + wDir.x * (25 + slideLeafW) + wNorm.x * 16, y: opStart.y + wDir.y * (25 + slideLeafW) + wNorm.y * 16 });
+        var sLeaf2Start = this.worldToScreen({ x: opEnd.x - wDir.x * (25 + slideLeafW) - wNorm.x * 16, y: opEnd.y - wDir.y * (25 + slideLeafW) - wNorm.y * 16 });
+        var sLeaf2End = this.worldToScreen({ x: opEnd.x - wDir.x * 25 - wNorm.x * 16, y: opEnd.y - wDir.y * 25 - wNorm.y * 16 });
+
+        ctx.strokeStyle = isSelected ? '#2563eb' : '#451a03';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(sLeaf1Start.x, sLeaf1Start.y); ctx.lineTo(sLeaf1End.x, sLeaf1End.y);
+        ctx.moveTo(sLeaf2Start.x, sLeaf2Start.y); ctx.lineTo(sLeaf2End.x, sLeaf2End.y);
+        ctx.stroke();
+
+        var midS1 = { x: (sLeaf1Start.x + sLeaf1End.x) / 2, y: (sLeaf1Start.y + sLeaf1End.y) / 2 };
+        var midS2 = { x: (sLeaf2Start.x + sLeaf2End.x) / 2, y: (sLeaf2Start.y + sLeaf2End.y) / 2 };
+        ctx.fillStyle = isSelected ? '#2563eb' : '#78350f';
+        ctx.font = '600 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('◄►', midS1.x, midS1.y - 7);
+        ctx.fillText('◄►', midS2.x, midS2.y + 7);
+
+      } else {
+        // Single Door — ALWAYS CLOSED
+        var leafT = 18;
+        var pL1 = this.worldToScreen({ x: opStart.x + wDir.x * jambW + wNorm.x * leafT, y: opStart.y + wDir.y * jambW + wNorm.y * leafT });
+        var pL2 = this.worldToScreen({ x: opEnd.x - wDir.x * jambW + wNorm.x * leafT, y: opEnd.y - wDir.y * jambW + wNorm.y * leafT });
+        var pL3 = this.worldToScreen({ x: opEnd.x - wDir.x * jambW - wNorm.x * leafT, y: opEnd.y - wDir.y * jambW - wNorm.y * leafT });
+        var pL4 = this.worldToScreen({ x: opStart.x + wDir.x * jambW - wNorm.x * leafT, y: opStart.y + wDir.y * jambW - wNorm.y * leafT });
+
+        ctx.fillStyle = isSelected ? 'rgba(37, 99, 235, 0.25)' : '#451a03';
+        ctx.strokeStyle = isSelected ? '#2563eb' : '#291102';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pL1.x, pL1.y); ctx.lineTo(pL2.x, pL2.y); ctx.lineTo(pL3.x, pL3.y); ctx.lineTo(pL4.x, pL4.y);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // Handle indicator on opening side opposite hinge
+        var swing = op.swing || 'in-left';
+        var isRightHinge = swing.indexOf('right') !== -1;
+        var handleWorld = isRightHinge ?
+          { x: opStart.x + wDir.x * (jambW + 45), y: opStart.y + wDir.y * (jambW + 45) } :
+          { x: opEnd.x - wDir.x * (jambW + 45), y: opEnd.y - wDir.y * (jambW + 45) };
+        var sH = this.worldToScreen(handleWorld);
+        ctx.fillStyle = '#d97706';
+        ctx.beginPath(); ctx.arc(sH.x, sH.y, 3.5, 0, Math.PI * 2); ctx.fill();
+      }
     } else {
-      // Draw Architectural Window (outer cut, double glass pane in sky cyan, sill stone)
-      var g1 = this.worldToScreen({ x: opStart.x + wNorm.x * (halfT / 3), y: opStart.y + wNorm.y * (halfT / 3) });
-      var g2 = this.worldToScreen({ x: opEnd.x + wNorm.x * (halfT / 3), y: opEnd.y + wNorm.y * (halfT / 3) });
-      var g3 = this.worldToScreen({ x: opStart.x - wNorm.x * (halfT / 3), y: opStart.y - wNorm.y * (halfT / 3) });
-      var g4 = this.worldToScreen({ x: opEnd.x - wNorm.x * (halfT / 3), y: opEnd.y - wNorm.y * (halfT / 3) });
+      // Windows: Sliding, Flap-Up, or Standard Fixed
+      var wType = op.windowType || 'sliding';
+      var sillT = halfT + 30;
+      var sSill1 = this.worldToScreen({ x: opStart.x - wDir.x * 20 - wNorm.x * sillT, y: opStart.y - wDir.y * 20 - wNorm.y * sillT });
+      var sSill2 = this.worldToScreen({ x: opEnd.x + wDir.x * 20 - wNorm.x * sillT, y: opEnd.y + wDir.y * 20 - wNorm.y * sillT });
 
-      // Double glass lines in architectural cyan
-      ctx.strokeStyle = isSelected ? '#2563eb' : (isGhost ? '#0284c7' : '#0284c7');
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y);
-      ctx.moveTo(g3.x, g3.y); ctx.lineTo(g4.x, g4.y);
-      ctx.stroke();
+      // Outer stone sill line
+      ctx.strokeStyle = isSelected ? '#1d4ed8' : '#334155';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(sSill1.x, sSill1.y); ctx.lineTo(sSill2.x, sSill2.y); ctx.stroke();
 
-      // Outer sill line
-      ctx.strokeStyle = isSelected ? '#1d4ed8' : '#0f172a';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(sStart.x, sStart.y); ctx.lineTo(sEnd.x, sEnd.y);
-      ctx.stroke();
+      if (wType === 'sliding') {
+        // Sliding window: dual bypass sash tracks
+        var sashW = op.width * 0.54;
+        var sw1A = this.worldToScreen({ x: opStart.x + wDir.x * 20 + wNorm.x * 12, y: opStart.y + wDir.y * 20 + wNorm.y * 12 });
+        var sw1B = this.worldToScreen({ x: opStart.x + wDir.x * (20 + sashW) + wNorm.x * 12, y: opStart.y + wDir.y * (20 + sashW) + wNorm.y * 12 });
+        var sw2A = this.worldToScreen({ x: opEnd.x - wDir.x * (20 + sashW) - wNorm.x * 12, y: opEnd.y - wDir.y * (20 + sashW) - wNorm.y * 12 });
+        var sw2B = this.worldToScreen({ x: opEnd.x - wDir.x * 20 - wNorm.x * 12, y: opEnd.y - wDir.y * 20 - wNorm.y * 12 });
+
+        ctx.strokeStyle = isSelected ? '#0284c7' : '#0ea5e9';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(sw1A.x, sw1A.y); ctx.lineTo(sw1B.x, sw1B.y);
+        ctx.moveTo(sw2A.x, sw2A.y); ctx.lineTo(sw2B.x, sw2B.y);
+        ctx.stroke();
+
+        // Center meeting sash overlap indicator
+        var sMid = this.worldToScreen(centerPt);
+        ctx.fillStyle = isSelected ? '#0284c7' : '#0369a1';
+        ctx.font = '600 8.5px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('◄►', sMid.x, sMid.y);
+
+      } else if (wType === 'flapup') {
+        // Flap-up awning window: center glass pane with exterior awning projection lines
+        var g1 = this.worldToScreen(opStart);
+        var g2 = this.worldToScreen(opEnd);
+        ctx.strokeStyle = isSelected ? '#0284c7' : '#0ea5e9';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.moveTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y); ctx.stroke();
+
+        // Dashed awning projection lines
+        var proj1 = this.worldToScreen({ x: opStart.x + wNorm.x * (halfT + 40), y: opStart.y + wNorm.y * (halfT + 40) });
+        var proj2 = this.worldToScreen({ x: opEnd.x + wNorm.x * (halfT + 40), y: opEnd.y + wNorm.y * (halfT + 40) });
+        ctx.strokeStyle = isSelected ? '#2563eb' : '#64748b';
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(g1.x, g1.y); ctx.lineTo(proj1.x, proj1.y);
+        ctx.lineTo(proj2.x, proj2.y); ctx.lineTo(g2.x, g2.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+      } else {
+        // Standard double-glazed fixed window
+        var g1 = this.worldToScreen({ x: opStart.x + wNorm.x * (halfT / 3), y: opStart.y + wNorm.y * (halfT / 3) });
+        var g2 = this.worldToScreen({ x: opEnd.x + wNorm.x * (halfT / 3), y: opEnd.y + wNorm.y * (halfT / 3) });
+        var g3 = this.worldToScreen({ x: opStart.x - wNorm.x * (halfT / 3), y: opStart.y - wNorm.y * (halfT / 3) });
+        var g4 = this.worldToScreen({ x: opEnd.x - wNorm.x * (halfT / 3), y: opEnd.y - wNorm.y * (halfT / 3) });
+
+        ctx.strokeStyle = isSelected ? '#0284c7' : '#0ea5e9';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y);
+        ctx.moveTo(g3.x, g3.y); ctx.lineTo(g4.x, g4.y);
+        ctx.stroke();
+      }
     }
 
-    // Clean compact architectural label (W, BW, or D)
+    // Clean compact architectural label (D or W with subtype)
     if (this.zoom >= 0.055 || isSelected) {
-      var isBayWindow = /bay/i.test(op.type || '') || (op.width >= 1500);
-      var tagPrefix = op.type === 'door' ? 'D' : (isBayWindow ? 'BW' : 'W');
+      var dType = op.doorType || 'single_closed';
+      var wType = op.windowType || 'sliding';
+      var tagPrefix = op.type === 'door' ?
+        (dType === 'double' ? 'D (Double)' : (dType === 'sliding' ? 'D (Sliding)' : (dType === 'frame_only' ? 'Open Frame' : 'D (Closed)'))) :
+        (wType === 'sliding' ? 'W (Sliding)' : (wType === 'flapup' ? 'W (Flap-Up)' : 'W (Fixed)'));
       ctx.fillStyle = isSelected ? '#1d4ed8' : '#0f172a';
-      ctx.font = '700 10.5px "IBM Plex Sans", -apple-system, sans-serif';
+      ctx.font = '700 9.5px "IBM Plex Sans", -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(tagPrefix, sCenter.x, sCenter.y - 12);
     }
@@ -6643,6 +6774,70 @@
         ctx.fillText(badgeText, midX, midY);
         ctx.restore();
       } else {
+        // If lastTapeMeasure exists, keep it rendered on screen so user can read distance!
+        if (this.lastTapeMeasure && this.lastTapeMeasure.p1 && this.lastTapeMeasure.p2) {
+          var lp1 = this.worldToScreen(this.lastTapeMeasure.p1);
+          var lp2 = this.worldToScreen(this.lastTapeMeasure.p2);
+          var lDist = this.lastTapeMeasure.distMm;
+          var lFmt = this.lastTapeMeasure.dimsFmt || this.formatAllDims(lDist);
+          var lIsHoriz = Math.abs(this.lastTapeMeasure.p2.y - this.lastTapeMeasure.p1.y) < Math.abs(this.lastTapeMeasure.p2.x - this.lastTapeMeasure.p1.x);
+
+          ctx.save();
+          ctx.strokeStyle = '#0F172A';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(lp1.x, lp1.y); ctx.lineTo(lp2.x, lp2.y);
+          ctx.stroke();
+
+          ctx.strokeStyle = '#10B981';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(lp1.x, lp1.y); ctx.lineTo(lp2.x, lp2.y);
+          ctx.stroke();
+
+          var capLen = 9;
+          ctx.beginPath();
+          if (lIsHoriz) {
+            ctx.moveTo(lp1.x, lp1.y - capLen); ctx.lineTo(lp1.x, lp1.y + capLen);
+            ctx.moveTo(lp2.x, lp2.y - capLen); ctx.lineTo(lp2.x, lp2.y + capLen);
+          } else {
+            ctx.moveTo(lp1.x - capLen, lp1.y); ctx.lineTo(lp1.x + capLen, lp1.y);
+            ctx.moveTo(lp2.x - capLen, lp2.y); ctx.lineTo(lp2.x + capLen, lp2.y);
+          }
+          ctx.stroke();
+
+          [lp1, lp2].forEach(function (pt) {
+            ctx.strokeStyle = '#0F172A';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#10B981';
+            ctx.fill();
+            ctx.stroke();
+          });
+
+          var lMidX = (lp1.x + lp2.x) / 2;
+          var lMidY = (lp1.y + lp2.y) / 2 - 16;
+          var lAxis = lIsHoriz ? '↔' : '↕';
+          var lBadge = '📏 ' + lAxis + ' ' + lFmt.combined;
+          ctx.font = '700 12.5px "IBM Plex Mono", monospace';
+          var ltw = ctx.measureText(lBadge).width;
+          ctx.fillStyle = '#064E3B';
+          ctx.strokeStyle = '#10B981';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(lMidX - ltw / 2 - 10, lMidY - 12, ltw + 20, 24, 5);
+          else ctx.rect(lMidX - ltw / 2 - 10, lMidY - 12, ltw + 20, 24);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = '#34D399';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(lBadge, lMidX, lMidY);
+          ctx.restore();
+        }
+
         // Draw crosshair cursor indicator
         var sSnap = this.worldToScreen(snapped.pt);
         ctx.save();
@@ -6657,7 +6852,7 @@
         ctx.stroke();
 
         ctx.font = '600 11.5px "IBM Plex Sans", sans-serif';
-        var tipTxt = '📏 Tape Tool: Click Point 1 to measure (straight only)';
+        var tipTxt = this.lastTapeMeasure ? '📏 Tape: Click to measure another span' : '📏 Tape Tool: Click Point 1 to measure (straight only)';
         var ttw = ctx.measureText(tipTxt).width;
         ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
         ctx.strokeStyle = '#F59E0B';
@@ -6899,6 +7094,78 @@
       this.renderFurniture(oCtx);
       this.renderDimensions(oCtx);
 
+      // Detailed Room Clear Inner Span & Carpet Area Callouts on Plan
+      oCtx.save();
+      for (var rIdx = 0; rIdx < rooms.length; rIdx++) {
+        var rObj = rooms[rIdx];
+        if (!rObj.polygon || rObj.polygon.length < 3) continue;
+        var rCentroid = (typeof Vec2 !== 'undefined' && Vec2.polygonCentroid) ? Vec2.polygonCentroid(rObj.polygon) : { x: 0, y: 0 };
+        var sRC = this.worldToScreen(rCentroid);
+
+        var rMinX = Infinity, rMaxX = -Infinity, rMinY = Infinity, rMaxY = -Infinity;
+        rObj.polygon.forEach(function (pt) {
+          rMinX = Math.min(rMinX, pt.x); rMaxX = Math.max(rMaxX, pt.x);
+          rMinY = Math.min(rMinY, pt.y); rMaxY = Math.max(rMaxY, pt.y);
+        });
+        var rSpanW = Math.round(rMaxX - rMinX);
+        var rSpanD = Math.round(rMaxY - rMinY);
+        var rSft = Math.round(rObj.areaSqFt || (rObj.areaSqMm ? rObj.areaSqMm / 92903.04 : (rSpanW * rSpanD) / 92903.04));
+
+        oCtx.fillStyle = '#0f172a';
+        oCtx.font = '700 15px "IBM Plex Sans", sans-serif';
+        oCtx.textAlign = 'center';
+        oCtx.fillText((rObj.name || 'Room ' + (rIdx + 1)).toUpperCase(), sRC.x, sRC.y - 14);
+
+        oCtx.fillStyle = '#0369a1';
+        oCtx.font = '600 12px "IBM Plex Mono", monospace';
+        oCtx.fillText('Clearance: ' + rSpanW + ' × ' + rSpanD + ' mm', sRC.x, sRC.y + 4);
+
+        oCtx.fillStyle = '#475569';
+        oCtx.font = '600 11px "IBM Plex Sans", sans-serif';
+        oCtx.fillText('Carpet Area: ' + rSft + ' sq.ft (' + (rSft * 0.0929).toFixed(1) + ' m²)', sRC.x, sRC.y + 20);
+      }
+      oCtx.restore();
+
+      // Electrical & Plumbing Points Annotation
+      oCtx.save();
+      var openingsList = plan.openings || [];
+      openingsList.forEach(function (op) {
+        if (op.type === 'door') {
+          var w = proj.plan.walls.find(function (wl) { return wl.id === op.wallId; });
+          if (w) {
+            var wD = Core.wallDirection(w);
+            var wN = Core.wallNormal(w);
+            var swPos = { x: w.start.x + wD.x * (op.offset + op.width / 2 + 180) + wN.x * 60, y: w.start.y + wD.y * (op.offset + op.width / 2 + 180) + wN.y * 60 };
+            var sSw = self.worldToScreen(swPos);
+            oCtx.fillStyle = '#b45309';
+            oCtx.strokeStyle = '#d97706';
+            oCtx.lineWidth = 1.2;
+            oCtx.strokeRect(sSw.x - 7, sSw.y - 7, 14, 14);
+            oCtx.fillRect(sSw.x - 4, sSw.y - 4, 8, 8);
+            oCtx.font = '700 9px "IBM Plex Sans", sans-serif';
+            oCtx.fillText('⚡ SW', sSw.x + 10, sSw.y + 3);
+          }
+        }
+      });
+
+      furniture.forEach(function (f) {
+        var isSink = (f.name && /sink/i.test(f.name)) || (f.unitConfig && f.unitConfig.applianceSink);
+        var isHob = (f.name && /hob|stove|burner/i.test(f.name)) || (f.unitConfig && f.unitConfig.applianceHob);
+        if (isSink && f.pos) {
+          var sSp = self.worldToScreen({ x: f.pos.x, y: f.pos.y });
+          oCtx.fillStyle = '#0284c7';
+          oCtx.font = '700 9.5px "IBM Plex Sans", sans-serif';
+          oCtx.fillText('🚰 Plumbing Point', sSp.x, sSp.y + 22);
+        }
+        if (isHob && f.pos) {
+          var sHp = self.worldToScreen({ x: f.pos.x, y: f.pos.y });
+          oCtx.fillStyle = '#dc2626';
+          oCtx.font = '700 9.5px "IBM Plex Sans", sans-serif';
+          oCtx.fillText('🔥 Gas Supply Line', sHp.x, sHp.y + 22);
+        }
+      });
+      oCtx.restore();
+
       // Blueprint double border
       oCtx.save();
       var margin = 40;
@@ -7025,7 +7292,7 @@
 
       // Legend
       var legW = 540;
-      var legH = 120;
+      var legH = 150;
       var legX = margin + 20;
       var legY = exportH - margin - legH - 20;
 
@@ -7038,29 +7305,92 @@
       oCtx.fillStyle = '#0f172a';
       oCtx.font = '700 12px "IBM Plex Sans", sans-serif';
       oCtx.textAlign = 'left';
-      oCtx.fillText('ARCHITECTURAL DRAWING LEGEND', legX + 16, legY + 24);
+      oCtx.fillText('ARCHITECTURAL DRAWING LEGEND', legX + 16, legY + 22);
 
       var legItems = [
-        { label: 'Solid Wall', color: '#0f172a' },
-        { label: 'Door Swing', color: '#64748b' },
-        { label: 'Base Cabinet (FM)', color: '#334155' },
-        { label: 'Built-in Gas Hob', color: '#d97706' },
-        { label: 'Kitchen Sink', color: '#0284c7' }
+        { label: 'Solid Wall (T: 150/200mm)', color: '#0f172a' },
+        { label: 'Closed / Double / Sliding Door', color: '#451a03' },
+        { label: 'Base Cabinet (FM 850mm)', color: '#334155' },
+        { label: 'Overhead Wall Unit (AFFL 1500)', color: '#0284c7' },
+        { label: 'Sliding / Flap-up Window', color: '#0ea5e9' },
+        { label: 'Built-in Gas Hob (🔥 Gas Point)', color: '#d97706' },
+        { label: 'Kitchen Sink (🚰 Plumbing Point)', color: '#0284c7' },
+        { label: 'Electrical Switch (⚡ SW)', color: '#b45309' }
       ];
 
       var lx = legX + 16;
+      var lyCur = legY + 38;
       for (var li = 0; li < legItems.length; li++) {
         var itm = legItems[li];
         oCtx.fillStyle = itm.color;
         oCtx.strokeStyle = itm.color;
-        oCtx.fillRect(lx, legY + 45, 24, 14);
-        oCtx.strokeRect(lx, legY + 45, 24, 14);
+        oCtx.fillRect(lx, lyCur, 22, 12);
+        oCtx.strokeRect(lx, lyCur, 22, 12);
         oCtx.font = '600 10.5px "IBM Plex Sans", sans-serif';
-        oCtx.fillText(itm.label, lx + 30, legY + 56);
-        lx += 180;
-        if (li === 1) {
+        oCtx.fillText(itm.label, lx + 28, lyCur + 10);
+        lx += 255;
+        if ((li + 1) % 2 === 0) {
           lx = legX + 16;
-          legY += 28;
+          lyCur += 24;
+        }
+      }
+
+      // Door & Window Schedule Table
+      var openings = plan.openings || [];
+      if (openings.length > 0) {
+        var schedW = 740;
+        var schedH = Math.min(220, 52 + openings.length * 24);
+        var schedX = legX + legW + 24;
+        var schedY = exportH - margin - schedH - 20;
+
+        oCtx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+        oCtx.fillRect(schedX, schedY, schedW, schedH);
+        oCtx.strokeStyle = '#cbd5e1';
+        oCtx.lineWidth = 1.2;
+        oCtx.strokeRect(schedX, schedY, schedW, schedH);
+
+        oCtx.fillStyle = '#0f172a';
+        oCtx.font = '700 12px "IBM Plex Sans", sans-serif';
+        oCtx.fillText('DOOR & WINDOW SCHEDULE', schedX + 16, schedY + 22);
+
+        oCtx.font = '700 10.5px "IBM Plex Mono", monospace';
+        oCtx.fillStyle = '#64748b';
+        oCtx.fillText('TAG', schedX + 16, schedY + 40);
+        oCtx.fillText('TYPE & STYLE', schedX + 65, schedY + 40);
+        oCtx.fillText('WIDTH × HEIGHT', schedX + 270, schedY + 40);
+        oCtx.fillText('SILL HEIGHT', schedX + 460, schedY + 40);
+        oCtx.fillText('STATUS', schedX + 610, schedY + 40);
+
+        oCtx.lineWidth = 0.8;
+        oCtx.strokeStyle = '#e2e8f0';
+        oCtx.beginPath();
+        oCtx.moveTo(schedX + 16, schedY + 46); oCtx.lineTo(schedX + schedW - 16, schedY + 46);
+        oCtx.stroke();
+
+        var sy = schedY + 64;
+        for (var oi = 0; oi < Math.min(openings.length, 6); oi++) {
+          var oItem = openings[oi];
+          var isD = oItem.type === 'door';
+          var oTag = oItem.label || (isD ? ('D' + (oi + 1)) : ('W' + (oi + 1)));
+          var oSub = isD ?
+            (oItem.doorType === 'double' ? 'Double Door' : (oItem.doorType === 'sliding' ? 'Sliding Door' : (oItem.doorType === 'frame_only' ? 'Only Door Frame' : 'Single Door (Closed)'))) :
+            (oItem.windowType === 'flapup' ? 'Flap-up Window' : (oItem.windowType === 'sliding' ? 'Sliding Window' : 'Standard Fixed'));
+
+          oCtx.fillStyle = isD ? '#451a03' : '#0284c7';
+          oCtx.font = '700 11px "IBM Plex Mono", monospace';
+          oCtx.fillText(oTag, schedX + 16, sy);
+
+          oCtx.fillStyle = '#1e293b';
+          oCtx.font = '600 10.5px "IBM Plex Sans", sans-serif';
+          oCtx.fillText(oSub, schedX + 65, sy);
+
+          oCtx.font = '600 10.5px "IBM Plex Mono", monospace';
+          oCtx.fillText(Math.round(oItem.width) + ' × ' + Math.round(oItem.height) + ' mm', schedX + 270, sy);
+          oCtx.fillText(isD ? '0 mm (Floor)' : ((oItem.sillHeight || 900) + ' mm AFFL'), schedX + 460, sy);
+
+          oCtx.fillStyle = '#16a34a';
+          oCtx.fillText('Specified', schedX + 610, sy);
+          sy += 24;
         }
       }
       oCtx.restore();
