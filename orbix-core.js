@@ -830,7 +830,8 @@
       (opts.unitConfig && opts.unitConfig.isOnlyShutter)
     );
     var isWrbOS = isOS && (cat === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(nm || opts.id || ''));
-    var isBaseOS = isOS && !isLoft && !isWallUnit && !isWrbOS;
+    var is18mmPanelOrShutter = (opts.dimensions && opts.dimensions.D === 18) || cat === 'wall_paneling' || (nm.indexOf('blank shutter') !== -1) || (opts.id && /^(bs-|blank-shutter)/i.test(opts.id));
+    var isBaseOS = isOS && !isLoft && !isWallUnit && !isWrbOS && !is18mmPanelOrShutter;
     var defElev = isLoft ? 2100 : (isOpenBox ? 1500 : (isSpiceRack ? 1350 : (isWallUnit ? 1500 : 0)));
     var isElevatedType = isWallUnit || isLoft || isSpiceRack || isOpenBox;
     var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '' && (!isElevatedType || parseFloat(opts.elevation) > 0)) ?
@@ -904,7 +905,8 @@
     } else if (isOS) {
       opts.unitConfig.isOnlyShutter = true;
       if (opts.dimensions) {
-        if (opts.dimensions.D === undefined || opts.dimensions.D < 100) {
+        var is18mmPanelOrShutter = (opts.dimensions.D === 18) || cat === 'wall_paneling' || (nm.indexOf('blank shutter') !== -1) || (opts.id && /^(bs-|blank-shutter)/i.test(opts.id));
+        if (!is18mmPanelOrShutter && (opts.dimensions.D === undefined || opts.dimensions.D < 100)) {
           opts.dimensions.D = isWallUnit ? 350 : 550;
         }
       }
@@ -967,9 +969,9 @@
       dimensions: {
         W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
         H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : (cat.indexOf('base') !== -1 || cat.indexOf('fm') !== -1 || cat.indexOf('d2') !== -1 || cat.indexOf('d3') !== -1 || cat.indexOf('tv') !== -1 ? 850 : 2100)),
-        D: (opts.dimensions && opts.dimensions.D !== undefined && (opts.dimensions.D > 100 || isWrbOS)) ?
+        D: (opts.dimensions && opts.dimensions.D !== undefined && (opts.dimensions.D > 100 || isWrbOS || is18mmPanelOrShutter)) ?
           opts.dimensions.D :
-          (isOS ? (isWallUnit ? 350 : (isWrbOS ? 18 : 550)) : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
+          (isOS ? (is18mmPanelOrShutter || isWrbOS ? 18 : (isWallUnit ? 350 : 550)) : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
       },
       shutterColors: initColors,
       shutterMaterials: initMats,
@@ -5682,6 +5684,55 @@
       "baseRate": 1028.17
     },
     "customRate": 1028.17
+  },
+  {
+    "id": "bs-60",
+    "code": "bs-60",
+    "name": "BS (BLANK SHUTTER)",
+    "modelType": "wall_paneling",
+    "category": "wall_paneling",
+    "costCategory": "Wall Paneling",
+    "areaSqft": 4.84375,
+    "icon": "🪵",
+    "dimensions": {
+      "W": 600,
+      "H": 750,
+      "D": 18
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 1,
+      "doorType": "slab",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 0,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "none",
+      "hfinish": "none",
+      "led": false,
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707",
+      "isOnlyShutter": true
+    },
+    "pricingOverrides": {
+      "baseRate": 1650.0
+    },
+    "customRate": 1650.0,
+    "elevation": 0
   },
   {
     "id": "wm-45-gl",

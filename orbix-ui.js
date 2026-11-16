@@ -4996,7 +4996,7 @@
           if (tabId === 'panel_ledges') {
             res = catalog.filter(function (it) {
               var n = (it.name || '').toLowerCase();
-              return n.indexOf('ledge') !== -1 || n.indexOf('shelf') !== -1;
+              return n.indexOf('ledge') !== -1 || n.indexOf('shelf') !== -1 || n.indexOf('blank shutter') !== -1 || n.indexOf('bs') !== -1 || it.id === 'bs-60';
             });
           } else {
             res = catalog.filter(function (it) {

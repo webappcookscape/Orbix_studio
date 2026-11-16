@@ -101,6 +101,8 @@
   ICONS["wrb-60-os"] = ICONS["wr-1-shelves"];
   ICONS["wrb-120-o-s"] = ICONS["wr-shelves"];
   ICONS["wrb-120-os"] = ICONS["wr-shelves"];
+  ICONS["bs-60"] = ICONS["ledge-vert"];
+  ICONS["bs"] = ICONS["ledge-vert"];
 
   return {
     ICONS: ICONS,
