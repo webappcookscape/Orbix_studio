@@ -841,10 +841,24 @@
     var is18mmPanelOrShutter = (opts.dimensions && opts.dimensions.D === 18) || cat === 'wall_paneling' || (nm.indexOf('blank shutter') !== -1) || (opts.id && /^(bs-|blank-shutter)/i.test(opts.id));
     var isBaseOS = isOS && !isLoft && !isWallUnit && !isWrbOS && !is18mmPanelOrShutter;
     var defElev = isLoft ? 2100 : (isOpenBox ? 1500 : (isSpiceRack ? 1350 : (isWallUnit ? 1500 : 0)));
-    var isElevatedType = isWallUnit || isLoft || isSpiceRack || isOpenBox;
-    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '' && (!isElevatedType || parseFloat(opts.elevation) > 0)) ?
+    var checkId = String(opts.id || opts.catalogItemId || opts.code || '').toLowerCase();
+    if (checkId === 'ledge-std' || /^ledge(-std)?$/i.test(checkId) || nm === 'ledge') {
+      defElev = 750;
+    } else if (checkId === 'ledge-ctop' || /ledge[-_ ]*c(ounter)?top/i.test(nm + ' ' + checkId)) {
+      defElev = 750;
+    } else if (checkId === 'ledge-vert' || /vert(ical)?[-_ ]*ledge/i.test(nm + ' ' + checkId)) {
+      defElev = 0;
+    } else if (checkId === 'pnl-back' || /back[-_ ]*panel/i.test(nm + ' ' + checkId)) {
+      defElev = 300;
+    } else if (checkId === 'pnl-wall' || /wall[-_ ]*panel/i.test(nm + ' ' + checkId)) {
+      defElev = 0;
+    } else if (checkId === 'bs-60' || /blank[-_ ]*shutter/i.test(nm + ' ' + checkId)) {
+      defElev = 0;
+    }
+
+    var elev = (opts.elevation !== undefined && opts.elevation !== null && opts.elevation !== '') ?
       parseFloat(opts.elevation) :
-      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && (!isElevatedType || parseFloat(opts.pos.z) > 0)) ?
+      ((opts.pos && opts.pos.z !== undefined && opts.pos.z !== null && opts.pos.z !== '') ?
         parseFloat(opts.pos.z) : defElev);
 
     // Kitchen FM & Base defaults: 100mm leg, countertop, 1 shelf
@@ -857,7 +871,7 @@
       if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = true;
       if (opts.unitConfig.legs === undefined) opts.unitConfig.legs = 100;
       if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = 100;
-      if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'black';
+      if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'granite_kashmir_white';
       if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 1;
       if (opts.dimensions && (opts.dimensions.D === undefined || opts.dimensions.D < 100)) {
         opts.dimensions.D = 550;
@@ -1201,6 +1215,10 @@
         snapToGrid: true,
         snapToAngle: true,
         snapDistance: 150, // mm tolerance for snapping
+        activeFloor: 'ground',
+        floors: [
+          { id: 'ground', name: 'Ground Floor', level: 0, isDefault: true }
+        ],
         walls: [],
         openings: [],
         rooms: [],
@@ -4822,7 +4840,8 @@
     "pricingOverrides": {
       "baseRate": 12338.03
     },
-    "customRate": 12338.03
+    "customRate": 12338.03,
+    "elevation": 0
   },
   {
     "id": "ob-std",
@@ -5013,7 +5032,8 @@
     "pricingOverrides": {
       "baseRate": 185.07
     },
-    "customRate": 185.07
+    "customRate": 185.07,
+    "elevation": 750
   },
   {
     "id": "pnl-back",
@@ -5060,7 +5080,8 @@
     "pricingOverrides": {
       "baseRate": 15422.54
     },
-    "customRate": 15422.54
+    "customRate": 15422.54,
+    "elevation": 300
   },
   {
     "id": "ctvb-doors-only",
@@ -5514,7 +5535,8 @@
     "pricingOverrides": {
       "baseRate": 138.8
     },
-    "customRate": 138.8
+    "customRate": 138.8,
+    "elevation": 750
   },
   {
     "id": "sr-60",
@@ -5704,7 +5726,8 @@
     "pricingOverrides": {
       "baseRate": 1028.17
     },
-    "customRate": 1028.17
+    "customRate": 1028.17,
+    "elevation": 0
   },
   {
     "id": "bs-60",

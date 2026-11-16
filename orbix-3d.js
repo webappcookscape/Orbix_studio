@@ -34,7 +34,7 @@
   // Realistic Granite & Stone Countertop Material Generator
   ArchitecturalRenderer.getCountertopMaterial = function (counterColorName, dims) {
     dims = dims || { W: 600, D: 600 };
-    counterColorName = counterColorName || 'granite_black_galaxy';
+    counterColorName = counterColorName || 'granite_kashmir_white';
     var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
 
     // Check if texture exists in ORBIX_COUNTERTOP_TEXTURES
@@ -4458,7 +4458,7 @@
     var handleMat = ArchitecturalRenderer.getHandleMaterial(handleFinish);
 
     // Countertop
-    var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'granite_black_galaxy' : (isBase ? 'granite_black_galaxy' : 'none'));
+    var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'granite_kashmir_white' : (isBase ? 'granite_kashmir_white' : 'none'));
     var counterMat = ArchitecturalRenderer.getCountertopMaterial(counterColorName, dims);
 
     var isTvOrVanity = (cat === 'tv_unit' || cat === 'vanity' || (name && (name.indexOf('tv') !== -1 || name.indexOf('vanity') !== -1)));

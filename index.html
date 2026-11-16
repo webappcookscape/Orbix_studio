@@ -281,8 +281,7 @@
               <!-- 4K Ultra Render Export & AI Decor -->
               <div class="cp-pill-group">
                 <button type="button" class="cp-render-btn" id="cpExport4KBtn">📸 Download 4K Ultra Render</button>
-                <button type="button" class="cp-pill" id="openAIDecor3DBtn" style="background:linear-gradient(135deg,#7c3aed,#9333ea);color:#ffffff;border:none;font-weight:600;">✨ AI Decor</button>
-              </div>
+                </div>
             </div>
           </div>
           <div class="stagebar">
@@ -609,10 +608,15 @@
           <!-- Row 1: Architectural Drawing Studio & Live Quote -->
           <div class="plan-toolbar-row drawing-bar">
             <div class="plan-toolgroup">
+              <div class="plan-toolgroup" id="floorSelectorGroup">
+                <select class="plan-select" id="planActiveFloor" title="Active Floor Level (Default: Ground Floor)"
+                  style="font-weight:700;color:#1e293b;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                  <option value="ground" selected>🏢 Ground Floor (Default)</option>
+                  <option value="first">🏢 First Floor</option>
+                  <option value="add_floor">+ Add Floor...</option>
+                </select>
+              </div>
               <button class="plan-tool-btn is-active" data-tool="select" title="Select & Move (S)">✋ Select</button>
-              <button class="plan-tool-btn" data-tool="pan" id="planPanBtn"
-                title="Pan Floor Plan: Click and drag anywhere to pan and observe floor plan (Hotkey H or hold Spacebar / Middle Click)">✋
-                Pan View</button>
               <button class="plan-tool-btn" data-tool="wall" title="Draw Wall (W)">🧱 + Wall</button>
               <select class="plan-select" id="planWallThickness" title="Wall Thickness">
                 <option value="100">100 mm (Drywall)</option>
@@ -670,26 +674,14 @@
                   BOQ</span>
               </button>
               <!-- AI Decor Auto-placement Button -->
-              <button class="plan-tool-btn" id="openAIDecorBtn" type="button"
-                title="AI Decor: Auto-style Living Room, Kitchen or Bedroom with authentic 3D decors (TV, sofa, plants, cutlery, bed, lamp)"
-                style="background:linear-gradient(135deg,#7c3aed,#9333ea);color:#ffffff;border:none;font-weight:600;display:inline-flex;align-items:center;gap:5px;border-radius:4px;padding:4px 10px;">
-                <span>✨ AI Decor</span>
-              </button>
-            </div>
+              </div>
 
             <div class="plan-toolgroup" style="margin-left:auto;gap:10px;">
               <button class="plan-tool-btn" id="planUnitToggleBtn"
                 style="font-weight:700;color:#1B4F72;border-color:#1B4F72;background:#F0F7FF;"
                 title="Switch 2D measurement unit between Millimeters (mm) and Feet & Inches (ft-in)">📐 Unit:
                 mm</button>
-              <div class="live-quote-badge" id="liveQuotationBadge" style="margin:0;">
-                <span class="badge-label">Estimated:</span>
-                <span class="badge-amount">₹ 0</span>
               </div>
-              <button class="plan-tool-btn" id="planView3D"
-                style="background:#1B4F72;color:#fff;border-color:#1B4F72;font-weight:700;"
-                title="View Whole Home in 3D">🏠 View 3D Home ➔</button>
-            </div>
           </div>
 
           <!-- Row 2: Blueprint Image, Undo/Redo, Templates & File Actions -->
@@ -877,61 +869,6 @@
       </div>
     </div>
   </div>
-  </div>
-
-  <!-- ══════ MODAL: SMART AI DECOR STYLER ══════ -->
-  <div class="orbix-modal" id="modalAIDecor" style="display:none;">
-    <div class="modal-backdrop"></div>
-    <div class="modal-dialog" style="max-width:580px;width:95vw;">
-      <div class="modal-head" style="background:linear-gradient(135deg,#7c3aed,#9333ea);color:#ffffff;border-bottom:none;padding:16px 20px;">
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
-            <h3 class="modal-title" style="color:#ffffff;margin:0;font-size:17px;font-weight:700;">✨ AI Decor Styler</h3>
-            <span style="font-size:10.5px;font-weight:700;background:rgba(255,255,255,0.22);color:#ffffff;padding:2px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.35);">1-Click Auto-Placement</span>
-          </div>
-          <p class="modal-sub" style="margin:0;color:rgba(255,255,255,0.88);font-size:12px;">Intelligently style your rooms with authentic 3D furniture and decorative accessories without affecting woodwork pricing.</p>
-        </div>
-        <button class="modal-close-btn" type="button" id="closeAIDecorModalBtn" title="Close (Esc)" style="color:#ffffff;">&times;</button>
-      </div>
-
-      <div class="modal-body" style="padding:16px 20px;">
-        <div style="font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Choose Room Style to Apply:</div>
-        
-        <div style="display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:16px;">
-          <!-- Living Room Preset -->
-          <div class="ai-decor-card" id="btnAIDecorLiving" style="background:#ffffff;border:1.5px solid #e2e8f0;border-radius:8px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all 0.15s ease;">
-            <div>
-              <div style="font-size:13.5px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:6px;">🛋️ Living Room Decor</div>
-              <div style="font-size:11.5px;color:#64748b;margin-top:3px;">Places 65" 4K TV, 3-Seater Ashley Sofa, Tall Fig Tree Planter &amp; Contemporary Armchair</div>
-            </div>
-            <button type="button" class="btn small" style="background:#f1f5f9;color:#0f172a;font-weight:600;font-size:11px;border:1px solid #cbd5e1;pointer-events:none;">Style Room &rarr;</button>
-          </div>
-
-          <!-- Kitchen Preset -->
-          <div class="ai-decor-card" id="btnAIDecorKitchen" style="background:#ffffff;border:1.5px solid #e2e8f0;border-radius:8px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all 0.15s ease;">
-            <div>
-              <div style="font-size:13.5px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:6px;">🍳 Kitchen Counter Decor</div>
-              <div style="font-size:11.5px;color:#64748b;margin-top:3px;">Places Countertop Cutlery Organizer, Fresh Vegetable Bowl, Glass Spice Canisters &amp; Dishrack</div>
-            </div>
-            <button type="button" class="btn small" style="background:#f1f5f9;color:#0f172a;font-weight:600;font-size:11px;border:1px solid #cbd5e1;pointer-events:none;">Style Room &rarr;</button>
-          </div>
-
-          <!-- Bedroom Preset -->
-          <div class="ai-decor-card" id="btnAIDecorBedroom" style="background:#ffffff;border:1.5px solid #e2e8f0;border-radius:8px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all 0.15s ease;">
-            <div>
-              <div style="font-size:13.5px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:6px;">🛏️ Bedroom Decor</div>
-              <div style="font-size:11.5px;color:#64748b;margin-top:3px;">Places Master Suite Bed with Nightstands, Nordic Curved Arc Floor Lamp &amp; Table Planter</div>
-            </div>
-            <button type="button" class="btn small" style="background:#f1f5f9;color:#0f172a;font-weight:600;font-size:11px;border:1px solid #cbd5e1;pointer-events:none;">Style Room &rarr;</button>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:8px;">
-          <button type="button" class="btn full" id="btnAIDecorAllRooms" style="flex:2;background:linear-gradient(135deg,#7c3aed,#9333ea);color:#ffffff;font-weight:700;font-size:12.5px;padding:9px;border:none;border-radius:6px;box-shadow:0 2px 4px rgba(124,58,237,0.25);">🪄 Auto-Style All Rooms</button>
-          <button type="button" class="btn danger" id="btnAIClearAllDecors" style="flex:1;font-size:11.5px;padding:9px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:6px;">🗑️ Clear Decors</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- ══════ MODAL: CREATE NEW PROJECT ══════ -->

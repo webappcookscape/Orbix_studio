@@ -83,12 +83,12 @@ assert(Math.abs(ctopPrice.areaSft - expectedCtopSqft) < 0.05, `ledge-ctop area s
 console.log(`  ✓ ledge-std area: ${ledgePrice.areaSft.toFixed(2)} sqft (formula: ${ledgePrice.formulaDescription})`);
 console.log(`  ✓ ledge-ctop area: ${ctopPrice.areaSft.toFixed(2)} sqft (formula: ${ctopPrice.formulaDescription})`);
 
-// 3. AI ROOM DECOR MODAL DUPLICATION & ROOM TARGETING
-console.log('\n3. Testing AI Room Decor & Single Modal Instance...');
+// 3. AI ROOM DECOR MODAL (Removed per user request)
+console.log('\n3. Testing AI Room Decor Modal Removal...');
 const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const modalCount = (indexHtml.match(/id="modalAIDecor"/g) || []).length;
-assert.strictEqual(modalCount, 1, `modalAIDecor must appear exactly once in index.html, found ${modalCount}`);
-console.log('  ✓ modalAIDecor exists exactly once in index.html');
+assert.strictEqual(modalCount, 0, `modalAIDecor must be removed from index.html, found ${modalCount}`);
+console.log('  ✓ modalAIDecor successfully removed from index.html per user request');
 
 // 4. DOOR OPTIONS: Always Closed, Double, Sliding, Frame-Only
 console.log('\n4. Testing Door Subtypes & Always Closed default...');

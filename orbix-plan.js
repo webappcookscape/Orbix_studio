@@ -460,6 +460,89 @@
     var snapped = Vec2.clone(worldPt);
     var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
 
+    // 00. Tape Measure Special Auto-Snapping: Snap to Room Inner Wall Faces and Unit Edges/Corners
+    if (this.activeTool === 'dimension') {
+      var bestTapeSnap = null;
+      var minTapeDist = 260; // mm magnetic snap threshold for tape tool
+
+      // 1. Snap to Furniture Outer Edges & Corners
+      var furnList = (this.project && this.project.plan && this.project.plan.furniture) || [];
+      for (var fti = 0; fti < furnList.length; fti++) {
+        var fObj = furnList[fti];
+        var fPoly = Core.getFurniturePolygon(fObj);
+        if (fPoly && fPoly.length >= 3) {
+          for (var fvi = 0; fvi < fPoly.length; fvi++) {
+            var cDist = Vec2.dist(worldPt, fPoly[fvi]);
+            if (cDist < minTapeDist) {
+              minTapeDist = cDist;
+              bestTapeSnap = { pt: Vec2.clone(fPoly[fvi]), type: 'tape_unit_corner', label: 'Unit Corner' };
+            }
+          }
+          for (var fei = 0; fei < fPoly.length; fei++) {
+            var p1 = fPoly[fei], p2 = fPoly[(fei + 1) % fPoly.length];
+            var prEdge = Core.projectPointToSegment(worldPt, p1, p2);
+            if (prEdge && prEdge.dist < minTapeDist && prEdge.t >= 0 && prEdge.t <= 1) {
+              minTapeDist = prEdge.dist;
+              bestTapeSnap = { pt: Vec2.clone(prEdge.pt), type: 'tape_unit_edge', label: 'Unit Edge' };
+            }
+          }
+        }
+      }
+
+      // 2. Snap to Room Inner Wall Faces & Corners (Room Polygons = True Inner Surfaces)
+      var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
+      for (var rti = 0; rti < rooms.length; rti++) {
+        var rPoly = rooms[rti].polygon;
+        if (rPoly && rPoly.length >= 3) {
+          for (var rvi = 0; rvi < rPoly.length; rvi++) {
+            var rcDist = Vec2.dist(worldPt, rPoly[rvi]);
+            if (rcDist < minTapeDist) {
+              minTapeDist = rcDist;
+              bestTapeSnap = { pt: Vec2.clone(rPoly[rvi]), type: 'tape_inner_corner', label: 'Wall Inner Corner' };
+            }
+          }
+          for (var rei = 0; rei < rPoly.length; rei++) {
+            var rp1 = rPoly[rei], rp2 = rPoly[(rei + 1) % rPoly.length];
+            var rPrEdge = Core.projectPointToSegment(worldPt, rp1, rp2);
+            if (rPrEdge && rPrEdge.dist < minTapeDist && rPrEdge.t >= 0 && rPrEdge.t <= 1) {
+              minTapeDist = rPrEdge.dist;
+              bestTapeSnap = { pt: Vec2.clone(rPrEdge.pt), type: 'tape_inner_wall_face', label: 'Wall Inner Face' };
+            }
+          }
+        }
+      }
+
+      // 3. Fallback: Inner wall faces derived from walls' inner segments
+      if (!bestTapeSnap && walls && walls.length > 0) {
+        for (var twi = 0; twi < walls.length; twi++) {
+          var tw = walls[twi];
+          if (tw.isDivider) continue;
+          var halfT = (tw.thickness || 150) / 2;
+          var twDir = Core.wallDirection(tw);
+          var twNorm = Core.wallNormal(tw);
+          var face1A = { x: tw.start.x + twNorm.x * halfT, y: tw.start.y + twNorm.y * halfT };
+          var face1B = { x: tw.end.x + twNorm.x * halfT, y: tw.end.y + twNorm.y * halfT };
+          var face2A = { x: tw.start.x - twNorm.x * halfT, y: tw.start.y - twNorm.y * halfT };
+          var face2B = { x: tw.end.x - twNorm.x * halfT, y: tw.end.y - twNorm.y * halfT };
+
+          var prF1 = Core.projectPointToSegment(worldPt, face1A, face1B);
+          if (prF1 && prF1.dist < minTapeDist && prF1.t >= 0 && prF1.t <= 1) {
+            minTapeDist = prF1.dist;
+            bestTapeSnap = { pt: Vec2.clone(prF1.pt), type: 'tape_wall_face', label: 'Wall Inner Face' };
+          }
+          var prF2 = Core.projectPointToSegment(worldPt, face2A, face2B);
+          if (prF2 && prF2.dist < minTapeDist && prF2.t >= 0 && prF2.t <= 1) {
+            minTapeDist = prF2.dist;
+            bestTapeSnap = { pt: Vec2.clone(prF2.pt), type: 'tape_wall_face', label: 'Wall Inner Face' };
+          }
+        }
+      }
+
+      if (bestTapeSnap) {
+        return bestTapeSnap;
+      }
+    }
+
     // 0a. Room Divider Special Auto-Snapping & Wall-to-Wall Locking
     if (this.activeTool === 'divider') {
       if (this.wallChainStart) {
@@ -1180,8 +1263,7 @@
           if (self.unitTierFilter && self.unitTierFilter !== 'all') {
             if (self.getUnitTier(fn) !== self.unitTierFilter) continue;
           }
-          var fPoly = Core.getFurniturePolygon(fn);
-          if (Core.Vec2.pointInPolygon(worldPt, fPoly)) {
+          if (self.hitTestFurniture(worldPt, fn)) {
             matchingHits.push(fn);
           }
         }
@@ -2134,8 +2216,7 @@
         if (this.unitTierFilter && this.unitTierFilter !== 'all') {
           if (this.getUnitTier(fn) !== this.unitTierFilter) continue;
         }
-        var poly = Core.getFurniturePolygon(fn);
-        if (Core.Vec2.pointInPolygon(worldPt, poly)) {
+        if (this.hitTestFurniture(worldPt, fn)) {
           matchingHits.push(fn);
         }
       }
@@ -2403,6 +2484,46 @@
   };
 
   // Computes the 8 connection points (4 corners + 4 edge midpoints) of a modular furniture unit
+  // Hit-testing for modular furniture with expanded tolerance for thin/narrow units (blank shutters, only shutters, ledges)
+  PlanEditor.prototype.hitTestFurniture = function (worldPt, fn) {
+    if (!fn) return false;
+    var fPoly = Core.getFurniturePolygon(fn);
+    if (Core.Vec2 && Core.Vec2.pointInPolygon && Core.Vec2.pointInPolygon(worldPt, fPoly)) {
+      return true;
+    }
+
+    var dims = fn.dimensions || {};
+    var wMm = dims.W || 600;
+    var dMm = dims.D || 550;
+    var isThinOrNarrow = (wMm <= 120 || dMm <= 80 || fn.id === 'bs-60' || (fn.name && /blank shutter/i.test(fn.name)) || (fn.catalogItemId && /bs-60/i.test(fn.catalogItemId)));
+    var zoomFactor = (this && this.zoom) ? this.zoom : 0.15;
+    var hitPadMm = isThinOrNarrow ? Math.max(90, 22 / zoomFactor) : Math.max(25, 6 / zoomFactor);
+
+    var cDist = Vec2.dist(worldPt, fn.pos || { x: 0, y: 0 });
+    if (isThinOrNarrow && cDist <= Math.max(hitPadMm, wMm / 2 + hitPadMm)) {
+      var ang = fn.rotY || 0;
+      var cosA = Math.cos(ang), sinA = Math.sin(ang);
+      var dx = worldPt.x - fn.pos.x, dy = worldPt.y - fn.pos.y;
+      var localX = Math.abs(dx * cosA + dy * sinA);
+      var localY = Math.abs(-dx * sinA + dy * cosA);
+      if (localX <= (wMm / 2 + hitPadMm) && localY <= (dMm / 2 + hitPadMm)) {
+        return true;
+      }
+    }
+
+    if (fPoly && fPoly.length >= 3) {
+      for (var i = 0; i < fPoly.length; i++) {
+        var pA = fPoly[i];
+        var pB = fPoly[(i + 1) % fPoly.length];
+        var prEdge = Core.projectPointToSegment ? Core.projectPointToSegment(worldPt, pA, pB) : null;
+        if (prEdge && prEdge.dist <= hitPadMm && prEdge.t >= -0.05 && prEdge.t <= 1.05) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
   PlanEditor.prototype.getFurnitureJointPoints = function (furn) {
     if (!furn) return [];
     var pos = furn.pos || { x: 0, y: 0 };
@@ -3027,6 +3148,77 @@
       if (bestCornerSnap) {
         return bestCornerSnap;
       }
+    } else {
+      // ── ROBUST CORNER SNAPPING FOR STRAIGHT UNITS & ONLY-SHUTTERING ──
+      // Allows shutters, blank shutters, wardrobes, and modular cabinets to snap flush into wall corners!
+      if (cornerCandidates && cornerCandidates.length > 0) {
+        var minStraightCornerDist = 450;
+        var bestStraightCorner = null;
+
+        for (var sci = 0; sci < cornerCandidates.length; sci++) {
+          var scc = cornerCandidates[sci];
+          var scPt = scc.cornerPt;
+          var sDirA = scc.dir1;
+          var sDirB = scc.dir2;
+
+          // Wall A mounting: Back flush against wall A (sDirA), side flush against wall B (sDirB)
+          var angleA = Math.atan2(sDirA.y, sDirA.x);
+          var rotAlongA = angleA;
+          var normA = { x: -sDirA.y, y: sDirA.x };
+          // Check outward normal pointing towards inner room
+          if (scc.room && scc.room.polygon) {
+            var testNorm = { x: scPt.x + normA.x * 20, y: scPt.y + normA.y * 20 };
+            if (!Core.Vec2.pointInPolygon(testNorm, scc.room.polygon)) {
+              normA = { x: sDirA.y, y: -sDirA.x };
+            }
+          }
+          var candA = {
+            x: scPt.x + (halfW) * sDirA.x + (halfD) * normA.x,
+            y: scPt.y + (halfW) * sDirA.y + (halfD) * normA.y
+          };
+          var distA = Math.hypot(pos.x - candA.x, pos.y - candA.y);
+          if (distA < minStraightCornerDist) {
+            minStraightCornerDist = distA;
+            bestStraightCorner = {
+              pos: candA,
+              rotY: rotAlongA,
+              type: 'wall_snap',
+              badgeLabel: '✓ Snapped Flush into Corner',
+              cornerPt: scPt
+            };
+          }
+
+          // Wall B mounting: Back flush against wall B (sDirB), side flush against wall A (sDirA)
+          var angleB = Math.atan2(sDirB.y, sDirB.x);
+          var rotAlongB = angleB;
+          var normB = { x: -sDirB.y, y: sDirB.x };
+          if (scc.room && scc.room.polygon) {
+            var testNormB = { x: scPt.x + normB.x * 20, y: scPt.y + normB.y * 20 };
+            if (!Core.Vec2.pointInPolygon(testNormB, scc.room.polygon)) {
+              normB = { x: sDirB.y, y: -sDirB.x };
+            }
+          }
+          var candB = {
+            x: scPt.x + (halfW) * sDirB.x + (halfD) * normB.x,
+            y: scPt.y + (halfW) * sDirB.y + (halfD) * normB.y
+          };
+          var distB = Math.hypot(pos.x - candB.x, pos.y - candB.y);
+          if (distB < minStraightCornerDist) {
+            minStraightCornerDist = distB;
+            bestStraightCorner = {
+              pos: candB,
+              rotY: rotAlongB,
+              type: 'wall_snap',
+              badgeLabel: '✓ Snapped Flush into Corner',
+              cornerPt: scPt
+            };
+          }
+        }
+
+        if (bestStraightCorner) {
+          return bestStraightCorner;
+        }
+      }
     }
 
     for (var wIdx = 0; wIdx < walls.length; wIdx++) {
@@ -3115,23 +3307,29 @@
       return bestWallSnap;
     }
 
-    // Secondary collision clamping against any intersecting wall cores
-    for (var w2 = 0; w2 < walls.length; w2++) {
-      var wObj = walls[w2];
-      if (wObj.isDivider) continue; // Room dividers do not block furniture!
-      var wPoly = Core.wallPolygon(wObj);
-      var fDummy = { pos: pos, rotY: rotY, dimensions: fDims };
-      var fPoly = Core.getFurniturePolygon(fDummy);
-      if (Core.polygonsIntersect(fPoly, wPoly, 10)) {
-        var wDir2 = Core.wallDirection(wObj);
-        var wNorm2 = Core.wallNormal(wObj);
-        var toF = { x: pos.x - wObj.start.x, y: pos.y - wObj.start.y };
-        var sD = toF.x * wNorm2.x + toF.y * wNorm2.y;
-        var sSign = sD >= 0 ? 1 : -1;
-        var reqDist = ((wObj.thickness || 150) / 2) + halfD;
-        var tProj = Math.max(0, Math.min(Core.wallLength(wObj), toF.x * wDir2.x + toF.y * wDir2.y));
-        pos.x = wObj.start.x + wDir2.x * tProj + sSign * wNorm2.x * reqDist;
-        pos.y = wObj.start.y + wDir2.y * tProj + sSign * wNorm2.y * reqDist;
+    // Secondary collision check: Allow intentional placement near RCC, on RCC, and on corners inside walls
+    // Units are NOT forcibly ejected away, honoring user positioning without changing elevation
+    var isCivilOrPanel = isWallU || (furn.dimensions && furn.dimensions.D <= 50) || furn.category === 'wall_paneling' || (furn.name && /shutter|ledge|panel|rcc|civil/i.test(furn.name));
+    if (!isCivilOrPanel && !this.isShiftDown) {
+      // Soft nudge only when unit is accidentally embedded > 80% inside an exterior wall
+      for (var w2 = 0; w2 < walls.length; w2++) {
+        var wObj = walls[w2];
+        if (wObj.isDivider) continue;
+        var wPoly = Core.wallPolygon(wObj);
+        var fDummy = { pos: pos, rotY: rotY, dimensions: fDims };
+        var fPoly = Core.getFurniturePolygon(fDummy);
+        if (Core.polygonsIntersect(fPoly, wPoly, 50)) {
+          // If completely engulfed inside wall core, gently align to wall face
+          var wDir2 = Core.wallDirection(wObj);
+          var wNorm2 = Core.wallNormal(wObj);
+          var toF = { x: pos.x - wObj.start.x, y: pos.y - wObj.start.y };
+          var sD = toF.x * wNorm2.x + toF.y * wNorm2.y;
+          var sSign = sD >= 0 ? 1 : -1;
+          var reqDist = ((wObj.thickness || 150) / 2) + halfD;
+          var tProj = Math.max(0, Math.min(Core.wallLength(wObj), toF.x * wDir2.x + toF.y * wDir2.y));
+          pos.x = wObj.start.x + wDir2.x * tProj + sSign * wNorm2.x * reqDist;
+          pos.y = wObj.start.y + wDir2.y * tProj + sSign * wNorm2.y * reqDist;
+        }
       }
     }
 
@@ -3166,7 +3364,14 @@
     var isLoftPlan = (catPlan.indexOf('loft') !== -1 || nmPlan.indexOf('loft') !== -1 || idPlan.indexOf('loft') !== -1 || cdPlan.indexOf('loft') !== -1);
     var isSpicePlan = (catPlan.indexOf('spice') !== -1 || nmPlan.indexOf('spice') !== -1 || idPlan.indexOf('spice') !== -1 || idPlan.indexOf('sr-') === 0);
     var defPlanElev = isLoftPlan ? 2100 : (isSpicePlan ? 1350 : (isWall ? 1500 : 0));
-    var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '' && (!isWall && !isLoftPlan && !isSpicePlan || parseFloat(this.furniturePreset.elevation) > 0)) ?
+    if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 750;
+    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 750;
+    else if (idPlan === 'ledge-vert' || nmPlan.indexOf('vertical ledge') !== -1) defPlanElev = 0;
+    else if (idPlan === 'pnl-back' || nmPlan.indexOf('back panel') !== -1) defPlanElev = 300;
+    else if (idPlan === 'pnl-wall' || nmPlan.indexOf('wall panel') !== -1 || catPlan === 'wall_paneling') defPlanElev = 0;
+    else if (idPlan === 'bs-60' || nmPlan.indexOf('blank shutter') !== -1) defPlanElev = 0;
+
+    var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '') ?
       parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
     var furnId = (Core.uid ? Core.uid('furn') : ('furn_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5)));

@@ -2071,7 +2071,7 @@
         var isBaseUnit = !isWall && (isKitchenBase || fn.category === 'kitchen_base' || fn.category === 'kitchen_fm' || fn.category === 'kitchen_corner' || fn.category === 'kitchen_drawers' || fn.category === 'crockery' || fn.category === 'vanity' || fn.category === 'tv_unit' || (fn.category && fn.category.indexOf('base') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('base') !== -1));
         var isTvOrVanity = (fn.category === 'tv_unit' || fn.category === 'vanity' || (fn.name && (fn.name.toLowerCase().indexOf('tv') !== -1 || fn.name.toLowerCase().indexOf('vanity') !== -1)));
         var isWardrobeOrTall = (fn.category === 'wardrobe' || fn.category === 'kitchen_tall' || (fn.name && (fn.name.toLowerCase().indexOf('wardrobe') !== -1 || fn.name.toLowerCase().indexOf('tall') !== -1 || fn.name.toLowerCase().indexOf('tbm') !== -1)));
-        var counterType = (fn.unitConfig && fn.unitConfig.counter) || (isBaseUnit ? 'granite_black_galaxy' : 'none');
+        var counterType = (fn.unitConfig && fn.unitConfig.counter) || (isBaseUnit ? 'granite_kashmir_white' : 'none');
         if (counterType === 'BLUE' || counterType === 'black' || counterType === 'galaxy') counterType = 'granite_black_galaxy';
         var hasHob = !!(fn.unitConfig && (fn.unitConfig.appliance === 'hob' || fn.unitConfig.hasHob));
         var hasSink = !!(fn.unitConfig && (fn.unitConfig.appliance === 'sink' || fn.unitConfig.hasSink));
@@ -2529,7 +2529,7 @@
               fn.unitConfig.hasHob = true;
               fn.unitConfig.hasSink = false;
               if (fn.unitConfig.counter === 'none') {
-                fn.unitConfig.counter = 'granite_black_galaxy';
+                fn.unitConfig.counter = 'granite_kashmir_white';
               }
             }
             syncInspectorTo3D();
@@ -2554,7 +2554,7 @@
               fn.unitConfig.hasSink = true;
               fn.unitConfig.hasHob = false;
               if (fn.unitConfig.counter === 'none') {
-                fn.unitConfig.counter = 'granite_black_galaxy';
+                fn.unitConfig.counter = 'granite_kashmir_white';
               }
             }
             syncInspectorTo3D();
@@ -3076,8 +3076,6 @@
           '<div class="insp-row"><label>Area (sq.ft)</label><input type="text" value="' + areaSqFt + ' sq ft (' + areaSqM + ' m²)" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
           '<div class="insp-row"><label>Perimeter (mm)</label><input type="text" value="' + Math.round(rm.perimeter || 0).toLocaleString() + ' mm" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
           '<div class="insp-row" style="margin-top:6px;"><label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="inspRoomFlooringQuote"' + (rm.includeFlooring ? ' checked' : '') + '> Include Civil Flooring in Quote (₹' + (self.project && self.project.rateCard && self.project.rateCard.categories && self.project.rateCard.categories.flooring ? self.project.rateCard.categories.flooring.baseRatePerSft : 140) + '/SFT)</label></div>' +
-          '<button class="btn full" id="inspRoomAIDecorBtn" style="margin-top:10px;background:linear-gradient(135deg,#7c3aed,#9333ea);color:#ffffff;font-weight:700;border:none;box-shadow:0 2px 4px rgba(124,58,237,0.25);">✨ Auto-Decor Room with AI</button>' +
-          '<button class="btn small full" id="inspRoomClearAIDecorBtn" style="margin-top:4px;font-size:10.5px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">🗑️ Clear AI Decors from this Room</button>' +
           '<button class="btn primary full" id="inspFocusRoom3D" style="margin-top:8px">👁 View Room in 3D Studio</button>' +
           '<button class="btn danger full" id="inspDelRoom" style="margin-top:8px">🗑️ Delete Room & Dividers</button>';
 
@@ -5729,7 +5727,14 @@
               cat === 'wall_unit' || currentTab === 'kitchen_wall_spice'
             );
             var defElev = isLoftUnit ? 2100 : (isOpenBoxUnit ? 1500 : (isSpiceUnit ? 1350 : (isWallUnit ? 1500 : 0)));
-            var finalElev = (cardData.elevation !== undefined && cardData.elevation !== null && parseFloat(cardData.elevation) > 0) ?
+            if (cId === 'ledge-std' || cName === 'ledge') defElev = 750;
+            else if (cId === 'ledge-ctop' || cName.indexOf('ledge countertop') !== -1) defElev = 750;
+            else if (cId === 'ledge-vert' || cName.indexOf('vertical ledge') !== -1) defElev = 0;
+            else if (cId === 'pnl-back' || cName.indexOf('back panel') !== -1) defElev = 300;
+            else if (cId === 'pnl-wall' || cName.indexOf('wall panel') !== -1) defElev = 0;
+            else if (cId === 'bs-60' || cName.indexOf('blank shutter') !== -1) defElev = 0;
+
+            var finalElev = (cardData.elevation !== undefined && cardData.elevation !== null && cardData.elevation !== '') ?
               parseFloat(cardData.elevation) : defElev;
 
             var itemToPlace = {

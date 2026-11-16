@@ -3024,73 +3024,77 @@
           if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !isTarget;
         });
       } else {
-        // 'single_auto' / 'all_obstructing': Support both outer walls and inner partition walls!
+        // Rock-Solid Stable Face-Wall Auto Cut-Off:
+        // Strictly ONE face wall (the primary front wall between camera and room) is cut.
+        // The other 3 walls remain 100% visible and rock-solid stable without any flickering!
         var camPt = { x: camera.position.x, y: camera.position.z };
         var targPt = { x: target.x, y: target.z };
-        var camToTargX = targPt.x - camPt.x;
-        var camToTargZ = targPt.y - camPt.y;
-        var camToTargDist = Math.hypot(camToTargX, camToTargZ) || 1;
+        var viewDirX = targPt.x - camPt.x;
+        var viewDirZ = targPt.y - camPt.y;
+        var viewDist = Math.hypot(viewDirX, viewDirZ) || 1;
+        var uViewX = viewDirX / viewDist, uViewZ = viewDirZ / viewDist;
 
-        var pWalls = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls) || [];
-        var pRooms = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.rooms) || [];
-
-        var intersectingWalls = [];
-        var scoredWalls = [];
+        var candidates = [];
 
         wallMeshes.forEach(function (wMesh, idx) {
           var uData = wMesh.userData || {};
           var wStart = uData.start;
           var wEnd = uData.end;
-          var wMid = uData.mid || (wStart && wEnd ? { x: (wStart.x + wEnd.x) / 2, y: (wStart.y + wEnd.y) / 2 } : null);
-          if (!wMid) return;
+          if (!wStart || !wEnd) return;
+          var wMid = uData.mid || { x: (wStart.x + wEnd.x) / 2, y: (wStart.y + wEnd.y) / 2 };
 
-          var wObj = uData.wall || pWalls[idx];
-          var isInner = checkIsInnerWall(wObj, pWalls, pRooms);
+          var wallDx = wEnd.x - wStart.x, wallDy = wEnd.y - wStart.y;
+          var wallLen = Math.hypot(wallDx, wallDy) || 1;
+          var wNormX = -wallDy / wallLen, wNormZ = wallDx / wallLen;
 
-          // 1. Ray-segment intersection check (direct line-of-sight barrier between camera and target)
-          var hit = (wStart && wEnd) ? testRayWallIntersection(camPt, targPt, wStart, wEnd) : null;
+          // Align normal to point outward toward camera
+          var dotCam = (camPt.x - wMid.x) * wNormX + (camPt.y - wMid.y) * wNormZ;
+          if (dotCam < 0) {
+            wNormX = -wNormX;
+            wNormZ = -wNormZ;
+          }
+
+          // Test ray intersection from camera to target
+          var hit = testRayWallIntersection(camPt, targPt, wStart, wEnd);
+          var distToCam = hit ? Math.hypot(hit.pt.x - camPt.x, hit.pt.y - camPt.y) : Math.hypot(wMid.x - camPt.x, wMid.y - camPt.y);
+          var distToTarg = hit ? Math.hypot(hit.pt.x - targPt.x, hit.pt.y - targPt.y) : Math.hypot(wMid.x - targPt.x, wMid.y - targPt.y);
+
+          // Front-facing alignment score: dot product between camera view direction and wall normal
+          var frontalDot = (uViewX * (-wNormX) + uViewZ * (-wNormZ)); // > 0 means camera looks into the wall face
+          var score = 0;
           if (hit) {
-            var distToCam = Math.hypot(hit.pt.x - camPt.x, hit.pt.y - camPt.y);
-            var distToTarg = Math.hypot(hit.pt.x - targPt.x, hit.pt.y - targPt.y);
-            intersectingWalls.push({
-              mesh: wMesh,
-              hit: hit,
-              isInner: isInner,
-              distToCam: distToCam,
-              distToTarg: distToTarg,
-              t: hit.t
-            });
+            score = 1000 - distToCam; // Intersecting barrier in direct line of sight has top priority
+          } else if (distToCam < viewDist * 1.15) {
+            score = 500 * frontalDot - (distToCam / viewDist) * 100;
           }
 
-          // 2. Obstruction score for general view angle
-          var camToWallX = wMid.x - camPt.x;
-          var camToWallZ = wMid.y - camPt.y;
-          var camToWallDist = Math.hypot(camToWallX, camToWallZ) || 1;
-          var dot = (camToTargX * camToWallX + camToTargZ * camToWallZ) / (camToTargDist * camToWallDist);
-
-          var score = -999999;
-          if (camToWallDist < camToTargDist * 1.05 && dot > 0.1) {
-            // Give inner walls strong obstruction weight when camera is looking at an interior space!
-            var innerBoost = isInner ? 0.35 : 0;
-            score = (dot + innerBoost) * (1.6 - (camToWallDist / camToTargDist));
-            if (hit) score += 10;
-          }
-          scoredWalls.push({ mesh: wMesh, score: score, isInner: isInner });
+          candidates.push({
+            mesh: wMesh,
+            wallId: uData.wallId,
+            score: score,
+            hit: !!hit,
+            distToCam: distToCam
+          });
         });
 
-        // Strict 1-wall cutaway: While zooming or rotating, cut strictly ONE front wall (the primary line-of-sight barrier).
-        // All other 3 walls in the room stay 100% visible at all zoom levels.
+        // Determine the single face wall with hysteresis to eliminate jumping between walls
         var singleCutWall = null;
+        if (candidates.length > 0) {
+          candidates.sort(function (a, b) { return b.score - a.score; });
+          var topCand = candidates[0];
 
-        if (intersectingWalls.length > 0) {
-          // Sort by closest intersecting barrier to camera
-          intersectingWalls.sort(function (a, b) { return a.distToCam - b.distToCam; });
-          singleCutWall = intersectingWalls[0].mesh;
-        } else if (scoredWalls.length > 0) {
-          scoredWalls.sort(function (a, b) { return b.score - a.score; });
-          if (scoredWalls[0].score > -999900) {
-            singleCutWall = scoredWalls[0].mesh;
+          if (!window._activeCutWallId) {
+            window._activeCutWallId = topCand.wallId;
+          } else {
+            // Hysteresis: keep active cut wall unless another wall scores at least 25% better
+            var activeCand = candidates.find(function (c) { return c.wallId === window._activeCutWallId; });
+            if (activeCand && (topCand.score - activeCand.score) < 120 && activeCand.score > 0) {
+              topCand = activeCand;
+            } else {
+              window._activeCutWallId = topCand.wallId;
+            }
           }
+          singleCutWall = topCand.mesh;
         }
 
         wallMeshes.forEach(function (wMesh) {
