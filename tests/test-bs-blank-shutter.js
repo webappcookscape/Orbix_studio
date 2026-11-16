@@ -42,3 +42,4 @@ assert(icon, 'Unit must have an icon');
 console.log('✓ Unit icon resolved cleanly:', typeof icon === 'string');
 
 console.log('\nALL BS (BLANK SHUTTER) TESTS PASSED SUCCESSFULLY!');
+

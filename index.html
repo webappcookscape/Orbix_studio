@@ -84,12 +84,6 @@
         <span class="save-dot"></span>
         <span class="save-text">Auto-save 15s</span>
       </div>
-      <div id="dbStatusBadge" class="db-badge" title="Database connection status">
-        <span class="db-dot"></span> PostgreSQL
-      </div>
-      <div id="vpsSyncBadge" class="vps-badge connected" title="VPS Cloud Synchronization status. Click to sync or configure.">
-        <span class="vps-dot"></span> <span class="vps-text">VPS: studio.orbixdesigns.com</span>
-      </div>
       <div class="topbar-auth-group">
         <button class="user-avatar-btn" id="userAvatarBtn" title="Current User & Profile">
           <span class="u-avatar">CA</span>
@@ -97,11 +91,6 @@
         </button>
         <button class="auth-logout-btn" id="userLogoutBtn" title="Sign out of this session">Logout</button>
       </div>
-      <button class="btn" id="openAIKeyTopBtn" title="Configure OpenAI API Key for Photorealistic 8K Renders" style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1px solid #cbd5e1;font-weight:600;font-size:11.5px;color:#1e293b;border-radius:6px;padding:4px 10px;cursor:pointer;">
-        <span>🔑 OpenAI Key:</span>
-        <span id="topAIKeyStatus" style="font-weight:700;color:#15803d;">Active</span>
-      </button>
-      <button class="btn" id="exportSkpTopBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#fff;font-weight:600;border-color:#0284c7;">📐 Export .skp</button>
     </div>
   </header>
 
@@ -380,7 +369,6 @@
             <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
               <button class="minibtn" id="placeUnit3DBtn" title="Add Modular Unit to this 3D Room" style="background:#2563eb;color:#ffffff;font-weight:600;border-color:#1d4ed8">+ Add Unit</button>
               <button class="minibtn" id="placeDecor3DBtn" title="Add 3D Decors &amp; Appliances from SketchUp Catalog" style="background:#059669;color:#ffffff;font-weight:600;border-color:#047857;">🌿 Add Decor</button>
-              <button class="minibtn" id="exportSkpBtn" title="Export complete 3D project to Trimble SketchUp (.skp / .dae format)" style="background:#0284c7;color:#ffffff;font-weight:600;border-color:#0369a1;">📐 Export .skp</button>
             </div>
           </div>
         </div>
@@ -504,8 +492,8 @@
             <button class="plan-tool-btn" data-tool="divider" id="planDividerBtn" title="Room Divider: Divide rooms without solid walls (Hotkey R)">✂ Room Divider</button>
             <button class="plan-tool-btn" data-tool="door" title="Place Door (D)">🚪 + Door</button>
             <button class="plan-tool-btn" data-tool="window" title="Place Window (Win)">🪟 + Window</button>
-            <!-- Dimension Measurement Tool -->
-            <button class="plan-tool-btn" data-tool="dimension" id="planDimensionBtn" title="Measure Length between Two Points (Hotkey M)">📏 Dimension</button>
+            <!-- Tape Measurement Tool (Straight Ortho Lock) -->
+            <button class="plan-tool-btn" data-tool="dimension" id="planDimensionBtn" title="Tape Measure: Measure straight distance between two points (Hotkey M)">📏 Tape</button>
             <!-- Dado Tile / Backsplash Tool -->
             <button class="plan-tool-btn" data-tool="dado" id="planDadoBtn" title="Draw Dado Tile: Click or drag on walls to draw kitchen backsplash & bathroom dado tiles (Hotkey T)">🧱 + Dado Tile</button>
             <!-- Furnish: Modular Units & Furniture Catalog Tool -->

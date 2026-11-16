@@ -2285,55 +2285,8 @@
       var curSelRoomId = (this.selected && this.selected.length === 1 && this.selected[0].type === 'room') ? this.selected[0].id : null;
       var isAlreadySelected = (curSelRoomId === targetRoom.id);
 
-      // Only if room was ALREADY selected via double-click, allow dragging
-      if (isAlreadySelected) {
-        var allWalls = this.project.plan.walls || [];
-        var roomDividerWalls = [];
-        for (var rw = 0; rw < allWalls.length; rw++) {
-          var wCandidate = allWalls[rw];
-          if (!wCandidate || !wCandidate.isDivider) continue;
-          var inWallIds = (targetRoom.wallIds && targetRoom.wallIds.indexOf(wCandidate.id) !== -1);
-          var nearPoly = false;
-          if (!inWallIds && targetRoom.polygon) {
-            var dS = Core.Vec2.pointInPolygon(wCandidate.start, targetRoom.polygon);
-            var dE = Core.Vec2.pointInPolygon(wCandidate.end, targetRoom.polygon);
-            if (dS && dE) nearPoly = true;
-          }
-          if (inWallIds || nearPoly) {
-            roomDividerWalls.push({
-              wall: wCandidate,
-              origStart: Vec2.clone(wCandidate.start),
-              origEnd: Vec2.clone(wCandidate.end)
-            });
-          }
-        }
-
-        // Collect furniture inside room
-        var allFurn = this.project.plan.furniture || [];
-        var roomFurn = [];
-        if (targetRoom.polygon) {
-          for (var rf = 0; rf < allFurn.length; rf++) {
-            if (allFurn[rf].pos && Core.Vec2.pointInPolygon(allFurn[rf].pos, targetRoom.polygon)) {
-              roomFurn.push({
-                furn: allFurn[rf],
-                origPos: Vec2.clone(allFurn[rf].pos)
-              });
-            }
-          }
-        }
-
-        this.dragState = {
-          type: 'move_room',
-          room: targetRoom,
-          startWorld: Vec2.clone(worldPt),
-          origPolygon: targetRoom.polygon.map(function (p) { return Vec2.clone(p); }),
-          dividerWalls: roomDividerWalls,
-          enclosedFurniture: roomFurn,
-          hasMoved: false
-        };
-      } else {
-        this.dragState = null;
-      }
+      // Room selection via double-click opens inspector, but rooms and their enclosed units are stationary and locked from accidental drag movement
+      this.dragState = null;
 
       this.render();
       return;
@@ -3296,21 +3249,34 @@
     }
 
     var p1 = this.dimensionStart;
-    var p2 = { x: pt.x, y: pt.y };
-    var dist = Math.round(Math.hypot(p2.x - p1.x, p2.y - p1.y));
+    var dx = pt.x - p1.x;
+    var dy = pt.y - p1.y;
+    // Strictly straight tape: locks to horizontal or vertical dominant axis
+    var isHoriz = Math.abs(dx) >= Math.abs(dy);
+    var p2 = {
+      x: isHoriz ? pt.x : p1.x,
+      y: isHoriz ? p1.y : pt.y
+    };
+    var dist = Math.round(isHoriz ? Math.abs(pt.x - p1.x) : Math.abs(pt.y - p1.y));
 
     if (dist >= 10) {
-      if (!this.project.plan.dimensions) this.project.plan.dimensions = [];
-      var newDim = {
-        id: 'dim-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+      var dimsFmt = this.formatAllDims(dist);
+      var msg = '📏 Tape: ' + dimsFmt.combined;
+      if (typeof window !== 'undefined' && typeof window.toast === 'function') {
+        window.toast(msg);
+      } else if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+        window.showToast(msg);
+      }
+      this.lastTapeMeasure = {
         p1: p1,
         p2: p2,
-        distMm: dist
+        distMm: dist,
+        dimsFmt: dimsFmt,
+        timestamp: Date.now()
       };
-      this.project.plan.dimensions.push(newDim);
-      this.pushHistory('Measure Dimension (' + dist + ' mm)');
     }
 
+    // Ephemeral tape measure: does NOT mark persistent dimension lines on 2D floor plan!
     this.dimensionStart = null;
     this.render();
   };
@@ -6553,61 +6519,92 @@
       ctx.restore();
     }
 
-    // 6. Dimension Tool live rubberband preview
+    // 6. Tape Measure Tool live straight preview (does not mark on 2D)
     if (this.activeTool === 'dimension') {
       var sCur = this.worldToScreen(this.cursorWorld);
       var snapped = this.snapPoint(this.cursorWorld);
-      var sSnap = this.worldToScreen(snapped.pt);
 
       if (this.dimensionStart) {
+        var dx = snapped.pt.x - this.dimensionStart.x;
+        var dy = snapped.pt.y - this.dimensionStart.y;
+        var isHoriz = Math.abs(dx) >= Math.abs(dy);
+        var straightPt = {
+          x: isHoriz ? snapped.pt.x : this.dimensionStart.x,
+          y: isHoriz ? this.dimensionStart.y : snapped.pt.y
+        };
         var sP1 = this.worldToScreen(this.dimensionStart);
-        var sP2 = sSnap;
-        var distMm = Math.round(Vec2.dist(this.dimensionStart, snapped.pt));
+        var sP2 = this.worldToScreen(straightPt);
+        var distMm = Math.round(isHoriz ? Math.abs(snapped.pt.x - this.dimensionStart.x) : Math.abs(snapped.pt.y - this.dimensionStart.y));
         var dimsFmt = this.formatAllDims(distMm);
 
         ctx.save();
-        // Rubberband line
-        ctx.strokeStyle = '#2563EB';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 4]);
+        // High-contrast CAD tape measuring line (amber #F59E0B with dark edging)
+        ctx.strokeStyle = '#0F172A';
+        ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.moveTo(sP1.x, sP1.y);
         ctx.lineTo(sP2.x, sP2.y);
         ctx.stroke();
-        ctx.setLineDash([]);
 
-        // Crosshairs at points
+        ctx.strokeStyle = '#F59E0B';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(sP1.x, sP1.y);
+        ctx.lineTo(sP2.x, sP2.y);
+        ctx.stroke();
+
+        // Tape end crossbars (T-caps perpendicular to straight line)
+        var capLen = 9;
+        ctx.strokeStyle = '#F59E0B';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        if (isHoriz) {
+          ctx.moveTo(sP1.x, sP1.y - capLen); ctx.lineTo(sP1.x, sP1.y + capLen);
+          ctx.moveTo(sP2.x, sP2.y - capLen); ctx.lineTo(sP2.x, sP2.y + capLen);
+        } else {
+          ctx.moveTo(sP1.x - capLen, sP1.y); ctx.lineTo(sP1.x + capLen, sP1.y);
+          ctx.moveTo(sP2.x - capLen, sP2.y); ctx.lineTo(sP2.x + capLen, sP2.y);
+        }
+        ctx.stroke();
+
+        // Point end-caps / circles
         [sP1, sP2].forEach(function (pt) {
-          ctx.strokeStyle = '#1D4ED8';
+          ctx.strokeStyle = '#0F172A';
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
-          ctx.fillStyle = '#FFFFFF';
+          ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#F59E0B';
           ctx.fill();
           ctx.stroke();
         });
 
-        // Midpoint measurement badge showing mm, cm, and feet & inches
+        // Midpoint measurement HUD badge
         var midX = (sP1.x + sP2.x) / 2;
-        var midY = (sP1.y + sP2.y) / 2 - 14;
-        var badgeText = dimsFmt.combined;
-        ctx.font = '700 11px "IBM Plex Mono", monospace';
+        var midY = (sP1.y + sP2.y) / 2 - 16;
+        var axisLabel = isHoriz ? '↔' : '↕';
+        var badgeText = '📏 ' + axisLabel + ' ' + dimsFmt.combined;
+        ctx.font = '700 12px "IBM Plex Mono", monospace';
         var tw = ctx.measureText(badgeText).width;
         ctx.fillStyle = '#0F172A';
+        ctx.strokeStyle = '#F59E0B';
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(midX - tw / 2 - 8, midY - 10, tw + 16, 20, 4);
-        else ctx.rect(midX - tw / 2 - 8, midY - 10, tw + 16, 20);
+        if (ctx.roundRect) ctx.roundRect(midX - tw / 2 - 9, midY - 11, tw + 18, 22, 5);
+        else ctx.rect(midX - tw / 2 - 9, midY - 11, tw + 18, 22);
         ctx.fill();
-        ctx.fillStyle = '#FFFFFF';
+        ctx.stroke();
+
+        ctx.fillStyle = '#FDE047';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(badgeText, midX, midY);
         ctx.restore();
       } else {
         // Draw crosshair cursor indicator
+        var sSnap = this.worldToScreen(snapped.pt);
         ctx.save();
-        ctx.strokeStyle = '#2563EB';
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#F59E0B';
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(sSnap.x, sSnap.y, 6, 0, Math.PI * 2);
         ctx.stroke();
@@ -6616,18 +6613,21 @@
         ctx.moveTo(sSnap.x, sSnap.y - 12); ctx.lineTo(sSnap.x, sSnap.y + 12);
         ctx.stroke();
 
-        ctx.font = '600 11px "IBM Plex Sans", sans-serif';
-        var tipTxt = '📏 Click point 1 to measure (mm / cm / ft-in)';
+        ctx.font = '600 11.5px "IBM Plex Sans", sans-serif';
+        var tipTxt = '📏 Tape Tool: Click Point 1 to measure (straight only)';
         var ttw = ctx.measureText(tipTxt).width;
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = '#F59E0B';
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(sSnap.x + 14, sSnap.y - 12, ttw + 16, 22, 4);
-        else ctx.rect(sSnap.x + 14, sSnap.y - 12, ttw + 16, 22);
+        if (ctx.roundRect) ctx.roundRect(sSnap.x + 14, sSnap.y - 12, ttw + 18, 24, 4);
+        else ctx.rect(sSnap.x + 14, sSnap.y - 12, ttw + 18, 24);
         ctx.fill();
+        ctx.stroke();
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        ctx.fillText(tipTxt, sSnap.x + 22, sSnap.y);
+        ctx.fillText(tipTxt, sSnap.x + 23, sSnap.y);
         ctx.restore();
       }
     }
