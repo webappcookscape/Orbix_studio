@@ -1767,8 +1767,7 @@
           '      <option value="subway_white"' + ((w.dadoTileStyle || window.dadoTileStyle) === 'subway_white' ? ' selected' : '') + '>Pattern: White Subway</option>' +
           '    </select>' +
           '  </div>') : '') +
-          '</div>' +
-          '
+                    '</div>' +
           '<div style="margin-top:10px;padding:8px 10px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;">' +
           '  <label style="font-size:11px;font-weight:700;color:#1e293b;display:block;margin-bottom:4px;">🧱 RCC Column Joint (Separate Wall)</label>' +
           '  <div style="font-size:10.5px;color:#64748b;margin-bottom:6px;">Split this straight wall into separate walls at an RCC joint:</div>' +
@@ -1776,7 +1775,7 @@
           '    <button type="button" class="btn small full" id="inspWallSplitMid" style="background:#0f172a;color:#ffffff;font-size:11px;">➕ RCC Joint at Midpoint (' + Math.round(lenMm / 2) + 'mm)</button>' +
           '  </div>' +
           '</div>' +
-          <button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>';
+          '<button class="btn danger full" id="inspDelWall" style="margin-top:12px">Delete Wall</button>'
 
         var elInner = document.getElementById('inspWallInnerLen');
         if (elInner) {
