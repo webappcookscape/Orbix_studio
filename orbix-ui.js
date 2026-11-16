@@ -1699,6 +1699,38 @@
           '<span style="font-size:11px;color:#64748B;">Centerline: ' + lenDisplay + ' (' + lenMm + ' mm)</span></div>' +
           '<div class="insp-row"><label>Thickness (mm)</label><input type="number" id="inspWallThick" value="' + (w.thickness || 150) + '" step="10"></div>' +
           '<div class="insp-row"><label>Height (mm)</label><input type="number" id="inspWallH" value="' + (w.height || 2800) + '" step="50"></div>' +
+          
+          '<div style="margin-top:12px;padding:10px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;">' +
+          '  <div style="font-weight:700;font-size:12px;color:#7c3aed;margin-bottom:8px;">🎨 Wall Finish & Wallpaper</div>' +
+          '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">' +
+          '    <div>' +
+          '      <label style="font-size:10.5px;font-weight:600;color:#7c3aed;display:block;margin-bottom:3px;">Wall Color</label>' +
+          '      <input type="color" id="inspWallColor" value="' + (w.paintColor || '#B89F82') + '" style="width:100%;height:30px;border:1px solid #ddd6fe;border-radius:4px;cursor:pointer;padding:2px;">' +
+          '    </div>' +
+          '    <div>' +
+          '      <label style="font-size:10.5px;font-weight:600;color:#7c3aed;display:block;margin-bottom:3px;">Finish Type</label>' +
+          '      <select id="inspWallFinishType" style="width:100%;height:30px;font-size:11px;border:1px solid #ddd6fe;border-radius:4px;padding:0 4px;">' +
+          '        <option value="paint"' + (!(w.wallFinishType) || w.wallFinishType === "paint" ? " selected" : "") + '>🖌️ Painted Plaster</option>' +
+          '        <option value="texture"' + (w.wallFinishType === "texture" ? " selected" : "") + '>🧱 Textured Stucco</option>' +
+          '        <option value="concrete"' + (w.wallFinishType === "concrete" ? " selected" : "") + '>🏢 Bare Concrete</option>' +
+          '        <option value="brick"' + (w.wallFinishType === "brick" ? " selected" : "") + '>🧱 Exposed Brick</option>' +
+          '        <option value="marble"' + (w.wallFinishType === "marble" ? " selected" : "") + '>🏛️ Marble Cladding</option>' +
+          '      </select>' +
+          '    </div>' +
+          '  </div>' +
+          '  <div>' +
+          '    <label style="font-size:10.5px;font-weight:600;color:#7c3aed;display:block;margin-bottom:3px;">Wallpaper Pattern</label>' +
+          '    <select id="inspWallpaper" style="width:100%;height:30px;font-size:11px;border:1px solid #ddd6fe;border-radius:4px;padding:0 4px;">' +
+          '      <option value="none"' + (!(w.wallpaper) || w.wallpaper === "none" ? " selected" : "") + '>None (Use Color/Finish)</option>' +
+          '      <option value="floral_blush"' + (w.wallpaper === "floral_blush" ? " selected" : "") + '>🌸 Floral Blush</option>' +
+          '      <option value="geometric_teal"' + (w.wallpaper === "geometric_teal" ? " selected" : "") + '>◈ Geometric Teal</option>' +
+          '      <option value="stripe_gold"' + (w.wallpaper === "stripe_gold" ? " selected" : "") + '>〓 Gold Stripe</option>' +
+          '      <option value="herringbone_grey"' + (w.wallpaper === "herringbone_grey" ? " selected" : "") + '>⟋ Herringbone Grey</option>' +
+          '      <option value="damask_cream"' + (w.wallpaper === "damask_cream" ? " selected" : "") + '>✦ Damask Cream</option>' +
+          '      <option value="tropical_leaf"' + (w.wallpaper === "tropical_leaf" ? " selected" : "") + '>🌿 Tropical Leaf</option>' +
+          '    </select>' +
+          '  </div>' +
+          '</div>' +
           '<div class="insp-row" style="margin-top:10px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">' +
           '  <label style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin:0;font-weight:600;color:#166534;">' +
           '    <span>🧱 Dado Tile (Backsplash)</span>' +
@@ -1865,6 +1897,31 @@
             }
           });
         }
+        
+        var elWallColor = document.getElementById('inspWallColor');
+        if (elWallColor) {
+          elWallColor.addEventListener('input', function () {
+            w.paintColor = this.value;
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var elWallFinishType = document.getElementById('inspWallFinishType');
+        if (elWallFinishType) {
+          elWallFinishType.addEventListener('change', function () {
+            w.wallFinishType = this.value;
+            ed.pushHistory('Change Wall Finish');
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var elWallpaper = document.getElementById('inspWallpaper');
+        if (elWallpaper) {
+          elWallpaper.addEventListener('change', function () {
+            w.wallpaper = this.value;
+            ed.pushHistory('Change Wall Wallpaper');
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
         var elDelWall = document.getElementById('inspDelWall');
         if (elDelWall) {
           elDelWall.addEventListener('click', function () {

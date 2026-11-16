@@ -1259,8 +1259,11 @@
       var stairsList = (self.project && self.project.plan && self.project.plan.stairs) || [];
       for (var si = stairsList.length - 1; si >= 0; si--) {
         var stObj = stairsList[si];
-        var stPoly = Core.getStaircasePolygon ? Core.getStaircasePolygon(stObj) : [];
-        if (Core.Vec2.pointInPolygon(worldPt, stPoly) || Vec2.dist(worldPt, stObj.pos) < (stObj.width || 900) / 2) {
+        var stPoly = (Core.getStaircasePolygon ? Core.getStaircasePolygon(stObj) : []);
+        var stWidth = stObj.width || 900;
+        var stHit = (stPoly && stPoly.length >= 3 && Core.Vec2.pointInPolygon(worldPt, stPoly)) ||
+          Vec2.dist(worldPt, stObj.pos) < stWidth * 0.65;
+        if (stHit) {
           self.selected = [{ type: 'stair', id: stObj.id }];
           self.dragState = {
             type: 'move_stair',
@@ -1424,7 +1427,10 @@
       var mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       self.lastMouseScreen = mouseScreen;
       self.cursorWorld = self.screenToWorld(mouseScreen);
+      self.mouseWorld = self.cursorWorld; // track for ghost previews (stair, etc.)
       self.isShiftDown = !!e.shiftKey;
+      // Re-render ghost preview for placement tools
+      if (self.activeTool === 'stair') { self.requestRender && self.requestRender() || self.render(); }
 
       if (self.dragState && self.dragState.type === 'move_underlay') {
         var dxS = mouseScreen.x - self.dragState.startScreen.x;
@@ -6520,7 +6526,36 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     ctx.restore();
   };
 
+  PlanEditor.prototype.renderStairGhost = function (ctx) {
+    if (this.activeTool !== 'stair' || !this.mouseWorld) return;
+    var W = (this.stairPreset && this.stairPreset.width) || 900;
+    var D = 250;
+    var f1 = 8;
+    var lD = W;
+    var f1L = f1 * D;
+    var bL = f1L + lD;
+    var sc = this.worldToScreen(this.mouseWorld);
+    ctx.save();
+    ctx.translate(sc.x, sc.y);
+    ctx.rotate(this.stairRotY || 0);
+    var s = this.zoom;
+    ctx.strokeStyle = 'rgba(2,132,199,0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([5, 4]);
+    ctx.strokeRect(-W / 2 * s, -bL / 2 * s, W * s, bL * s);
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(2,132,199,0.1)';
+    ctx.fillRect(-W / 2 * s, -bL / 2 * s, W * s, bL * s);
+    ctx.fillStyle = '#0284c7';
+    ctx.font = '700 ' + Math.max(10, Math.round(10 * s * 10)) + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🪜 Click to Place', 0, 0);
+    ctx.restore();
+  };
   PlanEditor.prototype.renderPreview = function (ctx) {
+    // Ghost for stair placement
+    if (this.activeTool === 'stair') { this.renderStairGhost(ctx); return; }
     // 0. Dragging Room Divider Area Box (e.g. Pooja Room)
     if (this.dragState && this.dragState.type === 'draw_divider_box') {
       var p1 = this.dragState.startWorld;

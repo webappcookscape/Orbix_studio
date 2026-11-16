@@ -4951,7 +4951,8 @@
           var yawRad = cam.yaw * Math.PI / 180;
           var pitchRad = (-cam.pitch) * Math.PI / 180;
           var cosY = Math.cos(yawRad), sinY = Math.sin(yawRad);
-          var panSpeed = 6.0 * Math.max(0.08, 1 - cam.zoom * 0.03);
+          // Adaptive pan speed: faster when zoomed out, slower when close-up
+          var panSpeed = Math.max(1.2, 4.5 / Math.max(0.1, (1 + cam.zoom * 0.18)));
           var tgt = GL.getTarget ? GL.getTarget() : null;
           if (tgt) {
             tgt.x -= dx * cosY * panSpeed;
@@ -4959,12 +4960,12 @@
             tgt.y += dy * Math.cos(pitchRad) * panSpeed;
             tgt.x += dy * Math.sin(pitchRad) * sinY * panSpeed * 0.5;
             tgt.z += dy * Math.sin(pitchRad) * cosY * panSpeed * 0.5;
-            tgt.y = Math.max(50, Math.min(6000, tgt.y));
+            tgt.y = Math.max(0, Math.min(6000, tgt.y));
           }
         } else {
           // Orbit camera 360 degrees
-          cam.yaw -= dx * 0.35;
-          cam.pitch += dy * 0.25;
+          cam.yaw -= dx * 0.22;
+          cam.pitch += dy * 0.18;
         }
       }
       camApply();
@@ -4983,8 +4984,11 @@
     stage.addEventListener("pointercancel", up);
     stage.addEventListener("wheel", function (e) {
       e.preventDefault();
-      var zoomDelta = -e.deltaY * 0.0012;
-      cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom + zoomDelta * (1 + Math.abs(cam.zoom) * 0.35)));
+      // Smoother zoom: scale by deltaMode and clamp zoom speed
+      var zoomFactor = e.deltaMode === 1 ? 20 : 1; // pixels vs lines
+      var zoomDelta = -e.deltaY * 0.0007 * zoomFactor;
+      var zoomAcc = 1 + Math.abs(cam.zoom) * 0.22; // less aggressive acceleration
+      cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom + zoomDelta * zoomAcc));
       camApply();
     }, { passive: false });
 

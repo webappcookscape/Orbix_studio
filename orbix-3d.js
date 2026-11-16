@@ -1224,6 +1224,115 @@
   /* ─────────────────────────────────────────────────────────────────────────────
      Build 3D Wall with Real Openings (Subdivided Blocks)
      ───────────────────────────────────────────────────────────────────────────── */
+  
+  ArchitecturalRenderer.prototype.createWallFinishMaterial = function (wall) {
+    if (typeof THREE === 'undefined') return this.materials.wall;
+    var wallpaper = wall.wallpaper || 'none';
+    var finishType = wall.wallFinishType || 'paint';
+    var paintHex = wall.paintColor || '#B89F82';
+
+    // Convert CSS hex color to Three.js hex integer
+    function hexToInt(hex) {
+      var h = hex.replace('#', '');
+      if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+      return parseInt(h, 16);
+    }
+
+    // If wallpaper is active, generate a canvas texture
+    if (wallpaper && wallpaper !== 'none') {
+      var wallpaperPatterns = {
+        floral_blush: function(ctx, W, H) {
+          ctx.fillStyle = '#fce7f3'; ctx.fillRect(0, 0, W, H);
+          for (var r = 0; r < 5; r++) {
+            for (var c = 0; c < 5; c++) {
+              var cx = c * W/4 + W/8; var cy = r * H/4 + H/8;
+              ctx.fillStyle = '#f9a8d4'; ctx.beginPath(); ctx.arc(cx, cy, 12, 0, Math.PI*2); ctx.fill();
+              ctx.fillStyle = '#fda4af'; ctx.beginPath(); ctx.arc(cx+15, cy-8, 7, 0, Math.PI*2); ctx.fill();
+            }
+          }
+        },
+        geometric_teal: function(ctx, W, H) {
+          ctx.fillStyle = '#e0f2fe'; ctx.fillRect(0, 0, W, H);
+          ctx.strokeStyle = '#0e7490'; ctx.lineWidth = 2.5;
+          for (var i2 = 0; i2 < 8; i2++) {
+            for (var j2 = 0; j2 < 8; j2++) {
+              var gx = i2 * W/6; var gy = j2 * H/6;
+              ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + W/12, gy + H/12); ctx.lineTo(gx + W/6, gy); ctx.closePath(); ctx.stroke();
+            }
+          }
+        },
+        stripe_gold: function(ctx, W, H) {
+          ctx.fillStyle = '#fffbeb'; ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = '#fbbf24';
+          for (var sg = 0; sg < 8; sg++) { ctx.fillRect(sg * W/6, 0, 8, H); }
+        },
+        herringbone_grey: function(ctx, W, H) {
+          ctx.fillStyle = '#f1f5f9'; ctx.fillRect(0, 0, W, H);
+          ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+          for (var hb = 0; hb < 10; hb++) {
+            var hx = hb * W/8;
+            ctx.beginPath(); ctx.moveTo(hx, 0); ctx.lineTo(hx + W/8, H/2); ctx.lineTo(hx + W/8*2, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(hx, H); ctx.lineTo(hx + W/8, H/2); ctx.lineTo(hx + W/8*2, H); ctx.stroke();
+          }
+        },
+        damask_cream: function(ctx, W, H) {
+          ctx.fillStyle = '#fefce8'; ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = '#fde68a'; ctx.font = 'bold ' + Math.round(W/5) + 'px serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          for (var dR = 0; dR < 4; dR++) {
+            for (var dC = 0; dC < 4; dC++) {
+              ctx.fillText('✦', dC * W/3 + W/6, dR * H/3 + H/6);
+            }
+          }
+        },
+        tropical_leaf: function(ctx, W, H) {
+          ctx.fillStyle = '#ecfdf5'; ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = '#6ee7b7'; ctx.font = Math.round(W/3) + 'px serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          var leafPos = [[W*0.2, H*0.25], [W*0.7, H*0.6], [W*0.5, H*0.1], [W*0.1, H*0.7], [W*0.85, H*0.3]];
+          for (var lp = 0; lp < leafPos.length; lp++) ctx.fillText('🌿', leafPos[lp][0], leafPos[lp][1]);
+        }
+      };
+
+      var canvas = document.createElement ? document.createElement('canvas') : null;
+      if (canvas) {
+        canvas.width = 256; canvas.height = 256;
+        var ctx2 = canvas.getContext('2d');
+        if (ctx2) {
+          var drawFn = wallpaperPatterns[wallpaper];
+          if (drawFn) {
+            try { drawFn(ctx2, 256, 256); } catch(err) {}
+          }
+          var tex = new THREE.CanvasTexture(canvas);
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(0.5, 0.5); // tile size in UV space
+          return new THREE.MeshStandardMaterial({
+            map: tex,
+            roughness: 0.82,
+            metalness: 0.0
+          });
+        }
+      }
+    }
+
+    // No wallpaper: use finish type with custom paint color
+    var roughness = 0.88;
+    var bump = ArchitecturalRenderer.createWallBumpTexture ? ArchitecturalRenderer.createWallBumpTexture() : null;
+    if (finishType === 'concrete') roughness = 0.95;
+    else if (finishType === 'brick') roughness = 0.95;
+    else if (finishType === 'marble') roughness = 0.25;
+    else if (finishType === 'texture') roughness = 0.92;
+
+    var matParams = {
+      color: hexToInt(paintHex),
+      roughness: roughness,
+      metalness: finishType === 'marble' ? 0.05 : 0.0
+    };
+    if (bump) { matParams.bumpMap = bump; matParams.bumpScale = finishType === 'texture' ? 0.08 : 0.03; }
+    return new THREE.MeshStandardMaterial(matParams);
+  };
+
   ArchitecturalRenderer.prototype.buildWallWithCutouts = function (wall, ops) {
     if (wall && wall.isDivider) {
       // Guard: Only render 3D threshold strip if divider is a valid room boundary or connected at both ends
@@ -1800,7 +1909,7 @@
     }
 
     var geo = null;
-    var floorDepth = 20; // 20mm physical architectural slab depth (eliminates paper-thin floor)
+    var floorDepth = 100; // 100mm physical architectural concrete slab depth
     try {
       if (typeof THREE.ExtrudeGeometry === 'function') {
         geo = new THREE.ExtrudeGeometry(shape, {

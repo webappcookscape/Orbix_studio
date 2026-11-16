@@ -1083,6 +1083,51 @@
     };
   }
 
+  
+  /*  autoSplitWallAtJunctions – when endpoint of a wall lands on the interior of
+      another wall, split the target wall at the T-junction so the graph is properly
+      connected and the room-detection algorithm can find all enclosures correctly.  */
+  function autoSplitWallAtJunctions(project) {
+    var walls = project && project.plan && project.plan.walls;
+    if (!walls || walls.length < 2) return false;
+    var TOL = 60; // mm: within 60mm of wall centre-line counts as a junction
+    var changed = false;
+    var maxPasses = 5;
+    for (var pass = 0; pass < maxPasses; pass++) {
+      var didSplit = false;
+      var current = project.plan.walls.slice();
+      for (var i = 0; i < current.length && !didSplit; i++) {
+        var wi = current[i];
+        // Check both endpoints of wi against interior of wj
+        var testPts = [wi.start, wi.end];
+        for (var tp = 0; tp < testPts.length && !didSplit; tp++) {
+          var pt = testPts[tp];
+          for (var j = 0; j < current.length && !didSplit; j++) {
+            if (j === i) continue;
+            var wj = current[j];
+            // Skip if pt is already a vertex of wj
+            var dS = Vec2.dist(pt, wj.start);
+            var dE = Vec2.dist(pt, wj.end);
+            if (dS < TOL || dE < TOL) continue;
+            // Check if pt lies on the interior of wj
+            var proj = Vec2.projectOnSegment(pt, wj.start, wj.end);
+            if (proj.dist < TOL && proj.t > 0.02 && proj.t < 0.98) {
+              // Snap the split point exactly to the wall line
+              var snapPt = proj.pt;
+              var res = splitWall(project, wj.id, snapPt);
+              if (res) {
+                didSplit = true;
+                changed = true;
+              }
+            }
+          }
+        }
+      }
+      if (!didSplit) break;
+    }
+    return changed;
+  }
+
   function getStaircasePolygon(stair) {
     if (!stair) return [];
     var pos = stair.pos || { x: 0, y: 0 };
@@ -6908,6 +6953,7 @@
     createOpening: createOpening,
     createRoom: createRoom,
     createFurniturePlacement: createFurniturePlacement,
+    autoSplitWallAtJunctions: autoSplitWallAtJunctions,
     createStaircasePlacement: createStaircasePlacement,
     getStaircasePolygon: getStaircasePolygon,
     wallLength: wallLength,
