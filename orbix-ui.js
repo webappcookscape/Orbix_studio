@@ -515,6 +515,29 @@
       var btnZoomFit = document.getElementById('planZoomFit');
       if (btnZoomFit) btnZoomFit.addEventListener('click', function () { self.editor.zoomFit(); });
 
+      var btnDownload2D = document.getElementById('planDownload2DPlanBtn');
+      if (btnDownload2D) {
+        btnDownload2D.addEventListener('click', function () {
+          if (self.editor && typeof self.editor.exportDetailed2DPlan === 'function') {
+            self.editor.exportDetailed2DPlan();
+          }
+        });
+      }
+
+      var btnOpenAIDecor = document.getElementById('openAIDecorBtn');
+      if (btnOpenAIDecor) {
+        btnOpenAIDecor.addEventListener('click', function () {
+          self.openAIDecorModal();
+        });
+      }
+
+      var btnOpenAIDecor3D = document.getElementById('openAIDecor3DBtn');
+      if (btnOpenAIDecor3D) {
+        btnOpenAIDecor3D.addEventListener('click', function () {
+          self.openAIDecorModal();
+        });
+      }
+
       var btnClear = document.getElementById('planClear');
       if (btnClear) {
         btnClear.addEventListener('click', function () {
@@ -1115,6 +1138,7 @@
       syncFurnDropdown();
       self.initFurnitureCatalogModal();
       if (typeof self.initDecorModal === 'function') self.initDecorModal();
+      if (typeof self.initAIDecorModal === 'function') self.initAIDecorModal();
       if (typeof self.initAIRenderModal === 'function') self.initAIRenderModal();
       if (typeof self.initFurnishUI === 'function') self.initFurnishUI();
 
@@ -2024,8 +2048,10 @@
         var isBaseUnit = !isWall && (isKitchenBase || fn.category === 'kitchen_base' || fn.category === 'kitchen_fm' || fn.category === 'kitchen_corner' || fn.category === 'kitchen_drawers' || fn.category === 'crockery' || fn.category === 'vanity' || fn.category === 'tv_unit' || (fn.category && fn.category.indexOf('base') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('base') !== -1));
         var isTvOrVanity = (fn.category === 'tv_unit' || fn.category === 'vanity' || (fn.name && (fn.name.toLowerCase().indexOf('tv') !== -1 || fn.name.toLowerCase().indexOf('vanity') !== -1)));
         var isWardrobeOrTall = (fn.category === 'wardrobe' || fn.category === 'kitchen_tall' || (fn.name && (fn.name.toLowerCase().indexOf('wardrobe') !== -1 || fn.name.toLowerCase().indexOf('tall') !== -1 || fn.name.toLowerCase().indexOf('tbm') !== -1)));
-        var counterType = (fn.unitConfig && fn.unitConfig.counter) || (isBaseUnit ? 'black' : 'none');
-        if (counterType === 'BLUE') counterType = 'black';
+        var counterType = (fn.unitConfig && fn.unitConfig.counter) || (isBaseUnit ? 'granite_black_galaxy' : 'none');
+        if (counterType === 'BLUE' || counterType === 'black' || counterType === 'galaxy') counterType = 'granite_black_galaxy';
+        var hasHob = !!(fn.unitConfig && (fn.unitConfig.appliance === 'hob' || fn.unitConfig.hasHob));
+        var hasSink = !!(fn.unitConfig && (fn.unitConfig.appliance === 'sink' || fn.unitConfig.hasSink));
 
         if (!fn.shutterColors) fn.shutterColors = [];
         if (!fn.shutterMaterials) fn.shutterMaterials = [];
@@ -2175,16 +2201,28 @@
               '<div><label style="font-size:10px;font-weight:600;color:#64748b;display:block;margin-bottom:2px;">Shutters</label><input type="number" id="inspFurnShutters" value="' + shuttersCount + '" min="0" max="8" style="width:100%;font-size:11.5px;padding:4px 6px;"></div>' +
               '<div><label style="font-size:10px;font-weight:600;color:#64748b;display:block;margin-bottom:2px;">Drawers</label><input type="number" id="inspFurnDrawers" value="' + drawersCount + '" min="0" max="6" style="width:100%;font-size:11.5px;padding:4px 6px;"></div>' +
             '</div>' +
-            (isBaseUnit ? ('<div class="insp-row"><label>Countertop</label><select id="inspFurnCounter">' +
-              '<option value="black"' + (counterType === "black" ? " selected" : "") + '>Black Galaxy Granite</option>' +
-              '<option value="galaxy"' + (counterType === "galaxy" ? " selected" : "") + '>Black Galaxy</option>' +
-              '<option value="white"' + (counterType === "white" || counterType === "marble" ? " selected" : "") + '>White Marble</option>' +
+            (isBaseUnit ? ('<div class="insp-row" style="margin-bottom:6px;"><label>Countertop Slab</label><select id="inspFurnCounter">' +
+              '<option value="granite_black_galaxy"' + (counterType === "granite_black_galaxy" || counterType === "black" || counterType === "galaxy" ? " selected" : "") + '>Realistic Granite 1: Black Galaxy (Polished)</option>' +
+              '<option value="granite_kashmir_white"' + (counterType === "granite_kashmir_white" || counterType === "kashmir_white" || counterType === "river_white" ? " selected" : "") + '>Realistic Granite 2: Kashmir White (Polished)</option>' +
+              '<option value="granite_tan_brown"' + (counterType === "granite_tan_brown" || counterType === "tan_brown" ? " selected" : "") + '>Realistic Granite 3: Tan Brown (Polished)</option>' +
               '<option value="quartz"' + (counterType === "quartz" ? " selected" : "") + '>Pure White Quartz</option>' +
+              '<option value="white"' + (counterType === "white" || counterType === "marble" ? " selected" : "") + '>White Italian Marble</option>' +
               '<option value="greyq"' + (counterType === "greyq" ? " selected" : "") + '>Grey Quartz</option>' +
               '<option value="beige"' + (counterType === "beige" ? " selected" : "") + '>Beige Marble</option>' +
               '<option value="green"' + (counterType === "green" ? " selected" : "") + '>Green Granite</option>' +
               '<option value="none"' + (counterType === "none" ? " selected" : "") + '>None (Carcass Top)</option>' +
-            '</select></div>') : "") +
+            '</select></div>' +
+            '<div style="margin-top:8px;padding:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">' +
+              '<div style="font-size:10.5px;font-weight:700;color:#334155;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">🍳 Built-in Countertop Appliances</div>' +
+              '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">' +
+                '<button type="button" class="btn small" id="inspToggleHobBtn" style="font-size:11px;padding:5px 8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;' + (hasHob ? 'background:#d97706;color:#ffffff;border-color:#b45309;' : 'background:#ffffff;color:#334155;border-color:#cbd5e1;') + '">' +
+                  '<span>🔥 Built-in HOB</span>' + (hasHob ? ' ✓' : '') +
+                '</button>' +
+                '<button type="button" class="btn small" id="inspToggleSinkBtn" style="font-size:11px;padding:5px 8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;' + (hasSink ? 'background:#0284c7;color:#ffffff;border-color:#0369a1;' : 'background:#ffffff;color:#334155;border-color:#cbd5e1;') + '">' +
+                  '<span>🚰 Kitchen Sink</span>' + (hasSink ? ' ✓' : '') +
+                '</button>' +
+              '</div>' +
+            '</div>') : "") +
             (!isWall ? ('<div class="insp-row" style="margin-top:6px;"><label>Base & Legs</label><select id="inspFurnLegs">' +
               '<option value="legs"' + (hasLegs ? " selected" : "") + '>Floor Standing (100mm Legs / Plinth)</option>' +
               '<option value="floating"' + (!hasLegs ? " selected" : "") + '>Floating / Wall-Hung (No Legs)</option>' +
@@ -2452,6 +2490,56 @@
             self.saveToLocalStorage();
             self.renderBOQ();
             self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var hobBtn = document.getElementById('inspToggleHobBtn');
+        if (hobBtn) {
+          hobBtn.addEventListener('click', function () {
+            if (!fn.unitConfig) fn.unitConfig = {};
+            var currentlyHasHob = !!(fn.unitConfig.appliance === 'hob' || fn.unitConfig.hasHob);
+            if (currentlyHasHob) {
+              fn.unitConfig.appliance = 'none';
+              fn.unitConfig.hasHob = false;
+            } else {
+              fn.unitConfig.appliance = 'hob';
+              fn.unitConfig.hasHob = true;
+              fn.unitConfig.hasSink = false;
+              if (fn.unitConfig.counter === 'none') {
+                fn.unitConfig.counter = 'granite_black_galaxy';
+              }
+            }
+            syncInspectorTo3D();
+            self.editor.pushHistory('Toggle Built-in HOB');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            self.renderInspector(self.editor.selected);
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var sinkBtn = document.getElementById('inspToggleSinkBtn');
+        if (sinkBtn) {
+          sinkBtn.addEventListener('click', function () {
+            if (!fn.unitConfig) fn.unitConfig = {};
+            var currentlyHasSink = !!(fn.unitConfig.appliance === 'sink' || fn.unitConfig.hasSink);
+            if (currentlyHasSink) {
+              fn.unitConfig.appliance = 'none';
+              fn.unitConfig.hasSink = false;
+            } else {
+              fn.unitConfig.appliance = 'sink';
+              fn.unitConfig.hasSink = true;
+              fn.unitConfig.hasHob = false;
+              if (fn.unitConfig.counter === 'none') {
+                fn.unitConfig.counter = 'granite_black_galaxy';
+              }
+            }
+            syncInspectorTo3D();
+            self.editor.pushHistory('Toggle Kitchen Sink');
+            self.saveToLocalStorage();
+            self.renderBOQ();
+            self.editor.render();
+            self.renderInspector(self.editor.selected);
             if (self.render3DHome) self.render3DHome(true);
           });
         }
@@ -2965,7 +3053,9 @@
           '<div class="insp-row"><label>Area (sq.ft)</label><input type="text" value="' + areaSqFt + ' sq ft (' + areaSqM + ' m²)" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
           '<div class="insp-row"><label>Perimeter (mm)</label><input type="text" value="' + Math.round(rm.perimeter || 0).toLocaleString() + ' mm" readonly style="background:var(--rule-2,#f3f4f6)"></div>' +
           '<div class="insp-row" style="margin-top:6px;"><label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="inspRoomFlooringQuote"' + (rm.includeFlooring ? ' checked' : '') + '> Include Civil Flooring in Quote (₹' + (self.project && self.project.rateCard && self.project.rateCard.categories && self.project.rateCard.categories.flooring ? self.project.rateCard.categories.flooring.baseRatePerSft : 140) + '/SFT)</label></div>' +
-          '<button class="btn primary full" id="inspFocusRoom3D" style="margin-top:12px">👁 View Room in 3D Studio</button>' +
+          '<button class="btn full" id="inspRoomAIDecorBtn" style="margin-top:10px;background:linear-gradient(135deg,#7c3aed,#9333ea);color:#ffffff;font-weight:700;border:none;box-shadow:0 2px 4px rgba(124,58,237,0.25);">✨ Auto-Decor Room with AI</button>' +
+          '<button class="btn small full" id="inspRoomClearAIDecorBtn" style="margin-top:4px;font-size:10.5px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">🗑️ Clear AI Decors from this Room</button>' +
+          '<button class="btn primary full" id="inspFocusRoom3D" style="margin-top:8px">👁 View Room in 3D Studio</button>' +
           '<button class="btn danger full" id="inspDelRoom" style="margin-top:8px">🗑️ Delete Room & Dividers</button>';
 
         var nameInput = document.getElementById('inspRoomName');
@@ -3029,6 +3119,20 @@
             self.editor.pushHistory('Change Ceiling Height');
             self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        var roomAIBtn = document.getElementById('inspRoomAIDecorBtn');
+        if (roomAIBtn) {
+          roomAIBtn.addEventListener('click', function () {
+            self.applyAIDecor(rm.id, rm.name);
+          });
+        }
+
+        var roomClearAIBtn = document.getElementById('inspRoomClearAIDecorBtn');
+        if (roomClearAIBtn) {
+          roomClearAIBtn.addEventListener('click', function () {
+            self.clearAIDecors(rm.id);
           });
         }
 
@@ -3734,6 +3838,467 @@
         if (searchInput) {
           setTimeout(function () { searchInput.focus(); }, 120);
         }
+      }
+    },
+
+    openAIDecorModal: function () {
+      var modal = document.getElementById('modalAIDecor');
+      if (modal) {
+        modal.classList.add('is-open');
+        modal.style.display = 'flex';
+      }
+    },
+
+    closeAIDecorModal: function () {
+      var modal = document.getElementById('modalAIDecor');
+      if (modal) {
+        modal.classList.remove('is-open');
+        modal.style.display = 'none';
+      }
+    },
+
+    initAIDecorModal: function () {
+      var self = this;
+      var modal = document.getElementById('modalAIDecor');
+      var openBtn = document.getElementById('openAIDecorBtn');
+      var open3DBtn = document.getElementById('openAIDecor3DBtn');
+      if (!modal) return;
+
+      if (openBtn) {
+        openBtn.addEventListener('click', function () {
+          self.openAIDecorModal();
+        });
+      }
+      if (open3DBtn) {
+        open3DBtn.addEventListener('click', function () {
+          self.openAIDecorModal();
+        });
+      }
+
+      modal.querySelectorAll('.modal-close-btn, .modal-backdrop, #closeAIDecorModalBtn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          self.closeAIDecorModal();
+        });
+      });
+
+      var btnLiving = document.getElementById('btnAIDecorLiving');
+      if (btnLiving) {
+        btnLiving.addEventListener('click', function () {
+          self.applyAIDecor(null, 'living');
+          self.closeAIDecorModal();
+        });
+      }
+
+      var btnKitchen = document.getElementById('btnAIDecorKitchen');
+      if (btnKitchen) {
+        btnKitchen.addEventListener('click', function () {
+          self.applyAIDecor(null, 'kitchen');
+          self.closeAIDecorModal();
+        });
+      }
+
+      var btnBed = document.getElementById('btnAIDecorBedroom');
+      if (btnBed) {
+        btnBed.addEventListener('click', function () {
+          self.applyAIDecor(null, 'bedroom');
+          self.closeAIDecorModal();
+        });
+      }
+
+      var btnAll = document.getElementById('btnAIDecorAllRooms');
+      if (btnAll) {
+        btnAll.addEventListener('click', function () {
+          self.applyAIDecor(null, null);
+          self.closeAIDecorModal();
+        });
+      }
+
+      var btnClear = document.getElementById('btnAIClearAllDecors');
+      if (btnClear) {
+        btnClear.addEventListener('click', function () {
+          self.clearAIDecors(null);
+          self.closeAIDecorModal();
+        });
+      }
+    },
+
+    applyAIDecor: function (targetRoomId, explicitCategory) {
+      var self = this;
+      var plan = (this.project && this.project.plan) || {};
+      var rooms = plan.rooms || [];
+      if (!rooms.length && typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
+        try { Core.detectRooms(this.project); } catch (_) {}
+        rooms = plan.rooms || [];
+      }
+
+      var targetRoom = null;
+      if (targetRoomId) {
+        targetRoom = rooms.find(function (r) { return r.id === targetRoomId; });
+      } else if (this.editor && this.editor.selected && this.editor.selected.length === 1 && this.editor.selected[0].type === 'room') {
+        targetRoom = rooms.find(function (r) { return r.id === self.editor.selected[0].id; });
+      }
+
+      if (!targetRoom && rooms.length === 1) {
+        targetRoom = rooms[0];
+      }
+
+      // If no room specified and multiple rooms exist, open AI Decor modal so user can pick!
+      if (!targetRoom && !explicitCategory) {
+        this.openAIDecorModal();
+        return;
+      }
+
+      var decorsCatalog = (typeof window !== 'undefined' && window.ORBIX_DECORS_CATALOG) || [];
+      function findCatalogItem(id) {
+        return decorsCatalog.find(function (it) { return it.id === id || it.slug === id; });
+      }
+
+      var roomsToDecorate = targetRoom ? [targetRoom] : rooms;
+      var totalAdded = 0;
+
+      roomsToDecorate.forEach(function (rm) {
+        var rName = (rm.name || '').toLowerCase();
+        var category = explicitCategory || (
+          (rName.indexOf('kitchen') !== -1 || rName.indexOf('cook') !== -1 || rName.indexOf('pantry') !== -1) ? 'kitchen' :
+          (rName.indexOf('bed') !== -1 || rName.indexOf('master') !== -1 || rName.indexOf('guest') !== -1 || rName.indexOf('kids') !== -1) ? 'bedroom' :
+          'living'
+        );
+
+        var poly = rm.polygon || [];
+        if (!poly.length || poly.length < 3) return;
+
+        var centroid = (typeof Vec2 !== 'undefined' && Vec2.polygonCentroid) ? Vec2.polygonCentroid(poly) : { x: 0, y: 0 };
+        var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        poly.forEach(function (pt) {
+          minX = Math.min(minX, pt.x); maxX = Math.max(maxX, pt.x);
+          minY = Math.min(minY, pt.y); maxY = Math.max(maxY, pt.y);
+        });
+        var rWidth = maxX - minX;
+        var rDepth = maxY - minY;
+
+        // Find longest wall in this room
+        var walls = plan.walls || [];
+        var roomWalls = walls.filter(function (w) {
+          return rm.wallIds && rm.wallIds.indexOf(w.id) !== -1 && !w.isDivider;
+        });
+        if (!roomWalls.length) roomWalls = walls;
+        roomWalls.sort(function (a, b) {
+          var lenA = Math.hypot(a.end.x - a.start.x, a.end.y - a.start.y);
+          var lenB = Math.hypot(b.end.x - b.start.x, b.end.y - b.start.y);
+          return lenB - lenA;
+        });
+        var primaryWall = roomWalls[0] || { start: { x: minX, y: minY }, end: { x: maxX, y: minY } };
+
+        // Wall vector, tangent & inward normal towards centroid
+        var dx = primaryWall.end.x - primaryWall.start.x;
+        var dy = primaryWall.end.y - primaryWall.start.y;
+        var wLen = Math.hypot(dx, dy) || 1;
+        var tx = dx / wLen, ty = dy / wLen;
+        var nx = -ty, ny = tx;
+        var wallMid = { x: (primaryWall.start.x + primaryWall.end.x) / 2, y: (primaryWall.start.y + primaryWall.end.y) / 2 };
+        var toCenter = { x: centroid.x - wallMid.x, y: centroid.y - wallMid.y };
+        if (nx * toCenter.x + ny * toCenter.y < 0) { nx = -nx; ny = -ny; }
+        var wallAngle = Math.atan2(ty, tx);
+
+        // Remove previous AI-generated decors from this room
+        plan.furniture = (plan.furniture || []).filter(function (f) {
+          return !(f.aiGenerated && (f.roomId === rm.id || Vec2.pointInPolygon(f.pos || { x: 0, y: 0 }, poly)));
+        });
+
+        if (category === 'living') {
+          // 1. TV (Xiaomi 65" 4K Smart TV mounted at 950mm AFFL against wall)
+          var tvItem = findCatalogItem('decor_7_mi_tv') || {
+            id: 'decor_7_mi_tv', name: 'Xiaomi Mi 65" Smart 4K TV',
+            dimensions: { W: 1450, H: 860, D: 65 }, modelUrl: 'assets/decors/7_mi_tv.glb'
+          };
+          var tvPos = { x: wallMid.x + nx * 80, y: wallMid.y + ny * 80, z: 950 };
+          plan.furniture.push(Core.createFurniturePlacement({
+            id: 'ai_tv_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+            name: tvItem.name,
+            category: 'decor',
+            decorType: 'tv',
+            isDecor: true,
+            excludeFromPricing: true,
+            aiGenerated: true,
+            roomId: rm.id,
+            modelUrl: tvItem.modelUrl,
+            dimensions: tvItem.dimensions,
+            pos: tvPos,
+            elevation: 950,
+            rotY: wallAngle
+          }));
+
+          // 2. 3-Seater Sofa (Ashley Padova facing the TV)
+          var sofaItem = findCatalogItem('decor_ashley_padova_3_seater_sofa') || {
+            id: 'decor_ashley_padova_3_seater_sofa', name: 'Ashley Padova 3-Seater Sofa',
+            dimensions: { W: 2400, H: 980, D: 1020 }, modelUrl: 'assets/decors/ashley_padova_3_seater_sofa.glb'
+          };
+          var sofaDist = Math.min(Math.max(1800, rDepth * 0.45), 2600);
+          var sofaPos = { x: wallMid.x + nx * sofaDist, y: wallMid.y + ny * sofaDist, z: 0 };
+          plan.furniture.push(Core.createFurniturePlacement({
+            id: 'ai_sofa_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+            name: sofaItem.name,
+            category: 'decor',
+            decorType: 'sofa',
+            isDecor: true,
+            excludeFromPricing: true,
+            aiGenerated: true,
+            roomId: rm.id,
+            modelUrl: sofaItem.modelUrl,
+            dimensions: sofaItem.dimensions,
+            pos: sofaPos,
+            elevation: 0,
+            rotY: wallAngle + Math.PI // Faces toward the TV
+          }));
+
+          // 3. Tall Fiddle Fig Tree Planter
+          var plantItem = findCatalogItem('decor_flower_pot_12') || findCatalogItem('decor_conc_flower_pot') || {
+            id: 'decor_flower_pot_12', name: 'Tall Indoor Fiddle Fig Tree',
+            dimensions: { W: 680, H: 1750, D: 680 }, modelUrl: 'assets/decors/flower_pot_12.glb'
+          };
+          var plantPos = { x: wallMid.x - tx * Math.min(wLen * 0.38, 1400) + nx * 500, y: wallMid.y - ty * Math.min(wLen * 0.38, 1400) + ny * 500, z: 0 };
+          plan.furniture.push(Core.createFurniturePlacement({
+            id: 'ai_plant_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+            name: plantItem.name,
+            category: 'decor',
+            decorType: 'plant',
+            isDecor: true,
+            excludeFromPricing: true,
+            aiGenerated: true,
+            roomId: rm.id,
+            modelUrl: plantItem.modelUrl,
+            dimensions: plantItem.dimensions,
+            pos: plantPos,
+            elevation: 0,
+            rotY: 0
+          }));
+
+          // 4. Contemporary Accent Armchair
+          var chairItem = findCatalogItem('decor_ai_2049_100r1');
+          if (chairItem) {
+            var chairPos = { x: sofaPos.x + tx * 1500 - nx * 200, y: sofaPos.y + ty * 1500 - ny * 200, z: 0 };
+            plan.furniture.push(Core.createFurniturePlacement({
+              id: 'ai_chair_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+              name: chairItem.name,
+              category: 'decor',
+              decorType: 'chair',
+              isDecor: true,
+              excludeFromPricing: true,
+              aiGenerated: true,
+              roomId: rm.id,
+              modelUrl: chairItem.modelUrl,
+              dimensions: chairItem.dimensions,
+              pos: chairPos,
+              elevation: 0,
+              rotY: wallAngle + Math.PI * 0.75
+            }));
+          }
+          totalAdded += 4;
+
+        } else if (category === 'kitchen') {
+          var kitchenBaseUnits = (plan.furniture || []).filter(function (f) {
+            if (f.isDecor || f.excludeFromPricing) return false;
+            var fRoomId = f.roomId;
+            var isInRoom = (fRoomId === rm.id) || (f.pos && Vec2.pointInPolygon(f.pos, poly));
+            var isBase = /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(f.name || f.id || f.catalogItemId || '') ||
+              (f.category === 'kitchen_base' || f.category === 'kitchen_fm' || f.costCategory === 'Base');
+            return isInRoom && isBase;
+          });
+
+          var cutleryItem = findCatalogItem('decor_cutlery') || {
+            id: 'decor_cutlery', name: 'Countertop Cutlery Organizer',
+            dimensions: { W: 170, H: 290, D: 160 }, modelUrl: 'assets/decors/cutlery.glb'
+          };
+          var vegItem = findCatalogItem('decor_vegetables') || {
+            id: 'decor_vegetables', name: 'Fresh Harvest Kitchen Vegetable Bowl',
+            dimensions: { W: 320, H: 180, D: 320 }, modelUrl: 'assets/decors/vegetables.glb'
+          };
+          var spiceItem = findCatalogItem('decor_glass_apothecary_jar') || {
+            id: 'decor_glass_apothecary_jar', name: 'Glass Apothecary Canisters (Spice Jars)',
+            dimensions: { W: 280, H: 240, D: 140 }, modelUrl: 'assets/decors/glass_apothecary_jar.glb'
+          };
+          var dishrackItem = findCatalogItem('decor_cuttlery_dishrack') || {
+            id: 'decor_cuttlery_dishrack', name: 'Cutlery & Dish Drying Rack',
+            dimensions: { W: 420, H: 300, D: 320 }, modelUrl: 'assets/decors/cuttlery_dishrack.glb'
+          };
+
+          if (kitchenBaseUnits.length > 0) {
+            var u0 = kitchenBaseUnits[0];
+            var u1 = kitchenBaseUnits[1] || kitchenBaseUnits[0];
+            var u2 = kitchenBaseUnits[2] || kitchenBaseUnits[kitchenBaseUnits.length - 1];
+
+            plan.furniture.push(Core.createFurniturePlacement({
+              id: 'ai_cutlery_' + Date.now(),
+              name: cutleryItem.name,
+              category: 'decor', decorType: 'kitchen_decor',
+              isDecor: true, excludeFromPricing: true, aiGenerated: true,
+              roomId: rm.id, modelUrl: cutleryItem.modelUrl, dimensions: cutleryItem.dimensions,
+              pos: { x: u0.pos.x - 120, y: u0.pos.y, z: 850 }, elevation: 850, rotY: u0.rotY || 0
+            }));
+
+            plan.furniture.push(Core.createFurniturePlacement({
+              id: 'ai_veg_' + Date.now(),
+              name: vegItem.name,
+              category: 'decor', decorType: 'kitchen_decor',
+              isDecor: true, excludeFromPricing: true, aiGenerated: true,
+              roomId: rm.id, modelUrl: vegItem.modelUrl, dimensions: vegItem.dimensions,
+              pos: { x: u1.pos.x + 80, y: u1.pos.y, z: 850 }, elevation: 850, rotY: u1.rotY || 0
+            }));
+
+            plan.furniture.push(Core.createFurniturePlacement({
+              id: 'ai_spice_' + Date.now(),
+              name: spiceItem.name,
+              category: 'decor', decorType: 'kitchen_decor',
+              isDecor: true, excludeFromPricing: true, aiGenerated: true,
+              roomId: rm.id, modelUrl: spiceItem.modelUrl, dimensions: spiceItem.dimensions,
+              pos: { x: u2.pos.x - 60, y: u2.pos.y, z: 850 }, elevation: 850, rotY: u2.rotY || 0
+            }));
+
+            plan.furniture.push(Core.createFurniturePlacement({
+              id: 'ai_dishrack_' + Date.now(),
+              name: dishrackItem.name,
+              category: 'decor', decorType: 'kitchen_decor',
+              isDecor: true, excludeFromPricing: true, aiGenerated: true,
+              roomId: rm.id, modelUrl: dishrackItem.modelUrl, dimensions: dishrackItem.dimensions,
+              pos: { x: u0.pos.x + 140, y: u0.pos.y, z: 850 }, elevation: 850, rotY: u0.rotY || 0
+            }));
+            totalAdded += 4;
+          } else {
+            var cPos = { x: wallMid.x + nx * 400, y: wallMid.y + ny * 400, z: 850 };
+            plan.furniture.push(Core.createFurniturePlacement({
+              id: 'ai_cutlery_' + Date.now(),
+              name: cutleryItem.name,
+              category: 'decor', decorType: 'kitchen_decor',
+              isDecor: true, excludeFromPricing: true, aiGenerated: true,
+              roomId: rm.id, modelUrl: cutleryItem.modelUrl, dimensions: cutleryItem.dimensions,
+              pos: { x: cPos.x - 300, y: cPos.y, z: 850 }, elevation: 850, rotY: wallAngle
+            }));
+            plan.furniture.push(Core.createFurniturePlacement({
+              id: 'ai_veg_' + Date.now(),
+              name: vegItem.name,
+              category: 'decor', decorType: 'kitchen_decor',
+              isDecor: true, excludeFromPricing: true, aiGenerated: true,
+              roomId: rm.id, modelUrl: vegItem.modelUrl, dimensions: vegItem.dimensions,
+              pos: { x: cPos.x, y: cPos.y, z: 850 }, elevation: 850, rotY: wallAngle
+            }));
+            plan.furniture.push(Core.createFurniturePlacement({
+              id: 'ai_spice_' + Date.now(),
+              name: spiceItem.name,
+              category: 'decor', decorType: 'kitchen_decor',
+              isDecor: true, excludeFromPricing: true, aiGenerated: true,
+              roomId: rm.id, modelUrl: spiceItem.modelUrl, dimensions: spiceItem.dimensions,
+              pos: { x: cPos.x + 320, y: cPos.y, z: 850 }, elevation: 850, rotY: wallAngle
+            }));
+            totalAdded += 3;
+          }
+
+        } else if (category === 'bedroom') {
+          var bedItem = findCatalogItem('decor_023') || findCatalogItem('decor_cama_3') || {
+            id: 'decor_023', name: 'Master Suite Bed & Nightstands 023',
+            dimensions: { W: 2400, H: 1050, D: 2150 }, modelUrl: 'assets/decors/023.glb'
+          };
+          var bedDist = bedItem.dimensions.D / 2 + 100;
+          var bedPos = { x: wallMid.x + nx * bedDist, y: wallMid.y + ny * bedDist, z: 0 };
+          plan.furniture.push(Core.createFurniturePlacement({
+            id: 'ai_bed_' + Date.now(),
+            name: bedItem.name,
+            category: 'decor',
+            decorType: 'bed',
+            isDecor: true,
+            excludeFromPricing: true,
+            aiGenerated: true,
+            roomId: rm.id,
+            modelUrl: bedItem.modelUrl,
+            dimensions: bedItem.dimensions,
+            pos: bedPos,
+            elevation: 0,
+            rotY: wallAngle + Math.PI
+          }));
+
+          var lampItem = findCatalogItem('decor_floor_lamp') || {
+            id: 'decor_floor_lamp', name: 'Nordic Curved Arc Floor Lamp',
+            dimensions: { W: 550, H: 1850, D: 550 }, modelUrl: 'assets/decors/floor_lamp.glb'
+          };
+          var lampPos = { x: wallMid.x - tx * 1500 + nx * 400, y: wallMid.y - ty * 1500 + ny * 400, z: 0 };
+          plan.furniture.push(Core.createFurniturePlacement({
+            id: 'ai_lamp_' + Date.now(),
+            name: lampItem.name,
+            category: 'decor',
+            decorType: 'floor_lamp',
+            isDecor: true,
+            excludeFromPricing: true,
+            aiGenerated: true,
+            roomId: rm.id,
+            modelUrl: lampItem.modelUrl,
+            dimensions: lampItem.dimensions,
+            pos: lampPos,
+            elevation: 0,
+            rotY: 0
+          }));
+
+          var planterItem = findCatalogItem('decor_component_3');
+          if (planterItem) {
+            var planterPos = { x: wallMid.x + tx * 1450 + nx * 350, y: wallMid.y + ty * 1450 + ny * 350, z: 500 };
+            plan.furniture.push(Core.createFurniturePlacement({
+              id: 'ai_planter_' + Date.now(),
+              name: planterItem.name,
+              category: 'decor',
+              decorType: 'plant',
+              isDecor: true,
+              excludeFromPricing: true,
+              aiGenerated: true,
+              roomId: rm.id,
+              modelUrl: planterItem.modelUrl,
+              dimensions: planterItem.dimensions,
+              pos: planterPos,
+              elevation: 500,
+              rotY: 0
+            }));
+          }
+          totalAdded += 3;
+        }
+      });
+
+      if (this.editor && this.editor.project && this.editor.project.plan) {
+        this.editor.project.plan.furniture = plan.furniture;
+      }
+      this.syncProjectUnitsTo3DStudio();
+      this.saveToLocalStorage();
+      if (this.editor) {
+        this.editor.pushHistory('AI Decor - ' + (targetRoom ? targetRoom.name : 'All Rooms'));
+        this.editor.render();
+      }
+      this.renderBOQ();
+      if (this.render3DHome) this.render3DHome(true);
+
+      var roomMsg = targetRoom ? ('in ' + targetRoom.name) : 'across entire home';
+      if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+        window.showToast('✨ AI Decor placed ' + totalAdded + ' items ' + roomMsg + '!');
+      }
+    },
+
+    clearAIDecors: function (roomId) {
+      var plan = (this.project && this.project.plan) || {};
+      var countBefore = (plan.furniture || []).length;
+      plan.furniture = (plan.furniture || []).filter(function (f) {
+        if (!f.aiGenerated) return true;
+        if (roomId && f.roomId !== roomId) return true;
+        return false;
+      });
+      var removed = countBefore - plan.furniture.length;
+      if (this.editor && this.editor.project && this.editor.project.plan) {
+        this.editor.project.plan.furniture = plan.furniture;
+      }
+      this.syncProjectUnitsTo3DStudio();
+      this.saveToLocalStorage();
+      if (this.editor) {
+        this.editor.pushHistory('Clear AI Decors');
+        this.editor.render();
+      }
+      this.renderBOQ();
+      if (this.render3DHome) this.render3DHome(true);
+      if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+        window.showToast('🗑️ Cleared ' + removed + ' AI-placed decor items.');
       }
     },
 

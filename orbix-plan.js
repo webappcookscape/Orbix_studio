@@ -5450,6 +5450,49 @@
         // Front handle pill indicator
         ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
         ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
+
+        // Built-in Appliance Symbols on Floor/Base Units (HOB & Sink)
+        var hasHobAppliance = !isDecor && !!(f.unitConfig && (f.unitConfig.appliance === 'hob' || f.unitConfig.hasHob));
+        var hasSinkAppliance = !isDecor && !!(f.unitConfig && (f.unitConfig.appliance === 'sink' || f.unitConfig.hasSink));
+
+        if (hasHobAppliance) {
+          ctx.save();
+          ctx.strokeStyle = isSelected ? '#b45309' : '#d97706';
+          ctx.fillStyle = isSelected ? '#b45309' : '#d97706';
+          ctx.lineWidth = 1.3;
+          var cW = Math.min(wPx * 0.85, wPx - 10), cD = Math.min(dPx * 0.78, dPx - 10);
+          ctx.strokeRect(-cW / 2, -cD / 2, cW, cD);
+          [-cW * 0.25, cW * 0.25].forEach(function (bx) {
+            ctx.beginPath(); ctx.arc(bx, -cD * 0.06, Math.min(cW, cD) * 0.24, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(bx, -cD * 0.06, Math.min(cW, cD) * 0.11, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(bx - Math.min(cW, cD) * 0.28, -cD * 0.06); ctx.lineTo(bx + Math.min(cW, cD) * 0.28, -cD * 0.06); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(bx, -cD * 0.06 - Math.min(cW, cD) * 0.28); ctx.lineTo(bx, -cD * 0.06 + Math.min(cW, cD) * 0.28); ctx.stroke();
+          });
+          [-cW * 0.16, 0, cW * 0.16].forEach(function (kx) {
+            ctx.beginPath(); ctx.arc(kx, cD / 2 - 5, 2.5, 0, Math.PI * 2); ctx.fill();
+          });
+          ctx.restore();
+        } else if (hasSinkAppliance) {
+          ctx.save();
+          ctx.strokeStyle = isSelected ? '#0369a1' : '#0284c7';
+          ctx.fillStyle = isSelected ? '#0369a1' : '#0284c7';
+          ctx.lineWidth = 1.3;
+          var sW = Math.min(wPx * 0.88, wPx - 10), sD = Math.min(dPx * 0.82, dPx - 10);
+          ctx.strokeRect(-sW / 2, -sD / 2, sW, sD);
+          var bowlW = sW * 0.55, bowlD = sD * 0.82, bowlX = -sW * 0.18;
+          ctx.strokeRect(bowlX - bowlW / 2, -bowlD / 2, bowlW, bowlD);
+          ctx.beginPath(); ctx.arc(bowlX, 0, Math.min(bowlW, bowlD) * 0.16, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(bowlX, -bowlD / 2 + 5, 3.5, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(bowlX, -bowlD / 2 + 5); ctx.lineTo(bowlX, -bowlD / 2 + 14); ctx.stroke();
+          var drW = sW * 0.32, drX = sW * 0.28;
+          for (var dr = -2; dr <= 2; dr++) {
+            ctx.beginPath();
+            ctx.moveTo(drX - drW / 2 + 3, dr * (bowlD / 6));
+            ctx.lineTo(drX + drW / 2 - 3, dr * (bowlD / 6));
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
       }
 
       // Labels: Name + Size (Clean LOD: only show detailed labels when zoomed in or selected)
@@ -6731,6 +6774,325 @@
       if (this.selected[i].type === type && this.selected[i].id === id) return true;
     }
     return false;
+  };
+
+  // High-Resolution Detailed 2D Architectural Plan Blueprint Exporter
+  PlanEditor.prototype.exportDetailed2DPlan = function () {
+    var proj = this.project || {};
+    var plan = proj.plan || {};
+    var walls = plan.walls || [];
+    var rooms = plan.rooms || [];
+    var furniture = plan.furniture || [];
+
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    var hasContent = false;
+
+    walls.forEach(function (w) {
+      if (w.start && w.end) {
+        minX = Math.min(minX, w.start.x, w.end.x);
+        maxX = Math.max(maxX, w.start.x, w.end.x);
+        minY = Math.min(minY, w.start.y, w.end.y);
+        maxY = Math.max(maxY, w.start.y, w.end.y);
+        hasContent = true;
+      }
+    });
+
+    rooms.forEach(function (r) {
+      if (r.polygon && r.polygon.length) {
+        r.polygon.forEach(function (p) {
+          minX = Math.min(minX, p.x);
+          maxX = Math.max(maxX, p.x);
+          minY = Math.min(minY, p.y);
+          maxY = Math.max(maxY, p.y);
+          hasContent = true;
+        });
+      }
+    });
+
+    furniture.forEach(function (f) {
+      if (f.pos) {
+        var w = (f.dimensions && f.dimensions.W) || 600;
+        var d = (f.dimensions && f.dimensions.D) || 600;
+        minX = Math.min(minX, f.pos.x - w);
+        maxX = Math.max(maxX, f.pos.x + w);
+        minY = Math.min(minY, f.pos.y - d);
+        maxY = Math.max(maxY, f.pos.y + d);
+        hasContent = true;
+      }
+    });
+
+    if (!hasContent) {
+      minX = -2000; maxX = 2000; minY = -1500; maxY = 1500;
+    }
+
+    var exportW = 3200;
+    var exportH = 2200;
+    if (typeof document === 'undefined') return { width: exportW, height: exportH };
+    var offscreen = document.createElement('canvas');
+    offscreen.width = exportW;
+    offscreen.height = exportH;
+    var oCtx = offscreen.getContext('2d');
+    if (!oCtx) return null;
+
+    var padLeft = 240, padRight = 240, padTop = 200, padBottom = 340;
+    var spanW = Math.max(1000, maxX - minX);
+    var spanH = Math.max(1000, maxY - minY);
+    var availW = exportW - padLeft - padRight;
+    var availH = exportH - padTop - padBottom;
+    var fitZoom = Math.min(availW / spanW, availH / spanH);
+
+    var midX = (minX + maxX) / 2;
+    var midY = (minY + maxY) / 2;
+    var targetCenterX = padLeft + availW / 2;
+    var targetCenterY = padTop + availH / 2;
+    var fitPanX = targetCenterX - midX * fitZoom;
+    var fitPanY = targetCenterY - midY * fitZoom;
+
+    var prevCtx = this.ctx;
+    var prevW = this.width;
+    var prevH = this.height;
+    var prevZoom = this.zoom;
+    var prevPan = { x: this.pan.x, y: this.pan.y };
+    var prevFilter = this.unitTierFilter;
+    var prevSel = this.selected;
+
+    try {
+      this.ctx = oCtx;
+      this.width = exportW;
+      this.height = exportH;
+      this.zoom = fitZoom;
+      this.pan = { x: fitPanX, y: fitPanY };
+      this.unitTierFilter = 'all';
+      this.selected = [];
+
+      oCtx.fillStyle = '#FFFFFF';
+      oCtx.fillRect(0, 0, exportW, exportH);
+
+      // Fine grid
+      oCtx.save();
+      oCtx.strokeStyle = 'rgba(226, 232, 240, 0.6)';
+      oCtx.lineWidth = 1;
+      var gridMm = 1000;
+      var sStart = this.screenToWorld({ x: 0, y: 0 });
+      var sEnd = this.screenToWorld({ x: exportW, y: exportH });
+      var startX = Math.floor(sStart.x / gridMm) * gridMm;
+      var endX = Math.ceil(sEnd.x / gridMm) * gridMm;
+      var startY = Math.floor(sStart.y / gridMm) * gridMm;
+      var endY = Math.ceil(sEnd.y / gridMm) * gridMm;
+
+      for (var gx = startX; gx <= endX; gx += gridMm) {
+        var sx = this.worldToScreen({ x: gx, y: 0 }).x;
+        oCtx.beginPath(); oCtx.moveTo(sx, 0); oCtx.lineTo(sx, exportH); oCtx.stroke();
+      }
+      for (var gy = startY; gy <= endY; gy += gridMm) {
+        var sy = this.worldToScreen({ x: 0, y: gy }).y;
+        oCtx.beginPath(); oCtx.moveTo(0, sy); oCtx.lineTo(exportW, sy); oCtx.stroke();
+      }
+      oCtx.restore();
+
+      // Architectural Layers
+      this.renderRooms(oCtx);
+      this.renderWalls(oCtx);
+      this.renderOpenings(oCtx);
+      this.renderAllWallDimensions(oCtx);
+      this.renderCornerAngles(oCtx);
+      this.renderFurniture(oCtx);
+      this.renderDimensions(oCtx);
+
+      // Blueprint double border
+      oCtx.save();
+      var margin = 40;
+      oCtx.strokeStyle = '#0f172a';
+      oCtx.lineWidth = 3.5;
+      oCtx.strokeRect(margin, margin, exportW - margin * 2, exportH - margin * 2);
+      oCtx.lineWidth = 1.2;
+      oCtx.strokeRect(margin + 6, margin + 6, exportW - margin * 2 - 12, exportH - margin * 2 - 12);
+
+      // Title Block
+      var tbW = 980;
+      var tbH = 220;
+      var tbX = exportW - margin - tbW - 6;
+      var tbY = exportH - margin - tbH - 6;
+
+      oCtx.fillStyle = 'rgba(255, 255, 255, 0.98)';
+      oCtx.fillRect(tbX, tbY, tbW, tbH);
+      oCtx.strokeStyle = '#0f172a';
+      oCtx.lineWidth = 2;
+      oCtx.strokeRect(tbX, tbY, tbW, tbH);
+
+      oCtx.lineWidth = 1.2;
+      oCtx.beginPath();
+      oCtx.moveTo(tbX + 460, tbY); oCtx.lineTo(tbX + 460, tbY + tbH);
+      oCtx.moveTo(tbX, tbY + 65); oCtx.lineTo(tbX + 460, tbY + 65);
+      oCtx.moveTo(tbX, tbY + 140); oCtx.lineTo(tbX + 460, tbY + 140);
+      oCtx.stroke();
+
+      var pName = (proj.meta && proj.meta.name) || proj.name || 'RESIDENTIAL INTERIOR DESIGN';
+      var cName = (proj.meta && proj.meta.clientName) || 'Standard Client';
+      var qId = (proj.meta && proj.meta.quoteId) || 'ORB-2026-PLAN';
+      var curDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      oCtx.fillStyle = '#0f172a';
+      oCtx.font = '700 22px "IBM Plex Sans", sans-serif';
+      oCtx.textAlign = 'left';
+      oCtx.fillText(pName.toUpperCase(), tbX + 24, tbY + 40);
+
+      oCtx.fillStyle = '#475569';
+      oCtx.font = '600 13px "IBM Plex Sans", sans-serif';
+      oCtx.fillText('PROJECT ID: ' + qId + '  |  CLIENT: ' + cName, tbX + 24, tbY + 100);
+      oCtx.fillText('DATE: ' + curDate + '  |  ALL DIMENSIONS IN MILLIMETERS (MM)', tbX + 24, tbY + 120);
+
+      oCtx.font = '700 14px "IBM Plex Sans", sans-serif';
+      oCtx.fillStyle = '#0284c7';
+      oCtx.fillText('COOKSCAPE / ORBIX CAD ARCHITECTURAL STUDIO', tbX + 24, tbY + 180);
+
+      oCtx.fillStyle = '#0f172a';
+      oCtx.font = '700 14px "IBM Plex Sans", sans-serif';
+      oCtx.fillText('ROOM SCHEDULE & CARPET AREA', tbX + 480, tbY + 30);
+
+      oCtx.font = '600 12.5px "IBM Plex Mono", monospace';
+      var rY = tbY + 58;
+      var totalAreaSft = 0;
+      var maxDisplayRooms = Math.min(rooms.length, 5);
+      for (var ri = 0; ri < maxDisplayRooms; ri++) {
+        var rm = rooms[ri];
+        var sft = Math.round(rm.areaSqFt || (rm.areaSqMm ? rm.areaSqMm / 92903.04 : 0));
+        totalAreaSft += sft;
+        oCtx.fillStyle = '#334155';
+        oCtx.fillText((rm.name || 'Room ' + (ri + 1)) + ':', tbX + 480, rY);
+        oCtx.textAlign = 'right';
+        oCtx.fillText(sft + ' sq.ft (' + (sft * 0.0929).toFixed(1) + ' m²)', tbX + tbW - 24, rY);
+        oCtx.textAlign = 'left';
+        rY += 26;
+      }
+      if (rooms.length > 5) {
+        oCtx.fillStyle = '#64748b';
+        oCtx.fillText('+ ' + (rooms.length - 5) + ' more room(s)...', tbX + 480, rY);
+      }
+
+      oCtx.fillStyle = '#0f172a';
+      oCtx.font = '700 13px "IBM Plex Sans", sans-serif';
+      oCtx.fillText('TOTAL ESTIMATED AREA: ' + totalAreaSft + ' SQ.FT', tbX + 480, tbY + tbH - 20);
+
+      // North Arrow
+      var naX = exportW - margin - 100;
+      var naY = margin + 110;
+      oCtx.lineWidth = 2.5;
+      oCtx.strokeStyle = '#0f172a';
+      oCtx.beginPath();
+      oCtx.arc(naX, naY, 40, 0, Math.PI * 2);
+      oCtx.stroke();
+
+      oCtx.lineWidth = 1.2;
+      oCtx.beginPath();
+      oCtx.moveTo(naX - 50, naY); oCtx.lineTo(naX + 50, naY);
+      oCtx.moveTo(naX, naY - 50); oCtx.lineTo(naX, naY + 50);
+      oCtx.stroke();
+
+      oCtx.fillStyle = '#0f172a';
+      oCtx.beginPath();
+      oCtx.moveTo(naX, naY - 38);
+      oCtx.lineTo(naX - 10, naY);
+      oCtx.lineTo(naX, naY - 8);
+      oCtx.closePath();
+      oCtx.fill();
+      oCtx.stroke();
+
+      oCtx.fillStyle = '#FFFFFF';
+      oCtx.beginPath();
+      oCtx.moveTo(naX, naY - 38);
+      oCtx.lineTo(naX + 10, naY);
+      oCtx.lineTo(naX, naY - 8);
+      oCtx.closePath();
+      oCtx.fill();
+      oCtx.stroke();
+
+      oCtx.fillStyle = '#0f172a';
+      oCtx.font = '700 16px "IBM Plex Sans", sans-serif';
+      oCtx.textAlign = 'center';
+      oCtx.fillText('N', naX, naY - 44);
+
+      // Scale bar
+      var barX = naX - 80;
+      var barY = naY + 65;
+      var bar1mMm = 1000 * fitZoom;
+      oCtx.fillStyle = '#0f172a';
+      oCtx.fillRect(barX, barY, bar1mMm, 6);
+      oCtx.strokeRect(barX, barY, bar1mMm, 6);
+      oCtx.font = '600 11px "IBM Plex Mono", monospace';
+      oCtx.fillText('0', barX, barY + 20);
+      oCtx.fillText('1000 mm (1m)', barX + bar1mMm, barY + 20);
+
+      // Legend
+      var legW = 540;
+      var legH = 120;
+      var legX = margin + 20;
+      var legY = exportH - margin - legH - 20;
+
+      oCtx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      oCtx.fillRect(legX, legY, legW, legH);
+      oCtx.strokeStyle = '#cbd5e1';
+      oCtx.lineWidth = 1.2;
+      oCtx.strokeRect(legX, legY, legW, legH);
+
+      oCtx.fillStyle = '#0f172a';
+      oCtx.font = '700 12px "IBM Plex Sans", sans-serif';
+      oCtx.textAlign = 'left';
+      oCtx.fillText('ARCHITECTURAL DRAWING LEGEND', legX + 16, legY + 24);
+
+      var legItems = [
+        { label: 'Solid Wall', color: '#0f172a' },
+        { label: 'Door Swing', color: '#64748b' },
+        { label: 'Base Cabinet (FM)', color: '#334155' },
+        { label: 'Built-in Gas Hob', color: '#d97706' },
+        { label: 'Kitchen Sink', color: '#0284c7' }
+      ];
+
+      var lx = legX + 16;
+      for (var li = 0; li < legItems.length; li++) {
+        var itm = legItems[li];
+        oCtx.fillStyle = itm.color;
+        oCtx.strokeStyle = itm.color;
+        oCtx.fillRect(lx, legY + 45, 24, 14);
+        oCtx.strokeRect(lx, legY + 45, 24, 14);
+        oCtx.font = '600 10.5px "IBM Plex Sans", sans-serif';
+        oCtx.fillText(itm.label, lx + 30, legY + 56);
+        lx += 180;
+        if (li === 1) {
+          lx = legX + 16;
+          legY += 28;
+        }
+      }
+      oCtx.restore();
+
+      if (typeof offscreen.toDataURL === 'function') {
+        var dataUrl = offscreen.toDataURL('image/png');
+        if (typeof document !== 'undefined' && document.body) {
+          var a = document.createElement('a');
+          var filename = (pName.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Architectural_Floor_Plan') + '_Detailed_2D_Plan.png';
+          a.download = filename;
+          a.href = dataUrl;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          if (window.OrbixUI && typeof window.OrbixUI.showNotification === 'function') {
+            window.OrbixUI.showNotification('📐 Detailed 2D floor plan exported successfully: ' + filename, 'success');
+          }
+        }
+        return dataUrl;
+      }
+      return offscreen;
+    } finally {
+      this.ctx = prevCtx;
+      this.width = prevW;
+      this.height = prevH;
+      this.zoom = prevZoom;
+      this.pan = prevPan;
+      this.unitTierFilter = prevFilter;
+      this.selected = prevSel;
+      if (typeof this.render === 'function') this.render();
+    }
   };
 
   return PlanEditor;

@@ -18,6 +18,8 @@ dado_tex_path = os.path.join(here, 'orbix-dado-textures.js')
 orbix_dado_tex = open(dado_tex_path, encoding='utf-8').read() if os.path.exists(dado_tex_path) else ''
 floor_tex_path = os.path.join(here, 'orbix-floor-textures.js')
 orbix_floor_tex = open(floor_tex_path, encoding='utf-8').read() if os.path.exists(floor_tex_path) else ''
+countertop_tex_path = os.path.join(here, 'orbix-countertop-textures.js')
+orbix_countertop_tex = open(countertop_tex_path, encoding='utf-8').read() if os.path.exists(countertop_tex_path) else ''
 orbix_3d = open(os.path.join(here, 'orbix-3d.js'), encoding='utf-8').read()
 orbix_ui = open(os.path.join(here, 'orbix-ui.js'), encoding='utf-8').read()
 js = open(os.path.join(here, 'app.js'), encoding='utf-8').read()
@@ -45,7 +47,7 @@ if os.path.exists(gif_journey_path):
     frag = frag.replace('src="assets/cookscape-2d-to-3d-journey.gif"', 'src="' + b64_gif + '"')
 
 frag = re.sub(r'<link rel="stylesheet" href="style\.css[^"]*">', '<style>\n' + css + '\n</style>', frag)
-all_js = '<script>\n' + orbix_unit_icons + '\n' + orbix_projects + '\n' + orbix_decors + '\n' + orbix_core + '\n' + orbix_plan + '\n' + orbix_dado_tex + '\n' + orbix_floor_tex + '\n' + orbix_3d + '\n' + orbix_ui + '\n' + js + '\n' + pwa_js + '\n</script>'
+all_js = '<script>\n' + orbix_unit_icons + '\n' + orbix_projects + '\n' + orbix_decors + '\n' + orbix_core + '\n' + orbix_plan + '\n' + orbix_dado_tex + '\n' + orbix_floor_tex + '\n' + orbix_countertop_tex + '\n' + orbix_3d + '\n' + orbix_ui + '\n' + js + '\n' + pwa_js + '\n</script>'
 pattern = r'(?:<script src="orbix-unit-icons\.js[^"]*"></script>\s*)?<script src="orbix-projects\.js[^"]*"></script>\s*(?:<script src="orbix-decors-catalog\.js[^"]*"></script>\s*)?<script src="orbix-core\.js[^"]*"></script>\s*<script src="orbix-plan\.js[^"]*"></script>\s*(?:<script src="orbix-dado-textures\.js[^"]*"></script>\s*)?(?:<script src="orbix-floor-textures\.js[^"]*"></script>\s*)?<script src="orbix-3d\.js[^"]*"></script>\s*<script src="orbix-ui\.js[^"]*"></script>\s*<script src="app\.js[^"]*"></script>\s*<script src="pwa\.js[^"]*"></script>'
 frag = re.sub(pattern, lambda m: all_js, frag, flags=re.DOTALL)
 out = frag.strip() + '\n'

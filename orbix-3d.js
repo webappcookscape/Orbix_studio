@@ -29,6 +29,238 @@
 
   ArchitecturalRenderer._floorTextures = ArchitecturalRenderer._floorTextures || {};
   ArchitecturalRenderer._floorMaterials = ArchitecturalRenderer._floorMaterials || {};
+  ArchitecturalRenderer._countertopTextures = ArchitecturalRenderer._countertopTextures || {};
+
+  // Realistic Granite & Stone Countertop Material Generator
+  ArchitecturalRenderer.getCountertopMaterial = function (counterColorName, dims) {
+    dims = dims || { W: 600, D: 600 };
+    counterColorName = counterColorName || 'granite_black_galaxy';
+    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+
+    // Check if texture exists in ORBIX_COUNTERTOP_TEXTURES
+    var b64 = null;
+    if (typeof window !== 'undefined' && window.ORBIX_COUNTERTOP_TEXTURES) {
+      b64 = window.ORBIX_COUNTERTOP_TEXTURES[counterColorName];
+      if (!b64 && (counterColorName === 'black' || counterColorName === 'galaxy' || counterColorName === 'granite_1' || counterColorName === 'granite_black_galaxy')) {
+        b64 = window.ORBIX_COUNTERTOP_TEXTURES.granite_black_galaxy;
+      } else if (!b64 && (counterColorName === 'white' || counterColorName === 'kashmir_white' || counterColorName === 'river_white' || counterColorName === 'granite_2' || counterColorName === 'granite_kashmir_white')) {
+        b64 = window.ORBIX_COUNTERTOP_TEXTURES.granite_kashmir_white;
+      } else if (!b64 && (counterColorName === 'tan_brown' || counterColorName === 'brown' || counterColorName === 'granite_3' || counterColorName === 'granite_tan_brown')) {
+        b64 = window.ORBIX_COUNTERTOP_TEXTURES.granite_tan_brown;
+      }
+    }
+
+    if (b64 && typeof THREE !== 'undefined' && typeof Image !== 'undefined') {
+      var texKey = counterColorName + '_' + Math.round(dims.W) + '_' + Math.round(dims.D);
+      var tex = ArchitecturalRenderer._countertopTextures[texKey];
+      if (!tex) {
+        var img = new Image();
+        tex = new THREE.Texture(img);
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        var repX = Math.max(1, (dims.W || 600) / 600);
+        var repY = Math.max(1, (dims.D || 600) / 600);
+        tex.repeat.set(repX, repY);
+        if (THREE.sRGBEncoding !== undefined) tex.encoding = THREE.sRGBEncoding;
+        if (tex.anisotropy !== undefined) tex.anisotropy = 8;
+        img.onload = function () {
+          tex.needsUpdate = true;
+          if (typeof window !== 'undefined' && window.__cc && window.__cc.gl && typeof window.__cc.gl.render === 'function') {
+            window.__cc.gl.render();
+          }
+        };
+        img.src = b64;
+        ArchitecturalRenderer._countertopTextures[texKey] = tex;
+      }
+
+      return new MatClass({
+        map: tex,
+        bumpMap: tex,
+        bumpScale: 0.015,
+        roughness: 0.12,
+        metalness: 0.05,
+        clearcoat: 0.95,
+        clearcoatRoughness: 0.05,
+        reflectivity: 0.85,
+        envMapIntensity: 1.25
+      });
+    }
+
+    // Fallback procedural/color finish
+    var counterHex = 0x1A1A1D;
+    if (counterColorName === 'white' || counterColorName === 'marble') counterHex = 0xF5F5F7;
+    else if (counterColorName === 'quartz') counterHex = 0xF5F5F7;
+    else if (counterColorName === 'greyq') counterHex = 0x8E9297;
+    else if (counterColorName === 'beige') counterHex = 0xE6DFD5;
+    else if (counterColorName === 'green') counterHex = 0x2A3E30;
+    else if (counterColorName === 'galaxy' || counterColorName === 'granite_black_galaxy') counterHex = 0x18181A;
+    else if (counterColorName === 'granite_kashmir_white') counterHex = 0xEDEAE5;
+    else if (counterColorName === 'granite_tan_brown') counterHex = 0x3D2B22;
+    else if (counterColorName !== 'none' && counterColorName !== 'black') {
+      counterHex = ArchitecturalRenderer.resolveFinishColor(counterColorName, 0x1A1A1D);
+    }
+
+    return new MatClass({
+      color: counterHex,
+      roughness: 0.14,
+      metalness: 0.06,
+      clearcoat: 0.90,
+      clearcoatRoughness: 0.07,
+      reflectivity: 0.80,
+      envMapIntensity: 1.2
+    });
+  };
+
+  // Built-in Gas HOB Cooktop Builder for Countertop Integration
+  ArchitecturalRenderer.buildBuiltInHob = function (fg, W, D, counterTopY, furnId) {
+    if (typeof THREE === 'undefined') return;
+    var hobW = Math.min(W - 30, 580);
+    var hobD = Math.min(D - 30, 480);
+    var hobH = 8;
+
+    var hobGlassMat = (typeof THREE.MeshPhysicalMaterial === 'function') ?
+      new THREE.MeshPhysicalMaterial({ color: 0x111315, roughness: 0.05, metalness: 0.9, clearcoat: 1.0, reflectivity: 0.9 }) :
+      new THREE.MeshStandardMaterial({ color: 0x111315, roughness: 0.08, metalness: 0.9 });
+    var hobBezelMat = new THREE.MeshStandardMaterial({ color: 0x94A3B8, metalness: 0.88, roughness: 0.22 });
+    var trivetMat = new THREE.MeshStandardMaterial({ color: 0x1E2024, roughness: 0.85, metalness: 0.35 });
+    var brassMat = new THREE.MeshStandardMaterial({ color: 0xD4AF37, metalness: 0.85, roughness: 0.2 });
+    var knobMat = new THREE.MeshStandardMaterial({ color: 0xE2E8F0, metalness: 0.92, roughness: 0.15 });
+
+    var hobGroup = new THREE.Group();
+    hobGroup.name = 'BuiltInHob';
+    hobGroup.position.set(0, counterTopY, 0);
+
+    // Bezel Frame
+    var bezel = new THREE.Mesh(new THREE.BoxGeometry(hobW + 4, hobH, hobD + 4), hobBezelMat);
+    bezel.position.set(0, hobH / 2, 0);
+    bezel.castShadow = true; bezel.receiveShadow = true;
+    hobGroup.add(bezel);
+
+    // Toughened Glass Top
+    var glass = new THREE.Mesh(new THREE.BoxGeometry(hobW, hobH + 2, hobD), hobGlassMat);
+    glass.position.set(0, hobH / 2 + 1, 0);
+    glass.castShadow = true; glass.receiveShadow = true;
+    hobGroup.add(glass);
+
+    // Burners (2 or 3 depending on width)
+    var numBurners = (hobW >= 550) ? 3 : 2;
+    var burnerOffsets = (numBurners === 3) ? [-hobW * 0.28, 0, hobW * 0.28] : [-hobW * 0.24, hobW * 0.24];
+
+    burnerOffsets.forEach(function (bx, bIdx) {
+      var bZ = (numBurners === 3 && bIdx === 1) ? -hobD * 0.12 : 0;
+      var tray = new THREE.Mesh(new THREE.CylinderGeometry(55, 60, 4, 28), hobBezelMat);
+      tray.position.set(bx, hobH + 3, bZ);
+      hobGroup.add(tray);
+
+      var brassRing = new THREE.Mesh(new THREE.CylinderGeometry(36, 40, 6, 24), brassMat);
+      brassRing.position.set(bx, hobH + 6, bZ);
+      hobGroup.add(brassRing);
+
+      var burnerCap = new THREE.Mesh(new THREE.CylinderGeometry(30, 30, 4, 24), trivetMat);
+      burnerCap.position.set(bx, hobH + 9, bZ);
+      hobGroup.add(burnerCap);
+
+      var sp1 = new THREE.Mesh(new THREE.BoxGeometry(100, 8, 8), trivetMat);
+      var sp2 = new THREE.Mesh(new THREE.BoxGeometry(8, 8, 100), trivetMat);
+      sp1.position.set(bx, hobH + 8, bZ);
+      sp2.position.set(bx, hobH + 8, bZ);
+      sp1.castShadow = true; sp2.castShadow = true;
+      hobGroup.add(sp1); hobGroup.add(sp2);
+    });
+
+    // Front Control Knobs
+    var knobOffsets = [-hobW * 0.2, 0, hobW * 0.2];
+    knobOffsets.forEach(function (kx) {
+      var knob = new THREE.Mesh(new THREE.CylinderGeometry(9, 10, 8, 18), knobMat);
+      knob.position.set(kx, hobH + 5, hobD / 2 - 22);
+      knob.rotation.x = Math.PI / 12;
+      hobGroup.add(knob);
+    });
+
+    fg.add(hobGroup);
+  };
+
+  // Built-in Kitchen Sink Builder for Countertop Integration
+  ArchitecturalRenderer.buildBuiltInSink = function (fg, W, D, counterTopY, furnId) {
+    if (typeof THREE === 'undefined') return;
+    var sinkW = Math.min(W - 30, 620);
+    var sinkD = Math.min(D - 30, 480);
+    var rimH = 6;
+
+    var sSteelMat = new THREE.MeshStandardMaterial({ color: 0xD8DDE2, metalness: 0.92, roughness: 0.18 });
+    var darkSinkMat = new THREE.MeshStandardMaterial({ color: 0x4A525D, metalness: 0.85, roughness: 0.35 });
+    var chromeFaucetMat = (typeof THREE.MeshPhysicalMaterial === 'function') ?
+      new THREE.MeshPhysicalMaterial({ color: 0xF8FAFC, metalness: 0.98, roughness: 0.04, clearcoat: 1.0 }) :
+      new THREE.MeshStandardMaterial({ color: 0xF0F2F5, metalness: 0.98, roughness: 0.08 });
+
+    var sinkGroup = new THREE.Group();
+    sinkGroup.name = 'BuiltInSink';
+    sinkGroup.position.set(0, counterTopY, 0);
+
+    // Rim Frame
+    var rimMesh = new THREE.Mesh(new THREE.BoxGeometry(sinkW, rimH, sinkD), sSteelMat);
+    rimMesh.position.set(0, rimH / 2, 0);
+    rimMesh.castShadow = true; rimMesh.receiveShadow = true;
+    sinkGroup.add(rimMesh);
+
+    // Basin Cavity (Offset left)
+    var basinW = sinkW * 0.54, basinD = sinkD * 0.8, basinH = 170, basinX = -sinkW * 0.18;
+    var basinWallMat = new THREE.MeshStandardMaterial({ color: 0xB8C0C8, metalness: 0.88, roughness: 0.25, side: THREE.DoubleSide });
+
+    var basinFloor = new THREE.Mesh(new THREE.BoxGeometry(basinW - 12, 6, basinD - 12), sSteelMat);
+    basinFloor.position.set(basinX, -basinH + 3, 0);
+    basinFloor.receiveShadow = true;
+    sinkGroup.add(basinFloor);
+
+    var bL = new THREE.Mesh(new THREE.BoxGeometry(6, basinH, basinD), basinWallMat);
+    bL.position.set(basinX - basinW / 2 + 3, -basinH / 2, 0);
+    var bR = new THREE.Mesh(new THREE.BoxGeometry(6, basinH, basinD), basinWallMat);
+    bR.position.set(basinX + basinW / 2 - 3, -basinH / 2, 0);
+    var bF = new THREE.Mesh(new THREE.BoxGeometry(basinW, basinH, 6), basinWallMat);
+    bF.position.set(basinX, -basinH / 2, basinD / 2 - 3);
+    var bB = new THREE.Mesh(new THREE.BoxGeometry(basinW, basinH, 6), basinWallMat);
+    bB.position.set(basinX, -basinH / 2, -basinD / 2 + 3);
+    sinkGroup.add(bL); sinkGroup.add(bR); sinkGroup.add(bF); sinkGroup.add(bB);
+
+    // Waste Strainer
+    var strainer = new THREE.Mesh(new THREE.CylinderGeometry(32, 28, 5, 24), darkSinkMat);
+    strainer.position.set(basinX, -basinH + 5, 0);
+    sinkGroup.add(strainer);
+
+    // Drainboard Grooves (Right side)
+    var dbW = sinkW * 0.34, dbD = sinkD * 0.76, dbX = sinkW * 0.26;
+    for (var r = 0; r < 5; r++) {
+      var ribZ = -dbD / 2 + 25 + r * ((dbD - 50) / 4);
+      var rib = new THREE.Mesh(new THREE.BoxGeometry(dbW - 16, 3, 8), sSteelMat);
+      rib.position.set(dbX, rimH + 1, ribZ);
+      sinkGroup.add(rib);
+    }
+
+    // Chrome Arched Gooseneck Mixer Faucet
+    var fZ = -basinD / 2 + 15;
+    var faucetBase = new THREE.Mesh(new THREE.CylinderGeometry(16, 20, 22, 20), chromeFaucetMat);
+    faucetBase.position.set(basinX, rimH + 11, fZ);
+    sinkGroup.add(faucetBase);
+
+    var stem = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 140, 16), chromeFaucetMat);
+    stem.position.set(basinX, rimH + 22 + 70, fZ);
+    sinkGroup.add(stem);
+
+    var spoutArc = new THREE.Mesh(new THREE.CylinderGeometry(7.5, 7.5, 95, 16), chromeFaucetMat);
+    spoutArc.position.set(basinX, rimH + 22 + 150, fZ + 45);
+    spoutArc.rotation.x = Math.PI / 2.8;
+    sinkGroup.add(spoutArc);
+
+    var nozzle = new THREE.Mesh(new THREE.CylinderGeometry(10, 8, 22, 16), chromeFaucetMat);
+    nozzle.position.set(basinX, rimH + 22 + 130, fZ + 85);
+    sinkGroup.add(nozzle);
+
+    var handleLever = new THREE.Mesh(new THREE.CylinderGeometry(4.5, 4.5, 45, 12), chromeFaucetMat);
+    handleLever.position.set(basinX + 22, rimH + 35, fZ);
+    handleLever.rotation.z = Math.PI / 3;
+    sinkGroup.add(handleLever);
+
+    fg.add(sinkGroup);
+  };
 
   // Floor Texture Generator: supports 'tile_1', 'tile_2', 'tile_3' (User uploads via ORBIX_FLOOR_TEXTURES), 'white_tile', 'square_tile', 'grey_tile', 'wooden'
   ArchitecturalRenderer.createFloorTexture = function (type) {
@@ -3722,6 +3954,14 @@
         slabMesh.castShadow = true; slabMesh.receiveShadow = true;
         slabMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
         fg.add(slabMesh);
+
+        var hasHobOS = !!(furn.unitConfig && (furn.unitConfig.appliance === 'hob' || furn.unitConfig.hasHob));
+        var hasSinkOS = !!(furn.unitConfig && (furn.unitConfig.appliance === 'sink' || furn.unitConfig.hasSink));
+        if (hasHobOS) {
+          ArchitecturalRenderer.buildBuiltInHob(fg, slabW, slabD, H, furn.id);
+        } else if (hasSinkOS) {
+          ArchitecturalRenderer.buildBuiltInSink(fg, slabW, slabD, H, furn.id);
+        }
       }
     }
 
@@ -4109,27 +4349,8 @@
     var handleMat = ArchitecturalRenderer.getHandleMaterial(handleFinish);
 
     // Countertop
-    var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'black' : (isBase ? 'black' : 'none'));
-    var counterHex = 0x1A1A1D;
-    if (counterColorName === 'white' || counterColorName === 'marble') counterHex = 0xF5F5F7;
-    else if (counterColorName === 'quartz') counterHex = 0xF5F5F7;
-    else if (counterColorName === 'greyq') counterHex = 0x8E9297;
-    else if (counterColorName === 'beige') counterHex = 0xE6DFD5;
-    else if (counterColorName === 'green') counterHex = 0x2A3E30;
-    else if (counterColorName === 'galaxy') counterHex = 0x18181A;
-    else if (counterColorName !== 'none' && counterColorName !== 'black') {
-      counterHex = ArchitecturalRenderer.resolveFinishColor(counterColorName, 0x1A1A1D);
-    }
-    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
-    var counterMat = new MatClass({
-      color: counterHex,
-      roughness: 0.14,
-      metalness: 0.06,
-      clearcoat: 0.85,
-      clearcoatRoughness: 0.08,
-      reflectivity: 0.75,
-      envMapIntensity: 1.15
-    });
+    var counterColorName = (furn.unitConfig && furn.unitConfig.counter) || (isKitchen ? 'granite_black_galaxy' : (isBase ? 'granite_black_galaxy' : 'none'));
+    var counterMat = ArchitecturalRenderer.getCountertopMaterial(counterColorName, dims);
 
     var isTvOrVanity = (cat === 'tv_unit' || cat === 'vanity' || (name && (name.indexOf('tv') !== -1 || name.indexOf('vanity') !== -1)));
     var isWardrobeOrTall = (cat === 'wardrobe' || cat === 'kitchen_tall' || (name && (name.indexOf('wardrobe') !== -1 || name.indexOf('tall') !== -1 || name.indexOf('tbm') !== -1)));
@@ -4494,6 +4715,16 @@
       cMesh.receiveShadow = true;
       cMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
       fg.add(cMesh);
+    }
+
+    // Built-in Appliances mounted onto Countertop (HOB or Sink)
+    var hasHob = !!(furn.unitConfig && (furn.unitConfig.appliance === 'hob' || furn.unitConfig.hasHob));
+    var hasSink = !!(furn.unitConfig && (furn.unitConfig.appliance === 'sink' || furn.unitConfig.hasSink));
+    var applianceMountY = plinthH + bodyH + (counterH > 0 ? counterH : 0);
+    if (hasHob) {
+      ArchitecturalRenderer.buildBuiltInHob(fg, dims.W, dims.D, applianceMountY, furn.id);
+    } else if (hasSink) {
+      ArchitecturalRenderer.buildBuiltInSink(fg, dims.W, dims.D, applianceMountY, furn.id);
     }
 
 // Realistic Drawers & Hinged Shutters with Interactive Open/Close & Individual Finishes
