@@ -268,7 +268,7 @@
      Model Types & Price Variant Matrix (from Factory Price Card)
      ───────────────────────────────────────────────────────────────────────────── */
   var PRICE_TIERS = [
-    'zappo - el pearl', 'pot&cafe', 'homespace', 'livlame',
+    'zappo - el pearl', 'pot&cafe', 'homespace', 'cafehunt',
     'LL elite', 'CC MATTE', 'CC GLOSSY', 'SURABHI', 'MR+'
   ];
 
@@ -278,7 +278,7 @@
     if (s === 'p1' || s === 'price 1' || s === 'price1' || s === 'zappo - el pearl' || s === 'zappo-el pearl' || s === 'zappo-el-pearl' || s === 'zappo – el pearl') return 'zappo - el pearl';
     if (s === 'p2' || s === 'price 2' || s === 'price2' || s === 'pot&cafe' || s === 'pot & cafe' || s === 'pot and cafe') return 'pot&cafe';
     if (s === 'p3' || s === 'price 3' || s === 'price3' || s === 'homespace' || s === 'home space') return 'homespace';
-    if (s === 'p4' || s === 'price 4' || s === 'price4' || s === 'livlame' || s === 'liv flame' || s === 'liv-lame') return 'livlame';
+    if (s === 'p4' || s === 'price 4' || s === 'price4' || s === 'cafehunt' || s === 'cafe hunt' || s === 'cafe-hunt' || s === 'livlame' || s === 'liv flame' || s === 'liv-lame') return 'cafehunt';
     if (s === 'livelane' || s === 'live lane' || s === 'll elite' || s === 'llelite') return 'LL elite';
     if (s === 'cc matte' || s === 'ccmatte') return 'CC MATTE';
     if (s === 'cc glossy' || s === 'ccglossy' || s === 'capricost glossy' || s === 'capricost') return 'CC GLOSSY';
@@ -438,8 +438,8 @@
       category: 'kitchen_wall',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 1545, 'pot&cafe': 1696, 'homespace': 1785, 'livlame': 1950, 'LL elite': 2034, 'CC MATTE': 2228, 'CC GLOSSY': 2422, 'SURABHI': 2616, 'MR+': 2929,
-        'ZAPPO - EL PEARL': 1545, 'POT&CAFE': 1696, 'HOMESPACE': 1785, 'LIVLAME': 1950, 'LL ELITE': 2034,
+        'zappo - el pearl': 1545, 'pot&cafe': 1696, 'homespace': 1785, 'cafehunt': 1950, 'livlame': 1950, 'LL elite': 2034, 'CC MATTE': 2228, 'CC GLOSSY': 2422, 'SURABHI': 2616, 'MR+': 2929,
+        'ZAPPO - EL PEARL': 1545, 'POT&CAFE': 1696, 'HOMESPACE': 1785, 'CAFEHUNT': 1950, 'LIVLAME': 1950, 'LL ELITE': 2034,
         'PRICE 1': 1545, 'PRICE 2': 1696, 'PRICE 3': 1785, 'PRICE 4': 1950, 'LIVE LANE': 2034,
         'p1': 1545, 'p2': 1696, 'p3': 1785, 'p4': 1950, 'livelane': 2034
       }
@@ -451,8 +451,8 @@
       category: 'kitchen_base',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 1796, 'pot&cafe': 1969, 'homespace': 1975, 'livlame': 2214, 'LL elite': 2500, 'CC MATTE': 2906, 'CC GLOSSY': 3113, 'SURABHI': 3391, 'MR+': 3786,
-        'ZAPPO - EL PEARL': 1796, 'POT&CAFE': 1969, 'HOMESPACE': 1975, 'LIVLAME': 2214, 'LL ELITE': 2500,
+        'zappo - el pearl': 1796, 'pot&cafe': 1969, 'homespace': 1975, 'cafehunt': 2214, 'livlame': 2214, 'LL elite': 2500, 'CC MATTE': 2906, 'CC GLOSSY': 3113, 'SURABHI': 3391, 'MR+': 3786,
+        'ZAPPO - EL PEARL': 1796, 'POT&CAFE': 1969, 'HOMESPACE': 1975, 'CAFEHUNT': 2214, 'LIVLAME': 2214, 'LL ELITE': 2500,
         'PRICE 1': 1796, 'PRICE 2': 1969, 'PRICE 3': 1975, 'PRICE 4': 2214, 'LIVE LANE': 2500,
         'p1': 1796, 'p2': 1969, 'p3': 1975, 'p4': 2214, 'livelane': 2500
       }
@@ -464,8 +464,8 @@
       category: 'kitchen_base',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 1972, 'pot&cafe': 2196, 'homespace': 2714, 'livlame': 2527, 'LL elite': 3600, 'CC MATTE': 3945, 'CC GLOSSY': 4172, 'SURABHI': 4469, 'MR+': 5227,
-        'ZAPPO - EL PEARL': 1972, 'POT&CAFE': 2196, 'HOMESPACE': 2714, 'LIVLAME': 2527, 'LL ELITE': 3600,
+        'zappo - el pearl': 1972, 'pot&cafe': 2196, 'homespace': 2714, 'cafehunt': 2527, 'livlame': 2527, 'LL elite': 3600, 'CC MATTE': 3945, 'CC GLOSSY': 4172, 'SURABHI': 4469, 'MR+': 5227,
+        'ZAPPO - EL PEARL': 1972, 'POT&CAFE': 2196, 'HOMESPACE': 2714, 'CAFEHUNT': 2527, 'LIVLAME': 2527, 'LL ELITE': 3600,
         'PRICE 1': 1972, 'PRICE 2': 2196, 'PRICE 3': 2714, 'PRICE 4': 2527, 'LIVE LANE': 3600,
         'p1': 1972, 'p2': 2196, 'p3': 2714, 'p4': 2527, 'livelane': 3600
       }
@@ -477,8 +477,8 @@
       category: 'kitchen_base',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 895, 'pot&cafe': 984, 'homespace': 1184, 'livlame': 1236, 'LL elite': 1196, 'CC MATTE': 1250, 'CC GLOSSY': 1567, 'SURABHI': 1786, 'MR+': 1984,
-        'ZAPPO - EL PEARL': 895, 'POT&CAFE': 984, 'HOMESPACE': 1184, 'LIVLAME': 1236, 'LL ELITE': 1196,
+        'zappo - el pearl': 895, 'pot&cafe': 984, 'homespace': 1184, 'cafehunt': 1236, 'livlame': 1236, 'LL elite': 1196, 'CC MATTE': 1250, 'CC GLOSSY': 1567, 'SURABHI': 1786, 'MR+': 1984,
+        'ZAPPO - EL PEARL': 895, 'POT&CAFE': 984, 'HOMESPACE': 1184, 'CAFEHUNT': 1236, 'LIVLAME': 1236, 'LL ELITE': 1196,
         'PRICE 1': 895, 'PRICE 2': 984, 'PRICE 3': 1184, 'PRICE 4': 1236, 'LIVE LANE': 1196,
         'p1': 895, 'p2': 984, 'p3': 1184, 'p4': 1236, 'livelane': 1196
       }
@@ -490,8 +490,8 @@
       category: 'kitchen_wall',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 2272, 'pot&cafe': 2725, 'homespace': 3996, 'livlame': 4579, 'LL elite': 4650, 'CC MATTE': 4969, 'CC GLOSSY': 5679, 'SURABHI': 5786, 'MR+': 6969,
-        'ZAPPO - EL PEARL': 2272, 'POT&CAFE': 2725, 'HOMESPACE': 3996, 'LIVLAME': 4579, 'LL ELITE': 4650,
+        'zappo - el pearl': 2272, 'pot&cafe': 2725, 'homespace': 3996, 'cafehunt': 4579, 'livlame': 4579, 'LL elite': 4650, 'CC MATTE': 4969, 'CC GLOSSY': 5679, 'SURABHI': 5786, 'MR+': 6969,
+        'ZAPPO - EL PEARL': 2272, 'POT&CAFE': 2725, 'HOMESPACE': 3996, 'CAFEHUNT': 4579, 'LIVLAME': 4579, 'LL ELITE': 4650,
         'PRICE 1': 2272, 'PRICE 2': 2725, 'PRICE 3': 3996, 'PRICE 4': 4579, 'LIVE LANE': 4650,
         'p1': 2272, 'p2': 2725, 'p3': 3996, 'p4': 4579, 'livelane': 4650
       }
@@ -503,8 +503,8 @@
       category: 'wardrobe',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 1545, 'pot&cafe': 1696, 'homespace': 1872, 'livlame': 1996, 'LL elite': 1827, 'CC MATTE': 1984, 'CC GLOSSY': 2072, 'SURABHI': 2227, 'MR+': 2714,
-        'ZAPPO - EL PEARL': 1545, 'POT&CAFE': 1696, 'HOMESPACE': 1872, 'LIVLAME': 1996, 'LL ELITE': 1827,
+        'zappo - el pearl': 1545, 'pot&cafe': 1696, 'homespace': 1872, 'cafehunt': 1996, 'livlame': 1996, 'LL elite': 1827, 'CC MATTE': 1984, 'CC GLOSSY': 2072, 'SURABHI': 2227, 'MR+': 2714,
+        'ZAPPO - EL PEARL': 1545, 'POT&CAFE': 1696, 'HOMESPACE': 1872, 'CAFEHUNT': 1996, 'LIVLAME': 1996, 'LL ELITE': 1827,
         'PRICE 1': 1545, 'PRICE 2': 1696, 'PRICE 3': 1872, 'PRICE 4': 1996, 'LIVE LANE': 1827,
         'p1': 1545, 'p2': 1696, 'p3': 1872, 'p4': 1996, 'livelane': 1827
       }
@@ -516,8 +516,8 @@
       category: 'wardrobe',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 1740, 'pot&cafe': 1891, 'homespace': 2067, 'livlame': 2191, 'LL elite': 2022, 'CC MATTE': 2179, 'CC GLOSSY': 2267, 'SURABHI': 2600, 'MR+': 3109,
-        'ZAPPO - EL PEARL': 1740, 'POT&CAFE': 1891, 'HOMESPACE': 2067, 'LIVLAME': 2191, 'LL ELITE': 2022,
+        'zappo - el pearl': 1740, 'pot&cafe': 1891, 'homespace': 2067, 'cafehunt': 2191, 'livlame': 2191, 'LL elite': 2022, 'CC MATTE': 2179, 'CC GLOSSY': 2267, 'SURABHI': 2600, 'MR+': 3109,
+        'ZAPPO - EL PEARL': 1740, 'POT&CAFE': 1891, 'HOMESPACE': 2067, 'CAFEHUNT': 2191, 'LIVLAME': 2191, 'LL ELITE': 2022,
         'PRICE 1': 1740, 'PRICE 2': 1891, 'PRICE 3': 2067, 'PRICE 4': 2191, 'LIVE LANE': 2022,
         'p1': 1740, 'p2': 1891, 'p3': 2067, 'p4': 2191, 'livelane': 2022
       }
@@ -529,8 +529,8 @@
       category: 'wardrobe',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 1795, 'pot&cafe': 1984, 'homespace': 2195, 'livlame': 2295, 'LL elite': 2345, 'CC MATTE': 2575, 'CC GLOSSY': 2725, 'SURABHI': 2929, 'MR+': 3366,
-        'ZAPPO - EL PEARL': 1795, 'POT&CAFE': 1984, 'HOMESPACE': 2195, 'LIVLAME': 2295, 'LL ELITE': 2345,
+        'zappo - el pearl': 1795, 'pot&cafe': 1984, 'homespace': 2195, 'cafehunt': 2295, 'livlame': 2295, 'LL elite': 2345, 'CC MATTE': 2575, 'CC GLOSSY': 2725, 'SURABHI': 2929, 'MR+': 3366,
+        'ZAPPO - EL PEARL': 1795, 'POT&CAFE': 1984, 'HOMESPACE': 2195, 'CAFEHUNT': 2295, 'LIVLAME': 2295, 'LL ELITE': 2345,
         'PRICE 1': 1795, 'PRICE 2': 1984, 'PRICE 3': 2195, 'PRICE 4': 2295, 'LIVE LANE': 2345,
         'p1': 1795, 'p2': 1984, 'p3': 2195, 'p4': 2295, 'livelane': 2345
       }
@@ -542,8 +542,8 @@
       category: 'wardrobe',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 895, 'pot&cafe': 996, 'homespace': 1069, 'livlame': 1227, 'LL elite': 996, 'CC MATTE': 1127, 'CC GLOSSY': 1269, 'SURABHI': 1369, 'MR+': 1567,
-        'ZAPPO - EL PEARL': 895, 'POT&CAFE': 996, 'HOMESPACE': 1069, 'LIVLAME': 1227, 'LL ELITE': 996,
+        'zappo - el pearl': 895, 'pot&cafe': 996, 'homespace': 1069, 'cafehunt': 1227, 'livlame': 1227, 'LL elite': 996, 'CC MATTE': 1127, 'CC GLOSSY': 1269, 'SURABHI': 1369, 'MR+': 1567,
+        'ZAPPO - EL PEARL': 895, 'POT&CAFE': 996, 'HOMESPACE': 1069, 'CAFEHUNT': 1227, 'LIVLAME': 1227, 'LL ELITE': 996,
         'PRICE 1': 895, 'PRICE 2': 996, 'PRICE 3': 1069, 'PRICE 4': 1227, 'LIVE LANE': 996,
         'p1': 895, 'p2': 996, 'p3': 1069, 'p4': 1227, 'livelane': 996
       }
@@ -555,8 +555,8 @@
       category: 'crockery',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 1969, 'pot&cafe': 2196, 'homespace': 2725, 'livlame': 3169, 'LL elite': 2100, 'CC MATTE': 2260, 'CC GLOSSY': 2433, 'SURABHI': 2848, 'MR+': 3129,
-        'ZAPPO - EL PEARL': 1969, 'POT&CAFE': 2196, 'HOMESPACE': 2725, 'LIVLAME': 3169, 'LL ELITE': 2100,
+        'zappo - el pearl': 1969, 'pot&cafe': 2196, 'homespace': 2725, 'cafehunt': 3169, 'livlame': 3169, 'LL elite': 2100, 'CC MATTE': 2260, 'CC GLOSSY': 2433, 'SURABHI': 2848, 'MR+': 3129,
+        'ZAPPO - EL PEARL': 1969, 'POT&CAFE': 2196, 'HOMESPACE': 2725, 'CAFEHUNT': 3169, 'LIVLAME': 3169, 'LL ELITE': 2100,
         'PRICE 1': 1969, 'PRICE 2': 2196, 'PRICE 3': 2725, 'PRICE 4': 3169, 'LIVE LANE': 2100,
         'p1': 1969, 'p2': 2196, 'p3': 2725, 'p4': 3169, 'livelane': 2100
       }
@@ -568,8 +568,8 @@
       category: 'tv_unit',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 1984, 'pot&cafe': 2724, 'homespace': 2929, 'livlame': 3786, 'LL elite': 3600, 'CC MATTE': 4200, 'CC GLOSSY': 4359, 'SURABHI': 4844, 'MR+': 5679,
-        'ZAPPO - EL PEARL': 1984, 'POT&CAFE': 2724, 'HOMESPACE': 2929, 'LIVLAME': 3786, 'LL ELITE': 3600,
+        'zappo - el pearl': 1984, 'pot&cafe': 2724, 'homespace': 2929, 'cafehunt': 3786, 'livlame': 3786, 'LL elite': 3600, 'CC MATTE': 4200, 'CC GLOSSY': 4359, 'SURABHI': 4844, 'MR+': 5679,
+        'ZAPPO - EL PEARL': 1984, 'POT&CAFE': 2724, 'HOMESPACE': 2929, 'CAFEHUNT': 3786, 'LIVLAME': 3786, 'LL ELITE': 3600,
         'PRICE 1': 1984, 'PRICE 2': 2724, 'PRICE 3': 2929, 'PRICE 4': 3786, 'LIVE LANE': 3600,
         'p1': 1984, 'p2': 2724, 'p3': 2929, 'p4': 3786, 'livelane': 3600
       }
@@ -581,8 +581,8 @@
       category: 'wall_paneling',
       pricingModel: 'front_area',
       rates: {
-        'zappo - el pearl': 796, 'pot&cafe': 845, 'homespace': 936, 'livlame': 969, 'LL elite': 960, 'CC MATTE': 1027, 'CC GLOSSY': 1196, 'SURABHI': 1247, 'MR+': 1427,
-        'ZAPPO - EL PEARL': 796, 'POT&CAFE': 845, 'HOMESPACE': 936, 'LIVLAME': 969, 'LL ELITE': 960,
+        'zappo - el pearl': 796, 'pot&cafe': 845, 'homespace': 936, 'cafehunt': 969, 'livlame': 969, 'LL elite': 960, 'CC MATTE': 1027, 'CC GLOSSY': 1196, 'SURABHI': 1247, 'MR+': 1427,
+        'ZAPPO - EL PEARL': 796, 'POT&CAFE': 845, 'HOMESPACE': 936, 'CAFEHUNT': 969, 'LIVLAME': 969, 'LL ELITE': 960,
         'PRICE 1': 796, 'PRICE 2': 845, 'PRICE 3': 936, 'PRICE 4': 969, 'LIVE LANE': 960,
         'p1': 796, 'p2': 845, 'p3': 936, 'p4': 969, 'livelane': 960
       }

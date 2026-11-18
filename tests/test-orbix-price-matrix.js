@@ -5,7 +5,7 @@ console.log('--- RUNNING ORBIX PRICE MATRIX & TIERS TESTS ---');
 
 // 1. Verify Price Tiers
 const expectedTiers = [
-  'zappo - el pearl', 'pot&cafe', 'homespace', 'livlame',
+  'zappo - el pearl', 'pot&cafe', 'homespace', 'cafehunt',
   'LL elite', 'CC MATTE', 'CC GLOSSY', 'SURABHI', 'MR+'
 ];
 assert.deepStrictEqual(OrbixCore.PRICE_TIERS, expectedTiers, 'Price tiers list must match exactly');
@@ -13,18 +13,18 @@ console.log('✓ Price Tiers verified (9 tiers: ' + expectedTiers.join(', ') + '
 
 // 2. Verify 12 Models and exact rates from the Excel sheet
 const expectedRates = {
-  kitchen_wm:    { 'zappo - el pearl': 1545, 'pot&cafe': 1696, 'homespace': 1785, 'livlame': 1950, 'LL elite': 2034, 'CC MATTE': 2228, 'CC GLOSSY': 2422, 'SURABHI': 2616, 'MR+': 2929 },
-  kitchen_fm:    { 'zappo - el pearl': 1796, 'pot&cafe': 1969, 'homespace': 1975, 'livlame': 2214, 'LL elite': 2500, 'CC MATTE': 2906, 'CC GLOSSY': 3113, 'SURABHI': 3391, 'MR+': 3786 },
-  kitchen_d2d3:  { 'zappo - el pearl': 1972, 'pot&cafe': 2196, 'homespace': 2714, 'livlame': 2527, 'LL elite': 3600, 'CC MATTE': 3945, 'CC GLOSSY': 4172, 'SURABHI': 4469, 'MR+': 5227 },
-  kitchen_os:    { 'zappo - el pearl': 895,  'pot&cafe': 984,  'homespace': 1184, 'livlame': 1236, 'LL elite': 1196, 'CC MATTE': 1250, 'CC GLOSSY': 1567, 'SURABHI': 1786, 'MR+': 1984 },
-  spice_rack:    { 'zappo - el pearl': 2272, 'pot&cafe': 2725, 'homespace': 3996, 'livlame': 4579, 'LL elite': 4650, 'CC MATTE': 4969, 'CC GLOSSY': 5679, 'SURABHI': 5786, 'MR+': 6969 },
-  wr_shelves:    { 'zappo - el pearl': 1545, 'pot&cafe': 1696, 'homespace': 1872, 'livlame': 1996, 'LL elite': 1827, 'CC MATTE': 1984, 'CC GLOSSY': 2072, 'SURABHI': 2227, 'MR+': 2714 },
-  wr_drawers:    { 'zappo - el pearl': 1740, 'pot&cafe': 1891, 'homespace': 2067, 'livlame': 2191, 'LL elite': 2022, 'CC MATTE': 2179, 'CC GLOSSY': 2267, 'SURABHI': 2600, 'MR+': 3109 },
-  wr_sliding:    { 'zappo - el pearl': 1795, 'pot&cafe': 1984, 'homespace': 2195, 'livlame': 2295, 'LL elite': 2345, 'CC MATTE': 2575, 'CC GLOSSY': 2725, 'SURABHI': 2929, 'MR+': 3366 },
-  loft_os:       { 'zappo - el pearl': 895,  'pot&cafe': 996,  'homespace': 1069, 'livlame': 1227, 'LL elite': 996,  'CC MATTE': 1127, 'CC GLOSSY': 1269, 'SURABHI': 1369, 'MR+': 1567 },
-  pooja_cnc:     { 'zappo - el pearl': 1969, 'pot&cafe': 2196, 'homespace': 2725, 'livlame': 3169, 'LL elite': 2100, 'CC MATTE': 2260, 'CC GLOSSY': 2433, 'SURABHI': 2848, 'MR+': 3129 },
-  tv_cabinet:    { 'zappo - el pearl': 1984, 'pot&cafe': 2724, 'homespace': 2929, 'livlame': 3786, 'LL elite': 3600, 'CC MATTE': 4200, 'CC GLOSSY': 4359, 'SURABHI': 4844, 'MR+': 5679 },
-  wall_paneling: { 'zappo - el pearl': 796,  'pot&cafe': 845,  'homespace': 936,  'livlame': 969,  'LL elite': 960,  'CC MATTE': 1027, 'CC GLOSSY': 1196, 'SURABHI': 1247, 'MR+': 1427 }
+  kitchen_wm:    { 'zappo - el pearl': 1545, 'pot&cafe': 1696, 'homespace': 1785, 'cafehunt': 1950, 'LL elite': 2034, 'CC MATTE': 2228, 'CC GLOSSY': 2422, 'SURABHI': 2616, 'MR+': 2929 },
+  kitchen_fm:    { 'zappo - el pearl': 1796, 'pot&cafe': 1969, 'homespace': 1975, 'cafehunt': 2214, 'LL elite': 2500, 'CC MATTE': 2906, 'CC GLOSSY': 3113, 'SURABHI': 3391, 'MR+': 3786 },
+  kitchen_d2d3:  { 'zappo - el pearl': 1972, 'pot&cafe': 2196, 'homespace': 2714, 'cafehunt': 2527, 'LL elite': 3600, 'CC MATTE': 3945, 'CC GLOSSY': 4172, 'SURABHI': 4469, 'MR+': 5227 },
+  kitchen_os:    { 'zappo - el pearl': 895,  'pot&cafe': 984,  'homespace': 1184, 'cafehunt': 1236, 'LL elite': 1196, 'CC MATTE': 1250, 'CC GLOSSY': 1567, 'SURABHI': 1786, 'MR+': 1984 },
+  spice_rack:    { 'zappo - el pearl': 2272, 'pot&cafe': 2725, 'homespace': 3996, 'cafehunt': 4579, 'LL elite': 4650, 'CC MATTE': 4969, 'CC GLOSSY': 5679, 'SURABHI': 5786, 'MR+': 6969 },
+  wr_shelves:    { 'zappo - el pearl': 1545, 'pot&cafe': 1696, 'homespace': 1872, 'cafehunt': 1996, 'LL elite': 1827, 'CC MATTE': 1984, 'CC GLOSSY': 2072, 'SURABHI': 2227, 'MR+': 2714 },
+  wr_drawers:    { 'zappo - el pearl': 1740, 'pot&cafe': 1891, 'homespace': 2067, 'cafehunt': 2191, 'LL elite': 2022, 'CC MATTE': 2179, 'CC GLOSSY': 2267, 'SURABHI': 2600, 'MR+': 3109 },
+  wr_sliding:    { 'zappo - el pearl': 1795, 'pot&cafe': 1984, 'homespace': 2195, 'cafehunt': 2295, 'LL elite': 2345, 'CC MATTE': 2575, 'CC GLOSSY': 2725, 'SURABHI': 2929, 'MR+': 3366 },
+  loft_os:       { 'zappo - el pearl': 895,  'pot&cafe': 996,  'homespace': 1069, 'cafehunt': 1227, 'LL elite': 996,  'CC MATTE': 1127, 'CC GLOSSY': 1269, 'SURABHI': 1369, 'MR+': 1567 },
+  pooja_cnc:     { 'zappo - el pearl': 1969, 'pot&cafe': 2196, 'homespace': 2725, 'cafehunt': 3169, 'LL elite': 2100, 'CC MATTE': 2260, 'CC GLOSSY': 2433, 'SURABHI': 2848, 'MR+': 3129 },
+  tv_cabinet:    { 'zappo - el pearl': 1984, 'pot&cafe': 2724, 'homespace': 2929, 'cafehunt': 3786, 'LL elite': 3600, 'CC MATTE': 4200, 'CC GLOSSY': 4359, 'SURABHI': 4844, 'MR+': 5679 },
+  wall_paneling: { 'zappo - el pearl': 796,  'pot&cafe': 845,  'homespace': 936,  'cafehunt': 969,  'LL elite': 960,  'CC MATTE': 1027, 'CC GLOSSY': 1196, 'SURABHI': 1247, 'MR+': 1427 }
 };
 
 for (const modelKey in expectedRates) {
