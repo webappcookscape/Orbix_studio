@@ -4894,13 +4894,35 @@
     var slatW = W - 52;
     var slatGeo = new THREE.BoxGeometry(slatW, slatH, 12);
 
+    // Roll group wrapping slats and grip bar for interactive open/close slide animation
+    var rollGroup = new THREE.Group();
+    rollGroup.name = 'RollingShutterSlats_' + furn.id;
+    var isOpen = !!(furn.shutterStates && furn.shutterStates[0]);
+    var rollTravelY = slatSpanH - 60;
+    rollGroup.position.y = isOpen ? rollTravelY : 0;
+    rollGroup.userData = {
+      isRollingShutter: true,
+      shutterIdx: 0,
+      furnitureId: furn.id,
+      openY: rollTravelY,
+      closedY: 0
+    };
+
     for (var k = 0; k < numSlats; k++) {
       var slatY = 18 + k * (slatH + slatGap) + slatH / 2;
       var slatMesh = new THREE.Mesh(slatGeo, slatMat);
       slatMesh.position.set(0, slatY, D / 2 - 7);
       slatMesh.castShadow = true; slatMesh.receiveShadow = true;
-      slatMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-      fg.add(slatMesh);
+      slatMesh.userData = {
+        isFurniturePart: true,
+        isShutter: true,
+        isRolling: true,
+        shutterIdx: 0,
+        rollGroup: rollGroup,
+        parentGroup: fg,
+        furnitureId: furn.id
+      };
+      rollGroup.add(slatMesh);
     }
 
     // Bottom Handle Profile Grip Bar
@@ -4913,13 +4935,26 @@
     var gripMesh = new THREE.Mesh(gripGeo, gripMat);
     gripMesh.position.set(0, 36, D / 2 - 6);
     gripMesh.castShadow = true;
-    gripMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-    fg.add(gripMesh);
+    gripMesh.userData = {
+      isFurniturePart: true,
+      isShutter: true,
+      isRolling: true,
+      shutterIdx: 0,
+      rollGroup: rollGroup,
+      parentGroup: fg,
+      furnitureId: furn.id
+    };
+    rollGroup.add(gripMesh);
+    fg.add(rollGroup);
 
     // Elevation positioning (mount at 750mm floor elevation default)
     var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) : 750;
-    fg.position.y = elev;
+    var posX = (furn.pos && furn.pos.x) || 0;
+    var posY = (furn.pos && furn.pos.y) || 0;
+    fg.position.set(posX, elev, posY);
+    fg.rotation.y = -(furn.rotY || 0);
+    fg.visible = true;
     return fg;
   };
 

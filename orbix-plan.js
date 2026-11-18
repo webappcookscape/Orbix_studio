@@ -2997,12 +2997,18 @@
       (furn.id && /^sr-/i.test(furn.id)) ||
       (furn.category === 'spice_rack' && !isOpenBoxF)
     );
-    var defElevF = isOpenBoxF ? 1500 : (isSpiceRackF ? 1350 : (isWallU ? 1500 : 0));
+    var isRollingF = !isDecorF && !!(
+      (furn.id && /wfm60[-_ ]*roll/i.test(furn.id)) ||
+      (furn.catalogItemId && /wfm60[-_ ]*roll/i.test(furn.catalogItemId)) ||
+      (furn.name && /rolling\s*shutter/i.test(furn.name)) ||
+      (furn.unitConfig && (furn.unitConfig.isRollingShutter || furn.unitConfig.shutterType === 'rolling_shutter'))
+    );
+    var defElevF = isRollingF ? 750 : (isOpenBoxF ? 1500 : (isSpiceRackF ? 1350 : (isWallU ? 1500 : 0)));
     var fElev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
         parseFloat(furn.pos.z) : defElevF);
-    var fH = (furn.dimensions && furn.dimensions.H) ? parseFloat(furn.dimensions.H) : (isWallU ? 600 : 850);
+    var fH = (furn.dimensions && furn.dimensions.H) ? parseFloat(furn.dimensions.H) : (isRollingF ? 1200 : (isWallU ? 600 : 850));
     var fTop = fElev + fH;
 
     var bestJoint = null;
@@ -3171,6 +3177,13 @@
               snapPoint: targetPosArm2
             };
           }
+          // L-Corner units ONLY provide Arm 1 and Arm 2 joints; NEVER fall through to rectangular side/point snapping!
+          continue;
+        }
+
+        if (furnIsLCorner) {
+          // An active L-corner being placed is handled by 90° corner detection & flush wall mounting
+          continue;
         }
 
         if (!isPerp) {
@@ -3491,77 +3504,6 @@
       if (bestCornerSnap) {
         return bestCornerSnap;
       }
-    } else {
-      // ── ROBUST CORNER SNAPPING FOR STRAIGHT UNITS & ONLY-SHUTTERING ──
-      // Allows shutters, blank shutters, wardrobes, and modular cabinets to snap flush into wall corners!
-      if (cornerCandidates && cornerCandidates.length > 0) {
-        var minStraightCornerDist = 120; // mm tight magnetic snap (prevents premature snatching)
-        var bestStraightCorner = null;
-
-        for (var sci = 0; sci < cornerCandidates.length; sci++) {
-          var scc = cornerCandidates[sci];
-          var scPt = scc.cornerPt;
-          var sDirA = scc.dir1;
-          var sDirB = scc.dir2;
-
-          // Wall A mounting: Back flush against wall A (sDirA), side flush against wall B (sDirB)
-          var angleA = Math.atan2(sDirA.y, sDirA.x);
-          var rotAlongA = angleA;
-          var normA = { x: -sDirA.y, y: sDirA.x };
-          // Check outward normal pointing towards inner room
-          if (scc.room && scc.room.polygon) {
-            var testNorm = { x: scPt.x + normA.x * 20, y: scPt.y + normA.y * 20 };
-            if (!Core.Vec2.pointInPolygon(testNorm, scc.room.polygon)) {
-              normA = { x: sDirA.y, y: -sDirA.x };
-            }
-          }
-          var candA = {
-            x: scPt.x + (halfW) * sDirA.x + (halfD) * normA.x,
-            y: scPt.y + (halfW) * sDirA.y + (halfD) * normA.y
-          };
-          var distA = Math.hypot(pos.x - candA.x, pos.y - candA.y);
-          if (distA < minStraightCornerDist) {
-            minStraightCornerDist = distA;
-            bestStraightCorner = {
-              pos: candA,
-              rotY: rotAlongA,
-              type: 'wall_snap',
-              badgeLabel: '✓ Snapped Flush into Corner',
-              cornerPt: scPt
-            };
-          }
-
-          // Wall B mounting: Back flush against wall B (sDirB), side flush against wall A (sDirA)
-          var angleB = Math.atan2(sDirB.y, sDirB.x);
-          var rotAlongB = angleB;
-          var normB = { x: -sDirB.y, y: sDirB.x };
-          if (scc.room && scc.room.polygon) {
-            var testNormB = { x: scPt.x + normB.x * 20, y: scPt.y + normB.y * 20 };
-            if (!Core.Vec2.pointInPolygon(testNormB, scc.room.polygon)) {
-              normB = { x: sDirB.y, y: -sDirB.x };
-            }
-          }
-          var candB = {
-            x: scPt.x + (halfW) * sDirB.x + (halfD) * normB.x,
-            y: scPt.y + (halfW) * sDirB.y + (halfD) * normB.y
-          };
-          var distB = Math.hypot(pos.x - candB.x, pos.y - candB.y);
-          if (distB < minStraightCornerDist) {
-            minStraightCornerDist = distB;
-            bestStraightCorner = {
-              pos: candB,
-              rotY: rotAlongB,
-              type: 'wall_snap',
-              badgeLabel: '✓ Snapped Flush into Corner',
-              cornerPt: scPt
-            };
-          }
-        }
-
-        if (bestStraightCorner) {
-          return bestStraightCorner;
-        }
-      }
     }
 
     for (var wIdx = 0; wIdx < walls.length; wIdx++) {
@@ -3641,7 +3583,7 @@
         // Allow intentional placement inside wall niches, recesses, and cavities
         var halfWallThick = (w.thickness || 150) / 2;
         var isInsideNiche = (perpDist <= halfWallThick + 50);
-        if (!this.isShiftDown && !isCivilOrPanel && !isInsideNiche) {
+        if (!this.isShiftDown && !this.forceFreePlacement && !this.isAltDown && !isCivilOrPanel && !isInsideNiche) {
           pos.x = proj.x + normOut.x * flushDist;
           pos.y = proj.y + normOut.y * flushDist;
         }
@@ -3693,6 +3635,55 @@
 
         var differentBand = (fTop <= oElev + 5 || oTop <= fElev + 5);
         if (differentBand) continue; // Plumb stackable (e.g. wall cabinet above floor base cabinet), can share same wall T
+
+        var oIsLCorner = !!(
+          (oFn.unitConfig && (oFn.unitConfig.geometryType === 'l_shaped_corner' || oFn.unitConfig.unitType === 'fbcm' || oFn.unitConfig.unitType === 'wbcm' || (oFn.unitConfig.corner && oFn.unitConfig.corner.enabled))) ||
+          oFn.catalogItemId === 'fbcm' || oFn.id === 'fbcm' || oFn.id === 'f_fbcm_1' || oFn.catalogItemId === 'fbcm-1500' ||
+          (oFn.id && /fbcm|wbcm/i.test(oFn.id)) ||
+          (oFn.catalogItemId && /fbcm|wbcm/i.test(oFn.catalogItemId)) ||
+          (oFn.code && /fbcm|wbcm/i.test(oFn.code)) ||
+          (oFn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(oFn.name))
+        );
+
+        if (oIsLCorner) {
+          var ocW = (oFn.unitConfig && oFn.unitConfig.corner && oFn.unitConfig.corner.legW) || oDims.W || 900;
+          var ocD = (oFn.unitConfig && oFn.unitConfig.corner && oFn.unitConfig.corner.legD) || oDims.W || 900;
+          var ocDepth = (oFn.unitConfig && oFn.unitConfig.corner && oFn.unitConfig.corner.depth) || oDims.D || 560;
+          var oRotL = oFn.rotY || 0;
+          var ou = { x: Math.cos(oRotL), y: Math.sin(oRotL) };
+          var ov = { x: -Math.sin(oRotL), y: Math.cos(oRotL) };
+          var cCornerPt = {
+            x: oFn.pos.x + (ocW / 2) * ou.x - (ocD / 2) * ov.x,
+            y: oFn.pos.y + (ocW / 2) * ou.y - (ocD / 2) * ov.y
+          };
+          var tCorner = (cCornerPt.x - bwWall.start.x) * bwDir.x + (cCornerPt.y - bwWall.start.y) * bwDir.y;
+
+          var arm1Dir = { x: -ou.x, y: -ou.y };
+          var dotArm1 = arm1Dir.x * bwDir.x + arm1Dir.y * bwDir.y;
+          if (Math.abs(dotArm1) > 0.7) {
+            var tArm1End = tCorner + dotArm1 * ocW;
+            occupiedIntervals.push({
+              start: Math.min(tCorner, tArm1End),
+              end: Math.max(tCorner, tArm1End),
+              center: (tCorner + tArm1End) / 2,
+              unit: oFn
+            });
+            continue;
+          }
+
+          var arm2Dir = { x: ov.x, y: ov.y };
+          var dotArm2 = arm2Dir.x * bwDir.x + arm2Dir.y * bwDir.y;
+          if (Math.abs(dotArm2) > 0.7) {
+            var tArm2End = tCorner + dotArm2 * ocD;
+            occupiedIntervals.push({
+              start: Math.min(tCorner, tArm2End),
+              end: Math.max(tCorner, tArm2End),
+              center: (tCorner + tArm2End) / 2,
+              unit: oFn
+            });
+            continue;
+          }
+        }
 
         occupiedIntervals.push({
           start: oT - oW / 2,
@@ -3775,7 +3766,8 @@
     var isLoftPlan = (catPlan.indexOf('loft') !== -1 || nmPlan.indexOf('loft') !== -1 || idPlan.indexOf('loft') !== -1 || cdPlan.indexOf('loft') !== -1);
     var isSpicePlan = (catPlan.indexOf('spice') !== -1 || nmPlan.indexOf('spice') !== -1 || idPlan.indexOf('spice') !== -1 || idPlan.indexOf('sr-') === 0);
     var defPlanElev = isLoftPlan ? 2100 : (isSpicePlan ? 1350 : (isWall ? 1500 : 0));
-    if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 750;
+    if (idPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && this.furniturePreset.unitConfig.isRollingShutter)) defPlanElev = 750;
+    else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 750;
     else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 750;
     else if (idPlan === 'ledge-vert' || nmPlan.indexOf('vertical ledge') !== -1) defPlanElev = 0;
     else if (idPlan === 'pnl-back' || nmPlan.indexOf('back panel') !== -1) defPlanElev = 300;

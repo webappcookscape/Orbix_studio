@@ -2704,7 +2704,15 @@
                 fn.shutterStates = fn.shutterStates || [];
                 fn.shutterStates[sIdx] = !fn.shutterStates[sIdx];
                 var isOpen = fn.shutterStates[sIdx];
-                if (actionPart.userData.isSliding) {
+                if (actionPart.userData.isRolling) {
+                  var rGroup = actionPart.userData.rollGroup || (actionPart.parent && actionPart.parent.userData && actionPart.parent.userData.isRollingShutter ? actionPart.parent : null);
+                  if (rGroup && rGroup.userData && rGroup.userData.openY !== undefined) {
+                    rGroup.position.y = isOpen ? rGroup.userData.openY : rGroup.userData.closedY;
+                    render();
+                  } else if (window.OrbixUI && window.OrbixUI.render3DHome) {
+                    window.OrbixUI.render3DHome(true);
+                  }
+                } else if (actionPart.userData.isSliding) {
                   var sGroup = actionPart.userData.shutterGroup || (actionPart.parent && actionPart.parent.userData && actionPart.parent.userData.isSliding ? actionPart.parent : null);
                   if (sGroup && sGroup.userData && sGroup.userData.openX !== undefined) {
                     sGroup.position.x = isOpen ? sGroup.userData.openX : sGroup.userData.closedX;
