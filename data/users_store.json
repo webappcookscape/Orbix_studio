@@ -43,26 +43,26 @@
     "name": "Elakkiya",
     "username": "elakkiya",
     "email": "elakkiya.sakthivelu3089@gmail.com",
-    "password": "password123",
+    "password": "$2b$10$eu1xRkU/UBxJ0hHRjPUl9.S0GeWsjUZw3mHQ8ZkBbv1qaE3CzQL9m",
     "role": "employee",
     "designation": "Floor Architect / FA",
     "company": "Cookscape",
     "avatar": "E",
     "createdAt": "2026-11-05T19:33:54.494Z",
-    "updatedAt": "2026-11-05T19:33:54.494Z"
+    "updatedAt": "2026-11-18T09:52:12.577Z"
   },
   {
     "id": "usr_aravind",
     "name": "Aravind",
     "username": "aravind",
     "email": "webapp.cookscape@gmail.com",
-    "password": "password123",
+    "password": "$2b$10$sQ.jc9mbJ8y.56dgxVBv1upvG9f0VskcO3VrnXfKrT9XViKBopSD.",
     "role": "employee",
     "designation": "Floor Architect / FA",
     "company": "Cookscape",
     "avatar": "A",
     "createdAt": "2026-11-05T19:33:54.494Z",
-    "updatedAt": "2026-11-05T19:33:54.494Z"
+    "updatedAt": "2026-11-18T09:52:12.705Z"
   },
   {
     "id": "usr_dev",

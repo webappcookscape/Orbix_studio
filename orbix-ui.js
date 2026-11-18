@@ -6706,6 +6706,7 @@
       var html = '<div class="boq-sheet">' +
         '<div class="boq-actions no-print">' +
         '<button class="btn" id="boqXlsxBtn" style="background:#107C41;color:#fff;border-color:#107C41;font-weight:600">📊 Download Excel (.xlsx)</button>' +
+        '<button class="btn" id="boqShareQuoteBtn" style="background:linear-gradient(135deg,#D90429,#9F021E);color:#fff;border-color:#9F021E;font-weight:700">🔐 Share Client Quote</button>' +
         '<button class="btn" id="boqEditDetailsBtn" style="font-weight:600;border-color:#2563EB;color:#2563EB">✏️ Edit Client Details</button>' +
         '<button class="btn" id="boqLockVersionBtn">Issue Quotation Snapshot</button>' +
         '<button class="btn" id="boqToggleRateCardBtn">Configure Company Rates</button>' +
@@ -7309,6 +7310,13 @@
       if (xlsxBtn) {
         xlsxBtn.addEventListener('click', function () {
           self.exportXLSX();
+        });
+      }
+
+      var shareQuoteBtn = document.getElementById('boqShareQuoteBtn');
+      if (shareQuoteBtn && window.OrbixClientQuote) {
+        shareQuoteBtn.addEventListener('click', function () {
+          window.OrbixClientQuote.openModal(self);
         });
       }
 

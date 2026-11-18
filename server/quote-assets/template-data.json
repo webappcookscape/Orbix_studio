@@ -1,0 +1,1167 @@
+{
+  "canvas": {
+    "width": 1060,
+    "height": 1498,
+    "bgColor": "#F4EDE3"
+  },
+  "assets": {
+    "masterLogo": "master_logo.jpg",
+    "masterLogoRect": {
+      "x": 658.6,
+      "y": 29.0,
+      "w": 368.6,
+      "h": 69.1
+    },
+    "coverBg": "slide_01_bg.jpg",
+    "coverLayout": {
+      "staticLabels": [
+        {
+          "text": "PERSONALIZED DESIGN",
+          "font": "Klein",
+          "szPt": 11.59,
+          "color": "#08231B",
+          "x": 197.0,
+          "y": 1383.7,
+          "w": 120.1,
+          "h": 40.9
+        },
+        {
+          "text": "Designing Spaces for a",
+          "font": "Baskerville Display PT",
+          "szPt": 48.0,
+          "color": "#08231B",
+          "x": 40.1,
+          "y": 275.3,
+          "w": 381.1,
+          "h": 171.2
+        },
+        {
+          "text": "Thoughtful Design | Premium Materials\nQuality Execution | Homes That Last",
+          "font": "Klein",
+          "szPt": 14.46,
+          "color": "#808080",
+          "x": 37.5,
+          "y": 607.0,
+          "w": 396.8,
+          "h": 54.8
+        },
+        {
+          "text": "Phone No",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 120.4,
+          "y": 914.4,
+          "w": 70.4,
+          "h": 23.6
+        },
+        {
+          "text": "Designer Details",
+          "font": "Calibri",
+          "szPt": 18.62,
+          "color": "#08231B",
+          "x": 480.3,
+          "y": 1063.0,
+          "w": 213.1,
+          "h": 35.4
+        },
+        {
+          "text": "Email ID",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 522.6,
+          "y": 1224.4,
+          "w": 56.4,
+          "h": 23.6
+        },
+        {
+          "text": "PREMIUM MATERIALS",
+          "font": "Klein",
+          "szPt": 11.59,
+          "color": "#08231B",
+          "x": 394.5,
+          "y": 1383.7,
+          "w": 90.4,
+          "h": 40.9
+        },
+        {
+          "text": "QUALITY WORKMANSHIP",
+          "font": "Klein",
+          "szPt": 11.59,
+          "color": "#08231B",
+          "x": 562.2,
+          "y": 1384.1,
+          "w": 131.3,
+          "h": 42.6
+        },
+        {
+          "text": "HOMES\nTHAT LAST",
+          "font": "Klein",
+          "szPt": 11.59,
+          "color": "#08231B",
+          "x": 768.6,
+          "y": 1383.7,
+          "w": 86.1,
+          "h": 40.9
+        },
+        {
+          "text": "LIVE LIKE YOU MEAN IT",
+          "font": "Klein",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 28.7,
+          "y": 182.5,
+          "w": 514.8,
+          "h": 24.4
+        },
+        {
+          "text": "Patron Details",
+          "font": "Calibri",
+          "szPt": 18.62,
+          "color": "#08231B",
+          "x": 69.7,
+          "y": 796.0,
+          "w": 176.1,
+          "h": 35.4
+        },
+        {
+          "text": "Name",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 511.9,
+          "y": 1128.2,
+          "w": 110.3,
+          "h": 22.1
+        },
+        {
+          "text": "Name",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 120.3,
+          "y": 861.8,
+          "w": 86.9,
+          "h": 22.1
+        },
+        {
+          "text": "Phone No",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 519.5,
+          "y": 1179.8,
+          "w": 70.4,
+          "h": 23.6
+        },
+        {
+          "text": "Location",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 120.5,
+          "y": 966.1,
+          "w": 60.7,
+          "h": 23.6
+        },
+        {
+          "text": "Date",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 120.3,
+          "y": 1014.3,
+          "w": 33.2,
+          "h": 23.6
+        },
+        {
+          "text": ":",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 239.2,
+          "y": 861.8,
+          "w": 3.8,
+          "h": 23.6
+        },
+        {
+          "text": ":",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 239.2,
+          "y": 914.4,
+          "w": 3.8,
+          "h": 23.6
+        },
+        {
+          "text": ":",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 239.2,
+          "y": 1019.7,
+          "w": 3.8,
+          "h": 23.6
+        },
+        {
+          "text": ":",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 236.8,
+          "y": 966.6,
+          "w": 3.8,
+          "h": 23.6
+        },
+        {
+          "text": ":",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 664.8,
+          "y": 1180.7,
+          "w": 3.8,
+          "h": 23.6
+        },
+        {
+          "text": ":",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 664.8,
+          "y": 1127.8,
+          "w": 3.8,
+          "h": 23.6
+        },
+        {
+          "text": ":",
+          "font": "Inter",
+          "szPt": 12.0,
+          "color": "#08231B",
+          "x": 664.7,
+          "y": 1224.1,
+          "w": 3.8,
+          "h": 23.6
+        },
+        {
+          "text": "Tomorrow",
+          "font": "Baskerville Display PT",
+          "szPt": 54.0,
+          "color": "#08231B",
+          "x": 112.1,
+          "y": 492.9,
+          "w": 382.9,
+          "h": 83.8
+        },
+        {
+          "text": "Brighter",
+          "font": "Moontime",
+          "szPt": 72.0,
+          "color": "#822510",
+          "x": 75.2,
+          "y": 397.8,
+          "w": 320.6,
+          "h": 124.8
+        }
+      ],
+      "dynamicSlots": {
+        "patron_name": {
+          "x": 255.8,
+          "y": 854.1,
+          "w": 167.3,
+          "h": 39.0
+        },
+        "patron_phone": {
+          "x": 253.5,
+          "y": 908.1,
+          "w": 134.9,
+          "h": 39.0
+        },
+        "patron_location": {
+          "x": 252.1,
+          "y": 958.0,
+          "w": 243.9,
+          "h": 39.0
+        },
+        "patron_date": {
+          "x": 250.9,
+          "y": 1006.3,
+          "w": 145.3,
+          "h": 39.0
+        },
+        "designer_email": {
+          "x": 667.6,
+          "y": 1220.3,
+          "w": 291.8,
+          "h": 32.5
+        },
+        "designer_phone": {
+          "x": 666.8,
+          "y": 1178.8,
+          "w": 129.2,
+          "h": 32.5
+        },
+        "designer_name": {
+          "x": 667.2,
+          "y": 1127.3,
+          "w": 114.7,
+          "h": 32.5
+        }
+      }
+    },
+    "introSlides": [
+      {
+        "id": "intro_2",
+        "title": "Introduction — Page 2",
+        "asset": "slide_02.jpg"
+      },
+      {
+        "id": "intro_3",
+        "title": "Introduction — Page 3",
+        "asset": "slide_03.jpg"
+      },
+      {
+        "id": "intro_4",
+        "title": "The Scape Flow",
+        "asset": "slide_04.jpg"
+      },
+      {
+        "id": "intro_5",
+        "title": "Introduction — Page 5",
+        "asset": "slide_05.jpg"
+      },
+      {
+        "id": "intro_6",
+        "title": "Introduction — Page 6",
+        "asset": "slide_06.jpg"
+      }
+    ],
+    "closingAsset": "slide_29.jpg"
+  },
+  "variants": [
+    {
+      "key": "LL elite",
+      "title": "LL ELITE",
+      "subtitle": "Smart Essential Modular Range",
+      "dividerSlide": 7,
+      "dividerAsset": "slide_07.jpg",
+      "specTables": [
+        [
+          [
+            "Kitchen Specification",
+            "Details"
+          ],
+          [
+            "Carcass Material",
+            "Marine Ply , BSL -BWR"
+          ],
+          [
+            "Carcass Finish",
+            "Frosty White"
+          ],
+          [
+            "Shutter Finish",
+            "Laminate Solid colors, Prelam Aqua Sheild-MDF-Clr-BSL"
+          ],
+          [
+            "Shutter Material",
+            "Hydroguard Plus HDF, Prelam Aqua Shield-MDF-Clr-BSL, Commercial Ply, Aqua Shield-MDF-R, MDF"
+          ],
+          [
+            "Handles",
+            "Dual Switch EBCO"
+          ],
+          [
+            "Hardware and Accessories",
+            "Tyrox"
+          ],
+          [
+            "Handles",
+            "Tyrox_CH-15060_160 NB_Nickel Brush_160mm, Tyrox_CH-15061_96 NB_Nickel Brush_96mm"
+          ],
+          [
+            "Finish:",
+            "Nickel Brush"
+          ]
+        ],
+        [
+          [
+            "Wardrobe Specification",
+            "Details"
+          ],
+          [
+            "Carcass Material",
+            "Prelam Aqua Shield MDF-R, PLHMR - BSL -HYH"
+          ],
+          [
+            "Carcass Finish",
+            "Frosty White"
+          ],
+          [
+            "Shutter Finish",
+            "Laminate Solid colors, Prelam Aqua Sheild-MDF-Clr-BSL"
+          ],
+          [
+            "Shutter Material",
+            "Hydroguard Plus HDF, Prelam Aqua Shield-MDF-Clr-BSL, Commercial Ply, Aqua Shield-MDF-R, MDF"
+          ],
+          [
+            "Handles",
+            "Dual Switch EBCO"
+          ],
+          [
+            "Hardware and Accessories",
+            "Tyrox"
+          ],
+          [
+            "Handles",
+            "Tyrox_CH-15060_160 NB_Nickel Brush_160mm, Tyrox_CH-15061_96 NB_Nickel Brush_96mm"
+          ],
+          [
+            "Finish:",
+            "Nickel Brush"
+          ]
+        ]
+      ]
+    },
+    {
+      "key": "CC MATTE",
+      "title": "CAPRICOAST MATTE",
+      "subtitle": "Refined Matte Laminate Finish",
+      "dividerSlide": 10,
+      "dividerAsset": "slide_10.jpg",
+      "specTables": [
+        [
+          [
+            "Specification",
+            "Details"
+          ],
+          [
+            "Carcass Material",
+            "GREENPLY BWP 710 Grade"
+          ],
+          [
+            "Shutter Finish",
+            "Matte Finish Laminate"
+          ],
+          [
+            "Shutter Material",
+            "(HDHMR) / GREENPLY BWP 710 Grade"
+          ],
+          [
+            "Customization",
+            "Available for Inner Partitions on Additional cost"
+          ],
+          [
+            "Primary Hinges",
+            "EBCO"
+          ],
+          [
+            "Hanger-rods",
+            "Multi Profile Hanger HD Rods - EBCO"
+          ],
+          [
+            "Wardrobe Locks",
+            "Dual Switch EBCO"
+          ],
+          [
+            "Leg & Wall Bracket",
+            "ABS / Adjustable"
+          ],
+          [
+            "Sliding Track",
+            "CNR Brand with Two Way slide"
+          ],
+          [
+            "Lift Up Piston",
+            "HETTICH / BLUM (15 KGS)"
+          ],
+          [
+            "Screws & Clamps",
+            "HP Screws / Self threading Type"
+          ],
+          [
+            "Skirting",
+            "Matching Shutter Finish Skirting"
+          ],
+          [
+            "Mirrors & Glass",
+            "4mm Saint Gobain"
+          ],
+          [
+            "Installation Process",
+            "Self-Drilling Screws with Screw caps"
+          ],
+          [
+            "Installation Duration",
+            "4 Weeks (may increase if the scope includes Civil, Electrical work)"
+          ],
+          [
+            "Inclusive in Cost",
+            "Installation and Transportation"
+          ],
+          [
+            "Taxes",
+            "Prices Excludes GST"
+          ],
+          [
+            "Laminate Pasting Process",
+            "Machine Pressed Lamination"
+          ],
+          [
+            "Throughfeed Edge Banding",
+            "Machine Edge Banding"
+          ],
+          [
+            "Edge Banding",
+            "Regular PVC Edge Banding"
+          ],
+          [
+            "Adhesives",
+            "FEVICOL SR"
+          ],
+          [
+            "HOT MELT Adhesive",
+            "Pidilite / SR"
+          ],
+          [
+            "Additional Process",
+            "-"
+          ],
+          [
+            "Laminate / Facia Brand",
+            "CATCH / New Mica"
+          ],
+          [
+            "Hardwares & Utilities",
+            "EBCO"
+          ],
+          [
+            "Kitchen Accessories",
+            "HETTICH / EBCO"
+          ],
+          [
+            "Production Timeline",
+            "4 Weeks from Physical Sign Off On The Colour Drawing"
+          ]
+        ]
+      ]
+    },
+    {
+      "key": "CC GLOSSY",
+      "title": "CAPRICOST GLOSSY",
+      "subtitle": "High-Gloss Mirror Finish",
+      "dividerSlide": 13,
+      "dividerAsset": "slide_13.jpg",
+      "specTables": [
+        [
+          [
+            "Specification",
+            "Details"
+          ],
+          [
+            "Carcass Material",
+            "GREENPLY BWP 710 Grade"
+          ],
+          [
+            "Shutter Finish",
+            "GLOSSY Finish Laminate (HGL)"
+          ],
+          [
+            "Shutter Material",
+            "High Density High Moisture Resistant Boards (HDHMR)"
+          ],
+          [
+            "Customization",
+            "Available for Inner Partitions on Additional cost"
+          ],
+          [
+            "Primary Hinges",
+            "EBCO (12 kg)"
+          ],
+          [
+            "Hanger-rods",
+            "Multi Profile Hanger HD Rods - EBCO"
+          ],
+          [
+            "Wardrobe Locks",
+            "Dual Switch EBCO"
+          ],
+          [
+            "Leg & Wall Bracket",
+            "ABS / Adjustable"
+          ],
+          [
+            "Sliding Track",
+            "CNR Brand with Two Way slide"
+          ],
+          [
+            "Lift Up Piston",
+            "BLUM / HETTICH 15 Kgs Load"
+          ],
+          [
+            "Screws & Clamps",
+            "HP Screws / Self threading Type"
+          ],
+          [
+            "Skirting",
+            "Matching Shutter Finish Skirting"
+          ],
+          [
+            "Mirrors & Glass",
+            "4mm Saint Gobain"
+          ],
+          [
+            "Installation Process",
+            "Self-Drilling Screws with Screw caps"
+          ],
+          [
+            "Installation Duration",
+            "4 Weeks (may increase if the scope includes Civil, Electrical work)"
+          ],
+          [
+            "Inclusive in Cost",
+            "Installation and Transportation"
+          ],
+          [
+            "Taxes",
+            "Prices Excludes GST"
+          ],
+          [
+            "Laminate Pasting Process",
+            "Machine Pressed Lamination"
+          ],
+          [
+            "Throughfeed Edge Banding",
+            "Hot melt Glue Machine Edge Banding"
+          ],
+          [
+            "Edge Banding",
+            "Regular PVC Edge Banding"
+          ],
+          [
+            "Adhesives",
+            "FEVICOL SR"
+          ],
+          [
+            "HOT MELT Adhesive",
+            "Pidilite / SR"
+          ],
+          [
+            "Additional Process",
+            "-"
+          ],
+          [
+            "Laminate / Facia Brand",
+            "CATCH / New Mica"
+          ],
+          [
+            "Hardwares & Utilities",
+            "EBCO (12 kg) / All Regular Hinges only"
+          ],
+          [
+            "Kitchen Accessories",
+            "HETTICH / EBCO"
+          ],
+          [
+            "Production Timeline",
+            "4 Weeks from Physical Sign Off On The Colour Drawing"
+          ]
+        ]
+      ]
+    },
+    {
+      "key": "SURABHI",
+      "title": "ELEGANT SURABHI",
+      "subtitle": "Super Matte 1mm Branded Laminate",
+      "dividerSlide": 16,
+      "dividerAsset": "slide_16.jpg",
+      "specTables": [
+        [
+          [
+            "Specification",
+            "Details"
+          ],
+          [
+            "Carcass Material",
+            "GREENPLY BWP 710 Grade with both side Laminate"
+          ],
+          [
+            "Shutter Finish",
+            "SUPER Matte Finish Laminate – 1mm (Branded)"
+          ],
+          [
+            "Shutter Material",
+            "BWP 710 Grade GURJAN Ply / GREENPLY HDHMR"
+          ],
+          [
+            "Customization",
+            "Available for Inner Partitions on Additional cost"
+          ],
+          [
+            "Primary Hinges",
+            "HETTICH | EBCO (12 kg)"
+          ],
+          [
+            "Hanger-rods",
+            "Multi Profile Hanger HD Rods - EBCO"
+          ],
+          [
+            "Wardrobe Locks",
+            "Dual Switch EBCO"
+          ],
+          [
+            "Leg & Wall Bracket",
+            "ABS / Adjustable"
+          ],
+          [
+            "Sliding Track",
+            "CNR Brand with Two-Way slide"
+          ],
+          [
+            "Lift Up Piston",
+            "BLUM / HETTICH 15 Kgs Load"
+          ],
+          [
+            "Screws & Clamps",
+            "HP Screws / Self threading Type"
+          ],
+          [
+            "Skirting",
+            "Matching Shutter Finish Skirting"
+          ],
+          [
+            "Mirrors & Glass",
+            "4mm Saint Gobain"
+          ],
+          [
+            "Installation Process",
+            "Self-Drilling Screws with Screw caps"
+          ],
+          [
+            "Installation Duration",
+            "4 Weeks (may increase if the scope includes Civil, Electrical work)"
+          ],
+          [
+            "Inclusive in Cost",
+            "Installation, Transportation includes Packing & Unloading"
+          ],
+          [
+            "Taxes",
+            "Prices Excludes GST"
+          ],
+          [
+            "Laminate Pasting Process",
+            "Machine Pressed Lamination"
+          ],
+          [
+            "Through feed Edge Banding",
+            "Hot melt Glue Machine Edge Banding"
+          ],
+          [
+            "Edge Banding",
+            "E3 Brand / PVC / Rehau"
+          ],
+          [
+            "Adhesives",
+            "SYNTHETIC ADHESIVE Grade: LK453"
+          ],
+          [
+            "HOT MELT Adhesive",
+            "ANABOND - SU2710"
+          ],
+          [
+            "Additional Process",
+            "Ext. Grading, Fungus - Resistant Spray Coating, Multi Boring on Ply"
+          ],
+          [
+            "Shutter Material",
+            "GREENPLY HDHMR OSR For Glossy / SF Matte laminates"
+          ],
+          [
+            "Laminate / Facia Brand",
+            "MERINO LAM SF, RH Series / New Mica"
+          ],
+          [
+            "Hinges Grade",
+            "Grade 1 Soft closing for kitchen , Auto & Soft close for Wardrobes"
+          ],
+          [
+            "Kitchen Accessories",
+            "HETTICH, HAFELE, EBCO as per the client preference"
+          ],
+          [
+            "Production Timeline",
+            "45 Days from Physical Sign Off On The Colour Drawing"
+          ]
+        ]
+      ]
+    },
+    {
+      "key": "MR+",
+      "title": "4X TUFF GLOSS",
+      "subtitle": "Scratch & Stain Proof Gloss",
+      "dividerSlide": 19,
+      "dividerAsset": "slide_19.jpg",
+      "specTables": [
+        [
+          [
+            "Specification",
+            "Details"
+          ],
+          [
+            "Carcass Material",
+            "GREENPLY BWP 710 Grade"
+          ],
+          [
+            "Shutter Finish",
+            "GLOSSY - SCRATCH & STAIN PROOF"
+          ],
+          [
+            "Shutter Material",
+            "BWP 710 Grade GURJAN Ply / GREENPLY HDHMR"
+          ],
+          [
+            "Customization",
+            "Available for Inner Partitions on Additional cost"
+          ],
+          [
+            "Primary Hinges",
+            "EBCO (12 kg)"
+          ],
+          [
+            "Hanger-rods",
+            "Multi Profile Hanger HD Rods - EBCO"
+          ],
+          [
+            "Wardrobe Locks",
+            "Dual Switch EBCO"
+          ],
+          [
+            "Leg & Wall Bracket",
+            "ABS / Adjustable"
+          ],
+          [
+            "Sliding Track",
+            "CNR Brand with Two Way slide"
+          ],
+          [
+            "Lift Up Piston",
+            "BLUM / HETTICH 15 Kgs Load"
+          ],
+          [
+            "Screws & Clamps",
+            "HP Screws / Self threading Type"
+          ],
+          [
+            "Skirting",
+            "Matching Shutter Finish Skirting"
+          ],
+          [
+            "Mirrors & Glass",
+            "4mm Saint Gobain"
+          ],
+          [
+            "Installation Process",
+            "Self-Drilling Screws with Screw caps"
+          ],
+          [
+            "Installation Duration",
+            "4 Weeks (may increase if the scope includes Civil, Electrical work)"
+          ],
+          [
+            "Inclusive in Cost",
+            "Installation and Transportation"
+          ],
+          [
+            "Taxes",
+            "Prices Excludes GST"
+          ],
+          [
+            "Laminate Pasting Process",
+            "Machine Pressed Lamination"
+          ],
+          [
+            "Throughfeed Edge Banding",
+            "Hot melt Glue Machine Edge Banding"
+          ],
+          [
+            "Edge Banding",
+            "E3 Brand / PVC"
+          ],
+          [
+            "Adhesives",
+            "SYNTHETIC ADHESIVE Grade: LK453"
+          ],
+          [
+            "HOT MELT Adhesive",
+            "ANABOND - SU2710"
+          ],
+          [
+            "Additional Process",
+            "Ext. Grading, Fungus - Resistant Spray Coating, Multi Boring on Ply"
+          ],
+          [
+            "Shutter Material",
+            "GREENPLY HDHMR OSR For Glossy / SF Matte laminates"
+          ],
+          [
+            "Laminate / Facia Brand",
+            "Merino MR+ / Royal Touche GLOSS"
+          ],
+          [
+            "Hinges Grade",
+            "Grade 1 Soft closing for kitchen & Auto close for Wardrobes"
+          ],
+          [
+            "Kitchen Accessories",
+            "HETTICH Brand"
+          ],
+          [
+            "Production Timeline",
+            "45 Days from Physical Sign Off On The Colour Drawing"
+          ]
+        ]
+      ]
+    }
+  ],
+  "processSlides": {
+    "designProcess": {
+      "title": "DESIGN PROCESS AND TIMELINES",
+      "paragraphs": [
+        "A structured design journey covering concept development, material selection, 3D visualization, and final approvals. Each stage is planned with a clear timeline to ensure smooth execution and timely project delivery.",
+        "1.Project Onboarding & Design Initiation",
+        "The design phase commences upon receipt of the initial 10% advance payment. A dedicated Design Lead will be assigned to manage project coordination, design discussions, and approvals throughout the process.",
+        "2.Design Stages & Review Meetings",
+        "Our design process is structured into two key phases to ensure clarity, collaboration, and timely decision-making throughout your project.",
+        "Stage 1 – Design Development & Approval",
+        "During this phase, our design team will collaborate with you to finalize layouts, material selections, finishes, colours, and overall design concepts. The proposed designs will be reviewed through scheduled discussions, and upon approval, the project will proceed to the next stage.",
+        "Stage 2 – Technical Drawings & Design Sign-Off",
+        "Detailed production drawings and execution documents will be prepared following design approval. The final project scope, specifications, and project value will be confirmed during this stage. A 35% payment and formal Design Sign-Off are required before the project is released for production and execution.",
+        "3.Design Timelines",
+        "The estimated design timeline may vary based on project complexity, design revisions, and the availability of clients for review meetings and approvals.",
+        "Timelines are subject to timely client feedback, approval schedules, and availability for design discussions. Delays in approvals or revisions may impact the overall design schedule."
+      ],
+      "table": [
+        [
+          "Project Type",
+          "Estimated Timeline"
+        ],
+        [
+          "2 BHK",
+          "5-7 days"
+        ],
+        [
+          "3 BHK",
+          "7-10 days"
+        ],
+        [
+          "4 BHK",
+          "10-20 days"
+        ],
+        [
+          "LUXURY VILLA & HIGH END DESIGN",
+          "30 days"
+        ]
+      ]
+    },
+    "executionProcess": {
+      "title": "EXECUTION PROCESS AND TIMELINES",
+      "paragraphs": [
+        "A structured design journey covering concept development, material selection, 3D visualization, and final approvals. Each stage is planned with clear timelines ensuring smooth execution and timely project delivery.",
+        "1.Commencement of Execution",
+        "Following Design Sign-Off, the approved drawings and specifications will be released for production. As all design selections and project requirements are finalized at this stage, no further changes will be permitted once manufacturing begins. Any exceptional requests may be subject to additional costs and timeline revisions.",
+        "2.Production & Quality Checking Process",
+        "The production phase is scheduled for 45 working days, Which will be followed by a detailed Quality Control (QC) inspection. If any rework is required to meet approved quality standards, an additional 7 working days may be necessary for rectification and final approval.",
+        "A 40% payment is due upon QC clearance and before material dispatch to the project site.",
+        "3.Installation Timelines",
+        "Installation begins upon successful delivery of materials to the project site and may vary based on project scope and site readiness. Timelines are subject to uninterrupted site access, civil readiness, utility availability, and timely client approvals.",
+        "4.Project Monitoring, Walkthrough & Quality Inspection",
+        "A dedicated Application Engineer (AE) will be assigned to oversee the execution and installation process.",
+        "The Application Engineer (AE) will be responsible for:",
+        "I. Regular Site Inspections & Monitoring",
+        "II. Daily Site Updates & Coordination",
+        "III. Weekly Progress Reports",
+        "IV. Quality Checks During Execution",
+        "V. Final Project Inspection, Snag List & Walkthrough",
+        "VI. Completion Report & Handover Documentation"
+      ],
+      "table": [
+        [
+          "VARIANTS",
+          "Estimated Timeline"
+        ],
+        [
+          "SURABHI LL ELITE",
+          "15 Working Days"
+        ],
+        [
+          "CAPRICOAST VARIANTS",
+          "30 Working Days"
+        ],
+        [
+          "SURABHI / MR+ &VENEER",
+          "45 Working Days"
+        ],
+        [
+          "TRADITIONAL / VANITY / IRIS",
+          "60 Working Days"
+        ]
+      ]
+    },
+    "inclusionsExclusions": {
+      "title": "INCLUSION & EXCLUSION POLICY",
+      "table": [
+        [
+          "INCLUDED IN SCOPE",
+          "EXCLUDED / CHARGED EXTRA"
+        ],
+        [
+          "Mirrors, handles, drawers, wardrobe locks, tower bolts, and skirting",
+          "Appliances, hob, chimney, sink, granite,\ndado tiles"
+        ],
+        [
+          "Packing and Shipment charges are included Orders above ₹1.5 Lakh",
+          "Demolition, civil works, electrical and plumbing works"
+        ],
+        [
+          "Local transportation, Loading and Unloading are included",
+          "Outstation transportation charges"
+        ],
+        [
+          "Installation, Alignment, Woodwork and Thinner Cleaning are included",
+          "Outstation labour, boarding charges"
+        ],
+        [
+          "Quality Control and Inspection are included",
+          "Bathroom utilities and fittings"
+        ],
+        [
+          "Project certification included",
+          "GST as applicable"
+        ],
+        [
+          "No hidden charges within approved scope",
+          "Special handles and premium accessories"
+        ],
+        [
+          "Soft-close and auto-close hardware for eligible kitchen models",
+          "Additional shelves beyond approved design"
+        ],
+        [
+          "Standard hinges for wardrobes and\nother units",
+          "Additional mirrors beyond approved\nscope"
+        ],
+        [
+          "Wardrobe locks included",
+          "Wall pelmets and decorative additions"
+        ],
+        [
+          "Approved design and manufacturing scope",
+          "Locks for units other than wardrobes"
+        ],
+        [
+          "Implementation of the Final approved layout",
+          "Design changes, alterations, or additions\nrequested during installation"
+        ]
+      ]
+    },
+    "paymentTerms": {
+      "title": "PAYMENT TERMS AND WORK STAGE",
+      "table": [
+        [
+          "STAGE",
+          "%",
+          "DETAILS"
+        ],
+        [
+          "Project Consultation & Estimation",
+          "0%",
+          "Initial requirement gathering and design consultation.\nSite assessment and project feasibility discussion.\nVariants, material options, finishes, and budget alignment.\nPreliminary scope definition and budgetary estimate."
+        ],
+        [
+          "Project Booking\n& Design Initiation",
+          "15%",
+          "Confirmation of project engagement.\nDetailed site measurement and technical assessment.\nDesign development discussions and layout planning.\nSelection of finishes, colours and accessories.\nPresentation of conceptual 3D visualizations and design proposals for approval."
+        ],
+        [
+          "Design Approval\n& Production Release",
+          "35%",
+          "Release of approved designs for manufacturing and production.\nProcurement planning and production scheduling commence.\nNo modifications to the approved designs, dimensions, or specifications shall be permitted after this stage."
+        ],
+        [
+          "Production Completion\n& QC Clearance",
+          "40%",
+          "Completion of manufacturing activities.\nComprehensive Quality Control (QC) inspection of all materials and components.\nApproval for dispatch from the Factory to the project site.\nPayment due before material dispatch and commencement of site installation."
+        ],
+        [
+          "Installation Completion\n& Handover Stage",
+          "10%",
+          "Completion of modular woodwork installation at the site.\nFinal payment is due before the installation of accessories, hardware and finishing elements.\nThe project proceeds to the final quality inspection, and handover process.\nA 10 - Years Guarantee Certificate will be provided, For Applicable Variants."
+        ]
+      ]
+    },
+    "termsConditions": {
+      "title": "TERMS & CONDITIONS",
+      "paragraphs": [
+        "1. Builder & Site-Related Delays:",
+        "Cookscape shall not be responsible for delays arising from builder-related activities, pending civil works, Pending Plumbing and Electrical Works, site readiness issues or other third-party dependencies. Any such delays may affect the overall project timeline.",
+        "2. Payment-Linked Material Supply:",
+        "All materials shall be invoiced prior to dispatch. Procurement, Production, Quality Certification and dispatch the installation activities are subject to the receipt of the respective payment as per the agreed payment schedule.",
+        "3. Additional Transportation & Labour Charges:",
+        "Once the Order (has been released for production), any additional orders, scope enhancements, or revisions beyond the approved proposal may incur additional transportation, logistics, and labor charges.",
+        "4. Dispatch, Invoicing & E-Way Bill Compliance:",
+        "Materials shall be dispatched only against valid invoices and statutory documentation, including E-Way Bills wherever applicable. Dispatch schedules are subject to payment clearance.",
+        "5. Final Material Dispatch Policy:",
+        "All the project material shall be supplied in accordance with the agreed payment schedule. Cookscape reserves the right to withhold dispatch of material against outstanding payments.",
+        "6. Accessories, Hardware & Finishing Components:",
+        "Accessories, hardware fittings, appliances, and décor elements form an integral part of the project and shall be supplied and installed upon clearance of the applicable payment milestone.",
+        "7. Scope Variations:",
+        "Any addition, deletion, design revisions, material upgrades, or scope changes requested after approval of the drawings may result in revised costs and timelines and shall be executed only after mutual approval.",
+        "8. Cancellation & Refund Policy:",
+        "In the event of project cancellation, booking advances and amounts paid towards site measurements, design development, working drawings, 3D visualizations, and production planning shall be non-refundable.",
+        "9. Quality & Handover:",
+        "Cookscape maintains stringent quality standards throughout project execution. Clients are encouraged to communicate any concerns identified during the final inspection or handover process to ensure prompt resolution."
+      ]
+    },
+    "faqs": {
+      "title": "FREQUENTLY ASKED QUESTIONS (FAQS)",
+      "paragraphs": [
+        "1.What exactly is included in the quoted price?",
+        "The quoted price includes Design services, PDI, woodwork related materials, Hardware, manufacturing, Transportation, installation, Supervision, Inspection and services work specifically mentioned in the quotation.",
+        "2.How long is this quotation valid?",
+        "This quotation is valid for 15 days from the date of issue unless otherwise specified. Prices may be revised after the validity period due to market fluctuations in material and labor costs.",
+        "3.How is the total project cost calculated?",
+        "The total project cost is calculated based on the approved design, material specifications, project scope, installation work, and site conditions.",
+        "4.Are design services and drawings included in the quotation?",
+        "Yes. Design consultation, space planning, and relevant drawings are included in accordance with the scope defined in the quotation.",
+        "5.Can the design be modified after final approval?",
+        "Minor modifications may be accommodated before production begins. Significant design changes after approval may impact project cost and timeline.",
+        "6.Can additional requirements be added during project execution?",
+        "Yes. Additional requirements can be incorporated through a variation order process, subject to feasibility, revised pricing, and timeline adjustments.",
+        "7.What materials, brands, and finishes will be used for my project?",
+        "All materials, brands, and finishes will be selected in accordance with the approved specifications and material schedule provided during the design stage.",
+        "8.Will I receive material samples before production begins?",
+        "Yes. Material samples, finish swatches, or references will be shared for approval wherever applicable before production commences.",
+        "9.Can materials or finishes be upgraded after project confirmation?",
+        "Yes. Material or finishes can be upgraded during the loading stage. However , Once the order has been released for production no further changes can be accommodated.",
+        "10.Is GST included in the quoted amount?",
+        "GST is applicable as per prevailing government regulations. The quotation will clearly specify whether GST is included in the quoted amount or charged separately.",
+        "11.What is the estimated project completion timeline?",
+        "The estimated project timeline will be communicated based on project scope, design complexity, material availability, and site readiness.",
+        "12.When does the project timeline officially begin?",
+        "The project timeline officially begins upon receipt of the advance payment, final design approval, and confirmation of site readiness.",
+        "13.What factors could delay the project completion?",
+        "Project delays may occur due to design changes, delayed approvals, site readiness issues, material shortages, unforeseen site conditions, or other external factors beyond our control.",
+        "14.What is the payment schedule and payment structure?",
+        "Payments are generally structured in stages, including advance payment, production milestone payments, and final payment before handover. The detailed schedule will be specified in the quotation.",
+        "15.Are transportation and installation charges included in the quotation?",
+        "Transportation and installation charges are included for orders above 3 lakhs. Onsite Partitioning, Assembly of Space-saving furniture and Removal of existing units during renovation projects additional charges may be applied separately with the client’s approval.",
+        "16. Is Annual Maintenance Service Chargeable?",
+        "No, Annual maintenance service is provided free of charge for the first 10 years from the date of installation, subject to the terms and conditions specified in the guarantee services will be chargeable on a call-out basis."
+      ]
+    }
+  }
+}

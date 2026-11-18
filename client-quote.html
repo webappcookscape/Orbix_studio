@@ -1,0 +1,1365 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Cookscape — Protected Client Quotation</title>
+  <link rel="icon" type="image/svg+xml" href="/icon.svg">
+  <style>
+    :root {
+      --bg: #0b1120;
+      --panel: #111827;
+      --card: #1e293b;
+      --border: #334155;
+      --crimson: #c00000;
+      --crimson-dark: #8f0000;
+      --gold: #f59e0b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    input, textarea {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      user-select: text;
+    }
+
+    @media print {
+      html, body, #loginScreen, #viewerShell, #blurShield {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      #printBlockNotice {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        font-size: 20px;
+        font-weight: 700;
+        color: #111827;
+        text-align: center;
+      }
+    }
+    #printBlockNotice { display: none; }
+
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(circle at top right, rgba(192, 0, 0, 0.16), transparent 48%),
+                  radial-gradient(circle at bottom left, rgba(245, 158, 11, 0.10), transparent 45%),
+                  var(--bg);
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(192, 0, 0, 0.16);
+      border: 1px solid rgba(192, 0, 0, 0.45);
+      color: #fca5a5;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+
+    .auth-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px 0;
+      color: #fff;
+    }
+
+    .auth-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 22px 0;
+      line-height: 1.5;
+    }
+
+    .quote-ref-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+
+    .quote-ref-box strong {
+      display: block;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .field-group { margin-bottom: 14px; }
+    .field-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    .field-group input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 11px 13px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .field-group input:focus {
+      border-color: var(--crimson);
+      box-shadow: 0 0 0 3px rgba(192, 0, 0, 0.2);
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--crimson), var(--crimson-dark));
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover { opacity: 0.94; }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .err-msg {
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #fecaca;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .sec-note {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(148, 163, 184, 0.16);
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    #viewerShell {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 18px;
+      flex-shrink: 0;
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      background: var(--crimson);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      padding: 6px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .deck-meta { min-width: 0; }
+    .deck-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .deck-sub {
+      font-size: 11.5px;
+      color: #86efac;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      background: var(--card);
+      color: #e2e8f0;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 6px 11px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .tool-btn:hover { background: #2a3a53; }
+    .tool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .tool-btn.is-danger { border-color: rgba(239, 68, 68, 0.5); color: #fca5a5; }
+
+    .page-counter {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12.5px;
+      color: #f8fafc;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      padding: 5px 10px;
+      border-radius: 7px;
+    }
+
+    .workspace {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .sidebar {
+      width: 265px;
+      background: #0f172a;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 12px 10px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .sidebar.is-open { display: block; position: fixed; left: 0; top: 54px; bottom: 0; z-index: 40; box-shadow: 10px 0 30px rgba(0,0,0,0.6); }
+    }
+
+    .sec-header {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      margin: 12px 8px 6px 8px;
+    }
+
+    .slide-nav-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+      color: #cbd5e1;
+      padding: 7px 9px;
+      border-radius: 7px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-bottom: 3px;
+    }
+
+    .slide-nav-btn:hover { background: rgba(255, 255, 255, 0.06); }
+    .slide-nav-btn.is-active {
+      background: rgba(192, 0, 0, 0.20);
+      border-color: rgba(192, 0, 0, 0.55);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .slide-num-pill {
+      min-width: 22px;
+      height: 20px;
+      border-radius: 5px;
+      background: var(--card);
+      color: #94a3b8;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .slide-nav-btn.is-active .slide-num-pill {
+      background: var(--crimson);
+      color: #fff;
+    }
+
+    .stage-wrap {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 36px 16px;
+      position: relative;
+      background: radial-gradient(circle at center, #172033 0%, #090e1a 100%);
+    }
+
+    .canvas-frame {
+      position: relative;
+      background: #F4EDE3;
+      border-radius: 8px;
+      box-shadow: 0 24px 65px rgba(0, 0, 0, 0.65);
+      overflow: hidden;
+      transition: filter 0.12s ease, opacity 0.12s ease;
+    }
+
+    .canvas-frame.is-shielded {
+      filter: blur(26px) brightness(0.35);
+      opacity: 0.15;
+    }
+
+    #quoteCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      pointer-events: none;
+    }
+
+    .canvas-guard {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      background: transparent;
+    }
+
+    #blurShield {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(9, 14, 26, 0.92);
+      backdrop-filter: blur(18px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    #blurShield.is-visible { display: flex; }
+
+    .shield-box {
+      max-width: 420px;
+      background: var(--panel);
+      border: 1px solid rgba(192, 0, 0, 0.55);
+      border-radius: 14px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+
+    .shield-box h2 { margin: 0 0 8px 0; font-size: 18px; color: #fff; }
+    .shield-box p { margin: 0 0 18px 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div id="printBlockNotice">
+    Printing, saving, and direct exporting are disabled for this protected Cookscape quotation.
+  </div>
+
+  <!-- Step 1: Client Authentication Screen -->
+  <div id="loginScreen">
+    <div class="auth-card">
+      <div class="brand-pill">COOKSCAPE • CLIENT QUOTATION PORTAL</div>
+      <h1 class="auth-title">View Your Interior Proposal</h1>
+      <p class="auth-sub">Enter the username and password shared by your Cookscape designer to unlock your personalized quotation.</p>
+
+      <div class="quote-ref-box" id="loginQuoteMeta">
+        <strong id="metaTitle">Loading quotation details...</strong>
+        <span id="metaCode" style="color:#94a3b8;font-size:12px;">Checking access link</span>
+      </div>
+
+      <div class="err-msg" id="loginError"></div>
+
+      <form id="portalLoginForm" autocomplete="off">
+        <div class="field-group">
+          <label for="clientUserInput">Client Username</label>
+          <input id="clientUserInput" type="text" placeholder="Enter your username" required autocomplete="off">
+        </div>
+        <div class="field-group">
+          <label for="clientPassInput">Client Password</label>
+          <input id="clientPassInput" type="password" placeholder="Enter your password" required autocomplete="off">
+        </div>
+        <button type="submit" class="btn-primary" id="loginSubmitBtn">Unlock Protected Quote</button>
+      </form>
+
+      <div class="sec-note">
+        Protected Read-Only View: slides and quotation visuals are watermarked to your session and restricted from direct download, copying, or printing.
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Protected Canvas Quote Viewer -->
+  <div id="viewerShell">
+    <header class="topbar">
+      <div class="top-left">
+        <button class="tool-btn" id="toggleSidebarBtn" title="Slides Index">☰ Slides</button>
+        <div class="brand-mark">COOKSCAPE</div>
+        <div class="deck-meta">
+          <div class="deck-title" id="viewerTitle">Interior Quotation</div>
+          <div class="deck-sub" id="viewerProtectionBadge">🔒 Watermarked Client View</div>
+        </div>
+      </div>
+
+      <div class="top-controls">
+        <button class="tool-btn" id="prevSlideBtn">◀ Prev</button>
+        <span class="page-counter" id="slideCounter">1 / 1</span>
+        <button class="tool-btn" id="nextSlideBtn">Next ▶</button>
+        <button class="tool-btn" id="zoomOutBtn" title="Zoom Out">−</button>
+        <button class="tool-btn" id="zoomResetBtn" title="Fit Screen">Fit</button>
+        <button class="tool-btn" id="zoomInBtn" title="Zoom In">+</button>
+        <button class="tool-btn is-danger" id="portalLogoutBtn">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="sidebar" id="slidesSidebar"></aside>
+      <main class="stage-wrap" id="stageWrap">
+        <div class="canvas-frame" id="canvasFrame">
+          <canvas id="quoteCanvas" width="1060" height="1498"></canvas>
+          <div class="canvas-guard" id="canvasGuard"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="blurShield">
+    <div class="shield-box">
+      <h2>Quote Display Protected</h2>
+      <p id="shieldReason">Viewing is paused while the window is unfocused or capture shortcuts are active. Click Resume to continue viewing.</p>
+      <button class="btn-primary" id="resumeViewBtn" type="button">Resume Protected View</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var CANVAS_W = 1060;
+      var CANVAS_H = 1498;
+      var MASTER_BG = '#F4EDE3';
+      var RENDER_SCALE = Math.min(2, Math.max(1.5, window.devicePixelRatio || 1.5));
+
+      var pathParts = window.location.pathname.split('/').filter(Boolean);
+      var shareToken = pathParts.length >= 2 && pathParts[0] === 'quote' ? pathParts[1] : '';
+
+      var state = {
+        deck: null,
+        currentSlide: 0,
+        zoomFactor: 1.0,
+        shieldActive: false,
+        bitmapCache: {}
+      };
+
+      var els = {
+        loginScreen: document.getElementById('loginScreen'),
+        viewerShell: document.getElementById('viewerShell'),
+        metaTitle: document.getElementById('metaTitle'),
+        metaCode: document.getElementById('metaCode'),
+        loginForm: document.getElementById('portalLoginForm'),
+        loginSubmitBtn: document.getElementById('loginSubmitBtn'),
+        loginError: document.getElementById('loginError'),
+        userInput: document.getElementById('clientUserInput'),
+        passInput: document.getElementById('clientPassInput'),
+        viewerTitle: document.getElementById('viewerTitle'),
+        protectionBadge: document.getElementById('viewerProtectionBadge'),
+        sidebar: document.getElementById('slidesSidebar'),
+        toggleSidebarBtn: document.getElementById('toggleSidebarBtn'),
+        prevBtn: document.getElementById('prevSlideBtn'),
+        nextBtn: document.getElementById('nextSlideBtn'),
+        counter: document.getElementById('slideCounter'),
+        zoomOutBtn: document.getElementById('zoomOutBtn'),
+        zoomResetBtn: document.getElementById('zoomResetBtn'),
+        zoomInBtn: document.getElementById('zoomInBtn'),
+        logoutBtn: document.getElementById('portalLogoutBtn'),
+        stageWrap: document.getElementById('stageWrap'),
+        canvasFrame: document.getElementById('canvasFrame'),
+        canvas: document.getElementById('quoteCanvas'),
+        blurShield: document.getElementById('blurShield'),
+        shieldReason: document.getElementById('shieldReason'),
+        resumeViewBtn: document.getElementById('resumeViewBtn')
+      };
+
+      function showError(msg) {
+        els.loginError.textContent = msg;
+        els.loginError.style.display = msg ? 'block' : 'none';
+      }
+
+      function fmtINR(val) {
+        var n = Math.round(Number(val) || 0);
+        return '₹ ' + n.toLocaleString('en-IN');
+      }
+
+      function sendAudit(event, detail) {
+        if (!shareToken || !state.deck) return;
+        try {
+          fetch('/api/client-portal/' + encodeURIComponent(shareToken) + '/audit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            keepalive: true,
+            body: JSON.stringify({ event: event, detail: detail || '' })
+          }).catch(function () {});
+        } catch (_) {}
+      }
+
+      async function fetchAssetBitmap(assetKey) {
+        if (!assetKey) return null;
+        if (state.bitmapCache[assetKey]) return state.bitmapCache[assetKey];
+        var res = await fetch('/api/client-portal/' + encodeURIComponent(shareToken) + '/asset/' + encodeURIComponent(assetKey), {
+          credentials: 'same-origin',
+          cache: 'no-store'
+        });
+        if (!res.ok) return null;
+        var blob = await res.blob();
+        var bmp = await createImageBitmap(blob);
+        state.bitmapCache[assetKey] = bmp;
+        return bmp;
+      }
+
+      function wrapLines(ctx, text, maxWidth) {
+        var paragraphs = String(text || '').split('\n');
+        var out = [];
+        for (var p = 0; p < paragraphs.length; p++) {
+          var words = paragraphs[p].trim().split(/\s+/);
+          var line = '';
+          for (var w = 0; w < words.length; w++) {
+            var test = line ? (line + ' ' + words[w]) : words[w];
+            if (ctx.measureText(test).width > maxWidth && line) {
+              out.push(line);
+              line = words[w];
+            } else {
+              line = test;
+            }
+          }
+          if (line) out.push(line);
+        }
+        return out.length ? out : [''];
+      }
+
+      function drawRoundedRect(ctx, x, y, w, h, r, fill, stroke, lineWidth) {
+        ctx.beginPath();
+        if (typeof ctx.roundRect === 'function') {
+          ctx.roundRect(x, y, w, h, r);
+        } else {
+          ctx.rect(x, y, w, h);
+        }
+        if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+        if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth || 1; ctx.stroke(); }
+      }
+
+      // Draw authentic Master-Template #F4EDE3 slide frame + top-right Cookscape logo + centered heading
+      function drawMasterContentFrame(ctx, slide, logoBmp, headingTitle, headingSub) {
+        ctx.fillStyle = MASTER_BG;
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+        var rect = slide.logoRect || { x: 658.6, y: 29.0, w: 368.6, h: 69.1 };
+        if (logoBmp) {
+          ctx.drawImage(logoBmp, rect.x, rect.y, rect.w, rect.h);
+        }
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#08231B';
+        ctx.font = '700 32px Georgia, "Times New Roman", serif';
+        ctx.fillText(headingTitle || slide.title || '', CANVAS_W / 2, 162);
+
+        if (headingSub) {
+          ctx.fillStyle = '#C00000';
+          ctx.font = '600 22px Georgia, "Times New Roman", serif';
+          ctx.fillText(headingSub, CANVAS_W / 2, 198);
+        }
+        ctx.textAlign = 'left';
+      }
+
+      // Authentic Master-Template footer & sequential slide number
+      function drawFooterAndSlideNumber(ctx, footerText, slideNum, showFooter) {
+        if (showFooter !== false && footerText) {
+          drawRoundedRect(ctx, 36, CANVAS_H - 42, CANVAS_W - 130, 28, 6, 'rgba(244, 237, 227, 0.94)', 'rgba(8, 35, 27, 0.22)', 1);
+          ctx.fillStyle = '#333333';
+          ctx.font = '600 13px "Segoe UI", Arial, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(footerText, 48, CANVAS_H - 23);
+        }
+        drawRoundedRect(ctx, CANVAS_W - 84, CANVAS_H - 42, 48, 28, 6, '#08231B', null);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 13px "Segoe UI", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(String(slideNum || ''), CANVAS_W - 60, CANVAS_H - 23);
+        ctx.textAlign = 'left';
+      }
+
+      function drawTable(ctx, rows, x, startY, width, colRatios, opts) {
+        opts = opts || {};
+        var fontSize = opts.fontSize || 13;
+        var lineH = Math.round(fontSize * 1.38);
+        var padY = opts.padY || 7;
+        var padX = opts.padX || 11;
+        var y = startY;
+        var headerRows = opts.headerRows !== undefined ? opts.headerRows : 1;
+        var colWidths = colRatios.map(function (r) { return r * width; });
+
+        for (var r = 0; r < rows.length; r++) {
+          var row = rows[r];
+          var isHeader = r < headerRows;
+          ctx.font = (isHeader ? 'bold ' : '') + fontSize + 'px "Segoe UI", Arial, sans-serif';
+
+          var cellWrapped = [];
+          var maxLines = 1;
+          for (var c = 0; c < colWidths.length; c++) {
+            var val = row[c] !== undefined ? String(row[c]) : '';
+            ctx.font = (isHeader || (c === 0 && opts.boldFirstCol))
+              ? ('bold ' + fontSize + 'px "Segoe UI", Arial, sans-serif')
+              : (fontSize + 'px "Segoe UI", Arial, sans-serif');
+            var wrapped = wrapLines(ctx, val, Math.max(28, colWidths[c] - padX * 2));
+            cellWrapped.push(wrapped);
+            if (wrapped.length > maxLines) maxLines = wrapped.length;
+          }
+
+          var rowH = maxLines * lineH + padY * 2;
+          if (y + rowH > CANVAS_H - 60) break;
+
+          var bg = isHeader ? (opts.headerBg || '#C00000') : (r % 2 === 0 ? '#FFFDF9' : '#FAF6F0');
+          if (row._highlight) bg = '#FEF9C3';
+
+          ctx.fillStyle = bg;
+          ctx.fillRect(x, y, width, rowH);
+          ctx.strokeStyle = '#D2C6B6';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, width, rowH);
+
+          var cx = x;
+          for (var c2 = 0; c2 < colWidths.length; c2++) {
+            if (c2 > 0) {
+              ctx.beginPath();
+              ctx.moveTo(cx, y);
+              ctx.lineTo(cx, y + rowH);
+              ctx.stroke();
+            }
+            var lines = cellWrapped[c2];
+            var isRight = opts.rightAlignCols && opts.rightAlignCols.indexOf(c2) !== -1 && !isHeader;
+            ctx.fillStyle = isHeader ? '#FFFFFF' : (row._accent && c2 === colWidths.length - 1 ? '#C00000' : '#08231B');
+            ctx.font = (isHeader || (c2 === 0 && opts.boldFirstCol) || row._highlight)
+              ? ('bold ' + fontSize + 'px "Segoe UI", Arial, sans-serif')
+              : (fontSize + 'px "Segoe UI", Arial, sans-serif');
+            ctx.textAlign = isRight ? 'right' : 'left';
+            var tx = isRight ? (cx + colWidths[c2] - padX) : (cx + padX);
+            for (var li = 0; li < lines.length; li++) {
+              ctx.fillText(lines[li], tx, y + padY + fontSize + li * lineH - 2);
+            }
+            cx += colWidths[c2];
+          }
+          ctx.textAlign = 'left';
+          y += rowH;
+        }
+        return y;
+      }
+
+      // Draw crisp isometric unit thumbnail onto canvas when icon bitmap isn't attached
+      function drawFallbackUnitIcon(ctx, cx, cy, size) {
+        var s = size * 0.42;
+        ctx.save();
+        ctx.fillStyle = '#8CE1D2';
+        ctx.strokeStyle = '#2F756B';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx - s, cy - s * 0.4);
+        ctx.lineTo(cx, cy - s * 0.8);
+        ctx.lineTo(cx, cy + s * 0.7);
+        ctx.lineTo(cx - s, cy + s * 1.1);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#5EBAAA';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - s * 0.8);
+        ctx.lineTo(cx + s, cy - s * 0.4);
+        ctx.lineTo(cx + s, cy + s * 1.1);
+        ctx.lineTo(cx, cy + s * 0.7);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      async function renderSlideToCanvas(slide) {
+        var ctx = els.canvas.getContext('2d');
+        els.canvas.width = Math.round(CANVAS_W * RENDER_SCALE);
+        els.canvas.height = Math.round(CANVAS_H * RENDER_SCALE);
+        ctx.save();
+        ctx.scale(RENDER_SCALE, RENDER_SCALE);
+
+        if (slide.type === 'cover') {
+          await paintCoverSlide(ctx, slide);
+        } else if (slide.type === 'image_slide') {
+          var bmp = await fetchAssetBitmap(slide.asset);
+          ctx.fillStyle = MASTER_BG;
+          ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+          if (bmp) ctx.drawImage(bmp, 0, 0, CANVAS_W, CANVAS_H);
+          drawFooterAndSlideNumber(ctx, slide.footer, slide.slideNumber, slide.showFooter);
+        } else if (slide.type === 'specs_table') {
+          await paintSpecsSlide(ctx, slide);
+        } else if (slide.type === 'unit_snips') {
+          await paintUnitSnipsSlide(ctx, slide);
+        } else if (slide.type === 'quotation_summary') {
+          await paintQuotationSummarySlide(ctx, slide);
+        } else if (slide.type === 'process_slide' || slide.type === 'table_slide' || slide.type === 'prose_slide') {
+          await paintEditorialTextSlide(ctx, slide);
+        }
+
+        if (!state.deck.securitySettings || state.deck.securitySettings.watermarkEnabled !== false) {
+          paintCanvasWatermark(ctx, state.deck.watermarkText || 'COOKSCAPE PROTECTED QUOTE');
+        }
+        ctx.restore();
+      }
+
+      // Exact Master-Template Cover Slide 1 (only substituting Patron & Designer details)
+      async function paintCoverSlide(ctx, slide) {
+        var cd = slide.coverData || {};
+        var bgBmp = await fetchAssetBitmap(slide.coverBgAsset || 'slide_01_bg.jpg');
+        ctx.fillStyle = MASTER_BG;
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+        if (bgBmp) ctx.drawImage(bgBmp, 0, 0, CANVAS_W, CANVAS_H);
+
+        var layout = slide.coverLayout || {};
+        var statics = layout.staticLabels || [];
+        for (var i = 0; i < statics.length; i++) {
+          var lbl = statics[i];
+          var pxSize = Math.round((lbl.szPt || 12) * 1.18);
+          var isSerif = (lbl.font || '').indexOf('Baskerville') !== -1 || (lbl.font || '').indexOf('Moontime') !== -1;
+          var isScript = (lbl.font || '').indexOf('Moontime') !== -1;
+          var family = isSerif ? 'Georgia, "Times New Roman", serif' : '"Segoe UI", Arial, sans-serif';
+          ctx.fillStyle = lbl.color || '#08231B';
+          ctx.font = (isScript ? 'italic ' : '') + ((pxSize > 16 || lbl.text === 'Patron Details' || lbl.text === 'Designer Details') ? '700 ' : '600 ') + pxSize + 'px ' + family;
+          var lines = String(lbl.text || '').split('\n');
+          if (lines.length === 1 && ctx.measureText(lines[0]).width > (lbl.w + 18)) {
+            lines = wrapLines(ctx, lbl.text, lbl.w + 14);
+          }
+          var lineStep = Math.round(pxSize * 1.16);
+          for (var l = 0; l < lines.length; l++) {
+            ctx.fillText(lines[l], lbl.x, lbl.y + pxSize + l * lineStep);
+          }
+        }
+
+        var slots = layout.dynamicSlots || {};
+        var dynamicMap = [
+          { key: 'patron_name', val: cd.patron && cd.patron.name, fallback: { x: 256, y: 854, w: 220 } },
+          { key: 'patron_phone', val: cd.patron && cd.patron.phone, fallback: { x: 254, y: 908, w: 200 } },
+          { key: 'patron_location', val: cd.patron && cd.patron.location, fallback: { x: 252, y: 958, w: 260 } },
+          { key: 'patron_date', val: cd.patron && cd.patron.date, fallback: { x: 251, y: 1006, w: 180 } },
+          { key: 'designer_name', val: cd.designer && cd.designer.name, fallback: { x: 667, y: 1127, w: 240 } },
+          { key: 'designer_phone', val: cd.designer && cd.designer.phone, fallback: { x: 667, y: 1179, w: 240 } },
+          { key: 'designer_email', val: cd.designer && cd.designer.email, fallback: { x: 668, y: 1220, w: 295 } }
+        ];
+        dynamicMap.forEach(function (dm) {
+          var box = slots[dm.key] || dm.fallback;
+          ctx.fillStyle = '#08231B';
+          ctx.font = '700 16px Georgia, "Times New Roman", serif';
+          var text = String(dm.val || '-');
+          var lines = wrapLines(ctx, text, Math.max(220, box.w + 70));
+          ctx.fillText(lines[0], box.x, box.y + 24);
+        });
+
+        drawFooterAndSlideNumber(ctx, '', slide.slideNumber, false);
+      }
+
+      async function paintSpecsSlide(ctx, slide) {
+        var logoBmp = await fetchAssetBitmap(slide.logoAsset);
+        drawMasterContentFrame(ctx, slide, logoBmp, slide.variantTitle || slide.title, 'Material & Hardware Specifications');
+        var y = 224;
+        var tables = slide.tables || [];
+        for (var i = 0; i < tables.length; i++) {
+          var tbl = tables[i];
+          var isMulti = tables.length > 1;
+          var ratios = (tbl[0] && tbl[0].length === 2) ? [0.34, 0.66] : [0.5, 0.5];
+          y = drawTable(ctx, tbl, 54, y, CANVAS_W - 108, ratios, {
+            fontSize: isMulti ? 13.5 : 12.0,
+            padY: isMulti ? 9 : 6.2,
+            boldFirstCol: true,
+            headerBg: '#C00000'
+          });
+          y += 26;
+        }
+        drawFooterAndSlideNumber(ctx, slide.footer, slide.slideNumber, true);
+      }
+
+      // Auto-generated Unit Snips Slide (placed right after Specifications, before Quotation)
+      async function paintUnitSnipsSlide(ctx, slide) {
+        var logoBmp = await fetchAssetBitmap(slide.logoAsset);
+        var items = slide.items || [];
+
+        // Pre-fetch unit preview thumbnails for this slide's items
+        var iconMap = {};
+        for (var k = 0; k < items.length; k++) {
+          var ik = items[k].iconKey;
+          if (ik && !iconMap[ik]) {
+            iconMap[ik] = await fetchAssetBitmap('unit_icon_' + ik);
+          }
+        }
+
+        drawMasterContentFrame(ctx, slide, logoBmp, slide.variantTitle, slide.title);
+
+        var x = 44, w = CANVAS_W - 88, y = 228;
+        var colW = [38, 86, 134, 240, 146, 86, 114, 128];
+        var headers = ['#', 'Unit', 'Room', 'Modular Unit & Finish', 'Size (mm)', 'Qty', 'Unit Price', 'Amount'];
+        var aligns = ['left', 'center', 'left', 'left', 'left', 'right', 'right', 'right'];
+
+        // Header bar
+        ctx.fillStyle = '#08231B';
+        ctx.fillRect(x, y, w, 38);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 13px "Segoe UI", Arial, sans-serif';
+        var hx = x;
+        for (var c = 0; c < colW.length; c++) {
+          ctx.textAlign = aligns[c];
+          var htx = aligns[c] === 'right' ? (hx + colW[c] - 8) : (aligns[c] === 'center' ? hx + colW[c] / 2 : hx + 8);
+          ctx.fillText(headers[c], htx, y + 24);
+          hx += colW[c];
+        }
+        ctx.textAlign = 'left';
+        y += 38;
+
+        var rowH = 104;
+        if (!items.length) {
+          ctx.fillStyle = '#FFFDF9';
+          ctx.fillRect(x, y, w, 80);
+          ctx.strokeStyle = '#D2C6B6';
+          ctx.strokeRect(x, y, w, 80);
+          ctx.fillStyle = '#64748B';
+          ctx.font = '14px "Segoe UI", Arial, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('No modular furniture items placed in the selected pricing scope.', x + w / 2, y + 46);
+          ctx.textAlign = 'left';
+          y += 80;
+        } else {
+          for (var r = 0; r < items.length; r++) {
+            var it = items[r];
+            if (y + rowH > CANVAS_H - 96) break;
+            ctx.fillStyle = r % 2 === 0 ? '#FFFDF9' : '#FAF6F0';
+            ctx.fillRect(x, y, w, rowH);
+            ctx.strokeStyle = '#D2C6B6';
+            ctx.strokeRect(x, y, w, rowH);
+
+            var cx = x;
+            // Column separators
+            for (var c2 = 1; c2 < colW.length; c2++) {
+              cx += colW[c2 - 1];
+              ctx.beginPath();
+              ctx.moveTo(cx, y);
+              ctx.lineTo(cx, y + rowH);
+              ctx.stroke();
+            }
+
+            // #
+            ctx.fillStyle = '#08231B';
+            ctx.font = 'bold 13px "Segoe UI", Arial, sans-serif';
+            ctx.fillText(String((slide.startNo || 1) + r), x + 10, y + 54);
+
+            // Unit thumbnail preview
+            var ix = x + colW[0];
+            var bmp = it.iconKey ? iconMap[it.iconKey] : null;
+            if (bmp) {
+              var sScale = Math.min(70 / bmp.width, 84 / bmp.height);
+              var dw = bmp.width * sScale;
+              var dh = bmp.height * sScale;
+              ctx.drawImage(bmp, ix + (colW[1] - dw) / 2, y + (rowH - dh) / 2, dw, dh);
+            } else {
+              drawFallbackUnitIcon(ctx, ix + colW[1] / 2, y + rowH / 2, 60);
+            }
+
+            // Room
+            var rx = ix + colW[1];
+            ctx.fillStyle = '#08231B';
+            ctx.font = 'bold 12.5px "Segoe UI", Arial, sans-serif';
+            wrapLines(ctx, it.room || 'General', colW[2] - 14).slice(0, 3).forEach(function (ln, li) {
+              ctx.fillText(ln, rx + 8, y + 36 + li * 17);
+            });
+
+            // Name + Finish + Ref
+            var nx = rx + colW[2];
+            ctx.fillStyle = '#08231B';
+            ctx.font = 'bold 13px "Segoe UI", Arial, sans-serif';
+            ctx.fillText(String(it.name || 'Modular Unit').slice(0, 26), nx + 8, y + 26);
+            if (it.refCode) {
+              ctx.fillStyle = '#C00000';
+              ctx.font = 'bold 11.5px "Segoe UI", Arial, sans-serif';
+              ctx.fillText('Ref: ' + it.refCode, nx + 8, y + 45);
+            }
+            ctx.fillStyle = '#475569';
+            ctx.font = '11.5px "Segoe UI", Arial, sans-serif';
+            wrapLines(ctx, it.finish || '', colW[3] - 16).slice(0, 2).forEach(function (ln, li) {
+              ctx.fillText(ln, nx + 8, y + 66 + li * 16);
+            });
+
+            // Size
+            var sx = nx + colW[3];
+            ctx.fillStyle = '#08231B';
+            ctx.font = '12.5px "Segoe UI", Arial, sans-serif';
+            ctx.fillText(String(it.dimensions || '-').slice(0, 20), sx + 8, y + 54);
+
+            // Qty
+            var qx = sx + colW[4];
+            ctx.textAlign = 'right';
+            ctx.fillText(String(it.qtyText || '-'), qx + colW[5] - 8, y + 54);
+
+            // Unit Price
+            var px = qx + colW[5];
+            ctx.fillText(fmtINR(it.rate || 0), px + colW[6] - 8, y + 54);
+
+            // Line Total
+            var ax = px + colW[6];
+            ctx.fillStyle = '#C00000';
+            ctx.font = 'bold 13.5px "Segoe UI", Arial, sans-serif';
+            ctx.fillText(fmtINR(it.amount || 0), ax + colW[7] - 8, y + 54);
+            ctx.textAlign = 'left';
+
+            y += rowH;
+          }
+        }
+
+        // Optional Specification Remarks box matching quotegenerator notes block
+        if (slide.notes && slide.notes.trim() && y + 110 < CANVAS_H - 60) {
+          y += 18;
+          drawRoundedRect(ctx, x, y, w, 108, 8, '#FFFBEB', '#FCD34D', 1.8);
+          ctx.fillStyle = '#92400E';
+          ctx.font = 'bold 13px "Segoe UI", Arial, sans-serif';
+          ctx.fillText('UNIT SPECIFICATION REMARKS', x + 16, y + 26);
+          ctx.fillStyle = '#1E293B';
+          ctx.font = '13px "Segoe UI", Arial, sans-serif';
+          wrapLines(ctx, slide.notes.trim(), w - 32).slice(0, 3).forEach(function (ln, li) {
+            ctx.fillText(ln, x + 16, y + 50 + li * 19);
+          });
+        }
+
+        drawFooterAndSlideNumber(ctx, slide.footer, slide.slideNumber, true);
+      }
+
+      // Exact Quotation Slide matching Master-Template Slides 9/12/15/18/21 (Quotation Snip area)
+      async function paintQuotationSummarySlide(ctx, slide) {
+        var logoBmp = await fetchAssetBitmap(slide.logoAsset);
+        drawMasterContentFrame(ctx, slide, logoBmp, slide.variantTitle, 'Quotation');
+
+        var comm = slide.commercial || {};
+        var rooms = slide.roomsSummary || [];
+        var y = 232;
+
+        // Scope info strip
+        drawRoundedRect(ctx, 54, y, CANVAS_W - 108, 52, 8, '#FFFDF9', '#D2C6B6', 1.2);
+        ctx.fillStyle = '#08231B';
+        ctx.font = 'bold 14px "Segoe UI", Arial, sans-serif';
+        ctx.fillText('Scope: ' + (slide.roomScopeLabel || 'All Rooms'), 72, y + 31);
+        if (slide.quoteCode) {
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#C00000';
+          ctx.fillText('Ref: ' + slide.quoteCode, CANVAS_W - 72, y + 31);
+          ctx.textAlign = 'left';
+        }
+        y += 74;
+
+        if (rooms.length) {
+          ctx.fillStyle = '#08231B';
+          ctx.font = 'bold 17px Georgia, "Times New Roman", serif';
+          ctx.fillText('ROOM-WISE BREAKDOWN', 54, y);
+          y += 12;
+          var rRows = [['Room / Zone', 'Units', 'Modular Subtotal', 'Share']];
+          rooms.slice(0, 10).forEach(function (r) {
+            rRows.push([r.name, String(r.itemCount || 0), fmtINR(r.roomSubtotal || 0), String(r.percentShare || 0) + '%']);
+          });
+          y = drawTable(ctx, rRows, 54, y, CANVAS_W - 108, [0.46, 0.14, 0.26, 0.14], {
+            fontSize: 13.5,
+            padY: 8,
+            boldFirstCol: true,
+            rightAlignCols: [1, 2, 3],
+            headerBg: '#08231B'
+          });
+          y += 30;
+        }
+
+        ctx.fillStyle = '#08231B';
+        ctx.font = 'bold 17px Georgia, "Times New Roman", serif';
+        ctx.fillText('COMMERCIAL ESTIMATE SUMMARY', 54, y);
+        y += 12;
+
+        var cRows = [
+          ['Description', 'Basis / Rate', 'Amount'],
+          ['Modular Woodwork Subtotal', 'Measured Units Schedule', fmtINR(comm.woodworkSubtotal || 0)],
+          ['Additional Accessories', 'Custom Hardware & Add-ons', fmtINR(comm.additionalAccessories || 0)],
+          ['Appliances', 'Selected Appliances', fmtINR(comm.appliances || 0)],
+          ['Design Charges & Handling Fee', String(comm.designPercent !== undefined ? comm.designPercent : 9) + '%', fmtINR(comm.designAmount || 0)],
+          ['Freight & Logistics Charges', String(comm.freightPercent !== undefined ? comm.freightPercent : 2.5) + '%', fmtINR(comm.freightAmount || 0)]
+        ];
+        if (Number(comm.discountAmount || 0) > 0) {
+          cRows.push(['Promotional Discount', String(comm.discountPercent || 0) + '% Off', '- ' + fmtINR(comm.discountAmount)]);
+        }
+        if (Number(comm.adpAmount || 0) > 0) {
+          cRows.push(['Additional Discount (ADP)', String(comm.adpPercent || 0) + '% Off', '- ' + fmtINR(comm.adpAmount)]);
+        }
+        cRows.push(['Net Estimate (Excl. GST)', 'Taxable Value', fmtINR(comm.netBeforeTax || 0)]);
+        cRows.push(['GST Applicable', String(comm.gstPercent !== undefined ? comm.gstPercent : 18) + '%', fmtINR(comm.gstAmount || 0)]);
+
+        var grandRow = ['FINAL QUOTED VALUE (INCL. GST)', 'Total Investment', fmtINR(comm.grandTotal || 0)];
+        grandRow._highlight = true;
+        grandRow._accent = true;
+        cRows.push(grandRow);
+
+        y = drawTable(ctx, cRows, 54, y, CANVAS_W - 108, [0.5, 0.24, 0.26], {
+          fontSize: 13.8,
+          padY: 9,
+          boldFirstCol: true,
+          rightAlignCols: [2],
+          headerBg: '#C00000'
+        });
+
+        y += 22;
+        if (y < CANVAS_H - 90) {
+          var tags = [
+            'Loading/Unloading: ' + (comm.loadingUnloadingStatus || 'Additional'),
+            'Floor Mat: ' + (comm.floorMatStatus || 'Not Included'),
+            'Civil Works: ' + (comm.civilWorksStatus || 'As per actuals'),
+            'Elec/Plumb: ' + (comm.electricalPlumbingStatus || 'Additional'),
+            'False Ceiling: ' + (comm.falseCeilingStatus || 'Not Included')
+          ];
+          ctx.fillStyle = '#475569';
+          ctx.font = '600 12.5px "Segoe UI", Arial, sans-serif';
+          wrapLines(ctx, 'Commercial Notes: ' + tags.join('   •   '), CANVAS_W - 108).forEach(function (ln, li) {
+            ctx.fillText(ln, 54, y + 12 + li * 18);
+          });
+        }
+
+        drawFooterAndSlideNumber(ctx, slide.footer, slide.slideNumber, true);
+      }
+
+      async function paintEditorialTextSlide(ctx, slide) {
+        var logoBmp = await fetchAssetBitmap(slide.logoAsset);
+        drawMasterContentFrame(ctx, slide, logoBmp, slide.title, '');
+
+        var y = 212;
+        var paras = slide.paragraphs || [];
+        for (var i = 0; i < paras.length; i++) {
+          var p = paras[i];
+          var isHeading = /^\d+\.|^Stage\s+\d+/i.test(p) || (p.length < 72 && p.indexOf(':') === p.length - 1);
+          ctx.font = (isHeading ? 'bold ' : '') + '13.5px "Segoe UI", Arial, sans-serif';
+          ctx.fillStyle = isHeading ? '#C00000' : '#1E293B';
+          var lines = wrapLines(ctx, p, CANVAS_W - 116);
+          if (y + lines.length * 19 > CANVAS_H - (slide.table && slide.table.length ? 260 : 75)) break;
+          for (var l = 0; l < lines.length; l++) {
+            ctx.fillText(lines[l], 54, y);
+            y += 19;
+          }
+          y += isHeading ? 4 : 9;
+        }
+
+        if (slide.table && slide.table.length) {
+          var cols = slide.table[0].length;
+          var ratios = cols === 3 ? [0.28, 0.10, 0.62] : (cols === 2 ? [0.5, 0.5] : new Array(cols).fill(1 / cols));
+          drawTable(ctx, slide.table, 54, Math.max(y + 8, 212), CANVAS_W - 108, ratios, {
+            fontSize: 13,
+            padY: 8,
+            boldFirstCol: cols !== 2,
+            headerBg: '#C00000'
+          });
+        }
+
+        drawFooterAndSlideNumber(ctx, slide.footer, slide.slideNumber, true);
+      }
+
+      function paintCanvasWatermark(ctx, text) {
+        ctx.save();
+        ctx.translate(CANVAS_W / 2, CANVAS_H / 2);
+        ctx.rotate(-Math.PI / 6);
+        ctx.font = 'bold 17px "Segoe UI", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
+        for (var y = -1100; y <= 1100; y += 210) {
+          for (var x = -900; x <= 900; x += 560) {
+            ctx.fillText(text, x + ((y % 420) === 0 ? 140 : -140), y);
+          }
+        }
+        ctx.restore();
+      }
+
+      function applyCanvasSize() {
+        var availW = Math.max(320, els.stageWrap.clientWidth - 48);
+        var availH = Math.max(400, els.stageWrap.clientHeight - 48);
+        var fitW = Math.min(availW, availH * (CANVAS_W / CANVAS_H));
+        els.canvasFrame.style.width = Math.round(fitW * state.zoomFactor) + 'px';
+      }
+
+      function renderSidebar() {
+        var slides = state.deck.slides || [];
+        var html = '';
+        var lastSection = '';
+        slides.forEach(function (s, idx) {
+          if (s.section && s.section !== lastSection) {
+            lastSection = s.section;
+            html += '<div class="sec-header">' + escapeHtml(s.section) + '</div>';
+          }
+          html += '<button class="slide-nav-btn' + (idx === state.currentSlide ? ' is-active' : '') + '" data-idx="' + idx + '">' +
+            '<span class="slide-num-pill">' + s.slideNumber + '</span>' +
+            '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(s.title) + '</span>' +
+            '</button>';
+        });
+        els.sidebar.innerHTML = html;
+        els.sidebar.querySelectorAll('.slide-nav-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            goToSlide(Number(btn.getAttribute('data-idx')));
+            els.sidebar.classList.remove('is-open');
+          });
+        });
+      }
+
+      async function goToSlide(idx) {
+        var slides = (state.deck && state.deck.slides) || [];
+        if (!slides.length) return;
+        state.currentSlide = Math.max(0, Math.min(slides.length - 1, idx));
+        var s = slides[state.currentSlide];
+        els.counter.textContent = (state.currentSlide + 1) + ' / ' + slides.length;
+        els.prevBtn.disabled = state.currentSlide === 0;
+        els.nextBtn.disabled = state.currentSlide === slides.length - 1;
+        els.sidebar.querySelectorAll('.slide-nav-btn').forEach(function (btn) {
+          btn.classList.toggle('is-active', Number(btn.getAttribute('data-idx')) === state.currentSlide);
+        });
+        var activeBtn = els.sidebar.querySelector('.slide-nav-btn.is-active');
+        if (activeBtn && activeBtn.scrollIntoView) activeBtn.scrollIntoView({ block: 'nearest' });
+        await renderSlideToCanvas(s);
+        sendAudit('slide_view', 'Slide ' + s.slideNumber);
+      }
+
+      function escapeHtml(s) {
+        return String(s || '')
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function activateShield(reason, auditEvent) {
+        if (!state.deck) return;
+        if (state.deck.securitySettings && state.deck.securitySettings.blurShieldEnabled === false) return;
+        state.shieldActive = true;
+        els.canvasFrame.classList.add('is-shielded');
+        els.shieldReason.textContent = reason || 'Viewing is paused while the window is unfocused.';
+        els.blurShield.classList.add('is-visible');
+        if (auditEvent) sendAudit(auditEvent, reason);
+      }
+
+      function deactivateShield() {
+        state.shieldActive = false;
+        els.canvasFrame.classList.remove('is-shielded');
+        els.blurShield.classList.remove('is-visible');
+      }
+
+      function installSecurityListeners() {
+        document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+        document.addEventListener('dragstart', function (e) { e.preventDefault(); });
+        document.addEventListener('copy', function (e) {
+          if (state.deck) {
+            e.preventDefault();
+            sendAudit('copy_attempt', 'Blocked copy shortcut');
+          }
+        });
+
+        window.addEventListener('keydown', function (e) {
+          if (state.deck) {
+            if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); goToSlide(state.currentSlide + 1); return; }
+            if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); goToSlide(state.currentSlide - 1); return; }
+          }
+          var k = (e.key || '').toLowerCase();
+          if (e.key === 'PrintScreen' || e.keyCode === 44) {
+            try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(''); } catch (_) {}
+            activateShield('Capture shortcut detected. Protected slides hidden.', 'screenshot_key_attempt');
+            e.preventDefault();
+            return;
+          }
+          if ((e.ctrlKey || e.metaKey) && (k === 'p' || k === 's' || k === 'u')) {
+            e.preventDefault();
+            if (k === 'p') sendAudit('print_attempt', 'Blocked print hotkey');
+            return;
+          }
+          if ((e.ctrlKey || e.metaKey) && e.shiftKey && (k === 's' || k === 'i' || k === 'j' || k === 'c')) {
+            e.preventDefault();
+            activateShield('Protected view temporarily paused.', 'screenshot_key_attempt');
+          }
+          if (e.key === 'F12') e.preventDefault();
+        });
+
+        window.addEventListener('beforeprint', function () {
+          if (state.deck) sendAudit('print_attempt', 'beforeprint triggered');
+        });
+        window.addEventListener('blur', function () {
+          activateShield('Focus moved away from the quotation window.', 'focus_blur');
+        });
+        document.addEventListener('visibilitychange', function () {
+          if (document.hidden) activateShield('Quotation tab hidden.', 'focus_blur');
+        });
+        els.resumeViewBtn.addEventListener('click', deactivateShield);
+      }
+
+      async function loadAuthenticatedDeck() {
+        var res = await fetch('/api/client-portal/' + encodeURIComponent(shareToken) + '/payload', {
+          credentials: 'same-origin',
+          cache: 'no-store'
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success || !data.deck) {
+          throw new Error(data.error || 'Unable to load quotation');
+        }
+        state.deck = data.deck;
+        els.loginScreen.style.display = 'none';
+        els.viewerShell.style.display = 'flex';
+        els.viewerTitle.textContent = data.deck.title || 'Cookscape Interior Quotation';
+        els.protectionBadge.textContent = '🔒 Watermarked for ' + (data.deck.clientName || 'Client') + ' • Read-Only';
+        renderSidebar();
+        applyCanvasSize();
+        await goToSlide(0);
+      }
+
+      async function initPortal() {
+        installSecurityListeners();
+        window.addEventListener('resize', applyCanvasSize);
+
+        els.toggleSidebarBtn.addEventListener('click', function () {
+          els.sidebar.classList.toggle('is-open');
+        });
+        els.prevBtn.addEventListener('click', function () { goToSlide(state.currentSlide - 1); });
+        els.nextBtn.addEventListener('click', function () { goToSlide(state.currentSlide + 1); });
+        els.zoomInBtn.addEventListener('click', function () {
+          state.zoomFactor = Math.min(2.0, state.zoomFactor + 0.15);
+          applyCanvasSize();
+        });
+        els.zoomOutBtn.addEventListener('click', function () {
+          state.zoomFactor = Math.max(0.65, state.zoomFactor - 0.15);
+          applyCanvasSize();
+        });
+        els.zoomResetBtn.addEventListener('click', function () {
+          state.zoomFactor = 1.0;
+          applyCanvasSize();
+        });
+        els.logoutBtn.addEventListener('click', async function () {
+          try {
+            await fetch('/api/client-portal/' + encodeURIComponent(shareToken) + '/logout', {
+              method: 'POST', credentials: 'same-origin'
+            });
+          } catch (_) {}
+          window.location.reload();
+        });
+
+        if (!shareToken) {
+          els.metaTitle.textContent = 'Invalid Quotation Link';
+          els.metaCode.textContent = 'No quotation token provided in URL.';
+          els.loginForm.style.display = 'none';
+          return;
+        }
+
+        try {
+          var res = await fetch('/api/client-portal/' + encodeURIComponent(shareToken) + '/info', {
+            credentials: 'same-origin',
+            cache: 'no-store'
+          });
+          var info = await res.json();
+          if (!info.exists || !info.active) {
+            els.metaTitle.textContent = info.title || 'Quotation Unavailable';
+            els.metaCode.textContent = info.reason || 'This quotation link is inactive.';
+            els.loginForm.style.display = 'none';
+            showError(info.reason || 'Quotation link is invalid, expired, or revoked.');
+            return;
+          }
+          els.metaTitle.textContent = info.title || 'Cookscape Interior Quotation';
+          els.metaCode.textContent = info.quoteCode ? ('Reference: ' + info.quoteCode) : 'Verified Protected Quote Link';
+          if (info.authenticated) await loadAuthenticatedDeck();
+        } catch (err) {
+          showError('Unable to reach server. Please refresh and try again.');
+        }
+
+        els.loginForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          showError('');
+          els.loginSubmitBtn.disabled = true;
+          els.loginSubmitBtn.textContent = 'Verifying...';
+          try {
+            var res = await fetch('/api/client-portal/' + encodeURIComponent(shareToken) + '/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'same-origin',
+              body: JSON.stringify({
+                username: els.userInput.value.trim(),
+                password: els.passInput.value
+              })
+            });
+            var data = await res.json();
+            if (!res.ok || !data.success) {
+              showError(data.error || 'Invalid client credentials.');
+              els.loginSubmitBtn.disabled = false;
+              els.loginSubmitBtn.textContent = 'Unlock Protected Quote';
+              return;
+            }
+            await loadAuthenticatedDeck();
+          } catch (err) {
+            showError('Network error while verifying credentials.');
+            els.loginSubmitBtn.disabled = false;
+            els.loginSubmitBtn.textContent = 'Unlock Protected Quote';
+          }
+        });
+      }
+
+      initPortal();
+    })();
+  </script>
+</body>
+</html>

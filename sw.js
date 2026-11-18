@@ -3,7 +3,7 @@
    Offline CAD engine, cache-first app shell & resilient background sync
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'orbix-studio-v18';
+const CACHE_NAME = 'orbix-studio-v19';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const STATIC_ASSETS = [
   './orbix-plan.js',
   './orbix-3d.js',
   './orbix-ui.js',
+  './orbix-client-quote.js',
   './logo.jpeg',
   './icon.svg',
   './icon-192.png',
@@ -63,6 +64,17 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-GET requests and non-http(s) schemes
   if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Never intercept or cache protected client quote portals or quote APIs
+  if (
+    url.pathname.startsWith('/api/client-portal/') ||
+    url.pathname.startsWith('/api/client-quotes') ||
+    url.pathname === '/client-quote.html' ||
+    /^\/quote\/.+/.test(url.pathname)
+  ) {
+    event.respondWith(fetch(request, { cache: 'no-store' }));
     return;
   }
 

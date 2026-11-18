@@ -96,3 +96,29 @@ CREATE TABLE IF NOT EXISTS project_forks (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Client Quotes Table (Protected shareable quotes with per-quote client credentials)
+CREATE TABLE IF NOT EXISTS client_quotes (
+  id VARCHAR(64) PRIMARY KEY,
+  project_id VARCHAR(64) NOT NULL,
+  created_by VARCHAR(64) REFERENCES users(id) ON DELETE SET NULL,
+  share_token VARCHAR(128) UNIQUE NOT NULL,
+  title VARCHAR(256) NOT NULL,
+  quote_code VARCHAR(64) DEFAULT '',
+  client_name VARCHAR(256) NOT NULL,
+  client_phone VARCHAR(64) DEFAULT '',
+  client_email VARCHAR(128) DEFAULT '',
+  site_address TEXT DEFAULT '',
+  client_username VARCHAR(128) NOT NULL,
+  password_hash VARCHAR(256) NOT NULL,
+  selected_tiers JSONB NOT NULL DEFAULT '[]'::jsonb,
+  quote_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb,
+  security_settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+  expires_at TIMESTAMP WITH TIME ZONE,
+  is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
+  view_count INTEGER NOT NULL DEFAULT 0,
+  last_viewed_at TIMESTAMP WITH TIME ZONE,
+  access_logs JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

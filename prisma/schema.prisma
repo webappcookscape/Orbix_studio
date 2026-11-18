@@ -23,6 +23,7 @@ model User {
   projects      Project[]
   sharesSent    ProjectShare[] @relation("UserShares")
   forksCreated  ProjectFork[]  @relation("UserForks")
+  clientQuotes  ClientQuote[]
 
   @@map("users")
 }
@@ -48,6 +49,7 @@ model Project {
   shares        ProjectShare[]
   forksAsSource ProjectFork[]  @relation("OriginalProject")
   forksAsFork   ProjectFork[]  @relation("ForkedProject")
+  clientQuotes  ClientQuote[]
 
   @@map("projects")
 }
@@ -83,5 +85,35 @@ model ProjectFork {
   forker          User?    @relation("UserForks", fields: [forkedBy], references: [id], onDelete: Cascade)
 
   @@map("project_forks")
+}
+
+model ClientQuote {
+  id               String    @id @default(cuid()) @db.VarChar(64)
+  projectId        String    @map("project_id") @db.VarChar(64)
+  createdBy        String?   @map("created_by") @db.VarChar(64)
+  shareToken       String    @unique @map("share_token") @db.VarChar(128)
+  title            String    @db.VarChar(256)
+  quoteCode        String?   @default("") @map("quote_code") @db.VarChar(64)
+  clientName       String    @map("client_name") @db.VarChar(256)
+  clientPhone      String?   @default("") @map("client_phone") @db.VarChar(64)
+  clientEmail      String?   @default("") @map("client_email") @db.VarChar(128)
+  siteAddress      String?   @default("") @map("site_address")
+  clientUsername   String    @map("client_username") @db.VarChar(128)
+  passwordHash     String    @map("password_hash") @db.VarChar(256)
+  selectedTiers    Json      @default("[]") @map("selected_tiers")
+  quoteSnapshot    Json      @default("{}") @map("quote_snapshot")
+  securitySettings Json      @default("{}") @map("security_settings")
+  expiresAt        DateTime? @map("expires_at") @db.Timestamptz(6)
+  isRevoked        Boolean   @default(false) @map("is_revoked")
+  viewCount        Int       @default(0) @map("view_count")
+  lastViewedAt     DateTime? @map("last_viewed_at") @db.Timestamptz(6)
+  accessLogs       Json      @default("[]") @map("access_logs")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator User?   @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@map("client_quotes")
 }
 

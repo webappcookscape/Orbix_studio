@@ -227,6 +227,13 @@ app.get(['/costcalculation', '/cost-calculation', '/costcalc'], (req, res) => {
   res.sendFile(path.join(ROOT_DIR, 'costcalculation.html'));
 });
 
+// ── Protected Client Quote Portal Page (Isolated from CAD App) ──
+app.get('/quote/:token', (req, res) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Cache-Control', 'no-store, private');
+  res.sendFile(path.join(ROOT_DIR, 'client-quote.html'));
+});
+
 // ── Single Page Application (SPA) Routing Fallback ──
 const SPA_VIEWS = [
   '/',
