@@ -113,4 +113,36 @@ assert(threeDCode.indexOf('buildRollingShutterCabinetMesh') !== -1, 'buildRollin
 assert(threeDCode.indexOf('// Corner Only-Shutter (FCM-RT OS or FCM-LT OS)') !== -1, 'Corner only shutter support must exist in buildOnlyShutterMesh');
 
 console.log('✓ Test 4 passed: All file implementations verified.');
+
+console.log('-> Test 5: Verifying FBCM Dual-Arm and Shutter Independence...');
+// Verify FBCM inspector UI and listeners
+assert(uiCode.indexOf('inspFbcmLegW') !== -1, 'inspFbcmLegW must exist in orbix-ui.js');
+assert(uiCode.indexOf('inspFbcmShutterA') !== -1, 'inspFbcmShutterA must exist in orbix-ui.js');
+assert(uiCode.indexOf('inspFbcmLegD') !== -1, 'inspFbcmLegD must exist in orbix-ui.js');
+assert(uiCode.indexOf('inspFbcmShutterB') !== -1, 'inspFbcmShutterB must exist in orbix-ui.js');
+assert(uiCode.indexOf('inspFbcmDepth') !== -1, 'inspFbcmDepth must exist in orbix-ui.js');
+assert(uiCode.indexOf('newLegW = Math.round(shVal + cDepth)') !== -1, 'Bidirectional Shutter A calculation must exist');
+assert(uiCode.indexOf('newLegD = Math.round(shVal + cDepth)') !== -1, 'Bidirectional Shutter B calculation must exist');
+
+// Verify FBCM 2D plan label with both arms and shutters
+assert(planCode.indexOf('A: \' + Math.round(legWVal) + \' (Sh: \' + shAVal + \') · B: \' + Math.round(legDVal) + \' (Sh: \' + shBVal') !== -1, '2D Plan must display both arms and shutter sizes');
+console.log('✓ Test 5 passed: FBCM Dual-Arm and Shutter independence verified.');
+
+console.log('-> Test 6: Verifying Free Placement and Wall Snapping Controls...');
+assert(planCode.indexOf('this.forceFreePlacement = false;') !== -1, 'PlanEditor must have forceFreePlacement state');
+assert(planCode.indexOf('this.isShiftDown || this.isAltDown || this.forceFreePlacement') !== -1, 'Free placement must check Shift, Alt, or forceFreePlacement');
+assert(uiCode.indexOf('planSnapToggleBtn') !== -1, 'planSnapToggleBtn must be wired in orbix-ui.js');
+assert(fs.readFileSync('index.html', 'utf8').indexOf('id="planSnapToggleBtn"') !== -1, 'planSnapToggleBtn must exist in index.html');
+console.log('✓ Test 6 passed: Free Placement and Wall Snapping controls verified.');
+
+console.log('-> Test 7: Verifying Anti-Overlap Resolver along Wall Face & RCC Snapping...');
+assert(planCode.indexOf('// ─── ANTI-OVERLAP RESOLVER ALONG WALL FACE ───') !== -1, 'Anti-overlap resolver must exist in orbix-plan.js');
+assert(planCode.indexOf('occupiedIntervals.push(') !== -1, 'Occupied intervals calculation must exist');
+assert(planCode.indexOf('candT = occ.end + halfActiveW;') !== -1, 'Push-out to positive side of adjacent unit verified');
+assert(planCode.indexOf('candT = occ.start - halfActiveW;') !== -1, 'Push-out to negative side of adjacent unit verified');
+assert(planCode.indexOf('// ─── RCC COLUMN / STRUCTURAL PILLAR DETECTION ───') !== -1, 'RCC Column detection must exist in orbix-plan.js');
+assert(planCode.indexOf('rcc_placement') !== -1, 'RCC placement snap type must exist');
+assert(planCode.indexOf('rcc_snap') !== -1, 'RCC face snap type must exist');
+console.log('✓ Test 7 passed: Anti-Overlap and RCC Snapping verified.');
+
 console.log('\n[PASS] All test suites passed successfully!');

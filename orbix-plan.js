@@ -43,6 +43,8 @@
     this.wallChainStart = null;
     this.wallChainFirstPoint = null;
     this.isShiftDown = false;
+    this.isAltDown = false;
+    this.forceFreePlacement = false;
     this.cursorWorld = { x: 0, y: 0 };
     this.numericInputBuffer = '';
     this.clipboard = [];
@@ -2898,9 +2900,78 @@
     var furnList = plan.furniture || [];
     var activeId = furn.id;
 
-    // Shift key temporarily disables all snapping for pixel-precision free positioning
-    if (this.isShiftDown) {
-      return { pos: pos, rotY: rotY, type: 'free_placement' };
+    // Shift, Alt, or Free Placement Mode completely disables all snapping for pixel-precision free positioning
+    if (this.isShiftDown || this.isAltDown || this.forceFreePlacement) {
+      return { pos: pos, rotY: rotY, type: 'free_placement', badgeLabel: '🔓 Free Placement' };
+    }
+
+    // ─── RCC COLUMN / STRUCTURAL PILLAR DETECTION ───
+    // If user is intentionally placing or hovering on/near an RCC column,
+    // snap flush to the RCC column faces or stay on the RCC column without walls snatching it!
+    var rccCol = null;
+    for (var rci = 0; rci < furnList.length; rci++) {
+      var rItem = furnList[rci];
+      if (activeId && rItem.id === activeId) continue;
+      var isRcc = (rItem.category === 'structural' || rItem.category === 'civil' ||
+                   /rcc|column|pillar|post|structural/i.test(rItem.name || '') ||
+                   /rcc|column|pillar|post|structural/i.test(rItem.id || '') ||
+                   /rcc|column|pillar|post|structural/i.test(rItem.catalogItemId || ''));
+      if (!isRcc) continue;
+      var rw = (rItem.dimensions && rItem.dimensions.W) || 300;
+      var rd = (rItem.dimensions && rItem.dimensions.D) || 300;
+      var rx = rItem.pos ? rItem.pos.x : 0;
+      var ry = rItem.pos ? rItem.pos.y : 0;
+      var rRot = rItem.rotY || 0;
+      var dToRcc = Math.hypot(pos.x - rx, pos.y - ry);
+      if (dToRcc <= Math.max(rw, rd) + Math.max(fW, fD) * 0.7) {
+        rccCol = { item: rItem, x: rx, y: ry, w: rw, d: rd, rotY: rRot, dist: dToRcc };
+        break;
+      }
+    }
+
+    if (rccCol) {
+      // Check if cursor is directly inside or on top of the RCC column footprint
+      var insideRcc = Math.abs(pos.x - rccCol.x) <= rccCol.w / 2 &&
+                      Math.abs(pos.y - rccCol.y) <= rccCol.d / 2;
+      if (insideRcc) {
+        return {
+          pos: { x: pos.x, y: pos.y },
+          rotY: rotY,
+          type: 'rcc_placement',
+          target: rccCol.item,
+          badgeLabel: '✓ Placed on RCC Column'
+        };
+      }
+
+      // 4 Flush Faces of RCC Column: Front, Back, Left, Right
+      var halfW = fW / 2;
+      var halfD = fD / 2;
+      var rFaces = [
+        { x: rccCol.x, y: rccCol.y + rccCol.d / 2 + halfD, rot: 0, label: 'Front' },
+        { x: rccCol.x, y: rccCol.y - rccCol.d / 2 - halfD, rot: Math.PI, label: 'Back' },
+        { x: rccCol.x - rccCol.w / 2 - halfW, y: rccCol.y, rot: Math.PI / 2, label: 'Left' },
+        { x: rccCol.x + rccCol.w / 2 + halfW, y: rccCol.y, rot: -Math.PI / 2, label: 'Right' }
+      ];
+      var bestRFace = null;
+      var minRDist = 9999;
+      for (var rfi = 0; rfi < rFaces.length; rfi++) {
+        var rf = rFaces[rfi];
+        var dRf = Math.hypot(pos.x - rf.x, pos.y - rf.y);
+        if (dRf < 160 && dRf < minRDist) {
+          minRDist = dRf;
+          bestRFace = rf;
+        }
+      }
+
+      if (bestRFace) {
+        return {
+          pos: { x: bestRFace.x, y: bestRFace.y },
+          rotY: bestRFace.rot,
+          type: 'rcc_snap',
+          target: rccCol.item,
+          badgeLabel: '✓ Snapped Flush to RCC Column (' + bestRFace.label + ')'
+        };
+      }
     }
 
     // Decor & appliance items (sinks, gas hobs, dishwashers, dining tables, plants, etc.)
@@ -3062,17 +3133,13 @@
           var cD = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.legD) || oDims.W || 900;
           var cDepth = (other.unitConfig && other.unitConfig.corner && other.unitConfig.corner.depth) || oDims.D || 560;
 
-          // 1. Arm 1 face (open joint at local X = -cW/2, Y = -cD/2 + cDepth/2, outward normal = -uO)
-          var arm1FaceCenter = {
-            x: oPos.x + (-cW / 2) * uO.x + (-cD / 2 + cDepth / 2) * vO.x,
-            y: oPos.y + (-cW / 2) * uO.y + (-cD / 2 + cDepth / 2) * vO.y
-          };
+          // 1. Arm 1 face (left edge of Arm 1, local X = -cW/2, back flush with wall at local Y = -cD/2)
           var targetPosArm1 = {
-            x: arm1FaceCenter.x - (fW / 2) * uO.x,
-            y: arm1FaceCenter.y - (fW / 2) * uO.y
+            x: oPos.x + (-cW / 2 - fW / 2) * uO.x + (-cD / 2 + fD / 2) * vO.x,
+            y: oPos.y + (-cW / 2 - fW / 2) * uO.y + (-cD / 2 + fD / 2) * vO.y
           };
           var dArm1 = Math.hypot(pos.x - targetPosArm1.x, pos.y - targetPosArm1.y);
-          if (dArm1 < minJointDist + 180 && dArm1 < (bestJoint ? bestJoint.dist : 9999)) {
+          if (dArm1 < minJointDist + 120 && dArm1 < (bestJoint ? bestJoint.dist : 9999)) {
             bestJoint = {
               pos: targetPosArm1,
               rotY: oRot,
@@ -3080,24 +3147,19 @@
               side: 'arm1',
               target: other,
               dist: dArm1,
-              badgeLabel: '✓ Jointed to Corner Arm 1',
-              snapPoint: arm1FaceCenter
+              badgeLabel: '✓ Jointed Flush to Corner Arm 1',
+              snapPoint: targetPosArm1
             };
           }
 
-          // 2. Arm 2 face (open joint at local X = cW/2 - cDepth/2, Y = +cD/2, outward normal = +vO)
-          var arm2FaceCenter = {
-            x: oPos.x + (cW / 2 - cDepth / 2) * uO.x + (cD / 2) * vO.x,
-            y: oPos.y + (cW / 2 - cDepth / 2) * uO.y + (cD / 2) * vO.y
-          };
+          // 2. Arm 2 face (top edge of Arm 2, local Y = +cD/2, back flush with wall at local X = +cW/2)
           var rotArm2 = (oRot + Math.PI / 2) % (Math.PI * 2);
-          var uArm2 = { x: Math.cos(rotArm2), y: Math.sin(rotArm2) };
           var targetPosArm2 = {
-            x: arm2FaceCenter.x + (fW / 2) * uArm2.x,
-            y: arm2FaceCenter.y + (fW / 2) * uArm2.y
+            x: oPos.x + (cW / 2 - fD / 2) * uO.x + (cD / 2 + fW / 2) * vO.x,
+            y: oPos.y + (cW / 2 - fD / 2) * uO.y + (cD / 2 + fW / 2) * vO.y
           };
           var dArm2 = Math.hypot(pos.x - targetPosArm2.x, pos.y - targetPosArm2.y);
-          if (dArm2 < minJointDist + 180 && dArm2 < (bestJoint ? bestJoint.dist : 9999)) {
+          if (dArm2 < minJointDist + 120 && dArm2 < (bestJoint ? bestJoint.dist : 9999)) {
             bestJoint = {
               pos: targetPosArm2,
               rotY: rotArm2,
@@ -3105,8 +3167,8 @@
               side: 'arm2',
               target: other,
               dist: dArm2,
-              badgeLabel: '✓ Jointed to Corner Arm 2',
-              snapPoint: arm2FaceCenter
+              badgeLabel: '✓ Jointed Flush to Corner Arm 2',
+              snapPoint: targetPosArm2
             };
           }
         }
@@ -3258,7 +3320,7 @@
     var walls = plan.walls || [];
     var rooms = plan.rooms || [];
     var bestWallSnap = null;
-    var minWallDist = isDecorF ? 160 : 250; // generous magnetic snap zone (mm)
+    var minWallDist = isDecorF ? 60 : 80; // mm tight magnetic snap zone (prevents distant walls from stealing cursor)
     var halfD = fD / 2;
     var halfW = fW / 2;
 
@@ -3282,6 +3344,84 @@
       (furn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(furn.name))
     );
 
+    // ── ROBUST 90° CORNER DETECTION & MAGNETIC SNAPPING ──
+    var cornerCandidates = [];
+
+    // A. Inner room corners from room polygons
+    if (rooms && rooms.length > 0) {
+      for (var ri = 0; ri < rooms.length; ri++) {
+        var poly = rooms[ri].polygon;
+        if (!poly || poly.length < 3) continue;
+        var nPts = poly.length;
+        for (var pi = 0; pi < nPts; pi++) {
+          var currPt = poly[pi];
+          var prevPt = poly[(pi - 1 + nPts) % nPts];
+          var nextPt = poly[(pi + 1) % nPts];
+
+          var v1 = { x: nextPt.x - currPt.x, y: nextPt.y - currPt.y };
+          var v2 = { x: prevPt.x - currPt.x, y: prevPt.y - currPt.y };
+          var l1 = Math.hypot(v1.x, v1.y);
+          var l2 = Math.hypot(v2.x, v2.y);
+          if (l1 < 100 || l2 < 100) continue;
+          var u1 = { x: v1.x / l1, y: v1.y / l1 };
+          var u2 = { x: v2.x / l2, y: v2.y / l2 };
+          var dot = u1.x * u2.x + u1.y * u2.y;
+          // Near 90° interior corner (dot product between -0.4 and 0.4)
+          if (Math.abs(dot) < 0.4) {
+            cornerCandidates.push({
+              cornerPt: currPt,
+              dir1: u1,
+              dir2: u2,
+              room: rooms[ri]
+            });
+          }
+        }
+      }
+    }
+
+    // B. Candidate corners from intersecting / meeting walls (tolerance up to 120mm)
+    for (var wa = 0; wa < walls.length; wa++) {
+      var wA = walls[wa];
+      if (wA.isDivider) continue;
+      for (var wb = wa + 1; wb < walls.length; wb++) {
+        var wB = walls[wb];
+        if (wB.isDivider) continue;
+
+        var sharedPt = null, endA = null, endB = null;
+        if (Vec2.dist(wA.start, wB.start) < 120) { sharedPt = wA.start; endA = wA.end; endB = wB.end; }
+        else if (Vec2.dist(wA.start, wB.end) < 120) { sharedPt = wA.start; endA = wA.end; endB = wB.start; }
+        else if (Vec2.dist(wA.end, wB.start) < 120) { sharedPt = wA.end; endA = wA.start; endB = wB.end; }
+        else if (Vec2.dist(wA.end, wB.end) < 120) { sharedPt = wA.end; endA = wA.start; endB = wB.start; }
+
+        if (sharedPt) {
+          var vA = { x: endA.x - sharedPt.x, y: endA.y - sharedPt.y };
+          var vB = { x: endB.x - sharedPt.x, y: endB.y - sharedPt.y };
+          var lenA = Math.hypot(vA.x, vA.y);
+          var lenB = Math.hypot(vB.x, vB.y);
+          if (lenA > 100 && lenB > 100) {
+            var uA = { x: vA.x / lenA, y: vA.y / lenA };
+            var uB = { x: vB.x / lenB, y: vB.y / lenB };
+            var dotAB = uA.x * uB.x + uA.y * uB.y;
+            if (Math.abs(dotAB) < 0.4) {
+              var halfTA = (wA.thickness || 150) / 2;
+              var halfTB = (wB.thickness || 150) / 2;
+              var innerCornerPt = {
+                x: sharedPt.x + halfTB * uA.x + halfTA * uB.x,
+                y: sharedPt.y + halfTB * uA.y + halfTA * uB.y
+              };
+              cornerCandidates.push({
+                cornerPt: innerCornerPt,
+                dir1: uA,
+                dir2: uB,
+                wallA: wA,
+                wallB: wB
+              });
+            }
+          }
+        }
+      }
+    }
+
     if (furnIsLCorner) {
       // Corner unit footprint dimensions are legW x legD
       var fDims = furn.dimensions || {};
@@ -3293,87 +3433,9 @@
       halfW = cW / 2;
       halfD = cD / 2;
 
-      // ── ROBUST 90° CORNER DETECTION & MAGNETIC SNAPPING FOR L-CORNER UNITS ──
-      var cornerCandidates = [];
-
-      // A. Inner room corners from room polygons
-      if (rooms && rooms.length > 0) {
-        for (var ri = 0; ri < rooms.length; ri++) {
-          var poly = rooms[ri].polygon;
-          if (!poly || poly.length < 3) continue;
-          var nPts = poly.length;
-          for (var pi = 0; pi < nPts; pi++) {
-            var currPt = poly[pi];
-            var prevPt = poly[(pi - 1 + nPts) % nPts];
-            var nextPt = poly[(pi + 1) % nPts];
-
-            var v1 = { x: nextPt.x - currPt.x, y: nextPt.y - currPt.y };
-            var v2 = { x: prevPt.x - currPt.x, y: prevPt.y - currPt.y };
-            var l1 = Math.hypot(v1.x, v1.y);
-            var l2 = Math.hypot(v2.x, v2.y);
-            if (l1 < 100 || l2 < 100) continue;
-            var u1 = { x: v1.x / l1, y: v1.y / l1 };
-            var u2 = { x: v2.x / l2, y: v2.y / l2 };
-            var dot = u1.x * u2.x + u1.y * u2.y;
-            // Near 90° interior corner (dot product between -0.4 and 0.4)
-            if (Math.abs(dot) < 0.4) {
-              cornerCandidates.push({
-                cornerPt: currPt,
-                dir1: u1,
-                dir2: u2,
-                room: rooms[ri]
-              });
-            }
-          }
-        }
-      }
-
-      // B. Candidate corners from intersecting / meeting walls (tolerance up to 120mm)
-      for (var wa = 0; wa < walls.length; wa++) {
-        var wA = walls[wa];
-        if (wA.isDivider) continue;
-        for (var wb = wa + 1; wb < walls.length; wb++) {
-          var wB = walls[wb];
-          if (wB.isDivider) continue;
-
-          var sharedPt = null, endA = null, endB = null;
-          if (Vec2.dist(wA.start, wB.start) < 120) { sharedPt = wA.start; endA = wA.end; endB = wB.end; }
-          else if (Vec2.dist(wA.start, wB.end) < 120) { sharedPt = wA.start; endA = wA.end; endB = wB.start; }
-          else if (Vec2.dist(wA.end, wB.start) < 120) { sharedPt = wA.end; endA = wA.start; endB = wB.end; }
-          else if (Vec2.dist(wA.end, wB.end) < 120) { sharedPt = wA.end; endA = wA.start; endB = wB.start; }
-
-          if (sharedPt) {
-            var vA = { x: endA.x - sharedPt.x, y: endA.y - sharedPt.y };
-            var vB = { x: endB.x - sharedPt.x, y: endB.y - sharedPt.y };
-            var lenA = Math.hypot(vA.x, vA.y);
-            var lenB = Math.hypot(vB.x, vB.y);
-            if (lenA > 100 && lenB > 100) {
-              var uA = { x: vA.x / lenA, y: vA.y / lenA };
-              var uB = { x: vB.x / lenB, y: vB.y / lenB };
-              var dotAB = uA.x * uB.x + uA.y * uB.y;
-              if (Math.abs(dotAB) < 0.4) {
-                var halfTA = (wA.thickness || 150) / 2;
-                var halfTB = (wB.thickness || 150) / 2;
-                var innerCornerPt = {
-                  x: sharedPt.x + halfTB * uA.x + halfTA * uB.x,
-                  y: sharedPt.y + halfTB * uA.y + halfTA * uB.y
-                };
-                cornerCandidates.push({
-                  cornerPt: innerCornerPt,
-                  dir1: uA,
-                  dir2: uB,
-                  wallA: wA,
-                  wallB: wB
-                });
-              }
-            }
-          }
-        }
-      }
-
-      // Find best matching corner candidate
+      // Find best matching corner candidate with tight magnetic radius
       var bestCornerSnap = null;
-      var minCornerDist = 850; // mm generous magnetic snap radius for room corners
+      var minCornerDist = 240; // mm tight magnetic snap radius for room corners (prevents jumping from afar)
 
       for (var ci = 0; ci < cornerCandidates.length; ci++) {
         var cc = cornerCandidates[ci];
@@ -3433,7 +3495,7 @@
       // ── ROBUST CORNER SNAPPING FOR STRAIGHT UNITS & ONLY-SHUTTERING ──
       // Allows shutters, blank shutters, wardrobes, and modular cabinets to snap flush into wall corners!
       if (cornerCandidates && cornerCandidates.length > 0) {
-        var minStraightCornerDist = 450;
+        var minStraightCornerDist = 120; // mm tight magnetic snap (prevents premature snatching)
         var bestStraightCorner = null;
 
         for (var sci = 0; sci < cornerCandidates.length; sci++) {
@@ -3552,8 +3614,8 @@
       // Combined distance: prioritizing whichever segment the cursor is directly opposite
       var snapDist = Math.hypot(Math.abs(perpDist - flushDist), longDist);
 
-      // Wall Snatching: when within magnetic snap distance of flush contact
-      if (perpDist < flushDist + minWallDist && t >= -0.3 && t <= 1.3) {
+      // Wall Snatching: only when cursor is within tight magnetic snap distance and opposite the wall span
+      if (perpDist < flushDist + minWallDist && t >= -0.05 && t <= 1.05) {
         if (snapDist < minWallDist) {
           minWallDist = snapDist;
           var wallSnapPos = {
@@ -3570,6 +3632,8 @@
             wall: w,
             proj: proj,
             norm: normOut,
+            wDir: wDir,
+            flushDist: flushDist,
             badgeLabel: '✓ Snapped Flush to Wall'
           };
         }
@@ -3585,12 +3649,101 @@
     }
 
     if (bestWallSnap) {
+      // ─── ANTI-OVERLAP RESOLVER ALONG WALL FACE ───
+      // Automatically prevent units from overlapping/penetrating adjacent units on the same wall!
+      var bwWall = bestWallSnap.wall;
+      var bwDir = bestWallSnap.wDir;
+      var bwNorm = bestWallSnap.norm;
+      var bwFlush = bestWallSnap.flushDist;
+
+      // Current projected offset of the candidate along the wall axis
+      var candT = (bestWallSnap.proj.x - bwWall.start.x) * bwDir.x + (bestWallSnap.proj.y - bwWall.start.y) * bwDir.y;
+      var halfActiveW = fW / 2;
+
+      // Find all existing units on this same wall and on interfering elevation bands
+      var occupiedIntervals = [];
+      for (var fni = 0; fni < furnList.length; fni++) {
+        var oFn = furnList[fni];
+        if (activeId && oFn.id === activeId) continue;
+        if (!oFn.pos) continue;
+
+        // Check if oFn is on this wall (distance to wall line within flush distance + tolerance)
+        var toO = { x: oFn.pos.x - bwWall.start.x, y: oFn.pos.y - bwWall.start.y };
+        var oT = toO.x * bwDir.x + toO.y * bwDir.y;
+        var oPerp = Math.abs(toO.x * bwNorm.x + toO.y * bwNorm.y);
+
+        var oDims = oFn.dimensions || { W: 600, D: 600, H: 850 };
+        var oW = oDims.W || 600;
+        var oD = oDims.D || 600;
+        var oFlushDist = (bwWall.thickness || 150) / 2 + oD / 2;
+
+        if (Math.abs(oPerp - oFlushDist) > Math.max(fD, oD, 300)) continue;
+
+        // Check elevation band collision:
+        var isWallO = Core.isWallUnit ? Core.isWallUnit(oFn.category, oFn.name, oFn.code || oFn.catalogItemId, oFn.costCategory) : false;
+        var isOpenBoxO = (oFn.name && /open[-_ ]*box/i.test(oFn.name)) || (oFn.id && /^ob-/i.test(oFn.id));
+        var isSpiceRackO = !isOpenBoxO && ((oFn.name && /spice/i.test(oFn.name)) || (oFn.id && /^sr-/i.test(oFn.id)));
+        var defElevO = isOpenBoxO ? 1500 : (isSpiceRackO ? 1350 : (isWallO ? 1500 : 0));
+        var oElev = (oFn.elevation !== undefined && oFn.elevation !== null && oFn.elevation !== '') ?
+          parseFloat(oFn.elevation) :
+          ((oFn.pos && oFn.pos.z !== undefined && oFn.pos.z !== null && oFn.pos.z !== 0) ?
+            parseFloat(oFn.pos.z) : defElevO);
+        var oH = (oDims.H) ? parseFloat(oDims.H) : (isWallO ? 600 : 850);
+        var oTop = oElev + oH;
+
+        var differentBand = (fTop <= oElev + 5 || oTop <= fElev + 5);
+        if (differentBand) continue; // Plumb stackable (e.g. wall cabinet above floor base cabinet), can share same wall T
+
+        occupiedIntervals.push({
+          start: oT - oW / 2,
+          end: oT + oW / 2,
+          center: oT,
+          halfW: oW / 2,
+          unit: oFn
+        });
+      }
+
+      // If candidate overlaps any occupied interval, push it flush to the nearest edge
+      var didShift = false;
+      for (var iter = 0; iter < 4; iter++) {
+        var collided = false;
+        for (var oii = 0; oii < occupiedIntervals.length; oii++) {
+          var occ = occupiedIntervals[oii];
+          var myStart = candT - halfActiveW;
+          var myEnd = candT + halfActiveW;
+          // Check overlap with 2mm tolerance
+          if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
+            collided = true;
+            didShift = true;
+            if (candT >= occ.center) {
+              // Push to positive side of existing unit
+              candT = occ.end + halfActiveW;
+            } else {
+              // Push to negative side of existing unit
+              candT = occ.start - halfActiveW;
+            }
+          }
+        }
+        if (!collided) break;
+      }
+
+      var finalProj = {
+        x: bwWall.start.x + candT * bwDir.x,
+        y: bwWall.start.y + candT * bwDir.y
+      };
+      bestWallSnap.pos = {
+        x: finalProj.x + bwNorm.x * bwFlush,
+        y: finalProj.y + bwNorm.y * bwFlush
+      };
+      bestWallSnap.proj = finalProj;
+      if (didShift) {
+        bestWallSnap.badgeLabel = '✓ Snapped Flush to Adjacent Unit';
+      }
+
       return bestWallSnap;
     }
 
     // Units can be placed inside wall recesses, alcoves, and near RCC points without unwanted forced ejection
-    return { pos: pos, rotY: rotY };
-
     return { pos: pos, rotY: rotY };
   };
 
@@ -6407,7 +6560,16 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
 
         ctx.fillStyle = isColliding ? '#dc2626' : (isDecor ? '#047857' : (isSelected ? '#1d4ed8' : '#475569'));
         ctx.font = '600 9.5px "IBM Plex Mono", monospace';
-        ctx.fillText(Math.round(wMm) + ' × ' + Math.round(dMm) + ' mm', 0, 8);
+        if (isLCorner) {
+          var legWVal = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || wMm;
+          var legDVal = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || wMm;
+          var depthVal = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || dMm;
+          var shAVal = Math.max(0, Math.round(legWVal - depthVal));
+          var shBVal = Math.max(0, Math.round(legDVal - depthVal));
+          ctx.fillText('A: ' + Math.round(legWVal) + ' (Sh: ' + shAVal + ') · B: ' + Math.round(legDVal) + ' (Sh: ' + shBVal + ') mm', 0, 8);
+        } else {
+          ctx.fillText(Math.round(wMm) + ' × ' + Math.round(dMm) + ' mm', 0, 8);
+        }
 
         // Elevation badge if wall mounted or elevated (Elevation > 0)
         var elevMm = f.elevation !== undefined ? f.elevation : ((f.pos && f.pos.z) || 0);

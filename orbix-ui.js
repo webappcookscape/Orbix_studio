@@ -1195,6 +1195,27 @@
         });
       }
 
+      // ── Wall Snapping vs Free Placement Toggle ──
+      var btnSnapToggle = document.getElementById('planSnapToggleBtn');
+      if (btnSnapToggle) {
+        btnSnapToggle.addEventListener('click', function () {
+          self.editor.forceFreePlacement = !self.editor.forceFreePlacement;
+          if (self.editor.forceFreePlacement) {
+            btnSnapToggle.innerHTML = '🔓 Free: No Wall Snap';
+            btnSnapToggle.style.color = '#b45309';
+            btnSnapToggle.style.borderColor = '#d97706';
+            btnSnapToggle.style.background = '#fef3c7';
+            if (self.showToast) self.showToast('Free Placement active: units place anywhere without wall snapping', 'info');
+          } else {
+            btnSnapToggle.innerHTML = '🧲 Snap: Wall Flush';
+            btnSnapToggle.style.color = '#0369a1';
+            btnSnapToggle.style.borderColor = '#0284c7';
+            btnSnapToggle.style.background = '#f0f9ff';
+            if (self.showToast) self.showToast('Wall Snap active: units snap flush to wall faces', 'info');
+          }
+        });
+      }
+
       // ── 2D Unit System Switch (mm ⇄ ft & in) ──
       var btnUnitToggle = document.getElementById('planUnitToggleBtn');
       if (btnUnitToggle) {
@@ -2484,6 +2505,52 @@
                         (fn.modelType && /sliding/i.test(fn.modelType)) ||
                         (fn.name && /sliding/i.test(fn.name));
 
+        var isLCornerUnit = !!(
+          (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+          fn.catalogItemId === 'fbcm' || fn.id === 'fbcm' || fn.id === 'f_fbcm_1' || fn.catalogItemId === 'fbcm-1500' ||
+          (fn.id && /fbcm|wbcm/i.test(fn.id)) ||
+          (fn.catalogItemId && /fbcm|wbcm/i.test(fn.catalogItemId)) ||
+          (fn.code && /fbcm|wbcm/i.test(fn.code)) ||
+          (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(fn.name))
+        );
+        var curLegW = (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.legW) || fn.dimensions.W || 900;
+        var curLegD = (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.legD) || fn.dimensions.W || 900;
+        var curCornerDepth = (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.depth) || fn.dimensions.D || 560;
+        var curShutterA = Math.max(0, Math.round(curLegW - curCornerDepth));
+        var curShutterB = Math.max(0, Math.round(curLegD - curCornerDepth));
+        var fbcmHtml = !isLCornerUnit ? '' : (
+          '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+              '<span style="font-size:11px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:0.5px;">📐 L-Corner Both Sides & Shutters</span>' +
+              '<span style="font-size:10px;color:#3b82f6;font-weight:600;">Independent Wings</span>' +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">' +
+              '<div>' +
+                '<label style="font-size:10px;font-weight:700;color:#1e3a8a;display:block;margin-bottom:2px;">Side 1 (Arm A) Length</label>' +
+                '<input type="number" id="inspFbcmLegW" value="' + curLegW + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;border:1px solid #93c5fd;border-radius:4px;font-weight:600;color:#1e3a8a;">' +
+              '</div>' +
+              '<div>' +
+                '<label style="font-size:10px;font-weight:700;color:#1e3a8a;display:block;margin-bottom:2px;">Shutter 1 (Arm A)</label>' +
+                '<input type="number" id="inspFbcmShutterA" value="' + curShutterA + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;border:1px solid #93c5fd;border-radius:4px;font-weight:600;color:#1d4ed8;">' +
+              '</div>' +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">' +
+              '<div>' +
+                '<label style="font-size:10px;font-weight:700;color:#1e3a8a;display:block;margin-bottom:2px;">Side 2 (Arm B) Length</label>' +
+                '<input type="number" id="inspFbcmLegD" value="' + curLegD + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;border:1px solid #93c5fd;border-radius:4px;font-weight:600;color:#1e3a8a;">' +
+              '</div>' +
+              '<div>' +
+                '<label style="font-size:10px;font-weight:700;color:#1e3a8a;display:block;margin-bottom:2px;">Shutter 2 (Arm B)</label>' +
+                '<input type="number" id="inspFbcmShutterB" value="' + curShutterB + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;border:1px solid #93c5fd;border-radius:4px;font-weight:600;color:#1d4ed8;">' +
+              '</div>' +
+            '</div>' +
+            '<div class="insp-row" style="margin-bottom:0;">' +
+              '<label style="color:#1e3a8a;font-weight:600;">Corner Carcass Depth</label>' +
+              '<input type="number" id="inspFbcmDepth" value="' + curCornerDepth + '" step="10" style="border:1px solid #93c5fd;border-radius:4px;">' +
+            '</div>' +
+          '</div>'
+        );
+
         panel.innerHTML =
           '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding-bottom:8px;margin-bottom:12px;">' +
             '<div><div style="font-size:13px;font-weight:700;color:#0f172a;">Unit Properties</div><div style="font-size:11px;color:#64748b;">' + (fn.name || "Modular Cabinet") + '</div></div>' +
@@ -2519,6 +2586,8 @@
               '<button type="button" class="btn small full" id="inspFocusUnitBtn3D" style="font-size:11px;padding:4px;background:#059669;color:#ffffff;border:none;border-radius:4px;cursor:pointer;font-weight:600;">🎯 Zoom / Focus Unit in 3D</button>' +
             '</div>' +
           '</div>' +
+
+          fbcmHtml +
 
           // ── Card 3: Door Style & Mechanisms ──
           '<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,0.03);">' +
@@ -2723,8 +2792,8 @@
             }
             if (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.enabled) {
               fn.unitConfig.corner.legW = newW;
-              fn.unitConfig.corner.legD = newW;
             }
+            if (typeof updateFbcmInputs === 'function') updateFbcmInputs();
             syncInspectorTo3D();
             self.editor.pushHistory('Resize Furniture');
             self.saveToLocalStorage();
@@ -2754,11 +2823,123 @@
             if (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.enabled) {
               fn.unitConfig.corner.depth = newD;
             }
+            if (typeof updateFbcmInputs === 'function') updateFbcmInputs();
             syncInspectorTo3D();
             self.editor.pushHistory('Resize Furniture');
             self.saveToLocalStorage();
             self.renderBOQ();
             self.editor.render();
+            if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+
+        // ─── FBCM / L-CORNER DUAL-ARM & SHUTTERS CONTROLS ───
+        var elFbcmLegW = document.getElementById('inspFbcmLegW');
+        var elFbcmShA = document.getElementById('inspFbcmShutterA');
+        var elFbcmLegD = document.getElementById('inspFbcmLegD');
+        var elFbcmShB = document.getElementById('inspFbcmShutterB');
+        var elFbcmDepth = document.getElementById('inspFbcmDepth');
+
+        var updateFbcmInputs = null;
+        if (elFbcmLegW || elFbcmShA || elFbcmLegD || elFbcmShB || elFbcmDepth) {
+          if (!fn.unitConfig) fn.unitConfig = {};
+          if (!fn.unitConfig.corner) fn.unitConfig.corner = { enabled: true };
+
+          updateFbcmInputs = function () {
+            var cDepth = fn.unitConfig.corner.depth || fn.dimensions.D || 560;
+            var cW = fn.unitConfig.corner.legW || fn.dimensions.W || 900;
+            var cD = fn.unitConfig.corner.legD || fn.dimensions.W || 900;
+            if (elFbcmLegW) elFbcmLegW.value = cW;
+            if (elFbcmLegD) elFbcmLegD.value = cD;
+            if (elFbcmDepth) elFbcmDepth.value = cDepth;
+            if (elFbcmShA) elFbcmShA.value = Math.max(0, Math.round(cW - cDepth));
+            if (elFbcmShB) elFbcmShB.value = Math.max(0, Math.round(cD - cDepth));
+            if (elFurnW) elFurnW.value = cW;
+            if (elFurnD) elFurnD.value = cDepth;
+          };
+
+          if (elFbcmLegW) {
+            elFbcmLegW.addEventListener('change', function (e) {
+              var val = parseFloat(e.target.value);
+              if (!(val > 0)) return;
+              fn.unitConfig.corner.legW = val;
+              fn.dimensions.W = val;
+              updateFbcmInputs();
+              syncInspectorTo3D();
+              self.editor.pushHistory('Resize Corner Side 1');
+              self.saveToLocalStorage();
+              self.renderBOQ();
+              self.editor.render();
+              if (self.render3DHome) self.render3DHome(true);
+            });
+          }
+
+          if (elFbcmShA) {
+            elFbcmShA.addEventListener('change', function (e) {
+              var shVal = parseFloat(e.target.value);
+              if (!(shVal >= 0)) return;
+              var cDepth = fn.unitConfig.corner.depth || fn.dimensions.D || 560;
+              var newLegW = Math.round(shVal + cDepth);
+              fn.unitConfig.corner.legW = newLegW;
+              fn.dimensions.W = newLegW;
+              updateFbcmInputs();
+              syncInspectorTo3D();
+              self.editor.pushHistory('Resize Corner Shutter 1');
+              self.saveToLocalStorage();
+              self.renderBOQ();
+              self.editor.render();
+              if (self.render3DHome) self.render3DHome(true);
+            });
+          }
+
+          if (elFbcmLegD) {
+            elFbcmLegD.addEventListener('change', function (e) {
+              var val = parseFloat(e.target.value);
+              if (!(val > 0)) return;
+              fn.unitConfig.corner.legD = val;
+              updateFbcmInputs();
+              syncInspectorTo3D();
+              self.editor.pushHistory('Resize Corner Side 2');
+              self.saveToLocalStorage();
+              self.renderBOQ();
+              self.editor.render();
+              if (self.render3DHome) self.render3DHome(true);
+            });
+          }
+
+          if (elFbcmShB) {
+            elFbcmShB.addEventListener('change', function (e) {
+              var shVal = parseFloat(e.target.value);
+              if (!(shVal >= 0)) return;
+              var cDepth = fn.unitConfig.corner.depth || fn.dimensions.D || 560;
+              var newLegD = Math.round(shVal + cDepth);
+              fn.unitConfig.corner.legD = newLegD;
+              updateFbcmInputs();
+              syncInspectorTo3D();
+              self.editor.pushHistory('Resize Corner Shutter 2');
+              self.saveToLocalStorage();
+              self.renderBOQ();
+              self.editor.render();
+              if (self.render3DHome) self.render3DHome(true);
+            });
+          }
+
+          if (elFbcmDepth) {
+            elFbcmDepth.addEventListener('change', function (e) {
+              var val = parseFloat(e.target.value);
+              if (!(val > 0)) return;
+              fn.unitConfig.corner.depth = val;
+              fn.dimensions.D = val;
+              updateFbcmInputs();
+              syncInspectorTo3D();
+              self.editor.pushHistory('Resize Corner Depth');
+              self.saveToLocalStorage();
+              self.renderBOQ();
+              self.editor.render();
+              if (self.render3DHome) self.render3DHome(true);
+            });
+          }
+        }
             if (self.render3DHome) self.render3DHome(true);
           });
         }
