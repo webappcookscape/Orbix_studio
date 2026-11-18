@@ -181,7 +181,7 @@
   };
 
   PlanEditor.prototype.initDOM = function () {
-    var existingTray = this.container ? this.container.querySelector('#furnishBottomTray') : null;
+    var existingTray = (this.container && typeof this.container.querySelector === 'function') ? this.container.querySelector('#furnishBottomTray') : null;
     if (existingTray && this.container.parentElement) {
       this.container.parentElement.appendChild(existingTray);
     }
@@ -297,7 +297,7 @@
   // Creates the floating segmented elevation filter pill bar above 2D plan canvas
   PlanEditor.prototype.createTierFilterBar = function () {
     if (!this.container || typeof document === 'undefined') return;
-    var existing = this.container.querySelector('.orbix-tier-filter-bar');
+    var existing = (this.container && typeof this.container.querySelector === 'function') ? this.container.querySelector('.orbix-tier-filter-bar') : null;
     if (existing) existing.remove();
 
     var bar = document.createElement('div');
@@ -846,16 +846,8 @@
       }
     }
 
-    // 1c. Magnetic snap to furniture corner joint points
-    var furnList = (this.project && this.project.plan && this.project.plan.furniture) || [];
-    for (var fi = 0; fi < furnList.length; fi++) {
-      var fJoints = this.getFurnitureJointPoints(furnList[fi]);
-      for (var fji = 0; fji < fJoints.length; fji++) {
-        if (Vec2.dist(worldPt, fJoints[fji]) < snapDistMm) {
-          return { pt: { x: fJoints[fji].x, y: fJoints[fji].y }, type: 'joint', target: fJoints[fji], label: 'Unit Joint' };
-        }
-      }
-    }
+    // 1c. Magnetic snap to furniture corner joint points (disabled: joint snaps not required)
+    // Removed per user request: "i dont need joint snaps"
 
     // 2. When drawing a wall (wallChainStart active), check angle guides:
     if (this.wallChainStart) {
@@ -3330,10 +3322,11 @@
     }
 
     // 2. WALL SNATCHING (FLUSH SNAP TO WALL FACE) & WALL OVERLAP PREVENTION
+    // Wall snapping takes full precedence so units slide smoothly on walls without unwanted joint snapping
     var walls = plan.walls || [];
     var rooms = plan.rooms || [];
     var bestWallSnap = null;
-    var minWallDist = isDecorF ? 60 : 80; // mm tight magnetic snap zone (prevents distant walls from stealing cursor)
+    var minWallDist = isDecorF ? 150 : 300; // Generous magnetic snap zone (captures cursor when near wall)
     var halfD = fD / 2;
     var halfW = fW / 2;
 
@@ -3556,8 +3549,8 @@
       // Combined distance: prioritizing whichever segment the cursor is directly opposite
       var snapDist = Math.hypot(Math.abs(perpDist - flushDist), longDist);
 
-      // Wall Snatching: only when cursor is within tight magnetic snap distance and opposite the wall span
-      if (perpDist < flushDist + minWallDist && t >= -0.05 && t <= 1.05) {
+      // Wall Snatching: only when cursor is within magnetic snap distance and opposite the wall span
+      if (perpDist < flushDist + minWallDist && t >= -0.15 && t <= 1.15) {
         if (snapDist < minWallDist) {
           minWallDist = snapDist;
           var wallSnapPos = {
@@ -3602,29 +3595,23 @@
       var candT = (bestWallSnap.proj.x - bwWall.start.x) * bwDir.x + (bestWallSnap.proj.y - bwWall.start.y) * bwDir.y;
       var halfActiveW = fW / 2;
 
-      // Find all existing units on this same wall and on interfering elevation bands
-      var occupiedIntervals = [];
+      // A. Determine clear inner wall bounds [tMin, tMax] considering corner adjoining walls & adjoining corner units
+      var bwLen = Core.wallLength(bwWall);
+      var tMin = 0;
+      var tMax = bwLen;
 
-      // A. Adjoining wall corner clearance (prevents units penetrating through corner walls or overlapping corner units on adjoining walls)
       for (var awi = 0; awi < walls.length; awi++) {
         var aWall = walls[awi];
         if (aWall.id === bwWall.id || aWall.isDivider) continue;
         var aHalfT = (aWall.thickness || 150) / 2;
-        var bwLen = Core.wallLength(bwWall);
 
-        // Check if aWall meets bwWall.start
+        // Check if an adjoining wall meets bwWall.start
         var meetsStart = (Vec2.dist(bwWall.start, aWall.start) < 90 || Vec2.dist(bwWall.start, aWall.end) < 90);
         if (meetsStart) {
           var aDir = Core.wallDirection(aWall);
           var dotAdj = Math.abs(bwDir.x * aDir.x + bwDir.y * aDir.y);
-          if (dotAdj < 0.5) { // Roughly perpendicular corner
-            occupiedIntervals.push({
-              start: -9999,
-              end: aHalfT,
-              center: aHalfT / 2
-            });
-
-            // If any unit on the adjoining wall occupies this corner on interfering elevation, reserve the corner zone
+          if (dotAdj < 0.7) { // Corner meeting
+            var boundStart = aHalfT;
             for (var afi = 0; afi < furnList.length; afi++) {
               var aFn = furnList[afi];
               if (activeId && aFn.id === activeId) continue;
@@ -3635,32 +3622,23 @@
               if (fTop <= aElev + 5 || (aElev + aH) <= fElev + 5) continue;
 
               var distFromCorner = Math.hypot(aFn.pos.x - bwWall.start.x, aFn.pos.y - bwWall.start.y);
-              var aFnExtent = Math.max(aDims.W || 600, aDims.D || 600);
-              if (distFromCorner < aFnExtent * 1.5) {
-                var cornerZone = Math.max(aDims.D || 600, 350) + aHalfT;
-                occupiedIntervals.push({
-                  start: -9999,
-                  end: cornerZone,
-                  center: cornerZone / 2,
-                  unit: aFn
-                });
+              var aFnDepth = (aDims.D && aDims.D > 100) ? aDims.D : 600;
+              if (distFromCorner < aFnDepth + aHalfT + 50) {
+                var cornerReserve = aFnDepth + aHalfT;
+                if (cornerReserve > boundStart) boundStart = cornerReserve;
               }
             }
+            if (boundStart > tMin) tMin = boundStart;
           }
         }
 
-        // Check if aWall meets bwWall.end
+        // Check if an adjoining wall meets bwWall.end
         var meetsEnd = (Vec2.dist(bwWall.end, aWall.start) < 90 || Vec2.dist(bwWall.end, aWall.end) < 90);
         if (meetsEnd) {
           var aDir2 = Core.wallDirection(aWall);
           var dotAdj2 = Math.abs(bwDir.x * aDir2.x + bwDir.y * aDir2.y);
-          if (dotAdj2 < 0.5) {
-            occupiedIntervals.push({
-              start: bwLen - aHalfT,
-              end: bwLen + 9999,
-              center: bwLen - aHalfT / 2
-            });
-
+          if (dotAdj2 < 0.7) {
+            var boundEnd = bwLen - aHalfT;
             for (var afi2 = 0; afi2 < furnList.length; afi2++) {
               var aFn2 = furnList[afi2];
               if (activeId && aFn2.id === activeId) continue;
@@ -3671,20 +3649,24 @@
               if (fTop <= aElev2 + 5 || (aElev2 + aH2) <= fElev + 5) continue;
 
               var distFromCorner2 = Math.hypot(aFn2.pos.x - bwWall.end.x, aFn2.pos.y - bwWall.end.y);
-              var aFnExtent2 = Math.max(aDims2.W || 600, aDims2.D || 600);
-              if (distFromCorner2 < aFnExtent2 * 1.5) {
-                var cornerZone2 = Math.max(aDims2.D || 600, 350) + aHalfT;
-                occupiedIntervals.push({
-                  start: bwLen - cornerZone2,
-                  end: bwLen + 9999,
-                  center: bwLen - cornerZone2 / 2,
-                  unit: aFn2
-                });
+              var aFnDepth2 = (aDims2.D && aDims2.D > 100) ? aDims2.D : 600;
+              if (distFromCorner2 < aFnDepth2 + aHalfT + 50) {
+                var cornerReserve2 = bwLen - (aFnDepth2 + aHalfT);
+                if (cornerReserve2 < boundEnd) boundEnd = cornerReserve2;
               }
             }
+            if (boundEnd < tMax) tMax = boundEnd;
           }
         }
       }
+
+      // Initial edge clamp: ensure unit outer edge sits cleanly within wall bounds [tMin, tMax]
+      if (tMax - tMin >= fW) {
+        candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
+      }
+
+      // Find all existing units on this same wall and on interfering elevation bands
+      var occupiedIntervals = [];
 
       // B. Units on this same wall
       for (var fni = 0; fni < furnList.length; fni++) {
@@ -3797,6 +3779,10 @@
               candT = occ.start - halfActiveW;
             }
           }
+        }
+        // Re-clamp within wall bounds after shifting
+        if (tMax - tMin >= fW) {
+          candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
         }
         if (!collided) break;
       }
@@ -7412,39 +7398,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       this.renderCrosshairReticle(ctx, snap0.pt, snap0, false);
     }
 
-    // 2. Snapping circle indicator (Magnetic Joint snap for select tool)
-    if (this.activeTool === 'select') {
-      var snap2 = this.snapPoint(this.cursorWorld);
-      if (snap2.type === 'joint' || snap2.type === 'vertex') {
-        var sSnap = this.worldToScreen(snap2.pt);
-        ctx.save();
-        ctx.strokeStyle = '#06b6d4'; // Bright cyan
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(sSnap.x, sSnap.y, 9, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.fillStyle = 'rgba(6, 182, 212, 0.3)';
-        ctx.beginPath();
-        ctx.arc(sSnap.x, sSnap.y, 4, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Joint badge
-        ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
-        var jText = '● Joint Snap';
-        var jtw = ctx.measureText(jText).width;
-        ctx.fillStyle = '#0891b2';
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(sSnap.x + 12, sSnap.y - 9, jtw + 10, 18, 3);
-        else ctx.rect(sSnap.x + 12, sSnap.y - 9, jtw + 10, 18);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(jText, sSnap.x + 17, sSnap.y);
-        ctx.restore();
-      }
-    }
+    // 2. Joint snap indicator for select tool disabled per user request: "i dont need joint snaps"
 
     // 3. Opening hover placement preview with live segmented architectural dimensions
     if (this.activeTool === 'door' || this.activeTool === 'window') {

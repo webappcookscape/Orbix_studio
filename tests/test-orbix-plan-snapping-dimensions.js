@@ -121,11 +121,10 @@ assert.strictEqual(wallSnap.pos.y, 2375, 'Unit should snap flush against wall fa
 assert.strictEqual(wallSnap.pos.x, 2500);
 console.log('✓ Wall snatching verified: unit snapped flush against wall surface (center at y=2375, back touches wall at y=2075)');
 
-// 5. Test Dimension Creation
+// 5. Test Dimension Creation (ephemeral tape measure)
 editor.handleDimensionMouseDown({ x: 500, y: 500 });
 editor.handleDimensionMouseDown({ x: 2500, y: 500 });
-assert.strictEqual(project.plan.dimensions.length, 1);
-assert.strictEqual(project.plan.dimensions[0].distMm, 2000);
+assert(editor.lastTapeMeasure && editor.lastTapeMeasure.distMm === 2000, 'Tape measure should record 2000mm distance');
 console.log('✓ Dimension tool measurement creation verified: 2000 mm line added');
 
 // 6. Verify image asset files exist
