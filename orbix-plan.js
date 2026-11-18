@@ -3425,9 +3425,13 @@
           };
         }
       } else if (perpDist < flushDist && t >= 0 && t <= 1) {
-        // Overlap Prevention: clamp strictly outward so units never overlap walls
-        pos.x = proj.x + normOut.x * flushDist;
-        pos.y = proj.y + normOut.y * flushDist;
+        // Allow intentional placement inside wall niches, recesses, and cavities
+        var halfWallThick = (w.thickness || 150) / 2;
+        var isInsideNiche = (perpDist <= halfWallThick + 50);
+        if (!this.isShiftDown && !isCivilOrPanel && !isInsideNiche) {
+          pos.x = proj.x + normOut.x * flushDist;
+          pos.y = proj.y + normOut.y * flushDist;
+        }
       }
     }
 
@@ -3435,31 +3439,8 @@
       return bestWallSnap;
     }
 
-    // Secondary collision check: Allow intentional placement near RCC, on RCC, and on corners inside walls
-    // Units are NOT forcibly ejected away, honoring user positioning without changing elevation
-    var isCivilOrPanel = isWallU || (furn.dimensions && furn.dimensions.D <= 50) || furn.category === 'wall_paneling' || (furn.name && /shutter|ledge|panel|rcc|civil/i.test(furn.name));
-    if (!isCivilOrPanel && !this.isShiftDown) {
-      // Soft nudge only when unit is accidentally embedded > 80% inside an exterior wall
-      for (var w2 = 0; w2 < walls.length; w2++) {
-        var wObj = walls[w2];
-        if (wObj.isDivider) continue;
-        var wPoly = Core.wallPolygon(wObj);
-        var fDummy = { pos: pos, rotY: rotY, dimensions: fDims };
-        var fPoly = Core.getFurniturePolygon(fDummy);
-        if (Core.polygonsIntersect(fPoly, wPoly, 50)) {
-          // If completely engulfed inside wall core, gently align to wall face
-          var wDir2 = Core.wallDirection(wObj);
-          var wNorm2 = Core.wallNormal(wObj);
-          var toF = { x: pos.x - wObj.start.x, y: pos.y - wObj.start.y };
-          var sD = toF.x * wNorm2.x + toF.y * wNorm2.y;
-          var sSign = sD >= 0 ? 1 : -1;
-          var reqDist = ((wObj.thickness || 150) / 2) + halfD;
-          var tProj = Math.max(0, Math.min(Core.wallLength(wObj), toF.x * wDir2.x + toF.y * wDir2.y));
-          pos.x = wObj.start.x + wDir2.x * tProj + sSign * wNorm2.x * reqDist;
-          pos.y = wObj.start.y + wDir2.y * tProj + sSign * wNorm2.y * reqDist;
-        }
-      }
-    }
+    // Units can be placed inside wall recesses, alcoves, and near RCC points without unwanted forced ejection
+    return { pos: pos, rotY: rotY };
 
     return { pos: pos, rotY: rotY };
   };
@@ -5769,12 +5750,22 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     ctx.restore();
   };
 
-  PlanEditor.prototype.renderAllWallDimensions = function (ctx) {
+  PlanEditor.prototype.renderAllWallDimensions = function (ctx, forceAll) {
     var walls = this.project.plan.walls || [];
+    var selOps = (this.selected || []).filter(function (s) { return s && s.type === 'opening'; });
+    var selOpWallIds = selOps.map(function (so) {
+      var op = (this.project.plan.openings || []).find(function (o) { return o && o.id === so.id; });
+      return op ? op.wallId : null;
+    }.bind(this));
+
     for (var i = 0; i < walls.length; i++) {
       var w = walls[i];
       var isSelected = this.isSelected('wall', w.id);
-      this.renderWallDimensions(ctx, w, isSelected);
+      var hasSelectedOp = selOpWallIds.indexOf(w.id) !== -1;
+      var isPreviewTarget = !!(this.previewOpening && this.previewOpening.wallId === w.id);
+      if (forceAll || isSelected || hasSelectedOp || isPreviewTarget) {
+        this.renderWallDimensions(ctx, w, isSelected || hasSelectedOp || isPreviewTarget);
+      }
     }
   };
 
@@ -6165,9 +6156,52 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         ctx.lineTo(wPx / 2, dPx / 2);
         ctx.stroke();
 
-        // Front handle pill indicator
-        ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
-        ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
+        var isRollingShutterUnit = !!((f.unitConfig && (f.unitConfig.isRollingShutter || f.unitConfig.shutterType === 'rolling_shutter')) || /rolling\s*shutter/i.test(f.name || ''));
+        var hasFixedPanelUnit = !!(f.unitConfig && f.unitConfig.fixedPanel && f.unitConfig.fixedPanel.enabled);
+
+        if (isRollingShutterUnit) {
+          // Rolling tambour shutter horizontal slats pattern
+          ctx.save();
+          ctx.strokeStyle = isSelected ? 'rgba(37, 99, 235, 0.45)' : 'rgba(100, 116, 139, 0.45)';
+          ctx.lineWidth = 1;
+          var numSlats = 7;
+          var slatStep = dPx / (numSlats + 1);
+          for (var si = 1; si <= numSlats; si++) {
+            var sy = -dPx / 2 + si * slatStep;
+            ctx.beginPath();
+            ctx.moveTo(-wPx / 2 + 3, sy);
+            ctx.lineTo(wPx / 2 - 3, sy);
+            ctx.stroke();
+          }
+          // Full-width grip handle bar along front edge
+          ctx.fillStyle = isSelected ? '#1d4ed8' : '#334155';
+          ctx.fillRect(-wPx / 2 + 4, dPx / 2 - 5, wPx - 8, 4);
+          ctx.restore();
+        } else if (hasFixedPanelUnit) {
+          // FCM Fixed Panel division
+          var isLtUnit = (f.unitConfig && f.unitConfig.openShutter && f.unitConfig.openShutter.opening === 'left') || /fcm[-_ ]*lt/i.test(f.id || f.name || '');
+          var fWidthMm = (f.unitConfig.fixedPanel && f.unitConfig.fixedPanel.width) || 600;
+          var fWidthRatio = Math.min(0.85, Math.max(0.15, fWidthMm / wMm));
+          var divPx = isLtUnit ? (-wPx / 2 + (1 - fWidthRatio) * wPx) : (-wPx / 2 + fWidthRatio * wPx);
+          ctx.save();
+          ctx.strokeStyle = isSelected ? '#2563eb' : '#64748b';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 3]);
+          ctx.beginPath();
+          ctx.moveTo(divPx, -dPx / 2);
+          ctx.lineTo(divPx, dPx / 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          // Front handle on operable side only
+          ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
+          var handleCenter = isLtUnit ? (-wPx / 2 + (divPx - (-wPx / 2)) / 2) : (divPx + (wPx / 2 - divPx) / 2);
+          ctx.fillRect(handleCenter - 10, dPx / 2 - 2, 20, 4);
+          ctx.restore();
+        } else {
+          // Front handle pill indicator
+          ctx.fillStyle = isColliding ? '#dc2626' : (isSelected ? '#1d4ed8' : '#1f2937');
+          ctx.fillRect(-10, dPx / 2 - 2, 20, 4);
+        }
 
         // Built-in Appliance Symbols on Floor/Base Units (HOB & Sink)
         var hasHobAppliance = !isDecor && !!(f.unitConfig && (f.unitConfig.appliance === 'hob' || f.unitConfig.hasHob));
@@ -6249,72 +6283,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         ctx.fillText(warnTxt, 0, -dPx / 2 - 13);
       }
 
-      // 8 Jointing & Connection Points (4 corners + 4 edge midpoints) - ONLY rendered on active selection or drag!
-      var isActivelyMovingThis = !!(this.dragState && this.dragState.type === 'move_furniture' && this.dragState.furniture && this.dragState.furniture.id === f.id);
-      if (isSelected || isActivelyMovingThis) {
-        var isWallF = (Core.isWallUnit) ?
-          Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
-        var pointColor = isWallF ? '#0284c7' : '#10b981';
-        var activeCornerColor = isSelected ? '#f59e0b' : pointColor;
-
-        if (isLCorner) {
-          var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || (f.dimensions && f.dimensions.W) || 900;
-          var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || (f.dimensions && f.dimensions.W) || 900;
-          var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || (f.dimensions && f.dimensions.D) || 560;
-          var cwPx = cW * this.zoom;
-          var cdPx = cD * this.zoom;
-          var depthPx = cDepth * this.zoom;
-
-          var cornerConnectionPts = [
-            // 6 Perimeter vertices
-            { x: -cwPx / 2, y: -cdPx / 2, r: 4, corner: true },
-            { x: cwPx / 2, y: -cdPx / 2, r: 4, corner: true },
-            { x: cwPx / 2, y: cdPx / 2, r: 4, corner: true },
-            { x: cwPx / 2 - depthPx, y: cdPx / 2, r: 4, corner: true },
-            { x: cwPx / 2 - depthPx, y: -cdPx / 2 + depthPx, r: 4, corner: true },
-            { x: -cwPx / 2, y: -cdPx / 2 + depthPx, r: 4, corner: true },
-            // Joint midpoints
-            { x: -cwPx / 2, y: -cdPx / 2 + depthPx / 2, r: 2.5, corner: false },
-            { x: cwPx / 2 - depthPx / 2, y: cdPx / 2, r: 2.5, corner: false },
-            { x: 0, y: -cdPx / 2, r: 2.5, corner: false },
-            { x: cwPx / 2, y: 0, r: 2.5, corner: false }
-          ];
-          for (var ccpi = 0; ccpi < cornerConnectionPts.length; ccpi++) {
-            var ccp = cornerConnectionPts[ccpi];
-            ctx.fillStyle = ccp.corner ? activeCornerColor : pointColor;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.2;
-            ctx.beginPath();
-            ctx.arc(ccp.x, ccp.y, ccp.r, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-          }
-        } else {
-          var connectionPts = [
-            // 4 Corners (Primary snaps)
-            { x: -wPx / 2, y: -dPx / 2, r: 4, corner: true },
-            { x: wPx / 2, y: -dPx / 2, r: 4, corner: true },
-            { x: wPx / 2, y: dPx / 2, r: 4, corner: true },
-            { x: -wPx / 2, y: dPx / 2, r: 4, corner: true },
-            // 4 Midpoints (Secondary snaps)
-            { x: 0, y: -dPx / 2, r: 2.5, corner: false },
-            { x: 0, y: dPx / 2, r: 2.5, corner: false },
-            { x: -wPx / 2, y: 0, r: 2.5, corner: false },
-            { x: wPx / 2, y: 0, r: 2.5, corner: false }
-          ];
-          for (var cpi = 0; cpi < connectionPts.length; cpi++) {
-            var cp = connectionPts[cpi];
-            ctx.fillStyle = cp.corner ? activeCornerColor : pointColor;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 1.2;
-            ctx.beginPath();
-            ctx.arc(cp.x, cp.y, cp.r, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-          }
-        }
-
-      }
+      // Connection dots on units removed per user request for visual cleanliness
 
       // If actively dragging and snapped/jointed, display snap feedback badge
       if (this.dragState && this.dragState.type === 'move_furniture' && this.dragState.furniture.id === f.id && this.dragState.snapInfo) {
@@ -7705,7 +7674,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       this.renderRooms(oCtx);
       this.renderWalls(oCtx);
       this.renderOpenings(oCtx);
-      this.renderAllWallDimensions(oCtx);
+      this.renderAllWallDimensions(oCtx, true);
       this.renderCornerAngles(oCtx);
       this.renderFurniture(oCtx);
       this.renderStairs(oCtx);

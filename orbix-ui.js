@@ -2165,10 +2165,10 @@
           '<div class="insp-title">' + (op.type === 'door' ? 'Door' : 'Window') + ' Properties</div>' +
           '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px;margin-bottom:12px;font-size:11px;font-family:monospace;color:#1e40af;line-height:1.4;">' +
           '<div style="font-weight:700;margin-bottom:4px;color:#1e3a8a;">📐 Segmented Measurements</div>' +
-          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-          '<span><b>Corner A (1):</b> ' + distA + ' mm</span>' +
-          '<span><b>Width:</b> ' + Math.round(op.width) + ' mm</span>' +
-          '<span><b>(2) Corner B:</b> ' + distB + ' mm</span>' +
+          '<div class="insp-op-banner" style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span id="inspOpBannerA"><b>Corner A (1):</b> ' + distA + ' mm</span>' +
+          '<span id="inspOpBannerW"><b>Width:</b> ' + Math.round(op.width) + ' mm</span>' +
+          '<span id="inspOpBannerB"><b>(2) Corner B:</b> ' + distB + ' mm</span>' +
           '</div></div>' +
           '<div class="insp-row"><label>Distance from Corner A (1) [mm]</label><input type="number" id="inspOpDistA" value="' + distA + '" min="0" max="' + (wallL - op.width) + '" step="10"></div>' +
           '<div class="insp-row"><label>Opening Width (mm)</label><input type="number" id="inspOpW" value="' + Math.round(op.width) + '" min="400" max="3000" step="50"></div>' +
@@ -2196,38 +2196,55 @@
           ) +
           '<button class="btn danger full" id="inspDelOp" style="margin-top:12px">Delete ' + (op.type === 'door' ? 'Door' : 'Window') + '</button>';
 
-        var updateOp = function () {
+        var updateOp = function (skipOffsetRead) {
           var wVal = parseFloat(document.getElementById('inspOpW').value);
           var hVal = parseFloat(document.getElementById('inspOpH').value);
-          var offVal = parseFloat(document.getElementById('inspOpOff').value);
-
           if (!isNaN(wVal) && wVal >= 200) op.width = wVal;
           if (!isNaN(hVal) && hVal >= 200) op.height = hVal;
 
           var curWall = self.editor.getWall(op.wallId);
-          var curWallL = curWall ? Core.wallLength(curWall) : 5000;
+          var curWallL = curWall ? Core.wallLength(curWall) : wallL;
           var curMin = Math.round(op.width / 2);
           var curMax = Math.max(curMin, Math.round(curWallL - op.width / 2));
 
-          if (!isNaN(offVal)) {
-            op.offset = Math.max(curMin, Math.min(curMax, offVal));
+          if (!skipOffsetRead) {
+            var offEl = document.getElementById('inspOpOff');
+            var offVal = offEl ? parseFloat(offEl.value) : NaN;
+            if (!isNaN(offVal)) {
+              op.offset = Math.max(curMin, Math.min(curMax, offVal));
+            }
+          } else {
+            op.offset = Math.max(curMin, Math.min(curMax, op.offset));
           }
+
+          var liveDistA = Math.max(0, Math.round(op.offset - op.width / 2));
+          var liveDistB = Math.max(0, Math.round(curWallL - (op.offset + op.width / 2)));
+
+          // Synchronize input fields if not currently being typed into
+          var elA = document.getElementById('inspOpDistA');
+          var elB = document.getElementById('inspOpDistB');
+          var elO = document.getElementById('inspOpOff');
+          var elWInput = document.getElementById('inspOpW');
+
+          if (elA && document.activeElement !== elA) elA.value = liveDistA;
+          if (elB && document.activeElement !== elB) elB.value = liveDistB;
+          if (elO && document.activeElement !== elO) elO.value = Math.round(op.offset);
+          if (elWInput && document.activeElement !== elWInput) elWInput.value = Math.round(op.width);
+
+          // Update banner in real time
+          var bA = document.getElementById('inspOpBannerA');
+          var bW = document.getElementById('inspOpBannerW');
+          var bB = document.getElementById('inspOpBannerB');
+          if (bA) bA.innerHTML = '<b>Corner A (1):</b> ' + liveDistA + ' mm';
+          if (bW) bW.innerHTML = '<b>Width:</b> ' + Math.round(op.width) + ' mm';
+          if (bB) bB.innerHTML = '<b>(2) Corner B:</b> ' + liveDistB + ' mm';
 
           var dTypeEl = document.getElementById('inspOpDoorType');
-          if (dTypeEl) {
-            op.doorType = dTypeEl.value;
-          }
-
+          if (dTypeEl) op.doorType = dTypeEl.value;
           var wTypeEl = document.getElementById('inspOpWindowType');
-          if (wTypeEl) {
-            op.windowType = wTypeEl.value;
-          }
-
+          if (wTypeEl) op.windowType = wTypeEl.value;
           var swingEl = document.getElementById('inspOpSwing');
-          if (swingEl) {
-            op.swing = swingEl.value;
-          }
-
+          if (swingEl) op.swing = swingEl.value;
           var sillEl = document.getElementById('inspOpSill');
           if (sillEl) {
             var sVal = parseFloat(sillEl.value);
@@ -2245,46 +2262,75 @@
           }
         };
 
+        var handleDistA = function () {
+          var val = parseFloat(document.getElementById('inspOpDistA').value);
+          if (!isNaN(val)) {
+            var curW = op.width || 800;
+            var curWall = self.editor.getWall(op.wallId);
+            var curWallL = curWall ? Core.wallLength(curWall) : wallL;
+            var curMin = Math.round(curW / 2);
+            var curMax = Math.max(curMin, Math.round(curWallL - curW / 2));
+            op.offset = Math.max(curMin, Math.min(curMax, Math.round(val + curW / 2)));
+            updateOp(true);
+          }
+        };
+
+        var handleDistB = function () {
+          var val = parseFloat(document.getElementById('inspOpDistB').value);
+          if (!isNaN(val)) {
+            var curW = op.width || 800;
+            var curWall = self.editor.getWall(op.wallId);
+            var curWallL = curWall ? Core.wallLength(curWall) : wallL;
+            var curMin = Math.round(curW / 2);
+            var curMax = Math.max(curMin, Math.round(curWallL - curW / 2));
+            op.offset = Math.max(curMin, Math.min(curMax, Math.round(curWallL - val - curW / 2)));
+            updateOp(true);
+          }
+        };
+
+        var handleWidth = function () {
+          var val = parseFloat(document.getElementById('inspOpW').value);
+          if (!isNaN(val) && val >= 200) {
+            var prevDistA = Math.max(0, Math.round(op.offset - op.width / 2));
+            op.width = val;
+            var curWall = self.editor.getWall(op.wallId);
+            var curWallL = curWall ? Core.wallLength(curWall) : wallL;
+            var curMin = Math.round(op.width / 2);
+            var curMax = Math.max(curMin, Math.round(curWallL - op.width / 2));
+            op.offset = Math.max(curMin, Math.min(curMax, Math.round(prevDistA + op.width / 2)));
+            updateOp(true);
+          }
+        };
+
         var elDistA = document.getElementById('inspOpDistA');
         if (elDistA) {
-          elDistA.addEventListener('change', function (e) {
-            var val = parseFloat(e.target.value);
-            if (!isNaN(val)) {
-              var curW = op.width || 800;
-              op.offset = Math.max(curW / 2, Math.min(wallL - curW / 2, Math.round(val + curW / 2)));
-              updateOp();
-              self.renderInspector(self.editor.selected);
-            }
-          });
+          elDistA.addEventListener('input', handleDistA);
+          elDistA.addEventListener('change', handleDistA);
         }
         var elDistB = document.getElementById('inspOpDistB');
         if (elDistB) {
-          elDistB.addEventListener('change', function (e) {
-            var val = parseFloat(e.target.value);
-            if (!isNaN(val)) {
-              var curW = op.width || 800;
-              op.offset = Math.max(curW / 2, Math.min(wallL - curW / 2, Math.round(wallL - val - curW / 2)));
-              updateOp();
-              self.renderInspector(self.editor.selected);
-            }
-          });
+          elDistB.addEventListener('input', handleDistB);
+          elDistB.addEventListener('change', handleDistB);
+        }
+        var elW = document.getElementById('inspOpW');
+        if (elW) {
+          elW.addEventListener('input', handleWidth);
+          elW.addEventListener('change', handleWidth);
         }
 
         ['input', 'change'].forEach(function (evt) {
-          var elW = document.getElementById('inspOpW');
-          if (elW) elW.addEventListener(evt, updateOp);
           var elH = document.getElementById('inspOpH');
-          if (elH) elH.addEventListener(evt, updateOp);
+          if (elH) elH.addEventListener(evt, function () { updateOp(false); });
           var elOff = document.getElementById('inspOpOff');
-          if (elOff) elOff.addEventListener(evt, updateOp);
+          if (elOff) elOff.addEventListener(evt, function () { updateOp(false); });
           var elDT = document.getElementById('inspOpDoorType');
-          if (elDT) elDT.addEventListener(evt, updateOp);
+          if (elDT) elDT.addEventListener(evt, function () { updateOp(false); });
           var elWT = document.getElementById('inspOpWindowType');
-          if (elWT) elWT.addEventListener(evt, updateOp);
+          if (elWT) elWT.addEventListener(evt, function () { updateOp(false); });
           var elSw = document.getElementById('inspOpSwing');
-          if (elSw) elSw.addEventListener(evt, updateOp);
+          if (elSw) elSw.addEventListener(evt, function () { updateOp(false); });
           var elSi = document.getElementById('inspOpSill');
-          if (elSi) elSi.addEventListener(evt, updateOp);
+          if (elSi) elSi.addEventListener(evt, function () { updateOp(false); });
         });
 
         var elDelOp = document.getElementById('inspDelOp');

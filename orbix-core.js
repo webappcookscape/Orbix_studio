@@ -766,6 +766,11 @@
       return false;
     }
 
+    // WFM (Wall Furniture Module / Rolling shutter wfm60) & overhead units are explicitly wall units
+    if (/(^|\b|_|-)(wfm|wm|wcm|wbcm)($|\b|_|-|\d+)/i.test(cd) || /(^|\b|_|-)(wfm|wm|wcm|wbcm)($|\b|_|-|\d+)/i.test(nm) || /rolling\s*shutter/i.test(nm)) {
+      return true;
+    }
+
     // Base units (including FM floor mounted kitchen units) are never wall units
     if (nm.indexOf('base') !== -1 || cat.indexOf('base') !== -1 || cc.indexOf('base') !== -1 || cd.indexOf('base') !== -1 ||
         cat === 'kitchen_fm' || nm.indexOf('fm') !== -1 || /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(nm) ||
@@ -798,10 +803,20 @@
   function createFurniturePlacement(opts) {
     if (typeof opts === 'string') {
       var found = FURNITURE_CATALOG.find(function (c) { return c.id === opts; });
-      opts = found ? Object.assign({}, found) : { id: opts, name: opts };
+      opts = found ? JSON.parse(JSON.stringify(found)) : { id: opts, name: opts };
       // When instantiated from catalog string, preserve catalog template ID as catalogItemId, and generate unique instance id
       opts.catalogItemId = opts.catalogItemId || opts.id;
       delete opts.id;
+    } else if (opts && (opts.id || opts.catalogItemId)) {
+      var targetCatId = opts.catalogItemId || opts.id;
+      var foundCat = FURNITURE_CATALOG.find(function (c) { return c.id === targetCatId || c.code === targetCatId; });
+      if (foundCat) {
+        var clone = JSON.parse(JSON.stringify(foundCat));
+        opts = Object.assign(clone, opts, {
+          unitConfig: Object.assign({}, clone.unitConfig, opts.unitConfig || {}),
+          dimensions: Object.assign({}, clone.dimensions, opts.dimensions || {})
+        });
+      }
     }
     opts = opts || {};
     var isCatalogTemplate = opts.id ? FURNITURE_CATALOG.some(function (c) { return c.id === opts.id; }) : false;
@@ -868,11 +883,18 @@
 
     opts.unitConfig = opts.unitConfig || {};
     if (isKitchenFM) {
-      if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = true;
-      if (opts.unitConfig.legs === undefined) opts.unitConfig.legs = 100;
-      if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = 100;
-      if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'granite_kashmir_white';
-      if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 1;
+      var isOnlyShutterUnit = isOS || (opts.unitConfig && opts.unitConfig.isOnlyShutter);
+      if (isOnlyShutterUnit) {
+        if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = false;
+        if (opts.unitConfig.counter === undefined) opts.unitConfig.counter = 'none';
+        if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 0;
+      } else {
+        if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = true;
+        if (opts.unitConfig.legs === undefined) opts.unitConfig.legs = 100;
+        if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = 100;
+        if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'granite_kashmir_white';
+        if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 1;
+      }
       if (opts.dimensions && (opts.dimensions.D === undefined || opts.dimensions.D < 100)) {
         opts.dimensions.D = 550;
       }
@@ -947,10 +969,10 @@
       opts.unitConfig.doorType = 'none';
     }
     if (isBaseOS) {
-      if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = true;
-      if (opts.unitConfig.legs === undefined) opts.unitConfig.legs = 100;
-      if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = 100;
-      if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'black';
+      if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = (opts.unitConfig.isOnlyShutter ? false : true);
+      if (opts.unitConfig.legs === undefined) opts.unitConfig.legs = (opts.unitConfig.hasLegs ? 100 : 0);
+      if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = (opts.unitConfig.hasLegs ? 100 : 0);
+      if (opts.unitConfig.counter === undefined) opts.unitConfig.counter = (opts.unitConfig.isOnlyShutter ? 'none' : 'black');
       if (opts.dimensions && (opts.dimensions.D === undefined || opts.dimensions.D < 100)) {
         opts.dimensions.D = 550;
       }
@@ -3446,6 +3468,192 @@
       "baseRate": 17398.79
     },
     "customRate": 17398.79
+  },
+  {
+    "id": "wfm60-roll",
+    "code": "WFM60-ROLL",
+    "name": "Rolling shutter wfm60",
+    "modelType": "kitchen_wall",
+    "category": "kitchen_wall",
+    "costCategory": "Kitchen - Wall",
+    "areaSqft": 7.75,
+    "icon": "🚪",
+    "dimensions": {
+      "W": 600,
+      "H": 1200,
+      "D": 350
+    },
+    "elevation": 750,
+    "materials": {
+      "shutter": {
+        "material": "ALUMINUM_SLATS",
+        "finish": "Anodized Silver / Anthracite"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kwall",
+      "unitType": "wfm60-roll",
+      "isRollingShutter": true,
+      "shutterType": "rolling_shutter",
+      "doorType": "rolling",
+      "shutters": 1,
+      "minDepth": 300,
+      "maxDepth": 550,
+      "counter": "none",
+      "hasLegs": false,
+      "legs": 0,
+      "plinthH": 0,
+      "sections": 1,
+      "shelves": 2,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "handle": "grip_bar",
+      "hfinish": "aluminum",
+      "led": false,
+      "carcass": "MDF 6601",
+      "shutterCol": "Silver Slats"
+    },
+    "pricingOverrides": {
+      "baseRate": 14500
+    },
+    "customRate": 14500
+  },
+  {
+    "id": "fcm-rt-os",
+    "code": "FCM-RT-OS",
+    "name": "FCM-RT Only Shutter",
+    "modelType": "kitchen_os",
+    "category": "kitchen_corner",
+    "costCategory": "Kitchen - O/S",
+    "areaSqft": 8.5,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 1050,
+      "H": 750,
+      "D": 550
+    },
+    "elevation": 0,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "NONE",
+        "finish": "None"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kbase",
+      "unitType": "fcm-rt",
+      "isOnlyShutter": true,
+      "fixedPanel": {
+        "enabled": true,
+        "width": 600,
+        "type": "fixed"
+      },
+      "openShutter": {
+        "enabled": true,
+        "width": 450,
+        "type": "shutter",
+        "count": 1,
+        "opening": "right"
+      },
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 2,
+      "shelves": 0,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "pull",
+      "hfinish": "black",
+      "led": false,
+      "hasLegs": false,
+      "legs": 0,
+      "plinthH": 0,
+      "carcass": "NONE",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 9800
+    },
+    "customRate": 9800
+  },
+  {
+    "id": "fcm-lt-os",
+    "code": "FCM-LT-OS",
+    "name": "FCM-LT Only Shutter",
+    "modelType": "kitchen_os",
+    "category": "kitchen_corner",
+    "costCategory": "Kitchen - O/S",
+    "areaSqft": 8.5,
+    "icon": "🍳",
+    "dimensions": {
+      "W": 1050,
+      "H": 750,
+      "D": 550
+    },
+    "elevation": 0,
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "NONE",
+        "finish": "None"
+      }
+    },
+    "unitConfig": {
+      "ctype": "kbase",
+      "unitType": "fcm-lt",
+      "isOnlyShutter": true,
+      "fixedPanel": {
+        "enabled": true,
+        "width": 600,
+        "type": "fixed"
+      },
+      "openShutter": {
+        "enabled": true,
+        "width": 450,
+        "type": "shutter",
+        "count": 1,
+        "opening": "left"
+      },
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 2,
+      "shelves": 0,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "pull",
+      "hfinish": "black",
+      "led": false,
+      "hasLegs": false,
+      "legs": 0,
+      "plinthH": 0,
+      "carcass": "NONE",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 9800
+    },
+    "customRate": 9800
   },
   {
     "id": "fbcm",
