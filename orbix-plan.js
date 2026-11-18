@@ -454,16 +454,183 @@
     return best;
   };
 
+  // Compute visible 2D black border edges and corners for solid walls (excluding wall centerlines)
+  PlanEditor.prototype.getWallBorderPrimitives = function (walls) {
+    var edges = [];
+    var corners = [];
+    if (!walls || !walls.length) return { edges: edges, corners: corners };
+
+    var connTol = 60;
+    var intersectFaceRay = function (p1, d1, p2, d2) {
+      var denom = d1.x * d2.y - d1.y * d2.x;
+      if (Math.abs(denom) < 0.08) return null;
+      return ((p2.x - p1.x) * d2.y - (p2.y - p1.y) * d2.x) / denom;
+    };
+
+    var collectBranchesAt = function (w, endPt) {
+      var branches = [];
+      for (var k = 0; k < walls.length; k++) {
+        var o = walls[k];
+        if (!o || o.id === w.id || o.isDivider || o.thickness === 0) continue;
+        if (Core.wallLength(o) < 1) continue;
+        var oDir = Core.wallDirection(o);
+        var oHalfT = (o.thickness || 150) / 2.0;
+        var dStart = Vec2.dist(endPt, o.start);
+        var dEnd = Vec2.dist(endPt, o.end);
+        if (dStart < connTol && dStart <= dEnd) {
+          branches.push({ dir: oDir, halfT: oHalfT, pt: o.start });
+        } else if (dEnd < connTol) {
+          branches.push({ dir: { x: -oDir.x, y: -oDir.y }, halfT: oHalfT, pt: o.end });
+        } else {
+          var pr = Core.projectPointToSegment(endPt, o.start, o.end);
+          if (pr && pr.dist < connTol && pr.t > 0.02 && pr.t < 0.98) {
+            branches.push({ dir: oDir, halfT: oHalfT, pt: pr.pt });
+            branches.push({ dir: { x: -oDir.x, y: -oDir.y }, halfT: oHalfT, pt: pr.pt });
+          }
+        }
+      }
+      return branches;
+    };
+
+    var computeEndTrim = function (branches, faceOrigin, uIn, sNorm, halfT, maxInward) {
+      if (!branches.length) return 0;
+      var hasInner = false;
+      var hasOuter = false;
+      var innerMax = -Infinity;
+      var outerBest = Infinity;
+      for (var bi = 0; bi < branches.length; bi++) {
+        var b = branches[bi];
+        var dot = sNorm.x * b.dir.x + sNorm.y * b.dir.y;
+        if (Math.abs(dot) <= 0.05) continue;
+        var nCandX = -b.dir.y;
+        var nCandY = b.dir.x;
+        var sign = (nCandX * uIn.x + nCandY * uIn.y >= 0) ? 1 : -1;
+        var refX = (dot > 0.05 ? 1 : -1) * nCandX * sign;
+        var refY = (dot > 0.05 ? 1 : -1) * nCandY * sign;
+        var p2 = { x: b.pt.x + b.halfT * refX, y: b.pt.y + b.halfT * refY };
+        var tHit = intersectFaceRay(faceOrigin, uIn, p2, b.dir);
+        if (tHit === null) continue;
+        if (dot > 0.05) {
+          hasInner = true;
+          if (tHit > innerMax) innerMax = tHit;
+        } else {
+          hasOuter = true;
+          if (tHit < outerBest) outerBest = tHit;
+        }
+      }
+      var maxExtend = Math.max(halfT * 3, 250);
+      if (hasInner) return Math.max(0, Math.min(maxInward, innerMax));
+      if (hasOuter) return Math.max(-maxExtend, Math.min(maxInward, outerBest));
+      return 0;
+    };
+
+    var subtractCut = function (spans, cutA, cutB) {
+      var next = [];
+      for (var si = 0; si < spans.length; si++) {
+        var s0 = spans[si][0], s1 = spans[si][1];
+        if (cutB <= s0 + 1 || cutA >= s1 - 1) {
+          next.push([s0, s1]);
+        } else {
+          if (cutA > s0 + 1) next.push([s0, cutA]);
+          if (cutB < s1 - 1) next.push([cutB, s1]);
+        }
+      }
+      return next;
+    };
+
+    for (var i = 0; i < walls.length; i++) {
+      var w = walls[i];
+      if (!w || w.isDivider || w.thickness === 0) continue;
+      var wLen = Core.wallLength(w);
+      if (wLen < 1) continue;
+
+      var u = Core.wallDirection(w);
+      var n = Core.wallNormal(w);
+      var h = (w.thickness || 150) / 2.0;
+      var maxIn = wLen * 0.49;
+      var startBranches = collectBranchesAt(w, w.start);
+      var endBranches = collectBranchesAt(w, w.end);
+
+      // Free (unconnected) wall end caps are visible black border lines
+      if (!startBranches.length) {
+        edges.push({
+          a: { x: w.start.x - n.x * h, y: w.start.y - n.y * h },
+          b: { x: w.start.x + n.x * h, y: w.start.y + n.y * h }
+        });
+      }
+      if (!endBranches.length) {
+        edges.push({
+          a: { x: w.end.x + n.x * h, y: w.end.y + n.y * h },
+          b: { x: w.end.x - n.x * h, y: w.end.y - n.y * h }
+        });
+      }
+
+      var sides = [1, -1];
+      for (var sd = 0; sd < sides.length; sd++) {
+        var s = sides[sd];
+        var sNorm = { x: n.x * s, y: n.y * s };
+        var faceStartBase = { x: w.start.x + sNorm.x * h, y: w.start.y + sNorm.y * h };
+        var faceEndBase = { x: w.end.x + sNorm.x * h, y: w.end.y + sNorm.y * h };
+
+        var tStart = computeEndTrim(startBranches, faceStartBase, u, sNorm, h, maxIn);
+        var uBack = { x: -u.x, y: -u.y };
+        var tEnd = wLen - computeEndTrim(endBranches, faceEndBase, uBack, sNorm, h, maxIn);
+        if (tEnd <= tStart + 1) continue;
+
+        var spans = [[tStart, tEnd]];
+        // Split face around T-junction stems entering this wall side
+        for (var k = 0; k < walls.length; k++) {
+          var o = walls[k];
+          if (!o || o.id === w.id || o.isDivider || o.thickness === 0) continue;
+          if (Core.wallLength(o) < 1) continue;
+          var oDir = Core.wallDirection(o);
+          var oHalfT = (o.thickness || 150) / 2.0;
+          var oNorm = { x: -oDir.y, y: oDir.x };
+          var eps = [
+            { pt: o.start, dOut: oDir },
+            { pt: o.end, dOut: { x: -oDir.x, y: -oDir.y } }
+          ];
+          for (var ei = 0; ei < 2; ei++) {
+            var ep = eps[ei];
+            if (Vec2.dist(ep.pt, w.start) < connTol || Vec2.dist(ep.pt, w.end) < connTol) continue;
+            var prMid = Core.projectPointToSegment(ep.pt, w.start, w.end);
+            if (!prMid || prMid.dist >= connTol || prMid.t <= 0.01 || prMid.t >= 0.99) continue;
+            if (sNorm.x * ep.dOut.x + sNorm.y * ep.dOut.y <= 0.05) continue;
+            var pL = { x: ep.pt.x + oNorm.x * oHalfT, y: ep.pt.y + oNorm.y * oHalfT };
+            var pR = { x: ep.pt.x - oNorm.x * oHalfT, y: ep.pt.y - oNorm.y * oHalfT };
+            var tL = intersectFaceRay(faceStartBase, u, pL, ep.dOut);
+            var tR = intersectFaceRay(faceStartBase, u, pR, ep.dOut);
+            if (tL !== null && tR !== null) {
+              spans = subtractCut(spans, Math.min(tL, tR), Math.max(tL, tR));
+            }
+          }
+        }
+
+        for (var spi = 0; spi < spans.length; spi++) {
+          var aPt = { x: faceStartBase.x + u.x * spans[spi][0], y: faceStartBase.y + u.y * spans[spi][0] };
+          var bPt = { x: faceStartBase.x + u.x * spans[spi][1], y: faceStartBase.y + u.y * spans[spi][1] };
+          edges.push({ a: aPt, b: bPt });
+          corners.push(aPt, bPt);
+        }
+      }
+    }
+
+    return { edges: edges, corners: corners };
+  };
+
   // Snapping logic: Room Close Loop -> Joint Snap -> On-Wall Snap -> Ortho/Angle Guides -> Grid Snap
   PlanEditor.prototype.snapPoint = function (worldPt, ignoreWallId) {
     var snapDistMm = 200; // snapping radius in mm
     var snapped = Vec2.clone(worldPt);
     var walls = (this.project && this.project.plan && this.project.plan.walls) || [];
 
-    // 00. Tape Measure Special Auto-Snapping: Snap to Room Inner Wall Faces and Unit Edges/Corners
+    // 00. Tape Measure Special Auto-Snapping: Snap strictly to Wall Black Border Lines/Corners & Unit Edges/Corners
     if (this.activeTool === 'dimension') {
-      var bestTapeSnap = null;
       var minTapeDist = 260; // mm magnetic snap threshold for tape tool
+      var bestCornerSnap = null;
+      var bestEdgeSnap = null;
+      var minCornerDist = minTapeDist;
+      var minEdgeDist = minTapeDist;
 
       // 1. Snap to Furniture Outer Edges & Corners
       var furnList = (this.project && this.project.plan && this.project.plan.furniture) || [];
@@ -473,74 +640,56 @@
         if (fPoly && fPoly.length >= 3) {
           for (var fvi = 0; fvi < fPoly.length; fvi++) {
             var cDist = Vec2.dist(worldPt, fPoly[fvi]);
-            if (cDist < minTapeDist) {
-              minTapeDist = cDist;
-              bestTapeSnap = { pt: Vec2.clone(fPoly[fvi]), type: 'tape_unit_corner', label: 'Unit Corner' };
+            if (cDist < minCornerDist) {
+              minCornerDist = cDist;
+              bestCornerSnap = { pt: Vec2.clone(fPoly[fvi]), dist: cDist, type: 'tape_unit_corner', label: 'Unit Corner' };
             }
           }
           for (var fei = 0; fei < fPoly.length; fei++) {
             var p1 = fPoly[fei], p2 = fPoly[(fei + 1) % fPoly.length];
             var prEdge = Core.projectPointToSegment(worldPt, p1, p2);
-            if (prEdge && prEdge.dist < minTapeDist && prEdge.t >= 0 && prEdge.t <= 1) {
-              minTapeDist = prEdge.dist;
-              bestTapeSnap = { pt: Vec2.clone(prEdge.pt), type: 'tape_unit_edge', label: 'Unit Edge' };
+            if (prEdge && prEdge.dist < minEdgeDist && prEdge.t >= 0 && prEdge.t <= 1) {
+              minEdgeDist = prEdge.dist;
+              bestEdgeSnap = { pt: Vec2.clone(prEdge.pt), dist: prEdge.dist, type: 'tape_unit_edge', label: 'Unit Edge' };
             }
           }
         }
       }
 
-      // 2. Snap to Room Inner Wall Faces & Corners (Room Polygons = True Inner Surfaces)
-      var rooms = (this.project && this.project.plan && this.project.plan.rooms) || [];
-      for (var rti = 0; rti < rooms.length; rti++) {
-        var rPoly = rooms[rti].polygon;
-        if (rPoly && rPoly.length >= 3) {
-          for (var rvi = 0; rvi < rPoly.length; rvi++) {
-            var rcDist = Vec2.dist(worldPt, rPoly[rvi]);
-            if (rcDist < minTapeDist) {
-              minTapeDist = rcDist;
-              bestTapeSnap = { pt: Vec2.clone(rPoly[rvi]), type: 'tape_inner_corner', label: 'Wall Inner Corner' };
-            }
-          }
-          for (var rei = 0; rei < rPoly.length; rei++) {
-            var rp1 = rPoly[rei], rp2 = rPoly[(rei + 1) % rPoly.length];
-            var rPrEdge = Core.projectPointToSegment(worldPt, rp1, rp2);
-            if (rPrEdge && rPrEdge.dist < minTapeDist && rPrEdge.t >= 0 && rPrEdge.t <= 1) {
-              minTapeDist = rPrEdge.dist;
-              bestTapeSnap = { pt: Vec2.clone(rPrEdge.pt), type: 'tape_inner_wall_face', label: 'Wall Inner Face' };
-            }
-          }
+      // 2. Snap to Solid Wall Black Border Lines & Corners (Never Wall Centerlines)
+      var wallBorders = this.getWallBorderPrimitives(walls);
+      for (var wci = 0; wci < wallBorders.corners.length; wci++) {
+        var wCorner = wallBorders.corners[wci];
+        var wcDist = Vec2.dist(worldPt, wCorner);
+        if (wcDist < minCornerDist) {
+          minCornerDist = wcDist;
+          bestCornerSnap = { pt: Vec2.clone(wCorner), dist: wcDist, type: 'tape_wall_corner', label: 'Wall Corner' };
+        }
+      }
+      for (var wei = 0; wei < wallBorders.edges.length; wei++) {
+        var wEdge = wallBorders.edges[wei];
+        var prWEdge = Core.projectPointToSegment(worldPt, wEdge.a, wEdge.b);
+        if (prWEdge && prWEdge.dist < minEdgeDist && prWEdge.t >= 0 && prWEdge.t <= 1) {
+          minEdgeDist = prWEdge.dist;
+          bestEdgeSnap = { pt: Vec2.clone(prWEdge.pt), dist: prWEdge.dist, type: 'tape_wall_face', label: 'Wall Border' };
         }
       }
 
-      // 3. Fallback: Inner wall faces derived from walls' inner segments
-      if (!bestTapeSnap && walls && walls.length > 0) {
-        for (var twi = 0; twi < walls.length; twi++) {
-          var tw = walls[twi];
-          if (tw.isDivider) continue;
-          var halfT = (tw.thickness || 150) / 2;
-          var twDir = Core.wallDirection(tw);
-          var twNorm = Core.wallNormal(tw);
-          var face1A = { x: tw.start.x + twNorm.x * halfT, y: tw.start.y + twNorm.y * halfT };
-          var face1B = { x: tw.end.x + twNorm.x * halfT, y: tw.end.y + twNorm.y * halfT };
-          var face2A = { x: tw.start.x - twNorm.x * halfT, y: tw.start.y - twNorm.y * halfT };
-          var face2B = { x: tw.end.x - twNorm.x * halfT, y: tw.end.y - twNorm.y * halfT };
-
-          var prF1 = Core.projectPointToSegment(worldPt, face1A, face1B);
-          if (prF1 && prF1.dist < minTapeDist && prF1.t >= 0 && prF1.t <= 1) {
-            minTapeDist = prF1.dist;
-            bestTapeSnap = { pt: Vec2.clone(prF1.pt), type: 'tape_wall_face', label: 'Wall Inner Face' };
-          }
-          var prF2 = Core.projectPointToSegment(worldPt, face2A, face2B);
-          if (prF2 && prF2.dist < minTapeDist && prF2.t >= 0 && prF2.t <= 1) {
-            minTapeDist = prF2.dist;
-            bestTapeSnap = { pt: Vec2.clone(prF2.pt), type: 'tape_wall_face', label: 'Wall Inner Face' };
-          }
-        }
+      if (bestCornerSnap && (!bestEdgeSnap || bestCornerSnap.dist <= bestEdgeSnap.dist || (bestCornerSnap.dist < 60 && bestCornerSnap.dist <= bestEdgeSnap.dist + 22))) {
+        return { pt: bestCornerSnap.pt, type: bestCornerSnap.type, label: bestCornerSnap.label };
+      }
+      if (bestEdgeSnap) {
+        return { pt: bestEdgeSnap.pt, type: bestEdgeSnap.type, label: bestEdgeSnap.label };
       }
 
-      if (bestTapeSnap) {
-        return bestTapeSnap;
+      // Free-space grid/raw snap without falling through to centerline wall joint/segment snaps
+      if (this.project && this.project.plan && this.project.plan.snapToGrid) {
+        var dimGrid = this.project.plan.gridSize || 100;
+        snapped.x = Math.round(snapped.x / dimGrid) * dimGrid;
+        snapped.y = Math.round(snapped.y / dimGrid) * dimGrid;
+        return { pt: snapped, type: 'grid', label: 'Grid' };
       }
+      return { pt: snapped, type: 'none', label: '' };
     }
 
     // 0a. Room Divider Special Auto-Snapping & Wall-to-Wall Locking
