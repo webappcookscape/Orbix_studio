@@ -3604,6 +3604,89 @@
 
       // Find all existing units on this same wall and on interfering elevation bands
       var occupiedIntervals = [];
+
+      // A. Adjoining wall corner clearance (prevents units penetrating through corner walls or overlapping corner units on adjoining walls)
+      for (var awi = 0; awi < walls.length; awi++) {
+        var aWall = walls[awi];
+        if (aWall.id === bwWall.id || aWall.isDivider) continue;
+        var aHalfT = (aWall.thickness || 150) / 2;
+        var bwLen = Core.wallLength(bwWall);
+
+        // Check if aWall meets bwWall.start
+        var meetsStart = (Vec2.dist(bwWall.start, aWall.start) < 90 || Vec2.dist(bwWall.start, aWall.end) < 90);
+        if (meetsStart) {
+          var aDir = Core.wallDirection(aWall);
+          var dotAdj = Math.abs(bwDir.x * aDir.x + bwDir.y * aDir.y);
+          if (dotAdj < 0.5) { // Roughly perpendicular corner
+            occupiedIntervals.push({
+              start: -9999,
+              end: aHalfT,
+              center: aHalfT / 2
+            });
+
+            // If any unit on the adjoining wall occupies this corner on interfering elevation, reserve the corner zone
+            for (var afi = 0; afi < furnList.length; afi++) {
+              var aFn = furnList[afi];
+              if (activeId && aFn.id === activeId) continue;
+              if (!aFn.pos) continue;
+              var aDims = aFn.dimensions || { W: 600, D: 600, H: 850 };
+              var aElev = (aFn.elevation !== undefined && aFn.elevation !== null && aFn.elevation !== '') ? parseFloat(aFn.elevation) : 0;
+              var aH = aDims.H ? parseFloat(aDims.H) : 850;
+              if (fTop <= aElev + 5 || (aElev + aH) <= fElev + 5) continue;
+
+              var distFromCorner = Math.hypot(aFn.pos.x - bwWall.start.x, aFn.pos.y - bwWall.start.y);
+              var aFnExtent = Math.max(aDims.W || 600, aDims.D || 600);
+              if (distFromCorner < aFnExtent * 1.5) {
+                var cornerZone = Math.max(aDims.D || 600, 350) + aHalfT;
+                occupiedIntervals.push({
+                  start: -9999,
+                  end: cornerZone,
+                  center: cornerZone / 2,
+                  unit: aFn
+                });
+              }
+            }
+          }
+        }
+
+        // Check if aWall meets bwWall.end
+        var meetsEnd = (Vec2.dist(bwWall.end, aWall.start) < 90 || Vec2.dist(bwWall.end, aWall.end) < 90);
+        if (meetsEnd) {
+          var aDir2 = Core.wallDirection(aWall);
+          var dotAdj2 = Math.abs(bwDir.x * aDir2.x + bwDir.y * aDir2.y);
+          if (dotAdj2 < 0.5) {
+            occupiedIntervals.push({
+              start: bwLen - aHalfT,
+              end: bwLen + 9999,
+              center: bwLen - aHalfT / 2
+            });
+
+            for (var afi2 = 0; afi2 < furnList.length; afi2++) {
+              var aFn2 = furnList[afi2];
+              if (activeId && aFn2.id === activeId) continue;
+              if (!aFn2.pos) continue;
+              var aDims2 = aFn2.dimensions || { W: 600, D: 600, H: 850 };
+              var aElev2 = (aFn2.elevation !== undefined && aFn2.elevation !== null && aFn2.elevation !== '') ? parseFloat(aFn2.elevation) : 0;
+              var aH2 = aDims2.H ? parseFloat(aDims2.H) : 850;
+              if (fTop <= aElev2 + 5 || (aElev2 + aH2) <= fElev + 5) continue;
+
+              var distFromCorner2 = Math.hypot(aFn2.pos.x - bwWall.end.x, aFn2.pos.y - bwWall.end.y);
+              var aFnExtent2 = Math.max(aDims2.W || 600, aDims2.D || 600);
+              if (distFromCorner2 < aFnExtent2 * 1.5) {
+                var cornerZone2 = Math.max(aDims2.D || 600, 350) + aHalfT;
+                occupiedIntervals.push({
+                  start: bwLen - cornerZone2,
+                  end: bwLen + 9999,
+                  center: bwLen - cornerZone2 / 2,
+                  unit: aFn2
+                });
+              }
+            }
+          }
+        }
+      }
+
+      // B. Units on this same wall
       for (var fni = 0; fni < furnList.length; fni++) {
         var oFn = furnList[fni];
         if (activeId && oFn.id === activeId) continue;
@@ -7416,30 +7499,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       ctx.strokeRect(-fW / 2, -fD / 2, fW, fD);
       ctx.setLineDash([]);
 
-      // 8 Jointing Points on Ghost (4 corners + 4 midpoints)
-      var isWallG = (Core.isWallUnit) ?
-        Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name, this.furniturePreset.code || this.furniturePreset.catalogItemId, this.furniturePreset.costCategory) : false;
-      var ghostPointColor = isWallG ? '#0284c7' : '#10b981';
-
-      var gCorners = [
-        { x: -fW / 2, y: -fD / 2, r: 3.5 },
-        { x: fW / 2, y: -fD / 2, r: 3.5 },
-        { x: fW / 2, y: fD / 2, r: 3.5 },
-        { x: -fW / 2, y: fD / 2, r: 3.5 },
-        { x: 0, y: -fD / 2, r: 2.2 },
-        { x: 0, y: fD / 2, r: 2.2 },
-        { x: -fW / 2, y: 0, r: 2.2 },
-        { x: fW / 2, y: 0, r: 2.2 }
-      ];
-      for (var gci = 0; gci < gCorners.length; gci++) {
-        ctx.fillStyle = ghostPointColor;
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.arc(gCorners[gci].x, gCorners[gci].y, gCorners[gci].r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-      }
+      // Points on ghost preview removed per user request for visual cleanliness
 
       // Shutter front edge indicator
       ctx.strokeStyle = (snapRes.type === 'unit_joint') ? '#059669' : '#0369a1';

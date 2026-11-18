@@ -3105,13 +3105,14 @@
           var distToCam = hit ? Math.hypot(hit.pt.x - camPt.x, hit.pt.y - camPt.y) : Math.hypot(wMid.x - camPt.x, wMid.y - camPt.y);
           var distToTarg = hit ? Math.hypot(hit.pt.x - targPt.x, hit.pt.y - targPt.y) : Math.hypot(wMid.x - targPt.x, wMid.y - targPt.y);
 
-          // Front-facing alignment score: dot product between camera view direction and wall normal
-          var frontalDot = (uViewX * (-wNormX) + uViewZ * (-wNormZ)); // > 0 means camera looks into the wall face
+          // Front-facing alignment score: ONLY walls that actually intersect the camera line of sight
+          // between the camera and the target can ever be candidates for cutaway.
+          // Background walls and unobstructed room interiors must NEVER be cut!
           var score = 0;
           if (hit) {
             score = 1000 - distToCam; // Intersecting barrier in direct line of sight has top priority
-          } else if (distToCam < viewDist * 1.15) {
-            score = 500 * frontalDot - (distToCam / viewDist) * 100;
+          } else {
+            score = 0; // If ray doesn't intersect this wall, it is NOT obstructing the target. Never cut it!
           }
 
           candidates.push({
@@ -3123,24 +3124,31 @@
           });
         });
 
-        // Determine the single face wall with hysteresis to eliminate jumping between walls
+        // Determine the single face wall with hysteresis to eliminate jumping between walls.
+        // A wall is ONLY cut if it genuinely obstructs the line of sight (hit === true).
         var singleCutWall = null;
         if (candidates.length > 0) {
           candidates.sort(function (a, b) { return b.score - a.score; });
           var topCand = candidates[0];
 
-          if (!window._activeCutWallId) {
-            window._activeCutWallId = topCand.wallId;
-          } else {
-            // Hysteresis: keep active cut wall unless another wall scores at least 25% better
-            var activeCand = candidates.find(function (c) { return c.wallId === window._activeCutWallId; });
-            if (activeCand && (topCand.score - activeCand.score) < 120 && activeCand.score > 0) {
-              topCand = activeCand;
-            } else {
+          if (topCand && topCand.hit && topCand.score > 0) {
+            if (!window._activeCutWallId) {
               window._activeCutWallId = topCand.wallId;
+            } else {
+              // Hysteresis: keep active cut wall unless another wall scores at least 25% better
+              var activeCand = candidates.find(function (c) { return c.wallId === window._activeCutWallId; });
+              if (activeCand && activeCand.hit && (topCand.score - activeCand.score) < 120 && activeCand.score > 0) {
+                topCand = activeCand;
+              } else {
+                window._activeCutWallId = topCand.wallId;
+              }
             }
+            singleCutWall = topCand.mesh;
+          } else {
+            // Camera is inside the room or unobstructed: all walls remain visible!
+            window._activeCutWallId = null;
+            singleCutWall = null;
           }
-          singleCutWall = topCand.mesh;
         }
 
         wallMeshes.forEach(function (wMesh) {

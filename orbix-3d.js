@@ -1321,7 +1321,8 @@
     var matParams = {
       color: hexToInt(paintHex),
       roughness: roughness,
-      metalness: finishType === 'marble' ? 0.08 : 0.0
+      metalness: finishType === 'marble' ? 0.08 : 0.0,
+      side: THREE.DoubleSide
     };
     if (bump) {
       matParams.bumpMap = bump;
