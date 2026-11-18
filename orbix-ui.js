@@ -2940,9 +2940,6 @@
             });
           }
         }
-            if (self.render3DHome) self.render3DHome(true);
-          });
-        }
         var elFurnShutters = document.getElementById('inspFurnShutters');
         if (elFurnShutters) {
           elFurnShutters.addEventListener('change', function (e) {
