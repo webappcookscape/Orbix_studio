@@ -857,7 +857,9 @@
     var isBaseOS = isOS && !isLoft && !isWallUnit && !isWrbOS && !is18mmPanelOrShutter;
     var defElev = isLoft ? 2100 : (isOpenBox ? 1500 : (isSpiceRack ? 1350 : (isWallUnit ? 1500 : 0)));
     var checkId = String(opts.id || opts.catalogItemId || opts.code || '').toLowerCase();
-    if (checkId === 'ledge-std' || /^ledge(-std)?$/i.test(checkId) || nm === 'ledge') {
+    if (checkId === 'wfm60-roll' || /rolling\s*shutter|wfm.*roll/i.test(nm + ' ' + checkId) || (opts.unitConfig && (opts.unitConfig.isRollingShutter || opts.unitConfig.shutterType === 'rolling_shutter'))) {
+      defElev = 750;
+    } else if (checkId === 'ledge-std' || /^ledge(-std)?$/i.test(checkId) || nm === 'ledge') {
       defElev = 750;
     } else if (checkId === 'ledge-ctop' || /ledge[-_ ]*c(ounter)?top/i.test(nm + ' ' + checkId)) {
       defElev = 750;
@@ -884,7 +886,8 @@
     opts.unitConfig = opts.unitConfig || {};
     if (isKitchenFM) {
       var isOnlyShutterUnit = isOS || (opts.unitConfig && opts.unitConfig.isOnlyShutter);
-      if (isOnlyShutterUnit) {
+      var isFcmOsUnit = isOnlyShutterUnit && (/fcm[-_ ]*(rt|lt)/i.test(checkId + ' ' + nm) || (opts.unitConfig && /fcm[-_ ]*(rt|lt)/i.test(opts.unitConfig.unitType || '')));
+      if (isOnlyShutterUnit && !isFcmOsUnit) {
         if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = false;
         if (opts.unitConfig.counter === undefined) opts.unitConfig.counter = 'none';
         if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 0;
@@ -893,7 +896,7 @@
         if (opts.unitConfig.legs === undefined) opts.unitConfig.legs = 100;
         if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = 100;
         if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'granite_kashmir_white';
-        if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 1;
+        if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = isFcmOsUnit ? 0 : 1;
       }
       if (opts.dimensions && (opts.dimensions.D === undefined || opts.dimensions.D < 100)) {
         opts.dimensions.D = 550;
@@ -1013,7 +1016,7 @@
       dimensions: {
         W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
         H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : (cat.indexOf('base') !== -1 || cat.indexOf('fm') !== -1 || cat.indexOf('d2') !== -1 || cat.indexOf('d3') !== -1 || cat.indexOf('tv') !== -1 ? 850 : 2100)),
-        D: (opts.dimensions && opts.dimensions.D !== undefined && (opts.dimensions.D > 100 || isWrbOS || is18mmPanelOrShutter)) ?
+        D: (opts.dimensions && opts.dimensions.D !== undefined && (opts.dimensions.D >= 18 || isWrbOS || is18mmPanelOrShutter)) ?
           opts.dimensions.D :
           (isOS ? (is18mmPanelOrShutter || isWrbOS ? 18 : (isWallUnit ? 350 : 550)) : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
       },
@@ -3537,7 +3540,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 1050,
-      "H": 750,
+      "H": 850,
       "D": 550
     },
     "elevation": 0,
@@ -3577,13 +3580,13 @@
       "drawers": 0,
       "loft": false,
       "loftH": 0,
-      "counter": "none",
+      "counter": "granite_kashmir_white",
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "hasLegs": false,
-      "legs": 0,
-      "plinthH": 0,
+      "hasLegs": true,
+      "legs": 100,
+      "plinthH": 100,
       "carcass": "NONE",
       "shutterCol": "MDF 7707"
     },
@@ -3603,7 +3606,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 1050,
-      "H": 750,
+      "H": 850,
       "D": 550
     },
     "elevation": 0,
@@ -3643,13 +3646,13 @@
       "drawers": 0,
       "loft": false,
       "loftH": 0,
-      "counter": "none",
+      "counter": "granite_kashmir_white",
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "hasLegs": false,
-      "legs": 0,
-      "plinthH": 0,
+      "hasLegs": true,
+      "legs": 100,
+      "plinthH": 100,
       "carcass": "NONE",
       "shutterCol": "MDF 7707"
     },

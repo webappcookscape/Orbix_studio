@@ -2883,7 +2883,7 @@
     var isWallU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : false;
     var isOS_F = !!((furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1));
     var isWrbOS_F = isOS_F && (furn.category === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(furn.name || furn.id || ''));
-    if (isOS_F && (!fD || (fD < 100 && !isWrbOS_F))) {
+    if (isOS_F && (!fD || (fD < 18 && !isWrbOS_F))) {
       fD = isWallU ? 350 : 550;
     }
     var plan = this.project && this.project.plan;
@@ -3017,7 +3017,7 @@
         var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
         var isOS_O = !!((other.unitConfig && other.unitConfig.isOnlyShutter) || (other.name && /\bo\/?s\b/i.test(other.name)) || (other.costCategory && other.costCategory.indexOf('O/S') !== -1));
         var isWrbOS_O = isOS_O && (other.category === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(other.name || other.id || ''));
-        if (isOS_O && (!oD || (oD < 100 && !isWrbOS_O))) {
+        if (isOS_O && (!oD || (oD < 18 && !isWrbOS_O))) {
           oD = isWallO ? 350 : 550;
         }
         var oRot = other.rotY || 0;
@@ -3835,7 +3835,7 @@
     var isLoftPlan = (catPlan.indexOf('loft') !== -1 || nmPlan.indexOf('loft') !== -1 || idPlan.indexOf('loft') !== -1 || cdPlan.indexOf('loft') !== -1);
     var isSpicePlan = (catPlan.indexOf('spice') !== -1 || nmPlan.indexOf('spice') !== -1 || idPlan.indexOf('spice') !== -1 || idPlan.indexOf('sr-') === 0);
     var defPlanElev = isLoftPlan ? 2100 : (isSpicePlan ? 1350 : (isWall ? 1500 : 0));
-    if (idPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && this.furniturePreset.unitConfig.isRollingShutter)) defPlanElev = 750;
+    if (idPlan === 'wfm60-roll' || cdPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && (this.furniturePreset.unitConfig.isRollingShutter || this.furniturePreset.unitConfig.shutterType === 'rolling_shutter'))) defPlanElev = 750;
     else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 750;
     else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 750;
     else if (idPlan === 'ledge-vert' || nmPlan.indexOf('vertical ledge') !== -1) defPlanElev = 0;
@@ -6142,12 +6142,9 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       var isBaseOS = isOS && (f.category === 'kitchen_fm' || f.category === 'kitchen_base' || /fm/i.test(f.name || '') || /fm/i.test(f.id || '') || (Core.isWallUnit ? !Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : true));
       var isWallUnitF = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
       var isWrbOS = isOS && (f.category === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(f.name || f.id || ''));
-      var dMm = isBaseOS ? ((f.dimensions && f.dimensions.D && f.dimensions.D > 100) ? f.dimensions.D : 550) : (isOS ? 18 : ((f.dimensions && f.dimensions.D) || 600));
-      if (isWrbOS) {
-        dMm = (f.dimensions && f.dimensions.D) ? f.dimensions.D : 18;
-      } else if (isOS && (!dMm || dMm < 100)) {
-        dMm = isWallUnitF ? 350 : 550;
-      }
+      var dMm = (f.dimensions && f.dimensions.D && f.dimensions.D >= 18) ?
+        parseFloat(f.dimensions.D) :
+        (isBaseOS ? 550 : (isWrbOS ? 18 : (isWallUnitF ? 350 : 550)));
       var wPx = wMm * this.zoom;
       var dPx = dMm * this.zoom;
       var sPos = this.worldToScreen(f.pos);
@@ -6519,7 +6516,13 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         ctx.lineTo(wPx / 2, dPx / 2);
         ctx.stroke();
 
-        var isRollingShutterUnit = !!((f.unitConfig && (f.unitConfig.isRollingShutter || f.unitConfig.shutterType === 'rolling_shutter')) || /rolling\s*shutter/i.test(f.name || ''));
+        var isRollingShutterUnit = !!(
+          (f.id && /wfm60[-_ ]*roll/i.test(f.id)) ||
+          (f.catalogItemId && /wfm60[-_ ]*roll/i.test(f.catalogItemId)) ||
+          (f.code && /wfm60[-_ ]*roll/i.test(f.code)) ||
+          (f.unitConfig && (f.unitConfig.isRollingShutter || f.unitConfig.shutterType === 'rolling_shutter' || f.unitConfig.unitType === 'wfm60-roll')) ||
+          /rolling\s*shutter/i.test(f.name || '')
+        );
         var hasFixedPanelUnit = !!(f.unitConfig && f.unitConfig.fixedPanel && f.unitConfig.fixedPanel.enabled);
 
         if (isRollingShutterUnit) {

@@ -4138,9 +4138,10 @@
     var isTrueOnlyShutter = !!(furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1);
     var isBaseOS = !isWrbOS && (isBase || catOS === 'kitchen_base' || catOS === 'kitchen_fm' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || nameOS.indexOf('fm') !== -1 || (furn.id && /fm/i.test(furn.id)) || catOS === 'crockery' || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS));
 
-    var baseD = (dims.D && dims.D > 100) ? dims.D : (isWrbOS ? (dims.D || 18) : (isWallOS ? 350 : (isBaseOS || isLoftOS ? 550 : 350)));
-    var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
-    var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none') ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 35)) : 0;
+    var isFcmCornerOS = /fcm[-_ ]*(rt|lt)/i.test(furn.id || furn.catalogItemId || furn.code || furn.name || '') || (furn.unitConfig && /fcm[-_ ]*(rt|lt)/i.test(furn.unitConfig.unitType || ''));
+    var baseD = (dims.D && dims.D >= 18) ? dims.D : (isWrbOS ? 18 : (isWallOS ? 350 : (isBaseOS || isLoftOS ? 550 : 350)));
+    var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false && !isFcmCornerOS) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
+    var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none' && !isFcmCornerOS) ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 35)) : 0;
 
     if (isBaseOS && baseD > 50) {
       // 1. Plinth Kickboard & Adjustable Cabinet Legs
@@ -4873,6 +4874,14 @@
     fasciaMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(fasciaMesh);
 
+    // Top internal tambour roll drum mechanism inside canister
+    var drumMat = new THREE.MeshStandardMaterial({ color: 0x64748B, metalness: 0.8, roughness: 0.3 });
+    var drumGeo = new THREE.CylinderGeometry(35, 35, W - 44, 24);
+    var drumMesh = new THREE.Mesh(drumGeo, drumMat);
+    drumMesh.rotation.z = Math.PI / 2;
+    drumMesh.position.set(0, H - 68, D / 2 - 45);
+    fg.add(drumMesh);
+
     // Vertical guide channels (side tracks)
     var trackMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.7, roughness: 0.3 });
     var trackGeo = new THREE.BoxGeometry(16, H - 136, 20);
@@ -4902,14 +4911,7 @@
     rollGroup.name = 'RollingShutterSlats_' + furn.id;
     var isOpen = !!(furn.shutterStates && furn.shutterStates[0]);
     var rollTravelY = slatSpanH - 60;
-    rollGroup.position.y = isOpen ? rollTravelY : 0;
-    rollGroup.userData = {
-      isRollingShutter: true,
-      shutterIdx: 0,
-      furnitureId: furn.id,
-      openY: rollTravelY,
-      closedY: 0
-    };
+    var slatMeshes = [];
 
     for (var k = 0; k < numSlats; k++) {
       var slatY = 18 + k * (slatH + slatGap) + slatH / 2;
@@ -4920,12 +4922,14 @@
         isFurniturePart: true,
         isShutter: true,
         isRolling: true,
+        baseY: slatY,
         shutterIdx: 0,
         rollGroup: rollGroup,
         parentGroup: fg,
         furnitureId: furn.id
       };
       rollGroup.add(slatMesh);
+      slatMeshes.push(slatMesh);
     }
 
     // Bottom Handle Profile Grip Bar
@@ -4948,10 +4952,35 @@
       furnitureId: furn.id
     };
     rollGroup.add(gripMesh);
+
+    // Realistic roll mechanism: slats retract into top canister drum without protruding into the ceiling
+    var setRollOpen = function (open) {
+      gripMesh.position.y = open ? (H - 145) : 36;
+      for (var si = 0; si < slatMeshes.length; si++) {
+        var sm = slatMeshes[si];
+        var effY = sm.userData.baseY + (open ? rollTravelY : 0);
+        if (effY > H - 120) {
+          sm.visible = false;
+        } else {
+          sm.position.y = effY;
+          sm.visible = true;
+        }
+      }
+    };
+    setRollOpen(isOpen);
+
+    rollGroup.userData = {
+      isRollingShutter: true,
+      shutterIdx: 0,
+      furnitureId: furn.id,
+      openY: 0,
+      closedY: 0,
+      setOpen: setRollOpen
+    };
     fg.add(rollGroup);
 
     // Elevation positioning (mount at 750mm floor elevation default)
-    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '' && parseFloat(furn.elevation) >= 0) ?
       parseFloat(furn.elevation) : 750;
     var posX = (furn.pos && furn.pos.x) || 0;
     var posY = (furn.pos && furn.pos.y) || 0;

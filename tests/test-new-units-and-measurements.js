@@ -45,10 +45,11 @@ var placedWfm = Core.createFurniturePlacement({ id: 'wfm60-roll', dimensions: { 
 assert.strictEqual(placedWfm.elevation, 750, 'Placed wfm60 elevation must be 750');
 assert.strictEqual(placedWfm.unitConfig.isRollingShutter, true, 'Placed wfm60 must retain isRollingShutter');
 
-var placedFcmOs = Core.createFurniturePlacement({ id: 'fcm-rt-os', dimensions: { W: 1050, H: 750, D: 550 } });
+var placedFcmOs = Core.createFurniturePlacement({ id: 'fcm-rt-os', dimensions: { W: 1050, H: 850, D: 550 } });
 assert.strictEqual(placedFcmOs.unitConfig.isOnlyShutter, true, 'Placed fcm-rt-os must be only shutter');
-assert.strictEqual(placedFcmOs.unitConfig.hasLegs, false, 'Placed fcm-rt-os must have no legs (civil slab)');
-assert.strictEqual(placedFcmOs.unitConfig.counter, 'none', 'Placed fcm-rt-os must have no countertop (civil slab)');
+assert.strictEqual(placedFcmOs.unitConfig.hasLegs, true, 'Placed fcm-rt-os must have 100mm legs');
+assert.strictEqual(placedFcmOs.unitConfig.plinthH, 100, 'Placed fcm-rt-os plinth height must be 100');
+assert.strictEqual(placedFcmOs.unitConfig.counter, 'granite_kashmir_white', 'Placed fcm-rt-os must have countertop');
 console.log('✓ Test 2 passed: Unit instantiation and defaults verified.');
 
 // Test 3: Math for Corner A, Width, and Corner B

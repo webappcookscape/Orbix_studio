@@ -2425,12 +2425,16 @@
         var isLoftInsp = (catInsp.indexOf('loft') !== -1 || nmInsp.indexOf('loft') !== -1 || idInsp.indexOf('loft') !== -1 || cdInsp.indexOf('loft') !== -1);
         var isOpenBoxInsp = (nmInsp.indexOf('open box') !== -1 || nmInsp.indexOf('open_box') !== -1 || idInsp.indexOf('ob-') === 0 || idInsp.indexOf('open-box') !== -1 || cdInsp.indexOf('ob-') === 0);
         var isSpiceInsp = !isOpenBoxInsp && (catInsp.indexOf('spice') !== -1 || nmInsp.indexOf('spice') !== -1 || idInsp.indexOf('spice') !== -1 || idInsp.indexOf('sr-') === 0);
-        var isWallInsp = !isLoftInsp && isWall;
-        var defInspElev = isLoftInsp ? 2100 : (isOpenBoxInsp ? 1500 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0)));
+        var isRollingInsp = !!(
+          idInsp === 'wfm60-roll' || cdInsp === 'wfm60-roll' || /rolling\s*shutter|wfm.*roll/i.test(nmInsp + ' ' + idInsp) ||
+          (fn.unitConfig && (fn.unitConfig.isRollingShutter || fn.unitConfig.shutterType === 'rolling_shutter'))
+        );
+        var isWallInsp = !isLoftInsp && !isRollingInsp && isWall;
+        var defInspElev = isRollingInsp ? 750 : (isLoftInsp ? 2100 : (isOpenBoxInsp ? 1500 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0))));
 
-        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '' && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp || parseFloat(fn.elevation) > 0)) ?
+        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '' && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp && !isRollingInsp || parseFloat(fn.elevation) > 0)) ?
           parseFloat(fn.elevation) :
-          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp || parseFloat(fn.pos.z) > 0)) ? parseFloat(fn.pos.z) : defInspElev);
+          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp && !isRollingInsp || parseFloat(fn.pos.z) > 0)) ? parseFloat(fn.pos.z) : defInspElev);
 
         var hasLegs = false;
         if (!isWall) {
@@ -2554,8 +2558,8 @@
         panel.innerHTML =
           '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding-bottom:8px;margin-bottom:12px;">' +
             '<div><div style="font-size:13px;font-weight:700;color:#0f172a;">Unit Properties</div><div style="font-size:11px;color:#64748b;">' + (fn.name || "Modular Cabinet") + '</div></div>' +
-            '<span style="font-size:10.5px;font-weight:600;background:' + (isWall ? "#fef3c7;color:#b45309;border:1px solid #fde68a;" : isSliding ? "#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff;" : "#e0f2fe;color:#0369a1;border:1px solid #bae6fd;") + ';padding:2px 8px;border-radius:12px;">' +
-              (isWall ? "Wall-Mounted (1500mm)" : isSliding ? "Sliding Wardrobe" : "Floor Unit (0mm)") + '</span>' +
+            '<span style="font-size:10.5px;font-weight:600;background:' + (isRollingInsp ? "#ecfdf5;color:#047857;border:1px solid #a7f3d0;" : (isWall ? "#fef3c7;color:#b45309;border:1px solid #fde68a;" : isSliding ? "#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff;" : "#e0f2fe;color:#0369a1;border:1px solid #bae6fd;")) + ';padding:2px 8px;border-radius:12px;">' +
+              (isRollingInsp ? "Countertop Rolling Shutter (750mm)" : (isWall ? "Wall-Mounted (1500mm)" : isSliding ? "Sliding Wardrobe" : "Floor Unit (0mm)")) + '</span>' +
           '</div>' +
 
           // ── Card 1: Identity & Room ──
@@ -2579,6 +2583,7 @@
             '<div class="insp-row" style="margin-bottom:4px;"><label>Floor Elevation (AFFL)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
             '<div style="display:flex;gap:4px;margin-top:6px;">' +
               '<button type="button" class="btn small" id="btnPresetFloor" style="flex:1;font-size:10px;padding:3px;background:#f8fafc;border:1px solid #cbd5e1;">Floor (0 mm)</button>' +
+              '<button type="button" class="btn small" id="btnPresetCounter" style="flex:1;font-size:10px;padding:3px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;">Counter (750 mm)</button>' +
               '<button type="button" class="btn small" id="btnPresetWall" style="flex:1;font-size:10px;padding:3px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;">Wall (1500 mm)</button>' +
               '<button type="button" class="btn small" id="btnPresetLoft" style="flex:1;font-size:10px;padding:3px;background:#ede9fe;border:1px solid #ddd6fe;color:#5b21b6;">Loft (2100 mm)</button>' +
             '</div>' +
@@ -3112,6 +3117,20 @@
             if (elevEl) elevEl.value = 0;
             syncInspectorTo3D();
             self.editor.pushHistory('Set Elevation: 0mm (Floor)');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+            self.renderInspector(self.editor.selected);
+          });
+        }
+        var btnCounter = document.getElementById('btnPresetCounter');
+        if (btnCounter) {
+          btnCounter.addEventListener('click', function () {
+            fn.elevation = 750;
+            if (fn.pos) fn.pos.z = 750;
+            var elevElC = document.getElementById('inspFurnElev');
+            if (elevElC) elevElC.value = 750;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Set Elevation: 750mm (Countertop)');
             self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
             self.renderInspector(self.editor.selected);
@@ -3733,8 +3752,16 @@
           window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) :
           (fn.category === 'kitchen_wall' || (fn.category && fn.category.indexOf('wall') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1));
         var isBase = !isWall && (isKitchen || fn.category === 'crockery' || fn.category === 'tv_unit' || (fn.name && fn.name.indexOf('BASE') !== -1));
+        var isRolling = !!(
+          (fn.id && /wfm60[-_ ]*roll/i.test(fn.id)) ||
+          (fn.catalogItemId && /wfm60[-_ ]*roll/i.test(fn.catalogItemId)) ||
+          (fn.code && /wfm60[-_ ]*roll/i.test(fn.code)) ||
+          (fn.unitConfig && (fn.unitConfig.isRollingShutter || fn.unitConfig.shutterType === 'rolling_shutter')) ||
+          /rolling\s*shutter/i.test(fn.name || '')
+        );
+        var defUnitElev = isRolling ? 750 : (isWall ? 1500 : 0);
         var unitElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
-          parseFloat(fn.elevation) : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? parseFloat(fn.pos.z) : (isWall ? 1500 : 0));
+          parseFloat(fn.elevation) : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? parseFloat(fn.pos.z) : defUnitElev);
 
         if (existing) {
           if (fn.name) existing.label = fn.name;

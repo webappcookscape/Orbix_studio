@@ -11091,7 +11091,9 @@ body.role-employee #adminCreateEmpBox,
     var isBaseOS = isOS && !isLoft && !isWallUnit && !isWrbOS && !is18mmPanelOrShutter;
     var defElev = isLoft ? 2100 : (isOpenBox ? 1500 : (isSpiceRack ? 1350 : (isWallUnit ? 1500 : 0)));
     var checkId = String(opts.id || opts.catalogItemId || opts.code || '').toLowerCase();
-    if (checkId === 'ledge-std' || /^ledge(-std)?$/i.test(checkId) || nm === 'ledge') {
+    if (checkId === 'wfm60-roll' || /rolling\s*shutter|wfm.*roll/i.test(nm + ' ' + checkId) || (opts.unitConfig && (opts.unitConfig.isRollingShutter || opts.unitConfig.shutterType === 'rolling_shutter'))) {
+      defElev = 750;
+    } else if (checkId === 'ledge-std' || /^ledge(-std)?$/i.test(checkId) || nm === 'ledge') {
       defElev = 750;
     } else if (checkId === 'ledge-ctop' || /ledge[-_ ]*c(ounter)?top/i.test(nm + ' ' + checkId)) {
       defElev = 750;
@@ -11118,7 +11120,8 @@ body.role-employee #adminCreateEmpBox,
     opts.unitConfig = opts.unitConfig || {};
     if (isKitchenFM) {
       var isOnlyShutterUnit = isOS || (opts.unitConfig && opts.unitConfig.isOnlyShutter);
-      if (isOnlyShutterUnit) {
+      var isFcmOsUnit = isOnlyShutterUnit && (/fcm[-_ ]*(rt|lt)/i.test(checkId + ' ' + nm) || (opts.unitConfig && /fcm[-_ ]*(rt|lt)/i.test(opts.unitConfig.unitType || '')));
+      if (isOnlyShutterUnit && !isFcmOsUnit) {
         if (opts.unitConfig.hasLegs === undefined) opts.unitConfig.hasLegs = false;
         if (opts.unitConfig.counter === undefined) opts.unitConfig.counter = 'none';
         if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 0;
@@ -11127,7 +11130,7 @@ body.role-employee #adminCreateEmpBox,
         if (opts.unitConfig.legs === undefined) opts.unitConfig.legs = 100;
         if (opts.unitConfig.plinthH === undefined) opts.unitConfig.plinthH = 100;
         if (opts.unitConfig.counter === undefined || opts.unitConfig.counter === 'none') opts.unitConfig.counter = 'granite_kashmir_white';
-        if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = 1;
+        if (opts.unitConfig.shelves === undefined) opts.unitConfig.shelves = isFcmOsUnit ? 0 : 1;
       }
       if (opts.dimensions && (opts.dimensions.D === undefined || opts.dimensions.D < 100)) {
         opts.dimensions.D = 550;
@@ -11247,7 +11250,7 @@ body.role-employee #adminCreateEmpBox,
       dimensions: {
         W: opts.dimensions ? opts.dimensions.W : (isWallUnit ? 1200 : 1200),
         H: opts.dimensions ? opts.dimensions.H : (isWallUnit ? 600 : (cat.indexOf('base') !== -1 || cat.indexOf('fm') !== -1 || cat.indexOf('d2') !== -1 || cat.indexOf('d3') !== -1 || cat.indexOf('tv') !== -1 ? 850 : 2100)),
-        D: (opts.dimensions && opts.dimensions.D !== undefined && (opts.dimensions.D > 100 || isWrbOS || is18mmPanelOrShutter)) ?
+        D: (opts.dimensions && opts.dimensions.D !== undefined && (opts.dimensions.D >= 18 || isWrbOS || is18mmPanelOrShutter)) ?
           opts.dimensions.D :
           (isOS ? (is18mmPanelOrShutter || isWrbOS ? 18 : (isWallUnit ? 350 : 550)) : (opts.dimensions && opts.dimensions.D !== undefined ? opts.dimensions.D : (isWallUnit ? 350 : 600)))
       },
@@ -13771,7 +13774,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 1050,
-      "H": 750,
+      "H": 850,
       "D": 550
     },
     "elevation": 0,
@@ -13811,13 +13814,13 @@ body.role-employee #adminCreateEmpBox,
       "drawers": 0,
       "loft": false,
       "loftH": 0,
-      "counter": "none",
+      "counter": "granite_kashmir_white",
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "hasLegs": false,
-      "legs": 0,
-      "plinthH": 0,
+      "hasLegs": true,
+      "legs": 100,
+      "plinthH": 100,
       "carcass": "NONE",
       "shutterCol": "MDF 7707"
     },
@@ -13837,7 +13840,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 1050,
-      "H": 750,
+      "H": 850,
       "D": 550
     },
     "elevation": 0,
@@ -13877,13 +13880,13 @@ body.role-employee #adminCreateEmpBox,
       "drawers": 0,
       "loft": false,
       "loftH": 0,
-      "counter": "none",
+      "counter": "granite_kashmir_white",
       "handle": "pull",
       "hfinish": "black",
       "led": false,
-      "hasLegs": false,
-      "legs": 0,
-      "plinthH": 0,
+      "hasLegs": true,
+      "legs": 100,
+      "plinthH": 100,
       "carcass": "NONE",
       "shutterCol": "MDF 7707"
     },
@@ -20481,7 +20484,7 @@ body.role-employee #adminCreateEmpBox,
     var isWallU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : false;
     var isOS_F = !!((furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1));
     var isWrbOS_F = isOS_F && (furn.category === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(furn.name || furn.id || ''));
-    if (isOS_F && (!fD || (fD < 100 && !isWrbOS_F))) {
+    if (isOS_F && (!fD || (fD < 18 && !isWrbOS_F))) {
       fD = isWallU ? 350 : 550;
     }
     var plan = this.project && this.project.plan;
@@ -20615,7 +20618,7 @@ body.role-employee #adminCreateEmpBox,
         var isWallO = Core.isWallUnit ? Core.isWallUnit(other.category, other.name, other.code || other.catalogItemId, other.costCategory) : false;
         var isOS_O = !!((other.unitConfig && other.unitConfig.isOnlyShutter) || (other.name && /\bo\/?s\b/i.test(other.name)) || (other.costCategory && other.costCategory.indexOf('O/S') !== -1));
         var isWrbOS_O = isOS_O && (other.category === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(other.name || other.id || ''));
-        if (isOS_O && (!oD || (oD < 100 && !isWrbOS_O))) {
+        if (isOS_O && (!oD || (oD < 18 && !isWrbOS_O))) {
           oD = isWallO ? 350 : 550;
         }
         var oRot = other.rotY || 0;
@@ -21433,7 +21436,7 @@ body.role-employee #adminCreateEmpBox,
     var isLoftPlan = (catPlan.indexOf('loft') !== -1 || nmPlan.indexOf('loft') !== -1 || idPlan.indexOf('loft') !== -1 || cdPlan.indexOf('loft') !== -1);
     var isSpicePlan = (catPlan.indexOf('spice') !== -1 || nmPlan.indexOf('spice') !== -1 || idPlan.indexOf('spice') !== -1 || idPlan.indexOf('sr-') === 0);
     var defPlanElev = isLoftPlan ? 2100 : (isSpicePlan ? 1350 : (isWall ? 1500 : 0));
-    if (idPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && this.furniturePreset.unitConfig.isRollingShutter)) defPlanElev = 750;
+    if (idPlan === 'wfm60-roll' || cdPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && (this.furniturePreset.unitConfig.isRollingShutter || this.furniturePreset.unitConfig.shutterType === 'rolling_shutter'))) defPlanElev = 750;
     else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 750;
     else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 750;
     else if (idPlan === 'ledge-vert' || nmPlan.indexOf('vertical ledge') !== -1) defPlanElev = 0;
@@ -23740,12 +23743,9 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       var isBaseOS = isOS && (f.category === 'kitchen_fm' || f.category === 'kitchen_base' || /fm/i.test(f.name || '') || /fm/i.test(f.id || '') || (Core.isWallUnit ? !Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : true));
       var isWallUnitF = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
       var isWrbOS = isOS && (f.category === 'wardrobe' || /(^|\b|_|-)(wrb|wr)[-_ ]*(o\/?s|only[-_ ]*shutter)/i.test(f.name || f.id || ''));
-      var dMm = isBaseOS ? ((f.dimensions && f.dimensions.D && f.dimensions.D > 100) ? f.dimensions.D : 550) : (isOS ? 18 : ((f.dimensions && f.dimensions.D) || 600));
-      if (isWrbOS) {
-        dMm = (f.dimensions && f.dimensions.D) ? f.dimensions.D : 18;
-      } else if (isOS && (!dMm || dMm < 100)) {
-        dMm = isWallUnitF ? 350 : 550;
-      }
+      var dMm = (f.dimensions && f.dimensions.D && f.dimensions.D >= 18) ?
+        parseFloat(f.dimensions.D) :
+        (isBaseOS ? 550 : (isWrbOS ? 18 : (isWallUnitF ? 350 : 550)));
       var wPx = wMm * this.zoom;
       var dPx = dMm * this.zoom;
       var sPos = this.worldToScreen(f.pos);
@@ -24117,7 +24117,13 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         ctx.lineTo(wPx / 2, dPx / 2);
         ctx.stroke();
 
-        var isRollingShutterUnit = !!((f.unitConfig && (f.unitConfig.isRollingShutter || f.unitConfig.shutterType === 'rolling_shutter')) || /rolling\s*shutter/i.test(f.name || ''));
+        var isRollingShutterUnit = !!(
+          (f.id && /wfm60[-_ ]*roll/i.test(f.id)) ||
+          (f.catalogItemId && /wfm60[-_ ]*roll/i.test(f.catalogItemId)) ||
+          (f.code && /wfm60[-_ ]*roll/i.test(f.code)) ||
+          (f.unitConfig && (f.unitConfig.isRollingShutter || f.unitConfig.shutterType === 'rolling_shutter' || f.unitConfig.unitType === 'wfm60-roll')) ||
+          /rolling\s*shutter/i.test(f.name || '')
+        );
         var hasFixedPanelUnit = !!(f.unitConfig && f.unitConfig.fixedPanel && f.unitConfig.fixedPanel.enabled);
 
         if (isRollingShutterUnit) {
@@ -30153,9 +30159,10 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     var isTrueOnlyShutter = !!(furn.unitConfig && furn.unitConfig.isOnlyShutter) || (furn.name && /\bo\/?s\b/i.test(furn.name)) || (furn.costCategory && furn.costCategory.indexOf('O/S') !== -1);
     var isBaseOS = !isWrbOS && (isBase || catOS === 'kitchen_base' || catOS === 'kitchen_fm' || catOS === 'kitchen_os' || catOS.indexOf('base') !== -1 || nameOS.indexOf('fm') !== -1 || (furn.id && /fm/i.test(furn.id)) || catOS === 'crockery' || (furn.costCategory && furn.costCategory.indexOf('Base') !== -1) || (!isWallOS && !isLoftOS));
 
-    var baseD = (dims.D && dims.D > 100) ? dims.D : (isWrbOS ? (dims.D || 18) : (isWallOS ? 350 : (isBaseOS || isLoftOS ? 550 : 350)));
-    var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
-    var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none') ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 35)) : 0;
+    var isFcmCornerOS = /fcm[-_ ]*(rt|lt)/i.test(furn.id || furn.catalogItemId || furn.code || furn.name || '') || (furn.unitConfig && /fcm[-_ ]*(rt|lt)/i.test(furn.unitConfig.unitType || ''));
+    var baseD = (dims.D && dims.D >= 18) ? dims.D : (isWrbOS ? 18 : (isWallOS ? 350 : (isBaseOS || isLoftOS ? 550 : 350)));
+    var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false && !isFcmCornerOS) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
+    var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none' && !isFcmCornerOS) ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 35)) : 0;
 
     if (isBaseOS && baseD > 50) {
       // 1. Plinth Kickboard & Adjustable Cabinet Legs
@@ -30888,6 +30895,14 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     fasciaMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
     fg.add(fasciaMesh);
 
+    // Top internal tambour roll drum mechanism inside canister
+    var drumMat = new THREE.MeshStandardMaterial({ color: 0x64748B, metalness: 0.8, roughness: 0.3 });
+    var drumGeo = new THREE.CylinderGeometry(35, 35, W - 44, 24);
+    var drumMesh = new THREE.Mesh(drumGeo, drumMat);
+    drumMesh.rotation.z = Math.PI / 2;
+    drumMesh.position.set(0, H - 68, D / 2 - 45);
+    fg.add(drumMesh);
+
     // Vertical guide channels (side tracks)
     var trackMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.7, roughness: 0.3 });
     var trackGeo = new THREE.BoxGeometry(16, H - 136, 20);
@@ -30917,14 +30932,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     rollGroup.name = 'RollingShutterSlats_' + furn.id;
     var isOpen = !!(furn.shutterStates && furn.shutterStates[0]);
     var rollTravelY = slatSpanH - 60;
-    rollGroup.position.y = isOpen ? rollTravelY : 0;
-    rollGroup.userData = {
-      isRollingShutter: true,
-      shutterIdx: 0,
-      furnitureId: furn.id,
-      openY: rollTravelY,
-      closedY: 0
-    };
+    var slatMeshes = [];
 
     for (var k = 0; k < numSlats; k++) {
       var slatY = 18 + k * (slatH + slatGap) + slatH / 2;
@@ -30935,12 +30943,14 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         isFurniturePart: true,
         isShutter: true,
         isRolling: true,
+        baseY: slatY,
         shutterIdx: 0,
         rollGroup: rollGroup,
         parentGroup: fg,
         furnitureId: furn.id
       };
       rollGroup.add(slatMesh);
+      slatMeshes.push(slatMesh);
     }
 
     // Bottom Handle Profile Grip Bar
@@ -30963,10 +30973,35 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       furnitureId: furn.id
     };
     rollGroup.add(gripMesh);
+
+    // Realistic roll mechanism: slats retract into top canister drum without protruding into the ceiling
+    var setRollOpen = function (open) {
+      gripMesh.position.y = open ? (H - 145) : 36;
+      for (var si = 0; si < slatMeshes.length; si++) {
+        var sm = slatMeshes[si];
+        var effY = sm.userData.baseY + (open ? rollTravelY : 0);
+        if (effY > H - 120) {
+          sm.visible = false;
+        } else {
+          sm.position.y = effY;
+          sm.visible = true;
+        }
+      }
+    };
+    setRollOpen(isOpen);
+
+    rollGroup.userData = {
+      isRollingShutter: true,
+      shutterIdx: 0,
+      furnitureId: furn.id,
+      openY: 0,
+      closedY: 0,
+      setOpen: setRollOpen
+    };
     fg.add(rollGroup);
 
     // Elevation positioning (mount at 750mm floor elevation default)
-    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '' && parseFloat(furn.elevation) >= 0) ?
       parseFloat(furn.elevation) : 750;
     var posX = (furn.pos && furn.pos.x) || 0;
     var posY = (furn.pos && furn.pos.y) || 0;
@@ -34683,12 +34718,16 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var isLoftInsp = (catInsp.indexOf('loft') !== -1 || nmInsp.indexOf('loft') !== -1 || idInsp.indexOf('loft') !== -1 || cdInsp.indexOf('loft') !== -1);
         var isOpenBoxInsp = (nmInsp.indexOf('open box') !== -1 || nmInsp.indexOf('open_box') !== -1 || idInsp.indexOf('ob-') === 0 || idInsp.indexOf('open-box') !== -1 || cdInsp.indexOf('ob-') === 0);
         var isSpiceInsp = !isOpenBoxInsp && (catInsp.indexOf('spice') !== -1 || nmInsp.indexOf('spice') !== -1 || idInsp.indexOf('spice') !== -1 || idInsp.indexOf('sr-') === 0);
-        var isWallInsp = !isLoftInsp && isWall;
-        var defInspElev = isLoftInsp ? 2100 : (isOpenBoxInsp ? 1500 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0)));
+        var isRollingInsp = !!(
+          idInsp === 'wfm60-roll' || cdInsp === 'wfm60-roll' || /rolling\s*shutter|wfm.*roll/i.test(nmInsp + ' ' + idInsp) ||
+          (fn.unitConfig && (fn.unitConfig.isRollingShutter || fn.unitConfig.shutterType === 'rolling_shutter'))
+        );
+        var isWallInsp = !isLoftInsp && !isRollingInsp && isWall;
+        var defInspElev = isRollingInsp ? 750 : (isLoftInsp ? 2100 : (isOpenBoxInsp ? 1500 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0))));
 
-        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '' && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp || parseFloat(fn.elevation) > 0)) ?
+        var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '' && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp && !isRollingInsp || parseFloat(fn.elevation) > 0)) ?
           parseFloat(fn.elevation) :
-          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp || parseFloat(fn.pos.z) > 0)) ? parseFloat(fn.pos.z) : defInspElev);
+          ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp && !isRollingInsp || parseFloat(fn.pos.z) > 0)) ? parseFloat(fn.pos.z) : defInspElev);
 
         var hasLegs = false;
         if (!isWall) {
@@ -34812,8 +34851,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         panel.innerHTML =
           '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding-bottom:8px;margin-bottom:12px;">' +
             '<div><div style="font-size:13px;font-weight:700;color:#0f172a;">Unit Properties</div><div style="font-size:11px;color:#64748b;">' + (fn.name || "Modular Cabinet") + '</div></div>' +
-            '<span style="font-size:10.5px;font-weight:600;background:' + (isWall ? "#fef3c7;color:#b45309;border:1px solid #fde68a;" : isSliding ? "#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff;" : "#e0f2fe;color:#0369a1;border:1px solid #bae6fd;") + ';padding:2px 8px;border-radius:12px;">' +
-              (isWall ? "Wall-Mounted (1500mm)" : isSliding ? "Sliding Wardrobe" : "Floor Unit (0mm)") + '</span>' +
+            '<span style="font-size:10.5px;font-weight:600;background:' + (isRollingInsp ? "#ecfdf5;color:#047857;border:1px solid #a7f3d0;" : (isWall ? "#fef3c7;color:#b45309;border:1px solid #fde68a;" : isSliding ? "#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff;" : "#e0f2fe;color:#0369a1;border:1px solid #bae6fd;")) + ';padding:2px 8px;border-radius:12px;">' +
+              (isRollingInsp ? "Countertop Rolling Shutter (750mm)" : (isWall ? "Wall-Mounted (1500mm)" : isSliding ? "Sliding Wardrobe" : "Floor Unit (0mm)")) + '</span>' +
           '</div>' +
 
           // ── Card 1: Identity & Room ──
@@ -34837,6 +34876,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             '<div class="insp-row" style="margin-bottom:4px;"><label>Floor Elevation (AFFL)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
             '<div style="display:flex;gap:4px;margin-top:6px;">' +
               '<button type="button" class="btn small" id="btnPresetFloor" style="flex:1;font-size:10px;padding:3px;background:#f8fafc;border:1px solid #cbd5e1;">Floor (0 mm)</button>' +
+              '<button type="button" class="btn small" id="btnPresetCounter" style="flex:1;font-size:10px;padding:3px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;">Counter (750 mm)</button>' +
               '<button type="button" class="btn small" id="btnPresetWall" style="flex:1;font-size:10px;padding:3px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;">Wall (1500 mm)</button>' +
               '<button type="button" class="btn small" id="btnPresetLoft" style="flex:1;font-size:10px;padding:3px;background:#ede9fe;border:1px solid #ddd6fe;color:#5b21b6;">Loft (2100 mm)</button>' +
             '</div>' +
@@ -35370,6 +35410,20 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             if (elevEl) elevEl.value = 0;
             syncInspectorTo3D();
             self.editor.pushHistory('Set Elevation: 0mm (Floor)');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+            self.renderInspector(self.editor.selected);
+          });
+        }
+        var btnCounter = document.getElementById('btnPresetCounter');
+        if (btnCounter) {
+          btnCounter.addEventListener('click', function () {
+            fn.elevation = 750;
+            if (fn.pos) fn.pos.z = 750;
+            var elevElC = document.getElementById('inspFurnElev');
+            if (elevElC) elevElC.value = 750;
+            syncInspectorTo3D();
+            self.editor.pushHistory('Set Elevation: 750mm (Countertop)');
             self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
             self.renderInspector(self.editor.selected);
@@ -35991,8 +36045,16 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           window.OrbixCore.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) :
           (fn.category === 'kitchen_wall' || (fn.category && fn.category.indexOf('wall') !== -1) || (fn.name && fn.name.toLowerCase().indexOf('wall') !== -1));
         var isBase = !isWall && (isKitchen || fn.category === 'crockery' || fn.category === 'tv_unit' || (fn.name && fn.name.indexOf('BASE') !== -1));
+        var isRolling = !!(
+          (fn.id && /wfm60[-_ ]*roll/i.test(fn.id)) ||
+          (fn.catalogItemId && /wfm60[-_ ]*roll/i.test(fn.catalogItemId)) ||
+          (fn.code && /wfm60[-_ ]*roll/i.test(fn.code)) ||
+          (fn.unitConfig && (fn.unitConfig.isRollingShutter || fn.unitConfig.shutterType === 'rolling_shutter')) ||
+          /rolling\s*shutter/i.test(fn.name || '')
+        );
+        var defUnitElev = isRolling ? 750 : (isWall ? 1500 : 0);
         var unitElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
-          parseFloat(fn.elevation) : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? parseFloat(fn.pos.z) : (isWall ? 1500 : 0));
+          parseFloat(fn.elevation) : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? parseFloat(fn.pos.z) : defUnitElev);
 
         if (existing) {
           if (fn.name) existing.label = fn.name;
@@ -44354,7 +44416,10 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
                 var isOpen = fn.shutterStates[sIdx];
                 if (actionPart.userData.isRolling) {
                   var rGroup = actionPart.userData.rollGroup || (actionPart.parent && actionPart.parent.userData && actionPart.parent.userData.isRollingShutter ? actionPart.parent : null);
-                  if (rGroup && rGroup.userData && rGroup.userData.openY !== undefined) {
+                  if (rGroup && rGroup.userData && typeof rGroup.userData.setOpen === 'function') {
+                    rGroup.userData.setOpen(isOpen);
+                    render();
+                  } else if (rGroup && rGroup.userData && rGroup.userData.openY !== undefined) {
                     rGroup.position.y = isOpen ? rGroup.userData.openY : rGroup.userData.closedY;
                     render();
                   } else if (window.OrbixUI && window.OrbixUI.render3DHome) {
