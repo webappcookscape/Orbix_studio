@@ -1473,14 +1473,17 @@
      Wall Geometry, Splitting & Openings Helpers
      ───────────────────────────────────────────────────────────────────────────── */
   function wallLength(w) {
+    if (!w || !w.start || !w.end) return 0;
     return Vec2.dist(w.start, w.end);
   }
 
   function wallAngle(w) {
+    if (!w || !w.start || !w.end) return 0;
     return Vec2.angle(w.start, w.end);
   }
 
   function wallDirection(w) {
+    if (!w || !w.start || !w.end) return { x: 1, y: 0 };
     var l = wallLength(w);
     if (l < 1e-9) return { x: 1, y: 0 };
     return { x: (w.end.x - w.start.x) / l, y: (w.end.y - w.start.y) / l };
@@ -1493,7 +1496,7 @@
 
   // Gets the 4 corners of the 2D wall rectangle
   function wallPolygon(w) {
-    if (!w || w.isDivider || w.thickness === 0) return [];
+    if (!w || !w.start || !w.end || w.isDivider || w.thickness === 0) return [];
     var halfT = (w.thickness || 150) / 2.0;
     var norm = wallNormal(w);
     var p1 = { x: w.start.x + norm.x * halfT, y: w.start.y + norm.y * halfT };
@@ -1505,7 +1508,7 @@
 
   // Computes the clear inner length between interior faces of adjoining walls (in mm)
   function getWallInnerLength(w, plan) {
-    if (!w) return 0;
+    if (!w || !w.start || !w.end) return 0;
     var totalL = wallLength(w);
     if (!plan || !plan.walls || plan.walls.length <= 1) return totalL;
 
@@ -1516,7 +1519,7 @@
 
     for (var i = 0; i < walls.length; i++) {
       var other = walls[i];
-      if (other.id === w.id) continue;
+      if (!other || !other.start || !other.end || other.id === w.id) continue;
       var oThickness = other.thickness || 150;
       var oHalfT = oThickness / 2.0;
 
@@ -1545,7 +1548,7 @@
 
   // Returns { start, end, innerLength, startDeduction, endDeduction } for witness lines and dimensions
   function getWallInnerSegment(w, plan) {
-    if (!w) return null;
+    if (!w || !w.start || !w.end) return null;
     var totalL = wallLength(w);
     var wDir = wallDirection(w);
     var startDeduction = 0;
@@ -1555,7 +1558,7 @@
       var walls = plan.walls;
       for (var i = 0; i < walls.length; i++) {
         var other = walls[i];
-        if (other.id === w.id) continue;
+        if (!other || !other.start || !other.end || other.id === w.id) continue;
         var oThickness = other.thickness || 150;
         var oHalfT = oThickness / 2.0;
 
@@ -1598,7 +1601,7 @@
 
   // Adjusts wall length so its clear inner length equals targetInnerLen (mm)
   function setWallInnerLength(w, targetInnerLen, plan, anchorEnd) {
-    if (!w || targetInnerLen <= 50) return;
+    if (!w || !w.start || !w.end || targetInnerLen <= 50) return w;
     var seg = getWallInnerSegment(w, plan);
     var deductions = (seg ? seg.startDeduction + seg.endDeduction : 0);
     var targetCenterlineL = targetInnerLen + deductions;
@@ -1618,7 +1621,7 @@
     // Also move connected adjoining walls that meet at this corner junction
     if (plan && plan.walls) {
       plan.walls.forEach(function (other) {
-        if (other.id === w.id) return;
+        if (!other || !other.start || !other.end || other.id === w.id) return;
         if (Vec2.dist(other.start, oldPt) < 5) {
           other.start.x = newPt.x;
           other.start.y = newPt.y;

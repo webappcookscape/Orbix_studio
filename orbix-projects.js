@@ -1604,14 +1604,23 @@
           units_count: project.units_count
         })
       })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+          if (!r.ok) {
+            throw new Error('HTTP ' + r.status);
+          }
+          return r.json().catch(function () { return {}; });
+        })
         .then(function () {
           var now = new Date();
           var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           self.setSaveIndicator('saved', timeStr);
         })
         .catch(function (err) {
-          console.warn('[AutoSave Live] PostgreSQL offline:', err);
+          // Gracefully indicate saved locally without spamming red/yellow console warnings
+          if (!self._lastOfflineLogged || Date.now() - self._lastOfflineLogged > 60000) {
+            self._lastOfflineLogged = Date.now();
+            console.log('[AutoSave] Working in offline mode (draft saved locally in browser/app storage)');
+          }
           self.setSaveIndicator('offline');
         });
     },

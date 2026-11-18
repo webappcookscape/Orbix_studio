@@ -1060,6 +1060,7 @@
       // 2. Isolate perimeter walls of that room
       var roomPoly = targetRoom.polygon;
       walls = walls.filter(function (w) {
+        if (!w || !w.start || !w.end) return false;
         var midW = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
         for (var pi = 0; pi < roomPoly.length; pi++) {
           var pA = roomPoly[pi];
@@ -1332,7 +1333,8 @@
   };
 
   ArchitecturalRenderer.prototype.buildWallWithCutouts = function (wall, ops) {
-    if (wall && wall.isDivider) {
+    if (!wall || !wall.start || !wall.end) return null;
+    if (wall.isDivider) {
       // Guard: Only render 3D threshold strip if divider is a valid room boundary or connected at both ends
       var planObj = this.currentPlan || (this.currentProject && this.currentProject.plan);
       var pRooms = (planObj && planObj.rooms) || [];
@@ -1347,7 +1349,7 @@
       var startConn = false, endConn = false;
       for (var wi = 0; wi < allW.length; wi++) {
         var ow = allW[wi];
-        if (ow.id === wall.id) continue;
+        if (!ow || !ow.start || !ow.end || ow.id === wall.id) continue;
         if (!startConn && Core.projectPointOnSegment(wall.start, ow.start, ow.end).dist <= 150) startConn = true;
         if (!endConn && Core.projectPointOnSegment(wall.end, ow.start, ow.end).dist <= 150) endConn = true;
       }
