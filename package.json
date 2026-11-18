@@ -7,7 +7,7 @@
     "start": "node server/server.js",
     "dev": "node --watch server/server.js",
     "start:desktop": "electron electron-main.js",
-    "package:win": "electron-packager . \"OrbixStudio\" --platform=win32 --arch=x64 --out=dist-desktop --overwrite",
+    "package:win": "electron-packager . \"OrbixStudio\" --platform=win32 --arch=x64 --out=dist-desktop --overwrite --ignore=\"dist-desktop\"",
     "dist:win": "electron-builder --win --x64",
     "prisma:generate": "prisma generate",
     "postinstall": "prisma generate"
