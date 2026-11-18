@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const projectService = require('../services/projectService');
+const userService = require('../services/userService');
 
 class ProjectController {
   // GET /api/projects
@@ -37,8 +38,7 @@ class ProjectController {
       if (!req.body || !req.body.title) {
         return res.status(400).json({ success: false, error: 'Project title is required' });
       }
-      const user = req.user || (req.body && req.body.currentUser);
-      const project = await projectService.createProject(req.body, user);
+      const project = await projectService.createProject(req.body, req.user);
       res.status(201).json({ success: true, project });
     } catch (err) {
       console.error('createProject error:', err);
@@ -73,9 +73,16 @@ class ProjectController {
   // POST /api/projects/:id/fork
   async fork(req, res) {
     try {
-      const targetUser = (req.body && req.body.colleagueUser) || req.user;
-      const senderUser = (req.body && req.body.senderUser) || req.user;
-      const forked = await projectService.forkProject(req.params.id, targetUser, senderUser);
+      let targetUser = req.user;
+      const requestedColleagueId = req.body && req.body.colleagueUser && req.body.colleagueUser.id;
+      if (requestedColleagueId && requestedColleagueId !== req.user.id) {
+        const lookedUp = await userService.getUserById(String(requestedColleagueId));
+        if (!lookedUp) {
+          return res.status(404).json({ success: false, error: 'Target colleague account not found' });
+        }
+        targetUser = lookedUp;
+      }
+      const forked = await projectService.forkProject(req.params.id, targetUser, req.user);
       res.status(201).json({ success: true, project: forked });
     } catch (err) {
       console.error('forkProject error:', err);

@@ -5048,11 +5048,6 @@
     },
 
     _getFallbackOpenAIKey: function () {
-      try {
-        var b64 = 'c2stcHJvai1HMjF4ZEF3YnVtSDNFUTQzYnZHV21ETUhUN0dvdUNWSExkQmRDbDg4MzVQaEFrWUZDSHBWMlVGTlZjdDZYUTRUVWlsTnhXOFp2SlQzQmxia0ZKaDhuUHA0Wl9Pb3NEZkI3RTFjWFBjMHpKN25aY2Rod0hZejVpd1B3LTFrWDkySDlkamJ4REExZmlZYlphR0NKRjM3cFZyS2kxZ0E=';
-        if (typeof atob === 'function') return atob(b64);
-        if (typeof Buffer !== 'undefined') return Buffer.from(b64, 'base64').toString('utf8');
-      } catch (_) {}
       return '';
     },
 
@@ -5074,10 +5069,15 @@
     updateAIKeyStatusUI: function (keyVal) {
       var k = (keyVal !== undefined) ? keyVal : this.getOpenAIKey();
       var hasKey = !!(k && k.trim().length > 10);
+      var hasServerKey = !!this._serverAIKeyConfigured;
       var badge = document.getElementById('aiKeyStatusBadge');
       if (badge) {
         if (hasKey) {
           badge.textContent = '● Key Connected (' + k.slice(0, 7) + '...)';
+          badge.style.background = '#dcfce7';
+          badge.style.color = '#15803d';
+        } else if (hasServerKey) {
+          badge.textContent = '● Server AI Ready';
           badge.style.background = '#dcfce7';
           badge.style.color = '#15803d';
         } else {
@@ -5088,8 +5088,8 @@
       }
       var topStatus = document.getElementById('topAIKeyStatus');
       if (topStatus) {
-        if (hasKey) {
-          topStatus.textContent = 'Active';
+        if (hasKey || hasServerKey) {
+          topStatus.textContent = hasKey ? 'Active' : 'Server Ready';
           topStatus.style.color = '#15803d';
         } else {
           topStatus.textContent = 'Not Set';
@@ -5107,7 +5107,7 @@
         this.updateAIKeyStatusUI(k.trim());
         var keyInput = document.getElementById('openAIApiKeyInput');
         if (keyInput) keyInput.value = k.trim();
-        if (typeof window.toast === 'function') window.toast('✅ OpenAI API Key Saved Securely!');
+        if (typeof window.toast === 'function') window.toast('✅ OpenAI API Key Saved!');
       }
     },
 
@@ -5116,8 +5116,7 @@
       try {
         saved = localStorage.getItem('orbix_openai_key') || localStorage.getItem('orbix_openai_api_key') || '';
       } catch (_) {}
-      if (saved && saved.trim()) return saved.trim();
-      return this._getFallbackOpenAIKey();
+      return (saved && saved.trim()) ? saved.trim() : '';
     },
 
     closeAIRenderModal: function () {
@@ -5172,21 +5171,14 @@
       var openBtn = document.getElementById('renderAIRenderBtn');
       if (!modal) return;
 
-      try {
-        var fallbackKey = self.getOpenAIKey();
-        if (!localStorage.getItem('orbix_openai_key') && !localStorage.getItem('orbix_openai_api_key')) {
-          localStorage.setItem('orbix_openai_key', fallbackKey);
-          localStorage.setItem('orbix_openai_api_key', fallbackKey);
-        }
-      } catch (_) {}
-
-      // Query server for environment configured key as well
+      // Check server AI configuration without fetching or persisting raw API keys
       if (typeof fetch === 'function') {
-        fetch('/api/ai/key').then(function (res) {
+        fetch('/api/ai/config', { credentials: 'include' }).then(function (res) {
           if (res.ok) return res.json();
         }).then(function (data) {
-          if (data && data.key && data.key.length > 10) {
-            self.setOpenAIKey(data.key);
+          if (data && data.configured) {
+            self._serverAIKeyConfigured = true;
+            self.updateAIKeyStatusUI();
           }
         }).catch(function () {});
       }
@@ -5300,17 +5292,28 @@
           startBtn.disabled = true;
 
           try {
-            if (!apiKey) {
+            if (!apiKey && !self._serverAIKeyConfigured) {
               if (progressCont) progressCont.style.display = 'none';
               startBtn.disabled = false;
-              alert('Please enter your OpenAI API key above and click "Save Key" to generate live AI photorealistic renders.');
+              alert('Please enter your OpenAI API key above (or configure OPENAI_API_KEY on the server) to generate live AI renders.');
               if (keyInput) keyInput.focus();
               return;
             }
 
-            // Call OpenAI DALL-E 3 API with expert architectural prompt
+            // Prefer authenticated server-side AI proxy so server keys never leave the backend
             var data = null;
-            try {
+            var srvRes = await fetch('/api/ai/render', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                apiKey: apiKey || undefined,
+                prompt: promptText.slice(0, 1000)
+              })
+            });
+            if (srvRes.ok) {
+              data = await srvRes.json();
+            } else if (apiKey) {
               var response = await fetch('https://api.openai.com/v1/images/generations', {
                 method: 'POST',
                 headers: {
@@ -5327,25 +5330,9 @@
                 })
               });
               data = await response.json();
-            } catch (netErr) {
-              // Fallback to server endpoint if direct client-to-openai fails (e.g. CORS block)
-              try {
-                var srvRes = await fetch('/api/ai/render', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    apiKey: apiKey,
-                    prompt: promptText.slice(0, 1000)
-                  })
-                });
-                if (srvRes.ok) {
-                  data = await srvRes.json();
-                } else {
-                  throw netErr;
-                }
-              } catch (_) {
-                throw netErr;
-              }
+            } else {
+              var errPayload = await srvRes.json().catch(function () { return {}; });
+              throw new Error((errPayload.error && errPayload.error.message) || errPayload.error || ('Server returned ' + srvRes.status));
             }
 
             if (data && data.error) {

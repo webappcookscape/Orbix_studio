@@ -39,10 +39,10 @@
   <link rel="stylesheet" href="style.css?v=6">
 
   <!-- ══════ FULL AUTH / LOGIN SCREEN ══════ -->
-  <div id="authScreen" class="auth-screen" style="display:none;">
+  <div id="authScreen" class="auth-screen" style="display:flex;">
     <div class="auth-card" style="position:relative;">
       <button type="button" id="closeAuthScreenBtn"
-        style="position:absolute;top:16px;right:18px;font-size:24px;line-height:1;color:#64748B;cursor:pointer;background:none;border:none;">&times;</button>
+        style="display:none;position:absolute;top:16px;right:18px;font-size:24px;line-height:1;color:#64748B;cursor:pointer;background:none;border:none;">&times;</button>
       <div class="auth-brand">
         <img src="logo.jpeg" alt="Orbix Studio" class="auth-logo">
         <h1 class="auth-title">Orbix Studio</h1>
@@ -64,6 +64,11 @@
             autocomplete="current-password">
         </div>
 
+        <div style="font-size:12px;color:#475569;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+          <span>🔒</span>
+          <span>Session remains active for <b>3 days</b> after sign in</span>
+        </div>
+
         <button type="submit" class="btn primary big auth-submit-btn" id="authScreenSubmitBtn">
           Sign In to Workspace
         </button>
@@ -71,7 +76,7 @@
     </div>
   </div>
 
-  <div id="app" style="display:flex;">
+  <div id="app" style="display:none;">
 
     <header class="topbar">
       <div class="tool">

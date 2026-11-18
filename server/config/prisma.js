@@ -297,7 +297,10 @@ class MockPrismaClient {
             }
           }
         }
-        return users[0] || null;
+        if (args && args.where && !args.where.OR) {
+          return users[0] || null;
+        }
+        return null;
       },
       async create(args) {
         const users = self._read(self._usersFile, DEFAULT_FALLBACK_USERS);

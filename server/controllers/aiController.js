@@ -5,22 +5,17 @@
 
 const https = require('https');
 
-function getFallbackKey() {
-  const b64 = 'c2stcHJvai1HMjF4ZEF3YnVtSDNFUTQzYnZHV21ETUhUN0dvdUNWSExkQmRDbDg4MzVQaEFrWUZDSHBWMlVGTlZjdDZYUTRUVWlsTnhXOFp2SlQzQmxia0ZKaDhuUHA0Wl9Pb3NEZkI3RTFjWFBjMHpKN25aY2Rod0hZejVpd1B3LTFrWDkySDlkamJ4REExZmlZYlphR0NKRjM3cFZyS2kxZ0E=';
-  try {
-    return Buffer.from(b64, 'base64').toString('utf8');
-  } catch (_) {
-    return '';
-  }
-}
-
 exports.getAIKey = (req, res) => {
-  const apiKey = process.env.OPENAI_API_KEY || getFallbackKey();
-  res.json({ key: apiKey });
+  const configuredKey = process.env.OPENAI_API_KEY || '';
+  res.json({
+    configured: !!configuredKey,
+    keyMasked: configuredKey ? configuredKey.slice(0, 7) + '...' + configuredKey.slice(-4) : '',
+    hasKey: !!configuredKey
+  });
 };
 
 exports.getAIConfig = (req, res) => {
-  const configuredKey = process.env.OPENAI_API_KEY || getFallbackKey();
+  const configuredKey = process.env.OPENAI_API_KEY || '';
   res.json({
     configured: !!configuredKey,
     keyMasked: configuredKey ? configuredKey.slice(0, 7) + '...' + configuredKey.slice(-4) : '',
@@ -30,11 +25,11 @@ exports.getAIConfig = (req, res) => {
 
 exports.renderAI = async (req, res) => {
   try {
-    const apiKey = (req.body && req.body.apiKey) || process.env.OPENAI_API_KEY || getFallbackKey();
+    const apiKey = process.env.OPENAI_API_KEY || (req.body && typeof req.body.apiKey === 'string' ? req.body.apiKey.trim() : '');
     const prompt = (req.body && req.body.prompt) || 'Luxury architectural interior photograph';
 
     if (!apiKey) {
-      return res.status(400).json({ error: { message: 'OpenAI API key is required' } });
+      return res.status(400).json({ error: { message: 'OpenAI API key is not configured on the server or provided in request.' } });
     }
 
     const payload = JSON.stringify({

@@ -219,6 +219,14 @@
         return;
       }
 
+      if (!OrbixProjects.currentUser || (typeof OrbixProjects.isLocalSessionValid === 'function' && !OrbixProjects.isLocalSessionValid())) {
+        try { this.updateUrl('login', true); } catch (_) { }
+        if (typeof OrbixProjects.showLogin === 'function') {
+          OrbixProjects.showLogin();
+        }
+        return;
+      }
+
       if (v === 'users') {
         if (!OrbixProjects.isAdmin()) {
           if (typeof showToast === 'function') {
@@ -268,16 +276,18 @@
     },
 
     dispatchInitialRoute: function () {
-      var v = this.initialTargetView || this.getInitialView();
-      if (v === 'login') {
-        if (OrbixProjects.currentUser) {
-          this.navigateTo('home', true);
-          return;
-        }
+      var isAuth = !!(OrbixProjects.currentUser && (typeof OrbixProjects.isLocalSessionValid !== 'function' || OrbixProjects.isLocalSessionValid()));
+      if (!isAuth) {
         this.updateUrl('login', true);
         if (typeof OrbixProjects.showLogin === 'function') {
           OrbixProjects.showLogin();
         }
+        return;
+      }
+
+      var v = this.initialTargetView || this.getInitialView();
+      if (v === 'login') {
+        this.navigateTo('home', true);
         return;
       }
 
@@ -295,43 +305,21 @@
   // ORBIX ROUTER — Clean URL Routing, Browser History & Role-Based Navigation
 
 
+  function escHtml(v) {
+    return String(v === undefined || v === null ? '' : v)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   var OrbixProjects = {
     currentUser: null,
     activeProjectId: null,
     projects: [],
-    users: [
-      // ── Admin ──
-      {"id":"usr_admin","name":"Cookscape Admin","username":"admin","email":"admin@cookscape.com","password":"studio@2026","role":"admin","designation":"System Administrator","company":"Cookscape","avatar":"CA"},
-
-      // ── 27 Employees (LA / FA) ──
-      {"id":"usr_shiraja","name":"SHIRAJA SUBRAMANIAN","username":"shiraja","email":"keyinteriors.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"SS"},
-      {"id":"usr_haseena","name":"HASEENA AYESHA","username":"haseena","email":"haseenaayeshaa@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"HA"},
-      {"id":"usr_abirami","name":"Abirami.k","username":"abirami","email":"abiramik707@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"A"},
-      {"id":"usr_vijaymanoj","name":"VIJAY MANOJ","username":"vijaymanoj","email":"vijaymanoj1214@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"VM"},
-      {"id":"usr_manikandan","name":"MANIKANDAN K","username":"manikandan","email":"manikandanidd02@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"MK"},
-      {"id":"usr_kalaimadhi","name":"Kalaimadhi D.A.","username":"kalaimadhi","email":"kalaimadhi06@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"KD"},
-      {"id":"usr_pravin","name":"Pravin M","username":"pravin","email":"pravindoss3@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"PM"},
-      {"id":"usr_suhail","name":"Suhail Akthar","username":"suhail","email":"suhailakthar555@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"SA"},
-      {"id":"usr_varshini","name":"Varshini","username":"varshini","email":"varshini.san@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"V"},
-      {"id":"usr_renukha","name":"Renukha Gopalan","username":"renukha","email":"durability.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"RG"},
-      {"id":"usr_sivakumar_r","name":"R.siva kumar","username":"sivakumar.r","email":"interact.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"RK"},
-      {"id":"usr_poonguzhali","name":"Poonguzhali Arumugam","username":"poonguzhali","email":"helpdesk.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"PA"},
-      {"id":"usr_meenakshi","name":"meenakshi","username":"meenakshi","email":"ps.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"M"},
-      {"id":"usr_abishek","name":"Abishek kumar","username":"abishek","email":"designsolution.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"AK"},
-      {"id":"usr_julia","name":"Julia Asha","username":"julia","email":"stylishomes.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"JA"},
-      {"id":"usr_niveditha","name":"Niveditha . S","username":"niveditha","email":"interior.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"N."},
-      {"id":"usr_shivaranjani","name":"Shivaranjani","username":"shivaranjani","email":"renovation.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"S"},
-      {"id":"usr_yogesh","name":"Yogesh kumar JK","username":"yogesh","email":"service.wall2wall@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"YK"},
-      {"id":"usr_keerthika","name":"Keerthika G","username":"keerthika","email":"layout.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"FA","company":"Cookscape","avatar":"KG"},
-      {"id":"usr_priyadharshini","name":"Priyadharshini Thangavel","username":"priyadharshini","email":"designers.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"PT"},
-      {"id":"usr_mohsina","name":"Mohsina Noor. A","username":"mohsina","email":"khanmohsina991@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"MN"},
-      {"id":"usr_kanimozhi","name":"Kanimozhi","username":"kanimozhi","email":"kanimozhianbuchezhian04@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"K"},
-      {"id":"usr_vanitha","name":"Vanitha Kaspar","username":"vanitha","email":"vanithakaspar@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"VK"},
-      {"id":"usr_ragulnath","name":"RAGULNATH G","username":"ragulnath","email":"sketches.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"RG"},
-      {"id":"usr_sivakumar_kj","name":"SIVAKUMAR KJ","username":"sivakumar.kj","email":"designideas.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"SK"},
-      {"id":"usr_sudarmathi","name":"Sudarmathi Selvam","username":"sudarmathi","email":"drawings.cookscape@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"SS"},
-      {"id":"usr_sowmiya","name":"Sowmiya. G","username":"sowmiya","email":"sowmiyaganesan17@gmail.com","password":"studio@2026","role":"employee","designation":"LA","company":"Cookscape","avatar":"SG"}
-    ],
+    users: [],
+    escHtml: escHtml,
     filter: 'all',
     searchQuery: '',
     dbStatus: null,
@@ -376,6 +364,37 @@
       return fetch(fullUrl, options);
     },
 
+    SESSION_TTL_MS: 3 * 24 * 60 * 60 * 1000, // 3 days session duration
+
+    isLocalSessionValid: function () {
+      try {
+        var saved = localStorage.getItem('orbix_current_user');
+        var expRaw = localStorage.getItem('orbix_session_expires_at');
+        if (!saved || !expRaw) return false;
+        var parsed = JSON.parse(saved);
+        var exp = Number(expRaw);
+        if (!parsed || !parsed.id || !exp || isNaN(exp)) return false;
+        if (Date.now() > exp) {
+          localStorage.removeItem('orbix_current_user');
+          localStorage.removeItem('orbix_session_expires_at');
+          return false;
+        }
+        return true;
+      } catch (_) {
+        return false;
+      }
+    },
+
+    clearAuthStorage: function () {
+      try {
+        localStorage.removeItem('orbix_current_user');
+        localStorage.removeItem('orbix_session_expires_at');
+        localStorage.removeItem('orbix-project');
+        localStorage.removeItem('orbix_active_project_id');
+        localStorage.removeItem('cupboard-cad');
+      } catch (_) { }
+    },
+
     verifySession: function (cb) {
       var self = this;
       OrbixProjects.apiFetch('/api/me')
@@ -384,34 +403,64 @@
             return r.json().then(function (data) {
               if (data.success && data.user) {
                 self.currentUser = data.user;
+                var existingExp = 0;
+                try { existingExp = Number(localStorage.getItem('orbix_session_expires_at')) || 0; } catch (_) { }
+                var exp = data.sessionExpiresAt || existingExp || (Date.now() + self.SESSION_TTL_MS);
                 try {
                   localStorage.setItem('orbix_current_user', JSON.stringify(data.user));
+                  localStorage.setItem('orbix_session_expires_at', String(exp));
                 } catch (e) { }
                 self.showApp();
                 self.updateUserUI();
+              } else {
+                self.currentUser = null;
+                self.clearAuthStorage();
+                self.showLogin();
               }
             });
           } else if (r.status === 401) {
-            // Server updated or session temporarily unauthenticated: retain local user and projects
-            var cached = null;
-            try { cached = JSON.parse(localStorage.getItem('orbix_current_user')); } catch (e) { }
-            if (cached && cached.id) {
-              console.log('[OrbixProjects] Retaining session for ' + cached.name + ' across server update.');
-              self.currentUser = cached;
-              self.showApp();
-              self.updateUserUI();
-            } else {
-              self.currentUser = null;
-              self.showLogin();
-            }
+            self.currentUser = null;
+            self.clearAuthStorage();
+            self.showLogin();
           }
         })
         .catch(function (err) {
           console.warn('[OrbixProjects] Session verification offline:', err.message);
+          if (self.isLocalSessionValid()) {
+            self.showApp();
+            self.updateUserUI();
+          } else {
+            self.currentUser = null;
+            self.clearAuthStorage();
+            self.showLogin();
+          }
         })
         .then(function () {
           if (cb) cb();
         });
+    },
+
+    loadAfterAuth: function () {
+      var self = this;
+      if (!this.currentUser || !this.isLocalSessionValid()) {
+        this.showLogin();
+        OrbixRouter.updateUrl('login', true);
+        return;
+      }
+      this.applyRolePermissions();
+      this.fetchUsers(function () {
+        self.applyRolePermissions();
+        self.fetchProjects(function () {
+          if (self.projects && self.projects.length > 0) {
+            var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
+            var savedId = null;
+            try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
+            var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
+            self.openProject(toOpen.id, false);
+          }
+          OrbixRouter.dispatchInitialRoute();
+        });
+      });
     },
 
     init: function () {
@@ -422,34 +471,21 @@
       this.initEventListeners();
       this.fetchDBStatus();
       this.verifySession(function () {
-        self.fetchUsers(function () {
-          self.applyRolePermissions();
-          self.fetchProjects(function () {
-            // Open active project or first project for this user
-            if (self.projects && self.projects.length > 0) {
-              var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
-              var savedId = null;
-              try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
-              var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
-              self.openProject(toOpen.id, false);
-            }
-            OrbixRouter.dispatchInitialRoute();
-          });
-        });
+        self.loadAfterAuth();
       });
       this.startAutoSaveLoop();
       this.guardViews();
 
       if (typeof window !== 'undefined') {
         window.addEventListener('beforeunload', function () {
-          self.flushImmediateSave();
+          if (self.currentUser) self.flushImmediateSave();
         });
         window.addEventListener('pagehide', function () {
-          self.flushImmediateSave();
+          if (self.currentUser) self.flushImmediateSave();
         });
         window.addEventListener('online', function () {
           self.setSaveIndicator('saved', 'Online');
-          if (self._hasPendingOfflineSave) {
+          if (self._hasPendingOfflineSave && self.currentUser) {
             self.saveActiveProject();
           }
         });
@@ -467,17 +503,20 @@
 
     loadCachedUser: function () {
       try {
+        if (!this.isLocalSessionValid()) {
+          this.currentUser = null;
+          this.clearAuthStorage();
+          this.showLogin();
+          return;
+        }
         var saved = localStorage.getItem('orbix_current_user');
         if (saved) {
           this.currentUser = JSON.parse(saved);
-          // If cached user is an obsolete demo account, reset to primary admin
+          // If cached user is an obsolete demo account, force fresh sign-in
           if (this.currentUser.id === 'usr_alex' || (this.currentUser.email && this.currentUser.email.indexOf('@orbixstudio.io') !== -1)) {
-            this.currentUser = this.users[0];
-            try {
-              localStorage.setItem('orbix_current_user', JSON.stringify(this.currentUser));
-            } catch (e) { }
-            this.showApp();
-            this.updateUserUI();
+            this.currentUser = null;
+            this.clearAuthStorage();
+            this.showLogin();
             return;
           }
           if (this.currentUser.id === 'usr_admin') {
@@ -488,17 +527,13 @@
           this.showApp();
           this.updateUserUI();
         } else {
-          this.currentUser = this.users[0];
-          try {
-            localStorage.setItem('orbix_current_user', JSON.stringify(this.currentUser));
-          } catch (e) { }
-          this.showApp();
-          this.updateUserUI();
+          this.currentUser = null;
+          this.showLogin();
         }
       } catch (e) {
-        this.currentUser = this.users[0];
-        this.showApp();
-        this.updateUserUI();
+        this.currentUser = null;
+        this.clearAuthStorage();
+        this.showLogin();
       }
     },
 
@@ -524,11 +559,9 @@
 
     logout: function () {
       try {
-        localStorage.removeItem('orbix_current_user');
-        localStorage.removeItem('orbix-project');
-        localStorage.removeItem('orbix_active_project_id');
-        localStorage.removeItem('cupboard-cad');
-      } catch (e) { }
+        OrbixProjects.apiFetch('/api/logout', { method: 'POST' }).catch(function () { });
+      } catch (_) { }
+      this.clearAuthStorage();
       this.currentUser = null;
       this.activeProjectId = null;
       this.projects = [];
@@ -553,11 +586,13 @@
       }
     },
 
-    setCurrentUser: function (user) {
+    setCurrentUser: function (user, expiresAt) {
       this.currentUser = user;
       this.activeProjectId = null; // Always clear active project on account switch!
+      var sessionExpiry = expiresAt || (Date.now() + this.SESSION_TTL_MS);
       try {
         localStorage.setItem('orbix_current_user', JSON.stringify(user));
+        localStorage.setItem('orbix_session_expires_at', String(sessionExpiry));
         localStorage.removeItem('orbix-project');
         localStorage.removeItem('orbix_active_project_id');
         localStorage.removeItem('cupboard-cad');
@@ -664,8 +699,8 @@
         var roleLabel = isAdm ? 'Admin' : 'Employee';
         var roleClass = isAdm ? 'badge-admin' : 'badge-employee';
         avatarEl.innerHTML = '<span class="u-avatar ' + (isAdm ? 'is-admin-avatar' : '') + '">' +
-          (this.currentUser.avatar || 'US') + '</span>' +
-          '<span class="u-name">' + this.currentUser.name + '</span>' +
+          escHtml(this.currentUser.avatar || 'US') + '</span>' +
+          '<span class="u-name">' + escHtml(this.currentUser.name) + '</span>' +
           '<span class="u-role-pill ' + roleClass + '">' + roleLabel + '</span>';
       }
 
@@ -798,14 +833,7 @@
         })
         .catch(function (err) {
           console.warn('User synchronization offline:', err.message);
-          if (!self.users || !self.users.length) {
-            self.users = [
-              { id: 'usr_admin', name: 'Cookscape Admin', username: 'admin', email: 'admin@cookscape.com', role: 'admin', designation: 'System Administrator', company: 'Cookscape', avatar: 'CA' },
-              { id: 'usr_sangathamizh', name: 'Sangathamizh', username: 'sangathamizh', email: 'designteam.cookscape@gmail.com', role: 'admin', designation: 'Business Head', company: 'Cookscape', avatar: 'S' },
-              { id: 'usr_elakkiya', name: 'Elakkiya', username: 'elakkiya', email: 'elakkiya.sakthivelu3089@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'E' },
-              { id: 'usr_aravind', name: 'Aravind', username: 'aravind', email: 'webapp.cookscape@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'A' }
-            ];
-          }
+          self.users = self.users || [];
           self.populateBhDropdown();
           if (cb) cb();
         });
@@ -1024,17 +1052,17 @@
       var sharedByDesig = sn.sharedByDesignation || 'Modular Designer';
       var projectTitle = sn.originalTitle || project.title;
 
-      container.innerHTML = '<div class="shared-copy-alert-banner" id="sharedAlert_' + noticeKey + '">' +
+      container.innerHTML = '<div class="shared-copy-alert-banner" id="sharedAlert_' + escHtml(noticeKey) + '">' +
         '<div class="sca-left">' +
         '<div class="sca-icon">⑂</div>' +
         '<div class="sca-content">' +
-        '<div class="sca-title">' + sharedByName + ' (' + sharedByDesig + ') has shared their project copy with you</div>' +
-        '<div class="sca-desc">Project: "<strong>' + projectTitle + '</strong>". An isolated duplicate has been added to your projects.</div>' +
+        '<div class="sca-title">' + escHtml(sharedByName) + ' (' + escHtml(sharedByDesig) + ') has shared their project copy with you</div>' +
+        '<div class="sca-desc">Project: "<strong>' + escHtml(projectTitle) + '</strong>". An isolated duplicate has been added to your projects.</div>' +
         '</div>' +
         '</div>' +
         '<div class="sca-actions">' +
-        '<button type="button" class="btn primary small sca-open-btn" data-pid="' + project.id + '">Open Project</button>' +
-        '<button type="button" class="btn small sca-cancel-btn" data-nid="' + noticeKey + '">Cancel</button>' +
+        '<button type="button" class="btn primary small sca-open-btn" data-pid="' + escHtml(project.id) + '">Open Project</button>' +
+        '<button type="button" class="btn small sca-cancel-btn" data-nid="' + escHtml(noticeKey) + '">Cancel</button>' +
         '</div>' +
         '</div>';
 
@@ -1075,7 +1103,7 @@
           '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
           '</div>' +
           '<h3>No projects found</h3>' +
-          '<p>' + (this.searchQuery ? 'No projects matched "' + this.searchQuery + '". Try clearing filters.' : 'Create your first project or launch from a pre-set catalogue design.') + '</p>' +
+          '<p>' + (this.searchQuery ? 'No projects matched "' + escHtml(this.searchQuery) + '". Try clearing filters.' : 'Create your first project or launch from a pre-set catalogue design.') + '</p>' +
           '<button class="btn primary big" id="emptyCreateBtn">+ Create New Project</button>' +
           '</div>';
 
@@ -1123,42 +1151,42 @@
         var statusClass = (p.status === 'Active' || p.status === 'In Progress') ? 'pstatus-active' : (p.status === 'Completed' ? 'pstatus-done' : 'pstatus-draft');
         var typeBadge = p.type || 'Interior CAD';
 
-        html += '<div class="proj-card' + (p.id === this.activeProjectId ? ' is-active-proj' : '') + '" data-id="' + p.id + '">' +
+        html += '<div class="proj-card' + (p.id === this.activeProjectId ? ' is-active-proj' : '') + '" data-id="' + escHtml(p.id) + '">' +
           '<div class="pcard-top">' +
           '<div class="pcard-badges">' +
-          (bhStr ? '<span class="ptag bh-badge">BH: ' + bhStr + '</span>' : '<span class="ptag type-wardrobe">' + typeBadge + '</span>') +
-          (cpStr ? '<span class="ptag cp-code">CP: ' + cpStr + '</span>' : '') +
-          '<span class="pstatus ' + statusClass + '">' + (p.status || 'Draft') + '</span>' +
+          (bhStr ? '<span class="ptag bh-badge">BH: ' + escHtml(bhStr) + '</span>' : '<span class="ptag type-wardrobe">' + escHtml(typeBadge) + '</span>') +
+          (cpStr ? '<span class="ptag cp-code">CP: ' + escHtml(cpStr) + '</span>' : '') +
+          '<span class="pstatus ' + statusClass + '">' + escHtml(p.status || 'Draft') + '</span>' +
           (p.is_shared ? '<span class="pshared-pill" title="Shared with colleagues">🔗 Shared</span>' : '') +
-          (p.fork_count ? '<span class="pfork-pill" title="' + p.fork_count + ' colleague copies created">⑂ ' + p.fork_count + ' copies</span>' : '') +
+          (p.fork_count ? '<span class="pfork-pill" title="' + escHtml(p.fork_count) + ' colleague copies created">⑂ ' + escHtml(p.fork_count) + ' copies</span>' : '') +
           '</div>' +
           '<div class="pcard-actions">' +
-          '<button class="pact-icon share-act" title="Share with colleague (they work in copy)" data-id="' + p.id + '">' +
+          '<button class="pact-icon share-act" title="Share with colleague (they work in copy)" data-id="' + escHtml(p.id) + '">' +
           '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>' +
           '</button>' +
-          '<button class="pact-icon fork-act" title="Work in a copy (duplicate for me)" data-id="' + p.id + '">' +
+          '<button class="pact-icon fork-act" title="Work in a copy (duplicate for me)" data-id="' + escHtml(p.id) + '">' +
           '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
           '</button>' +
-          '<button class="pact-icon del-act" title="Delete project" data-id="' + p.id + '">' +
+          '<button class="pact-icon del-act" title="Delete project" data-id="' + escHtml(p.id) + '">' +
           '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
           '</button>' +
           '</div>' +
           '</div>' +
 
-          '<h3 class="pcard-title" data-open="' + p.id + '">' + (p.title || clientStr) + '</h3>' +
+          '<h3 class="pcard-title" data-open="' + escHtml(p.id) + '">' + escHtml(p.title || clientStr) + '</h3>' +
 
           '<div class="pcard-meta-grid">' +
-          '<div class="pmeta-item"><span class="pm-lbl">Client:</span> <strong class="pm-val">' + clientStr + '</strong>' + (contactStr ? ' (' + contactStr + ')' : '') + '</div>' +
-          (locationStr ? '<div class="pmeta-item"><span class="pm-lbl">Location:</span> <span class="pm-val">' + locationStr + '</span></div>' : '') +
-          (bhStr ? '<div class="pmeta-item"><span class="pm-lbl">BH Name:</span> <span class="pm-val">' + bhStr + '</span></div>' : '') +
+          '<div class="pmeta-item"><span class="pm-lbl">Client:</span> <strong class="pm-val">' + escHtml(clientStr) + '</strong>' + (contactStr ? ' (' + escHtml(contactStr) + ')' : '') + '</div>' +
+          (locationStr ? '<div class="pmeta-item"><span class="pm-lbl">Location:</span> <span class="pm-val">' + escHtml(locationStr) + '</span></div>' : '') +
+          (bhStr ? '<div class="pmeta-item"><span class="pm-lbl">BH Name:</span> <span class="pm-val">' + escHtml(bhStr) + '</span></div>' : '') +
           '</div>' +
 
           '<div class="pcard-foot">' +
           '<div class="pcard-owner">' +
-          '<span class="powner-avatar">' + ownerInitials + '</span>' +
+          '<span class="powner-avatar">' + escHtml(ownerInitials) + '</span>' +
           '<div class="powner-details">' +
-          '<span class="powner-name">' + (isOwner ? 'You' : ownerName) + '</span>' +
-          '<span class="powner-date">' + dateStr + '</span>' +
+          '<span class="powner-name">' + (isOwner ? 'You' : escHtml(ownerName)) + '</span>' +
+          '<span class="powner-date">' + escHtml(dateStr) + '</span>' +
           '</div>' +
           '</div>' +
           '<div class="pcard-btns">' +
@@ -2280,11 +2308,15 @@
           var name = document.getElementById('newEmpName').value.trim();
           var username = document.getElementById('newEmpUsername').value.trim();
           var email = document.getElementById('newEmpEmail').value.trim();
-          var password = document.getElementById('newEmpPassword').value.trim() || 'studio@2026';
+          var password = document.getElementById('newEmpPassword').value;
           var title = document.getElementById('newEmpTitle').value.trim() || 'Modular Designer';
           var role = document.getElementById('newEmpRole').value || 'employee';
 
           if (!name || !email) return;
+          if (!password || password.length < 6) {
+            alert('Please enter a password of at least 6 characters.');
+            return;
+          }
 
           var initials = name.split(' ').map(function (n) { return n[0]; }).join('').toUpperCase().substring(0, 2) || 'EM';
 
@@ -2346,7 +2378,7 @@
               console.error('Backend employee creation failed:', err);
               var errorMsg = err.message || 'Server error';
               if (errorMsg.includes('401') || errorMsg.includes('Unauthorized') || errorMsg.includes('session required')) {
-                errorMsg = 'Session expired or not signed in. Please sign in as Admin (admin / admin123).';
+                errorMsg = 'Session expired or not signed in. Please sign in as Admin.';
               } else if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
                 errorMsg = 'Administrator privileges required to add employees.';
               }
@@ -2402,9 +2434,9 @@
             submitBtn.textContent = 'Signing In...';
           }
 
-          function completeLogin(user) {
+          function completeLogin(user, sessionExpiresAt) {
             authPageForm.reset();
-            self.setCurrentUser(user);
+            self.setCurrentUser(user, sessionExpiresAt);
             var authEl = document.getElementById('authScreen');
             if (authEl) authEl.style.display = 'none';
             var appEl = document.getElementById('app');
@@ -2415,33 +2447,9 @@
             if (root.OrbixRouter) {
               root.OrbixRouter.navigateTo('home', true);
             }
-            self.fetchProjects();
-          }
-
-          function tryOfflineLogin() {
-            var cleanId = identifier.trim().toLowerCase();
-            var allKnown = (self.users && self.users.length) ? self.users : [
-              { id: 'usr_admin', name: 'Cookscape Admin', username: 'admin', email: 'admin@cookscape.com', role: 'admin', designation: 'System Administrator', company: 'Cookscape', avatar: 'CA' },
-              { id: 'usr_sangathamizh', name: 'Sangathamizh', username: 'sangathamizh', email: 'designteam.cookscape@gmail.com', role: 'admin', designation: 'Business Head', company: 'Cookscape', avatar: 'S' },
-              { id: 'usr_elakkiya', name: 'Elakkiya', username: 'elakkiya', email: 'elakkiya.sakthivelu3089@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'E' },
-              { id: 'usr_aravind', name: 'Aravind', username: 'aravind', email: 'webapp.cookscape@gmail.com', role: 'employee', designation: 'Floor Architect / FA', company: 'Cookscape', avatar: 'A' }
-            ];
-            var matched = allKnown.find(function (u) {
-              return (u.email && u.email.toLowerCase() === cleanId) ||
-                (u.username && u.username.toLowerCase() === cleanId) ||
-                (u.name && u.name.toLowerCase() === cleanId) ||
-                (cleanId === 'admin' && u.id === 'usr_admin') ||
-                (cleanId === 'st' && u.id === 'usr_sangathamizh');
+            self.fetchUsers(function () {
+              self.applyRolePermissions();
             });
-            if (!matched && (cleanId === 'admin' || cleanId === 'admin@cookscape.com')) {
-              matched = allKnown[0];
-            }
-            var isPassValid = (password === 'admin123' || password === 'studio@2026' || (matched && matched.password && matched.password === password));
-            if (matched && isPassValid) {
-              completeLogin(matched);
-              return true;
-            }
-            return false;
           }
 
           OrbixProjects.apiFetch('/api/login', {
@@ -2449,33 +2457,30 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ identifier: identifier, password: password })
           })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
+            .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+            .then(function (res) {
               if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign In to Workspace';
               }
+              var data = res.data || {};
               if (data.success && data.user) {
-                completeLogin(data.user);
+                completeLogin(data.user, data.sessionExpiresAt);
               } else {
-                if (!tryOfflineLogin()) {
-                  if (errAlert) {
-                    errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
-                    errAlert.style.display = 'block';
-                  }
+                if (errAlert) {
+                  errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
+                  errAlert.style.display = 'block';
                 }
               }
             })
-            .catch(function (err) {
+            .catch(function () {
               if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign In to Workspace';
               }
-              if (!tryOfflineLogin()) {
-                if (errAlert) {
-                  errAlert.textContent = 'Invalid credentials or connection error.';
-                  errAlert.style.display = 'block';
-                }
+              if (errAlert) {
+                errAlert.textContent = 'Unable to reach authentication server. Please verify connection and try again.';
+                errAlert.style.display = 'block';
               }
             });
         });
@@ -2484,8 +2489,9 @@
       var closeAuthBtn = document.getElementById('closeAuthScreenBtn');
       if (closeAuthBtn) {
         closeAuthBtn.addEventListener('click', function () {
-          var authEl = document.getElementById('authScreen');
-          if (authEl) authEl.style.display = 'none';
+          if (self.currentUser && self.isLocalSessionValid()) {
+            self.showApp();
+          }
         });
       }
 
@@ -2824,22 +2830,22 @@
           if (isCurrent) {
             actionsHtml += '<span class="current-tag">Current</span>';
           }
-          actionsHtml += '<button class="btn small edit-user-btn" data-uid="' + u.id + '" type="button" title="Edit account">Edit</button>';
+          actionsHtml += '<button class="btn small edit-user-btn" data-uid="' + escHtml(u.id) + '" type="button" title="Edit account">Edit</button>';
           if (!isPrimaryAdmin && (!self.currentUser || u.id !== self.currentUser.id)) {
-            actionsHtml += '<button class="btn small danger del-user-btn" data-uid="' + u.id + '" data-uname="' + (u.name || u.username || 'User') + '" type="button" title="Delete account">Delete</button>';
+            actionsHtml += '<button class="btn small danger del-user-btn" data-uid="' + escHtml(u.id) + '" data-uname="' + escHtml(u.name || u.username || 'User') + '" type="button" title="Delete account">Delete</button>';
           }
           actionsHtml += '</div>';
 
           var userMeta = '';
-          if (u.username) userMeta += '@' + u.username + ' • ';
-          userMeta += (u.email || '') + ' • ' + (u.designation || (uIsAdmin ? 'Admin' : 'Employee'));
+          if (u.username) userMeta += '@' + escHtml(u.username) + ' • ';
+          userMeta += escHtml(u.email || '') + ' • ' + escHtml(u.designation || (uIsAdmin ? 'Admin' : 'Employee'));
 
-          html += '<div class="u-switch-item' + (isCurrent ? ' is-current' : '') + '" data-uid="' + u.id + '">' +
+          html += '<div class="u-switch-item' + (isCurrent ? ' is-current' : '') + '" data-uid="' + escHtml(u.id) + '">' +
             '<div class="u-info">' +
-            '<span class="u-avatar ' + (uIsAdmin ? 'is-admin-avatar' : '') + '">' + (u.avatar || 'US') + '</span>' +
+            '<span class="u-avatar ' + (uIsAdmin ? 'is-admin-avatar' : '') + '">' + escHtml(u.avatar || 'US') + '</span>' +
             '<div>' +
             '<div style="display:flex;align-items:center;gap:6px;">' +
-            '<strong>' + u.name + (isCurrent ? ' (Active)' : '') + '</strong>' +
+            '<strong>' + escHtml(u.name) + (isCurrent ? ' (Active)' : '') + '</strong>' +
             roleBadgeHtml +
             '</div>' +
             '<span>' + userMeta + '</span>' +

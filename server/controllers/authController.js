@@ -5,6 +5,8 @@
 const userService = require('../services/userService');
 const { getDatabaseStatus } = require('../config/prisma');
 
+const SESSION_DURATION_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
 class AuthController {
   // GET /api/status
   getStatus(req, res) {
@@ -17,10 +19,21 @@ class AuthController {
 
   // GET /api/me
   getCurrentUser(req, res) {
-    if (!req.user) {
+    if (!req.user || !req.session || !req.session.userId) {
       return res.status(401).json({ success: false, error: 'Not authenticated' });
     }
-    res.json({ success: true, user: req.user });
+    if (req.session.loginExpiresAt && Date.now() > Number(req.session.loginExpiresAt)) {
+      if (typeof req.session.destroy === 'function') {
+        req.session.destroy(() => {});
+      }
+      res.clearCookie('orbix.sid', { path: '/' });
+      return res.status(401).json({ success: false, error: 'Session expired. Please sign in again.' });
+    }
+    res.json({
+      success: true,
+      user: req.user,
+      sessionExpiresAt: req.session.loginExpiresAt || (Date.now() + SESSION_DURATION_MS)
+    });
   }
 
   // POST /api/login
@@ -48,7 +61,15 @@ class AuthController {
           return res.status(500).json({ success: false, error: 'Session initialization error' });
         }
 
+        const now = Date.now();
+        const expiresAt = now + SESSION_DURATION_MS;
         req.session.userId = user.id;
+        req.session.loginAt = now;
+        req.session.loginExpiresAt = expiresAt;
+        if (req.session.cookie) {
+          req.session.cookie.maxAge = SESSION_DURATION_MS;
+          req.session.cookie.expires = new Date(expiresAt);
+        }
         req.session.save((saveErr) => {
           if (saveErr) {
             console.error('Session save error:', saveErr);
@@ -57,7 +78,9 @@ class AuthController {
           res.json({
             success: true,
             user,
-            message: 'Signed in successfully'
+            sessionExpiresAt: expiresAt,
+            sessionDays: 3,
+            message: 'Signed in successfully (session active for 3 days)'
           });
         });
       });
@@ -69,6 +92,10 @@ class AuthController {
 
   // POST /api/logout
   logout(req, res) {
+    if (!req.session || typeof req.session.destroy !== 'function') {
+      res.clearCookie('orbix.sid', { path: '/' });
+      return res.json({ success: true, message: 'Logged out successfully' });
+    }
     req.session.destroy((err) => {
       if (err) {
         console.error('Logout error:', err);

@@ -87,8 +87,11 @@ class UserService {
     const email = (userData.email || `${id}@orbixstudio.io`).trim().toLowerCase();
     const username = (userData.username || name.toLowerCase().replace(/[^a-z0-9]/g, '') || id).trim();
 
-    // Hash password with bcrypt
-    const rawPassword = userData.password || '123456';
+    // Require explicit password (minimum 6 chars) — never fall back to weak defaults
+    const rawPassword = typeof userData.password === 'string' ? userData.password : '';
+    if (rawPassword.length < 6) {
+      throw new Error('Password must be at least 6 characters long');
+    }
     const hashedPassword = bcrypt.hashSync(rawPassword, 10);
 
     const role = (userData.role === 'admin') ? 'admin' : 'employee';

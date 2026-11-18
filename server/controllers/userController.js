@@ -9,7 +9,18 @@ class UserController {
   async getAll(req, res) {
     try {
       const users = await userService.getAllUsers();
-      res.json({ success: true, users });
+      const isAdmin = req.user && req.user.role === 'admin';
+      const safeList = isAdmin
+        ? users
+        : users.map((u) => ({
+            id: u.id,
+            name: u.name,
+            role: u.role,
+            designation: u.designation,
+            company: u.company,
+            avatar: u.avatar
+          }));
+      res.json({ success: true, users: safeList });
     } catch (err) {
       console.error('getUsers error:', err);
       res.status(500).json({ success: false, error: err.message });

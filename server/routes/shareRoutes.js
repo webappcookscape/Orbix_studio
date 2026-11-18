@@ -5,10 +5,11 @@
 const express = require('express');
 const router = express.Router();
 const shareController = require('../controllers/shareController');
+const { requireAuth } = require('../middlewares/authMiddleware');
 
-// Resolving share token can be accessed publicly or with auth
+// Reading a shared preview link can be accessed with the opaque share token; creating a workspace copy requires login
 router.get('/:token', shareController.getShare);
-router.post('/:token/copy', shareController.copyShare);
+router.post('/:token/copy', requireAuth, shareController.copyShare);
 
 module.exports = router;
 

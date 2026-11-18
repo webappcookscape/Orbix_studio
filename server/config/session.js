@@ -17,6 +17,14 @@ try {
 const { Pool } = require('pg');
 
 const DISK_CACHE_PATH = path.join(__dirname, '..', '..', '.sessions_cache.json');
+const THREE_DAYS_SECONDS = 3 * 24 * 60 * 60;
+
+function isSessionActive(sess, nowMs) {
+  if (!sess || typeof sess !== 'object') return false;
+  if (sess.loginExpiresAt && Number(sess.loginExpiresAt) <= nowMs) return false;
+  if (sess.cookie && sess.cookie.expires && new Date(sess.cookie.expires).getTime() <= nowMs) return false;
+  return true;
+}
 
 const BaseStore = (session && session.Store) ? session.Store : class MockStore {};
 
@@ -44,8 +52,7 @@ class ResilientSessionStore extends BaseStore {
           const now = Date.now();
           for (const sid of Object.keys(data)) {
             const sess = data[sid];
-            // Only load non-expired sessions
-            if (sess && (!sess.cookie || !sess.cookie.expires || new Date(sess.cookie.expires).getTime() > now)) {
+            if (isSessionActive(sess, now)) {
               this.memorySessions.set(sid, sess);
             }
           }
@@ -62,7 +69,7 @@ class ResilientSessionStore extends BaseStore {
       const obj = {};
       const now = Date.now();
       for (const [sid, sess] of this.memorySessions.entries()) {
-        if (sess && (!sess.cookie || !sess.cookie.expires || new Date(sess.cookie.expires).getTime() > now)) {
+        if (isSessionActive(sess, now)) {
           obj[sid] = sess;
         }
       }
@@ -101,6 +108,7 @@ class ResilientSessionStore extends BaseStore {
             this.pgStore = new pgSession({
               pool,
               tableName: 'session',
+              ttl: THREE_DAYS_SECONDS,
               createTableIfMissing: true
             });
             this.pgStore.on('error', () => {});
@@ -119,14 +127,23 @@ class ResilientSessionStore extends BaseStore {
 
   get(sid, fn) {
     if (this.memorySessions.has(sid)) {
-      return fn(null, this.memorySessions.get(sid));
+      const cached = this.memorySessions.get(sid);
+      if (isSessionActive(cached, Date.now())) {
+        return fn(null, cached);
+      }
+      this.memorySessions.delete(sid);
+      this.saveDiskCache();
     }
     if (this.pgStore) {
       this.pgStore.get(sid, (err, sess) => {
-        if (!err && sess) {
+        if (!err && sess && isSessionActive(sess, Date.now())) {
           this.memorySessions.set(sid, sess);
           this.saveDiskCache();
           return fn(null, sess);
+        }
+        if (sess && !isSessionActive(sess, Date.now())) {
+          this.destroy(sid, () => fn(null, null));
+          return;
         }
         fn(null, null);
       });

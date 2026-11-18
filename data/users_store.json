@@ -4,13 +4,13 @@
     "name": "Cookscape Admin",
     "username": "admin",
     "email": "admin@cookscape.com",
-    "password": "password123",
+    "password": "$2b$10$01TepVhc.ePd2JLaPCp5.uDwMBzUmiF1fpIEOuOZlrAsfM4CEc3uq",
     "role": "admin",
     "designation": "System Administrator",
     "company": "Cookscape",
     "avatar": "CA",
     "createdAt": "2026-11-05T19:33:54.494Z",
-    "updatedAt": "2026-11-05T19:33:54.494Z"
+    "updatedAt": "2026-11-18T05:10:21.311Z"
   },
   {
     "id": "usr_sangathamizh",

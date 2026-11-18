@@ -73,11 +73,14 @@ class ShareService {
       throw new Error('Shared project link is invalid or has expired');
     }
 
+    const safeProj = { ...share.project };
+    delete safeProj.ownerEmail;
+
     return {
       shareToken: share.shareToken,
       permission: share.permission,
       sharedAt: share.createdAt,
-      project: share.project
+      project: safeProj
     };
   }
 

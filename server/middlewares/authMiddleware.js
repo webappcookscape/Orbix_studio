@@ -4,19 +4,10 @@
 
 function requireAuth(req, res, next) {
   if (!req.user) {
-    if (req.body && req.body.currentUser) {
-      req.user = req.body.currentUser;
-      return next();
-    }
-    // Default fallback so local designers are never blocked
-    req.user = {
-      id: 'usr_admin',
-      name: 'Cookscape Admin',
-      email: 'admin@cookscape.com',
-      role: 'admin',
-      designation: 'System Head',
-      company: 'Cookscape'
-    };
+    return res.status(401).json({
+      success: false,
+      error: 'Authentication required. Please sign in.'
+    });
   }
   next();
 }

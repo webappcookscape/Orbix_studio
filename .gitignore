@@ -18,3 +18,5 @@ server/db/local_store.json
 *.bak*
 *.backup*
 .sessions_cache.json
+.session_secret
+data/
