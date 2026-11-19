@@ -5290,7 +5290,104 @@
       }
     } catch (e) { }
   }
+
+  function toggleStagebarCollapse(forceState) {
+    var viewDesign = document.getElementById("view-design");
+    if (!viewDesign) return;
+    var willCollapse;
+    if (typeof forceState === "boolean") {
+      willCollapse = forceState;
+    } else {
+      willCollapse = !viewDesign.classList.contains("stagebar-collapsed");
+    }
+    viewDesign.classList.toggle("stagebar-collapsed", willCollapse);
+    try {
+      localStorage.setItem("orbix_stagebar_collapsed", willCollapse ? "true" : "false");
+    } catch (e) { }
+
+    window.dispatchEvent(new Event("resize"));
+    if (window.GL && typeof window.GL.resize === "function") {
+      window.GL.resize();
+    }
+    if (typeof softAll === "function") {
+      softAll();
+    }
+  }
+  window.toggleStagebarCollapse = toggleStagebarCollapse;
+
+  function initStagebarCollapseControls() {
+    var btnCollapse = document.getElementById("stagebarCollapseBtn");
+    if (btnCollapse && !btnCollapse._wired) {
+      btnCollapse._wired = true;
+      btnCollapse.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleStagebarCollapse(true);
+      });
+    }
+
+    var btnFloating = document.getElementById("stagebarFloatingExpandBtn");
+    if (btnFloating && !btnFloating._wired) {
+      btnFloating._wired = true;
+      btnFloating.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleStagebarCollapse(false);
+      });
+    }
+
+    // Keyboard shortcut: T or Ctrl+J to toggle 3D controls toolbar
+    if (!window._stagebarKeyHandlerAttached) {
+      window._stagebarKeyHandlerAttached = true;
+      window.addEventListener("keydown", function (e) {
+        var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+        if (tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+        if (e.key === "t" || e.key === "T" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j")) {
+          var viewDesign = document.getElementById("view-design");
+          if (viewDesign && viewDesign.classList.contains("is-on")) {
+            e.preventDefault();
+            toggleStagebarCollapse();
+          }
+        }
+      });
+    }
+
+    // Floor finish select synchronization with floorFinishGroup
+    var floorSelect = document.getElementById("floorFinishSelect");
+    var floorGroup = document.getElementById("floorFinishGroup");
+    if (floorSelect && floorGroup && !floorSelect._wired) {
+      floorSelect._wired = true;
+      floorSelect.addEventListener("change", function () {
+        var val = floorSelect.value;
+        var targetBtn = floorGroup.querySelector('button[data-floor="' + val + '"]');
+        if (targetBtn) {
+          targetBtn.click();
+        }
+      });
+
+      floorGroup.querySelectorAll('button[data-floor]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var val = btn.getAttribute('data-floor');
+          if (floorSelect.value !== val) {
+            floorSelect.value = val;
+          }
+        });
+      });
+    }
+
+    // Restore saved toolbar collapsed state
+    try {
+      var savedStagebarCol = localStorage.getItem("orbix_stagebar_collapsed");
+      if (savedStagebarCol === "true") {
+        var viewDesign = document.getElementById("view-design");
+        if (viewDesign) {
+          viewDesign.classList.add("stagebar-collapsed");
+        }
+      }
+    } catch (e) { }
+  }
+  window.initStagebarCollapseControls = initStagebarCollapseControls;
+
   setTimeout(initRailCollapseControls, 60);
+  setTimeout(initStagebarCollapseControls, 60);
 
   function renderRail() {
     var uw = $("#units"); uw.innerHTML = "";
@@ -5299,6 +5396,7 @@
     if (savedCol === "true") uw.classList.add("is-collapsed");
 
     initRailCollapseControls();
+    initStagebarCollapseControls();
 
     S.units.forEach(function (u, i) {
       var c = el("uchip" + (i === S.active ? " is-on" : ""), uw, "button");

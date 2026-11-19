@@ -289,6 +289,11 @@
                 </div>
             </div>
           </div>
+          <button type="button" class="stagebar-floating-expand-btn" id="stagebarFloatingExpandBtn"
+            title="Show 3D Studio Controls &amp; Finishes (Shortcut: T)">
+            <span>⚙️ 3D Controls &amp; Finishes</span>
+            <span style="font-size:12px;line-height:1;">▴</span>
+          </button>
           <div class="stagebar">
             <!-- Row 1: Camera Orbit/Pan, Perspective Views, and 8K Render Menu -->
             <div class="stagebar-row camera-row">
@@ -415,6 +420,12 @@
                     </button>
                   </div>
                 </div>
+
+                <button type="button" class="minibtn stagebar-collapse-btn" id="stagebarCollapseBtn"
+                  title="Collapse Controls for Full 3D View [Shortcut: T]"
+                  style="background:#f1f5f9;color:#334155;border-color:#cbd5e1;font-weight:700;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;cursor:pointer;">
+                  <span>⇊ Full View</span>
+                </button>
               </div>
             </div>
 
@@ -436,6 +447,16 @@
                   <option value="hidden">🚫 All Walls Hidden</option>
                 </select>
                 <!-- 3D Floor Finish Switcher -->
+                <select class="minibtn" id="floorFinishSelect" title="Choose 3D Floor Finish"
+                  style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                  <option value="white_tile" selected>◻ White Tile</option>
+                  <option value="square_tile">▦ Square Tile</option>
+                  <option value="grey_tile">▩ Grey Tile</option>
+                  <option value="wooden">🪵 Wooden</option>
+                  <option value="tile_1">🏛️ Tile 1</option>
+                  <option value="tile_2">✨ Tile 2</option>
+                  <option value="tile_3">🪵 Tile 3</option>
+                </select>
                 <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
                   <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White
                     Tile</button>

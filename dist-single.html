@@ -294,51 +294,100 @@ input,select{font:inherit;color:inherit}
 .hbtn.is-on .hlb{color:var(--blue)}
 
 /* stage bar */
+/* stage bar */
 .stagebar{
   flex:0 0 auto;
   display:flex;
   flex-direction:column;
-  gap:6px;
-  padding:6px 14px;
+  gap:4px;
+  padding:4px 10px;
   background:var(--panel);
   border-top:1px solid var(--rule);
   min-width:0;
-  overflow-x:auto;
-  overflow-y:hidden;
+  width:100%;
+  box-sizing:border-box;
+  overflow-x:hidden !important; /* Non-scrollable: all options fit on single screen */
+  overflow-y:visible !important;
   position:relative;
   z-index:50;
+  transition:max-height 0.28s ease, opacity 0.2s ease, padding 0.28s ease;
 }
-.stagebar::-webkit-scrollbar{height:4px}
-.stagebar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.2);border-radius:4px}
+#view-design.stagebar-collapsed .stagebar{
+  max-height:0 !important;
+  padding:0 10px !important;
+  border-top:none !important;
+  overflow:hidden !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+#view-design.stagebar-collapsed #stage{
+  flex:1 1 100% !important;
+  height:100% !important;
+}
+.stagebar-floating-expand-btn{
+  display:none;
+  position:absolute;
+  bottom:12px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:60;
+  background:rgba(15,23,42,0.92);
+  color:#ffffff;
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:20px;
+  padding:5px 14px;
+  font-family:var(--cond);
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,0.35);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  align-items:center;
+  gap:6px;
+  transition:all 0.2s ease;
+}
+.stagebar-floating-expand-btn:hover{
+  background:#1e293b;
+  border-color:#38bdf8;
+  transform:translateX(-50%) translateY(-2px);
+  box-shadow:0 6px 20px rgba(0,0,0,0.45);
+}
+#view-design.stagebar-collapsed .stagebar-floating-expand-btn{
+  display:inline-flex !important;
+}
 .stagebar-row{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:8px 12px;
-  flex-wrap:wrap;
+  gap:4px 8px;
+  flex-wrap:nowrap;
   min-width:0;
   width:100%;
+  box-sizing:border-box;
   position:relative;
 }
 .stagebar-row.finishes-row{
   border-top:1px solid rgba(0,0,0,0.06);
-  padding-top:4px;
+  padding-top:3px;
 }
-.legend{display:flex;gap:18px;flex-wrap:nowrap;flex-shrink:0;min-width:0}
-.lg{display:flex;align-items:center;gap:8px;min-width:0}
+.legend{display:flex;gap:10px;flex-wrap:nowrap;flex-shrink:0;min-width:0;align-items:center}
+.lg{display:flex;align-items:center;gap:5px;min-width:0}
 .lg-sw{
-  width:30px;height:30px;flex:0 0 auto;border:1px solid rgba(0,0,0,.25);
-  background-size:cover;background-position:center;
+  width:22px;height:22px;flex:0 0 auto;border:1px solid rgba(0,0,0,.25);
+  background-size:cover;background-position:center;border-radius:3px;
 }
 .lg-t{display:flex;flex-direction:column;min-width:0}
-.lg-role{font-family:var(--cond);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
-.lg-code{font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg-role{font-family:var(--cond);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);line-height:1}
+.lg-code{font-family:var(--mono);font-size:10.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;line-height:1.2}
 .viewbtns{
   margin-left:auto;
   display:flex;
   align-items:center;
-  gap:6px;
-  flex-wrap:wrap;
+  gap:4px;
+  flex-wrap:nowrap;
   flex-shrink:0;
   overflow:visible !important;
   position:relative;
@@ -346,23 +395,27 @@ input,select{font:inherit;color:inherit}
 .render-mode-group {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   background: #ffffff;
-  padding: 2px 6px;
-  border-radius: 6px;
+  padding: 1px 4px;
+  border-radius: 5px;
   border: 1px solid #cbd5e1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  font-size: 11.5px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-size: 10.5px;
   font-weight: 600;
   flex-shrink: 0;
 }
 .render-mode-group .render-mode-label {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #64748b;
-  margin-right: 2px;
+  margin-right: 1px;
+}
+.render-mode-group .minibtn {
+  padding: 2px 5px !important;
+  font-size: 10px !important;
 }
 .render-mode-group .minibtn.is-on {
   background: #2563eb !important;
@@ -378,9 +431,49 @@ input,select{font:inherit;color:inherit}
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.5) !important;
 }
 .minibtn{
-  font-family:var(--cond);font-size:11px;font-weight:600;letter-spacing:.05em;
-  text-transform:uppercase;padding:6px 11px;border:1px solid var(--rule);
-  color:var(--ink-2);background:var(--panel);white-space:nowrap;
+  font-family:var(--cond);font-size:10.5px;font-weight:600;letter-spacing:.03em;
+  text-transform:uppercase;padding:4px 7px;border:1px solid var(--rule);
+  color:var(--ink-2);background:var(--panel);white-space:nowrap;border-radius:4px;line-height:1.2;
+}
+.stagebar .lighting-controls-group {
+  padding: 1px 5px !important;
+  gap: 3px !important;
+  font-size: 10.5px !important;
+}
+.stagebar .lighting-controls-group input[type="range"] {
+  width: 36px !important;
+}
+.stagebar .tod-controls-group {
+  padding: 1px 3px !important;
+  gap: 2px !important;
+}
+.stagebar .tod-controls-group .minibtn {
+  padding: 2px 5px !important;
+  font-size: 10px !important;
+}
+.stagebar #photoRenderBtn {
+  padding: 3px 8px !important;
+  font-size: 10.5px !important;
+}
+.stagebar select.minibtn {
+  padding: 2px 6px !important;
+  font-size: 10.5px !important;
+}
+@media (max-width: 1540px) {
+  .floor-finish-group {
+    display: none !important;
+  }
+  #floorFinishSelect {
+    display: inline-block !important;
+  }
+}
+@media (min-width: 1541px) {
+  #floorFinishSelect {
+    display: none !important;
+  }
+  .floor-finish-group {
+    display: inline-flex !important;
+  }
 }
 .minibtn:hover{color:var(--ink);border-color:var(--ink-3)}
 .minibtn[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -4059,6 +4152,11 @@ body.role-employee #adminCreateEmpBox,
                 </div>
             </div>
           </div>
+          <button type="button" class="stagebar-floating-expand-btn" id="stagebarFloatingExpandBtn"
+            title="Show 3D Studio Controls &amp; Finishes (Shortcut: T)">
+            <span>⚙️ 3D Controls &amp; Finishes</span>
+            <span style="font-size:12px;line-height:1;">▴</span>
+          </button>
           <div class="stagebar">
             <!-- Row 1: Camera Orbit/Pan, Perspective Views, and 8K Render Menu -->
             <div class="stagebar-row camera-row">
@@ -4185,6 +4283,12 @@ body.role-employee #adminCreateEmpBox,
                     </button>
                   </div>
                 </div>
+
+                <button type="button" class="minibtn stagebar-collapse-btn" id="stagebarCollapseBtn"
+                  title="Collapse Controls for Full 3D View [Shortcut: T]"
+                  style="background:#f1f5f9;color:#334155;border-color:#cbd5e1;font-weight:700;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;cursor:pointer;">
+                  <span>⇊ Full View</span>
+                </button>
               </div>
             </div>
 
@@ -4206,6 +4310,16 @@ body.role-employee #adminCreateEmpBox,
                   <option value="hidden">🚫 All Walls Hidden</option>
                 </select>
                 <!-- 3D Floor Finish Switcher -->
+                <select class="minibtn" id="floorFinishSelect" title="Choose 3D Floor Finish"
+                  style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                  <option value="white_tile" selected>◻ White Tile</option>
+                  <option value="square_tile">▦ Square Tile</option>
+                  <option value="grey_tile">▩ Grey Tile</option>
+                  <option value="wooden">🪵 Wooden</option>
+                  <option value="tile_1">🏛️ Tile 1</option>
+                  <option value="tile_2">✨ Tile 2</option>
+                  <option value="tile_3">🪵 Tile 3</option>
+                </select>
                 <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
                   <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White
                     Tile</button>
@@ -48498,7 +48612,104 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       }
     } catch (e) { }
   }
+
+  function toggleStagebarCollapse(forceState) {
+    var viewDesign = document.getElementById("view-design");
+    if (!viewDesign) return;
+    var willCollapse;
+    if (typeof forceState === "boolean") {
+      willCollapse = forceState;
+    } else {
+      willCollapse = !viewDesign.classList.contains("stagebar-collapsed");
+    }
+    viewDesign.classList.toggle("stagebar-collapsed", willCollapse);
+    try {
+      localStorage.setItem("orbix_stagebar_collapsed", willCollapse ? "true" : "false");
+    } catch (e) { }
+
+    window.dispatchEvent(new Event("resize"));
+    if (window.GL && typeof window.GL.resize === "function") {
+      window.GL.resize();
+    }
+    if (typeof softAll === "function") {
+      softAll();
+    }
+  }
+  window.toggleStagebarCollapse = toggleStagebarCollapse;
+
+  function initStagebarCollapseControls() {
+    var btnCollapse = document.getElementById("stagebarCollapseBtn");
+    if (btnCollapse && !btnCollapse._wired) {
+      btnCollapse._wired = true;
+      btnCollapse.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleStagebarCollapse(true);
+      });
+    }
+
+    var btnFloating = document.getElementById("stagebarFloatingExpandBtn");
+    if (btnFloating && !btnFloating._wired) {
+      btnFloating._wired = true;
+      btnFloating.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleStagebarCollapse(false);
+      });
+    }
+
+    // Keyboard shortcut: T or Ctrl+J to toggle 3D controls toolbar
+    if (!window._stagebarKeyHandlerAttached) {
+      window._stagebarKeyHandlerAttached = true;
+      window.addEventListener("keydown", function (e) {
+        var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+        if (tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+        if (e.key === "t" || e.key === "T" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j")) {
+          var viewDesign = document.getElementById("view-design");
+          if (viewDesign && viewDesign.classList.contains("is-on")) {
+            e.preventDefault();
+            toggleStagebarCollapse();
+          }
+        }
+      });
+    }
+
+    // Floor finish select synchronization with floorFinishGroup
+    var floorSelect = document.getElementById("floorFinishSelect");
+    var floorGroup = document.getElementById("floorFinishGroup");
+    if (floorSelect && floorGroup && !floorSelect._wired) {
+      floorSelect._wired = true;
+      floorSelect.addEventListener("change", function () {
+        var val = floorSelect.value;
+        var targetBtn = floorGroup.querySelector('button[data-floor="' + val + '"]');
+        if (targetBtn) {
+          targetBtn.click();
+        }
+      });
+
+      floorGroup.querySelectorAll('button[data-floor]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var val = btn.getAttribute('data-floor');
+          if (floorSelect.value !== val) {
+            floorSelect.value = val;
+          }
+        });
+      });
+    }
+
+    // Restore saved toolbar collapsed state
+    try {
+      var savedStagebarCol = localStorage.getItem("orbix_stagebar_collapsed");
+      if (savedStagebarCol === "true") {
+        var viewDesign = document.getElementById("view-design");
+        if (viewDesign) {
+          viewDesign.classList.add("stagebar-collapsed");
+        }
+      }
+    } catch (e) { }
+  }
+  window.initStagebarCollapseControls = initStagebarCollapseControls;
+
   setTimeout(initRailCollapseControls, 60);
+  setTimeout(initStagebarCollapseControls, 60);
 
   function renderRail() {
     var uw = $("#units"); uw.innerHTML = "";
@@ -48507,6 +48718,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     if (savedCol === "true") uw.classList.add("is-collapsed");
 
     initRailCollapseControls();
+    initStagebarCollapseControls();
 
     S.units.forEach(function (u, i) {
       var c = el("uchip" + (i === S.active ? " is-on" : ""), uw, "button");
