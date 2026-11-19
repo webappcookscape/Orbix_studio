@@ -1604,6 +1604,19 @@
       if (self.dragState && self.dragState.type === 'move_underlay') {
         var dxS = mouseScreen.x - self.dragState.startScreen.x;
         var dyS = mouseScreen.y - self.dragState.startScreen.y;
+        var isFree = !!(e.shiftKey || e.ctrlKey);
+        var axis = 'FREE';
+        if (!isFree) {
+          // Strictly lock to straight horizontal (X) or vertical (Y) axis
+          if (Math.abs(dxS) >= Math.abs(dyS)) {
+            dyS = 0;
+            axis = 'X';
+          } else {
+            dxS = 0;
+            axis = 'Y';
+          }
+        }
+        self.dragState.axis = axis;
         self.underlay.x = self.dragState.origUnderlayPos.x + dxS / self.zoom;
         self.underlay.y = self.dragState.origUnderlayPos.y + dyS / self.zoom;
         self.requestRender();
@@ -1895,26 +1908,64 @@
           }
         }
         // Comprehensive overlap check against adjacent furniture, wall cores, and openings
-        var colCheck = Core.checkPlacementOverlap ?
-          Core.checkPlacementOverlap(self.dragState.furniture, self.project.plan, self.dragState.furniture.id) :
-          Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
+        var isDecorDrag = !!(
+          self.dragState.furniture.isDecor ||
+          self.dragState.furniture.excludeFromPricing ||
+          self.dragState.furniture.category === 'decor' ||
+          self.dragState.furniture.category === 'appliance_decor' ||
+          self.dragState.furniture.decorType
+        );
 
-        if (snapRes.type === 'unit_joint' || (snapRes.type === 'wall_snap' && colCheck.type === 'wall')) {
+        if (isDecorDrag) {
+          // Detect if placed or moved over another modular unit (countertop, table, shelf, ledge)
+          var underUnit = null;
+          var maxTopZ = 0;
+          var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
+          for (var fu = 0; fu < furnList.length; fu++) {
+            var oU = furnList[fu];
+            if (oU.id === self.dragState.furniture.id || oU.isDecor || oU.category === 'decor' || oU.category === 'appliance_decor') continue;
+            var polyU = Core.getFurniturePolygon(oU);
+            if (Core.Vec2.pointInPolygon(self.dragState.furniture.pos, polyU)) {
+              var topZ = (oU.elevation !== undefined && oU.elevation !== null ? parseFloat(oU.elevation) : 0) +
+                         (oU.dimensions && oU.dimensions.H ? parseFloat(oU.dimensions.H) : 850);
+              if (topZ >= maxTopZ) {
+                maxTopZ = topZ;
+                underUnit = oU;
+              }
+            }
+          }
+          if (underUnit && maxTopZ > 0) {
+            self.dragState.furniture.elevation = maxTopZ;
+            self.dragState.furniture.pos.z = maxTopZ;
+            self.dragState.snapInfo = {
+              type: 'decor_on_unit',
+              badgeLabel: '✓ Placed on ' + (underUnit.name || 'Unit') + ' (▲ ' + Math.round(maxTopZ) + ' mm)'
+            };
+          }
           self.dragState.hasCollision = false;
           self.dragState.collidedWith = null;
         } else {
-          var isCollidedRcc = colCheck.other && (
-            colCheck.other.category === 'structural' || colCheck.other.category === 'civil' ||
-            colCheck.other.category === 'wall_paneling' ||
-            /rcc|column|pillar|post|structural/i.test(colCheck.other.name || '') ||
-            /rcc|column|pillar|post|structural/i.test(colCheck.other.id || '')
-          );
-          if (isCollidedRcc) {
+          var colCheck = Core.checkPlacementOverlap ?
+            Core.checkPlacementOverlap(self.dragState.furniture, self.project.plan, self.dragState.furniture.id) :
+            Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
+
+          if (snapRes.type === 'unit_joint' || (snapRes.type === 'wall_snap' && colCheck.type === 'wall')) {
             self.dragState.hasCollision = false;
             self.dragState.collidedWith = null;
           } else {
-            self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
-            self.dragState.collidedWith = colCheck.target || colCheck.other;
+            var isCollidedRcc = colCheck.other && (
+              colCheck.other.category === 'structural' || colCheck.other.category === 'civil' ||
+              colCheck.other.category === 'wall_paneling' ||
+              /rcc|column|pillar|post|structural/i.test(colCheck.other.name || '') ||
+              /rcc|column|pillar|post|structural/i.test(colCheck.other.id || '')
+            );
+            if (isCollidedRcc) {
+              self.dragState.hasCollision = false;
+              self.dragState.collidedWith = null;
+            } else {
+              self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
+              self.dragState.collidedWith = colCheck.target || colCheck.other;
+            }
           }
         }
         self.requestRender();
@@ -3825,6 +3876,14 @@
       }
     }
 
+    var isDecorPreset = !!(
+      this.furniturePreset.isDecor ||
+      this.furniturePreset.excludeFromPricing ||
+      this.furniturePreset.category === 'decor' ||
+      this.furniturePreset.category === 'appliance_decor' ||
+      this.furniturePreset.decorType
+    );
+
     var isWall = (Core.isWallUnit) ?
       Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name, this.furniturePreset.code || this.furniturePreset.catalogItemId, this.furniturePreset.costCategory) :
       false;
@@ -3846,13 +3905,36 @@
     var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '') ?
       parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
+    // If placing decor, auto-detect if cursor is over an underlying modular unit (countertop, table, shelf, ledge)
+    if (isDecorPreset) {
+      var underUnit = null;
+      var maxTopZ = 0;
+      var allFurn = (this.project && this.project.plan && this.project.plan.furniture) || [];
+      for (var fu = 0; fu < allFurn.length; fu++) {
+        var oU = allFurn[fu];
+        if (oU.isDecor || oU.category === 'decor' || oU.category === 'appliance_decor') continue;
+        var polyU = Core.getFurniturePolygon(oU);
+        if (Core.Vec2.pointInPolygon(finalPos, polyU)) {
+          var topZ = (oU.elevation !== undefined && oU.elevation !== null ? parseFloat(oU.elevation) : 0) +
+                     (oU.dimensions && oU.dimensions.H ? parseFloat(oU.dimensions.H) : 850);
+          if (topZ >= maxTopZ) {
+            maxTopZ = topZ;
+            underUnit = oU;
+          }
+        }
+      }
+      if (underUnit && maxTopZ > 0) {
+        presetElev = maxTopZ;
+      }
+    }
+
     var furnId = (Core.uid ? Core.uid('furn') : ('furn_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5)));
     var furn = Core.createFurniturePlacement({
       id: furnId,
       catalogItemId: this.furniturePreset.catalogItemId || this.furniturePreset.id || this.furniturePreset.code,
       modelType: this.furniturePreset.modelType,
       name: this.furniturePreset.name,
-      category: this.furniturePreset.category,
+      category: this.furniturePreset.category || (isDecorPreset ? 'decor' : 'wardrobe'),
       code: this.furniturePreset.code,
       costCategory: this.furniturePreset.costCategory,
       roomId: matchedRoomId,
@@ -3860,7 +3942,14 @@
       pos: { x: finalPos.x, y: finalPos.y, z: presetElev },
       rotY: finalRotY,
       dimensions: Object.assign({}, this.furniturePreset.dimensions),
-      unitConfig: Object.assign({}, this.furniturePreset.unitConfig || {})
+      unitConfig: Object.assign({}, this.furniturePreset.unitConfig || {}),
+      isDecor: isDecorPreset,
+      excludeFromPricing: isDecorPreset,
+      decorType: this.furniturePreset.decorType || null,
+      modelUrl: this.furniturePreset.modelUrl || null,
+      thumbnailUrl: this.furniturePreset.thumbnailUrl || null,
+      modelFormat: this.furniturePreset.modelFormat || null,
+      slug: this.furniturePreset.slug || null
     });
 
     this.project.plan.furniture.push(furn);
@@ -4387,8 +4476,39 @@
         ctx.fillRect(c.x - 5, c.y - 5, 10, 10);
       });
 
-      // Top notification badge
-      var badgeText = '✋ Move Blueprint Active: Drag anywhere to align blueprint under walls (Press Esc to finish)';
+      // Top notification badge with live Straight Axis HUD indicator
+      var badgeText = '✋ Straight Move Active: Dragging blueprint straight horizontal / vertical (Esc to finish)';
+      if (this.dragState && this.dragState.type === 'move_underlay' && this.dragState.axis) {
+        if (this.dragState.axis === 'X') {
+          badgeText = '✋ Straight Horizontal ⟷ (Holding X axis · Shift for Free · Esc to finish)';
+          // Draw subtle straight horizontal guideline
+          ctx.save();
+          ctx.strokeStyle = 'rgba(5, 150, 105, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 6]);
+          var cyMid = topLeft.y + hPx / 2;
+          ctx.beginPath();
+          ctx.moveTo(-10000, cyMid);
+          ctx.lineTo(10000, cyMid);
+          ctx.stroke();
+          ctx.restore();
+        } else if (this.dragState.axis === 'Y') {
+          badgeText = '✋ Straight Vertical ↕ (Holding Y axis · Shift for Free · Esc to finish)';
+          // Draw subtle straight vertical guideline
+          ctx.save();
+          ctx.strokeStyle = 'rgba(5, 150, 105, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 6]);
+          var cxMid = topLeft.x + wPx / 2;
+          ctx.beginPath();
+          ctx.moveTo(cxMid, -10000);
+          ctx.lineTo(cxMid, 10000);
+          ctx.stroke();
+          ctx.restore();
+        } else if (this.dragState.axis === 'FREE') {
+          badgeText = '✋ Free Move (Shift/Ctrl held · Esc to finish)';
+        }
+      }
       ctx.font = '700 12px "IBM Plex Sans", sans-serif';
       var tw = ctx.measureText(badgeText).width;
       var bx = topLeft.x + wPx / 2;
@@ -6685,6 +6805,17 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           ctx.fill();
           ctx.fillStyle = '#ffffff';
           ctx.fillText(wTxt, 0, -dPx / 2 - 14);
+        } else if (sInfo.type === 'decor_on_unit') {
+          var dTxt = sInfo.badgeLabel || '✓ Placed on Top of Unit';
+          ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
+          var dw = ctx.measureText(dTxt).width;
+          ctx.fillStyle = '#059669';
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(-dw / 2 - 8, -dPx / 2 - 24, dw + 16, 18, 5);
+          else ctx.rect(-dw / 2 - 8, -dPx / 2 - 24, dw + 16, 18);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(dTxt, 0, -dPx / 2 - 14);
         }
       }
 

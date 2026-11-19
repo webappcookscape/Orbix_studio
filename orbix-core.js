@@ -2908,6 +2908,17 @@
     }
     if (!data.plan) data.plan = { walls: [], openings: [], rooms: [], furniture: [], stairs: [] };
     if (!data.plan.stairs) data.plan.stairs = [];
+    if (!data.plan.floors || !Array.isArray(data.plan.floors) || data.plan.floors.length === 0) {
+      data.plan.floors = [
+        { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
+      ];
+    }
+    if (!data.plan.activeFloor) {
+      data.plan.activeFloor = data.plan.floors[0].id || 'ground';
+    }
+    if (!data.plan.floorsData) {
+      data.plan.floorsData = {};
+    }
     if (!data.rateCard) data.rateCard = JSON.parse(JSON.stringify(DEFAULT_RATE_CARD));
     if (!data.commercialCharges) data.commercialCharges = {};
     // Ensure all furniture items have guaranteed unique instance IDs (de-duplicate legacy projects)

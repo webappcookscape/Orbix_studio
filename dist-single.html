@@ -4078,6 +4078,15 @@ body.role-employee #adminCreateEmpBox,
                     Client Ultra</button>
                 </div>
 
+                <!-- 3D Building Storey Floor View Selector -->
+                <div style="display:inline-flex;align-items:center;gap:4px;">
+                  <select id="studioFloorSelect" title="3D Building Storey View: Stacked Building or Specific Floor"
+                    style="font-weight:700;color:#0f172a;background:#ffffff;border:1px solid #cbd5e1;border-radius:6px;padding:3px 8px;font-size:11.5px;cursor:pointer;">
+                    <option value="all" selected>🏛️ All Floors (Stacked)</option>
+                    <option value="ground">🏢 Ground Floor</option>
+                  </select>
+                </div>
+
                 <div
                   style="display:inline-flex;align-items:center;gap:3px;background:rgba(0,0,0,0.04);padding:2px 4px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);">
                   <button class="minibtn is-on" id="viewFocusUnitBtn"
@@ -5238,6 +5247,34 @@ body.role-employee #adminCreateEmpBox,
       </div>
     </div>
   </div>
+  </div>
+
+  <!-- ══════ MODAL: ADD NEW FLOOR / MULTI-LEVEL STOREY ══════ -->
+  <div class="orbix-modal" id="modalAddFloor" style="display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);">
+    <div class="modal-dialog" style="max-width:440px;width:92vw;background:#ffffff;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.24);overflow:hidden;border:1px solid #e2e8f0;">
+      <div class="modal-head" style="background:#f8fafc;border-bottom:1px solid #e2e8f0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+        <h3 style="margin:0;font-size:15px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:6px;">🏢 Add New Floor</h3>
+        <button type="button" id="closeAddFloorModalBtn" style="border:none;background:transparent;cursor:pointer;font-size:18px;color:#64748b;line-height:1;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:18px;">
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;">Floor Name</label>
+          <input type="text" id="addFloorNameInput" value="First Floor" placeholder="e.g. First Floor, Second Floor, Terrace"
+            style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:600;color:#0f172a;">
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer;">
+            <input type="checkbox" id="addFloorCopyWallsCheck" checked style="width:16px;height:16px;accent-color:#059669;cursor:pointer;">
+            <span>Copy outer walls from ground floor</span>
+          </label>
+          <p style="margin:4px 0 0 24px;font-size:11px;color:#64748b;">Duplicates perimeter walls with fresh IDs so the building outline is immediately ready for editing.</p>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button type="button" id="cancelAddFloorBtn" style="padding:8px 14px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;">Cancel</button>
+          <button type="button" id="confirmAddFloorBtn" style="padding:8px 18px;border:none;background:#059669;border-radius:6px;font-size:12px;font-weight:700;color:#ffffff;cursor:pointer;box-shadow:0 2px 6px rgba(5,150,105,0.35);">+ Create Floor</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ══════ MODAL: IMPORT CUSTOM .SKP & DECORS (EXCLUDED FROM PRICING) ══════ -->
@@ -7382,6 +7419,9 @@ body.role-employee #adminCreateEmpBox,
     },
 
     flushImmediateSave: function () {
+      if (window.OrbixUI && typeof window.OrbixUI.syncActiveFloorData === 'function') {
+        window.OrbixUI.syncActiveFloorData();
+      }
       var currentPlan = (window.OrbixUI && window.OrbixUI.project) ? window.OrbixUI.project : null;
       if (!currentPlan) return;
       var currentUnits = (window.S && Array.isArray(window.S.units)) ? window.S.units : [];
@@ -7409,6 +7449,9 @@ body.role-employee #adminCreateEmpBox,
 
     saveActiveProject: function (dataUpdates) {
       var self = this;
+      if (window.OrbixUI && typeof window.OrbixUI.syncActiveFloorData === 'function') {
+        window.OrbixUI.syncActiveFloorData();
+      }
       var activeId = this.activeProjectId || (this.currentUser ? localStorage.getItem('orbix_active_proj_' + this.currentUser.id) : null);
       var project = activeId ? this.projects.find(function (p) { return p.id === activeId; }) : null;
 
@@ -13142,6 +13185,17 @@ body.role-employee #adminCreateEmpBox,
     }
     if (!data.plan) data.plan = { walls: [], openings: [], rooms: [], furniture: [], stairs: [] };
     if (!data.plan.stairs) data.plan.stairs = [];
+    if (!data.plan.floors || !Array.isArray(data.plan.floors) || data.plan.floors.length === 0) {
+      data.plan.floors = [
+        { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
+      ];
+    }
+    if (!data.plan.activeFloor) {
+      data.plan.activeFloor = data.plan.floors[0].id || 'ground';
+    }
+    if (!data.plan.floorsData) {
+      data.plan.floorsData = {};
+    }
     if (!data.rateCard) data.rateCard = JSON.parse(JSON.stringify(DEFAULT_RATE_CARD));
     if (!data.commercialCharges) data.commercialCharges = {};
     // Ensure all furniture items have guaranteed unique instance IDs (de-duplicate legacy projects)
@@ -19205,6 +19259,19 @@ body.role-employee #adminCreateEmpBox,
       if (self.dragState && self.dragState.type === 'move_underlay') {
         var dxS = mouseScreen.x - self.dragState.startScreen.x;
         var dyS = mouseScreen.y - self.dragState.startScreen.y;
+        var isFree = !!(e.shiftKey || e.ctrlKey);
+        var axis = 'FREE';
+        if (!isFree) {
+          // Strictly lock to straight horizontal (X) or vertical (Y) axis
+          if (Math.abs(dxS) >= Math.abs(dyS)) {
+            dyS = 0;
+            axis = 'X';
+          } else {
+            dxS = 0;
+            axis = 'Y';
+          }
+        }
+        self.dragState.axis = axis;
         self.underlay.x = self.dragState.origUnderlayPos.x + dxS / self.zoom;
         self.underlay.y = self.dragState.origUnderlayPos.y + dyS / self.zoom;
         self.requestRender();
@@ -19496,26 +19563,64 @@ body.role-employee #adminCreateEmpBox,
           }
         }
         // Comprehensive overlap check against adjacent furniture, wall cores, and openings
-        var colCheck = Core.checkPlacementOverlap ?
-          Core.checkPlacementOverlap(self.dragState.furniture, self.project.plan, self.dragState.furniture.id) :
-          Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
+        var isDecorDrag = !!(
+          self.dragState.furniture.isDecor ||
+          self.dragState.furniture.excludeFromPricing ||
+          self.dragState.furniture.category === 'decor' ||
+          self.dragState.furniture.category === 'appliance_decor' ||
+          self.dragState.furniture.decorType
+        );
 
-        if (snapRes.type === 'unit_joint' || (snapRes.type === 'wall_snap' && colCheck.type === 'wall')) {
+        if (isDecorDrag) {
+          // Detect if placed or moved over another modular unit (countertop, table, shelf, ledge)
+          var underUnit = null;
+          var maxTopZ = 0;
+          var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
+          for (var fu = 0; fu < furnList.length; fu++) {
+            var oU = furnList[fu];
+            if (oU.id === self.dragState.furniture.id || oU.isDecor || oU.category === 'decor' || oU.category === 'appliance_decor') continue;
+            var polyU = Core.getFurniturePolygon(oU);
+            if (Core.Vec2.pointInPolygon(self.dragState.furniture.pos, polyU)) {
+              var topZ = (oU.elevation !== undefined && oU.elevation !== null ? parseFloat(oU.elevation) : 0) +
+                         (oU.dimensions && oU.dimensions.H ? parseFloat(oU.dimensions.H) : 850);
+              if (topZ >= maxTopZ) {
+                maxTopZ = topZ;
+                underUnit = oU;
+              }
+            }
+          }
+          if (underUnit && maxTopZ > 0) {
+            self.dragState.furniture.elevation = maxTopZ;
+            self.dragState.furniture.pos.z = maxTopZ;
+            self.dragState.snapInfo = {
+              type: 'decor_on_unit',
+              badgeLabel: '✓ Placed on ' + (underUnit.name || 'Unit') + ' (▲ ' + Math.round(maxTopZ) + ' mm)'
+            };
+          }
           self.dragState.hasCollision = false;
           self.dragState.collidedWith = null;
         } else {
-          var isCollidedRcc = colCheck.other && (
-            colCheck.other.category === 'structural' || colCheck.other.category === 'civil' ||
-            colCheck.other.category === 'wall_paneling' ||
-            /rcc|column|pillar|post|structural/i.test(colCheck.other.name || '') ||
-            /rcc|column|pillar|post|structural/i.test(colCheck.other.id || '')
-          );
-          if (isCollidedRcc) {
+          var colCheck = Core.checkPlacementOverlap ?
+            Core.checkPlacementOverlap(self.dragState.furniture, self.project.plan, self.dragState.furniture.id) :
+            Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
+
+          if (snapRes.type === 'unit_joint' || (snapRes.type === 'wall_snap' && colCheck.type === 'wall')) {
             self.dragState.hasCollision = false;
             self.dragState.collidedWith = null;
           } else {
-            self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
-            self.dragState.collidedWith = colCheck.target || colCheck.other;
+            var isCollidedRcc = colCheck.other && (
+              colCheck.other.category === 'structural' || colCheck.other.category === 'civil' ||
+              colCheck.other.category === 'wall_paneling' ||
+              /rcc|column|pillar|post|structural/i.test(colCheck.other.name || '') ||
+              /rcc|column|pillar|post|structural/i.test(colCheck.other.id || '')
+            );
+            if (isCollidedRcc) {
+              self.dragState.hasCollision = false;
+              self.dragState.collidedWith = null;
+            } else {
+              self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
+              self.dragState.collidedWith = colCheck.target || colCheck.other;
+            }
           }
         }
         self.requestRender();
@@ -21426,6 +21531,14 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
+    var isDecorPreset = !!(
+      this.furniturePreset.isDecor ||
+      this.furniturePreset.excludeFromPricing ||
+      this.furniturePreset.category === 'decor' ||
+      this.furniturePreset.category === 'appliance_decor' ||
+      this.furniturePreset.decorType
+    );
+
     var isWall = (Core.isWallUnit) ?
       Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name, this.furniturePreset.code || this.furniturePreset.catalogItemId, this.furniturePreset.costCategory) :
       false;
@@ -21447,13 +21560,36 @@ body.role-employee #adminCreateEmpBox,
     var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '') ?
       parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
+    // If placing decor, auto-detect if cursor is over an underlying modular unit (countertop, table, shelf, ledge)
+    if (isDecorPreset) {
+      var underUnit = null;
+      var maxTopZ = 0;
+      var allFurn = (this.project && this.project.plan && this.project.plan.furniture) || [];
+      for (var fu = 0; fu < allFurn.length; fu++) {
+        var oU = allFurn[fu];
+        if (oU.isDecor || oU.category === 'decor' || oU.category === 'appliance_decor') continue;
+        var polyU = Core.getFurniturePolygon(oU);
+        if (Core.Vec2.pointInPolygon(finalPos, polyU)) {
+          var topZ = (oU.elevation !== undefined && oU.elevation !== null ? parseFloat(oU.elevation) : 0) +
+                     (oU.dimensions && oU.dimensions.H ? parseFloat(oU.dimensions.H) : 850);
+          if (topZ >= maxTopZ) {
+            maxTopZ = topZ;
+            underUnit = oU;
+          }
+        }
+      }
+      if (underUnit && maxTopZ > 0) {
+        presetElev = maxTopZ;
+      }
+    }
+
     var furnId = (Core.uid ? Core.uid('furn') : ('furn_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5)));
     var furn = Core.createFurniturePlacement({
       id: furnId,
       catalogItemId: this.furniturePreset.catalogItemId || this.furniturePreset.id || this.furniturePreset.code,
       modelType: this.furniturePreset.modelType,
       name: this.furniturePreset.name,
-      category: this.furniturePreset.category,
+      category: this.furniturePreset.category || (isDecorPreset ? 'decor' : 'wardrobe'),
       code: this.furniturePreset.code,
       costCategory: this.furniturePreset.costCategory,
       roomId: matchedRoomId,
@@ -21461,7 +21597,14 @@ body.role-employee #adminCreateEmpBox,
       pos: { x: finalPos.x, y: finalPos.y, z: presetElev },
       rotY: finalRotY,
       dimensions: Object.assign({}, this.furniturePreset.dimensions),
-      unitConfig: Object.assign({}, this.furniturePreset.unitConfig || {})
+      unitConfig: Object.assign({}, this.furniturePreset.unitConfig || {}),
+      isDecor: isDecorPreset,
+      excludeFromPricing: isDecorPreset,
+      decorType: this.furniturePreset.decorType || null,
+      modelUrl: this.furniturePreset.modelUrl || null,
+      thumbnailUrl: this.furniturePreset.thumbnailUrl || null,
+      modelFormat: this.furniturePreset.modelFormat || null,
+      slug: this.furniturePreset.slug || null
     });
 
     this.project.plan.furniture.push(furn);
@@ -21988,8 +22131,39 @@ body.role-employee #adminCreateEmpBox,
         ctx.fillRect(c.x - 5, c.y - 5, 10, 10);
       });
 
-      // Top notification badge
-      var badgeText = '✋ Move Blueprint Active: Drag anywhere to align blueprint under walls (Press Esc to finish)';
+      // Top notification badge with live Straight Axis HUD indicator
+      var badgeText = '✋ Straight Move Active: Dragging blueprint straight horizontal / vertical (Esc to finish)';
+      if (this.dragState && this.dragState.type === 'move_underlay' && this.dragState.axis) {
+        if (this.dragState.axis === 'X') {
+          badgeText = '✋ Straight Horizontal ⟷ (Holding X axis · Shift for Free · Esc to finish)';
+          // Draw subtle straight horizontal guideline
+          ctx.save();
+          ctx.strokeStyle = 'rgba(5, 150, 105, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 6]);
+          var cyMid = topLeft.y + hPx / 2;
+          ctx.beginPath();
+          ctx.moveTo(-10000, cyMid);
+          ctx.lineTo(10000, cyMid);
+          ctx.stroke();
+          ctx.restore();
+        } else if (this.dragState.axis === 'Y') {
+          badgeText = '✋ Straight Vertical ↕ (Holding Y axis · Shift for Free · Esc to finish)';
+          // Draw subtle straight vertical guideline
+          ctx.save();
+          ctx.strokeStyle = 'rgba(5, 150, 105, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 6]);
+          var cxMid = topLeft.x + wPx / 2;
+          ctx.beginPath();
+          ctx.moveTo(cxMid, -10000);
+          ctx.lineTo(cxMid, 10000);
+          ctx.stroke();
+          ctx.restore();
+        } else if (this.dragState.axis === 'FREE') {
+          badgeText = '✋ Free Move (Shift/Ctrl held · Esc to finish)';
+        }
+      }
       ctx.font = '700 12px "IBM Plex Sans", sans-serif';
       var tw = ctx.measureText(badgeText).width;
       var bx = topLeft.x + wPx / 2;
@@ -24286,6 +24460,17 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           ctx.fill();
           ctx.fillStyle = '#ffffff';
           ctx.fillText(wTxt, 0, -dPx / 2 - 14);
+        } else if (sInfo.type === 'decor_on_unit') {
+          var dTxt = sInfo.badgeLabel || '✓ Placed on Top of Unit';
+          ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
+          var dw = ctx.measureText(dTxt).width;
+          ctx.fillStyle = '#059669';
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(-dw / 2 - 8, -dPx / 2 - 24, dw + 16, 18, 5);
+          else ctx.rect(-dw / 2 - 8, -dPx / 2 - 24, dw + 16, 18);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(dTxt, 0, -dPx / 2 - 14);
         }
       }
 
@@ -27063,10 +27248,53 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     plan = plan || {};
     this.currentProject = project;
     this.currentPlan = plan;
-    var walls = plan.walls || [];
-    var openings = plan.openings || [];
-    var rooms = plan.rooms || [];
-    var furniture = plan.furniture || [];
+    var floors = (plan.floors && plan.floors.length) ? plan.floors : [
+      { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
+    ];
+    var activeFloorId = plan.activeFloor || 'ground';
+    var floorsData = plan.floorsData || {};
+    var viewMode = this.viewFloorMode || (typeof window !== 'undefined' && window.studioFloorMode ? window.studioFloorMode : 'all');
+
+    if (viewMode === 'all' && floors.length > 1) {
+      // Build full stacked multi-storey building!
+      for (var flIdx = 0; flIdx < floors.length; flIdx++) {
+        var fl = floors[flIdx];
+        var flElev = fl.elevation !== undefined ? fl.elevation : (fl.level * 2800);
+        var flData = (fl.id === activeFloorId) ? plan : (floorsData[fl.id] || { walls: [], openings: [], rooms: [], furniture: [], stairs: [] });
+        var floorGrp = this.buildFloorGroup(flData, flElev, fl.id, null);
+        if (floorGrp) {
+          this.group.add(floorGrp);
+        }
+      }
+    } else {
+      // Single floor view (active or selected floor)
+      var targetFlId = (viewMode === 'all' || viewMode === 'active') ? activeFloorId : viewMode;
+      var targetFl = floors.find(function (f) { return f.id === targetFlId; }) || floors[0];
+      var flData = (targetFl.id === activeFloorId) ? plan : (floorsData[targetFl.id] || { walls: [], openings: [], rooms: [], furniture: [], stairs: [] });
+      var floorGrp = this.buildFloorGroup(flData, 0, targetFl.id, targetIsoId);
+      if (floorGrp) {
+        this.group.add(floorGrp);
+      }
+    }
+
+    this.scene.add(this.group);
+    return this.group;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Build Individual Floor Geometry Group (Extruded Walls, Floors, Ceilings, Units)
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildFloorGroup = function (floorData, floorElevation, floorId, targetIsoId) {
+    floorData = floorData || {};
+    var floorGroup = new THREE.Group();
+    floorGroup.name = 'OrbixFloor_' + (floorId || 'ground');
+    floorGroup.position.y = floorElevation || 0;
+    floorGroup.userData = { floorId: floorId, floorElevation: floorElevation };
+
+    var walls = floorData.walls || [];
+    var openings = floorData.openings || [];
+    var rooms = floorData.rooms || [];
+    var furniture = floorData.furniture || [];
 
     // Room Isolation Mode: select a particular room and view that room only!
     var targetRoom = null;
@@ -27120,7 +27348,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       if (wallMeshGroup) {
         wallMeshGroup.userData.wallIndex = w;
         wallMeshGroup.userData.wallNumber = w + 1; // 1, 2, 3, 4
-        this.group.add(wallMeshGroup);
+        floorGroup.add(wallMeshGroup);
       }
     }
 
@@ -27134,33 +27362,33 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       for (var r = 0; r < rooms.length; r++) {
         var room = rooms[r];
         var floorMesh = this.buildRoomFloor(room, rooms);
-        if (floorMesh) this.group.add(floorMesh);
+        if (floorMesh) floorGroup.add(floorMesh);
 
         if (showCeiling) {
           var ceilingMesh = this.buildRoomCeiling(room, rooms, defaultCeilingH);
-          if (ceilingMesh) this.group.add(ceilingMesh);
+          if (ceilingMesh) floorGroup.add(ceilingMesh);
         }
 
         // Photorealistic Interior Architectural Room Lighting
         var roomLightGroup = this.buildRoomInteriorLighting(room, defaultCeilingH);
-        if (roomLightGroup) this.group.add(roomLightGroup);
+        if (roomLightGroup) floorGroup.add(roomLightGroup);
       }
     } else {
       var fallbackFloor = this.buildBoundingFloor(walls, furniture);
-      if (fallbackFloor) this.group.add(fallbackFloor);
+      if (fallbackFloor) floorGroup.add(fallbackFloor);
       if (showCeiling && fallbackFloor && fallbackFloor.userData && fallbackFloor.userData.boundingRoom) {
         var fallbackCeil = this.buildRoomCeiling(fallbackFloor.userData.boundingRoom, null, defaultCeilingH);
-        if (fallbackCeil) this.group.add(fallbackCeil);
+        if (fallbackCeil) floorGroup.add(fallbackCeil);
       }
     }
 
         // 2b. Build Architectural Staircases in 3D
-    var stairs = (plan && plan.stairs) || [];
+    var stairs = (floorData && floorData.stairs) || [];
     for (var sIdx = 0; sIdx < stairs.length; sIdx++) {
       var stairObj = stairs[sIdx];
       var stairMeshGroup = this.buildStaircaseMesh(stairObj);
       if (stairMeshGroup) {
-        this.group.add(stairMeshGroup);
+        floorGroup.add(stairMeshGroup);
       }
     }
 
@@ -27199,12 +27427,11 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           furnMesh.userData.wallIndex = bestWall.index;
           furnMesh.userData.wallNumber = bestWall.number;
         }
-        this.group.add(furnMesh);
+        floorGroup.add(furnMesh);
       }
     }
 
-    this.scene.add(this.group);
-    return this.group;
+    return floorGroup;
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
@@ -29057,10 +29284,32 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       (decorType === 'microwave') ? 1200 :
       (decorType === 'mirror') ? 800 :
       (decorType === 'sink' || decorType === 'gas_hob') ? 850 : 0;
-    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '' && parseFloat(furn.elevation) > 0) ?
       parseFloat(furn.elevation) :
-      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : defDecorElev);
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && parseFloat(furn.pos.z) > 0) ?
+        parseFloat(furn.pos.z) :
+        ((furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ? parseFloat(furn.elevation) : defDecorElev));
+
+    // If still at floor level (0mm) but sitting on a modular unit (counter, table, desk, shelf), snap to unit top elevation
+    var isFloorStandingDecor = (decorType === 'bed' || decorType === 'mariam_bed' || decorType === 'kid_bed' ||
+      decorType === 'sofa' || decorType === 'sofa_collection' || decorType === 'dining_table' ||
+      decorType === 'fridge' || decorType === 'washing_machine' || decorType === 'dishwasher');
+    if (elev === 0 && !isFloorStandingDecor && this.currentPlan && Array.isArray(this.currentPlan.furniture)) {
+      var Core = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : null;
+      var fX = (furn.pos && furn.pos.x) || 0;
+      var fY = (furn.pos && furn.pos.y) || 0;
+      for (var fIdx = 0; fIdx < this.currentPlan.furniture.length; fIdx++) {
+        var oUnit = this.currentPlan.furniture[fIdx];
+        if (oUnit.id === furn.id || oUnit.isDecor || oUnit.category === 'decor' || oUnit.category === 'appliance_decor') continue;
+        if (Core && Core.Vec2 && Core.getFurniturePolygon) {
+          if (Core.Vec2.pointInPolygon({ x: fX, y: fY }, Core.getFurniturePolygon(oUnit))) {
+            var unitTop = (oUnit.elevation !== undefined && oUnit.elevation !== null ? parseFloat(oUnit.elevation) : 0) +
+                          (oUnit.dimensions && oUnit.dimensions.H ? parseFloat(oUnit.dimensions.H) : 850);
+            if (unitTop > elev) elev = unitTop;
+          }
+        }
+      }
+    }
 
     // If photorealistic SketchUp GLB model is available, attach it directly!
     if (glbUrl) {
@@ -32532,6 +32781,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       });
 
       this.bindToolbar();
+      this.initFloorSwitcher();
+      this.updateFloorSwitcherUI();
       this.updateUI();
       this.renderBOQ();
       this.restoreUnderlay(this.project);
@@ -32551,6 +32802,22 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         window.S.active = 0;
       }
       this.project = proj;
+      if (proj && proj.plan) {
+        if (!proj.plan.floors || !proj.plan.floors.length) {
+          proj.plan.floors = [
+            { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
+          ];
+        }
+        if (!proj.plan.activeFloor) {
+          proj.plan.activeFloor = proj.plan.floors[0].id || 'ground';
+        }
+        if (!proj.plan.floorsData) {
+          proj.plan.floorsData = {};
+        }
+        if (typeof this.updateFloorSwitcherUI === 'function') {
+          this.updateFloorSwitcherUI();
+        }
+      }
       if (typeof Core !== 'undefined' && typeof Core.healCollinearWalls === 'function') {
         try { Core.healCollinearWalls(this.project); } catch (e) { }
       }
@@ -32631,6 +32898,9 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     saveToLocalStorage: function () {
       if (!this.project) return;
       try {
+        if (typeof this.syncActiveFloorData === 'function') {
+          this.syncActiveFloorData();
+        }
         var now = Date.now();
         var currentUnits = (window.S && window.S.units) ? window.S.units : [];
         var activeId = (window.OrbixProjects && window.OrbixProjects.activeProjectId) ||
@@ -37231,6 +37501,35 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       var initElev = (preset.elevation !== undefined && preset.elevation !== null) ? parseFloat(preset.elevation) :
                      ((preset.elev !== undefined && preset.elev !== null) ? parseFloat(preset.elev) : 0);
 
+      // If a modular unit is selected or hovered, position decor directly on top of that unit
+      var selItem = this.editor && this.editor.selected && this.editor.selected.find(function (s) { return s.type === 'furniture'; });
+      var selUnit = selItem ? (plan.furniture || []).find(function (u) { return u.id === selItem.id; }) : null;
+      if (selUnit && !selUnit.isDecor && selUnit.category !== 'decor') {
+        if (selUnit.pos) {
+          cX = selUnit.pos.x;
+          cY = selUnit.pos.y;
+        }
+        var topZ = (selUnit.elevation !== undefined && selUnit.elevation !== null ? parseFloat(selUnit.elevation) : 0) +
+                   (selUnit.dimensions && selUnit.dimensions.H ? parseFloat(selUnit.dimensions.H) : 850);
+        if (topZ > 0) {
+          initElev = topZ;
+        }
+      } else {
+        // Auto-detect if center falls inside any underlying unit
+        var allUnits = plan.furniture || [];
+        var maxTopZ = 0;
+        for (var ui = 0; ui < allUnits.length; ui++) {
+          var un = allUnits[ui];
+          if (un.isDecor || un.category === 'decor' || un.category === 'appliance_decor') continue;
+          if (Core && Core.Vec2 && Core.getFurniturePolygon && Core.Vec2.pointInPolygon({ x: cX, y: cY }, Core.getFurniturePolygon(un))) {
+            var tz = (un.elevation !== undefined && un.elevation !== null ? parseFloat(un.elevation) : 0) +
+                     (un.dimensions && un.dimensions.H ? parseFloat(un.dimensions.H) : 850);
+            if (tz > maxTopZ) maxTopZ = tz;
+          }
+        }
+        if (maxTopZ > 0) initElev = maxTopZ;
+      }
+
       var dims = Object.assign({ W: 900, H: 1800, D: 700 }, preset.dimensions || {});
       if (preset.w !== undefined) dims.W = parseFloat(preset.w);
       if (preset.h !== undefined) dims.H = parseFloat(preset.h);
@@ -37301,6 +37600,268 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       if (typeof window.showToast === 'function') {
         window.showToast('🌿 Placed ' + newDecor.name + ' (Excluded from Woodwork Pricing)');
+      }
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Multi-Floor Project Architecture (2D Plan & 3D Stacked Building)
+    // ─────────────────────────────────────────────────────────────────────────────
+    syncActiveFloorData: function () {
+      var proj = this.project || (this.editor && this.editor.project);
+      if (!proj || !proj.plan) return;
+      var plan = proj.plan;
+      plan.floors = plan.floors || [
+        { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
+      ];
+      plan.activeFloor = plan.activeFloor || 'ground';
+      plan.floorsData = plan.floorsData || {};
+
+      plan.floorsData[plan.activeFloor] = {
+        walls: JSON.parse(JSON.stringify(plan.walls || [])),
+        openings: JSON.parse(JSON.stringify(plan.openings || [])),
+        rooms: JSON.parse(JSON.stringify(plan.rooms || [])),
+        furniture: JSON.parse(JSON.stringify(plan.furniture || [])),
+        stairs: JSON.parse(JSON.stringify(plan.stairs || [])),
+        dimensions: JSON.parse(JSON.stringify(plan.dimensions || [])),
+        underlay: plan.underlay ? JSON.parse(JSON.stringify(plan.underlay)) : null
+      };
+    },
+
+    switchFloor: function (floorId) {
+      if (!floorId) return;
+      var proj = this.project || (this.editor && this.editor.project);
+      if (!proj || !proj.plan) return;
+      var plan = proj.plan;
+      plan.floors = plan.floors || [
+        { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
+      ];
+      plan.floorsData = plan.floorsData || {};
+
+      if (plan.activeFloor === floorId && plan.floorsData[floorId]) {
+        this.updateFloorSwitcherUI();
+        return;
+      }
+
+      // 1. Sync current active floor first
+      this.syncActiveFloorData();
+
+      // 2. Switch to target floor
+      plan.activeFloor = floorId;
+
+      // 3. Load target floor data (or initialize if empty)
+      var targetData = plan.floorsData[floorId] || {
+        walls: [],
+        openings: [],
+        rooms: [],
+        furniture: [],
+        stairs: [],
+        dimensions: [],
+        underlay: null
+      };
+
+      plan.walls = JSON.parse(JSON.stringify(targetData.walls || []));
+      plan.openings = JSON.parse(JSON.stringify(targetData.openings || []));
+      plan.rooms = JSON.parse(JSON.stringify(targetData.rooms || []));
+      plan.furniture = JSON.parse(JSON.stringify(targetData.furniture || []));
+      plan.stairs = JSON.parse(JSON.stringify(targetData.stairs || []));
+      plan.dimensions = JSON.parse(JSON.stringify(targetData.dimensions || []));
+      plan.underlay = targetData.underlay ? JSON.parse(JSON.stringify(targetData.underlay)) : null;
+
+      // Update 2D editor state
+      if (this.editor) {
+        this.editor.project = proj;
+        this.editor.underlay = plan.underlay;
+        this.editor.selected = [];
+        this.editor.wallChainStart = null;
+        this.editor.dadoDrawStart = null;
+        this.editor.dimensionStart = null;
+        var Core = window.OrbixCore || root.OrbixCore;
+        if (Core && typeof Core.detectRooms === 'function') {
+          Core.detectRooms(proj);
+        }
+        this.editor.render();
+      }
+
+      // Update 3D studio
+      this.syncProjectUnitsTo3DStudio();
+      if (typeof this.render3DHome === 'function') {
+        this.render3DHome(true);
+      }
+      this.renderBOQ();
+      this.updateFloorSwitcherUI();
+
+      var floorObj = plan.floors.find(function (f) { return f.id === floorId; });
+      var fName = floorObj ? floorObj.name : floorId;
+      if (typeof window.showToast === 'function') {
+        window.showToast('🏢 Switched to ' + fName);
+      }
+      this.queueAutoSave();
+    },
+
+    addFloor: function (name, copyPerimeterWalls) {
+      var proj = this.project || (this.editor && this.editor.project);
+      if (!proj || !proj.plan) return;
+      var plan = proj.plan;
+      plan.floors = plan.floors || [
+        { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
+      ];
+      plan.floorsData = plan.floorsData || {};
+
+      this.syncActiveFloorData();
+
+      var nextLevel = plan.floors.length;
+      var floorName = name || (nextLevel === 1 ? 'First Floor' : (nextLevel === 2 ? 'Second Floor' : ('Floor ' + nextLevel)));
+      var floorId = 'floor_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+      var floorElevation = nextLevel * 2800; // mm
+
+      var newWalls = [];
+      var Core = window.OrbixCore || root.OrbixCore;
+      if (copyPerimeterWalls) {
+        var groundWalls = (plan.floorsData['ground'] && plan.floorsData['ground'].walls) || plan.walls || [];
+        groundWalls.forEach(function (w) {
+          if (w.isDivider) return;
+          var newId = (Core && Core.uid ? Core.uid('wall') : ('w_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4)));
+          var wCopy = JSON.parse(JSON.stringify(w));
+          wCopy.id = newId;
+          newWalls.push(wCopy);
+        });
+      }
+
+      var newFloor = {
+        id: floorId,
+        name: floorName,
+        level: nextLevel,
+        elevation: floorElevation
+      };
+      plan.floors.push(newFloor);
+
+      plan.floorsData[floorId] = {
+        walls: newWalls,
+        openings: [],
+        rooms: [],
+        furniture: [],
+        stairs: [],
+        dimensions: [],
+        underlay: null
+      };
+
+      this.switchFloor(floorId);
+
+      if (typeof window.showToast === 'function') {
+        window.showToast('🏢 Created ' + floorName + ' (Level ' + nextLevel + ')');
+      }
+      this.queueAutoSave();
+    },
+
+    openAddFloorModal: function () {
+      var modal = document.getElementById('modalAddFloor');
+      if (!modal) return;
+      var plan = this.getPlan();
+      var count = (plan && plan.floors && plan.floors.length) || 1;
+      var nameInp = document.getElementById('addFloorNameInput');
+      if (nameInp) {
+        nameInp.value = count === 1 ? 'First Floor' : (count === 2 ? 'Second Floor' : ('Floor ' + count));
+      }
+      modal.style.display = 'flex';
+    },
+
+    closeAddFloorModal: function () {
+      var modal = document.getElementById('modalAddFloor');
+      if (!modal) return;
+      modal.style.display = 'none';
+      this.updateFloorSwitcherUI();
+    },
+
+    initFloorSwitcher: function () {
+      var self = this;
+      var sel2D = document.getElementById('planActiveFloor');
+      if (sel2D) {
+        sel2D.addEventListener('change', function () {
+          var val = sel2D.value;
+          if (val === 'add_floor') {
+            self.openAddFloorModal();
+          } else {
+            self.switchFloor(val);
+          }
+        });
+      }
+
+      var sel3D = document.getElementById('studioFloorSelect');
+      if (sel3D) {
+        sel3D.addEventListener('change', function () {
+          var val = sel3D.value;
+          self.studioFloorMode = val;
+          if (self.archRenderer) {
+            self.archRenderer.viewFloorMode = val;
+          }
+          window.studioFloorMode = val;
+          if (typeof self.render3DHome === 'function') {
+            self.render3DHome(true);
+          }
+        });
+      }
+
+      var closeBtn = document.getElementById('closeAddFloorModalBtn');
+      var cancelBtn = document.getElementById('cancelAddFloorBtn');
+      var confirmBtn = document.getElementById('confirmAddFloorBtn');
+
+      if (closeBtn) closeBtn.addEventListener('click', function () { self.closeAddFloorModal(); });
+      if (cancelBtn) cancelBtn.addEventListener('click', function () { self.closeAddFloorModal(); });
+      if (confirmBtn) {
+        confirmBtn.addEventListener('click', function () {
+          var nameInp = document.getElementById('addFloorNameInput');
+          var copyCheck = document.getElementById('addFloorCopyWallsCheck');
+          var fName = nameInp ? nameInp.value.trim() : '';
+          var copyWalls = copyCheck ? copyCheck.checked : true;
+          self.addFloor(fName, copyWalls);
+          self.closeAddFloorModal();
+        });
+      }
+    },
+
+    updateFloorSwitcherUI: function () {
+      var proj = this.project || (this.editor && this.editor.project);
+      if (!proj || !proj.plan) return;
+      var plan = proj.plan;
+      var floors = plan.floors || [
+        { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
+      ];
+      var activeId = plan.activeFloor || 'ground';
+
+      // 1. 2D Plan Floor Selector
+      var sel2D = document.getElementById('planActiveFloor');
+      if (sel2D) {
+        sel2D.innerHTML = '';
+        floors.forEach(function (fl) {
+          var opt = document.createElement('option');
+          opt.value = fl.id;
+          opt.textContent = '🏢 ' + fl.name + (fl.isDefault ? ' (Default)' : (' · Level ' + fl.level));
+          if (fl.id === activeId) opt.selected = true;
+          sel2D.appendChild(opt);
+        });
+        var addOpt = document.createElement('option');
+        addOpt.value = 'add_floor';
+        addOpt.textContent = '➕ Add New Floor...';
+        sel2D.appendChild(addOpt);
+      }
+
+      // 2. 3D Studio Floor Selector
+      var sel3D = document.getElementById('studioFloorSelect');
+      if (sel3D) {
+        sel3D.innerHTML = '';
+        var allOpt = document.createElement('option');
+        allOpt.value = 'all';
+        allOpt.textContent = '🏛️ All Floors (Stacked Building)';
+        if (!this.studioFloorMode || this.studioFloorMode === 'all') allOpt.selected = true;
+        sel3D.appendChild(allOpt);
+
+        floors.forEach(function (fl) {
+          var opt = document.createElement('option');
+          opt.value = fl.id;
+          opt.textContent = '🏢 ' + fl.name + (fl.id === activeId ? ' (Active)' : '');
+          if (this.studioFloorMode === fl.id) opt.selected = true;
+          sel3D.appendChild(opt);
+        }.bind(this));
       }
     },
 

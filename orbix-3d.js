@@ -1042,10 +1042,53 @@
     plan = plan || {};
     this.currentProject = project;
     this.currentPlan = plan;
-    var walls = plan.walls || [];
-    var openings = plan.openings || [];
-    var rooms = plan.rooms || [];
-    var furniture = plan.furniture || [];
+    var floors = (plan.floors && plan.floors.length) ? plan.floors : [
+      { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
+    ];
+    var activeFloorId = plan.activeFloor || 'ground';
+    var floorsData = plan.floorsData || {};
+    var viewMode = this.viewFloorMode || (typeof window !== 'undefined' && window.studioFloorMode ? window.studioFloorMode : 'all');
+
+    if (viewMode === 'all' && floors.length > 1) {
+      // Build full stacked multi-storey building!
+      for (var flIdx = 0; flIdx < floors.length; flIdx++) {
+        var fl = floors[flIdx];
+        var flElev = fl.elevation !== undefined ? fl.elevation : (fl.level * 2800);
+        var flData = (fl.id === activeFloorId) ? plan : (floorsData[fl.id] || { walls: [], openings: [], rooms: [], furniture: [], stairs: [] });
+        var floorGrp = this.buildFloorGroup(flData, flElev, fl.id, null);
+        if (floorGrp) {
+          this.group.add(floorGrp);
+        }
+      }
+    } else {
+      // Single floor view (active or selected floor)
+      var targetFlId = (viewMode === 'all' || viewMode === 'active') ? activeFloorId : viewMode;
+      var targetFl = floors.find(function (f) { return f.id === targetFlId; }) || floors[0];
+      var flData = (targetFl.id === activeFloorId) ? plan : (floorsData[targetFl.id] || { walls: [], openings: [], rooms: [], furniture: [], stairs: [] });
+      var floorGrp = this.buildFloorGroup(flData, 0, targetFl.id, targetIsoId);
+      if (floorGrp) {
+        this.group.add(floorGrp);
+      }
+    }
+
+    this.scene.add(this.group);
+    return this.group;
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────────────
+     Build Individual Floor Geometry Group (Extruded Walls, Floors, Ceilings, Units)
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.buildFloorGroup = function (floorData, floorElevation, floorId, targetIsoId) {
+    floorData = floorData || {};
+    var floorGroup = new THREE.Group();
+    floorGroup.name = 'OrbixFloor_' + (floorId || 'ground');
+    floorGroup.position.y = floorElevation || 0;
+    floorGroup.userData = { floorId: floorId, floorElevation: floorElevation };
+
+    var walls = floorData.walls || [];
+    var openings = floorData.openings || [];
+    var rooms = floorData.rooms || [];
+    var furniture = floorData.furniture || [];
 
     // Room Isolation Mode: select a particular room and view that room only!
     var targetRoom = null;
@@ -1099,7 +1142,7 @@
       if (wallMeshGroup) {
         wallMeshGroup.userData.wallIndex = w;
         wallMeshGroup.userData.wallNumber = w + 1; // 1, 2, 3, 4
-        this.group.add(wallMeshGroup);
+        floorGroup.add(wallMeshGroup);
       }
     }
 
@@ -1113,33 +1156,33 @@
       for (var r = 0; r < rooms.length; r++) {
         var room = rooms[r];
         var floorMesh = this.buildRoomFloor(room, rooms);
-        if (floorMesh) this.group.add(floorMesh);
+        if (floorMesh) floorGroup.add(floorMesh);
 
         if (showCeiling) {
           var ceilingMesh = this.buildRoomCeiling(room, rooms, defaultCeilingH);
-          if (ceilingMesh) this.group.add(ceilingMesh);
+          if (ceilingMesh) floorGroup.add(ceilingMesh);
         }
 
         // Photorealistic Interior Architectural Room Lighting
         var roomLightGroup = this.buildRoomInteriorLighting(room, defaultCeilingH);
-        if (roomLightGroup) this.group.add(roomLightGroup);
+        if (roomLightGroup) floorGroup.add(roomLightGroup);
       }
     } else {
       var fallbackFloor = this.buildBoundingFloor(walls, furniture);
-      if (fallbackFloor) this.group.add(fallbackFloor);
+      if (fallbackFloor) floorGroup.add(fallbackFloor);
       if (showCeiling && fallbackFloor && fallbackFloor.userData && fallbackFloor.userData.boundingRoom) {
         var fallbackCeil = this.buildRoomCeiling(fallbackFloor.userData.boundingRoom, null, defaultCeilingH);
-        if (fallbackCeil) this.group.add(fallbackCeil);
+        if (fallbackCeil) floorGroup.add(fallbackCeil);
       }
     }
 
         // 2b. Build Architectural Staircases in 3D
-    var stairs = (plan && plan.stairs) || [];
+    var stairs = (floorData && floorData.stairs) || [];
     for (var sIdx = 0; sIdx < stairs.length; sIdx++) {
       var stairObj = stairs[sIdx];
       var stairMeshGroup = this.buildStaircaseMesh(stairObj);
       if (stairMeshGroup) {
-        this.group.add(stairMeshGroup);
+        floorGroup.add(stairMeshGroup);
       }
     }
 
@@ -1178,12 +1221,11 @@
           furnMesh.userData.wallIndex = bestWall.index;
           furnMesh.userData.wallNumber = bestWall.number;
         }
-        this.group.add(furnMesh);
+        floorGroup.add(furnMesh);
       }
     }
 
-    this.scene.add(this.group);
-    return this.group;
+    return floorGroup;
   };
 
   /* ─────────────────────────────────────────────────────────────────────────────
@@ -3036,10 +3078,32 @@
       (decorType === 'microwave') ? 1200 :
       (decorType === 'mirror') ? 800 :
       (decorType === 'sink' || decorType === 'gas_hob') ? 850 : 0;
-    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
+    var elev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '' && parseFloat(furn.elevation) > 0) ?
       parseFloat(furn.elevation) :
-      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
-        parseFloat(furn.pos.z) : defDecorElev);
+      ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && parseFloat(furn.pos.z) > 0) ?
+        parseFloat(furn.pos.z) :
+        ((furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ? parseFloat(furn.elevation) : defDecorElev));
+
+    // If still at floor level (0mm) but sitting on a modular unit (counter, table, desk, shelf), snap to unit top elevation
+    var isFloorStandingDecor = (decorType === 'bed' || decorType === 'mariam_bed' || decorType === 'kid_bed' ||
+      decorType === 'sofa' || decorType === 'sofa_collection' || decorType === 'dining_table' ||
+      decorType === 'fridge' || decorType === 'washing_machine' || decorType === 'dishwasher');
+    if (elev === 0 && !isFloorStandingDecor && this.currentPlan && Array.isArray(this.currentPlan.furniture)) {
+      var Core = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : null;
+      var fX = (furn.pos && furn.pos.x) || 0;
+      var fY = (furn.pos && furn.pos.y) || 0;
+      for (var fIdx = 0; fIdx < this.currentPlan.furniture.length; fIdx++) {
+        var oUnit = this.currentPlan.furniture[fIdx];
+        if (oUnit.id === furn.id || oUnit.isDecor || oUnit.category === 'decor' || oUnit.category === 'appliance_decor') continue;
+        if (Core && Core.Vec2 && Core.getFurniturePolygon) {
+          if (Core.Vec2.pointInPolygon({ x: fX, y: fY }, Core.getFurniturePolygon(oUnit))) {
+            var unitTop = (oUnit.elevation !== undefined && oUnit.elevation !== null ? parseFloat(oUnit.elevation) : 0) +
+                          (oUnit.dimensions && oUnit.dimensions.H ? parseFloat(oUnit.dimensions.H) : 850);
+            if (unitTop > elev) elev = unitTop;
+          }
+        }
+      }
+    }
 
     // If photorealistic SketchUp GLB model is available, attach it directly!
     if (glbUrl) {
