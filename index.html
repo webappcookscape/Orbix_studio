@@ -289,6 +289,11 @@
                 </div>
             </div>
           </div>
+          <button type="button" class="stagebar-floating-expand-btn" id="stagebarFloatingExpandBtn"
+            title="Show 3D Studio Controls &amp; Finishes (Shortcut: T)">
+            <span>⚙️ 3D Controls &amp; Finishes</span>
+            <span style="font-size:12px;line-height:1;">▴</span>
+          </button>
           <div class="stagebar">
             <!-- Row 1: Camera Orbit/Pan, Perspective Views, and 8K Render Menu -->
             <div class="stagebar-row camera-row">
@@ -306,6 +311,15 @@
                   <button type="button" class="minibtn" id="modeUltraBtn"
                     title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic camera view, and presentation HUD overlay">🌟
                     Client Ultra</button>
+                </div>
+
+                <!-- 3D Building Storey Floor View Selector -->
+                <div style="display:inline-flex;align-items:center;gap:4px;">
+                  <select id="studioFloorSelect" title="3D Building Storey View: Stacked Building or Specific Floor"
+                    style="font-weight:700;color:#0f172a;background:#ffffff;border:1px solid #cbd5e1;border-radius:6px;padding:3px 8px;font-size:11.5px;cursor:pointer;">
+                    <option value="all" selected>🏛️ All Floors (Stacked)</option>
+                    <option value="ground">🏢 Ground Floor</option>
+                  </select>
                 </div>
 
                 <div
@@ -406,6 +420,12 @@
                     </button>
                   </div>
                 </div>
+
+                <button type="button" class="minibtn stagebar-collapse-btn" id="stagebarCollapseBtn"
+                  title="Collapse Controls for Full 3D View [Shortcut: T]"
+                  style="background:#f1f5f9;color:#334155;border-color:#cbd5e1;font-weight:700;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;cursor:pointer;">
+                  <span>⇊ Full View</span>
+                </button>
               </div>
             </div>
 
@@ -427,6 +447,16 @@
                   <option value="hidden">🚫 All Walls Hidden</option>
                 </select>
                 <!-- 3D Floor Finish Switcher -->
+                <select class="minibtn" id="floorFinishSelect" title="Choose 3D Floor Finish"
+                  style="background:#ffffff;color:#1e293b;font-weight:600;border:1px solid #cbd5e1;border-radius:4px;padding:3px 8px;cursor:pointer;">
+                  <option value="white_tile" selected>◻ White Tile</option>
+                  <option value="square_tile">▦ Square Tile</option>
+                  <option value="grey_tile">▩ Grey Tile</option>
+                  <option value="wooden">🪵 Wooden</option>
+                  <option value="tile_1">🏛️ Tile 1</option>
+                  <option value="tile_2">✨ Tile 2</option>
+                  <option value="tile_3">🪵 Tile 3</option>
+                </select>
                 <div class="floor-finish-group" id="floorFinishGroup" title="Choose 3D Floor Finish">
                   <button class="minibtn is-on" data-floor="white_tile" title="Italian White Marble Tile">◻ White
                     Tile</button>
@@ -1462,6 +1492,34 @@
       </div>
     </div>
   </div>
+  </div>
+
+  <!-- ══════ MODAL: ADD NEW FLOOR / MULTI-LEVEL STOREY ══════ -->
+  <div class="orbix-modal" id="modalAddFloor" style="display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);">
+    <div class="modal-dialog" style="max-width:440px;width:92vw;background:#ffffff;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.24);overflow:hidden;border:1px solid #e2e8f0;">
+      <div class="modal-head" style="background:#f8fafc;border-bottom:1px solid #e2e8f0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+        <h3 style="margin:0;font-size:15px;font-weight:700;color:#0f172a;display:flex;align-items:center;gap:6px;">🏢 Add New Floor</h3>
+        <button type="button" id="closeAddFloorModalBtn" style="border:none;background:transparent;cursor:pointer;font-size:18px;color:#64748b;line-height:1;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:18px;">
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;">Floor Name</label>
+          <input type="text" id="addFloorNameInput" value="First Floor" placeholder="e.g. First Floor, Second Floor, Terrace"
+            style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:600;color:#0f172a;">
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer;">
+            <input type="checkbox" id="addFloorCopyWallsCheck" checked style="width:16px;height:16px;accent-color:#059669;cursor:pointer;">
+            <span>Copy outer walls from ground floor</span>
+          </label>
+          <p style="margin:4px 0 0 24px;font-size:11px;color:#64748b;">Duplicates perimeter walls with fresh IDs so the building outline is immediately ready for editing.</p>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button type="button" id="cancelAddFloorBtn" style="padding:8px 14px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;">Cancel</button>
+          <button type="button" id="confirmAddFloorBtn" style="padding:8px 18px;border:none;background:#059669;border-radius:6px;font-size:12px;font-weight:700;color:#ffffff;cursor:pointer;box-shadow:0 2px 6px rgba(5,150,105,0.35);">+ Create Floor</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ══════ MODAL: IMPORT CUSTOM .SKP & DECORS (EXCLUDED FROM PRICING) ══════ -->

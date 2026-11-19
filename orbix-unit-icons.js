@@ -103,6 +103,12 @@
   ICONS["wrb-120-os"] = ICONS["wr-shelves"];
   ICONS["bs-60"] = ICONS["ledge-vert"];
   ICONS["bs"] = ICONS["ledge-vert"];
+  ICONS["ctvb-60"] = ICONS["ctvb-1d"] || ICONS["ctvb-1dr"];
+  ICONS["tbm-90"] = ICONS["tbm-60"];
+  ICONS["ctvw-wm-gl-75"] = ICONS["wm-75-gl"];
+  ICONS["wm-gl-75"] = ICONS["wm-75-gl"];
+  ICONS["ctvw-wm-gl-45"] = ICONS["wm-45-gl"];
+  ICONS["wm-gl-45"] = ICONS["wm-45-gl"];
 
   return {
     ICONS: ICONS,

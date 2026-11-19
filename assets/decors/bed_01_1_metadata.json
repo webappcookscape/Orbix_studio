@@ -1,0 +1,3378 @@
+{
+  "format_version": "1.0",
+  "source_file": "bed_01_1",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.1.299}",
+  "total_definitions": 85,
+  "total_meshes": 110,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "55Material #2142147295",
+      "color": {
+        "r": 222,
+        "g": 216,
+        "b": 207
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\youshang-北欧卧室-20422-004.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "55Material #2142147296",
+      "color": {
+        "r": 198,
+        "g": 199,
+        "b": 199
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\youshang-北欧卧室-20422-005.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "55Material #2142147297",
+      "color": {
+        "r": 148,
+        "g": 148,
+        "b": 148
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\youshang-北欧卧室-20422-007.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "youshang-北欧卧室-20422-_640",
+      "color": {
+        "r": 51,
+        "g": 51,
+        "b": 51
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "youshang-北欧卧室-20422-_641",
+      "color": {
+        "r": 210,
+        "g": 210,
+        "b": 210
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_贴图 417233635_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Alberta_Bed_LAwwGUNwloth7",
+      "color": {
+        "r": 120,
+        "g": 111,
+        "b": 104
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_贴图 417233592_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "youshang-EEl #13479",
+      "color": {
+        "r": 27,
+        "g": 30,
+        "b": 31
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_贴图 417233591_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "youshang-m11011",
+      "color": {
+        "r": 18,
+        "g": 18,
+        "b": 18
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\youshang-北欧卧室-20422-009.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "youshang-m11012",
+      "color": {
+        "r": 205,
+        "g": 203,
+        "b": 202
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\youshang-北欧卧室-20422-010.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "youshang-m11013",
+      "color": {
+        "r": 244,
+        "g": 244,
+        "b": 244
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\youshang-北欧卧室-20422-011.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "vray ChenZc-200606-DCZ8",
+      "color": {
+        "r": 181,
+        "g": 181,
+        "b": 181
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\wang\\Desktop\\桌面贴图\\fabric_b.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "ChenZc-200606-DCZ97",
+      "color": {
+        "r": 45,
+        "g": 44,
+        "b": 41
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_ChenZc200606DCZ342_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "vray ChenZc-200606-DCZ22",
+      "color": {
+        "r": 127,
+        "g": 124,
+        "b": 121
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\235198_metal.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "mmjhfdghd188",
+      "color": {
+        "r": 201,
+        "g": 200,
+        "b": 196
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_贴图 1914238947_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "mmjhfdghd189",
+      "color": {
+        "r": 128,
+        "g": 114,
+        "b": 101
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\wang\\Desktop\\绒布10.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "mmjhfdghd187",
+      "color": {
+        "r": 135,
+        "g": 128,
+        "b": 119
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_贴图 1914238944_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "mmjhfdghd179",
+      "color": {
+        "r": 96,
+        "g": 95,
+        "b": 91
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_Map 156_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "mmjhfdghd180",
+      "color": {
+        "r": 185,
+        "g": 184,
+        "b": 180
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_Map 97_1.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "mmjhfdghd176",
+      "color": {
+        "r": 165,
+        "g": 164,
+        "b": 159
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_Map 97_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "sfdsafafssssssss",
+      "color": {
+        "r": 93,
+        "g": 90,
+        "b": 70
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "taochi",
+      "color": {
+        "r": 39,
+        "g": 38,
+        "b": 35
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_Map 20354_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "vray_VRayMtl_21",
+      "color": {
+        "r": 100,
+        "g": 101,
+        "b": 99
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_Map 139_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "2106173_033",
+      "color": {
+        "r": 229,
+        "g": 230,
+        "b": 224
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\2106173_009.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "2106173_034",
+      "color": {
+        "r": 76,
+        "g": 96,
+        "b": 103
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\Color_4b6167.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "2106173_036",
+      "color": {
+        "r": 162,
+        "g": 159,
+        "b": 158
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\2106173_011.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "2106173_037",
+      "color": {
+        "r": 209,
+        "g": 209,
+        "b": 208
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\2106173_010.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "2106173_039",
+      "color": {
+        "r": 165,
+        "g": 162,
+        "b": 162
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\DiffuseTexture_2106173_117_0.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "2106173_040",
+      "color": {
+        "r": 221,
+        "g": 216,
+        "b": 210
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\616050_metal.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "2106173_042",
+      "color": {
+        "r": 215,
+        "g": 213,
+        "b": 210
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\616137_metal.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "2106173_019",
+      "color": {
+        "r": 211,
+        "g": 210,
+        "b": 206
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\wang\\Desktop\\桌面贴图\\微水泥\\2105102_0033.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "2106173_041",
+      "color": {
+        "r": 3,
+        "g": 2,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:/SUMODEL\\现代卧室\\textures\\Color_030201.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__@05-床_01.第一季_组#8__mmjhfdgh3719_Layer0": {
+      "name": "mmjhfdgh3719",
+      "definition_name": "Group113",
+      "layer": "Layer0",
+      "position_mm": [
+        -40.93,
+        561.04,
+        -5.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / @05-床_01.第一季_组#8 / mmjhfdgh3719"
+    },
+    "mesh_1_ROOT__@05-床_01.第一季_组#8__mmjhfdgh5271_Layer0": {
+      "name": "mmjhfdgh5271",
+      "definition_name": "Group114",
+      "layer": "Layer0",
+      "position_mm": [
+        745.81,
+        -102.54,
+        1883.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / @05-床_01.第一季_组#8 / mmjhfdgh5271"
+    },
+    "mesh_2_ROOT__@05-床_01.第一季_组#8__mmjhfdgh6003_Layer0": {
+      "name": "mmjhfdgh6003",
+      "definition_name": "Group115",
+      "layer": "Layer0",
+      "position_mm": [
+        745.81,
+        -102.54,
+        1883.74
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / @05-床_01.第一季_组#8 / mmjhfdgh6003"
+    },
+    "mesh_3_ROOT__@05-床_01.第一季_组#8__mmjhfdgh7285_Layer0": {
+      "name": "mmjhfdgh7285",
+      "definition_name": "Group112",
+      "layer": "Layer0",
+      "position_mm": [
+        -40.58,
+        265.64,
+        1116.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / @05-床_01.第一季_组#8 / mmjhfdgh7285"
+    },
+    "mesh_4_ROOT__@05-床_01.第一季_组#8__mmjhfdgh7550_Layer0_96_95_91_ds": {
+      "name": "mmjhfdgh7550",
+      "definition_name": "Group116",
+      "layer": "Layer0",
+      "position_mm": [
+        -40.58,
+        265.64,
+        1116.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / @05-床_01.第一季_组#8 / mmjhfdgh7550"
+    },
+    "mesh_5_ROOT__@05-床_01.第一季_组#8__mmjhfdgh7550_Layer0_185_184_180_ds": {
+      "name": "mmjhfdgh7550",
+      "definition_name": "Group116",
+      "layer": "Layer0",
+      "position_mm": [
+        -40.58,
+        265.64,
+        1116.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / @05-床_01.第一季_组#8 / mmjhfdgh7550"
+    },
+    "mesh_6_ROOT__@05-床_01.第一季_组#8__mmjhfdgh9481_Layer0": {
+      "name": "mmjhfdgh9481",
+      "definition_name": "Group111",
+      "layer": "Layer0",
+      "position_mm": [
+        -84.09,
+        533.61,
+        489.34
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / @05-床_01.第一季_组#8 / mmjhfdgh9481"
+    },
+    "mesh_7_ROOT__Component_721089_Layer0_162_159_158_ds": {
+      "name": "Component_721089",
+      "definition_name": "Group68#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -2780.67,
+        1243.21,
+        737.8
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_721089"
+    },
+    "mesh_8_ROOT__Component_721089_Layer0_209_209_208_ds": {
+      "name": "Component_721089",
+      "definition_name": "Group68#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -2780.67,
+        1243.21,
+        737.8
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_721089"
+    },
+    "mesh_9_ROOT__Component_723534_Layer0_165_162_162_ds": {
+      "name": "Component_723534",
+      "definition_name": "Group69#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -2779.72,
+        1258.0,
+        764.84
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_723534"
+    },
+    "mesh_10_ROOT__Component_723534_Layer0_209_209_208_ds": {
+      "name": "Component_723534",
+      "definition_name": "Group69#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -2779.72,
+        1258.0,
+        764.84
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_723534"
+    },
+    "mesh_11_ROOT__Component_725981_Layer0_229_230_224_ds": {
+      "name": "Component_725981",
+      "definition_name": "Group67#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -2896.84,
+        1317.29,
+        821.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_725981"
+    },
+    "mesh_12_ROOT__Component_725981_Layer0_76_96_103_ds": {
+      "name": "Component_725981",
+      "definition_name": "Group67#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -2896.84,
+        1317.29,
+        821.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_725981"
+    },
+    "mesh_13_ROOT__ChenZc-24999_Layer0": {
+      "name": "ChenZc-24999",
+      "definition_name": "Group82",
+      "layer": "Layer0",
+      "position_mm": [
+        768.66,
+        -474.05,
+        14.22
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / ChenZc-24999"
+    },
+    "mesh_14_ROOT__组#4__youshang3145_Layer0": {
+      "name": "youshang3145",
+      "definition_name": "youshang4736",
+      "layer": "Layer0",
+      "position_mm": [
+        1179.77,
+        1260.5,
+        490.42
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / youshang3145"
+    },
+    "mesh_15_ROOT__组#4__youshang4736_Layer0": {
+      "name": "youshang4736",
+      "definition_name": "youshang4736",
+      "layer": "Layer0",
+      "position_mm": [
+        1255.34,
+        1260.5,
+        504.18
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / youshang4736"
+    },
+    "mesh_16_ROOT__组#4__17、植物花艺_花艺摆件_组#4__Group75_Layer0": {
+      "name": "Group75",
+      "definition_name": "Group75",
+      "layer": "Layer0",
+      "position_mm": [
+        1463.37,
+        1284.22,
+        538.45
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / Group75"
+    },
+    "mesh_17_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine18560_Layer0": {
+      "name": "objLine18560",
+      "definition_name": "objLine6",
+      "layer": "Layer0",
+      "position_mm": [
+        -4785.06,
+        -1645.85,
+        2901.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine18560"
+    },
+    "mesh_18_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objSpher2705_Layer0": {
+      "name": "objSpher2705",
+      "definition_name": "objSpher7787",
+      "layer": "Layer0",
+      "position_mm": [
+        -4785.06,
+        -1645.85,
+        2901.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objSpher2705"
+    },
+    "mesh_19_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine12551_Layer0": {
+      "name": "objLine12551",
+      "definition_name": "objLine63836",
+      "layer": "Layer0",
+      "position_mm": [
+        -4785.06,
+        -1645.85,
+        2901.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine12551"
+    },
+    "mesh_20_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objSpher1879_Layer0": {
+      "name": "objSpher1879",
+      "definition_name": "objSpher7787",
+      "layer": "Layer0",
+      "position_mm": [
+        -4941.15,
+        -1381.18,
+        -688.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objSpher1879"
+    },
+    "mesh_21_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group129_Layer0": {
+      "name": "Group129",
+      "definition_name": "Group129",
+      "layer": "Layer0",
+      "position_mm": [
+        -5084.07,
+        -1477.9,
+        -639.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group129"
+    },
+    "mesh_22_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group126_Layer0": {
+      "name": "Group126",
+      "definition_name": "Group126",
+      "layer": "Layer0",
+      "position_mm": [
+        -5084.07,
+        -1477.9,
+        -639.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group126"
+    },
+    "mesh_23_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine150_Layer0": {
+      "name": "objLine150",
+      "definition_name": "objLine63836",
+      "layer": "Layer0",
+      "position_mm": [
+        -4941.15,
+        -1381.18,
+        -688.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine150"
+    },
+    "mesh_24_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine12248_Layer0": {
+      "name": "objLine12248",
+      "definition_name": "objLine6",
+      "layer": "Layer0",
+      "position_mm": [
+        -4941.15,
+        -1381.18,
+        -688.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine12248"
+    },
+    "mesh_25_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objCapsu7465_Layer0": {
+      "name": "objCapsu7465",
+      "definition_name": "objCapsu7465",
+      "layer": "Layer0",
+      "position_mm": [
+        -4577.03,
+        -991.94,
+        -2802.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objCapsu7465"
+    },
+    "mesh_26_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine72380_Layer0": {
+      "name": "objLine72380",
+      "definition_name": "objLine72380",
+      "layer": "Layer0",
+      "position_mm": [
+        -4577.03,
+        -991.94,
+        -2802.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine72380"
+    },
+    "mesh_27_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objCapsu3023_Layer0": {
+      "name": "objCapsu3023",
+      "definition_name": "objCapsu3023",
+      "layer": "Layer0",
+      "position_mm": [
+        -4577.03,
+        -991.94,
+        -2802.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objCapsu3023"
+    },
+    "mesh_28_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objCapsu1749_Layer0": {
+      "name": "objCapsu1749",
+      "definition_name": "objCapsu7465",
+      "layer": "Layer0",
+      "position_mm": [
+        -5437.95,
+        -1143.74,
+        1961.75
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objCapsu1749"
+    },
+    "mesh_29_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine16539_Layer0": {
+      "name": "objLine16539",
+      "definition_name": "objLine72380",
+      "layer": "Layer0",
+      "position_mm": [
+        -5437.95,
+        -1143.74,
+        1961.75
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine16539"
+    },
+    "mesh_30_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objSpher2770_Layer0": {
+      "name": "objSpher2770",
+      "definition_name": "objSpher2770",
+      "layer": "Layer0",
+      "position_mm": [
+        -4577.03,
+        -991.94,
+        -2802.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objSpher2770"
+    },
+    "mesh_31_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine6_Layer0": {
+      "name": "objLine6",
+      "definition_name": "objLine6",
+      "layer": "Layer0",
+      "position_mm": [
+        -4995.61,
+        -1473.27,
+        -720.72
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine6"
+    },
+    "mesh_32_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine12147_Layer0": {
+      "name": "objLine12147",
+      "definition_name": "objLine7",
+      "layer": "Layer0",
+      "position_mm": [
+        -5437.95,
+        -1143.74,
+        1961.75
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine12147"
+    },
+    "mesh_33_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine14060_Layer0": {
+      "name": "objLine14060",
+      "definition_name": "objLine78646",
+      "layer": "Layer0",
+      "position_mm": [
+        -5437.95,
+        -1143.74,
+        1961.75
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine14060"
+    },
+    "mesh_34_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine13578_Layer0": {
+      "name": "objLine13578",
+      "definition_name": "objLine72905",
+      "layer": "Layer0",
+      "position_mm": [
+        -5437.95,
+        -1143.74,
+        1961.75
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine13578"
+    },
+    "mesh_35_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine63836_Layer0": {
+      "name": "objLine63836",
+      "definition_name": "objLine63836",
+      "layer": "Layer0",
+      "position_mm": [
+        -4995.61,
+        -1473.27,
+        -720.72
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine63836"
+    },
+    "mesh_36_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objSpher7787_Layer0": {
+      "name": "objSpher7787",
+      "definition_name": "objSpher7787",
+      "layer": "Layer0",
+      "position_mm": [
+        -4995.61,
+        -1473.27,
+        -720.72
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objSpher7787"
+    },
+    "mesh_37_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Object11_Layer0": {
+      "name": "Object11",
+      "definition_name": "Object09",
+      "layer": "Layer0",
+      "position_mm": [
+        1435.69,
+        1247.64,
+        503.53
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Object11"
+    },
+    "mesh_38_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objCapsu2182_Layer0": {
+      "name": "objCapsu2182",
+      "definition_name": "objCapsu3023",
+      "layer": "Layer0",
+      "position_mm": [
+        -5437.95,
+        -1143.74,
+        1961.75
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objCapsu2182"
+    },
+    "mesh_39_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine72905_Layer0": {
+      "name": "objLine72905",
+      "definition_name": "objLine72905",
+      "layer": "Layer0",
+      "position_mm": [
+        -4577.03,
+        -991.94,
+        -2802.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine72905"
+    },
+    "mesh_40_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine7_Layer0": {
+      "name": "objLine7",
+      "definition_name": "objLine7",
+      "layer": "Layer0",
+      "position_mm": [
+        -4577.03,
+        -991.94,
+        -2802.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine7"
+    },
+    "mesh_41_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objLine78646_Layer0": {
+      "name": "objLine78646",
+      "definition_name": "objLine78646",
+      "layer": "Layer0",
+      "position_mm": [
+        -4577.03,
+        -991.94,
+        -2802.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objLine78646"
+    },
+    "mesh_42_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__objSpher9981_Layer0": {
+      "name": "objSpher9981",
+      "definition_name": "objSpher2770",
+      "layer": "Layer0",
+      "position_mm": [
+        -5437.95,
+        -1143.74,
+        1961.75
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / objSpher9981"
+    },
+    "mesh_43_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Object09_Layer0": {
+      "name": "Object09",
+      "definition_name": "Object09",
+      "layer": "Layer0",
+      "position_mm": [
+        1432.74,
+        1272.4,
+        471.77
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Object09"
+    },
+    "mesh_44_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Object04_Layer0": {
+      "name": "Object04",
+      "definition_name": "Object09",
+      "layer": "Layer0",
+      "position_mm": [
+        1442.7,
+        1260.99,
+        401.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Object04"
+    },
+    "mesh_45_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Object07_Layer0": {
+      "name": "Object07",
+      "definition_name": "Object09",
+      "layer": "Layer0",
+      "position_mm": [
+        1436.81,
+        1260.29,
+        471.77
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Object07"
+    },
+    "mesh_46_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group76_Layer0": {
+      "name": "Group76",
+      "definition_name": "Group76",
+      "layer": "Layer0",
+      "position_mm": [
+        1442.7,
+        1260.99,
+        401.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group76"
+    },
+    "mesh_47_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group118_Layer0": {
+      "name": "Group118",
+      "definition_name": "Group118",
+      "layer": "Layer0",
+      "position_mm": [
+        3076.15,
+        -5524.52,
+        -624.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group118"
+    },
+    "mesh_48_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group107_Layer0": {
+      "name": "Group107",
+      "definition_name": "Group107",
+      "layer": "Layer0",
+      "position_mm": [
+        -5462.47,
+        -1148.07,
+        -442.9
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group107"
+    },
+    "mesh_49_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_520642_Layer0": {
+      "name": "Component_520642",
+      "definition_name": "Group114#1",
+      "layer": "Layer0",
+      "position_mm": [
+        3068.27,
+        -5536.34,
+        -630.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_520642"
+    },
+    "mesh_50_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group125_Layer0": {
+      "name": "Group125",
+      "definition_name": "Group125",
+      "layer": "Layer0",
+      "position_mm": [
+        -5084.07,
+        -1477.9,
+        -639.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group125"
+    },
+    "mesh_51_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group127_Layer0": {
+      "name": "Group127",
+      "definition_name": "Group127",
+      "layer": "Layer0",
+      "position_mm": [
+        -5084.07,
+        -1477.9,
+        -639.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group127"
+    },
+    "mesh_52_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_520981_Layer0": {
+      "name": "Component_520981",
+      "definition_name": "Group83#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1415.81,
+        1297.15,
+        1001.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_520981"
+    },
+    "mesh_53_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group88_Layer0": {
+      "name": "Group88",
+      "definition_name": "Group88",
+      "layer": "Layer0",
+      "position_mm": [
+        -5119.58,
+        -1542.17,
+        -451.86
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group88"
+    },
+    "mesh_54_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group87_Layer0": {
+      "name": "Group87",
+      "definition_name": "Group87",
+      "layer": "Layer0",
+      "position_mm": [
+        -5119.58,
+        -1542.17,
+        -451.86
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group87"
+    },
+    "mesh_55_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_527368_Layer0": {
+      "name": "Component_527368",
+      "definition_name": "Group111#1",
+      "layer": "Layer0",
+      "position_mm": [
+        3068.27,
+        -5536.34,
+        -630.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_527368"
+    },
+    "mesh_56_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group110_Layer0": {
+      "name": "Group110",
+      "definition_name": "Group110",
+      "layer": "Layer0",
+      "position_mm": [
+        3068.27,
+        -5536.34,
+        -630.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group110"
+    },
+    "mesh_57_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group105_Layer0": {
+      "name": "Group105",
+      "definition_name": "Group105",
+      "layer": "Layer0",
+      "position_mm": [
+        -5462.47,
+        -1148.07,
+        -442.9
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group105"
+    },
+    "mesh_58_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group93_Layer0": {
+      "name": "Group93",
+      "definition_name": "Group93",
+      "layer": "Layer0",
+      "position_mm": [
+        746.5,
+        -2580.1,
+        201.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group93"
+    },
+    "mesh_59_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group90_Layer0": {
+      "name": "Group90",
+      "definition_name": "Group90",
+      "layer": "Layer0",
+      "position_mm": [
+        746.5,
+        -2580.1,
+        201.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group90"
+    },
+    "mesh_60_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group106_Layer0": {
+      "name": "Group106",
+      "definition_name": "Group106",
+      "layer": "Layer0",
+      "position_mm": [
+        -5462.47,
+        -1148.07,
+        -442.9
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group106"
+    },
+    "mesh_61_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_527940_Layer0": {
+      "name": "Component_527940",
+      "definition_name": "Group78#1",
+      "layer": "Layer0",
+      "position_mm": [
+        3074.36,
+        -5525.73,
+        -623.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_527940"
+    },
+    "mesh_62_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group85_Layer0": {
+      "name": "Group85",
+      "definition_name": "Group85",
+      "layer": "Layer0",
+      "position_mm": [
+        -5119.58,
+        -1542.17,
+        -451.86
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group85"
+    },
+    "mesh_63_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group104_Layer0": {
+      "name": "Group104",
+      "definition_name": "Group104",
+      "layer": "Layer0",
+      "position_mm": [
+        -5462.47,
+        -1148.07,
+        -442.9
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group104"
+    },
+    "mesh_64_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group124_Layer0": {
+      "name": "Group124",
+      "definition_name": "Group124",
+      "layer": "Layer0",
+      "position_mm": [
+        -4894.58,
+        -1533.98,
+        -698.04
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group124"
+    },
+    "mesh_65_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group92_Layer0": {
+      "name": "Group92",
+      "definition_name": "Group92",
+      "layer": "Layer0",
+      "position_mm": [
+        746.5,
+        -2580.1,
+        201.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group92"
+    },
+    "mesh_66_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group108_Layer0": {
+      "name": "Group108",
+      "definition_name": "Group108",
+      "layer": "Layer0",
+      "position_mm": [
+        -5462.47,
+        -1148.07,
+        -442.9
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group108"
+    },
+    "mesh_67_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group79_Layer0": {
+      "name": "Group79",
+      "definition_name": "Group79",
+      "layer": "Layer0",
+      "position_mm": [
+        1415.81,
+        1297.15,
+        1001.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group79"
+    },
+    "mesh_68_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_531739_Layer0": {
+      "name": "Component_531739",
+      "definition_name": "Group115#1",
+      "layer": "Layer0",
+      "position_mm": [
+        3068.27,
+        -5536.34,
+        -630.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_531739"
+    },
+    "mesh_69_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group86_Layer0": {
+      "name": "Group86",
+      "definition_name": "Group86",
+      "layer": "Layer0",
+      "position_mm": [
+        -5119.58,
+        -1542.17,
+        -451.86
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group86"
+    },
+    "mesh_70_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group89_Layer0": {
+      "name": "Group89",
+      "definition_name": "Group89",
+      "layer": "Layer0",
+      "position_mm": [
+        746.5,
+        -2580.1,
+        201.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group89"
+    },
+    "mesh_71_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group109_Layer0": {
+      "name": "Group109",
+      "definition_name": "Group109",
+      "layer": "Layer0",
+      "position_mm": [
+        -5462.47,
+        -1148.07,
+        -442.9
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group109"
+    },
+    "mesh_72_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_532113_Layer0": {
+      "name": "Component_532113",
+      "definition_name": "Group80#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1370.94,
+        1608.85,
+        793.14
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_532113"
+    },
+    "mesh_73_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group130_Layer0": {
+      "name": "Group130",
+      "definition_name": "Group130",
+      "layer": "Layer0",
+      "position_mm": [
+        -5084.07,
+        -1477.9,
+        -639.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group130"
+    },
+    "mesh_74_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group131_Layer0": {
+      "name": "Group131",
+      "definition_name": "Group131",
+      "layer": "Layer0",
+      "position_mm": [
+        -5084.07,
+        -1477.9,
+        -639.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group131"
+    },
+    "mesh_75_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_538555_Layer0": {
+      "name": "Component_538555",
+      "definition_name": "Group82#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1366.62,
+        1247.48,
+        1099.23
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_538555"
+    },
+    "mesh_76_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group81_Layer0": {
+      "name": "Group81",
+      "definition_name": "Group81",
+      "layer": "Layer0",
+      "position_mm": [
+        1415.81,
+        1297.15,
+        1001.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group81"
+    },
+    "mesh_77_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_552615_Layer0": {
+      "name": "Component_552615",
+      "definition_name": "Group112#1",
+      "layer": "Layer0",
+      "position_mm": [
+        3068.27,
+        -5536.34,
+        -630.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_552615"
+    },
+    "mesh_78_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group128_Layer0": {
+      "name": "Group128",
+      "definition_name": "Group128",
+      "layer": "Layer0",
+      "position_mm": [
+        -5084.07,
+        -1477.9,
+        -639.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group128"
+    },
+    "mesh_79_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_552741_Layer0": {
+      "name": "Component_552741",
+      "definition_name": "Group84#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -5119.58,
+        -1542.17,
+        -451.86
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_552741"
+    },
+    "mesh_80_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group94_Layer0": {
+      "name": "Group94",
+      "definition_name": "Group94",
+      "layer": "Layer0",
+      "position_mm": [
+        746.5,
+        -2580.1,
+        201.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group94"
+    },
+    "mesh_81_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group91_Layer0": {
+      "name": "Group91",
+      "definition_name": "Group91",
+      "layer": "Layer0",
+      "position_mm": [
+        746.5,
+        -2580.1,
+        201.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group91"
+    },
+    "mesh_82_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group103_Layer0": {
+      "name": "Group103",
+      "definition_name": "Group103",
+      "layer": "Layer0",
+      "position_mm": [
+        -5462.47,
+        -1148.07,
+        -442.9
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group103"
+    },
+    "mesh_83_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_553115_Layer0": {
+      "name": "Component_553115",
+      "definition_name": "Group113#1",
+      "layer": "Layer0",
+      "position_mm": [
+        3068.27,
+        -5536.34,
+        -630.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_553115"
+    },
+    "mesh_84_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group117_Layer0": {
+      "name": "Group117",
+      "definition_name": "Group117",
+      "layer": "Layer0",
+      "position_mm": [
+        3076.15,
+        -5524.52,
+        -624.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group117"
+    },
+    "mesh_85_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group119_Layer0": {
+      "name": "Group119",
+      "definition_name": "Group119",
+      "layer": "Layer0",
+      "position_mm": [
+        3076.15,
+        -5524.52,
+        -624.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group119"
+    },
+    "mesh_86_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group95_Layer0": {
+      "name": "Group95",
+      "definition_name": "Group95",
+      "layer": "Layer0",
+      "position_mm": [
+        746.5,
+        -2580.1,
+        201.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group95"
+    },
+    "mesh_87_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Component_553403_Layer0": {
+      "name": "Component_553403",
+      "definition_name": "Group116#1",
+      "layer": "Layer0",
+      "position_mm": [
+        3068.27,
+        -5536.34,
+        -630.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Component_553403"
+    },
+    "mesh_88_ROOT__组#4__17、植物花艺_花艺摆件_组#4__组#3__Group120_Layer0": {
+      "name": "Group120",
+      "definition_name": "Group120",
+      "layer": "Layer0",
+      "position_mm": [
+        3076.15,
+        -5524.52,
+        -624.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / 17、植物花艺_花艺摆件_组#4 / 组#3 / Group120"
+    },
+    "mesh_89_ROOT__组#4__youshang9929_Layer0_222_216_207_ds": {
+      "name": "youshang9929",
+      "definition_name": "Group71",
+      "layer": "Layer0",
+      "position_mm": [
+        1201.99,
+        1251.85,
+        438.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / youshang9929"
+    },
+    "mesh_90_ROOT__组#4__youshang9929_Layer0_198_199_199_ds": {
+      "name": "youshang9929",
+      "definition_name": "Group71",
+      "layer": "Layer0",
+      "position_mm": [
+        1201.99,
+        1251.85,
+        438.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / youshang9929"
+    },
+    "mesh_91_ROOT__组#4__youshang9929_Layer0_148_148_148_ds": {
+      "name": "youshang9929",
+      "definition_name": "Group71",
+      "layer": "Layer0",
+      "position_mm": [
+        1201.99,
+        1251.85,
+        438.55
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#4 / youshang9929"
+    },
+    "mesh_92_ROOT__组#1__Component_577736_Layer0": {
+      "name": "Component_577736",
+      "definition_name": "Group70#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1289.22,
+        1290.44,
+        -18.03
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Component_577736"
+    },
+    "mesh_93_ROOT__组#1__Component_577931_Layer0": {
+      "name": "Component_577931",
+      "definition_name": "Group71#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1289.22,
+        1290.44,
+        0.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Component_577931"
+    },
+    "mesh_94_ROOT__组#1__Component_578726_Layer0": {
+      "name": "Component_578726",
+      "definition_name": "Group74#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1266.4,
+        1290.44,
+        -18.03
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Component_578726"
+    },
+    "mesh_95_ROOT__组#1__Component_581382_Layer0": {
+      "name": "Component_581382",
+      "definition_name": "Group73#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1289.22,
+        1290.45,
+        170.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Component_581382"
+    },
+    "mesh_96_ROOT__组#1__Group72_Layer0": {
+      "name": "Group72",
+      "definition_name": "Group72",
+      "layer": "Layer0",
+      "position_mm": [
+        1289.22,
+        1290.44,
+        404.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Group72"
+    },
+    "mesh_97_ROOT__组#2__ChenZc-29316_Layer0": {
+      "name": "ChenZc-29316",
+      "definition_name": "Group83",
+      "layer": "Layer0",
+      "position_mm": [
+        -939.67,
+        1130.55,
+        21.08
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#2 / ChenZc-29316"
+    },
+    "mesh_98_ROOT__组#2__ChenZc-26516_Layer0": {
+      "name": "ChenZc-26516",
+      "definition_name": "Group84",
+      "layer": "Layer0",
+      "position_mm": [
+        -939.67,
+        1130.55,
+        21.08
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#2 / ChenZc-26516"
+    },
+    "mesh_99_ROOT__ChenZc-25912_Layer0": {
+      "name": "ChenZc-25912",
+      "definition_name": "Group80",
+      "layer": "Layer0",
+      "position_mm": [
+        247.25,
+        -1345.86,
+        -81.91
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / ChenZc-25912"
+    },
+    "mesh_100_ROOT__youshang2014_Layer0_18_18_18_ds": {
+      "name": "youshang2014",
+      "definition_name": "Group74",
+      "layer": "Layer0",
+      "position_mm": [
+        11.07,
+        -1169.71,
+        44.27
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / youshang2014"
+    },
+    "mesh_101_ROOT__youshang2014_Layer0_205_203_202_ds": {
+      "name": "youshang2014",
+      "definition_name": "Group74",
+      "layer": "Layer0",
+      "position_mm": [
+        11.07,
+        -1169.71,
+        44.27
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / youshang2014"
+    },
+    "mesh_102_ROOT__youshang2014_Layer0_244_244_244_ds": {
+      "name": "youshang2014",
+      "definition_name": "Group74",
+      "layer": "Layer0",
+      "position_mm": [
+        11.07,
+        -1169.71,
+        44.27
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / youshang2014"
+    },
+    "mesh_103_ROOT__youshang3568_Layer0_120_111_104_ds": {
+      "name": "youshang3568",
+      "definition_name": "Group73",
+      "layer": "Layer0",
+      "position_mm": [
+        996.22,
+        -784.38,
+        1469.69
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / youshang3568"
+    },
+    "mesh_104_ROOT__youshang3568_Layer0_27_30_31_ds": {
+      "name": "youshang3568",
+      "definition_name": "Group73",
+      "layer": "Layer0",
+      "position_mm": [
+        996.22,
+        -784.38,
+        1469.69
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / youshang3568"
+    },
+    "mesh_105_ROOT__组#1__Component_577736_Layer0": {
+      "name": "Component_577736",
+      "definition_name": "Group70#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -1394.57,
+        1290.44,
+        -18.03
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Component_577736"
+    },
+    "mesh_106_ROOT__组#1__Component_577931_Layer0": {
+      "name": "Component_577931",
+      "definition_name": "Group71#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -1394.57,
+        1290.44,
+        0.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Component_577931"
+    },
+    "mesh_107_ROOT__组#1__Component_578726_Layer0": {
+      "name": "Component_578726",
+      "definition_name": "Group74#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -1417.39,
+        1290.44,
+        -18.03
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Component_578726"
+    },
+    "mesh_108_ROOT__组#1__Component_581382_Layer0": {
+      "name": "Component_581382",
+      "definition_name": "Group73#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -1394.57,
+        1290.45,
+        170.49
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Component_581382"
+    },
+    "mesh_109_ROOT__组#1__Group72_Layer0": {
+      "name": "Group72",
+      "definition_name": "Group72",
+      "layer": "Layer0",
+      "position_mm": [
+        -1394.57,
+        1290.44,
+        404.56
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Group72"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "@05-床_01.第一季_组#8",
+        "definition_name": "@05-床_01.第一季_组#8",
+        "layer": "Layer0",
+        "position_mm": [
+          -1200.77,
+          -587.17,
+          19.45
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "mmjhfdgh3719",
+            "definition_name": "Group113",
+            "layer": "Layer0",
+            "position_mm": [
+              -40.93,
+              561.04,
+              -5.34
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "mmjhfdgh5271",
+            "definition_name": "Group114",
+            "layer": "Layer0",
+            "position_mm": [
+              745.81,
+              -102.54,
+              1883.74
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "mmjhfdgh6003",
+            "definition_name": "Group115",
+            "layer": "Layer0",
+            "position_mm": [
+              745.81,
+              -102.54,
+              1883.74
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "mmjhfdgh7285",
+            "definition_name": "Group112",
+            "layer": "Layer0",
+            "position_mm": [
+              -40.58,
+              265.64,
+              1116.35
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "mmjhfdgh7550",
+            "definition_name": "Group116",
+            "layer": "Layer0",
+            "position_mm": [
+              -40.58,
+              265.64,
+              1116.35
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "mmjhfdgh9481",
+            "definition_name": "Group111",
+            "layer": "Layer0",
+            "position_mm": [
+              -84.09,
+              533.61,
+              489.34
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Component_721089",
+        "definition_name": "Group68#1",
+        "layer": "Layer0",
+        "position_mm": [
+          -2780.67,
+          1243.21,
+          737.8
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Component_723534",
+        "definition_name": "Group69#1",
+        "layer": "Layer0",
+        "position_mm": [
+          -2779.72,
+          1258.0,
+          764.84
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Component_725981",
+        "definition_name": "Group67#1",
+        "layer": "Layer0",
+        "position_mm": [
+          -2896.84,
+          1317.29,
+          821.43
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "ChenZc-24999",
+        "definition_name": "Group82",
+        "layer": "Layer0",
+        "position_mm": [
+          768.66,
+          -474.05,
+          14.22
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "组#4",
+        "definition_name": "组#4",
+        "layer": "Layer0",
+        "position_mm": [
+          990.68,
+          1014.87,
+          254.22
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "youshang3145",
+            "definition_name": "youshang4736",
+            "layer": "Layer0",
+            "position_mm": [
+              1179.77,
+              1260.5,
+              490.42
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "youshang4736",
+            "definition_name": "youshang4736",
+            "layer": "Layer0",
+            "position_mm": [
+              1255.34,
+              1260.5,
+              504.18
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "17、植物花艺_花艺摆件_组#4",
+            "definition_name": "17、植物花艺_花艺摆件_组#4",
+            "layer": "Layer0",
+            "position_mm": [
+              1198.27,
+              1062.03,
+              415.47
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Group75",
+                "definition_name": "Group75",
+                "layer": "Layer0",
+                "position_mm": [
+                  1463.37,
+                  1284.22,
+                  538.45
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "组#3",
+                "definition_name": "组#3",
+                "layer": "Layer0",
+                "position_mm": [
+                  1198.27,
+                  1062.03,
+                  503.33
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "objLine18560",
+                    "definition_name": "objLine6",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4785.06,
+                      -1645.85,
+                      2901.39
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objSpher2705",
+                    "definition_name": "objSpher7787",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4785.06,
+                      -1645.85,
+                      2901.39
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine12551",
+                    "definition_name": "objLine63836",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4785.06,
+                      -1645.85,
+                      2901.39
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objSpher1879",
+                    "definition_name": "objSpher7787",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4941.15,
+                      -1381.18,
+                      -688.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group129",
+                    "definition_name": "Group129",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5084.07,
+                      -1477.9,
+                      -639.24
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group126",
+                    "definition_name": "Group126",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5084.07,
+                      -1477.9,
+                      -639.24
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine150",
+                    "definition_name": "objLine63836",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4941.15,
+                      -1381.18,
+                      -688.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine12248",
+                    "definition_name": "objLine6",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4941.15,
+                      -1381.18,
+                      -688.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objCapsu7465",
+                    "definition_name": "objCapsu7465",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4577.03,
+                      -991.94,
+                      -2802.13
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine72380",
+                    "definition_name": "objLine72380",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4577.03,
+                      -991.94,
+                      -2802.13
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objCapsu3023",
+                    "definition_name": "objCapsu3023",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4577.03,
+                      -991.94,
+                      -2802.13
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objCapsu1749",
+                    "definition_name": "objCapsu7465",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5437.95,
+                      -1143.74,
+                      1961.75
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine16539",
+                    "definition_name": "objLine72380",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5437.95,
+                      -1143.74,
+                      1961.75
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objSpher2770",
+                    "definition_name": "objSpher2770",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4577.03,
+                      -991.94,
+                      -2802.13
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine6",
+                    "definition_name": "objLine6",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4995.61,
+                      -1473.27,
+                      -720.72
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine12147",
+                    "definition_name": "objLine7",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5437.95,
+                      -1143.74,
+                      1961.75
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine14060",
+                    "definition_name": "objLine78646",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5437.95,
+                      -1143.74,
+                      1961.75
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine13578",
+                    "definition_name": "objLine72905",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5437.95,
+                      -1143.74,
+                      1961.75
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine63836",
+                    "definition_name": "objLine63836",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4995.61,
+                      -1473.27,
+                      -720.72
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objSpher7787",
+                    "definition_name": "objSpher7787",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4995.61,
+                      -1473.27,
+                      -720.72
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Object11",
+                    "definition_name": "Object09",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1435.69,
+                      1247.64,
+                      503.53
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objCapsu2182",
+                    "definition_name": "objCapsu3023",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5437.95,
+                      -1143.74,
+                      1961.75
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine72905",
+                    "definition_name": "objLine72905",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4577.03,
+                      -991.94,
+                      -2802.13
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine7",
+                    "definition_name": "objLine7",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4577.03,
+                      -991.94,
+                      -2802.13
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objLine78646",
+                    "definition_name": "objLine78646",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4577.03,
+                      -991.94,
+                      -2802.13
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "objSpher9981",
+                    "definition_name": "objSpher2770",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5437.95,
+                      -1143.74,
+                      1961.75
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Object09",
+                    "definition_name": "Object09",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1432.74,
+                      1272.4,
+                      471.77
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Object04",
+                    "definition_name": "Object09",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1442.7,
+                      1260.99,
+                      401.56
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Object07",
+                    "definition_name": "Object09",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1436.81,
+                      1260.29,
+                      471.77
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group76",
+                    "definition_name": "Group76",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1442.7,
+                      1260.99,
+                      401.56
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group118",
+                    "definition_name": "Group118",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3076.15,
+                      -5524.52,
+                      -624.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group107",
+                    "definition_name": "Group107",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5462.47,
+                      -1148.07,
+                      -442.9
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_520642",
+                    "definition_name": "Group114#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3068.27,
+                      -5536.34,
+                      -630.56
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group125",
+                    "definition_name": "Group125",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5084.07,
+                      -1477.9,
+                      -639.24
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group127",
+                    "definition_name": "Group127",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5084.07,
+                      -1477.9,
+                      -639.24
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_520981",
+                    "definition_name": "Group83#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1415.81,
+                      1297.15,
+                      1001.61
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group88",
+                    "definition_name": "Group88",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5119.58,
+                      -1542.17,
+                      -451.86
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group87",
+                    "definition_name": "Group87",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5119.58,
+                      -1542.17,
+                      -451.86
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_527368",
+                    "definition_name": "Group111#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3068.27,
+                      -5536.34,
+                      -630.56
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group110",
+                    "definition_name": "Group110",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3068.27,
+                      -5536.34,
+                      -630.56
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group105",
+                    "definition_name": "Group105",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5462.47,
+                      -1148.07,
+                      -442.9
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group93",
+                    "definition_name": "Group93",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      746.5,
+                      -2580.1,
+                      201.25
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group90",
+                    "definition_name": "Group90",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      746.5,
+                      -2580.1,
+                      201.25
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group106",
+                    "definition_name": "Group106",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5462.47,
+                      -1148.07,
+                      -442.9
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_527940",
+                    "definition_name": "Group78#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3074.36,
+                      -5525.73,
+                      -623.49
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group85",
+                    "definition_name": "Group85",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5119.58,
+                      -1542.17,
+                      -451.86
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group104",
+                    "definition_name": "Group104",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5462.47,
+                      -1148.07,
+                      -442.9
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group124",
+                    "definition_name": "Group124",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -4894.58,
+                      -1533.98,
+                      -698.04
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group92",
+                    "definition_name": "Group92",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      746.5,
+                      -2580.1,
+                      201.25
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group108",
+                    "definition_name": "Group108",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5462.47,
+                      -1148.07,
+                      -442.9
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group79",
+                    "definition_name": "Group79",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1415.81,
+                      1297.15,
+                      1001.61
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_531739",
+                    "definition_name": "Group115#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3068.27,
+                      -5536.34,
+                      -630.56
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group86",
+                    "definition_name": "Group86",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5119.58,
+                      -1542.17,
+                      -451.86
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group89",
+                    "definition_name": "Group89",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      746.5,
+                      -2580.1,
+                      201.25
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group109",
+                    "definition_name": "Group109",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5462.47,
+                      -1148.07,
+                      -442.9
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_532113",
+                    "definition_name": "Group80#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1370.94,
+                      1608.85,
+                      793.14
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group130",
+                    "definition_name": "Group130",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5084.07,
+                      -1477.9,
+                      -639.24
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group131",
+                    "definition_name": "Group131",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5084.07,
+                      -1477.9,
+                      -639.24
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_538555",
+                    "definition_name": "Group82#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1366.62,
+                      1247.48,
+                      1099.23
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group81",
+                    "definition_name": "Group81",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      1415.81,
+                      1297.15,
+                      1001.61
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_552615",
+                    "definition_name": "Group112#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3068.27,
+                      -5536.34,
+                      -630.56
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group128",
+                    "definition_name": "Group128",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5084.07,
+                      -1477.9,
+                      -639.24
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_552741",
+                    "definition_name": "Group84#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5119.58,
+                      -1542.17,
+                      -451.86
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group94",
+                    "definition_name": "Group94",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      746.5,
+                      -2580.1,
+                      201.25
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group91",
+                    "definition_name": "Group91",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      746.5,
+                      -2580.1,
+                      201.25
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group103",
+                    "definition_name": "Group103",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -5462.47,
+                      -1148.07,
+                      -442.9
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_553115",
+                    "definition_name": "Group113#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3068.27,
+                      -5536.34,
+                      -630.56
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group117",
+                    "definition_name": "Group117",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3076.15,
+                      -5524.52,
+                      -624.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group119",
+                    "definition_name": "Group119",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3076.15,
+                      -5524.52,
+                      -624.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group95",
+                    "definition_name": "Group95",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      746.5,
+                      -2580.1,
+                      201.25
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Component_553403",
+                    "definition_name": "Group116#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3068.27,
+                      -5536.34,
+                      -630.56
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Group120",
+                    "definition_name": "Group120",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      3076.15,
+                      -5524.52,
+                      -624.37
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "youshang9929",
+            "definition_name": "Group71",
+            "layer": "Layer0",
+            "position_mm": [
+              1201.99,
+              1251.85,
+              438.55
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "组#1",
+        "definition_name": "组#1",
+        "layer": "Layer0",
+        "position_mm": [
+          988.67,
+          1075.4,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Component_577736",
+            "definition_name": "Group70#1",
+            "layer": "Layer0",
+            "position_mm": [
+              1289.22,
+              1290.44,
+              -18.03
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_577931",
+            "definition_name": "Group71#1",
+            "layer": "Layer0",
+            "position_mm": [
+              1289.22,
+              1290.44,
+              0.46
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_578726",
+            "definition_name": "Group74#1",
+            "layer": "Layer0",
+            "position_mm": [
+              1266.4,
+              1290.44,
+              -18.03
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_581382",
+            "definition_name": "Group73#1",
+            "layer": "Layer0",
+            "position_mm": [
+              1289.22,
+              1290.45,
+              170.49
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Group72",
+            "definition_name": "Group72",
+            "layer": "Layer0",
+            "position_mm": [
+              1289.22,
+              1290.44,
+              404.56
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "组#2",
+        "definition_name": "组#2",
+        "layer": "Layer0",
+        "position_mm": [
+          -1509.04,
+          -1558.72,
+          18.42
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "ChenZc-29316",
+            "definition_name": "Group83",
+            "layer": "Layer0",
+            "position_mm": [
+              -939.67,
+              1130.55,
+              21.08
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "ChenZc-26516",
+            "definition_name": "Group84",
+            "layer": "Layer0",
+            "position_mm": [
+              -939.67,
+              1130.55,
+              21.08
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "ChenZc-25912",
+        "definition_name": "Group80",
+        "layer": "Layer0",
+        "position_mm": [
+          247.25,
+          -1345.86,
+          -81.91
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "youshang2014",
+        "definition_name": "Group74",
+        "layer": "Layer0",
+        "position_mm": [
+          11.07,
+          -1169.71,
+          44.27
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "youshang3568",
+        "definition_name": "Group73",
+        "layer": "Layer0",
+        "position_mm": [
+          996.22,
+          -784.38,
+          1469.69
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "组#1",
+        "definition_name": "组#1",
+        "layer": "Layer0",
+        "position_mm": [
+          -1695.12,
+          1075.4,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Component_577736",
+            "definition_name": "Group70#1",
+            "layer": "Layer0",
+            "position_mm": [
+              -1394.57,
+              1290.44,
+              -18.03
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_577931",
+            "definition_name": "Group71#1",
+            "layer": "Layer0",
+            "position_mm": [
+              -1394.57,
+              1290.44,
+              0.46
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_578726",
+            "definition_name": "Group74#1",
+            "layer": "Layer0",
+            "position_mm": [
+              -1417.39,
+              1290.44,
+              -18.03
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Component_581382",
+            "definition_name": "Group73#1",
+            "layer": "Layer0",
+            "position_mm": [
+              -1394.57,
+              1290.45,
+              170.49
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Group72",
+            "definition_name": "Group72",
+            "layer": "Layer0",
+            "position_mm": [
+              -1394.57,
+              1290.44,
+              404.56
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,2441 @@
+{
+  "format_version": "1.0",
+  "source_file": "plant_3",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 168,
+  "total_meshes": 30,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "Niraj_Skin",
+      "color": {
+        "r": 158,
+        "g": 128,
+        "b": 115
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Niraj_Shoe_Stitching",
+      "color": {
+        "r": 181,
+        "g": 137,
+        "b": 92
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Niraj_Pant_Shadow",
+      "color": {
+        "r": 70,
+        "g": 74,
+        "b": 99
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Niraj_Shoe_Sole",
+      "color": {
+        "r": 96,
+        "g": 73,
+        "b": 48
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Niraj_Pant",
+      "color": {
+        "r": 69,
+        "g": 86,
+        "b": 117
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Niraj_Shirt",
+      "color": {
+        "r": 144,
+        "g": 153,
+        "b": 181
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Niraj_Hair_Dark",
+      "color": {
+        "r": 109,
+        "g": 109,
+        "b": 109
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Niraj_Hair_Gray",
+      "color": {
+        "r": 178,
+        "g": 178,
+        "b": 178
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material~3",
+      "color": {
+        "r": 121,
+        "g": 127,
+        "b": 67
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\289\\DWF\\SimLabTempFile\\Texture 2.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~5",
+      "color": {
+        "r": 73,
+        "g": 93,
+        "b": 35
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\289\\DWF\\SimLabTempFile\\Texture 5.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~8",
+      "color": {
+        "r": 63,
+        "g": 55,
+        "b": 40
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\289\\DWF\\SimLabTempFile\\Texture 1.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~4",
+      "color": {
+        "r": 119,
+        "g": 110,
+        "b": 81
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\289\\DWF\\SimLabTempFile\\Texture 3.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~7",
+      "color": {
+        "r": 91,
+        "g": 125,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\289\\DWF\\SimLabTempFile\\Texture 4.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~6",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material~9",
+      "color": {
+        "r": 228,
+        "g": 228,
+        "b": 228
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material~1",
+      "color": {
+        "r": 68,
+        "g": 99,
+        "b": 41
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\292\\DWF\\SimLabTempFile\\Texture 4.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~2",
+      "color": {
+        "r": 77,
+        "g": 108,
+        "b": 44
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\292\\DWF\\SimLabTempFile\\Texture 3.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~21",
+      "color": {
+        "r": 67,
+        "g": 78,
+        "b": 36
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\292\\DWF\\SimLabTempFile\\Texture 5.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~15",
+      "color": {
+        "r": 81,
+        "g": 111,
+        "b": 45
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\292\\DWF\\SimLabTempFile\\Texture 6.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~12",
+      "color": {
+        "r": 144,
+        "g": 139,
+        "b": 143
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\292\\DWF\\SimLabTempFile\\Texture 10.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~10",
+      "color": {
+        "r": 66,
+        "g": 79,
+        "b": 28
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\292\\DWF\\SimLabTempFile\\Texture 1.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~11",
+      "color": {
+        "r": 100,
+        "g": 105,
+        "b": 15
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\292\\DWF\\SimLabTempFile\\Texture 2.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~28",
+      "color": {
+        "r": 86,
+        "g": 113,
+        "b": 24
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\rinoc\\SimLab_Imported_Textures\\292\\DWF\\SimLabTempFile\\Texture 11.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~13",
+      "color": {
+        "r": 238,
+        "g": 146,
+        "b": 0
+      },
+      "transparency": 0.24,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material~14",
+      "color": {
+        "r": 26,
+        "g": 0,
+        "b": 13
+      },
+      "transparency": 0.37,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material~16",
+      "color": {
+        "r": 3,
+        "g": 2,
+        "b": 5
+      },
+      "transparency": 0.63,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material~17",
+      "color": {
+        "r": 116,
+        "g": 140,
+        "b": 27
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\1. SKETCHUP FOREVER\\1. SKP\\17. TREES & PLANTS\\PLANT INTERIOR\\PLI_0044\\TEXTURES\\3d66Model-848126-files-16.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~18",
+      "color": {
+        "r": 103,
+        "g": 97,
+        "b": 83
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\1. SKETCHUP FOREVER\\1. SKP\\17. TREES & PLANTS\\PLANT INTERIOR\\PLI_0044\\TEXTURES\\3d66Model-848126-files-21.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~19",
+      "color": {
+        "r": 35,
+        "g": 35,
+        "b": 35
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material~20",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\intercona\\SimLab_Imported_Textures\\556\\DWF\\SimLabTempFile\\Texture 6.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~22",
+      "color": {
+        "r": 161,
+        "g": 129,
+        "b": 80
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\1. SKETCHUP FOREVER\\1. SKP\\17. TREES & PLANTS\\PLANT INTERIOR\\PLI_0044\\TEXTURES\\3d66Model-848126-files-13.jpg",
+        "x_scale": 1.0,
+        "y_scale": 0.9654471544715446
+      }
+    },
+    {
+      "name": "Material~23",
+      "color": {
+        "r": 198,
+        "g": 182,
+        "b": 161
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\intercona\\SimLab_Imported_Textures\\556\\DWF\\SimLabTempFile\\Texture 8.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~24",
+      "color": {
+        "r": 103,
+        "g": 96,
+        "b": 83
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\intercona\\SimLab_Imported_Textures\\556\\DWF\\SimLabTempFile\\Texture 4.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~25",
+      "color": {
+        "r": 137,
+        "g": 115,
+        "b": 97
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\1. SKETCHUP FOREVER\\1. SKP\\17. TREES & PLANTS\\PLANT INTERIOR\\PLI_0044\\TEXTURES\\3d66Model-848126-files-14.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~26",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\intercona\\SimLab_Imported_Textures\\556\\DWF\\SimLabTempFile\\Texture 3.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~27",
+      "color": {
+        "r": 69,
+        "g": 47,
+        "b": 40
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\intercona\\SimLab_Imported_Textures\\556\\DWF\\SimLabTempFile\\Texture 7.jpeg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~29",
+      "color": {
+        "r": 70,
+        "g": 50,
+        "b": 41
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\1. SKETCHUP FOREVER\\1. SKP\\17. TREES & PLANTS\\PLANT INTERIOR\\PLI_0044\\TEXTURES\\3d66Model-848126-files-18.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~30",
+      "color": {
+        "r": 70,
+        "g": 92,
+        "b": 65
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\1. SKETCHUP FOREVER\\1. SKP\\17. TREES & PLANTS\\PLANT INTERIOR\\PLI_0044\\TEXTURES\\3d66Model-848126-files-24.jpg",
+        "x_scale": 0.8,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Material~31",
+      "color": {
+        "r": 79,
+        "g": 127,
+        "b": 37
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\1. SKETCHUP FOREVER\\1. SKP\\17. TREES & PLANTS\\PLANT INTERIOR\\PLI_0044\\TEXTURES\\3d66Model-848126-files-10.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Mat3d66-618546-2-547",
+      "color": {
+        "r": 137,
+        "g": 111,
+        "b": 92
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Administrator\\Desktop\\新建文件夹\\2018(1)\\7月\\B栋15层\\b栋15楼办公室\\3d66Model-618546-files-2.jpg",
+        "x_scale": 1000.0,
+        "y_scale": 1000.0
+      }
+    },
+    {
+      "name": "Mat3d66-618546-3-663",
+      "color": {
+        "r": 53,
+        "g": 47,
+        "b": 32
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Administrator\\Desktop\\新建文件夹\\2018(1)\\7月\\B栋15层\\b栋15楼办公室\\3d66Model-618546-files-1.jpg",
+        "x_scale": 1000.0,
+        "y_scale": 1000.0
+      }
+    },
+    {
+      "name": "02 - Defaultds",
+      "color": {
+        "r": 158,
+        "g": 140,
+        "b": 117
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Administrator\\Desktop\\新建文件夹\\2018(1)\\7月\\B栋15层\\b栋15楼办公室\\好木4.jpg",
+        "x_scale": 1000.0,
+        "y_scale": 1000.0
+      }
+    },
+    {
+      "name": "陶瓷1",
+      "color": {
+        "r": 242,
+        "g": 242,
+        "b": 239
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Administrator\\Desktop\\贴图\\设计师SING 的店铺 (52).jpg",
+        "x_scale": 500.0,
+        "y_scale": 1000.0
+      }
+    },
+    {
+      "name": "Mat3d66-618546-1-530",
+      "color": {
+        "r": 59,
+        "g": 90,
+        "b": 52
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/ADMINI~1/AppData/Local/Temp/3d66Model-618546-files-3.jpg",
+        "x_scale": 1000.0,
+        "y_scale": 1000.0
+      }
+    },
+    {
+      "name": "xiadele_POT 2",
+      "color": {
+        "r": 248,
+        "g": 248,
+        "b": 246
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Administrator\\Desktop\\贴图\\设计师SING的模型专用贴图（盗版必究） (46).jpg",
+        "x_scale": 3937.0078740157483,
+        "y_scale": 2746.0629921259847
+      }
+    },
+    {
+      "name": "xiadele_LEAF 6",
+      "color": {
+        "r": 91,
+        "g": 94,
+        "b": 57
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "I:\\8月29号下得乐模型\\北欧简约沙发茶几组合_30069846\\北欧简约沙发茶几组合80\\北欧简约沙发茶几组合\\xiadele_LEAF 22.jpg",
+        "x_scale": 1000.0,
+        "y_scale": 1000.0
+      }
+    },
+    {
+      "name": "xiadele_LEAF 4",
+      "color": {
+        "r": 165,
+        "g": 168,
+        "b": 151
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "I:\\8月29号下得乐模型\\北欧简约沙发茶几组合_30069846\\北欧简约沙发茶几组合80\\北欧简约沙发茶几组合\\xiadele_leaf 18.jpg",
+        "x_scale": 1000.0,
+        "y_scale": 1000.0
+      }
+    },
+    {
+      "name": "xiadele_wood",
+      "color": {
+        "r": 38,
+        "g": 32,
+        "b": 24
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "I:\\8月29号下得乐模型\\北欧简约沙发茶几组合_30069846\\北欧简约沙发茶几组合80\\北欧简约沙发茶几组合\\xiadele_0AAAA.jpg",
+        "x_scale": 1000.0,
+        "y_scale": 1000.0
+      }
+    },
+    {
+      "name": "xiadele_soil 1",
+      "color": {
+        "r": 68,
+        "g": 55,
+        "b": 46
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "I:\\8月29号下得乐模型\\北欧简约沙发茶几组合_30069846\\北欧简约沙发茶几组合80\\北欧简约沙发茶几组合\\xiadele_soil.jpg",
+        "x_scale": 1000.0,
+        "y_scale": 1000.0
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_2081417__Group#3__Group106__Group107__xiadele_Plane9549_Defintio_Layer0": {
+      "name": "xiadele_Plane9549_Defintion#1",
+      "definition_name": "xiadele_Plane9549_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        386.71,
+        678.21,
+        958.07
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group106 / Group107 / xiadele_Plane9549_Defintion#1"
+    },
+    "mesh_1_ROOT__Component_2081417__Group#3__Group116__Group117__xiadele_Plane9563_Defintio_Layer0": {
+      "name": "xiadele_Plane9563_Defintion#1",
+      "definition_name": "xiadele_Plane9563_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        585.24,
+        992.13,
+        887.12
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group116 / Group117 / xiadele_Plane9563_Defintion#1"
+    },
+    "mesh_2_ROOT__Component_2081417__Group#3__Group112__Group113__xiadele_Plane9561_Defintio_Layer0": {
+      "name": "xiadele_Plane9561_Defintion#1",
+      "definition_name": "xiadele_Plane9561_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        729.38,
+        201.72,
+        796.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group112 / Group113 / xiadele_Plane9561_Defintion#1"
+    },
+    "mesh_3_ROOT__Component_2081417__Group#3__Group108__Group109__xiadele_Plane9559_Defintio_Layer0": {
+      "name": "xiadele_Plane9559_Defintion#1",
+      "definition_name": "xiadele_Plane9559_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        383.53,
+        308.03,
+        781.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group108 / Group109 / xiadele_Plane9559_Defintion#1"
+    },
+    "mesh_4_ROOT__Component_2081417__Group#3__Group122__Group123__xiadele_Plane9554_Defintio_Layer0": {
+      "name": "xiadele_Plane9554_Defintion#1",
+      "definition_name": "xiadele_Plane9554_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        466.67,
+        332.48,
+        944.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group122 / Group123 / xiadele_Plane9554_Defintion#1"
+    },
+    "mesh_5_ROOT__Component_2081417__Group#3__Group136__Group137__xiadele_Plane9565_Defintio_Layer0": {
+      "name": "xiadele_Plane9565_Defintion#1",
+      "definition_name": "xiadele_Plane9565_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        861.99,
+        645.29,
+        825.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group136 / Group137 / xiadele_Plane9565_Defintion#1"
+    },
+    "mesh_6_ROOT__Component_2081417__Group#3__Group144__Group145__xiadele_Plane9556_Defintio_Layer0": {
+      "name": "xiadele_Plane9556_Defintion#1",
+      "definition_name": "xiadele_Plane9556_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        755.6,
+        414.7,
+        1015.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group144 / Group145 / xiadele_Plane9556_Defintion#1"
+    },
+    "mesh_7_ROOT__Component_2081417__Group#3__Group134__Group135__xiadele_Plane9552_Defintio_Layer0": {
+      "name": "xiadele_Plane9552_Defintion#1",
+      "definition_name": "xiadele_Plane9552_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        749.02,
+        780.23,
+        959.37
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group134 / Group135 / xiadele_Plane9552_Defintion#1"
+    },
+    "mesh_8_ROOT__Component_2081417__Group#3__Group126__Group127__xiadele_Plane9570_Defintio_Layer0": {
+      "name": "xiadele_Plane9570_Defintion#1",
+      "definition_name": "xiadele_Plane9570_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        364.12,
+        399.32,
+        948.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group126 / Group127 / xiadele_Plane9570_Defintion#1"
+    },
+    "mesh_9_ROOT__Component_2081417__Group#3__Group128__Group129__xiadele_Plane9567_Defintio_Layer0": {
+      "name": "xiadele_Plane9567_Defintion#1",
+      "definition_name": "xiadele_Plane9567_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        215.13,
+        617.53,
+        827.77
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group128 / Group129 / xiadele_Plane9567_Defintion#1"
+    },
+    "mesh_10_ROOT__Component_2081417__Group#3__Group146__Group147__xiadele_Plane9557_Defintio_Layer0": {
+      "name": "xiadele_Plane9557_Defintion#1",
+      "definition_name": "xiadele_Plane9557_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        627.81,
+        719.67,
+        1136.97
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#3 / Group146 / Group147 / xiadele_Plane9557_Defintion#1"
+    },
+    "mesh_11_ROOT__Component_2081417__Component_2072759__xiadele_Cylinder006__xiadele_Cylinde_Layer0": {
+      "name": "xiadele_Cylinder006",
+      "definition_name": "xiadele_Cylinder006_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        346.02,
+        533.49,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Component_2072759 / xiadele_Cylinder006 / xiadele_Cylinder006 / xiadele_Cylinder006"
+    },
+    "mesh_12_ROOT__Component_2081417__Component_2072759__xiadele_ChamferBox003__xiadele_Chamf_Layer0": {
+      "name": "xiadele_ChamferBox003",
+      "definition_name": "xiadele_ChamferBox003_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        542.43,
+        622.77,
+        129.92
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Component_2072759 / xiadele_ChamferBox003 / xiadele_ChamferBox003 / xiadele_ChamferBox003"
+    },
+    "mesh_13_ROOT__Component_2081417__Component_2072759__xiadele_Cylinder008__xiadele_Cylinde_Layer0": {
+      "name": "xiadele_Cylinder008",
+      "definition_name": "xiadele_Cylinder008_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        453.84,
+        816.33,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Component_2072759 / xiadele_Cylinder008 / xiadele_Cylinder008 / xiadele_Cylinder008"
+    },
+    "mesh_14_ROOT__Component_2081417__Component_2072759__xiadele_ChamferBox004__xiadele_Chamf_Layer0": {
+      "name": "xiadele_ChamferBox004",
+      "definition_name": "xiadele_ChamferBox004_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        542.43,
+        622.77,
+        129.92
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Component_2072759 / xiadele_ChamferBox004 / xiadele_ChamferBox004 / xiadele_ChamferBox004"
+    },
+    "mesh_15_ROOT__Component_2081417__Component_2072759__xiadele_Cylinder005__xiadele_Cylinde_Layer0": {
+      "name": "xiadele_Cylinder005",
+      "definition_name": "xiadele_Cylinder005_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        736.34,
+        711.37,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Component_2072759 / xiadele_Cylinder005 / xiadele_Cylinder005 / xiadele_Cylinder005"
+    },
+    "mesh_16_ROOT__Component_2081417__Component_2072759__xiadele_Cylinder007__xiadele_Cylinde_Layer0": {
+      "name": "xiadele_Cylinder007",
+      "definition_name": "xiadele_Cylinder007_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        631.38,
+        426.75,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Component_2072759 / xiadele_Cylinder007 / xiadele_Cylinder007 / xiadele_Cylinder007"
+    },
+    "mesh_17_ROOT__Component_2081417__Component_2072759__xiadele_Plane9547__xiadele_Plane9547_Layer0": {
+      "name": "xiadele_Plane9547",
+      "definition_name": "xiadele_Plane9547_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        544.08,
+        464.9,
+        335.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Component_2072759 / xiadele_Plane9547 / xiadele_Plane9547 / xiadele_Plane9547"
+    },
+    "mesh_18_ROOT__Component_2081417__xiadele_SOIL010__xiadele_SOIL010__xiadele_SOIL010_Layer0": {
+      "name": "xiadele_SOIL010",
+      "definition_name": "xiadele_SOIL010_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        541.53,
+        622.27,
+        483.64
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / xiadele_SOIL010 / xiadele_SOIL010 / xiadele_SOIL010"
+    },
+    "mesh_19_ROOT__Component_2081417__Group#2__Group110__Group111__xiadele_Plane9560_Defintio_Layer0": {
+      "name": "xiadele_Plane9560_Defintion#1",
+      "definition_name": "xiadele_Plane9560_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        461.38,
+        433.85,
+        661.19
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group110 / Group111 / xiadele_Plane9560_Defintion#1"
+    },
+    "mesh_20_ROOT__Component_2081417__Group#2__Group120__Group121__xiadele_Plane9553_Defintio_Layer0": {
+      "name": "xiadele_Plane9553_Defintion#1",
+      "definition_name": "xiadele_Plane9553_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        512.61,
+        474.7,
+        758.67
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group120 / Group121 / xiadele_Plane9553_Defintion#1"
+    },
+    "mesh_21_ROOT__Component_2081417__Group#2__Group118__Group119__xiadele_Plane9564_Defintio_Layer0": {
+      "name": "xiadele_Plane9564_Defintion#1",
+      "definition_name": "xiadele_Plane9564_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        566.23,
+        801.75,
+        745.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group118 / Group119 / xiadele_Plane9564_Defintion#1"
+    },
+    "mesh_22_ROOT__Component_2081417__Group#2__Group114__Group115__xiadele_Plane9568_Defintio_Layer0": {
+      "name": "xiadele_Plane9568_Defintion#1",
+      "definition_name": "xiadele_Plane9568_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        362.68,
+        617.59,
+        704.2
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group114 / Group115 / xiadele_Plane9568_Defintion#1"
+    },
+    "mesh_23_ROOT__Component_2081417__Group#2__Group104__Group105__xiadele_Plane9501_Defintio_Layer0": {
+      "name": "xiadele_Plane9501_Defintion#1",
+      "definition_name": "xiadele_Plane9501_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        442.62,
+        654.93,
+        727.58
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group104 / Group105 / xiadele_Plane9501_Defintion#1"
+    },
+    "mesh_24_ROOT__Component_2081417__Group#2__Group138__Group139__xiadele_Plane9566_Defintio_Layer0": {
+      "name": "xiadele_Plane9566_Defintion#1",
+      "definition_name": "xiadele_Plane9566_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        730.2,
+        604.97,
+        694.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group138 / Group139 / xiadele_Plane9566_Defintion#1"
+    },
+    "mesh_25_ROOT__Component_2081417__Group#2__Group140__Group141__xiadele_Plane9562_Defintio_Layer0": {
+      "name": "xiadele_Plane9562_Defintion#1",
+      "definition_name": "xiadele_Plane9562_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        654.71,
+        376.11,
+        684.07
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group140 / Group141 / xiadele_Plane9562_Defintion#1"
+    },
+    "mesh_26_ROOT__Component_2081417__Group#2__Group124__Group125__xiadele_Plane9569_Defintio_Layer0": {
+      "name": "xiadele_Plane9569_Defintion#1",
+      "definition_name": "xiadele_Plane9569_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        465.7,
+        512.31,
+        781.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group124 / Group125 / xiadele_Plane9569_Defintion#1"
+    },
+    "mesh_27_ROOT__Component_2081417__Group#2__Group142__Group143__xiadele_Plane9555_Defintio_Layer0": {
+      "name": "xiadele_Plane9555_Defintion#1",
+      "definition_name": "xiadele_Plane9555_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        625.67,
+        507.34,
+        801.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group142 / Group143 / xiadele_Plane9555_Defintion#1"
+    },
+    "mesh_28_ROOT__Component_2081417__Group#2__Group132__Group133__xiadele_Plane9551_Defintio_Layer0": {
+      "name": "xiadele_Plane9551_Defintion#1",
+      "definition_name": "xiadele_Plane9551_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        627.13,
+        693.76,
+        773.75
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group132 / Group133 / xiadele_Plane9551_Defintion#1"
+    },
+    "mesh_29_ROOT__Component_2081417__Group#2__Group130__Group131__xiadele_Plane9558_Defintio_Layer0": {
+      "name": "xiadele_Plane9558_Defintion#1",
+      "definition_name": "xiadele_Plane9558_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        566.72,
+        622.4,
+        881.21
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_2081417 / Group#2 / Group130 / Group131 / xiadele_Plane9558_Defintion#1"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_2081417",
+        "definition_name": "Group#2",
+        "layer": "Layer0",
+        "position_mm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Group#3",
+            "definition_name": "Group105#1",
+            "layer": "Layer0",
+            "position_mm": [
+              26.81,
+              1225.27,
+              473.66
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Group106",
+                "definition_name": "Group106#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group107",
+                    "definition_name": "Group107#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9549_Defintion#1",
+                        "definition_name": "xiadele_Plane9549_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          386.71,
+                          678.21,
+                          958.07
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group116",
+                "definition_name": "Group108#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group117",
+                    "definition_name": "Group109#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9563_Defintion#1",
+                        "definition_name": "xiadele_Plane9563_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          585.24,
+                          992.13,
+                          887.12
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group112",
+                "definition_name": "Group110#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group113",
+                    "definition_name": "Group111#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9561_Defintion#1",
+                        "definition_name": "xiadele_Plane9561_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          729.38,
+                          201.72,
+                          796.09
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group108",
+                "definition_name": "Group112#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group109",
+                    "definition_name": "Group113#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9559_Defintion#1",
+                        "definition_name": "xiadele_Plane9559_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          383.53,
+                          308.03,
+                          781.05
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group122",
+                "definition_name": "Group114#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group123",
+                    "definition_name": "Group115#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9554_Defintion#1",
+                        "definition_name": "xiadele_Plane9554_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          466.67,
+                          332.48,
+                          944.3
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group136",
+                "definition_name": "Group116#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group137",
+                    "definition_name": "Group117#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9565_Defintion#1",
+                        "definition_name": "xiadele_Plane9565_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          861.99,
+                          645.29,
+                          825.05
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group144",
+                "definition_name": "Group118#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group145",
+                    "definition_name": "Group119#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9556_Defintion#1",
+                        "definition_name": "xiadele_Plane9556_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          755.6,
+                          414.7,
+                          1015.44
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group134",
+                "definition_name": "Group120#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group135",
+                    "definition_name": "Group121#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9552_Defintion#1",
+                        "definition_name": "xiadele_Plane9552_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          749.02,
+                          780.23,
+                          959.37
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group126",
+                "definition_name": "Group122#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group127",
+                    "definition_name": "Group123#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9570_Defintion#1",
+                        "definition_name": "xiadele_Plane9570_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          364.12,
+                          399.32,
+                          948.61
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group128",
+                "definition_name": "Group124#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group129",
+                    "definition_name": "Group125#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9567_Defintion#1",
+                        "definition_name": "xiadele_Plane9567_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          215.13,
+                          617.53,
+                          827.77
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group146",
+                "definition_name": "Group126#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group147",
+                    "definition_name": "Group127#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9557_Defintion#1",
+                        "definition_name": "xiadele_Plane9557_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          627.81,
+                          719.67,
+                          1136.97
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Component_2072759",
+            "definition_name": "Group#1",
+            "layer": "Layer0",
+            "position_mm": [
+              333.3,
+              829.06,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "xiadele_Cylinder006",
+                "definition_name": "Group102",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "xiadele_Cylinder006",
+                    "definition_name": "Group103",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Cylinder006",
+                        "definition_name": "xiadele_Cylinder006_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          346.02,
+                          533.49,
+                          0.0
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "xiadele_ChamferBox003",
+                "definition_name": "Group88",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "xiadele_ChamferBox003",
+                    "definition_name": "Group89",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_ChamferBox003",
+                        "definition_name": "xiadele_ChamferBox003_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          542.43,
+                          622.77,
+                          129.92
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "xiadele_Cylinder008",
+                "definition_name": "Group92",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "xiadele_Cylinder008",
+                    "definition_name": "Group93",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Cylinder008",
+                        "definition_name": "xiadele_Cylinder008_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          453.84,
+                          816.33,
+                          0.0
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "xiadele_ChamferBox004",
+                "definition_name": "Group90",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "xiadele_ChamferBox004",
+                    "definition_name": "Group91",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_ChamferBox004",
+                        "definition_name": "xiadele_ChamferBox004_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          542.43,
+                          622.77,
+                          129.92
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "xiadele_Cylinder005",
+                "definition_name": "Group96",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "xiadele_Cylinder005",
+                    "definition_name": "Group97",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Cylinder005",
+                        "definition_name": "xiadele_Cylinder005_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          736.34,
+                          711.37,
+                          0.0
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "xiadele_Cylinder007",
+                "definition_name": "Group94",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "xiadele_Cylinder007",
+                    "definition_name": "Group95",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Cylinder007",
+                        "definition_name": "xiadele_Cylinder007_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          631.38,
+                          426.75,
+                          0.0
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "xiadele_Plane9547",
+                "definition_name": "Group98",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "xiadele_Plane9547",
+                    "definition_name": "Group99",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9547",
+                        "definition_name": "xiadele_Plane9547_Defintion",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          544.08,
+                          464.9,
+                          335.39
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "xiadele_SOIL010",
+            "definition_name": "Group100",
+            "layer": "Layer0",
+            "position_mm": [
+              -3045.96,
+              3564.76,
+              -7.28
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "xiadele_SOIL010",
+                "definition_name": "Group101",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "xiadele_SOIL010",
+                    "definition_name": "xiadele_SOIL010_Defintion",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      541.53,
+                      622.27,
+                      483.64
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Group#2",
+            "definition_name": "Group105#2",
+            "layer": "Layer0",
+            "position_mm": [
+              -0.0,
+              1244.75,
+              411.05
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Group110",
+                "definition_name": "Group106#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group111",
+                    "definition_name": "Group107#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9560_Defintion#1",
+                        "definition_name": "xiadele_Plane9560_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          461.38,
+                          433.85,
+                          661.19
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group120",
+                "definition_name": "Group108#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group121",
+                    "definition_name": "Group109#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9553_Defintion#1",
+                        "definition_name": "xiadele_Plane9553_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          512.61,
+                          474.7,
+                          758.67
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group118",
+                "definition_name": "Group110#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group119",
+                    "definition_name": "Group111#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9564_Defintion#1",
+                        "definition_name": "xiadele_Plane9564_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          566.23,
+                          801.75,
+                          745.05
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group114",
+                "definition_name": "Group112#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group115",
+                    "definition_name": "Group113#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9568_Defintion#1",
+                        "definition_name": "xiadele_Plane9568_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          362.68,
+                          617.59,
+                          704.2
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group104",
+                "definition_name": "Group114#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group105",
+                    "definition_name": "Group115#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9501_Defintion#1",
+                        "definition_name": "xiadele_Plane9501_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          442.62,
+                          654.93,
+                          727.58
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group138",
+                "definition_name": "Group116#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group139",
+                    "definition_name": "Group117#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9566_Defintion#1",
+                        "definition_name": "xiadele_Plane9566_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          730.2,
+                          604.97,
+                          694.41
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group140",
+                "definition_name": "Group118#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group141",
+                    "definition_name": "Group119#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9562_Defintion#1",
+                        "definition_name": "xiadele_Plane9562_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          654.71,
+                          376.11,
+                          684.07
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group124",
+                "definition_name": "Group120#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group125",
+                    "definition_name": "Group121#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9569_Defintion#1",
+                        "definition_name": "xiadele_Plane9569_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          465.7,
+                          512.31,
+                          781.62
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group142",
+                "definition_name": "Group122#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group143",
+                    "definition_name": "Group123#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9555_Defintion#1",
+                        "definition_name": "xiadele_Plane9555_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          625.67,
+                          507.34,
+                          801.05
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group132",
+                "definition_name": "Group124#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group133",
+                    "definition_name": "Group125#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9551_Defintion#1",
+                        "definition_name": "xiadele_Plane9551_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          627.13,
+                          693.76,
+                          773.75
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Group130",
+                "definition_name": "Group126#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  -3045.96,
+                  3564.76,
+                  -7.28
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Group131",
+                    "definition_name": "Group127#2",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -3045.96,
+                      3564.76,
+                      -7.28
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "xiadele_Plane9558_Defintion#1",
+                        "definition_name": "xiadele_Plane9558_Defintion#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          566.72,
+                          622.4,
+                          881.21
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

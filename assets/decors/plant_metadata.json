@@ -1,0 +1,1667 @@
+{
+  "format_version": "1.0",
+  "source_file": "plant",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 57,
+  "total_meshes": 41,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "*12",
+      "color": {
+        "r": 191,
+        "g": 163,
+        "b": 129
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\WORK\\NHA A TOAN\\MAP\\New folder (2)\\117170181_2104699876341473_6169152502631454643_n.jpg",
+        "x_scale": 39.37007874015748,
+        "y_scale": 69.73298079437487
+      }
+    },
+    {
+      "name": "PDM_Wood_08",
+      "color": {
+        "r": 102,
+        "g": 59,
+        "b": 32
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Davor\\Dropbox\\Materials - Seamless textures\\wood\\wood_99.jpg",
+        "x_scale": 24.0,
+        "y_scale": 24.0
+      }
+    },
+    {
+      "name": "[0136_Charcoal]1",
+      "color": {
+        "r": 35,
+        "g": 35,
+        "b": 35
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material__",
+      "color": {
+        "r": 95,
+        "g": 70,
+        "b": 46
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/ADMINI~1/AppData/Local/Temp/ChaosGroupTextureCache/539df44acf106978bfc284b909dd4a78.png",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "daunback2",
+      "color": {
+        "r": 44,
+        "g": 61,
+        "b": 25
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA 25 BACK2 - Copy.jpg",
+        "x_scale": 0.26026242519685056,
+        "y_scale": 10.669291338582678
+      }
+    },
+    {
+      "name": "batang pisang",
+      "color": {
+        "r": 80,
+        "g": 103,
+        "b": 45
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\STVOL.jpg",
+        "x_scale": 0.3937007874015748,
+        "y_scale": 10.652077581211435
+      }
+    },
+    {
+      "name": "daunback4",
+      "color": {
+        "r": 44,
+        "g": 61,
+        "b": 25
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA 25 BACK5.jpg",
+        "x_scale": 0.26026242519685056,
+        "y_scale": 10.669291338582678
+      }
+    },
+    {
+      "name": "daun2",
+      "color": {
+        "r": 45,
+        "g": 71,
+        "b": 15
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA2.jpg",
+        "x_scale": 0.26026242519685056,
+        "y_scale": 10.669291338582678
+      }
+    },
+    {
+      "name": "daun3",
+      "color": {
+        "r": 45,
+        "g": 71,
+        "b": 15
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA3.jpg",
+        "x_scale": 0.26026242519685056,
+        "y_scale": 10.669291338582678
+      }
+    },
+    {
+      "name": "bana7",
+      "color": {
+        "r": 44,
+        "g": 61,
+        "b": 25
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA 25 BACK6 - Copy (2).jpg",
+        "x_scale": 0.26026242519685056,
+        "y_scale": 10.669291338582678
+      }
+    },
+    {
+      "name": "daun7",
+      "color": {
+        "r": 45,
+        "g": 71,
+        "b": 15
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA7.jpg",
+        "x_scale": 0.1968503937007874,
+        "y_scale": 8.069755743341995
+      }
+    },
+    {
+      "name": "Material110",
+      "color": {
+        "r": 44,
+        "g": 61,
+        "b": 25
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA 25 BACK1.jpg",
+        "x_scale": 0.27562847244094507,
+        "y_scale": 11.299212598425198
+      }
+    },
+    {
+      "name": "bana6back",
+      "color": {
+        "r": 44,
+        "g": 61,
+        "b": 25
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA 25 BACK6 - Copy (2).jpg",
+        "x_scale": 0.26026242519685056,
+        "y_scale": 10.669291338582678
+      }
+    },
+    {
+      "name": "daun back5",
+      "color": {
+        "r": 44,
+        "g": 61,
+        "b": 25
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA 25 BACK5.jpg",
+        "x_scale": 0.26026242519685056,
+        "y_scale": 10.669291338582678
+      }
+    },
+    {
+      "name": "Material109",
+      "color": {
+        "r": 45,
+        "g": 71,
+        "b": 15
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA5.jpg",
+        "x_scale": 0.26026242519685056,
+        "y_scale": 10.669291338582678
+      }
+    },
+    {
+      "name": "Material114",
+      "color": {
+        "r": 44,
+        "g": 61,
+        "b": 25
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA 25 BACK3.jpg",
+        "x_scale": 0.26026242519685056,
+        "y_scale": 10.669291338582678
+      }
+    },
+    {
+      "name": "Material108",
+      "color": {
+        "r": 45,
+        "g": 71,
+        "b": 15
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA4.jpg",
+        "x_scale": 0.26026242519685056,
+        "y_scale": 10.669291338582678
+      }
+    },
+    {
+      "name": "banana",
+      "color": {
+        "r": 45,
+        "g": 71,
+        "b": 15
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA1.jpg",
+        "x_scale": 9.448818897637796,
+        "y_scale": 14.316392269148173
+      }
+    },
+    {
+      "name": "daun7back",
+      "color": {
+        "r": 44,
+        "g": 61,
+        "b": 25
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\AGE\\data age\\3d model\\sketchup model\\BANANA BLACK POT 3D MAX 2011_3dmili.com\\daun pisang age\\BUNANA 25 BACK7 - Copy (2).jpg",
+        "x_scale": 0.19687748031496075,
+        "y_scale": 8.070866141732283
+      }
+    },
+    {
+      "name": "[0129_WhiteSmoke]",
+      "color": {
+        "r": 245,
+        "g": 245,
+        "b": 245
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT_Layer0_191_163_129_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_1_ROOT_Layer0_102_59_32_ss": {
+      "name": "ROOT",
+      "definition_name": "ROOT_MODEL",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT"
+    },
+    "mesh_2_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane044__Compone_Layer0": {
+      "name": "3DGeom~85",
+      "definition_name": "3DGeom~85_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        517.99,
+        648.6,
+        1873.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane044 / Component_5620837 / 3DGeom~85"
+    },
+    "mesh_3_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane044__Compone_Layer0_45_71_15_ss": {
+      "name": "3DGeom~86",
+      "definition_name": "3DGeom~86_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        517.99,
+        648.6,
+        1873.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane044 / Component_5620843 / 3DGeom~86"
+    },
+    "mesh_4_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane044__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~86",
+      "definition_name": "3DGeom~86_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        517.99,
+        648.6,
+        1873.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane044 / Component_5620843 / 3DGeom~86"
+    },
+    "mesh_5_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane044__Compone_Layer0_80_103_45_ss": {
+      "name": "3DGeom~87",
+      "definition_name": "3DGeom~87_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        517.99,
+        648.6,
+        1873.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane044 / Component_5620838 / 3DGeom~87"
+    },
+    "mesh_6_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane044__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~87",
+      "definition_name": "3DGeom~87_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        517.99,
+        648.6,
+        1873.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane044 / Component_5620838 / 3DGeom~87"
+    },
+    "mesh_7_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane039__Compone_Layer0": {
+      "name": "3DGeom~17",
+      "definition_name": "3DGeom~17_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        738.81,
+        640.93,
+        1462.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane039 / Component_5620836 / 3DGeom~17"
+    },
+    "mesh_8_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane039__Compone_Layer0_45_71_15_ss": {
+      "name": "3DGeom~18",
+      "definition_name": "3DGeom~18_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        738.81,
+        640.93,
+        1462.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane039 / Component_5620840 / 3DGeom~18"
+    },
+    "mesh_9_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane039__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~18",
+      "definition_name": "3DGeom~18_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        738.81,
+        640.93,
+        1462.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane039 / Component_5620840 / 3DGeom~18"
+    },
+    "mesh_10_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane039__Compone_Layer0_80_103_45_ss": {
+      "name": "3DGeom~19",
+      "definition_name": "3DGeom~19_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        738.81,
+        640.93,
+        1462.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane039 / Component_5620839 / 3DGeom~19"
+    },
+    "mesh_11_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane039__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~19",
+      "definition_name": "3DGeom~19_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        738.81,
+        640.93,
+        1462.87
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane039 / Component_5620839 / 3DGeom~19"
+    },
+    "mesh_12_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane087__Compone_Layer0": {
+      "name": "3DGeom~14",
+      "definition_name": "3DGeom~14_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        518.66,
+        469.02,
+        1659.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane087 / Component_5620841 / 3DGeom~14"
+    },
+    "mesh_13_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane087__Compone_Layer0_45_71_15_ss": {
+      "name": "3DGeom~15",
+      "definition_name": "3DGeom~15_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        518.66,
+        469.02,
+        1659.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane087 / Component_5620844 / 3DGeom~15"
+    },
+    "mesh_14_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane087__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~15",
+      "definition_name": "3DGeom~15_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        518.66,
+        469.02,
+        1659.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane087 / Component_5620844 / 3DGeom~15"
+    },
+    "mesh_15_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane087__Compone_Layer0_80_103_45_ss": {
+      "name": "3DGeom~16",
+      "definition_name": "3DGeom~16_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        518.66,
+        469.02,
+        1659.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane087 / Component_5620834 / 3DGeom~16"
+    },
+    "mesh_16_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane087__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~16",
+      "definition_name": "3DGeom~16_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        518.66,
+        469.02,
+        1659.05
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane087 / Component_5620834 / 3DGeom~16"
+    },
+    "mesh_17_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane042__Compone_Layer0": {
+      "name": "3DGeom~11",
+      "definition_name": "3DGeom~11_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        373.2,
+        576.96,
+        1750.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane042 / Component_5620826 / 3DGeom~11"
+    },
+    "mesh_18_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane042__Compone_Layer0_45_71_15_ss": {
+      "name": "3DGeom~12",
+      "definition_name": "3DGeom~12_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        373.2,
+        576.96,
+        1750.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane042 / Component_5620842 / 3DGeom~12"
+    },
+    "mesh_19_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane042__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~12",
+      "definition_name": "3DGeom~12_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        373.2,
+        576.96,
+        1750.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane042 / Component_5620842 / 3DGeom~12"
+    },
+    "mesh_20_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane042__Compone_Layer0_80_103_45_ss": {
+      "name": "3DGeom~13",
+      "definition_name": "3DGeom~13_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        373.2,
+        576.96,
+        1750.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane042 / Component_5620835 / 3DGeom~13"
+    },
+    "mesh_21_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane042__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~13",
+      "definition_name": "3DGeom~13_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        373.2,
+        576.96,
+        1750.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane042 / Component_5620835 / 3DGeom~13"
+    },
+    "mesh_22_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane040__Compone_Layer0": {
+      "name": "3DGeom~8",
+      "definition_name": "3DGeom~8_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        423.73,
+        778.01,
+        1561.45
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane040 / Component_5620833 / 3DGeom~8"
+    },
+    "mesh_23_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane040__Compone_Layer0_45_71_15_ss": {
+      "name": "3DGeom~9",
+      "definition_name": "3DGeom~9_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        423.73,
+        778.01,
+        1561.45
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane040 / Component_5620832 / 3DGeom~9"
+    },
+    "mesh_24_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane040__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~9",
+      "definition_name": "3DGeom~9_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        423.73,
+        778.01,
+        1561.45
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane040 / Component_5620832 / 3DGeom~9"
+    },
+    "mesh_25_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane040__Compone_Layer0_80_103_45_ss": {
+      "name": "3DGeom~10",
+      "definition_name": "3DGeom~10_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        423.73,
+        778.01,
+        1561.45
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane040 / Component_5620824 / 3DGeom~10"
+    },
+    "mesh_26_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane040__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~10",
+      "definition_name": "3DGeom~10_Defintion#1",
+      "layer": "Layer0",
+      "position_mm": [
+        423.73,
+        778.01,
+        1561.45
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane040 / Component_5620824 / 3DGeom~10"
+    },
+    "mesh_27_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane035__Compone_Layer0": {
+      "name": "3DGeom~5",
+      "definition_name": "3DGeom~5_Defintion#3",
+      "layer": "Layer0",
+      "position_mm": [
+        471.37,
+        957.24,
+        1512.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane035 / Component_5620825 / 3DGeom~5"
+    },
+    "mesh_28_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane035__Compone_Layer0": {
+      "name": "3DGeom~6",
+      "definition_name": "3DGeom~6_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        471.37,
+        957.24,
+        1512.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane035 / Component_5620831 / 3DGeom~6"
+    },
+    "mesh_29_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane035__Compone_Layer0_80_103_45_ss": {
+      "name": "3DGeom~7",
+      "definition_name": "3DGeom~7_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        471.37,
+        957.24,
+        1512.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane035 / Component_5620827 / 3DGeom~7"
+    },
+    "mesh_30_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane035__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~7",
+      "definition_name": "3DGeom~7_Defintion#2",
+      "layer": "Layer0",
+      "position_mm": [
+        471.37,
+        957.24,
+        1512.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane035 / Component_5620827 / 3DGeom~7"
+    },
+    "mesh_31_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane034__Compone_Layer0": {
+      "name": "3DGeom~2",
+      "definition_name": "3DGeom~2_Defintion#5",
+      "layer": "Layer0",
+      "position_mm": [
+        591.16,
+        594.37,
+        1495.23
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane034 / Component_5620830 / 3DGeom~2"
+    },
+    "mesh_32_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane034__Compone_Layer0_45_71_15_ss": {
+      "name": "3DGeom~3",
+      "definition_name": "3DGeom~3_Defintion#5",
+      "layer": "Layer0",
+      "position_mm": [
+        591.16,
+        594.37,
+        1495.23
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane034 / Component_5620829 / 3DGeom~3"
+    },
+    "mesh_33_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane034__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~3",
+      "definition_name": "3DGeom~3_Defintion#5",
+      "layer": "Layer0",
+      "position_mm": [
+        591.16,
+        594.37,
+        1495.23
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane034 / Component_5620829 / 3DGeom~3"
+    },
+    "mesh_34_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane034__Compone_Layer0_80_103_45_ss": {
+      "name": "3DGeom~4",
+      "definition_name": "3DGeom~4_Defintion#3",
+      "layer": "Layer0",
+      "position_mm": [
+        591.16,
+        594.37,
+        1495.23
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane034 / Component_5620828 / 3DGeom~4"
+    },
+    "mesh_35_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620855__Plane034__Compone_Layer0_44_61_25_ss": {
+      "name": "3DGeom~4",
+      "definition_name": "3DGeom~4_Defintion#3",
+      "layer": "Layer0",
+      "position_mm": [
+        591.16,
+        594.37,
+        1495.23
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620855 / Plane034 / Component_5620828 / 3DGeom~4"
+    },
+    "mesh_36_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620854__Component_5620851_Layer0": {
+      "name": "Component_5620851",
+      "definition_name": "Group#1742",
+      "layer": "Layer0",
+      "position_mm": [
+        332.24,
+        479.7,
+        234.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620854 / Component_5620851"
+    },
+    "mesh_37_ROOT__Banana_Leaf_Plant__Component_5620856__Component_5620854__Circle018_Layer0": {
+      "name": "Circle018",
+      "definition_name": "Group#1743",
+      "layer": "Layer0",
+      "position_mm": [
+        16732.92,
+        -988.34,
+        -13151.08
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Banana Leaf Plant / Component_5620856 / Component_5620854 / Circle018"
+    },
+    "mesh_38_ROOT__Component_5620858_Layer0": {
+      "name": "Component_5620858",
+      "definition_name": "Group#1745",
+      "layer": "Layer0",
+      "position_mm": [
+        286.63,
+        440.15,
+        212.02
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_5620858"
+    },
+    "mesh_39_ROOT__Component_158276388_Layer0_191_163_129_ss": {
+      "name": "Component_158276388",
+      "definition_name": "Group#449",
+      "layer": "Layer0",
+      "position_mm": [
+        280.8,
+        433.36,
+        149.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_158276388"
+    },
+    "mesh_40_ROOT__Component_158276388_Layer0_102_59_32_ss": {
+      "name": "Component_158276388",
+      "definition_name": "Group#449",
+      "layer": "Layer0",
+      "position_mm": [
+        280.8,
+        433.36,
+        149.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_158276388"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Banana Leaf Plant",
+        "definition_name": "Banana Leaf Plant",
+        "layer": "Layer0",
+        "position_mm": [
+          0.0,
+          0.0,
+          242.77
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Component_5620856",
+            "definition_name": "Group#1747",
+            "layer": "Layer0",
+            "position_mm": [
+              0.0,
+              0.0,
+              234.54
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Component_5620855",
+                "definition_name": "Component#140",
+                "layer": "Layer0",
+                "position_mm": [
+                  476.5,
+                  604.52,
+                  16.38
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Plane044",
+                    "definition_name": "Group246#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      476.5,
+                      604.52,
+                      16.38
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_5620837",
+                        "definition_name": "Group247#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~85",
+                            "definition_name": "3DGeom~85_Defintion",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              517.99,
+                              648.6,
+                              1873.01
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620843",
+                        "definition_name": "Group248#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~86",
+                            "definition_name": "3DGeom~86_Defintion",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              517.99,
+                              648.6,
+                              1873.01
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620838",
+                        "definition_name": "Group249#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~87",
+                            "definition_name": "3DGeom~87_Defintion",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              517.99,
+                              648.6,
+                              1873.01
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Plane039",
+                    "definition_name": "Group112#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      476.5,
+                      604.52,
+                      16.38
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_5620836",
+                        "definition_name": "Group113#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~17",
+                            "definition_name": "3DGeom~17_Defintion#2",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              738.81,
+                              640.93,
+                              1462.87
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620840",
+                        "definition_name": "Group114#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~18",
+                            "definition_name": "3DGeom~18_Defintion#2",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              738.81,
+                              640.93,
+                              1462.87
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620839",
+                        "definition_name": "Group115#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~19",
+                            "definition_name": "3DGeom~19_Defintion#2",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              738.81,
+                              640.93,
+                              1462.87
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Plane087",
+                    "definition_name": "Group108#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      476.5,
+                      604.52,
+                      16.38
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_5620841",
+                        "definition_name": "Group109#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~14",
+                            "definition_name": "3DGeom~14_Defintion#2",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              518.66,
+                              469.02,
+                              1659.05
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620844",
+                        "definition_name": "Group110#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~15",
+                            "definition_name": "3DGeom~15_Defintion#2",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              518.66,
+                              469.02,
+                              1659.05
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620834",
+                        "definition_name": "Group111#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~16",
+                            "definition_name": "3DGeom~16_Defintion#2",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              518.66,
+                              469.02,
+                              1659.05
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Plane042",
+                    "definition_name": "Group104#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      476.5,
+                      604.52,
+                      16.38
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_5620826",
+                        "definition_name": "Group105#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~11",
+                            "definition_name": "3DGeom~11_Defintion#1",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              373.2,
+                              576.96,
+                              1750.61
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620842",
+                        "definition_name": "Group106#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~12",
+                            "definition_name": "3DGeom~12_Defintion#1",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              373.2,
+                              576.96,
+                              1750.61
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620835",
+                        "definition_name": "Group107#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~13",
+                            "definition_name": "3DGeom~13_Defintion#1",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              373.2,
+                              576.96,
+                              1750.61
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Plane040",
+                    "definition_name": "Group100#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      476.5,
+                      604.52,
+                      16.38
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_5620833",
+                        "definition_name": "Group101#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~8",
+                            "definition_name": "3DGeom~8_Defintion#1",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              423.73,
+                              778.01,
+                              1561.45
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620832",
+                        "definition_name": "Group102#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~9",
+                            "definition_name": "3DGeom~9_Defintion#1",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              423.73,
+                              778.01,
+                              1561.45
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620824",
+                        "definition_name": "Group103#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~10",
+                            "definition_name": "3DGeom~10_Defintion#1",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              423.73,
+                              778.01,
+                              1561.45
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Plane035",
+                    "definition_name": "Group96#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      476.5,
+                      604.52,
+                      16.38
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_5620825",
+                        "definition_name": "Group97#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~5",
+                            "definition_name": "3DGeom~5_Defintion#3",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              471.37,
+                              957.24,
+                              1512.39
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620831",
+                        "definition_name": "Group98#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~6",
+                            "definition_name": "3DGeom~6_Defintion#2",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              471.37,
+                              957.24,
+                              1512.39
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620827",
+                        "definition_name": "Group99#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~7",
+                            "definition_name": "3DGeom~7_Defintion#2",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              471.37,
+                              957.24,
+                              1512.39
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Plane034",
+                    "definition_name": "Group92#5",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      476.5,
+                      604.52,
+                      16.38
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Component_5620830",
+                        "definition_name": "Group93#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~2",
+                            "definition_name": "3DGeom~2_Defintion#5",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              591.16,
+                              594.37,
+                              1495.23
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620829",
+                        "definition_name": "Group94#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~3",
+                            "definition_name": "3DGeom~3_Defintion#5",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              591.16,
+                              594.37,
+                              1495.23
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Component_5620828",
+                        "definition_name": "Group95#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          476.5,
+                          604.52,
+                          16.38
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": [
+                          {
+                            "name": "3DGeom~4",
+                            "definition_name": "3DGeom~4_Defintion#3",
+                            "layer": "Layer0",
+                            "position_mm": [
+                              591.16,
+                              594.37,
+                              1495.23
+                            ],
+                            "properties": {},
+                            "attribute_dictionaries": {},
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Component_5620854",
+                "definition_name": "Group#1744",
+                "layer": "Layer0",
+                "position_mm": [
+                  332.24,
+                  479.7,
+                  234.54
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_5620851",
+                    "definition_name": "Group#1742",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      332.24,
+                      479.7,
+                      234.54
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  },
+                  {
+                    "name": "Circle018",
+                    "definition_name": "Group#1743",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      16732.92,
+                      -988.34,
+                      -13151.08
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Component_5620858",
+        "definition_name": "Group#1745",
+        "layer": "Layer0",
+        "position_mm": [
+          286.63,
+          440.15,
+          212.02
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Component_158276388",
+        "definition_name": "Group#449",
+        "layer": "Layer0",
+        "position_mm": [
+          280.8,
+          433.36,
+          149.46
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,1293 @@
+{
+  "format_version": "1.0",
+  "source_file": "adornos_rmllr",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 25,
+  "total_meshes": 39,
+  "total_layers": 6,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    },
+    {
+      "name": "ponte",
+      "color": {
+        "r": 170,
+        "g": 68,
+        "b": 0
+      }
+    },
+    {
+      "name": "talão",
+      "color": {
+        "r": 204,
+        "g": 102,
+        "b": 0
+      }
+    },
+    {
+      "name": "haste",
+      "color": {
+        "r": 204,
+        "g": 84,
+        "b": 0
+      }
+    },
+    {
+      "name": "frontal lentes",
+      "color": {
+        "r": 153,
+        "g": 153,
+        "b": 204
+      }
+    },
+    {
+      "name": "plaquetas",
+      "color": {
+        "r": 255,
+        "g": 135,
+        "b": 170
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "ponte": false,
+    "talão": false,
+    "haste": false,
+    "frontal lentes": false,
+    "plaquetas": false
+  },
+  "materials": [
+    {
+      "name": "DOURADO VASO",
+      "color": {
+        "r": 185,
+        "g": 143,
+        "b": 78
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Nossa Casa\\Documents\\K. HERZOG\\BIBLIOTECA\\3 - MATERIAIS\\7 - REVESTIMENTO PASTILHA\\ouro_fosco_5x5cm_635663518356604201.jpg",
+        "x_scale": 3937.0078740157483,
+        "y_scale": 784.577789845235
+      }
+    },
+    {
+      "name": "pages 17",
+      "color": {
+        "r": 210,
+        "g": 210,
+        "b": 210
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/VRAI/AppData/Local/Temp/ChaosGroupTextureCache/d7d1303464ee144af0e21b1fc4973ab9.JPG",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "pages 10",
+      "color": {
+        "r": 209,
+        "g": 209,
+        "b": 208
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/VRAI/AppData/Local/Temp/ChaosGroupTextureCache/89d327d6279d6d5780b21d8af680e5c4.JPG",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Cover 24",
+      "color": {
+        "r": 130,
+        "g": 128,
+        "b": 125
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/VRAI/AppData/Local/Temp/ChaosGroupTextureCache/577872d0ba3276c76293e54ec7475c7d.JPG",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Cover 8",
+      "color": {
+        "r": 213,
+        "g": 206,
+        "b": 204
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/VRAI/AppData/Local/Temp/ChaosGroupTextureCache/77b1627530c008497589a6f6925d6266.JPG",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Cover 11",
+      "color": {
+        "r": 120,
+        "g": 109,
+        "b": 99
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/VRAI/AppData/Local/Temp/ChaosGroupTextureCache/909e802224ed1d85c6edc9d75e505216.JPG",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "leaf 5",
+      "color": {
+        "r": 109,
+        "g": 140,
+        "b": 82
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "ground",
+      "color": {
+        "r": 42,
+        "g": 42,
+        "b": 38
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "stem",
+      "color": {
+        "r": 153,
+        "g": 147,
+        "b": 103
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color A03]",
+      "color": {
+        "r": 31,
+        "g": 49,
+        "b": 75
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Nossa Casa\\Desktop\\22.png",
+        "x_scale": 11.811023622047244,
+        "y_scale": 10.83085568660764
+      }
+    },
+    {
+      "name": "*19",
+      "color": {
+        "r": 152,
+        "g": 145,
+        "b": 13
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Image2",
+      "color": {
+        "r": 103,
+        "g": 138,
+        "b": 151
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:\\Users\\Federico\\Desktop\\iphone.jpg",
+        "x_scale": 676.0,
+        "y_scale": 1202.0
+      }
+    },
+    {
+      "name": "*20",
+      "color": {
+        "r": 149,
+        "g": 131,
+        "b": 81
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*4",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "black",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*1",
+      "color": {
+        "r": 45,
+        "g": 45,
+        "b": 45
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Translucent_Glass_Gold]",
+      "color": {
+        "r": 255,
+        "g": 254,
+        "b": 26
+      },
+      "transparency": 0.6,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Translucent_Glass_Tinted.jpg",
+        "x_scale": 24.0,
+        "y_scale": 24.0
+      }
+    },
+    {
+      "name": "[Translucent_Glass_Gray]",
+      "color": {
+        "r": 128,
+        "g": 128,
+        "b": 128
+      },
+      "transparency": 0.5,
+      "colorized": false,
+      "colorize_type": 1
+    },
+    {
+      "name": "[Color_H11]",
+      "color": {
+        "r": 0,
+        "g": 153,
+        "b": 153
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*2",
+      "color": {
+        "r": 62,
+        "g": 62,
+        "b": 62
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "METAL",
+      "color": {
+        "r": 170,
+        "g": 170,
+        "b": 170
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Color_C11]",
+      "color": {
+        "r": 153,
+        "g": 76,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "VIDRO INCOLOR",
+      "color": {
+        "r": 140,
+        "g": 140,
+        "b": 140
+      },
+      "transparency": 0.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_ponte",
+      "color": {
+        "r": 170,
+        "g": 68,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_talão",
+      "color": {
+        "r": 204,
+        "g": 102,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_haste",
+      "color": {
+        "r": 204,
+        "g": 84,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_frontal lentes",
+      "color": {
+        "r": 153,
+        "g": 153,
+        "b": 204
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_plaquetas",
+      "color": {
+        "r": 255,
+        "g": 135,
+        "b": 170
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__LIVROS#1__02_Design_books_06__3DGeom~11_Layer0": {
+      "name": "3DGeom~11",
+      "definition_name": "3DGeom~11_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        547.34,
+        117.76,
+        285.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 06 / 3DGeom~11"
+    },
+    "mesh_1_ROOT__LIVROS#1__02_Design_books_06__3DGeom~12_Layer0_210_210_210_ds": {
+      "name": "3DGeom~12",
+      "definition_name": "3DGeom~12_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        547.34,
+        117.76,
+        285.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 06 / 3DGeom~12"
+    },
+    "mesh_2_ROOT__LIVROS#1__02_Design_books_06__3DGeom~12_Layer0_210_210_210_ds": {
+      "name": "3DGeom~12",
+      "definition_name": "3DGeom~12_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        547.34,
+        117.76,
+        285.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 06 / 3DGeom~12"
+    },
+    "mesh_3_ROOT__LIVROS#1__02_Design_books_18__3DGeom~35_Layer0_130_128_125_ds": {
+      "name": "3DGeom~35",
+      "definition_name": "3DGeom~35_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        547.34,
+        117.76,
+        -194.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 18 / 3DGeom~35"
+    },
+    "mesh_4_ROOT__LIVROS#1__02_Design_books_18__3DGeom~35_Layer0_130_128_125_ds": {
+      "name": "3DGeom~35",
+      "definition_name": "3DGeom~35_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        547.34,
+        117.76,
+        -194.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 18 / 3DGeom~35"
+    },
+    "mesh_5_ROOT__LIVROS#1__02_Design_books_18__3DGeom~36_Layer0_209_209_208_ds": {
+      "name": "3DGeom~36",
+      "definition_name": "3DGeom~36_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        547.34,
+        117.76,
+        -194.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 18 / 3DGeom~36"
+    },
+    "mesh_6_ROOT__LIVROS#1__02_Design_books_18__3DGeom~36_Layer0_209_209_208_ds": {
+      "name": "3DGeom~36",
+      "definition_name": "3DGeom~36_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        547.34,
+        117.76,
+        -194.24
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 18 / 3DGeom~36"
+    },
+    "mesh_7_ROOT__LIVROS#1__02_Design_books_19__3DGeom~37_Layer0_213_206_204_ds": {
+      "name": "3DGeom~37",
+      "definition_name": "3DGeom~37_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        546.92,
+        137.15,
+        -176.02
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 19 / 3DGeom~37"
+    },
+    "mesh_8_ROOT__LIVROS#1__02_Design_books_19__3DGeom~37_Layer0_213_206_204_ds": {
+      "name": "3DGeom~37",
+      "definition_name": "3DGeom~37_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        546.92,
+        137.15,
+        -176.02
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 19 / 3DGeom~37"
+    },
+    "mesh_9_ROOT__LIVROS#1__02_Design_books_19__3DGeom~38_Layer0_209_209_208_ds": {
+      "name": "3DGeom~38",
+      "definition_name": "3DGeom~38_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        546.92,
+        137.15,
+        -176.02
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 19 / 3DGeom~38"
+    },
+    "mesh_10_ROOT__LIVROS#1__02_Design_books_19__3DGeom~38_Layer0_209_209_208_ds": {
+      "name": "3DGeom~38",
+      "definition_name": "3DGeom~38_Defintion",
+      "layer": "Layer0",
+      "position_mm": [
+        546.92,
+        137.15,
+        -176.02
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / LIVROS#1 / 02 Design books 19 / 3DGeom~38"
+    },
+    "mesh_11_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1_Layer0_62_62_62_ds": {
+      "name": "Grupo#1",
+      "definition_name": "Grupo#1",
+      "layer": "Layer0",
+      "position_mm": [
+        268.24,
+        45.97,
+        79.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1"
+    },
+    "mesh_12_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1_Layer0_149_131_81_ss": {
+      "name": "Grupo#1",
+      "definition_name": "Grupo#1",
+      "layer": "Layer0",
+      "position_mm": [
+        268.24,
+        45.97,
+        79.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1"
+    },
+    "mesh_13_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1_Layer0_62_62_62_ss": {
+      "name": "Grupo#1",
+      "definition_name": "Grupo#1",
+      "layer": "Layer0",
+      "position_mm": [
+        268.24,
+        45.97,
+        79.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1"
+    },
+    "mesh_14_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1_Layer0_255_255_255_ss": {
+      "name": "Grupo#1",
+      "definition_name": "Grupo#1",
+      "layer": "Layer0",
+      "position_mm": [
+        268.24,
+        45.97,
+        79.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1"
+    },
+    "mesh_15_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1_Layer0_0_0_0_ss": {
+      "name": "Grupo#1",
+      "definition_name": "Grupo#1",
+      "layer": "Layer0",
+      "position_mm": [
+        268.24,
+        45.97,
+        79.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1"
+    },
+    "mesh_16_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1_Layer0_45_45_45_ss": {
+      "name": "Grupo#1",
+      "definition_name": "Grupo#1",
+      "layer": "Layer0",
+      "position_mm": [
+        268.24,
+        45.97,
+        79.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1"
+    },
+    "mesh_17_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1_Layer0_255_254_26_ds": {
+      "name": "Grupo#1",
+      "definition_name": "Grupo#1",
+      "layer": "Layer0",
+      "position_mm": [
+        268.24,
+        45.97,
+        79.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1"
+    },
+    "mesh_18_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1_Layer0_128_128_128_ds": {
+      "name": "Grupo#1",
+      "definition_name": "Grupo#1",
+      "layer": "Layer0",
+      "position_mm": [
+        268.24,
+        45.97,
+        79.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1"
+    },
+    "mesh_19_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1_Layer0_0_153_153_ss": {
+      "name": "Grupo#1",
+      "definition_name": "Grupo#1",
+      "layer": "Layer0",
+      "position_mm": [
+        268.24,
+        45.97,
+        79.36
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1"
+    },
+    "mesh_20_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1__iP_Layer0": {
+      "name": "iPhone",
+      "definition_name": "iPhone",
+      "layer": "Layer0",
+      "position_mm": [
+        303.75,
+        108.49,
+        80.61
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1 / iPhone"
+    },
+    "mesh_21_ROOT__iPhone_5s_Prateado__iPhone_5s_Cinza_Espacial__APPLE_IPHONE_5S__Grupo#1__Im_Layer0": {
+      "name": "Image#1",
+      "definition_name": "Image#1",
+      "layer": "Layer0",
+      "position_mm": [
+        263.31,
+        77.41,
+        88.64
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / iPhone 5s Prateado / iPhone 5s Cinza Espacial / APPLE IPHONE 5S / Grupo#1 / Image#1"
+    },
+    "mesh_22_ROOT__OCULOS1_ponte_149_131_81_ss": {
+      "name": "OCULOS1",
+      "definition_name": "OCULOS1",
+      "layer": "ponte",
+      "position_mm": [
+        346.44,
+        49.02,
+        79.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / OCULOS1"
+    },
+    "mesh_23_ROOT__OCULOS1_ponte_170_68_0_ss": {
+      "name": "OCULOS1",
+      "definition_name": "OCULOS1",
+      "layer": "ponte",
+      "position_mm": [
+        346.44,
+        49.02,
+        79.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / OCULOS1"
+    },
+    "mesh_24_ROOT__OCULOS1_ponte_170_170_170_ss": {
+      "name": "OCULOS1",
+      "definition_name": "OCULOS1",
+      "layer": "ponte",
+      "position_mm": [
+        346.44,
+        49.02,
+        79.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / OCULOS1"
+    },
+    "mesh_25_ROOT__OCULOS1_ponte_153_76_0_ss": {
+      "name": "OCULOS1",
+      "definition_name": "OCULOS1",
+      "layer": "ponte",
+      "position_mm": [
+        346.44,
+        49.02,
+        79.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / OCULOS1"
+    },
+    "mesh_26_ROOT__OCULOS1_ponte_128_128_128_ss": {
+      "name": "OCULOS1",
+      "definition_name": "OCULOS1",
+      "layer": "ponte",
+      "position_mm": [
+        346.44,
+        49.02,
+        79.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / OCULOS1"
+    },
+    "mesh_27_ROOT__OCULOS1_ponte_149_131_81_ds": {
+      "name": "OCULOS1",
+      "definition_name": "OCULOS1",
+      "layer": "ponte",
+      "position_mm": [
+        346.44,
+        49.02,
+        79.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / OCULOS1"
+    },
+    "mesh_28_ROOT__OCULOS1__Agrupar#22_frontal lentes": {
+      "name": "Agrupar#22",
+      "definition_name": "Agrupar#22",
+      "layer": "frontal lentes",
+      "position_mm": [
+        433.16,
+        50.48,
+        79.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / OCULOS1 / Agrupar#22"
+    },
+    "mesh_29_ROOT__OCULOS1__Agrupar#21_frontal lentes": {
+      "name": "Agrupar#21",
+      "definition_name": "Agrupar#21",
+      "layer": "frontal lentes",
+      "position_mm": [
+        407.5,
+        50.48,
+        79.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / OCULOS1 / Agrupar#21"
+    },
+    "mesh_30_ROOT__Agrupar#111__skpF5DC__25_Mint_1__Layer0_153_147_103_ss": {
+      "name": "25 Mint 1 ",
+      "definition_name": "25 Mint 1 ",
+      "layer": "Layer0",
+      "position_mm": [
+        418.43,
+        129.31,
+        101.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Agrupar#111 / skpF5DC / 25 Mint 1 "
+    },
+    "mesh_31_ROOT__Agrupar#111__skpF5DC__25_Mint_1__Layer0_109_140_82_ss": {
+      "name": "25 Mint 1 ",
+      "definition_name": "25 Mint 1 ",
+      "layer": "Layer0",
+      "position_mm": [
+        418.43,
+        129.31,
+        101.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Agrupar#111 / skpF5DC / 25 Mint 1 "
+    },
+    "mesh_32_ROOT__Agrupar#111__skpF5DC__25_Mint_1__Layer0_109_140_82_ds": {
+      "name": "25 Mint 1 ",
+      "definition_name": "25 Mint 1 ",
+      "layer": "Layer0",
+      "position_mm": [
+        418.43,
+        129.31,
+        101.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Agrupar#111 / skpF5DC / 25 Mint 1 "
+    },
+    "mesh_33_ROOT__Agrupar#111__VASO__Agrupar#9_Layer0_31_49_75_ds": {
+      "name": "Agrupar#9",
+      "definition_name": "Agrupar#9",
+      "layer": "Layer0",
+      "position_mm": [
+        360.7,
+        197.49,
+        104.8
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Agrupar#111 / VASO / Agrupar#9"
+    },
+    "mesh_34_ROOT__Agrupar#111__VASO__Agrupar#9_Layer0_42_42_38_ss": {
+      "name": "Agrupar#9",
+      "definition_name": "Agrupar#9",
+      "layer": "Layer0",
+      "position_mm": [
+        360.7,
+        197.49,
+        104.8
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Agrupar#111 / VASO / Agrupar#9"
+    },
+    "mesh_35_ROOT__Agrupar#111__VASO__Agrupar#9_Layer0_31_49_75_ss": {
+      "name": "Agrupar#9",
+      "definition_name": "Agrupar#9",
+      "layer": "Layer0",
+      "position_mm": [
+        360.7,
+        197.49,
+        104.8
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Agrupar#111 / VASO / Agrupar#9"
+    },
+    "mesh_36_ROOT__Agrupar#111__VASO__Agrupar#9_Layer0_185_143_78_ss": {
+      "name": "Agrupar#9",
+      "definition_name": "Agrupar#9",
+      "layer": "Layer0",
+      "position_mm": [
+        360.7,
+        197.49,
+        104.8
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Agrupar#111 / VASO / Agrupar#9"
+    },
+    "mesh_37_ROOT__Agrupar#111__VASO__Agrupar#8_Layer0_185_143_78_ss": {
+      "name": "Agrupar#8",
+      "definition_name": "Agrupar#8",
+      "layer": "Layer0",
+      "position_mm": [
+        378.5,
+        179.65,
+        81.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Agrupar#111 / VASO / Agrupar#8"
+    },
+    "mesh_38_ROOT__Agrupar#111__VASO__Agrupar#8_Layer0_31_49_75_ss": {
+      "name": "Agrupar#8",
+      "definition_name": "Agrupar#8",
+      "layer": "Layer0",
+      "position_mm": [
+        378.5,
+        179.65,
+        81.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Agrupar#111 / VASO / Agrupar#8"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "LIVROS#1",
+        "definition_name": "LIVROS#1",
+        "layer": "Layer0",
+        "position_mm": [
+          157.24,
+          295.25,
+          -5.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "02 Design books 06",
+            "definition_name": "Group56#1",
+            "layer": "Layer0",
+            "position_mm": [
+              338.77,
+              117.64,
+              285.52
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "3DGeom~11",
+                "definition_name": "3DGeom~11_Defintion",
+                "layer": "Layer0",
+                "position_mm": [
+                  547.34,
+                  117.76,
+                  285.52
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "3DGeom~12",
+                "definition_name": "3DGeom~12_Defintion",
+                "layer": "Layer0",
+                "position_mm": [
+                  547.34,
+                  117.76,
+                  285.52
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "02 Design books 18",
+            "definition_name": "Group68#1",
+            "layer": "Layer0",
+            "position_mm": [
+              338.77,
+              117.64,
+              -194.24
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "3DGeom~35",
+                "definition_name": "3DGeom~35_Defintion",
+                "layer": "Layer0",
+                "position_mm": [
+                  547.34,
+                  117.76,
+                  -194.24
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "3DGeom~36",
+                "definition_name": "3DGeom~36_Defintion",
+                "layer": "Layer0",
+                "position_mm": [
+                  547.34,
+                  117.76,
+                  -194.24
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "02 Design books 19",
+            "definition_name": "Group69#1",
+            "layer": "Layer0",
+            "position_mm": [
+              338.35,
+              137.01,
+              -176.02
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "3DGeom~37",
+                "definition_name": "3DGeom~37_Defintion",
+                "layer": "Layer0",
+                "position_mm": [
+                  546.92,
+                  137.15,
+                  -176.02
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "3DGeom~38",
+                "definition_name": "3DGeom~38_Defintion",
+                "layer": "Layer0",
+                "position_mm": [
+                  546.92,
+                  137.15,
+                  -176.02
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "iPhone 5s Prateado",
+        "definition_name": "iPhone 5s Prateado",
+        "layer": "Layer0",
+        "position_mm": [
+          268.24,
+          45.97,
+          79.36
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "iPhone 5s Cinza Espacial",
+            "definition_name": "iPhone 5s Cinza Espacial",
+            "layer": "Layer0",
+            "position_mm": [
+              268.24,
+              45.97,
+              79.36
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "APPLE IPHONE 5S",
+                "definition_name": "APPLE IPHONE 5S",
+                "layer": "Layer0",
+                "position_mm": [
+                  268.24,
+                  45.97,
+                  79.36
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Grupo#1",
+                    "definition_name": "Grupo#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      268.24,
+                      45.97,
+                      79.36
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "iPhone",
+                        "definition_name": "iPhone",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          303.75,
+                          108.49,
+                          80.61
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      },
+                      {
+                        "name": "Image#1",
+                        "definition_name": "Image#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          263.31,
+                          77.41,
+                          88.64
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "OCULOS1",
+        "definition_name": "OCULOS1",
+        "layer": "Layer0",
+        "position_mm": [
+          346.44,
+          49.02,
+          79.52
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Agrupar#22",
+            "definition_name": "Agrupar#22",
+            "layer": "frontal lentes",
+            "position_mm": [
+              433.16,
+              50.48,
+              79.52
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Agrupar#21",
+            "definition_name": "Agrupar#21",
+            "layer": "frontal lentes",
+            "position_mm": [
+              407.5,
+              50.48,
+              79.52
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Agrupar#111",
+        "definition_name": "Agrupar#111",
+        "layer": "Layer0",
+        "position_mm": [
+          333.48,
+          212.82,
+          81.25
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "skpF5DC",
+            "definition_name": "skpF5DC",
+            "layer": "Layer0",
+            "position_mm": [
+              418.43,
+              129.31,
+              101.13
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "25 Mint 1 ",
+                "definition_name": "25 Mint 1 ",
+                "layer": "Layer0",
+                "position_mm": [
+                  418.43,
+                  129.31,
+                  101.13
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "VASO",
+            "definition_name": "VASO",
+            "layer": "Layer0",
+            "position_mm": [
+              360.7,
+              197.49,
+              81.25
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Agrupar#9",
+                "definition_name": "Agrupar#9",
+                "layer": "Layer0",
+                "position_mm": [
+                  360.7,
+                  197.49,
+                  104.8
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Agrupar#8",
+                "definition_name": "Agrupar#8",
+                "layer": "Layer0",
+                "position_mm": [
+                  378.5,
+                  179.65,
+                  81.25
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

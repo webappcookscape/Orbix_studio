@@ -1,0 +1,243 @@
+{
+  "format_version": "1.0",
+  "source_file": "mirror_2_1",
+  "model_source": "sketchup",
+  "sketchup_version": "{24.0.506}",
+  "total_definitions": 16,
+  "total_meshes": 5,
+  "total_layers": 2,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    },
+    {
+      "name": "Camada 1",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false,
+    "Camada 1": false
+  },
+  "materials": [
+    {
+      "name": "<auto>",
+      "color": {
+        "r": 51,
+        "g": 51,
+        "b": 51
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[Aluminum]",
+      "color": {
+        "r": 179,
+        "g": 179,
+        "b": 179
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Aluminum.jpg",
+        "x_scale": 60.0,
+        "y_scale": 60.0
+      }
+    },
+    {
+      "name": "[Mirror 02]",
+      "color": {
+        "r": 229,
+        "g": 229,
+        "b": 229
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Mirror_02.jpg",
+        "x_scale": 78.74015748031496,
+        "y_scale": 78.74015748031496
+      }
+    },
+    {
+      "name": "[Color D04]",
+      "color": {
+        "r": 255,
+        "g": 223,
+        "b": 170
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Camada 1",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__ESPELHO_BRENDA#1__Agrupar#9_Layer0": {
+      "name": "Agrupar#9",
+      "definition_name": "Agrupar#9",
+      "layer": "Layer0",
+      "position_mm": [
+        200.51,
+        5.0,
+        1179.06
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / ESPELHO BRENDA#1 / Agrupar#9"
+    },
+    "mesh_1_ROOT__ESPELHO_BRENDA#1__Agrupar#2_Layer0_229_229_229_ss": {
+      "name": "Agrupar#2",
+      "definition_name": "Agrupar#2",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / ESPELHO BRENDA#1 / Agrupar#2"
+    },
+    "mesh_2_ROOT__ESPELHO_BRENDA#1__Agrupar#2_Layer0_255_255_255_ss": {
+      "name": "Agrupar#2",
+      "definition_name": "Agrupar#2",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / ESPELHO BRENDA#1 / Agrupar#2"
+    },
+    "mesh_3_ROOT__ESPELHO_BRENDA#1__Agrupar#2_Layer0_255_223_170_ss": {
+      "name": "Agrupar#2",
+      "definition_name": "Agrupar#2",
+      "layer": "Layer0",
+      "position_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / ESPELHO BRENDA#1 / Agrupar#2"
+    },
+    "mesh_4_ROOT__ESPELHO_BRENDA#1__Agrupar#10_Layer0": {
+      "name": "Agrupar#10",
+      "definition_name": "Agrupar#10",
+      "layer": "Layer0",
+      "position_mm": [
+        200.51,
+        5.0,
+        449.06
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / ESPELHO BRENDA#1 / Agrupar#10"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "ESPELHO BRENDA#1",
+        "definition_name": "ESPELHO BRENDA#1",
+        "layer": "Layer0",
+        "position_mm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Agrupar#9",
+            "definition_name": "Agrupar#9",
+            "layer": "Layer0",
+            "position_mm": [
+              200.51,
+              5.0,
+              1179.06
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Agrupar#2",
+            "definition_name": "Agrupar#2",
+            "layer": "Layer0",
+            "position_mm": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Agrupar#10",
+            "definition_name": "Agrupar#10",
+            "layer": "Layer0",
+            "position_mm": [
+              200.51,
+              5.0,
+              449.06
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

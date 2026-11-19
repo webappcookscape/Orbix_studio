@@ -1604,6 +1604,19 @@
       if (self.dragState && self.dragState.type === 'move_underlay') {
         var dxS = mouseScreen.x - self.dragState.startScreen.x;
         var dyS = mouseScreen.y - self.dragState.startScreen.y;
+        var isFree = !!(e.shiftKey || e.ctrlKey);
+        var axis = 'FREE';
+        if (!isFree) {
+          // Strictly lock to straight horizontal (X) or vertical (Y) axis
+          if (Math.abs(dxS) >= Math.abs(dyS)) {
+            dyS = 0;
+            axis = 'X';
+          } else {
+            dxS = 0;
+            axis = 'Y';
+          }
+        }
+        self.dragState.axis = axis;
         self.underlay.x = self.dragState.origUnderlayPos.x + dxS / self.zoom;
         self.underlay.y = self.dragState.origUnderlayPos.y + dyS / self.zoom;
         self.requestRender();
@@ -1895,26 +1908,64 @@
           }
         }
         // Comprehensive overlap check against adjacent furniture, wall cores, and openings
-        var colCheck = Core.checkPlacementOverlap ?
-          Core.checkPlacementOverlap(self.dragState.furniture, self.project.plan, self.dragState.furniture.id) :
-          Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
+        var isDecorDrag = !!(
+          self.dragState.furniture.isDecor ||
+          self.dragState.furniture.excludeFromPricing ||
+          self.dragState.furniture.category === 'decor' ||
+          self.dragState.furniture.category === 'appliance_decor' ||
+          self.dragState.furniture.decorType
+        );
 
-        if (snapRes.type === 'unit_joint' || (snapRes.type === 'wall_snap' && colCheck.type === 'wall')) {
+        if (isDecorDrag) {
+          // Detect if placed or moved over another modular unit (countertop, table, shelf, ledge)
+          var underUnit = null;
+          var maxTopZ = 0;
+          var furnList = (self.project && self.project.plan && self.project.plan.furniture) || [];
+          for (var fu = 0; fu < furnList.length; fu++) {
+            var oU = furnList[fu];
+            if (oU.id === self.dragState.furniture.id || oU.isDecor || oU.category === 'decor' || oU.category === 'appliance_decor') continue;
+            var polyU = Core.getFurniturePolygon(oU);
+            if (Core.Vec2.pointInPolygon(self.dragState.furniture.pos, polyU)) {
+              var topZ = (oU.elevation !== undefined && oU.elevation !== null ? parseFloat(oU.elevation) : 0) +
+                         (oU.dimensions && oU.dimensions.H ? parseFloat(oU.dimensions.H) : 850);
+              if (topZ >= maxTopZ) {
+                maxTopZ = topZ;
+                underUnit = oU;
+              }
+            }
+          }
+          if (underUnit && maxTopZ > 0) {
+            self.dragState.furniture.elevation = maxTopZ;
+            self.dragState.furniture.pos.z = maxTopZ;
+            self.dragState.snapInfo = {
+              type: 'decor_on_unit',
+              badgeLabel: '✓ Placed on ' + (underUnit.name || 'Unit') + ' (▲ ' + Math.round(maxTopZ) + ' mm)'
+            };
+          }
           self.dragState.hasCollision = false;
           self.dragState.collidedWith = null;
         } else {
-          var isCollidedRcc = colCheck.other && (
-            colCheck.other.category === 'structural' || colCheck.other.category === 'civil' ||
-            colCheck.other.category === 'wall_paneling' ||
-            /rcc|column|pillar|post|structural/i.test(colCheck.other.name || '') ||
-            /rcc|column|pillar|post|structural/i.test(colCheck.other.id || '')
-          );
-          if (isCollidedRcc) {
+          var colCheck = Core.checkPlacementOverlap ?
+            Core.checkPlacementOverlap(self.dragState.furniture, self.project.plan, self.dragState.furniture.id) :
+            Core.checkFurnitureCollision(self.dragState.furniture, self.project.plan.furniture, self.dragState.furniture.id);
+
+          if (snapRes.type === 'unit_joint' || (snapRes.type === 'wall_snap' && colCheck.type === 'wall')) {
             self.dragState.hasCollision = false;
             self.dragState.collidedWith = null;
           } else {
-            self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
-            self.dragState.collidedWith = colCheck.target || colCheck.other;
+            var isCollidedRcc = colCheck.other && (
+              colCheck.other.category === 'structural' || colCheck.other.category === 'civil' ||
+              colCheck.other.category === 'wall_paneling' ||
+              /rcc|column|pillar|post|structural/i.test(colCheck.other.name || '') ||
+              /rcc|column|pillar|post|structural/i.test(colCheck.other.id || '')
+            );
+            if (isCollidedRcc) {
+              self.dragState.hasCollision = false;
+              self.dragState.collidedWith = null;
+            } else {
+              self.dragState.hasCollision = colCheck.hasOverlap !== undefined ? colCheck.hasOverlap : colCheck.collided;
+              self.dragState.collidedWith = colCheck.target || colCheck.other;
+            }
           }
         }
         self.requestRender();
@@ -2817,9 +2868,12 @@
     );
 
     if (isLCorner) {
-      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || dims.W || 900;
-      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || dims.W || 900;
-      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || dims.D || 560;
+      var isWallL = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : (furn.elevation >= 1000 || (furn.unitConfig && furn.unitConfig.ctype === 'kwall'));
+      var defLeg = isWallL ? 600 : 900;
+      var defDepth = isWallL ? 300 : 550;
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || dims.W || defLeg;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || (dims.D && dims.D >= 500 ? dims.D : (dims.W || defLeg));
+      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || (dims.D && dims.D < cW ? dims.D : defDepth);
 
       function toWorld(lx, ly, name, isMid) {
         return {
@@ -2891,6 +2945,10 @@
 
     var furnList = plan.furniture || [];
     var activeId = furn.id;
+    var isCivilOrPanel = furn.category === 'wall_paneling' ||
+      (furn.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(furn.name)) ||
+      (furn.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(furn.id)) ||
+      (furn.catalogItemId && /ledge|rcc|civil|panel/i.test(furn.catalogItemId));
 
     // Shift, Alt, or Free Placement Mode completely disables all snapping for pixel-precision free positioning
     if (this.isShiftDown || this.isAltDown || this.forceFreePlacement) {
@@ -3007,10 +3065,15 @@
     var minJointDist = 180; // mm magnetic snap threshold
 
     // Unit-to-unit jointing & multi-point magnetic snapping is only evaluated for regular woodwork cabinets
-    if (!isDecorF) {
+    // Ledges, panels, and civil items snap flush to walls without hijacking cursor via unit joints
+    if (!isDecorF && !isCivilOrPanel) {
       for (var i = 0; i < furnList.length; i++) {
         var other = furnList[i];
         if (activeId && other.id === activeId) continue;
+        var otherIsCivil = other.category === 'wall_paneling' ||
+          (other.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(other.name)) ||
+          (other.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(other.id));
+        if (otherIsCivil) continue;
         var oDims = other.dimensions || { W: 1200, D: 600, H: 2100 };
         var oW = oDims.W || 1200;
         var oD = oDims.D || 600;
@@ -3431,17 +3494,20 @@
     if (furnIsLCorner) {
       // Corner unit footprint dimensions are legW x legD
       var fDims = furn.dimensions || {};
-      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || fDims.W || 900;
-      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || fDims.W || 900;
-      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || fDims.D || 560;
+      var isWallCornerU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : (furn.elevation >= 1000 || (furn.unitConfig && furn.unitConfig.ctype === 'kwall'));
+      var defLeg = isWallCornerU ? 600 : 900;
+      var defCornerDepth = isWallCornerU ? 300 : 550;
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || fDims.W || defLeg;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || (fDims.D && fDims.D >= 500 ? fDims.D : (fDims.W || defLeg));
+      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || (fDims.D && fDims.D < cW ? fDims.D : defCornerDepth);
       fW = cW;
       fD = cD;
       halfW = cW / 2;
       halfD = cD / 2;
 
-      // Find best matching corner candidate with tight magnetic radius
+      // Generous magnetic snap radius for room corners (allows effortless snapping to 90° corners)
       var bestCornerSnap = null;
-      var minCornerDist = 240; // mm tight magnetic snap radius for room corners (prevents jumping from afar)
+      var minCornerDist = Math.max(650, Math.max(cW, cD) * 0.85);
 
       for (var ci = 0; ci < cornerCandidates.length; ci++) {
         var cc = cornerCandidates[ci];
@@ -3606,11 +3672,11 @@
         var aHalfT = (aWall.thickness || 150) / 2;
 
         // Check if an adjoining wall meets bwWall.start
-        var meetsStart = (Vec2.dist(bwWall.start, aWall.start) < 90 || Vec2.dist(bwWall.start, aWall.end) < 90);
+        var meetsStart = (Vec2.dist(bwWall.start, aWall.start) < 150 || Vec2.dist(bwWall.start, aWall.end) < 150);
         if (meetsStart) {
           var aDir = Core.wallDirection(aWall);
           var dotAdj = Math.abs(bwDir.x * aDir.x + bwDir.y * aDir.y);
-          if (dotAdj < 0.7) { // Corner meeting
+          if (dotAdj < 0.7) { // Corner meeting (~90°)
             var boundStart = aHalfT;
             for (var afi = 0; afi < furnList.length; afi++) {
               var aFn = furnList[afi];
@@ -3622,9 +3688,16 @@
               if (fTop <= aElev + 5 || (aElev + aH) <= fElev + 5) continue;
 
               var distFromCorner = Math.hypot(aFn.pos.x - bwWall.start.x, aFn.pos.y - bwWall.start.y);
-              var aFnDepth = (aDims.D && aDims.D > 100) ? aDims.D : 600;
-              if (distFromCorner < aFnDepth + aHalfT + 50) {
-                var cornerReserve = aFnDepth + aHalfT;
+              var aIsLCorner = !!(
+                (aFn.unitConfig && (aFn.unitConfig.geometryType === 'l_shaped_corner' || aFn.unitConfig.unitType === 'fbcm' || aFn.unitConfig.unitType === 'wbcm' || (aFn.unitConfig.corner && aFn.unitConfig.corner.enabled))) ||
+                aFn.catalogItemId === 'fbcm' || aFn.id === 'fbcm' || aFn.catalogItemId === 'fbcm-1500' || aFn.catalogItemId === 'wbcm' ||
+                (aFn.id && /fbcm|wbcm/i.test(aFn.id)) ||
+                (aFn.catalogItemId && /fbcm|wbcm/i.test(aFn.catalogItemId)) ||
+                (aFn.code && /fbcm|wbcm/i.test(aFn.code))
+              );
+              var aArmLength = aIsLCorner ? ((aFn.unitConfig && aFn.unitConfig.corner && aFn.unitConfig.corner.legW) || aDims.W || 900) : ((aDims.D && aDims.D > 100) ? aDims.D : 600);
+              if (distFromCorner < aArmLength + aHalfT + 120) {
+                var cornerReserve = aArmLength + aHalfT;
                 if (cornerReserve > boundStart) boundStart = cornerReserve;
               }
             }
@@ -3633,7 +3706,7 @@
         }
 
         // Check if an adjoining wall meets bwWall.end
-        var meetsEnd = (Vec2.dist(bwWall.end, aWall.start) < 90 || Vec2.dist(bwWall.end, aWall.end) < 90);
+        var meetsEnd = (Vec2.dist(bwWall.end, aWall.start) < 150 || Vec2.dist(bwWall.end, aWall.end) < 150);
         if (meetsEnd) {
           var aDir2 = Core.wallDirection(aWall);
           var dotAdj2 = Math.abs(bwDir.x * aDir2.x + bwDir.y * aDir2.y);
@@ -3649,9 +3722,16 @@
               if (fTop <= aElev2 + 5 || (aElev2 + aH2) <= fElev + 5) continue;
 
               var distFromCorner2 = Math.hypot(aFn2.pos.x - bwWall.end.x, aFn2.pos.y - bwWall.end.y);
-              var aFnDepth2 = (aDims2.D && aDims2.D > 100) ? aDims2.D : 600;
-              if (distFromCorner2 < aFnDepth2 + aHalfT + 50) {
-                var cornerReserve2 = bwLen - (aFnDepth2 + aHalfT);
+              var a2IsLCorner = !!(
+                (aFn2.unitConfig && (aFn2.unitConfig.geometryType === 'l_shaped_corner' || aFn2.unitConfig.unitType === 'fbcm' || aFn2.unitConfig.unitType === 'wbcm' || (aFn2.unitConfig.corner && aFn2.unitConfig.corner.enabled))) ||
+                aFn2.catalogItemId === 'fbcm' || aFn2.id === 'fbcm' || aFn2.catalogItemId === 'fbcm-1500' || aFn2.catalogItemId === 'wbcm' ||
+                (aFn2.id && /fbcm|wbcm/i.test(aFn2.id)) ||
+                (aFn2.catalogItemId && /fbcm|wbcm/i.test(aFn2.catalogItemId)) ||
+                (aFn2.code && /fbcm|wbcm/i.test(aFn2.code))
+              );
+              var a2ArmLength = a2IsLCorner ? ((aFn2.unitConfig && aFn2.unitConfig.corner && aFn2.unitConfig.corner.legW) || aDims2.W || 900) : ((aDims2.D && aDims2.D > 100) ? aDims2.D : 600);
+              if (distFromCorner2 < a2ArmLength + aHalfT + 120) {
+                var cornerReserve2 = bwLen - (a2ArmLength + aHalfT);
                 if (cornerReserve2 < boundEnd) boundEnd = cornerReserve2;
               }
             }
@@ -3685,6 +3765,12 @@
         var oFlushDist = (bwWall.thickness || 150) / 2 + oD / 2;
 
         if (Math.abs(oPerp - oFlushDist) > Math.max(fD, oD, 300)) continue;
+
+        var oIsCivilOrPanel = oFn.category === 'wall_paneling' ||
+          (oFn.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(oFn.name)) ||
+          (oFn.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(oFn.id)) ||
+          (oFn.catalogItemId && /ledge|rcc|civil|panel/i.test(oFn.catalogItemId));
+        if (oIsCivilOrPanel) continue; // Existing ledges and wall paneling do not push regular cabinets away!
 
         // Check elevation band collision:
         var isWallO = Core.isWallUnit ? Core.isWallUnit(oFn.category, oFn.name, oFn.code || oFn.catalogItemId, oFn.costCategory) : false;
@@ -3760,31 +3846,34 @@
       }
 
       // If candidate overlaps any occupied interval, push it flush to the nearest edge
-      var didShift = false;
-      for (var iter = 0; iter < 4; iter++) {
-        var collided = false;
-        for (var oii = 0; oii < occupiedIntervals.length; oii++) {
-          var occ = occupiedIntervals[oii];
-          var myStart = candT - halfActiveW;
-          var myEnd = candT + halfActiveW;
-          // Check overlap with 2mm tolerance
-          if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
-            collided = true;
-            didShift = true;
-            if (candT >= occ.center) {
-              // Push to positive side of existing unit
-              candT = occ.end + halfActiveW;
-            } else {
-              // Push to negative side of existing unit
-              candT = occ.start - halfActiveW;
+      // Ledges, civil panels, and wall panelings mount freely without being pushed away
+      if (!isCivilOrPanel) {
+        var didShift = false;
+        for (var iter = 0; iter < 4; iter++) {
+          var collided = false;
+          for (var oii = 0; oii < occupiedIntervals.length; oii++) {
+            var occ = occupiedIntervals[oii];
+            var myStart = candT - halfActiveW;
+            var myEnd = candT + halfActiveW;
+            // Check overlap with 2mm tolerance
+            if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
+              collided = true;
+              didShift = true;
+              if (candT >= occ.center) {
+                // Push to positive side of existing unit
+                candT = occ.end + halfActiveW;
+              } else {
+                // Push to negative side of existing unit
+                candT = occ.start - halfActiveW;
+              }
             }
           }
+          // Re-clamp within wall bounds after shifting
+          if (tMax - tMin >= fW) {
+            candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
+          }
+          if (!collided) break;
         }
-        // Re-clamp within wall bounds after shifting
-        if (tMax - tMin >= fW) {
-          candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
-        }
-        if (!collided) break;
       }
 
       var finalProj = {
@@ -3825,6 +3914,14 @@
       }
     }
 
+    var isDecorPreset = !!(
+      this.furniturePreset.isDecor ||
+      this.furniturePreset.excludeFromPricing ||
+      this.furniturePreset.category === 'decor' ||
+      this.furniturePreset.category === 'appliance_decor' ||
+      this.furniturePreset.decorType
+    );
+
     var isWall = (Core.isWallUnit) ?
       Core.isWallUnit(this.furniturePreset.category, this.furniturePreset.name, this.furniturePreset.code || this.furniturePreset.catalogItemId, this.furniturePreset.costCategory) :
       false;
@@ -3836,8 +3933,8 @@
     var isSpicePlan = (catPlan.indexOf('spice') !== -1 || nmPlan.indexOf('spice') !== -1 || idPlan.indexOf('spice') !== -1 || idPlan.indexOf('sr-') === 0);
     var defPlanElev = isLoftPlan ? 2100 : (isSpicePlan ? 1350 : (isWall ? 1500 : 0));
     if (idPlan === 'wfm60-roll' || cdPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && (this.furniturePreset.unitConfig.isRollingShutter || this.furniturePreset.unitConfig.shutterType === 'rolling_shutter'))) defPlanElev = 750;
-    else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 750;
-    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 750;
+    else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 1200;
+    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 850;
     else if (idPlan === 'ledge-vert' || nmPlan.indexOf('vertical ledge') !== -1) defPlanElev = 0;
     else if (idPlan === 'pnl-back' || nmPlan.indexOf('back panel') !== -1) defPlanElev = 300;
     else if (idPlan === 'pnl-wall' || nmPlan.indexOf('wall panel') !== -1 || catPlan === 'wall_paneling') defPlanElev = 0;
@@ -3846,13 +3943,43 @@
     var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '') ?
       parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
+    // If placing decor or shelf/countertop ledge, auto-detect if cursor is over an underlying modular unit (countertop, table, shelf, ledge)
+    var isLedgePreset = (idPlan === 'ledge-std' || idPlan === 'ledge-ctop' || nmPlan === 'ledge' || nmPlan.indexOf('ledge') !== -1);
+    if (isDecorPreset || isLedgePreset) {
+      var underUnit = null;
+      var maxTopZ = 0;
+      var allFurn = (this.project && this.project.plan && this.project.plan.furniture) || [];
+      for (var fu = 0; fu < allFurn.length; fu++) {
+        var oU = allFurn[fu];
+        if (oU.isDecor || oU.category === 'decor' || oU.category === 'appliance_decor' || (oU.id && /ledge/i.test(oU.id))) continue;
+        var polyU = Core.getFurniturePolygon(oU);
+        if (Core.Vec2.pointInPolygon(finalPos, polyU)) {
+          var topZ = (oU.elevation !== undefined && oU.elevation !== null ? parseFloat(oU.elevation) : 0) +
+                     (oU.dimensions && oU.dimensions.H ? parseFloat(oU.dimensions.H) : 850);
+          if (topZ >= maxTopZ) {
+            maxTopZ = topZ;
+            underUnit = oU;
+          }
+        }
+      }
+      if (underUnit && maxTopZ > 0) {
+        if (idPlan === 'ledge-std' || nmPlan === 'ledge') {
+          presetElev = maxTopZ + 350;
+        } else if (idPlan === 'ledge-ctop') {
+          presetElev = maxTopZ;
+        } else {
+          presetElev = maxTopZ;
+        }
+      }
+    }
+
     var furnId = (Core.uid ? Core.uid('furn') : ('furn_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5)));
     var furn = Core.createFurniturePlacement({
       id: furnId,
       catalogItemId: this.furniturePreset.catalogItemId || this.furniturePreset.id || this.furniturePreset.code,
       modelType: this.furniturePreset.modelType,
       name: this.furniturePreset.name,
-      category: this.furniturePreset.category,
+      category: this.furniturePreset.category || (isDecorPreset ? 'decor' : 'wardrobe'),
       code: this.furniturePreset.code,
       costCategory: this.furniturePreset.costCategory,
       roomId: matchedRoomId,
@@ -3860,7 +3987,14 @@
       pos: { x: finalPos.x, y: finalPos.y, z: presetElev },
       rotY: finalRotY,
       dimensions: Object.assign({}, this.furniturePreset.dimensions),
-      unitConfig: Object.assign({}, this.furniturePreset.unitConfig || {})
+      unitConfig: Object.assign({}, this.furniturePreset.unitConfig || {}),
+      isDecor: isDecorPreset,
+      excludeFromPricing: isDecorPreset,
+      decorType: this.furniturePreset.decorType || null,
+      modelUrl: this.furniturePreset.modelUrl || null,
+      thumbnailUrl: this.furniturePreset.thumbnailUrl || null,
+      modelFormat: this.furniturePreset.modelFormat || null,
+      slug: this.furniturePreset.slug || null
     });
 
     this.project.plan.furniture.push(furn);
@@ -4387,8 +4521,39 @@
         ctx.fillRect(c.x - 5, c.y - 5, 10, 10);
       });
 
-      // Top notification badge
-      var badgeText = '✋ Move Blueprint Active: Drag anywhere to align blueprint under walls (Press Esc to finish)';
+      // Top notification badge with live Straight Axis HUD indicator
+      var badgeText = '✋ Straight Move Active: Dragging blueprint straight horizontal / vertical (Esc to finish)';
+      if (this.dragState && this.dragState.type === 'move_underlay' && this.dragState.axis) {
+        if (this.dragState.axis === 'X') {
+          badgeText = '✋ Straight Horizontal ⟷ (Holding X axis · Shift for Free · Esc to finish)';
+          // Draw subtle straight horizontal guideline
+          ctx.save();
+          ctx.strokeStyle = 'rgba(5, 150, 105, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 6]);
+          var cyMid = topLeft.y + hPx / 2;
+          ctx.beginPath();
+          ctx.moveTo(-10000, cyMid);
+          ctx.lineTo(10000, cyMid);
+          ctx.stroke();
+          ctx.restore();
+        } else if (this.dragState.axis === 'Y') {
+          badgeText = '✋ Straight Vertical ↕ (Holding Y axis · Shift for Free · Esc to finish)';
+          // Draw subtle straight vertical guideline
+          ctx.save();
+          ctx.strokeStyle = 'rgba(5, 150, 105, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 6]);
+          var cxMid = topLeft.x + wPx / 2;
+          ctx.beginPath();
+          ctx.moveTo(cxMid, -10000);
+          ctx.lineTo(cxMid, 10000);
+          ctx.stroke();
+          ctx.restore();
+        } else if (this.dragState.axis === 'FREE') {
+          badgeText = '✋ Free Move (Shift/Ctrl held · Esc to finish)';
+        }
+      }
       ctx.font = '700 12px "IBM Plex Sans", sans-serif';
       var tw = ctx.measureText(badgeText).width;
       var bx = topLeft.x + wPx / 2;
@@ -6162,23 +6327,26 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         ctx.globalAlpha = 0.28;
       }
 
-      // Check if L-shaped corner base unit
+      // Check if L-shaped corner base/wall unit (FBCM or WBCM)
       var isLCorner = !!(
-        (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
-        f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' ||
-        (f.id && /fbcm/i.test(f.id)) ||
-        (f.catalogItemId && /fbcm/i.test(f.catalogItemId)) ||
-        (f.code && /fbcm/i.test(f.code)) ||
-        (f.name && /l[-_ ]*shaped.*corner/i.test(f.name))
+        (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || f.unitConfig.unitType === 'wbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
+        f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' || f.catalogItemId === 'wbcm' ||
+        (f.id && /fbcm|wbcm/i.test(f.id)) ||
+        (f.catalogItemId && /fbcm|wbcm/i.test(f.catalogItemId)) ||
+        (f.code && /fbcm|wbcm/i.test(f.code)) ||
+        (f.name && /l[-_ ]*shaped.*corner|\bwbcm\b|\bfbcm\b/i.test(f.name))
       );
 
       // Furniture body boundary (Red if colliding!)
       var isDecor = !!(f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor');
 
       if (isLCorner) {
-        var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || 900;
-        var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || 900;
-        var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || 560;
+        var isWallL = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : (f.elevation >= 1000 || (f.unitConfig && f.unitConfig.ctype === 'kwall'));
+        var defLeg = isWallL ? 600 : 900;
+        var defDepth = isWallL ? 300 : 550;
+        var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || (f.dimensions && f.dimensions.W) || defLeg;
+        var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || (f.dimensions && f.dimensions.D && f.dimensions.D >= 500 ? f.dimensions.D : (f.dimensions && f.dimensions.W ? f.dimensions.W : defLeg));
+        var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || (f.dimensions && f.dimensions.D && f.dimensions.D < cW ? f.dimensions.D : defDepth);
         var cwPx = cW * this.zoom;
         var cdPx = cD * this.zoom;
         var depthPx = cDepth * this.zoom;
@@ -6188,7 +6356,6 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           ctx.strokeStyle = '#dc2626';
           ctx.lineWidth = 2.5;
         } else {
-          var isWallL = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
           if (isWallL) {
             ctx.fillStyle = isSelected ? 'rgba(2, 132, 199, 0.25)' : 'rgba(240, 249, 255, 0.95)';
             ctx.strokeStyle = isSelected ? '#0284c7' : '#0369a1';
@@ -6685,6 +6852,17 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           ctx.fill();
           ctx.fillStyle = '#ffffff';
           ctx.fillText(wTxt, 0, -dPx / 2 - 14);
+        } else if (sInfo.type === 'decor_on_unit') {
+          var dTxt = sInfo.badgeLabel || '✓ Placed on Top of Unit';
+          ctx.font = '700 10.5px "IBM Plex Sans", sans-serif';
+          var dw = ctx.measureText(dTxt).width;
+          ctx.fillStyle = '#059669';
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(-dw / 2 - 8, -dPx / 2 - 24, dw + 16, 18, 5);
+          else ctx.rect(-dw / 2 - 8, -dPx / 2 - 24, dw + 16, 18);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(dTxt, 0, -dPx / 2 - 14);
         }
       }
 

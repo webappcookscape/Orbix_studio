@@ -1,0 +1,1074 @@
+{
+  "format_version": "1.0",
+  "source_file": "component_9",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 11,
+  "total_meshes": 36,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "3D66_SU_1597975373616_0035",
+      "color": {
+        "r": 246,
+        "g": 246,
+        "b": 246
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975373616_0035.png",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Glass_Candle_012",
+      "color": {
+        "r": 130,
+        "g": 130,
+        "b": 130
+      },
+      "transparency": 0.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "Texture.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "candle_012",
+      "color": {
+        "r": 217,
+        "g": 200,
+        "b": 179
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "white_042",
+      "color": {
+        "r": 245,
+        "g": 245,
+        "b": 245
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "3D66_SU_1597975373559_0034",
+      "color": {
+        "r": 238,
+        "g": 238,
+        "b": 237
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975373559_0034.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374635_0050",
+      "color": {
+        "r": 129,
+        "g": 129,
+        "b": 129
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374635_0050.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374183_0047",
+      "color": {
+        "r": 201,
+        "g": 184,
+        "b": 160
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374183_0047.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "oblojka_065",
+      "color": {
+        "r": 203,
+        "g": 205,
+        "b": 195
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "3D66_SU_1597975374801_0054",
+      "color": {
+        "r": 233,
+        "g": 234,
+        "b": 226
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374801_0054.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374816_0055",
+      "color": {
+        "r": 207,
+        "g": 193,
+        "b": 185
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374816_0055.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374791_0053",
+      "color": {
+        "r": 201,
+        "g": 184,
+        "b": 160
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374791_0053.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975373679_0036",
+      "color": {
+        "r": 152,
+        "g": 147,
+        "b": 137
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975373679_0036.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975373707_0037",
+      "color": {
+        "r": 201,
+        "g": 184,
+        "b": 160
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975373707_0037.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975373777_0038",
+      "color": {
+        "r": 116,
+        "g": 123,
+        "b": 118
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975373777_0038.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975373836_0039",
+      "color": {
+        "r": 226,
+        "g": 225,
+        "b": 220
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975373836_0039.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975373951_0040",
+      "color": {
+        "r": 200,
+        "g": 200,
+        "b": 196
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975373951_0040.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "oblojka_068",
+      "color": {
+        "r": 247,
+        "g": 247,
+        "b": 247
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "3D66_SU_1597975374775_0052",
+      "color": {
+        "r": 218,
+        "g": 225,
+        "b": 213
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374775_0052.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374742_0051",
+      "color": {
+        "r": 151,
+        "g": 146,
+        "b": 122
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374742_0051.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374090_0044",
+      "color": {
+        "r": 232,
+        "g": 234,
+        "b": 230
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374090_0044.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374135_0045",
+      "color": {
+        "r": 223,
+        "g": 225,
+        "b": 222
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374135_0045.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374167_0046",
+      "color": {
+        "r": 227,
+        "g": 232,
+        "b": 231
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374167_0046.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374281_0048",
+      "color": {
+        "r": 189,
+        "g": 198,
+        "b": 199
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374281_0048.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374443_0049",
+      "color": {
+        "r": 195,
+        "g": 199,
+        "b": 196
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374443_0049.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374048_0042",
+      "color": {
+        "r": 234,
+        "g": 231,
+        "b": 222
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374048_0042.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374030_0041",
+      "color": {
+        "r": 222,
+        "g": 216,
+        "b": 202
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374030_0041.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "3D66_SU_1597975374060_0043",
+      "color": {
+        "r": 235,
+        "g": 232,
+        "b": 223
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\上传审核 - 模型\\WorkTemp\\100295560\\3D66_SU_1597975374060_0043.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component56_Layer0_201_184_160_ds": {
+      "name": "Component56",
+      "definition_name": "Component56",
+      "layer": "Layer0",
+      "position_mm": [
+        188.26,
+        118.35,
+        83.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component56"
+    },
+    "mesh_1_ROOT__Component56_Layer0_116_123_118_ds": {
+      "name": "Component56",
+      "definition_name": "Component56",
+      "layer": "Layer0",
+      "position_mm": [
+        188.26,
+        118.35,
+        83.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component56"
+    },
+    "mesh_2_ROOT__Component56_Layer0_226_225_220_ds": {
+      "name": "Component56",
+      "definition_name": "Component56",
+      "layer": "Layer0",
+      "position_mm": [
+        188.26,
+        118.35,
+        83.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component56"
+    },
+    "mesh_3_ROOT__Component56_Layer0_200_200_196_ds": {
+      "name": "Component56",
+      "definition_name": "Component56",
+      "layer": "Layer0",
+      "position_mm": [
+        188.26,
+        118.35,
+        83.43
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component56"
+    },
+    "mesh_4_ROOT__candle_005_Layer0_217_200_179_ds": {
+      "name": "candle_005",
+      "definition_name": "Group53",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / candle_005"
+    },
+    "mesh_5_ROOT__candle_005_Layer0_245_245_245_ds": {
+      "name": "candle_005",
+      "definition_name": "Group53",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / candle_005"
+    },
+    "mesh_6_ROOT__candle_005_Layer0_255_84_84_ds": {
+      "name": "candle_005",
+      "definition_name": "Group53",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / candle_005"
+    },
+    "mesh_7_ROOT__candle_005_Layer0_238_238_237_ds": {
+      "name": "candle_005",
+      "definition_name": "Group53",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / candle_005"
+    },
+    "mesh_8_ROOT__B026_Layer0_247_247_247_ds": {
+      "name": "B026",
+      "definition_name": "Group62",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B026"
+    },
+    "mesh_9_ROOT__B026_Layer0_218_225_213_ds": {
+      "name": "B026",
+      "definition_name": "Group62",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B026"
+    },
+    "mesh_10_ROOT__B026_Layer0_201_184_160_ds": {
+      "name": "B026",
+      "definition_name": "Group62",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B026"
+    },
+    "mesh_11_ROOT__B018_Layer0_151_146_122_ds": {
+      "name": "B018",
+      "definition_name": "Group61",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B018"
+    },
+    "mesh_12_ROOT__B018_Layer0_201_184_160_ds": {
+      "name": "B018",
+      "definition_name": "Group61",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B018"
+    },
+    "mesh_13_ROOT__B021_Layer0_189_198_199_ds": {
+      "name": "B021",
+      "definition_name": "Group59",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B021"
+    },
+    "mesh_14_ROOT__B021_Layer0_195_199_196_ds": {
+      "name": "B021",
+      "definition_name": "Group59",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B021"
+    },
+    "mesh_15_ROOT__B021_Layer0_201_184_160_ds": {
+      "name": "B021",
+      "definition_name": "Group59",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B021"
+    },
+    "mesh_16_ROOT__candle_012_Layer0_246_246_246_ds": {
+      "name": "candle_012",
+      "definition_name": "Group54",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / candle_012"
+    },
+    "mesh_17_ROOT__candle_012_Layer0_130_130_130_ds": {
+      "name": "candle_012",
+      "definition_name": "Group54",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / candle_012"
+    },
+    "mesh_18_ROOT__candle_012_Layer0_217_200_179_ds": {
+      "name": "candle_012",
+      "definition_name": "Group54",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / candle_012"
+    },
+    "mesh_19_ROOT__candle_012_Layer0_245_245_245_ds": {
+      "name": "candle_012",
+      "definition_name": "Group54",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / candle_012"
+    },
+    "mesh_20_ROOT__Box_Layer0": {
+      "name": "Box",
+      "definition_name": "Group55",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Box"
+    },
+    "mesh_21_ROOT__B07_Layer0_232_234_230_ds": {
+      "name": "B07",
+      "definition_name": "Group58",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B07"
+    },
+    "mesh_22_ROOT__B07_Layer0_223_225_222_ds": {
+      "name": "B07",
+      "definition_name": "Group58",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B07"
+    },
+    "mesh_23_ROOT__B07_Layer0_227_232_231_ds": {
+      "name": "B07",
+      "definition_name": "Group58",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B07"
+    },
+    "mesh_24_ROOT__B07_Layer0_201_184_160_ds": {
+      "name": "B07",
+      "definition_name": "Group58",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B07"
+    },
+    "mesh_25_ROOT__B025_Layer0_203_205_195_ds": {
+      "name": "B025",
+      "definition_name": "Group63",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B025"
+    },
+    "mesh_26_ROOT__B025_Layer0_233_234_226_ds": {
+      "name": "B025",
+      "definition_name": "Group63",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B025"
+    },
+    "mesh_27_ROOT__B025_Layer0_207_193_185_ds": {
+      "name": "B025",
+      "definition_name": "Group63",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B025"
+    },
+    "mesh_28_ROOT__B025_Layer0_201_184_160_ds": {
+      "name": "B025",
+      "definition_name": "Group63",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B025"
+    },
+    "mesh_29_ROOT__B022_Layer0_129_129_129_ds": {
+      "name": "B022",
+      "definition_name": "Group60",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B022"
+    },
+    "mesh_30_ROOT__B022_Layer0_201_184_160_ds": {
+      "name": "B022",
+      "definition_name": "Group60",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B022"
+    },
+    "mesh_31_ROOT__B011_Layer0_234_231_222_ds": {
+      "name": "B011",
+      "definition_name": "Group57",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B011"
+    },
+    "mesh_32_ROOT__B011_Layer0_222_216_202_ds": {
+      "name": "B011",
+      "definition_name": "Group57",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B011"
+    },
+    "mesh_33_ROOT__B011_Layer0_235_232_223_ds": {
+      "name": "B011",
+      "definition_name": "Group57",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B011"
+    },
+    "mesh_34_ROOT__B011_Layer0_201_184_160_ds": {
+      "name": "B011",
+      "definition_name": "Group57",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B011"
+    },
+    "mesh_35_ROOT__B011_Layer0_200_200_196_ds": {
+      "name": "B011",
+      "definition_name": "Group57",
+      "layer": "Layer0",
+      "position_mm": [
+        9803.81,
+        16217.24,
+        -993.71
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / B011"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component56",
+        "definition_name": "Component56",
+        "layer": "Layer0",
+        "position_mm": [
+          188.26,
+          118.35,
+          83.43
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "candle_005",
+        "definition_name": "Group53",
+        "layer": "Layer0",
+        "position_mm": [
+          9803.81,
+          16217.24,
+          -993.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "B026",
+        "definition_name": "Group62",
+        "layer": "Layer0",
+        "position_mm": [
+          9803.81,
+          16217.24,
+          -993.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "B018",
+        "definition_name": "Group61",
+        "layer": "Layer0",
+        "position_mm": [
+          9803.81,
+          16217.24,
+          -993.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "B021",
+        "definition_name": "Group59",
+        "layer": "Layer0",
+        "position_mm": [
+          9803.81,
+          16217.24,
+          -993.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "candle_012",
+        "definition_name": "Group54",
+        "layer": "Layer0",
+        "position_mm": [
+          9803.81,
+          16217.24,
+          -993.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Box",
+        "definition_name": "Group55",
+        "layer": "Layer0",
+        "position_mm": [
+          9803.81,
+          16217.24,
+          -993.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "B07",
+        "definition_name": "Group58",
+        "layer": "Layer0",
+        "position_mm": [
+          9803.81,
+          16217.24,
+          -993.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "B025",
+        "definition_name": "Group63",
+        "layer": "Layer0",
+        "position_mm": [
+          9803.81,
+          16217.24,
+          -993.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "B022",
+        "definition_name": "Group60",
+        "layer": "Layer0",
+        "position_mm": [
+          9803.81,
+          16217.24,
+          -993.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "B011",
+        "definition_name": "Group57",
+        "layer": "Layer0",
+        "position_mm": [
+          9803.81,
+          16217.24,
+          -993.71
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      }
+    ]
+  }
+}

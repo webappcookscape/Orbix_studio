@@ -1642,6 +1642,9 @@
     },
 
     flushImmediateSave: function () {
+      if (window.OrbixUI && typeof window.OrbixUI.syncActiveFloorData === 'function') {
+        window.OrbixUI.syncActiveFloorData();
+      }
       var currentPlan = (window.OrbixUI && window.OrbixUI.project) ? window.OrbixUI.project : null;
       if (!currentPlan) return;
       var currentUnits = (window.S && Array.isArray(window.S.units)) ? window.S.units : [];
@@ -1669,6 +1672,9 @@
 
     saveActiveProject: function (dataUpdates) {
       var self = this;
+      if (window.OrbixUI && typeof window.OrbixUI.syncActiveFloorData === 'function') {
+        window.OrbixUI.syncActiveFloorData();
+      }
       var activeId = this.activeProjectId || (this.currentUser ? localStorage.getItem('orbix_active_proj_' + this.currentUser.id) : null);
       var project = activeId ? this.projects.find(function (p) { return p.id === activeId; }) : null;
 

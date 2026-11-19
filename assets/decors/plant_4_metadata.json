@@ -1,0 +1,231 @@
+{
+  "format_version": "1.0",
+  "source_file": "plant_4",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 4,
+  "total_meshes": 4,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "Areca_Palm_ceramic_1",
+      "color": {
+        "r": 246,
+        "g": 246,
+        "b": 246
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "trunk_1",
+      "color": {
+        "r": 79,
+        "g": 104,
+        "b": 39
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/DELL/AppData/Local/Temp/ChaosGroupTextureCache/7c0452eae9acd412ecdae15f4d6167a4.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "trunk_2",
+      "color": {
+        "r": 103,
+        "g": 125,
+        "b": 63
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/DELL/AppData/Local/Temp/ChaosGroupTextureCache/114578c91096839180cd15e72e5a37a7.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "leaf_1",
+      "color": {
+        "r": 79,
+        "g": 104,
+        "b": 39
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/DELL/AppData/Local/Temp/ChaosGroupTextureCache/7c0452eae9acd412ecdae15f4d6167a4.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "ground1",
+      "color": {
+        "r": 30,
+        "g": 21,
+        "b": 16
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "C:/Users/DELL/AppData/Local/Temp/ChaosGroupTextureCache/b1a25fb1e33305eab4adfb4d161eba6b.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_4756__pot_006_Layer0": {
+      "name": "pot_006",
+      "definition_name": "Group#15",
+      "layer": "Layer0",
+      "position_mm": [
+        1600.45,
+        841.77,
+        13.28
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4756 / pot_006"
+    },
+    "mesh_1_ROOT__Component_4756__ground_006_Layer0": {
+      "name": "ground_006",
+      "definition_name": "Group#14",
+      "layer": "Layer0",
+      "position_mm": [
+        1600.45,
+        841.77,
+        13.28
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4756 / ground_006"
+    },
+    "mesh_2_ROOT__Component_4756__Tropical_Layer0_79_104_39_ds": {
+      "name": "Tropical",
+      "definition_name": "Group#13",
+      "layer": "Layer0",
+      "position_mm": [
+        1600.45,
+        841.77,
+        13.28
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4756 / Tropical"
+    },
+    "mesh_3_ROOT__Component_4756__Tropical_Layer0_103_125_63_ds": {
+      "name": "Tropical",
+      "definition_name": "Group#13",
+      "layer": "Layer0",
+      "position_mm": [
+        1600.45,
+        841.77,
+        13.28
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_4756 / Tropical"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_4756",
+        "definition_name": "Group#49",
+        "layer": "Layer0",
+        "position_mm": [
+          682.94,
+          499.4,
+          13.28
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "pot_006",
+            "definition_name": "Group#15",
+            "layer": "Layer0",
+            "position_mm": [
+              1600.45,
+              841.77,
+              13.28
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "ground_006",
+            "definition_name": "Group#14",
+            "layer": "Layer0",
+            "position_mm": [
+              1600.45,
+              841.77,
+              13.28
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Tropical",
+            "definition_name": "Group#13",
+            "layer": "Layer0",
+            "position_mm": [
+              1600.45,
+              841.77,
+              13.28
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}
