@@ -7363,7 +7363,13 @@
           if (clientInput) clientInput.value = m.clientName || 'Vikram Singhania';
           if (contactInput) contactInput.value = m.phone || m.contactNumber || '+91 98765 43210';
           if (locInput) locInput.value = m.siteAddress || m.siteLocation || m.location || 'Whitefield, Bengaluru';
-          if (bhSelect) bhSelect.value = m.bhName || m.designerName || 'Sangathamizh';
+          if (bhSelect) {
+            var existingBh = m.bhName || m.designerName || '';
+            if (window.OrbixProjects && typeof window.OrbixProjects.populateBhDropdown === 'function') {
+              window.OrbixProjects.populateBhDropdown(existingBh);
+            }
+            if (existingBh) bhSelect.value = existingBh;
+          }
           if (dtInput) dtInput.value = m.dateTime || (m.dateCreated ? self.formatDisplayDate(m.dateCreated, true) : '05-11-2026 23:36');
           if (cpInput) cpInput.value = m.cpCode || m.quoteId || 'CP-9042';
 

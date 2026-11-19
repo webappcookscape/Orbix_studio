@@ -14,299 +14,49 @@
     },
     "coverBg": "slide_01_bg.jpg",
     "coverLayout": {
-      "staticLabels": [
-        {
-          "text": "PERSONALIZED DESIGN",
-          "font": "Klein",
-          "szPt": 11.59,
-          "color": "#08231B",
-          "x": 197.0,
-          "y": 1383.7,
-          "w": 120.1,
-          "h": 40.9
-        },
-        {
-          "text": "Designing Spaces for a",
-          "font": "Baskerville Display PT",
-          "szPt": 48.0,
-          "color": "#08231B",
-          "x": 40.1,
-          "y": 275.3,
-          "w": 381.1,
-          "h": 171.2
-        },
-        {
-          "text": "Thoughtful Design | Premium Materials\nQuality Execution | Homes That Last",
-          "font": "Klein",
-          "szPt": 14.46,
-          "color": "#808080",
-          "x": 37.5,
-          "y": 607.0,
-          "w": 396.8,
-          "h": 54.8
-        },
-        {
-          "text": "Phone No",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 120.4,
-          "y": 914.4,
-          "w": 70.4,
-          "h": 23.6
-        },
-        {
-          "text": "Designer Details",
-          "font": "Calibri",
-          "szPt": 18.62,
-          "color": "#08231B",
-          "x": 480.3,
-          "y": 1063.0,
-          "w": 213.1,
-          "h": 35.4
-        },
-        {
-          "text": "Email ID",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 522.6,
-          "y": 1224.4,
-          "w": 56.4,
-          "h": 23.6
-        },
-        {
-          "text": "PREMIUM MATERIALS",
-          "font": "Klein",
-          "szPt": 11.59,
-          "color": "#08231B",
-          "x": 394.5,
-          "y": 1383.7,
-          "w": 90.4,
-          "h": 40.9
-        },
-        {
-          "text": "QUALITY WORKMANSHIP",
-          "font": "Klein",
-          "szPt": 11.59,
-          "color": "#08231B",
-          "x": 562.2,
-          "y": 1384.1,
-          "w": 131.3,
-          "h": 42.6
-        },
-        {
-          "text": "HOMES\nTHAT LAST",
-          "font": "Klein",
-          "szPt": 11.59,
-          "color": "#08231B",
-          "x": 768.6,
-          "y": 1383.7,
-          "w": 86.1,
-          "h": 40.9
-        },
-        {
-          "text": "LIVE LIKE YOU MEAN IT",
-          "font": "Klein",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 28.7,
-          "y": 182.5,
-          "w": 514.8,
-          "h": 24.4
-        },
-        {
-          "text": "Patron Details",
-          "font": "Calibri",
-          "szPt": 18.62,
-          "color": "#08231B",
-          "x": 69.7,
-          "y": 796.0,
-          "w": 176.1,
-          "h": 35.4
-        },
-        {
-          "text": "Name",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 511.9,
-          "y": 1128.2,
-          "w": 110.3,
-          "h": 22.1
-        },
-        {
-          "text": "Name",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 120.3,
-          "y": 861.8,
-          "w": 86.9,
-          "h": 22.1
-        },
-        {
-          "text": "Phone No",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 519.5,
-          "y": 1179.8,
-          "w": 70.4,
-          "h": 23.6
-        },
-        {
-          "text": "Location",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 120.5,
-          "y": 966.1,
-          "w": 60.7,
-          "h": 23.6
-        },
-        {
-          "text": "Date",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 120.3,
-          "y": 1014.3,
-          "w": 33.2,
-          "h": 23.6
-        },
-        {
-          "text": ":",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 239.2,
-          "y": 861.8,
-          "w": 3.8,
-          "h": 23.6
-        },
-        {
-          "text": ":",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 239.2,
-          "y": 914.4,
-          "w": 3.8,
-          "h": 23.6
-        },
-        {
-          "text": ":",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 239.2,
-          "y": 1019.7,
-          "w": 3.8,
-          "h": 23.6
-        },
-        {
-          "text": ":",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 236.8,
-          "y": 966.6,
-          "w": 3.8,
-          "h": 23.6
-        },
-        {
-          "text": ":",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 664.8,
-          "y": 1180.7,
-          "w": 3.8,
-          "h": 23.6
-        },
-        {
-          "text": ":",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 664.8,
-          "y": 1127.8,
-          "w": 3.8,
-          "h": 23.6
-        },
-        {
-          "text": ":",
-          "font": "Inter",
-          "szPt": 12.0,
-          "color": "#08231B",
-          "x": 664.7,
-          "y": 1224.1,
-          "w": 3.8,
-          "h": 23.6
-        },
-        {
-          "text": "Tomorrow",
-          "font": "Baskerville Display PT",
-          "szPt": 54.0,
-          "color": "#08231B",
-          "x": 112.1,
-          "y": 492.9,
-          "w": 382.9,
-          "h": 83.8
-        },
-        {
-          "text": "Brighter",
-          "font": "Moontime",
-          "szPt": 72.0,
-          "color": "#822510",
-          "x": 75.2,
-          "y": 397.8,
-          "w": 320.6,
-          "h": 124.8
-        }
-      ],
+      "coverBakedStatics": true,
+      "staticLabels": [],
       "dynamicSlots": {
         "patron_name": {
-          "x": 255.8,
+          "x": 255.4,
           "y": 854.1,
-          "w": 167.3,
+          "w": 379.9,
           "h": 39.0
         },
         "patron_phone": {
-          "x": 253.5,
-          "y": 908.1,
-          "w": 134.9,
+          "x": 255.4,
+          "y": 906.7,
+          "w": 379.9,
           "h": 39.0
         },
         "patron_location": {
-          "x": 252.1,
-          "y": 958.0,
-          "w": 243.9,
+          "x": 255.4,
+          "y": 958.4,
+          "w": 379.9,
           "h": 39.0
         },
         "patron_date": {
-          "x": 250.9,
-          "y": 1006.3,
-          "w": 145.3,
+          "x": 255.4,
+          "y": 1006.6,
+          "w": 379.9,
           "h": 39.0
         },
-        "designer_email": {
-          "x": 667.6,
-          "y": 1220.3,
-          "w": 291.8,
+        "designer_name": {
+          "x": 664.8,
+          "y": 1127.3,
+          "w": 290.2,
           "h": 32.5
         },
         "designer_phone": {
-          "x": 666.8,
-          "y": 1178.8,
-          "w": 129.2,
+          "x": 664.8,
+          "y": 1178.9,
+          "w": 290.2,
           "h": 32.5
         },
-        "designer_name": {
-          "x": 667.2,
-          "y": 1127.3,
-          "w": 114.7,
+        "designer_email": {
+          "x": 664.8,
+          "y": 1223.5,
+          "w": 290.2,
           "h": 32.5
         }
       }

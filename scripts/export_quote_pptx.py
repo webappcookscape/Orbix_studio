@@ -251,22 +251,82 @@ def xml_escape(text):
     )
 
 
+COVER_SHAPE_ALIGNMENTS = [
+    ('60', 1140000, 8168341, None, None),
+    ('51', 1140000, 8667320, None, None),
+    ('62', 1140000, 9156700, None, None),
+    ('64', 1140000, 9613900, None, None),
+    ('65', 2266527, 8168341, None, None),
+    ('66', 2266527, 8667320, None, None),
+    ('69', 2266527, 9156700, None, None),
+    ('68', 2266527, 9613900, None, None),
+    ('73', 2420000, 8095502, 3600000, 369332),
+    ('74', 2420000, 8594481, 3600000, 369332),
+    ('76', 2420000, 9083861, 3600000, 369332),
+    ('77', 2420000, 9541061, 3600000, 369332),
+    ('27', 4248150, 11456931, None, None),
+    ('59', 4850877, 10693847, None, None),
+    ('61', 4850877, 11182762, None, None),
+    ('53', 4850877, 11605675, None, None),
+    ('71', 6150000, 10693847, None, None),
+    ('70', 6150000, 11182762, None, None),
+    ('72', 6150000, 11605675, None, None),
+    ('80', 6300000, 10684772, 2750000, 307777),
+    ('79', 6300000, 11173687, 2750000, 307777),
+    ('78', 6300000, 11596600, 2750000, 307777),
+]
+
+
+def apply_cover_shape_alignments(slide1_xml):
+    align_map = {sid: (x, y, cx, cy) for sid, x, y, cx, cy in COVER_SHAPE_ALIGNMENTS}
+    def _rw_sp(m):
+        sp_xml = m.group(0)
+        mid = re.search(r'<p:cNvPr\b[^>]*\bid="(\d+)"', sp_xml)
+        if not mid or mid.group(1) not in align_map:
+            return sp_xml
+        x, y, cx, cy = align_map[mid.group(1)]
+        def _rw_xf(xm):
+            xf = re.sub(r'<a:off\b[^/]*/>', f'<a:off x="{x}" y="{y}"/>', xm.group(0), count=1)
+            if cx is not None and cy is not None:
+                xf = re.sub(r'<a:ext\b[^/]*/>', f'<a:ext cx="{cx}" cy="{cy}"/>', xf, count=1)
+            return xf
+        return re.sub(r'<a:xfrm\b[^>]*>.*?</a:xfrm>', _rw_xf, sp_xml, count=1, flags=re.DOTALL)
+    return re.sub(r'<p:sp\b[^>]*>.*?</p:sp>', _rw_sp, slide1_xml, flags=re.DOTALL)
+
+
 def replace_cover_tokens(slide1_xml, payload):
     meta = payload.get('meta') or {}
     designer = payload.get('designer') or {}
-    replacements = {
-        'Mr. Aravindan': payload.get('clientName') or meta.get('clientName') or 'Valued Client',
-        '7418414780': payload.get('clientPhone') or meta.get('phone') or '-',
-        'Individual Villa Adyar': payload.get('siteAddress') or meta.get('siteAddress') or '-',
-        '10/10/2026': meta.get('dateCreated') or '',
-        'designs.cookscape@gmail.com': designer.get('email') or 'designs.cookscape@gmail.com',
-        '93611 84787': designer.get('phone') or '-',
-        'Mr. Abishek': designer.get('name') or meta.get('designerName') or 'Cookscape Team'
-    }
-    for old_s, new_s in replacements.items():
-        if new_s:
-            slide1_xml = slide1_xml.replace(old_s, xml_escape(new_s))
-    return slide1_xml
+    c_name = str(payload.get('clientName') or meta.get('clientName') or '')
+    c_phone = str(payload.get('clientPhone') or meta.get('phone') or '')
+    c_email = str(payload.get('clientEmail') or meta.get('clientEmail') or '')
+    c_loc = str(payload.get('siteAddress') or meta.get('siteAddress') or '')
+    c_date = str(meta.get('dateCreated') or '')
+    d_name = str(designer.get('name') or meta.get('designerName') or '')
+    d_phone = str(designer.get('phone') or '')
+    d_email = str(designer.get('email') or '')
+    cover_replacements = [
+        (r'Mr\.\s*Aravindan', c_name),
+        (r'7418414780', c_phone),
+        (r'Webapp\.cookscape@gmail\.com', c_email),
+        (r'Individual Villa Adyar', c_loc),
+        (r'10\/10\/2026', c_date),
+        (r'Mr\.\s*Abishek', d_name),
+        (r'93611\s*84787', d_phone),
+        (r'designs\.cookscape@gmail\.com', d_email),
+        (r'\{\{CLIENT_NAME\}\}', c_name),
+        (r'\{\{CLIENT_PHONE\}\}', c_phone),
+        (r'\{\{CLIENT_EMAIL\}\}', c_email),
+        (r'\{\{LOCATION\}\}', c_loc),
+        (r'\{\{DATE\}\}', c_date),
+        (r'\{\{ARCHITECT_NAME\}\}', d_name),
+        (r'\{\{ARCHITECT_PHONE\}\}', d_phone),
+        (r'\{\{ARCHITECT_EMAIL\}\}', d_email),
+    ]
+    for pat, val in cover_replacements:
+        esc = xml_escape(val)
+        slide1_xml = re.sub(pat, lambda _m, v=esc: v, slide1_xml, flags=re.IGNORECASE)
+    return apply_cover_shape_alignments(slide1_xml)
 
 
 def replace_footer_and_number(slide_xml, footer_text, slide_num):

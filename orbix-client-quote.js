@@ -381,9 +381,11 @@
         '      <div>' +
         '        <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:3px;">Link Validity</label>' +
         '        <select id="cqExpiryDays" style="width:100%;padding:7px 8px;border:1px solid #CBD5E1;border-radius:6px;font-size:12.5px;">' +
+        '          <option value="1">1 Day</option>' +
         '          <option value="7">7 Days</option>' +
         '          <option value="15" selected>15 Days</option>' +
         '          <option value="30">30 Days</option>' +
+        '          <option value="365">1 Year</option>' +
         '          <option value="0">No Expiry</option>' +
         '        </select>' +
         '      </div>' +
@@ -624,7 +626,7 @@
             '  </div>' +
             '  <div style="font-size:11.5px;color:#475569;">Views: <b>' + q.viewCount + '</b>' + (alertsCount ? (' · <span style="color:#B45309;">Shield Events: ' + alertsCount + '</span>') : '') + '</div>' +
             '</div>' +
-            '<div style="font-size:11.5px;color:#64748B;margin-top:4px;">Variants: ' + esc(variantsStr || '-') + (q.lastViewedAt ? (' · Last opened: ' + new Date(q.lastViewedAt).toLocaleString('en-IN')) : '') + '</div>' +
+            '<div style="font-size:11.5px;color:#64748B;margin-top:4px;">Variants: ' + esc(variantsStr || '-') + (q.expiresAt ? (' · Expires: ' + new Date(q.expiresAt).toLocaleDateString('en-IN')) : ' · No Expiry') + (q.lastViewedAt ? (' · Last opened: ' + new Date(q.lastViewedAt).toLocaleString('en-IN')) : '') + '</div>' +
             '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
             '  <button type="button" class="btn small cq-act-copy" data-url="' + esc(q.shareUrl) + '">📋 Copy Link</button>' +
             '  <button type="button" class="btn small cq-act-pass" data-id="' + esc(q.id) + '" data-user="' + esc(q.clientUsername) + '">🔑 Reset Password</button>' +

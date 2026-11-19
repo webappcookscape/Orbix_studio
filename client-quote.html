@@ -779,46 +779,74 @@
         ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
         if (bgBmp) ctx.drawImage(bgBmp, 0, 0, CANVAS_W, CANVAS_H);
 
+        var PT_TO_PX = 1.333;
         var layout = slide.coverLayout || {};
-        var statics = layout.staticLabels || [];
-        for (var i = 0; i < statics.length; i++) {
-          var lbl = statics[i];
-          var pxSize = Math.round((lbl.szPt || 12) * 1.18);
-          var isSerif = (lbl.font || '').indexOf('Baskerville') !== -1 || (lbl.font || '').indexOf('Moontime') !== -1;
-          var isScript = (lbl.font || '').indexOf('Moontime') !== -1;
-          var family = isSerif ? 'Georgia, "Times New Roman", serif' : '"Segoe UI", Arial, sans-serif';
-          ctx.fillStyle = lbl.color || '#08231B';
-          ctx.font = (isScript ? 'italic ' : '') + ((pxSize > 16 || lbl.text === 'Patron Details' || lbl.text === 'Designer Details') ? '700 ' : '600 ') + pxSize + 'px ' + family;
-          var lines = String(lbl.text || '').split('\n');
-          if (lines.length === 1 && ctx.measureText(lines[0]).width > (lbl.w + 18)) {
-            lines = wrapLines(ctx, lbl.text, lbl.w + 14);
+        ctx.textBaseline = 'top';
+        if (!layout.coverBakedStatics) {
+          var statics = layout.staticLabels || [];
+          for (var i = 0; i < statics.length; i++) {
+            var lbl = statics[i];
+            var pxSize = Math.round((lbl.szPt || 12) * PT_TO_PX);
+            var isSerif = (lbl.font || '').indexOf('Baskerville') !== -1 || (lbl.font || '').indexOf('Moontime') !== -1;
+            var isScript = (lbl.font || '').indexOf('Moontime') !== -1;
+            var family = isScript
+              ? '"Segoe Script", "Brush Script MT", Georgia, cursive'
+              : (isSerif ? '"Baskerville Old Face", Baskerville, Georgia, "Times New Roman", serif' : '"Segoe UI", Arial, sans-serif');
+            var weight = lbl.bold ? '700 ' : '400 ';
+            if (lbl.text === 'LIVE LIKE YOU MEAN IT') pxSize = 19;
+
+            ctx.fillStyle = lbl.color || '#08231B';
+            ctx.font = (isScript ? 'italic ' : '') + weight + pxSize + 'px ' + family;
+            ctx.textAlign = lbl.algn === 'ctr' ? 'center' : 'left';
+            var drawX = lbl.algn === 'ctr' ? (lbl.x + lbl.w / 2) : lbl.x;
+
+            var lines = String(lbl.text || '').split('\n');
+            if (lines.length === 1 && ctx.measureText(lines[0]).width > (lbl.w + 8)) {
+              lines = wrapLines(ctx, lbl.text, lbl.w + 4);
+            }
+            var lineStep = Math.round(pxSize * 1.15);
+            for (var l = 0; l < lines.length; l++) {
+              ctx.fillText(lines[l], drawX, lbl.y + l * lineStep);
+            }
           }
-          var lineStep = Math.round(pxSize * 1.16);
-          for (var l = 0; l < lines.length; l++) {
-            ctx.fillText(lines[l], lbl.x, lbl.y + pxSize + l * lineStep);
-          }
+          ctx.textAlign = 'left';
         }
 
         var slots = layout.dynamicSlots || {};
+        var serifStack = '"Baskerville Display PT", "Baskerville Old Face", Baskerville, Georgia, "Times New Roman", serif';
+        var sansStack = '"Segoe UI", Calibri, Arial, sans-serif';
         var dynamicMap = [
-          { key: 'patron_name', val: cd.patron && cd.patron.name, fallback: { x: 256, y: 854, w: 220 } },
-          { key: 'patron_phone', val: cd.patron && cd.patron.phone, fallback: { x: 254, y: 908, w: 200 } },
-          { key: 'patron_location', val: cd.patron && cd.patron.location, fallback: { x: 252, y: 958, w: 260 } },
-          { key: 'patron_date', val: cd.patron && cd.patron.date, fallback: { x: 251, y: 1006, w: 180 } },
-          { key: 'designer_name', val: cd.designer && cd.designer.name, fallback: { x: 667, y: 1127, w: 240 } },
-          { key: 'designer_phone', val: cd.designer && cd.designer.phone, fallback: { x: 667, y: 1179, w: 240 } },
-          { key: 'designer_email', val: cd.designer && cd.designer.email, fallback: { x: 668, y: 1220, w: 295 } }
+          { key: 'patron_name', val: cd.patron && cd.patron.name, fallback: { x: 255.3, y: 854.1, w: 379.9, h: 39.0 }, px: 22, dy: 7, font: serifStack },
+          { key: 'patron_phone', val: cd.patron && cd.patron.phone, fallback: { x: 255.3, y: 906.7, w: 379.9, h: 39.0 }, px: 22, dy: 7, font: serifStack },
+          { key: 'patron_location', val: cd.patron && cd.patron.location, fallback: { x: 255.3, y: 958.4, w: 379.9, h: 39.0 }, px: 22, dy: 7, font: serifStack },
+          { key: 'patron_date', val: cd.patron && cd.patron.date, fallback: { x: 255.3, y: 1006.6, w: 379.9, h: 39.0 }, px: 22, dy: 7, font: serifStack },
+          { key: 'designer_name', val: cd.designer && cd.designer.name, fallback: { x: 664.8, y: 1127.3, w: 290.2, h: 32.5 }, px: 18, dy: 4, font: serifStack },
+          { key: 'designer_phone', val: cd.designer && cd.designer.phone, fallback: { x: 664.8, y: 1178.9, w: 290.2, h: 32.5 }, px: 18, dy: 4, font: serifStack },
+          { key: 'designer_email', val: cd.designer && cd.designer.email, fallback: { x: 664.8, y: 1223.5, w: 290.2, h: 32.5 }, px: 16, dy: 5, font: sansStack }
         ];
         dynamicMap.forEach(function (dm) {
           var box = slots[dm.key] || dm.fallback;
+          var text = String(dm.val || '').trim();
+          if (!text) return;
           ctx.fillStyle = '#08231B';
-          ctx.font = '700 16px Georgia, "Times New Roman", serif';
-          var text = String(dm.val || '-');
-          var lines = wrapLines(ctx, text, Math.max(220, box.w + 70));
-          ctx.fillText(lines[0], box.x, box.y + 24);
+          var sz = dm.px;
+          var maxW = Math.max(220, (box.w || 280) - 8);
+          ctx.font = '400 ' + sz + 'px ' + dm.font;
+          while (sz > 12 && ctx.measureText(text).width > maxW) {
+            sz -= 1;
+            ctx.font = '400 ' + sz + 'px ' + dm.font;
+          }
+          ctx.fillText(text, box.x + 6, box.y + dm.dy);
         });
+        ctx.textBaseline = 'alphabetic';
 
-        drawFooterAndSlideNumber(ctx, '', slide.slideNumber, false);
+        if (!layout.coverBakedStatics) {
+          ctx.fillStyle = '#475569';
+          ctx.font = '400 13px "Segoe UI", Arial, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(String(slide.slideNumber || '1'), CANVAS_W - 40, CANVAS_H - 26);
+          ctx.textAlign = 'left';
+        }
       }
 
       async function paintSpecsSlide(ctx, slide) {

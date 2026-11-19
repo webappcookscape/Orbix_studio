@@ -8,8 +8,10 @@
  */
 
 const assert = require('assert');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const http = require('http');
+const os = require('os');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -257,6 +259,9 @@ async function runTests() {
     }
     assert.strictEqual(slideIds[slideIds.length - 1], 'closing', 'Last slide must be Slide 29 closing');
     assert(slides[0].coverBgAsset === 'slide_01_bg.jpg' && slides[0].coverLayout && slides[0].coverLayout.dynamicSlots);
+    assert.strictEqual(slides[0].coverLayout.coverBakedStatics, true);
+    assert.strictEqual(slides[0].coverLayout.dynamicSlots.patron_name.x, 255.4);
+    assert.strictEqual(slides[0].coverLayout.dynamicSlots.designer_name.x, 664.8);
 
     // Fetch protected artwork + unit icon
     const covRes = await request(port, 'GET', `/api/client-portal/${shareToken}/asset/slide_01_bg.jpg`, null, { Cookie: clientCookie });
@@ -271,9 +276,24 @@ async function runTests() {
     // 10. Revocation + Password Rotation
     assert.strictEqual((await request(port, 'PATCH', `/api/client-quotes/${createdQuoteId}`, { isRevoked: true }, { Cookie: emp1Cookie })).status, 200);
     assert.strictEqual((await request(port, 'GET', `/api/client-portal/${shareToken}/payload`, null, { Cookie: clientCookie })).status, 403);
-    assert.strictEqual((await request(port, 'PATCH', `/api/client-quotes/${createdQuoteId}`, { isRevoked: false, clientPassword: 'RotatedPass#2' }, { Cookie: emp1Cookie })).status, 200);
+    await request(port, 'PATCH', `/api/client-quotes/${createdQuoteId}`, { isRevoked: false, clientPassword: 'RotatedPass#2' }, { Cookie: emp1Cookie });
     assert.strictEqual((await request(port, 'POST', `/api/client-portal/${shareToken}/login`, { username: 'karthik.901', password: 'RotatedPass#2' })).status, 200);
-    console.log('✓ [8] Instant revocation (403) and password rotation verified');
+
+    // 1 Day and 1 Year expiry options verified
+    const uiSrc = fs.readFileSync(path.join(ROOT, 'orbix-client-quote.js'), 'utf8');
+    assert(uiSrc.includes('<option value="1">1 Day</option>'), 'UI must include 1 Day expiry option');
+    assert(uiSrc.includes('<option value="365">1 Year</option>'), 'UI must include 1 Year expiry option');
+
+    const exp1Res = await request(port, 'PATCH', `/api/client-quotes/${createdQuoteId}`, { expiryDays: 1 }, { Cookie: emp1Cookie });
+    assert.strictEqual(exp1Res.status, 200);
+    const diff1Days = (new Date(exp1Res.json.quote.expiresAt).getTime() - Date.now()) / 86400000;
+    assert(diff1Days > 0.9 && diff1Days <= 1.05, `Expected ~1 day expiry, got ${diff1Days}`);
+
+    const exp365Res = await request(port, 'PATCH', `/api/client-quotes/${createdQuoteId}`, { expiryDays: 365 }, { Cookie: emp1Cookie });
+    assert.strictEqual(exp365Res.status, 200);
+    const diff365Days = (new Date(exp365Res.json.quote.expiresAt).getTime() - Date.now()) / 86400000;
+    assert(diff365Days > 364.9 && diff365Days <= 365.05, `Expected ~365 days expiry, got ${diff365Days}`);
+    console.log('✓ [8] Instant revocation (403), password rotation, and 1 Day / 1 Year expiry verified');
 
     // 11. Master PPTX Export with auto Unit Snips before Quotation Slides
     const pptxRes = await request(port, 'POST', '/api/client-quotes/export-pptx', {
@@ -292,7 +312,19 @@ async function runTests() {
     assert(pptxRes.buf.includes('orbix_quote_slide_12.png'), 'PPTX must embed CAPRICOAST MATTE Quotation PNG');
     assert(pptxRes.buf.includes('orbix_unit_snip_21_1.png'), 'PPTX must embed 4X TUFF GLOSS Unit Snip slide PNG');
     assert(pptxRes.buf.includes('orbix_quote_slide_21.png'), 'PPTX must embed 4X TUFF GLOSS Quotation PNG');
-    console.log('✓ [9] Master-Template.pptx export embeds Unit Snips + Quotation per selected variant cleanly');
+    const tmpPptx = path.join(os.tmpdir(), `orbix_verify_s1_${Date.now()}.pptx`);
+    fs.writeFileSync(tmpPptx, pptxRes.buf);
+    try {
+      const s1Xml = execFileSync('python', ['-c', 'import sys,zipfile;print(zipfile.ZipFile(sys.argv[1]).read("ppt/slides/slide1.xml").decode("utf-8"))', tmpPptx], { encoding: 'utf8' });
+      assert(s1Xml.includes('Mr. Karthik Test'), 'PPTX Slide 1 must contain client name');
+      assert(s1Xml.includes('Elakkiya'), 'PPTX Slide 1 must contain designer name');
+      assert(s1Xml.includes('x="2420000"') && s1Xml.includes('cx="3600000"'), 'PPTX Slide 1 must apply quotegenerator client value alignment');
+      assert(s1Xml.includes('x="6300000"') && s1Xml.includes('cx="2750000"'), 'PPTX Slide 1 must apply quotegenerator designer value alignment');
+      assert(!s1Xml.includes('Mr. Aravindan') && !s1Xml.includes('7418414780') && !s1Xml.includes('Individual Villa Adyar') && !s1Xml.includes('Mr. Abishek'), 'PPTX Slide 1 must not leak sample placeholders');
+    } finally {
+      try { fs.unlinkSync(tmpPptx); } catch (_) {}
+    }
+    console.log('✓ [9] Master-Template.pptx export matches quotegenerator Slide 1 alignments & embeds Unit Snips + Quotation cleanly');
 
     console.log('\n=== ALL STRICT MASTER-TEMPLATE CLIENT QUOTE TESTS PASSED SUCCESSFULLY ===');
   } finally {

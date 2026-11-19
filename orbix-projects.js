@@ -1973,62 +1973,71 @@
         });
     },
 
-    populateBhDropdown: function () {
-      var select = document.getElementById('newProjBhName');
-      if (!select || !select.appendChild || typeof document.createElement !== 'function') return;
+    isBusinessHeadUser: function (u) {
+      if (!u || !u.name) return false;
+      var desig = String(u.designation || '').trim();
+      return /\b(bh|business\s*head|branch\s*head)\b/i.test(desig);
+    },
 
-      var currentVal = select.value;
-      select.innerHTML = '<option value="" disabled selected>-- Select Business Head (BH) --</option>';
-
+    getBusinessHeadUsers: function () {
+      var self = this;
+      var list = [];
       var namesSeen = {};
-
-      // 1. Add all users from database
       if (this.users && this.users.length) {
         this.users.forEach(function (u) {
-          if (u.name && !namesSeen[u.name.toLowerCase()]) {
-            namesSeen[u.name.toLowerCase()] = true;
-            var opt = document.createElement('option');
-            opt.value = u.name;
-            opt.textContent = u.name + ' (' + (u.designation || (u.role === 'admin' ? 'Business Head' : 'Studio Designer')) + ')';
-            select.appendChild(opt);
+          if (!self.isBusinessHeadUser(u)) return;
+          var cleanName = String(u.name || '').trim();
+          var key = cleanName.toLowerCase();
+          if (cleanName && !namesSeen[key]) {
+            namesSeen[key] = true;
+            list.push({ name: cleanName, designation: String(u.designation || 'Business Head').trim() });
           }
         });
       }
+      if (!list.length) {
+        list.push({ name: 'Sangathamizh', designation: 'Business Head' });
+      }
+      return list;
+    },
 
-      // 2. Add standard Cookscape Business Heads & Leads
-      var defaultBhs = [
-        { name: 'Sangathamizh', role: 'Business Head' },
-        { name: 'Cookscape Admin', role: 'System Head' },
-        { name: 'Aravind', role: 'Floor Architect / FA' },
-        { name: 'Elakkiya', role: 'Floor Architect / FA' },
-        { name: 'Dev Kancheti', role: 'Design Lead' }
-      ];
-      defaultBhs.forEach(function (b) {
-        if (!namesSeen[b.name.toLowerCase()]) {
-          namesSeen[b.name.toLowerCase()] = true;
-          var opt = document.createElement('option');
-          opt.value = b.name;
-          opt.textContent = b.name + ' (' + b.role + ')';
-          select.appendChild(opt);
+    _fillBhSelect: function (select, bhList, preserveVal) {
+      if (!select || !select.appendChild || typeof document.createElement !== 'function') return;
+      var currentVal = (preserveVal !== undefined && preserveVal !== null) ? String(preserveVal).trim() : select.value;
+      select.innerHTML = '<option value="" disabled selected>-- Select Business Head (BH) --</option>';
+
+      var hasCurrent = false;
+      bhList.forEach(function (bh) {
+        var opt = document.createElement('option');
+        opt.value = bh.name;
+        opt.textContent = bh.name;
+        select.appendChild(opt);
+        if (currentVal && bh.name.toLowerCase() === currentVal.toLowerCase()) {
+          hasCurrent = true;
+          currentVal = bh.name;
         }
       });
 
-      // 3. Add Cookscape Studio branches/hubs
-      var hubGroup = document.createElement('optgroup');
-      hubGroup.label = 'Cookscape Branches / Hubs';
-      ['Cookscape Chennai Central', 'Cookscape OMR Hub', 'Cookscape Coimbatore', 'Cookscape Bangalore'].forEach(function (h) {
-        var opt = document.createElement('option');
-        opt.value = h;
-        opt.textContent = h;
-        hubGroup.appendChild(opt);
-      });
-      select.appendChild(hubGroup);
+      if (preserveVal && currentVal && !hasCurrent) {
+        var legacyOpt = document.createElement('option');
+        legacyOpt.value = currentVal;
+        legacyOpt.textContent = currentVal;
+        select.appendChild(legacyOpt);
+      }
 
       if (currentVal) select.value = currentVal;
     },
 
+    populateBhDropdown: function (editPreserveVal) {
+      var bhList = this.getBusinessHeadUsers();
+      this._fillBhSelect(document.getElementById('newProjBhName'), bhList);
+      this._fillBhSelect(document.getElementById('editProjBhName'), bhList, editPreserveVal);
+    },
+
     openCreateModal: function () {
       this.populateBhDropdown();
+      if (!this.users || !this.users.length) {
+        this.fetchUsers();
+      }
       var modal = document.getElementById('createProjectModal');
       if (modal) {
         var dtInput = document.getElementById('newProjDateTime');

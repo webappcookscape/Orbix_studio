@@ -4684,10 +4684,7 @@ body.role-employee #adminCreateEmpBox,
               <label class="form-label" for="newProjBhName">BH Name <span class="req">*</span></label>
               <select id="newProjBhName" class="form-input" required>
                 <option value="" disabled selected>-- Select Business Head (BH) --</option>
-                <option value="Sangathamizh">Sangathamizh (Business Head)</option>
-                <option value="Cookscape Admin">Cookscape Admin (System Head)</option>
-                <option value="Aravind">Aravind (Floor Architect / FA)</option>
-                <option value="Elakkiya">Elakkiya (Floor Architect / FA)</option>
+                <option value="Sangathamizh">Sangathamizh</option>
               </select>
             </div>
           </div>
@@ -4751,10 +4748,7 @@ body.role-employee #adminCreateEmpBox,
               <label class="form-label" for="editProjBhName">BH Name <span class="req">*</span></label>
               <select id="editProjBhName" class="form-input" required>
                 <option value="" disabled selected>-- Select Business Head (BH) --</option>
-                <option value="Sangathamizh">Sangathamizh (Business Head)</option>
-                <option value="Cookscape Admin">Cookscape Admin (System Head)</option>
-                <option value="Aravind">Aravind (Floor Architect / FA)</option>
-                <option value="Elakkiya">Elakkiya (Floor Architect / FA)</option>
+                <option value="Sangathamizh">Sangathamizh</option>
               </select>
             </div>
           </div>
@@ -7713,62 +7707,71 @@ body.role-employee #adminCreateEmpBox,
         });
     },
 
-    populateBhDropdown: function () {
-      var select = document.getElementById('newProjBhName');
-      if (!select || !select.appendChild || typeof document.createElement !== 'function') return;
+    isBusinessHeadUser: function (u) {
+      if (!u || !u.name) return false;
+      var desig = String(u.designation || '').trim();
+      return /\b(bh|business\s*head|branch\s*head)\b/i.test(desig);
+    },
 
-      var currentVal = select.value;
-      select.innerHTML = '<option value="" disabled selected>-- Select Business Head (BH) --</option>';
-
+    getBusinessHeadUsers: function () {
+      var self = this;
+      var list = [];
       var namesSeen = {};
-
-      // 1. Add all users from database
       if (this.users && this.users.length) {
         this.users.forEach(function (u) {
-          if (u.name && !namesSeen[u.name.toLowerCase()]) {
-            namesSeen[u.name.toLowerCase()] = true;
-            var opt = document.createElement('option');
-            opt.value = u.name;
-            opt.textContent = u.name + ' (' + (u.designation || (u.role === 'admin' ? 'Business Head' : 'Studio Designer')) + ')';
-            select.appendChild(opt);
+          if (!self.isBusinessHeadUser(u)) return;
+          var cleanName = String(u.name || '').trim();
+          var key = cleanName.toLowerCase();
+          if (cleanName && !namesSeen[key]) {
+            namesSeen[key] = true;
+            list.push({ name: cleanName, designation: String(u.designation || 'Business Head').trim() });
           }
         });
       }
+      if (!list.length) {
+        list.push({ name: 'Sangathamizh', designation: 'Business Head' });
+      }
+      return list;
+    },
 
-      // 2. Add standard Cookscape Business Heads & Leads
-      var defaultBhs = [
-        { name: 'Sangathamizh', role: 'Business Head' },
-        { name: 'Cookscape Admin', role: 'System Head' },
-        { name: 'Aravind', role: 'Floor Architect / FA' },
-        { name: 'Elakkiya', role: 'Floor Architect / FA' },
-        { name: 'Dev Kancheti', role: 'Design Lead' }
-      ];
-      defaultBhs.forEach(function (b) {
-        if (!namesSeen[b.name.toLowerCase()]) {
-          namesSeen[b.name.toLowerCase()] = true;
-          var opt = document.createElement('option');
-          opt.value = b.name;
-          opt.textContent = b.name + ' (' + b.role + ')';
-          select.appendChild(opt);
+    _fillBhSelect: function (select, bhList, preserveVal) {
+      if (!select || !select.appendChild || typeof document.createElement !== 'function') return;
+      var currentVal = (preserveVal !== undefined && preserveVal !== null) ? String(preserveVal).trim() : select.value;
+      select.innerHTML = '<option value="" disabled selected>-- Select Business Head (BH) --</option>';
+
+      var hasCurrent = false;
+      bhList.forEach(function (bh) {
+        var opt = document.createElement('option');
+        opt.value = bh.name;
+        opt.textContent = bh.name;
+        select.appendChild(opt);
+        if (currentVal && bh.name.toLowerCase() === currentVal.toLowerCase()) {
+          hasCurrent = true;
+          currentVal = bh.name;
         }
       });
 
-      // 3. Add Cookscape Studio branches/hubs
-      var hubGroup = document.createElement('optgroup');
-      hubGroup.label = 'Cookscape Branches / Hubs';
-      ['Cookscape Chennai Central', 'Cookscape OMR Hub', 'Cookscape Coimbatore', 'Cookscape Bangalore'].forEach(function (h) {
-        var opt = document.createElement('option');
-        opt.value = h;
-        opt.textContent = h;
-        hubGroup.appendChild(opt);
-      });
-      select.appendChild(hubGroup);
+      if (preserveVal && currentVal && !hasCurrent) {
+        var legacyOpt = document.createElement('option');
+        legacyOpt.value = currentVal;
+        legacyOpt.textContent = currentVal;
+        select.appendChild(legacyOpt);
+      }
 
       if (currentVal) select.value = currentVal;
     },
 
+    populateBhDropdown: function (editPreserveVal) {
+      var bhList = this.getBusinessHeadUsers();
+      this._fillBhSelect(document.getElementById('newProjBhName'), bhList);
+      this._fillBhSelect(document.getElementById('editProjBhName'), bhList, editPreserveVal);
+    },
+
     openCreateModal: function () {
       this.populateBhDropdown();
+      if (!this.users || !this.users.length) {
+        this.fetchUsers();
+      }
       var modal = document.getElementById('createProjectModal');
       if (modal) {
         var dtInput = document.getElementById('newProjDateTime');
@@ -39656,7 +39659,13 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           if (clientInput) clientInput.value = m.clientName || 'Vikram Singhania';
           if (contactInput) contactInput.value = m.phone || m.contactNumber || '+91 98765 43210';
           if (locInput) locInput.value = m.siteAddress || m.siteLocation || m.location || 'Whitefield, Bengaluru';
-          if (bhSelect) bhSelect.value = m.bhName || m.designerName || 'Sangathamizh';
+          if (bhSelect) {
+            var existingBh = m.bhName || m.designerName || '';
+            if (window.OrbixProjects && typeof window.OrbixProjects.populateBhDropdown === 'function') {
+              window.OrbixProjects.populateBhDropdown(existingBh);
+            }
+            if (existingBh) bhSelect.value = existingBh;
+          }
           if (dtInput) dtInput.value = m.dateTime || (m.dateCreated ? self.formatDisplayDate(m.dateCreated, true) : '05-11-2026 23:36');
           if (cpInput) cpInput.value = m.cpCode || m.quoteId || 'CP-9042';
 
@@ -41399,9 +41408,11 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         '      <div>' +
         '        <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:3px;">Link Validity</label>' +
         '        <select id="cqExpiryDays" style="width:100%;padding:7px 8px;border:1px solid #CBD5E1;border-radius:6px;font-size:12.5px;">' +
+        '          <option value="1">1 Day</option>' +
         '          <option value="7">7 Days</option>' +
         '          <option value="15" selected>15 Days</option>' +
         '          <option value="30">30 Days</option>' +
+        '          <option value="365">1 Year</option>' +
         '          <option value="0">No Expiry</option>' +
         '        </select>' +
         '      </div>' +
@@ -41642,7 +41653,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             '  </div>' +
             '  <div style="font-size:11.5px;color:#475569;">Views: <b>' + q.viewCount + '</b>' + (alertsCount ? (' · <span style="color:#B45309;">Shield Events: ' + alertsCount + '</span>') : '') + '</div>' +
             '</div>' +
-            '<div style="font-size:11.5px;color:#64748B;margin-top:4px;">Variants: ' + esc(variantsStr || '-') + (q.lastViewedAt ? (' · Last opened: ' + new Date(q.lastViewedAt).toLocaleString('en-IN')) : '') + '</div>' +
+            '<div style="font-size:11.5px;color:#64748B;margin-top:4px;">Variants: ' + esc(variantsStr || '-') + (q.expiresAt ? (' · Expires: ' + new Date(q.expiresAt).toLocaleDateString('en-IN')) : ' · No Expiry') + (q.lastViewedAt ? (' · Last opened: ' + new Date(q.lastViewedAt).toLocaleString('en-IN')) : '') + '</div>' +
             '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
             '  <button type="button" class="btn small cq-act-copy" data-url="' + esc(q.shareUrl) + '">📋 Copy Link</button>' +
             '  <button type="button" class="btn small cq-act-pass" data-id="' + esc(q.id) + '" data-user="' + esc(q.clientUsername) + '">🔑 Reset Password</button>' +
