@@ -2868,9 +2868,12 @@
     );
 
     if (isLCorner) {
-      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || dims.W || 900;
-      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || dims.W || 900;
-      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || dims.D || 560;
+      var isWallL = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : (furn.elevation >= 1000 || (furn.unitConfig && furn.unitConfig.ctype === 'kwall'));
+      var defLeg = isWallL ? 600 : 900;
+      var defDepth = isWallL ? 300 : 550;
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || dims.W || defLeg;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || (dims.D && dims.D >= 500 ? dims.D : (dims.W || defLeg));
+      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || (dims.D && dims.D < cW ? dims.D : defDepth);
 
       function toWorld(lx, ly, name, isMid) {
         return {
@@ -3482,17 +3485,20 @@
     if (furnIsLCorner) {
       // Corner unit footprint dimensions are legW x legD
       var fDims = furn.dimensions || {};
-      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || fDims.W || 900;
-      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || fDims.W || 900;
-      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || fDims.D || 560;
+      var isWallCornerU = Core.isWallUnit ? Core.isWallUnit(furn.category, furn.name, furn.code || furn.catalogItemId, furn.costCategory) : (furn.elevation >= 1000 || (furn.unitConfig && furn.unitConfig.ctype === 'kwall'));
+      var defLeg = isWallCornerU ? 600 : 900;
+      var defCornerDepth = isWallCornerU ? 300 : 550;
+      var cW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || fDims.W || defLeg;
+      var cD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || (fDims.D && fDims.D >= 500 ? fDims.D : (fDims.W || defLeg));
+      var cDepth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || (fDims.D && fDims.D < cW ? fDims.D : defCornerDepth);
       fW = cW;
       fD = cD;
       halfW = cW / 2;
       halfD = cD / 2;
 
-      // Find best matching corner candidate with tight magnetic radius
+      // Generous magnetic snap radius for room corners (allows effortless snapping to 90° corners)
       var bestCornerSnap = null;
-      var minCornerDist = 240; // mm tight magnetic snap radius for room corners (prevents jumping from afar)
+      var minCornerDist = Math.max(650, Math.max(cW, cD) * 0.85);
 
       for (var ci = 0; ci < cornerCandidates.length; ci++) {
         var cc = cornerCandidates[ci];
@@ -3657,11 +3663,11 @@
         var aHalfT = (aWall.thickness || 150) / 2;
 
         // Check if an adjoining wall meets bwWall.start
-        var meetsStart = (Vec2.dist(bwWall.start, aWall.start) < 90 || Vec2.dist(bwWall.start, aWall.end) < 90);
+        var meetsStart = (Vec2.dist(bwWall.start, aWall.start) < 150 || Vec2.dist(bwWall.start, aWall.end) < 150);
         if (meetsStart) {
           var aDir = Core.wallDirection(aWall);
           var dotAdj = Math.abs(bwDir.x * aDir.x + bwDir.y * aDir.y);
-          if (dotAdj < 0.7) { // Corner meeting
+          if (dotAdj < 0.7) { // Corner meeting (~90°)
             var boundStart = aHalfT;
             for (var afi = 0; afi < furnList.length; afi++) {
               var aFn = furnList[afi];
@@ -3673,9 +3679,16 @@
               if (fTop <= aElev + 5 || (aElev + aH) <= fElev + 5) continue;
 
               var distFromCorner = Math.hypot(aFn.pos.x - bwWall.start.x, aFn.pos.y - bwWall.start.y);
-              var aFnDepth = (aDims.D && aDims.D > 100) ? aDims.D : 600;
-              if (distFromCorner < aFnDepth + aHalfT + 50) {
-                var cornerReserve = aFnDepth + aHalfT;
+              var aIsLCorner = !!(
+                (aFn.unitConfig && (aFn.unitConfig.geometryType === 'l_shaped_corner' || aFn.unitConfig.unitType === 'fbcm' || aFn.unitConfig.unitType === 'wbcm' || (aFn.unitConfig.corner && aFn.unitConfig.corner.enabled))) ||
+                aFn.catalogItemId === 'fbcm' || aFn.id === 'fbcm' || aFn.catalogItemId === 'fbcm-1500' || aFn.catalogItemId === 'wbcm' ||
+                (aFn.id && /fbcm|wbcm/i.test(aFn.id)) ||
+                (aFn.catalogItemId && /fbcm|wbcm/i.test(aFn.catalogItemId)) ||
+                (aFn.code && /fbcm|wbcm/i.test(aFn.code))
+              );
+              var aArmLength = aIsLCorner ? ((aFn.unitConfig && aFn.unitConfig.corner && aFn.unitConfig.corner.legW) || aDims.W || 900) : ((aDims.D && aDims.D > 100) ? aDims.D : 600);
+              if (distFromCorner < aArmLength + aHalfT + 120) {
+                var cornerReserve = aArmLength + aHalfT;
                 if (cornerReserve > boundStart) boundStart = cornerReserve;
               }
             }
@@ -3684,7 +3697,7 @@
         }
 
         // Check if an adjoining wall meets bwWall.end
-        var meetsEnd = (Vec2.dist(bwWall.end, aWall.start) < 90 || Vec2.dist(bwWall.end, aWall.end) < 90);
+        var meetsEnd = (Vec2.dist(bwWall.end, aWall.start) < 150 || Vec2.dist(bwWall.end, aWall.end) < 150);
         if (meetsEnd) {
           var aDir2 = Core.wallDirection(aWall);
           var dotAdj2 = Math.abs(bwDir.x * aDir2.x + bwDir.y * aDir2.y);
@@ -3700,9 +3713,16 @@
               if (fTop <= aElev2 + 5 || (aElev2 + aH2) <= fElev + 5) continue;
 
               var distFromCorner2 = Math.hypot(aFn2.pos.x - bwWall.end.x, aFn2.pos.y - bwWall.end.y);
-              var aFnDepth2 = (aDims2.D && aDims2.D > 100) ? aDims2.D : 600;
-              if (distFromCorner2 < aFnDepth2 + aHalfT + 50) {
-                var cornerReserve2 = bwLen - (aFnDepth2 + aHalfT);
+              var a2IsLCorner = !!(
+                (aFn2.unitConfig && (aFn2.unitConfig.geometryType === 'l_shaped_corner' || aFn2.unitConfig.unitType === 'fbcm' || aFn2.unitConfig.unitType === 'wbcm' || (aFn2.unitConfig.corner && aFn2.unitConfig.corner.enabled))) ||
+                aFn2.catalogItemId === 'fbcm' || aFn2.id === 'fbcm' || aFn2.catalogItemId === 'fbcm-1500' || aFn2.catalogItemId === 'wbcm' ||
+                (aFn2.id && /fbcm|wbcm/i.test(aFn2.id)) ||
+                (aFn2.catalogItemId && /fbcm|wbcm/i.test(aFn2.catalogItemId)) ||
+                (aFn2.code && /fbcm|wbcm/i.test(aFn2.code))
+              );
+              var a2ArmLength = a2IsLCorner ? ((aFn2.unitConfig && aFn2.unitConfig.corner && aFn2.unitConfig.corner.legW) || aDims2.W || 900) : ((aDims2.D && aDims2.D > 100) ? aDims2.D : 600);
+              if (distFromCorner2 < a2ArmLength + aHalfT + 120) {
+                var cornerReserve2 = bwLen - (a2ArmLength + aHalfT);
                 if (cornerReserve2 < boundEnd) boundEnd = cornerReserve2;
               }
             }
@@ -6282,23 +6302,26 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         ctx.globalAlpha = 0.28;
       }
 
-      // Check if L-shaped corner base unit
+      // Check if L-shaped corner base/wall unit (FBCM or WBCM)
       var isLCorner = !!(
-        (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
-        f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' ||
-        (f.id && /fbcm/i.test(f.id)) ||
-        (f.catalogItemId && /fbcm/i.test(f.catalogItemId)) ||
-        (f.code && /fbcm/i.test(f.code)) ||
-        (f.name && /l[-_ ]*shaped.*corner/i.test(f.name))
+        (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || f.unitConfig.unitType === 'wbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
+        f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' || f.catalogItemId === 'wbcm' ||
+        (f.id && /fbcm|wbcm/i.test(f.id)) ||
+        (f.catalogItemId && /fbcm|wbcm/i.test(f.catalogItemId)) ||
+        (f.code && /fbcm|wbcm/i.test(f.code)) ||
+        (f.name && /l[-_ ]*shaped.*corner|\bwbcm\b|\bfbcm\b/i.test(f.name))
       );
 
       // Furniture body boundary (Red if colliding!)
       var isDecor = !!(f.isDecor || f.excludeFromPricing || f.category === 'decor' || f.category === 'appliance_decor');
 
       if (isLCorner) {
-        var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || 900;
-        var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || 900;
-        var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || 560;
+        var isWallL = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : (f.elevation >= 1000 || (f.unitConfig && f.unitConfig.ctype === 'kwall'));
+        var defLeg = isWallL ? 600 : 900;
+        var defDepth = isWallL ? 300 : 550;
+        var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || (f.dimensions && f.dimensions.W) || defLeg;
+        var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || (f.dimensions && f.dimensions.D && f.dimensions.D >= 500 ? f.dimensions.D : (f.dimensions && f.dimensions.W ? f.dimensions.W : defLeg));
+        var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || (f.dimensions && f.dimensions.D && f.dimensions.D < cW ? f.dimensions.D : defDepth);
         var cwPx = cW * this.zoom;
         var cdPx = cD * this.zoom;
         var depthPx = cDepth * this.zoom;
@@ -6308,7 +6331,6 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           ctx.strokeStyle = '#dc2626';
           ctx.lineWidth = 2.5;
         } else {
-          var isWallL = Core.isWallUnit ? Core.isWallUnit(f.category, f.name, f.code || f.catalogItemId, f.costCategory) : false;
           if (isWallL) {
             ctx.fillStyle = isSelected ? 'rgba(2, 132, 199, 0.25)' : 'rgba(240, 249, 255, 0.95)';
             ctx.strokeStyle = isSelected ? '#0284c7' : '#0369a1';

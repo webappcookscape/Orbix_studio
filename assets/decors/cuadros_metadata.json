@@ -1,0 +1,448 @@
+{
+  "format_version": "1.0",
+  "source_file": "cuadros",
+  "model_source": "sketchup",
+  "sketchup_version": "{25.0.660}",
+  "total_definitions": 7,
+  "total_meshes": 17,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "madera",
+      "color": {
+        "r": 193,
+        "g": 158,
+        "b": 121
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:/wood-free-txtr-4.jpg",
+        "x_scale": 10.0,
+        "y_scale": 10.0
+      }
+    },
+    {
+      "name": "[Color_001]",
+      "color": {
+        "r": 226,
+        "g": 226,
+        "b": 226
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Fotos-de-alumnos-de-la-Clase-El-Retrato-en-Blanco-y-Negro-impartido-por-Javier-Serrano-Universidad-de-Alicante-7",
+      "color": {
+        "r": 86,
+        "g": 85,
+        "b": 81
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\Fotos-de-alumnos-de-la-Clase-El-Retrato-en-Blanco-y-Negro-impartido-por-Javier-Serrano-Universidad-de-Alicante-7.jpg",
+        "x_scale": 5.4787870802121335,
+        "y_scale": 8.214523219063052
+      }
+    },
+    {
+      "name": "vidrio",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 0.043137254902000044,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "praia-redimensionado1",
+      "color": {
+        "r": 117,
+        "g": 117,
+        "b": 117
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\praia-redimensionado1.jpg",
+        "x_scale": 8.350300212292712,
+        "y_scale": 6.210535782892705
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Componente#1_Layer0_255_255_255_ds": {
+      "name": "Componente#1",
+      "definition_name": "Componente#1",
+      "layer": "Layer0",
+      "position_mm": [
+        244.92,
+        -10.0,
+        -1.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#1"
+    },
+    "mesh_1_ROOT__Componente#1_Layer0_226_226_226_ds": {
+      "name": "Componente#1",
+      "definition_name": "Componente#1",
+      "layer": "Layer0",
+      "position_mm": [
+        244.92,
+        -10.0,
+        -1.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#1"
+    },
+    "mesh_2_ROOT__Componente#1__Agrupar#3_Layer0": {
+      "name": "Agrupar#3",
+      "definition_name": "Agrupar#3",
+      "layer": "Layer0",
+      "position_mm": [
+        297.86,
+        -0.0,
+        36.82
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#1 / Agrupar#3"
+    },
+    "mesh_3_ROOT__Componente#1__Agrupar#4_Layer0": {
+      "name": "Agrupar#4",
+      "definition_name": "Agrupar#4",
+      "layer": "Layer0",
+      "position_mm": [
+        394.92,
+        -0.0,
+        -1.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#1 / Agrupar#4"
+    },
+    "mesh_4_ROOT__Componente#1__Agrupar#1_Layer0_255_84_84_ss": {
+      "name": "Agrupar#1",
+      "definition_name": "Agrupar#1",
+      "layer": "Layer0",
+      "position_mm": [
+        244.92,
+        -0.0,
+        198.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#1 / Agrupar#1"
+    },
+    "mesh_5_ROOT__Componente#1__Agrupar#1_Layer0_193_158_121_ss": {
+      "name": "Agrupar#1",
+      "definition_name": "Agrupar#1",
+      "layer": "Layer0",
+      "position_mm": [
+        244.92,
+        -0.0,
+        198.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#1 / Agrupar#1"
+    },
+    "mesh_6_ROOT__Componente#1__Agrupar#1_Layer0_226_226_226_ss": {
+      "name": "Agrupar#1",
+      "definition_name": "Agrupar#1",
+      "layer": "Layer0",
+      "position_mm": [
+        244.92,
+        -0.0,
+        198.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#1 / Agrupar#1"
+    },
+    "mesh_7_ROOT__Componente#1__Agrupar#1_Layer0_193_158_121_ds": {
+      "name": "Agrupar#1",
+      "definition_name": "Agrupar#1",
+      "layer": "Layer0",
+      "position_mm": [
+        244.92,
+        -0.0,
+        198.01
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#1 / Agrupar#1"
+    },
+    "mesh_8_ROOT__Componente#2_Layer0_226_226_226_ds": {
+      "name": "Componente#2",
+      "definition_name": "Componente#2",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        -10.0,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#2"
+    },
+    "mesh_9_ROOT__Componente#2_Layer0_255_84_84_ss": {
+      "name": "Componente#2",
+      "definition_name": "Componente#2",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        -10.0,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#2"
+    },
+    "mesh_10_ROOT__Componente#2_Layer0_255_255_255_ss": {
+      "name": "Componente#2",
+      "definition_name": "Componente#2",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        -10.0,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#2"
+    },
+    "mesh_11_ROOT__Componente#2__Agrupar#2_Layer0": {
+      "name": "Agrupar#2",
+      "definition_name": "Agrupar#2",
+      "layer": "Layer0",
+      "position_mm": [
+        48.8,
+        -0.0,
+        52.93
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#2 / Agrupar#2"
+    },
+    "mesh_12_ROOT__Componente#2__Agrupar#4_Layer0": {
+      "name": "Agrupar#4",
+      "definition_name": "Agrupar#4",
+      "layer": "Layer0",
+      "position_mm": [
+        105.63,
+        -0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#2 / Agrupar#4"
+    },
+    "mesh_13_ROOT__Componente#2__Agrupar#5_Layer0_255_84_84_ss": {
+      "name": "Agrupar#5",
+      "definition_name": "Agrupar#5",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        -0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#2 / Agrupar#5"
+    },
+    "mesh_14_ROOT__Componente#2__Agrupar#5_Layer0_193_158_121_ss": {
+      "name": "Agrupar#5",
+      "definition_name": "Agrupar#5",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        -0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#2 / Agrupar#5"
+    },
+    "mesh_15_ROOT__Componente#2__Agrupar#5_Layer0_226_226_226_ss": {
+      "name": "Agrupar#5",
+      "definition_name": "Agrupar#5",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        -0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#2 / Agrupar#5"
+    },
+    "mesh_16_ROOT__Componente#2__Agrupar#5_Layer0_193_158_121_ds": {
+      "name": "Agrupar#5",
+      "definition_name": "Agrupar#5",
+      "layer": "Layer0",
+      "position_mm": [
+        10.0,
+        -0.0,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Componente#2 / Agrupar#5"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Componente#1",
+        "definition_name": "Componente#1",
+        "layer": "Layer0",
+        "position_mm": [
+          244.92,
+          -10.0,
+          -1.99
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Agrupar#3",
+            "definition_name": "Agrupar#3",
+            "layer": "Layer0",
+            "position_mm": [
+              297.86,
+              -0.0,
+              36.82
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Agrupar#4",
+            "definition_name": "Agrupar#4",
+            "layer": "Layer0",
+            "position_mm": [
+              394.92,
+              -0.0,
+              -1.99
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Agrupar#1",
+            "definition_name": "Agrupar#1",
+            "layer": "Layer0",
+            "position_mm": [
+              244.92,
+              -0.0,
+              198.01
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Componente#2",
+        "definition_name": "Componente#2",
+        "layer": "Layer0",
+        "position_mm": [
+          10.0,
+          -10.0,
+          -0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Agrupar#2",
+            "definition_name": "Agrupar#2",
+            "layer": "Layer0",
+            "position_mm": [
+              48.8,
+              -0.0,
+              52.93
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Agrupar#4",
+            "definition_name": "Agrupar#4",
+            "layer": "Layer0",
+            "position_mm": [
+              105.63,
+              -0.0,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Agrupar#5",
+            "definition_name": "Agrupar#5",
+            "layer": "Layer0",
+            "position_mm": [
+              10.0,
+              -0.0,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

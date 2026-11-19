@@ -3951,9 +3951,19 @@
      Build L-Shaped Corner Base Unit (Cookscape) - 900x900 Corner Module
      ───────────────────────────────────────────────────────────────────────────── */
   ArchitecturalRenderer.prototype.buildLCornerCabinetMesh = function (furn, fg, dims, carcassMat, counterMat, plinthH, bodyH, counterH, getShutterMaterial, handleType, handleMat, isBase, isKitchen) {
-    var legW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || (dims && dims.W) || 900;
-    var legD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || (dims && dims.W) || 900;
-    var depth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || (dims && dims.D) || 560;
+    var catL = (furn.category || '').toLowerCase();
+    var nameL = (furn.name || '').toLowerCase();
+    var isWallCorner = (!isBase && (catL.indexOf('wall') !== -1 || nameL.indexOf('wall') !== -1 || /(^|\b|_|-)(wcm|wbcm)($|\b|_|-|\d+)/i.test(nameL) || /(^|\b|_|-)(wcm|wbcm)($|\b|_|-|\d+)/i.test(furn.code || '') || /(^|\b|_|-)(wcm|wbcm)($|\b|_|-|\d+)/i.test(furn.id || ''))) || (furn.elevation >= 1000) || (furn.unitConfig && furn.unitConfig.ctype === 'kwall');
+    if (isWallCorner) {
+      plinthH = 0;
+      counterH = 0;
+      bodyH = (dims && dims.H) ? dims.H : 600;
+    }
+    var defLeg = isWallCorner ? 600 : 900;
+    var defDepth = isWallCorner ? 300 : 550;
+    var legW = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legW) || (dims && dims.W) || defLeg;
+    var legD = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.legD) || (dims && dims.D && dims.D >= 500 ? dims.D : (dims && dims.W ? dims.W : defLeg));
+    var depth = (furn.unitConfig && furn.unitConfig.corner && furn.unitConfig.corner.depth) || (dims && dims.D && dims.D < legW ? dims.D : defDepth);
     var W = legW;
     var D = legD;
     var openW = W - depth;
@@ -4074,7 +4084,7 @@
     var door2W = Math.max(80, openD - 22);
     var shutterMat0 = getShutterMaterial(0);
     var shutterMat1 = getShutterMaterial(1);
-    var lHandleY = (isBase || plinthH > 0) ? shH * 0.25 : 0;
+    var lHandleY = isWallCorner ? -shH * 0.25 : ((isBase || plinthH > 0) ? shH * 0.25 : 0);
 
     // Door 1 (Front Door on Left Wing Face)
     var d1LeftX = -W / 2 + 4;

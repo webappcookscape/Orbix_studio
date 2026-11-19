@@ -1312,17 +1312,20 @@
 
     var isLCorner = !!(
       (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || f.unitConfig.unitType === 'wbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
-      f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' ||
+      f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' || f.catalogItemId === 'wbcm' ||
       (f.id && /fbcm|wbcm/i.test(f.id)) ||
       (f.catalogItemId && /fbcm|wbcm/i.test(f.catalogItemId)) ||
       (f.code && /fbcm|wbcm/i.test(f.code)) ||
-      (f.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(f.name))
+      (f.name && /l[-_ ]*shaped.*corner|\bwbcm\b|\bfbcm\b/i.test(f.name))
     );
 
     if (isLCorner) {
-      var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || (f.dimensions && f.dimensions.W) || 900;
-      var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || (f.dimensions && f.dimensions.W) || 900;
-      var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || (f.dimensions && f.dimensions.D) || 560;
+      var isWallL = isWallUnitCategory(f.category, f.name, f.code || f.catalogItemId, f.costCategory) || (f.elevation >= 1000) || (f.unitConfig && f.unitConfig.ctype === 'kwall');
+      var defLeg = isWallL ? 600 : 900;
+      var defDepth = isWallL ? 300 : 550;
+      var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || (f.dimensions && f.dimensions.W) || defLeg;
+      var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || (f.dimensions && f.dimensions.D && f.dimensions.D >= 500 ? f.dimensions.D : (f.dimensions && f.dimensions.W ? f.dimensions.W : defLeg));
+      var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || (f.dimensions && f.dimensions.D && f.dimensions.D < cW ? f.dimensions.D : defDepth);
       var ux = cosA, uy = sinA;
       var vx = -sinA, vy = cosA;
       function toPt(lx, ly) {
@@ -1351,6 +1354,56 @@
       { x: cx + ux + vx, y: cy + uy + vy },
       { x: cx - ux + vx, y: cy - uy + vy }
     ];
+  }
+
+  // Decomposes concave units (like L-corner cabinets) into convex sub-polygons for exact SAT collision detection
+  function getFurnitureSubPolygons(f) {
+    var ang = f.rotY || 0;
+    var cosA = Math.cos(ang), sinA = Math.sin(ang);
+    var cx = (f.pos && f.pos.x) || 0, cy = (f.pos && f.pos.y) || 0;
+
+    var isLCorner = !!(
+      (f.unitConfig && (f.unitConfig.geometryType === 'l_shaped_corner' || f.unitConfig.unitType === 'fbcm' || f.unitConfig.unitType === 'wbcm' || (f.unitConfig.corner && f.unitConfig.corner.enabled))) ||
+      f.catalogItemId === 'fbcm' || f.id === 'fbcm' || f.id === 'f_fbcm_1' || f.catalogItemId === 'fbcm-1500' || f.catalogItemId === 'wbcm' ||
+      (f.id && /fbcm|wbcm/i.test(f.id)) ||
+      (f.catalogItemId && /fbcm|wbcm/i.test(f.catalogItemId)) ||
+      (f.code && /fbcm|wbcm/i.test(f.code)) ||
+      (f.name && /l[-_ ]*shaped.*corner|\bwbcm\b|\bfbcm\b/i.test(f.name))
+    );
+
+    if (isLCorner) {
+      var isWallL = isWallUnitCategory(f.category, f.name, f.code || f.catalogItemId, f.costCategory) || (f.elevation >= 1000) || (f.unitConfig && f.unitConfig.ctype === 'kwall');
+      var defLeg = isWallL ? 600 : 900;
+      var defDepth = isWallL ? 300 : 550;
+      var cW = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legW) || (f.dimensions && f.dimensions.W) || defLeg;
+      var cD = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.legD) || (f.dimensions && f.dimensions.D && f.dimensions.D >= 500 ? f.dimensions.D : (f.dimensions && f.dimensions.W ? f.dimensions.W : defLeg));
+      var cDepth = (f.unitConfig && f.unitConfig.corner && f.unitConfig.corner.depth) || (f.dimensions && f.dimensions.D && f.dimensions.D < cW ? f.dimensions.D : defDepth);
+      var ux = cosA, uy = sinA;
+      var vx = -sinA, vy = cosA;
+      function toPt(lx, ly) {
+        return {
+          x: cx + lx * ux + ly * vx,
+          y: cy + lx * uy + ly * vy
+        };
+      }
+      // Box 1: Arm 1 (width cW, depth cDepth)
+      var box1 = [
+        toPt(-cW / 2, -cD / 2),
+        toPt(cW / 2, -cD / 2),
+        toPt(cW / 2, -cD / 2 + cDepth),
+        toPt(-cW / 2, -cD / 2 + cDepth)
+      ];
+      // Box 2: Arm 2 (width cDepth, length cD - cDepth)
+      var box2 = [
+        toPt(cW / 2 - cDepth, -cD / 2 + cDepth),
+        toPt(cW / 2, -cD / 2 + cDepth),
+        toPt(cW / 2, cD / 2),
+        toPt(cW / 2 - cDepth, cD / 2)
+      ];
+      return [box1, box2];
+    }
+
+    return [getFurniturePolygon(f)];
   }
 
   // SAT (Separating Axis Theorem) collision test between two convex 2D polygons
@@ -1426,8 +1479,19 @@
       // If vertical elevation ranges do not overlap (e.g. wall cabinet above floor base unit), allow
       if (top1 <= elev2 + 5 || top2 <= elev1 + 5) continue;
 
-      var polyOther = getFurniturePolygon(other);
-      if (polygonsIntersect(polyF, polyOther, 5)) {
+      var subPolysF = getFurnitureSubPolygons(f);
+      var subPolysO = getFurnitureSubPolygons(other);
+      var hasOverlap = false;
+      for (var sf = 0; sf < subPolysF.length; sf++) {
+        for (var so = 0; so < subPolysO.length; so++) {
+          if (polygonsIntersect(subPolysF[sf], subPolysO[so], 5)) {
+            hasOverlap = true;
+            break;
+          }
+        }
+        if (hasOverlap) break;
+      }
+      if (hasOverlap) {
         return { collided: true, other: other };
       }
     }

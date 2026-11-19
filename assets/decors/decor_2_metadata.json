@@ -1,0 +1,1570 @@
+{
+  "format_version": "1.0",
+  "source_file": "decor_2",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.339}",
+  "total_definitions": 53,
+  "total_meshes": 39,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "MUTTO 1_Material #2126313551",
+      "color": {
+        "r": 206,
+        "g": 203,
+        "b": 203
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "MUTTO 1_Material #2126313541",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "MUTTO 1_Material #2126313552",
+      "color": {
+        "r": 163,
+        "g": 152,
+        "b": 108
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\Zamioculcas base_dif.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "MUTTO 1_Material #2126313546",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "MUTTO 1_Material #2126313534",
+      "color": {
+        "r": 197,
+        "g": 177,
+        "b": 151
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\ash wood_dif.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "MUTTO 1_Material #2126313550",
+      "color": {
+        "r": 124,
+        "g": 132,
+        "b": 69
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\Zamioculcas_dif.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "MUTTO 1_Material #2126313539",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 0.1332496285438538,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "MUTTO 1_Material #2126313538",
+      "color": {
+        "r": 146,
+        "g": 162,
+        "b": 113
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\38888176-areca-palm-leaves-Stock-Photo.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "MUTTO 1_Material #2126313548",
+      "color": {
+        "r": 163,
+        "g": 152,
+        "b": 108
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\Zamioculcas base_dif.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "MUTTO 1_Material #2126313545",
+      "color": {
+        "r": 132,
+        "g": 120,
+        "b": 108
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\Muuto Coffee Maker.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "MUTTO 1_Material #2126313537",
+      "color": {
+        "r": 146,
+        "g": 162,
+        "b": 113
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\38888176-areca-palm-leaves-Stock-Photo.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "MUTTO 1_Material #2126313544",
+      "color": {
+        "r": 132,
+        "g": 120,
+        "b": 108
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\Muuto Coffee Maker.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "Glass_Window_Neutral",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 0.1231299757957458,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Water",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 0.1130932033061981,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "0095_LightBlue4545",
+      "color": {
+        "r": 234,
+        "g": 237,
+        "b": 232
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\tropoc palm.jpg",
+        "x_scale": 16.19677243314883,
+        "y_scale": 22.72047244094488
+      }
+    },
+    {
+      "name": "MUTTO 1_Material #2126313540",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "MUTTO 1_Material #2126313549",
+      "color": {
+        "r": 163,
+        "g": 152,
+        "b": 108
+      },
+      "transparency": 0.20000000298023224,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\Zamioculcas base_dif.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "MUTTO 1_Material #31",
+      "color": {
+        "r": 227,
+        "g": 229,
+        "b": 228
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\tropic painting.png",
+        "x_scale": 11.811023622047244,
+        "y_scale": 17.03986220472441
+      }
+    },
+    {
+      "name": "0039_DarkOrange1",
+      "color": {
+        "r": 227,
+        "g": 229,
+        "b": 228
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\tropic painting.png",
+        "x_scale": 15.748031496062993,
+        "y_scale": 22.719816272965883
+      }
+    },
+    {
+      "name": "MUTTO 1_DefaultMaterial",
+      "color": {
+        "r": 203,
+        "g": 203,
+        "b": 203
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "MUTTO 1_Material #2126313535",
+      "color": {
+        "r": 220,
+        "g": 220,
+        "b": 212
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "D:\\MODEL\\MODEL\\INTERIOR\\PROP\\PROP SET\\626882.57ceac667cfa8\\TEXTURES\\furnitecture-Architectural-Digest-magazine-Best-Books-interior-design-news.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "MUTTO 1_Material #2126313536",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Component_415987_Layer0": {
+      "name": "Component_415987",
+      "definition_name": "Group#1",
+      "layer": "Layer0",
+      "position_mm": [
+        -888.19,
+        396.08,
+        -637.72
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Component_415987"
+    },
+    "mesh_1_ROOT__Line004__MUTTO_1_5_Layer0": {
+      "name": "MUTTO 1_5",
+      "definition_name": "Group9",
+      "layer": "Layer0",
+      "position_mm": [
+        -55.3,
+        -115.51,
+        -566.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Line004 / MUTTO 1_5"
+    },
+    "mesh_2_ROOT__Line004__MUTTO_1_6_Layer0": {
+      "name": "MUTTO 1_6",
+      "definition_name": "Group10",
+      "layer": "Layer0",
+      "position_mm": [
+        -55.3,
+        -115.51,
+        -566.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Line004 / MUTTO 1_6"
+    },
+    "mesh_3_ROOT__Line005__MUTTO_1_3_Layer0": {
+      "name": "MUTTO 1_3",
+      "definition_name": "Group6",
+      "layer": "Layer0",
+      "position_mm": [
+        -313.89,
+        -114.37,
+        -566.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Line005 / MUTTO 1_3"
+    },
+    "mesh_4_ROOT__Line005__MUTTO_1_4_Layer0": {
+      "name": "MUTTO 1_4",
+      "definition_name": "Group7",
+      "layer": "Layer0",
+      "position_mm": [
+        -313.89,
+        -114.37,
+        -566.79
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Line005 / MUTTO 1_4"
+    },
+    "mesh_5_ROOT__Group1871011899__Plane080__MUTTO_1_19_Layer0": {
+      "name": "MUTTO 1_19",
+      "definition_name": "Group29",
+      "layer": "Layer0",
+      "position_mm": [
+        313.11,
+        83.54,
+        -54.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011899 / Plane080 / MUTTO 1_19"
+    },
+    "mesh_6_ROOT__Group1871011899__Plane080__MUTTO_1_20_Layer0": {
+      "name": "MUTTO 1_20",
+      "definition_name": "Group30",
+      "layer": "Layer0",
+      "position_mm": [
+        313.11,
+        83.54,
+        -54.38
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011899 / Plane080 / MUTTO 1_20"
+    },
+    "mesh_7_ROOT__Group1871011899__MUTTO_1_21_Layer0": {
+      "name": "MUTTO 1_21",
+      "definition_name": "Group31",
+      "layer": "Layer0",
+      "position_mm": [
+        217.71,
+        -28.22,
+        -450.14
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011899 / MUTTO 1_21"
+    },
+    "mesh_8_ROOT__Group1871011899__MUTTO_1_22_Layer0": {
+      "name": "MUTTO 1_22",
+      "definition_name": "Group32",
+      "layer": "Layer0",
+      "position_mm": [
+        217.71,
+        -28.22,
+        -450.14
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011899 / MUTTO 1_22"
+    },
+    "mesh_9_ROOT__Group1871011899__Plane101__MUTTO_1_23_Layer0": {
+      "name": "MUTTO 1_23",
+      "definition_name": "Group34",
+      "layer": "Layer0",
+      "position_mm": [
+        383.08,
+        56.86,
+        16.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011899 / Plane101 / MUTTO 1_23"
+    },
+    "mesh_10_ROOT__Group1871011899__Plane101__MUTTO_1_24_Layer0": {
+      "name": "MUTTO 1_24",
+      "definition_name": "Group35",
+      "layer": "Layer0",
+      "position_mm": [
+        383.08,
+        56.86,
+        16.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011899 / Plane101 / MUTTO 1_24"
+    },
+    "mesh_11_ROOT__Group1871011898__MUTTO_1_16_Layer0": {
+      "name": "MUTTO 1_16",
+      "definition_name": "Group24",
+      "layer": "Layer0",
+      "position_mm": [
+        -180.48,
+        348.58,
+        -229.42
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011898 / MUTTO 1_16"
+    },
+    "mesh_12_ROOT__Group1871011898__MUTTO_1_17_Layer0": {
+      "name": "MUTTO 1_17",
+      "definition_name": "Group25",
+      "layer": "Layer0",
+      "position_mm": [
+        -180.48,
+        356.99,
+        -230.15
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011898 / MUTTO 1_17"
+    },
+    "mesh_13_ROOT__Group1871011898__MUTTO_1_18_Layer0": {
+      "name": "MUTTO 1_18",
+      "definition_name": "Group26",
+      "layer": "Layer0",
+      "position_mm": [
+        -180.48,
+        356.99,
+        -230.15
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011898 / MUTTO 1_18"
+    },
+    "mesh_14_ROOT__Group1871011896__MUTTO_1_7_Layer0": {
+      "name": "MUTTO 1_7",
+      "definition_name": "Group12",
+      "layer": "Layer0",
+      "position_mm": [
+        -724.14,
+        -244.31,
+        -508.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011896 / MUTTO 1_7"
+    },
+    "mesh_15_ROOT__Group1871011896__Plane002__MUTTO_1_8_Layer0": {
+      "name": "MUTTO 1_8",
+      "definition_name": "Group14",
+      "layer": "Layer0",
+      "position_mm": [
+        -614.03,
+        -121.83,
+        -105.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011896 / Plane002 / MUTTO 1_8"
+    },
+    "mesh_16_ROOT__Group1871011896__Plane002__MUTTO_1_9_Layer0": {
+      "name": "MUTTO 1_9",
+      "definition_name": "Group15",
+      "layer": "Layer0",
+      "position_mm": [
+        -614.03,
+        -121.83,
+        -105.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011896 / Plane002 / MUTTO 1_9"
+    },
+    "mesh_17_ROOT__Group1871011896__MUTTO_1_10_Layer0": {
+      "name": "MUTTO 1_10",
+      "definition_name": "Group16",
+      "layer": "Layer0",
+      "position_mm": [
+        -724.14,
+        -244.31,
+        -508.39
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011896 / MUTTO 1_10"
+    },
+    "mesh_18_ROOT__Group1871011897__MUTTO_1_11_Layer0_234_237_232_ss": {
+      "name": "MUTTO 1_11",
+      "definition_name": "Group18",
+      "layer": "Layer0",
+      "position_mm": [
+        443.89,
+        369.19,
+        -229.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011897 / MUTTO 1_11"
+    },
+    "mesh_19_ROOT__Group1871011897__MUTTO_1_11_Layer0_0_0_0_ss": {
+      "name": "MUTTO 1_11",
+      "definition_name": "Group18",
+      "layer": "Layer0",
+      "position_mm": [
+        443.89,
+        369.19,
+        -229.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011897 / MUTTO 1_11"
+    },
+    "mesh_20_ROOT__Group1871011897__MUTTO_1_11_Layer0_234_237_232_ds": {
+      "name": "MUTTO 1_11",
+      "definition_name": "Group18",
+      "layer": "Layer0",
+      "position_mm": [
+        443.89,
+        369.19,
+        -229.3
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011897 / MUTTO 1_11"
+    },
+    "mesh_21_ROOT__Group1871011897__MUTTO_1_12_Layer0": {
+      "name": "MUTTO 1_12",
+      "definition_name": "Group19",
+      "layer": "Layer0",
+      "position_mm": [
+        443.89,
+        365.2,
+        -228.95
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011897 / MUTTO 1_12"
+    },
+    "mesh_22_ROOT__Group1871011897__MUTTO_1_13_Layer0": {
+      "name": "MUTTO 1_13",
+      "definition_name": "Group20",
+      "layer": "Layer0",
+      "position_mm": [
+        571.53,
+        372.89,
+        -229.63
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011897 / MUTTO 1_13"
+    },
+    "mesh_23_ROOT__Group1871011897__MUTTO_1_14_Layer0": {
+      "name": "MUTTO 1_14",
+      "definition_name": "Group21",
+      "layer": "Layer0",
+      "position_mm": [
+        443.89,
+        373.61,
+        -229.69
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011897 / MUTTO 1_14"
+    },
+    "mesh_24_ROOT__Group001__MUTTO_1_1_Layer0": {
+      "name": "MUTTO 1_1",
+      "definition_name": "Group3",
+      "layer": "Layer0",
+      "position_mm": [
+        184.71,
+        -265.5,
+        -602.09
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group001 / MUTTO 1_1"
+    },
+    "mesh_25_ROOT__Group001__MUTTO_1_2_Layer0": {
+      "name": "MUTTO 1_2",
+      "definition_name": "Group4",
+      "layer": "Layer0",
+      "position_mm": [
+        -568.75,
+        -418.54,
+        -593.62
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group001 / MUTTO 1_2"
+    },
+    "mesh_26_ROOT__MUTTO_1_0_Layer0": {
+      "name": "MUTTO 1_0",
+      "definition_name": "Group1",
+      "layer": "Layer0",
+      "position_mm": [
+        780.71,
+        -273.15,
+        -657.54
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / MUTTO 1_0"
+    },
+    "mesh_27_ROOT__Group1871011900__MUTTO_1_25_Layer0": {
+      "name": "MUTTO 1_25",
+      "definition_name": "Group37",
+      "layer": "Layer0",
+      "position_mm": [
+        782.38,
+        -272.67,
+        -82.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011900 / MUTTO 1_25"
+    },
+    "mesh_28_ROOT__Group1871011900__Line001__MUTTO_1_26_Layer0": {
+      "name": "MUTTO 1_26",
+      "definition_name": "Group39",
+      "layer": "Layer0",
+      "position_mm": [
+        693.82,
+        -272.67,
+        -541.16
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011900 / Line001 / MUTTO 1_26"
+    },
+    "mesh_29_ROOT__Group1871011900__Line001__MUTTO_1_27_Layer0": {
+      "name": "MUTTO 1_27",
+      "definition_name": "Group40",
+      "layer": "Layer0",
+      "position_mm": [
+        693.82,
+        -272.67,
+        -541.16
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011900 / Line001 / MUTTO 1_27"
+    },
+    "mesh_30_ROOT__Group1871011900__MUTTO_1_28_Layer0": {
+      "name": "MUTTO 1_28",
+      "definition_name": "Group41",
+      "layer": "Layer0",
+      "position_mm": [
+        696.43,
+        -272.67,
+        -138.59
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011900 / MUTTO 1_28"
+    },
+    "mesh_31_ROOT__Group1871011900__Group1871011890__MUTTO_1_29_Layer0": {
+      "name": "MUTTO 1_29",
+      "definition_name": "Group43",
+      "layer": "Layer0",
+      "position_mm": [
+        745.59,
+        -272.68,
+        -435.89
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011900 / Group1871011890 / MUTTO 1_29"
+    },
+    "mesh_32_ROOT__Group1871011900__Group1871011890__MUTTO_1_30_Layer0": {
+      "name": "MUTTO 1_30",
+      "definition_name": "Group44",
+      "layer": "Layer0",
+      "position_mm": [
+        745.59,
+        -272.68,
+        -435.89
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011900 / Group1871011890 / MUTTO 1_30"
+    },
+    "mesh_33_ROOT__Group1871011900__Group1871011890__MUTTO_1_31_Layer0": {
+      "name": "MUTTO 1_31",
+      "definition_name": "Group45",
+      "layer": "Layer0",
+      "position_mm": [
+        745.59,
+        -272.68,
+        -435.89
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011900 / Group1871011890 / MUTTO 1_31"
+    },
+    "mesh_34_ROOT__Group1871011901__Sphere008__MUTTO_1_32_Layer0": {
+      "name": "MUTTO 1_32",
+      "definition_name": "Group48",
+      "layer": "Layer0",
+      "position_mm": [
+        679.7,
+        274.14,
+        72.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011901 / Sphere008 / MUTTO 1_32"
+    },
+    "mesh_35_ROOT__Group1871011901__Sphere008__MUTTO_1_33_Layer0": {
+      "name": "MUTTO 1_33",
+      "definition_name": "Group49",
+      "layer": "Layer0",
+      "position_mm": [
+        679.7,
+        274.14,
+        72.52
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011901 / Sphere008 / MUTTO 1_33"
+    },
+    "mesh_36_ROOT__Group1871011901__Sphere024__MUTTO_1_34_Layer0": {
+      "name": "MUTTO 1_34",
+      "definition_name": "Group51",
+      "layer": "Layer0",
+      "position_mm": [
+        622.7,
+        284.8,
+        1.1
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011901 / Sphere024 / MUTTO 1_34"
+    },
+    "mesh_37_ROOT__Group1871011901__Sphere024__MUTTO_1_35_Layer0": {
+      "name": "MUTTO 1_35",
+      "definition_name": "Group52",
+      "layer": "Layer0",
+      "position_mm": [
+        622.7,
+        284.8,
+        1.1
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011901 / Sphere024 / MUTTO 1_35"
+    },
+    "mesh_38_ROOT__Group1871011901__MUTTO_1_36_Layer0": {
+      "name": "MUTTO 1_36",
+      "definition_name": "Group53",
+      "layer": "Layer0",
+      "position_mm": [
+        546.51,
+        202.75,
+        -447.25
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group1871011901 / MUTTO 1_36"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Component_415987",
+        "definition_name": "Group#1",
+        "layer": "Layer0",
+        "position_mm": [
+          -888.19,
+          396.08,
+          -637.72
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Line004",
+        "definition_name": "Group8",
+        "layer": "Layer0",
+        "position_mm": [
+          -55.3,
+          -115.51,
+          -566.79
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "MUTTO 1_5",
+            "definition_name": "Group9",
+            "layer": "Layer0",
+            "position_mm": [
+              -55.3,
+              -115.51,
+              -566.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "MUTTO 1_6",
+            "definition_name": "Group10",
+            "layer": "Layer0",
+            "position_mm": [
+              -55.3,
+              -115.51,
+              -566.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Line005",
+        "definition_name": "Group5",
+        "layer": "Layer0",
+        "position_mm": [
+          -313.89,
+          -114.37,
+          -566.79
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "MUTTO 1_3",
+            "definition_name": "Group6",
+            "layer": "Layer0",
+            "position_mm": [
+              -313.89,
+              -114.37,
+              -566.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "MUTTO 1_4",
+            "definition_name": "Group7",
+            "layer": "Layer0",
+            "position_mm": [
+              -313.89,
+              -114.37,
+              -566.79
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Group1871011899",
+        "definition_name": "Group27",
+        "layer": "Layer0",
+        "position_mm": [
+          224.54,
+          127.17,
+          -138.37
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Plane080",
+            "definition_name": "Group28",
+            "layer": "Layer0",
+            "position_mm": [
+              313.11,
+              83.54,
+              -54.38
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "MUTTO 1_19",
+                "definition_name": "Group29",
+                "layer": "Layer0",
+                "position_mm": [
+                  313.11,
+                  83.54,
+                  -54.38
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "MUTTO 1_20",
+                "definition_name": "Group30",
+                "layer": "Layer0",
+                "position_mm": [
+                  313.11,
+                  83.54,
+                  -54.38
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "MUTTO 1_21",
+            "definition_name": "Group31",
+            "layer": "Layer0",
+            "position_mm": [
+              217.71,
+              -28.22,
+              -450.14
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "MUTTO 1_22",
+            "definition_name": "Group32",
+            "layer": "Layer0",
+            "position_mm": [
+              217.71,
+              -28.22,
+              -450.14
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Plane101",
+            "definition_name": "Group33",
+            "layer": "Layer0",
+            "position_mm": [
+              383.08,
+              56.86,
+              16.44
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "MUTTO 1_23",
+                "definition_name": "Group34",
+                "layer": "Layer0",
+                "position_mm": [
+                  383.08,
+                  56.86,
+                  16.44
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "MUTTO 1_24",
+                "definition_name": "Group35",
+                "layer": "Layer0",
+                "position_mm": [
+                  383.08,
+                  56.86,
+                  16.44
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Group1871011898",
+        "definition_name": "Group22",
+        "layer": "Layer0",
+        "position_mm": [
+          -604.09,
+          430.59,
+          -247.05
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "MUTTO 1_16",
+            "definition_name": "Group24",
+            "layer": "Layer0",
+            "position_mm": [
+              -180.48,
+              348.58,
+              -229.42
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "MUTTO 1_17",
+            "definition_name": "Group25",
+            "layer": "Layer0",
+            "position_mm": [
+              -180.48,
+              356.99,
+              -230.15
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "MUTTO 1_18",
+            "definition_name": "Group26",
+            "layer": "Layer0",
+            "position_mm": [
+              -180.48,
+              356.99,
+              -230.15
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Group1871011896",
+        "definition_name": "Group11",
+        "layer": "Layer0",
+        "position_mm": [
+          -763.17,
+          -83.51,
+          -277.64
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "MUTTO 1_7",
+            "definition_name": "Group12",
+            "layer": "Layer0",
+            "position_mm": [
+              -724.14,
+              -244.31,
+              -508.39
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Plane002",
+            "definition_name": "Group13",
+            "layer": "Layer0",
+            "position_mm": [
+              -614.03,
+              -121.83,
+              -105.78
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "MUTTO 1_8",
+                "definition_name": "Group14",
+                "layer": "Layer0",
+                "position_mm": [
+                  -614.03,
+                  -121.83,
+                  -105.78
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "MUTTO 1_9",
+                "definition_name": "Group15",
+                "layer": "Layer0",
+                "position_mm": [
+                  -614.03,
+                  -121.83,
+                  -105.78
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "MUTTO 1_10",
+            "definition_name": "Group16",
+            "layer": "Layer0",
+            "position_mm": [
+              -724.14,
+              -244.31,
+              -508.39
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Group1871011897",
+        "definition_name": "Group17",
+        "layer": "Layer0",
+        "position_mm": [
+          -193.38,
+          440.69,
+          -312.9
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "MUTTO 1_11",
+            "definition_name": "Group18",
+            "layer": "Layer0",
+            "position_mm": [
+              443.89,
+              369.19,
+              -229.3
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "MUTTO 1_12",
+            "definition_name": "Group19",
+            "layer": "Layer0",
+            "position_mm": [
+              443.89,
+              365.2,
+              -228.95
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "MUTTO 1_13",
+            "definition_name": "Group20",
+            "layer": "Layer0",
+            "position_mm": [
+              571.53,
+              372.89,
+              -229.63
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "MUTTO 1_14",
+            "definition_name": "Group21",
+            "layer": "Layer0",
+            "position_mm": [
+              443.89,
+              373.61,
+              -229.69
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "Group001",
+        "definition_name": "Group2",
+        "layer": "Layer0",
+        "position_mm": [
+          -156.2,
+          -119.73,
+          -634.23
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "MUTTO 1_1",
+            "definition_name": "Group3",
+            "layer": "Layer0",
+            "position_mm": [
+              184.71,
+              -265.5,
+              -602.09
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "MUTTO 1_2",
+            "definition_name": "Group4",
+            "layer": "Layer0",
+            "position_mm": [
+              -568.75,
+              -418.54,
+              -593.62
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "MUTTO 1_0",
+        "definition_name": "Group1",
+        "layer": "Layer0",
+        "position_mm": [
+          780.71,
+          -273.15,
+          -657.54
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "Group1871011900",
+        "definition_name": "Group36",
+        "layer": "Layer0",
+        "position_mm": [
+          810.17,
+          -272.67,
+          -334.32
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "MUTTO 1_25",
+            "definition_name": "Group37",
+            "layer": "Layer0",
+            "position_mm": [
+              782.38,
+              -272.67,
+              -82.99
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Line001",
+            "definition_name": "Group38",
+            "layer": "Layer0",
+            "position_mm": [
+              693.82,
+              -272.67,
+              -541.16
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "MUTTO 1_26",
+                "definition_name": "Group39",
+                "layer": "Layer0",
+                "position_mm": [
+                  693.82,
+                  -272.67,
+                  -541.16
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "MUTTO 1_27",
+                "definition_name": "Group40",
+                "layer": "Layer0",
+                "position_mm": [
+                  693.82,
+                  -272.67,
+                  -541.16
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "MUTTO 1_28",
+            "definition_name": "Group41",
+            "layer": "Layer0",
+            "position_mm": [
+              696.43,
+              -272.67,
+              -138.59
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Group1871011890",
+            "definition_name": "Group42",
+            "layer": "Layer0",
+            "position_mm": [
+              782.38,
+              -272.68,
+              -304.33
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "MUTTO 1_29",
+                "definition_name": "Group43",
+                "layer": "Layer0",
+                "position_mm": [
+                  745.59,
+                  -272.68,
+                  -435.89
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "MUTTO 1_30",
+                "definition_name": "Group44",
+                "layer": "Layer0",
+                "position_mm": [
+                  745.59,
+                  -272.68,
+                  -435.89
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "MUTTO 1_31",
+                "definition_name": "Group45",
+                "layer": "Layer0",
+                "position_mm": [
+                  745.59,
+                  -272.68,
+                  -435.89
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Group1871011901",
+        "definition_name": "Group46",
+        "layer": "Layer0",
+        "position_mm": [
+          678.97,
+          255.45,
+          0.57
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Sphere008",
+            "definition_name": "Group47",
+            "layer": "Layer0",
+            "position_mm": [
+              679.7,
+              274.14,
+              72.52
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "MUTTO 1_32",
+                "definition_name": "Group48",
+                "layer": "Layer0",
+                "position_mm": [
+                  679.7,
+                  274.14,
+                  72.52
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "MUTTO 1_33",
+                "definition_name": "Group49",
+                "layer": "Layer0",
+                "position_mm": [
+                  679.7,
+                  274.14,
+                  72.52
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Sphere024",
+            "definition_name": "Group50",
+            "layer": "Layer0",
+            "position_mm": [
+              622.7,
+              284.8,
+              1.1
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "MUTTO 1_34",
+                "definition_name": "Group51",
+                "layer": "Layer0",
+                "position_mm": [
+                  622.7,
+                  284.8,
+                  1.1
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "MUTTO 1_35",
+                "definition_name": "Group52",
+                "layer": "Layer0",
+                "position_mm": [
+                  622.7,
+                  284.8,
+                  1.1
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "MUTTO 1_36",
+            "definition_name": "Group53",
+            "layer": "Layer0",
+            "position_mm": [
+              546.51,
+              202.75,
+              -447.25
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

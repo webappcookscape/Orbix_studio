@@ -1516,5 +1516,500 @@
     "fileSizeGlb": 73880,
     "excludeFromPricing": true,
     "isDecor": true
+  },
+  {
+    "id": "decor_adornos_rmllr",
+    "slug": "adornos_rmllr",
+    "original_filename": "ADORNOS+-+RMLLR.skp",
+    "name": "Ceramic Decor & Vases Arrangement",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "🏺",
+    "modelUrl": "assets/decors/adornos_rmllr.glb",
+    "thumbnailUrl": "assets/decors/adornos_rmllr_thumb.png",
+    "dimensions": {
+      "W": 390.0,
+      "H": 306.7,
+      "D": 302.3
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        157.2,
+        -5.7,
+        -269.0
+      ],
+      "max": [
+        547.2,
+        301.0,
+        33.4
+      ]
+    },
+    "fileSizeGlb": 9328548,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_bed_01_1",
+    "slug": "bed_01_1",
+    "original_filename": "BED_01 (1).skp",
+    "name": "Contemporary Platform Bed 01",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/bed_01_1.glb",
+    "thumbnailUrl": "assets/decors/bed_01_1_thumb.png",
+    "dimensions": {
+      "W": 3384.3,
+      "H": 1141.1,
+      "D": 3117.4
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -1695.1,
+        0.0,
+        -1558.7
+      ],
+      "max": [
+        1689.1,
+        1141.1,
+        1558.7
+      ]
+    },
+    "fileSizeGlb": 36797044,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_beds_and_nightstands",
+    "slug": "beds_and_nightstands",
+    "original_filename": "Beds+and+nightstands.skp",
+    "name": "Luxury Bed with Matching Nightstands",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/beds_and_nightstands.glb",
+    "thumbnailUrl": "assets/decors/beds_and_nightstands_thumb.png",
+    "dimensions": {
+      "W": 3720.0,
+      "H": 1570.0,
+      "D": 2787.0
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        3669.1,
+        50.0,
+        -6.3
+      ],
+      "max": [
+        7389.1,
+        1620.0,
+        2780.7
+      ]
+    },
+    "fileSizeGlb": 25580468,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_cuadros",
+    "slug": "cuadros",
+    "original_filename": "CUADROS.skp",
+    "name": "Modern Wall Art & Canvas Set",
+    "category": "decor",
+    "decorType": "wall_art",
+    "subCategory": "Wall Art & Frames",
+    "icon": "🖼️",
+    "modelUrl": "assets/decors/cuadros.glb",
+    "thumbnailUrl": "assets/decors/cuadros_thumb.png",
+    "dimensions": {
+      "W": 534.9,
+      "H": 302.0,
+      "D": 70.0
+    },
+    "elevation": 1200,
+    "bounds": {
+      "min": [
+        10.0,
+        -2.0,
+        -60.0
+      ],
+      "max": [
+        544.9,
+        300.0,
+        10.0
+      ]
+    },
+    "fileSizeGlb": 383012,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_component_1",
+    "slug": "component_1",
+    "original_filename": "Component (1).skp",
+    "name": "Designer Accent Collection",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/component_1.glb",
+    "thumbnailUrl": "assets/decors/component_1_thumb.png",
+    "dimensions": {
+      "W": 160.8,
+      "H": 3072.2,
+      "D": 3430.0
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -192.0,
+        2.7,
+        -1744.0
+      ],
+      "max": [
+        -31.1,
+        3074.9,
+        1686.0
+      ]
+    },
+    "fileSizeGlb": 3723388,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_component_9",
+    "slug": "component_9",
+    "original_filename": "Component_9.skp",
+    "name": "Designer Accent Collection",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/component_9.glb",
+    "thumbnailUrl": "assets/decors/component_9_thumb.png",
+    "dimensions": {
+      "W": 401.1,
+      "H": 247.2,
+      "D": 235.8
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -235.8
+      ],
+      "max": [
+        401.1,
+        247.2,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 6844628,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_decor_2",
+    "slug": "decor_2",
+    "original_filename": "DECOR (2).skp",
+    "name": "Curated Tabletop Styling Decor",
+    "category": "decor",
+    "decorType": "decor",
+    "subCategory": "Accents & Styling",
+    "icon": "✨",
+    "modelUrl": "assets/decors/decor_2.glb",
+    "thumbnailUrl": "assets/decors/decor_2_thumb.png",
+    "dimensions": {
+      "W": 2078.7,
+      "H": 1315.6,
+      "D": 955.7
+    },
+    "elevation": 850,
+    "bounds": {
+      "min": [
+        -1039.3,
+        -657.8,
+        -477.9
+      ],
+      "max": [
+        1039.4,
+        657.8,
+        477.9
+      ]
+    },
+    "fileSizeGlb": 13837536,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_kid_bedroom_001_1",
+    "slug": "kid_bedroom_001_1",
+    "original_filename": "KID+BEDROOM+001 (1).skp",
+    "name": "Kids Bedroom Suite & Bunk Set",
+    "category": "decor",
+    "decorType": "bed",
+    "subCategory": "Beds & Bedroom",
+    "icon": "🛏️",
+    "modelUrl": "assets/decors/kid_bedroom_001_1.glb",
+    "thumbnailUrl": "assets/decors/kid_bedroom_001_1_thumb.png",
+    "dimensions": {
+      "W": 3265.4,
+      "H": 2688.0,
+      "D": 1877.9
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -0.0,
+        -0.0,
+        -1800.0
+      ],
+      "max": [
+        3265.4,
+        2688.0,
+        77.9
+      ]
+    },
+    "fileSizeGlb": 15641672,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_plant_2",
+    "slug": "plant_2",
+    "original_filename": "Plant (2).skp",
+    "name": "Potted Greenery",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/plant_2.glb",
+    "thumbnailUrl": "assets/decors/plant_2_thumb.png",
+    "dimensions": {
+      "W": 895.7,
+      "H": 1171.9,
+      "D": 798.9
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -385.3,
+        -0.0,
+        -419.1
+      ],
+      "max": [
+        510.4,
+        1171.9,
+        379.8
+      ]
+    },
+    "fileSizeGlb": 3293896,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_plant_3",
+    "slug": "plant_3",
+    "original_filename": "Plant (3).skp",
+    "name": "Potted Greenery",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/plant_3.glb",
+    "thumbnailUrl": "assets/decors/plant_3_thumb.png",
+    "dimensions": {
+      "W": 1022.8,
+      "H": 1232.8,
+      "D": 1244.8
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -1244.8
+      ],
+      "max": [
+        1022.8,
+        1232.8,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 1597260,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_sofa_set_collection_51",
+    "slug": "sofa_set_collection_51",
+    "original_filename": "Sofa+Set+Collection+(51).skp",
+    "name": "Modern Living Room Sofa Suite",
+    "category": "decor",
+    "decorType": "sofa",
+    "subCategory": "Sofas & Seating",
+    "icon": "🛋️",
+    "modelUrl": "assets/decors/sofa_set_collection_51.glb",
+    "thumbnailUrl": "assets/decors/sofa_set_collection_51_thumb.png",
+    "dimensions": {
+      "W": 3041.0,
+      "H": 1036.3,
+      "D": 2533.6
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        -1945.0,
+        0.0,
+        -2222.4
+      ],
+      "max": [
+        1096.0,
+        1036.4,
+        311.2
+      ]
+    },
+    "fileSizeGlb": 13422080,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_cay_chuoi",
+    "slug": "cay_chuoi",
+    "original_filename": "cay+chuoi.skp",
+    "name": "Indoor Banana Palm Planter",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/cay_chuoi.glb",
+    "thumbnailUrl": "assets/decors/cay_chuoi_thumb.png",
+    "dimensions": {
+      "W": 1066.0,
+      "H": 1770.6,
+      "D": 1159.4
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        682.9,
+        13.3,
+        -1658.8
+      ],
+      "max": [
+        1748.9,
+        1783.9,
+        -499.4
+      ]
+    },
+    "fileSizeGlb": 2540172,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_mirror_2_1",
+    "slug": "mirror_2_1",
+    "original_filename": "mirror 2 (1).skp",
+    "name": "Designer Wall Vanity Mirror",
+    "category": "decor",
+    "decorType": "mirror",
+    "subCategory": "Mirrors & Vanity",
+    "icon": "🪞",
+    "modelUrl": "assets/decors/mirror_2_1.glb",
+    "thumbnailUrl": "assets/decors/mirror_2_1_thumb.png",
+    "dimensions": {
+      "W": 600.0,
+      "H": 1500.0,
+      "D": 35.0
+    },
+    "elevation": 1100,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -35.0
+      ],
+      "max": [
+        600.0,
+        1500.0,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 277604,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_plant_4",
+    "slug": "plant_4",
+    "original_filename": "plant (4).skp",
+    "name": "Potted Greenery",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/plant_4.glb",
+    "thumbnailUrl": "assets/decors/plant_4_thumb.png",
+    "dimensions": {
+      "W": 1066.0,
+      "H": 1770.6,
+      "D": 1159.4
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        682.9,
+        13.3,
+        -1658.8
+      ],
+      "max": [
+        1748.9,
+        1783.9,
+        -499.4
+      ]
+    },
+    "fileSizeGlb": 2540172,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
+    "id": "decor_plant",
+    "slug": "plant",
+    "original_filename": "plant.skp",
+    "name": "Potted Greenery",
+    "category": "decor",
+    "decorType": "plant",
+    "subCategory": "Plants & Pots",
+    "icon": "🪴",
+    "modelUrl": "assets/decors/plant.glb",
+    "thumbnailUrl": "assets/decors/plant_thumb.png",
+    "dimensions": {
+      "W": 787.4,
+      "H": 2137.1,
+      "D": 1194.2
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -1194.2
+      ],
+      "max": [
+        787.4,
+        2137.1,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 11380460,
+    "excludeFromPricing": true,
+    "isDecor": true
   }
 ]

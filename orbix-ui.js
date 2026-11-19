@@ -2531,16 +2531,19 @@
                         (fn.name && /sliding/i.test(fn.name));
 
         var isLCornerUnit = !!(
-          (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
-          fn.catalogItemId === 'fbcm' || fn.id === 'fbcm' || fn.id === 'f_fbcm_1' || fn.catalogItemId === 'fbcm-1500' ||
+          (fn.unitConfig && (fn.unitConfig.geometryType === 'l_shaped_corner' || fn.unitConfig.unitType === 'fbcm' || fn.unitConfig.unitType === 'wbcm' || (fn.unitConfig.corner && fn.unitConfig.corner.enabled))) ||
+          fn.catalogItemId === 'fbcm' || fn.id === 'fbcm' || fn.id === 'f_fbcm_1' || fn.catalogItemId === 'fbcm-1500' || fn.catalogItemId === 'wbcm' ||
           (fn.id && /fbcm|wbcm/i.test(fn.id)) ||
           (fn.catalogItemId && /fbcm|wbcm/i.test(fn.catalogItemId)) ||
           (fn.code && /fbcm|wbcm/i.test(fn.code)) ||
-          (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b/i.test(fn.name))
+          (fn.name && /l[-_ ]*shaped.*corner|\bwbcm\b|\bfbcm\b/i.test(fn.name))
         );
-        var curLegW = (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.legW) || fn.dimensions.W || 900;
-        var curLegD = (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.legD) || fn.dimensions.W || 900;
-        var curCornerDepth = (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.depth) || fn.dimensions.D || 560;
+        var isWallCornerU = Core.isWallUnit ? Core.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) : (fn.elevation >= 1000 || (fn.unitConfig && fn.unitConfig.ctype === 'kwall'));
+        var defCornerLeg = isWallCornerU ? 600 : 900;
+        var defCornerD = isWallCornerU ? 300 : 550;
+        var curLegW = (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.legW) || fn.dimensions.W || defCornerLeg;
+        var curLegD = (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.legD) || (fn.dimensions.D && fn.dimensions.D >= 500 ? fn.dimensions.D : (fn.dimensions.W || defCornerLeg));
+        var curCornerDepth = (fn.unitConfig && fn.unitConfig.corner && fn.unitConfig.corner.depth) || (fn.dimensions.D && fn.dimensions.D < curLegW ? fn.dimensions.D : defCornerD);
         var curShutterA = Math.max(0, Math.round(curLegW - curCornerDepth));
         var curShutterB = Math.max(0, Math.round(curLegD - curCornerDepth));
         var fbcmHtml = !isLCornerUnit ? '' : (
@@ -2872,9 +2875,12 @@
           if (!fn.unitConfig.corner) fn.unitConfig.corner = { enabled: true };
 
           updateFbcmInputs = function () {
-            var cDepth = fn.unitConfig.corner.depth || fn.dimensions.D || 560;
-            var cW = fn.unitConfig.corner.legW || fn.dimensions.W || 900;
-            var cD = fn.unitConfig.corner.legD || fn.dimensions.W || 900;
+            var isWallCornerU = Core.isWallUnit ? Core.isWallUnit(fn.category, fn.name, fn.code || fn.catalogItemId, fn.costCategory) : (fn.elevation >= 1000 || (fn.unitConfig && fn.unitConfig.ctype === 'kwall'));
+            var defCornerLeg = isWallCornerU ? 600 : 900;
+            var defCornerD = isWallCornerU ? 300 : 550;
+            var cW = fn.unitConfig.corner.legW || fn.dimensions.W || defCornerLeg;
+            var cD = fn.unitConfig.corner.legD || (fn.dimensions.D && fn.dimensions.D >= 500 ? fn.dimensions.D : (fn.dimensions.W || defCornerLeg));
+            var cDepth = fn.unitConfig.corner.depth || (fn.dimensions.D && fn.dimensions.D < cW ? fn.dimensions.D : defCornerD);
             if (elFbcmLegW) elFbcmLegW.value = cW;
             if (elFbcmLegD) elFbcmLegD.value = cD;
             if (elFbcmDepth) elFbcmDepth.value = cDepth;
@@ -3981,7 +3987,7 @@
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
           if (isExistingFbcm) {
-            existing.unitType = (fn.unitConfig && fn.unitConfig.unitType) || 'fbcm';
+            existing.unitType = (fn.unitConfig && fn.unitConfig.unitType) || (isWall ? 'wbcm' : 'fbcm');
             existing.geometryType = 'l_shaped_corner';
             existing.shutters = 2;
             existing.sections = 1;
@@ -4044,7 +4050,7 @@
             label: fn.name,
             ctype: isWall ? 'kwall' : (isBase ? 'kbase' : 'wardrobe'),
             _furnId: fn.id,
-            unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFbcmNew ? 'fbcm' : (isFcmNew ? (isFcmLtNew ? 'fcm-lt' : 'fcm-rt') : undefined)),
+            unitType: (fn.unitConfig && fn.unitConfig.unitType) || fn.catalogItemId || (isFbcmNew ? (isWall ? 'wbcm' : 'fbcm') : (isFcmNew ? (isFcmLtNew ? 'fcm-lt' : 'fcm-rt') : undefined)),
             geometryType: (fn.unitConfig && fn.unitConfig.geometryType) || (isFbcmNew ? 'l_shaped_corner' : undefined),
             catalogItemId: fn.catalogItemId || fn.id,
             fixedPanel: (fn.unitConfig && fn.unitConfig.fixedPanel) || (isFcmNew ? { enabled: true, width: Math.round(defW / 2), type: 'fixed' } : undefined),

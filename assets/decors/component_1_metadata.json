@@ -1,0 +1,393 @@
+{
+  "format_version": "1.0",
+  "source_file": "component_1",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 15,
+  "total_meshes": 8,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "[Color_001]",
+      "color": {
+        "r": 196,
+        "g": 196,
+        "b": 196
+      },
+      "transparency": 0.97,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "*97",
+      "color": {
+        "r": 255,
+        "g": 255,
+        "b": 255
+      },
+      "transparency": 0.41000000000000003,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Material~1",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__Group002__Group001__Plane001__Component_155750__3DGeom~1_Layer0": {
+      "name": "3DGeom~1",
+      "definition_name": "3DGeom~1_Defintion#7",
+      "layer": "Layer0",
+      "position_mm": [
+        -70.88,
+        1242.14,
+        1273.07
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group002 / Group001 / Plane001 / Component_155750 / 3DGeom~1"
+    },
+    "mesh_1_ROOT__Group002__Group001__Plane003__Component_155747__3DGeom~2_Layer0": {
+      "name": "3DGeom~2",
+      "definition_name": "3DGeom~2_Defintion#7",
+      "layer": "Layer0",
+      "position_mm": [
+        -104.53,
+        1109.53,
+        1408.11
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group002 / Group001 / Plane003 / Component_155747 / 3DGeom~2"
+    },
+    "mesh_2_ROOT__Group002__Group001__Plane003__Component_155751__3DGeom~3_Layer0_196_196_196_ds": {
+      "name": "3DGeom~3",
+      "definition_name": "3DGeom~3_Defintion#7",
+      "layer": "Layer0",
+      "position_mm": [
+        -104.53,
+        1109.53,
+        1408.11
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group002 / Group001 / Plane003 / Component_155751 / 3DGeom~3"
+    },
+    "mesh_3_ROOT__Group002__Group001__Plane003__Component_155751__3DGeom~3_Layer0_255_255_255_ss": {
+      "name": "3DGeom~3",
+      "definition_name": "3DGeom~3_Defintion#7",
+      "layer": "Layer0",
+      "position_mm": [
+        -104.53,
+        1109.53,
+        1408.11
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group002 / Group001 / Plane003 / Component_155751 / 3DGeom~3"
+    },
+    "mesh_4_ROOT__Group002__Group001__Plane003__Component_155751__3DGeom~3_Layer0_196_196_196_ss": {
+      "name": "3DGeom~3",
+      "definition_name": "3DGeom~3_Defintion#7",
+      "layer": "Layer0",
+      "position_mm": [
+        -104.53,
+        1109.53,
+        1408.11
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group002 / Group001 / Plane003 / Component_155751 / 3DGeom~3"
+    },
+    "mesh_5_ROOT__Group002__Group001__Plane005__Component_155749__3DGeom~4_Layer0_255_255_255_ss": {
+      "name": "3DGeom~4",
+      "definition_name": "3DGeom~4_Defintion#6",
+      "layer": "Layer0",
+      "position_mm": [
+        -109.9,
+        -1051.22,
+        1408.11
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group002 / Group001 / Plane005 / Component_155749 / 3DGeom~4"
+    },
+    "mesh_6_ROOT__Group002__Group001__Plane005__Component_155749__3DGeom~4_Layer0_196_196_196_ss": {
+      "name": "3DGeom~4",
+      "definition_name": "3DGeom~4_Defintion#6",
+      "layer": "Layer0",
+      "position_mm": [
+        -109.9,
+        -1051.22,
+        1408.11
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group002 / Group001 / Plane005 / Component_155749 / 3DGeom~4"
+    },
+    "mesh_7_ROOT__Group002__Group001__Plane005__Component_155748__3DGeom~5_Layer0": {
+      "name": "3DGeom~5",
+      "definition_name": "3DGeom~5_Defintion#6",
+      "layer": "Layer0",
+      "position_mm": [
+        -109.9,
+        -1051.22,
+        1408.11
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / Group002 / Group001 / Plane005 / Component_155748 / 3DGeom~5"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "Group002",
+        "definition_name": "Group6#3",
+        "layer": "Layer0",
+        "position_mm": [
+          -30.26,
+          0.0,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Group001",
+            "definition_name": "Group7#3",
+            "layer": "Layer0",
+            "position_mm": [
+              -30.26,
+              0.0,
+              0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Plane001",
+                "definition_name": "Group8#3",
+                "layer": "Layer0",
+                "position_mm": [
+                  -60.26,
+                  0.0,
+                  0.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_155750",
+                    "definition_name": "Group9#3",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -60.26,
+                      0.0,
+                      0.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~1",
+                        "definition_name": "3DGeom~1_Defintion#7",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          -70.88,
+                          1242.14,
+                          1273.07
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Plane003",
+                "definition_name": "Group10#3",
+                "layer": "Layer0",
+                "position_mm": [
+                  -126.97,
+                  92.51,
+                  0.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_155747",
+                    "definition_name": "Group11#3",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -126.97,
+                      92.51,
+                      0.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~2",
+                        "definition_name": "3DGeom~2_Defintion#7",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          -104.53,
+                          1109.53,
+                          1408.11
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_155751",
+                    "definition_name": "Group12#3",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -126.97,
+                      92.51,
+                      0.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~3",
+                        "definition_name": "3DGeom~3_Defintion#7",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          -104.53,
+                          1109.53,
+                          1408.11
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Plane005",
+                "definition_name": "Group13#3",
+                "layer": "Layer0",
+                "position_mm": [
+                  -132.34,
+                  -0.0,
+                  0.0
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Component_155749",
+                    "definition_name": "Group14#3",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -132.34,
+                      -0.0,
+                      0.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~4",
+                        "definition_name": "3DGeom~4_Defintion#6",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          -109.9,
+                          -1051.22,
+                          1408.11
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Component_155748",
+                    "definition_name": "Group15#3",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      -132.34,
+                      -0.0,
+                      0.0
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "3DGeom~5",
+                        "definition_name": "3DGeom~5_Defintion#6",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          -109.9,
+                          -1051.22,
+                          1408.11
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
