@@ -3161,9 +3161,56 @@
         });
       }
 
-      // Furniture units must always stay visible — cutting front walls allows viewing interior units, never hides them!
+      // Furniture Visibility: Units mounted on / attached to a hidden wall hide with that wall!
+      // Cutting front walls hides both the wall AND its attached cabinets/ledges so the interior is completely unobstructed.
+      // Units on visible walls and in the room interior remain 100% visible!
       furnMeshes.forEach(function (fMesh) {
-        fMesh.visible = true;
+        var fPos = fMesh.position;
+        var hideThisFurn = false;
+
+        for (var wi = 0; wi < wallMeshes.length; wi++) {
+          var wm = wallMeshes[wi];
+          if (wm.visible) continue; // This wall is visible: keep its units visible!
+
+          var uData = wm.userData || {};
+          var wS = uData.start;
+          var wE = uData.end;
+          if (!wS || !wE) continue;
+
+          var dx = wE.x - wS.x;
+          var dy = wE.y - wS.y;
+          var wallLen = Math.hypot(dx, dy);
+          if (wallLen < 1) continue;
+
+          var dirX = dx / wallLen;
+          var dirY = dy / wallLen;
+
+          // Vector from wall start to furniture position in world X-Z
+          var toU = { x: fPos.x - wS.x, y: fPos.z - wS.y };
+          var tProj = (toU.x * dirX + toU.y * dirY);
+          var tNorm = tProj / wallLen;
+
+          // Check if unit is within the wall span (with 150mm margin for edge units)
+          if (tNorm >= -0.1 && tNorm <= 1.1) {
+            // Perpendicular distance from wall centerline
+            var perpX = toU.x - tProj * dirX;
+            var perpY = toU.y - tProj * dirY;
+            var distPerp = Math.hypot(perpX, perpY);
+
+            var furnObj = (fMesh.userData && fMesh.userData.furniture) || {};
+            var fDims = furnObj.dimensions || {};
+            var fDepth = parseFloat(fDims.D) || 600;
+            var wallThick = (uData.wall && uData.wall.thickness) ? uData.wall.thickness : 150;
+            var maxAttachDist = wallThick / 2 + fDepth + 150;
+
+            if (distPerp <= maxAttachDist) {
+              hideThisFurn = true;
+              break;
+            }
+          }
+        }
+
+        fMesh.visible = !hideThisFurn;
       });
     }
 
@@ -5095,6 +5142,37 @@
       camApply();
       if (GL.ok) GL.settle();
     });
+
+    // Wire floating 3D navigation controls (Zoom In, Zoom Out, Reset, Pan)
+    var f3dIn = document.getElementById('float3dZoomIn');
+    var f3dOut = document.getElementById('float3dZoomOut');
+    var f3dReset = document.getElementById('float3dReset');
+    var f3dPan = document.getElementById('float3dPan');
+
+    if (f3dIn) {
+      f3dIn.addEventListener('click', function () {
+        cam.zoom = Math.min(25.0, cam.zoom + 0.16);
+        camApply();
+      });
+    }
+    if (f3dOut) {
+      f3dOut.addEventListener('click', function () {
+        cam.zoom = Math.max(-0.82, cam.zoom - 0.16);
+        camApply();
+      });
+    }
+    if (f3dReset) {
+      f3dReset.addEventListener('click', function () {
+        if (btnCamReset) btnCamReset.click();
+      });
+    }
+    if (f3dPan) {
+      f3dPan.addEventListener('click', function () {
+        var nextMode = (studioCamMode === 'pan') ? 'rotate' : 'pan';
+        setStudioCamMode(nextMode);
+        f3dPan.classList.toggle('is-active', nextMode === 'pan');
+      });
+    }
   })();
 
   /* ══════════ RAIL ══════════ */

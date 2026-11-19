@@ -358,6 +358,93 @@ input,select{font:inherit;color:inherit}
 #view-design.stagebar-collapsed .stagebar-floating-expand-btn{
   display:inline-flex !important;
 }
+
+/* User-Friendly Floating Navigation Overlay (2D & 3D Pan/Zoom) */
+.stage-nav-overlay{
+  position:absolute;
+  right:14px;
+  top:14px;
+  z-index:40;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  background:rgba(15,23,42,0.8);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  padding:5px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.18);
+  box-shadow:0 4px 16px rgba(0,0,0,0.28);
+}
+.stage-nav-btn{
+  width:32px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,0.08);
+  color:#f8fafc;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:6px;
+  font-size:13px;
+  cursor:pointer;
+  transition:all 0.15s ease;
+  user-select:none;
+}
+.stage-nav-btn:hover{
+  background:rgba(255,255,255,0.22);
+  border-color:#38bdf8;
+  color:#ffffff;
+  transform:scale(1.05);
+}
+.stage-nav-btn.is-active{
+  background:#0284c7;
+  border-color:#38bdf8;
+  color:#ffffff;
+}
+
+.plan-nav-overlay{
+  position:absolute;
+  right:16px;
+  bottom:16px;
+  z-index:30;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  padding:5px;
+  border-radius:8px;
+  border:1px solid #cbd5e1;
+  box-shadow:0 4px 14px rgba(0,0,0,0.12);
+}
+.plan-nav-btn{
+  width:32px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f8fafc;
+  color:#1e293b;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  font-size:13px;
+  cursor:pointer;
+  transition:all 0.15s ease;
+  user-select:none;
+}
+.plan-nav-btn:hover{
+  background:#eff6ff;
+  border-color:#2563eb;
+  color:#1d4ed8;
+  transform:scale(1.05);
+}
+.plan-nav-btn.is-active{
+  background:#2563eb;
+  border-color:#1d4ed8;
+  color:#ffffff;
+}
 .stagebar-row{
   display:flex;
   align-items:center;
@@ -4088,6 +4175,13 @@ body.role-employee #adminCreateEmpBox,
           <div id="stage" role="region"
             aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
             <div id="world"></div>
+            <!-- Floating 3D Navigation Controls -->
+            <div class="stage-nav-overlay" id="stageNavOverlay">
+              <button type="button" class="stage-nav-btn" id="float3dZoomIn" title="Zoom In (+)">➕</button>
+              <button type="button" class="stage-nav-btn" id="float3dZoomOut" title="Zoom Out (-)">➖</button>
+              <button type="button" class="stage-nav-btn" id="float3dReset" title="Re-Centre (Home)">🎯</button>
+              <button type="button" class="stage-nav-btn" id="float3dPan" title="Pan View (Right-Click Drag or Left-Click in Pan mode)">✋</button>
+            </div>
           </div>
 
           <!-- Floating Client Presentation HUD Overlay -->
@@ -4625,7 +4719,10 @@ body.role-employee #adminCreateEmpBox,
 
               <div class="plan-tool-divider"></div>
 
-              <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen">🔍 Fit</button>
+              <button class="plan-tool-btn" id="planZoomIn" title="Zoom In (+)">➕ In</button>
+              <button class="plan-tool-btn" id="planZoomOut" title="Zoom Out (-)">➖ Out</button>
+              <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen (Home)">🔍 Fit</button>
+              <button class="plan-tool-btn" id="planPanToolBtn" data-tool="pan" title="Pan Canvas (Hold Space or Drag with Right Mouse Button)">✋ Pan</button>
               <button class="plan-tool-btn" id="planDownload2DPlanBtn" title="Download Detailed Architectural 2D Plan with Dimensions (PNG/Print)" style="background:#0284c7;color:#fff;font-weight:600;border:none;border-radius:4px;padding:4px 10px;display:inline-flex;align-items:center;gap:4px;">📐 Download 2D Plan</button>
             </div>
           </div>
@@ -4661,7 +4758,15 @@ body.role-employee #adminCreateEmpBox,
             </div>
           </aside>
 
-          <div id="planCanvasContainer"></div>
+          <div id="planCanvasContainer" style="position:relative;">
+            <!-- Floating 2D Navigation Overlay (Zoom In, Zoom Out, Fit, Pan) -->
+            <div class="plan-nav-overlay" id="planNavOverlay">
+              <button type="button" class="plan-nav-btn" id="floatPlanZoomIn" title="Zoom In (+)">➕</button>
+              <button type="button" class="plan-nav-btn" id="floatPlanZoomOut" title="Zoom Out (-)">➖</button>
+              <button type="button" class="plan-nav-btn" id="floatPlanZoomFit" title="Fit to Screen (Home)">⛶</button>
+              <button type="button" class="plan-nav-btn" id="floatPlanPan" title="Pan Canvas (Space+Drag or Right-Click Drag)">✋</button>
+            </div>
+          </div>
 
           <!-- ══════ BOTTOM FURNISH UNIT DRAWER / TRAY ══════ -->
           <div class="furn-bottom-tray" id="furnishBottomTray" style="display:none;">
@@ -20008,13 +20113,13 @@ body.role-employee #adminCreateEmpBox,
       var worldPt = self.screenToWorld(mouseScreen);
 
       // Middle mouse button, Spacebar held, or Pan View tool -> Pan
-      if (e.button === 1 || e.spaceKey || self.activeTool === 'pan') {
+      if (e.button === 1 || self.isSpaceDown || self.activeTool === 'pan') {
         if (self.canvas) self.canvas.style.cursor = 'grabbing';
         self.dragState = { type: 'pan', startScreen: mouseScreen, startPan: { x: self.pan.x, y: self.pan.y } };
         return;
       }
 
-      if (e.button === 2) { // Right click cancels / finishes wall chain or divider
+      if (e.button === 2) { // Right click cancels / finishes wall chain or divider, or drag pans!
         if (self.dadoDrawStart) {
           self.dadoDrawStart = null;
           self.render();
@@ -20029,7 +20134,11 @@ body.role-employee #adminCreateEmpBox,
           if (Core.detectRooms) Core.detectRooms(self.project);
           self.pushHistory(wasDiv2 ? 'Cancel Room Divider' : 'Finish Wall Chain');
           self.render();
+          return;
         }
+        self.rightDownScreen = mouseScreen;
+        self.rightDownPan = { x: self.pan.x, y: self.pan.y };
+        self.rightDownTime = Date.now();
         return;
       }
 
@@ -20267,6 +20376,17 @@ body.role-employee #adminCreateEmpBox,
         self.underlay.y = self.dragState.origUnderlayPos.y + dyS / self.zoom;
         self.requestRender();
         return;
+      }
+
+      if (self.rightDownScreen && (e.buttons & 2)) {
+        var rDx = mouseScreen.x - self.rightDownScreen.x;
+        var rDy = mouseScreen.y - self.rightDownScreen.y;
+        if (Math.hypot(rDx, rDy) > 4) {
+          if (!self.dragState || self.dragState.type !== 'pan') {
+            self.dragState = { type: 'pan', startScreen: self.rightDownScreen, startPan: self.rightDownPan };
+            if (self.canvas) self.canvas.style.cursor = 'grabbing';
+          }
+        }
       }
 
       if (self.dragState && self.dragState.type === 'pan') {
@@ -20877,6 +20997,17 @@ body.role-employee #adminCreateEmpBox,
           if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
         }
       }
+      if (e.button === 2 && self.rightDownScreen) {
+        var rDist = Math.hypot(e.clientX - (self.rightDownScreen.x + self.canvas.getBoundingClientRect().left), e.clientY - (self.rightDownScreen.y + self.canvas.getBoundingClientRect().top));
+        var rElapsed = Date.now() - (self.rightDownTime || 0);
+        self.rightDownScreen = null;
+        if (rDist < 6 && rElapsed < 350) {
+          if (self.furniturePreset) self.furniturePreset = null;
+          self.selected = [];
+          self.onSelectionChange([]);
+          self.render();
+        }
+      }
     });
 
     window.addEventListener('keyup', function (e) {
@@ -20884,11 +21015,29 @@ body.role-employee #adminCreateEmpBox,
         self.isShiftDown = false;
         if (self.wallChainStart) self.render();
       }
+      if (e.code === 'Space') {
+        self.isSpaceDown = false;
+        if (!self.dragState && self.canvas) {
+          self.canvas.style.cursor = (self.activeTool === 'pan') ? 'grab' : '';
+        }
+      }
     });
 
     // Keyboard shortcuts (Undo, Redo, Delete, Escape, Number Input)
     window.addEventListener('keydown', function (e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.code === 'Space' && !e.repeat) {
+        self.isSpaceDown = true;
+        if (!self.dragState && self.canvas) {
+          self.canvas.style.cursor = 'grab';
+        }
+      }
+
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'h' || e.key === 'H')) {
+        self.setTool('pan');
+        return;
+      }
 
       // Elevation Tier Shortcuts: Alt + (F, W, L, A) or Ctrl + (F, L, A, W)
       if (e.altKey || e.ctrlKey || e.metaKey) {
@@ -21050,6 +21199,15 @@ body.role-employee #adminCreateEmpBox,
       }
       if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R')) {
         e.preventDefault();
+
+        // 1. If currently placing a new unit from the catalog, rotate the placement ghost preview!
+        if (self.furniturePreset) {
+          self.furnitureRotY = ((self.furnitureRotY || 0) + Math.PI / 2) % (Math.PI * 2);
+          self.render();
+          return;
+        }
+
+        // 2. If furniture units are explicitly selected in 2D, rotate ONLY those selected units!
         var rotated = false;
         for (var s = 0; s < self.selected.length; s++) {
           if (self.selected[s].type === 'furniture') {
@@ -21074,24 +21232,9 @@ body.role-employee #adminCreateEmpBox,
           }
           return;
         }
-        // Fallback: rotate active 3D Studio unit if any
-        if (typeof window !== 'undefined' && window.S && window.S.units && window.S.units[window.S.active]) {
-          var actU = window.S.units[window.S.active];
-          if (actU && actU._furnId && self.project.plan.furniture) {
-            for (var f2 = 0; f2 < self.project.plan.furniture.length; f2++) {
-              if (self.project.plan.furniture[f2].id === actU._furnId) {
-                self.project.plan.furniture[f2].rotY = ((self.project.plan.furniture[f2].rotY || 0) + Math.PI / 2) % (Math.PI * 2);
-                self.pushHistory('Rotate Furniture');
-                self.render();
-                if (window.OrbixUI) {
-                  if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
-                  if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
-                }
-                return;
-              }
-            }
-          }
-        }
+
+        // 3. When NO unit is clicked/selected in 2D, NEVER rotate any background unit!
+        return;
         // Staircase rotation
         for (var sIdx = 0; sIdx < self.selected.length; sIdx++) {
           if (self.selected[sIdx].type === 'stair') {
@@ -22035,7 +22178,8 @@ body.role-employee #adminCreateEmpBox,
     var walls = plan.walls || [];
     var rooms = plan.rooms || [];
     var bestWallSnap = null;
-    var minWallDist = isDecorF ? 150 : 300; // Generous magnetic snap zone (captures cursor when near wall)
+    var isFreeMode = !!(this.isShiftDown || this.forceFreePlacement || this.isAltDown);
+    var minWallDist = isFreeMode ? 0 : (isDecorF ? 60 : 110); // Precise 110mm natural magnetic snap zone (never hijacks from far away!)
     var halfD = fD / 2;
     var halfW = fW / 2;
 
@@ -22265,32 +22409,42 @@ body.role-employee #adminCreateEmpBox,
       if (perpDist < flushDist + minWallDist && t >= -0.15 && t <= 1.15) {
         if (snapDist < minWallDist) {
           minWallDist = snapDist;
-          var wallSnapPos = {
-            x: proj.x + normOut.x * flushDist,
-            y: proj.y + normOut.y * flushDist
-          };
           var normAngle = Math.atan2(normOut.y, normOut.x);
           var cabinetRotY = normAngle - Math.PI / 2;
 
+          var isLedgeItem = (furn.id && /ledge/i.test(furn.id)) || (furn.name && /ledge/i.test(furn.name));
+          var unitRotY = cabinetRotY;
+          var curFlush = flushDist;
+
+          if (isDecorF) {
+            unitRotY = rotY;
+          } else if (isCivilOrPanel || isLedgeItem) {
+            // For vertical ledges and wall paneling, allow rotating 90° with Spacebar so user can place it
+            // either flat on the wall (parallel) or perpendicular to the wall (divider)!
+            var rotDiff = Math.abs(((rotY - cabinetRotY) % Math.PI + Math.PI) % Math.PI);
+            var isPerp = (rotDiff > 0.35 && rotDiff < 2.8);
+            if (isPerp) {
+              unitRotY = cabinetRotY + Math.PI / 2;
+              curFlush = halfT + (fW / 2);
+            }
+          }
+
+          var wallSnapPos = {
+            x: proj.x + normOut.x * curFlush,
+            y: proj.y + normOut.y * curFlush
+          };
+
           bestWallSnap = {
             pos: wallSnapPos,
-            rotY: isDecorF ? rotY : cabinetRotY, // Preserve custom rotation for decor items
+            rotY: unitRotY,
             type: 'wall_snap',
             wall: w,
             proj: proj,
             norm: normOut,
             wDir: wDir,
-            flushDist: flushDist,
+            flushDist: curFlush,
             badgeLabel: '✓ Snapped Flush to Wall'
           };
-        }
-      } else if (perpDist < flushDist && t >= 0 && t <= 1) {
-        // Allow intentional placement inside wall niches, recesses, and cavities
-        var halfWallThick = (w.thickness || 150) / 2;
-        var isInsideNiche = (perpDist <= halfWallThick + 50);
-        if (!this.isShiftDown && !this.forceFreePlacement && !this.isAltDown && !isCivilOrPanel && !isInsideNiche) {
-          pos.x = proj.x + normOut.x * flushDist;
-          pos.y = proj.y + normOut.y * flushDist;
         }
       }
     }
@@ -22493,7 +22647,8 @@ body.role-employee #adminCreateEmpBox,
 
       // If candidate overlaps any occupied interval, push it flush to the nearest edge
       // Ledges, civil panels, and wall panelings mount freely without being pushed away
-      if (!isCivilOrPanel) {
+      if (!isCivilOrPanel && !isFreeMode) {
+        var origCandT = candT;
         var didShift = false;
         for (var iter = 0; iter < 4; iter++) {
           var collided = false;
@@ -22520,6 +22675,11 @@ body.role-employee #adminCreateEmpBox,
           }
           if (!collided) break;
         }
+        // If pushing would fling the unit far away (> 85% of unit width), keep it where user placed it!
+        if (Math.abs(candT - origCandT) > fW * 0.85) {
+          candT = origCandT;
+          didShift = false;
+        }
       }
 
       var finalProj = {
@@ -22544,10 +22704,10 @@ body.role-employee #adminCreateEmpBox,
 
   PlanEditor.prototype.handleFurnitureMouseDown = function (worldPt) {
     if (!this.furniturePreset) return;
-    var snapped = this.snapPoint(worldPt);
+    var clickPt = { x: Math.round(worldPt.x / 10) * 10, y: Math.round(worldPt.y / 10) * 10 };
 
     // Apply smart snapping (jointing to adjacent units or snatching to wall face)
-    var snapRes = this.snapFurniture(this.furniturePreset, snapped.pt, this.furnitureRotY || 0);
+    var snapRes = this.snapFurniture(this.furniturePreset, clickPt, this.furnitureRotY || 0);
     var finalPos = snapRes.pos;
     var finalRotY = snapRes.rotY !== undefined ? snapRes.rotY : (this.furnitureRotY || 0);
 
@@ -22964,6 +23124,26 @@ body.role-employee #adminCreateEmpBox,
     this.ctx.scale(dpr, dpr);
     this.width = w;
     this.height = h;
+    this.render();
+  };
+
+  PlanEditor.prototype.zoomIn = function () {
+    var centerScreen = { x: this.width / 2, y: this.height / 2 };
+    var worldBefore = this.screenToWorld(centerScreen);
+    this.zoom = Math.min(10.0, this.zoom * 1.25);
+    var screenAfter = this.worldToScreen(worldBefore);
+    this.pan.x += (centerScreen.x - screenAfter.x);
+    this.pan.y += (centerScreen.y - screenAfter.y);
+    this.render();
+  };
+
+  PlanEditor.prototype.zoomOut = function () {
+    var centerScreen = { x: this.width / 2, y: this.height / 2 };
+    var worldBefore = this.screenToWorld(centerScreen);
+    this.zoom = Math.max(0.01, this.zoom / 1.25);
+    var screenAfter = this.worldToScreen(worldBefore);
+    this.pan.x += (centerScreen.x - screenAfter.x);
+    this.pan.y += (centerScreen.y - screenAfter.y);
     this.render();
   };
 
@@ -28743,18 +28923,64 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           }
           dUv.needsUpdate = true;
         }
-        var tileF = new THREE.Mesh(dadoGeo, tileMat);
-        tileF.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, wThick / 2 + dadoT / 2);
-        tileF.castShadow = true;
-        tileF.receiveShadow = true;
-        tileF.userData = { isDadoTile: true, thickness: dadoT, wallId: wall.id };
-        group.add(tileF);
-        var tileB = new THREE.Mesh(dadoGeo, tileMat);
-        tileB.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, -wThick / 2 - dadoT / 2);
-        tileB.castShadow = true;
-        tileB.receiveShadow = true;
-        tileB.userData = { isDadoTile: true, thickness: dadoT, wallId: wall.id };
-        group.add(tileB);
+        // Determine whether dado tile should show on Front (+Z) or Back (-Z) face (strictly ONE side!)
+        var dadoSide = wall.dadoSide || 'auto'; // 'front', 'back', or 'auto'
+        if (dadoSide === 'auto') {
+          var planObj = self.currentPlan || (self.currentProject && self.currentProject.plan);
+          var furnList = (planObj && planObj.furniture) || [];
+          var pRooms = (planObj && planObj.rooms) || [];
+          var sideScorePlus = 0, sideScoreMinus = 0;
+
+          var midSegX = sStart + subLen / 2;
+          // In local coordinates, +Z is at +wThick/2, -Z is at -wThick/2
+          // Local to global transform:
+          // X_world = start.x + cos(angle) * midSegX - sin(angle) * localZ
+          // Y_world = start.y + sin(angle) * midSegX + cos(angle) * localZ
+          var testPtGlobalPlus = {
+            x: start.x + Math.cos(angle) * midSegX - Math.sin(angle) * (wThick / 2 + 300),
+            y: start.y + Math.sin(angle) * midSegX + Math.cos(angle) * (wThick / 2 + 300)
+          };
+          var testPtGlobalMinus = {
+            x: start.x + Math.cos(angle) * midSegX + Math.sin(angle) * (wThick / 2 + 300),
+            y: start.y + Math.sin(angle) * midSegX - Math.cos(angle) * (wThick / 2 + 300)
+          };
+
+          for (var fi = 0; fi < furnList.length; fi++) {
+            var fn = furnList[fi];
+            if (!fn || !fn.pos) continue;
+            var dPlus = Math.hypot(fn.pos.x - testPtGlobalPlus.x, fn.pos.y - testPtGlobalPlus.y);
+            var dMinus = Math.hypot(fn.pos.x - testPtGlobalMinus.x, fn.pos.y - testPtGlobalMinus.y);
+            if (dPlus < 500) sideScorePlus += (550 - dPlus);
+            if (dMinus < 500) sideScoreMinus += (550 - dMinus);
+          }
+
+          if (sideScorePlus === 0 && sideScoreMinus === 0 && pRooms.length > 0) {
+            for (var rmi = 0; rmi < pRooms.length; rmi++) {
+              var rPoly = pRooms[rmi].polygon;
+              if (rPoly && Core.Vec2.pointInPolygon(testPtGlobalPlus, rPoly)) sideScorePlus += 100;
+              if (rPoly && Core.Vec2.pointInPolygon(testPtGlobalMinus, rPoly)) sideScoreMinus += 100;
+            }
+          }
+
+          dadoSide = (sideScoreMinus > sideScorePlus) ? 'back' : 'front';
+        }
+
+        if (dadoSide === 'front' || dadoSide === 'both') {
+          var tileF = new THREE.Mesh(dadoGeo, tileMat);
+          tileF.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, wThick / 2 + dadoT / 2);
+          tileF.castShadow = true;
+          tileF.receiveShadow = true;
+          tileF.userData = { isDadoTile: true, thickness: dadoT, wallId: wall.id, side: 'front' };
+          group.add(tileF);
+        }
+        if (dadoSide === 'back' || dadoSide === 'both') {
+          var tileB = new THREE.Mesh(dadoGeo, tileMat);
+          tileB.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, -wThick / 2 - dadoT / 2);
+          tileB.castShadow = true;
+          tileB.receiveShadow = true;
+          tileB.userData = { isDadoTile: true, thickness: dadoT, wallId: wall.id, side: 'back' };
+          group.add(tileB);
+        }
       }
     }
 
@@ -34126,8 +34352,35 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       var btnDelete = document.getElementById('planDelete');
       if (btnDelete) btnDelete.addEventListener('click', function () { self.editor.deleteSelected(); });
 
+      var btnZoomIn = document.getElementById('planZoomIn');
+      var floatZoomIn = document.getElementById('floatPlanZoomIn');
+      function doZoomIn() { if (self.editor && self.editor.zoomIn) self.editor.zoomIn(); }
+      if (btnZoomIn) btnZoomIn.addEventListener('click', doZoomIn);
+      if (floatZoomIn) floatZoomIn.addEventListener('click', doZoomIn);
+
+      var btnZoomOut = document.getElementById('planZoomOut');
+      var floatZoomOut = document.getElementById('floatPlanZoomOut');
+      function doZoomOut() { if (self.editor && self.editor.zoomOut) self.editor.zoomOut(); }
+      if (btnZoomOut) btnZoomOut.addEventListener('click', doZoomOut);
+      if (floatZoomOut) floatZoomOut.addEventListener('click', doZoomOut);
+
       var btnZoomFit = document.getElementById('planZoomFit');
-      if (btnZoomFit) btnZoomFit.addEventListener('click', function () { self.editor.zoomFit(); });
+      var floatZoomFit = document.getElementById('floatPlanZoomFit');
+      function doZoomFit() { if (self.editor && self.editor.zoomFit) self.editor.zoomFit(); }
+      if (btnZoomFit) btnZoomFit.addEventListener('click', doZoomFit);
+      if (floatZoomFit) floatZoomFit.addEventListener('click', doZoomFit);
+
+      var btnPanTool = document.getElementById('planPanToolBtn');
+      var floatPan = document.getElementById('floatPlanPan');
+      function doTogglePan() {
+        if (!self.editor) return;
+        var nextTool = (self.editor.activeTool === 'pan') ? 'select' : 'pan';
+        self.editor.setTool(nextTool);
+        if (floatPan) floatPan.classList.toggle('is-active', nextTool === 'pan');
+        if (btnPanTool) btnPanTool.classList.toggle('is-active', nextTool === 'pan');
+      }
+      if (btnPanTool) btnPanTool.addEventListener('click', doTogglePan);
+      if (floatPan) floatPan.addEventListener('click', doTogglePan);
 
       var btnDownload2D = document.getElementById('planDownload2DPlanBtn');
       if (btnDownload2D) {
@@ -35387,7 +35640,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           '  </div>' +
           '  <div style="display:flex;gap:6px;margin-top:6px;align-items:center;">' +
           '    <button type="button" id="inspWallDadoFull" style="padding:3px 8px;font-size:10.5px;font-weight:600;border:1px solid #86efac;background:#dcfce7;color:#166534;border-radius:4px;cursor:pointer;">Reset Full Wall</button>' +
-          '    <span style="font-size:10px;color:#15803d;">Max ' + Math.round(lenMm) + ' mm</span>' +
+          '    <button type="button" id="inspWallDadoFlip" style="padding:3px 8px;font-size:10.5px;font-weight:600;border:1px solid #93c5fd;background:#eff6ff;color:#1d4ed8;border-radius:4px;cursor:pointer;" title="Flip dado tile to other side of wall">⇄ Flip Side (' + (w.dadoSide === 'back' ? 'Back' : (w.dadoSide === 'front' ? 'Front' : 'Auto')) + ')</button>' +
+          '    <span style="font-size:10px;color:#15803d;margin-left:auto;">Max ' + Math.round(lenMm) + ' mm</span>' +
           '  </div>' +
           '  <div style="margin-top:8px;">' +
           '    <label style="font-size:11px;font-weight:600;color:#166534;display:block;margin-bottom:3px;">Tile Pattern</label>' +
@@ -35529,6 +35783,20 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             self.renderInspector(ed.selected);
             if (self.saveToLocalStorage) self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var elWallDadoFlip = document.getElementById('inspWallDadoFlip');
+        if (elWallDadoFlip) {
+          elWallDadoFlip.addEventListener('click', function () {
+            var curSide = w.dadoSide || 'front';
+            w.dadoSide = (curSide === 'front' ? 'back' : 'front');
+            ed.pushHistory('Flip Wall Dado Side');
+            self.renderInspector(ed.selected);
+            if (self.saveToLocalStorage) self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+            if (typeof window.toast === 'function') {
+              window.toast('🧱 Dado Tile Flipped to ' + (w.dadoSide === 'front' ? 'Front' : 'Back') + ' Face');
+            }
           });
         }
         var elWallDadoStyle = document.getElementById('inspWallDadoStyle');
@@ -46494,9 +46762,56 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         });
       }
 
-      // Furniture units must always stay visible — cutting front walls allows viewing interior units, never hides them!
+      // Furniture Visibility: Units mounted on / attached to a hidden wall hide with that wall!
+      // Cutting front walls hides both the wall AND its attached cabinets/ledges so the interior is completely unobstructed.
+      // Units on visible walls and in the room interior remain 100% visible!
       furnMeshes.forEach(function (fMesh) {
-        fMesh.visible = true;
+        var fPos = fMesh.position;
+        var hideThisFurn = false;
+
+        for (var wi = 0; wi < wallMeshes.length; wi++) {
+          var wm = wallMeshes[wi];
+          if (wm.visible) continue; // This wall is visible: keep its units visible!
+
+          var uData = wm.userData || {};
+          var wS = uData.start;
+          var wE = uData.end;
+          if (!wS || !wE) continue;
+
+          var dx = wE.x - wS.x;
+          var dy = wE.y - wS.y;
+          var wallLen = Math.hypot(dx, dy);
+          if (wallLen < 1) continue;
+
+          var dirX = dx / wallLen;
+          var dirY = dy / wallLen;
+
+          // Vector from wall start to furniture position in world X-Z
+          var toU = { x: fPos.x - wS.x, y: fPos.z - wS.y };
+          var tProj = (toU.x * dirX + toU.y * dirY);
+          var tNorm = tProj / wallLen;
+
+          // Check if unit is within the wall span (with 150mm margin for edge units)
+          if (tNorm >= -0.1 && tNorm <= 1.1) {
+            // Perpendicular distance from wall centerline
+            var perpX = toU.x - tProj * dirX;
+            var perpY = toU.y - tProj * dirY;
+            var distPerp = Math.hypot(perpX, perpY);
+
+            var furnObj = (fMesh.userData && fMesh.userData.furniture) || {};
+            var fDims = furnObj.dimensions || {};
+            var fDepth = parseFloat(fDims.D) || 600;
+            var wallThick = (uData.wall && uData.wall.thickness) ? uData.wall.thickness : 150;
+            var maxAttachDist = wallThick / 2 + fDepth + 150;
+
+            if (distPerp <= maxAttachDist) {
+              hideThisFurn = true;
+              break;
+            }
+          }
+        }
+
+        fMesh.visible = !hideThisFurn;
       });
     }
 
@@ -48428,6 +48743,37 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       camApply();
       if (GL.ok) GL.settle();
     });
+
+    // Wire floating 3D navigation controls (Zoom In, Zoom Out, Reset, Pan)
+    var f3dIn = document.getElementById('float3dZoomIn');
+    var f3dOut = document.getElementById('float3dZoomOut');
+    var f3dReset = document.getElementById('float3dReset');
+    var f3dPan = document.getElementById('float3dPan');
+
+    if (f3dIn) {
+      f3dIn.addEventListener('click', function () {
+        cam.zoom = Math.min(25.0, cam.zoom + 0.16);
+        camApply();
+      });
+    }
+    if (f3dOut) {
+      f3dOut.addEventListener('click', function () {
+        cam.zoom = Math.max(-0.82, cam.zoom - 0.16);
+        camApply();
+      });
+    }
+    if (f3dReset) {
+      f3dReset.addEventListener('click', function () {
+        if (btnCamReset) btnCamReset.click();
+      });
+    }
+    if (f3dPan) {
+      f3dPan.addEventListener('click', function () {
+        var nextMode = (studioCamMode === 'pan') ? 'rotate' : 'pan';
+        setStudioCamMode(nextMode);
+        f3dPan.classList.toggle('is-active', nextMode === 'pan');
+      });
+    }
   })();
 
   /* ══════════ RAIL ══════════ */

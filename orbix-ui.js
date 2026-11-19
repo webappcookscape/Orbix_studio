@@ -536,8 +536,35 @@
       var btnDelete = document.getElementById('planDelete');
       if (btnDelete) btnDelete.addEventListener('click', function () { self.editor.deleteSelected(); });
 
+      var btnZoomIn = document.getElementById('planZoomIn');
+      var floatZoomIn = document.getElementById('floatPlanZoomIn');
+      function doZoomIn() { if (self.editor && self.editor.zoomIn) self.editor.zoomIn(); }
+      if (btnZoomIn) btnZoomIn.addEventListener('click', doZoomIn);
+      if (floatZoomIn) floatZoomIn.addEventListener('click', doZoomIn);
+
+      var btnZoomOut = document.getElementById('planZoomOut');
+      var floatZoomOut = document.getElementById('floatPlanZoomOut');
+      function doZoomOut() { if (self.editor && self.editor.zoomOut) self.editor.zoomOut(); }
+      if (btnZoomOut) btnZoomOut.addEventListener('click', doZoomOut);
+      if (floatZoomOut) floatZoomOut.addEventListener('click', doZoomOut);
+
       var btnZoomFit = document.getElementById('planZoomFit');
-      if (btnZoomFit) btnZoomFit.addEventListener('click', function () { self.editor.zoomFit(); });
+      var floatZoomFit = document.getElementById('floatPlanZoomFit');
+      function doZoomFit() { if (self.editor && self.editor.zoomFit) self.editor.zoomFit(); }
+      if (btnZoomFit) btnZoomFit.addEventListener('click', doZoomFit);
+      if (floatZoomFit) floatZoomFit.addEventListener('click', doZoomFit);
+
+      var btnPanTool = document.getElementById('planPanToolBtn');
+      var floatPan = document.getElementById('floatPlanPan');
+      function doTogglePan() {
+        if (!self.editor) return;
+        var nextTool = (self.editor.activeTool === 'pan') ? 'select' : 'pan';
+        self.editor.setTool(nextTool);
+        if (floatPan) floatPan.classList.toggle('is-active', nextTool === 'pan');
+        if (btnPanTool) btnPanTool.classList.toggle('is-active', nextTool === 'pan');
+      }
+      if (btnPanTool) btnPanTool.addEventListener('click', doTogglePan);
+      if (floatPan) floatPan.addEventListener('click', doTogglePan);
 
       var btnDownload2D = document.getElementById('planDownload2DPlanBtn');
       if (btnDownload2D) {
@@ -1797,7 +1824,8 @@
           '  </div>' +
           '  <div style="display:flex;gap:6px;margin-top:6px;align-items:center;">' +
           '    <button type="button" id="inspWallDadoFull" style="padding:3px 8px;font-size:10.5px;font-weight:600;border:1px solid #86efac;background:#dcfce7;color:#166534;border-radius:4px;cursor:pointer;">Reset Full Wall</button>' +
-          '    <span style="font-size:10px;color:#15803d;">Max ' + Math.round(lenMm) + ' mm</span>' +
+          '    <button type="button" id="inspWallDadoFlip" style="padding:3px 8px;font-size:10.5px;font-weight:600;border:1px solid #93c5fd;background:#eff6ff;color:#1d4ed8;border-radius:4px;cursor:pointer;" title="Flip dado tile to other side of wall">⇄ Flip Side (' + (w.dadoSide === 'back' ? 'Back' : (w.dadoSide === 'front' ? 'Front' : 'Auto')) + ')</button>' +
+          '    <span style="font-size:10px;color:#15803d;margin-left:auto;">Max ' + Math.round(lenMm) + ' mm</span>' +
           '  </div>' +
           '  <div style="margin-top:8px;">' +
           '    <label style="font-size:11px;font-weight:600;color:#166534;display:block;margin-bottom:3px;">Tile Pattern</label>' +
@@ -1939,6 +1967,20 @@
             self.renderInspector(ed.selected);
             if (self.saveToLocalStorage) self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
+          });
+        }
+        var elWallDadoFlip = document.getElementById('inspWallDadoFlip');
+        if (elWallDadoFlip) {
+          elWallDadoFlip.addEventListener('click', function () {
+            var curSide = w.dadoSide || 'front';
+            w.dadoSide = (curSide === 'front' ? 'back' : 'front');
+            ed.pushHistory('Flip Wall Dado Side');
+            self.renderInspector(ed.selected);
+            if (self.saveToLocalStorage) self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true);
+            if (typeof window.toast === 'function') {
+              window.toast('🧱 Dado Tile Flipped to ' + (w.dadoSide === 'front' ? 'Front' : 'Back') + ' Face');
+            }
           });
         }
         var elWallDadoStyle = document.getElementById('inspWallDadoStyle');

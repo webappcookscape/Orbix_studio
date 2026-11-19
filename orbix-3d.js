@@ -1499,18 +1499,64 @@
           }
           dUv.needsUpdate = true;
         }
-        var tileF = new THREE.Mesh(dadoGeo, tileMat);
-        tileF.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, wThick / 2 + dadoT / 2);
-        tileF.castShadow = true;
-        tileF.receiveShadow = true;
-        tileF.userData = { isDadoTile: true, thickness: dadoT, wallId: wall.id };
-        group.add(tileF);
-        var tileB = new THREE.Mesh(dadoGeo, tileMat);
-        tileB.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, -wThick / 2 - dadoT / 2);
-        tileB.castShadow = true;
-        tileB.receiveShadow = true;
-        tileB.userData = { isDadoTile: true, thickness: dadoT, wallId: wall.id };
-        group.add(tileB);
+        // Determine whether dado tile should show on Front (+Z) or Back (-Z) face (strictly ONE side!)
+        var dadoSide = wall.dadoSide || 'auto'; // 'front', 'back', or 'auto'
+        if (dadoSide === 'auto') {
+          var planObj = self.currentPlan || (self.currentProject && self.currentProject.plan);
+          var furnList = (planObj && planObj.furniture) || [];
+          var pRooms = (planObj && planObj.rooms) || [];
+          var sideScorePlus = 0, sideScoreMinus = 0;
+
+          var midSegX = sStart + subLen / 2;
+          // In local coordinates, +Z is at +wThick/2, -Z is at -wThick/2
+          // Local to global transform:
+          // X_world = start.x + cos(angle) * midSegX - sin(angle) * localZ
+          // Y_world = start.y + sin(angle) * midSegX + cos(angle) * localZ
+          var testPtGlobalPlus = {
+            x: start.x + Math.cos(angle) * midSegX - Math.sin(angle) * (wThick / 2 + 300),
+            y: start.y + Math.sin(angle) * midSegX + Math.cos(angle) * (wThick / 2 + 300)
+          };
+          var testPtGlobalMinus = {
+            x: start.x + Math.cos(angle) * midSegX + Math.sin(angle) * (wThick / 2 + 300),
+            y: start.y + Math.sin(angle) * midSegX - Math.cos(angle) * (wThick / 2 + 300)
+          };
+
+          for (var fi = 0; fi < furnList.length; fi++) {
+            var fn = furnList[fi];
+            if (!fn || !fn.pos) continue;
+            var dPlus = Math.hypot(fn.pos.x - testPtGlobalPlus.x, fn.pos.y - testPtGlobalPlus.y);
+            var dMinus = Math.hypot(fn.pos.x - testPtGlobalMinus.x, fn.pos.y - testPtGlobalMinus.y);
+            if (dPlus < 500) sideScorePlus += (550 - dPlus);
+            if (dMinus < 500) sideScoreMinus += (550 - dMinus);
+          }
+
+          if (sideScorePlus === 0 && sideScoreMinus === 0 && pRooms.length > 0) {
+            for (var rmi = 0; rmi < pRooms.length; rmi++) {
+              var rPoly = pRooms[rmi].polygon;
+              if (rPoly && Core.Vec2.pointInPolygon(testPtGlobalPlus, rPoly)) sideScorePlus += 100;
+              if (rPoly && Core.Vec2.pointInPolygon(testPtGlobalMinus, rPoly)) sideScoreMinus += 100;
+            }
+          }
+
+          dadoSide = (sideScoreMinus > sideScorePlus) ? 'back' : 'front';
+        }
+
+        if (dadoSide === 'front' || dadoSide === 'both') {
+          var tileF = new THREE.Mesh(dadoGeo, tileMat);
+          tileF.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, wThick / 2 + dadoT / 2);
+          tileF.castShadow = true;
+          tileF.receiveShadow = true;
+          tileF.userData = { isDadoTile: true, thickness: dadoT, wallId: wall.id, side: 'front' };
+          group.add(tileF);
+        }
+        if (dadoSide === 'back' || dadoSide === 'both') {
+          var tileB = new THREE.Mesh(dadoGeo, tileMat);
+          tileB.position.set(sStart + subLen / 2, dadoBottom + dadoH / 2, -wThick / 2 - dadoT / 2);
+          tileB.castShadow = true;
+          tileB.receiveShadow = true;
+          tileB.userData = { isDadoTile: true, thickness: dadoT, wallId: wall.id, side: 'back' };
+          group.add(tileB);
+        }
       }
     }
 

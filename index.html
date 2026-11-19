@@ -225,6 +225,13 @@
           <div id="stage" role="region"
             aria-label="Cupboard preview — drag to orbit, scroll to zoom, tap a door to open it">
             <div id="world"></div>
+            <!-- Floating 3D Navigation Controls -->
+            <div class="stage-nav-overlay" id="stageNavOverlay">
+              <button type="button" class="stage-nav-btn" id="float3dZoomIn" title="Zoom In (+)">➕</button>
+              <button type="button" class="stage-nav-btn" id="float3dZoomOut" title="Zoom Out (-)">➖</button>
+              <button type="button" class="stage-nav-btn" id="float3dReset" title="Re-Centre (Home)">🎯</button>
+              <button type="button" class="stage-nav-btn" id="float3dPan" title="Pan View (Right-Click Drag or Left-Click in Pan mode)">✋</button>
+            </div>
           </div>
 
           <!-- Floating Client Presentation HUD Overlay -->
@@ -762,7 +769,10 @@
 
               <div class="plan-tool-divider"></div>
 
-              <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen">🔍 Fit</button>
+              <button class="plan-tool-btn" id="planZoomIn" title="Zoom In (+)">➕ In</button>
+              <button class="plan-tool-btn" id="planZoomOut" title="Zoom Out (-)">➖ Out</button>
+              <button class="plan-tool-btn" id="planZoomFit" title="Fit to Screen (Home)">🔍 Fit</button>
+              <button class="plan-tool-btn" id="planPanToolBtn" data-tool="pan" title="Pan Canvas (Hold Space or Drag with Right Mouse Button)">✋ Pan</button>
               <button class="plan-tool-btn" id="planDownload2DPlanBtn" title="Download Detailed Architectural 2D Plan with Dimensions (PNG/Print)" style="background:#0284c7;color:#fff;font-weight:600;border:none;border-radius:4px;padding:4px 10px;display:inline-flex;align-items:center;gap:4px;">📐 Download 2D Plan</button>
             </div>
           </div>
@@ -798,7 +808,15 @@
             </div>
           </aside>
 
-          <div id="planCanvasContainer"></div>
+          <div id="planCanvasContainer" style="position:relative;">
+            <!-- Floating 2D Navigation Overlay (Zoom In, Zoom Out, Fit, Pan) -->
+            <div class="plan-nav-overlay" id="planNavOverlay">
+              <button type="button" class="plan-nav-btn" id="floatPlanZoomIn" title="Zoom In (+)">➕</button>
+              <button type="button" class="plan-nav-btn" id="floatPlanZoomOut" title="Zoom Out (-)">➖</button>
+              <button type="button" class="plan-nav-btn" id="floatPlanZoomFit" title="Fit to Screen (Home)">⛶</button>
+              <button type="button" class="plan-nav-btn" id="floatPlanPan" title="Pan Canvas (Space+Drag or Right-Click Drag)">✋</button>
+            </div>
+          </div>
 
           <!-- ══════ BOTTOM FURNISH UNIT DRAWER / TRAY ══════ -->
           <div class="furn-bottom-tray" id="furnishBottomTray" style="display:none;">

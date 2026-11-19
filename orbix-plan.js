@@ -1362,13 +1362,13 @@
       var worldPt = self.screenToWorld(mouseScreen);
 
       // Middle mouse button, Spacebar held, or Pan View tool -> Pan
-      if (e.button === 1 || e.spaceKey || self.activeTool === 'pan') {
+      if (e.button === 1 || self.isSpaceDown || self.activeTool === 'pan') {
         if (self.canvas) self.canvas.style.cursor = 'grabbing';
         self.dragState = { type: 'pan', startScreen: mouseScreen, startPan: { x: self.pan.x, y: self.pan.y } };
         return;
       }
 
-      if (e.button === 2) { // Right click cancels / finishes wall chain or divider
+      if (e.button === 2) { // Right click cancels / finishes wall chain or divider, or drag pans!
         if (self.dadoDrawStart) {
           self.dadoDrawStart = null;
           self.render();
@@ -1383,7 +1383,11 @@
           if (Core.detectRooms) Core.detectRooms(self.project);
           self.pushHistory(wasDiv2 ? 'Cancel Room Divider' : 'Finish Wall Chain');
           self.render();
+          return;
         }
+        self.rightDownScreen = mouseScreen;
+        self.rightDownPan = { x: self.pan.x, y: self.pan.y };
+        self.rightDownTime = Date.now();
         return;
       }
 
@@ -1621,6 +1625,17 @@
         self.underlay.y = self.dragState.origUnderlayPos.y + dyS / self.zoom;
         self.requestRender();
         return;
+      }
+
+      if (self.rightDownScreen && (e.buttons & 2)) {
+        var rDx = mouseScreen.x - self.rightDownScreen.x;
+        var rDy = mouseScreen.y - self.rightDownScreen.y;
+        if (Math.hypot(rDx, rDy) > 4) {
+          if (!self.dragState || self.dragState.type !== 'pan') {
+            self.dragState = { type: 'pan', startScreen: self.rightDownScreen, startPan: self.rightDownPan };
+            if (self.canvas) self.canvas.style.cursor = 'grabbing';
+          }
+        }
       }
 
       if (self.dragState && self.dragState.type === 'pan') {
@@ -2231,6 +2246,17 @@
           if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
         }
       }
+      if (e.button === 2 && self.rightDownScreen) {
+        var rDist = Math.hypot(e.clientX - (self.rightDownScreen.x + self.canvas.getBoundingClientRect().left), e.clientY - (self.rightDownScreen.y + self.canvas.getBoundingClientRect().top));
+        var rElapsed = Date.now() - (self.rightDownTime || 0);
+        self.rightDownScreen = null;
+        if (rDist < 6 && rElapsed < 350) {
+          if (self.furniturePreset) self.furniturePreset = null;
+          self.selected = [];
+          self.onSelectionChange([]);
+          self.render();
+        }
+      }
     });
 
     window.addEventListener('keyup', function (e) {
@@ -2238,11 +2264,29 @@
         self.isShiftDown = false;
         if (self.wallChainStart) self.render();
       }
+      if (e.code === 'Space') {
+        self.isSpaceDown = false;
+        if (!self.dragState && self.canvas) {
+          self.canvas.style.cursor = (self.activeTool === 'pan') ? 'grab' : '';
+        }
+      }
     });
 
     // Keyboard shortcuts (Undo, Redo, Delete, Escape, Number Input)
     window.addEventListener('keydown', function (e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.code === 'Space' && !e.repeat) {
+        self.isSpaceDown = true;
+        if (!self.dragState && self.canvas) {
+          self.canvas.style.cursor = 'grab';
+        }
+      }
+
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'h' || e.key === 'H')) {
+        self.setTool('pan');
+        return;
+      }
 
       // Elevation Tier Shortcuts: Alt + (F, W, L, A) or Ctrl + (F, L, A, W)
       if (e.altKey || e.ctrlKey || e.metaKey) {
@@ -2404,6 +2448,15 @@
       }
       if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R')) {
         e.preventDefault();
+
+        // 1. If currently placing a new unit from the catalog, rotate the placement ghost preview!
+        if (self.furniturePreset) {
+          self.furnitureRotY = ((self.furnitureRotY || 0) + Math.PI / 2) % (Math.PI * 2);
+          self.render();
+          return;
+        }
+
+        // 2. If furniture units are explicitly selected in 2D, rotate ONLY those selected units!
         var rotated = false;
         for (var s = 0; s < self.selected.length; s++) {
           if (self.selected[s].type === 'furniture') {
@@ -2428,24 +2481,9 @@
           }
           return;
         }
-        // Fallback: rotate active 3D Studio unit if any
-        if (typeof window !== 'undefined' && window.S && window.S.units && window.S.units[window.S.active]) {
-          var actU = window.S.units[window.S.active];
-          if (actU && actU._furnId && self.project.plan.furniture) {
-            for (var f2 = 0; f2 < self.project.plan.furniture.length; f2++) {
-              if (self.project.plan.furniture[f2].id === actU._furnId) {
-                self.project.plan.furniture[f2].rotY = ((self.project.plan.furniture[f2].rotY || 0) + Math.PI / 2) % (Math.PI * 2);
-                self.pushHistory('Rotate Furniture');
-                self.render();
-                if (window.OrbixUI) {
-                  if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
-                  if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
-                }
-                return;
-              }
-            }
-          }
-        }
+
+        // 3. When NO unit is clicked/selected in 2D, NEVER rotate any background unit!
+        return;
         // Staircase rotation
         for (var sIdx = 0; sIdx < self.selected.length; sIdx++) {
           if (self.selected[sIdx].type === 'stair') {
@@ -3389,7 +3427,8 @@
     var walls = plan.walls || [];
     var rooms = plan.rooms || [];
     var bestWallSnap = null;
-    var minWallDist = isDecorF ? 150 : 300; // Generous magnetic snap zone (captures cursor when near wall)
+    var isFreeMode = !!(this.isShiftDown || this.forceFreePlacement || this.isAltDown);
+    var minWallDist = isFreeMode ? 0 : (isDecorF ? 60 : 110); // Precise 110mm natural magnetic snap zone (never hijacks from far away!)
     var halfD = fD / 2;
     var halfW = fW / 2;
 
@@ -3619,32 +3658,42 @@
       if (perpDist < flushDist + minWallDist && t >= -0.15 && t <= 1.15) {
         if (snapDist < minWallDist) {
           minWallDist = snapDist;
-          var wallSnapPos = {
-            x: proj.x + normOut.x * flushDist,
-            y: proj.y + normOut.y * flushDist
-          };
           var normAngle = Math.atan2(normOut.y, normOut.x);
           var cabinetRotY = normAngle - Math.PI / 2;
 
+          var isLedgeItem = (furn.id && /ledge/i.test(furn.id)) || (furn.name && /ledge/i.test(furn.name));
+          var unitRotY = cabinetRotY;
+          var curFlush = flushDist;
+
+          if (isDecorF) {
+            unitRotY = rotY;
+          } else if (isCivilOrPanel || isLedgeItem) {
+            // For vertical ledges and wall paneling, allow rotating 90° with Spacebar so user can place it
+            // either flat on the wall (parallel) or perpendicular to the wall (divider)!
+            var rotDiff = Math.abs(((rotY - cabinetRotY) % Math.PI + Math.PI) % Math.PI);
+            var isPerp = (rotDiff > 0.35 && rotDiff < 2.8);
+            if (isPerp) {
+              unitRotY = cabinetRotY + Math.PI / 2;
+              curFlush = halfT + (fW / 2);
+            }
+          }
+
+          var wallSnapPos = {
+            x: proj.x + normOut.x * curFlush,
+            y: proj.y + normOut.y * curFlush
+          };
+
           bestWallSnap = {
             pos: wallSnapPos,
-            rotY: isDecorF ? rotY : cabinetRotY, // Preserve custom rotation for decor items
+            rotY: unitRotY,
             type: 'wall_snap',
             wall: w,
             proj: proj,
             norm: normOut,
             wDir: wDir,
-            flushDist: flushDist,
+            flushDist: curFlush,
             badgeLabel: '✓ Snapped Flush to Wall'
           };
-        }
-      } else if (perpDist < flushDist && t >= 0 && t <= 1) {
-        // Allow intentional placement inside wall niches, recesses, and cavities
-        var halfWallThick = (w.thickness || 150) / 2;
-        var isInsideNiche = (perpDist <= halfWallThick + 50);
-        if (!this.isShiftDown && !this.forceFreePlacement && !this.isAltDown && !isCivilOrPanel && !isInsideNiche) {
-          pos.x = proj.x + normOut.x * flushDist;
-          pos.y = proj.y + normOut.y * flushDist;
         }
       }
     }
@@ -3847,7 +3896,8 @@
 
       // If candidate overlaps any occupied interval, push it flush to the nearest edge
       // Ledges, civil panels, and wall panelings mount freely without being pushed away
-      if (!isCivilOrPanel) {
+      if (!isCivilOrPanel && !isFreeMode) {
+        var origCandT = candT;
         var didShift = false;
         for (var iter = 0; iter < 4; iter++) {
           var collided = false;
@@ -3874,6 +3924,11 @@
           }
           if (!collided) break;
         }
+        // If pushing would fling the unit far away (> 85% of unit width), keep it where user placed it!
+        if (Math.abs(candT - origCandT) > fW * 0.85) {
+          candT = origCandT;
+          didShift = false;
+        }
       }
 
       var finalProj = {
@@ -3898,10 +3953,10 @@
 
   PlanEditor.prototype.handleFurnitureMouseDown = function (worldPt) {
     if (!this.furniturePreset) return;
-    var snapped = this.snapPoint(worldPt);
+    var clickPt = { x: Math.round(worldPt.x / 10) * 10, y: Math.round(worldPt.y / 10) * 10 };
 
     // Apply smart snapping (jointing to adjacent units or snatching to wall face)
-    var snapRes = this.snapFurniture(this.furniturePreset, snapped.pt, this.furnitureRotY || 0);
+    var snapRes = this.snapFurniture(this.furniturePreset, clickPt, this.furnitureRotY || 0);
     var finalPos = snapRes.pos;
     var finalRotY = snapRes.rotY !== undefined ? snapRes.rotY : (this.furnitureRotY || 0);
 
@@ -4318,6 +4373,26 @@
     this.ctx.scale(dpr, dpr);
     this.width = w;
     this.height = h;
+    this.render();
+  };
+
+  PlanEditor.prototype.zoomIn = function () {
+    var centerScreen = { x: this.width / 2, y: this.height / 2 };
+    var worldBefore = this.screenToWorld(centerScreen);
+    this.zoom = Math.min(10.0, this.zoom * 1.25);
+    var screenAfter = this.worldToScreen(worldBefore);
+    this.pan.x += (centerScreen.x - screenAfter.x);
+    this.pan.y += (centerScreen.y - screenAfter.y);
+    this.render();
+  };
+
+  PlanEditor.prototype.zoomOut = function () {
+    var centerScreen = { x: this.width / 2, y: this.height / 2 };
+    var worldBefore = this.screenToWorld(centerScreen);
+    this.zoom = Math.max(0.01, this.zoom / 1.25);
+    var screenAfter = this.worldToScreen(worldBefore);
+    this.pan.x += (centerScreen.x - screenAfter.x);
+    this.pan.y += (centerScreen.y - screenAfter.y);
     this.render();
   };
 
