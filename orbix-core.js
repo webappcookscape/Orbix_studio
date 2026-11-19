@@ -860,11 +860,16 @@
     if (checkId === 'wfm60-roll' || /rolling\s*shutter|wfm.*roll/i.test(nm + ' ' + checkId) || (opts.unitConfig && (opts.unitConfig.isRollingShutter || opts.unitConfig.shutterType === 'rolling_shutter'))) {
       defElev = 750;
     } else if (checkId === 'ledge-std' || /^ledge(-std)?$/i.test(checkId) || nm === 'ledge') {
-      defElev = 750;
+      defElev = 1200;
     } else if (checkId === 'ledge-ctop' || /ledge[-_ ]*c(ounter)?top/i.test(nm + ' ' + checkId)) {
-      defElev = 750;
+      defElev = 850;
     } else if (checkId === 'ledge-vert' || /vert(ical)?[-_ ]*ledge/i.test(nm + ' ' + checkId)) {
       defElev = 0;
+      if (opts.dimensions && opts.dimensions.W > opts.dimensions.D && opts.dimensions.W >= 500 && opts.dimensions.D <= 50) {
+        var tempW = opts.dimensions.W;
+        opts.dimensions.W = opts.dimensions.D;
+        opts.dimensions.D = tempW;
+      }
     } else if (checkId === 'pnl-back' || /back[-_ ]*panel/i.test(nm + ' ' + checkId)) {
       defElev = 300;
     } else if (checkId === 'pnl-wall' || /wall[-_ ]*panel/i.test(nm + ' ' + checkId)) {
@@ -3010,6 +3015,58 @@
      ───────────────────────────────────────────────────────────────────────────── */
   var FURNITURE_CATALOG = [
   {
+    "id": "ctvb-60",
+    "code": "ctvb-60",
+    "name": "CROCKERY/TV BASE 600",
+    "modelType": "tv_unit_cabinet",
+    "category": "crockery",
+    "costCategory": "TV Unit Cabinet",
+    "areaSqft": 4.84376,
+    "icon": "📺",
+    "dimensions": {
+      "W": 600,
+      "H": 750,
+      "D": 450
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "BLUE",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "hasLegs": true,
+      "legs": 100,
+      "mountType": "floor",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707",
+      "plinthH": 100
+    },
+    "pricingOverrides": {
+      "baseRate": 4666.0
+    },
+    "customRate": 4666.0,
+    "elevation": 0
+  },
+  {
     "id": "ctvb-1d",
     "code": "ctvb-1d",
     "name": "CROCKERY/TV BASE 1DOOR",
@@ -3370,6 +3427,206 @@
       "baseRate": 11444.84
     },
     "customRate": 11444.84,
+    "elevation": 1500
+  },
+  {
+    "id": "ctvw-wm-gl-75",
+    "code": "WM-GL-75",
+    "name": "CROCKERY/TV WM-GL-75",
+    "modelType": "tv_unit_cabinet",
+    "category": "crockery",
+    "costCategory": "TV Unit Cabinet",
+    "areaSqft": 4.84376,
+    "icon": "🎛️",
+    "dimensions": {
+      "W": 750,
+      "H": 600,
+      "D": 300
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 2,
+      "doorType": "hinged",
+      "dstyle": "glass",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "mountType": "wall",
+      "ctype": "kwall",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 7483.61
+    },
+    "customRate": 7483.61,
+    "elevation": 1500
+  },
+  {
+    "id": "wm-gl-75",
+    "code": "wm-gl-75",
+    "name": "CROCKERY/TV WM-GL-75",
+    "modelType": "tv_unit_cabinet",
+    "category": "crockery",
+    "costCategory": "TV Unit Cabinet",
+    "areaSqft": 4.84376,
+    "icon": "🎛️",
+    "dimensions": {
+      "W": 750,
+      "H": 600,
+      "D": 300
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 2,
+      "doorType": "hinged",
+      "dstyle": "glass",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "mountType": "wall",
+      "ctype": "kwall",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 7483.61
+    },
+    "customRate": 7483.61,
+    "elevation": 1500
+  },
+  {
+    "id": "ctvw-wm-gl-45",
+    "code": "WM-GL-45",
+    "name": "CROCKERY/TV WM-GL-45",
+    "modelType": "tv_unit_cabinet",
+    "category": "crockery",
+    "costCategory": "TV Unit Cabinet",
+    "areaSqft": 2.90626,
+    "icon": "🎛️",
+    "dimensions": {
+      "W": 450,
+      "H": 600,
+      "D": 300
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "glass",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "mountType": "wall",
+      "ctype": "kwall",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 4490.17
+    },
+    "customRate": 4490.17,
+    "elevation": 1500
+  },
+  {
+    "id": "wm-gl-45",
+    "code": "wm-gl-45",
+    "name": "CROCKERY/TV WM-GL-45",
+    "modelType": "tv_unit_cabinet",
+    "category": "crockery",
+    "costCategory": "TV Unit Cabinet",
+    "areaSqft": 2.90626,
+    "icon": "🎛️",
+    "dimensions": {
+      "W": 450,
+      "H": 600,
+      "D": 300
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "glass",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "mountType": "wall",
+      "ctype": "kwall",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 4490.17
+    },
+    "customRate": 4490.17,
     "elevation": 1500
   },
   {
@@ -5620,7 +5877,7 @@
       "baseRate": 185.07
     },
     "customRate": 185.07,
-    "elevation": 750
+    "elevation": 1200
   },
   {
     "id": "pnl-back",
@@ -6123,7 +6380,7 @@
       "baseRate": 138.8
     },
     "customRate": 138.8,
-    "elevation": 750
+    "elevation": 850
   },
   {
     "id": "sr-60",
@@ -6269,6 +6526,58 @@
     "elevation": 0
   },
   {
+    "id": "tbm-90",
+    "code": "tbm-90",
+    "name": "TBM 90",
+    "modelType": "wardrobe_modular_shelves",
+    "category": "kitchen_tall",
+    "costCategory": "Kitchen - Tall",
+    "areaSqft": 20.3438,
+    "icon": "🚪",
+    "dimensions": {
+      "W": 900,
+      "H": 2100,
+      "D": 550
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 2,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 5,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "gprof",
+      "hfinish": "none",
+      "led": false,
+      "hasLegs": true,
+      "legs": 100,
+      "plinthH": 100,
+      "mountType": "floor",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 31431.17
+    },
+    "customRate": 31431.17,
+    "elevation": 0
+  },
+  {
     "id": "ledge-vert",
     "code": "ledge-vert",
     "name": "VERTICAL LEDGE",
@@ -6278,9 +6587,9 @@
     "areaSqft": 1.291669806,
     "icon": "🪵",
     "dimensions": {
-      "W": 550,
+      "W": 18,
       "H": 750,
-      "D": 18
+      "D": 550
     },
     "materials": {
       "shutter": {

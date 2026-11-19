@@ -2945,6 +2945,10 @@
 
     var furnList = plan.furniture || [];
     var activeId = furn.id;
+    var isCivilOrPanel = furn.category === 'wall_paneling' ||
+      (furn.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(furn.name)) ||
+      (furn.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(furn.id)) ||
+      (furn.catalogItemId && /ledge|rcc|civil|panel/i.test(furn.catalogItemId));
 
     // Shift, Alt, or Free Placement Mode completely disables all snapping for pixel-precision free positioning
     if (this.isShiftDown || this.isAltDown || this.forceFreePlacement) {
@@ -3061,10 +3065,15 @@
     var minJointDist = 180; // mm magnetic snap threshold
 
     // Unit-to-unit jointing & multi-point magnetic snapping is only evaluated for regular woodwork cabinets
-    if (!isDecorF) {
+    // Ledges, panels, and civil items snap flush to walls without hijacking cursor via unit joints
+    if (!isDecorF && !isCivilOrPanel) {
       for (var i = 0; i < furnList.length; i++) {
         var other = furnList[i];
         if (activeId && other.id === activeId) continue;
+        var otherIsCivil = other.category === 'wall_paneling' ||
+          (other.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(other.name)) ||
+          (other.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(other.id));
+        if (otherIsCivil) continue;
         var oDims = other.dimensions || { W: 1200, D: 600, H: 2100 };
         var oW = oDims.W || 1200;
         var oD = oDims.D || 600;
@@ -3757,6 +3766,12 @@
 
         if (Math.abs(oPerp - oFlushDist) > Math.max(fD, oD, 300)) continue;
 
+        var oIsCivilOrPanel = oFn.category === 'wall_paneling' ||
+          (oFn.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(oFn.name)) ||
+          (oFn.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(oFn.id)) ||
+          (oFn.catalogItemId && /ledge|rcc|civil|panel/i.test(oFn.catalogItemId));
+        if (oIsCivilOrPanel) continue; // Existing ledges and wall paneling do not push regular cabinets away!
+
         // Check elevation band collision:
         var isWallO = Core.isWallUnit ? Core.isWallUnit(oFn.category, oFn.name, oFn.code || oFn.catalogItemId, oFn.costCategory) : false;
         var isOpenBoxO = (oFn.name && /open[-_ ]*box/i.test(oFn.name)) || (oFn.id && /^ob-/i.test(oFn.id));
@@ -3831,31 +3846,34 @@
       }
 
       // If candidate overlaps any occupied interval, push it flush to the nearest edge
-      var didShift = false;
-      for (var iter = 0; iter < 4; iter++) {
-        var collided = false;
-        for (var oii = 0; oii < occupiedIntervals.length; oii++) {
-          var occ = occupiedIntervals[oii];
-          var myStart = candT - halfActiveW;
-          var myEnd = candT + halfActiveW;
-          // Check overlap with 2mm tolerance
-          if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
-            collided = true;
-            didShift = true;
-            if (candT >= occ.center) {
-              // Push to positive side of existing unit
-              candT = occ.end + halfActiveW;
-            } else {
-              // Push to negative side of existing unit
-              candT = occ.start - halfActiveW;
+      // Ledges, civil panels, and wall panelings mount freely without being pushed away
+      if (!isCivilOrPanel) {
+        var didShift = false;
+        for (var iter = 0; iter < 4; iter++) {
+          var collided = false;
+          for (var oii = 0; oii < occupiedIntervals.length; oii++) {
+            var occ = occupiedIntervals[oii];
+            var myStart = candT - halfActiveW;
+            var myEnd = candT + halfActiveW;
+            // Check overlap with 2mm tolerance
+            if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
+              collided = true;
+              didShift = true;
+              if (candT >= occ.center) {
+                // Push to positive side of existing unit
+                candT = occ.end + halfActiveW;
+              } else {
+                // Push to negative side of existing unit
+                candT = occ.start - halfActiveW;
+              }
             }
           }
+          // Re-clamp within wall bounds after shifting
+          if (tMax - tMin >= fW) {
+            candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
+          }
+          if (!collided) break;
         }
-        // Re-clamp within wall bounds after shifting
-        if (tMax - tMin >= fW) {
-          candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
-        }
-        if (!collided) break;
       }
 
       var finalProj = {
@@ -3915,8 +3933,8 @@
     var isSpicePlan = (catPlan.indexOf('spice') !== -1 || nmPlan.indexOf('spice') !== -1 || idPlan.indexOf('spice') !== -1 || idPlan.indexOf('sr-') === 0);
     var defPlanElev = isLoftPlan ? 2100 : (isSpicePlan ? 1350 : (isWall ? 1500 : 0));
     if (idPlan === 'wfm60-roll' || cdPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && (this.furniturePreset.unitConfig.isRollingShutter || this.furniturePreset.unitConfig.shutterType === 'rolling_shutter'))) defPlanElev = 750;
-    else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 750;
-    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 750;
+    else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 1200;
+    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 850;
     else if (idPlan === 'ledge-vert' || nmPlan.indexOf('vertical ledge') !== -1) defPlanElev = 0;
     else if (idPlan === 'pnl-back' || nmPlan.indexOf('back panel') !== -1) defPlanElev = 300;
     else if (idPlan === 'pnl-wall' || nmPlan.indexOf('wall panel') !== -1 || catPlan === 'wall_paneling') defPlanElev = 0;
@@ -3925,14 +3943,15 @@
     var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '') ?
       parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
-    // If placing decor, auto-detect if cursor is over an underlying modular unit (countertop, table, shelf, ledge)
-    if (isDecorPreset) {
+    // If placing decor or shelf/countertop ledge, auto-detect if cursor is over an underlying modular unit (countertop, table, shelf, ledge)
+    var isLedgePreset = (idPlan === 'ledge-std' || idPlan === 'ledge-ctop' || nmPlan === 'ledge' || nmPlan.indexOf('ledge') !== -1);
+    if (isDecorPreset || isLedgePreset) {
       var underUnit = null;
       var maxTopZ = 0;
       var allFurn = (this.project && this.project.plan && this.project.plan.furniture) || [];
       for (var fu = 0; fu < allFurn.length; fu++) {
         var oU = allFurn[fu];
-        if (oU.isDecor || oU.category === 'decor' || oU.category === 'appliance_decor') continue;
+        if (oU.isDecor || oU.category === 'decor' || oU.category === 'appliance_decor' || (oU.id && /ledge/i.test(oU.id))) continue;
         var polyU = Core.getFurniturePolygon(oU);
         if (Core.Vec2.pointInPolygon(finalPos, polyU)) {
           var topZ = (oU.elevation !== undefined && oU.elevation !== null ? parseFloat(oU.elevation) : 0) +
@@ -3944,7 +3963,13 @@
         }
       }
       if (underUnit && maxTopZ > 0) {
-        presetElev = maxTopZ;
+        if (idPlan === 'ledge-std' || nmPlan === 'ledge') {
+          presetElev = maxTopZ + 350;
+        } else if (idPlan === 'ledge-ctop') {
+          presetElev = maxTopZ;
+        } else {
+          presetElev = maxTopZ;
+        }
       }
     }
 

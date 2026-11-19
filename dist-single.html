@@ -5748,6 +5748,12 @@ body.role-employee #adminCreateEmpBox,
   ICONS["wrb-120-os"] = ICONS["wr-shelves"];
   ICONS["bs-60"] = ICONS["ledge-vert"];
   ICONS["bs"] = ICONS["ledge-vert"];
+  ICONS["ctvb-60"] = ICONS["ctvb-1d"] || ICONS["ctvb-1dr"];
+  ICONS["tbm-90"] = ICONS["tbm-60"];
+  ICONS["ctvw-wm-gl-75"] = ICONS["wm-75-gl"];
+  ICONS["wm-gl-75"] = ICONS["wm-75-gl"];
+  ICONS["ctvw-wm-gl-45"] = ICONS["wm-45-gl"];
+  ICONS["wm-gl-45"] = ICONS["wm-45-gl"];
 
   return {
     ICONS: ICONS,
@@ -11632,11 +11638,16 @@ body.role-employee #adminCreateEmpBox,
     if (checkId === 'wfm60-roll' || /rolling\s*shutter|wfm.*roll/i.test(nm + ' ' + checkId) || (opts.unitConfig && (opts.unitConfig.isRollingShutter || opts.unitConfig.shutterType === 'rolling_shutter'))) {
       defElev = 750;
     } else if (checkId === 'ledge-std' || /^ledge(-std)?$/i.test(checkId) || nm === 'ledge') {
-      defElev = 750;
+      defElev = 1200;
     } else if (checkId === 'ledge-ctop' || /ledge[-_ ]*c(ounter)?top/i.test(nm + ' ' + checkId)) {
-      defElev = 750;
+      defElev = 850;
     } else if (checkId === 'ledge-vert' || /vert(ical)?[-_ ]*ledge/i.test(nm + ' ' + checkId)) {
       defElev = 0;
+      if (opts.dimensions && opts.dimensions.W > opts.dimensions.D && opts.dimensions.W >= 500 && opts.dimensions.D <= 50) {
+        var tempW = opts.dimensions.W;
+        opts.dimensions.W = opts.dimensions.D;
+        opts.dimensions.D = tempW;
+      }
     } else if (checkId === 'pnl-back' || /back[-_ ]*panel/i.test(nm + ' ' + checkId)) {
       defElev = 300;
     } else if (checkId === 'pnl-wall' || /wall[-_ ]*panel/i.test(nm + ' ' + checkId)) {
@@ -13782,6 +13793,58 @@ body.role-employee #adminCreateEmpBox,
      ───────────────────────────────────────────────────────────────────────────── */
   var FURNITURE_CATALOG = [
   {
+    "id": "ctvb-60",
+    "code": "ctvb-60",
+    "name": "CROCKERY/TV BASE 600",
+    "modelType": "tv_unit_cabinet",
+    "category": "crockery",
+    "costCategory": "TV Unit Cabinet",
+    "areaSqft": 4.84376,
+    "icon": "📺",
+    "dimensions": {
+      "W": 600,
+      "H": 750,
+      "D": 450
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "BLUE",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "hasLegs": true,
+      "legs": 100,
+      "mountType": "floor",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707",
+      "plinthH": 100
+    },
+    "pricingOverrides": {
+      "baseRate": 4666.0
+    },
+    "customRate": 4666.0,
+    "elevation": 0
+  },
+  {
     "id": "ctvb-1d",
     "code": "ctvb-1d",
     "name": "CROCKERY/TV BASE 1DOOR",
@@ -14142,6 +14205,206 @@ body.role-employee #adminCreateEmpBox,
       "baseRate": 11444.84
     },
     "customRate": 11444.84,
+    "elevation": 1500
+  },
+  {
+    "id": "ctvw-wm-gl-75",
+    "code": "WM-GL-75",
+    "name": "CROCKERY/TV WM-GL-75",
+    "modelType": "tv_unit_cabinet",
+    "category": "crockery",
+    "costCategory": "TV Unit Cabinet",
+    "areaSqft": 4.84376,
+    "icon": "🎛️",
+    "dimensions": {
+      "W": 750,
+      "H": 600,
+      "D": 300
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 2,
+      "doorType": "hinged",
+      "dstyle": "glass",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "mountType": "wall",
+      "ctype": "kwall",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 7483.61
+    },
+    "customRate": 7483.61,
+    "elevation": 1500
+  },
+  {
+    "id": "wm-gl-75",
+    "code": "wm-gl-75",
+    "name": "CROCKERY/TV WM-GL-75",
+    "modelType": "tv_unit_cabinet",
+    "category": "crockery",
+    "costCategory": "TV Unit Cabinet",
+    "areaSqft": 4.84376,
+    "icon": "🎛️",
+    "dimensions": {
+      "W": 750,
+      "H": 600,
+      "D": 300
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 2,
+      "doorType": "hinged",
+      "dstyle": "glass",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "mountType": "wall",
+      "ctype": "kwall",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 7483.61
+    },
+    "customRate": 7483.61,
+    "elevation": 1500
+  },
+  {
+    "id": "ctvw-wm-gl-45",
+    "code": "WM-GL-45",
+    "name": "CROCKERY/TV WM-GL-45",
+    "modelType": "tv_unit_cabinet",
+    "category": "crockery",
+    "costCategory": "TV Unit Cabinet",
+    "areaSqft": 2.90626,
+    "icon": "🎛️",
+    "dimensions": {
+      "W": 450,
+      "H": 600,
+      "D": 300
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "glass",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "mountType": "wall",
+      "ctype": "kwall",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 4490.17
+    },
+    "customRate": 4490.17,
+    "elevation": 1500
+  },
+  {
+    "id": "wm-gl-45",
+    "code": "wm-gl-45",
+    "name": "CROCKERY/TV WM-GL-45",
+    "modelType": "tv_unit_cabinet",
+    "category": "crockery",
+    "costCategory": "TV Unit Cabinet",
+    "areaSqft": 2.90626,
+    "icon": "🎛️",
+    "dimensions": {
+      "W": 450,
+      "H": 600,
+      "D": 300
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 1,
+      "doorType": "hinged",
+      "dstyle": "glass",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 1,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "gprof",
+      "hfinish": "black",
+      "led": false,
+      "mountType": "wall",
+      "ctype": "kwall",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 4490.17
+    },
+    "customRate": 4490.17,
     "elevation": 1500
   },
   {
@@ -16392,7 +16655,7 @@ body.role-employee #adminCreateEmpBox,
       "baseRate": 185.07
     },
     "customRate": 185.07,
-    "elevation": 750
+    "elevation": 1200
   },
   {
     "id": "pnl-back",
@@ -16895,7 +17158,7 @@ body.role-employee #adminCreateEmpBox,
       "baseRate": 138.8
     },
     "customRate": 138.8,
-    "elevation": 750
+    "elevation": 850
   },
   {
     "id": "sr-60",
@@ -17041,6 +17304,58 @@ body.role-employee #adminCreateEmpBox,
     "elevation": 0
   },
   {
+    "id": "tbm-90",
+    "code": "tbm-90",
+    "name": "TBM 90",
+    "modelType": "wardrobe_modular_shelves",
+    "category": "kitchen_tall",
+    "costCategory": "Kitchen - Tall",
+    "areaSqft": 20.3438,
+    "icon": "🚪",
+    "dimensions": {
+      "W": 900,
+      "H": 2100,
+      "D": 550
+    },
+    "materials": {
+      "shutter": {
+        "material": "HDHMR_18mm",
+        "finish": "MDF 7707"
+      },
+      "carcass": {
+        "material": "BWP_18mm",
+        "finish": "MDF 6601"
+      }
+    },
+    "unitConfig": {
+      "shutters": 2,
+      "doorType": "hinged",
+      "dstyle": "slab",
+      "glassTint": "none",
+      "profileColor": "none",
+      "sections": 0,
+      "shelves": 5,
+      "drawers": 0,
+      "loft": false,
+      "loftH": 0,
+      "counter": "none",
+      "handle": "gprof",
+      "hfinish": "none",
+      "led": false,
+      "hasLegs": true,
+      "legs": 100,
+      "plinthH": 100,
+      "mountType": "floor",
+      "carcass": "MDF 6601",
+      "shutterCol": "MDF 7707"
+    },
+    "pricingOverrides": {
+      "baseRate": 31431.17
+    },
+    "customRate": 31431.17,
+    "elevation": 0
+  },
+  {
     "id": "ledge-vert",
     "code": "ledge-vert",
     "name": "VERTICAL LEDGE",
@@ -17050,9 +17365,9 @@ body.role-employee #adminCreateEmpBox,
     "areaSqft": 1.291669806,
     "icon": "🪵",
     "dimensions": {
-      "W": 550,
+      "W": 18,
       "H": 750,
-      "D": 18
+      "D": 550
     },
     "materials": {
       "shutter": {
@@ -21159,6 +21474,10 @@ body.role-employee #adminCreateEmpBox,
 
     var furnList = plan.furniture || [];
     var activeId = furn.id;
+    var isCivilOrPanel = furn.category === 'wall_paneling' ||
+      (furn.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(furn.name)) ||
+      (furn.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(furn.id)) ||
+      (furn.catalogItemId && /ledge|rcc|civil|panel/i.test(furn.catalogItemId));
 
     // Shift, Alt, or Free Placement Mode completely disables all snapping for pixel-precision free positioning
     if (this.isShiftDown || this.isAltDown || this.forceFreePlacement) {
@@ -21275,10 +21594,15 @@ body.role-employee #adminCreateEmpBox,
     var minJointDist = 180; // mm magnetic snap threshold
 
     // Unit-to-unit jointing & multi-point magnetic snapping is only evaluated for regular woodwork cabinets
-    if (!isDecorF) {
+    // Ledges, panels, and civil items snap flush to walls without hijacking cursor via unit joints
+    if (!isDecorF && !isCivilOrPanel) {
       for (var i = 0; i < furnList.length; i++) {
         var other = furnList[i];
         if (activeId && other.id === activeId) continue;
+        var otherIsCivil = other.category === 'wall_paneling' ||
+          (other.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(other.name)) ||
+          (other.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(other.id));
+        if (otherIsCivil) continue;
         var oDims = other.dimensions || { W: 1200, D: 600, H: 2100 };
         var oW = oDims.W || 1200;
         var oD = oDims.D || 600;
@@ -21971,6 +22295,12 @@ body.role-employee #adminCreateEmpBox,
 
         if (Math.abs(oPerp - oFlushDist) > Math.max(fD, oD, 300)) continue;
 
+        var oIsCivilOrPanel = oFn.category === 'wall_paneling' ||
+          (oFn.name && /ledge|rcc|civil|panel|column|pillar|post|structural/i.test(oFn.name)) ||
+          (oFn.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(oFn.id)) ||
+          (oFn.catalogItemId && /ledge|rcc|civil|panel/i.test(oFn.catalogItemId));
+        if (oIsCivilOrPanel) continue; // Existing ledges and wall paneling do not push regular cabinets away!
+
         // Check elevation band collision:
         var isWallO = Core.isWallUnit ? Core.isWallUnit(oFn.category, oFn.name, oFn.code || oFn.catalogItemId, oFn.costCategory) : false;
         var isOpenBoxO = (oFn.name && /open[-_ ]*box/i.test(oFn.name)) || (oFn.id && /^ob-/i.test(oFn.id));
@@ -22045,31 +22375,34 @@ body.role-employee #adminCreateEmpBox,
       }
 
       // If candidate overlaps any occupied interval, push it flush to the nearest edge
-      var didShift = false;
-      for (var iter = 0; iter < 4; iter++) {
-        var collided = false;
-        for (var oii = 0; oii < occupiedIntervals.length; oii++) {
-          var occ = occupiedIntervals[oii];
-          var myStart = candT - halfActiveW;
-          var myEnd = candT + halfActiveW;
-          // Check overlap with 2mm tolerance
-          if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
-            collided = true;
-            didShift = true;
-            if (candT >= occ.center) {
-              // Push to positive side of existing unit
-              candT = occ.end + halfActiveW;
-            } else {
-              // Push to negative side of existing unit
-              candT = occ.start - halfActiveW;
+      // Ledges, civil panels, and wall panelings mount freely without being pushed away
+      if (!isCivilOrPanel) {
+        var didShift = false;
+        for (var iter = 0; iter < 4; iter++) {
+          var collided = false;
+          for (var oii = 0; oii < occupiedIntervals.length; oii++) {
+            var occ = occupiedIntervals[oii];
+            var myStart = candT - halfActiveW;
+            var myEnd = candT + halfActiveW;
+            // Check overlap with 2mm tolerance
+            if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
+              collided = true;
+              didShift = true;
+              if (candT >= occ.center) {
+                // Push to positive side of existing unit
+                candT = occ.end + halfActiveW;
+              } else {
+                // Push to negative side of existing unit
+                candT = occ.start - halfActiveW;
+              }
             }
           }
+          // Re-clamp within wall bounds after shifting
+          if (tMax - tMin >= fW) {
+            candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
+          }
+          if (!collided) break;
         }
-        // Re-clamp within wall bounds after shifting
-        if (tMax - tMin >= fW) {
-          candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
-        }
-        if (!collided) break;
       }
 
       var finalProj = {
@@ -22129,8 +22462,8 @@ body.role-employee #adminCreateEmpBox,
     var isSpicePlan = (catPlan.indexOf('spice') !== -1 || nmPlan.indexOf('spice') !== -1 || idPlan.indexOf('spice') !== -1 || idPlan.indexOf('sr-') === 0);
     var defPlanElev = isLoftPlan ? 2100 : (isSpicePlan ? 1350 : (isWall ? 1500 : 0));
     if (idPlan === 'wfm60-roll' || cdPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && (this.furniturePreset.unitConfig.isRollingShutter || this.furniturePreset.unitConfig.shutterType === 'rolling_shutter'))) defPlanElev = 750;
-    else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 750;
-    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 750;
+    else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 1200;
+    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 850;
     else if (idPlan === 'ledge-vert' || nmPlan.indexOf('vertical ledge') !== -1) defPlanElev = 0;
     else if (idPlan === 'pnl-back' || nmPlan.indexOf('back panel') !== -1) defPlanElev = 300;
     else if (idPlan === 'pnl-wall' || nmPlan.indexOf('wall panel') !== -1 || catPlan === 'wall_paneling') defPlanElev = 0;
@@ -22139,14 +22472,15 @@ body.role-employee #adminCreateEmpBox,
     var presetElev = (this.furniturePreset.elevation !== undefined && this.furniturePreset.elevation !== null && this.furniturePreset.elevation !== '') ?
       parseFloat(this.furniturePreset.elevation) : defPlanElev;
 
-    // If placing decor, auto-detect if cursor is over an underlying modular unit (countertop, table, shelf, ledge)
-    if (isDecorPreset) {
+    // If placing decor or shelf/countertop ledge, auto-detect if cursor is over an underlying modular unit (countertop, table, shelf, ledge)
+    var isLedgePreset = (idPlan === 'ledge-std' || idPlan === 'ledge-ctop' || nmPlan === 'ledge' || nmPlan.indexOf('ledge') !== -1);
+    if (isDecorPreset || isLedgePreset) {
       var underUnit = null;
       var maxTopZ = 0;
       var allFurn = (this.project && this.project.plan && this.project.plan.furniture) || [];
       for (var fu = 0; fu < allFurn.length; fu++) {
         var oU = allFurn[fu];
-        if (oU.isDecor || oU.category === 'decor' || oU.category === 'appliance_decor') continue;
+        if (oU.isDecor || oU.category === 'decor' || oU.category === 'appliance_decor' || (oU.id && /ledge/i.test(oU.id))) continue;
         var polyU = Core.getFurniturePolygon(oU);
         if (Core.Vec2.pointInPolygon(finalPos, polyU)) {
           var topZ = (oU.elevation !== undefined && oU.elevation !== null ? parseFloat(oU.elevation) : 0) +
@@ -22158,7 +22492,13 @@ body.role-employee #adminCreateEmpBox,
         }
       }
       if (underUnit && maxTopZ > 0) {
-        presetElev = maxTopZ;
+        if (idPlan === 'ledge-std' || nmPlan === 'ledge') {
+          presetElev = maxTopZ + 350;
+        } else if (idPlan === 'ledge-ctop') {
+          presetElev = maxTopZ;
+        } else {
+          presetElev = maxTopZ;
+        }
       }
     }
 
