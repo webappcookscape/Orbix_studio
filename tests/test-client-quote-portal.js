@@ -107,18 +107,46 @@ async function runTests() {
     assert.strictEqual(projCreate.status, 201);
     createdProjectId = projCreate.json.project.id;
 
-    // 4. Reject non-Master-Template tier names
+    // 4. Reject unknown tier names
     const badTierRes = await request(port, 'POST', '/api/client-quotes', {
       projectId: createdProjectId,
       clientName: 'Bad Tier Client',
       clientUsername: 'badtier1',
       clientPassword: 'Password#1',
-      quoteSnapshot: { variantQuotes: [{ tierKey: 'zappo - el pearl', items: [] }] }
+      quoteSnapshot: { variantQuotes: [{ tierKey: 'unknown_tier_xyz', items: [] }] }
     }, { Cookie: emp1Cookie });
     assert.strictEqual(badTierRes.status, 400);
 
-    // 5. Generate Protected Multi-Variant Quote (CC MATTE + MR+) with unitIcons (zero 2D/3D)
+    // 5. Generate Protected Multi-Variant Quote (4 newly added variants + CC MATTE + MR+) with unitIcons (zero 2D/3D)
     const sampleUnitPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    const mkVariant = (tierKey, tierTitle, total) => ({
+      tierKey,
+      tierTitle,
+      roomScopeLabel: 'Kitchen, Master Bedroom',
+      currencySymbol: '₹',
+      grandTotal: total,
+      roomsSummary: [
+        { name: 'Kitchen', itemCount: 2, roomSubtotal: Math.round(total * 0.55), percentShare: 65 },
+        { name: 'Master Bedroom', itemCount: 1, roomSubtotal: Math.round(total * 0.25), percentShare: 35 }
+      ],
+      commercial: {
+        woodworkSubtotal: Math.round(total * 0.8),
+        additionalAccessories: 15000,
+        appliances: 0,
+        designPercent: 9,
+        designAmount: Math.round(total * 0.07),
+        freightPercent: 2.5,
+        freightAmount: Math.round(total * 0.02),
+        netBeforeTax: Math.round(total / 1.18),
+        gstPercent: 18,
+        gstAmount: total - Math.round(total / 1.18),
+        grandTotal: total
+      },
+      items: [
+        { refCode: 'K01', room: 'Kitchen', name: 'Base Unit B600', dimensions: '600 x 600 x 850', finish: tierTitle, qtyText: '8.5 sft', rate: 1650, amount: 14025, iconKey: 'u0_base_600' }
+      ],
+      notes: 'Soft-close hinges included on all kitchen units.'
+    });
     const quotePayload = {
       projectId: createdProjectId,
       title: 'Karthik Villa Modular Proposal',
@@ -130,7 +158,7 @@ async function runTests() {
       clientPassword: 'ClientPass#901',
       expiryDays: 15,
       securitySettings: {
-        watermarkEnabled: true,
+        watermarkEnabled: false,
         blurShieldEnabled: true
       },
       quoteSnapshot: {
@@ -146,61 +174,12 @@ async function runTests() {
         designer: { name: 'Elakkiya', phone: '93611 84787', email: 'designs.cookscape@gmail.com' },
         unitIcons: { u0_base_600: sampleUnitPng },
         variantQuotes: [
-          {
-            tierKey: 'CC MATTE',
-            tierTitle: 'CAPRICOAST MATTE',
-            roomScopeLabel: 'Kitchen, Master Bedroom',
-            currencySymbol: '₹',
-            grandTotal: 452000,
-            roomsSummary: [
-              { name: 'Kitchen', itemCount: 2, roomSubtotal: 240000, percentShare: 65 },
-              { name: 'Master Bedroom', itemCount: 1, roomSubtotal: 128000, percentShare: 35 }
-            ],
-            commercial: {
-              woodworkSubtotal: 368000,
-              additionalAccessories: 15000,
-              appliances: 0,
-              designPercent: 9,
-              designAmount: 33120,
-              freightPercent: 2.5,
-              freightAmount: 9200,
-              netBeforeTax: 383051,
-              gstPercent: 18,
-              gstAmount: 68949,
-              grandTotal: 452000
-            },
-            items: [
-              { refCode: 'K01', room: 'Kitchen', name: 'Base Unit B600', dimensions: '600 x 600 x 850', finish: 'HDHMR / Matte', qtyText: '8.5 sft', rate: 1650, amount: 14025, iconKey: 'u0_base_600' }
-            ],
-            notes: 'Soft-close hinges included on all kitchen units.'
-          },
-          {
-            tierKey: 'MR+',
-            tierTitle: '4X TUFF GLOSS',
-            roomScopeLabel: 'Kitchen, Master Bedroom',
-            currencySymbol: '₹',
-            grandTotal: 548000,
-            roomsSummary: [
-              { name: 'Kitchen', itemCount: 2, roomSubtotal: 290000, percentShare: 65 },
-              { name: 'Master Bedroom', itemCount: 1, roomSubtotal: 156000, percentShare: 35 }
-            ],
-            commercial: {
-              woodworkSubtotal: 446000,
-              additionalAccessories: 15000,
-              appliances: 0,
-              designPercent: 9,
-              designAmount: 40140,
-              freightPercent: 2.5,
-              freightAmount: 11150,
-              netBeforeTax: 464407,
-              gstPercent: 18,
-              gstAmount: 83593,
-              grandTotal: 548000
-            },
-            items: [
-              { refCode: 'K01', room: 'Kitchen', name: 'Base Unit B600', dimensions: '600 x 600 x 850', finish: 'BWP / 4X Gloss', qtyText: '8.5 sft', rate: 1990, amount: 16915, iconKey: 'u0_base_600' }
-            ]
-          }
+          mkVariant('zappo - el pearl', 'ZAPPO EL PEARL', 310000),
+          mkVariant('pot&cafe', 'POT & CAFE', 345000),
+          mkVariant('homespace', 'HOME SPACE', 380000),
+          mkVariant('cafehunt', 'CAFÉ HUNT', 415000),
+          mkVariant('CC MATTE', 'CAPRICOAST MATTE', 452000),
+          mkVariant('MR+', '4X TUFF GLOSS', 548000)
         ]
       }
     };
@@ -243,12 +222,18 @@ async function runTests() {
     assert(!slideIds.some((id) => id.includes('preview_2d') || id.includes('preview_3d')), '2D & 3D preview slides MUST NOT exist');
     assert(!slideTypes.includes('project_preview'), 'project_preview type MUST NOT exist');
 
-    // Strict template order checks
+    // Strict template order checks (6 variants including 4 newly added + CC MATTE + MR+)
+    assert.strictEqual(deckRes.json.deck.watermarkText, '', 'Watermark text must be removed');
+    assert.strictEqual(deckRes.json.deck.securitySettings.watermarkEnabled, false, 'Watermark must be disabled');
     const expectedOrder = [
       'cover',
       'intro_2', 'intro_3', 'intro_4', 'intro_5', 'intro_6',
       'var_0_divider', 'var_0_specs', 'var_0_units_0', 'var_0_quotation',
       'var_1_divider', 'var_1_specs', 'var_1_units_0', 'var_1_quotation',
+      'var_2_divider', 'var_2_specs', 'var_2_units_0', 'var_2_quotation',
+      'var_3_divider', 'var_3_specs', 'var_3_units_0', 'var_3_quotation',
+      'var_4_divider', 'var_4_specs', 'var_4_units_0', 'var_4_quotation',
+      'var_5_divider', 'var_5_specs', 'var_5_units_0', 'var_5_quotation',
       'process_design', 'process_execution', 'policy_inclusions', 'policy_payment', 'policy_terms'
     ];
     let lastPos = -1;
@@ -295,7 +280,9 @@ async function runTests() {
     assert(diff365Days > 364.9 && diff365Days <= 365.05, `Expected ~365 days expiry, got ${diff365Days}`);
     console.log('✓ [8] Instant revocation (403), password rotation, and 1 Day / 1 Year expiry verified');
 
-    // 11. Master PPTX Export with auto Unit Snips before Quotation Slides
+    // 11. Master PPTX Export (Zero PIL dependency, native OOXML tables & unit icons, all 9 variants)
+    const exportSrc = fs.readFileSync(path.join(ROOT, 'scripts', 'export_quote_pptx.py'), 'utf8');
+    assert(!exportSrc.includes('from PIL') && !exportSrc.includes('import PIL'), 'export_quote_pptx.py must NOT depend on PIL/Pillow');
     const pptxRes = await request(port, 'POST', '/api/client-quotes/export-pptx', {
       clientName: quotePayload.clientName,
       clientPhone: quotePayload.clientPhone,
@@ -308,23 +295,30 @@ async function runTests() {
     }, { Cookie: emp1Cookie });
     assert.strictEqual(pptxRes.status, 200, `PPTX export failed: ${pptxRes.status}`);
     assert.strictEqual(pptxRes.buf.slice(0, 2).toString('utf8'), 'PK');
-    assert(pptxRes.buf.includes('orbix_unit_snip_12_1.png'), 'PPTX must embed CAPRICOAST MATTE Unit Snip slide PNG');
-    assert(pptxRes.buf.includes('orbix_quote_slide_12.png'), 'PPTX must embed CAPRICOAST MATTE Quotation PNG');
-    assert(pptxRes.buf.includes('orbix_unit_snip_21_1.png'), 'PPTX must embed 4X TUFF GLOSS Unit Snip slide PNG');
-    assert(pptxRes.buf.includes('orbix_quote_slide_21.png'), 'PPTX must embed 4X TUFF GLOSS Quotation PNG');
     const tmpPptx = path.join(os.tmpdir(), `orbix_verify_s1_${Date.now()}.pptx`);
     fs.writeFileSync(tmpPptx, pptxRes.buf);
     try {
-      const s1Xml = execFileSync('python', ['-c', 'import sys,zipfile;print(zipfile.ZipFile(sys.argv[1]).read("ppt/slides/slide1.xml").decode("utf-8"))', tmpPptx], { encoding: 'utf8' });
-      assert(s1Xml.includes('Mr. Karthik Test'), 'PPTX Slide 1 must contain client name');
-      assert(s1Xml.includes('Elakkiya'), 'PPTX Slide 1 must contain designer name');
-      assert(s1Xml.includes('x="2420000"') && s1Xml.includes('cx="3600000"'), 'PPTX Slide 1 must apply quotegenerator client value alignment');
-      assert(s1Xml.includes('x="6300000"') && s1Xml.includes('cx="2750000"'), 'PPTX Slide 1 must apply quotegenerator designer value alignment');
-      assert(!s1Xml.includes('Mr. Aravindan') && !s1Xml.includes('7418414780') && !s1Xml.includes('Individual Villa Adyar') && !s1Xml.includes('Mr. Abishek'), 'PPTX Slide 1 must not leak sample placeholders');
+      const pyCheck = 'import sys,zipfile,json; z=zipfile.ZipFile(sys.argv[1]); names=z.namelist(); print(json.dumps({"names":names,"s1":z.read("ppt/slides/slide1.xml").decode("utf-8"),"s9":z.read("ppt/slides/slide9.xml").decode("utf-8"),"s12":z.read("ppt/slides/slide12.xml").decode("utf-8"),"s15":z.read("ppt/slides/slide15.xml").decode("utf-8"),"s18":z.read("ppt/slides/slide18.xml").decode("utf-8"),"s24":z.read("ppt/slides/slide24.xml").decode("utf-8"),"s33":z.read("ppt/slides/slide33.xml").decode("utf-8"),"u1":z.read("ppt/slides/slide_unit_1.xml").decode("utf-8")}))';
+      const parsed = JSON.parse(execFileSync('python', ['-c', pyCheck, tmpPptx], { encoding: 'utf8' }));
+      assert(parsed.names.includes('ppt/media/orbix_uicon_u0_base_600.png'), 'PPTX must embed unit icon PNG');
+      assert(parsed.names.includes('ppt/slides/slide_unit_1.xml') && parsed.names.includes('ppt/slides/slide_unit_6.xml'), 'PPTX must include Unit Breakdown slides for all 6 selected variants');
+      assert(!parsed.names.includes('ppt/slides/slide19.xml'), 'Unselected LL ELITE slides must be excluded');
+      assert(parsed.s9.includes('ZAPPO EL PEARL') && parsed.s9.includes('<a:tbl>'), 'Slide 9 must have native Zappo El Pearl quotation table');
+      assert(parsed.s12.includes('POT &amp; CAFE') && parsed.s12.includes('<a:tbl>'), 'Slide 12 must have native Pot & Cafe quotation table');
+      assert(parsed.s15.includes('HOME SPACE') && parsed.s15.includes('<a:tbl>'), 'Slide 15 must have native Home Space quotation table');
+      assert(parsed.s18.includes('CAFÉ HUNT') && parsed.s18.includes('<a:tbl>'), 'Slide 18 must have native Café Hunt quotation table');
+      assert(parsed.s24.includes('CAPRICOAST MATTE') && parsed.s24.includes('<a:tbl>'), 'Slide 24 must have native Capricoast Matte quotation table');
+      assert(parsed.s33.includes('4X TUFF GLOSS') && parsed.s33.includes('<a:tbl>'), 'Slide 33 must have native 4X Tuff Gloss quotation table');
+      assert(parsed.u1.includes('UNIT-WISE BREAKDOWN') && parsed.u1.includes('Base Unit B600'), 'Unit Breakdown slide must include native unit table');
+      assert(parsed.s1.includes('Mr. Karthik Test'), 'PPTX Slide 1 must contain client name');
+      assert(parsed.s1.includes('Elakkiya'), 'PPTX Slide 1 must contain designer name');
+      assert(parsed.s1.includes('x="2420000"') && parsed.s1.includes('cx="3600000"'), 'PPTX Slide 1 must apply quotegenerator client value alignment');
+      assert(parsed.s1.includes('x="6300000"') && parsed.s1.includes('cx="2750000"'), 'PPTX Slide 1 must apply quotegenerator designer value alignment');
+      assert(!parsed.s1.includes('Mr. Aravindan') && !parsed.s1.includes('7418414780') && !parsed.s1.includes('Individual Villa Adyar') && !parsed.s1.includes('Mr. Abishek'), 'PPTX Slide 1 must not leak sample placeholders');
     } finally {
       try { fs.unlinkSync(tmpPptx); } catch (_) {}
     }
-    console.log('✓ [9] Master-Template.pptx export matches quotegenerator Slide 1 alignments & embeds Unit Snips + Quotation cleanly');
+    console.log('✓ [9] Zero-PIL Master-Template.pptx export verified for all new + existing variants with native OOXML tables & Slide 1 alignments');
 
     console.log('\n=== ALL STRICT MASTER-TEMPLATE CLIENT QUOTE TESTS PASSED SUCCESSFULLY ===');
   } finally {

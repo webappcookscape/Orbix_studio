@@ -8,11 +8,15 @@
   var Core = root.OrbixCore;
 
   var MASTER_VARIANTS = [
-    { key: 'LL elite', label: 'LL ELITE', slideRange: 'Slides 7–9' },
-    { key: 'CC MATTE', label: 'CAPRICOAST MATTE', slideRange: 'Slides 10–12' },
-    { key: 'CC GLOSSY', label: 'CAPRICOST GLOSSY', slideRange: 'Slides 13–15' },
-    { key: 'SURABHI', label: 'ELEGANT SURABHI', slideRange: 'Slides 16–18' },
-    { key: 'MR+', label: '4X TUFF GLOSS', slideRange: 'Slides 19–21' }
+    { key: 'zappo - el pearl', label: 'ZAPPO EL PEARL', slideRange: 'Slides 7–9' },
+    { key: 'pot&cafe', label: 'POT & CAFE', slideRange: 'Slides 10–12' },
+    { key: 'homespace', label: 'HOME SPACE', slideRange: 'Slides 13–15' },
+    { key: 'cafehunt', label: 'CAFÉ HUNT', slideRange: 'Slides 16–18' },
+    { key: 'LL elite', label: 'LL ELITE', slideRange: 'Slides 19–21' },
+    { key: 'CC MATTE', label: 'CAPRICOAST MATTE', slideRange: 'Slides 22–24' },
+    { key: 'CC GLOSSY', label: 'CAPRICOST GLOSSY', slideRange: 'Slides 25–27' },
+    { key: 'SURABHI', label: 'ELEGANT SURABHI', slideRange: 'Slides 28–30' },
+    { key: 'MR+', label: '4X TUFF GLOSS', slideRange: 'Slides 31–33' }
   ];
 
   function esc(str) {
@@ -317,22 +321,22 @@
       var suggestedUser = makeDefaultUsername(clientName, quoteCode);
       var suggestedPass = randomPassword();
 
-      var variantCheckboxesHtml = MASTER_VARIANTS.map(function (v) {
+      var variantCheckboxesHtml = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">' + MASTER_VARIANTS.map(function (v) {
         var checked = (v.key === defaultCheckedTier) ? ' checked' : '';
         var info = tierPreviews[v.key] || { grandTotal: 0, unitCount: 0 };
-        return '<label style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border:1px solid #E2E8F0;border-radius:7px;cursor:pointer;background:#FAF6F0;margin-bottom:6px;">' +
-          '<span style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:#08231B;">' +
+        return '<label style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid #E2E8F0;border-radius:7px;cursor:pointer;background:#FAF6F0;">' +
+          '<span style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:#08231B;">' +
           '<input type="checkbox" class="cq-tier-chk" value="' + esc(v.key) + '"' + checked + '> ' +
-          esc(v.label) + ' <span style="font-weight:500;color:#64748B;font-size:11px;">(' + v.unitCount + ' unit snips + quote)</span>' +
+          '<span>' + esc(v.label) + '<span style="display:block;font-weight:500;color:#64748B;font-size:10.5px;">' + info.unitCount + ' units + quote</span></span>' +
           '</span>' +
-          '<span style="font-family:monospace;font-size:12.5px;font-weight:700;color:#C00000;">' + esc(fmtINR(info.grandTotal)) + '</span>' +
+          '<span style="font-family:monospace;font-size:12px;font-weight:700;color:#C00000;white-space:nowrap;">' + esc(fmtINR(info.grandTotal)) + '</span>' +
           '</label>';
-      }).join('');
+      }).join('') + '</div>';
 
       body.innerHTML =
         '<div id="cqFormWrap">' +
         '  <div style="background:#FAF6F0;border:1px solid #E2D5C3;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#08231B;">' +
-        '    <b>Master Template Flow Locked:</b> Cover Page &rarr; Intro (Slides 2&ndash;6) &rarr; Selected Variant(s) [Divider &bull; Specs &bull; <b>Auto Unit Snips</b> &bull; <b>Auto Quotation Snip</b>] &rarr; Timelines, Inclusions, Payment, T&amp;C &amp; FAQs (22&ndash;28) &rarr; Thank You (29).' +
+        '    <b>Master Template Flow Locked:</b> Cover Page &rarr; Intro (Slides 2&ndash;6) &rarr; Selected Variant(s) [Divider &bull; Specs &bull; <b>Auto Unit Snips</b> &bull; <b>Auto Quotation Snip</b>] &rarr; Timelines, Inclusions, Payment, T&amp;C &amp; FAQs (34&ndash;40) &rarr; Thank You (41).' +
         '  </div>' +
 
         '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">' +
@@ -391,8 +395,7 @@
         '      </div>' +
         '    </div>' +
         '    <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:#1E293B;">' +
-        '      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="cqSecWatermark" checked> Dynamic Canvas Watermark</label>' +
-        '      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="cqSecBlur" checked> Focus-Loss Blur Shield</label>' +
+        '      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="cqSecBlur" checked> Strict Anti-Screenshot Blackout Shield (Phone / Tablet / Laptop / PC)</label>' +
         '    </div>' +
         '  </div>' +
 
@@ -461,7 +464,7 @@
           clientPassword: cPass,
           expiryDays: Number(body.querySelector('#cqExpiryDays').value),
           securitySettings: {
-            watermarkEnabled: body.querySelector('#cqSecWatermark').checked,
+            watermarkEnabled: false,
             blurShieldEnabled: body.querySelector('#cqSecBlur').checked
           },
           quoteSnapshot: {

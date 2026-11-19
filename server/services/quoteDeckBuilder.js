@@ -31,6 +31,10 @@ function resolveTemplateAssetPath(assetFileName) {
 
 function normalizeTemplateVariantKey(raw) {
   const s = String(raw || '').trim().toLowerCase();
+  if (s === 'zappo - el pearl' || s === 'zappo-el pearl' || s === 'zappo-el-pearl' || s === 'zappo el pearl' || s === 'zappo' || s === 'p1' || s === 'price 1' || s === 'price1') return 'zappo - el pearl';
+  if (s === 'pot&cafe' || s === 'pot & cafe' || s === 'pot and cafe' || s === 'pot cafe' || s === 'p2' || s === 'price 2' || s === 'price2') return 'pot&cafe';
+  if (s === 'homespace' || s === 'home space' || s === 'home-space' || s === 'p3' || s === 'price 3' || s === 'price3') return 'homespace';
+  if (s === 'cafehunt' || s === 'cafe hunt' || s === 'café hunt' || s === 'cafe-hunt' || s === 'livlame' || s === 'p4' || s === 'price 4' || s === 'price4') return 'cafehunt';
   if (s === 'll elite' || s === 'llelite' || s === 'livelane' || s === 'live lane') return 'LL elite';
   if (s === 'cc matte' || s === 'ccmatte' || s === 'capricoast matte') return 'CC MATTE';
   if (s === 'cc glossy' || s === 'ccglossy' || s === 'capricost glossy' || s === 'capricoast glossy' || s === 'capricost') return 'CC GLOSSY';
@@ -274,13 +278,13 @@ function buildClientQuoteDeck(quoteRecord) {
     }
   }
 
-  // 5. Exact Master-Template Closing Slide (Slide 29)
+  // 5. Exact Master-Template Closing Slide (Slide 41)
   slides.push({
     id: 'closing',
     type: 'image_slide',
     section: 'Thank You',
     title: 'Thank You',
-    asset: (tpl.assets && tpl.assets.closingAsset) || 'slide_29.jpg',
+    asset: (tpl.assets && tpl.assets.closingAsset) || 'slide_41.jpg',
     showFooter: true,
     footer: footerText
   });

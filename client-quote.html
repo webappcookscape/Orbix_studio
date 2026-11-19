@@ -360,12 +360,11 @@
       border-radius: 8px;
       box-shadow: 0 24px 65px rgba(0, 0, 0, 0.65);
       overflow: hidden;
-      transition: filter 0.12s ease, opacity 0.12s ease;
     }
 
     .canvas-frame.is-shielded {
-      filter: blur(26px) brightness(0.35);
-      opacity: 0.15;
+      visibility: hidden !important;
+      opacity: 0 !important;
     }
 
     #quoteCanvas {
@@ -373,6 +372,9 @@
       width: 100%;
       height: auto;
       pointer-events: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     .canvas-guard {
@@ -380,15 +382,18 @@
       inset: 0;
       z-index: 5;
       background: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: pan-y;
     }
 
     #blurShield {
       display: none;
       position: fixed;
       inset: 0;
-      z-index: 9999;
-      background: rgba(9, 14, 26, 0.92);
-      backdrop-filter: blur(18px);
+      z-index: 99999;
+      background: #05080D;
       align-items: center;
       justify-content: center;
       padding: 24px;
@@ -442,7 +447,7 @@
       </form>
 
       <div class="sec-note">
-        Protected Read-Only View: slides and quotation visuals are watermarked to your session and restricted from direct download, copying, or printing.
+        Protected Read-Only View: slides and quotation visuals are restricted from screenshots, screen capture, copying, downloading, or printing.
       </div>
     </div>
   </div>
@@ -455,7 +460,7 @@
         <div class="brand-mark">COOKSCAPE</div>
         <div class="deck-meta">
           <div class="deck-title" id="viewerTitle">Interior Quotation</div>
-          <div class="deck-sub" id="viewerProtectionBadge">🔒 Watermarked Client View</div>
+          <div class="deck-sub" id="viewerProtectionBadge">🔒 Protected Client View</div>
         </div>
       </div>
 
@@ -765,9 +770,6 @@
           await paintEditorialTextSlide(ctx, slide);
         }
 
-        if (!state.deck.securitySettings || state.deck.securitySettings.watermarkEnabled !== false) {
-          paintCanvasWatermark(ctx, state.deck.watermarkText || 'COOKSCAPE PROTECTED QUOTE');
-        }
         ctx.restore();
       }
 
@@ -1217,66 +1219,182 @@
           .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
 
+      function wipeCanvasPixels() {
+        try {
+          var ctx = els.canvas && els.canvas.getContext('2d');
+          if (ctx) {
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.fillStyle = '#05080D';
+            ctx.fillRect(0, 0, els.canvas.width || 1, els.canvas.height || 1);
+            ctx.restore();
+          }
+        } catch (_) {}
+      }
+
       function activateShield(reason, auditEvent) {
         if (!state.deck) return;
         if (state.deck.securitySettings && state.deck.securitySettings.blurShieldEnabled === false) return;
         state.shieldActive = true;
+        wipeCanvasPixels();
         els.canvasFrame.classList.add('is-shielded');
-        els.shieldReason.textContent = reason || 'Viewing is paused while the window is unfocused.';
+        els.shieldReason.textContent = reason || 'Viewing is paused while the window is unfocused or capture protection is triggered.';
         els.blurShield.classList.add('is-visible');
         if (auditEvent) sendAudit(auditEvent, reason);
       }
 
-      function deactivateShield() {
+      async function deactivateShield() {
         state.shieldActive = false;
         els.canvasFrame.classList.remove('is-shielded');
         els.blurShield.classList.remove('is-visible');
+        if (state.deck && state.deck.slides && state.deck.slides[state.currentSlide]) {
+          await renderSlideToCanvas(state.deck.slides[state.currentSlide]);
+        }
       }
 
       function installSecurityListeners() {
-        document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-        document.addEventListener('dragstart', function (e) { e.preventDefault(); });
+        var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        var idleTimer = null;
+        var longPressTimer = null;
+
+        function resetIdleLock() {
+          if (idleTimer) clearTimeout(idleTimer);
+          if (!state.deck || state.shieldActive) return;
+          idleTimer = setTimeout(function () {
+            activateShield('Quotation locked automatically due to inactivity.', 'idle_lock');
+          }, 180000);
+        }
+
+        // Block in-page browser screen capture / recording API
+        try {
+          if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            navigator.mediaDevices.getDisplayMedia = function () {
+              activateShield('Screen capture / recording is blocked for this quotation.', 'screen_capture_blocked');
+              return Promise.reject(new DOMException('Screen capture is disabled.', 'NotAllowedError'));
+            };
+          }
+        } catch (_) {}
+
+        document.addEventListener('contextmenu', function (e) { e.preventDefault(); }, { capture: true });
+        document.addEventListener('dragstart', function (e) { e.preventDefault(); }, { capture: true });
+        document.addEventListener('selectstart', function (e) {
+          if (state.deck && e.target && e.target.tagName !== 'INPUT') e.preventDefault();
+        }, { capture: true });
         document.addEventListener('copy', function (e) {
           if (state.deck) {
             e.preventDefault();
+            try { if (e.clipboardData) e.clipboardData.setData('text/plain', ''); } catch (_) {}
             sendAudit('copy_attempt', 'Blocked copy shortcut');
           }
-        });
+        }, { capture: true });
 
-        window.addEventListener('keydown', function (e) {
-          if (state.deck) {
+        // Phone & Tablet anti-screenshot gestures (3-finger swipe, long-press save sheet)
+        document.addEventListener('touchstart', function (e) {
+          resetIdleLock();
+          if (!state.deck) return;
+          if (e.touches && e.touches.length >= 3) {
+            e.preventDefault();
+            activateShield('Multi-finger screenshot gesture blocked.', 'mobile_gesture_capture');
+            return;
+          }
+          if (e.touches && e.touches.length === 1 && els.stageWrap.contains(e.target)) {
+            if (longPressTimer) clearTimeout(longPressTimer);
+            longPressTimer = setTimeout(function () {
+              activateShield('Long-press image capture blocked.', 'mobile_longpress_block');
+            }, 650);
+          }
+        }, { passive: false, capture: true });
+
+        document.addEventListener('touchmove', function (e) {
+          if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+          if (state.deck && e.touches && e.touches.length >= 3) {
+            e.preventDefault();
+            activateShield('Multi-finger screenshot gesture blocked.', 'mobile_gesture_capture');
+          }
+        }, { passive: false, capture: true });
+
+        document.addEventListener('touchend', function () {
+          if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+        }, { capture: true });
+        document.addEventListener('touchcancel', function () {
+          if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+        }, { capture: true });
+
+        // Laptop & Desktop PC screenshot / DevTools / print shortcut interception
+        function handleCaptureKey(e) {
+          resetIdleLock();
+          if (state.deck && e.type === 'keydown') {
             if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); goToSlide(state.currentSlide + 1); return; }
             if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); goToSlide(state.currentSlide - 1); return; }
           }
           var k = (e.key || '').toLowerCase();
-          if (e.key === 'PrintScreen' || e.keyCode === 44) {
-            try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(''); } catch (_) {}
-            activateShield('Capture shortcut detected. Protected slides hidden.', 'screenshot_key_attempt');
-            e.preventDefault();
-            return;
-          }
-          if ((e.ctrlKey || e.metaKey) && (k === 'p' || k === 's' || k === 'u')) {
-            e.preventDefault();
-            if (k === 'p') sendAudit('print_attempt', 'Blocked print hotkey');
-            return;
-          }
-          if ((e.ctrlKey || e.metaKey) && e.shiftKey && (k === 's' || k === 'i' || k === 'j' || k === 'c')) {
-            e.preventDefault();
-            activateShield('Protected view temporarily paused.', 'screenshot_key_attempt');
-          }
-          if (e.key === 'F12') e.preventDefault();
-        });
+          var isPrintScr = (e.key === 'PrintScreen' || e.code === 'PrintScreen' || e.keyCode === 44);
+          var isMetaKey = (e.key === 'Meta' || e.key === 'OS' || e.code === 'MetaLeft' || e.code === 'MetaRight');
 
+          if (isPrintScr) {
+            e.preventDefault();
+            activateShield('Screenshot key detected. Display wiped and locked.', 'screenshot_key_attempt');
+            try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(''); } catch (_) {}
+            return;
+          }
+          // Pre-empt Windows Snipping Tool (Win+Shift+S / Win+PrtSc / Win+G) & macOS Cmd+Shift+3/4/5
+          if (isMetaKey && state.deck) {
+            activateShield('System capture modifier detected. Protected slides hidden.', 'screenshot_key_attempt');
+            return;
+          }
+          if ((e.ctrlKey || e.metaKey) && (k === 'p' || k === 's' || k === 'u' || k === 'c')) {
+            e.preventDefault();
+            activateShield('Protected action blocked.', k === 'p' ? 'print_attempt' : 'copy_attempt');
+            return;
+          }
+          if ((e.ctrlKey || e.metaKey) && e.shiftKey && (k === 's' || k === 'i' || k === 'j' || k === 'c' || k === '3' || k === '4' || k === '5' || k === '6')) {
+            e.preventDefault();
+            activateShield('Screen capture / inspector shortcut blocked.', 'screenshot_key_attempt');
+            return;
+          }
+          if (e.key === 'F12') {
+            e.preventDefault();
+            activateShield('Developer tools are disabled for protected quotes.', 'devtools_attempt');
+          }
+        }
+        window.addEventListener('keydown', handleCaptureKey, { capture: true });
+        window.addEventListener('keyup', handleCaptureKey, { capture: true });
+
+        // Focus loss, app switcher, Snipping Tool overlay, tab hide, desktop cursor leave
         window.addEventListener('beforeprint', function () {
-          if (state.deck) sendAudit('print_attempt', 'beforeprint triggered');
+          activateShield('Printing is disabled for this protected quotation.', 'print_attempt');
         });
         window.addEventListener('blur', function () {
           activateShield('Focus moved away from the quotation window.', 'focus_blur');
         });
-        document.addEventListener('visibilitychange', function () {
-          if (document.hidden) activateShield('Quotation tab hidden.', 'focus_blur');
+        window.addEventListener('pagehide', function () {
+          activateShield('Quotation page paused.', 'focus_blur');
         });
-        els.resumeViewBtn.addEventListener('click', deactivateShield);
+        document.addEventListener('visibilitychange', function () {
+          if (document.hidden) activateShield('Quotation tab hidden or app switched.', 'focus_blur');
+        });
+        if (!isTouchDevice) {
+          document.addEventListener('mouseleave', function (e) {
+            if (state.deck && (!e.relatedTarget && !e.toElement)) {
+              activateShield('Pointer left the quotation window. Click Resume when ready.', 'window_leave');
+            }
+          });
+          document.addEventListener('mousemove', resetIdleLock, { passive: true });
+          // Docked DevTools detection on desktop browsers
+          setInterval(function () {
+            if (!state.deck || state.shieldActive) return;
+            var dw = Math.abs((window.outerWidth || 0) - (window.innerWidth || 0));
+            var dh = Math.abs((window.outerHeight || 0) - (window.innerHeight || 0));
+            if (dw > 220 || dh > 220) {
+              activateShield('Browser inspector / overlay detected. Close it to continue viewing.', 'devtools_attempt');
+            }
+          }, 1200);
+        }
+
+        els.resumeViewBtn.addEventListener('click', function () {
+          deactivateShield();
+          resetIdleLock();
+        });
       }
 
       async function loadAuthenticatedDeck() {
@@ -1292,7 +1410,7 @@
         els.loginScreen.style.display = 'none';
         els.viewerShell.style.display = 'flex';
         els.viewerTitle.textContent = data.deck.title || 'Cookscape Interior Quotation';
-        els.protectionBadge.textContent = '🔒 Watermarked for ' + (data.deck.clientName || 'Client') + ' • Read-Only';
+        els.protectionBadge.textContent = '🔒 Protected View for ' + (data.deck.clientName || 'Client') + ' • Read-Only';
         renderSidebar();
         applyCanvasSize();
         await goToSlide(0);

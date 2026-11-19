@@ -560,7 +560,15 @@ def main():
             cover_bg_im, cover_layout = render_slide1_cover_bg(z, slide_w_emu, slide_h_emu, theme_colors)
             cover_bg_im.save(os.path.join(OUT_DIR, 'slide_01_bg.jpg'), 'JPEG', quality=88, optimize=True)
 
-        visual_slides = [2, 3, 4, 5, 6, 7, 10, 13, 16, 19, 29]
+        visual_slides = [2, 3, 4, 5, 6, 7, 10, 13, 16, 19, 22, 25, 28, 31, 41]
+        expected_jpgs = {'master_logo.jpg', 'slide_01_bg.jpg'} | {f'slide_{idx:02d}.jpg' for idx in visual_slides}
+        for existing_fn in os.listdir(OUT_DIR):
+            if existing_fn.endswith('.jpg') and existing_fn not in expected_jpgs:
+                try:
+                    os.remove(os.path.join(OUT_DIR, existing_fn))
+                except Exception:
+                    pass
+
         for idx in visual_slides:
             fname = f'slide_{idx:02d}.jpg'
             img = render_visual_slide(z, idx, slide_w_emu, slide_h_emu, theme_colors)
@@ -576,60 +584,92 @@ def main():
 
         variants = [
             {
-                'key': 'LL elite',
-                'title': 'LL ELITE',
-                'subtitle': 'Smart Essential Modular Range',
+                'key': 'zappo - el pearl',
+                'title': 'ZAPPO EL PEARL',
+                'subtitle': 'Value Modular Range',
                 'dividerSlide': 7,
                 'dividerAsset': 'slide_07.jpg',
                 'specTables': read_slide_tables(8)
             },
             {
-                'key': 'CC MATTE',
-                'title': 'CAPRICOAST MATTE',
-                'subtitle': 'Refined Matte Laminate Finish',
+                'key': 'pot&cafe',
+                'title': 'POT & CAFE',
+                'subtitle': 'Essential Contemporary Modular Range',
                 'dividerSlide': 10,
                 'dividerAsset': 'slide_10.jpg',
                 'specTables': read_slide_tables(11)
             },
             {
-                'key': 'CC GLOSSY',
-                'title': 'CAPRICOST GLOSSY',
-                'subtitle': 'High-Gloss Mirror Finish',
+                'key': 'homespace',
+                'title': 'HOME SPACE',
+                'subtitle': 'Elevated Modular Living Range',
                 'dividerSlide': 13,
                 'dividerAsset': 'slide_13.jpg',
                 'specTables': read_slide_tables(14)
             },
             {
-                'key': 'SURABHI',
-                'title': 'ELEGANT SURABHI',
-                'subtitle': 'Super Matte 1mm Branded Laminate',
+                'key': 'cafehunt',
+                'title': 'CAFÉ HUNT',
+                'subtitle': 'Signature Marine BWP Modular Range',
                 'dividerSlide': 16,
                 'dividerAsset': 'slide_16.jpg',
                 'specTables': read_slide_tables(17)
             },
             {
-                'key': 'MR+',
-                'title': '4X TUFF GLOSS',
-                'subtitle': 'Scratch & Stain Proof Gloss',
+                'key': 'LL elite',
+                'title': 'LL ELITE',
+                'subtitle': 'Smart Essential Modular Range',
                 'dividerSlide': 19,
                 'dividerAsset': 'slide_19.jpg',
                 'specTables': read_slide_tables(20)
+            },
+            {
+                'key': 'CC MATTE',
+                'title': 'CAPRICOAST MATTE',
+                'subtitle': 'Refined Matte Laminate Finish',
+                'dividerSlide': 22,
+                'dividerAsset': 'slide_22.jpg',
+                'specTables': read_slide_tables(23)
+            },
+            {
+                'key': 'CC GLOSSY',
+                'title': 'CAPRICOST GLOSSY',
+                'subtitle': 'High-Gloss Mirror Finish',
+                'dividerSlide': 25,
+                'dividerAsset': 'slide_25.jpg',
+                'specTables': read_slide_tables(26)
+            },
+            {
+                'key': 'SURABHI',
+                'title': 'ELEGANT SURABHI',
+                'subtitle': 'Super Matte 1mm Branded Laminate',
+                'dividerSlide': 28,
+                'dividerAsset': 'slide_28.jpg',
+                'specTables': read_slide_tables(29)
+            },
+            {
+                'key': 'MR+',
+                'title': '4X TUFF GLOSS',
+                'subtitle': 'Scratch & Stain Proof Gloss',
+                'dividerSlide': 31,
+                'dividerAsset': 'slide_31.jpg',
+                'specTables': read_slide_tables(32)
             }
         ]
 
-        s22_paras = read_slide_paras(22)
-        s22_tables = read_slide_tables(22)
-        s23_paras = read_slide_paras(23)
-        s23_tables = read_slide_tables(23)
-        s24_tables = read_slide_tables(24)
-        s25_tables = read_slide_tables(25)
-        s26_paras = read_slide_paras(26)
-        s27_paras = read_slide_paras(27)
-        s28_paras = read_slide_paras(28)
+        s34_paras = read_slide_paras(34)
+        s34_tables = read_slide_tables(34)
+        s35_paras = read_slide_paras(35)
+        s35_tables = read_slide_tables(35)
+        s36_tables = read_slide_tables(36)
+        s37_tables = read_slide_tables(37)
+        s38_paras = read_slide_paras(38)
+        s39_paras = read_slide_paras(39)
+        s40_paras = read_slide_paras(40)
 
-        faq_idx = next((i for i, p in enumerate(s27_paras) if 'FREQUENTLY ASKED QUESTIONS' in p.upper()), len(s27_paras))
-        terms_paras = [p for p in (s26_paras + s27_paras[:faq_idx]) if p.upper() != 'TERMS & CONDITIONS']
-        faq_paras = [p for p in (s27_paras[faq_idx + 1:] + s28_paras) if 'FREQUENTLY ASKED QUESTIONS' not in p.upper()]
+        faq_idx = next((i for i, p in enumerate(s39_paras) if 'FREQUENTLY ASKED QUESTIONS' in p.upper()), len(s39_paras))
+        terms_paras = [p for p in (s38_paras + s39_paras[:faq_idx]) if p.upper() != 'TERMS & CONDITIONS']
+        faq_paras = [p for p in (s39_paras[faq_idx + 1:] + s40_paras) if 'FREQUENTLY ASKED QUESTIONS' not in p.upper()]
 
         data = {
             'canvas': {'width': CANVAS_W, 'height': CANVAS_H, 'bgColor': '#F4EDE3'},
@@ -650,27 +690,27 @@ def main():
                     {'id': 'intro_5', 'title': 'Introduction — Page 5', 'asset': 'slide_05.jpg'},
                     {'id': 'intro_6', 'title': 'Introduction — Page 6', 'asset': 'slide_06.jpg'}
                 ],
-                'closingAsset': 'slide_29.jpg'
+                'closingAsset': 'slide_41.jpg'
             },
             'variants': variants,
             'processSlides': {
                 'designProcess': {
                     'title': 'DESIGN PROCESS AND TIMELINES',
-                    'paragraphs': [p for p in s22_paras if p.upper() != 'DESIGN PROCESS AND TIMELINES'],
-                    'table': s22_tables[0] if s22_tables else []
+                    'paragraphs': [p for p in s34_paras if p.upper() != 'DESIGN PROCESS AND TIMELINES'],
+                    'table': s34_tables[0] if s34_tables else []
                 },
                 'executionProcess': {
                     'title': 'EXECUTION PROCESS AND TIMELINES',
-                    'paragraphs': [p for p in s23_paras if p.upper() != 'EXECUTION PROCESS AND TIMELINES'],
-                    'table': s23_tables[0] if s23_tables else []
+                    'paragraphs': [p for p in s35_paras if p.upper() != 'EXECUTION PROCESS AND TIMELINES'],
+                    'table': s35_tables[0] if s35_tables else []
                 },
                 'inclusionsExclusions': {
                     'title': 'INCLUSION & EXCLUSION POLICY',
-                    'table': s24_tables[0] if s24_tables else []
+                    'table': s36_tables[0] if s36_tables else []
                 },
                 'paymentTerms': {
                     'title': 'PAYMENT TERMS AND WORK STAGE',
-                    'table': s25_tables[0] if s25_tables else []
+                    'table': s37_tables[0] if s37_tables else []
                 },
                 'termsConditions': {
                     'title': 'TERMS & CONDITIONS',

@@ -310,7 +310,7 @@ class ClientQuoteService {
       Boolean(quoteDeckBuilder.normalizeTemplateVariantKey(vq.tierKey || vq.tierName || vq.tierTitle))
     );
     if (!variantQuotes.length) {
-      throw makeError('Please select at least one Master Template variant (LL ELITE, CAPRICOAST MATTE, CAPRICOST GLOSSY, ELEGANT SURABHI, or 4X TUFF GLOSS).', 400);
+      throw makeError('Please select at least one Master Template variant (ZAPPO EL PEARL, POT & CAFE, HOME SPACE, CAFÉ HUNT, LL ELITE, CAPRICOAST MATTE, CAPRICOST GLOSSY, ELEGANT SURABHI, or 4X TUFF GLOSS).', 400);
     }
 
     // Sanitize compact unit thumbnail icons mapped inside Unit Snips
@@ -362,7 +362,7 @@ class ClientQuoteService {
         unitIcons
       },
       securitySettings: {
-        watermarkEnabled: payload.securitySettings?.watermarkEnabled !== false,
+        watermarkEnabled: false,
         blurShieldEnabled: payload.securitySettings?.blurShieldEnabled !== false
       },
       expiresAt,
@@ -532,14 +532,11 @@ class ClientQuoteService {
       title: rec.title,
       quoteCode: rec.quoteCode || '',
       clientName: rec.clientName,
-      watermarkText: [
-        rec.clientName,
-        rec.clientUsername,
-        rec.quoteCode || rec.id,
-        maskIp(ip),
-        new Date().toISOString().slice(0, 16).replace('T', ' ')
-      ].filter(Boolean).join('  •  '),
-      securitySettings: rec.securitySettings || { watermarkEnabled: true, blurShieldEnabled: true },
+      watermarkText: '',
+      securitySettings: {
+        watermarkEnabled: false,
+        blurShieldEnabled: rec.securitySettings?.blurShieldEnabled !== false
+      },
       slides
     };
   }

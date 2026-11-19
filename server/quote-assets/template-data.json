@@ -88,15 +88,535 @@
         "asset": "slide_06.jpg"
       }
     ],
-    "closingAsset": "slide_29.jpg"
+    "closingAsset": "slide_41.jpg"
   },
   "variants": [
+    {
+      "key": "zappo - el pearl",
+      "title": "ZAPPO EL PEARL",
+      "subtitle": "Value Modular Range",
+      "dividerSlide": 7,
+      "dividerAsset": "slide_07.jpg",
+      "specTables": [
+        [
+          [
+            "Specification",
+            "Details"
+          ],
+          [
+            "Kitchen FM Carcass",
+            "BWP PLY,CENTURY PLY,303 MR GRADE"
+          ],
+          [
+            "Shutter Finish",
+            ""
+          ],
+          [
+            "Shutter Material",
+            ""
+          ],
+          [
+            "Wardrobe Carcass",
+            "BWP PLY,CENTURY PLY,303 MR GRADE"
+          ],
+          [
+            "Shutter Finish",
+            ""
+          ],
+          [
+            "Primary Hinges",
+            ""
+          ],
+          [
+            "Shutters Edge Banding",
+            "2mm Edge Banding"
+          ],
+          [
+            "Adhesives",
+            ""
+          ],
+          [
+            "Laminate / Facia Brand",
+            "Vir/new mica/dorby/advanced catch"
+          ],
+          [
+            "Hardwares & Utilities",
+            "Premium soft closing"
+          ],
+          [
+            "Kitchen Accessories",
+            "SLEEK BRAND /EBCO/HETTICH"
+          ],
+          [
+            "Hanger-rods",
+            ""
+          ],
+          [
+            "Wardrobe Locks",
+            "Dual Switch EBCO"
+          ],
+          [
+            "Leg & Wall Bracket",
+            ""
+          ],
+          [
+            "Sliding Track",
+            "premium soft closing"
+          ],
+          [
+            "Colour Customization",
+            "Default Half White"
+          ],
+          [
+            "Lift Up Piston",
+            ""
+          ],
+          [
+            "Screws & clamps",
+            ""
+          ],
+          [
+            "Installation Process",
+            ""
+          ],
+          [
+            "Installation Duration",
+            ""
+          ],
+          [
+            "Inclusive in cost",
+            ""
+          ],
+          [
+            "Excluded in Cost",
+            "Transport,unloading,floor matt,design charges"
+          ],
+          [
+            "Taxes",
+            "Prices are Excluding GST"
+          ],
+          [
+            "Customization Internals",
+            "Not Available for Inner Partitions"
+          ],
+          [
+            "Laminate Pasting",
+            "Machine Pressed Lamination"
+          ],
+          [
+            "Edge Banding",
+            "2mm edge banding"
+          ],
+          [
+            "HOT MELT Adhesives",
+            ""
+          ],
+          [
+            "Additional process",
+            ""
+          ],
+          [
+            "Production Timeline",
+            "45 working days"
+          ]
+        ]
+      ]
+    },
+    {
+      "key": "pot&cafe",
+      "title": "POT & CAFE",
+      "subtitle": "Essential Contemporary Modular Range",
+      "dividerSlide": 10,
+      "dividerAsset": "slide_10.jpg",
+      "specTables": [
+        [
+          [
+            "Specification",
+            "Details"
+          ],
+          [
+            "Kitchen FM Carcass",
+            "BWP PLY,CENTURY PLY,303 MR GRADE"
+          ],
+          [
+            "Shutter Finish",
+            ""
+          ],
+          [
+            "Shutter Material",
+            ""
+          ],
+          [
+            "Wardrobe Carcass",
+            "BWP PLY,CENTURY PLY,303 MR GRADE"
+          ],
+          [
+            "Shutter Finish",
+            ""
+          ],
+          [
+            "Primary Hinges",
+            ""
+          ],
+          [
+            "Shutters Edge Banding",
+            ""
+          ],
+          [
+            "Adhesives",
+            ""
+          ],
+          [
+            "Laminate / Facia Brand",
+            "Style lam,Airo lam,India lam"
+          ],
+          [
+            "Hardwares & Utilities",
+            "Necessary hardwares"
+          ],
+          [
+            "Kitchen Accessories",
+            ""
+          ],
+          [
+            "Hanger-rods",
+            ""
+          ],
+          [
+            "Wardrobe Locks",
+            ""
+          ],
+          [
+            "Leg & Wall Bracket",
+            ""
+          ],
+          [
+            "Sliding Track",
+            ""
+          ],
+          [
+            "Colour Customization",
+            "Default Half White"
+          ],
+          [
+            "Lift Up Piston",
+            ""
+          ],
+          [
+            "Screws & clamps",
+            ""
+          ],
+          [
+            "Installation Process",
+            ""
+          ],
+          [
+            "Installation Duration",
+            ""
+          ],
+          [
+            "Inclusive in cost",
+            ""
+          ],
+          [
+            "Excluded in Cost",
+            ""
+          ],
+          [
+            "Taxes",
+            "Prices are Excluding GST"
+          ],
+          [
+            "Customization Internals",
+            "Additional cost"
+          ],
+          [
+            "Laminate Pasting",
+            ""
+          ],
+          [
+            "Edge Banding",
+            ""
+          ],
+          [
+            "HOT MELT Adhesives",
+            ""
+          ],
+          [
+            "Additional process",
+            ""
+          ],
+          [
+            "Production Timeline",
+            ""
+          ]
+        ]
+      ]
+    },
+    {
+      "key": "homespace",
+      "title": "HOME SPACE",
+      "subtitle": "Elevated Modular Living Range",
+      "dividerSlide": 13,
+      "dividerAsset": "slide_13.jpg",
+      "specTables": [
+        [
+          [
+            "Specification",
+            "Details"
+          ],
+          [
+            "Kitchen FM Carcass",
+            "BWP PLY,PRELAM AQUA SHEID MDF - R"
+          ],
+          [
+            "Shutter Finish",
+            "MATT,HI GLOSS,BSL,COMMERCIAL PLY,MDF"
+          ],
+          [
+            "Shutter Material",
+            "HYDRO GUARD TUF HDF ,PRELAM AQUA SHIELD"
+          ],
+          [
+            "Wardrobe Carcass",
+            "BWP PLY, PRELAM AQUA SHEID MDF - R"
+          ],
+          [
+            "Shutter Finish",
+            "MATT/HI GLOSS/BSL"
+          ],
+          [
+            "Primary Hinges",
+            "TYROX"
+          ],
+          [
+            "Shutters Edge Banding",
+            ""
+          ],
+          [
+            "Adhesives",
+            ""
+          ],
+          [
+            "Laminate / Facia Brand",
+            "WOODGRAINS,SF,PRELAM LAM"
+          ],
+          [
+            "Hardwares & Utilities",
+            "TYROX"
+          ],
+          [
+            "Kitchen Accessories",
+            ""
+          ],
+          [
+            "Hanger-rods",
+            ""
+          ],
+          [
+            "Wardrobe Locks",
+            ""
+          ],
+          [
+            "Leg & Wall Bracket",
+            ""
+          ],
+          [
+            "Sliding Track",
+            ""
+          ],
+          [
+            "Colour Customization",
+            "Default Half White"
+          ],
+          [
+            "Lift Up Piston",
+            ""
+          ],
+          [
+            "Screws & clamps",
+            ""
+          ],
+          [
+            "Installation Process",
+            ""
+          ],
+          [
+            "Installation Duration",
+            ""
+          ],
+          [
+            "Inclusive in cost",
+            ""
+          ],
+          [
+            "Excluded in Cost",
+            ""
+          ],
+          [
+            "Taxes",
+            "Prices are Excluding GST"
+          ],
+          [
+            "Customization Internals",
+            "Not Available for Inner Partitions"
+          ],
+          [
+            "Laminate Pasting",
+            "Machine Pressed Lamination"
+          ],
+          [
+            "Edge Banding",
+            ""
+          ],
+          [
+            "HOT MELT Adhesives",
+            ""
+          ],
+          [
+            "Additional process",
+            "Not Applicable"
+          ],
+          [
+            "Production Timeline",
+            "45 Day delivery gurantee"
+          ]
+        ]
+      ]
+    },
+    {
+      "key": "cafehunt",
+      "title": "CAFÉ HUNT",
+      "subtitle": "Signature Marine BWP Modular Range",
+      "dividerSlide": 16,
+      "dividerAsset": "slide_16.jpg",
+      "specTables": [
+        [
+          [
+            "Specification",
+            "Details"
+          ],
+          [
+            "Kitchen FM Carcass",
+            "Marine grade BWP"
+          ],
+          [
+            "Shutter Finish",
+            "MATT / GLOSSY"
+          ],
+          [
+            "Shutter Material",
+            "HDHMR"
+          ],
+          [
+            "Wardrobe Carcass",
+            "Marine grade BWP"
+          ],
+          [
+            "Shutter Finish",
+            "MATT/HI GLOSS/BSL"
+          ],
+          [
+            "Primary Hinges",
+            ""
+          ],
+          [
+            "Shutters Edge Banding",
+            ""
+          ],
+          [
+            "Adhesives",
+            ""
+          ],
+          [
+            "Laminate / Facia Brand",
+            "GREEN PLY,FORTUNE GOLD,FINEPLY,TROJAN PLY,ACTION TESA-HDHME"
+          ],
+          [
+            "Hardwares & Utilities",
+            ""
+          ],
+          [
+            "Kitchen Accessories",
+            ""
+          ],
+          [
+            "Hanger-rods",
+            ""
+          ],
+          [
+            "Wardrobe Locks",
+            ""
+          ],
+          [
+            "Leg & Wall Bracket",
+            ""
+          ],
+          [
+            "Sliding Track",
+            ""
+          ],
+          [
+            "Colour Customization",
+            ""
+          ],
+          [
+            "Lift Up Piston",
+            ""
+          ],
+          [
+            "Screws & clamps",
+            ""
+          ],
+          [
+            "Installation Process",
+            ""
+          ],
+          [
+            "Installation Duration",
+            ""
+          ],
+          [
+            "Inclusive in cost",
+            ""
+          ],
+          [
+            "Excluded in Cost",
+            ""
+          ],
+          [
+            "Taxes",
+            "Prices are Excluding GST"
+          ],
+          [
+            "Customization Internals",
+            ""
+          ],
+          [
+            "Laminate Pasting",
+            ""
+          ],
+          [
+            "Edge Banding",
+            ""
+          ],
+          [
+            "Additional process",
+            ""
+          ],
+          [
+            "Production Timeline",
+            "45 to 60 working days"
+          ]
+        ]
+      ]
+    },
     {
       "key": "LL elite",
       "title": "LL ELITE",
       "subtitle": "Smart Essential Modular Range",
-      "dividerSlide": 7,
-      "dividerAsset": "slide_07.jpg",
+      "dividerSlide": 19,
+      "dividerAsset": "slide_19.jpg",
       "specTables": [
         [
           [
@@ -180,8 +700,8 @@
       "key": "CC MATTE",
       "title": "CAPRICOAST MATTE",
       "subtitle": "Refined Matte Laminate Finish",
-      "dividerSlide": 10,
-      "dividerAsset": "slide_10.jpg",
+      "dividerSlide": 22,
+      "dividerAsset": "slide_22.jpg",
       "specTables": [
         [
           [
@@ -303,8 +823,8 @@
       "key": "CC GLOSSY",
       "title": "CAPRICOST GLOSSY",
       "subtitle": "High-Gloss Mirror Finish",
-      "dividerSlide": 13,
-      "dividerAsset": "slide_13.jpg",
+      "dividerSlide": 25,
+      "dividerAsset": "slide_25.jpg",
       "specTables": [
         [
           [
@@ -426,8 +946,8 @@
       "key": "SURABHI",
       "title": "ELEGANT SURABHI",
       "subtitle": "Super Matte 1mm Branded Laminate",
-      "dividerSlide": 16,
-      "dividerAsset": "slide_16.jpg",
+      "dividerSlide": 28,
+      "dividerAsset": "slide_28.jpg",
       "specTables": [
         [
           [
@@ -553,8 +1073,8 @@
       "key": "MR+",
       "title": "4X TUFF GLOSS",
       "subtitle": "Scratch & Stain Proof Gloss",
-      "dividerSlide": 19,
-      "dividerAsset": "slide_19.jpg",
+      "dividerSlide": 31,
+      "dividerAsset": "slide_31.jpg",
       "specTables": [
         [
           [

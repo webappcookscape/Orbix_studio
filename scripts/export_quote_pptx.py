@@ -1,243 +1,80 @@
 #!/usr/bin/env python3
 """
-Generate a customized Cookscape quotation PPTX directly from Master-Template.pptx
-preserving exact Master Template flow:
-Slide 1 Cover -> Intro (2-6) -> Per Selected Variant: [Divider, Specs, Unit Snips, Quotation] -> Process/Terms/FAQs (22-28) -> Closing (29).
+Strict Master-Template.pptx Exporter (100% Python Standard Library — ZERO Pillow/PIL dependency):
+- Preserves Slide 1 Cover (with quotegenerator's exact alignments & token replacements),
+  Slides 2-6 Intro, Slides 34-40 Process/Terms/FAQs, and Slide 41 Closing untouched.
+- Supports all 9 Master-Template.pptx variants (Slides 7-33) in exact template order:
+  ZAPPO EL PEARL, POT & CAFE, HOME SPACE, CAFÉ HUNT, LL ELITE,
+  CAPRICOAST MATTE, CAPRICOST GLOSSY, ELEGANT SURABHI, 4X TUFF GLOSS.
+- Keeps ONLY selected variants; inserts native PowerPoint Unit Snips slides (with embedded
+  unit icon PNG thumbnails) right before each selected variant's native Quotation Summary table.
 """
 
 import base64
-import io
 import json
 import os
 import re
 import sys
 import zipfile
 import xml.etree.ElementTree as ET
-from PIL import Image, ImageDraw, ImageFont
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PPTX_PATH = os.path.join(ROOT_DIR, 'Master-Template.pptx')
 
 VARIANT_SLIDE_GROUPS = {
-    'LL elite': {'slides': [7, 8, 9], 'quote_slide': 9, 'title': 'LL ELITE'},
-    'CC MATTE': {'slides': [10, 11, 12], 'quote_slide': 12, 'title': 'CAPRICOAST MATTE'},
-    'CC GLOSSY': {'slides': [13, 14, 15], 'quote_slide': 15, 'title': 'CAPRICOST GLOSSY'},
-    'SURABHI': {'slides': [16, 17, 18], 'quote_slide': 18, 'title': 'ELEGANT SURABHI'},
-    'MR+': {'slides': [19, 20, 21], 'quote_slide': 21, 'title': '4X TUFF GLOSS'}
+    'zappo - el pearl': {'title': 'ZAPPO EL PEARL', 'slides': [7, 8, 9], 'quote_slide': 9},
+    'pot&cafe': {'title': 'POT & CAFE', 'slides': [10, 11, 12], 'quote_slide': 12},
+    'homespace': {'title': 'HOME SPACE', 'slides': [13, 14, 15], 'quote_slide': 15},
+    'cafehunt': {'title': 'CAFÉ HUNT', 'slides': [16, 17, 18], 'quote_slide': 18},
+    'LL elite': {'title': 'LL ELITE', 'slides': [19, 20, 21], 'quote_slide': 21},
+    'CC MATTE': {'title': 'CAPRICOAST MATTE', 'slides': [22, 23, 24], 'quote_slide': 24},
+    'CC GLOSSY': {'title': 'CAPRICOST GLOSSY', 'slides': [25, 26, 27], 'quote_slide': 27},
+    'SURABHI': {'title': 'ELEGANT SURABHI', 'slides': [28, 29, 30], 'quote_slide': 30},
+    'MR+': {'title': '4X TUFF GLOSS', 'slides': [31, 32, 33], 'quote_slide': 33},
 }
 
-CRIMSON = (192, 0, 0)
-FOREST = (8, 35, 27)
-BORDER = (210, 198, 182)
-CREAM_BG = (244, 237, 227)
-CARD_BG = (255, 253, 249)
-ALT_ROW = (250, 246, 240)
-GOLD_BG = (254, 249, 195)
-MUTED = (90, 96, 94)
+BASE_UNIT_TEMPLATE_SLIDE = 21  # Clean single-header Quotation slide (LL ELITE)
 
 
-def load_font(size, bold=False):
-    candidates = (
-        ['C:/Windows/Fonts/segoeuib.ttf', 'C:/Windows/Fonts/arialbd.ttf']
-        if bold else
-        ['C:/Windows/Fonts/segoeui.ttf', 'C:/Windows/Fonts/arial.ttf']
-    )
-    for fp in candidates:
-        if os.path.exists(fp):
-            try:
-                return ImageFont.truetype(fp, size)
-            except Exception:
-                pass
-    return ImageFont.load_default()
+def normalize_tier_key(raw):
+    s = str(raw or '').strip().lower()
+    if s in ('zappo - el pearl', 'zappo-el pearl', 'zappo-el-pearl', 'zappo el pearl', 'zappo', 'p1', 'price 1', 'price1'):
+        return 'zappo - el pearl'
+    if s in ('pot&cafe', 'pot & cafe', 'pot and cafe', 'pot cafe', 'p2', 'price 2', 'price2'):
+        return 'pot&cafe'
+    if s in ('homespace', 'home space', 'home-space', 'p3', 'price 3', 'price3'):
+        return 'homespace'
+    if s in ('cafehunt', 'cafe hunt', 'café hunt', 'cafe-hunt', 'livlame', 'p4', 'price 4', 'price4'):
+        return 'cafehunt'
+    if s in ('ll elite', 'llelite', 'livelane', 'live lane'):
+        return 'LL elite'
+    if s in ('cc matte', 'ccmatte', 'capricoast matte'):
+        return 'CC MATTE'
+    if s in ('cc glossy', 'ccglossy', 'capricost glossy', 'capricoast glossy', 'capricost'):
+        return 'CC GLOSSY'
+    if s in ('surabhi', 'elegant surabhi'):
+        return 'SURABHI'
+    if s in ('mr+', 'mr plus', '4x tuff gloss', '4x tg', '4xtg', 'tuff gloss'):
+        return 'MR+'
+    return None
 
 
 def fmt_inr(val):
-    try:
-        n = round(float(val or 0))
-    except Exception:
-        n = 0
+    n = int(round(float(val or 0)))
+    neg = n < 0
     s = str(abs(n))
     if len(s) > 3:
-        head, tail = s[:-3], s[-3:]
+        last3 = s[-3:]
+        rest = s[:-3]
         parts = []
-        while len(head) > 2:
-            parts.insert(0, head[-2:])
-            head = head[:-2]
-        if head:
-            parts.insert(0, head)
-        formatted = ','.join(parts) + ',' + tail
-    else:
-        formatted = s
-    return ('-' if n < 0 else '') + 'Rs. ' + formatted
-
-
-def decode_unit_icons(unit_icons_map):
-    decoded = {}
-    if not isinstance(unit_icons_map, dict):
-        return decoded
-    for key, data_url in unit_icons_map.items():
-        if not isinstance(data_url, str) or ';base64,' not in data_url:
-            continue
-        try:
-            raw = base64.b64decode(data_url.split(';base64,', 1)[1])
-            decoded[key] = Image.open(io.BytesIO(raw)).convert('RGBA')
-        except Exception:
-            pass
-    return decoded
-
-
-def render_unit_snips_image(items_chunk, start_no, page_idx, total_pages, variant_title, unit_icons, notes=''):
-    """Render auto-generated Unit Breakdown / Unit Snips PNG placed before Quotation slide."""
-    W, H = 1360, 1480
-    img = Image.new('RGB', (W, H), CREAM_BG)
-    draw = ImageDraw.Draw(img)
-
-    f_sec = load_font(22, bold=True)
-    f_th = load_font(17, bold=True)
-    f_td = load_font(16, bold=False)
-    f_td_b = load_font(16, bold=True)
-    f_sm = load_font(14, bold=False)
-
-    y = 14
-    sub_lbl = f"{variant_title} — UNIT BREAKDOWN (PAGE {page_idx}/{total_pages})" if total_pages > 1 else f"{variant_title} — MODULAR UNIT BREAKDOWN"
-    draw.rectangle([16, y, W - 16, y + 44], fill=FOREST)
-    draw.text((32, y + 10), sub_lbl, fill=(255, 255, 255), font=f_sec)
-    y += 50
-
-    cols = [
-        (16, 64, '#'),
-        (64, 160, 'Preview'),
-        (160, 330, 'Room'),
-        (330, 620, 'Unit & Finish'),
-        (620, 815, 'Size (mm)'),
-        (815, 945, 'Qty'),
-        (945, 1135, 'Rate'),
-        (1135, W - 16, 'Amount')
-    ]
-    draw.rectangle([16, y, W - 16, y + 40], fill=CRIMSON)
-    for x0, x1, title in cols:
-        draw.text((x0 + 8, y + 10), title, fill=(255, 255, 255), font=f_th)
-    y += 42
-
-    row_h = 112
-    for idx, it in enumerate(items_chunk):
-        bg = CARD_BG if idx % 2 == 0 else ALT_ROW
-        draw.rectangle([16, y, W - 16, y + row_h], fill=bg, outline=BORDER, width=1)
-        draw.text((28, y + 42), str(start_no + idx), fill=FOREST, font=f_td_b)
-
-        icon_key = it.get('iconKey')
-        icon_im = unit_icons.get(icon_key) if icon_key else None
-        if icon_im is not None:
-            thumb = icon_im.copy()
-            thumb.thumbnail((78, 88), Image.Resampling.LANCZOS)
-            ix = 64 + (96 - thumb.width) // 2
-            iy = y + (row_h - thumb.height) // 2
-            img.paste(thumb, (ix, iy), thumb)
-        else:
-            draw.rectangle([82, y + 20, 142, y + 92], fill=(232, 245, 243), outline=(94, 186, 170), width=2)
-
-        draw.text((170, y + 42), str(it.get('room', 'General'))[:16], fill=FOREST, font=f_td_b)
-        draw.text((340, y + 22), str(it.get('name', 'Unit'))[:26], fill=FOREST, font=f_td_b)
-        draw.text((340, y + 50), str(it.get('refCode', ''))[:16], fill=CRIMSON, font=f_sm)
-        draw.text((340, y + 74), str(it.get('finish', ''))[:32], fill=MUTED, font=f_sm)
-
-        draw.text((628, y + 42), str(it.get('dimensions', '-'))[:20], fill=FOREST, font=f_td)
-        draw.text((824, y + 42), str(it.get('qtyText', '-'))[:11], fill=FOREST, font=f_td)
-        draw.text((1125, y + 42), fmt_inr(it.get('rate', 0)), fill=FOREST, font=f_td, anchor='ra')
-        draw.text((W - 26, y + 42), fmt_inr(it.get('amount', 0)), fill=CRIMSON, font=f_td_b, anchor='ra')
-        y += row_h
-
-    if notes and notes.strip():
-        ny = min(y + 18, H - 150)
-        draw.rectangle([16, ny, W - 16, min(ny + 124, H - 18)], fill=GOLD_BG, outline=(252, 211, 77), width=2)
-        draw.text((30, ny + 12), 'SPECIFICATION REMARKS:', fill=(146, 64, 14), font=f_td_b)
-        draw.text((30, ny + 44), notes.strip()[:140], fill=FOREST, font=f_td)
-
-    buf = io.BytesIO()
-    img.save(buf, format='PNG', optimize=True)
-    return buf.getvalue()
-
-
-def render_quote_summary_image(variant_quote, payload):
-    """Render crisp Quotation Commercial Summary PNG for Quotation Slides (9/12/15/18/21)."""
-    W, H = 1360, 1420
-    img = Image.new('RGB', (W, H), CREAM_BG)
-    draw = ImageDraw.Draw(img)
-
-    f_title = load_font(28, bold=True)
-    f_sub = load_font(19, bold=False)
-    f_sec = load_font(21, bold=True)
-    f_td = load_font(18, bold=False)
-    f_td_b = load_font(18, bold=True)
-
-    y = 18
-    meta = payload.get('meta') or {}
-    quote_code = payload.get('quoteCode') or meta.get('quoteId') or ''
-    scope = variant_quote.get('roomScopeLabel') or 'All Rooms'
-    draw.rectangle([20, y, W - 20, y + 92], fill=CARD_BG, outline=BORDER, width=2)
-    draw.text((40, y + 14), f"{variant_quote.get('tierTitle', 'QUOTATION SUMMARY')}  —  COMMERCIAL ESTIMATE", fill=FOREST, font=f_title)
-    draw.text((40, y + 54), f"Patron: {payload.get('clientName', '')}   |   Scope: {scope}   |   Ref: {quote_code}", fill=MUTED, font=f_sub)
-    y += 116
-
-    rooms = variant_quote.get('roomsSummary') or []
-    comm = variant_quote.get('commercial') or {}
-
-    if rooms:
-        draw.rectangle([20, y, W - 20, y + 42], fill=FOREST)
-        draw.text((36, y + 9), 'ROOM-WISE BREAKDOWN', fill=(255, 255, 255), font=f_sec)
-        y += 42
-        for i, rm in enumerate(rooms[:10]):
-            bg = CARD_BG if i % 2 == 0 else ALT_ROW
-            draw.rectangle([20, y, W - 20, y + 42], fill=bg, outline=BORDER, width=1)
-            rname = f"{rm.get('name', 'Room')} ({rm.get('itemCount', 0)} units)"
-            draw.text((36, y + 10), rname, fill=FOREST, font=f_td_b)
-            draw.text((W - 40, y + 10), fmt_inr(rm.get('roomSubtotal', 0)), fill=FOREST, font=f_td_b, anchor='ra')
-            y += 42
-        y += 28
-
-    draw.rectangle([20, y, W - 20, y + 42], fill=CRIMSON)
-    draw.text((36, y + 9), 'COMMERCIAL SUMMARY & CHARGES', fill=(255, 255, 255), font=f_sec)
-    y += 42
-
-    comm_rows = [
-        ('Modular Woodwork Subtotal', fmt_inr(comm.get('woodworkSubtotal', 0)), True),
-        ('Additional Accessories', fmt_inr(comm.get('additionalAccessories', 0)), False),
-        ('Appliances', fmt_inr(comm.get('appliances', 0)), False),
-        (f"Design & Handling Fee ({comm.get('designPercent', 9)}%)", fmt_inr(comm.get('designAmount', 0)), False),
-        (f"Freight Charges ({comm.get('freightPercent', 2.5)}%)", fmt_inr(comm.get('freightAmount', 0)), False),
-    ]
-    if float(comm.get('discountAmount') or 0) > 0:
-        comm_rows.append((f"Promotional Discount ({comm.get('discountPercent', 0)}%)", '- ' + fmt_inr(comm.get('discountAmount', 0)), False))
-    if float(comm.get('adpAmount') or 0) > 0:
-        comm_rows.append((f"Additional Discount ADP ({comm.get('adpPercent', 0)}%)", '- ' + fmt_inr(comm.get('adpAmount', 0)), False))
-    comm_rows.append(('Net Estimate (Excl. GST)', fmt_inr(comm.get('netBeforeTax', 0)), True))
-    comm_rows.append((f"GST Applicable ({comm.get('gstPercent', 18)}%)", fmt_inr(comm.get('gstAmount', 0)), False))
-
-    for i, (label, val, is_bold) in enumerate(comm_rows):
-        bg = CARD_BG if i % 2 == 0 else ALT_ROW
-        draw.rectangle([20, y, W - 20, y + 44], fill=bg, outline=BORDER, width=1)
-        draw.text((36, y + 11), label, fill=FOREST, font=f_td_b if is_bold else f_td)
-        draw.text((W - 40, y + 11), val, fill=FOREST, font=f_td_b, anchor='ra')
-        y += 44
-
-    draw.rectangle([20, y, W - 20, y + 60], fill=GOLD_BG, outline=CRIMSON, width=3)
-    draw.text((36, y + 16), 'FINAL QUOTED VALUE (INCLUSIVE OF GST)', fill=FOREST, font=f_sec)
-    draw.text((W - 40, y + 14), fmt_inr(comm.get('grandTotal', variant_quote.get('grandTotal', 0))), fill=CRIMSON, font=f_title, anchor='ra')
-    y += 78
-
-    if y < H - 80:
-        scope_notes = (
-            f"Loading/Unloading: {comm.get('loadingUnloadingStatus', 'Additional')}  •  "
-            f"Floor Mat: {comm.get('floorMatStatus', 'Not Included')}  •  "
-            f"Civil: {comm.get('civilWorksStatus', 'As per actuals')}  •  "
-            f"Elec/Plumb: {comm.get('electricalPlumbingStatus', 'Additional')}  •  "
-            f"False Ceiling: {comm.get('falseCeilingStatus', 'Not Included')}"
-        )
-        draw.text((28, y), scope_notes, fill=MUTED, font=load_font(15))
-
-    buf = io.BytesIO()
-    img.save(buf, format='PNG', optimize=True)
-    return buf.getvalue()
+        while len(rest) > 2:
+            parts.append(rest[-2:])
+            rest = rest[:-2]
+        if rest:
+            parts.append(rest)
+        parts.reverse()
+        s = ','.join(parts) + ',' + last3
+    return ('- Rs. ' if neg else 'Rs. ') + s
 
 
 def xml_escape(text):
@@ -249,6 +86,30 @@ def xml_escape(text):
         .replace('"', '&quot;')
         .replace("'", '&apos;')
     )
+
+
+def decode_unit_icons_bytes(icons_map):
+    """Return {iconKey: (ext, raw_bytes)} without requiring PIL."""
+    out = {}
+    if not isinstance(icons_map, dict):
+        return out
+    for k, raw in icons_map.items():
+        if not isinstance(raw, str):
+            continue
+        clean_key = re.sub(r'[^a-zA-Z0-9_-]', '', str(k or ''))[:36]
+        if not clean_key:
+            continue
+        m = re.match(r'^data:image/(png|jpeg|jpg|webp);base64,(.+)$', raw, flags=re.DOTALL)
+        if not m:
+            continue
+        ext = 'jpg' if m.group(1) in ('jpeg', 'jpg') else m.group(1)
+        try:
+            b = base64.b64decode(m.group(2))
+            if b:
+                out[clean_key] = (ext, b)
+        except Exception:
+            pass
+    return out
 
 
 COVER_SHAPE_ALIGNMENTS = [
@@ -279,18 +140,22 @@ COVER_SHAPE_ALIGNMENTS = [
 
 def apply_cover_shape_alignments(slide1_xml):
     align_map = {sid: (x, y, cx, cy) for sid, x, y, cx, cy in COVER_SHAPE_ALIGNMENTS}
+
     def _rw_sp(m):
         sp_xml = m.group(0)
         mid = re.search(r'<p:cNvPr\b[^>]*\bid="(\d+)"', sp_xml)
         if not mid or mid.group(1) not in align_map:
             return sp_xml
         x, y, cx, cy = align_map[mid.group(1)]
+
         def _rw_xf(xm):
             xf = re.sub(r'<a:off\b[^/]*/>', f'<a:off x="{x}" y="{y}"/>', xm.group(0), count=1)
             if cx is not None and cy is not None:
                 xf = re.sub(r'<a:ext\b[^/]*/>', f'<a:ext cx="{cx}" cy="{cy}"/>', xf, count=1)
             return xf
+
         return re.sub(r'<a:xfrm\b[^>]*>.*?</a:xfrm>', _rw_xf, sp_xml, count=1, flags=re.DOTALL)
+
     return re.sub(r'<p:sp\b[^>]*>.*?</p:sp>', _rw_sp, slide1_xml, flags=re.DOTALL)
 
 
@@ -340,34 +205,343 @@ def replace_footer_and_number(slide_xml, footer_text, slide_num):
     return slide_xml
 
 
-def inject_png_into_slide(slide_xml, rels_xml, media_filename, img_id_num):
-    existing_rids = [int(m) for m in re.findall(r'Id="rId(\d+)"', rels_xml)]
-    next_rid = f"rId{(max(existing_rids) + 1) if existing_rids else 10}"
-    new_rel = (
-        f'<Relationship Id="{next_rid}" '
-        f'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
-        f'Target="../media/{media_filename}"/>'
+def _ooxml_cell_borders(color_hex='D2C6B6', width_emu=12700):
+    ln_xml = f'<a:ln w="{width_emu}" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:srgbClr val="{color_hex}"/></a:solidFill></a:ln>'
+    return (
+        f'<a:lnL w="{width_emu}" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:srgbClr val="{color_hex}"/></a:solidFill></a:lnL>'
+        f'<a:lnR w="{width_emu}" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:srgbClr val="{color_hex}"/></a:solidFill></a:lnR>'
+        f'<a:lnT w="{width_emu}" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:srgbClr val="{color_hex}"/></a:solidFill></a:lnT>'
+        f'<a:lnB w="{width_emu}" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:srgbClr val="{color_hex}"/></a:solidFill></a:lnB>'
     )
-    rels_xml = rels_xml.replace('</Relationships>', f'{new_rel}</Relationships>')
 
-    pic_xml = f'''
-      <p:pic xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-        <p:nvPicPr>
-          <p:cNvPr id="{9000 + img_id_num}" name="OrbixQuotePic{img_id_num}"/>
-          <p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr>
-          <p:nvPr/>
-        </p:nvPicPr>
-        <p:blipFill>
-          <a:blip r:embed="{next_rid}"/>
-          <a:stretch><a:fillRect/></a:stretch>
-        </p:blipFill>
-        <p:spPr>
-          <a:xfrm><a:off x="480000" y="2550000"/><a:ext cx="9085700" cy="10500000"/></a:xfrm>
-          <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
-        </p:spPr>
-      </p:pic>'''
-    slide_xml = slide_xml.replace('</p:spTree>', f'{pic_xml}</p:spTree>')
-    return slide_xml, rels_xml
+
+def build_ooxml_cell(lines, fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=1000, align='l', border_hex='D2C6B6'):
+    """Build a single native PowerPoint <a:tc> cell supporting multi-line paragraphs."""
+    if isinstance(lines, str):
+        lines = [lines]
+    p_parts = []
+    for idx, line in enumerate(lines):
+        if isinstance(line, tuple):
+            txt, l_bold, l_hex, l_sz = line
+        else:
+            txt, l_bold, l_hex, l_sz = str(line or ''), bold, text_hex, font_sz
+        b_attr = ' b="1"' if l_bold else ''
+        p_parts.append(
+            f'<a:p><a:pPr algn="{align}"/>'
+            f'<a:r><a:rPr lang="en-IN" sz="{l_sz}"{b_attr} dirty="0">'
+            f'<a:solidFill><a:srgbClr val="{l_hex}"/></a:solidFill>'
+            f'<a:latin typeface="Calibri"/>'
+            f'</a:rPr><a:t>{xml_escape(txt)}</a:t></a:r></a:p>'
+        )
+    if not p_parts:
+        p_parts.append(f'<a:p><a:pPr algn="{align}"/><a:endParaRPr lang="en-IN" sz="{font_sz}"/></a:p>')
+    borders = _ooxml_cell_borders(border_hex)
+    return (
+        f'<a:tc>'
+        f'<a:txBody><a:bodyPr wrap="square" lIns="75000" tIns="45000" rIns="75000" bIns="45000" anchor="ctr"/>'
+        f'<a:lstStyle/>{"".join(p_parts)}</a:txBody>'
+        f'<a:tcPr anchor="ctr">{borders}<a:solidFill><a:srgbClr val="{fill_hex}"/></a:solidFill></a:tcPr>'
+        f'</a:tc>'
+    )
+
+
+def build_ooxml_table(shape_id, name, x, y, col_widths, rows_spec):
+    """Build a complete native <p:graphicFrame><a:tbl> shape."""
+    total_w = sum(col_widths)
+    total_h = sum(r_h for r_h, _ in rows_spec)
+    grid_xml = ''.join(f'<a:gridCol w="{w}"/>' for w in col_widths)
+    tr_xml = []
+    for r_h, cells in rows_spec:
+        tr_xml.append(f'<a:tr h="{r_h}">{"".join(cells)}</a:tr>')
+    return (
+        f'<p:graphicFrame xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+        f'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+        f'<p:nvGraphicFramePr>'
+        f'<p:cNvPr id="{shape_id}" name="{xml_escape(name)}"/>'
+        f'<p:cNvGraphicFramePr><a:graphicFrameLocks noGrp="1"/></p:cNvGraphicFramePr>'
+        f'<p:nvPr/>'
+        f'</p:nvGraphicFramePr>'
+        f'<p:xfrm><a:off x="{x}" y="{y}"/><a:ext cx="{total_w}" cy="{total_h}"/></p:xfrm>'
+        f'<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table">'
+        f'<a:tbl><a:tblPr firstRow="1" bandRow="1"/><a:tblGrid>{grid_xml}</a:tblGrid>{"".join(tr_xml)}</a:tbl>'
+        f'</a:graphicData></a:graphic></p:graphicFrame>'
+    )
+
+
+def build_ooxml_textbox(shape_id, name, x, y, cx, cy, lines, fill_hex=None, border_hex=None, align='l'):
+    p_parts = []
+    for line in lines:
+        txt, bold, hex_c, sz = line
+        b_attr = ' b="1"' if bold else ''
+        p_parts.append(
+            f'<a:p><a:pPr algn="{align}"/>'
+            f'<a:r><a:rPr lang="en-IN" sz="{sz}"{b_attr} dirty="0">'
+            f'<a:solidFill><a:srgbClr val="{hex_c}"/></a:solidFill>'
+            f'<a:latin typeface="Calibri"/>'
+            f'</a:rPr><a:t>{xml_escape(txt)}</a:t></a:r></a:p>'
+        )
+    fill_xml = f'<a:solidFill><a:srgbClr val="{fill_hex}"/></a:solidFill>' if fill_hex else '<a:noFill/>'
+    ln_xml = f'<a:ln w="12700"><a:solidFill><a:srgbClr val="{border_hex}"/></a:solidFill></a:ln>' if border_hex else '<a:ln><a:noFill/></a:ln>'
+    return (
+        f'<p:sp xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+        f'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+        f'<p:nvSpPr><p:cNvPr id="{shape_id}" name="{xml_escape(name)}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+        f'<p:spPr><a:xfrm><a:off x="{x}" y="{y}"/><a:ext cx="{cx}" cy="{cy}"/></a:xfrm>'
+        f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>{fill_xml}{ln_xml}</p:spPr>'
+        f'<p:txBody><a:bodyPr wrap="square" lIns="110000" tIns="60000" rIns="110000" bIns="60000" anchor="ctr"/>'
+        f'<a:lstStyle/>{"".join(p_parts)}</p:txBody></p:sp>'
+    )
+
+
+def build_ooxml_pic(shape_id, name, rid, x, y, cx, cy):
+    return (
+        f'<p:pic xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+        f'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+        f'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+        f'<p:nvPicPr><p:cNvPr id="{shape_id}" name="{xml_escape(name)}"/>'
+        f'<p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr>'
+        f'<p:blipFill><a:blip r:embed="{rid}"/><a:stretch><a:fillRect/></a:stretch></p:blipFill>'
+        f'<p:spPr><a:xfrm><a:off x="{x}" y="{y}"/><a:ext cx="{cx}" cy="{cy}"/></a:xfrm>'
+        f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>'
+    )
+
+
+def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_id_seed):
+    """Inject native PowerPoint Room Breakdown + Commercial Summary tables onto a Quotation slide."""
+    meta = payload.get('meta') or {}
+    quote_code = payload.get('quoteCode') or meta.get('quoteId') or ''
+    scope = variant_quote.get('roomScopeLabel') or 'All Rooms'
+    client_name = payload.get('clientName') or meta.get('clientName') or ''
+    tier_title = variant_quote.get('tierTitle') or variant_quote.get('tierKey') or 'QUOTATION SUMMARY'
+
+    x0 = 460000
+    w_total = 9125700
+    y = 2520000
+    shapes = []
+
+    shapes.append(build_ooxml_textbox(
+        8100 + slide_id_seed * 20, f'OrbixQuoteHdr_{slide_id_seed}',
+        x0, y, w_total, 700000,
+        [
+            (f'{tier_title}  —  COMMERCIAL ESTIMATE', True, '08231B', 1400),
+            (f'Patron: {client_name}   |   Scope: {scope}   |   Ref: {quote_code}', False, '475569', 1000)
+        ],
+        fill_hex='FFFFFF', border_hex='D2C6B6'
+    ))
+    y += 840000
+
+    rooms = (variant_quote.get('roomsSummary') or [])[:10]
+    comm = variant_quote.get('commercial') or {}
+
+    if rooms:
+        row_h = 330000 if len(rooms) <= 6 else 285000
+        room_rows = [
+            (360000, [
+                build_ooxml_cell('ROOM-WISE BREAKDOWN', fill_hex='08231B', text_hex='FFFFFF', bold=True, font_sz=1050, align='l', border_hex='08231B'),
+                build_ooxml_cell('AMOUNT', fill_hex='08231B', text_hex='FFFFFF', bold=True, font_sz=1050, align='r', border_hex='08231B'),
+            ])
+        ]
+        for idx, rm in enumerate(rooms):
+            bg = 'FFFFFF' if idx % 2 == 0 else 'FAF6F0'
+            rname = f"{rm.get('name', 'Room')} ({rm.get('itemCount', 0)} units)"
+            room_rows.append((row_h, [
+                build_ooxml_cell(rname, fill_hex=bg, text_hex='08231B', bold=True, font_sz=1000, align='l'),
+                build_ooxml_cell(fmt_inr(rm.get('roomSubtotal', 0)), fill_hex=bg, text_hex='08231B', bold=True, font_sz=1000, align='r'),
+            ]))
+        shapes.append(build_ooxml_table(
+            8101 + slide_id_seed * 20, f'OrbixRoomsTbl_{slide_id_seed}',
+            x0, y, [6325700, 2800000], room_rows
+        ))
+        y += sum(rh for rh, _ in room_rows) + 240000
+
+    comm_items = [
+        ('Modular Woodwork Subtotal', fmt_inr(comm.get('woodworkSubtotal', 0)), True),
+        ('Additional Accessories', fmt_inr(comm.get('additionalAccessories', 0)), False),
+        ('Appliances', fmt_inr(comm.get('appliances', 0)), False),
+        (f"Design & Handling Fee ({comm.get('designPercent', 9)}%)", fmt_inr(comm.get('designAmount', 0)), False),
+        (f"Freight Charges ({comm.get('freightPercent', 2.5)}%)", fmt_inr(comm.get('freightAmount', 0)), False),
+    ]
+    if float(comm.get('discountAmount') or 0) > 0:
+        comm_items.append((f"Promotional Discount ({comm.get('discountPercent', 0)}%)", '- ' + fmt_inr(comm.get('discountAmount', 0)), False))
+    if float(comm.get('adpAmount') or 0) > 0:
+        comm_items.append((f"Additional Discount ADP ({comm.get('adpPercent', 0)}%)", '- ' + fmt_inr(comm.get('adpAmount', 0)), False))
+    comm_items.append(('Net Estimate (Excl. GST)', fmt_inr(comm.get('netBeforeTax', 0)), True))
+    comm_items.append((f"GST Applicable ({comm.get('gstPercent', 18)}%)", fmt_inr(comm.get('gstAmount', 0)), False))
+
+    c_row_h = 340000 if len(comm_items) <= 8 else 305000
+    comm_rows = [
+        (370000, [
+            build_ooxml_cell('COMMERCIAL SUMMARY & CHARGES', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=1050, align='l', border_hex='C00000'),
+            build_ooxml_cell('AMOUNT', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=1050, align='r', border_hex='C00000'),
+        ])
+    ]
+    for idx, (lbl, val, is_b) in enumerate(comm_items):
+        bg = 'FFFFFF' if idx % 2 == 0 else 'FAF6F0'
+        comm_rows.append((c_row_h, [
+            build_ooxml_cell(lbl, fill_hex=bg, text_hex='08231B', bold=is_b, font_sz=1000, align='l'),
+            build_ooxml_cell(val, fill_hex=bg, text_hex='08231B', bold=True, font_sz=1000, align='r'),
+        ]))
+
+    grand_total = fmt_inr(comm.get('grandTotal', variant_quote.get('grandTotal', 0)))
+    comm_rows.append((490000, [
+        build_ooxml_cell('FINAL QUOTED VALUE (INCLUSIVE OF GST)', fill_hex='FEF9C3', text_hex='08231B', bold=True, font_sz=1150, align='l', border_hex='C00000'),
+        build_ooxml_cell(grand_total, fill_hex='FEF9C3', text_hex='C00000', bold=True, font_sz=1350, align='r', border_hex='C00000'),
+    ]))
+
+    shapes.append(build_ooxml_table(
+        8102 + slide_id_seed * 20, f'OrbixCommTbl_{slide_id_seed}',
+        x0, y, [6325700, 2800000], comm_rows
+    ))
+    y += sum(rh for rh, _ in comm_rows) + 180000
+
+    if y < 12650000:
+        scope_notes = (
+            f"Loading/Unloading: {comm.get('loadingUnloadingStatus', 'Additional')}  |  "
+            f"Floor Mat: {comm.get('floorMatStatus', 'Not Included')}  |  "
+            f"Civil: {comm.get('civilWorksStatus', 'As per actuals')}  |  "
+            f"Elec/Plumb: {comm.get('electricalPlumbingStatus', 'Additional')}  |  "
+            f"False Ceiling: {comm.get('falseCeilingStatus', 'Not Included')}"
+        )
+        shapes.append(build_ooxml_textbox(
+            8103 + slide_id_seed * 20, f'OrbixScopeNote_{slide_id_seed}',
+            x0, y, w_total, 420000,
+            [(scope_notes, False, '475569', 850)]
+        ))
+
+    return slide_xml.replace('</p:spTree>', ''.join(shapes) + '</p:spTree>')
+
+
+def inject_unit_snips_into_slide(slide_xml, rels_xml, items, start_no, page_idx, total_pages, variant_title, unit_icons_bytes, notes, unit_slide_uid):
+    """Build native PowerPoint Unit Breakdown table + embedded native <p:pic> unit thumbnails."""
+    x0 = 460000
+    y = 2520000
+    col_widths = [560000, 960000, 3550000, 1850000, 950000, 1255700]
+    w_total = sum(col_widths)
+    shapes = []
+
+    hdr_text = f"{variant_title} — UNIT-WISE BREAKDOWN (PAGE {page_idx} OF {total_pages})"
+    shapes.append(build_ooxml_textbox(
+        9100 + unit_slide_uid * 40, f'OrbixUnitHdr_{unit_slide_uid}',
+        x0, y, w_total, 420000,
+        [(hdr_text, True, 'FFFFFF', 1100)],
+        fill_hex='08231B'
+    ))
+    y += 460000
+
+    hdr_h = 370000
+    row_h = 920000
+    tbl_rows = [
+        (hdr_h, [
+            build_ooxml_cell('No.', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=950, align='ctr', border_hex='C00000'),
+            build_ooxml_cell('Unit', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=950, align='ctr', border_hex='C00000'),
+            build_ooxml_cell('Unit Details & Dimensions', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=950, align='l', border_hex='C00000'),
+            build_ooxml_cell('Material / Finish', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=950, align='l', border_hex='C00000'),
+            build_ooxml_cell('Qty', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=950, align='ctr', border_hex='C00000'),
+            build_ooxml_cell('Amount', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=950, align='r', border_hex='C00000'),
+        ])
+    ]
+
+    existing_rids = [int(m) for m in re.findall(r'Id="rId(\d+)"', rels_xml)]
+    next_rid_num = (max(existing_rids) + 1) if existing_rids else 10
+    embedded_media = {}  # media_filename -> raw_bytes
+    icon_rid_cache = {}
+    pic_shapes = []
+
+    for idx, it in enumerate(items):
+        bg = 'FFFFFF' if idx % 2 == 0 else 'FAF6F0'
+        row_y = y + hdr_h + idx * row_h
+        ref = str(it.get('refCode') or f'{start_no + idx:02d}')
+        room_name = str(it.get('room') or 'Interior')
+        unit_name = str(it.get('name') or 'Modular Unit')
+        dims = str(it.get('dimensions') or '')
+        finish = str(it.get('finish') or '-')
+        qty_txt = str(it.get('qtyText') or '1')
+        amt_txt = fmt_inr(it.get('amount') or 0)
+
+        detail_lines = [
+            (f'{room_name} • {unit_name}', True, '08231B', 950),
+        ]
+        if dims:
+            detail_lines.append((dims, False, '475569', 850))
+
+        icon_key = re.sub(r'[^a-zA-Z0-9_-]', '', str(it.get('iconKey') or ''))
+        has_icon = icon_key in unit_icons_bytes
+        if has_icon:
+            ext, raw_bytes = unit_icons_bytes[icon_key]
+            media_fn = f'orbix_uicon_{icon_key}.{ext}'
+            embedded_media[media_fn] = raw_bytes
+            if media_fn not in icon_rid_cache:
+                rid = f'rId{next_rid_num}'
+                next_rid_num += 1
+                icon_rid_cache[media_fn] = rid
+                rel_tag = (
+                    f'<Relationship Id="{rid}" '
+                    f'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
+                    f'Target="../media/{media_fn}"/>'
+                )
+                rels_xml = rels_xml.replace('</Relationships>', f'{rel_tag}</Relationships>')
+            icon_sz = 680000
+            pic_x = x0 + col_widths[0] + (col_widths[1] - icon_sz) // 2
+            pic_y = row_y + (row_h - icon_sz) // 2
+            pic_shapes.append(build_ooxml_pic(
+                9120 + unit_slide_uid * 40 + idx,
+                f'OrbixUnitIcon_{unit_slide_uid}_{idx}',
+                icon_rid_cache[media_fn],
+                pic_x, pic_y, icon_sz, icon_sz
+            ))
+
+        tbl_rows.append((row_h, [
+            build_ooxml_cell(ref, fill_hex=bg, text_hex='08231B', bold=True, font_sz=900, align='ctr'),
+            build_ooxml_cell('' if has_icon else 'UNIT', fill_hex=bg, text_hex='94A3B8', bold=False, font_sz=750, align='ctr'),
+            build_ooxml_cell(detail_lines, fill_hex=bg, text_hex='08231B', bold=False, font_sz=900, align='l'),
+            build_ooxml_cell(finish, fill_hex=bg, text_hex='334155', bold=False, font_sz=850, align='l'),
+            build_ooxml_cell(qty_txt, fill_hex=bg, text_hex='08231B', bold=False, font_sz=850, align='ctr'),
+            build_ooxml_cell(amt_txt, fill_hex=bg, text_hex='08231B', bold=True, font_sz=950, align='r'),
+        ]))
+
+    if not items:
+        tbl_rows.append((600000, [
+            build_ooxml_cell('-', fill_hex='FFFFFF', text_hex='475569', align='ctr'),
+            build_ooxml_cell('-', fill_hex='FFFFFF', text_hex='475569', align='ctr'),
+            build_ooxml_cell('No modular units listed.', fill_hex='FFFFFF', text_hex='475569', align='l'),
+            build_ooxml_cell('-', fill_hex='FFFFFF', text_hex='475569', align='l'),
+            build_ooxml_cell('-', fill_hex='FFFFFF', text_hex='475569', align='ctr'),
+            build_ooxml_cell('Rs. 0', fill_hex='FFFFFF', text_hex='08231B', bold=True, align='r'),
+        ]))
+
+    shapes.append(build_ooxml_table(
+        9101 + unit_slide_uid * 40, f'OrbixUnitsTbl_{unit_slide_uid}',
+        x0, y, col_widths, tbl_rows
+    ))
+    shapes.extend(pic_shapes)
+    y += sum(rh for rh, _ in tbl_rows) + 180000
+
+    if notes and y < 12650000:
+        shapes.append(build_ooxml_textbox(
+            9105 + unit_slide_uid * 40, f'OrbixUnitsNotes_{unit_slide_uid}',
+            x0, y, w_total, 500000,
+            [(f'Remarks: {notes}', False, '08231B', 900)],
+            fill_hex='FAF6F0', border_hex='D2C6B6'
+        ))
+
+    slide_xml = slide_xml.replace('</p:spTree>', ''.join(shapes) + '</p:spTree>')
+    return slide_xml, rels_xml, embedded_media
+
+
+def ensure_content_types(ct_xml, media_files):
+    needed = set()
+    for fn in media_files:
+        ext = os.path.splitext(fn)[1].lstrip('.').lower()
+        if ext:
+            needed.add(ext)
+    mime_map = {'png': 'image/png', 'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'webp': 'image/webp'}
+    for ext in needed:
+        if ext in mime_map and not re.search(rf'Extension="{re.escape(ext)}"', ct_xml, flags=re.IGNORECASE):
+            ct_xml = ct_xml.replace(
+                '</Types>',
+                f'<Default Extension="{ext}" ContentType="{mime_map[ext]}"/></Types>'
+            )
+    return ct_xml
 
 
 def build_pptx(payload, out_path):
@@ -375,12 +549,19 @@ def build_pptx(payload, out_path):
         raise FileNotFoundError(f'Missing {PPTX_PATH}')
 
     variant_quotes = payload.get('variantQuotes') or []
-    unit_icons = decode_unit_icons(payload.get('unitIcons') or {})
+    unit_icons_bytes = decode_unit_icons_bytes(payload.get('unitIcons') or {})
+
+    # Map normalized variant keys from payload
+    payload_by_key = {}
+    for vq in variant_quotes:
+        nk = normalize_tier_key(vq.get('tierKey') or vq.get('tierName') or vq.get('tierTitle'))
+        if nk and nk not in payload_by_key:
+            payload_by_key[nk] = vq
 
     kept_variant_map = {}
     slides_to_remove = set()
     for key, cfg in VARIANT_SLIDE_GROUPS.items():
-        matched = next((vq for vq in variant_quotes if vq.get('tierKey') == key), None)
+        matched = payload_by_key.get(key)
         if matched:
             kept_variant_map[cfg['quote_slide']] = (cfg, matched)
         else:
@@ -390,34 +571,31 @@ def build_pptx(payload, out_path):
     footer_parts = [payload.get('clientName') or '', payload.get('siteAddress') or '', payload.get('clientPhone') or '']
     footer_text = ' | '.join([p for p in footer_parts if p]) or 'Cookscape Interiors'
 
-    injected_quote_media = {}
     unit_slides_by_quote_slide = {}
     unit_counter = 0
-
     for q_slide, (cfg, vq) in kept_variant_map.items():
-        injected_quote_media[q_slide] = (
-            f"orbix_quote_slide_{q_slide}.png",
-            render_quote_summary_image(vq, payload)
-        )
         items = vq.get('items') or []
         chunks = [items[i:i + 9] for i in range(0, len(items), 9)] or [[]]
         unit_slides_by_quote_slide[q_slide] = []
         for p_idx, ch in enumerate(chunks):
             unit_counter += 1
-            media_name = f"orbix_unit_snip_{q_slide}_{p_idx + 1}.png"
-            png_bytes = render_unit_snips_image(
-                ch, p_idx * 9 + 1, p_idx + 1, len(chunks), cfg['title'], unit_icons,
-                notes=(vq.get('notes', '') if p_idx == len(chunks) - 1 else '')
-            )
-            unit_slides_by_quote_slide[q_slide].append((unit_counter, cfg['title'], media_name, png_bytes))
+            unit_slides_by_quote_slide[q_slide].append((
+                unit_counter,
+                cfg['title'],
+                ch,
+                p_idx * 9 + 1,
+                p_idx + 1,
+                len(chunks),
+                vq.get('notes', '') if p_idx == len(chunks) - 1 else ''
+            ))
 
     with zipfile.ZipFile(PPTX_PATH, 'r') as zin:
         pres_xml = zin.read('ppt/presentation.xml').decode('utf-8')
         pres_rels_xml = zin.read('ppt/_rels/presentation.xml.rels').decode('utf-8')
         ct_xml = zin.read('[Content_Types].xml').decode('utf-8')
 
-        base_quote_xml = zin.read('ppt/slides/slide9.xml').decode('utf-8')
-        base_quote_rels = zin.read('ppt/slides/_rels/slide9.xml.rels').decode('utf-8')
+        base_quote_xml = zin.read(f'ppt/slides/slide{BASE_UNIT_TEMPLATE_SLIDE}.xml').decode('utf-8')
+        base_quote_rels = zin.read(f'ppt/slides/_rels/slide{BASE_UNIT_TEMPLATE_SLIDE}.xml.rels').decode('utf-8')
 
         rel_root = ET.fromstring(pres_rels_xml)
         rid_to_slide = {}
@@ -434,11 +612,12 @@ def build_pptx(payload, out_path):
             if s_num and s_num in slides_to_remove:
                 continue
             if s_num in unit_slides_by_quote_slide:
-                for u_id, v_title, u_media_name, u_png in unit_slides_by_quote_slide[s_num]:
+                for u_info in unit_slides_by_quote_slide[s_num]:
+                    u_id = u_info[0]
                     u_rid = f"rIdOrbixUnit{u_id}"
                     u_target = f"slides/slide_unit_{u_id}.xml"
                     u_sld_tag = f'<p:sldId id="{32000 + u_id}" r:id="{u_rid}"/>'
-                    final_entries.append(('unit', u_sld_tag, u_id, v_title, u_media_name, u_png, u_rid, u_target))
+                    final_entries.append(('unit', u_sld_tag, u_info, u_rid, u_target))
             final_entries.append(('orig', m.group(0), s_num))
 
         new_sld_lst = '<p:sldIdLst>' + ''.join(e[1] for e in final_entries) + '</p:sldIdLst>'
@@ -454,8 +633,8 @@ def build_pptx(payload, out_path):
             if e[0] == 'orig':
                 orig_seq_map[e[2]] = seq_idx
             else:
-                unit_seq_map[e[2]] = seq_idx
-                u_rid, u_target = e[6], e[7]
+                u_info, u_rid, u_target = e[2], e[3], e[4]
+                unit_seq_map[u_info[0]] = seq_idx
                 pres_rels_xml = pres_rels_xml.replace(
                     '</Relationships>',
                     f'<Relationship Id="{u_rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="{u_target}"/></Relationships>'
@@ -464,6 +643,29 @@ def build_pptx(payload, out_path):
                     '</Types>',
                     f'<Override PartName="/ppt/{u_target}" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/></Types>'
                 )
+
+        # Pre-generate synthesized Unit Snips slides so we know all embedded media extensions before writing Content_Types
+        built_unit_slides = []
+        all_embedded_media = {}
+        for e in final_entries:
+            if e[0] != 'unit':
+                continue
+            u_info, _, u_target = e[2], e[3], e[4]
+            u_id, v_title, ch, start_no, p_idx, total_p, notes = u_info
+            u_xml = (
+                base_quote_xml
+                .replace(' LL ELITE', f' {xml_escape(v_title)}')
+                .replace('LL ELITE', xml_escape(v_title))
+                .replace('Quotation', 'Unit Breakdown')
+            )
+            u_xml = replace_footer_and_number(u_xml, footer_text, unit_seq_map[u_id])
+            u_xml, u_rels, media_dict = inject_unit_snips_into_slide(
+                u_xml, base_quote_rels, ch, start_no, p_idx, total_p, v_title, unit_icons_bytes, notes, u_id
+            )
+            all_embedded_media.update(media_dict)
+            built_unit_slides.append((u_target, u_xml, u_rels))
+
+        ct_xml = ensure_content_types(ct_xml, all_embedded_media.keys())
 
         with zipfile.ZipFile(out_path, 'w', compression=zipfile.ZIP_DEFLATED) as zout:
             for item in zin.infolist():
@@ -484,34 +686,19 @@ def build_pptx(payload, out_path):
                     if s_num == 1:
                         s_xml = replace_cover_tokens(s_xml, payload)
                     s_xml = replace_footer_and_number(s_xml, footer_text, orig_seq_map.get(s_num, s_num))
-                    if s_num in injected_quote_media:
-                        rels_fn = f'ppt/slides/_rels/slide{s_num}.xml.rels'
-                        rels_xml = zin.read(rels_fn).decode('utf-8')
-                        s_xml, rels_xml = inject_png_into_slide(s_xml, rels_xml, injected_quote_media[s_num][0], s_num)
-                        zout.writestr(fn, s_xml.encode('utf-8'))
-                        zout.writestr(rels_fn, rels_xml.encode('utf-8'))
-                        continue
+                    if s_num in kept_variant_map:
+                        _, vq = kept_variant_map[s_num]
+                        s_xml = inject_quotation_tables_into_slide(s_xml, vq, payload, s_num)
                     zout.writestr(fn, s_xml.encode('utf-8'))
-                elif m_slide and fn.endswith('.rels') and int(m_slide.group(1)) in injected_quote_media:
-                    continue
                 else:
                     zout.writestr(fn, zin.read(fn))
 
-            # Write quotation slide PNGs
-            for _, (media_name, png_bytes) in injected_quote_media.items():
-                zout.writestr(f'ppt/media/{media_name}', png_bytes)
+            for media_fn, raw_bytes in all_embedded_media.items():
+                zout.writestr(f'ppt/media/{media_fn}', raw_bytes)
 
-            # Write synthesized Unit Snips slides (exact clone of Slide 9 frame with Unit Breakdown title & PNG)
-            for e in final_entries:
-                if e[0] != 'unit':
-                    continue
-                _, _, u_id, v_title, u_media_name, u_png, _, u_target = e
-                u_xml = base_quote_xml.replace(' LL ELITE', f' {xml_escape(v_title)}').replace('LL ELITE', xml_escape(v_title)).replace('Quotation', 'Unit Breakdown')
-                u_xml = replace_footer_and_number(u_xml, footer_text, unit_seq_map[u_id])
-                u_xml, u_rels = inject_png_into_slide(u_xml, base_quote_rels, u_media_name, 500 + u_id)
+            for u_target, u_xml, u_rels in built_unit_slides:
                 zout.writestr(f'ppt/{u_target}', u_xml.encode('utf-8'))
                 zout.writestr(f'ppt/slides/_rels/{os.path.basename(u_target)}.rels', u_rels.encode('utf-8'))
-                zout.writestr(f'ppt/media/{u_media_name}', u_png)
 
 
 if __name__ == '__main__':
