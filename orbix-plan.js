@@ -3454,8 +3454,30 @@
 
     // ── ROBUST 90° CORNER DETECTION & MAGNETIC SNAPPING ──
     var cornerCandidates = [];
+    var seenCorners = [];
 
-    // A. Inner room corners from room polygons
+    function addCornerCandidate(cPt, dirA, dirB, source) {
+      if (!cPt || !isFinite(cPt.x) || !isFinite(cPt.y)) return;
+      if (!dirA || !dirB) return;
+      // Deduplicate corner points within 40mm having similar directions
+      for (var s = 0; s < seenCorners.length; s++) {
+        var sc = seenCorners[s];
+        if (Math.hypot(sc.x - cPt.x, sc.y - cPt.y) < 40 &&
+            Math.abs(sc.dirA.x * dirA.x + sc.dirA.y * dirA.y - 1) < 0.08 &&
+            Math.abs(sc.dirB.x * dirB.x + sc.dirB.y * dirB.y - 1) < 0.08) {
+          return;
+        }
+      }
+      seenCorners.push({ x: cPt.x, y: cPt.y, dirA: dirA, dirB: dirB });
+      cornerCandidates.push({
+        cornerPt: cPt,
+        dir1: dirA,
+        dir2: dirB,
+        source: source
+      });
+    }
+
+    // A. Inner room corners from room polygons (with exact wall thickness offsets)
     if (rooms && rooms.length > 0) {
       for (var ri = 0; ri < rooms.length; ri++) {
         var poly = rooms[ri].polygon;
@@ -3474,56 +3496,152 @@
           var u1 = { x: v1.x / l1, y: v1.y / l1 };
           var u2 = { x: v2.x / l2, y: v2.y / l2 };
           var dot = u1.x * u2.x + u1.y * u2.y;
-          // Near 90° interior corner (dot product between -0.4 and 0.4)
-          if (Math.abs(dot) < 0.4) {
-            cornerCandidates.push({
-              cornerPt: currPt,
-              dir1: u1,
-              dir2: u2,
-              room: rooms[ri]
-            });
+          // Near 90° interior corner (dot product between -0.38 and 0.38)
+          if (Math.abs(dot) < 0.38) {
+            // Find wall thicknesses for the two meeting wall segments
+            var tA = 150, tB = 150;
+            for (var wki = 0; wki < walls.length; wki++) {
+              var wObj = walls[wki];
+              var dC = Math.min(Math.hypot(wObj.start.x - currPt.x, wObj.start.y - currPt.y), Math.hypot(wObj.end.x - currPt.x, wObj.end.y - currPt.y));
+              if (dC < 120) {
+                var dNext = Math.min(Math.hypot(wObj.start.x - nextPt.x, wObj.start.y - nextPt.y), Math.hypot(wObj.end.x - nextPt.x, wObj.end.y - nextPt.y));
+                if (dNext < 120) tA = wObj.thickness || 150;
+                var dPrev = Math.min(Math.hypot(wObj.start.x - prevPt.x, wObj.start.y - prevPt.y), Math.hypot(wObj.end.x - prevPt.x, wObj.end.y - prevPt.y));
+                if (dPrev < 120) tB = wObj.thickness || 150;
+              }
+            }
+            var halfTA = tA / 2;
+            var halfTB = tB / 2;
+            var innerCornerPt = {
+              x: currPt.x + halfTB * u1.x + halfTA * u2.x,
+              y: currPt.y + halfTB * u1.y + halfTA * u2.y
+            };
+            addCornerCandidate(innerCornerPt, u1, u2, 'room_poly');
           }
         }
       }
     }
 
-    // B. Candidate corners from intersecting / meeting walls (tolerance up to 120mm)
+    // B. Candidate corners from intersecting / meeting walls (L-corners & T-junctions)
     for (var wa = 0; wa < walls.length; wa++) {
       var wA = walls[wa];
       if (wA.isDivider) continue;
+      var halfTA = (wA.thickness || 150) / 2;
+
       for (var wb = wa + 1; wb < walls.length; wb++) {
         var wB = walls[wb];
         if (wB.isDivider) continue;
+        var halfTB = (wB.thickness || 150) / 2;
 
-        var sharedPt = null, endA = null, endB = null;
-        if (Vec2.dist(wA.start, wB.start) < 120) { sharedPt = wA.start; endA = wA.end; endB = wB.end; }
-        else if (Vec2.dist(wA.start, wB.end) < 120) { sharedPt = wA.start; endA = wA.end; endB = wB.start; }
-        else if (Vec2.dist(wA.end, wB.start) < 120) { sharedPt = wA.end; endA = wA.start; endB = wB.end; }
-        else if (Vec2.dist(wA.end, wB.end) < 120) { sharedPt = wA.end; endA = wA.start; endB = wB.start; }
+        var ptsA = [wA.start, wA.end];
+        var ptsB = [wB.start, wB.end];
 
-        if (sharedPt) {
-          var vA = { x: endA.x - sharedPt.x, y: endA.y - sharedPt.y };
-          var vB = { x: endB.x - sharedPt.x, y: endB.y - sharedPt.y };
-          var lenA = Math.hypot(vA.x, vA.y);
-          var lenB = Math.hypot(vB.x, vB.y);
-          if (lenA > 100 && lenB > 100) {
-            var uA = { x: vA.x / lenA, y: vA.y / lenA };
-            var uB = { x: vB.x / lenB, y: vB.y / lenB };
-            var dotAB = uA.x * uB.x + uA.y * uB.y;
-            if (Math.abs(dotAB) < 0.4) {
-              var halfTA = (wA.thickness || 150) / 2;
-              var halfTB = (wB.thickness || 150) / 2;
-              var innerCornerPt = {
-                x: sharedPt.x + halfTB * uA.x + halfTA * uB.x,
-                y: sharedPt.y + halfTB * uA.y + halfTA * uB.y
-              };
-              cornerCandidates.push({
-                cornerPt: innerCornerPt,
-                dir1: uA,
-                dir2: uB,
-                wallA: wA,
-                wallB: wB
-              });
+        // 1. Direct meeting of endpoints (L-junctions)
+        for (var pa = 0; pa < 2; pa++) {
+          var ptA = ptsA[pa];
+          var otherA = ptsA[1 - pa];
+          for (var pb = 0; pb < 2; pb++) {
+            var ptB = ptsB[pb];
+            var otherB = ptsB[1 - pb];
+
+            var dEnd = Math.hypot(ptA.x - ptB.x, ptA.y - ptB.y);
+            if (dEnd < 180) {
+              var jPt = { x: (ptA.x + ptB.x) / 2, y: (ptA.y + ptB.y) / 2 };
+              var vA = { x: otherA.x - jPt.x, y: otherA.y - jPt.y };
+              var vB = { x: otherB.x - jPt.x, y: otherB.y - jPt.y };
+              var lenA = Math.hypot(vA.x, vA.y);
+              var lenB = Math.hypot(vB.x, vB.y);
+              if (lenA > 100 && lenB > 100) {
+                var uA = { x: vA.x / lenA, y: vA.y / lenA };
+                var uB = { x: vB.x / lenB, y: vB.y / lenB };
+                var dotAB = uA.x * uB.x + uA.y * uB.y;
+                if (Math.abs(dotAB) < 0.38) {
+                  var innerPt = {
+                    x: jPt.x + halfTB * uA.x + halfTA * uB.x,
+                    y: jPt.y + halfTB * uA.y + halfTA * uB.y
+                  };
+                  addCornerCandidate(innerPt, uA, uB, 'wall_meeting');
+                }
+              }
+            }
+          }
+        }
+
+        // 2. T-junctions: endpoint of Wall A landing on segment of Wall B
+        for (var paT = 0; paT < 2; paT++) {
+          var ptAT = ptsA[paT];
+          var otherAT = ptsA[1 - paT];
+          var prB = Core.projectPointOnSegment(ptAT, wB.start, wB.end);
+          if (prB.dist < 180 && prB.t >= 0.05 && prB.t <= 0.95) {
+            var jPtB = prB.pt;
+            var vAT = { x: otherAT.x - jPtB.x, y: otherAT.y - jPtB.y };
+            var lenAT = Math.hypot(vAT.x, vAT.y);
+            if (lenAT > 100) {
+              var uAT = { x: vAT.x / lenAT, y: vAT.y / lenAT };
+              // Two directions along Wall B: towards start and towards end
+              var vBStart = { x: wB.start.x - jPtB.x, y: wB.start.y - jPtB.y };
+              var lenBStart = Math.hypot(vBStart.x, vBStart.y);
+              if (lenBStart > 100) {
+                var uBStart = { x: vBStart.x / lenBStart, y: vBStart.y / lenBStart };
+                if (Math.abs(uAT.x * uBStart.x + uAT.y * uBStart.y) < 0.38) {
+                  var innerPtT1 = {
+                    x: jPtB.x + halfTB * uAT.x + halfTA * uBStart.x,
+                    y: jPtB.y + halfTB * uAT.y + halfTA * uBStart.y
+                  };
+                  addCornerCandidate(innerPtT1, uAT, uBStart, 't_junction');
+                }
+              }
+              var vBEnd = { x: wB.end.x - jPtB.x, y: wB.end.y - jPtB.y };
+              var lenBEnd = Math.hypot(vBEnd.x, vBEnd.y);
+              if (lenBEnd > 100) {
+                var uBEnd = { x: vBEnd.x / lenBEnd, y: vBEnd.y / lenBEnd };
+                if (Math.abs(uAT.x * uBEnd.x + uAT.y * uBEnd.y) < 0.38) {
+                  var innerPtT2 = {
+                    x: jPtB.x + halfTB * uAT.x + halfTA * uBEnd.x,
+                    y: jPtB.y + halfTB * uAT.y + halfTA * uBEnd.y
+                  };
+                  addCornerCandidate(innerPtT2, uAT, uBEnd, 't_junction');
+                }
+              }
+            }
+          }
+        }
+
+        // 3. T-junctions: endpoint of Wall B landing on segment of Wall A
+        for (var pbT = 0; pbT < 2; pbT++) {
+          var ptBT = ptsB[pbT];
+          var otherBT = ptsB[1 - pbT];
+          var prA = Core.projectPointOnSegment(ptBT, wA.start, wA.end);
+          if (prA.dist < 180 && prA.t >= 0.05 && prA.t <= 0.95) {
+            var jPtA = prA.pt;
+            var vBT = { x: otherBT.x - jPtA.x, y: otherBT.y - jPtA.y };
+            var lenBT = Math.hypot(vBT.x, vBT.y);
+            if (lenBT > 100) {
+              var uBT = { x: vBT.x / lenBT, y: vBT.y / lenBT };
+              var vAStart = { x: wA.start.x - jPtA.x, y: wA.start.y - jPtA.y };
+              var lenAStart = Math.hypot(vAStart.x, vAStart.y);
+              if (lenAStart > 100) {
+                var uAStart = { x: vAStart.x / lenAStart, y: vAStart.y / lenAStart };
+                if (Math.abs(uBT.x * uAStart.x + uBT.y * uAStart.y) < 0.38) {
+                  var innerPtTA1 = {
+                    x: jPtA.x + halfTA * uBT.x + halfTB * uAStart.x,
+                    y: jPtA.y + halfTA * uBT.y + halfTB * uAStart.y
+                  };
+                  addCornerCandidate(innerPtTA1, uBT, uAStart, 't_junction');
+                }
+              }
+              var vAEnd = { x: wA.end.x - jPtA.x, y: wA.end.y - jPtA.y };
+              var lenAEnd = Math.hypot(vAEnd.x, vAEnd.y);
+              if (lenAEnd > 100) {
+                var uAEnd = { x: vAEnd.x / lenAEnd, y: vAEnd.y / lenAEnd };
+                if (Math.abs(uBT.x * uAEnd.x + uBT.y * uAEnd.y) < 0.38) {
+                  var innerPtTA2 = {
+                    x: jPtA.x + halfTA * uBT.x + halfTB * uAEnd.x,
+                    y: jPtA.y + halfTA * uBT.y + halfTB * uAEnd.y
+                  };
+                  addCornerCandidate(innerPtTA2, uBT, uAEnd, 't_junction');
+                }
+              }
             }
           }
         }
@@ -3544,9 +3662,9 @@
       halfW = cW / 2;
       halfD = cD / 2;
 
-      // Generous magnetic snap radius for room corners (allows effortless snapping to 90° corners)
+      // Generous magnetic snap radius for room corners (locks solidly into 90° corners without snatching)
       var bestCornerSnap = null;
-      var minCornerDist = Math.max(650, Math.max(cW, cD) * 0.85);
+      var minCornerDist = Math.max(950, Math.max(cW, cD) * 1.35);
 
       for (var ci = 0; ci < cornerCandidates.length; ci++) {
         var cc = cornerCandidates[ci];
@@ -3559,10 +3677,21 @@
         // Arm 2 (depth cD) extends from outer corner along local +v
         // Outer corner is at (+cW/2, -cD/2)
         // Center = C_outer - (cW/2) * u + (cD/2) * v
-        // Evaluate the 4 orthogonal rotations: 0, π/2, π, 3π/2
-        var angles = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
-        for (var ai = 0; ai < angles.length; ai++) {
-          var aTest = angles[ai];
+        // Test all orthogonal orientations aligned to dirA and dirB
+        var testAngles = [
+          Math.atan2(-dirA.y, -dirA.x),
+          Math.atan2(-dirB.y, -dirB.x),
+          Math.atan2(dirA.y, dirA.x),
+          Math.atan2(dirB.y, dirB.x),
+          Math.atan2(dirA.x, -dirA.y),
+          Math.atan2(-dirA.x, dirA.y),
+          Math.atan2(dirB.x, -dirB.y),
+          Math.atan2(-dirB.x, dirB.y),
+          0, Math.PI / 2, Math.PI, 3 * Math.PI / 2
+        ];
+
+        for (var ai = 0; ai < testAngles.length; ai++) {
+          var aTest = testAngles[ai];
           var u = { x: Math.cos(aTest), y: Math.sin(aTest) };
           var v = { x: -Math.sin(aTest), y: Math.cos(aTest) };
           var arm1Dir = { x: -u.x, y: -u.y };
@@ -3574,8 +3703,8 @@
           var dot1B = arm1Dir.x * dirB.x + arm1Dir.y * dirB.y;
           var dot2A = arm2Dir.x * dirA.x + arm2Dir.y * dirA.y;
 
-          var matchesConfigA = (dot1A > 0.65 && dot2B > 0.65);
-          var matchesConfigB = (dot1B > 0.65 && dot2A > 0.65);
+          var matchesConfigA = (dot1A > 0.82 && dot2B > 0.82);
+          var matchesConfigB = (dot1B > 0.82 && dot2A > 0.82);
 
           if (matchesConfigA || matchesConfigB) {
             var candidateCenter = {
@@ -3599,6 +3728,8 @@
         }
       }
 
+      // STRICT PRECEDENCE LOCK: When hovering near a 90° corner, lock firmly into the corner
+      // and completely bypass the single-wall snatch loop to eliminate snatching/jitter!
       if (bestCornerSnap) {
         return bestCornerSnap;
       }
