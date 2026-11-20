@@ -117,6 +117,7 @@
     t.textContent = m; t.classList.add("show");
     clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("show"); }, 2400);
   }
+  window.toast = toast;
   function lam(code) {
     if (!code) return LAMINATES[0];
     var c = String(code).trim();
@@ -5484,7 +5485,36 @@
       });
     }
 
-    // Floor finish select synchronization with floorFinishGroup
+    // Keyboard shortcut: Spacebar or R to rotate active unit in 3D Studio
+    if (!window._unitRotationKeyHandlerAttached) {
+      window._unitRotationKeyHandlerAttached = true;
+      window.addEventListener("keydown", function (e) {
+        var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+        if (tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+        if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === "Space" || e.key === " " || e.key === "r" || e.key === "R")) {
+          var viewDesign = document.getElementById("view-design");
+          if (viewDesign && viewDesign.classList.contains("is-on")) {
+            var activeU = (window.S && window.S.units && window.S.active >= 0) ? window.S.units[window.S.active] : null;
+            if (activeU) {
+              e.preventDefault();
+              var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+              if (activeU._furnId && plan && plan.furniture) {
+                var f = plan.furniture.find(function (it) { return it.id === activeU._furnId; });
+                if (f) {
+                  f.rotY = ((f.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+                  if (window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+                  if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+                  if (window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+                  if (window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+                  if (typeof buildScene === 'function') buildScene();
+                  if (typeof toast === 'function') toast("↻ Rotated to " + Math.round(f.rotY * 180 / Math.PI) + "° (Spacebar)");
+                }
+              }
+            }
+          }
+        }
+      });
+    }
     var floorSelect = document.getElementById("floorFinishSelect");
     var floorGroup = document.getElementById("floorFinishGroup");
     if (floorSelect && floorGroup && !floorSelect._wired) {
