@@ -3,7 +3,7 @@
    Offline CAD engine, cache-first app shell & resilient background sync
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'orbix-studio-v20';
+const CACHE_NAME = 'orbix-studio-v21';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -107,7 +107,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Local App Code (HTML, JS, CSS): Network-First to guarantee latest code loads
+  // 2. Local App Code (HTML, JS, CSS) & SPA Navigation: Network-First to guarantee latest code loads
   if (url.origin === location.origin) {
     event.respondWith(
       fetch(request)
@@ -118,7 +118,23 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => caches.match(request))
+        .catch(async () => {
+          const cached = await caches.match(request);
+          if (cached) return cached;
+
+          // SPA navigation routes (/3d-studio, /2d-plan, etc.) fallback to app shell (index.html)
+          if (request.mode === 'navigate' || !url.pathname.includes('.')) {
+            const appShell = await caches.match('./index.html') || await caches.match('./');
+            if (appShell) return appShell;
+          }
+
+          // Return a safe 503 Service Unavailable Response object instead of undefined
+          return new Response('Offline — resource temporarily unavailable', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        })
     );
     return;
   }
@@ -134,7 +150,9 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => cachedResponse);
+        .catch(() => {
+          return cachedResponse || new Response('', { status: 404 });
+        });
 
       return cachedResponse || fetchPromise;
     })

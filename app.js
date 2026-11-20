@@ -1908,8 +1908,20 @@
     }
     function init() {
       if (!window.THREE) return false;
-      try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance", logarithmicDepthBuffer: true }); }
-      catch (e) { return false; }
+      try {
+        renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: true,
+          powerPreference: "high-performance",
+          logarithmicDepthBuffer: false
+        });
+      } catch (e) {
+        try {
+          renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+        } catch (_) {
+          return false;
+        }
+      }
       renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1917,11 +1929,33 @@
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.domElement.id = "gl";
+
+      // Gracefully handle WebGL context loss (Back-Forward cache, GPU memory pressure, sleep/wake)
+      renderer.domElement.addEventListener("webglcontextlost", function (e) {
+        e.preventDefault();
+        console.warn("[Orbix 3D] WebGL context lost. Gracefully suspending render loop.");
+      }, false);
+
+      renderer.domElement.addEventListener("webglcontextrestored", function () {
+        console.log("[Orbix 3D] WebGL context restored. Recompiling materials and recovering scene.");
+        try {
+          matCache = {};
+          if (pmrem) {
+            try { pmrem.dispose(); } catch (_) {}
+            pmrem = new THREE.PMREMGenerator(renderer);
+            scene.environment = pmrem.fromScene(makeRoomScene(), 0.04, 10, 30000).texture;
+          }
+          if (typeof render === "function") render();
+        } catch (err) {
+          console.warn("[Orbix 3D] Context recovery notice:", err);
+        }
+      }, false);
+
       stage.appendChild(renderer.domElement);
       stage.classList.add("gl");
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x82C3EC); // Crisp radiant daytime sky blue
-      camera = new THREE.PerspectiveCamera(24, 1, 15, 600000);
+      camera = new THREE.PerspectiveCamera(24, 1, 20, 120000);
       target = new THREE.Vector3();
       pmrem = new THREE.PMREMGenerator(renderer);
       /* fromScene defaults to near/far 0.1–100: the light room is 9 m across, so pass real planes or it bakes black */
@@ -1941,7 +1975,7 @@
       var bounceL = new THREE.DirectionalLight(0xfbf6ee, window.sunlightIntensity * 0.25); bounceL.position.set(0, -1800, 1200); scene.add(bounceL);
       scene.add(new THREE.HemisphereLight(0x82C3EC, 0x4E8A42, 0.55)); // Sky blue overhead + natural lawn grass ground bounce
       var hasArchHome = (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan && window.OrbixUI.project.plan.walls && window.OrbixUI.project.plan.walls.length > 0);
-      floor = new THREE.Mesh(new THREE.PlaneGeometry(300000, 300000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
+      floor = new THREE.Mesh(new THREE.PlaneGeometry(120000, 120000), hasArchHome ? makeGrassGroundMat() : makeFloorMat());
       floor.rotation.x = -Math.PI / 2; floor.position.y = -105; floor.receiveShadow = true; scene.add(floor);
       root = new THREE.Group(); scene.add(root);
       ok = true; return true;
