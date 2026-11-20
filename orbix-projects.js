@@ -1509,7 +1509,7 @@
           var uId = self.currentUser ? self.currentUser.id : 'anon';
           var localList = JSON.parse(localStorage.getItem('orbix_local_projects_' + uId) || '[]');
           project = localList.find(function (p) { return p.id === id; });
-        } catch (_) {}
+        } catch (_) { }
       }
       if (!project && !id) return;
       if (!project) {
@@ -1939,8 +1939,8 @@
         this._saveDebounce = null;
       }
       if ((this._hasUnsavedChanges || hadPendingDebounce || this._hasPendingOfflineSave) &&
-          this.currentUser &&
-          !(typeof navigator !== 'undefined' && navigator.onLine === false)) {
+        this.currentUser &&
+        !(typeof navigator !== 'undefined' && navigator.onLine === false)) {
         var project = this.projects ? this.projects.find(function (p) { return p && String(p.id) === String(activeId); }) : null;
         var pData = project ? Object.assign({}, project.data || {}, { plan: currentPlan, units: currentUnits }) : { plan: currentPlan, units: currentUnits };
         var stats = this._countPlanElements({ data: pData });
