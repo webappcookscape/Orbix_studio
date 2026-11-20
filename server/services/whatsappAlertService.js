@@ -65,6 +65,9 @@ async function postJson(url, body, headers) {
   return { ok: res.ok, status: res.status, body: text.slice(0, 300) };
 }
 
+const DEFAULT_UTILITY_TEMPLATE = 'orbix_quote_opened_alert';
+let cachedTemplateCheck = { name: '', approved: false, language: 'en', checkedAt: 0 };
+
 function getMetaCredentials() {
   const phoneNumberId = String(process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.PHONE_NUMBER_ID || '').trim();
   const token = String(process.env.WHATSAPP_ACCESS_TOKEN || process.env.WHATSAPP_TOKEN || '').trim();
@@ -72,31 +75,89 @@ function getMetaCredentials() {
   return { phoneNumberId, token, wabaId };
 }
 
-async function sendViaMetaCloud(phone, message) {
+async function resolveApprovedTemplate() {
+  const explicitName = String(process.env.WHATSAPP_TEMPLATE_NAME || '').trim();
+  const targetName = explicitName || DEFAULT_UTILITY_TEMPLATE;
+  const explicitLang = String(process.env.WHATSAPP_TEMPLATE_LANG || 'en').trim();
+  if (explicitName) {
+    return { name: explicitName, language: explicitLang, approved: true };
+  }
+  const { token, wabaId } = getMetaCredentials();
+  if (!token || !wabaId) return { name: targetName, language: explicitLang, approved: false };
+
+  const now = Date.now();
+  const ttl = cachedTemplateCheck.approved ? 15 * 60 * 1000 : 60 * 1000;
+  if (cachedTemplateCheck.name === targetName && (now - cachedTemplateCheck.checkedAt) < ttl) {
+    return cachedTemplateCheck;
+  }
+  try {
+    const apiVer = process.env.WHATSAPP_GRAPH_VERSION || 'v21.0';
+    const url = `https://graph.facebook.com/${apiVer}/${encodeURIComponent(wabaId)}/message_templates?name=${encodeURIComponent(targetName)}&fields=name,status,language`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) {
+      const json = await res.json();
+      const match = (json.data || []).find((t) => t.name === targetName && t.status === 'APPROVED');
+      cachedTemplateCheck = {
+        name: targetName,
+        approved: Boolean(match),
+        language: (match && match.language) || explicitLang,
+        checkedAt: now
+      };
+      return cachedTemplateCheck;
+    }
+  } catch (_) {}
+  cachedTemplateCheck = { name: targetName, approved: false, language: explicitLang, checkedAt: now };
+  return cachedTemplateCheck;
+}
+
+function cleanParam(val, fallback) {
+  const s = String(val || fallback || '-').replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  return (s || fallback || '-').slice(0, 120);
+}
+
+async function sendViaMetaCloud(phone, message, meta) {
   const { phoneNumberId, token } = getMetaCredentials();
   const apiVer = process.env.WHATSAPP_GRAPH_VERSION || 'v21.0';
   const url = `https://graph.facebook.com/${apiVer}/${encodeURIComponent(phoneNumberId)}/messages`;
-  const templateName = String(process.env.WHATSAPP_TEMPLATE_NAME || '').trim();
-  const payload = templateName
-    ? {
-        messaging_product: 'whatsapp',
-        to: phone,
-        type: 'template',
-        template: {
-          name: templateName,
-          language: { code: process.env.WHATSAPP_TEMPLATE_LANG || 'en' },
-          components: templateName === 'hello_world'
-            ? []
-            : [{ type: 'body', parameters: [{ type: 'text', text: message.slice(0, 900) }] }]
-        }
+  const tpl = await resolveApprovedTemplate();
+
+  let payload;
+  if (tpl && tpl.approved && process.env.WHATSAPP_USE_TEXT !== 'true') {
+    const m = meta || {};
+    const components = tpl.name === 'hello_world'
+      ? []
+      : tpl.name === DEFAULT_UTILITY_TEMPLATE
+        ? [{
+            type: 'body',
+            parameters: [
+              { type: 'text', text: cleanParam(m.clientName, 'Valued Client') },
+              { type: 'text', text: cleanParam(m.projectName || m.title, 'Interior Project') },
+              { type: 'text', text: cleanParam(m.projectId, '-') },
+              { type: 'text', text: cleanParam(m.quoteCode, '-') },
+              { type: 'text', text: cleanParam(m.openedAt, formatIstNow()) }
+            ]
+          }]
+        : [{ type: 'body', parameters: [{ type: 'text', text: cleanParam(message, 'Client opened quote') }] }];
+
+    payload = {
+      messaging_product: 'whatsapp',
+      to: phone,
+      type: 'template',
+      template: {
+        name: tpl.name,
+        language: { code: tpl.language || 'en' },
+        components
       }
-    : {
-        messaging_product: 'whatsapp',
-        recipient_type: 'individual',
-        to: phone,
-        type: 'text',
-        text: { preview_url: false, body: message }
-      };
+    };
+  } else {
+    payload = {
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to: phone,
+      type: 'text',
+      text: { preview_url: false, body: message }
+    };
+  }
   return postJson(url, payload, { Authorization: `Bearer ${token}` });
 }
 
@@ -188,7 +249,7 @@ async function sendClientOpenedAlert(info) {
     }
     try {
       let resp = null;
-      if (provider === 'meta') resp = await sendViaMetaCloud(phone, message);
+      if (provider === 'meta') resp = await sendViaMetaCloud(phone, message, meta);
       else if (provider === 'twilio') resp = await sendViaTwilio(phone, message);
       else if (provider === 'ultramsg') resp = await sendViaUltraMsg(phone, message);
       else if (provider === 'webhook') resp = await sendViaWebhook(phone, message, meta);
@@ -220,6 +281,9 @@ async function sendClientOpenedAlert(info) {
   } else {
     const okCount = results.filter((r) => r.sent).length;
     console.log(`[WhatsAppAlert] Dispatched via ${provider}: ${okCount}/${recipients.length} delivered for client "${meta.clientName}" (${meta.projectId})`);
+    results.filter((r) => !r.sent).forEach((r) => {
+      console.error(`[WhatsAppAlert] Delivery FAILED -> ${r.phone} (HTTP ${r.status || 0}): ${r.error || r.detail || 'Unknown error'}`);
+    });
   }
 
   return {

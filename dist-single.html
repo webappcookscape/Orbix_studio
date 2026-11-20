@@ -43815,7 +43815,10 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
               if (d.alert.provider === 'none') {
                 alert('WhatsApp API credentials are not configured in server .env yet.\nAlert message prepared for 8838199428 & 7418414780:\n\n' + d.alert.message);
               } else {
-                alert('WhatsApp test dispatched via ' + d.alert.provider + ': ' + delivered + '/' + d.alert.recipients.length + ' delivered!');
+                var failDetails = (d.alert.results || []).filter(function (x) { return !x.sent; }).map(function (x) {
+                  return x.phone + ' -> HTTP ' + (x.status || 0) + ': ' + (x.error || x.detail || 'Failed');
+                }).join('\n');
+                alert('WhatsApp test dispatched via ' + d.alert.provider + ': ' + delivered + '/' + d.alert.recipients.length + ' delivered!' + (failDetails ? ('\n\nFailure details:\n' + failDetails) : ''));
               }
             } catch (err) {
               alert(err.message || String(err));
