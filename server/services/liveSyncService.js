@@ -81,12 +81,34 @@ class LiveSyncService {
       let currentProjectId = null;
       ws.isAlive = true;
 
+      // Rate limiting & DoS protection per connection
+      let msgCountInWindow = 0;
+      let windowStart = Date.now();
+      const MAX_MSGS_PER_SEC = 40;
+      const MAX_PAYLOAD_BYTES = 5 * 1024 * 1024; // 5 MB
+
       ws.on('pong', () => {
         ws.isAlive = true;
       });
 
       ws.on('message', async (rawMessage) => {
         try {
+          if (rawMessage.length > MAX_PAYLOAD_BYTES) {
+            console.warn(`[LiveSync] Message rejected: exceeded max payload size (${rawMessage.length} bytes)`);
+            return;
+          }
+
+          const now = Date.now();
+          if (now - windowStart > 1000) {
+            windowStart = now;
+            msgCountInWindow = 0;
+          }
+          msgCountInWindow++;
+          if (msgCountInWindow > MAX_MSGS_PER_SEC) {
+            // Drop excessive messages to prevent event loop starvation
+            return;
+          }
+
           const msg = JSON.parse(rawMessage.toString());
           if (!msg || !msg.type) return;
 

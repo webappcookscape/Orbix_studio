@@ -65,6 +65,27 @@ class ResilientSessionStore extends BaseStore {
   }
 
   saveDiskCache() {
+    if (this._diskSaveDebounce) return;
+    this._diskSaveDebounce = setTimeout(() => {
+      this._diskSaveDebounce = null;
+      try {
+        const obj = {};
+        const now = Date.now();
+        for (const [sid, sess] of this.memorySessions.entries()) {
+          if (isSessionActive(sess, now)) {
+            obj[sid] = sess;
+          }
+        }
+        fs.writeFile(DISK_CACHE_PATH, JSON.stringify(obj, null, 2), 'utf8', () => {});
+      } catch (_) {}
+    }, 2000);
+  }
+
+  flushDiskCacheSync() {
+    if (this._diskSaveDebounce) {
+      clearTimeout(this._diskSaveDebounce);
+      this._diskSaveDebounce = null;
+    }
     try {
       const obj = {};
       const now = Date.now();

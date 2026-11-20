@@ -1996,6 +1996,15 @@
         console.warn('[OrbixProjects] Blocked cross-project save attempt (' + existingPlanId + ' != ' + activeId + ').');
         return;
       }
+      var planFurn = (currentPlan.plan && currentPlan.plan.furniture) || (currentPlan.furniture) || [];
+      var newUnitsCount = planFurn.length || (currentUnits ? currentUnits.length : 0);
+      var prevUnitsCount = (project && project.units_count) ? project.units_count : 0;
+      var isExplicitClear = (opts && (opts.action === 'clear_all' || opts.allowEmpty === true || opts.changeAction === 'clear_plan')) || self._explicitUserClear;
+      // ZERO-UNIT PROTECT GUARD:
+      if (prevUnitsCount > 0 && newUnitsCount === 0 && !isExplicitClear) {
+        console.warn('[OrbixProjects] Guarded saveActiveProject from accidental 0-unit overwrite for ' + activeId);
+        return;
+      }
 
       var now = Date.now();
       var seq = ++this._saveSeq;
@@ -2018,6 +2027,7 @@
         if (activeId) {
           var userKey = 'orbix_project_' + uKey + '_' + activeId;
           self._safeLocalSet(userKey, JSON.stringify(lightPlan));
+          self._safeLocalSet('orbix_project_draft_' + activeId, JSON.stringify(lightPlan));
           self._safeLocalSet('orbix_active_proj_' + uKey, String(activeId));
           self._safeLocalSet('orbix_active_project_id', String(activeId));
         }

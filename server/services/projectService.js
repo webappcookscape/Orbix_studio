@@ -227,7 +227,7 @@ class ProjectService {
     return formatProject(created);
   }
 
-  // 4. Update existing project
+  // 4. Update existing project with Zero-Loss Protection & Rolling Revisions
   async updateProject(id, updates, user) {
     if (!id) throw new Error('Project ID is required');
 
@@ -244,6 +244,7 @@ class ProjectService {
     if (updates.client !== undefined) data.client = updates.client.trim();
     if (updates.type !== undefined) data.type = updates.type;
     if (updates.status !== undefined) data.status = updates.status;
+
     if (updates.units_count !== undefined || updates.unitsCount !== undefined) {
       data.unitsCount = parseInt(updates.units_count ?? updates.unitsCount, 10);
     }
@@ -321,6 +322,27 @@ class ProjectService {
           }
         }
       }
+
+      // Automatic Rolling Revision History (keep last 5 snapshots)
+      const revisions = Array.isArray(existingData._revisions) ? [...existingData._revisions] : [];
+      const snapshot = {
+        timestamp: Date.now(),
+        savedAt: new Date().toISOString(),
+        unitsCount: existingStats.furniture || existing.unitsCount || 0,
+        wallsCount: existingStats.walls || 0,
+        plan: existingData.plan || null,
+        units: existingData.units || null,
+        savedBy: user ? (user.name || user.username || user.id) : 'autosave'
+      };
+      if (existingStats.totalElements > 0 || (existingData.plan && existingData.plan.walls && existingData.plan.walls.length > 0)) {
+        const lastRev = revisions[0];
+        const isTooRecent = lastRev && (Date.now() - lastRev.timestamp < 30000) && lastRev.unitsCount === snapshot.unitsCount && lastRev.wallsCount === snapshot.wallsCount;
+        if (!isTooRecent) {
+          revisions.unshift(snapshot);
+          if (revisions.length > 5) revisions.length = 5;
+        }
+      }
+      mergedData._revisions = revisions;
 
       data.data = mergedData;
 
