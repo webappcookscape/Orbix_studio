@@ -8228,6 +8228,16 @@
       if (this.archRenderer) {
         var proj = this.project || (this.editor && this.editor.project);
         var homeObj = scene.getObjectByName('OrbixHome3D');
+        var curProjId = proj ? String(proj.id || proj._projectId || '') : '';
+
+        // Instant Fast-Path: If 3D home is already built and 2D plan hasn't been edited, skip full CSG reconstruction!
+        if (!this._3dDirty && homeObj && this.archRenderer.group && this._lastRendered3DProjId === curProjId && isolatedRoomId === undefined) {
+          if (gl.apply) gl.apply();
+          if (gl.settle) gl.settle();
+          return;
+        }
+        this._3dDirty = false;
+        this._lastRendered3DProjId = curProjId;
 
         // Fast-path: If single furniture/decor item placed or modified and 3D home exists, use instant incremental mesh addition!
         if (targetFurnId && homeObj && this.archRenderer.group && typeof this.archRenderer.addOrUpdateFurnitureMesh === 'function') {
