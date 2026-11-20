@@ -2379,9 +2379,15 @@
 
       // Spacebar or R / r: Rotate selected unit if any unit is selected or being placed!
       if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R')) {
+        if (e.repeat || e._orbixRotated) {
+          e.preventDefault();
+          return;
+        }
         var didRotate = (typeof self.rotateSelectedElement === 'function') ? self.rotateSelectedElement() : false;
         if (didRotate) {
+          e._orbixRotated = true;
           e.preventDefault();
+          if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
           return;
         }
         // ONLY if no unit is selected/rotated does Spacebar act as Pan tool (hand icon)

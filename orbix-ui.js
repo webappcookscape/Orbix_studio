@@ -342,11 +342,22 @@
           return;
         }
 
-        // Spacebar or R / r to rotate active unit across 2D and 3D
+        // Spacebar or R / r to rotate active unit in 3D Studio (in 2D Plan view, PlanEditor owns rotation)
         if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R')) {
+          if (e.repeat || e._orbixRotated) {
+            e.preventDefault();
+            return;
+          }
+          var viewPlan = document.getElementById('view-plan');
+          if (viewPlan && viewPlan.classList.contains('is-on')) {
+            // Plan view rotation is handled by PlanEditor listener; avoid double rotation!
+            return;
+          }
           var didRotate = self.rotateActiveUnit();
           if (didRotate) {
+            e._orbixRotated = true;
             e.preventDefault();
+            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
           }
         }
       });

@@ -111,4 +111,19 @@ assert.strictEqual(Math.round(mockPlan.furniture[0].rotY * 180 / Math.PI), 90, '
 assert.strictEqual(mockEditor.furnitureRotY, 0, 'furniturePreset ghost rotation must NOT steal the shortcut when a unit is selected');
 console.log('✓ Spacebar rotation rotates selected unit directly without ghost preset stealing focus.');
 
+// 3. Verify that 4 consecutive rotations achieve all 4 cardinal angles (90, 180, 270, 0)
+const angles = [];
+for (let step = 1; step <= 4; step++) {
+  rotateActiveUnitFn(OrbixUI, global.window);
+  angles.push(Math.round(mockPlan.furniture[0].rotY * 180 / Math.PI));
+}
+assert.deepStrictEqual(angles, [180, 270, 0, 90], '4 presses must step through 90 deg increments without jumping by 180');
+console.log('✓ 4-angle cardinal rotation verified:', angles);
+
+// 4. Verify no double rotation handlers in orbix-ui when in plan view
+assert(uiCode.includes("viewPlan.classList.contains('is-on')"), 'orbix-ui must skip plan view to prevent double rotation');
+assert(planCode.includes('e._orbixRotated = true'), 'orbix-plan must mark _orbixRotated');
+assert(uiCode.includes('e._orbixRotated'), 'orbix-ui must check _orbixRotated');
+console.log('✓ Double-rotation prevention verified between orbix-plan and orbix-ui');
+
 console.log('>>> ALL SPACEBAR & ALT+F TESTS PASSED! <<<');

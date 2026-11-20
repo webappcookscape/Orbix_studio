@@ -5520,11 +5520,21 @@
         }
 
         if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === "Space" || e.key === " " || e.key === "r" || e.key === "R")) {
+          if (e.repeat || e._orbixRotated) {
+            e.preventDefault();
+            return;
+          }
           var viewDesign = document.getElementById("view-design");
           if (viewDesign && viewDesign.classList.contains("is-on")) {
+            e._orbixRotated = true;
+            e.preventDefault();
+            if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+            if (window.OrbixUI && typeof window.OrbixUI.rotateActiveUnit === "function") {
+              window.OrbixUI.rotateActiveUnit();
+              return;
+            }
             var activeU = (window.S && window.S.units && window.S.active >= 0) ? window.S.units[window.S.active] : null;
             if (activeU) {
-              e.preventDefault();
               var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
               if (activeU._furnId && plan && plan.furniture) {
                 var f = plan.furniture.find(function (it) { return it.id === activeU._furnId; });
