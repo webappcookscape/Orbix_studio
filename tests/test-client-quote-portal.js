@@ -428,12 +428,14 @@ async function runTests() {
       assert.strictEqual(decorTestQuote.furnitureItems.length, 1, 'Decors must be completely removed from Pricing & Quotation');
       assert.strictEqual(decorTestQuote.allRoomsSummary[0].itemCount, 1, 'Room unit count must exclude decors');
 
-      // Verify Discount on Design Charge math (50% of 9% design charge on 100000 woodwork = 4500) + enable/disable toggles
+      // Verify Discount on Design Charge math + all 4 Review Link enable/disable toggles (Accessories, Appliances, Freight, GST)
+      const revHtml = fs.readFileSync(path.join(ROOT, 'quote-review.html'), 'utf8');
+      assert(revHtml.includes('data-toggle="accessoriesEnabled"') && revHtml.includes('data-toggle="appliancesEnabled"') && revHtml.includes('data-toggle="freightEnabled"') && revHtml.includes('data-toggle="gstEnabled"'), 'Review link must include enable/disable toggles for Accessories, Appliances, Freight & GST');
       const reviewResp = await request(port, 'POST', `/api/quote-review/${revToken}/approve`, {
         approvedBy: 'Sangathamizh',
-        approvalRemarks: 'Test Design Discount math',
+        approvalRemarks: 'Test Design Discount + Toggles',
         variantDiscounts: [
-          { tierKey: 'zappo - el pearl', designPercent: 10, discountPercent: 5, adpPercent: 50 }
+          { tierKey: 'zappo - el pearl', designPercent: 10, discountPercent: 5, adpPercent: 50, accessoriesEnabled: false, appliancesEnabled: false, freightEnabled: false, gstEnabled: false }
         ]
       });
       assert.strictEqual(reviewResp.status, 200);
@@ -443,6 +445,15 @@ async function runTests() {
       assert.strictEqual(zv.commercial.designAmount, expectedDesign, 'Editable design % must recalculate design charge');
       assert.strictEqual(zv.commercial.adpAmount, expectedDesignDisc, 'Discount on Design Charge must be % of Design Charge');
       assert.strictEqual(zv.commercial.totalSavings, zv.commercial.discountAmount + expectedDesignDisc, 'Your Savings must equal Wood Work Discount + Design Charge Discount');
+      assert.strictEqual(zv.commercial.accessoriesEnabled, false);
+      assert.strictEqual(zv.commercial.additionalAccessories, 0);
+      assert.strictEqual(zv.commercial.appliancesEnabled, false);
+      assert.strictEqual(zv.commercial.appliances, 0);
+      assert.strictEqual(zv.commercial.freightEnabled, false);
+      assert.strictEqual(zv.commercial.freightAmount, 0);
+      assert.strictEqual(zv.commercial.gstEnabled, false);
+      assert.strictEqual(zv.commercial.gstAmount, 0);
+      assert.strictEqual(zv.commercial.grandTotal, zv.commercial.netBeforeTax, 'When GST is disabled, Final Total must equal Grand Total Without GST');
 
       console.log('✓ [10] 2-Stage Head Review + Decor Exclusion + Editable Design/Discounts/Toggles + Modal Blur + Client Quote Summary verified');
     } finally {
