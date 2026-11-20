@@ -2078,7 +2078,8 @@
       }
     });
 
-    window.addEventListener('mouseup', function () {
+    window.addEventListener('mouseup', function (e) {
+      e = e || window.event || {};
       if (self.dragState) {
         if (self.dragState.type === 'draw_divider_box') {
           var dsBox = self.dragState;
@@ -2249,7 +2250,7 @@
           if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
         }
       }
-      if (e.button === 2 && self.rightDownScreen) {
+      if (e && e.button === 2 && self.rightDownScreen) {
         var rDist = Math.hypot(e.clientX - (self.rightDownScreen.x + self.canvas.getBoundingClientRect().left), e.clientY - (self.rightDownScreen.y + self.canvas.getBoundingClientRect().top));
         var rElapsed = Date.now() - (self.rightDownTime || 0);
         self.rightDownScreen = null;
