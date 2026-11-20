@@ -203,6 +203,9 @@
         onProjectChange: function (proj, changeContext) {
           self.project = proj;
           self.queueAutoSave();
+          if (typeof window !== 'undefined' && window.OrbixLiveSync && typeof window.OrbixLiveSync.broadcastChange === 'function') {
+            window.OrbixLiveSync.broadcastChange(changeContext || 'project_change');
+          }
           self.updateUI();
 
           // Lazy BOQ: only compute & build quotation table if BOQ view is currently visible
@@ -335,6 +338,9 @@
             plan: self.project,
             units: window.S ? window.S.units : []
           });
+        }
+        if (typeof window !== 'undefined' && window.OrbixLiveSync && typeof window.OrbixLiveSync.broadcastChange === 'function') {
+          window.OrbixLiveSync.broadcastChange('autosave');
         }
       }, delayMs !== undefined ? delayMs : 250);
     },

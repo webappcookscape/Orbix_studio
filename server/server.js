@@ -279,6 +279,8 @@ app.get('*', (req, res) => {
 // ── Centralized Error Handler ──
 app.use(errorHandler);
 
+const liveSyncService = require('./services/liveSyncService');
+
 // ── Server Startup ──
 const server = app.listen(PORT, () => {
   console.log(`\n═════════════════════════════════════════════════════════════`);
@@ -286,6 +288,9 @@ const server = app.listen(PORT, () => {
   console.log(`  Local URL: http://localhost:${PORT}`);
   console.log(`  Database: PostgreSQL on port ${process.env.PGPORT || 5432}`);
   console.log(`═════════════════════════════════════════════════════════════\n`);
+
+  // Initialize Real-time Multi-Device Live Sync WebSocket Hub
+  liveSyncService.init(server);
 });
 
 module.exports = { app, server };

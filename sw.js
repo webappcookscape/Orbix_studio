@@ -10,6 +10,7 @@ const STATIC_ASSETS = [
   './style.css',
   './app.js',
   './orbix-projects.js',
+  './orbix-live-sync.js',
   './orbix-core.js',
   './orbix-plan.js',
   './orbix-3d.js',

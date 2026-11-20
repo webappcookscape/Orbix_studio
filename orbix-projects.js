@@ -1372,6 +1372,9 @@
       var activeId = project.id || self.activeProjectId;
       if (activeId) {
         self.activeProjectId = activeId;
+        if (typeof window !== 'undefined' && window.OrbixLiveSync && typeof window.OrbixLiveSync.joinProject === 'function') {
+          window.OrbixLiveSync.joinProject(activeId);
+        }
         try {
           var uId = self.currentUser ? self.currentUser.id : 'anon';
           localStorage.setItem('orbix_active_proj_' + uId, String(activeId));
