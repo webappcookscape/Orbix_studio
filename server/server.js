@@ -227,6 +227,12 @@ app.get(['/costcalculation', '/cost-calculation', '/costcalc'], (req, res) => {
   res.sendFile(path.join(ROOT_DIR, 'costcalculation.html'));
 });
 
+// ── Public Password-Free Head Commercial Review Page ──
+app.get('/quote-review/:reviewToken', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, private');
+  res.sendFile(path.join(ROOT_DIR, 'quote-review.html'));
+});
+
 // ── Protected Client Quote Portal Page (Isolated from CAD App) ──
 app.get('/quote/:token', (req, res) => {
   res.setHeader('X-Frame-Options', 'DENY');

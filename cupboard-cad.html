@@ -12287,6 +12287,35 @@ body.role-employee #adminCreateEmpBox,
     });
   }
 
+  // Automatically updates unit name and code when its width changes (e.g. FM 60 -> FM 45, WM 60 -> WM 45, Floor Base 600 -> Floor Base 450)
+  function updateUnitNameForWidth(fn, oldW, newW) {
+    if (!fn || !oldW || !newW || oldW === newW) return fn;
+    var oldCm = Math.round(oldW / 10);
+    var newCm = Math.round(newW / 10);
+    var oldMm = Math.round(oldW);
+    var newMm = Math.round(newW);
+
+    function replaceWidthInString(str) {
+      if (!str || typeof str !== 'string') return str;
+      // 1. Try matching mm first (e.g. 600 -> 450)
+      var regMm = new RegExp('(\\b|_|-)' + oldMm + '(\\b|_|-)', 'i');
+      if (regMm.test(str)) {
+        return str.replace(regMm, function (m, p1, p2) { return p1 + newMm + p2; });
+      }
+      // 2. Try matching cm (e.g. 60 -> 45) after a code prefix or at word boundary
+      var regCm = new RegExp('(\\b|[a-zA-Z]+[-_ ]*)' + oldCm + '(\\b|_|-|\\s|$)', 'i');
+      if (regCm.test(str)) {
+        return str.replace(regCm, function (m, p1, p2) { return p1 + newCm + p2; });
+      }
+      return str;
+    }
+
+    if (fn.name) fn.name = replaceWidthInString(fn.name);
+    if (fn.code) fn.code = replaceWidthInString(fn.code);
+    if (fn.catalogItemId) fn.catalogItemId = replaceWidthInString(fn.catalogItemId);
+    return fn;
+  }
+
   // Calculates corner angle in degrees between two walls meeting at jointPt
   function calculateCornerAngle(w1, w2, jointPt) {
     if (!w1 || !w2 || !jointPt) return 90;
@@ -12690,14 +12719,14 @@ body.role-employee #adminCreateEmpBox,
       w.end.y = w.start.y + dir.y * targetCenterlineL;
       newPt = w.end;
     }
-    // Also move connected adjoining walls that meet at this corner junction
+    // Also move connected adjoining walls that meet at this corner junction (tolerance up to 60mm)
     if (plan && plan.walls) {
       plan.walls.forEach(function (other) {
         if (!other || !other.start || !other.end || other.id === w.id) return;
-        if (Vec2.dist(other.start, oldPt) < 5) {
+        if (Vec2.dist(other.start, oldPt) < 60) {
           other.start.x = newPt.x;
           other.start.y = newPt.y;
-        } else if (Vec2.dist(other.end, oldPt) < 5) {
+        } else if (Vec2.dist(other.end, oldPt) < 60) {
           other.end.x = newPt.x;
           other.end.y = newPt.y;
         }
@@ -12773,7 +12802,14 @@ body.role-employee #adminCreateEmpBox,
       // In modular architectural design, kitchen base units and sinks sit directly under windows!
       // Sinks and base units are only blocked if the window is a floor-to-ceiling opening (sill < 400).
       var isSinkOrCounterFixture = !!(f.isDecor || f.decorType === 'sink' || (f.name && /sink|basin|hob|cooktop/i.test(f.name)));
-      var isBaseUnit = !isWallU && (f.category === 'kitchen_base' || f.category === 'vanity' || (f.name && /base/i.test(f.name)) || (top1 <= 1050));
+      var isBaseUnit = !isWallU && (
+        f.category === 'kitchen_base' || f.category === 'kitchen_fm' || f.category === 'kitchen_corner' ||
+        f.category === 'kitchen_drawers' || f.category === 'vanity' ||
+        /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(f.code || '') ||
+        /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(f.id || '') ||
+        (f.name && /base|drawer|sink/i.test(f.name)) ||
+        (top1 <= 1050 && elev1 < 300)
+      );
 
       if (isWindow && (isSinkOrCounterFixture || isBaseUnit) && opElev >= 700) {
         // Base units & sinks are allowed under windows with standard sill height
@@ -18701,6 +18737,7 @@ body.role-employee #adminCreateEmpBox,
     createOpening: createOpening,
     createRoom: createRoom,
     createFurniturePlacement: createFurniturePlacement,
+    updateUnitNameForWidth: updateUnitNameForWidth,
     autoSplitWallAtJunctions: autoSplitWallAtJunctions,
     createStaircasePlacement: createStaircasePlacement,
     getStaircasePolygon: getStaircasePolygon,
@@ -20829,7 +20866,8 @@ body.role-employee #adminCreateEmpBox,
       }
     });
 
-    window.addEventListener('mouseup', function () {
+    window.addEventListener('mouseup', function (e) {
+      e = e || window.event || {};
       if (self.dragState) {
         if (self.dragState.type === 'draw_divider_box') {
           var dsBox = self.dragState;
@@ -20980,6 +21018,9 @@ body.role-employee #adminCreateEmpBox,
             if (Core.detectRooms) Core.detectRooms(self.project);
             self.pushHistory('Move Room');
           }
+        } else if (self.dragState.type === 'move_stair') {
+          self.pushHistory('Move Staircase');
+          if (typeof self.onPlanChange === 'function') self.onPlanChange();
         }
         var wasMovingUnderlay = (self.dragState && self.dragState.type === 'move_underlay');
         self.dragState = null;
@@ -20997,7 +21038,7 @@ body.role-employee #adminCreateEmpBox,
           if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
         }
       }
-      if (e.button === 2 && self.rightDownScreen) {
+      if (e && e.button === 2 && self.rightDownScreen) {
         var rDist = Math.hypot(e.clientX - (self.rightDownScreen.x + self.canvas.getBoundingClientRect().left), e.clientY - (self.rightDownScreen.y + self.canvas.getBoundingClientRect().top));
         var rElapsed = Date.now() - (self.rightDownTime || 0);
         self.rightDownScreen = null;
@@ -21192,6 +21233,50 @@ body.role-employee #adminCreateEmpBox,
         }
       }
 
+      // 1b. Numeric and Imperial typing for stretching existing selected wall
+      var isSingleWallSelected = self.selected && self.selected.length === 1 && self.selected[0].type === 'wall';
+      if (isSingleWallSelected && !self.wallChainStart) {
+        var validKeyWall = (e.key >= '0' && e.key <= '9') || e.key === '.' || e.key === '\'' || e.key === '"' || e.key === ' ' ||
+          e.key.toLowerCase() === 'f' || e.key.toLowerCase() === 't' || e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'n' || e.key.toLowerCase() === 'm';
+        if (validKeyWall) {
+          e.preventDefault();
+          self.numericInputBuffer = (self.numericInputBuffer || '') + e.key;
+          self.render();
+          return;
+        }
+        if (e.key === 'Backspace' && self.numericInputBuffer && self.numericInputBuffer.length > 0) {
+          e.preventDefault();
+          self.numericInputBuffer = self.numericInputBuffer.slice(0, -1);
+          self.render();
+          return;
+        }
+        if (e.key === 'Enter' && self.numericInputBuffer && self.numericInputBuffer.trim().length > 0) {
+          e.preventDefault();
+          var w = (self.project && self.project.plan && self.project.plan.walls || []).find(function (item) { return item.id === self.selected[0].id; });
+          if (w) {
+            var targetInner = self.parseDimInput(self.numericInputBuffer);
+            if (targetInner > 50) {
+              var anchor = (w.startLocked === false && w.endLocked !== false) ? 'end' : 'start';
+              if (Core.setWallInnerLength) {
+                Core.setWallInnerLength(w, targetInner, self.project.plan, anchor);
+              }
+              if (Core.detectRooms) Core.detectRooms(self.project);
+              self.pushHistory('Stretch Wall (' + self.formatDim(targetInner) + ')');
+              self.numericInputBuffer = '';
+              self.render();
+              if (typeof window !== 'undefined' && window.OrbixUI) {
+                if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+                if (window.OrbixUI.updateInspector) window.OrbixUI.updateInspector();
+              }
+              return;
+            }
+          }
+          self.numericInputBuffer = '';
+          self.render();
+          return;
+        }
+      }
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         self.deleteSelected();
@@ -21207,7 +21292,14 @@ body.role-employee #adminCreateEmpBox,
           return;
         }
 
-        // 2. If furniture units are explicitly selected in 2D, rotate ONLY those selected units!
+        // 1b. If currently placing a staircase, rotate the stair ghost preview!
+        if (self.activeTool === 'stair') {
+          self.stairRotY = ((self.stairRotY || 0) + Math.PI / 2) % (Math.PI * 2);
+          self.render();
+          return;
+        }
+
+        // 2. If furniture or stair units are explicitly selected in 2D, rotate ONLY those selected units!
         var rotated = false;
         for (var s = 0; s < self.selected.length; s++) {
           if (self.selected[s].type === 'furniture') {
@@ -21221,10 +21313,16 @@ body.role-employee #adminCreateEmpBox,
               fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
               rotated = true;
             }
+          } else if (self.selected[s].type === 'stair') {
+            var stObj = (self.project.plan.stairs || []).find(function (st) { return st.id === self.selected[s].id; });
+            if (stObj) {
+              stObj.rotY = ((stObj.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+              rotated = true;
+            }
           }
         }
         if (rotated) {
-          self.pushHistory('Rotate Furniture');
+          self.pushHistory('Rotate Element');
           self.render();
           if (typeof window !== 'undefined' && window.OrbixUI) {
             if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
@@ -21235,20 +21333,6 @@ body.role-employee #adminCreateEmpBox,
 
         // 3. When NO unit is clicked/selected in 2D, NEVER rotate any background unit!
         return;
-        // Staircase rotation
-        for (var sIdx = 0; sIdx < self.selected.length; sIdx++) {
-          if (self.selected[sIdx].type === 'stair') {
-            var stObj = (self.project.plan.stairs || []).find(function (st) { return st.id === self.selected[sIdx].id; });
-            if (stObj) {
-              stObj.rotY = ((stObj.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
-              rotated = true;
-            }
-          }
-        }
-        if (!rotated && (e.key === 'r' || e.key === 'R')) {
-          self.setTool('divider');
-          return;
-        }
       }
       if (e.key === 'Escape') {
         if (self.numericInputBuffer) {
@@ -22205,8 +22289,30 @@ body.role-employee #adminCreateEmpBox,
 
     // ── ROBUST 90° CORNER DETECTION & MAGNETIC SNAPPING ──
     var cornerCandidates = [];
+    var seenCorners = [];
 
-    // A. Inner room corners from room polygons
+    function addCornerCandidate(cPt, dirA, dirB, source) {
+      if (!cPt || !isFinite(cPt.x) || !isFinite(cPt.y)) return;
+      if (!dirA || !dirB) return;
+      // Deduplicate corner points within 40mm having similar directions
+      for (var s = 0; s < seenCorners.length; s++) {
+        var sc = seenCorners[s];
+        if (Math.hypot(sc.x - cPt.x, sc.y - cPt.y) < 40 &&
+            Math.abs(sc.dirA.x * dirA.x + sc.dirA.y * dirA.y - 1) < 0.08 &&
+            Math.abs(sc.dirB.x * dirB.x + sc.dirB.y * dirB.y - 1) < 0.08) {
+          return;
+        }
+      }
+      seenCorners.push({ x: cPt.x, y: cPt.y, dirA: dirA, dirB: dirB });
+      cornerCandidates.push({
+        cornerPt: cPt,
+        dir1: dirA,
+        dir2: dirB,
+        source: source
+      });
+    }
+
+    // A. Inner room corners from room polygons (with exact wall thickness offsets)
     if (rooms && rooms.length > 0) {
       for (var ri = 0; ri < rooms.length; ri++) {
         var poly = rooms[ri].polygon;
@@ -22225,56 +22331,152 @@ body.role-employee #adminCreateEmpBox,
           var u1 = { x: v1.x / l1, y: v1.y / l1 };
           var u2 = { x: v2.x / l2, y: v2.y / l2 };
           var dot = u1.x * u2.x + u1.y * u2.y;
-          // Near 90° interior corner (dot product between -0.4 and 0.4)
-          if (Math.abs(dot) < 0.4) {
-            cornerCandidates.push({
-              cornerPt: currPt,
-              dir1: u1,
-              dir2: u2,
-              room: rooms[ri]
-            });
+          // Near 90° interior corner (dot product between -0.38 and 0.38)
+          if (Math.abs(dot) < 0.38) {
+            // Find wall thicknesses for the two meeting wall segments
+            var tA = 150, tB = 150;
+            for (var wki = 0; wki < walls.length; wki++) {
+              var wObj = walls[wki];
+              var dC = Math.min(Math.hypot(wObj.start.x - currPt.x, wObj.start.y - currPt.y), Math.hypot(wObj.end.x - currPt.x, wObj.end.y - currPt.y));
+              if (dC < 120) {
+                var dNext = Math.min(Math.hypot(wObj.start.x - nextPt.x, wObj.start.y - nextPt.y), Math.hypot(wObj.end.x - nextPt.x, wObj.end.y - nextPt.y));
+                if (dNext < 120) tA = wObj.thickness || 150;
+                var dPrev = Math.min(Math.hypot(wObj.start.x - prevPt.x, wObj.start.y - prevPt.y), Math.hypot(wObj.end.x - prevPt.x, wObj.end.y - prevPt.y));
+                if (dPrev < 120) tB = wObj.thickness || 150;
+              }
+            }
+            var halfTA = tA / 2;
+            var halfTB = tB / 2;
+            var innerCornerPt = {
+              x: currPt.x + halfTB * u1.x + halfTA * u2.x,
+              y: currPt.y + halfTB * u1.y + halfTA * u2.y
+            };
+            addCornerCandidate(innerCornerPt, u1, u2, 'room_poly');
           }
         }
       }
     }
 
-    // B. Candidate corners from intersecting / meeting walls (tolerance up to 120mm)
+    // B. Candidate corners from intersecting / meeting walls (L-corners & T-junctions)
     for (var wa = 0; wa < walls.length; wa++) {
       var wA = walls[wa];
       if (wA.isDivider) continue;
+      var halfTA = (wA.thickness || 150) / 2;
+
       for (var wb = wa + 1; wb < walls.length; wb++) {
         var wB = walls[wb];
         if (wB.isDivider) continue;
+        var halfTB = (wB.thickness || 150) / 2;
 
-        var sharedPt = null, endA = null, endB = null;
-        if (Vec2.dist(wA.start, wB.start) < 120) { sharedPt = wA.start; endA = wA.end; endB = wB.end; }
-        else if (Vec2.dist(wA.start, wB.end) < 120) { sharedPt = wA.start; endA = wA.end; endB = wB.start; }
-        else if (Vec2.dist(wA.end, wB.start) < 120) { sharedPt = wA.end; endA = wA.start; endB = wB.end; }
-        else if (Vec2.dist(wA.end, wB.end) < 120) { sharedPt = wA.end; endA = wA.start; endB = wB.start; }
+        var ptsA = [wA.start, wA.end];
+        var ptsB = [wB.start, wB.end];
 
-        if (sharedPt) {
-          var vA = { x: endA.x - sharedPt.x, y: endA.y - sharedPt.y };
-          var vB = { x: endB.x - sharedPt.x, y: endB.y - sharedPt.y };
-          var lenA = Math.hypot(vA.x, vA.y);
-          var lenB = Math.hypot(vB.x, vB.y);
-          if (lenA > 100 && lenB > 100) {
-            var uA = { x: vA.x / lenA, y: vA.y / lenA };
-            var uB = { x: vB.x / lenB, y: vB.y / lenB };
-            var dotAB = uA.x * uB.x + uA.y * uB.y;
-            if (Math.abs(dotAB) < 0.4) {
-              var halfTA = (wA.thickness || 150) / 2;
-              var halfTB = (wB.thickness || 150) / 2;
-              var innerCornerPt = {
-                x: sharedPt.x + halfTB * uA.x + halfTA * uB.x,
-                y: sharedPt.y + halfTB * uA.y + halfTA * uB.y
-              };
-              cornerCandidates.push({
-                cornerPt: innerCornerPt,
-                dir1: uA,
-                dir2: uB,
-                wallA: wA,
-                wallB: wB
-              });
+        // 1. Direct meeting of endpoints (L-junctions)
+        for (var pa = 0; pa < 2; pa++) {
+          var ptA = ptsA[pa];
+          var otherA = ptsA[1 - pa];
+          for (var pb = 0; pb < 2; pb++) {
+            var ptB = ptsB[pb];
+            var otherB = ptsB[1 - pb];
+
+            var dEnd = Math.hypot(ptA.x - ptB.x, ptA.y - ptB.y);
+            if (dEnd < 180) {
+              var jPt = { x: (ptA.x + ptB.x) / 2, y: (ptA.y + ptB.y) / 2 };
+              var vA = { x: otherA.x - jPt.x, y: otherA.y - jPt.y };
+              var vB = { x: otherB.x - jPt.x, y: otherB.y - jPt.y };
+              var lenA = Math.hypot(vA.x, vA.y);
+              var lenB = Math.hypot(vB.x, vB.y);
+              if (lenA > 100 && lenB > 100) {
+                var uA = { x: vA.x / lenA, y: vA.y / lenA };
+                var uB = { x: vB.x / lenB, y: vB.y / lenB };
+                var dotAB = uA.x * uB.x + uA.y * uB.y;
+                if (Math.abs(dotAB) < 0.38) {
+                  var innerPt = {
+                    x: jPt.x + halfTB * uA.x + halfTA * uB.x,
+                    y: jPt.y + halfTB * uA.y + halfTA * uB.y
+                  };
+                  addCornerCandidate(innerPt, uA, uB, 'wall_meeting');
+                }
+              }
+            }
+          }
+        }
+
+        // 2. T-junctions: endpoint of Wall A landing on segment of Wall B
+        for (var paT = 0; paT < 2; paT++) {
+          var ptAT = ptsA[paT];
+          var otherAT = ptsA[1 - paT];
+          var prB = Core.projectPointOnSegment(ptAT, wB.start, wB.end);
+          if (prB.dist < 180 && prB.t >= 0.05 && prB.t <= 0.95) {
+            var jPtB = prB.pt;
+            var vAT = { x: otherAT.x - jPtB.x, y: otherAT.y - jPtB.y };
+            var lenAT = Math.hypot(vAT.x, vAT.y);
+            if (lenAT > 100) {
+              var uAT = { x: vAT.x / lenAT, y: vAT.y / lenAT };
+              // Two directions along Wall B: towards start and towards end
+              var vBStart = { x: wB.start.x - jPtB.x, y: wB.start.y - jPtB.y };
+              var lenBStart = Math.hypot(vBStart.x, vBStart.y);
+              if (lenBStart > 100) {
+                var uBStart = { x: vBStart.x / lenBStart, y: vBStart.y / lenBStart };
+                if (Math.abs(uAT.x * uBStart.x + uAT.y * uBStart.y) < 0.38) {
+                  var innerPtT1 = {
+                    x: jPtB.x + halfTB * uAT.x + halfTA * uBStart.x,
+                    y: jPtB.y + halfTB * uAT.y + halfTA * uBStart.y
+                  };
+                  addCornerCandidate(innerPtT1, uAT, uBStart, 't_junction');
+                }
+              }
+              var vBEnd = { x: wB.end.x - jPtB.x, y: wB.end.y - jPtB.y };
+              var lenBEnd = Math.hypot(vBEnd.x, vBEnd.y);
+              if (lenBEnd > 100) {
+                var uBEnd = { x: vBEnd.x / lenBEnd, y: vBEnd.y / lenBEnd };
+                if (Math.abs(uAT.x * uBEnd.x + uAT.y * uBEnd.y) < 0.38) {
+                  var innerPtT2 = {
+                    x: jPtB.x + halfTB * uAT.x + halfTA * uBEnd.x,
+                    y: jPtB.y + halfTB * uAT.y + halfTA * uBEnd.y
+                  };
+                  addCornerCandidate(innerPtT2, uAT, uBEnd, 't_junction');
+                }
+              }
+            }
+          }
+        }
+
+        // 3. T-junctions: endpoint of Wall B landing on segment of Wall A
+        for (var pbT = 0; pbT < 2; pbT++) {
+          var ptBT = ptsB[pbT];
+          var otherBT = ptsB[1 - pbT];
+          var prA = Core.projectPointOnSegment(ptBT, wA.start, wA.end);
+          if (prA.dist < 180 && prA.t >= 0.05 && prA.t <= 0.95) {
+            var jPtA = prA.pt;
+            var vBT = { x: otherBT.x - jPtA.x, y: otherBT.y - jPtA.y };
+            var lenBT = Math.hypot(vBT.x, vBT.y);
+            if (lenBT > 100) {
+              var uBT = { x: vBT.x / lenBT, y: vBT.y / lenBT };
+              var vAStart = { x: wA.start.x - jPtA.x, y: wA.start.y - jPtA.y };
+              var lenAStart = Math.hypot(vAStart.x, vAStart.y);
+              if (lenAStart > 100) {
+                var uAStart = { x: vAStart.x / lenAStart, y: vAStart.y / lenAStart };
+                if (Math.abs(uBT.x * uAStart.x + uBT.y * uAStart.y) < 0.38) {
+                  var innerPtTA1 = {
+                    x: jPtA.x + halfTA * uBT.x + halfTB * uAStart.x,
+                    y: jPtA.y + halfTA * uBT.y + halfTB * uAStart.y
+                  };
+                  addCornerCandidate(innerPtTA1, uBT, uAStart, 't_junction');
+                }
+              }
+              var vAEnd = { x: wA.end.x - jPtA.x, y: wA.end.y - jPtA.y };
+              var lenAEnd = Math.hypot(vAEnd.x, vAEnd.y);
+              if (lenAEnd > 100) {
+                var uAEnd = { x: vAEnd.x / lenAEnd, y: vAEnd.y / lenAEnd };
+                if (Math.abs(uBT.x * uAEnd.x + uBT.y * uAEnd.y) < 0.38) {
+                  var innerPtTA2 = {
+                    x: jPtA.x + halfTA * uBT.x + halfTB * uAEnd.x,
+                    y: jPtA.y + halfTA * uBT.y + halfTB * uAEnd.y
+                  };
+                  addCornerCandidate(innerPtTA2, uBT, uAEnd, 't_junction');
+                }
+              }
             }
           }
         }
@@ -22295,9 +22497,9 @@ body.role-employee #adminCreateEmpBox,
       halfW = cW / 2;
       halfD = cD / 2;
 
-      // Generous magnetic snap radius for room corners (allows effortless snapping to 90° corners)
+      // Generous magnetic snap radius for room corners (locks solidly into 90° corners without snatching)
       var bestCornerSnap = null;
-      var minCornerDist = Math.max(650, Math.max(cW, cD) * 0.85);
+      var minCornerDist = Math.max(950, Math.max(cW, cD) * 1.35);
 
       for (var ci = 0; ci < cornerCandidates.length; ci++) {
         var cc = cornerCandidates[ci];
@@ -22310,10 +22512,21 @@ body.role-employee #adminCreateEmpBox,
         // Arm 2 (depth cD) extends from outer corner along local +v
         // Outer corner is at (+cW/2, -cD/2)
         // Center = C_outer - (cW/2) * u + (cD/2) * v
-        // Evaluate the 4 orthogonal rotations: 0, π/2, π, 3π/2
-        var angles = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
-        for (var ai = 0; ai < angles.length; ai++) {
-          var aTest = angles[ai];
+        // Test all orthogonal orientations aligned to dirA and dirB
+        var testAngles = [
+          Math.atan2(-dirA.y, -dirA.x),
+          Math.atan2(-dirB.y, -dirB.x),
+          Math.atan2(dirA.y, dirA.x),
+          Math.atan2(dirB.y, dirB.x),
+          Math.atan2(dirA.x, -dirA.y),
+          Math.atan2(-dirA.x, dirA.y),
+          Math.atan2(dirB.x, -dirB.y),
+          Math.atan2(-dirB.x, dirB.y),
+          0, Math.PI / 2, Math.PI, 3 * Math.PI / 2
+        ];
+
+        for (var ai = 0; ai < testAngles.length; ai++) {
+          var aTest = testAngles[ai];
           var u = { x: Math.cos(aTest), y: Math.sin(aTest) };
           var v = { x: -Math.sin(aTest), y: Math.cos(aTest) };
           var arm1Dir = { x: -u.x, y: -u.y };
@@ -22325,8 +22538,8 @@ body.role-employee #adminCreateEmpBox,
           var dot1B = arm1Dir.x * dirB.x + arm1Dir.y * dirB.y;
           var dot2A = arm2Dir.x * dirA.x + arm2Dir.y * dirA.y;
 
-          var matchesConfigA = (dot1A > 0.65 && dot2B > 0.65);
-          var matchesConfigB = (dot1B > 0.65 && dot2A > 0.65);
+          var matchesConfigA = (dot1A > 0.82 && dot2B > 0.82);
+          var matchesConfigB = (dot1B > 0.82 && dot2A > 0.82);
 
           if (matchesConfigA || matchesConfigB) {
             var candidateCenter = {
@@ -22350,6 +22563,8 @@ body.role-employee #adminCreateEmpBox,
         }
       }
 
+      // STRICT PRECEDENCE LOCK: When hovering near a 90° corner, lock firmly into the corner
+      // and completely bypass the single-wall snatch loop to eliminate snatching/jitter!
       if (bestCornerSnap) {
         return bestCornerSnap;
       }
@@ -22545,8 +22760,96 @@ body.role-employee #adminCreateEmpBox,
         candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
       }
 
-      // Find all existing units on this same wall and on interfering elevation bands
+      // Magnetic attraction to wall corner edges and adjacent corner units (Item 6)
+      var snapCornerStartT = tMin + halfActiveW;
+      var snapCornerEndT = tMax - halfActiveW;
+      var isCornerSnap = false;
+      if (Math.abs(candT - snapCornerStartT) < 140) {
+        candT = snapCornerStartT;
+        bestWallSnap.badgeLabel = (tMin > 100) ? '✓ Snapped Flush to Corner Unit' : '✓ Snapped Flush to Corner Edge';
+        isCornerSnap = true;
+      } else if (Math.abs(candT - snapCornerEndT) < 140) {
+        candT = snapCornerEndT;
+        bestWallSnap.badgeLabel = (tMax < bwLen - 100) ? '✓ Snapped Flush to Corner Unit' : '✓ Snapped Flush to Corner Edge';
+        isCornerSnap = true;
+      }
+
+      // Find all existing units and openings on this same wall
       var occupiedIntervals = [];
+
+      // Openings on this wall (Windows & Doors) (Item 2)
+      var isSinkOrCounterFixture = !!(furn.isDecor || furn.decorType === 'sink' || (furn.name && /sink|basin|hob|cooktop/i.test(furn.name)));
+      var isBaseUnit = !isWallU && (
+        furn.category === 'kitchen_base' || furn.category === 'kitchen_fm' || furn.category === 'kitchen_corner' ||
+        furn.category === 'kitchen_drawers' || furn.category === 'vanity' ||
+        /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(furn.code || '') ||
+        /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(furn.id || '') ||
+        (furn.name && /base|drawer|sink/i.test(furn.name)) ||
+        (fTop <= 1050 && fElev < 300)
+      );
+
+      var wallOpenings = (plan.openings || []).filter(function (op) { return op.wallId === bwWall.id; });
+      for (var woi = 0; woi < wallOpenings.length; woi++) {
+        var wOp = wallOpenings[woi];
+        var opW = wOp.width || (wOp.type === 'window' ? 1200 : 900);
+        var halfOpW = opW / 2;
+        var opCenter = wOp.offset;
+        var opSill = (wOp.sillHeight !== undefined) ? wOp.sillHeight : ((wOp.elevation !== undefined) ? wOp.elevation : (wOp.type === 'window' ? 900 : 0));
+        var opH = wOp.height || (wOp.type === 'window' ? 1200 : 2100);
+        var opTop = opSill + opH;
+
+        if (wOp.type === 'window') {
+          if ((isSinkOrCounterFixture || isBaseUnit) && opSill >= 700) {
+            // Base unit / sink fits cleanly under window!
+            // Provide magnetic snap centered directly under the window:
+            if (!isCornerSnap && Math.abs(candT - opCenter) < 140) {
+              candT = opCenter;
+              bestWallSnap.badgeLabel = '✓ Centered Under Window';
+            }
+          } else {
+            // Wall unit, tall cabinet, or low-sill window: cannot overlap window!
+            occupiedIntervals.push({
+              start: opCenter - halfOpW,
+              end: opCenter + halfOpW,
+              center: opCenter,
+              halfW: halfOpW,
+              isWindow: true
+            });
+            // Magnetic snap to left or right casing of window frame:
+            if (!isCornerSnap) {
+              var flushLeft = opCenter - halfOpW - halfActiveW;
+              var flushRight = opCenter + halfOpW + halfActiveW;
+              if (Math.abs(candT - flushLeft) < 120) {
+                candT = flushLeft;
+                bestWallSnap.badgeLabel = '✓ Snapped Flush to Window Frame';
+              } else if (Math.abs(candT - flushRight) < 120) {
+                candT = flushRight;
+                bestWallSnap.badgeLabel = '✓ Snapped Flush to Window Frame';
+              }
+            }
+          }
+        } else if (wOp.type === 'door') {
+          // Door openings cannot have units inside
+          occupiedIntervals.push({
+            start: opCenter - halfOpW,
+            end: opCenter + halfOpW,
+            center: opCenter,
+            halfW: halfOpW,
+            isDoor: true
+          });
+          if (!isCornerSnap) {
+            var dFlushLeft = opCenter - halfOpW - halfActiveW;
+            var dFlushRight = opCenter + halfOpW + halfActiveW;
+            if (Math.abs(candT - dFlushLeft) < 120) {
+              candT = dFlushLeft;
+              bestWallSnap.badgeLabel = '✓ Snapped Flush to Door Frame';
+            } else if (Math.abs(candT - dFlushRight) < 120) {
+              candT = dFlushRight;
+              bestWallSnap.badgeLabel = '✓ Snapped Flush to Door Frame';
+            }
+          }
+        }
+      }
 
       // B. Units on this same wall
       for (var fni = 0; fni < furnList.length; fni++) {
@@ -22650,6 +22953,7 @@ body.role-employee #adminCreateEmpBox,
       if (!isCivilOrPanel && !isFreeMode) {
         var origCandT = candT;
         var didShift = false;
+        var shiftedAgainst = null;
         for (var iter = 0; iter < 4; iter++) {
           var collided = false;
           for (var oii = 0; oii < occupiedIntervals.length; oii++) {
@@ -22660,6 +22964,7 @@ body.role-employee #adminCreateEmpBox,
             if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
               collided = true;
               didShift = true;
+              shiftedAgainst = occ;
               if (candT >= occ.center) {
                 // Push to positive side of existing unit
                 candT = occ.end + halfActiveW;
@@ -22692,7 +22997,13 @@ body.role-employee #adminCreateEmpBox,
       };
       bestWallSnap.proj = finalProj;
       if (didShift) {
-        bestWallSnap.badgeLabel = '✓ Snapped Flush to Adjacent Unit';
+        if (shiftedAgainst && shiftedAgainst.isWindow) {
+          bestWallSnap.badgeLabel = '✓ Snapped Flush to Window Frame';
+        } else if (shiftedAgainst && shiftedAgainst.isDoor) {
+          bestWallSnap.badgeLabel = '✓ Snapped Flush to Door Frame';
+        } else {
+          bestWallSnap.badgeLabel = '✓ Snapped Flush to Adjacent Unit';
+        }
       }
 
       return bestWallSnap;
@@ -25099,6 +25410,31 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       // Direction arrow 2 in Segment 2 (last opening end to end B)
       var lastOpEndT = cleanDivs.length > 2 ? cleanDivs[cleanDivs.length - 2] : lMm;
       drawCoreArrow(lastOpEndT, lMm, 'B', '2');
+    }
+
+    // Floating keyboard input HUD for selected wall direct value input (Item 1)
+    if (isSelected && this.numericInputBuffer && !this.wallChainStart) {
+      var midWPt = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
+      var sMid = this.worldToScreen(midWPt);
+      ctx.save();
+      ctx.font = '700 13px "IBM Plex Mono", monospace';
+      var parsedL = this.parseDimInput(this.numericInputBuffer);
+      var previewTxt = parsedL > 0 ? (' = ' + this.formatDim(parsedL)) : '';
+      var hudText = '⌨ Wall Length: [ ' + this.numericInputBuffer + ' ]' + previewTxt + '  (↵ Enter to apply, Esc to cancel)';
+      var htw = ctx.measureText(hudText).width;
+      ctx.fillStyle = '#1e3a8a';
+      ctx.strokeStyle = '#60a5fa';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(sMid.x - htw / 2 - 12, sMid.y - 14, htw + 24, 28, 6);
+      else ctx.rect(sMid.x - htw / 2 - 12, sMid.y - 14, htw + 24, 28);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(hudText, sMid.x, sMid.y);
+      ctx.restore();
     }
 
     ctx.restore();
@@ -32342,6 +32678,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       isStaircase: true,
       isFurniture: true,
       isFurnitureGroup: true,
+      furnitureId: stair.id,
       stairId: stair.id,
       stair: stair
     };
@@ -35683,6 +36020,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
               ed.pushHistory('Resize Wall Inner Length');
               ed.render();
               self.renderInspector(ed.selected);
+              if (self.render3DHome) self.render3DHome(true);
             }
           });
         }
@@ -35693,19 +36031,36 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             var targetL = ed.parseDimInput(e.target.value);
             if (targetL > 100) {
               var dir = Core.wallDirection(w);
-              if (w.startLocked === false && w.endLocked !== false) {
+              var anchor = (w.startLocked === false && w.endLocked !== false) ? 'end' : 'start';
+              var oldPt = (anchor === 'end') ? { x: w.start.x, y: w.start.y } : { x: w.end.x, y: w.end.y };
+              var newPt;
+              if (anchor === 'end') {
                 // Corner B is locked, Corner A released: resize wall anchored from Corner B
                 w.start.x = w.end.x - dir.x * targetL;
                 w.start.y = w.end.y - dir.y * targetL;
+                newPt = w.start;
               } else {
                 // Corner A is locked (or both locked): resize wall anchored from Corner A
                 w.end.x = w.start.x + dir.x * targetL;
                 w.end.y = w.start.y + dir.y * targetL;
+                newPt = w.end;
+              }
+              // Move connected adjoining walls meeting at this junction
+              if (ed.project && ed.project.plan && ed.project.plan.walls) {
+                ed.project.plan.walls.forEach(function (other) {
+                  if (!other || !other.start || !other.end || other.id === w.id) return;
+                  if (Core.Vec2.dist(other.start, oldPt) < 60) {
+                    other.start.x = newPt.x; other.start.y = newPt.y;
+                  } else if (Core.Vec2.dist(other.end, oldPt) < 60) {
+                    other.end.x = newPt.x; other.end.y = newPt.y;
+                  }
+                });
               }
               Core.detectRooms(ed.project);
               ed.pushHistory('Resize Wall');
               ed.render();
               self.renderInspector(ed.selected);
+              if (self.render3DHome) self.render3DHome(true);
             }
           });
         }
@@ -36671,7 +37026,18 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           elFurnW.addEventListener('change', function (e) {
             var newW = parseFloat(e.target.value);
             if (!(newW > 0)) return;
+            var oldW = fn.dimensions.W || 600;
             fn.dimensions.W = newW;
+
+            // Automatically update unit name and code for width (e.g. FM 60 -> FM 45 when width changed to 450mm)
+            if (Core.updateUnitNameForWidth) {
+              Core.updateUnitNameForWidth(fn, oldW, newW);
+              var inspTitleEl = document.querySelector('.insp-title') || document.getElementById('inspTitle');
+              if (inspTitleEl && fn.name) {
+                inspTitleEl.textContent = fn.name;
+              }
+            }
+
             if (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) {
               var halfW = Math.round(newW / 2);
               fn.unitConfig.fixedPanel.width = halfW;
@@ -43242,13 +43608,15 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       body.innerHTML =
         '<div id="cqFormWrap">' +
-        '  <div style="background:#FAF6F0;border:1px solid #E2D5C3;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#08231B;">' +
-        '    <b>Master Template Flow Locked:</b> Cover Page &rarr; Intro (Slides 2&ndash;6) &rarr; Selected Variant(s) [Divider &bull; Specs &bull; <b>Auto Unit Snips</b> &bull; <b>Auto Quotation Snip</b>] &rarr; Timelines, Inclusions, Payment, T&amp;C &amp; FAQs (34&ndash;40) &rarr; Thank You (41).' +
+        '  <div style="background:#FAF6F0;border:1px solid #E2D5C3;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#08231B;line-height:1.45;">' +
+        '    <b>2-Step Approval &amp; Share Flow:</b><br>' +
+        '    <b>Step 1:</b> Generate password-free <b>Head Review Link</b> (variant quotation pages with editable Discounts) &rarr; Share to Head.<br>' +
+        '    <b>Step 2:</b> Once Head clicks <b>Approve</b>, generate the full password-protected <b>Client Link</b> (Username = Client Name) &amp; download full <b>PPTX / PDF</b>.' +
         '  </div>' +
 
-        '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">' +
+        '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
         '    <div>' +
-        '      <label style="display:block;font-size:11.5px;font-weight:700;color:#475569;margin-bottom:4px;">Patron Name *</label>' +
+        '      <label style="display:block;font-size:11.5px;font-weight:700;color:#475569;margin-bottom:4px;">Patron / Client Name *</label>' +
         '      <input id="cqClientName" type="text" value="' + esc(clientName) + '" style="width:100%;padding:8px 10px;border:1px solid #CBD5E1;border-radius:6px;font-size:13px;">' +
         '    </div>' +
         '    <div>' +
@@ -43266,68 +43634,35 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         '  </div>' +
 
         '  <div style="margin-bottom:12px;">' +
-        '    <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:6px;">Select Master Template Variant(s) — Auto-Populates Unit Snips &amp; Quotation Snip</div>' +
+        '    <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:6px;">Select Master Template Variant(s) for Quotation</div>' +
         variantCheckboxesHtml +
         '  </div>' +
 
-        '  <div style="margin-bottom:14px;">' +
+        '  <div style="margin-bottom:12px;">' +
         '    <label style="display:block;font-size:11.5px;font-weight:700;color:#475569;margin-bottom:4px;">Unit Specification Remarks (Optional — shown below Unit Snips)</label>' +
         '    <input id="cqUnitRemarks" type="text" placeholder="e.g. All kitchen base units include soft-close channels &amp; skirting" style="width:100%;padding:7px 10px;border:1px solid #CBD5E1;border-radius:6px;font-size:12.5px;">' +
         '  </div>' +
 
-        '  <div style="background:#FFF7ED;border:1px solid #FDBA74;border-radius:8px;padding:12px;margin-bottom:14px;">' +
-        '    <div style="font-size:12px;font-weight:700;color:#9A3412;margin-bottom:8px;">Client Portal Login &amp; Anti-Screenshot Protection</div>' +
-        '    <div style="display:grid;grid-template-columns:1fr 1fr 145px;gap:10px;margin-bottom:10px;">' +
-        '      <div>' +
-        '        <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:3px;">Client Username</label>' +
-        '        <input id="cqUsername" type="text" value="' + esc(suggestedUser) + '" style="width:100%;padding:7px 9px;border:1px solid #CBD5E1;border-radius:6px;font-size:12.5px;">' +
-        '      </div>' +
-        '      <div>' +
-        '        <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:3px;">Client Password</label>' +
-        '        <div style="display:flex;gap:4px;">' +
-        '          <input id="cqPassword" type="text" value="' + esc(suggestedPass) + '" style="width:100%;padding:7px 9px;border:1px solid #CBD5E1;border-radius:6px;font-size:12.5px;font-family:monospace;font-weight:700;">' +
-        '          <button type="button" id="cqRegenPassBtn" class="btn small" title="Generate new password" style="padding:0 9px;">🔄</button>' +
-        '        </div>' +
-        '      </div>' +
-        '      <div>' +
-        '        <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:3px;">Link Validity</label>' +
-        '        <select id="cqExpiryDays" style="width:100%;padding:7px 8px;border:1px solid #CBD5E1;border-radius:6px;font-size:12.5px;">' +
-        '          <option value="1">1 Day</option>' +
-        '          <option value="7">7 Days</option>' +
-        '          <option value="15" selected>15 Days</option>' +
-        '          <option value="30">30 Days</option>' +
-        '          <option value="365">1 Year</option>' +
-        '          <option value="0">No Expiry</option>' +
-        '        </select>' +
-        '      </div>' +
-        '    </div>' +
-        '    <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:#1E293B;">' +
-        '      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="cqSecBlur" checked> Strict Anti-Screenshot Blackout Shield (Phone / Tablet / Laptop / PC)</label>' +
-        '    </div>' +
-        '  </div>' +
-
         '  <div id="cqErrorBox" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;padding:8px 12px;border-radius:6px;font-size:12.5px;margin-bottom:10px;"></div>' +
 
-        '  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">' +
-        '    <button type="button" id="cqCreateLinkBtn" class="btn" style="flex:1;background:#C00000;color:#fff;border-color:#900000;font-weight:700;padding:10px 16px;">🔐 Generate Protected Client Quote Link</button>' +
-        '    <button type="button" id="cqDownloadPptxBtn" class="btn" style="background:#08231B;color:#fff;border-color:#08231B;font-weight:600;padding:10px 14px;">📊 Download Master PPTX (Team Copy)</button>' +
+        '  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">' +
+        '    <button type="button" id="cqCreateReviewBtn" class="btn" style="flex:1;background:#C00000;color:#fff;border-color:#900000;font-weight:700;padding:11px 16px;">📋 Step 1: Generate Head Review Link (No Password)</button>' +
         '  </div>' +
         '</div>' +
 
         '<div id="cqResultCard" style="display:none;background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:14px;margin-bottom:16px;"></div>' +
 
         '<div style="border-top:1px solid #E2E8F0;padding-top:12px;">' +
-        '  <div style="font-size:12.5px;font-weight:700;color:#0F172A;margin-bottom:8px;">Existing Client Quote Links for This Project</div>' +
+        '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;">' +
+        '    <div style="font-size:12.5px;font-weight:700;color:#0F172A;">Approval Status, Client Links &amp; Approved Downloads</div>' +
+        '    <button type="button" id="cqRefreshListBtn" class="btn small" style="padding:4px 10px;font-size:11.5px;">🔄 Refresh Approval Status</button>' +
+        '  </div>' +
         '  <div id="cqExistingList" style="font-size:12.5px;color:#64748B;">Loading saved quote links...</div>' +
         '</div>';
 
       modal.classList.add('is-open');
 
-      body.querySelector('#cqRegenPassBtn').addEventListener('click', function () {
-        body.querySelector('#cqPassword').value = randomPassword();
-      });
-
-      async function gatherPayload() {
+      async function gatherReviewPayload() {
         var selectedTiers = [];
         body.querySelectorAll('.cq-tier-chk:checked').forEach(function (chk) {
           selectedTiers.push(chk.value);
@@ -43338,11 +43673,9 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var cPhone = body.querySelector('#cqClientPhone').value.trim();
         var cLoc = body.querySelector('#cqSiteAddress').value.trim();
         var qCode = body.querySelector('#cqQuoteCode').value.trim();
-        var cUser = body.querySelector('#cqUsername').value.trim();
-        var cPass = body.querySelector('#cqPassword').value.trim();
         var remarks = body.querySelector('#cqUnitRemarks').value.trim();
 
-        if (!cName) throw new Error('Patron Name is required.');
+        if (!cName) throw new Error('Patron / Client Name is required.');
 
         proj.meta = proj.meta || {};
         proj.meta.clientName = cName;
@@ -43351,7 +43684,6 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         proj.meta.cpCode = qCode;
         if (typeof app.saveToLocalStorage === 'function') app.saveToLocalStorage();
 
-        // Build base quote once to rasterize unique unit preview icons for Unit Snips
         var baseQuote = Core.generateFullQuotation(proj, app.selectedBOQRooms || ['all']);
         var iconData = await buildUnitIconsMap(app, baseQuote.furnitureItems || []);
 
@@ -43367,13 +43699,6 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           clientPhone: cPhone,
           clientEmail: meta.email || '',
           siteAddress: cLoc,
-          clientUsername: cUser,
-          clientPassword: cPass,
-          expiryDays: Number(body.querySelector('#cqExpiryDays').value),
-          securitySettings: {
-            watermarkEnabled: false,
-            blurShieldEnabled: body.querySelector('#cqSecBlur').checked
-          },
           quoteSnapshot: {
             meta: {
               title: proj.meta.title || 'Modular Interior Proposal',
@@ -43402,48 +43727,50 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         errBox.style.display = msg ? 'block' : 'none';
       }
 
-      body.querySelector('#cqCreateLinkBtn').addEventListener('click', async function () {
+      body.querySelector('#cqRefreshListBtn').addEventListener('click', function () {
+        self.loadExistingList(body, getActiveProjectId(app));
+      });
+
+      body.querySelector('#cqCreateReviewBtn').addEventListener('click', async function () {
         showErr('');
         var btn = this;
         btn.disabled = true;
-        btn.textContent = '⏳ Creating Protected Quote...';
+        btn.textContent = '⏳ Generating Head Review Link...';
         try {
-          var payload = await gatherPayload();
-          var plainPass = payload.clientPassword;
-          var res = await fetch('/api/client-quotes', {
+          var payload = await gatherReviewPayload();
+          var res = await fetch('/api/client-quotes/review', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
             body: JSON.stringify(payload)
           });
           var data = await res.json();
-          if (!res.ok || !data.success) throw new Error(data.error || 'Failed to generate client quote');
+          if (!res.ok || !data.success) throw new Error(data.error || 'Failed to generate review link');
+
+          var headMsg =
+            'Cookscape Head Review Request — ' + payload.clientName + '\n' +
+            'Project: ' + payload.title + '\n' +
+            'Review & Approve Link (No Password): ' + data.reviewUrl + '\n' +
+            'Please review variant discounts and click Approve.';
 
           var resCard = body.querySelector('#cqResultCard');
-          var inviteMsg =
-            'Cookscape Interior Quotation — ' + payload.clientName + '\n' +
-            'Quote Link: ' + data.shareUrl + '\n' +
-            'Username: ' + data.quote.clientUsername + '\n' +
-            'Password: ' + plainPass + '\n' +
-            '(Protected view: login required, watermarked to your account)';
-
           resCard.style.display = 'block';
+          resCard.style.background = '#FFFBEB';
+          resCard.style.borderColor = '#FCD34D';
           resCard.innerHTML =
-            '<div style="font-size:13.5px;font-weight:700;color:#166534;margin-bottom:8px;">✓ Protected Client Quote Link Ready</div>' +
-            '<div style="font-size:12px;background:#fff;border:1px solid #BBF7D0;border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;">' +
-            '  <div><b>Share Link:</b> <a href="' + esc(data.sharePath) + '" target="_blank" style="color:#1D4ED8;">' + esc(data.shareUrl) + '</a></div>' +
-            '  <div style="margin-top:4px;"><b>Username:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(data.quote.clientUsername) + '</code> &nbsp; <b>Password:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(plainPass) + '</code></div>' +
+            '<div style="font-size:13.5px;font-weight:700;color:#92400E;margin-bottom:6px;">📋 Step 1 Complete: Head Review Link Ready (No Password)</div>' +
+            '<div style="font-size:12px;background:#fff;border:1px solid #FDE68A;border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;">' +
+            '  <div><b>Head Review Link:</b> <a href="' + esc(data.reviewPath) + '" target="_blank" style="color:#1D4ED8;">' + esc(data.reviewUrl) + '</a></div>' +
+            '  <div style="margin-top:4px;color:#64748B;">Share this link with Head. Once Head edits discounts &amp; approves, click <b>Refresh Approval Status</b> below to generate the Client Link + download PPTX / PDF.</div>' +
             '</div>' +
             '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-            '  <button type="button" id="cqCopyUrlBtn" class="btn small">📋 Copy Link</button>' +
-            '  <button type="button" id="cqCopyInviteBtn" class="btn small" style="background:#166534;color:#fff;border-color:#166534;">💬 Copy Client Invite (Link + Login)</button>' +
+            '  <button type="button" id="cqCopyRevBtn" class="btn small">📋 Copy Review Link</button>' +
+            '  <a href="' + esc(data.reviewPath) + '" target="_blank" class="btn small" style="text-decoration:none;">🔗 Open Review Page</a>' +
+            '  <a href="https://wa.me/?text=' + encodeURIComponent(headMsg) + '" target="_blank" class="btn small" style="background:#15803D;color:#fff;border-color:#15803D;text-decoration:none;">💬 Share to Head (WhatsApp)</a>' +
             '</div>';
 
-          resCard.querySelector('#cqCopyUrlBtn').addEventListener('click', function () {
-            copyText(data.shareUrl, this, '✓ Link Copied');
-          });
-          resCard.querySelector('#cqCopyInviteBtn').addEventListener('click', function () {
-            copyText(inviteMsg, this, '✓ Invite Copied');
+          resCard.querySelector('#cqCopyRevBtn').addEventListener('click', function () {
+            copyText(data.reviewUrl, this, '✓ Copied');
           });
 
           self.loadExistingList(body, getActiveProjectId(app));
@@ -43451,57 +43778,42 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           showErr(err.message || String(err));
         } finally {
           btn.disabled = false;
-          btn.textContent = '🔐 Generate Protected Client Quote Link';
-        }
-      });
-
-      body.querySelector('#cqDownloadPptxBtn').addEventListener('click', async function () {
-        showErr('');
-        var btn = this;
-        btn.disabled = true;
-        btn.textContent = '⏳ Building PPTX Deck...';
-        try {
-          var payload = await gatherPayload();
-          var pptxBody = {
-            clientName: payload.clientName,
-            clientPhone: payload.clientPhone,
-            siteAddress: payload.siteAddress,
-            quoteCode: payload.quoteCode,
-            meta: payload.quoteSnapshot.meta,
-            designer: payload.quoteSnapshot.designer,
-            variantQuotes: payload.quoteSnapshot.variantQuotes,
-            unitIcons: payload.quoteSnapshot.unitIcons
-          };
-          var res = await fetch('/api/client-quotes/export-pptx', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify(pptxBody)
-          });
-          if (!res.ok) {
-            var errJson = await res.json().catch(function () { return {}; });
-            throw new Error(errJson.error || 'PPTX generation failed');
-          }
-          var blob = await res.blob();
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = url;
-          a.download = (payload.clientName.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Cookscape') + '_Quotation.pptx';
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(function () {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }, 800);
-        } catch (err) {
-          showErr(err.message || String(err));
-        } finally {
-          btn.disabled = false;
-          btn.textContent = '📊 Download Master PPTX (Team Copy)';
+          btn.textContent = '📋 Step 1: Generate Head Review Link (No Password)';
         }
       });
 
       this.loadExistingList(body, getActiveProjectId(app));
+    },
+
+    downloadApprovedFile: async function (quoteId, format, clientName, btnEl) {
+      var prev = btnEl.textContent;
+      btnEl.disabled = true;
+      btnEl.textContent = format === 'pdf' ? '⏳ Building PDF...' : '⏳ Building PPTX...';
+      try {
+        var endpoint = '/api/client-quotes/' + encodeURIComponent(quoteId) + (format === 'pdf' ? '/export-pdf' : '/export-pptx');
+        var res = await fetch(endpoint, { method: 'POST', credentials: 'same-origin' });
+        if (!res.ok) {
+          var errJson = await res.json().catch(function () { return {}; });
+          throw new Error(errJson.error || (format.toUpperCase() + ' export failed'));
+        }
+        var blob = await res.blob();
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        var clean = String(clientName || 'Cookscape').replace(/[^a-zA-Z0-9_-]/g, '_') || 'Cookscape';
+        a.download = clean + '_Approved_Quotation.' + format;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 800);
+      } catch (err) {
+        alert(err.message || String(err));
+      } finally {
+        btnEl.disabled = false;
+        btnEl.textContent = prev;
+      }
     },
 
     loadExistingList: async function (body, projectId) {
@@ -43516,38 +43828,154 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not load links');
         var quotes = data.quotes || [];
         if (!quotes.length) {
-          listEl.innerHTML = '<div style="padding:8px 0;color:#64748B;">No client quote links created for this project yet.</div>';
+          listEl.innerHTML = '<div style="padding:8px 0;color:#64748B;">No quotation review links created for this project yet. Generate a Head Review Link in Step 1 above.</div>';
           return;
         }
         listEl.innerHTML = quotes.map(function (q) {
+          var isApproved = q.approvalStatus === 'approved';
+          var isActivated = Boolean(q.clientLinkActivated);
           var isExpired = q.expiresAt && new Date(q.expiresAt).getTime() < Date.now();
-          var badgeColor = q.isRevoked ? '#DC2626' : (isExpired ? '#D97706' : '#16A34A');
-          var badgeLabel = q.isRevoked ? 'Revoked' : (isExpired ? 'Expired' : 'Active');
-          var variantsStr = (q.selectedTiers || []).join(', ');
-          var alertsCount = (q.accessLogs || []).filter(function (l) {
-            return l.event === 'focus_blur' || l.event === 'screenshot_key_attempt' || l.event === 'print_attempt';
-          }).length;
 
-          return '<div style="border:1px solid #E2E8F0;border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#F8FAFC;">' +
+          var approvalBadge = isApproved
+            ? '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;color:#fff;background:#16A34A;">✅ Approved' + (q.approvedBy ? (' by ' + esc(q.approvedBy)) : '') + '</span>'
+            : '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;color:#92400E;background:#FEF3C7;border:1px solid #F59E0B;">⏳ Pending Head Approval</span>';
+
+          var clientBadge = '';
+          if (isActivated) {
+            var cBg = q.isRevoked ? '#DC2626' : (isExpired ? '#D97706' : '#0F766E');
+            var cLbl = q.isRevoked ? 'Client Link Revoked' : (isExpired ? 'Client Link Expired' : 'Client Link Active');
+            clientBadge = ' <span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;color:#fff;background:' + cBg + ';">' + cLbl + '</span>';
+          }
+
+          var varSummaryHtml = (q.variantSummaries || []).map(function (vs) {
+            var discNote = (vs.discountPercent || vs.adpPercent)
+              ? (' <span style="color:#B45309;">(Disc ' + vs.discountPercent + '%' + (vs.adpPercent ? (' + ADP ' + vs.adpPercent + '%') : '') + ')</span>')
+              : '';
+            return '<span style="display:inline-block;background:#fff;border:1px solid #E2E8F0;border-radius:5px;padding:2px 7px;margin:2px 4px 2px 0;font-size:11px;"><b>' + esc(vs.tierTitle || vs.tierKey) + '</b>: ' + esc(fmtINR(vs.grandTotal)) + discNote + '</span>';
+          }).join('');
+
+          var waNotice = q.lastWhatsappAlert
+            ? '<div style="margin-top:5px;font-size:11px;color:#166534;background:#ECFDF5;border:1px solid #BBF7D0;border-radius:5px;padding:4px 8px;">📲 Client opened link &rarr; WhatsApp alert triggered for 8838199428 &amp; 7418414780 (' + esc(new Date(q.lastWhatsappAlert.sentAt).toLocaleString('en-IN')) + ')</div>'
+            : '';
+
+          var step2Html = '';
+          if (!isApproved) {
+            step2Html =
+              '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">' +
+              '  <button type="button" class="btn small cq-act-copy" data-url="' + esc(q.reviewUrl) + '" style="background:#FFFBEB;border-color:#F59E0B;color:#92400E;">📋 Copy Head Review Link</button>' +
+              '  <a href="' + esc(q.reviewPath) + '" target="_blank" class="btn small" style="text-decoration:none;">🔗 Open Review Page</a>' +
+              '  <button type="button" class="btn small cq-act-del" data-id="' + esc(q.id) + '" style="color:#B91C1C;border-color:#FECACA;">🗑 Delete</button>' +
+              '</div>';
+          } else if (!isActivated) {
+            var defaultPw = randomPassword();
+            step2Html =
+              '<div style="margin-top:9px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:8px;padding:10px;">' +
+              '  <div style="font-size:11.5px;font-weight:700;color:#166534;margin-bottom:7px;">Step 2 Unlocked: Generate Full Client Link (Username = Client Name) &amp; Download PPTX / PDF</div>' +
+              '  <div style="display:grid;grid-template-columns:1fr 1fr 125px;gap:7px;margin-bottom:8px;">' +
+              '    <div><label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:2px;">Client Username</label><input type="text" class="cq-act-user" value="' + esc(q.clientName) + '" style="width:100%;padding:6px 8px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;"></div>' +
+              '    <div><label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:2px;">Client Password</label><input type="text" class="cq-act-pass-in" value="' + esc(defaultPw) + '" style="width:100%;padding:6px 8px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;font-family:monospace;font-weight:700;"></div>' +
+              '    <div><label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:2px;">Validity</label>' +
+              '      <select class="cq-act-exp" style="width:100%;padding:6px 6px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;">' +
+              '        <option value="1">1 Day</option><option value="7">7 Days</option><option value="15" selected>15 Days</option><option value="30">30 Days</option><option value="365">1 Year</option><option value="0">No Expiry</option>' +
+              '      </select>' +
+              '    </div>' +
+              '  </div>' +
+              '  <div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+              '    <button type="button" class="btn small cq-btn-activate" data-id="' + esc(q.id) + '" style="background:#C00000;color:#fff;border-color:#900000;font-weight:700;">🔐 Generate Full Client Link</button>' +
+              '    <button type="button" class="btn small cq-btn-pptx" data-id="' + esc(q.id) + '" data-client="' + esc(q.clientName) + '" style="background:#08231B;color:#fff;border-color:#08231B;">📊 Download Full PPTX</button>' +
+              '    <button type="button" class="btn small cq-btn-pdf" data-id="' + esc(q.id) + '" data-client="' + esc(q.clientName) + '" style="background:#1E3A8A;color:#fff;border-color:#1E3A8A;">📄 Download Full PDF</button>' +
+              '    <button type="button" class="btn small cq-act-del" data-id="' + esc(q.id) + '" style="color:#B91C1C;border-color:#FECACA;">🗑 Delete</button>' +
+              '  </div>' +
+              '</div>';
+          } else {
+            step2Html =
+              '<div style="font-size:11.5px;color:#475569;margin-top:5px;">Client Login User: <code style="background:#E2E8F0;padding:1px 5px;border-radius:4px;">' + esc(q.clientUsername) + '</code> &bull; Views: <b>' + q.viewCount + '</b>' + (q.expiresAt ? (' &bull; Expires: ' + new Date(q.expiresAt).toLocaleDateString('en-IN')) : ' &bull; No Expiry') + '</div>' +
+              waNotice +
+              '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
+              '  <button type="button" class="btn small cq-act-copy" data-url="' + esc(q.shareUrl) + '" style="background:#166534;color:#fff;border-color:#166534;">📋 Copy Client Link</button>' +
+              '  <button type="button" class="btn small cq-btn-pptx" data-id="' + esc(q.id) + '" data-client="' + esc(q.clientName) + '" style="background:#08231B;color:#fff;border-color:#08231B;">📊 Full PPTX</button>' +
+              '  <button type="button" class="btn small cq-btn-pdf" data-id="' + esc(q.id) + '" data-client="' + esc(q.clientName) + '" style="background:#1E3A8A;color:#fff;border-color:#1E3A8A;">📄 Full PDF</button>' +
+              '  <button type="button" class="btn small cq-act-pass" data-id="' + esc(q.id) + '" data-user="' + esc(q.clientUsername) + '">🔑 Reset Pass</button>' +
+              '  <button type="button" class="btn small cq-act-toggle" data-id="' + esc(q.id) + '" data-revoked="' + (q.isRevoked ? '1' : '0') + '">' + (q.isRevoked ? '✅ Reactivate' : '⛔ Revoke') + '</button>' +
+              '  <button type="button" class="btn small cq-act-del" data-id="' + esc(q.id) + '" style="color:#B91C1C;border-color:#FECACA;">🗑 Delete</button>' +
+              '</div>';
+          }
+
+          return '<div class="cq-quote-card" style="border:1px solid #E2E8F0;border-radius:9px;padding:11px 13px;margin-bottom:10px;background:#F8FAFC;">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">' +
-            '  <div>' +
-            '    <span style="display:inline-block;padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:700;color:#fff;background:' + badgeColor + ';">' + badgeLabel + '</span> ' +
-            '    <b>' + esc(q.clientName) + '</b> · User: <code>' + esc(q.clientUsername) + '</code>' +
-            '  </div>' +
-            '  <div style="font-size:11.5px;color:#475569;">Views: <b>' + q.viewCount + '</b>' + (alertsCount ? (' · <span style="color:#B45309;">Shield Events: ' + alertsCount + '</span>') : '') + '</div>' +
+            '  <div>' + approvalBadge + clientBadge + ' <b style="margin-left:4px;">' + esc(q.clientName) + '</b> <span style="color:#64748B;font-size:11px;">(' + esc(q.quoteCode || q.id) + ')</span></div>' +
+            '  <div style="font-size:11px;color:#64748B;">' + (q.createdAt ? new Date(q.createdAt).toLocaleDateString('en-IN') : '') + '</div>' +
             '</div>' +
-            '<div style="font-size:11.5px;color:#64748B;margin-top:4px;">Variants: ' + esc(variantsStr || '-') + (q.expiresAt ? (' · Expires: ' + new Date(q.expiresAt).toLocaleDateString('en-IN')) : ' · No Expiry') + (q.lastViewedAt ? (' · Last opened: ' + new Date(q.lastViewedAt).toLocaleString('en-IN')) : '') + '</div>' +
-            '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
-            '  <button type="button" class="btn small cq-act-copy" data-url="' + esc(q.shareUrl) + '">📋 Copy Link</button>' +
-            '  <button type="button" class="btn small cq-act-pass" data-id="' + esc(q.id) + '" data-user="' + esc(q.clientUsername) + '">🔑 Reset Password</button>' +
-            '  <button type="button" class="btn small cq-act-toggle" data-id="' + esc(q.id) + '" data-revoked="' + (q.isRevoked ? '1' : '0') + '">' + (q.isRevoked ? '✅ Reactivate' : '⛔ Revoke') + '</button>' +
-            '  <button type="button" class="btn small cq-act-del" data-id="' + esc(q.id) + '" style="color:#B91C1C;border-color:#FECACA;">🗑 Delete</button>' +
-            '</div>' +
+            '<div style="margin-top:6px;">' + varSummaryHtml + '</div>' +
+            (q.approvalRemarks ? ('<div style="font-size:11.5px;color:#166534;margin-top:4px;">Head Remarks: <i>' + esc(q.approvalRemarks) + '</i></div>') : '') +
+            step2Html +
             '</div>';
         }).join('');
 
         listEl.querySelectorAll('.cq-act-copy').forEach(function (b) {
           b.addEventListener('click', function () { copyText(this.getAttribute('data-url'), this, '✓ Copied'); });
+        });
+        listEl.querySelectorAll('.cq-btn-activate').forEach(function (b) {
+          b.addEventListener('click', async function () {
+            var qId = this.getAttribute('data-id');
+            var card = this.closest('.cq-quote-card');
+            var uVal = card.querySelector('.cq-act-user').value.trim();
+            var pVal = card.querySelector('.cq-act-pass-in').value.trim();
+            var expVal = Number(card.querySelector('.cq-act-exp').value);
+            this.disabled = true;
+            this.textContent = '⏳ Activating...';
+            try {
+              var r = await fetch('/api/client-quotes/' + encodeURIComponent(qId) + '/activate-client-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ clientUsername: uVal, clientPassword: pVal, expiryDays: expVal })
+              });
+              var d = await r.json();
+              if (!r.ok || !d.success) throw new Error(d.error || 'Activation failed');
+              var inviteMsg =
+                'Cookscape Interior Quotation — ' + d.quote.clientName + '\n' +
+                'Quote Link: ' + d.shareUrl + '\n' +
+                'Username: ' + d.quote.clientUsername + '\n' +
+                'Password: ' + pVal;
+              var resCard = body.querySelector('#cqResultCard');
+              resCard.style.display = 'block';
+              resCard.style.background = '#F0FDF4';
+              resCard.style.borderColor = '#86EFAC';
+              resCard.innerHTML =
+                '<div style="font-size:13.5px;font-weight:700;color:#166534;margin-bottom:6px;">✅ Full Client Quote Link Activated!</div>' +
+                '<div style="font-size:12px;background:#fff;border:1px solid #BBF7D0;border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;">' +
+                '  <div><b>Client Link:</b> <a href="' + esc(d.sharePath) + '" target="_blank" style="color:#1D4ED8;">' + esc(d.shareUrl) + '</a></div>' +
+                '  <div style="margin-top:4px;"><b>Username:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(d.quote.clientUsername) + '</code> &nbsp; <b>Password:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(pVal) + '</code></div>' +
+                '  <div style="margin-top:4px;font-size:11px;color:#0F766E;">📲 WhatsApp alert will trigger to 8838199428 &amp; 7418414780 as soon as the client opens this link.</div>' +
+                '</div>' +
+                '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+                '  <button type="button" id="cqCopyClientUrlBtn" class="btn small">📋 Copy Client Link</button>' +
+                '  <button type="button" id="cqCopyClientInvBtn" class="btn small" style="background:#166534;color:#fff;border-color:#166534;">💬 Copy Client Invite (Link + Login)</button>' +
+                '</div>';
+              resCard.querySelector('#cqCopyClientUrlBtn').addEventListener('click', function () {
+                copyText(d.shareUrl, this, '✓ Copied');
+              });
+              resCard.querySelector('#cqCopyClientInvBtn').addEventListener('click', function () {
+                copyText(inviteMsg, this, '✓ Invite Copied');
+              });
+              OrbixClientQuote.loadExistingList(body, projectId);
+            } catch (err) {
+              alert(err.message || String(err));
+              this.disabled = false;
+              this.textContent = '🔐 Generate Full Client Link';
+            }
+          });
+        });
+        listEl.querySelectorAll('.cq-btn-pptx').forEach(function (b) {
+          b.addEventListener('click', function () {
+            OrbixClientQuote.downloadApprovedFile(this.getAttribute('data-id'), 'pptx', this.getAttribute('data-client'), this);
+          });
+        });
+        listEl.querySelectorAll('.cq-btn-pdf').forEach(function (b) {
+          b.addEventListener('click', function () {
+            OrbixClientQuote.downloadApprovedFile(this.getAttribute('data-id'), 'pdf', this.getAttribute('data-client'), this);
+          });
         });
         listEl.querySelectorAll('.cq-act-toggle').forEach(function (b) {
           b.addEventListener('click', async function () {
@@ -43584,7 +44012,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         });
         listEl.querySelectorAll('.cq-act-del').forEach(function (b) {
           b.addEventListener('click', async function () {
-            if (!confirm('Delete this client quote link permanently?')) return;
+            if (!confirm('Delete this quotation link permanently?')) return;
             var qId = this.getAttribute('data-id');
             await fetch('/api/client-quotes/' + encodeURIComponent(qId), {
               method: 'DELETE',
@@ -46865,7 +47293,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       }
       if (target.y < 0) target.y = 0;
       if (target.y > 6000) target.y = 6000;
-      cam.pitch = Math.max(-85, Math.min(22, cam.pitch));
+      cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
       cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom));
       var yaw = cam.yaw * Math.PI / 180, el = (-cam.pitch) * Math.PI / 180;
       var safeZoom = Math.max(0.18, 1 + cam.zoom);
@@ -48278,7 +48706,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     scale = Math.max(0.05, Math.min((r.height * 0.72) / totalH, (r.width * 0.64) / span));
   }
   function camApply() {
-    cam.pitch = Math.max(-85, Math.min(22, cam.pitch));
+    cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
     cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom));
     if (GL.ok) { GL.apply(); return; }
     var s = scale * (1 + cam.zoom);
@@ -48664,19 +49092,23 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var dx = e.clientX - prev.clientX;
         var dy = e.clientY - prev.clientY;
         if (prev.button === 2 || prev.button === 1 || e.shiftKey || studioCamMode === 'pan') {
-          // Pan camera target across 3D space (both Horizontal X-Z and Vertical Y up/down!)
+          // Pan camera target across 3D space with mathematically exact screen-space vectors (Horizontal & Vertical)
           var yawRad = cam.yaw * Math.PI / 180;
-          var pitchRad = (-cam.pitch) * Math.PI / 180;
+          var elRad = (-cam.pitch) * Math.PI / 180;
           var cosY = Math.cos(yawRad), sinY = Math.sin(yawRad);
-          // Adaptive pan speed: faster when zoomed out, slower when close-up
-          var panSpeed = Math.max(1.2, 4.5 / Math.max(0.1, (1 + cam.zoom * 0.18)));
+          var cosEl = Math.cos(elRad), sinEl = Math.sin(elRad);
+
+          // Adaptive pan speed proportional to distance from target for buttery-smooth tracking
+          var curDist = (GL.getDist ? GL.getDist() : 3500) / Math.max(0.18, 1 + cam.zoom);
+          var panSpeed = Math.max(0.8, Math.min(18.0, curDist * 0.0016));
+
           var tgt = GL.getTarget ? GL.getTarget() : null;
           if (tgt) {
-            tgt.x -= dx * cosY * panSpeed;
-            tgt.z += dx * sinY * panSpeed;
-            tgt.y += dy * Math.cos(pitchRad) * panSpeed;
-            tgt.x += dy * Math.sin(pitchRad) * sinY * panSpeed * 0.5;
-            tgt.z += dy * Math.sin(pitchRad) * cosY * panSpeed * 0.5;
+            // Screen-space Right vector R = (cosY, 0, -sinY)
+            // Screen-space Up vector U = (-sinY * sinEl, cosEl, -cosY * sinEl)
+            tgt.x += (-dx * cosY - dy * sinY * sinEl) * panSpeed;
+            tgt.y += (dy * cosEl) * panSpeed;
+            tgt.z += (dx * sinY - dy * cosY * sinEl) * panSpeed;
             tgt.y = Math.max(0, Math.min(6000, tgt.y));
           }
         } else {
@@ -48741,7 +49173,25 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       cam.pitch = 28;
       cam.zoom = 0;
       var tgt = GL.getTarget ? GL.getTarget() : null;
-      if (tgt) { tgt.x = 0; tgt.y = 800; tgt.z = 0; }
+      if (tgt) {
+        var pWalls = (window.OrbixUI && window.OrbixUI.editor && window.OrbixUI.editor.project && window.OrbixUI.editor.project.plan && window.OrbixUI.editor.project.plan.walls) || [];
+        if (pWalls.length > 0) {
+          var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+          pWalls.forEach(function (w) {
+            if (w.start) { minX = Math.min(minX, w.start.x); maxX = Math.max(maxX, w.start.x); minY = Math.min(minY, w.start.y); maxY = Math.max(maxY, w.start.y); }
+            if (w.end) { minX = Math.min(minX, w.end.x); maxX = Math.max(maxX, w.end.x); minY = Math.min(minY, w.end.y); maxY = Math.max(maxY, w.end.y); }
+          });
+          if (isFinite(minX) && isFinite(maxX)) {
+            tgt.x = (minX + maxX) / 2;
+            tgt.y = 800;
+            tgt.z = (minY + maxY) / 2;
+          } else {
+            tgt.x = 0; tgt.y = 800; tgt.z = 0;
+          }
+        } else {
+          tgt.x = 0; tgt.y = 800; tgt.z = 0;
+        }
+      }
       if (GL.ok && GL.frame) GL.frame('home');
       camApply();
       if (GL.ok) GL.settle();

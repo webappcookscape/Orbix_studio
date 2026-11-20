@@ -354,12 +354,21 @@
       background: radial-gradient(circle at center, #172033 0%, #090e1a 100%);
     }
 
+    .slides-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      width: 100%;
+    }
+
     .canvas-frame {
       position: relative;
       background: #F4EDE3;
       border-radius: 8px;
       box-shadow: 0 24px 65px rgba(0, 0, 0, 0.65);
       overflow: hidden;
+      flex-shrink: 0;
     }
 
     .canvas-frame.is-shielded {
@@ -367,6 +376,7 @@
       opacity: 0 !important;
     }
 
+    .slide-canvas,
     #quoteCanvas {
       display: block;
       width: 100%;
@@ -478,10 +488,7 @@
     <div class="workspace">
       <aside class="sidebar" id="slidesSidebar"></aside>
       <main class="stage-wrap" id="stageWrap">
-        <div class="canvas-frame" id="canvasFrame">
-          <canvas id="quoteCanvas" width="1060" height="1498"></canvas>
-          <div class="canvas-guard" id="canvasGuard"></div>
-        </div>
+        <div class="slides-stack" id="slidesStack"></div>
       </main>
     </div>
   </div>
@@ -511,7 +518,11 @@
         currentSlide: 0,
         zoomFactor: 1.0,
         shieldActive: false,
-        bitmapCache: {}
+        bitmapCache: {},
+        slideFrames: [],
+        slideCanvases: [],
+        renderedMap: {},
+        observer: null
       };
 
       var els = {
@@ -536,8 +547,7 @@
         zoomInBtn: document.getElementById('zoomInBtn'),
         logoutBtn: document.getElementById('portalLogoutBtn'),
         stageWrap: document.getElementById('stageWrap'),
-        canvasFrame: document.getElementById('canvasFrame'),
-        canvas: document.getElementById('quoteCanvas'),
+        slidesStack: document.getElementById('slidesStack'),
         blurShield: document.getElementById('blurShield'),
         shieldReason: document.getElementById('shieldReason'),
         resumeViewBtn: document.getElementById('resumeViewBtn')
@@ -745,10 +755,11 @@
         ctx.restore();
       }
 
-      async function renderSlideToCanvas(slide) {
-        var ctx = els.canvas.getContext('2d');
-        els.canvas.width = Math.round(CANVAS_W * RENDER_SCALE);
-        els.canvas.height = Math.round(CANVAS_H * RENDER_SCALE);
+      async function renderSlideToCanvas(slide, targetCanvas) {
+        if (!targetCanvas || state.shieldActive) return;
+        var ctx = targetCanvas.getContext('2d');
+        targetCanvas.width = Math.round(CANVAS_W * RENDER_SCALE);
+        targetCanvas.height = Math.round(CANVAS_H * RENDER_SCALE);
         ctx.save();
         ctx.scale(RENDER_SCALE, RENDER_SCALE);
 
@@ -1167,10 +1178,107 @@
       }
 
       function applyCanvasSize() {
-        var availW = Math.max(320, els.stageWrap.clientWidth - 48);
-        var availH = Math.max(400, els.stageWrap.clientHeight - 48);
-        var fitW = Math.min(availW, availH * (CANVAS_W / CANVAS_H));
-        els.canvasFrame.style.width = Math.round(fitW * state.zoomFactor) + 'px';
+        var availW = Math.max(300, els.stageWrap.clientWidth - 40);
+        var availH = Math.max(400, els.stageWrap.clientHeight - 40);
+        var fitW = Math.min(availW, Math.max(availW * 0.92, availH * (CANVAS_W / CANVAS_H)));
+        if (availW > 960) fitW = Math.min(availW, Math.max(760, availH * (CANVAS_W / CANVAS_H)));
+        var pxW = Math.round(fitW * state.zoomFactor) + 'px';
+        for (var i = 0; i < state.slideFrames.length; i++) {
+          state.slideFrames[i].style.width = pxW;
+        }
+      }
+
+      function setActiveSlideUi(idx) {
+        var slides = (state.deck && state.deck.slides) || [];
+        if (!slides.length) return;
+        state.currentSlide = Math.max(0, Math.min(slides.length - 1, idx));
+        els.counter.textContent = (state.currentSlide + 1) + ' / ' + slides.length;
+        els.prevBtn.disabled = state.currentSlide === 0;
+        els.nextBtn.disabled = state.currentSlide === slides.length - 1;
+        els.sidebar.querySelectorAll('.slide-nav-btn').forEach(function (btn) {
+          btn.classList.toggle('is-active', Number(btn.getAttribute('data-idx')) === state.currentSlide);
+        });
+        var activeBtn = els.sidebar.querySelector('.slide-nav-btn.is-active');
+        if (activeBtn && activeBtn.scrollIntoView) activeBtn.scrollIntoView({ block: 'nearest' });
+      }
+
+      async function ensureSlideRendered(idx) {
+        var slides = (state.deck && state.deck.slides) || [];
+        if (idx < 0 || idx >= slides.length) return;
+        if (state.shieldActive || state.renderedMap[idx]) return;
+        var cv = state.slideCanvases[idx];
+        if (!cv) return;
+        state.renderedMap[idx] = 'rendering';
+        await renderSlideToCanvas(slides[idx], cv);
+        if (!state.shieldActive) state.renderedMap[idx] = 'done';
+      }
+
+      function buildScrollableSlides() {
+        var slides = (state.deck && state.deck.slides) || [];
+        els.slidesStack.innerHTML = '';
+        state.slideFrames = [];
+        state.slideCanvases = [];
+        state.renderedMap = {};
+        if (state.observer) {
+          try { state.observer.disconnect(); } catch (_) {}
+          state.observer = null;
+        }
+
+        slides.forEach(function (s, idx) {
+          var frame = document.createElement('div');
+          frame.className = 'canvas-frame';
+          frame.setAttribute('data-slide-idx', String(idx));
+
+          var cv = document.createElement('canvas');
+          cv.className = 'slide-canvas';
+          cv.width = CANVAS_W;
+          cv.height = CANVAS_H;
+
+          var guard = document.createElement('div');
+          guard.className = 'canvas-guard';
+
+          frame.appendChild(cv);
+          frame.appendChild(guard);
+          els.slidesStack.appendChild(frame);
+          state.slideFrames.push(frame);
+          state.slideCanvases.push(cv);
+        });
+
+        applyCanvasSize();
+
+        if (typeof IntersectionObserver !== 'undefined') {
+          state.observer = new IntersectionObserver(function (entries) {
+            if (state.shieldActive) return;
+            var bestIdx = -1;
+            var bestRatio = 0;
+            entries.forEach(function (ent) {
+              var idx = Number(ent.target.getAttribute('data-slide-idx'));
+              if (ent.isIntersecting) {
+                ensureSlideRendered(idx);
+                ensureSlideRendered(idx + 1);
+                if (idx > 0) ensureSlideRendered(idx - 1);
+                if (ent.intersectionRatio > bestRatio) {
+                  bestRatio = ent.intersectionRatio;
+                  bestIdx = idx;
+                }
+              }
+            });
+            if (bestIdx !== -1 && bestIdx !== state.currentSlide) {
+              setActiveSlideUi(bestIdx);
+            }
+          }, {
+            root: els.stageWrap,
+            rootMargin: '400px 0px',
+            threshold: [0.15, 0.5]
+          });
+          state.slideFrames.forEach(function (fr) { state.observer.observe(fr); });
+        } else {
+          slides.forEach(function (_, idx) { ensureSlideRendered(idx); });
+        }
+
+        ensureSlideRendered(0);
+        if (slides.length > 1) ensureSlideRendered(1);
+        setActiveSlideUi(0);
       }
 
       function renderSidebar() {
@@ -1199,18 +1307,15 @@
       async function goToSlide(idx) {
         var slides = (state.deck && state.deck.slides) || [];
         if (!slides.length) return;
-        state.currentSlide = Math.max(0, Math.min(slides.length - 1, idx));
-        var s = slides[state.currentSlide];
-        els.counter.textContent = (state.currentSlide + 1) + ' / ' + slides.length;
-        els.prevBtn.disabled = state.currentSlide === 0;
-        els.nextBtn.disabled = state.currentSlide === slides.length - 1;
-        els.sidebar.querySelectorAll('.slide-nav-btn').forEach(function (btn) {
-          btn.classList.toggle('is-active', Number(btn.getAttribute('data-idx')) === state.currentSlide);
-        });
-        var activeBtn = els.sidebar.querySelector('.slide-nav-btn.is-active');
-        if (activeBtn && activeBtn.scrollIntoView) activeBtn.scrollIntoView({ block: 'nearest' });
-        await renderSlideToCanvas(s);
-        sendAudit('slide_view', 'Slide ' + s.slideNumber);
+        var target = Math.max(0, Math.min(slides.length - 1, idx));
+        setActiveSlideUi(target);
+        await ensureSlideRendered(target);
+        if (target + 1 < slides.length) ensureSlideRendered(target + 1);
+        var frame = state.slideFrames[target];
+        if (frame && frame.scrollIntoView) {
+          frame.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        sendAudit('slide_view', 'Slide ' + slides[target].slideNumber);
       }
 
       function escapeHtml(s) {
@@ -1220,16 +1325,20 @@
       }
 
       function wipeCanvasPixels() {
-        try {
-          var ctx = els.canvas && els.canvas.getContext('2d');
-          if (ctx) {
-            ctx.save();
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-            ctx.fillStyle = '#05080D';
-            ctx.fillRect(0, 0, els.canvas.width || 1, els.canvas.height || 1);
-            ctx.restore();
-          }
-        } catch (_) {}
+        state.renderedMap = {};
+        for (var i = 0; i < state.slideCanvases.length; i++) {
+          try {
+            var cv = state.slideCanvases[i];
+            var ctx = cv && cv.getContext('2d');
+            if (ctx) {
+              ctx.save();
+              ctx.setTransform(1, 0, 0, 1, 0, 0);
+              ctx.fillStyle = '#05080D';
+              ctx.fillRect(0, 0, cv.width || 1, cv.height || 1);
+              ctx.restore();
+            }
+          } catch (_) {}
+        }
       }
 
       function activateShield(reason, auditEvent) {
@@ -1237,7 +1346,7 @@
         if (state.deck.securitySettings && state.deck.securitySettings.blurShieldEnabled === false) return;
         state.shieldActive = true;
         wipeCanvasPixels();
-        els.canvasFrame.classList.add('is-shielded');
+        state.slideFrames.forEach(function (fr) { fr.classList.add('is-shielded'); });
         els.shieldReason.textContent = reason || 'Viewing is paused while the window is unfocused or capture protection is triggered.';
         els.blurShield.classList.add('is-visible');
         if (auditEvent) sendAudit(auditEvent, reason);
@@ -1245,10 +1354,13 @@
 
       async function deactivateShield() {
         state.shieldActive = false;
-        els.canvasFrame.classList.remove('is-shielded');
+        state.slideFrames.forEach(function (fr) { fr.classList.remove('is-shielded'); });
         els.blurShield.classList.remove('is-visible');
-        if (state.deck && state.deck.slides && state.deck.slides[state.currentSlide]) {
-          await renderSlideToCanvas(state.deck.slides[state.currentSlide]);
+        if (state.deck && state.deck.slides) {
+          var cur = state.currentSlide || 0;
+          await ensureSlideRendered(cur);
+          if (cur > 0) ensureSlideRendered(cur - 1);
+          if (cur + 1 < state.deck.slides.length) ensureSlideRendered(cur + 1);
         }
       }
 
@@ -1360,7 +1472,7 @@
         window.addEventListener('keydown', handleCaptureKey, { capture: true });
         window.addEventListener('keyup', handleCaptureKey, { capture: true });
 
-        // Focus loss, app switcher, Snipping Tool overlay, tab hide, desktop cursor leave
+        // Focus loss, app switcher, Snipping Tool overlay, tab hide (mouse movement never triggers shield)
         window.addEventListener('beforeprint', function () {
           activateShield('Printing is disabled for this protected quotation.', 'print_attempt');
         });
@@ -1374,22 +1486,9 @@
           if (document.hidden) activateShield('Quotation tab hidden or app switched.', 'focus_blur');
         });
         if (!isTouchDevice) {
-          document.addEventListener('mouseleave', function (e) {
-            if (state.deck && (!e.relatedTarget && !e.toElement)) {
-              activateShield('Pointer left the quotation window. Click Resume when ready.', 'window_leave');
-            }
-          });
           document.addEventListener('mousemove', resetIdleLock, { passive: true });
-          // Docked DevTools detection on desktop browsers
-          setInterval(function () {
-            if (!state.deck || state.shieldActive) return;
-            var dw = Math.abs((window.outerWidth || 0) - (window.innerWidth || 0));
-            var dh = Math.abs((window.outerHeight || 0) - (window.innerHeight || 0));
-            if (dw > 220 || dh > 220) {
-              activateShield('Browser inspector / overlay detected. Close it to continue viewing.', 'devtools_attempt');
-            }
-          }, 1200);
         }
+        els.stageWrap.addEventListener('scroll', resetIdleLock, { passive: true });
 
         els.resumeViewBtn.addEventListener('click', function () {
           deactivateShield();
@@ -1412,8 +1511,7 @@
         els.viewerTitle.textContent = data.deck.title || 'Cookscape Interior Quotation';
         els.protectionBadge.textContent = '🔒 Protected View for ' + (data.deck.clientName || 'Client') + ' • Read-Only';
         renderSidebar();
-        applyCanvasSize();
-        await goToSlide(0);
+        buildScrollableSlides();
       }
 
       async function initPortal() {

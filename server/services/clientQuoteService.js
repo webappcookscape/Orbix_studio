@@ -1,5 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// ORBIX STUDIO — Protected Client Quote Service (PostgreSQL + JSON Fallback)
+// ORBIX STUDIO — Protected Client Quote & Head Approval Service (PostgreSQL + JSON)
+// Flow:
+//   Stage 1: Employee generates password-free Head Review Link (/quote-review/:reviewToken)
+//            showing each selected variant's Quotation page with editable Discounts/ADP.
+//   Stage 2: Head edits discounts & clicks Approve -> syncs approved totals back to app.
+//   Stage 3: Employee generates full password-protected Client Link (/quote/:shareToken)
+//            (default username = Client Name) + downloads Full Master PPTX & Full PDF.
+//   Stage 4: When client logs in to /quote/:shareToken, triggers WhatsApp alert to
+//            8838199428 & 7418414780 with Client Name, Project Name & Project ID.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const fs = require('fs');
@@ -8,6 +16,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const prismaConfig = require('../config/prisma');
 const quoteDeckBuilder = require('./quoteDeckBuilder');
+const whatsappAlertService = require('./whatsappAlertService');
 
 const ROOT_DIR = path.join(__dirname, '../..');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
@@ -15,7 +24,7 @@ const STORE_PATH = path.join(DATA_DIR, 'client_quotes_store.json');
 
 const MAX_ICON_BYTES = 200 * 1024; // 200 KB per unit elevation icon
 const MAX_UNIT_ICONS = 80;
-const MAX_AUDIT_LOGS = 60;
+const MAX_AUDIT_LOGS = 80;
 
 let pgTableReady = false;
 
@@ -44,14 +53,79 @@ function sanitizeUnitIconDataUrl(raw) {
   return { mime, data: b64 };
 }
 
+function recalculateVariantCommercial(comm, discountPercent, adpPercent) {
+  const c = comm || {};
+  const woodwork = Math.round(Number(c.woodworkSubtotal) || 0);
+  const acc = Number(c.additionalAccessories) || 0;
+  const appliances = Number(c.appliances) || 0;
+  const designPercent = (c.designPercent !== undefined && c.designPercent !== null && c.designPercent !== '') ? Number(c.designPercent) : 9;
+  const freightPercent = (c.freightPercent !== undefined && c.freightPercent !== null && c.freightPercent !== '') ? Number(c.freightPercent) : 2.5;
+  const gstPercent = (c.gstPercent !== undefined && c.gstPercent !== null && c.gstPercent !== '') ? Number(c.gstPercent) : 18;
+
+  const designAmount = Math.round(woodwork * (designPercent / 100));
+  const freightAmount = Math.round(woodwork * (freightPercent / 100));
+
+  const discP = Math.max(0, Math.min(100, Number(discountPercent !== undefined ? discountPercent : c.discountPercent) || 0));
+  const adpP = Math.max(0, Math.min(100, Number(adpPercent !== undefined ? adpPercent : c.adpPercent) || 0));
+  const discountAmount = Math.round(woodwork * (discP / 100));
+  const adpAmount = Math.round(woodwork * (adpP / 100));
+
+  const netBeforeTax = Math.max(0, Math.round(woodwork + acc + appliances + designAmount + freightAmount - (discountAmount + adpAmount)));
+  const gstAmount = Math.round(netBeforeTax * (gstPercent / 100));
+  const grandTotal = netBeforeTax + gstAmount;
+
+  return Object.assign({}, c, {
+    woodworkSubtotal: woodwork,
+    additionalAccessories: acc,
+    appliances,
+    designPercent,
+    designAmount,
+    freightPercent,
+    freightAmount,
+    discountPercent: discP,
+    discountAmount,
+    adpPercent: adpP,
+    adpAmount,
+    netBeforeTax,
+    gstPercent,
+    gstAmount,
+    grandTotal
+  });
+}
+
+function getWorkflowMeta(rec) {
+  const sec = (rec && rec.securitySettings) || {};
+  const approvalStatus = sec.approvalStatus || 'approved';
+  const clientLinkActivated = sec.clientLinkActivated !== undefined
+    ? Boolean(sec.clientLinkActivated)
+    : (approvalStatus === 'approved' && Boolean(rec && rec.passwordHash));
+  return {
+    reviewToken: sec.reviewToken || '',
+    approvalStatus,
+    approvedAt: sec.approvedAt || null,
+    approvedBy: sec.approvedBy || '',
+    approvalRemarks: sec.approvalRemarks || '',
+    clientLinkActivated,
+    lastWhatsappAlert: sec.lastWhatsappAlert || null
+  };
+}
+
 function sanitizeRecordForManager(rec) {
   if (!rec) return null;
   const snap = rec.quoteSnapshot || {};
+  const wf = getWorkflowMeta(rec);
   return {
     id: rec.id,
     projectId: rec.projectId,
     createdBy: rec.createdBy,
     shareToken: rec.shareToken,
+    reviewToken: wf.reviewToken,
+    approvalStatus: wf.approvalStatus,
+    approvedAt: wf.approvedAt,
+    approvedBy: wf.approvedBy,
+    approvalRemarks: wf.approvalRemarks,
+    clientLinkActivated: wf.clientLinkActivated,
+    lastWhatsappAlert: wf.lastWhatsappAlert,
     title: rec.title,
     quoteCode: rec.quoteCode,
     clientName: rec.clientName,
@@ -64,7 +138,9 @@ function sanitizeRecordForManager(rec) {
     variantSummaries: (snap.variantQuotes || []).map((v) => ({
       tierKey: v.tierKey,
       tierTitle: v.tierTitle,
-      grandTotal: v.grandTotal,
+      discountPercent: Number(v.commercial?.discountPercent || 0),
+      adpPercent: Number(v.commercial?.adpPercent || 0),
+      grandTotal: Math.round(Number(v.commercial?.grandTotal ?? v.grandTotal ?? 0)),
       currencySymbol: v.currencySymbol || '₹'
     })),
     expiresAt: rec.expiresAt || null,
@@ -189,6 +265,21 @@ async function findByToken(shareToken) {
   return local.find((r) => r.shareToken === shareToken) || null;
 }
 
+async function findByReviewToken(reviewToken) {
+  if (!reviewToken) return null;
+  if (await ensurePgTable()) {
+    try {
+      const rows = await prismaConfig.prisma.$queryRawUnsafe(
+        "SELECT * FROM client_quotes WHERE security_settings->>'reviewToken' = $1 LIMIT 1",
+        reviewToken
+      );
+      if (rows && rows.length) return normalizeRow(rows[0]);
+    } catch (_) {}
+  }
+  const local = readLocalStore();
+  return local.find((r) => r.securitySettings && r.securitySettings.reviewToken === reviewToken) || null;
+}
+
 async function findById(id) {
   if (!id) return null;
   if (await ensurePgTable()) {
@@ -251,16 +342,20 @@ async function persistRecordUpdate(rec) {
         `UPDATE client_quotes SET
           client_username = $2,
           password_hash = $3,
-          expires_at = $4::timestamptz,
-          is_revoked = $5,
-          view_count = $6,
-          last_viewed_at = $7::timestamptz,
-          access_logs = $8::jsonb,
-          updated_at = $9::timestamptz
+          quote_snapshot = $4::jsonb,
+          security_settings = $5::jsonb,
+          expires_at = $6::timestamptz,
+          is_revoked = $7,
+          view_count = $8,
+          last_viewed_at = $9::timestamptz,
+          access_logs = $10::jsonb,
+          updated_at = $11::timestamptz
          WHERE id = $1`,
         rec.id,
         rec.clientUsername,
         rec.passwordHash,
+        JSON.stringify(rec.quoteSnapshot || {}),
+        JSON.stringify(rec.securitySettings || {}),
         rec.expiresAt ? new Date(rec.expiresAt).toISOString() : null,
         Boolean(rec.isRevoked),
         Number(rec.viewCount || 0),
@@ -284,50 +379,125 @@ async function persistRecordUpdate(rec) {
 function checkQuoteActiveStatus(rec) {
   if (!rec) return { active: false, reason: 'Quotation link not found.' };
   if (rec.isRevoked) return { active: false, reason: 'This quotation link has been revoked by the designer.' };
+  const wf = getWorkflowMeta(rec);
+  if (wf.approvalStatus !== 'approved' || !wf.clientLinkActivated) {
+    return { active: false, reason: 'This quotation is awaiting Head approval before client viewing.' };
+  }
   if (rec.expiresAt && new Date(rec.expiresAt).getTime() < Date.now()) {
     return { active: false, reason: 'This quotation link has expired. Please contact your Cookscape designer.' };
   }
   return { active: true, reason: null };
 }
 
+function extractValidatedVariantsAndIcons(snapInput) {
+  const rawVariants = Array.isArray(snapInput.variantQuotes) ? snapInput.variantQuotes : [];
+  const variantQuotes = rawVariants.filter((vq) =>
+    Boolean(quoteDeckBuilder.normalizeTemplateVariantKey(vq.tierKey || vq.tierName || vq.tierTitle))
+  );
+  if (!variantQuotes.length) {
+    throw makeError('Please select at least one Master Template variant (ZAPPO EL PEARL, POT & CAFE, HOME SPACE, CAFÉ HUNT, LL ELITE, CAPRICOAST MATTE, CAPRICOST GLOSSY, ELEGANT SURABHI, or 4X TUFF GLOSS).', 400);
+  }
+
+  const unitIcons = {};
+  if (snapInput.unitIcons && typeof snapInput.unitIcons === 'object') {
+    let iconCount = 0;
+    for (const [k, dataUrl] of Object.entries(snapInput.unitIcons)) {
+      if (iconCount >= MAX_UNIT_ICONS) break;
+      const cleanKey = String(k || '').replace(/[^a-zA-Z0-9_-]/g, '');
+      if (!cleanKey) continue;
+      const parsedIcon = sanitizeUnitIconDataUrl(dataUrl);
+      if (parsedIcon) {
+        unitIcons[cleanKey] = parsedIcon;
+        iconCount += 1;
+      }
+    }
+  }
+  return { variantQuotes, unitIcons };
+}
+
 class ClientQuoteService {
-  async createQuote(user, payload) {
+  // Stage 1: Generate password-free Head Review Link (/quote-review/:reviewToken)
+  async createReviewQuote(user, payload) {
     if (!user) throw makeError('Authentication required', 401);
     const projectId = String(payload.projectId || '').trim();
-    await assertProjectAccess(user, projectId);
+    const project = await assertProjectAccess(user, projectId);
 
     const clientName = String(payload.clientName || '').trim();
     if (!clientName) throw makeError('Client name is required', 400);
 
-    const clientUsername = String(payload.clientUsername || '').trim();
+    const snapInput = payload.quoteSnapshot || {};
+    const { variantQuotes, unitIcons } = extractValidatedVariantsAndIcons(snapInput);
+
+    const now = new Date().toISOString();
+    const reviewToken = 'rv_' + crypto.randomBytes(16).toString('hex');
+    const rec = {
+      id: 'cq_' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'),
+      projectId,
+      createdBy: user.id,
+      shareToken: 'qt_' + crypto.randomBytes(16).toString('hex'),
+      title: String(payload.title || snapInput.meta?.title || (project && project.title) || `${clientName} — Interior Quotation`).slice(0, 250),
+      quoteCode: String(payload.quoteCode || snapInput.meta?.quoteId || '').slice(0, 60),
+      clientName: clientName.slice(0, 240),
+      clientPhone: String(payload.clientPhone || '').trim().slice(0, 60),
+      clientEmail: String(payload.clientEmail || '').trim().slice(0, 120),
+      siteAddress: String(payload.siteAddress || '').trim().slice(0, 500),
+      clientUsername: clientName.slice(0, 120),
+      passwordHash: '',
+      selectedTiers: variantQuotes.map((v) => v.tierTitle || v.tierKey),
+      quoteSnapshot: {
+        meta: snapInput.meta || {},
+        designer: snapInput.designer || {
+          name: user.name,
+          email: user.email,
+          phone: ''
+        },
+        variantQuotes,
+        unitIcons
+      },
+      securitySettings: {
+        watermarkEnabled: false,
+        blurShieldEnabled: true,
+        reviewToken,
+        approvalStatus: 'pending_approval',
+        approvedAt: null,
+        approvedBy: '',
+        approvalRemarks: '',
+        clientLinkActivated: false,
+        lastWhatsappAlert: null
+      },
+      expiresAt: null,
+      isRevoked: false,
+      viewCount: 0,
+      lastViewedAt: null,
+      accessLogs: [{ event: 'review_link_created', at: now, detail: `Created by ${user.name}` }],
+      createdAt: now,
+      updatedAt: now
+    };
+
+    await insertRecord(rec);
+    return sanitizeRecordForManager(rec);
+  }
+
+  // Direct createQuote (preserved for backwards compatibility & direct client link creation)
+  async createQuote(user, payload) {
+    if (!user) throw makeError('Authentication required', 401);
+    if (payload.stage === 'head_review' || (!payload.clientPassword && payload.requireApproval !== false)) {
+      return this.createReviewQuote(user, payload);
+    }
+
+    const projectId = String(payload.projectId || '').trim();
+    const project = await assertProjectAccess(user, projectId);
+
+    const clientName = String(payload.clientName || '').trim();
+    if (!clientName) throw makeError('Client name is required', 400);
+
+    const clientUsername = String(payload.clientUsername || clientName).trim();
     const clientPassword = String(payload.clientPassword || '').trim();
-    if (clientUsername.length < 3) throw makeError('Client username must be at least 3 characters', 400);
+    if (clientUsername.length < 2) throw makeError('Client username must be at least 2 characters', 400);
     if (clientPassword.length < 4) throw makeError('Client password must be at least 4 characters', 400);
 
     const snapInput = payload.quoteSnapshot || {};
-    const rawVariants = Array.isArray(snapInput.variantQuotes) ? snapInput.variantQuotes : [];
-    const variantQuotes = rawVariants.filter((vq) =>
-      Boolean(quoteDeckBuilder.normalizeTemplateVariantKey(vq.tierKey || vq.tierName || vq.tierTitle))
-    );
-    if (!variantQuotes.length) {
-      throw makeError('Please select at least one Master Template variant (ZAPPO EL PEARL, POT & CAFE, HOME SPACE, CAFÉ HUNT, LL ELITE, CAPRICOAST MATTE, CAPRICOST GLOSSY, ELEGANT SURABHI, or 4X TUFF GLOSS).', 400);
-    }
-
-    // Sanitize compact unit thumbnail icons mapped inside Unit Snips
-    const unitIcons = {};
-    if (snapInput.unitIcons && typeof snapInput.unitIcons === 'object') {
-      let iconCount = 0;
-      for (const [k, dataUrl] of Object.entries(snapInput.unitIcons)) {
-        if (iconCount >= MAX_UNIT_ICONS) break;
-        const cleanKey = String(k || '').replace(/[^a-zA-Z0-9_-]/g, '');
-        if (!cleanKey) continue;
-        const parsedIcon = sanitizeUnitIconDataUrl(dataUrl);
-        if (parsedIcon) {
-          unitIcons[cleanKey] = parsedIcon;
-          iconCount += 1;
-        }
-      }
-    }
+    const { variantQuotes, unitIcons } = extractValidatedVariantsAndIcons(snapInput);
 
     const expiryDays = payload.expiryDays !== undefined && payload.expiryDays !== null && payload.expiryDays !== ''
       ? Number(payload.expiryDays)
@@ -337,12 +507,13 @@ class ClientQuoteService {
       : null;
 
     const now = new Date().toISOString();
+    const reviewToken = 'rv_' + crypto.randomBytes(16).toString('hex');
     const rec = {
       id: 'cq_' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'),
       projectId,
       createdBy: user.id,
       shareToken: 'qt_' + crypto.randomBytes(16).toString('hex'),
-      title: String(payload.title || snapInput.meta?.title || `${clientName} — Interior Quotation`).slice(0, 250),
+      title: String(payload.title || snapInput.meta?.title || (project && project.title) || `${clientName} — Interior Quotation`).slice(0, 250),
       quoteCode: String(payload.quoteCode || snapInput.meta?.quoteId || '').slice(0, 60),
       clientName: clientName.slice(0, 240),
       clientPhone: String(payload.clientPhone || '').trim().slice(0, 60),
@@ -363,7 +534,14 @@ class ClientQuoteService {
       },
       securitySettings: {
         watermarkEnabled: false,
-        blurShieldEnabled: payload.securitySettings?.blurShieldEnabled !== false
+        blurShieldEnabled: payload.securitySettings?.blurShieldEnabled !== false,
+        reviewToken,
+        approvalStatus: 'approved',
+        approvedAt: now,
+        approvedBy: user.name || 'Designer',
+        approvalRemarks: '',
+        clientLinkActivated: true,
+        lastWhatsappAlert: null
       },
       expiresAt,
       isRevoked: false,
@@ -376,6 +554,173 @@ class ClientQuoteService {
 
     await insertRecord(rec);
     return sanitizeRecordForManager(rec);
+  }
+
+  // Stage 2a: Public password-free Head Review payload (ONLY selected variants' quotation summaries)
+  async getReviewPayload(reviewToken) {
+    const rec = await findByReviewToken(reviewToken);
+    if (!rec) throw makeError('Review link not found or invalid.', 404);
+    if (rec.isRevoked) throw makeError('This quotation review link has been revoked.', 403);
+    const snap = rec.quoteSnapshot || {};
+    const wf = getWorkflowMeta(rec);
+    return {
+      id: rec.id,
+      projectId: rec.projectId,
+      reviewToken: wf.reviewToken,
+      approvalStatus: wf.approvalStatus,
+      approvedAt: wf.approvedAt,
+      approvedBy: wf.approvedBy,
+      approvalRemarks: wf.approvalRemarks,
+      title: rec.title,
+      quoteCode: rec.quoteCode,
+      clientName: rec.clientName,
+      clientPhone: rec.clientPhone,
+      siteAddress: rec.siteAddress,
+      designer: snap.designer || {},
+      variants: (snap.variantQuotes || []).map((v) => ({
+        tierKey: v.tierKey,
+        tierTitle: v.tierTitle || v.tierKey,
+        roomScopeLabel: v.roomScopeLabel || 'All Rooms',
+        currencySymbol: v.currencySymbol || '₹',
+        roomsSummary: v.roomsSummary || [],
+        commercial: recalculateVariantCommercial(v.commercial || {}),
+        grandTotal: Math.round(Number(v.commercial?.grandTotal ?? v.grandTotal ?? 0))
+      }))
+    };
+  }
+
+  // Stage 2b: Head edits variant discounts & approves the review link (NO password required)
+  async approveReviewQuote(reviewToken, body, ip) {
+    const rec = await findByReviewToken(reviewToken);
+    if (!rec) throw makeError('Review link not found or invalid.', 404);
+    if (rec.isRevoked) throw makeError('This quotation review link has been revoked.', 403);
+
+    const discountsList = Array.isArray(body.variantDiscounts) ? body.variantDiscounts : [];
+    const byKey = {};
+    for (const d of discountsList) {
+      const nk = quoteDeckBuilder.normalizeTemplateVariantKey(d.tierKey) || String(d.tierKey || '').trim();
+      if (nk) byKey[nk] = d;
+    }
+
+    rec.quoteSnapshot = rec.quoteSnapshot || {};
+    const vqs = Array.isArray(rec.quoteSnapshot.variantQuotes) ? rec.quoteSnapshot.variantQuotes : [];
+    rec.quoteSnapshot.variantQuotes = vqs.map((v) => {
+      const nk = quoteDeckBuilder.normalizeTemplateVariantKey(v.tierKey || v.tierTitle) || v.tierKey;
+      const edit = byKey[nk] || byKey[v.tierKey];
+      const nextComm = edit
+        ? recalculateVariantCommercial(v.commercial || {}, edit.discountPercent, edit.adpPercent)
+        : recalculateVariantCommercial(v.commercial || {});
+      return Object.assign({}, v, {
+        commercial: nextComm,
+        grandTotal: nextComm.grandTotal
+      });
+    });
+
+    const nowIso = new Date().toISOString();
+    const approvedBy = String(body.approvedBy || 'Business Head').trim().slice(0, 120) || 'Business Head';
+    const approvalRemarks = String(body.approvalRemarks || '').trim().slice(0, 400);
+
+    rec.securitySettings = Object.assign({}, rec.securitySettings || {}, {
+      watermarkEnabled: false,
+      approvalStatus: 'approved',
+      approvedAt: nowIso,
+      approvedBy,
+      approvalRemarks
+    });
+
+    rec.accessLogs = Array.isArray(rec.accessLogs) ? rec.accessLogs : [];
+    rec.accessLogs.push({
+      event: 'head_approved',
+      at: nowIso,
+      ip: maskIp(ip),
+      detail: `Approved by ${approvedBy}${approvalRemarks ? ' — ' + approvalRemarks.slice(0, 60) : ''}`
+    });
+    if (rec.accessLogs.length > MAX_AUDIT_LOGS) rec.accessLogs = rec.accessLogs.slice(-MAX_AUDIT_LOGS);
+
+    await persistRecordUpdate(rec);
+    return this.getReviewPayload(reviewToken);
+  }
+
+  // Stage 3: Once Head approves, generate/activate the full client link with username (client name) & password
+  async activateClientLink(user, quoteId, payload) {
+    if (!user) throw makeError('Authentication required', 401);
+    const rec = await findById(quoteId);
+    if (!rec) throw makeError('Quotation not found', 404);
+    if (user.role !== 'admin' && rec.createdBy !== user.id) {
+      throw makeError('Access denied', 403);
+    }
+
+    const wf = getWorkflowMeta(rec);
+    if (wf.approvalStatus !== 'approved') {
+      throw makeError('Head approval is required before generating the full client quotation link.', 400);
+    }
+
+    const clientUsername = String(payload.clientUsername || rec.clientName || '').trim();
+    const clientPassword = String(payload.clientPassword || '').trim();
+    if (clientUsername.length < 2) throw makeError('Client username must be at least 2 characters', 400);
+    if (clientPassword.length < 4) throw makeError('Client password must be at least 4 characters', 400);
+
+    const expiryDays = payload.expiryDays !== undefined && payload.expiryDays !== null && payload.expiryDays !== ''
+      ? Number(payload.expiryDays)
+      : 15;
+    rec.expiresAt = expiryDays > 0
+      ? new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString()
+      : null;
+
+    rec.clientUsername = clientUsername.slice(0, 120);
+    rec.passwordHash = await bcrypt.hash(clientPassword, 10);
+    rec.isRevoked = false;
+    rec.securitySettings = Object.assign({}, rec.securitySettings || {}, {
+      watermarkEnabled: false,
+      blurShieldEnabled: payload.blurShieldEnabled !== false,
+      clientLinkActivated: true
+    });
+
+    const nowIso = new Date().toISOString();
+    rec.accessLogs = Array.isArray(rec.accessLogs) ? rec.accessLogs : [];
+    rec.accessLogs.push({
+      event: 'client_link_activated',
+      at: nowIso,
+      detail: `Activated for ${rec.clientUsername} by ${user.name}`
+    });
+    if (rec.accessLogs.length > MAX_AUDIT_LOGS) rec.accessLogs = rec.accessLogs.slice(-MAX_AUDIT_LOGS);
+
+    await persistRecordUpdate(rec);
+    return sanitizeRecordForManager(rec);
+  }
+
+  // Export payload builder for Approved Quotes (PPTX & PDF with Head-approved discounts)
+  async getQuoteExportPayload(user, quoteId) {
+    if (!user) throw makeError('Authentication required', 401);
+    const rec = await findById(quoteId);
+    if (!rec) throw makeError('Quotation not found', 404);
+    if (user.role !== 'admin' && rec.createdBy !== user.id) {
+      throw makeError('Access denied', 403);
+    }
+    const wf = getWorkflowMeta(rec);
+    if (wf.approvalStatus !== 'approved') {
+      throw makeError('Head approval is required before downloading the full PPTX / PDF quotation.', 400);
+    }
+    const snap = rec.quoteSnapshot || {};
+    const unitIconsDataUrls = {};
+    if (snap.unitIcons && typeof snap.unitIcons === 'object') {
+      for (const [k, entry] of Object.entries(snap.unitIcons)) {
+        if (entry && entry.data) {
+          unitIconsDataUrls[k] = `data:${entry.mime || 'image/png'};base64,${entry.data}`;
+        }
+      }
+    }
+    return {
+      clientName: rec.clientName,
+      clientPhone: rec.clientPhone,
+      clientEmail: rec.clientEmail,
+      siteAddress: rec.siteAddress,
+      quoteCode: rec.quoteCode,
+      meta: snap.meta || {},
+      designer: snap.designer || {},
+      variantQuotes: snap.variantQuotes || [],
+      unitIcons: unitIconsDataUrls
+    };
   }
 
   async listQuotesByProject(user, projectId) {
@@ -414,7 +759,7 @@ class ClientQuoteService {
     }
 
     if (typeof updates.isRevoked === 'boolean') rec.isRevoked = updates.isRevoked;
-    if (updates.clientUsername && String(updates.clientUsername).trim().length >= 3) {
+    if (updates.clientUsername && String(updates.clientUsername).trim().length >= 2) {
       rec.clientUsername = String(updates.clientUsername).trim();
     }
     if (updates.clientPassword !== undefined && updates.clientPassword !== '') {
@@ -473,6 +818,7 @@ class ClientQuoteService {
     };
   }
 
+  // Stage 4: Client logs into /quote/:shareToken -> triggers WhatsApp Alert to 8838199428 & 7418414780
   async authenticatePortalClient(shareToken, username, password, ip, userAgent) {
     const rec = await findByToken(shareToken);
     const status = checkQuoteActiveStatus(rec);
@@ -487,7 +833,7 @@ class ClientQuoteService {
     }
 
     const expectedUser = String(rec.clientUsername || '').trim().toLowerCase();
-    const passMatches = await bcrypt.compare(pClean, rec.passwordHash);
+    const passMatches = rec.passwordHash ? await bcrypt.compare(pClean, rec.passwordHash) : false;
 
     if (uClean !== expectedUser || !passMatches) {
       rec.accessLogs = Array.isArray(rec.accessLogs) ? rec.accessLogs : [];
@@ -507,6 +853,37 @@ class ClientQuoteService {
       ip: maskIp(ip),
       ua: String(userAgent || '').slice(0, 90)
     });
+
+    // Dispatch WhatsApp alert to 8838199428 & 7418414780 (never blocks client login on external network error)
+    let waSummary = null;
+    try {
+      const snapMeta = (rec.quoteSnapshot && rec.quoteSnapshot.meta) || {};
+      const projectName = snapMeta.title || rec.title || 'Interior Project';
+      const alertRes = await whatsappAlertService.sendClientOpenedAlert({
+        clientName: rec.clientName,
+        projectName,
+        projectId: rec.projectId,
+        quoteCode: rec.quoteCode || snapMeta.quoteId || rec.id
+      });
+      waSummary = {
+        sentAt: nowIso,
+        provider: alertRes.provider,
+        recipients: alertRes.recipients,
+        deliveredCount: alertRes.results.filter((r) => r.sent).length,
+        message: alertRes.message
+      };
+      rec.securitySettings = Object.assign({}, rec.securitySettings || {}, {
+        lastWhatsappAlert: waSummary
+      });
+      rec.accessLogs.push({
+        event: 'whatsapp_alert',
+        at: nowIso,
+        detail: `Alert (${alertRes.provider}) -> ${alertRes.recipients.join(', ')}`
+      });
+    } catch (waErr) {
+      console.warn('[WhatsAppAlert] Error:', waErr.message);
+    }
+
     if (rec.accessLogs.length > MAX_AUDIT_LOGS) rec.accessLogs = rec.accessLogs.slice(-MAX_AUDIT_LOGS);
     await persistRecordUpdate(rec);
 
@@ -515,7 +892,8 @@ class ClientQuoteService {
       username: rec.clientUsername,
       clientName: rec.clientName,
       quoteCode: rec.quoteCode || '',
-      authenticatedAt: nowIso
+      authenticatedAt: nowIso,
+      whatsappAlert: waSummary
     };
   }
 
@@ -575,7 +953,7 @@ class ClientQuoteService {
   async logPortalAuditEvent(shareToken, eventName, detail, ip) {
     const rec = await findByToken(shareToken);
     if (!rec) return;
-    const allowed = new Set(['focus_blur', 'print_attempt', 'screenshot_key_attempt', 'copy_attempt', 'slide_view']);
+    const allowed = new Set(['focus_blur', 'print_attempt', 'screenshot_key_attempt', 'copy_attempt', 'slide_view', 'mobile_gesture_capture', 'mobile_longpress_block', 'devtools_attempt', 'idle_lock', 'screen_capture_blocked']);
     if (!allowed.has(eventName)) return;
     rec.accessLogs = Array.isArray(rec.accessLogs) ? rec.accessLogs : [];
     rec.accessLogs.push({

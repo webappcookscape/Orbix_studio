@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cookscape — Head Commercial Review &amp; Approval</title>
+  <style>
+    :root {
+      --bg: #F4EDE3;
+      --card: #FFFFFF;
+      --forest: #08231B;
+      --crimson: #C00000;
+      --muted: #64748B;
+      --border: #DDD2C3;
+      --gold-bg: #FEF9C3;
+      --ok-bg: #DCFCE7;
+      --ok-fg: #166534;
+      --warn-bg: #FEF3C7;
+      --warn-fg: #92400E;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--forest);
+      min-height: 100vh;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--forest);
+      color: #fff;
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-tag {
+      background: var(--crimson);
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+    }
+    .brand-title { font-size: 15px; font-weight: 700; }
+    .brand-sub { font-size: 11.5px; color: #CBD5E1; margin-top: 1px; }
+    .status-pill {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .status-pill.is-pending { background: var(--warn-bg); color: var(--warn-fg); }
+    .status-pill.is-approved { background: var(--ok-bg); color: var(--ok-fg); }
+
+    .container {
+      max-width: 1040px;
+      margin: 22px auto 60px auto;
+      padding: 0 16px;
+    }
+    .meta-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px 18px;
+      box-shadow: 0 6px 20px rgba(8, 35, 27, 0.05);
+    }
+    .meta-item label {
+      display: block;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .meta-item .val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--forest);
+    }
+
+    .approved-banner {
+      display: none;
+      background: #ECFDF5;
+      border: 1.5px solid #22C55E;
+      color: #14532D;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .approved-banner.is-visible { display: block; }
+
+    .variant-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 22px;
+      box-shadow: 0 10px 28px rgba(8, 35, 27, 0.07);
+    }
+    .variant-head {
+      background: linear-gradient(90deg, #08231B 0%, #113B2F 100%);
+      color: #fff;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .variant-head h2 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: 0.03em;
+    }
+    .variant-head .scope {
+      font-size: 12px;
+      color: #CBD5E1;
+    }
+    .variant-body {
+      padding: 18px 20px 20px 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 13.5px;
+    }
+    th {
+      text-align: left;
+      padding: 9px 12px;
+      background: var(--forest);
+      color: #fff;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    th.crimson-hdr { background: var(--crimson); }
+    th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #EAE2D7;
+    }
+    tr:nth-child(even) td { background: #FAF6F0; }
+    tr.discount-row td { background: #FFF7ED !important; }
+    tr.total-row td {
+      background: var(--gold-bg) !important;
+      border-top: 2px solid var(--crimson);
+      border-bottom: 2px solid var(--crimson);
+      font-weight: 800;
+      font-size: 15px;
+    }
+    tr.total-row td.num {
+      color: var(--crimson);
+      font-size: 17px;
+    }
+    .disc-input-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .disc-input {
+      width: 78px;
+      padding: 5px 8px;
+      border: 1.5px solid #EA580C;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #9A3412;
+      background: #fff;
+      text-align: right;
+    }
+    .disc-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.2);
+    }
+    .scope-strip {
+      font-size: 12px;
+      color: var(--muted);
+      background: #FAF6F0;
+      border: 1px solid #E8DFD3;
+      border-radius: 8px;
+      padding: 9px 12px;
+    }
+
+    .approval-box {
+      background: var(--card);
+      border: 2px solid var(--forest);
+      border-radius: 14px;
+      padding: 20px 22px;
+      box-shadow: 0 12px 32px rgba(8, 35, 27, 0.1);
+    }
+    .approval-box h3 {
+      margin: 0 0 6px 0;
+      font-size: 16px;
+    }
+    .approval-box p {
+      margin: 0 0 14px 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .approval-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 640px) {
+      .approval-grid { grid-template-columns: 1fr; }
+    }
+    .field label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+    .field input {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid #CBD5E1;
+      border-radius: 7px;
+      font-size: 13.5px;
+    }
+    .approve-btn {
+      width: 100%;
+      padding: 13px 18px;
+      background: #15803D;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .approve-btn:hover { background: #166534; }
+    .approve-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+    .err-card {
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      color: #991B1B;
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 30px;
+    }
+    .loading-card {
+      text-align: center;
+      padding: 50px 20px;
+      font-size: 15px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-tag">COOKSCAPE</div>
+      <div>
+        <div class="brand-title" id="hdrTitle">Commercial Quotation — Head Review</div>
+        <div class="brand-sub" id="hdrSub">Edit variant discounts below and approve to unlock full client quotation link</div>
+      </div>
+    </div>
+    <div id="statusPill" class="status-pill is-pending">⏳ Loading...</div>
+  </header>
+
+  <main class="container" id="mainWrap">
+    <div class="loading-card">Loading quotation variants for review...</div>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var parts = window.location.pathname.split('/').filter(Boolean);
+      var reviewToken = parts.length >= 2 && parts[0] === 'quote-review' ? parts[1] : '';
+      var state = { review: null, variants: [] };
+
+      function esc(s) {
+        return String(s === undefined || s === null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function fmtINR(v) {
+        var n = Math.round(Number(v) || 0);
+        return (n < 0 ? '- ₹ ' : '₹ ') + Math.abs(n).toLocaleString('en-IN');
+      }
+
+      function recalcCommercial(comm, discountPct, adpPct) {
+        var woodwork = Number(comm.woodworkSubtotal) || 0;
+        var acc = Number(comm.additionalAccessories) || 0;
+        var app = Number(comm.appliances) || 0;
+        var dPct = comm.designPercent !== undefined ? Number(comm.designPercent) : 9;
+        var fPct = comm.freightPercent !== undefined ? Number(comm.freightPercent) : 2.5;
+        var gstPct = comm.gstPercent !== undefined ? Number(comm.gstPercent) : 18;
+        var designAmt = Math.round(woodwork * (dPct / 100));
+        var freightAmt = Math.round(woodwork * (fPct / 100));
+
+        var discP = Math.max(0, Math.min(100, Number(discountPct) || 0));
+        var adpP = Math.max(0, Math.min(100, Number(adpPct) || 0));
+        var discAmt = Math.round(woodwork * (discP / 100));
+        var adpAmt = Math.round(woodwork * (adpP / 100));
+
+        var netBeforeTax = Math.max(0, Math.round(woodwork + acc + app + designAmt + freightAmt - (discAmt + adpAmt)));
+        var gstAmt = Math.round(netBeforeTax * (gstPct / 100));
+        var grandTotal = netBeforeTax + gstAmt;
+
+        return Object.assign({}, comm, {
+          woodworkSubtotal: Math.round(woodwork),
+          designPercent: dPct,
+          designAmount: designAmt,
+          freightPercent: fPct,
+          freightAmount: freightAmt,
+          discountPercent: discP,
+          discountAmount: discAmt,
+          adpPercent: adpP,
+          adpAmount: adpAmt,
+          netBeforeTax: netBeforeTax,
+          gstPercent: gstPct,
+          gstAmount: gstAmt,
+          grandTotal: grandTotal
+        });
+      }
+
+      function updateVariantDom(idx) {
+        var v = state.variants[idx];
+        var card = document.querySelector('[data-var-idx="' + idx + '"]');
+        if (!card || !v) return;
+        var c = v.commercial;
+        card.querySelector('[data-f="discAmt"]').textContent = c.discountAmount > 0 ? ('- ' + fmtINR(c.discountAmount)) : fmtINR(0);
+        card.querySelector('[data-f="adpAmt"]').textContent = c.adpAmount > 0 ? ('- ' + fmtINR(c.adpAmount)) : fmtINR(0);
+        card.querySelector('[data-f="netBeforeTax"]').textContent = fmtINR(c.netBeforeTax);
+        card.querySelector('[data-f="gstAmt"]').textContent = fmtINR(c.gstAmount);
+        card.querySelector('[data-f="grandTotal"]').textContent = fmtINR(c.grandTotal);
+      }
+
+      function renderPage() {
+        var r = state.review;
+        var main = document.getElementById('mainWrap');
+        var pill = document.getElementById('statusPill');
+        document.getElementById('hdrTitle').textContent = (r.title || 'Commercial Quotation') + ' — Head Review';
+        document.getElementById('hdrSub').textContent = 'Patron: ' + (r.clientName || '-') + ' • Ref: ' + (r.quoteCode || '-');
+
+        var isApproved = r.approvalStatus === 'approved';
+        pill.className = 'status-pill ' + (isApproved ? 'is-approved' : 'is-pending');
+        pill.textContent = isApproved ? ('✅ Approved by ' + (r.approvedBy || 'Head')) : '⏳ Pending Head Approval';
+
+        var html = '';
+        if (isApproved) {
+          html += '<div class="approved-banner is-visible">' +
+            '<b>✅ Quotation Approved</b>' +
+            (r.approvedBy ? (' by <b>' + esc(r.approvedBy) + '</b>') : '') +
+            (r.approvedAt ? (' on ' + esc(new Date(r.approvedAt).toLocaleString('en-IN'))) : '') +
+            '. The designer can now generate the full password-protected client link, PPTX &amp; PDF from Orbix Studio.' +
+            (r.approvalRemarks ? ('<div style="margin-top:4px;">Remarks: <i>' + esc(r.approvalRemarks) + '</i></div>') : '') +
+            '</div>';
+        }
+
+        html += '<div class="meta-card">' +
+          '<div class="meta-item"><label>Patron Name</label><div class="val">' + esc(r.clientName || '-') + '</div></div>' +
+          '<div class="meta-item"><label>Site Location</label><div class="val">' + esc(r.siteAddress || '-') + '</div></div>' +
+          '<div class="meta-item"><label>Quote Ref</label><div class="val">' + esc(r.quoteCode || '-') + '</div></div>' +
+          '<div class="meta-item"><label>Designer / BH</label><div class="val">' + esc((r.designer && r.designer.name) || '-') + '</div></div>' +
+          '</div>';
+
+        state.variants.forEach(function (v, idx) {
+          var c = v.commercial || {};
+          var rooms = v.roomsSummary || [];
+          html += '<section class="variant-card" data-var-idx="' + idx + '">' +
+            '<div class="variant-head">' +
+            '  <h2>' + esc(v.tierTitle || v.tierKey) + ' — QUOTATION</h2>' +
+            '  <div class="scope">Scope: ' + esc(v.roomScopeLabel || 'All Rooms') + '</div>' +
+            '</div>' +
+            '<div class="variant-body">';
+
+          if (rooms.length) {
+            html += '<table><thead><tr><th>Room-Wise Breakdown</th><th class="num">Units</th><th class="num">Amount</th></tr></thead><tbody>';
+            rooms.forEach(function (rm) {
+              html += '<tr><td><b>' + esc(rm.name || 'Room') + '</b></td><td class="num">' + (rm.itemCount || 0) + '</td><td class="num"><b>' + fmtINR(rm.roomSubtotal) + '</b></td></tr>';
+            });
+            html += '</tbody></table>';
+          }
+
+          html += '<table><thead><tr><th class="crimson-hdr">Commercial Summary &amp; Editable Discounts</th><th class="crimson-hdr num">Amount</th></tr></thead><tbody>' +
+            '<tr><td><b>Modular Woodwork Subtotal</b></td><td class="num"><b>' + fmtINR(c.woodworkSubtotal) + '</b></td></tr>' +
+            '<tr><td>Additional Accessories</td><td class="num">' + fmtINR(c.additionalAccessories) + '</td></tr>' +
+            '<tr><td>Appliances</td><td class="num">' + fmtINR(c.appliances) + '</td></tr>' +
+            '<tr><td>Design &amp; Handling Fee (' + esc(c.designPercent) + '%)</td><td class="num">' + fmtINR(c.designAmount) + '</td></tr>' +
+            '<tr><td>Freight Charges (' + esc(c.freightPercent) + '%)</td><td class="num">' + fmtINR(c.freightAmount) + '</td></tr>' +
+            '<tr class="discount-row">' +
+            '  <td><div class="disc-input-wrap"><b>Promotional Discount (%):</b> ' +
+            '    <input type="number" step="0.5" min="0" max="100" class="disc-input" data-idx="' + idx + '" data-kind="discount" value="' + esc(c.discountPercent || 0) + '">' +
+            '    <span>%</span></div></td>' +
+            '  <td class="num" style="color:#B91C1C;font-weight:700;" data-f="discAmt">' + (c.discountAmount > 0 ? ('- ' + fmtINR(c.discountAmount)) : fmtINR(0)) + '</td>' +
+            '</tr>' +
+            '<tr class="discount-row">' +
+            '  <td><div class="disc-input-wrap"><b>Additional Discount — ADP (%):</b> ' +
+            '    <input type="number" step="0.5" min="0" max="100" class="disc-input" data-idx="' + idx + '" data-kind="adp" value="' + esc(c.adpPercent || 0) + '">' +
+            '    <span>%</span></div></td>' +
+            '  <td class="num" style="color:#B91C1C;font-weight:700;" data-f="adpAmt">' + (c.adpAmount > 0 ? ('- ' + fmtINR(c.adpAmount)) : fmtINR(0)) + '</td>' +
+            '</tr>' +
+            '<tr><td><b>Net Estimate (Excl. GST)</b></td><td class="num"><b data-f="netBeforeTax">' + fmtINR(c.netBeforeTax) + '</b></td></tr>' +
+            '<tr><td>GST Applicable (' + esc(c.gstPercent) + '%)</td><td class="num" data-f="gstAmt">' + fmtINR(c.gstAmount) + '</td></tr>' +
+            '<tr class="total-row"><td>FINAL QUOTED VALUE (INCLUSIVE OF GST)</td><td class="num" data-f="grandTotal">' + fmtINR(c.grandTotal) + '</td></tr>' +
+            '</tbody></table>' +
+            '<div class="scope-strip">' +
+            'Loading/Unloading: <b>' + esc(c.loadingUnloadingStatus || 'Additional') + '</b> &bull; ' +
+            'Floor Mat: <b>' + esc(c.floorMatStatus || 'Not Included') + '</b> &bull; ' +
+            'Civil: <b>' + esc(c.civilWorksStatus || 'As per actuals') + '</b> &bull; ' +
+            'Elec/Plumb: <b>' + esc(c.electricalPlumbingStatus || 'Additional') + '</b> &bull; ' +
+            'False Ceiling: <b>' + esc(c.falseCeilingStatus || 'Not Included') + '</b>' +
+            '</div>' +
+            '</div></section>';
+        });
+
+        html += '<section class="approval-box">' +
+          '<h3>' + (isApproved ? 'Update Approved Discounts / Re-Approve' : 'Head Approval Confirmation') + '</h3>' +
+          '<p>Verify the variant totals &amp; discounts above, then click Approve to unlock client link generation, PPTX &amp; PDF downloads inside Orbix Studio.</p>' +
+          '<div class="approval-grid">' +
+          '  <div class="field"><label for="headNameInput">Approved By (Head Name)</label><input id="headNameInput" type="text" value="' + esc(r.approvedBy || 'Business Head') + '" placeholder="e.g. Sangathamizh"></div>' +
+          '  <div class="field"><label for="headRemarksInput">Approval Remarks (Optional)</label><input id="headRemarksInput" type="text" value="' + esc(r.approvalRemarks || '') + '" placeholder="e.g. Approved 5% promotional discount"></div>' +
+          '</div>' +
+          '<div id="approveErr" style="display:none;color:#B91C1C;font-size:13px;margin-bottom:10px;font-weight:600;"></div>' +
+          '<button type="button" class="approve-btn" id="approveBtn">' + (isApproved ? '✅ Save Updated Discounts &amp; Re-Approve' : '✅ Approve Quotation &amp; Unlock Client Link') + '</button>' +
+          '</section>';
+
+        main.innerHTML = html;
+
+        main.querySelectorAll('.disc-input').forEach(function (inp) {
+          inp.addEventListener('input', function () {
+            var i = Number(this.getAttribute('data-idx'));
+            var card = main.querySelector('[data-var-idx="' + i + '"]');
+            var dVal = card.querySelector('[data-kind="discount"]').value;
+            var aVal = card.querySelector('[data-kind="adp"]').value;
+            state.variants[i].commercial = recalcCommercial(state.variants[i].commercial, dVal, aVal);
+            state.variants[i].grandTotal = state.variants[i].commercial.grandTotal;
+            updateVariantDom(i);
+          });
+        });
+
+        document.getElementById('approveBtn').addEventListener('click', async function () {
+          var btn = this;
+          var errEl = document.getElementById('approveErr');
+          errEl.style.display = 'none';
+          btn.disabled = true;
+          btn.textContent = '⏳ Saving & Approving...';
+          try {
+            var variantDiscounts = state.variants.map(function (v) {
+              return {
+                tierKey: v.tierKey,
+                discountPercent: Number(v.commercial.discountPercent) || 0,
+                adpPercent: Number(v.commercial.adpPercent) || 0
+              };
+            });
+            var res = await fetch('/api/quote-review/' + encodeURIComponent(reviewToken) + '/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                approvedBy: document.getElementById('headNameInput').value.trim() || 'Business Head',
+                approvalRemarks: document.getElementById('headRemarksInput').value.trim(),
+                variantDiscounts: variantDiscounts
+              })
+            });
+            var data = await res.json();
+            if (!res.ok || !data.success) {
+              throw new Error(data.error || 'Approval failed');
+            }
+            state.review = data.review;
+            state.variants = (data.review.variants || []).map(function (v) {
+              return Object.assign({}, v, { commercial: recalcCommercial(v.commercial || {}, v.commercial?.discountPercent, v.commercial?.adpPercent) });
+            });
+            renderPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } catch (err) {
+            errEl.textContent = err.message || 'Unable to approve quotation.';
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = '✅ Approve Quotation & Unlock Client Link';
+          }
+        });
+      }
+
+      async function loadReview() {
+        var main = document.getElementById('mainWrap');
+        if (!reviewToken) {
+          main.innerHTML = '<div class="err-card">Invalid review link. Missing token.</div>';
+          return;
+        }
+        try {
+          var res = await fetch('/api/quote-review/' + encodeURIComponent(reviewToken), { cache: 'no-store' });
+          var data = await res.json();
+          if (!res.ok || !data.success || !data.review) {
+            throw new Error(data.error || 'Review link not found or revoked.');
+          }
+          state.review = data.review;
+          state.variants = (data.review.variants || []).map(function (v) {
+            var c = v.commercial || {};
+            return Object.assign({}, v, {
+              commercial: recalcCommercial(c, c.discountPercent || 0, c.adpPercent || 0)
+            });
+          });
+          renderPage();
+        } catch (err) {
+          document.getElementById('statusPill').textContent = 'Unavailable';
+          main.innerHTML = '<div class="err-card">' + esc(err.message || 'Unable to load review link.') + '</div>';
+        }
+      }
+
+      loadReview();
+    })();
+  </script>
+</body>
+</html>

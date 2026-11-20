@@ -320,6 +320,93 @@ async function runTests() {
     }
     console.log('✓ [9] Zero-PIL Master-Template.pptx export verified for all new + existing variants with native OOXML tables & Slide 1 alignments');
 
+    // 12. Full 2-Stage Head Approval Flow + PDF Export + WhatsApp Alert + Scrollable No-MouseLeave Viewer
+    const revCreate = await request(port, 'POST', '/api/client-quotes/review', {
+      projectId: createdProjectId,
+      title: 'Karthik Villa — Head Review',
+      quoteCode: 'ORB-REV-902',
+      clientName: 'Karthik Subramanian',
+      clientPhone: '9876543210',
+      siteAddress: 'Adyar, Chennai',
+      quoteSnapshot: quotePayload.quoteSnapshot
+    }, { Cookie: emp1Cookie });
+    assert.strictEqual(revCreate.status, 201, `Review link creation failed: ${revCreate.raw}`);
+    const revQuoteId = revCreate.json.quote.id;
+    const revToken = revCreate.json.quote.reviewToken;
+    const revShareToken = revCreate.json.quote.shareToken;
+    assert(revToken && revCreate.json.quote.approvalStatus === 'pending_approval', 'New review quote must start in pending_approval');
+
+    try {
+      // Head opens review link WITHOUT any password or login cookie
+      const revPage = await request(port, 'GET', `/quote-review/${revToken}`);
+      assert.strictEqual(revPage.status, 200);
+      const revData = await request(port, 'GET', `/api/quote-review/${revToken}`);
+      assert.strictEqual(revData.status, 200);
+      assert.strictEqual(revData.json.review.variants.length, 6, 'Review link must expose only the selected variant quotation pages');
+
+      // Before Head approves, cannot activate client link or download approved PDF/PPTX
+      assert.strictEqual((await request(port, 'POST', `/api/client-quotes/${revQuoteId}/activate-client-link`, { clientUsername: 'Karthik Subramanian', clientPassword: 'Pass#123' }, { Cookie: emp1Cookie })).status, 400);
+      assert.strictEqual((await request(port, 'POST', `/api/client-quotes/${revQuoteId}/export-pdf`, null, { Cookie: emp1Cookie })).status, 400);
+
+      // Head edits Discount (5%) + ADP (2%) on Zappo El Pearl and clicks Approve
+      const approveRes = await request(port, 'POST', `/api/quote-review/${revToken}/approve`, {
+        approvedBy: 'Sangathamizh',
+        approvalRemarks: 'Approved 5% + 2% discount',
+        variantDiscounts: [
+          { tierKey: 'zappo - el pearl', discountPercent: 5, adpPercent: 2 }
+        ]
+      });
+      assert.strictEqual(approveRes.status, 200, `Head approval failed: ${approveRes.raw}`);
+      assert.strictEqual(approveRes.json.review.approvalStatus, 'approved');
+      const zappoVar = approveRes.json.review.variants.find((v) => v.tierKey === 'zappo - el pearl');
+      assert.strictEqual(zappoVar.commercial.discountPercent, 5);
+      assert.strictEqual(zappoVar.commercial.adpPercent, 2);
+      assert(zappoVar.commercial.discountAmount > 0 && zappoVar.commercial.adpAmount > 0);
+
+      // Employee refreshes list -> sees Approved status, activates Full Client Link with Username = Client Name
+      const actRes = await request(port, 'POST', `/api/client-quotes/${revQuoteId}/activate-client-link`, {
+        clientUsername: 'Karthik Subramanian',
+        clientPassword: 'Client#2026',
+        expiryDays: 365
+      }, { Cookie: emp1Cookie });
+      assert.strictEqual(actRes.status, 200, `Activation failed: ${actRes.raw}`);
+      assert.strictEqual(actRes.json.quote.clientLinkActivated, true);
+      assert.strictEqual(actRes.json.quote.clientUsername, 'Karthik Subramanian');
+
+      // Approved Full PDF & PPTX Downloads succeed with zero PIL
+      const pdfExportSrc = fs.readFileSync(path.join(ROOT, 'scripts', 'export_quote_pdf.py'), 'utf8');
+      assert(!pdfExportSrc.includes('from PIL') && !pdfExportSrc.includes('import PIL'), 'export_quote_pdf.py must NOT depend on PIL');
+      const pdfRes = await request(port, 'POST', `/api/client-quotes/${revQuoteId}/export-pdf`, null, { Cookie: emp1Cookie });
+      assert.strictEqual(pdfRes.status, 200, `PDF export failed: ${pdfRes.status}`);
+      assert.strictEqual(pdfRes.buf.slice(0, 5).toString('utf8'), '%PDF-', 'Approved PDF must be valid PDF binary');
+      assert(pdfRes.buf.length > 50000, 'Full Master-Template PDF must contain embedded artwork & pages');
+
+      const approvedPptxRes = await request(port, 'POST', `/api/client-quotes/${revQuoteId}/export-pptx`, null, { Cookie: emp1Cookie });
+      assert.strictEqual(approvedPptxRes.status, 200);
+      assert.strictEqual(approvedPptxRes.buf.slice(0, 2).toString('utf8'), 'PK');
+
+      // Client logs in with Client Name username -> triggers WhatsApp alert to 8838199428 & 7418414780
+      const clientOpenRes = await request(port, 'POST', `/api/client-portal/${revShareToken}/login`, {
+        username: 'Karthik Subramanian',
+        password: 'Client#2026'
+      });
+      assert.strictEqual(clientOpenRes.status, 200, `Client login failed: ${clientOpenRes.raw}`);
+      assert(clientOpenRes.json.whatsappAlert, 'Client login must trigger WhatsApp alert metadata');
+      assert.deepStrictEqual(clientOpenRes.json.whatsappAlert.recipients, ['918838199428', '917418414780']);
+      assert(clientOpenRes.json.whatsappAlert.message.includes('Karthik Subramanian'));
+      assert(clientOpenRes.json.whatsappAlert.message.includes(createdProjectId));
+      assert(clientOpenRes.json.whatsappAlert.message.includes('please contact them') || clientOpenRes.json.whatsappAlert.message.includes('Please contact them'));
+
+      // Verify client-quote.html is vertically scrollable and does NOT trigger shield on mouseleave
+      const viewerHtml = fs.readFileSync(path.join(ROOT, 'client-quote.html'), 'utf8');
+      assert(viewerHtml.includes('buildScrollableSlides') && viewerHtml.includes('slides-stack'), 'Viewer must render vertically scrollable slides');
+      assert(!viewerHtml.includes("'mouseleave'"), 'Moving mouse outside window must NOT trigger blackout shield');
+
+      console.log('✓ [10] 2-Stage Head Review (no password, editable discounts) -> Approve -> Client Link + Full PDF/PPTX + WhatsApp Alert (8838199428 & 7418414780) + Scrollable Viewer verified');
+    } finally {
+      await request(port, 'DELETE', `/api/client-quotes/${revQuoteId}`, null, { Cookie: emp1Cookie }).catch(() => {});
+    }
+
     console.log('\n=== ALL STRICT MASTER-TEMPLATE CLIENT QUOTE TESTS PASSED SUCCESSFULLY ===');
   } finally {
     if (createdQuoteId && emp1Cookie) {

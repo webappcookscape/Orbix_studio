@@ -335,13 +335,15 @@
 
       body.innerHTML =
         '<div id="cqFormWrap">' +
-        '  <div style="background:#FAF6F0;border:1px solid #E2D5C3;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#08231B;">' +
-        '    <b>Master Template Flow Locked:</b> Cover Page &rarr; Intro (Slides 2&ndash;6) &rarr; Selected Variant(s) [Divider &bull; Specs &bull; <b>Auto Unit Snips</b> &bull; <b>Auto Quotation Snip</b>] &rarr; Timelines, Inclusions, Payment, T&amp;C &amp; FAQs (34&ndash;40) &rarr; Thank You (41).' +
+        '  <div style="background:#FAF6F0;border:1px solid #E2D5C3;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#08231B;line-height:1.45;">' +
+        '    <b>2-Step Approval &amp; Share Flow:</b><br>' +
+        '    <b>Step 1:</b> Generate password-free <b>Head Review Link</b> (variant quotation pages with editable Discounts) &rarr; Share to Head.<br>' +
+        '    <b>Step 2:</b> Once Head clicks <b>Approve</b>, generate the full password-protected <b>Client Link</b> (Username = Client Name) &amp; download full <b>PPTX / PDF</b>.' +
         '  </div>' +
 
-        '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">' +
+        '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
         '    <div>' +
-        '      <label style="display:block;font-size:11.5px;font-weight:700;color:#475569;margin-bottom:4px;">Patron Name *</label>' +
+        '      <label style="display:block;font-size:11.5px;font-weight:700;color:#475569;margin-bottom:4px;">Patron / Client Name *</label>' +
         '      <input id="cqClientName" type="text" value="' + esc(clientName) + '" style="width:100%;padding:8px 10px;border:1px solid #CBD5E1;border-radius:6px;font-size:13px;">' +
         '    </div>' +
         '    <div>' +
@@ -359,68 +361,35 @@
         '  </div>' +
 
         '  <div style="margin-bottom:12px;">' +
-        '    <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:6px;">Select Master Template Variant(s) — Auto-Populates Unit Snips &amp; Quotation Snip</div>' +
+        '    <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:6px;">Select Master Template Variant(s) for Quotation</div>' +
         variantCheckboxesHtml +
         '  </div>' +
 
-        '  <div style="margin-bottom:14px;">' +
+        '  <div style="margin-bottom:12px;">' +
         '    <label style="display:block;font-size:11.5px;font-weight:700;color:#475569;margin-bottom:4px;">Unit Specification Remarks (Optional — shown below Unit Snips)</label>' +
         '    <input id="cqUnitRemarks" type="text" placeholder="e.g. All kitchen base units include soft-close channels &amp; skirting" style="width:100%;padding:7px 10px;border:1px solid #CBD5E1;border-radius:6px;font-size:12.5px;">' +
         '  </div>' +
 
-        '  <div style="background:#FFF7ED;border:1px solid #FDBA74;border-radius:8px;padding:12px;margin-bottom:14px;">' +
-        '    <div style="font-size:12px;font-weight:700;color:#9A3412;margin-bottom:8px;">Client Portal Login &amp; Anti-Screenshot Protection</div>' +
-        '    <div style="display:grid;grid-template-columns:1fr 1fr 145px;gap:10px;margin-bottom:10px;">' +
-        '      <div>' +
-        '        <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:3px;">Client Username</label>' +
-        '        <input id="cqUsername" type="text" value="' + esc(suggestedUser) + '" style="width:100%;padding:7px 9px;border:1px solid #CBD5E1;border-radius:6px;font-size:12.5px;">' +
-        '      </div>' +
-        '      <div>' +
-        '        <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:3px;">Client Password</label>' +
-        '        <div style="display:flex;gap:4px;">' +
-        '          <input id="cqPassword" type="text" value="' + esc(suggestedPass) + '" style="width:100%;padding:7px 9px;border:1px solid #CBD5E1;border-radius:6px;font-size:12.5px;font-family:monospace;font-weight:700;">' +
-        '          <button type="button" id="cqRegenPassBtn" class="btn small" title="Generate new password" style="padding:0 9px;">🔄</button>' +
-        '        </div>' +
-        '      </div>' +
-        '      <div>' +
-        '        <label style="display:block;font-size:11px;font-weight:700;color:#475569;margin-bottom:3px;">Link Validity</label>' +
-        '        <select id="cqExpiryDays" style="width:100%;padding:7px 8px;border:1px solid #CBD5E1;border-radius:6px;font-size:12.5px;">' +
-        '          <option value="1">1 Day</option>' +
-        '          <option value="7">7 Days</option>' +
-        '          <option value="15" selected>15 Days</option>' +
-        '          <option value="30">30 Days</option>' +
-        '          <option value="365">1 Year</option>' +
-        '          <option value="0">No Expiry</option>' +
-        '        </select>' +
-        '      </div>' +
-        '    </div>' +
-        '    <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:#1E293B;">' +
-        '      <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" id="cqSecBlur" checked> Strict Anti-Screenshot Blackout Shield (Phone / Tablet / Laptop / PC)</label>' +
-        '    </div>' +
-        '  </div>' +
-
         '  <div id="cqErrorBox" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;padding:8px 12px;border-radius:6px;font-size:12.5px;margin-bottom:10px;"></div>' +
 
-        '  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">' +
-        '    <button type="button" id="cqCreateLinkBtn" class="btn" style="flex:1;background:#C00000;color:#fff;border-color:#900000;font-weight:700;padding:10px 16px;">🔐 Generate Protected Client Quote Link</button>' +
-        '    <button type="button" id="cqDownloadPptxBtn" class="btn" style="background:#08231B;color:#fff;border-color:#08231B;font-weight:600;padding:10px 14px;">📊 Download Master PPTX (Team Copy)</button>' +
+        '  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">' +
+        '    <button type="button" id="cqCreateReviewBtn" class="btn" style="flex:1;background:#C00000;color:#fff;border-color:#900000;font-weight:700;padding:11px 16px;">📋 Step 1: Generate Head Review Link (No Password)</button>' +
         '  </div>' +
         '</div>' +
 
         '<div id="cqResultCard" style="display:none;background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:14px;margin-bottom:16px;"></div>' +
 
         '<div style="border-top:1px solid #E2E8F0;padding-top:12px;">' +
-        '  <div style="font-size:12.5px;font-weight:700;color:#0F172A;margin-bottom:8px;">Existing Client Quote Links for This Project</div>' +
+        '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;">' +
+        '    <div style="font-size:12.5px;font-weight:700;color:#0F172A;">Approval Status, Client Links &amp; Approved Downloads</div>' +
+        '    <button type="button" id="cqRefreshListBtn" class="btn small" style="padding:4px 10px;font-size:11.5px;">🔄 Refresh Approval Status</button>' +
+        '  </div>' +
         '  <div id="cqExistingList" style="font-size:12.5px;color:#64748B;">Loading saved quote links...</div>' +
         '</div>';
 
       modal.classList.add('is-open');
 
-      body.querySelector('#cqRegenPassBtn').addEventListener('click', function () {
-        body.querySelector('#cqPassword').value = randomPassword();
-      });
-
-      async function gatherPayload() {
+      async function gatherReviewPayload() {
         var selectedTiers = [];
         body.querySelectorAll('.cq-tier-chk:checked').forEach(function (chk) {
           selectedTiers.push(chk.value);
@@ -431,11 +400,9 @@
         var cPhone = body.querySelector('#cqClientPhone').value.trim();
         var cLoc = body.querySelector('#cqSiteAddress').value.trim();
         var qCode = body.querySelector('#cqQuoteCode').value.trim();
-        var cUser = body.querySelector('#cqUsername').value.trim();
-        var cPass = body.querySelector('#cqPassword').value.trim();
         var remarks = body.querySelector('#cqUnitRemarks').value.trim();
 
-        if (!cName) throw new Error('Patron Name is required.');
+        if (!cName) throw new Error('Patron / Client Name is required.');
 
         proj.meta = proj.meta || {};
         proj.meta.clientName = cName;
@@ -444,7 +411,6 @@
         proj.meta.cpCode = qCode;
         if (typeof app.saveToLocalStorage === 'function') app.saveToLocalStorage();
 
-        // Build base quote once to rasterize unique unit preview icons for Unit Snips
         var baseQuote = Core.generateFullQuotation(proj, app.selectedBOQRooms || ['all']);
         var iconData = await buildUnitIconsMap(app, baseQuote.furnitureItems || []);
 
@@ -460,13 +426,6 @@
           clientPhone: cPhone,
           clientEmail: meta.email || '',
           siteAddress: cLoc,
-          clientUsername: cUser,
-          clientPassword: cPass,
-          expiryDays: Number(body.querySelector('#cqExpiryDays').value),
-          securitySettings: {
-            watermarkEnabled: false,
-            blurShieldEnabled: body.querySelector('#cqSecBlur').checked
-          },
           quoteSnapshot: {
             meta: {
               title: proj.meta.title || 'Modular Interior Proposal',
@@ -495,48 +454,50 @@
         errBox.style.display = msg ? 'block' : 'none';
       }
 
-      body.querySelector('#cqCreateLinkBtn').addEventListener('click', async function () {
+      body.querySelector('#cqRefreshListBtn').addEventListener('click', function () {
+        self.loadExistingList(body, getActiveProjectId(app));
+      });
+
+      body.querySelector('#cqCreateReviewBtn').addEventListener('click', async function () {
         showErr('');
         var btn = this;
         btn.disabled = true;
-        btn.textContent = '⏳ Creating Protected Quote...';
+        btn.textContent = '⏳ Generating Head Review Link...';
         try {
-          var payload = await gatherPayload();
-          var plainPass = payload.clientPassword;
-          var res = await fetch('/api/client-quotes', {
+          var payload = await gatherReviewPayload();
+          var res = await fetch('/api/client-quotes/review', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
             body: JSON.stringify(payload)
           });
           var data = await res.json();
-          if (!res.ok || !data.success) throw new Error(data.error || 'Failed to generate client quote');
+          if (!res.ok || !data.success) throw new Error(data.error || 'Failed to generate review link');
+
+          var headMsg =
+            'Cookscape Head Review Request — ' + payload.clientName + '\n' +
+            'Project: ' + payload.title + '\n' +
+            'Review & Approve Link (No Password): ' + data.reviewUrl + '\n' +
+            'Please review variant discounts and click Approve.';
 
           var resCard = body.querySelector('#cqResultCard');
-          var inviteMsg =
-            'Cookscape Interior Quotation — ' + payload.clientName + '\n' +
-            'Quote Link: ' + data.shareUrl + '\n' +
-            'Username: ' + data.quote.clientUsername + '\n' +
-            'Password: ' + plainPass + '\n' +
-            '(Protected view: login required, watermarked to your account)';
-
           resCard.style.display = 'block';
+          resCard.style.background = '#FFFBEB';
+          resCard.style.borderColor = '#FCD34D';
           resCard.innerHTML =
-            '<div style="font-size:13.5px;font-weight:700;color:#166534;margin-bottom:8px;">✓ Protected Client Quote Link Ready</div>' +
-            '<div style="font-size:12px;background:#fff;border:1px solid #BBF7D0;border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;">' +
-            '  <div><b>Share Link:</b> <a href="' + esc(data.sharePath) + '" target="_blank" style="color:#1D4ED8;">' + esc(data.shareUrl) + '</a></div>' +
-            '  <div style="margin-top:4px;"><b>Username:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(data.quote.clientUsername) + '</code> &nbsp; <b>Password:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(plainPass) + '</code></div>' +
+            '<div style="font-size:13.5px;font-weight:700;color:#92400E;margin-bottom:6px;">📋 Step 1 Complete: Head Review Link Ready (No Password)</div>' +
+            '<div style="font-size:12px;background:#fff;border:1px solid #FDE68A;border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;">' +
+            '  <div><b>Head Review Link:</b> <a href="' + esc(data.reviewPath) + '" target="_blank" style="color:#1D4ED8;">' + esc(data.reviewUrl) + '</a></div>' +
+            '  <div style="margin-top:4px;color:#64748B;">Share this link with Head. Once Head edits discounts &amp; approves, click <b>Refresh Approval Status</b> below to generate the Client Link + download PPTX / PDF.</div>' +
             '</div>' +
             '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-            '  <button type="button" id="cqCopyUrlBtn" class="btn small">📋 Copy Link</button>' +
-            '  <button type="button" id="cqCopyInviteBtn" class="btn small" style="background:#166534;color:#fff;border-color:#166534;">💬 Copy Client Invite (Link + Login)</button>' +
+            '  <button type="button" id="cqCopyRevBtn" class="btn small">📋 Copy Review Link</button>' +
+            '  <a href="' + esc(data.reviewPath) + '" target="_blank" class="btn small" style="text-decoration:none;">🔗 Open Review Page</a>' +
+            '  <a href="https://wa.me/?text=' + encodeURIComponent(headMsg) + '" target="_blank" class="btn small" style="background:#15803D;color:#fff;border-color:#15803D;text-decoration:none;">💬 Share to Head (WhatsApp)</a>' +
             '</div>';
 
-          resCard.querySelector('#cqCopyUrlBtn').addEventListener('click', function () {
-            copyText(data.shareUrl, this, '✓ Link Copied');
-          });
-          resCard.querySelector('#cqCopyInviteBtn').addEventListener('click', function () {
-            copyText(inviteMsg, this, '✓ Invite Copied');
+          resCard.querySelector('#cqCopyRevBtn').addEventListener('click', function () {
+            copyText(data.reviewUrl, this, '✓ Copied');
           });
 
           self.loadExistingList(body, getActiveProjectId(app));
@@ -544,57 +505,42 @@
           showErr(err.message || String(err));
         } finally {
           btn.disabled = false;
-          btn.textContent = '🔐 Generate Protected Client Quote Link';
-        }
-      });
-
-      body.querySelector('#cqDownloadPptxBtn').addEventListener('click', async function () {
-        showErr('');
-        var btn = this;
-        btn.disabled = true;
-        btn.textContent = '⏳ Building PPTX Deck...';
-        try {
-          var payload = await gatherPayload();
-          var pptxBody = {
-            clientName: payload.clientName,
-            clientPhone: payload.clientPhone,
-            siteAddress: payload.siteAddress,
-            quoteCode: payload.quoteCode,
-            meta: payload.quoteSnapshot.meta,
-            designer: payload.quoteSnapshot.designer,
-            variantQuotes: payload.quoteSnapshot.variantQuotes,
-            unitIcons: payload.quoteSnapshot.unitIcons
-          };
-          var res = await fetch('/api/client-quotes/export-pptx', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin',
-            body: JSON.stringify(pptxBody)
-          });
-          if (!res.ok) {
-            var errJson = await res.json().catch(function () { return {}; });
-            throw new Error(errJson.error || 'PPTX generation failed');
-          }
-          var blob = await res.blob();
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = url;
-          a.download = (payload.clientName.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Cookscape') + '_Quotation.pptx';
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(function () {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }, 800);
-        } catch (err) {
-          showErr(err.message || String(err));
-        } finally {
-          btn.disabled = false;
-          btn.textContent = '📊 Download Master PPTX (Team Copy)';
+          btn.textContent = '📋 Step 1: Generate Head Review Link (No Password)';
         }
       });
 
       this.loadExistingList(body, getActiveProjectId(app));
+    },
+
+    downloadApprovedFile: async function (quoteId, format, clientName, btnEl) {
+      var prev = btnEl.textContent;
+      btnEl.disabled = true;
+      btnEl.textContent = format === 'pdf' ? '⏳ Building PDF...' : '⏳ Building PPTX...';
+      try {
+        var endpoint = '/api/client-quotes/' + encodeURIComponent(quoteId) + (format === 'pdf' ? '/export-pdf' : '/export-pptx');
+        var res = await fetch(endpoint, { method: 'POST', credentials: 'same-origin' });
+        if (!res.ok) {
+          var errJson = await res.json().catch(function () { return {}; });
+          throw new Error(errJson.error || (format.toUpperCase() + ' export failed'));
+        }
+        var blob = await res.blob();
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        var clean = String(clientName || 'Cookscape').replace(/[^a-zA-Z0-9_-]/g, '_') || 'Cookscape';
+        a.download = clean + '_Approved_Quotation.' + format;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 800);
+      } catch (err) {
+        alert(err.message || String(err));
+      } finally {
+        btnEl.disabled = false;
+        btnEl.textContent = prev;
+      }
     },
 
     loadExistingList: async function (body, projectId) {
@@ -609,38 +555,154 @@
         if (!res.ok || !data.success) throw new Error(data.error || 'Could not load links');
         var quotes = data.quotes || [];
         if (!quotes.length) {
-          listEl.innerHTML = '<div style="padding:8px 0;color:#64748B;">No client quote links created for this project yet.</div>';
+          listEl.innerHTML = '<div style="padding:8px 0;color:#64748B;">No quotation review links created for this project yet. Generate a Head Review Link in Step 1 above.</div>';
           return;
         }
         listEl.innerHTML = quotes.map(function (q) {
+          var isApproved = q.approvalStatus === 'approved';
+          var isActivated = Boolean(q.clientLinkActivated);
           var isExpired = q.expiresAt && new Date(q.expiresAt).getTime() < Date.now();
-          var badgeColor = q.isRevoked ? '#DC2626' : (isExpired ? '#D97706' : '#16A34A');
-          var badgeLabel = q.isRevoked ? 'Revoked' : (isExpired ? 'Expired' : 'Active');
-          var variantsStr = (q.selectedTiers || []).join(', ');
-          var alertsCount = (q.accessLogs || []).filter(function (l) {
-            return l.event === 'focus_blur' || l.event === 'screenshot_key_attempt' || l.event === 'print_attempt';
-          }).length;
 
-          return '<div style="border:1px solid #E2E8F0;border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#F8FAFC;">' +
+          var approvalBadge = isApproved
+            ? '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;color:#fff;background:#16A34A;">✅ Approved' + (q.approvedBy ? (' by ' + esc(q.approvedBy)) : '') + '</span>'
+            : '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;color:#92400E;background:#FEF3C7;border:1px solid #F59E0B;">⏳ Pending Head Approval</span>';
+
+          var clientBadge = '';
+          if (isActivated) {
+            var cBg = q.isRevoked ? '#DC2626' : (isExpired ? '#D97706' : '#0F766E');
+            var cLbl = q.isRevoked ? 'Client Link Revoked' : (isExpired ? 'Client Link Expired' : 'Client Link Active');
+            clientBadge = ' <span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;color:#fff;background:' + cBg + ';">' + cLbl + '</span>';
+          }
+
+          var varSummaryHtml = (q.variantSummaries || []).map(function (vs) {
+            var discNote = (vs.discountPercent || vs.adpPercent)
+              ? (' <span style="color:#B45309;">(Disc ' + vs.discountPercent + '%' + (vs.adpPercent ? (' + ADP ' + vs.adpPercent + '%') : '') + ')</span>')
+              : '';
+            return '<span style="display:inline-block;background:#fff;border:1px solid #E2E8F0;border-radius:5px;padding:2px 7px;margin:2px 4px 2px 0;font-size:11px;"><b>' + esc(vs.tierTitle || vs.tierKey) + '</b>: ' + esc(fmtINR(vs.grandTotal)) + discNote + '</span>';
+          }).join('');
+
+          var waNotice = q.lastWhatsappAlert
+            ? '<div style="margin-top:5px;font-size:11px;color:#166534;background:#ECFDF5;border:1px solid #BBF7D0;border-radius:5px;padding:4px 8px;">📲 Client opened link &rarr; WhatsApp alert triggered for 8838199428 &amp; 7418414780 (' + esc(new Date(q.lastWhatsappAlert.sentAt).toLocaleString('en-IN')) + ')</div>'
+            : '';
+
+          var step2Html = '';
+          if (!isApproved) {
+            step2Html =
+              '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">' +
+              '  <button type="button" class="btn small cq-act-copy" data-url="' + esc(q.reviewUrl) + '" style="background:#FFFBEB;border-color:#F59E0B;color:#92400E;">📋 Copy Head Review Link</button>' +
+              '  <a href="' + esc(q.reviewPath) + '" target="_blank" class="btn small" style="text-decoration:none;">🔗 Open Review Page</a>' +
+              '  <button type="button" class="btn small cq-act-del" data-id="' + esc(q.id) + '" style="color:#B91C1C;border-color:#FECACA;">🗑 Delete</button>' +
+              '</div>';
+          } else if (!isActivated) {
+            var defaultPw = randomPassword();
+            step2Html =
+              '<div style="margin-top:9px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:8px;padding:10px;">' +
+              '  <div style="font-size:11.5px;font-weight:700;color:#166534;margin-bottom:7px;">Step 2 Unlocked: Generate Full Client Link (Username = Client Name) &amp; Download PPTX / PDF</div>' +
+              '  <div style="display:grid;grid-template-columns:1fr 1fr 125px;gap:7px;margin-bottom:8px;">' +
+              '    <div><label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:2px;">Client Username</label><input type="text" class="cq-act-user" value="' + esc(q.clientName) + '" style="width:100%;padding:6px 8px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;"></div>' +
+              '    <div><label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:2px;">Client Password</label><input type="text" class="cq-act-pass-in" value="' + esc(defaultPw) + '" style="width:100%;padding:6px 8px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;font-family:monospace;font-weight:700;"></div>' +
+              '    <div><label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:2px;">Validity</label>' +
+              '      <select class="cq-act-exp" style="width:100%;padding:6px 6px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;">' +
+              '        <option value="1">1 Day</option><option value="7">7 Days</option><option value="15" selected>15 Days</option><option value="30">30 Days</option><option value="365">1 Year</option><option value="0">No Expiry</option>' +
+              '      </select>' +
+              '    </div>' +
+              '  </div>' +
+              '  <div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+              '    <button type="button" class="btn small cq-btn-activate" data-id="' + esc(q.id) + '" style="background:#C00000;color:#fff;border-color:#900000;font-weight:700;">🔐 Generate Full Client Link</button>' +
+              '    <button type="button" class="btn small cq-btn-pptx" data-id="' + esc(q.id) + '" data-client="' + esc(q.clientName) + '" style="background:#08231B;color:#fff;border-color:#08231B;">📊 Download Full PPTX</button>' +
+              '    <button type="button" class="btn small cq-btn-pdf" data-id="' + esc(q.id) + '" data-client="' + esc(q.clientName) + '" style="background:#1E3A8A;color:#fff;border-color:#1E3A8A;">📄 Download Full PDF</button>' +
+              '    <button type="button" class="btn small cq-act-del" data-id="' + esc(q.id) + '" style="color:#B91C1C;border-color:#FECACA;">🗑 Delete</button>' +
+              '  </div>' +
+              '</div>';
+          } else {
+            step2Html =
+              '<div style="font-size:11.5px;color:#475569;margin-top:5px;">Client Login User: <code style="background:#E2E8F0;padding:1px 5px;border-radius:4px;">' + esc(q.clientUsername) + '</code> &bull; Views: <b>' + q.viewCount + '</b>' + (q.expiresAt ? (' &bull; Expires: ' + new Date(q.expiresAt).toLocaleDateString('en-IN')) : ' &bull; No Expiry') + '</div>' +
+              waNotice +
+              '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
+              '  <button type="button" class="btn small cq-act-copy" data-url="' + esc(q.shareUrl) + '" style="background:#166534;color:#fff;border-color:#166534;">📋 Copy Client Link</button>' +
+              '  <button type="button" class="btn small cq-btn-pptx" data-id="' + esc(q.id) + '" data-client="' + esc(q.clientName) + '" style="background:#08231B;color:#fff;border-color:#08231B;">📊 Full PPTX</button>' +
+              '  <button type="button" class="btn small cq-btn-pdf" data-id="' + esc(q.id) + '" data-client="' + esc(q.clientName) + '" style="background:#1E3A8A;color:#fff;border-color:#1E3A8A;">📄 Full PDF</button>' +
+              '  <button type="button" class="btn small cq-act-pass" data-id="' + esc(q.id) + '" data-user="' + esc(q.clientUsername) + '">🔑 Reset Pass</button>' +
+              '  <button type="button" class="btn small cq-act-toggle" data-id="' + esc(q.id) + '" data-revoked="' + (q.isRevoked ? '1' : '0') + '">' + (q.isRevoked ? '✅ Reactivate' : '⛔ Revoke') + '</button>' +
+              '  <button type="button" class="btn small cq-act-del" data-id="' + esc(q.id) + '" style="color:#B91C1C;border-color:#FECACA;">🗑 Delete</button>' +
+              '</div>';
+          }
+
+          return '<div class="cq-quote-card" style="border:1px solid #E2E8F0;border-radius:9px;padding:11px 13px;margin-bottom:10px;background:#F8FAFC;">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">' +
-            '  <div>' +
-            '    <span style="display:inline-block;padding:2px 7px;border-radius:999px;font-size:10.5px;font-weight:700;color:#fff;background:' + badgeColor + ';">' + badgeLabel + '</span> ' +
-            '    <b>' + esc(q.clientName) + '</b> · User: <code>' + esc(q.clientUsername) + '</code>' +
-            '  </div>' +
-            '  <div style="font-size:11.5px;color:#475569;">Views: <b>' + q.viewCount + '</b>' + (alertsCount ? (' · <span style="color:#B45309;">Shield Events: ' + alertsCount + '</span>') : '') + '</div>' +
+            '  <div>' + approvalBadge + clientBadge + ' <b style="margin-left:4px;">' + esc(q.clientName) + '</b> <span style="color:#64748B;font-size:11px;">(' + esc(q.quoteCode || q.id) + ')</span></div>' +
+            '  <div style="font-size:11px;color:#64748B;">' + (q.createdAt ? new Date(q.createdAt).toLocaleDateString('en-IN') : '') + '</div>' +
             '</div>' +
-            '<div style="font-size:11.5px;color:#64748B;margin-top:4px;">Variants: ' + esc(variantsStr || '-') + (q.expiresAt ? (' · Expires: ' + new Date(q.expiresAt).toLocaleDateString('en-IN')) : ' · No Expiry') + (q.lastViewedAt ? (' · Last opened: ' + new Date(q.lastViewedAt).toLocaleString('en-IN')) : '') + '</div>' +
-            '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
-            '  <button type="button" class="btn small cq-act-copy" data-url="' + esc(q.shareUrl) + '">📋 Copy Link</button>' +
-            '  <button type="button" class="btn small cq-act-pass" data-id="' + esc(q.id) + '" data-user="' + esc(q.clientUsername) + '">🔑 Reset Password</button>' +
-            '  <button type="button" class="btn small cq-act-toggle" data-id="' + esc(q.id) + '" data-revoked="' + (q.isRevoked ? '1' : '0') + '">' + (q.isRevoked ? '✅ Reactivate' : '⛔ Revoke') + '</button>' +
-            '  <button type="button" class="btn small cq-act-del" data-id="' + esc(q.id) + '" style="color:#B91C1C;border-color:#FECACA;">🗑 Delete</button>' +
-            '</div>' +
+            '<div style="margin-top:6px;">' + varSummaryHtml + '</div>' +
+            (q.approvalRemarks ? ('<div style="font-size:11.5px;color:#166534;margin-top:4px;">Head Remarks: <i>' + esc(q.approvalRemarks) + '</i></div>') : '') +
+            step2Html +
             '</div>';
         }).join('');
 
         listEl.querySelectorAll('.cq-act-copy').forEach(function (b) {
           b.addEventListener('click', function () { copyText(this.getAttribute('data-url'), this, '✓ Copied'); });
+        });
+        listEl.querySelectorAll('.cq-btn-activate').forEach(function (b) {
+          b.addEventListener('click', async function () {
+            var qId = this.getAttribute('data-id');
+            var card = this.closest('.cq-quote-card');
+            var uVal = card.querySelector('.cq-act-user').value.trim();
+            var pVal = card.querySelector('.cq-act-pass-in').value.trim();
+            var expVal = Number(card.querySelector('.cq-act-exp').value);
+            this.disabled = true;
+            this.textContent = '⏳ Activating...';
+            try {
+              var r = await fetch('/api/client-quotes/' + encodeURIComponent(qId) + '/activate-client-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ clientUsername: uVal, clientPassword: pVal, expiryDays: expVal })
+              });
+              var d = await r.json();
+              if (!r.ok || !d.success) throw new Error(d.error || 'Activation failed');
+              var inviteMsg =
+                'Cookscape Interior Quotation — ' + d.quote.clientName + '\n' +
+                'Quote Link: ' + d.shareUrl + '\n' +
+                'Username: ' + d.quote.clientUsername + '\n' +
+                'Password: ' + pVal;
+              var resCard = body.querySelector('#cqResultCard');
+              resCard.style.display = 'block';
+              resCard.style.background = '#F0FDF4';
+              resCard.style.borderColor = '#86EFAC';
+              resCard.innerHTML =
+                '<div style="font-size:13.5px;font-weight:700;color:#166534;margin-bottom:6px;">✅ Full Client Quote Link Activated!</div>' +
+                '<div style="font-size:12px;background:#fff;border:1px solid #BBF7D0;border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;">' +
+                '  <div><b>Client Link:</b> <a href="' + esc(d.sharePath) + '" target="_blank" style="color:#1D4ED8;">' + esc(d.shareUrl) + '</a></div>' +
+                '  <div style="margin-top:4px;"><b>Username:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(d.quote.clientUsername) + '</code> &nbsp; <b>Password:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(pVal) + '</code></div>' +
+                '  <div style="margin-top:4px;font-size:11px;color:#0F766E;">📲 WhatsApp alert will trigger to 8838199428 &amp; 7418414780 as soon as the client opens this link.</div>' +
+                '</div>' +
+                '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+                '  <button type="button" id="cqCopyClientUrlBtn" class="btn small">📋 Copy Client Link</button>' +
+                '  <button type="button" id="cqCopyClientInvBtn" class="btn small" style="background:#166534;color:#fff;border-color:#166534;">💬 Copy Client Invite (Link + Login)</button>' +
+                '</div>';
+              resCard.querySelector('#cqCopyClientUrlBtn').addEventListener('click', function () {
+                copyText(d.shareUrl, this, '✓ Copied');
+              });
+              resCard.querySelector('#cqCopyClientInvBtn').addEventListener('click', function () {
+                copyText(inviteMsg, this, '✓ Invite Copied');
+              });
+              OrbixClientQuote.loadExistingList(body, projectId);
+            } catch (err) {
+              alert(err.message || String(err));
+              this.disabled = false;
+              this.textContent = '🔐 Generate Full Client Link';
+            }
+          });
+        });
+        listEl.querySelectorAll('.cq-btn-pptx').forEach(function (b) {
+          b.addEventListener('click', function () {
+            OrbixClientQuote.downloadApprovedFile(this.getAttribute('data-id'), 'pptx', this.getAttribute('data-client'), this);
+          });
+        });
+        listEl.querySelectorAll('.cq-btn-pdf').forEach(function (b) {
+          b.addEventListener('click', function () {
+            OrbixClientQuote.downloadApprovedFile(this.getAttribute('data-id'), 'pdf', this.getAttribute('data-client'), this);
+          });
         });
         listEl.querySelectorAll('.cq-act-toggle').forEach(function (b) {
           b.addEventListener('click', async function () {
@@ -677,7 +739,7 @@
         });
         listEl.querySelectorAll('.cq-act-del').forEach(function (b) {
           b.addEventListener('click', async function () {
-            if (!confirm('Delete this client quote link permanently?')) return;
+            if (!confirm('Delete this quotation link permanently?')) return;
             var qId = this.getAttribute('data-id');
             await fetch('/api/client-quotes/' + encodeURIComponent(qId), {
               method: 'DELETE',
