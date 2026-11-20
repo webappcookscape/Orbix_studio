@@ -370,9 +370,15 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
     if frt_enabled:
         comm_items.append((f"Freight Charges ({comm.get('freightPercent', 2.5)}%)", fmt_inr(comm.get('freightAmount', 0)), False))
     if float(comm.get('discountAmount') or 0) > 0:
-        comm_items.append((f"Discount on Wood Work ({comm.get('discountPercent', 0)}%)", '- ' + fmt_inr(comm.get('discountAmount', 0)), False))
+        ww_after = comm.get('woodworkAfterDiscount')
+        if ww_after is None:
+            ww_after = max(0, round(float(comm.get('woodworkSubtotal') or 0) - float(comm.get('discountAmount') or 0)))
+        comm_items.append((f"Discount on Wood Work ({comm.get('discountPercent', 0)}%)", fmt_inr(ww_after), False))
     if float(comm.get('adpAmount') or 0) > 0:
-        comm_items.append((f"Discount on Design Charge ({comm.get('adpPercent', 0)}%)", '- ' + fmt_inr(comm.get('adpAmount', 0)), False))
+        dc_after = comm.get('designAfterDiscount')
+        if dc_after is None:
+            dc_after = max(0, round(float(comm.get('designAmount') or 0) - float(comm.get('adpAmount') or 0)))
+        comm_items.append((f"Discount on Design Charge ({comm.get('adpPercent', 0)}%)", fmt_inr(dc_after), False))
     comm_items.append(('Grand Total (Without GST)', fmt_inr(comm.get('netBeforeTax', 0)), True))
     if gst_enabled:
         comm_items.append((f"GST ({comm.get('gstPercent', 18)}%)", fmt_inr(comm.get('gstAmount', 0)), False))

@@ -62,8 +62,14 @@ function recalculateVariantCommercial(comm, overrides) {
   const freightEnabled = o.freightEnabled !== undefined ? Boolean(o.freightEnabled) : (c.freightEnabled !== false);
   const gstEnabled = o.gstEnabled !== undefined ? Boolean(o.gstEnabled) : (c.gstEnabled !== false);
 
-  const baseAcc = Number(c.baseAdditionalAccessories !== undefined ? c.baseAdditionalAccessories : c.additionalAccessories) || 0;
-  const baseApp = Number(c.baseAppliances !== undefined ? c.baseAppliances : c.appliances) || 0;
+  const rawAcc = (o.additionalAccessories !== undefined && o.additionalAccessories !== null && o.additionalAccessories !== '')
+    ? o.additionalAccessories
+    : (c.baseAdditionalAccessories !== undefined ? c.baseAdditionalAccessories : c.additionalAccessories);
+  const rawApp = (o.appliances !== undefined && o.appliances !== null && o.appliances !== '')
+    ? o.appliances
+    : (c.baseAppliances !== undefined ? c.baseAppliances : c.appliances);
+  const baseAcc = Math.max(0, Math.round(Number(rawAcc) || 0));
+  const baseApp = Math.max(0, Math.round(Number(rawApp) || 0));
   const acc = accessoriesEnabled ? baseAcc : 0;
   const appliances = appliancesEnabled ? baseApp : 0;
   const rawDesign = o.designPercent !== undefined ? o.designPercent : c.designPercent;
@@ -77,11 +83,14 @@ function recalculateVariantCommercial(comm, overrides) {
   const discP = Math.max(0, Math.min(100, Number(o.discountPercent !== undefined ? o.discountPercent : c.discountPercent) || 0));
   const adpP = Math.max(0, Math.min(100, Number(o.adpPercent !== undefined ? o.adpPercent : c.adpPercent) || 0));
   const discountAmount = Math.round(woodwork * (discP / 100));
+  const woodworkAfterDiscount = Math.max(0, woodwork - discountAmount);
   // Discount on Design Charge (replaces ADP): % of Design Charges
   const adpAmount = Math.round(designAmount * (adpP / 100));
+  const designAfterDiscount = Math.max(0, designAmount - adpAmount);
   const totalSavings = discountAmount + adpAmount;
 
-  const netBeforeTax = Math.max(0, Math.round(woodwork + acc + appliances + designAmount + freightAmount - totalSavings));
+  // Grand Total (Without GST) = Net Woodwork + Net Design Charge (+ enabled Accessories, Appliances, Freight)
+  const netBeforeTax = Math.max(0, Math.round(woodworkAfterDiscount + designAfterDiscount + acc + appliances + freightAmount));
   const gstAmount = gstEnabled ? Math.round(netBeforeTax * (gstPercent / 100)) : 0;
   const grandTotal = netBeforeTax + gstAmount;
 
@@ -100,8 +109,10 @@ function recalculateVariantCommercial(comm, overrides) {
     freightAmount,
     discountPercent: discP,
     discountAmount,
+    woodworkAfterDiscount,
     adpPercent: adpP,
     adpAmount,
+    designAfterDiscount,
     totalSavings,
     netBeforeTax,
     gstEnabled,

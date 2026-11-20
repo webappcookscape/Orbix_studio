@@ -1143,7 +1143,7 @@
       this.project = Core.deserializeProject(this.history[this.historyIndex].data);
       Core.detectRooms(this.project);
       this.selected = [];
-      this.onProjectChange(this.project);
+      this.onProjectChange(this.project, { actionName: 'Undo' });
       this.render();
     }
   };
@@ -1154,7 +1154,7 @@
       this.project = Core.deserializeProject(this.history[this.historyIndex].data);
       Core.detectRooms(this.project);
       this.selected = [];
-      this.onProjectChange(this.project);
+      this.onProjectChange(this.project, { actionName: 'Redo' });
       this.render();
     }
   };

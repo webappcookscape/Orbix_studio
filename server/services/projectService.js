@@ -4,6 +4,95 @@
 
 const { prisma } = require('../config/prisma');
 
+function extractPlanNode(dataObj) {
+  if (!dataObj || typeof dataObj !== 'object') return null;
+  if (dataObj.plan && typeof dataObj.plan === 'object') {
+    if (dataObj.plan.plan && typeof dataObj.plan.plan === 'object') {
+      return { rootPlan: dataObj.plan, innerPlan: dataObj.plan.plan };
+    }
+    return { rootPlan: dataObj.plan, innerPlan: dataObj.plan };
+  }
+  return null;
+}
+
+function getPlanIntegrityStats(dataObj) {
+  const stats = {
+    hasPlan: false,
+    walls: 0,
+    furniture: 0,
+    openings: 0,
+    rooms: 0,
+    stairs: 0,
+    totalElements: 0,
+    lastModified: 0,
+    saveSeq: 0
+  };
+  if (!dataObj || typeof dataObj !== 'object') return stats;
+  const node = extractPlanNode(dataObj);
+  if (node) {
+    stats.hasPlan = true;
+    const inner = node.innerPlan || {};
+    const rootP = node.rootPlan || {};
+    stats.walls = Array.isArray(inner.walls) ? inner.walls.length : 0;
+    stats.furniture = Array.isArray(inner.furniture) ? inner.furniture.length : 0;
+    stats.openings = Array.isArray(inner.openings) ? inner.openings.length : 0;
+    stats.rooms = Array.isArray(inner.rooms) ? inner.rooms.length : 0;
+    stats.stairs = Array.isArray(inner.stairs) ? inner.stairs.length : 0;
+
+    // Also inspect multi-floor floorsData so elements on non-active floors are counted
+    if (inner.floorsData && typeof inner.floorsData === 'object') {
+      let floorWalls = 0;
+      let floorFurn = 0;
+      let floorOpenings = 0;
+      let floorStairs = 0;
+      for (const fKey of Object.keys(inner.floorsData)) {
+        const fd = inner.floorsData[fKey];
+        if (!fd || typeof fd !== 'object') continue;
+        if (Array.isArray(fd.walls)) floorWalls += fd.walls.length;
+        if (Array.isArray(fd.furniture)) floorFurn += fd.furniture.length;
+        if (Array.isArray(fd.openings)) floorOpenings += fd.openings.length;
+        if (Array.isArray(fd.stairs)) floorStairs += fd.stairs.length;
+      }
+      if (floorWalls > stats.walls) stats.walls = floorWalls;
+      if (floorFurn > stats.furniture) stats.furniture = floorFurn;
+      if (floorOpenings > stats.openings) stats.openings = floorOpenings;
+      if (floorStairs > stats.stairs) stats.stairs = floorStairs;
+    }
+
+    const lm = Number(rootP._lastModified || inner._lastModified || dataObj._lastModified || 0);
+    if (Number.isFinite(lm) && lm > 0) stats.lastModified = lm;
+    const seq = Number(rootP._saveSeq || dataObj._saveSeq || 0);
+    if (Number.isFinite(seq) && seq > 0) stats.saveSeq = seq;
+  }
+  if (stats.furniture === 0 && Array.isArray(dataObj.units) && dataObj.units.length > 0) {
+    stats.furniture = dataObj.units.length;
+  }
+  stats.totalElements = stats.walls + stats.furniture + stats.openings + stats.stairs;
+  return stats;
+}
+
+function isExplicitDestructiveUpdate(updates) {
+  if (!updates || typeof updates !== 'object') return false;
+  if (updates.allowEmptyPlan === true || updates.allowDestructive === true) return true;
+  const rawAction = updates.changeAction || updates.action || (updates.data && updates.data._changeAction) || '';
+  const act = (typeof rawAction === 'object' && rawAction !== null ? (rawAction.actionName || '') : String(rawAction)).toLowerCase().trim();
+  if (!act) return false;
+  return (
+    act === 'clear_all' ||
+    act === 'user_delete_all' ||
+    act === 'clear plan' ||
+    act === 'delete' ||
+    act === 'delete_selected' ||
+    act === 'delete_furniture' ||
+    act === 'delete furniture' ||
+    act === 'undo' ||
+    act === 'redo' ||
+    act === 'reset_project' ||
+    act.indexOf('clear') !== -1 ||
+    act.indexOf('delete') !== -1
+  );
+}
+
 // Helper: Format project with top-level metadata accessors from project.data.details
 function formatProject(p) {
   if (!p) return null;
@@ -161,8 +250,87 @@ class ProjectService {
     if (updates.boards_est !== undefined || updates.boardsEst !== undefined) {
       data.boardsEst = parseInt(updates.boards_est ?? updates.boardsEst, 10);
     }
-    if (updates.data !== undefined) {
-      data.data = updates.data;
+
+    let planPreserved = false;
+    if (updates.data !== undefined && updates.data && typeof updates.data === 'object') {
+      const existingData = (existing.data && typeof existing.data === 'object') ? existing.data : {};
+      const incomingData = updates.data;
+      const existingStats = getPlanIntegrityStats(existingData);
+      const incomingStats = getPlanIntegrityStats(incomingData);
+      const allowDestructive = isExplicitDestructiveUpdate(updates);
+
+      // Start from a safe merge so metadata-only updates NEVER wipe existing plan/units/details
+      const mergedData = Object.assign({}, existingData, incomingData);
+      if (existingData.details && typeof existingData.details === 'object') {
+        mergedData.details = Object.assign(
+          {},
+          existingData.details,
+          (incomingData.details && typeof incomingData.details === 'object') ? incomingData.details : {}
+        );
+      }
+
+      if (!incomingStats.hasPlan && existingStats.hasPlan) {
+        // Metadata-only update: retain existing floor plan and units untouched
+        mergedData.plan = existingData.plan;
+        if (existingData.units !== undefined && incomingData.units === undefined) {
+          mergedData.units = existingData.units;
+        }
+        planPreserved = true;
+      } else if (incomingStats.hasPlan && existingStats.hasPlan) {
+        // Cross-project guard: reject if incoming plan explicitly belongs to a different project ID
+        const incomingPlanId = incomingData.plan && (incomingData.plan._projectId || (incomingData.plan.meta && incomingData.plan.meta.id));
+        const isCrossProjectLeak = !!(incomingPlanId && String(incomingPlanId) !== String(id) && existingStats.totalElements > 0);
+
+        // Stale out-of-order request guard: reject older snapshot overwriting a newer saved snapshot
+        const isStaleTimestamp = !!(
+          existingStats.lastModified > 0 &&
+          incomingStats.lastModified > 0 &&
+          incomingStats.lastModified < existingStats.lastModified
+        );
+
+        // Accidental empty-wipe guard: protect both walls AND furniture/units against unhydrated or glitchy empty saves
+        const isAccidentalWallWipe = !!(existingStats.walls > 0 && incomingStats.walls === 0 && !allowDestructive);
+        const isAccidentalFurnWipe = !!(existingStats.furniture > 0 && incomingStats.furniture === 0 && !allowDestructive);
+        const isAccidentalTotalWipe = !!(existingStats.totalElements > 0 && incomingStats.totalElements === 0 && !allowDestructive);
+
+        if (isCrossProjectLeak || isStaleTimestamp || isAccidentalWallWipe || isAccidentalFurnWipe || isAccidentalTotalWipe) {
+          const reason = isCrossProjectLeak
+            ? `cross-project mismatch (${incomingPlanId} != ${id})`
+            : isStaleTimestamp
+              ? `stale snapshot (${incomingStats.lastModified} < ${existingStats.lastModified})`
+              : `unintentional empty wipe (existing: ${existingStats.walls} walls, ${existingStats.furniture} units; incoming: ${incomingStats.walls} walls, ${incomingStats.furniture} units)`;
+          console.warn(`[ProjectService] Protected project ${id} from destructive plan overwrite: ${reason}`);
+          mergedData.plan = existingData.plan;
+          if (existingData.units !== undefined) {
+            mergedData.units = existingData.units;
+          }
+          planPreserved = true;
+        } else {
+          // Valid newer plan update: preserve units array if incoming plan has furniture but incoming units array is empty
+          if (incomingStats.furniture > 0 && Array.isArray(incomingData.units) && incomingData.units.length === 0 && Array.isArray(existingData.units) && existingData.units.length > 0 && !allowDestructive) {
+            mergedData.units = existingData.units;
+          }
+          // Ensure _lastModified is stamped monotonically on the stored plan
+          if (mergedData.plan && typeof mergedData.plan === 'object') {
+            const stampedMod = Math.max(incomingStats.lastModified || 0, existingStats.lastModified || 0, Date.now());
+            mergedData.plan = Object.assign({}, mergedData.plan, {
+              _projectId: String(id),
+              _lastModified: incomingStats.lastModified > 0 ? incomingStats.lastModified : stampedMod,
+              _serverSavedAt: Date.now()
+            });
+          }
+        }
+      }
+
+      data.data = mergedData;
+
+      // Never allow unitsCount to drop to 0 when the existing plan was preserved
+      if (planPreserved) {
+        const preservedCount = existingStats.furniture || existing.unitsCount || 0;
+        data.unitsCount = preservedCount;
+      } else if (data.unitsCount === undefined) {
+        data.unitsCount = incomingStats.furniture;
+      }
     }
     if (updates.is_shared !== undefined || updates.isShared !== undefined) {
       data.isShared = updates.is_shared ?? updates.isShared;
@@ -175,7 +343,11 @@ class ProjectService {
       where: { id },
       data
     });
-    return formatProject(updated);
+    const formatted = formatProject(updated);
+    if (planPreserved) {
+      formatted._planPreserved = true;
+    }
+    return formatted;
   }
 
   // 5. Delete project

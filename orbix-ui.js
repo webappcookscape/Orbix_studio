@@ -203,9 +203,18 @@
         onProjectChange: function (proj, changeContext) {
           self.project = proj;
           if (self._isProjectLoading) return;
-          self.queueAutoSave();
+          if (root.OrbixProjects) {
+            root.OrbixProjects._isAwaitingHydration = false;
+            if (typeof root.OrbixProjects.markProjectDirty === 'function') {
+              root.OrbixProjects.markProjectDirty();
+            }
+          }
+          var actionName = (changeContext && typeof changeContext === 'object')
+            ? (changeContext.actionName || 'project_change')
+            : (typeof changeContext === 'string' ? changeContext : 'project_change');
+          self.queueAutoSave(undefined, actionName);
           if (typeof window !== 'undefined' && window.OrbixLiveSync && typeof window.OrbixLiveSync.broadcastChange === 'function') {
-            window.OrbixLiveSync.broadcastChange(changeContext || 'project_change');
+            window.OrbixLiveSync.broadcastChange(actionName);
           }
           self.updateUI();
 
@@ -251,7 +260,11 @@
       this.initGlobalShortcuts();
 
       window.addEventListener('beforeunload', function () {
-        if (self.flushAutoSave) self.flushAutoSave();
+        if (root.OrbixProjects && typeof root.OrbixProjects.flushImmediateSave === 'function') {
+          root.OrbixProjects.flushImmediateSave();
+        } else if (self.flushAutoSave) {
+          self.flushAutoSave();
+        }
       });
     },
 
@@ -341,9 +354,10 @@
       return rotated;
     },
 
-    loadProject: function (proj) {
+    loadProject: function (proj, opts) {
       if (!proj) return;
       var self = this;
+      var loadOpts = opts || {};
       this._isProjectLoading = true;
       try {
         var prevProjId = (this.project && (this.project._projectId || (this.project.meta && this.project.meta.id) || this.project.id)) || '';
@@ -366,6 +380,27 @@
           if (!proj.plan.floorsData) {
             proj.plan.floorsData = {};
           }
+          // Recovery guard: if active floor arrays are empty but floorsData[activeFloor] has walls/furniture, restore them!
+          var curFloorData = proj.plan.floorsData[proj.plan.activeFloor];
+          if (curFloorData && typeof curFloorData === 'object') {
+            var topWalls = Array.isArray(proj.plan.walls) ? proj.plan.walls.length : 0;
+            var topFurn = Array.isArray(proj.plan.furniture) ? proj.plan.furniture.length : 0;
+            var fdWalls = Array.isArray(curFloorData.walls) ? curFloorData.walls.length : 0;
+            var fdFurn = Array.isArray(curFloorData.furniture) ? curFloorData.furniture.length : 0;
+            if ((topWalls === 0 && fdWalls > 0) || (topFurn === 0 && fdFurn > 0)) {
+              if (topWalls === 0 && fdWalls > 0) proj.plan.walls = JSON.parse(JSON.stringify(curFloorData.walls));
+              if (topFurn === 0 && fdFurn > 0) proj.plan.furniture = JSON.parse(JSON.stringify(curFloorData.furniture));
+              if ((!proj.plan.openings || !proj.plan.openings.length) && Array.isArray(curFloorData.openings) && curFloorData.openings.length) {
+                proj.plan.openings = JSON.parse(JSON.stringify(curFloorData.openings));
+              }
+              if ((!proj.plan.rooms || !proj.plan.rooms.length) && Array.isArray(curFloorData.rooms) && curFloorData.rooms.length) {
+                proj.plan.rooms = JSON.parse(JSON.stringify(curFloorData.rooms));
+              }
+              if ((!proj.plan.stairs || !proj.plan.stairs.length) && Array.isArray(curFloorData.stairs) && curFloorData.stairs.length) {
+                proj.plan.stairs = JSON.parse(JSON.stringify(curFloorData.stairs));
+              }
+            }
+          }
           if (typeof this.updateFloorSwitcherUI === 'function') {
             this.updateFloorSwitcherUI();
           }
@@ -377,10 +412,13 @@
           try { Core.detectRooms(this.project); } catch (e) { console.warn('[Orbix UI] detectRooms on load:', e); }
         }
         this.syncProjectUnitsTo3DStudio(); // Synchronize units FIRST so window.S.units reflects project
-        this.saveToLocalStorage();
-        if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
-          root.OrbixProjects.saveActiveProject({ plan: this.project });
-        }         // THEN save clean state to local storage
+        // Only persist locally/remotely if this load is NOT a passive open/hydration read
+        if (!loadOpts.skipLocalSave) {
+          this.saveToLocalStorage({ preserveTimestamp: true });
+        }
+        if (!loadOpts.skipAutoSave && root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+          root.OrbixProjects.saveActiveProject({ plan: this.project, changeAction: loadOpts.changeAction || 'load_project', allowEmptyPlan: !!loadOpts.allowEmptyPlan });
+        }
         if (this.editor) {
           this.editor.project = proj;
           this.editor.selected = [];
@@ -411,84 +449,118 @@
     createNewProject: function (title, clientName) {
       var fresh = Core.createProject(title || 'New Project');
       if (clientName && fresh.meta) fresh.meta.clientName = clientName;
-      this.loadProject(fresh);
+      this.loadProject(fresh, { skipAutoSave: true });
       return fresh;
     },
 
     resetProject: function (title) {
       var fresh = Core.createProject(title || 'Untitled Project');
-      this.loadProject(fresh);
+      this.loadProject(fresh, { changeAction: 'reset_project', allowEmptyPlan: true });
       return fresh;
     },
 
-    queueAutoSave: function (delayMs) {
+    queueAutoSave: function (delayMs, changeAction) {
       var self = this;
       if (this._isProjectLoading) return;
+      if (changeAction) {
+        self._pendingChangeAction = changeAction;
+      }
       if (this._autoSaveTimer) {
         clearTimeout(this._autoSaveTimer);
       }
       this._autoSaveTimer = setTimeout(function () {
         self._autoSaveTimer = null;
         if (self._isProjectLoading) return;
+        var act = self._pendingChangeAction || 'autosave';
+        self._pendingChangeAction = null;
         self.saveToLocalStorage();
         if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+          var isDestructive = !!(typeof root.OrbixProjects._isExplicitDestructiveAction === 'function' && root.OrbixProjects._isExplicitDestructiveAction(act));
           root.OrbixProjects.saveActiveProject({
             plan: self.project,
-            units: window.S ? window.S.units : []
+            units: window.S ? window.S.units : [],
+            changeAction: act,
+            allowEmptyPlan: isDestructive
           });
         }
         if (typeof window !== 'undefined' && window.OrbixLiveSync && typeof window.OrbixLiveSync.broadcastChange === 'function') {
-          window.OrbixLiveSync.broadcastChange('autosave');
+          window.OrbixLiveSync.broadcastChange(act);
         }
       }, delayMs !== undefined ? delayMs : 250);
     },
 
     flushAutoSave: function () {
+      var act = this._pendingChangeAction || 'flush_autosave';
+      this._pendingChangeAction = null;
       if (this._autoSaveTimer) {
         clearTimeout(this._autoSaveTimer);
         this._autoSaveTimer = null;
       }
       this.saveToLocalStorage();
-      if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+      if (root.OrbixProjects && typeof root.OrbixProjects.flushImmediateSave === 'function') {
+        root.OrbixProjects.flushImmediateSave();
+      } else if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+        var isDestructive = !!(typeof root.OrbixProjects._isExplicitDestructiveAction === 'function' && root.OrbixProjects._isExplicitDestructiveAction(act));
         root.OrbixProjects.saveActiveProject({
           plan: this.project,
-          units: window.S ? window.S.units : []
+          units: window.S ? window.S.units : [],
+          changeAction: act,
+          allowEmptyPlan: isDestructive
         });
       }
     },
 
-    saveToLocalStorage: function () {
+    saveToLocalStorage: function (opts) {
       if (!this.project) return;
+      var saveOpts = opts || {};
       try {
         if (typeof this.syncActiveFloorData === 'function') {
           this.syncActiveFloorData();
         }
         var now = Date.now();
+        if (!saveOpts.preserveTimestamp || !this.project._lastModified) {
+          this.project._lastModified = now;
+        }
         var currentUnits = (window.S && window.S.units) ? window.S.units : [];
         var activeId = (window.OrbixProjects && window.OrbixProjects.activeProjectId) ||
                        localStorage.getItem('orbix_active_project_id') ||
+                       (this.project && this.project._projectId) ||
                        (this.project && this.project.meta && this.project.meta.id) ||
                        (this.project && this.project.id) || '';
+        if (activeId && !this.project._projectId) {
+          this.project._projectId = String(activeId);
+        }
         var uId = (window.OrbixProjects && window.OrbixProjects.currentUser) ? window.OrbixProjects.currentUser.id : 'anon';
 
+        // Strip large base64 underlay images before localStorage write (OrbixUnderlayDB IndexedDB already stores them)
+        // so localStorage never silently fails with QuotaExceededError!
+        var lightPlan = (window.OrbixProjects && typeof window.OrbixProjects._stripHeavyLocalData === 'function')
+          ? window.OrbixProjects._stripHeavyLocalData(this.project)
+          : this.project;
+        var safeSet = (window.OrbixProjects && typeof window.OrbixProjects._safeLocalSet === 'function')
+          ? window.OrbixProjects._safeLocalSet.bind(window.OrbixProjects)
+          : function (k, v) { localStorage.setItem(k, v); };
+
         // 1. Synchronously persist full working draft (guarantees survival across hard refresh & network drop)
-        localStorage.setItem('orbix_working_project_draft', JSON.stringify({
+        safeSet('orbix_working_project_draft', JSON.stringify({
           projectId: activeId ? String(activeId) : '',
           userId: uId,
-          timestamp: now,
-          plan: this.project,
+          timestamp: this.project._lastModified || now,
+          plan: lightPlan,
           units: currentUnits
         }));
 
         // 2. Persist to active project key if ID is known
         if (activeId) {
           var key = 'orbix_project_' + uId + '_' + activeId;
-          var serialized = (Core && typeof Core.serializeProject === 'function') ? Core.serializeProject(this.project) : JSON.stringify(this.project);
-          localStorage.setItem(key, serialized);
-          localStorage.setItem('orbix_active_proj_' + uId, String(activeId));
-          localStorage.setItem('orbix_active_project_id', String(activeId));
+          var serialized = (Core && typeof Core.serializeProject === 'function') ? Core.serializeProject(lightPlan) : JSON.stringify(lightPlan);
+          safeSet(key, serialized);
+          safeSet('orbix_active_proj_' + uId, String(activeId));
+          safeSet('orbix_active_project_id', String(activeId));
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('[OrbixUI] saveToLocalStorage notice:', e && e.message ? e.message : e);
+      }
     },
 
     persistUnderlay: function () {

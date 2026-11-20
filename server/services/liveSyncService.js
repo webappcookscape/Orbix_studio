@@ -6,12 +6,68 @@
 const WebSocket = require('ws');
 const { prisma } = require('../config/prisma');
 
+function normalizeSyncAction(action) {
+  if (!action) return '';
+  if (typeof action === 'object') {
+    return String(action.actionName || action.type || '').trim();
+  }
+  return String(action).trim();
+}
+
+function isExplicitDestructiveAction(action) {
+  const act = normalizeSyncAction(action).toLowerCase();
+  if (!act) return false;
+  return (
+    act === 'clear_all' ||
+    act === 'user_delete_all' ||
+    act === 'clear plan' ||
+    act === 'delete' ||
+    act === 'delete_selected' ||
+    act === 'delete_furniture' ||
+    act === 'delete furniture' ||
+    act === 'undo' ||
+    act === 'redo' ||
+    act === 'reset_project' ||
+    act.indexOf('clear') !== -1 ||
+    act.indexOf('delete') !== -1
+  );
+}
+
+function countPlanElements(plan, units) {
+  const inner = (plan && plan.plan && typeof plan.plan === 'object') ? plan.plan : (plan || {});
+  let walls = Array.isArray(inner.walls) ? inner.walls.length : 0;
+  let furniture = Array.isArray(inner.furniture) ? inner.furniture.length : 0;
+  let openings = Array.isArray(inner.openings) ? inner.openings.length : 0;
+  let stairs = Array.isArray(inner.stairs) ? inner.stairs.length : 0;
+  if (inner.floorsData && typeof inner.floorsData === 'object') {
+    let fw = 0, ff = 0, fo = 0, fs = 0;
+    for (const k of Object.keys(inner.floorsData)) {
+      const fd = inner.floorsData[k];
+      if (!fd || typeof fd !== 'object') continue;
+      if (Array.isArray(fd.walls)) fw += fd.walls.length;
+      if (Array.isArray(fd.furniture)) ff += fd.furniture.length;
+      if (Array.isArray(fd.openings)) fo += fd.openings.length;
+      if (Array.isArray(fd.stairs)) fs += fd.stairs.length;
+    }
+    if (fw > walls) walls = fw;
+    if (ff > furniture) furniture = ff;
+    if (fo > openings) openings = fo;
+    if (fs > stairs) stairs = fs;
+  }
+  if (furniture === 0 && Array.isArray(units) && units.length > 0) {
+    furniture = units.length;
+  }
+  const lastModified = Number((plan && plan._lastModified) || (inner && inner._lastModified) || 0) || 0;
+  return { walls, furniture, openings, stairs, total: walls + furniture + openings + stairs, lastModified };
+}
+
 class LiveSyncService {
   constructor() {
     this.wss = null;
     this.rooms = new Map(); // projectId -> Map<clientId, { ws, userId, userName, isAlive }>
     this.clientToProject = new Map(); // clientId -> projectId
     this.saveDebounceTimers = new Map(); // projectId -> setTimeout timer
+    this.lastTimestampByProject = new Map(); // projectId -> latest accepted timestamp
   }
 
   init(server) {
@@ -42,6 +98,12 @@ class LiveSyncService {
             case 'join_project': {
               const { projectId, clientId, user } = msg;
               if (!projectId || !clientId) return;
+
+              // Leave any previous project room so this client never leaks across projects
+              const prevProjectId = this.clientToProject.get(clientId);
+              if (prevProjectId && String(prevProjectId) !== String(projectId)) {
+                this.removeClientFromRoom(prevProjectId, clientId);
+              }
 
               currentClientId = clientId;
               currentProjectId = projectId;
@@ -100,20 +162,37 @@ class LiveSyncService {
               const { projectId, clientId, action, plan, units, timestamp } = msg;
               if (!projectId || !clientId) return;
 
+              // Cross-project protection: reject if payload plan explicitly belongs to a different project
+              const planProjId = plan && (plan._projectId || (plan.meta && plan.meta.id));
+              if (planProjId && String(planProjId) !== String(projectId)) {
+                console.warn(`[LiveSync] Rejected cross-project change from ${clientId}: plan ${planProjId} != room ${projectId}`);
+                return;
+              }
+
+              const incomingTs = Number(timestamp || (plan && plan._lastModified) || 0) || Date.now();
+              const prevTs = this.lastTimestampByProject.get(projectId) || 0;
+              if (prevTs > 0 && incomingTs < prevTs) {
+                console.warn(`[LiveSync] Ignored stale out-of-order change for ${projectId} (${incomingTs} < ${prevTs})`);
+                return;
+              }
+              this.lastTimestampByProject.set(projectId, incomingTs);
+
+              const normalizedAction = normalizeSyncAction(action) || 'plan_update';
+
               // 1. Immediately broadcast changes to all other connected systems/devices
               const broadcastPayload = {
                 type: 'remote_change',
                 projectId,
                 sourceClientId: clientId,
-                action: action || 'plan_update',
+                action: normalizedAction,
                 plan,
                 units,
-                timestamp: timestamp || Date.now()
+                timestamp: incomingTs
               };
-              const sentCount = this.broadcastToRoom(projectId, broadcastPayload, clientId);
+              this.broadcastToRoom(projectId, broadcastPayload, clientId);
 
               // 2. Debounced persistence to PostgreSQL/Prisma database
-              this.scheduleDatabaseSave(projectId, plan, units, action);
+              this.scheduleDatabaseSave(projectId, plan, units, normalizedAction, incomingTs);
               break;
             }
 
@@ -199,7 +278,7 @@ class LiveSyncService {
     }
   }
 
-  scheduleDatabaseSave(projectId, plan, units, action = null) {
+  scheduleDatabaseSave(projectId, plan, units, action = null, timestamp = null) {
     if (!projectId) return;
 
     if (this.saveDebounceTimers.has(projectId)) {
@@ -209,10 +288,6 @@ class LiveSyncService {
     const timer = setTimeout(async () => {
       this.saveDebounceTimers.delete(projectId);
       try {
-        const uCount = (plan && plan.plan && Array.isArray(plan.plan.furniture))
-          ? plan.plan.furniture.length
-          : (Array.isArray(units) ? units.length : 0);
-
         // Fetch existing project to safely merge metadata & details
         const existing = await prisma.project.findUnique({
           where: { id: projectId }
@@ -222,34 +297,54 @@ class LiveSyncService {
           return; // Project does not exist in DB, skip silent persistence
         }
 
-        const existingUnitsCount = existing.unitsCount || 0;
-        const isExplicitClear = action === 'clear_all' || action === 'user_delete_all';
+        const existingData = (existing.data && typeof existing.data === 'object') ? existing.data : {};
+        const existingStats = countPlanElements(existingData.plan, existingData.units);
+        const incomingStats = countPlanElements(plan, units);
+        const isExplicitClear = isExplicitDestructiveAction(action);
 
-        // ZERO-UNIT PROTECT GUARD:
-        // If the incoming plan has 0 units but the database already has existing units,
-        // do NOT overwrite the database with 0 units unless it is an explicit user clear action!
-        if (uCount === 0 && existingUnitsCount > 0 && !isExplicitClear) {
-          console.warn(`[LiveSync] Rejected destructive 0-unit overwrite for project ${projectId} (database currently retains ${existingUnitsCount} units).`);
+        // Stale-timestamp guard: never let an older WebSocket debounce overwrite a newer HTTP PUT save
+        const incomingMod = incomingStats.lastModified || Number(timestamp || 0) || 0;
+        if (existingStats.lastModified > 0 && incomingMod > 0 && incomingMod < existingStats.lastModified) {
+          console.warn(`[LiveSync] Skipped stale DB save for ${projectId} (${incomingMod} < ${existingStats.lastModified}).`);
           return;
         }
 
+        // ZERO-WALL / ZERO-UNIT PROTECT GUARD:
+        // Never allow an accidental empty wall or empty unit snapshot to wipe an existing project!
+        if (!isExplicitClear) {
+          if (incomingStats.walls === 0 && existingStats.walls > 0) {
+            console.warn(`[LiveSync] Rejected destructive 0-wall overwrite for project ${projectId} (DB retains ${existingStats.walls} walls).`);
+            return;
+          }
+          if (incomingStats.furniture === 0 && (existingStats.furniture > 0 || (existing.unitsCount || 0) > 0)) {
+            console.warn(`[LiveSync] Rejected destructive 0-unit overwrite for project ${projectId} (DB retains ${existingStats.furniture || existing.unitsCount} units).`);
+            return;
+          }
+        }
+
+        const stampedPlan = plan ? Object.assign({}, plan, {
+          _projectId: String(projectId),
+          _lastModified: Math.max(incomingMod || 0, existingStats.lastModified || 0, Date.now()),
+          _serverSavedAt: Date.now()
+        }) : existingData.plan;
+
         // Merge data while preserving details, rooms, etc.
-        const mergedData = Object.assign({}, existing.data || {}, {
-          plan: plan || (existing.data && existing.data.plan),
+        const mergedData = Object.assign({}, existingData, {
+          plan: stampedPlan,
           units: (Array.isArray(units) && (units.length > 0 || isExplicitClear))
             ? units
-            : ((existing.data && existing.data.units) || [])
+            : (existingData.units || [])
         });
 
         await prisma.project.update({
           where: { id: projectId },
           data: {
             data: mergedData,
-            unitsCount: uCount,
+            unitsCount: incomingStats.furniture,
             updatedAt: new Date()
           }
         });
-        console.log(`[LiveSync] Auto-persisted real-time state for project ${projectId} to database (${uCount} units).`);
+        console.log(`[LiveSync] Auto-persisted real-time state for project ${projectId} to database (${incomingStats.walls} walls, ${incomingStats.furniture} units).`);
       } catch (err) {
         console.warn(`[LiveSync] Database persistence notice for ${projectId}:`, err.message);
       }

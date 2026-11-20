@@ -194,6 +194,35 @@
       outline: none;
       box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.2);
     }
+    .amt-input-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 5px;
+    }
+    .amt-input {
+      width: 118px;
+      padding: 5px 8px;
+      border: 1.5px solid #08231B;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #08231B;
+      background: #fff;
+      text-align: right;
+    }
+    .amt-input:focus {
+      outline: none;
+      border-color: #EA580C;
+      box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.18);
+    }
+    .disc-saved-hint {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #15803D;
+      margin-top: 2px;
+    }
     .scope-strip {
       font-size: 12px;
       color: var(--muted);
@@ -219,6 +248,7 @@
       table { font-size: 12.5px; }
       th, td { padding: 8px 8px; }
       .disc-input { width: 66px; font-size: 16px; padding: 6px; }
+      .amt-input { width: 96px; font-size: 16px; padding: 6px; }
       .field input { font-size: 16px; min-height: 44px; }
       .approve-btn { min-height: 48px; font-size: 14.5px; }
     }
@@ -336,8 +366,14 @@
         var freightEnabled = o.freightEnabled !== undefined ? Boolean(o.freightEnabled) : (comm.freightEnabled !== false);
         var gstEnabled = o.gstEnabled !== undefined ? Boolean(o.gstEnabled) : (comm.gstEnabled !== false);
 
-        var baseAcc = Number(comm.baseAdditionalAccessories !== undefined ? comm.baseAdditionalAccessories : comm.additionalAccessories) || 0;
-        var baseApp = Number(comm.baseAppliances !== undefined ? comm.baseAppliances : comm.appliances) || 0;
+        var rawAcc = (o.additionalAccessories !== undefined && o.additionalAccessories !== null && o.additionalAccessories !== '')
+          ? o.additionalAccessories
+          : (comm.baseAdditionalAccessories !== undefined ? comm.baseAdditionalAccessories : comm.additionalAccessories);
+        var rawApp = (o.appliances !== undefined && o.appliances !== null && o.appliances !== '')
+          ? o.appliances
+          : (comm.baseAppliances !== undefined ? comm.baseAppliances : comm.appliances);
+        var baseAcc = Math.max(0, Math.round(Number(rawAcc) || 0));
+        var baseApp = Math.max(0, Math.round(Number(rawApp) || 0));
         var acc = accessoriesEnabled ? baseAcc : 0;
         var app = appliancesEnabled ? baseApp : 0;
 
@@ -351,11 +387,14 @@
         var discP = Math.max(0, Math.min(100, Number(o.discountPercent !== undefined ? o.discountPercent : comm.discountPercent) || 0));
         var adpP = Math.max(0, Math.min(100, Number(o.adpPercent !== undefined ? o.adpPercent : comm.adpPercent) || 0));
         var discAmt = Math.round(woodwork * (discP / 100));
-        // Discount on Design Charge (replaces ADP)
+        var woodworkAfterDiscount = Math.max(0, woodwork - discAmt);
+        // Discount on Design Charge (replaces ADP): net value after % discount on Design Charges
         var adpAmt = Math.round(designAmt * (adpP / 100));
+        var designAfterDiscount = Math.max(0, designAmt - adpAmt);
         var totalSavings = discAmt + adpAmt;
 
-        var netBeforeTax = Math.max(0, Math.round(woodwork + acc + app + designAmt + freightAmt - totalSavings));
+        // Grand Total (Without GST) = Net Woodwork + Net Design Charge (+ enabled Accessories, Appliances, Freight)
+        var netBeforeTax = Math.max(0, Math.round(woodworkAfterDiscount + designAfterDiscount + acc + app + freightAmt));
         var gstAmt = gstEnabled ? Math.round(netBeforeTax * (gstPct / 100)) : 0;
         var grandTotal = netBeforeTax + gstAmt;
 
@@ -374,8 +413,10 @@
           freightAmount: freightAmt,
           discountPercent: discP,
           discountAmount: discAmt,
+          woodworkAfterDiscount: woodworkAfterDiscount,
           adpPercent: adpP,
           adpAmount: adpAmt,
+          designAfterDiscount: designAfterDiscount,
           totalSavings: totalSavings,
           netBeforeTax: netBeforeTax,
           gstEnabled: gstEnabled,
@@ -390,15 +431,24 @@
         var card = document.querySelector('[data-var-idx="' + idx + '"]');
         if (!card || !v) return;
         var c = v.commercial;
+
         var accRow = card.querySelector('[data-row="accessories"]');
         if (accRow) accRow.style.opacity = c.accessoriesEnabled ? '' : '0.5';
-        var accEl = card.querySelector('[data-f="accAmt"]');
-        if (accEl) accEl.textContent = c.accessoriesEnabled ? fmtINR(c.additionalAccessories) : 'Disabled';
+        var accInputWrap = card.querySelector('[data-wrap="accInput"]');
+        var accDis = card.querySelector('[data-f="accDisabled"]');
+        var accInp = card.querySelector('[data-kind="accessories"]');
+        if (accInputWrap) accInputWrap.style.display = c.accessoriesEnabled ? 'inline-flex' : 'none';
+        if (accDis) accDis.style.display = c.accessoriesEnabled ? 'none' : 'inline';
+        if (accInp && document.activeElement !== accInp) accInp.value = String(c.baseAdditionalAccessories || 0);
 
         var appRow = card.querySelector('[data-row="appliances"]');
         if (appRow) appRow.style.opacity = c.appliancesEnabled ? '' : '0.5';
-        var appEl = card.querySelector('[data-f="appAmt"]');
-        if (appEl) appEl.textContent = c.appliancesEnabled ? fmtINR(c.appliances) : 'Disabled';
+        var appInputWrap = card.querySelector('[data-wrap="appInput"]');
+        var appDis = card.querySelector('[data-f="appDisabled"]');
+        var appInp = card.querySelector('[data-kind="appliances"]');
+        if (appInputWrap) appInputWrap.style.display = c.appliancesEnabled ? 'inline-flex' : 'none';
+        if (appDis) appDis.style.display = c.appliancesEnabled ? 'none' : 'inline';
+        if (appInp && document.activeElement !== appInp) appInp.value = String(c.baseAppliances || 0);
 
         var dEl = card.querySelector('[data-f="designAmt"]');
         if (dEl) dEl.textContent = fmtINR(c.designAmount);
@@ -408,8 +458,16 @@
         var frtEl = card.querySelector('[data-f="freightAmt"]');
         if (frtEl) frtEl.textContent = c.freightEnabled ? fmtINR(c.freightAmount) : 'Disabled';
 
-        card.querySelector('[data-f="discAmt"]').textContent = c.discountAmount > 0 ? ('- ' + fmtINR(c.discountAmount)) : fmtINR(0);
-        card.querySelector('[data-f="adpAmt"]').textContent = c.adpAmount > 0 ? ('- ' + fmtINR(c.adpAmount)) : fmtINR(0);
+        var discCell = card.querySelector('[data-f="discAmt"]');
+        if (discCell) {
+          discCell.innerHTML = '<span>' + fmtINR(c.woodworkAfterDiscount) + '</span>' +
+            (c.discountAmount > 0 ? ('<span class="disc-saved-hint">Saved ' + fmtINR(c.discountAmount) + '</span>') : '');
+        }
+        var adpCell = card.querySelector('[data-f="adpAmt"]');
+        if (adpCell) {
+          adpCell.innerHTML = '<span>' + fmtINR(c.designAfterDiscount) + '</span>' +
+            (c.adpAmount > 0 ? ('<span class="disc-saved-hint">Saved ' + fmtINR(c.adpAmount) + '</span>') : '');
+        }
         card.querySelector('[data-f="netBeforeTax"]').textContent = fmtINR(c.netBeforeTax);
 
         var gstRow = card.querySelector('[data-row="gst"]');
@@ -475,11 +533,21 @@
             '<tr><td><b>Modular Woodwork Subtotal</b></td><td class="num"><b>' + fmtINR(c.woodworkSubtotal) + '</b></td></tr>' +
             '<tr data-row="accessories" style="' + (c.accessoriesEnabled ? '' : 'opacity:0.5;') + '">' +
             '  <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="accessoriesEnabled"' + (c.accessoriesEnabled ? ' checked' : '') + '> <b>Additional Accessories</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
-            '  <td class="num" data-f="accAmt">' + (c.accessoriesEnabled ? fmtINR(c.additionalAccessories) : 'Disabled') + '</td>' +
+            '  <td class="num">' +
+            '    <span class="amt-input-wrap" data-wrap="accInput" style="display:' + (c.accessoriesEnabled ? 'inline-flex' : 'none') + ';">' +
+            '      <span>₹</span><input type="number" step="100" min="0" class="amt-input" data-idx="' + idx + '" data-kind="accessories" value="' + esc(c.baseAdditionalAccessories || 0) + '" placeholder="0">' +
+            '    </span>' +
+            '    <span data-f="accDisabled" style="display:' + (c.accessoriesEnabled ? 'none' : 'inline') + ';color:#64748B;">Disabled</span>' +
+            '  </td>' +
             '</tr>' +
             '<tr data-row="appliances" style="' + (c.appliancesEnabled ? '' : 'opacity:0.5;') + '">' +
             '  <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="appliancesEnabled"' + (c.appliancesEnabled ? ' checked' : '') + '> <b>Appliances</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
-            '  <td class="num" data-f="appAmt">' + (c.appliancesEnabled ? fmtINR(c.appliances) : 'Disabled') + '</td>' +
+            '  <td class="num">' +
+            '    <span class="amt-input-wrap" data-wrap="appInput" style="display:' + (c.appliancesEnabled ? 'inline-flex' : 'none') + ';">' +
+            '      <span>₹</span><input type="number" step="100" min="0" class="amt-input" data-idx="' + idx + '" data-kind="appliances" value="' + esc(c.baseAppliances || 0) + '" placeholder="0">' +
+            '    </span>' +
+            '    <span data-f="appDisabled" style="display:' + (c.appliancesEnabled ? 'none' : 'inline') + ';color:#64748B;">Disabled</span>' +
+            '  </td>' +
             '</tr>' +
             '<tr class="discount-row">' +
             '  <td><div class="disc-input-wrap"><b>Design Charges (%):</b> ' +
@@ -495,13 +563,13 @@
             '  <td><div class="disc-input-wrap"><b>Discount on Wood Work (%):</b> ' +
             '    <input type="number" step="0.5" min="0" max="100" class="disc-input" data-idx="' + idx + '" data-kind="discount" value="' + esc(c.discountPercent || 0) + '">' +
             '    <span>%</span></div></td>' +
-            '  <td class="num" style="color:#B91C1C;font-weight:700;" data-f="discAmt">' + (c.discountAmount > 0 ? ('- ' + fmtINR(c.discountAmount)) : fmtINR(0)) + '</td>' +
+            '  <td class="num" style="color:#08231B;font-weight:700;" data-f="discAmt"><span>' + fmtINR(c.woodworkAfterDiscount) + '</span>' + (c.discountAmount > 0 ? ('<span class="disc-saved-hint">Saved ' + fmtINR(c.discountAmount) + '</span>') : '') + '</td>' +
             '</tr>' +
             '<tr class="discount-row">' +
             '  <td><div class="disc-input-wrap"><b>Discount on Design Charge (%):</b> ' +
             '    <input type="number" step="0.5" min="0" max="100" class="disc-input" data-idx="' + idx + '" data-kind="adp" value="' + esc(c.adpPercent || 0) + '">' +
             '    <span>%</span></div></td>' +
-            '  <td class="num" style="color:#B91C1C;font-weight:700;" data-f="adpAmt">' + (c.adpAmount > 0 ? ('- ' + fmtINR(c.adpAmount)) : fmtINR(0)) + '</td>' +
+            '  <td class="num" style="color:#08231B;font-weight:700;" data-f="adpAmt"><span>' + fmtINR(c.designAfterDiscount) + '</span>' + (c.adpAmount > 0 ? ('<span class="disc-saved-hint">Saved ' + fmtINR(c.adpAmount) + '</span>') : '') + '</td>' +
             '</tr>' +
             '<tr><td><b>Grand Total (Without GST)</b></td><td class="num"><b data-f="netBeforeTax">' + fmtINR(c.netBeforeTax) + '</b></td></tr>' +
             '<tr data-row="gst" style="' + (c.gstEnabled ? '' : 'opacity:0.5;') + '">' +
@@ -539,10 +607,14 @@
             var el = card.querySelector('[data-toggle="' + name + '"]');
             return el ? el.checked : true;
           };
+          var accInput = card.querySelector('[data-kind="accessories"]');
+          var appInput = card.querySelector('[data-kind="appliances"]');
           return {
             designPercent: card.querySelector('[data-kind="design"]').value,
             discountPercent: card.querySelector('[data-kind="discount"]').value,
             adpPercent: card.querySelector('[data-kind="adp"]').value,
+            additionalAccessories: accInput ? accInput.value : 0,
+            appliances: appInput ? appInput.value : 0,
             accessoriesEnabled: getChk('accessoriesEnabled'),
             appliancesEnabled: getChk('appliancesEnabled'),
             freightEnabled: getChk('freightEnabled'),
@@ -550,7 +622,7 @@
           };
         }
 
-        main.querySelectorAll('.disc-input, .rev-toggle').forEach(function (el) {
+        main.querySelectorAll('.disc-input, .amt-input, .rev-toggle').forEach(function (el) {
           var ev = el.type === 'checkbox' ? 'change' : 'input';
           el.addEventListener(ev, function () {
             var i = Number(this.getAttribute('data-idx'));
@@ -574,6 +646,8 @@
                 designPercent: Number(v.commercial.designPercent),
                 discountPercent: Number(v.commercial.discountPercent) || 0,
                 adpPercent: Number(v.commercial.adpPercent) || 0,
+                additionalAccessories: Number(v.commercial.baseAdditionalAccessories) || 0,
+                appliances: Number(v.commercial.baseAppliances) || 0,
                 accessoriesEnabled: v.commercial.accessoriesEnabled !== false,
                 appliancesEnabled: v.commercial.appliancesEnabled !== false,
                 freightEnabled: v.commercial.freightEnabled !== false,

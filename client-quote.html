@@ -1182,10 +1182,16 @@
           cRows.push(['Freight Charges', String(comm.freightPercent !== undefined ? comm.freightPercent : 2.5) + '%', fmtINR(comm.freightAmount || 0)]);
         }
         if (Number(comm.discountAmount || 0) > 0) {
-          cRows.push(['Discount on Wood Work', String(comm.discountPercent || 0) + '% Off', '- ' + fmtINR(comm.discountAmount)]);
+          var wwAfter = comm.woodworkAfterDiscount !== undefined
+            ? Number(comm.woodworkAfterDiscount)
+            : Math.max(0, Math.round((Number(comm.woodworkSubtotal) || 0) - (Number(comm.discountAmount) || 0)));
+          cRows.push(['Discount on Wood Work', String(comm.discountPercent || 0) + '% Off', fmtINR(wwAfter)]);
         }
         if (Number(comm.adpAmount || 0) > 0) {
-          cRows.push(['Discount on Design Charge', String(comm.adpPercent || 0) + '% Off', '- ' + fmtINR(comm.adpAmount)]);
+          var dcAfter = comm.designAfterDiscount !== undefined
+            ? Number(comm.designAfterDiscount)
+            : Math.max(0, Math.round((Number(comm.designAmount) || 0) - (Number(comm.adpAmount) || 0)));
+          cRows.push(['Discount on Design Charge', String(comm.adpPercent || 0) + '% Off', fmtINR(dcAfter)]);
         }
         cRows.push(['Grand Total (Without GST)', 'Net Estimate', fmtINR(comm.netBeforeTax || 0)]);
         if (gstEnabled) {

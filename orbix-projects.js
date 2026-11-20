@@ -324,6 +324,163 @@
     searchQuery: '',
     dbStatus: null,
     vpsSyncStatus: 'connected',
+    _saveSeq: 0,
+    _saveInFlight: false,
+    _saveQueued: null,
+    _openRequestSeq: 0,
+    _localDirtySeq: 0,
+    _dirtyProjectId: null,
+    _isAwaitingHydration: false,
+    _hasUnsavedChanges: false,
+    _lastCloudPauseAt: 0,
+
+    markProjectDirty: function (projectId) {
+      var pid = projectId || this.activeProjectId;
+      if (pid) this._dirtyProjectId = String(pid);
+      this._localDirtySeq = (this._localDirtySeq || 0) + 1;
+      this._hasUnsavedChanges = true;
+    },
+
+    _isExplicitDestructiveAction: function (action) {
+      if (!action) return false;
+      var raw = (typeof action === 'object') ? (action.actionName || action.type || '') : String(action);
+      var act = raw.toLowerCase().trim();
+      if (!act) return false;
+      return (
+        act === 'clear_all' ||
+        act === 'user_delete_all' ||
+        act === 'clear plan' ||
+        act === 'delete' ||
+        act === 'delete_selected' ||
+        act === 'delete_furniture' ||
+        act === 'delete furniture' ||
+        act === 'undo' ||
+        act === 'redo' ||
+        act === 'reset_project' ||
+        act.indexOf('clear') !== -1 ||
+        act.indexOf('delete') !== -1
+      );
+    },
+
+    _countPlanElements: function (obj) {
+      var res = { walls: 0, furniture: 0, openings: 0, rooms: 0, stairs: 0, total: 0, lastModified: 0 };
+      if (!obj || typeof obj !== 'object') return res;
+      var rootPlan = null;
+      var inner = null;
+      if (obj.data && obj.data.plan && typeof obj.data.plan === 'object') {
+        rootPlan = obj.data.plan;
+        inner = (rootPlan.plan && typeof rootPlan.plan === 'object') ? rootPlan.plan : rootPlan;
+      } else if (obj.plan && typeof obj.plan === 'object') {
+        rootPlan = obj;
+        inner = (obj.plan.plan && typeof obj.plan.plan === 'object') ? obj.plan.plan : obj.plan;
+      } else {
+        rootPlan = obj;
+        inner = obj;
+      }
+      if (inner && typeof inner === 'object') {
+        res.walls = Array.isArray(inner.walls) ? inner.walls.length : 0;
+        res.furniture = Array.isArray(inner.furniture) ? inner.furniture.length : 0;
+        res.openings = Array.isArray(inner.openings) ? inner.openings.length : 0;
+        res.rooms = Array.isArray(inner.rooms) ? inner.rooms.length : 0;
+        res.stairs = Array.isArray(inner.stairs) ? inner.stairs.length : 0;
+        if (inner.floorsData && typeof inner.floorsData === 'object') {
+          var fw = 0, ff = 0, fo = 0, fs = 0;
+          for (var fk in inner.floorsData) {
+            if (!Object.prototype.hasOwnProperty.call(inner.floorsData, fk)) continue;
+            var fd = inner.floorsData[fk];
+            if (!fd || typeof fd !== 'object') continue;
+            if (Array.isArray(fd.walls)) fw += fd.walls.length;
+            if (Array.isArray(fd.furniture)) ff += fd.furniture.length;
+            if (Array.isArray(fd.openings)) fo += fd.openings.length;
+            if (Array.isArray(fd.stairs)) fs += fd.stairs.length;
+          }
+          if (fw > res.walls) res.walls = fw;
+          if (ff > res.furniture) res.furniture = ff;
+          if (fo > res.openings) res.openings = fo;
+          if (fs > res.stairs) res.stairs = fs;
+        }
+      }
+      if (res.furniture === 0 && obj.data && Array.isArray(obj.data.units)) {
+        res.furniture = obj.data.units.length;
+      }
+      res.lastModified = Number((rootPlan && rootPlan._lastModified) || (inner && inner._lastModified) || obj._lastModified || 0) || 0;
+      res.total = res.walls + res.furniture + res.openings + res.stairs;
+      return res;
+    },
+
+    _stripHeavyLocalData: function (planObj) {
+      if (!planObj || typeof planObj !== 'object') return planObj;
+      try {
+        var copy = JSON.parse(JSON.stringify(planObj));
+        var scrubUnderlay = function (u) {
+          if (u && typeof u === 'object' && typeof u.dataUrl === 'string' && u.dataUrl.length > 32000) {
+            u.dataUrl = '';
+            u._storedInIDB = true;
+          }
+        };
+        if (copy.plan && typeof copy.plan === 'object') {
+          scrubUnderlay(copy.plan.underlay);
+          if (copy.plan.floorsData && typeof copy.plan.floorsData === 'object') {
+            for (var fk in copy.plan.floorsData) {
+              if (Object.prototype.hasOwnProperty.call(copy.plan.floorsData, fk) && copy.plan.floorsData[fk]) {
+                scrubUnderlay(copy.plan.floorsData[fk].underlay);
+              }
+            }
+          }
+        } else {
+          scrubUnderlay(copy.underlay);
+        }
+        return copy;
+      } catch (_) {
+        return planObj;
+      }
+    },
+
+    _safeLocalSet: function (key, valueStr) {
+      if (typeof localStorage === 'undefined') return false;
+      try {
+        localStorage.setItem(key, valueStr);
+        return true;
+      } catch (err) {
+        try {
+          var activeSuffix = this.activeProjectId ? ('_' + String(this.activeProjectId)) : '';
+          var toRemove = [];
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (!k || k === key) continue;
+            if (k.indexOf('orbix_underlay_') === 0) {
+              toRemove.push(k);
+            } else if (k.indexOf('orbix_project_') === 0 && (!activeSuffix || k.slice(-activeSuffix.length) !== activeSuffix)) {
+              toRemove.push(k);
+            }
+          }
+          for (var r = 0; r < toRemove.length; r++) {
+            try { localStorage.removeItem(toRemove[r]); } catch (_) { }
+          }
+          localStorage.setItem(key, valueStr);
+          return true;
+        } catch (err2) {
+          console.warn('[OrbixProjects] localStorage quota full for key ' + key + ':', err2 && err2.message ? err2.message : err2);
+          return false;
+        }
+      }
+    },
+
+    _persistLightweightProjectList: function () {
+      if (!this.projects || !this.currentUser) return;
+      try {
+        var self = this;
+        var lightList = this.projects.map(function (p) {
+          if (!p || !p.data || !p.data.plan) return p;
+          return Object.assign({}, p, {
+            data: Object.assign({}, p.data, {
+              plan: self._stripHeavyLocalData(p.data.plan)
+            })
+          });
+        });
+        this._safeLocalSet('orbix_local_projects_' + this.currentUser.id, JSON.stringify(lightList));
+      } catch (_) { }
+    },
 
     getApiBase: function () {
       try {
@@ -492,10 +649,18 @@
         window.addEventListener('pagehide', function () {
           if (self.currentUser) self.flushImmediateSave();
         });
+        if (typeof document !== 'undefined') {
+          document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden' && self.currentUser) {
+              self.flushImmediateSave();
+            }
+          });
+        }
         window.addEventListener('online', function () {
+          self._cloudSyncPaused = false;
           self.setSaveIndicator('saved', 'Online');
-          if (self._hasPendingOfflineSave && self.currentUser) {
-            self.saveActiveProject();
+          if ((self._hasPendingOfflineSave || self._hasUnsavedChanges) && self.currentUser) {
+            self.saveActiveProject({ immediate: true });
           }
         });
         window.addEventListener('offline', function () {
@@ -1007,9 +1172,7 @@
           // Merge remote projects with local projects without blowing away drafts
           self.projects = self._mergeProjects(self.projects || [], remoteList);
 
-          try {
-            localStorage.setItem(localKey, JSON.stringify(self.projects));
-          } catch (e) { }
+          self._persistLightweightProjectList();
 
           self.renderProjectsList();
           self.renderSharedCopyAlert();
@@ -1327,9 +1490,14 @@
 
       var prevId = this.activeProjectId;
       if (prevId && id && String(prevId) !== String(id)) {
+        if (this._saveDebounce) {
+          clearTimeout(this._saveDebounce);
+          this._saveDebounce = null;
+        }
         if (typeof this.flushImmediateSave === 'function') {
           this.flushImmediateSave();
         }
+        this._saveQueued = null;
         this.disposeSceneResources();
         if (window.S) {
           window.S.units = [];
@@ -1337,18 +1505,24 @@
         }
       }
 
+      var openSeq = ++this._openRequestSeq;
+      var openDirtySeq = this._localDirtySeq;
       this.activeProjectId = id;
+      this._hasUnsavedChanges = false;
+
       if (this.currentUser) {
-        try {
-          localStorage.setItem('orbix_active_proj_' + this.currentUser.id, id);
-        } catch (e) { }
+        this._safeLocalSet('orbix_active_proj_' + this.currentUser.id, String(id));
       }
-      try {
-        if (id) localStorage.setItem('orbix_active_project_id', String(id));
-      } catch (e) { }
+      if (id) {
+        this._safeLocalSet('orbix_active_project_id', String(id));
+      }
+
+      var cachedStats = this._countPlanElements(project);
+      var hasCachedPlan = !!(project && project.data && project.data.plan && (cachedStats.total > 0 || (project.data.plan.plan && Array.isArray(project.data.plan.plan.walls))));
+      this._isAwaitingHydration = !hasCachedPlan;
 
       // 1. Immediately switch view and load workspace without waiting for async API!
-      self._loadProjectIntoWorkspace(project, switchView);
+      self._loadProjectIntoWorkspace(project, switchView, { skipAutoSave: true });
 
       // 2. Fetch fresh live project from PostgreSQL in background
       OrbixProjects.apiFetch('/api/projects/' + id)
@@ -1357,46 +1531,64 @@
           return r.json();
         })
         .then(function (data) {
-          var liveProj = (data && (data.project || (data.id && data))) || null;
-          if (liveProj) {
-            self._loadProjectIntoWorkspace(liveProj, false);
+          // Guard 1: Abort if the user switched to a different project while this fetch was in flight!
+          if (openSeq !== self._openRequestSeq || String(self.activeProjectId) !== String(id)) {
+            return;
           }
+          self._isAwaitingHydration = false;
+          var liveProj = (data && (data.project || (data.id && data))) || null;
+          if (!liveProj) return;
+
+          if (Array.isArray(self.projects)) {
+            var pIdx = self.projects.findIndex(function (p) { return p && String(p.id) === String(id); });
+            if (pIdx !== -1) {
+              self.projects[pIdx] = Object.assign({}, self.projects[pIdx], liveProj);
+            }
+          }
+
+          // Guard 2: If the user ALREADY edited walls/units while GET was in flight,
+          // DO NOT wipe their new work with the older server snapshot!
+          var userEditedDuringFetch = (self._dirtyProjectId === String(id) && self._localDirtySeq > openDirtySeq);
+          if (userEditedDuringFetch) {
+            console.log('[OrbixProjects] Preserved in-progress local edits made while live project hydrated for ' + id + '.');
+            if (window.OrbixUI && window.OrbixUI.project) {
+              var curP = window.OrbixUI.project;
+              curP.meta = curP.meta || {};
+              if (liveProj.title || liveProj.name) curP.meta.title = liveProj.title || liveProj.name;
+            }
+            self.saveActiveProject({ immediate: true });
+            return;
+          }
+
+          self._loadProjectIntoWorkspace(liveProj, false, { skipAutoSave: true, isHydration: true });
         })
         .catch(function (err) {
+          if (openSeq === self._openRequestSeq) {
+            self._isAwaitingHydration = false;
+          }
           console.warn('[OrbixProjects] Live fetch background update offline:', err);
         });
     },
 
-    _loadProjectIntoWorkspace: function (project, switchView) {
+    _loadProjectIntoWorkspace: function (project, switchView, opts) {
       var self = this;
+      var loadOpts = opts || {};
       var activeId = project.id || self.activeProjectId;
       if (activeId) {
         self.activeProjectId = activeId;
         if (typeof window !== 'undefined' && window.OrbixLiveSync && typeof window.OrbixLiveSync.joinProject === 'function') {
           window.OrbixLiveSync.joinProject(activeId);
         }
-        try {
-          var uId = self.currentUser ? self.currentUser.id : 'anon';
-          localStorage.setItem('orbix_active_proj_' + uId, String(activeId));
-          localStorage.setItem('orbix_active_project_id', String(activeId));
-        } catch (e) { }
+        var uId = self.currentUser ? self.currentUser.id : 'anon';
+        self._safeLocalSet('orbix_active_proj_' + uId, String(activeId));
+        self._safeLocalSet('orbix_active_project_id', String(activeId));
       }
 
-      function countFurn(obj) {
-        if (!obj) return 0;
-        if (obj.plan && Array.isArray(obj.plan.furniture)) return obj.plan.furniture.length;
-        if (obj.data && obj.data.plan) {
-          if (obj.data.plan.plan && Array.isArray(obj.data.plan.plan.furniture)) return obj.data.plan.plan.furniture.length;
-          if (Array.isArray(obj.data.plan.furniture)) return obj.data.plan.furniture.length;
-        }
-        if (Array.isArray(obj.furniture)) return obj.furniture.length;
-        return 0;
-      }
-
-      // 1. Check if we have a newer local storage draft for this specific project (retains units across hard refresh & offline)
+      // 1. Check if we have a newer local storage draft for this specific project (retains walls & units across hard refresh & offline)
       var uIdKey = self.currentUser ? self.currentUser.id : 'anon';
       var userKey = 'orbix_project_' + uIdKey + '_' + activeId;
       var localPlanRaw = null;
+      var localDraftTs = 0;
       try {
         localPlanRaw = localStorage.getItem(userKey);
         if (!localPlanRaw) {
@@ -1410,16 +1602,24 @@
             var draftMatches = !!(draftObj && draftObj.projectId && String(draftObj.projectId) === String(activeId));
             if (draftMatches && draftObj.plan) {
               localPlanRaw = JSON.stringify(draftObj.plan);
+              localDraftTs = Number(draftObj.timestamp || draftObj.savedAt || 0) || 0;
             }
           }
         }
       } catch (e) { }
 
       var planToLoad = null;
+      var serverStats = self._countPlanElements(project);
+      var serverUpdatedMs = Math.max(
+        serverStats.lastModified || 0,
+        project.updatedAt ? new Date(project.updatedAt).getTime() : 0,
+        project.updated_at ? new Date(project.updated_at).getTime() : 0
+      );
+
       var inMemProj = (window.OrbixUI && window.OrbixUI.project) ? window.OrbixUI.project : null;
       var inMemId = inMemProj ? String(inMemProj._projectId || (inMemProj.meta && inMemProj.meta.id) || inMemProj.id || '') : '';
       var inMemSameProj = !!(activeId && inMemId && inMemId === String(activeId));
-      var curInMemoryCount = inMemSameProj ? countFurn(inMemProj) : 0;
+      var inMemStats = inMemSameProj ? self._countPlanElements(inMemProj) : { walls: 0, furniture: 0, total: 0, lastModified: 0 };
 
       if (localPlanRaw) {
         try {
@@ -1427,24 +1627,27 @@
           var localProjId = String(parsedLocal._projectId || (parsedLocal.meta && parsedLocal.meta.id) || parsedLocal.id || '');
           var belongsToProject = !activeId || !localProjId || localProjId === String(activeId);
           if (belongsToProject) {
-            var localCount = countFurn(parsedLocal);
-            var serverCount = countFurn(project);
-            var serverUpdatedMs = project.updatedAt ? new Date(project.updatedAt).getTime() : 0;
-            var localNewer = !!(parsedLocal._lastModified && (!serverUpdatedMs || parsedLocal._lastModified >= serverUpdatedMs));
-            if (localNewer || (serverCount === 0 && localCount > 0)) {
+            var localStats = self._countPlanElements(parsedLocal);
+            var localModMs = Math.max(localStats.lastModified || 0, localDraftTs || 0);
+            var localNewer = !!(localModMs > 0 && (!serverUpdatedMs || localModMs > serverUpdatedMs));
+            var serverEmptyButLocalHasWork = !!(serverStats.total === 0 && localStats.total > 0);
+            var serverMissingWalls = !!(serverStats.walls === 0 && localStats.walls > 0 && (!serverUpdatedMs || localModMs >= serverUpdatedMs));
+            if (localNewer || serverEmptyButLocalHasWork || serverMissingWalls) {
               planToLoad = parsedLocal;
-              console.log('[Orbix Studio] Restored project-specific local draft (' + localCount + ' units) for ' + activeId + '.');
+              self._isAwaitingHydration = false;
+              console.log('[Orbix Studio] Restored project-specific local draft (' + localStats.walls + ' walls, ' + localStats.furniture + ' units) for ' + activeId + '.');
             }
           }
         } catch (e) { }
       }
 
-      // Preserve in-memory units ONLY when refreshing the SAME project (never leak a different project's work!)
-      if (!planToLoad && inMemSameProj && curInMemoryCount > 0) {
-        var serverCount2 = countFurn(project);
-        if (curInMemoryCount >= serverCount2) {
+      // Preserve in-memory walls & units ONLY when refreshing the SAME project (never leak a different project's work!)
+      if (!planToLoad && inMemSameProj && inMemStats.total > 0) {
+        var inMemNewer = !!(inMemStats.lastModified > 0 && (!serverUpdatedMs || inMemStats.lastModified >= serverUpdatedMs));
+        var inMemRicher = (inMemStats.total >= serverStats.total && inMemStats.walls >= serverStats.walls && inMemStats.furniture >= serverStats.furniture);
+        if (inMemNewer || (serverStats.total === 0 && inMemStats.total > 0) || (loadOpts.isHydration && inMemRicher && inMemStats.lastModified > 0)) {
           planToLoad = inMemProj;
-          console.log('[Orbix Studio] Preserved same-project in-memory units (' + curInMemoryCount + ' units).');
+          console.log('[Orbix Studio] Preserved same-project in-memory work (' + inMemStats.walls + ' walls, ' + inMemStats.furniture + ' units).');
         }
       }
 
@@ -1495,9 +1698,12 @@
         try { window.OrbixCore.healCollinearWalls(planToLoad); } catch (e) { }
       }
 
-      // Load 2D floor plan into OrbixUI
+      // Load 2D floor plan into OrbixUI (skipAutoSave=true so opening/hydrating NEVER writes an unhydrated skeleton back to DB!)
       if (window.OrbixUI && planToLoad && typeof window.OrbixUI.loadProject === 'function') {
-        window.OrbixUI.loadProject(planToLoad);
+        window.OrbixUI.loadProject(planToLoad, {
+          skipAutoSave: loadOpts.skipAutoSave !== false,
+          skipLocalSave: !!this._isAwaitingHydration
+        });
       }
 
       // 2. Synchronize 3D units strictly synchronized with live project
@@ -1573,6 +1779,12 @@
 
     autoSaveWorkingProject: function () {
       if (!this.currentUser) return;
+      if (window.OrbixUI && window.OrbixUI._isProjectLoading) return;
+      if (this._isAwaitingHydration) return;
+      if (this._saveInFlight) return;
+      // Only run the 15s safety-net save if there are actually unsaved or offline-queued edits
+      if (!this._hasUnsavedChanges && !this._hasPendingOfflineSave) return;
+
       var activeId = this.activeProjectId;
       if (!activeId) {
         try {
@@ -1581,75 +1793,20 @@
       }
       if (!activeId) return;
 
-      // Strictly verify activeId belongs to this user's project list
-      var project = this.projects.find(function (p) { return p.id === activeId; });
-      if (!project) return;
-
       var currentPlan = (window.OrbixUI && window.OrbixUI.project) ? window.OrbixUI.project : null;
-      var currentUnits = (window.S && Array.isArray(window.S.units)) ? window.S.units : null;
+      if (!currentPlan) return;
 
-      if (!currentPlan && !currentUnits) return;
+      // Cross-project safety check: never auto-save a plan belonging to a different project ID
+      var planId = String(currentPlan._projectId || (currentPlan.meta && currentPlan.meta.id) || '');
+      if (planId && planId !== String(activeId)) return;
 
-      project.data = project.data || {};
-      if (currentPlan) project.data.plan = currentPlan;
-      if (currentUnits) project.data.units = currentUnits;
-
-      var fCount = (project.data.plan && project.data.plan.plan && project.data.plan.plan.furniture)
-        ? project.data.plan.plan.furniture.length : 0;
-      project.units_count = fCount || (project.data.units ? project.data.units.length : 0);
-
-      // Save user-scoped local backup
-      try {
-        if (project.data.plan) {
-          localStorage.setItem('orbix_project_' + this.currentUser.id + '_' + activeId, JSON.stringify(project.data.plan));
-        }
-        localStorage.setItem('orbix_active_proj_' + this.currentUser.id, activeId);
-      } catch (e) { }
-
-      var self = this;
-
-      // If cloud sync is paused due to unauthenticated session or offline mode, retain locally without repeated failed network requests
-      if (self._cloudSyncPaused || self._isUnauthorized) {
-        self.setSaveIndicator('offline');
-        return;
-      }
-
-      self.setSaveIndicator('saving');
-
-      // Sync live to PostgreSQL backend
-      OrbixProjects.apiFetch('/api/projects/' + activeId, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          data: project.data,
-          units_count: project.units_count
-        })
-      })
-        .then(function (r) {
-          if (!r.ok) {
-            if (r.status === 401) {
-              self._cloudSyncPaused = true;
-              self._isUnauthorized = true;
-            }
-            throw new Error('HTTP ' + r.status);
-          }
-          self._cloudSyncPaused = false;
-          self._isUnauthorized = false;
-          return r.json().catch(function () { return {}; });
-        })
-        .then(function () {
-          var now = new Date();
-          var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          self.setSaveIndicator('saved', timeStr);
-        })
-        .catch(function (err) {
-          // Gracefully indicate saved locally without spamming red/yellow console warnings
-          if (!self._lastOfflineLogged || Date.now() - self._lastOfflineLogged > 60000) {
-            self._lastOfflineLogged = Date.now();
-            console.log('[AutoSave] Working in offline mode (draft saved locally in browser/app storage)');
-          }
-          self.setSaveIndicator('offline');
-        });
+      // Delegate to unified serialized saveActiveProject pipeline (prevents racing PUTs!)
+      this.saveActiveProject({
+        plan: currentPlan,
+        units: (window.S && Array.isArray(window.S.units)) ? window.S.units : [],
+        immediate: true,
+        changeAction: 'interval_autosave'
+      });
     },
 
     setSaveIndicator: function (status, timeStr) {
@@ -1669,6 +1826,8 @@
     },
 
     flushImmediateSave: function () {
+      if (window.OrbixUI && window.OrbixUI._isProjectLoading) return;
+      if (this._isAwaitingHydration) return;
       if (window.OrbixUI && typeof window.OrbixUI.syncActiveFloorData === 'function') {
         window.OrbixUI.syncActiveFloorData();
       }
@@ -1676,70 +1835,211 @@
       if (!currentPlan) return;
       var currentUnits = (window.S && Array.isArray(window.S.units)) ? window.S.units : [];
       var activeId = this.activeProjectId || (this.currentUser ? localStorage.getItem('orbix_active_proj_' + this.currentUser.id) : null);
-      var now = Date.now();
-      currentPlan._lastModified = now;
+      if (!activeId) return;
 
+      // Cross-project safety check
+      var planId = String(currentPlan._projectId || (currentPlan.meta && currentPlan.meta.id) || '');
+      if (planId && planId !== String(activeId)) return;
+
+      var now = Date.now();
+      currentPlan._projectId = String(activeId);
+      if (!currentPlan._lastModified || this._hasUnsavedChanges) {
+        currentPlan._lastModified = now;
+      }
+
+      // 1. Synchronous lightweight localStorage backup (strips huge base64 underlays to avoid QuotaExceededError)
+      var uId = this.currentUser ? this.currentUser.id : 'anon';
+      var lightPlan = this._stripHeavyLocalData(currentPlan);
       try {
         var draft = {
-          projectId: activeId,
-          userId: this.currentUser ? this.currentUser.id : 'anon',
-          timestamp: now,
-          plan: currentPlan,
+          projectId: String(activeId),
+          userId: uId,
+          timestamp: currentPlan._lastModified,
+          plan: lightPlan,
           units: currentUnits
         };
-        localStorage.setItem('orbix_working_project_draft', JSON.stringify(draft));
-        if (activeId) {
-          var userKey = 'orbix_project_' + (this.currentUser ? this.currentUser.id : 'anon') + '_' + activeId;
-          localStorage.setItem(userKey, JSON.stringify(currentPlan));
-        }
+        this._safeLocalSet('orbix_working_project_draft', JSON.stringify(draft));
+        this._safeLocalSet('orbix_project_' + uId + '_' + activeId, JSON.stringify(lightPlan));
       } catch (e) {
         console.warn('Flush immediate save error:', e);
       }
+
+      // 2. If there is a pending debounced save or unsaved edits, push to server immediately using keepalive!
+      var hadPendingDebounce = !!this._saveDebounce;
+      if (this._saveDebounce) {
+        clearTimeout(this._saveDebounce);
+        this._saveDebounce = null;
+      }
+      if ((this._hasUnsavedChanges || hadPendingDebounce || this._hasPendingOfflineSave) &&
+          this.currentUser &&
+          !(typeof navigator !== 'undefined' && navigator.onLine === false)) {
+        var project = this.projects ? this.projects.find(function (p) { return p && String(p.id) === String(activeId); }) : null;
+        var pData = project ? Object.assign({}, project.data || {}, { plan: currentPlan, units: currentUnits }) : { plan: currentPlan, units: currentUnits };
+        var stats = this._countPlanElements({ data: pData });
+        var bodyStr = JSON.stringify({
+          data: pData,
+          units_count: stats.furniture,
+          changeAction: 'flush_unload',
+          allowEmptyPlan: false
+        });
+        var fetchOpts = {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: bodyStr
+        };
+        // Browser keepalive limit is 64 KB — use keepalive when within limit so tab close/refresh completes the PUT!
+        if (bodyStr.length < 60000) {
+          fetchOpts.keepalive = true;
+        }
+        try {
+          OrbixProjects.apiFetch('/api/projects/' + activeId, fetchOpts).catch(function () { });
+        } catch (_) { }
+      }
+    },
+
+    _dispatchServerSave: function (payload) {
+      var self = this;
+      if (!payload || !payload.activeId) return;
+
+      // Serialize in-flight saves: if a PUT is already in flight, coalesce into _saveQueued so
+      // an older network request can NEVER arrive after and overwrite a newer save!
+      if (self._saveInFlight) {
+        if (self._saveQueued && self._saveQueued.allowEmptyPlan && !payload.allowEmptyPlan) {
+          payload.allowEmptyPlan = true;
+        }
+        self._saveQueued = payload;
+        return;
+      }
+
+      self._saveInFlight = true;
+      self.setSaveIndicator('saving');
+
+      OrbixProjects.apiFetch('/api/projects/' + payload.activeId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          data: payload.data,
+          units_count: payload.unitsCount,
+          changeAction: payload.changeAction || 'autosave',
+          allowEmptyPlan: !!payload.allowEmptyPlan
+        })
+      })
+        .then(function (r) {
+          if (!r.ok) {
+            if (r.status === 401) {
+              self._cloudSyncPaused = true;
+              self._isUnauthorized = true;
+              self._lastCloudPauseAt = Date.now();
+            }
+            if (r.status === 404) {
+              console.warn('[OrbixProjects] Project ' + payload.activeId + ' not found on server, stopping autosave for stale ID.');
+              if (String(self.activeProjectId) === String(payload.activeId)) {
+                self.activeProjectId = null;
+              }
+              try {
+                if (self.currentUser) localStorage.removeItem('orbix_active_proj_' + self.currentUser.id);
+                localStorage.removeItem('orbix_active_project_id');
+              } catch (_) { }
+            }
+            throw new Error('HTTP ' + r.status);
+          }
+          self._cloudSyncPaused = false;
+          self._isUnauthorized = false;
+          return r.json().catch(function () { return {}; });
+        })
+        .then(function () {
+          var d = new Date();
+          var timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          self.setSaveIndicator('saved', timeStr);
+          self._hasPendingOfflineSave = false;
+          if (!self._saveQueued && payload.saveSeq >= self._saveSeq) {
+            self._hasUnsavedChanges = false;
+          }
+        })
+        .catch(function () {
+          if (!self._lastOfflineLogged || Date.now() - self._lastOfflineLogged > 60000) {
+            self._lastOfflineLogged = Date.now();
+            console.log('[AutoSave] Working in offline mode (draft saved locally in browser/app storage)');
+          }
+          self.setSaveIndicator('offline');
+          self._hasPendingOfflineSave = true;
+        })
+        .then(function () {
+          self._saveInFlight = false;
+          if (self._saveQueued) {
+            var next = self._saveQueued;
+            self._saveQueued = null;
+            self._dispatchServerSave(next);
+          }
+        });
     },
 
     saveActiveProject: function (dataUpdates) {
       var self = this;
+      var opts = dataUpdates || {};
+      if (window.OrbixUI && window.OrbixUI._isProjectLoading) return;
+      if (this._isAwaitingHydration && !opts.force) return;
+
       if (window.OrbixUI && typeof window.OrbixUI.syncActiveFloorData === 'function') {
         window.OrbixUI.syncActiveFloorData();
       }
       var activeId = this.activeProjectId || (this.currentUser ? localStorage.getItem('orbix_active_proj_' + this.currentUser.id) : null);
-      var project = activeId ? this.projects.find(function (p) { return p.id === activeId; }) : null;
+      var project = activeId && this.projects ? this.projects.find(function (p) { return p && String(p.id) === String(activeId); }) : null;
 
-      var currentPlan = (dataUpdates && dataUpdates.plan) || (window.OrbixUI && window.OrbixUI.project);
-      var currentUnits = (dataUpdates && dataUpdates.units) || (window.S && window.S.units) || [];
+      var currentPlan = (opts && opts.plan) || (window.OrbixUI && window.OrbixUI.project);
+      var currentUnits = (opts && opts.units) || (window.S && window.S.units) || [];
       if (!currentPlan) return;
 
-      var now = Date.now();
-      currentPlan._lastModified = now;
+      // Cross-project safety check: do NOT save Plan A under Project B's ID
+      var existingPlanId = String(currentPlan._projectId || (currentPlan.meta && currentPlan.meta.id) || '');
+      if (activeId && existingPlanId && existingPlanId !== String(activeId)) {
+        console.warn('[OrbixProjects] Blocked cross-project save attempt (' + existingPlanId + ' != ' + activeId + ').');
+        return;
+      }
 
-      // 1. Instant Synchronous LocalStorage Save (0ms delay - 100% hard refresh & offline safe)
+      var now = Date.now();
+      var seq = ++this._saveSeq;
+      if (activeId) currentPlan._projectId = String(activeId);
+      currentPlan._lastModified = Math.max(now, (currentPlan._lastModified || 0) + 1);
+      currentPlan._saveSeq = seq;
+      this.markProjectDirty(activeId);
+
+      // 1. Instant Synchronous Lightweight LocalStorage Save (0ms delay - immune to underlay QuotaExceededError!)
+      var uKey = self.currentUser ? self.currentUser.id : 'anon';
+      var lightPlan = self._stripHeavyLocalData(currentPlan);
       try {
-        localStorage.setItem('orbix_working_project_draft', JSON.stringify({
+        self._safeLocalSet('orbix_working_project_draft', JSON.stringify({
           projectId: activeId ? String(activeId) : '',
-          userId: self.currentUser ? self.currentUser.id : 'anon',
-          timestamp: now,
-          plan: currentPlan,
+          userId: uKey,
+          timestamp: currentPlan._lastModified,
+          plan: lightPlan,
           units: currentUnits
         }));
         if (activeId) {
-          var uKey = self.currentUser ? self.currentUser.id : 'anon';
           var userKey = 'orbix_project_' + uKey + '_' + activeId;
-          localStorage.setItem(userKey, JSON.stringify(currentPlan));
-          localStorage.setItem('orbix_active_proj_' + uKey, String(activeId));
-          localStorage.setItem('orbix_active_project_id', String(activeId));
+          self._safeLocalSet(userKey, JSON.stringify(lightPlan));
+          self._safeLocalSet('orbix_active_proj_' + uKey, String(activeId));
+          self._safeLocalSet('orbix_active_project_id', String(activeId));
         }
       } catch (e) { }
 
+      var stats = self._countPlanElements({ data: { plan: currentPlan, units: currentUnits } });
       if (project) {
         project.data = project.data || {};
         project.data.plan = currentPlan;
         project.data.units = currentUnits;
-        var planFurn = (currentPlan.plan && currentPlan.plan.furniture) || (currentPlan.furniture) || [];
-        project.units_count = planFurn.length || (currentUnits ? currentUnits.length : 0);
+        project.units_count = stats.furniture;
+        project.updatedAt = new Date(currentPlan._lastModified).toISOString();
+        self._persistLightweightProjectList();
       }
 
-      // 2. Check offline status or paused cloud sync
-      if ((typeof navigator !== 'undefined' && !navigator.onLine) || self._cloudSyncPaused || self._isUnauthorized) {
+      // 2. Check offline status or paused cloud sync (auto-retry after 15s cooldown on transient 401/network blips)
+      var pauseExpired = !!(self._cloudSyncPaused && self._lastCloudPauseAt && (Date.now() - self._lastCloudPauseAt > 15000));
+      if (pauseExpired && self.currentUser) {
+        self._cloudSyncPaused = false;
+        self._isUnauthorized = false;
+      }
+      if ((typeof navigator !== 'undefined' && navigator.onLine === false) || self._cloudSyncPaused || self._isUnauthorized) {
         self.setSaveIndicator('offline');
         self._hasPendingOfflineSave = true;
         return;
@@ -1747,56 +2047,60 @@
 
       self.setSaveIndicator('saving');
 
-      // 3. Debounced backend save to PostgreSQL
-      clearTimeout(this._saveDebounce);
-      this._saveDebounce = setTimeout(function () {
+      var changeAction = opts.changeAction || 'autosave';
+      var allowEmptyPlan = !!(opts.allowEmptyPlan || self._isExplicitDestructiveAction(changeAction));
+      // Preserve allowEmptyPlan across rapid debounced edits
+      if (allowEmptyPlan) {
+        self._pendingAllowEmptyPlan = true;
+        self._pendingChangeAction = changeAction;
+      } else if (!self._pendingChangeAction) {
+        self._pendingChangeAction = changeAction;
+      }
+
+      var scheduleRun = function () {
         if (!activeId) {
           self.setSaveIndicator('offline');
           return;
         }
-        var pData = project ? project.data : { plan: currentPlan, units: currentUnits };
-        var pUnitsCount = project ? project.units_count : ((currentPlan.plan && currentPlan.plan.furniture) ? currentPlan.plan.furniture.length : 0);
+        if (self.activeProjectId && String(self.activeProjectId) !== String(activeId)) {
+          return; // Active project changed before debounce fired
+        }
+        var finalAllowEmpty = !!self._pendingAllowEmptyPlan;
+        var finalAction = self._pendingChangeAction || changeAction;
+        self._pendingAllowEmptyPlan = false;
+        self._pendingChangeAction = null;
 
-        OrbixProjects.apiFetch('/api/projects/' + activeId, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            data: pData,
-            units_count: pUnitsCount
-          })
-        })
-          .then(function (r) {
-            if (!r.ok) {
-              if (r.status === 401) {
-                self._cloudSyncPaused = true;
-                self._isUnauthorized = true;
-              }
-              if (r.status === 404) {
-                console.warn('[OrbixProjects] Project ' + activeId + ' not found on server, stopping autosave for stale ID.');
-                self.activeProjectId = null;
-                try {
-                  if (self.currentUser) localStorage.removeItem('orbix_active_proj_' + self.currentUser.id);
-                  localStorage.removeItem('orbix_active_project_id');
-                } catch (_) { }
-              }
-              throw new Error('HTTP ' + r.status);
-            }
-            self._cloudSyncPaused = false;
-            self._isUnauthorized = false;
-            var d = new Date();
-            var timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            self.setSaveIndicator('saved', timeStr);
-            self._hasPendingOfflineSave = false;
-          })
-          .catch(function (e) {
-            if (!self._lastOfflineLogged || Date.now() - self._lastOfflineLogged > 60000) {
-              self._lastOfflineLogged = Date.now();
-              console.log('[AutoSave] Working in offline mode (draft saved locally in browser/app storage)');
-            }
-            self.setSaveIndicator('offline');
-            self._hasPendingOfflineSave = true;
-          });
-      }, 400);
+        var liveProject = self.projects ? self.projects.find(function (p) { return p && String(p.id) === String(activeId); }) : project;
+        var pData = liveProject
+          ? Object.assign({}, liveProject.data || {}, { plan: currentPlan, units: currentUnits })
+          : { plan: currentPlan, units: currentUnits };
+        var pStats = self._countPlanElements({ data: pData });
+
+        // Clone snapshot at dispatch time so later mutations never half-mutate the JSON being sent
+        var snapshotData;
+        try { snapshotData = JSON.parse(JSON.stringify(pData)); } catch (_) { snapshotData = pData; }
+
+        self._dispatchServerSave({
+          activeId: String(activeId),
+          data: snapshotData,
+          unitsCount: pStats.furniture,
+          changeAction: finalAction,
+          allowEmptyPlan: finalAllowEmpty,
+          saveSeq: seq
+        });
+      };
+
+      // 3. Debounced (or immediate) serialized backend save to PostgreSQL
+      clearTimeout(this._saveDebounce);
+      if (opts.immediate) {
+        this._saveDebounce = null;
+        scheduleRun();
+      } else {
+        this._saveDebounce = setTimeout(function () {
+          self._saveDebounce = null;
+          scheduleRun();
+        }, 400);
+      }
     },
 
     // ═══════════════════════════════════════════════════════════════════════════

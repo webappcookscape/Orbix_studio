@@ -426,10 +426,19 @@ class MockPrismaClient {
   }
 
   _write(file, data) {
+    const tmpFile = `${file}.tmp.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2, 6)}`;
     try {
-      fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+      const payload = JSON.stringify(data, null, 2);
+      fs.writeFileSync(tmpFile, payload, 'utf8');
+      fs.renameSync(tmpFile, file);
     } catch (err) {
-      console.warn('MockPrismaClient storage notice:', err.message);
+      try { if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile); } catch (_) {}
+      // Windows EPERM fallback if target file is momentarily locked by antivirus/reader
+      try {
+        fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+      } catch (err2) {
+        console.warn('MockPrismaClient storage notice:', err2.message || err.message);
+      }
     }
   }
 
