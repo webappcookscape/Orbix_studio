@@ -1287,6 +1287,35 @@
     });
   }
 
+  // Automatically updates unit name and code when its width changes (e.g. FM 60 -> FM 45, WM 60 -> WM 45, Floor Base 600 -> Floor Base 450)
+  function updateUnitNameForWidth(fn, oldW, newW) {
+    if (!fn || !oldW || !newW || oldW === newW) return fn;
+    var oldCm = Math.round(oldW / 10);
+    var newCm = Math.round(newW / 10);
+    var oldMm = Math.round(oldW);
+    var newMm = Math.round(newW);
+
+    function replaceWidthInString(str) {
+      if (!str || typeof str !== 'string') return str;
+      // 1. Try matching mm first (e.g. 600 -> 450)
+      var regMm = new RegExp('(\\b|_|-)' + oldMm + '(\\b|_|-)', 'i');
+      if (regMm.test(str)) {
+        return str.replace(regMm, function (m, p1, p2) { return p1 + newMm + p2; });
+      }
+      // 2. Try matching cm (e.g. 60 -> 45) after a code prefix or at word boundary
+      var regCm = new RegExp('(\\b|[a-zA-Z]+[-_ ]*)' + oldCm + '(\\b|_|-|\\s|$)', 'i');
+      if (regCm.test(str)) {
+        return str.replace(regCm, function (m, p1, p2) { return p1 + newCm + p2; });
+      }
+      return str;
+    }
+
+    if (fn.name) fn.name = replaceWidthInString(fn.name);
+    if (fn.code) fn.code = replaceWidthInString(fn.code);
+    if (fn.catalogItemId) fn.catalogItemId = replaceWidthInString(fn.catalogItemId);
+    return fn;
+  }
+
   // Calculates corner angle in degrees between two walls meeting at jointPt
   function calculateCornerAngle(w1, w2, jointPt) {
     if (!w1 || !w2 || !jointPt) return 90;
@@ -1690,14 +1719,14 @@
       w.end.y = w.start.y + dir.y * targetCenterlineL;
       newPt = w.end;
     }
-    // Also move connected adjoining walls that meet at this corner junction
+    // Also move connected adjoining walls that meet at this corner junction (tolerance up to 60mm)
     if (plan && plan.walls) {
       plan.walls.forEach(function (other) {
         if (!other || !other.start || !other.end || other.id === w.id) return;
-        if (Vec2.dist(other.start, oldPt) < 5) {
+        if (Vec2.dist(other.start, oldPt) < 60) {
           other.start.x = newPt.x;
           other.start.y = newPt.y;
-        } else if (Vec2.dist(other.end, oldPt) < 5) {
+        } else if (Vec2.dist(other.end, oldPt) < 60) {
           other.end.x = newPt.x;
           other.end.y = newPt.y;
         }
@@ -1773,7 +1802,14 @@
       // In modular architectural design, kitchen base units and sinks sit directly under windows!
       // Sinks and base units are only blocked if the window is a floor-to-ceiling opening (sill < 400).
       var isSinkOrCounterFixture = !!(f.isDecor || f.decorType === 'sink' || (f.name && /sink|basin|hob|cooktop/i.test(f.name)));
-      var isBaseUnit = !isWallU && (f.category === 'kitchen_base' || f.category === 'vanity' || (f.name && /base/i.test(f.name)) || (top1 <= 1050));
+      var isBaseUnit = !isWallU && (
+        f.category === 'kitchen_base' || f.category === 'kitchen_fm' || f.category === 'kitchen_corner' ||
+        f.category === 'kitchen_drawers' || f.category === 'vanity' ||
+        /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(f.code || '') ||
+        /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(f.id || '') ||
+        (f.name && /base|drawer|sink/i.test(f.name)) ||
+        (top1 <= 1050 && elev1 < 300)
+      );
 
       if (isWindow && (isSinkOrCounterFixture || isBaseUnit) && opElev >= 700) {
         // Base units & sinks are allowed under windows with standard sill height
@@ -7701,6 +7737,7 @@
     createOpening: createOpening,
     createRoom: createRoom,
     createFurniturePlacement: createFurniturePlacement,
+    updateUnitNameForWidth: updateUnitNameForWidth,
     autoSplitWallAtJunctions: autoSplitWallAtJunctions,
     createStaircasePlacement: createStaircasePlacement,
     getStaircasePolygon: getStaircasePolygon,

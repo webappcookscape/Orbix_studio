@@ -4918,6 +4918,7 @@
       isStaircase: true,
       isFurniture: true,
       isFurnitureGroup: true,
+      furnitureId: stair.id,
       stairId: stair.id,
       stair: stair
     };

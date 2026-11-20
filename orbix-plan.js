@@ -2229,6 +2229,9 @@
             if (Core.detectRooms) Core.detectRooms(self.project);
             self.pushHistory('Move Room');
           }
+        } else if (self.dragState.type === 'move_stair') {
+          self.pushHistory('Move Staircase');
+          if (typeof self.onPlanChange === 'function') self.onPlanChange();
         }
         var wasMovingUnderlay = (self.dragState && self.dragState.type === 'move_underlay');
         self.dragState = null;
@@ -2441,6 +2444,50 @@
         }
       }
 
+      // 1b. Numeric and Imperial typing for stretching existing selected wall
+      var isSingleWallSelected = self.selected && self.selected.length === 1 && self.selected[0].type === 'wall';
+      if (isSingleWallSelected && !self.wallChainStart) {
+        var validKeyWall = (e.key >= '0' && e.key <= '9') || e.key === '.' || e.key === '\'' || e.key === '"' || e.key === ' ' ||
+          e.key.toLowerCase() === 'f' || e.key.toLowerCase() === 't' || e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'n' || e.key.toLowerCase() === 'm';
+        if (validKeyWall) {
+          e.preventDefault();
+          self.numericInputBuffer = (self.numericInputBuffer || '') + e.key;
+          self.render();
+          return;
+        }
+        if (e.key === 'Backspace' && self.numericInputBuffer && self.numericInputBuffer.length > 0) {
+          e.preventDefault();
+          self.numericInputBuffer = self.numericInputBuffer.slice(0, -1);
+          self.render();
+          return;
+        }
+        if (e.key === 'Enter' && self.numericInputBuffer && self.numericInputBuffer.trim().length > 0) {
+          e.preventDefault();
+          var w = (self.project && self.project.plan && self.project.plan.walls || []).find(function (item) { return item.id === self.selected[0].id; });
+          if (w) {
+            var targetInner = self.parseDimInput(self.numericInputBuffer);
+            if (targetInner > 50) {
+              var anchor = (w.startLocked === false && w.endLocked !== false) ? 'end' : 'start';
+              if (Core.setWallInnerLength) {
+                Core.setWallInnerLength(w, targetInner, self.project.plan, anchor);
+              }
+              if (Core.detectRooms) Core.detectRooms(self.project);
+              self.pushHistory('Stretch Wall (' + self.formatDim(targetInner) + ')');
+              self.numericInputBuffer = '';
+              self.render();
+              if (typeof window !== 'undefined' && window.OrbixUI) {
+                if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+                if (window.OrbixUI.updateInspector) window.OrbixUI.updateInspector();
+              }
+              return;
+            }
+          }
+          self.numericInputBuffer = '';
+          self.render();
+          return;
+        }
+      }
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         self.deleteSelected();
@@ -2456,7 +2503,14 @@
           return;
         }
 
-        // 2. If furniture units are explicitly selected in 2D, rotate ONLY those selected units!
+        // 1b. If currently placing a staircase, rotate the stair ghost preview!
+        if (self.activeTool === 'stair') {
+          self.stairRotY = ((self.stairRotY || 0) + Math.PI / 2) % (Math.PI * 2);
+          self.render();
+          return;
+        }
+
+        // 2. If furniture or stair units are explicitly selected in 2D, rotate ONLY those selected units!
         var rotated = false;
         for (var s = 0; s < self.selected.length; s++) {
           if (self.selected[s].type === 'furniture') {
@@ -2470,10 +2524,16 @@
               fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
               rotated = true;
             }
+          } else if (self.selected[s].type === 'stair') {
+            var stObj = (self.project.plan.stairs || []).find(function (st) { return st.id === self.selected[s].id; });
+            if (stObj) {
+              stObj.rotY = ((stObj.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+              rotated = true;
+            }
           }
         }
         if (rotated) {
-          self.pushHistory('Rotate Furniture');
+          self.pushHistory('Rotate Element');
           self.render();
           if (typeof window !== 'undefined' && window.OrbixUI) {
             if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
@@ -2484,20 +2544,6 @@
 
         // 3. When NO unit is clicked/selected in 2D, NEVER rotate any background unit!
         return;
-        // Staircase rotation
-        for (var sIdx = 0; sIdx < self.selected.length; sIdx++) {
-          if (self.selected[sIdx].type === 'stair') {
-            var stObj = (self.project.plan.stairs || []).find(function (st) { return st.id === self.selected[sIdx].id; });
-            if (stObj) {
-              stObj.rotY = ((stObj.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
-              rotated = true;
-            }
-          }
-        }
-        if (!rotated && (e.key === 'r' || e.key === 'R')) {
-          self.setTool('divider');
-          return;
-        }
       }
       if (e.key === 'Escape') {
         if (self.numericInputBuffer) {
@@ -3925,8 +3971,96 @@
         candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
       }
 
-      // Find all existing units on this same wall and on interfering elevation bands
+      // Magnetic attraction to wall corner edges and adjacent corner units (Item 6)
+      var snapCornerStartT = tMin + halfActiveW;
+      var snapCornerEndT = tMax - halfActiveW;
+      var isCornerSnap = false;
+      if (Math.abs(candT - snapCornerStartT) < 140) {
+        candT = snapCornerStartT;
+        bestWallSnap.badgeLabel = (tMin > 100) ? '✓ Snapped Flush to Corner Unit' : '✓ Snapped Flush to Corner Edge';
+        isCornerSnap = true;
+      } else if (Math.abs(candT - snapCornerEndT) < 140) {
+        candT = snapCornerEndT;
+        bestWallSnap.badgeLabel = (tMax < bwLen - 100) ? '✓ Snapped Flush to Corner Unit' : '✓ Snapped Flush to Corner Edge';
+        isCornerSnap = true;
+      }
+
+      // Find all existing units and openings on this same wall
       var occupiedIntervals = [];
+
+      // Openings on this wall (Windows & Doors) (Item 2)
+      var isSinkOrCounterFixture = !!(furn.isDecor || furn.decorType === 'sink' || (furn.name && /sink|basin|hob|cooktop/i.test(furn.name)));
+      var isBaseUnit = !isWallU && (
+        furn.category === 'kitchen_base' || furn.category === 'kitchen_fm' || furn.category === 'kitchen_corner' ||
+        furn.category === 'kitchen_drawers' || furn.category === 'vanity' ||
+        /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(furn.code || '') ||
+        /(^|\b|_|-)(fm|fcm|fbcm)($|\b|_|-|\d+)/i.test(furn.id || '') ||
+        (furn.name && /base|drawer|sink/i.test(furn.name)) ||
+        (fTop <= 1050 && fElev < 300)
+      );
+
+      var wallOpenings = (plan.openings || []).filter(function (op) { return op.wallId === bwWall.id; });
+      for (var woi = 0; woi < wallOpenings.length; woi++) {
+        var wOp = wallOpenings[woi];
+        var opW = wOp.width || (wOp.type === 'window' ? 1200 : 900);
+        var halfOpW = opW / 2;
+        var opCenter = wOp.offset;
+        var opSill = (wOp.sillHeight !== undefined) ? wOp.sillHeight : ((wOp.elevation !== undefined) ? wOp.elevation : (wOp.type === 'window' ? 900 : 0));
+        var opH = wOp.height || (wOp.type === 'window' ? 1200 : 2100);
+        var opTop = opSill + opH;
+
+        if (wOp.type === 'window') {
+          if ((isSinkOrCounterFixture || isBaseUnit) && opSill >= 700) {
+            // Base unit / sink fits cleanly under window!
+            // Provide magnetic snap centered directly under the window:
+            if (!isCornerSnap && Math.abs(candT - opCenter) < 140) {
+              candT = opCenter;
+              bestWallSnap.badgeLabel = '✓ Centered Under Window';
+            }
+          } else {
+            // Wall unit, tall cabinet, or low-sill window: cannot overlap window!
+            occupiedIntervals.push({
+              start: opCenter - halfOpW,
+              end: opCenter + halfOpW,
+              center: opCenter,
+              halfW: halfOpW,
+              isWindow: true
+            });
+            // Magnetic snap to left or right casing of window frame:
+            if (!isCornerSnap) {
+              var flushLeft = opCenter - halfOpW - halfActiveW;
+              var flushRight = opCenter + halfOpW + halfActiveW;
+              if (Math.abs(candT - flushLeft) < 120) {
+                candT = flushLeft;
+                bestWallSnap.badgeLabel = '✓ Snapped Flush to Window Frame';
+              } else if (Math.abs(candT - flushRight) < 120) {
+                candT = flushRight;
+                bestWallSnap.badgeLabel = '✓ Snapped Flush to Window Frame';
+              }
+            }
+          }
+        } else if (wOp.type === 'door') {
+          // Door openings cannot have units inside
+          occupiedIntervals.push({
+            start: opCenter - halfOpW,
+            end: opCenter + halfOpW,
+            center: opCenter,
+            halfW: halfOpW,
+            isDoor: true
+          });
+          if (!isCornerSnap) {
+            var dFlushLeft = opCenter - halfOpW - halfActiveW;
+            var dFlushRight = opCenter + halfOpW + halfActiveW;
+            if (Math.abs(candT - dFlushLeft) < 120) {
+              candT = dFlushLeft;
+              bestWallSnap.badgeLabel = '✓ Snapped Flush to Door Frame';
+            } else if (Math.abs(candT - dFlushRight) < 120) {
+              candT = dFlushRight;
+              bestWallSnap.badgeLabel = '✓ Snapped Flush to Door Frame';
+            }
+          }
+        }
+      }
 
       // B. Units on this same wall
       for (var fni = 0; fni < furnList.length; fni++) {
@@ -4030,6 +4164,7 @@
       if (!isCivilOrPanel && !isFreeMode) {
         var origCandT = candT;
         var didShift = false;
+        var shiftedAgainst = null;
         for (var iter = 0; iter < 4; iter++) {
           var collided = false;
           for (var oii = 0; oii < occupiedIntervals.length; oii++) {
@@ -4040,6 +4175,7 @@
             if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
               collided = true;
               didShift = true;
+              shiftedAgainst = occ;
               if (candT >= occ.center) {
                 // Push to positive side of existing unit
                 candT = occ.end + halfActiveW;
@@ -4072,7 +4208,13 @@
       };
       bestWallSnap.proj = finalProj;
       if (didShift) {
-        bestWallSnap.badgeLabel = '✓ Snapped Flush to Adjacent Unit';
+        if (shiftedAgainst && shiftedAgainst.isWindow) {
+          bestWallSnap.badgeLabel = '✓ Snapped Flush to Window Frame';
+        } else if (shiftedAgainst && shiftedAgainst.isDoor) {
+          bestWallSnap.badgeLabel = '✓ Snapped Flush to Door Frame';
+        } else {
+          bestWallSnap.badgeLabel = '✓ Snapped Flush to Adjacent Unit';
+        }
       }
 
       return bestWallSnap;
@@ -6479,6 +6621,31 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       // Direction arrow 2 in Segment 2 (last opening end to end B)
       var lastOpEndT = cleanDivs.length > 2 ? cleanDivs[cleanDivs.length - 2] : lMm;
       drawCoreArrow(lastOpEndT, lMm, 'B', '2');
+    }
+
+    // Floating keyboard input HUD for selected wall direct value input (Item 1)
+    if (isSelected && this.numericInputBuffer && !this.wallChainStart) {
+      var midWPt = { x: (w.start.x + w.end.x) / 2, y: (w.start.y + w.end.y) / 2 };
+      var sMid = this.worldToScreen(midWPt);
+      ctx.save();
+      ctx.font = '700 13px "IBM Plex Mono", monospace';
+      var parsedL = this.parseDimInput(this.numericInputBuffer);
+      var previewTxt = parsedL > 0 ? (' = ' + this.formatDim(parsedL)) : '';
+      var hudText = '⌨ Wall Length: [ ' + this.numericInputBuffer + ' ]' + previewTxt + '  (↵ Enter to apply, Esc to cancel)';
+      var htw = ctx.measureText(hudText).width;
+      ctx.fillStyle = '#1e3a8a';
+      ctx.strokeStyle = '#60a5fa';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(sMid.x - htw / 2 - 12, sMid.y - 14, htw + 24, 28, 6);
+      else ctx.rect(sMid.x - htw / 2 - 12, sMid.y - 14, htw + 24, 28);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(hudText, sMid.x, sMid.y);
+      ctx.restore();
     }
 
     ctx.restore();

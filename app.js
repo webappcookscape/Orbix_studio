@@ -3261,7 +3261,7 @@
       }
       if (target.y < 0) target.y = 0;
       if (target.y > 6000) target.y = 6000;
-      cam.pitch = Math.max(-85, Math.min(22, cam.pitch));
+      cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
       cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom));
       var yaw = cam.yaw * Math.PI / 180, el = (-cam.pitch) * Math.PI / 180;
       var safeZoom = Math.max(0.18, 1 + cam.zoom);
@@ -4674,7 +4674,7 @@
     scale = Math.max(0.05, Math.min((r.height * 0.72) / totalH, (r.width * 0.64) / span));
   }
   function camApply() {
-    cam.pitch = Math.max(-85, Math.min(22, cam.pitch));
+    cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
     cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom));
     if (GL.ok) { GL.apply(); return; }
     var s = scale * (1 + cam.zoom);
@@ -5060,19 +5060,23 @@
         var dx = e.clientX - prev.clientX;
         var dy = e.clientY - prev.clientY;
         if (prev.button === 2 || prev.button === 1 || e.shiftKey || studioCamMode === 'pan') {
-          // Pan camera target across 3D space (both Horizontal X-Z and Vertical Y up/down!)
+          // Pan camera target across 3D space with mathematically exact screen-space vectors (Horizontal & Vertical)
           var yawRad = cam.yaw * Math.PI / 180;
-          var pitchRad = (-cam.pitch) * Math.PI / 180;
+          var elRad = (-cam.pitch) * Math.PI / 180;
           var cosY = Math.cos(yawRad), sinY = Math.sin(yawRad);
-          // Adaptive pan speed: faster when zoomed out, slower when close-up
-          var panSpeed = Math.max(1.2, 4.5 / Math.max(0.1, (1 + cam.zoom * 0.18)));
+          var cosEl = Math.cos(elRad), sinEl = Math.sin(elRad);
+
+          // Adaptive pan speed proportional to distance from target for buttery-smooth tracking
+          var curDist = (GL.getDist ? GL.getDist() : 3500) / Math.max(0.18, 1 + cam.zoom);
+          var panSpeed = Math.max(0.8, Math.min(18.0, curDist * 0.0016));
+
           var tgt = GL.getTarget ? GL.getTarget() : null;
           if (tgt) {
-            tgt.x -= dx * cosY * panSpeed;
-            tgt.z += dx * sinY * panSpeed;
-            tgt.y += dy * Math.cos(pitchRad) * panSpeed;
-            tgt.x += dy * Math.sin(pitchRad) * sinY * panSpeed * 0.5;
-            tgt.z += dy * Math.sin(pitchRad) * cosY * panSpeed * 0.5;
+            // Screen-space Right vector R = (cosY, 0, -sinY)
+            // Screen-space Up vector U = (-sinY * sinEl, cosEl, -cosY * sinEl)
+            tgt.x += (-dx * cosY - dy * sinY * sinEl) * panSpeed;
+            tgt.y += (dy * cosEl) * panSpeed;
+            tgt.z += (dx * sinY - dy * cosY * sinEl) * panSpeed;
             tgt.y = Math.max(0, Math.min(6000, tgt.y));
           }
         } else {
@@ -5137,7 +5141,25 @@
       cam.pitch = 28;
       cam.zoom = 0;
       var tgt = GL.getTarget ? GL.getTarget() : null;
-      if (tgt) { tgt.x = 0; tgt.y = 800; tgt.z = 0; }
+      if (tgt) {
+        var pWalls = (window.OrbixUI && window.OrbixUI.editor && window.OrbixUI.editor.project && window.OrbixUI.editor.project.plan && window.OrbixUI.editor.project.plan.walls) || [];
+        if (pWalls.length > 0) {
+          var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+          pWalls.forEach(function (w) {
+            if (w.start) { minX = Math.min(minX, w.start.x); maxX = Math.max(maxX, w.start.x); minY = Math.min(minY, w.start.y); maxY = Math.max(maxY, w.start.y); }
+            if (w.end) { minX = Math.min(minX, w.end.x); maxX = Math.max(maxX, w.end.x); minY = Math.min(minY, w.end.y); maxY = Math.max(maxY, w.end.y); }
+          });
+          if (isFinite(minX) && isFinite(maxX)) {
+            tgt.x = (minX + maxX) / 2;
+            tgt.y = 800;
+            tgt.z = (minY + maxY) / 2;
+          } else {
+            tgt.x = 0; tgt.y = 800; tgt.z = 0;
+          }
+        } else {
+          tgt.x = 0; tgt.y = 800; tgt.z = 0;
+        }
+      }
       if (GL.ok && GL.frame) GL.frame('home');
       camApply();
       if (GL.ok) GL.settle();

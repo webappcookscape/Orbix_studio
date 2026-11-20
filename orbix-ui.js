@@ -1867,6 +1867,7 @@
               ed.pushHistory('Resize Wall Inner Length');
               ed.render();
               self.renderInspector(ed.selected);
+              if (self.render3DHome) self.render3DHome(true);
             }
           });
         }
@@ -1877,19 +1878,36 @@
             var targetL = ed.parseDimInput(e.target.value);
             if (targetL > 100) {
               var dir = Core.wallDirection(w);
-              if (w.startLocked === false && w.endLocked !== false) {
+              var anchor = (w.startLocked === false && w.endLocked !== false) ? 'end' : 'start';
+              var oldPt = (anchor === 'end') ? { x: w.start.x, y: w.start.y } : { x: w.end.x, y: w.end.y };
+              var newPt;
+              if (anchor === 'end') {
                 // Corner B is locked, Corner A released: resize wall anchored from Corner B
                 w.start.x = w.end.x - dir.x * targetL;
                 w.start.y = w.end.y - dir.y * targetL;
+                newPt = w.start;
               } else {
                 // Corner A is locked (or both locked): resize wall anchored from Corner A
                 w.end.x = w.start.x + dir.x * targetL;
                 w.end.y = w.start.y + dir.y * targetL;
+                newPt = w.end;
+              }
+              // Move connected adjoining walls meeting at this junction
+              if (ed.project && ed.project.plan && ed.project.plan.walls) {
+                ed.project.plan.walls.forEach(function (other) {
+                  if (!other || !other.start || !other.end || other.id === w.id) return;
+                  if (Core.Vec2.dist(other.start, oldPt) < 60) {
+                    other.start.x = newPt.x; other.start.y = newPt.y;
+                  } else if (Core.Vec2.dist(other.end, oldPt) < 60) {
+                    other.end.x = newPt.x; other.end.y = newPt.y;
+                  }
+                });
               }
               Core.detectRooms(ed.project);
               ed.pushHistory('Resize Wall');
               ed.render();
               self.renderInspector(ed.selected);
+              if (self.render3DHome) self.render3DHome(true);
             }
           });
         }
@@ -2855,7 +2873,18 @@
           elFurnW.addEventListener('change', function (e) {
             var newW = parseFloat(e.target.value);
             if (!(newW > 0)) return;
+            var oldW = fn.dimensions.W || 600;
             fn.dimensions.W = newW;
+
+            // Automatically update unit name and code for width (e.g. FM 60 -> FM 45 when width changed to 450mm)
+            if (Core.updateUnitNameForWidth) {
+              Core.updateUnitNameForWidth(fn, oldW, newW);
+              var inspTitleEl = document.querySelector('.insp-title') || document.getElementById('inspTitle');
+              if (inspTitleEl && fn.name) {
+                inspTitleEl.textContent = fn.name;
+              }
+            }
+
             if (fn.unitConfig && fn.unitConfig.fixedPanel && fn.unitConfig.fixedPanel.enabled) {
               var halfW = Math.round(newW / 2);
               fn.unitConfig.fixedPanel.width = halfW;

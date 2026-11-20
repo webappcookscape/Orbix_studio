@@ -158,3 +158,4 @@ console.log('  ✓ Reversed wall drawing directions lock into corner cleanly');
 console.log('\n================================================================');
 console.log('ALL FBCM & WBCM L-CORNER SNAPPING TESTS PASSED SUCCESSFULLY!');
 console.log('================================================================\n');
+
