@@ -403,6 +403,8 @@
             return r.json().then(function (data) {
               if (data.success && data.user) {
                 self.currentUser = data.user;
+                self._cloudSyncPaused = false;
+                self._isUnauthorized = false;
                 var existingExp = 0;
                 try { existingExp = Number(localStorage.getItem('orbix_session_expires_at')) || 0; } catch (_) { }
                 var exp = data.sessionExpiresAt || existingExp || (Date.now() + self.SESSION_TTL_MS);
@@ -412,14 +414,21 @@
                 } catch (e) { }
                 self.showApp();
                 self.updateUserUI();
+                if (self._hasPendingOfflineSave) {
+                  self.saveActiveProject();
+                }
               } else {
                 self.currentUser = null;
+                self._isUnauthorized = true;
+                self._cloudSyncPaused = true;
                 self.clearAuthStorage();
                 self.showLogin();
               }
             });
           } else if (r.status === 401) {
             self.currentUser = null;
+            self._isUnauthorized = true;
+            self._cloudSyncPaused = true;
             self.clearAuthStorage();
             self.showLogin();
           }
@@ -609,6 +618,8 @@
         if (typeof buildScene === 'function') buildScene();
       }
 
+      this._cloudSyncPaused = false;
+      this._isUnauthorized = false;
       this.showApp();
       this.updateUserUI();
       this.applyRolePermissions();
@@ -1593,6 +1604,13 @@
       } catch (e) { }
 
       var self = this;
+
+      // If cloud sync is paused due to unauthenticated session or offline mode, retain locally without repeated failed network requests
+      if (self._cloudSyncPaused || self._isUnauthorized) {
+        self.setSaveIndicator('offline');
+        return;
+      }
+
       self.setSaveIndicator('saving');
 
       // Sync live to PostgreSQL backend
@@ -1606,8 +1624,14 @@
       })
         .then(function (r) {
           if (!r.ok) {
+            if (r.status === 401) {
+              self._cloudSyncPaused = true;
+              self._isUnauthorized = true;
+            }
             throw new Error('HTTP ' + r.status);
           }
+          self._cloudSyncPaused = false;
+          self._isUnauthorized = false;
           return r.json().catch(function () { return {}; });
         })
         .then(function () {
@@ -1711,8 +1735,8 @@
         project.units_count = planFurn.length || (currentUnits ? currentUnits.length : 0);
       }
 
-      // 2. Check offline status
-      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      // 2. Check offline status or paused cloud sync
+      if ((typeof navigator !== 'undefined' && !navigator.onLine) || self._cloudSyncPaused || self._isUnauthorized) {
         self.setSaveIndicator('offline');
         self._hasPendingOfflineSave = true;
         return;
@@ -1738,14 +1762,26 @@
             units_count: pUnitsCount
           })
         })
-          .then(function () {
+          .then(function (r) {
+            if (!r.ok) {
+              if (r.status === 401) {
+                self._cloudSyncPaused = true;
+                self._isUnauthorized = true;
+              }
+              throw new Error('HTTP ' + r.status);
+            }
+            self._cloudSyncPaused = false;
+            self._isUnauthorized = false;
             var d = new Date();
             var timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             self.setSaveIndicator('saved', timeStr);
             self._hasPendingOfflineSave = false;
           })
           .catch(function (e) {
-            console.warn('Auto-save to backend failed (retained locally):', e);
+            if (!self._lastOfflineLogged || Date.now() - self._lastOfflineLogged > 60000) {
+              self._lastOfflineLogged = Date.now();
+              console.log('[AutoSave] Working in offline mode (draft saved locally in browser/app storage)');
+            }
             self.setSaveIndicator('offline');
             self._hasPendingOfflineSave = true;
           });
