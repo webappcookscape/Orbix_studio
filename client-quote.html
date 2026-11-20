@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1120">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="robots" content="noindex, nofollow, noarchive">
   <title>Cookscape — Protected Client Quotation</title>
   <link rel="icon" type="image/svg+xml" href="/icon.svg">
@@ -141,9 +143,10 @@
       background: #0f172a;
       border: 1px solid var(--border);
       color: #fff;
-      padding: 11px 13px;
-      border-radius: 8px;
-      font-size: 14px;
+      padding: 12px 14px;
+      border-radius: 9px;
+      font-size: 16px;
+      min-height: 46px;
       outline: none;
     }
 
@@ -157,9 +160,10 @@
       background: linear-gradient(135deg, var(--crimson), var(--crimson-dark));
       color: #fff;
       border: none;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 14px;
+      border-radius: 9px;
+      padding: 13px 16px;
+      font-size: 15px;
+      min-height: 48px;
       font-weight: 700;
       cursor: pointer;
     }
@@ -191,6 +195,7 @@
       display: none;
       flex-direction: column;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
     }
 
@@ -198,18 +203,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       background: var(--panel);
       border-bottom: 1px solid var(--border);
-      padding: 10px 18px;
+      padding: 10px 16px;
+      padding-top: max(10px, env(safe-area-inset-top));
       flex-shrink: 0;
+      z-index: 30;
     }
 
     .top-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       min-width: 0;
+      flex: 1;
     }
 
     .brand-mark {
@@ -287,9 +295,68 @@
       flex-shrink: 0;
     }
 
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 35;
+      background: rgba(2, 6, 23, 0.65);
+    }
+    .sidebar-backdrop.is-open { display: block; }
+
+    .mobile-bottom-bar {
+      display: none;
+    }
+
     @media (max-width: 900px) {
-      .sidebar { display: none; }
-      .sidebar.is-open { display: block; position: fixed; left: 0; top: 54px; bottom: 0; z-index: 40; box-shadow: 10px 0 30px rgba(0,0,0,0.6); }
+      .sidebar { display: none; width: min(82vw, 300px); }
+      .sidebar.is-open { display: block; position: fixed; left: 0; top: 52px; bottom: 0; z-index: 40; box-shadow: 10px 0 30px rgba(0,0,0,0.6); -webkit-overflow-scrolling: touch; }
+    }
+
+    @media (max-width: 768px) {
+      #loginScreen { padding: 14px; }
+      .auth-card { padding: 22px 18px; border-radius: 14px; }
+      .auth-title { font-size: 19px; }
+      .topbar { padding: 8px 10px; gap: 6px; min-height: 52px; }
+      .brand-mark { font-size: 11px; padding: 5px 7px; }
+      .deck-title { font-size: 13px; }
+      .deck-sub { display: none; }
+      .top-controls .desktop-only { display: none !important; }
+      .tool-btn { padding: 7px 10px; font-size: 12px; min-height: 36px; }
+      .stage-wrap {
+        padding: 10px 8px calc(82px + env(safe-area-inset-bottom)) 8px;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+      .slides-stack { gap: 14px; }
+      .canvas-frame { border-radius: 6px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); }
+      .mobile-bottom-bar {
+        display: flex;
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: max(10px, env(safe-area-inset-bottom));
+        z-index: 32;
+        background: rgba(17, 24, 39, 0.94);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 7px 10px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+      }
+      .mobile-bottom-bar .tool-btn {
+        min-height: 38px;
+        min-width: 38px;
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+      .mobile-bottom-bar .page-counter {
+        font-size: 12px;
+        padding: 6px 8px;
+      }
     }
 
     .sec-header {
@@ -346,6 +413,7 @@
     .stage-wrap {
       flex: 1;
       overflow: auto;
+      -webkit-overflow-scrolling: touch;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -369,6 +437,7 @@
       box-shadow: 0 24px 65px rgba(0, 0, 0, 0.65);
       overflow: hidden;
       flex-shrink: 0;
+      margin: 0 auto;
     }
 
     .canvas-frame.is-shielded {
@@ -395,7 +464,7 @@
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
-      touch-action: pan-y;
+      touch-action: pan-x pan-y;
     }
 
     #blurShield {
@@ -475,22 +544,36 @@
       </div>
 
       <div class="top-controls">
-        <button class="tool-btn" id="prevSlideBtn">◀ Prev</button>
-        <span class="page-counter" id="slideCounter">1 / 1</span>
-        <button class="tool-btn" id="nextSlideBtn">Next ▶</button>
-        <button class="tool-btn" id="zoomOutBtn" title="Zoom Out">−</button>
-        <button class="tool-btn" id="zoomResetBtn" title="Fit Screen">Fit</button>
-        <button class="tool-btn" id="zoomInBtn" title="Zoom In">+</button>
+        <button class="tool-btn desktop-only" id="prevSlideBtn">◀ Prev</button>
+        <span class="page-counter desktop-only" id="slideCounter">1 / 1</span>
+        <button class="tool-btn desktop-only" id="nextSlideBtn">Next ▶</button>
+        <button class="tool-btn desktop-only" id="zoomOutBtn" title="Zoom Out">−</button>
+        <button class="tool-btn desktop-only" id="zoomResetBtn" title="Fit Screen">Fit</button>
+        <button class="tool-btn desktop-only" id="zoomInBtn" title="Zoom In">+</button>
         <button class="tool-btn is-danger" id="portalLogoutBtn">Sign Out</button>
       </div>
     </header>
 
     <div class="workspace">
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
       <aside class="sidebar" id="slidesSidebar"></aside>
       <main class="stage-wrap" id="stageWrap">
         <div class="slides-stack" id="slidesStack"></div>
       </main>
     </div>
+
+    <nav class="mobile-bottom-bar" id="mobileBottomBar" aria-label="Slide controls">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button class="tool-btn" id="mobPrevBtn" aria-label="Previous Slide">◀</button>
+        <span class="page-counter" id="mobSlideCounter">1 / 1</span>
+        <button class="tool-btn" id="mobNextBtn" aria-label="Next Slide">▶</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button class="tool-btn" id="mobZoomOutBtn" aria-label="Zoom Out">−</button>
+        <button class="tool-btn" id="mobZoomResetBtn">Fit</button>
+        <button class="tool-btn" id="mobZoomInBtn" aria-label="Zoom In">+</button>
+      </div>
+    </nav>
   </div>
 
   <div id="blurShield">
@@ -1178,13 +1261,19 @@
       }
 
       function applyCanvasSize() {
-        var availW = Math.max(300, els.stageWrap.clientWidth - 40);
-        var availH = Math.max(400, els.stageWrap.clientHeight - 40);
-        var fitW = Math.min(availW, Math.max(availW * 0.92, availH * (CANVAS_W / CANVAS_H)));
-        if (availW > 960) fitW = Math.min(availW, Math.max(760, availH * (CANVAS_W / CANVAS_H)));
+        var isMobile = window.innerWidth <= 768;
+        var pad = isMobile ? 16 : 44;
+        var availW = Math.max(260, els.stageWrap.clientWidth - pad);
+        var availH = Math.max(380, els.stageWrap.clientHeight - pad);
+        var fitW = isMobile
+          ? availW
+          : Math.min(availW, Math.max(760, availH * (CANVAS_W / CANVAS_H)));
         var pxW = Math.round(fitW * state.zoomFactor) + 'px';
         for (var i = 0; i < state.slideFrames.length; i++) {
           state.slideFrames[i].style.width = pxW;
+        }
+        if (els.slidesStack) {
+          els.slidesStack.style.alignItems = state.zoomFactor > 1.05 ? 'flex-start' : 'center';
         }
       }
 
@@ -1192,9 +1281,18 @@
         var slides = (state.deck && state.deck.slides) || [];
         if (!slides.length) return;
         state.currentSlide = Math.max(0, Math.min(slides.length - 1, idx));
-        els.counter.textContent = (state.currentSlide + 1) + ' / ' + slides.length;
-        els.prevBtn.disabled = state.currentSlide === 0;
-        els.nextBtn.disabled = state.currentSlide === slides.length - 1;
+        var counterText = (state.currentSlide + 1) + ' / ' + slides.length;
+        els.counter.textContent = counterText;
+        var mobCnt = document.getElementById('mobSlideCounter');
+        if (mobCnt) mobCnt.textContent = counterText;
+        var isFirst = state.currentSlide === 0;
+        var isLast = state.currentSlide === slides.length - 1;
+        els.prevBtn.disabled = isFirst;
+        els.nextBtn.disabled = isLast;
+        var mobP = document.getElementById('mobPrevBtn');
+        var mobN = document.getElementById('mobNextBtn');
+        if (mobP) mobP.disabled = isFirst;
+        if (mobN) mobN.disabled = isLast;
         els.sidebar.querySelectorAll('.slide-nav-btn').forEach(function (btn) {
           btn.classList.toggle('is-active', Number(btn.getAttribute('data-idx')) === state.currentSlide);
         });
@@ -1518,23 +1616,41 @@
         installSecurityListeners();
         window.addEventListener('resize', applyCanvasSize);
 
+        var sbBackdrop = document.getElementById('sidebarBackdrop');
+        function closeSidebar() {
+          els.sidebar.classList.remove('is-open');
+          if (sbBackdrop) sbBackdrop.classList.remove('is-open');
+        }
         els.toggleSidebarBtn.addEventListener('click', function () {
-          els.sidebar.classList.toggle('is-open');
+          var opening = !els.sidebar.classList.contains('is-open');
+          els.sidebar.classList.toggle('is-open', opening);
+          if (sbBackdrop) sbBackdrop.classList.toggle('is-open', opening);
         });
+        if (sbBackdrop) sbBackdrop.addEventListener('click', closeSidebar);
+        els.sidebar.addEventListener('click', function (e) {
+          if (e.target && e.target.closest && e.target.closest('.slide-nav-btn')) closeSidebar();
+        });
+
+        function zoomIn() { state.zoomFactor = Math.min(2.2, +(state.zoomFactor + 0.2).toFixed(2)); applyCanvasSize(); }
+        function zoomOut() { state.zoomFactor = Math.max(0.7, +(state.zoomFactor - 0.2).toFixed(2)); applyCanvasSize(); }
+        function zoomReset() { state.zoomFactor = 1.0; applyCanvasSize(); }
+
         els.prevBtn.addEventListener('click', function () { goToSlide(state.currentSlide - 1); });
         els.nextBtn.addEventListener('click', function () { goToSlide(state.currentSlide + 1); });
-        els.zoomInBtn.addEventListener('click', function () {
-          state.zoomFactor = Math.min(2.0, state.zoomFactor + 0.15);
-          applyCanvasSize();
-        });
-        els.zoomOutBtn.addEventListener('click', function () {
-          state.zoomFactor = Math.max(0.65, state.zoomFactor - 0.15);
-          applyCanvasSize();
-        });
-        els.zoomResetBtn.addEventListener('click', function () {
-          state.zoomFactor = 1.0;
-          applyCanvasSize();
-        });
+        els.zoomInBtn.addEventListener('click', zoomIn);
+        els.zoomOutBtn.addEventListener('click', zoomOut);
+        els.zoomResetBtn.addEventListener('click', zoomReset);
+
+        var mobP = document.getElementById('mobPrevBtn');
+        var mobN = document.getElementById('mobNextBtn');
+        var mobZI = document.getElementById('mobZoomInBtn');
+        var mobZO = document.getElementById('mobZoomOutBtn');
+        var mobZR = document.getElementById('mobZoomResetBtn');
+        if (mobP) mobP.addEventListener('click', function () { goToSlide(state.currentSlide - 1); });
+        if (mobN) mobN.addEventListener('click', function () { goToSlide(state.currentSlide + 1); });
+        if (mobZI) mobZI.addEventListener('click', zoomIn);
+        if (mobZO) mobZO.addEventListener('click', zoomOut);
+        if (mobZR) mobZR.addEventListener('click', zoomReset);
         els.logoutBtn.addEventListener('click', async function () {
           try {
             await fetch('/api/client-portal/' + encodeURIComponent(shareToken) + '/logout', {

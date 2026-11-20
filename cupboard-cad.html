@@ -43650,6 +43650,11 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         '  </div>' +
         '</div>' +
 
+        '<div id="cqWaStatusBar" style="background:#F8FAFC;border:1px solid #CBD5E1;border-radius:8px;padding:8px 11px;margin-bottom:12px;font-size:11.5px;color:#334155;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">' +
+        '  <span id="cqWaStatusTxt">📲 Checking WhatsApp alert status (8838199428 &amp; 7418414780)...</span>' +
+        '  <button type="button" id="cqWaTestBtn" class="btn small" style="padding:3px 9px;font-size:11px;">📲 Test WhatsApp Alert</button>' +
+        '</div>' +
+
         '<div id="cqResultCard" style="display:none;background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:14px;margin-bottom:16px;"></div>' +
 
         '<div style="border-top:1px solid #E2E8F0;padding-top:12px;">' +
@@ -43730,6 +43735,61 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       body.querySelector('#cqRefreshListBtn').addEventListener('click', function () {
         self.loadExistingList(body, getActiveProjectId(app));
       });
+
+      (function loadWaStatus() {
+        var stTxt = body.querySelector('#cqWaStatusTxt');
+        var stBar = body.querySelector('#cqWaStatusBar');
+        var testBtn = body.querySelector('#cqWaTestBtn');
+        if (!stTxt) return;
+        fetch('/api/client-quotes/whatsapp-status', { credentials: 'same-origin', cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (!d || !d.success) return;
+            if (d.configured) {
+              stBar.style.background = '#ECFDF5';
+              stBar.style.borderColor = '#86EFAC';
+              stTxt.innerHTML = '✅ <b>WhatsApp Alerts Active</b> (' + esc(d.provider) + ') &rarr; <b>' + esc((d.recipients || []).join(', ')) + '</b>';
+            } else {
+              stBar.style.background = '#FEF2F2';
+              stBar.style.borderColor = '#FCA5A5';
+              stTxt.innerHTML = '⚠️ <b>WhatsApp Gateway Not Connected Yet</b> — Add CallMeBot / Meta Cloud / UltraMsg / Twilio keys in server <code>.env</code> so <b>8838199428 &amp; 7418414780</b> receive live messages.';
+            }
+          }).catch(function () {});
+
+        if (testBtn) {
+          testBtn.addEventListener('click', async function () {
+            var prev = this.textContent;
+            this.disabled = true;
+            this.textContent = '⏳ Sending...';
+            try {
+              var r = await fetch('/api/client-quotes/test-whatsapp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                  clientName: (body.querySelector('#cqClientName') && body.querySelector('#cqClientName').value.trim()) || 'Test Client',
+                  projectName: (proj.meta && proj.meta.title) || 'Orbix Project',
+                  projectId: getActiveProjectId(app),
+                  quoteCode: (body.querySelector('#cqQuoteCode') && body.querySelector('#cqQuoteCode').value.trim()) || 'TEST'
+                })
+              });
+              var d = await r.json();
+              if (!r.ok || !d.success) throw new Error(d.error || 'Test failed');
+              var delivered = (d.alert.results || []).filter(function (x) { return x.sent; }).length;
+              if (d.alert.provider === 'none') {
+                alert('WhatsApp API credentials are not configured in server .env yet.\nAlert message prepared for 8838199428 & 7418414780:\n\n' + d.alert.message);
+              } else {
+                alert('WhatsApp test dispatched via ' + d.alert.provider + ': ' + delivered + '/' + d.alert.recipients.length + ' delivered!');
+              }
+            } catch (err) {
+              alert(err.message || String(err));
+            } finally {
+              this.disabled = false;
+              this.textContent = prev;
+            }
+          });
+        }
+      })();
 
       body.querySelector('#cqCreateReviewBtn').addEventListener('click', async function () {
         showErr('');

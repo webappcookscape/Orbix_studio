@@ -8,6 +8,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { execFile } = require('child_process');
 const clientQuoteService = require('../services/clientQuoteService');
+const whatsappAlertService = require('../services/whatsappAlertService');
 
 const ROOT_DIR = path.join(__dirname, '../..');
 const PPTX_SCRIPT = path.join(ROOT_DIR, 'scripts', 'export_quote_pptx.py');
@@ -63,6 +64,33 @@ function decorateUrls(req, q) {
 }
 
 class ClientQuoteController {
+  // GET /api/client-quotes/whatsapp-status
+  async getWhatsappStatus(req, res) {
+    const provider = whatsappAlertService.detectActiveProvider();
+    res.json({
+      success: true,
+      configured: provider !== 'none',
+      provider,
+      recipients: whatsappAlertService.getAlertRecipients()
+    });
+  }
+
+  // POST /api/client-quotes/test-whatsapp
+  async sendTestWhatsappAlert(req, res, next) {
+    try {
+      const body = req.body || {};
+      const result = await whatsappAlertService.sendClientOpenedAlert({
+        clientName: body.clientName || 'Test Client',
+        projectName: body.projectName || 'Orbix Studio Test Project',
+        projectId: body.projectId || 'TEST-ID',
+        quoteCode: body.quoteCode || 'TEST-REF'
+      });
+      res.json({ success: true, alert: result });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   // POST /api/client-quotes/review (Stage 1: Password-free Head Review Link)
   async createReviewQuote(req, res, next) {
     try {
