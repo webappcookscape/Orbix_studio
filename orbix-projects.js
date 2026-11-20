@@ -1771,6 +1771,14 @@
                 self._cloudSyncPaused = true;
                 self._isUnauthorized = true;
               }
+              if (r.status === 404) {
+                console.warn('[OrbixProjects] Project ' + activeId + ' not found on server, stopping autosave for stale ID.');
+                self.activeProjectId = null;
+                try {
+                  if (self.currentUser) localStorage.removeItem('orbix_active_proj_' + self.currentUser.id);
+                  localStorage.removeItem('orbix_active_project_id');
+                } catch (_) { }
+              }
               throw new Error('HTTP ' + r.status);
             }
             self._cloudSyncPaused = false;

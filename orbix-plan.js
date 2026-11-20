@@ -2513,32 +2513,51 @@
 
         // 2. If furniture or stair units are explicitly selected in 2D, rotate ONLY those selected units!
         var rotated = false;
-        for (var s = 0; s < self.selected.length; s++) {
+        var planFurnList = (self.project && self.project.plan && Array.isArray(self.project.plan.furniture))
+          ? self.project.plan.furniture
+          : ((self.project && Array.isArray(self.project.furniture)) ? self.project.furniture : []);
+
+        for (var s = 0; s < (self.selected || []).length; s++) {
           if (self.selected[s].type === 'furniture') {
-            var fn = self.getFurniture ? self.getFurniture(self.selected[s].id) : null;
-            if (!fn) {
-              for (var f = 0; f < self.project.plan.furniture.length; f++) {
-                if (self.project.plan.furniture[f].id === self.selected[s].id) { fn = self.project.plan.furniture[f]; break; }
-              }
-            }
+            var selId = self.selected[s].id;
+            var fn = planFurnList.find(function (f) { return f.id === selId; });
             if (fn) {
               fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
               rotated = true;
             }
           } else if (self.selected[s].type === 'stair') {
-            var stObj = (self.project.plan.stairs || []).find(function (st) { return st.id === self.selected[s].id; });
+            var stObj = ((self.project && self.project.plan && self.project.plan.stairs) || []).find(function (st) { return st.id === self.selected[s].id; });
             if (stObj) {
               stObj.rotY = ((stObj.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
               rotated = true;
             }
           }
         }
+
+        // 2b. If no 2D unit is selected via canvas, check if active unit in 3D Studio or bottom rail is selected:
+        if (!rotated && window.S && window.S.units && window.S.active >= 0 && window.S.units[window.S.active]) {
+          var activeU = window.S.units[window.S.active];
+          var matchFn = planFurnList.find(function (f) {
+            return (activeU._furnId && f.id === activeU._furnId) || (activeU.label && f.name === activeU.label);
+          });
+          if (matchFn) {
+            matchFn.rotY = ((matchFn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+            self.selected = [{ type: 'furniture', id: matchFn.id }];
+            rotated = true;
+          }
+        }
+
         if (rotated) {
           self.pushHistory('Rotate Element');
           self.render();
           if (typeof window !== 'undefined' && window.OrbixUI) {
             if (window.OrbixUI.syncProjectUnitsTo3DStudio) window.OrbixUI.syncProjectUnitsTo3DStudio();
             if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+            if (window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(self.selected);
+            if (window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+            if (typeof window.toast === 'function') {
+              window.toast('↻ Unit rotated 90° (Spacebar)');
+            }
           }
           return;
         }

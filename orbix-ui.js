@@ -202,6 +202,7 @@
         project: this.project,
         onProjectChange: function (proj, changeContext) {
           self.project = proj;
+          if (self._isProjectLoading) return;
           self.queueAutoSave();
           if (typeof window !== 'undefined' && window.OrbixLiveSync && typeof window.OrbixLiveSync.broadcastChange === 'function') {
             window.OrbixLiveSync.broadcastChange(changeContext || 'project_change');
@@ -247,69 +248,164 @@
       this.updateUI();
       this.renderBOQ();
       this.restoreUnderlay(this.project);
+      this.initGlobalShortcuts();
 
       window.addEventListener('beforeunload', function () {
         if (self.flushAutoSave) self.flushAutoSave();
       });
     },
 
+    initGlobalShortcuts: function () {
+      var self = this;
+      if (this._globalShortcutsInitialized) return;
+      this._globalShortcutsInitialized = true;
+
+      window.addEventListener('keydown', function (e) {
+        var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+
+        // Spacebar or R / r to rotate active unit across 2D and 3D
+        if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R')) {
+          var didRotate = self.rotateActiveUnit();
+          if (didRotate) {
+            e.preventDefault();
+          }
+        }
+      });
+    },
+
+    rotateActiveUnit: function () {
+      var self = this;
+      var rotated = false;
+      var plan = self.getPlan();
+      var furnList = (plan && plan.furniture) || [];
+
+      // 1. If currently placing a new unit from catalog, rotate preview
+      if (self.editor && self.editor.furniturePreset) {
+        self.editor.furnitureRotY = ((self.editor.furnitureRotY || 0) + Math.PI / 2) % (Math.PI * 2);
+        self.editor.render();
+        return true;
+      }
+      if (self.editor && self.editor.activeTool === 'stair') {
+        self.editor.stairRotY = ((self.editor.stairRotY || 0) + Math.PI / 2) % (Math.PI * 2);
+        self.editor.render();
+        return true;
+      }
+
+      // 2. Check if 2D editor has an explicitly selected unit
+      if (self.editor && self.editor.selected && self.editor.selected.length > 0) {
+        for (var i = 0; i < self.editor.selected.length; i++) {
+          var sel = self.editor.selected[i];
+          if (sel.type === 'furniture') {
+            var fn = furnList.find(function (f) { return f.id === sel.id; });
+            if (fn) {
+              fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+              rotated = true;
+            }
+          } else if (sel.type === 'stair') {
+            var stObj = (plan.stairs || []).find(function (st) { return st.id === sel.id; });
+            if (stObj) {
+              stObj.rotY = ((stObj.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+              rotated = true;
+            }
+          }
+        }
+      }
+
+      // 3. Check if 3D Studio active unit is selected
+      if (!rotated && window.S && window.S.units && window.S.active >= 0 && window.S.units[window.S.active]) {
+        var activeU = window.S.units[window.S.active];
+        var fMatch = furnList.find(function (f) {
+          return (activeU._furnId && f.id === activeU._furnId) || (activeU.label && f.name === activeU.label);
+        });
+        if (fMatch) {
+          fMatch.rotY = ((fMatch.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+          if (self.editor) self.editor.selected = [{ type: 'furniture', id: fMatch.id }];
+          rotated = true;
+        }
+      }
+
+      if (rotated) {
+        if (self.editor) {
+          self.editor.pushHistory('Rotate Element');
+          self.editor.render();
+        }
+        self.saveToLocalStorage();
+        if (self.syncProjectUnitsTo3DStudio) self.syncProjectUnitsTo3DStudio();
+        if (self.render3DHome) self.render3DHome(true);
+        if (self.editor && self.renderInspector) self.renderInspector(self.editor.selected);
+        if (typeof window.toast === 'function') {
+          window.toast('↻ Unit rotated 90° (Spacebar)');
+        }
+      }
+      return rotated;
+    },
+
     loadProject: function (proj) {
       if (!proj) return;
-      var prevProjId = (this.project && (this.project._projectId || (this.project.meta && this.project.meta.id) || this.project.id)) || '';
-      var nextProjId = proj._projectId || (proj.meta && proj.meta.id) || proj.id || '';
-      if (nextProjId) proj._projectId = String(nextProjId);
-      if (window.S && (!prevProjId || !nextProjId || String(prevProjId) !== String(nextProjId))) {
-        window.S.units = [];
-        window.S.active = 0;
-      }
-      this.project = proj;
-      if (proj && proj.plan) {
-        if (!proj.plan.floors || !proj.plan.floors.length) {
-          proj.plan.floors = [
-            { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
-          ];
+      var self = this;
+      this._isProjectLoading = true;
+      try {
+        var prevProjId = (this.project && (this.project._projectId || (this.project.meta && this.project.meta.id) || this.project.id)) || '';
+        var nextProjId = proj._projectId || (proj.meta && proj.meta.id) || proj.id || '';
+        if (nextProjId) proj._projectId = String(nextProjId);
+        if (window.S && (!prevProjId || !nextProjId || String(prevProjId) !== String(nextProjId))) {
+          window.S.units = [];
+          window.S.active = 0;
         }
-        if (!proj.plan.activeFloor) {
-          proj.plan.activeFloor = proj.plan.floors[0].id || 'ground';
+        this.project = proj;
+        if (proj && proj.plan) {
+          if (!proj.plan.floors || !proj.plan.floors.length) {
+            proj.plan.floors = [
+              { id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }
+            ];
+          }
+          if (!proj.plan.activeFloor) {
+            proj.plan.activeFloor = proj.plan.floors[0].id || 'ground';
+          }
+          if (!proj.plan.floorsData) {
+            proj.plan.floorsData = {};
+          }
+          if (typeof this.updateFloorSwitcherUI === 'function') {
+            this.updateFloorSwitcherUI();
+          }
         }
-        if (!proj.plan.floorsData) {
-          proj.plan.floorsData = {};
+        if (typeof Core !== 'undefined' && typeof Core.healCollinearWalls === 'function') {
+          try { Core.healCollinearWalls(this.project); } catch (e) { }
         }
-        if (typeof this.updateFloorSwitcherUI === 'function') {
-          this.updateFloorSwitcherUI();
+        if (typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
+          try { Core.detectRooms(this.project); } catch (e) { console.warn('[Orbix UI] detectRooms on load:', e); }
         }
-      }
-      if (typeof Core !== 'undefined' && typeof Core.healCollinearWalls === 'function') {
-        try { Core.healCollinearWalls(this.project); } catch (e) { }
-      }
-      if (typeof Core !== 'undefined' && typeof Core.detectRooms === 'function') {
-        try { Core.detectRooms(this.project); } catch (e) { console.warn('[Orbix UI] detectRooms on load:', e); }
-      }
-      this.syncProjectUnitsTo3DStudio(); // Synchronize units FIRST so window.S.units reflects project
-      this.saveToLocalStorage();
-      if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
-        root.OrbixProjects.saveActiveProject({ plan: this.project });
-      }         // THEN save clean state to local storage
-      if (this.editor) {
-        this.editor.project = proj;
-        this.editor.selected = [];
-        this.editor.wallChainStart = null;
-        this.editor.history = [];
-        this.editor.historyIndex = -1;
-        this.editor.pushHistory('Open Project');
-        this.editor.resize();
-        this.editor.render();
-        if (typeof this.editor.zoomFit === 'function') {
-          this.editor.zoomFit();
+        this.syncProjectUnitsTo3DStudio(); // Synchronize units FIRST so window.S.units reflects project
+        this.saveToLocalStorage();
+        if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
+          root.OrbixProjects.saveActiveProject({ plan: this.project });
+        }         // THEN save clean state to local storage
+        if (this.editor) {
+          this.editor.project = proj;
+          this.editor.selected = [];
+          this.editor.wallChainStart = null;
+          this.editor.history = [];
+          this.editor.historyIndex = -1;
+          this.editor.pushHistory('Open Project');
+          this.editor.resize();
+          this.editor.render();
+          if (typeof this.editor.zoomFit === 'function') {
+            this.editor.zoomFit();
+          }
+          this.restoreUnderlay(proj);
         }
-        this.restoreUnderlay(proj);
+        this.updateUI();
+        this.renderBOQ();
+        if (typeof window.buildScene === 'function') window.buildScene();
+        if (typeof this.render3DHome === 'function') this.render3DHome();
+        if (typeof window.fit === 'function') window.fit();
+        if (typeof window.camApply === 'function') window.camApply();
+      } finally {
+        setTimeout(function () {
+          self._isProjectLoading = false;
+        }, 350);
       }
-      this.updateUI();
-      this.renderBOQ();
-      if (typeof window.buildScene === 'function') window.buildScene();
-      if (typeof this.render3DHome === 'function') this.render3DHome();
-      if (typeof window.fit === 'function') window.fit();
-      if (typeof window.camApply === 'function') window.camApply();
     },
 
     createNewProject: function (title, clientName) {
@@ -327,11 +423,13 @@
 
     queueAutoSave: function (delayMs) {
       var self = this;
+      if (this._isProjectLoading) return;
       if (this._autoSaveTimer) {
         clearTimeout(this._autoSaveTimer);
       }
       this._autoSaveTimer = setTimeout(function () {
         self._autoSaveTimer = null;
+        if (self._isProjectLoading) return;
         self.saveToLocalStorage();
         if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
           root.OrbixProjects.saveActiveProject({

@@ -131,6 +131,8 @@
     broadcastChange: function (action) {
       var self = this;
       if (self.isApplyingRemoteChange) return; // Don't echo back changes received from peer!
+      if (root.OrbixUI && root.OrbixUI._isProjectLoading) return; // Do not broadcast intermediate states while loading a project!
+
       if (!self.activeProjectId) {
         if (root.OrbixProjects && root.OrbixProjects.activeProjectId) {
           self.activeProjectId = String(root.OrbixProjects.activeProjectId);
@@ -141,9 +143,19 @@
 
       clearTimeout(self.broadcastDebounceTimer);
       self.broadcastDebounceTimer = setTimeout(function () {
+        if (root.OrbixUI && root.OrbixUI._isProjectLoading) return;
+
         var currentPlan = (root.OrbixUI && root.OrbixUI.project) ? root.OrbixUI.project : null;
         var currentUnits = (root.S && Array.isArray(root.S.units)) ? root.S.units : [];
         if (!currentPlan && !currentUnits) return;
+
+        // If currentUnits is empty but currentPlan has furniture, sync first to avoid broadcasting 0 units
+        var fCount = (currentPlan && currentPlan.plan && Array.isArray(currentPlan.plan.furniture))
+          ? currentPlan.plan.furniture.length : 0;
+        if (fCount > 0 && currentUnits.length === 0 && root.OrbixUI && typeof root.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
+          try { root.OrbixUI.syncProjectUnitsTo3DStudio(); } catch (_) { }
+          currentUnits = (root.S && Array.isArray(root.S.units)) ? root.S.units : [];
+        }
 
         try {
           self.socket.send(JSON.stringify({
@@ -203,6 +215,29 @@
         var remotePlan = msg.plan;
         var remoteUnits = msg.units;
 
+        var localFurnCount = 0;
+        if (root.OrbixUI && root.OrbixUI.project && root.OrbixUI.project.plan && Array.isArray(root.OrbixUI.project.plan.furniture)) {
+          localFurnCount = root.OrbixUI.project.plan.furniture.length;
+        } else if (root.S && Array.isArray(root.S.units)) {
+          localFurnCount = root.S.units.length;
+        }
+
+        var remoteFurnCount = 0;
+        if (remotePlan && remotePlan.plan && Array.isArray(remotePlan.plan.furniture)) {
+          remoteFurnCount = remotePlan.plan.furniture.length;
+        } else if (Array.isArray(remoteUnits)) {
+          remoteFurnCount = remoteUnits.length;
+        }
+
+        var isDel = msg.action === 'clear_all' || msg.action === 'delete_selected' || msg.action === 'delete_furniture';
+        // GUARD: If incoming remote has 0 units, but local project has active units, and action was NOT deliberate deletion,
+        // do not wipe local units!
+        if (remoteFurnCount === 0 && localFurnCount > 0 && !isDel) {
+          console.warn('[LiveSync] Discarded empty remote change to protect active units.');
+          self.isApplyingRemoteChange = false;
+          return;
+        }
+
         if (remotePlan && root.OrbixUI) {
           root.OrbixUI.project = remotePlan;
           if (root.OrbixUI.editor) {
@@ -210,7 +245,7 @@
           }
         }
 
-        if (Array.isArray(remoteUnits) && root.S) {
+        if (Array.isArray(remoteUnits) && root.S && (remoteUnits.length > 0 || isDel)) {
           root.S.units = remoteUnits;
         }
 

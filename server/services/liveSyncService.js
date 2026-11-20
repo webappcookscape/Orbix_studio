@@ -113,7 +113,7 @@ class LiveSyncService {
               const sentCount = this.broadcastToRoom(projectId, broadcastPayload, clientId);
 
               // 2. Debounced persistence to PostgreSQL/Prisma database
-              this.scheduleDatabaseSave(projectId, plan, units);
+              this.scheduleDatabaseSave(projectId, plan, units, action);
               break;
             }
 
@@ -199,7 +199,7 @@ class LiveSyncService {
     }
   }
 
-  scheduleDatabaseSave(projectId, plan, units) {
+  scheduleDatabaseSave(projectId, plan, units, action = null) {
     if (!projectId) return;
 
     if (this.saveDebounceTimers.has(projectId)) {
@@ -213,10 +213,38 @@ class LiveSyncService {
           ? plan.plan.furniture.length
           : (Array.isArray(units) ? units.length : 0);
 
+        // Fetch existing project to safely merge metadata & details
+        const existing = await prisma.project.findUnique({
+          where: { id: projectId }
+        });
+
+        if (!existing) {
+          return; // Project does not exist in DB, skip silent persistence
+        }
+
+        const existingUnitsCount = existing.unitsCount || 0;
+        const isExplicitClear = action === 'clear_all' || action === 'user_delete_all';
+
+        // ZERO-UNIT PROTECT GUARD:
+        // If the incoming plan has 0 units but the database already has existing units,
+        // do NOT overwrite the database with 0 units unless it is an explicit user clear action!
+        if (uCount === 0 && existingUnitsCount > 0 && !isExplicitClear) {
+          console.warn(`[LiveSync] Rejected destructive 0-unit overwrite for project ${projectId} (database currently retains ${existingUnitsCount} units).`);
+          return;
+        }
+
+        // Merge data while preserving details, rooms, etc.
+        const mergedData = Object.assign({}, existing.data || {}, {
+          plan: plan || (existing.data && existing.data.plan),
+          units: (Array.isArray(units) && (units.length > 0 || isExplicitClear))
+            ? units
+            : ((existing.data && existing.data.units) || [])
+        });
+
         await prisma.project.update({
           where: { id: projectId },
           data: {
-            data: { plan, units },
+            data: mergedData,
             unitsCount: uCount,
             updatedAt: new Date()
           }
@@ -225,7 +253,7 @@ class LiveSyncService {
       } catch (err) {
         console.warn(`[LiveSync] Database persistence notice for ${projectId}:`, err.message);
       }
-    }, 600);
+    }, 800);
 
     this.saveDebounceTimers.set(projectId, timer);
   }

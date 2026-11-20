@@ -950,7 +950,12 @@ class ClientQuoteService {
           buffer: Buffer.from(entry.data, 'base64')
         };
       }
-      throw makeError('Unit icon not found', 404);
+      // Clean fallback: 1x1 transparent PNG if custom unit icon thumbnail is not in snapshot
+      const transparent1x1Png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+      return {
+        mime: 'image/png',
+        buffer: transparent1x1Png
+      };
     }
 
     const diskPath = quoteDeckBuilder.resolveTemplateAssetPath(assetKey);

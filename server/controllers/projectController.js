@@ -52,6 +52,10 @@ class ProjectController {
       const updated = await projectService.updateProject(req.params.id, req.body, req.user);
       res.json({ success: true, project: updated });
     } catch (err) {
+      const isNotFound = err.message && err.message.includes('Project not found');
+      if (isNotFound) {
+        return res.status(404).json({ success: false, error: err.message });
+      }
       console.error('updateProject error:', err);
       const isForbidden = err.message && err.message.includes('Access denied');
       res.status(isForbidden ? 403 : 400).json({ success: false, error: err.message });
@@ -64,6 +68,10 @@ class ProjectController {
       const result = await projectService.deleteProject(req.params.id, req.user);
       res.json(result);
     } catch (err) {
+      const isNotFound = err.message && err.message.includes('Project not found');
+      if (isNotFound) {
+        return res.status(404).json({ success: false, error: err.message });
+      }
       console.error('deleteProject error:', err);
       const isForbidden = err.message && err.message.includes('Access denied');
       res.status(isForbidden ? 403 : 400).json({ success: false, error: err.message });
