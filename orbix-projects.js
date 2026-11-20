@@ -552,6 +552,34 @@
       } catch (_) { }
     },
 
+    _purgeStaleProjectId: function (staleId) {
+      if (!staleId) return;
+      var sid = String(staleId);
+      try {
+        localStorage.removeItem('orbix_active_project_id');
+        localStorage.removeItem('orbix_active_proj_anon');
+        if (this.currentUser) {
+          localStorage.removeItem('orbix_active_proj_' + this.currentUser.id);
+        }
+        for (var i = localStorage.length - 1; i >= 0; i--) {
+          var k = localStorage.key(i);
+          if (k && k.indexOf('orbix_active_proj_') === 0) {
+            if (localStorage.getItem(k) === sid) {
+              localStorage.removeItem(k);
+            }
+          }
+        }
+        var draftRaw = localStorage.getItem('orbix_working_project_draft');
+        if (draftRaw) {
+          var draftObj = JSON.parse(draftRaw);
+          if (draftObj && String(draftObj.projectId) === sid) {
+            draftObj.projectId = '';
+            localStorage.setItem('orbix_working_project_draft', JSON.stringify(draftObj));
+          }
+        }
+      } catch (_) { }
+    },
+
     verifySession: function (cb) {
       var self = this;
       OrbixProjects.apiFetch('/api/me')
@@ -1489,6 +1517,21 @@
       }
 
       var prevId = this.activeProjectId;
+      var inMemProj = (window.OrbixUI && window.OrbixUI.project) ? window.OrbixUI.project : null;
+      var inMemId = inMemProj ? String(inMemProj._projectId || (inMemProj.meta && inMemProj.meta.id) || inMemProj.id || '') : '';
+      if (prevId && id && String(prevId) === String(id) && inMemId === String(id) && !this._isAwaitingHydration && (!idOrProj || typeof idOrProj === 'string' || !idOrProj.forceReload)) {
+        if (switchView !== false) {
+          try {
+            if (typeof window.setView === 'function') {
+              window.setView('plan');
+            } else if (root.OrbixRouter && typeof root.OrbixRouter.navigateTo === 'function') {
+              root.OrbixRouter.navigateTo('plan');
+            }
+          } catch (_) { }
+        }
+        return;
+      }
+
       if (prevId && id && String(prevId) !== String(id)) {
         if (this._saveDebounce) {
           clearTimeout(this._saveDebounce);
@@ -1527,7 +1570,16 @@
       // 2. Fetch fresh live project from PostgreSQL in background
       OrbixProjects.apiFetch('/api/projects/' + id)
         .then(function (r) {
-          if (!r.ok) throw new Error('Status ' + r.status);
+          if (!r.ok) {
+            if (r.status === 404) {
+              console.warn('[OrbixProjects] Project ' + id + ' not found on server, stopping autosave for stale ID.');
+              if (String(self.activeProjectId) === String(id)) {
+                self.activeProjectId = null;
+              }
+              self._purgeStaleProjectId(id);
+            }
+            throw new Error('Status ' + r.status);
+          }
           return r.json();
         })
         .then(function (data) {
@@ -1621,6 +1673,20 @@
       var inMemSameProj = !!(activeId && inMemId && inMemId === String(activeId));
       var inMemStats = inMemSameProj ? self._countPlanElements(inMemProj) : { walls: 0, furniture: 0, total: 0, lastModified: 0 };
 
+      // On background hydration, if in-memory workspace is already identical to or richer than incoming server snapshot,
+      // preserve in-memory work and only sync authoritative metadata without reloading scene or repeating logs!
+      if (loadOpts.isHydration && inMemSameProj && inMemStats.total > 0 && inMemStats.total >= serverStats.total) {
+        if (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.meta) {
+          var curMeta = window.OrbixUI.project.meta;
+          if (project.title || project.name) curMeta.title = project.title || project.name;
+          var pDetails = (project.data && project.data.details) || {};
+          if (project.client || pDetails.clientName) curMeta.clientName = project.client || pDetails.clientName;
+          if (project.contact_number || pDetails.contactNumber) curMeta.phone = project.contact_number || pDetails.contactNumber;
+          if (project.location || pDetails.siteAddress) curMeta.siteAddress = project.location || pDetails.siteAddress;
+        }
+        return;
+      }
+
       if (localPlanRaw) {
         try {
           var parsedLocal = JSON.parse(localPlanRaw);
@@ -1635,7 +1701,9 @@
             if (localNewer || serverEmptyButLocalHasWork || serverMissingWalls) {
               planToLoad = parsedLocal;
               self._isAwaitingHydration = false;
-              console.log('[Orbix Studio] Restored project-specific local draft (' + localStats.walls + ' walls, ' + localStats.furniture + ' units) for ' + activeId + '.');
+              if (!loadOpts.isHydration || !inMemSameProj || inMemStats.total !== localStats.total) {
+                console.log('[Orbix Studio] Restored project-specific local draft (' + localStats.walls + ' walls, ' + localStats.furniture + ' units) for ' + activeId + '.');
+              }
             }
           }
         } catch (e) { }
@@ -1936,10 +2004,7 @@
               if (String(self.activeProjectId) === String(payload.activeId)) {
                 self.activeProjectId = null;
               }
-              try {
-                if (self.currentUser) localStorage.removeItem('orbix_active_proj_' + self.currentUser.id);
-                localStorage.removeItem('orbix_active_project_id');
-              } catch (_) { }
+              self._purgeStaleProjectId(payload.activeId);
             }
             throw new Error('HTTP ' + r.status);
           }

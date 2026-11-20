@@ -5873,6 +5873,18 @@
       modal.style.display = 'flex';
       modal.classList.add('is-open');
 
+      var self = this;
+      if (typeof fetch === 'function' && !self._serverAIKeyConfigured && window.OrbixProjects && window.OrbixProjects.currentUser) {
+        fetch('/api/ai/config', { credentials: 'include' }).then(function (res) {
+          if (res.ok) return res.json();
+        }).then(function (data) {
+          if (data && data.configured) {
+            self._serverAIKeyConfigured = true;
+            self.updateAIKeyStatusUI();
+          }
+        }).catch(function () {});
+      }
+
       var keyInput = document.getElementById('openAIApiKeyInput');
       var k = this.getOpenAIKey();
       if (keyInput) {
@@ -5987,8 +5999,8 @@
       var openBtn = document.getElementById('renderAIRenderBtn');
       if (!modal) return;
 
-      // Check server AI configuration without fetching or persisting raw API keys
-      if (typeof fetch === 'function') {
+      // Check server AI configuration when authenticated without fetching or persisting raw API keys
+      if (typeof fetch === 'function' && window.OrbixProjects && window.OrbixProjects.currentUser) {
         fetch('/api/ai/config', { credentials: 'include' }).then(function (res) {
           if (res.ok) return res.json();
         }).then(function (data) {
