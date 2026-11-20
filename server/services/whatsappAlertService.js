@@ -65,9 +65,15 @@ async function postJson(url, body, headers) {
   return { ok: res.ok, status: res.status, body: text.slice(0, 300) };
 }
 
+function getMetaCredentials() {
+  const phoneNumberId = String(process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.PHONE_NUMBER_ID || '').trim();
+  const token = String(process.env.WHATSAPP_ACCESS_TOKEN || process.env.WHATSAPP_TOKEN || '').trim();
+  const wabaId = String(process.env.WHATSAPP_WABA_ID || process.env.WABA_ID || '').trim();
+  return { phoneNumberId, token, wabaId };
+}
+
 async function sendViaMetaCloud(phone, message) {
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const token = process.env.WHATSAPP_ACCESS_TOKEN;
+  const { phoneNumberId, token } = getMetaCredentials();
   const apiVer = process.env.WHATSAPP_GRAPH_VERSION || 'v21.0';
   const url = `https://graph.facebook.com/${apiVer}/${encodeURIComponent(phoneNumberId)}/messages`;
   const templateName = String(process.env.WHATSAPP_TEMPLATE_NAME || '').trim();
@@ -79,7 +85,9 @@ async function sendViaMetaCloud(phone, message) {
         template: {
           name: templateName,
           language: { code: process.env.WHATSAPP_TEMPLATE_LANG || 'en' },
-          components: [{ type: 'body', parameters: [{ type: 'text', text: message.slice(0, 900) }] }]
+          components: templateName === 'hello_world'
+            ? []
+            : [{ type: 'body', parameters: [{ type: 'text', text: message.slice(0, 900) }] }]
         }
       }
     : {
@@ -154,7 +162,8 @@ async function sendViaCallMeBot(phone, message) {
 function detectActiveProvider() {
   const explicit = String(process.env.WHATSAPP_PROVIDER || '').trim().toLowerCase();
   if (explicit) return explicit;
-  if (process.env.WHATSAPP_PHONE_NUMBER_ID && process.env.WHATSAPP_ACCESS_TOKEN) return 'meta';
+  const meta = getMetaCredentials();
+  if (meta.phoneNumberId && meta.token) return 'meta';
   if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_WHATSAPP_FROM) return 'twilio';
   if (process.env.ULTRAMSG_INSTANCE_ID && process.env.ULTRAMSG_TOKEN) return 'ultramsg';
   if (process.env.WHATSAPP_WEBHOOK_URL) return 'webhook';
