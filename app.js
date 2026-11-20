@@ -5491,6 +5491,24 @@
       window.addEventListener("keydown", function (e) {
         var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
         if (tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+        // Alt + F / alt + f shortcut -> open Furnish tool!
+        if (e.altKey && (e.key === "f" || e.key === "F" || e.code === "KeyF")) {
+          e.preventDefault();
+          if (typeof window.toggleFurnishMenu === "function") {
+            var viewPlan = document.getElementById("view-plan");
+            if (viewPlan && !viewPlan.classList.contains("is-on")) {
+              if (window.OrbixRouter && typeof window.OrbixRouter.navigateTo === "function") {
+                window.OrbixRouter.navigateTo("plan", false);
+              } else if (typeof window.setView === "function") {
+                window.setView("plan");
+              }
+            }
+            window.toggleFurnishMenu();
+            if (typeof toast === "function") toast("🪑 Furnish Tool (Alt+F)");
+          }
+          return;
+        }
+
         if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === "Space" || e.key === " " || e.key === "r" || e.key === "R")) {
           var viewDesign = document.getElementById("view-design");
           if (viewDesign && viewDesign.classList.contains("is-on")) {

@@ -29,7 +29,7 @@
     this.doorPreset = { width: 900, height: 2100, swing: 'in-left' };
     this.windowPreset = { width: 1200, height: 1200, sillHeight: 900 };
     this.wallPreset = { thickness: 150, height: 2800 };
-    this.furniturePreset = (Core.FURNITURE_CATALOG && Core.FURNITURE_CATALOG[0]) || null;
+    this.furniturePreset = null;
     this.furnitureRotY = 0;
 
     // Viewport transform (world mm to canvas px)
@@ -2292,17 +2292,12 @@
         return;
       }
 
-      // Elevation Tier Shortcuts: Alt + (F, W, L, A) or Ctrl + (F, L, A, W)
-      if (e.altKey || e.ctrlKey || e.metaKey) {
+      // Elevation Tier Shortcuts: Alt + (W, L, A) or Ctrl + (W, L, A)
+      if ((e.altKey || e.ctrlKey || e.metaKey) && !e.shiftKey) {
         var k = e.key.toLowerCase();
         if (k === 'w' && (e.altKey || e.ctrlKey)) {
           e.preventDefault();
           self.setUnitTierFilter('wall');
-          return;
-        }
-        if (k === 'f' && (e.altKey || e.ctrlKey)) {
-          e.preventDefault();
-          self.setUnitTierFilter('floor');
           return;
         }
         if (k === 'l' && (e.altKey || e.ctrlKey)) {
@@ -2315,6 +2310,18 @@
           self.setUnitTierFilter('all');
           return;
         }
+      }
+
+      // Shortcut: Alt + F opens / toggles Furnish Tool
+      if (e.altKey && (e.key === 'f' || e.key === 'F' || e.code === 'KeyF')) {
+        e.preventDefault();
+        if (typeof window !== 'undefined' && typeof window.toggleFurnishMenu === 'function') {
+          window.toggleFurnishMenu();
+          if (typeof window.toast === 'function') {
+            window.toast('🪑 Furnish Tool (Alt+F)');
+          }
+        }
+        return;
       }
 
       if (e.key === 'Shift') {
@@ -2497,21 +2504,7 @@
       if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R')) {
         e.preventDefault();
 
-        // 1. If currently placing a new unit from the catalog, rotate the placement ghost preview!
-        if (self.furniturePreset) {
-          self.furnitureRotY = ((self.furnitureRotY || 0) + Math.PI / 2) % (Math.PI * 2);
-          self.render();
-          return;
-        }
-
-        // 1b. If currently placing a staircase, rotate the stair ghost preview!
-        if (self.activeTool === 'stair') {
-          self.stairRotY = ((self.stairRotY || 0) + Math.PI / 2) % (Math.PI * 2);
-          self.render();
-          return;
-        }
-
-        // 2. If furniture or stair units are explicitly selected in 2D, rotate ONLY those selected units!
+        // 1. If furniture or stair units are explicitly selected in 2D, rotate ONLY those selected units!
         var rotated = false;
         var planFurnList = (self.project && self.project.plan && Array.isArray(self.project.plan.furniture))
           ? self.project.plan.furniture
@@ -2534,7 +2527,7 @@
           }
         }
 
-        // 2b. If no 2D unit is selected via canvas, check if active unit in 3D Studio or bottom rail is selected:
+        // 2. If no 2D unit is selected via canvas, check if active unit in 3D Studio or bottom rail is selected:
         if (!rotated && window.S && window.S.units && window.S.active >= 0 && window.S.units[window.S.active]) {
           var activeU = window.S.units[window.S.active];
           var matchFn = planFurnList.find(function (f) {
@@ -2562,7 +2555,27 @@
           return;
         }
 
-        // 3. When NO unit is clicked/selected in 2D, NEVER rotate any background unit!
+        // 3. If currently placing a new unit from the catalog, rotate the placement ghost preview!
+        if (self.furniturePreset && self.activeTool === 'furniture') {
+          self.furnitureRotY = ((self.furnitureRotY || 0) + Math.PI / 2) % (Math.PI * 2);
+          self.render();
+          if (typeof window !== 'undefined' && typeof window.toast === 'function') {
+            window.toast('↻ Preview rotated 90° (Spacebar)');
+          }
+          return;
+        }
+
+        // 3b. If currently placing a staircase, rotate the stair ghost preview!
+        if (self.activeTool === 'stair') {
+          self.stairRotY = ((self.stairRotY || 0) + Math.PI / 2) % (Math.PI * 2);
+          self.render();
+          if (typeof window !== 'undefined' && typeof window.toast === 'function') {
+            window.toast('↻ Stair preview rotated 90° (Spacebar)');
+          }
+          return;
+        }
+
+        // 4. When NO unit is clicked/selected in 2D, NEVER rotate any background unit!
         return;
       }
       if (e.key === 'Escape') {

@@ -277,6 +277,26 @@
         var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
         if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
 
+        // Alt + F / alt + f shortcut -> open Furnish tool!
+        if (e.altKey && (e.key === 'f' || e.key === 'F' || e.code === 'KeyF')) {
+          e.preventDefault();
+          if (typeof window.toggleFurnishMenu === 'function') {
+            var viewPlan = document.getElementById('view-plan');
+            if (viewPlan && !viewPlan.classList.contains('is-on')) {
+              if (window.OrbixRouter && typeof window.OrbixRouter.navigateTo === 'function') {
+                window.OrbixRouter.navigateTo('plan', false);
+              } else if (typeof window.setView === 'function') {
+                window.setView('plan');
+              }
+            }
+            window.toggleFurnishMenu();
+            if (typeof window.toast === 'function') {
+              window.toast('🪑 Furnish Tool (Alt+F)');
+            }
+          }
+          return;
+        }
+
         // Spacebar or R / r to rotate active unit across 2D and 3D
         if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.code === 'Space' || e.key === ' ' || e.key === 'r' || e.key === 'R')) {
           var didRotate = self.rotateActiveUnit();
@@ -293,19 +313,7 @@
       var plan = self.getPlan();
       var furnList = (plan && plan.furniture) || [];
 
-      // 1. If currently placing a new unit from catalog, rotate preview
-      if (self.editor && self.editor.furniturePreset) {
-        self.editor.furnitureRotY = ((self.editor.furnitureRotY || 0) + Math.PI / 2) % (Math.PI * 2);
-        self.editor.render();
-        return true;
-      }
-      if (self.editor && self.editor.activeTool === 'stair') {
-        self.editor.stairRotY = ((self.editor.stairRotY || 0) + Math.PI / 2) % (Math.PI * 2);
-        self.editor.render();
-        return true;
-      }
-
-      // 2. Check if 2D editor has an explicitly selected unit
+      // 1. Check if 2D editor has an explicitly selected unit (highest priority)
       if (self.editor && self.editor.selected && self.editor.selected.length > 0) {
         for (var i = 0; i < self.editor.selected.length; i++) {
           var sel = self.editor.selected[i];
@@ -325,7 +333,7 @@
         }
       }
 
-      // 3. Check if 3D Studio active unit is selected
+      // 2. Check if 3D Studio active unit is selected
       if (!rotated && window.S && window.S.units && window.S.active >= 0 && window.S.units[window.S.active]) {
         var activeU = window.S.units[window.S.active];
         var fMatch = furnList.find(function (f) {
@@ -346,12 +354,32 @@
         self.saveToLocalStorage();
         if (self.syncProjectUnitsTo3DStudio) self.syncProjectUnitsTo3DStudio();
         if (self.render3DHome) self.render3DHome(true);
+        if (typeof buildScene === 'function') buildScene();
         if (self.editor && self.renderInspector) self.renderInspector(self.editor.selected);
         if (typeof window.toast === 'function') {
           window.toast('↻ Unit rotated 90° (Spacebar)');
         }
+        return true;
       }
-      return rotated;
+
+      // 3. If currently placing a new unit from catalog, rotate preview
+      if (self.editor && self.editor.activeTool === 'furniture' && self.editor.furniturePreset) {
+        self.editor.furnitureRotY = ((self.editor.furnitureRotY || 0) + Math.PI / 2) % (Math.PI * 2);
+        self.editor.render();
+        if (typeof window.toast === 'function') {
+          window.toast('↻ Preview rotated 90° (Spacebar)');
+        }
+        return true;
+      }
+      if (self.editor && self.editor.activeTool === 'stair') {
+        self.editor.stairRotY = ((self.editor.stairRotY || 0) + Math.PI / 2) % (Math.PI * 2);
+        self.editor.render();
+        if (typeof window.toast === 'function') {
+          window.toast('↻ Stair preview rotated 90° (Spacebar)');
+        }
+        return true;
+      }
+      return false;
     },
 
     loadProject: function (proj, opts) {
