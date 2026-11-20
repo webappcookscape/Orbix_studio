@@ -714,9 +714,10 @@
         }
         window.addEventListener('online', function () {
           self._cloudSyncPaused = false;
+          self._serverSaveFailures = 0;
           self.setSaveIndicator('saved', 'Online');
           if ((self._hasPendingOfflineSave || self._hasUnsavedChanges) && self.currentUser) {
-            self.saveActiveProject({ immediate: true });
+            self.saveActiveProject({ immediate: true, force: true, changeAction: 'online_reconnect' });
           }
         });
         window.addEventListener('offline', function () {
@@ -1881,6 +1882,14 @@
       // Only run the 15s safety-net save if there are actually unsaved or offline-queued edits
       if (!this._hasUnsavedChanges && !this._hasPendingOfflineSave) return;
 
+      // When server connection is failing/timing out, apply exponential backoff (15s -> 30s -> 60s)
+      if (this._serverSaveFailures > 0) {
+        var backoffMs = Math.min(60000, 15000 * Math.pow(2, this._serverSaveFailures - 1));
+        var elapsed = Date.now() - (this._lastSaveAttemptTime || 0);
+        if (elapsed < backoffMs) return;
+      }
+      this._lastSaveAttemptTime = Date.now();
+
       var activeId = this.activeProjectId;
       if (!activeId) {
         try {
@@ -2041,6 +2050,7 @@
           return r.json().catch(function () { return {}; });
         })
         .then(function () {
+          self._serverSaveFailures = 0;
           var d = new Date();
           var timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           self.setSaveIndicator('saved', timeStr);
@@ -2050,7 +2060,8 @@
           }
         })
         .catch(function () {
-          if (!self._lastOfflineLogged || Date.now() - self._lastOfflineLogged > 60000) {
+          self._serverSaveFailures = (self._serverSaveFailures || 0) + 1;
+          if (!self._lastOfflineLogged || Date.now() - self._lastOfflineLogged > 120000) {
             self._lastOfflineLogged = Date.now();
             console.log('[AutoSave] Working in offline mode (draft saved locally in browser/app storage)');
           }

@@ -3,7 +3,7 @@
    Offline CAD engine, cache-first app shell & resilient background sync
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'orbix-studio-v22';
+const CACHE_NAME = 'orbix-studio-v23';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -133,6 +133,14 @@ self.addEventListener('fetch', (event) => {
           if (request.mode === 'navigate' || !url.pathname.includes('.')) {
             const appShell = await caches.match('./index.html') || await caches.match('./');
             if (appShell) return appShell;
+          }
+
+          // Fallback for image requests when offline or missing to avoid 503 red console errors
+          if (request.destination === 'image' || url.pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico)$/i)) {
+            return new Response(
+              '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>',
+              { headers: { 'Content-Type': 'image/svg+xml' } }
+            );
           }
 
           // Return a safe 503 Service Unavailable Response object instead of undefined

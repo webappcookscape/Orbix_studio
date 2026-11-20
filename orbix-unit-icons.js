@@ -115,19 +115,21 @@
     sanitizeIconId: sanitizeIconId,
     getIcon: function (item) {
       if (!item) return 'icon-cookscape-unit.png';
-      if (typeof item === 'string') {
-        var cleanKey = sanitizeIconId(item);
-        if (cleanKey === 'w2d' || cleanKey === 'w-01') return 'icon-furniture.png';
-        if (cleanKey === 'ctvb-1d-1dr') return 'icon-cookscape-unit.png';
-        if (ICONS[cleanKey]) {
-          return 'data:image/svg+xml;utf8,' + encodeURIComponent(ICONS[cleanKey]);
-        }
-        return 'unit-icons/' + cleanKey + '.svg';
+      if (typeof item === 'object' && (item.thumbnailUrl || item.thumbnail)) {
+        return item.thumbnailUrl || item.thumbnail;
       }
-      var id = item.id || '';
+      var id = (typeof item === 'string') ? item : (item.id || item.code || '');
       var clean = sanitizeIconId(id);
-      if (id === 'w2d' || id === 'W-01') return 'icon-furniture.png';
-      if (id === 'ctvb-1d-1dr') return 'icon-cookscape-unit.png';
+      if (id === 'w2d' || id === 'W-01' || clean === 'w2d' || clean === 'w-01') return 'icon-furniture.png';
+      if (id === 'ctvb-1d-1dr' || clean === 'ctvb-1d-1dr') return 'icon-cookscape-unit.png';
+      if (clean.indexOf('decor_') === 0 || (typeof item === 'object' && (item.category === 'decor' || item.type === 'decor'))) {
+        if (typeof item === 'object' && item.thumbnailUrl) return item.thumbnailUrl;
+        if (typeof window !== 'undefined' && window.OrbixDecorsCatalog && Array.isArray(window.OrbixDecorsCatalog)) {
+          var dMatch = window.OrbixDecorsCatalog.find(function (d) { return d.id === id || d.slug === clean.replace(/^decor_/, ''); });
+          if (dMatch && dMatch.thumbnailUrl) return dMatch.thumbnailUrl;
+        }
+        return 'icon-furniture.png';
+      }
       if (ICONS[clean]) {
         return 'data:image/svg+xml;utf8,' + encodeURIComponent(ICONS[clean]);
       }

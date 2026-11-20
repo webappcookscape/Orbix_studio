@@ -6867,7 +6867,7 @@
           // Thumbnail
           var curCore = (typeof window !== 'undefined' && window.OrbixCore) ? window.OrbixCore : Core;
           var getIconFn = (curCore && curCore.getUnitIcon) || (typeof OrbixUnitIcons !== 'undefined' && OrbixUnitIcons.getIcon);
-          var thumbUrl = getIconFn ? getIconFn({ id: cardData.id }) : 'icon-cookscape-unit.png';
+          var thumbUrl = getIconFn ? getIconFn(cardData) : (cardData.thumbnailUrl || 'icon-cookscape-unit.png');
 
           var topHtml = '<div class="furn-card-top">' +
             '<div class="furn-card-thumb"><img src="' + thumbUrl + '" alt="' + cardData.code + '" loading="lazy"></div>' +

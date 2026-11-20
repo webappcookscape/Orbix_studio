@@ -7682,10 +7682,16 @@
       var mod = require('./orbix-unit-icons.js');
       if (mod && mod.getIcon) return mod.getIcon(item);
     } catch (_) {}
-    var id = typeof item === 'string' ? item : (item.id || '');
-    if (id === 'w2d' || id === 'W-01') return 'icon-furniture.png';
-    if (id === 'ctvb-1d-1dr') return 'icon-cookscape-unit.png';
-    return 'unit-icons/' + sanitizeIconId(id) + '.svg';
+    var id = typeof item === 'string' ? item : (item.id || item.code || '');
+    if (typeof item === 'object' && (item.thumbnailUrl || item.thumbnail)) return item.thumbnailUrl || item.thumbnail;
+    var clean = sanitizeIconId(id);
+    if (id === 'w2d' || id === 'W-01' || clean === 'w2d' || clean === 'w-01') return 'icon-furniture.png';
+    if (id === 'ctvb-1d-1dr' || clean === 'ctvb-1d-1dr') return 'icon-cookscape-unit.png';
+    if (clean.indexOf('decor_') === 0 || (typeof item === 'object' && (item.category === 'decor' || item.type === 'decor'))) {
+      if (typeof item === 'object' && item.thumbnailUrl) return item.thumbnailUrl;
+      return 'icon-furniture.png';
+    }
+    return 'unit-icons/' + clean + '.svg';
   }
 
   function formatFeetInches(mm) {
