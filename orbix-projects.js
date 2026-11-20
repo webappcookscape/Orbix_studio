@@ -518,7 +518,25 @@
       var fullUrl = (url.indexOf('http://') === 0 || url.indexOf('https://') === 0)
         ? url
         : (base + (url.indexOf('/') === 0 ? '' : '/') + url);
-      return fetch(fullUrl, options);
+
+      // Support AbortController timeout to prevent requests from hanging indefinitely on network timeout
+      var timeoutMs = options.timeoutMs || 12000;
+      var controller = (typeof AbortController !== 'undefined' && !options.signal) ? new AbortController() : null;
+      var timer = null;
+      if (controller) {
+        options.signal = controller.signal;
+        timer = setTimeout(function () {
+          try { controller.abort(); } catch (_) { }
+        }, timeoutMs);
+      }
+
+      var p = fetch(fullUrl, options);
+      if (timer) {
+        p = p.finally(function () {
+          clearTimeout(timer);
+        });
+      }
+      return p;
     },
 
     SESSION_TTL_MS: 3 * 24 * 60 * 60 * 1000, // 3 days session duration
@@ -616,6 +634,16 @@
             self._cloudSyncPaused = true;
             self.clearAuthStorage();
             self.showLogin();
+          } else if (r.status >= 500) {
+            console.warn('[OrbixProjects] Server temporarily unreachable (HTTP ' + r.status + '), preserving local session.');
+            if (self.isLocalSessionValid()) {
+              self.showApp();
+              self.updateUserUI();
+            } else {
+              self.currentUser = null;
+              self.clearAuthStorage();
+              self.showLogin();
+            }
           }
         })
         .catch(function (err) {

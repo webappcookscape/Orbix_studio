@@ -3,7 +3,7 @@
    Offline CAD engine, cache-first app shell & resilient background sync
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'orbix-studio-v21';
+const CACHE_NAME = 'orbix-studio-v22';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -82,7 +82,14 @@ self.addEventListener('fetch', (event) => {
   // 1. Backend REST API: Never cache auth/session routes; network-first for other GET endpoints
   if (url.pathname.startsWith('/api/')) {
     if (url.pathname === '/api/me' || url.pathname === '/api/login' || url.pathname === '/api/logout') {
-      event.respondWith(fetch(request));
+      event.respondWith(
+        fetch(request).catch(() => {
+          return new Response(
+            JSON.stringify({ success: false, offline: true, error: 'Offline or connection timeout' }),
+            { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'application/json' } }
+          );
+        })
+      );
       return;
     }
     event.respondWith(

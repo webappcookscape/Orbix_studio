@@ -55,6 +55,10 @@
     connect: function () {
       var self = this;
       if (typeof WebSocket === 'undefined') return;
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        self.scheduleReconnect();
+        return;
+      }
       if (self.socket && (self.socket.readyState === WebSocket.OPEN || self.socket.readyState === WebSocket.CONNECTING)) {
         return;
       }
