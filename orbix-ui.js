@@ -277,8 +277,53 @@
         var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
         if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
 
-        // Alt + F / alt + f shortcut -> open Furnish tool!
-        if (e.altKey && (e.key === 'f' || e.key === 'F' || e.code === 'KeyF')) {
+        // Elevation Tier Shortcuts: Alt + F (Floor), Alt + W (Wall), Alt + L (Loft), Alt + A (All)
+        if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+          var k = e.key.toLowerCase();
+          if (k === 'f') {
+            e.preventDefault();
+            if (self.editor && typeof self.editor.setUnitTierFilter === 'function') {
+              self.editor.setUnitTierFilter('floor');
+            }
+            if (typeof window.toast === 'function') {
+              window.toast('Tier Filter: Floor Units (Alt+F)');
+            }
+            return;
+          }
+          if (k === 'w') {
+            e.preventDefault();
+            if (self.editor && typeof self.editor.setUnitTierFilter === 'function') {
+              self.editor.setUnitTierFilter('wall');
+            }
+            if (typeof window.toast === 'function') {
+              window.toast('Tier Filter: Wall Units (Alt+W)');
+            }
+            return;
+          }
+          if (k === 'l') {
+            e.preventDefault();
+            if (self.editor && typeof self.editor.setUnitTierFilter === 'function') {
+              self.editor.setUnitTierFilter('loft');
+            }
+            if (typeof window.toast === 'function') {
+              window.toast('Tier Filter: Loft Units (Alt+L)');
+            }
+            return;
+          }
+          if (k === 'a') {
+            e.preventDefault();
+            if (self.editor && typeof self.editor.setUnitTierFilter === 'function') {
+              self.editor.setUnitTierFilter('all');
+            }
+            if (typeof window.toast === 'function') {
+              window.toast('Tier Filter: All Units (Alt+A)');
+            }
+            return;
+          }
+        }
+
+        // Ctrl + F / Cmd + F shortcut -> open Furnish toolbar!
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'f' || e.key === 'F' || e.code === 'KeyF')) {
           e.preventDefault();
           if (typeof window.toggleFurnishMenu === 'function') {
             var viewPlan = document.getElementById('view-plan');
@@ -291,7 +336,7 @@
             }
             window.toggleFurnishMenu();
             if (typeof window.toast === 'function') {
-              window.toast('🪑 Furnish Tool (Alt+F)');
+              window.toast('🪑 Furnish Toolbar (Ctrl+F)');
             }
           }
           return;
@@ -3840,11 +3885,15 @@
         var elRotateFurn = document.getElementById('inspRotateFurn');
         if (elRotateFurn) {
           elRotateFurn.addEventListener('click', function () {
-            fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
-            self.editor.pushHistory('Rotate Furniture');
-            self.saveToLocalStorage();
-            self.editor.render();
-            if (self.render3DHome) self.render3DHome(true);
+            if (self.editor && typeof self.editor.rotateSelectedElement === 'function') {
+              self.editor.rotateSelectedElement();
+            } else {
+              fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+              self.editor.pushHistory('Rotate Furniture');
+              self.saveToLocalStorage();
+              self.editor.render();
+              if (self.render3DHome) self.render3DHome(true);
+            }
           });
         }
 

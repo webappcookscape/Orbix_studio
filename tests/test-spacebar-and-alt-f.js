@@ -29,13 +29,24 @@ global.document = {
   addEventListener: () => {}
 };
 
-// 1. Verify Alt+F triggers toggleFurnishMenu
+// 1. Verify Alt+F triggers setUnitTierFilter('floor') and Ctrl+F triggers toggleFurnishMenu
 const planCode = fs.readFileSync(path.join(__dirname, '../orbix-plan.js'), 'utf8');
 const uiCode = fs.readFileSync(path.join(__dirname, '../orbix-ui.js'), 'utf8');
+const appCode = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
 
-assert(planCode.includes("e.altKey && (e.key === 'f' || e.key === 'F' || e.code === 'KeyF')"), 'orbix-plan.js must handle Alt+F shortcut');
-assert(uiCode.includes("e.altKey && (e.key === 'f' || e.key === 'F' || e.code === 'KeyF')"), 'orbix-ui.js must handle Alt+F shortcut');
-console.log('✓ Alt+F shortcut handlers verified in orbix-plan.js and orbix-ui.js');
+assert(planCode.includes("self.setUnitTierFilter('floor')"), 'orbix-plan.js must set floor tier on Alt+F');
+assert(uiCode.includes("self.editor.setUnitTierFilter('floor')"), 'orbix-ui.js must set floor tier on Alt+F');
+assert(appCode.includes('setUnitTierFilter("floor")'), 'app.js must set floor tier on Alt+F');
+console.log('✓ Alt+F floor tier filter handlers verified across orbix-plan.js, orbix-ui.js, and app.js');
+
+assert(planCode.includes('(e.ctrlKey || e.metaKey)') && planCode.includes('toggleFurnishMenu'), 'orbix-plan.js must handle Ctrl+F furnish toolbar shortcut');
+assert(uiCode.includes('(e.ctrlKey || e.metaKey)') && uiCode.includes('toggleFurnishMenu'), 'orbix-ui.js must handle Ctrl+F furnish toolbar shortcut');
+assert(appCode.includes('(e.ctrlKey || e.metaKey)') && appCode.includes('toggleFurnishMenu'), 'app.js must handle Ctrl+F furnish toolbar shortcut');
+console.log('✓ Ctrl+F furnish toolbar shortcuts verified across orbix-plan.js, orbix-ui.js, and app.js');
+
+assert(planCode.includes('PlanEditor.prototype.rotateSelectedElement = function'), 'orbix-plan.js must export rotateSelectedElement');
+assert(uiCode.includes('self.editor.rotateSelectedElement()'), 'orbix-ui.js inspRotateFurn must call rotateSelectedElement');
+console.log('✓ rotateSelectedElement unified between Spacebar and Inspector button');
 
 // 2. Verify selected unit rotation priority over furniturePreset
 // Simulate orbix-ui rotateActiveUnit logic

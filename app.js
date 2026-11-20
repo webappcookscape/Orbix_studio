@@ -5491,8 +5491,18 @@
       window.addEventListener("keydown", function (e) {
         var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
         if (tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-        // Alt + F / alt + f shortcut -> open Furnish tool!
-        if (e.altKey && (e.key === "f" || e.key === "F" || e.code === "KeyF")) {
+        // Elevation Tier Shortcuts: Alt + F (Floor Units)
+        if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === "f" || e.key === "F" || e.code === "KeyF")) {
+          e.preventDefault();
+          if (window.OrbixUI && window.OrbixUI.editor && typeof window.OrbixUI.editor.setUnitTierFilter === "function") {
+            window.OrbixUI.editor.setUnitTierFilter("floor");
+          }
+          if (typeof toast === "function") toast("Tier Filter: Floor Units (Alt+F)");
+          return;
+        }
+
+        // Ctrl + F / Cmd + F shortcut -> open Furnish toolbar!
+        if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === "f" || e.key === "F" || e.code === "KeyF")) {
           e.preventDefault();
           if (typeof window.toggleFurnishMenu === "function") {
             var viewPlan = document.getElementById("view-plan");
@@ -5504,7 +5514,7 @@
               }
             }
             window.toggleFurnishMenu();
-            if (typeof toast === "function") toast("🪑 Furnish Tool (Alt+F)");
+            if (typeof toast === "function") toast("🪑 Furnish Toolbar (Ctrl+F)");
           }
           return;
         }
