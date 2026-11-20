@@ -358,6 +358,17 @@
             e._orbixRotated = true;
             e.preventDefault();
             if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+            return;
+          }
+          if ((e.key === 'r' || e.key === 'R') && !e.repeat) {
+            if (typeof window !== 'undefined' && window.OrbixRouter && typeof window.OrbixRouter.navigateTo === 'function') {
+              window.OrbixRouter.navigateTo('plan', false);
+            } else if (typeof window !== 'undefined' && typeof window.setView === 'function') {
+              window.setView('plan');
+            }
+            if (self.editor && typeof self.editor.setTool === 'function') {
+              self.editor.setTool('divider');
+            }
           }
         }
       });

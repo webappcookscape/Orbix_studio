@@ -1392,8 +1392,8 @@
       for (var wi = 0; wi < allW.length; wi++) {
         var ow = allW[wi];
         if (!ow || !ow.start || !ow.end || ow.id === wall.id) continue;
-        if (!startConn && Core.projectPointOnSegment(wall.start, ow.start, ow.end).dist <= 150) startConn = true;
-        if (!endConn && Core.projectPointOnSegment(wall.end, ow.start, ow.end).dist <= 150) endConn = true;
+        if (!startConn && Core.projectPointOnSegment(wall.start, ow.start, ow.end).dist <= 250) startConn = true;
+        if (!endConn && Core.projectPointOnSegment(wall.end, ow.start, ow.end).dist <= 250) endConn = true;
       }
       if (!isUsedInRoom && (!startConn || !endConn)) {
         return null; // Suppress dangling / orphan divider in 3D!
@@ -2077,7 +2077,7 @@
     if (typeof geo.computeVertexNormals === 'function') {
       geo.computeVertexNormals();
     }
-    if (geo.attributes && geo.attributes.uv && geo.attributes.position) {
+    if (geo.attributes && geo.attributes.uv && geo.attributes.position && typeof geo.attributes.position.getX === 'function' && typeof geo.attributes.position.getZ === 'function') {
       var uvAttr = geo.attributes.uv;
       var posAttr = geo.attributes.position;
       var normAttr = geo.attributes.normal;

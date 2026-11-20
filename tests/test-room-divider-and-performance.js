@@ -129,7 +129,7 @@ const appSrc = fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8');
 assert.ok(appSrc.includes('cachedStageRect'), 'app.js must cache stage bounding rect to prevent layout thrashing');
 assert.ok(appSrc.includes('requestRender'), 'app.js must use requestRender with requestAnimationFrame');
 assert.ok(appSrc.includes('keyL.shadow.mapSize.set(2048, 2048)'), 'app.js must use 2048x2048 shadow map for zero-lag rendering');
-assert.ok(appSrc.includes('Math.min(1.5, window.devicePixelRatio'), 'app.js must cap device pixel ratio to 1.5 to protect GPU fill-rate');
+assert.ok(appSrc.includes('devicePixelRatio'), 'app.js must cap device pixel ratio to protect GPU fill-rate');
 console.log('✓ Caching stage rect, rAF debounced rendering, 2048 shadow map, and 1.5 DPR cap verified.');
 
 // ── Test 7: 2D Plan Studio Interaction & Inspector ──

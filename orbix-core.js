@@ -1967,7 +1967,7 @@
           var proj = projectPointOnSegment(pt, wj.start, wj.end);
           var l = Math.hypot(wj.end.x - wj.start.x, wj.end.y - wj.start.y);
           var distFromEndpoints = Math.min(proj.t * l, (1 - proj.t) * l);
-          if (proj.dist <= snapTol && distFromEndpoints > 40) {
+          if (proj.dist <= snapTol && distFromEndpoints > 5) {
             cuts[j].push(proj.t);
           }
         }
@@ -2034,7 +2034,7 @@
      ───────────────────────────────────────────────────────────────────────────── */
   function pruneOrphanDividers(project) {
     if (!project || !project.plan || !project.plan.walls) return 0;
-    var snapTol = 150;
+    var snapTol = 250;
     var totalPruned = 0;
     var changed = true;
     var passes = 0;
@@ -2093,8 +2093,39 @@
       return [];
     }
 
+    // Auto-clamp room divider endpoints to nearest walls within 250mm so dividers connect flush to boundary walls
+    for (var di = 0; di < walls.length; di++) {
+      var dw = walls[di];
+      if (!dw || !dw.isDivider || !dw.start || !dw.end) continue;
+      var bestPrS = null, bestDistS = Infinity;
+      var bestPrE = null, bestDistE = Infinity;
+      for (var dj = 0; dj < walls.length; dj++) {
+        if (di === dj) continue;
+        var ow = walls[dj];
+        if (!ow || !ow.start || !ow.end) continue;
+        var prS = projectPointOnSegment(dw.start, ow.start, ow.end);
+        if (prS.dist <= 250 && prS.t >= -0.05 && prS.t <= 1.05 && prS.dist < bestDistS) {
+          bestDistS = prS.dist;
+          bestPrS = prS;
+        }
+        var prE = projectPointOnSegment(dw.end, ow.start, ow.end);
+        if (prE.dist <= 250 && prE.t >= -0.05 && prE.t <= 1.05 && prE.dist < bestDistE) {
+          bestDistE = prE.dist;
+          bestPrE = prE;
+        }
+      }
+      if (bestPrS) {
+        dw.start.x = Math.round(bestPrS.pt.x);
+        dw.start.y = Math.round(bestPrS.pt.y);
+      }
+      if (bestPrE) {
+        dw.end.x = Math.round(bestPrE.pt.x);
+        dw.end.y = Math.round(bestPrE.pt.y);
+      }
+    }
+
     // Step 1: Subdivide walls at all cross-junctions and T-junctions
-    var snapTol = 120;
+    var snapTol = 200;
     var segments = subdivideWalls(walls, snapTol);
     if (segments.length < 3) {
       project.plan.rooms = [];
