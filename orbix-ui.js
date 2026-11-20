@@ -6990,7 +6990,7 @@
     COMMERCIAL_FIELDS: [
       { key: 'additionalAccessories', label: 'Additional Accessories', type: 'amount', isDeduction: false },
       { key: 'appliances', label: 'Appliances', type: 'amount', isDeduction: false },
-      { key: 'designCharges', label: 'Design charges & Handling Fee', type: 'percent', defaultPercent: 9, isDeduction: false },
+      { key: 'designCharges', label: 'Design Charges', type: 'percent', defaultPercent: 9, isDeduction: false },
       { key: 'freightCharges', label: 'Freight Charges', type: 'percent', defaultPercent: 2.5, isDeduction: false },
       { key: 'loadingUnloading', label: 'Loading and unloading (material)', type: 'select', options: ['Additional', 'Included'], defaultVal: 'Additional' },
       { key: 'floorMat', label: 'Floor protective mat', type: 'select', options: ['Not Included in Quote', 'Included'], defaultVal: 'Not Included in Quote' },
@@ -6998,8 +6998,8 @@
       { key: 'electricalPlumbing', label: 'Electrical & Plumbing Works', type: 'select', options: ['Additional', 'Included'], defaultVal: 'Additional' },
       { key: 'falseCeiling', label: 'False ceiling', type: 'select', options: ['Not Included', 'Included'], defaultVal: 'Not Included' },
       { key: 'wallpaper', label: 'Wallpaper', type: 'select', options: ['Complementary', 'Not Included'], defaultVal: 'Complementary' },
-      { key: 'discount', label: 'Discount', type: 'percent', isDeduction: true },
-      { key: 'adp', label: 'ADP', type: 'percent', isDeduction: true }
+      { key: 'discount', label: 'Discount on Wood Work', type: 'percent', isDeduction: true },
+      { key: 'adp', label: 'Discount on Design Charge', type: 'percent', isDeduction: true }
     ],
 
     getCommercialCharges: function () {
@@ -7007,9 +7007,12 @@
       if (!this.project.commercialCharges) {
         this.project.commercialCharges = {
           additionalAccessories: 0,
+          accessoriesEnabled: true,
           appliances: 0,
+          appliancesEnabled: true,
           designPercent: 9,
           freightPercent: 2.5,
+          freightEnabled: true,
           loadingUnloadingStatus: 'Additional',
           floorMatStatus: 'Not Included in Quote',
           civilWorksStatus: 'As per actuals',
@@ -7018,14 +7021,18 @@
           wallpaperStatus: 'Complementary',
           discountPercent: 0,
           adpPercent: 0,
-          gstPercent: 18
+          gstPercent: 18,
+          gstEnabled: true
         };
       }
       var c = this.project.commercialCharges;
       if (c.accessories && !c.additionalAccessories) c.additionalAccessories = c.accessories;
       if (c.discount && !c.discountPercent) c.discountPercent = c.discount;
+      if (c.accessoriesEnabled === undefined) c.accessoriesEnabled = true;
+      if (c.appliancesEnabled === undefined) c.appliancesEnabled = true;
       if (c.designPercent === undefined) c.designPercent = 9;
       if (c.freightPercent === undefined) c.freightPercent = 2.5;
+      if (c.freightEnabled === undefined) c.freightEnabled = true;
       if (!c.loadingUnloadingStatus) c.loadingUnloadingStatus = 'Additional';
       if (!c.floorMatStatus) c.floorMatStatus = 'Not Included in Quote';
       if (!c.civilWorksStatus) c.civilWorksStatus = 'As per actuals';
@@ -7035,13 +7042,19 @@
       if (c.discountPercent === undefined) c.discountPercent = 0;
       if (c.adpPercent === undefined) c.adpPercent = 0;
       if (c.gstPercent === undefined) c.gstPercent = 18;
+      if (c.gstEnabled === undefined) c.gstEnabled = true;
       return this.project.commercialCharges;
     },
 
     computeCommercialSummary: function (woodworkSubtotal, commCharges) {
       var charges = commCharges || this.getCommercialCharges();
-      var addAccessories = parseFloat(charges.additionalAccessories || charges.accessories) || 0;
-      var appliances = parseFloat(charges.appliances) || 0;
+      var accessoriesEnabled = charges.accessoriesEnabled !== false;
+      var appliancesEnabled = charges.appliancesEnabled !== false;
+      var freightEnabled = charges.freightEnabled !== false;
+      var gstEnabled = charges.gstEnabled !== false;
+
+      var addAccessories = accessoriesEnabled ? (parseFloat(charges.additionalAccessories || charges.accessories) || 0) : 0;
+      var appliances = appliancesEnabled ? (parseFloat(charges.appliances) || 0) : 0;
 
       var designPercent = (charges.designPercent !== undefined && charges.designPercent !== null && charges.designPercent !== '') ? parseFloat(charges.designPercent) : 9;
       if (isNaN(designPercent)) designPercent = 9;
@@ -7049,13 +7062,14 @@
 
       var freightPercent = (charges.freightPercent !== undefined && charges.freightPercent !== null && charges.freightPercent !== '') ? parseFloat(charges.freightPercent) : 2.5;
       if (isNaN(freightPercent)) freightPercent = 2.5;
-      var freightAmount = Math.round(woodworkSubtotal * (freightPercent / 100));
+      var freightAmount = freightEnabled ? Math.round(woodworkSubtotal * (freightPercent / 100)) : 0;
 
       var discountPercent = parseFloat(charges.discountPercent || charges.discount) || 0;
       var discountAmount = Math.round(woodworkSubtotal * (discountPercent / 100));
 
+      // Discount on Design Charge (replaces ADP): % applied on Design Charges
       var adpPercent = parseFloat(charges.adpPercent || charges.adp) || 0;
-      var adpAmount = Math.round(woodworkSubtotal * (adpPercent / 100));
+      var adpAmount = Math.round(designAmount * (adpPercent / 100));
 
       var totalDeductions = discountAmount + adpAmount;
       var grossAdditions = addAccessories + appliances + designAmount + freightAmount;
@@ -7063,15 +7077,18 @@
       var netValue = Math.max(0, Math.round(woodworkSubtotal + grossAdditions - totalDeductions));
       var gstPercent = (charges.gstPercent !== undefined && charges.gstPercent !== null && charges.gstPercent !== '') ? parseFloat(charges.gstPercent) : 18;
       if (isNaN(gstPercent)) gstPercent = 18;
-      var gstAmount = Math.round(netValue * (gstPercent / 100));
+      var gstAmount = gstEnabled ? Math.round(netValue * (gstPercent / 100)) : 0;
       var grandTotal = netValue + gstAmount;
 
       return {
         woodworkSubtotal: Math.round(woodworkSubtotal),
+        accessoriesEnabled: accessoriesEnabled,
         additionalAccessories: addAccessories,
+        appliancesEnabled: appliancesEnabled,
         appliances: appliances,
         designPercent: designPercent,
         designAmount: designAmount,
+        freightEnabled: freightEnabled,
         freightPercent: freightPercent,
         freightAmount: freightAmount,
         loadingUnloadingStatus: charges.loadingUnloadingStatus || 'Additional',
@@ -7084,10 +7101,12 @@
         discountAmount: discountAmount,
         adpPercent: adpPercent,
         adpAmount: adpAmount,
+        totalSavings: totalDeductions,
         grossAdditions: grossAdditions,
         totalDeductions: totalDeductions,
         netValue: netValue,
         netTaxable: netValue,
+        gstEnabled: gstEnabled,
         gstPercent: gstPercent,
         gstAmount: gstAmount,
         grandTotal: grandTotal
@@ -7489,32 +7508,32 @@
         '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
         '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>' +
 
-        // Additional Accessories (enter amount)
-        '<tr class="comm-charge-row">' +
+        // Additional Accessories (Enable/Disable + amount)
+        '<tr class="comm-charge-row" id="commRowAccessories" style="' + (commSummary.accessoriesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">Additional Accessories</td>' +
+        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Additional Accessories</label></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
-        '<input type="number" min="0" step="any" class="comm-input" data-key="additionalAccessories" value="' + (commCharges.additionalAccessories || '') + '" placeholder="enter amount">' +
+        '<input type="number" min="0" step="any" class="comm-input" data-key="additionalAccessories" value="' + (commCharges.additionalAccessories || '') + '" placeholder="enter amount"' + (commSummary.accessoriesEnabled ? '' : ' disabled') + '>' +
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
 
-        // Appliances (enter amount)
-        '<tr class="comm-charge-row">' +
+        // Appliances (Enable/Disable + amount)
+        '<tr class="comm-charge-row" id="commRowAppliances" style="' + (commSummary.appliancesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">Appliances</td>' +
+        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Appliances</label></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
-        '<input type="number" min="0" step="any" class="comm-input" data-key="appliances" value="' + (commCharges.appliances || '') + '" placeholder="enter amount">' +
+        '<input type="number" min="0" step="any" class="comm-input" data-key="appliances" value="' + (commCharges.appliances || '') + '" placeholder="enter amount"' + (commSummary.appliancesEnabled ? '' : ' disabled') + '>' +
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
 
-        // Design charges & Handling Fee (9%)
+        // Design Charges (editable %, 9% default)
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">Design charges &amp; Handling Fee</td>' +
+        '<td colspan="4" class="bold">Design Charges</td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
         '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="designPercent" value="' + commSummary.designPercent + '" style="width:55px" placeholder="9">' +
@@ -7522,13 +7541,13 @@
         '<span id="commDesignAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.designAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
-        // Freight Charges (2.50%)
-        '<tr class="comm-charge-row">' +
+        // Freight Charges (2.5% + Enable/Disable)
+        '<tr class="comm-charge-row" id="commRowFreight" style="' + (commSummary.freightEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">Freight Charges</td>' +
+        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="freightEnabled"' + (commSummary.freightEnabled ? ' checked' : '') + '> Freight Charges</label></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
-        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="freightPercent" value="' + commSummary.freightPercent + '" style="width:55px" placeholder="2.5">' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="freightPercent" value="' + commSummary.freightPercent + '" style="width:55px" placeholder="2.5"' + (commSummary.freightEnabled ? '' : ' disabled') + '>' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
         '<span id="commFreightAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.freightAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
@@ -7587,10 +7606,10 @@
         '<option value="Not Included"' + (commSummary.wallpaperStatus === 'Not Included' ? ' selected' : '') + '>Not Included</option>' +
         '</select></td></tr>' +
 
-        // Discount (enter %)
+        // Discount on Wood Work (replaces Promotional Discount)
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold text-red">Discount</td>' +
+        '<td colspan="4" class="bold text-red">Discount on Wood Work</td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
         '<span style="font-size:11px;color:#DC2626;font-weight:600">(-)</span>' +
@@ -7599,10 +7618,10 @@
         '<span id="commDiscountAmount" class="bold text-red" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.discountAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
-        // ADP (enter %)
+        // Discount on Design Charge (replaces ADP)
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold text-red">ADP</td>' +
+        '<td colspan="4" class="bold text-red">Discount on Design Charge</td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
         '<span style="font-size:11px;color:#DC2626;font-weight:600">(-)</span>' +
@@ -7611,30 +7630,36 @@
         '<span id="commAdpAmount" class="bold text-red" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.adpAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
-        // NET VALUE (renamed from NET TAXABLE VALUE)
+        // GRAND TOTAL (WITHOUT GST)
         '<tr class="taxable-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold" style="font-size:12px">NET VALUE</td>' +
+        '<td colspan="4" class="bold" style="font-size:12px">GRAND TOTAL (WITHOUT GST)</td>' +
         '<td colspan="3" class="c-num bold" id="commNetTaxable" style="font-size:13px;color:#1E3A8A">₹ ' + commSummary.netValue.toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
 
-        // GST (Additional)
-        '<tr class="comm-charge-row" style="background:#F8FAFC">' +
+        // GST (Enable/Disable)
+        '<tr class="comm-charge-row" id="commRowGst" style="background:#F8FAFC;' + (commSummary.gstEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">GST <span style="font-size:11px;color:#64748B;font-weight:normal;">(Additional)</span></td>' +
+        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="gstEnabled"' + (commSummary.gstEnabled ? ' checked' : '') + '> GST</label></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
         '<span style="font-size:11px;color:#64748B">Rate:</span>' +
-        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="gstPercent" value="' + commSummary.gstPercent + '" style="width:55px" placeholder="18">' +
+        '<input type="number" min="0" max="100" step="any" class="comm-input" data-key="gstPercent" value="' + commSummary.gstPercent + '" style="width:55px" placeholder="18"' + (commSummary.gstEnabled ? '' : ' disabled') + '>' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">% &nbsp;=&nbsp; ₹</span>' +
         '<span id="commGstAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.gstAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
-        // Grand Total (Give total)
+        // FINAL TOTAL (WITH GST)
         '<tr class="grand-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold grand-lbl" style="font-size:13px">GRAND TOTAL</td>' +
+        '<td colspan="4" class="bold grand-lbl" id="commFinalLabel" style="font-size:13px">' + (commSummary.gstEnabled ? 'FINAL TOTAL (WITH GST)' : 'FINAL TOTAL') + '</td>' +
         '<td colspan="3" class="c-num bold grand-val" id="commFinalTotal" style="font-size:14px">INR ' + commSummary.grandTotal.toLocaleString('en-IN') + '.00</td>' +
+        '</tr>' +
+        // YOUR SAVINGS
+        '<tr style="background:#ECFDF5;">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold" style="font-size:12.5px;color:#166534;">YOUR SAVINGS</td>' +
+        '<td colspan="3" class="c-num bold" id="commTotalSavings" style="font-size:13.5px;color:#166534;">₹ ' + (commSummary.totalSavings || 0).toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
         '</tbody></table></div>';
 
@@ -7659,6 +7684,30 @@
       html += '</div>';
       boqEl.innerHTML = html;
 
+      function refreshCommercialDom() {
+        var summary = self.computeCommercialSummary(quote.subtotalWoodwork, self.project.commercialCharges);
+        var designAmtEl = document.getElementById('commDesignAmount');
+        if (designAmtEl) designAmtEl.textContent = summary.designAmount.toLocaleString('en-IN') + '.00';
+        var freightAmtEl = document.getElementById('commFreightAmount');
+        if (freightAmtEl) freightAmtEl.textContent = summary.freightAmount.toLocaleString('en-IN') + '.00';
+        var discAmtEl = document.getElementById('commDiscountAmount');
+        if (discAmtEl) discAmtEl.textContent = summary.discountAmount.toLocaleString('en-IN') + '.00';
+        var adpAmtEl = document.getElementById('commAdpAmount');
+        if (adpAmtEl) adpAmtEl.textContent = summary.adpAmount.toLocaleString('en-IN') + '.00';
+        var netEl = document.getElementById('commNetTaxable');
+        if (netEl) netEl.textContent = '₹ ' + summary.netValue.toLocaleString('en-IN') + '.00';
+        var gstAmtEl = document.getElementById('commGstAmount');
+        if (gstAmtEl) gstAmtEl.textContent = summary.gstAmount.toLocaleString('en-IN') + '.00';
+        var finalLblEl = document.getElementById('commFinalLabel');
+        if (finalLblEl) finalLblEl.textContent = summary.gstEnabled ? 'FINAL TOTAL (WITH GST)' : 'FINAL TOTAL';
+        var finalEl = document.getElementById('commFinalTotal');
+        if (finalEl) finalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
+        var savEl = document.getElementById('commTotalSavings');
+        if (savEl) savEl.textContent = '₹ ' + (summary.totalSavings || 0).toLocaleString('en-IN') + '.00';
+        var headerTotalEl = document.getElementById('boqHeaderTotalAmount');
+        if (headerTotalEl) headerTotalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
+      }
+
       // Commercial Charges live input bindings
       var commInputs = boqEl.querySelectorAll('.comm-input');
       commInputs.forEach(function (inp) {
@@ -7670,33 +7719,25 @@
 
           self.project.commercialCharges = self.project.commercialCharges || {};
           self.project.commercialCharges[key] = val;
+          refreshCommercialDom();
+          self.saveToLocalStorage();
+        });
+      });
 
-          var summary = self.computeCommercialSummary(quote.subtotalWoodwork, self.project.commercialCharges);
-
-          var designAmtEl = document.getElementById('commDesignAmount');
-          if (designAmtEl) designAmtEl.textContent = summary.designAmount.toLocaleString('en-IN') + '.00';
-
-          var freightAmtEl = document.getElementById('commFreightAmount');
-          if (freightAmtEl) freightAmtEl.textContent = summary.freightAmount.toLocaleString('en-IN') + '.00';
-
-          var discAmtEl = document.getElementById('commDiscountAmount');
-          if (discAmtEl) discAmtEl.textContent = summary.discountAmount.toLocaleString('en-IN') + '.00';
-
-          var adpAmtEl = document.getElementById('commAdpAmount');
-          if (adpAmtEl) adpAmtEl.textContent = summary.adpAmount.toLocaleString('en-IN') + '.00';
-
-          var netEl = document.getElementById('commNetTaxable');
-          if (netEl) netEl.textContent = '₹ ' + summary.netValue.toLocaleString('en-IN') + '.00';
-
-          var gstAmtEl = document.getElementById('commGstAmount');
-          if (gstAmtEl) gstAmtEl.textContent = summary.gstAmount.toLocaleString('en-IN') + '.00';
-
-          var finalEl = document.getElementById('commFinalTotal');
-          if (finalEl) finalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
-
-          var headerTotalEl = document.getElementById('boqHeaderTotalAmount');
-          if (headerTotalEl) headerTotalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
-
+      // Enable / Disable toggles for Accessories, Appliances, Freight & GST
+      var commToggles = boqEl.querySelectorAll('.comm-toggle');
+      commToggles.forEach(function (chk) {
+        chk.addEventListener('change', function () {
+          var tKey = chk.getAttribute('data-toggle');
+          if (!tKey) return;
+          self.project.commercialCharges = self.project.commercialCharges || {};
+          self.project.commercialCharges[tKey] = !!chk.checked;
+          var tr = chk.closest('tr');
+          if (tr) {
+            tr.style.opacity = chk.checked ? '' : '0.55';
+            tr.querySelectorAll('.comm-input').forEach(function (el) { el.disabled = !chk.checked; });
+          }
+          refreshCommercialDom();
           self.saveToLocalStorage();
         });
       });
@@ -8726,24 +8767,36 @@
       var appliancesVal = Number(commCharges.appliances) || 0;
 
       var commRows = [
-        { label: 'Modular Woodwork Subtotal', status: 'Active Scope', amt: comm.woodworkSubtotal, style: 12 },
-        { label: 'Hardware & Functional Fittings Subtotal', status: 'Included in Base Package', amt: 0, style: 12 },
-        { label: 'Additional Accessories', status: addAccVal > 0 ? 'Specified' : 'Standard', amt: comm.additionalAccessories, style: 12 },
-        { label: 'Appliances', status: appliancesVal > 0 ? 'Specified' : 'Standard', amt: comm.appliances, style: 12 },
-        { label: 'Design charges & Handling Fee', status: comm.designPercent + '%', amt: comm.designAmount, style: 12 },
-        { label: 'Freight Charges', status: comm.freightPercent + '%', amt: comm.freightAmount, style: 12 },
+        { label: 'Modular Woodwork Subtotal', status: 'Active Scope', amt: comm.woodworkSubtotal, style: 12 }
+      ];
+      if (comm.accessoriesEnabled !== false) {
+        commRows.push({ label: 'Additional Accessories', status: comm.additionalAccessories > 0 ? 'Specified' : 'Standard', amt: comm.additionalAccessories, style: 12 });
+      }
+      if (comm.appliancesEnabled !== false) {
+        commRows.push({ label: 'Appliances', status: comm.appliances > 0 ? 'Specified' : 'Standard', amt: comm.appliances, style: 12 });
+      }
+      commRows.push({ label: 'Design Charges', status: comm.designPercent + '%', amt: comm.designAmount, style: 12 });
+      if (comm.freightEnabled !== false) {
+        commRows.push({ label: 'Freight Charges', status: comm.freightPercent + '%', amt: comm.freightAmount, style: 12 });
+      }
+      commRows.push(
         { label: 'Loading and unloading (material)', status: comm.loadingUnloadingStatus || 'Additional', amt: comm.loadingUnloadingStatus === 'Included' ? 0 : 'Additional', style: 10 },
         { label: 'Floor protective mat', status: comm.floorMatStatus || 'Not Included in Quote', amt: comm.floorMatStatus === 'Included' ? 0 : 'Not Included', style: 10 },
         { label: 'Civil works', status: comm.civilWorksStatus || 'As per actuals', amt: comm.civilWorksStatus === 'Included' ? 0 : 'As per actuals', style: 10 },
         { label: 'Electrical & Plumbing Works', status: comm.electricalPlumbingStatus || 'Additional', amt: comm.electricalPlumbingStatus === 'Included' ? 0 : 'Additional', style: 10 },
         { label: 'False ceiling', status: comm.falseCeilingStatus || 'Not Included', amt: comm.falseCeilingStatus === 'Included' ? 0 : 'Not Included', style: 10 },
         { label: 'Wallpaper', status: comm.wallpaperStatus || 'Complementary', amt: comm.wallpaperStatus === 'Complementary' ? 'Complementary' : 'Not Included', style: 10 },
-        { label: 'Discount', status: '(-) ' + comm.discountPercent + '%', amt: -comm.discountAmount, style: 19 },
-        { label: 'ADP', status: '(-) ' + comm.adpPercent + '%', amt: -comm.adpAmount, style: 19 },
-        { label: 'NET VALUE', status: 'Taxable Amount', amt: comm.netValue, style: 20, isNet: true },
-        { label: 'GST (Additional)', status: 'Rate: ' + comm.gstPercent + '%', amt: comm.gstAmount, style: 12 },
-        { label: 'GRAND TOTAL', status: 'Net Payable', amt: comm.grandTotal, style: 22, isGrand: true }
-      ];
+        { label: 'Discount on Wood Work', status: '(-) ' + comm.discountPercent + '%', amt: -comm.discountAmount, style: 19 },
+        { label: 'Discount on Design Charge', status: '(-) ' + comm.adpPercent + '%', amt: -comm.adpAmount, style: 19 },
+        { label: 'Grand Total (Without GST)', status: 'Net Value', amt: comm.netValue, style: 20, isNet: true }
+      );
+      if (comm.gstEnabled !== false) {
+        commRows.push({ label: 'GST', status: 'Rate: ' + comm.gstPercent + '%', amt: comm.gstAmount, style: 12 });
+      }
+      commRows.push(
+        { label: comm.gstEnabled !== false ? 'Final Total (With GST)' : 'Final Total', status: 'Net Payable', amt: comm.grandTotal, style: 22, isGrand: true },
+        { label: 'Your Savings', status: 'Total Discount', amt: comm.totalSavings || (comm.discountAmount + comm.adpAmount), style: 12 }
+      );
 
       for (var cr = 0; cr < commRows.length; cr++) {
         var rowData = commRows[cr];

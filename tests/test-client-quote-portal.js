@@ -397,12 +397,54 @@ async function runTests() {
       assert(clientOpenRes.json.whatsappAlert.message.includes(createdProjectId));
       assert(clientOpenRes.json.whatsappAlert.message.includes('please contact them') || clientOpenRes.json.whatsappAlert.message.includes('Please contact them'));
 
-      // Verify client-quote.html is vertically scrollable and does NOT trigger shield on mouseleave
+      // Verify client-quote.html is vertically scrollable, no mouseleave shield, no Share col, new cost estimation labels & Your Savings
       const viewerHtml = fs.readFileSync(path.join(ROOT, 'client-quote.html'), 'utf8');
       assert(viewerHtml.includes('buildScrollableSlides') && viewerHtml.includes('slides-stack'), 'Viewer must render vertically scrollable slides');
       assert(!viewerHtml.includes("'mouseleave'"), 'Moving mouse outside window must NOT trigger blackout shield');
+      assert(!viewerHtml.includes("'Share'"), 'Room-wise breakdown must NOT contain Share column');
+      assert(viewerHtml.includes('Design Charges') && !viewerHtml.includes('Handling Fee'), 'Client quote must show Design Charges without Handling Fee');
+      assert(viewerHtml.includes('Discount on Wood Work') && viewerHtml.includes('Discount on Design Charge'), 'Client quote must show Discount on Wood Work and Discount on Design Charge');
+      assert(viewerHtml.includes('Grand Total (Without GST)') && viewerHtml.includes('YOUR SAVINGS'), 'Client quote must show Grand Total (Without GST) and YOUR SAVINGS');
 
-      console.log('✓ [10] 2-Stage Head Review (no password, editable discounts) -> Approve -> Client Link + Full PDF/PPTX + WhatsApp Alert (8838199428 & 7418414780) + Scrollable Viewer verified');
+      // Verify orbix-client-quote.js modal blur, close only via cross, no WA status bar, separated history
+      const modalSrc = fs.readFileSync(path.join(ROOT, 'orbix-client-quote.js'), 'utf8');
+      assert(modalSrc.includes("backdropFilter = 'blur(8px)'"), 'Modal must blur background');
+      assert(!modalSrc.includes('if (e.target === modal)'), 'Modal must NOT close on clicking outside');
+      assert(!modalSrc.includes('cqWaStatusBar'), 'WhatsApp status bar must be removed from modal');
+      assert(modalSrc.includes('Latest / Current Quotation') && modalSrc.includes('Previous Quotation History'), 'History must be differentiated below Approval Status');
+
+      // Verify orbix-core.js completely excludes decors from Pricing & Quotation
+      const Core = require(path.join(ROOT, 'orbix-core.js'));
+      const decorTestQuote = Core.generateFullQuotation({
+        plan: {
+          rooms: [{ id: 'r1', name: 'Kitchen', polygon: [{ x: 0, y: 0 }, { x: 4000, y: 0 }, { x: 4000, y: 4000 }, { x: 0, y: 4000 }], areaSqFt: 170 }],
+          furniture: [
+            { id: 'f1', name: 'Base Unit', category: 'kitchen_base', pos: { x: 500, y: 500 }, width: 600, depth: 600, height: 850 },
+            { id: 'd1', name: 'Potted Plant', category: 'decor', isDecor: true, excludeFromPricing: true, pos: { x: 1000, y: 1000 }, width: 400, depth: 400, height: 900 },
+            { id: 'd2', name: 'Wall Frame', catalogId: 'dec_frame_1', pos: { x: 1200, y: 1200 }, width: 500, depth: 50, height: 700 }
+          ]
+        }
+      });
+      assert.strictEqual(decorTestQuote.furnitureItems.length, 1, 'Decors must be completely removed from Pricing & Quotation');
+      assert.strictEqual(decorTestQuote.allRoomsSummary[0].itemCount, 1, 'Room unit count must exclude decors');
+
+      // Verify Discount on Design Charge math (50% of 9% design charge on 100000 woodwork = 4500) + enable/disable toggles
+      const reviewResp = await request(port, 'POST', `/api/quote-review/${revToken}/approve`, {
+        approvedBy: 'Sangathamizh',
+        approvalRemarks: 'Test Design Discount math',
+        variantDiscounts: [
+          { tierKey: 'zappo - el pearl', designPercent: 10, discountPercent: 5, adpPercent: 50 }
+        ]
+      });
+      assert.strictEqual(reviewResp.status, 200);
+      const zv = reviewResp.json.review.variants.find((v) => v.tierKey === 'zappo - el pearl');
+      const expectedDesign = Math.round(zv.commercial.woodworkSubtotal * 0.10);
+      const expectedDesignDisc = Math.round(expectedDesign * 0.50);
+      assert.strictEqual(zv.commercial.designAmount, expectedDesign, 'Editable design % must recalculate design charge');
+      assert.strictEqual(zv.commercial.adpAmount, expectedDesignDisc, 'Discount on Design Charge must be % of Design Charge');
+      assert.strictEqual(zv.commercial.totalSavings, zv.commercial.discountAmount + expectedDesignDisc, 'Your Savings must equal Wood Work Discount + Design Charge Discount');
+
+      console.log('✓ [10] 2-Stage Head Review + Decor Exclusion + Editable Design/Discounts/Toggles + Modal Blur + Client Quote Summary verified');
     } finally {
       await request(port, 'DELETE', `/api/client-quotes/${revQuoteId}`, null, { Cookie: emp1Cookie }).catch(() => {});
     }

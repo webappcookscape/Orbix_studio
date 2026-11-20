@@ -2737,12 +2737,28 @@
     var subtotal = 0;
     var allItemsTotalWoodwork = 0;
 
-    // 1. Modular Furniture & Cabinetry Line Items
+    // 1. Modular Furniture & Cabinetry Line Items (strictly exclude all Decor items & their values from Pricing & Quotation)
     for (var i = 0; i < furniture.length; i++) {
       var f = furniture[i];
+      if (!f) continue;
+      var fCat = String(f.category || '').toLowerCase();
+      var fCatId = String(f.catalogId || f.code || '').toLowerCase();
+      if (
+        f.isDecor ||
+        f.excludeFromPricing ||
+        f.decorType ||
+        fCat === 'decor' ||
+        fCat === 'appliance_decor' ||
+        fCat === 'styling' ||
+        fCatId.indexOf('dec_') === 0 ||
+        fCatId.indexOf('decor_') === 0
+      ) {
+        continue;
+      }
       var fRoomId = f.roomId || '_general';
       var rTier = (rateCard.roomTiers && rateCard.roomTiers[fRoomId]) || (roomMap[fRoomId] && roomMap[fRoomId].variant) || null;
       var cost = calculateItemCost(f, rateCard, rTier);
+      if (!cost || cost.isDecor) continue;
       cost.roomId = fRoomId;
       cost.roomName = (f.roomId && roomMap[f.roomId]) ? roomMap[f.roomId].name : 'General';
 

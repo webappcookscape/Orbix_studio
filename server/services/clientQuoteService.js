@@ -53,40 +53,53 @@ function sanitizeUnitIconDataUrl(raw) {
   return { mime, data: b64 };
 }
 
-function recalculateVariantCommercial(comm, discountPercent, adpPercent) {
+function recalculateVariantCommercial(comm, discountPercent, adpPercent, designPercentOverride) {
   const c = comm || {};
   const woodwork = Math.round(Number(c.woodworkSubtotal) || 0);
-  const acc = Number(c.additionalAccessories) || 0;
-  const appliances = Number(c.appliances) || 0;
-  const designPercent = (c.designPercent !== undefined && c.designPercent !== null && c.designPercent !== '') ? Number(c.designPercent) : 9;
+  const accessoriesEnabled = c.accessoriesEnabled !== false;
+  const appliancesEnabled = c.appliancesEnabled !== false;
+  const freightEnabled = c.freightEnabled !== false;
+  const gstEnabled = c.gstEnabled !== false;
+
+  const acc = accessoriesEnabled ? (Number(c.additionalAccessories) || 0) : 0;
+  const appliances = appliancesEnabled ? (Number(c.appliances) || 0) : 0;
+  const rawDesign = designPercentOverride !== undefined ? designPercentOverride : c.designPercent;
+  const designPercent = (rawDesign !== undefined && rawDesign !== null && rawDesign !== '') ? Math.max(0, Math.min(100, Number(rawDesign) || 0)) : 9;
   const freightPercent = (c.freightPercent !== undefined && c.freightPercent !== null && c.freightPercent !== '') ? Number(c.freightPercent) : 2.5;
   const gstPercent = (c.gstPercent !== undefined && c.gstPercent !== null && c.gstPercent !== '') ? Number(c.gstPercent) : 18;
 
   const designAmount = Math.round(woodwork * (designPercent / 100));
-  const freightAmount = Math.round(woodwork * (freightPercent / 100));
+  const freightAmount = freightEnabled ? Math.round(woodwork * (freightPercent / 100)) : 0;
 
   const discP = Math.max(0, Math.min(100, Number(discountPercent !== undefined ? discountPercent : c.discountPercent) || 0));
   const adpP = Math.max(0, Math.min(100, Number(adpPercent !== undefined ? adpPercent : c.adpPercent) || 0));
   const discountAmount = Math.round(woodwork * (discP / 100));
-  const adpAmount = Math.round(woodwork * (adpP / 100));
+  // Discount on Design Charge (replaces ADP): % of Design Charges
+  const adpAmount = Math.round(designAmount * (adpP / 100));
+  const totalSavings = discountAmount + adpAmount;
 
-  const netBeforeTax = Math.max(0, Math.round(woodwork + acc + appliances + designAmount + freightAmount - (discountAmount + adpAmount)));
-  const gstAmount = Math.round(netBeforeTax * (gstPercent / 100));
+  const netBeforeTax = Math.max(0, Math.round(woodwork + acc + appliances + designAmount + freightAmount - totalSavings));
+  const gstAmount = gstEnabled ? Math.round(netBeforeTax * (gstPercent / 100)) : 0;
   const grandTotal = netBeforeTax + gstAmount;
 
   return Object.assign({}, c, {
     woodworkSubtotal: woodwork,
+    accessoriesEnabled,
     additionalAccessories: acc,
+    appliancesEnabled,
     appliances,
     designPercent,
     designAmount,
+    freightEnabled,
     freightPercent,
     freightAmount,
     discountPercent: discP,
     discountAmount,
     adpPercent: adpP,
     adpAmount,
+    totalSavings,
     netBeforeTax,
+    gstEnabled,
     gstPercent,
     gstAmount,
     grandTotal
@@ -608,7 +621,7 @@ class ClientQuoteService {
       const nk = quoteDeckBuilder.normalizeTemplateVariantKey(v.tierKey || v.tierTitle) || v.tierKey;
       const edit = byKey[nk] || byKey[v.tierKey];
       const nextComm = edit
-        ? recalculateVariantCommercial(v.commercial || {}, edit.discountPercent, edit.adpPercent)
+        ? recalculateVariantCommercial(v.commercial || {}, edit.discountPercent, edit.adpPercent, edit.designPercent)
         : recalculateVariantCommercial(v.commercial || {});
       return Object.assign({}, v, {
         commercial: nextComm,

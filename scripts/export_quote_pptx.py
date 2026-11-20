@@ -354,24 +354,33 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
         ))
         y += sum(rh for rh, _ in room_rows) + 240000
 
+    acc_enabled = comm.get('accessoriesEnabled', True) is not False
+    app_enabled = comm.get('appliancesEnabled', True) is not False
+    frt_enabled = comm.get('freightEnabled', True) is not False
+    gst_enabled = comm.get('gstEnabled', True) is not False
+
     comm_items = [
         ('Modular Woodwork Subtotal', fmt_inr(comm.get('woodworkSubtotal', 0)), True),
-        ('Additional Accessories', fmt_inr(comm.get('additionalAccessories', 0)), False),
-        ('Appliances', fmt_inr(comm.get('appliances', 0)), False),
-        (f"Design & Handling Fee ({comm.get('designPercent', 9)}%)", fmt_inr(comm.get('designAmount', 0)), False),
-        (f"Freight Charges ({comm.get('freightPercent', 2.5)}%)", fmt_inr(comm.get('freightAmount', 0)), False),
     ]
+    if acc_enabled:
+        comm_items.append(('Additional Accessories', fmt_inr(comm.get('additionalAccessories', 0)), False))
+    if app_enabled:
+        comm_items.append(('Appliances', fmt_inr(comm.get('appliances', 0)), False))
+    comm_items.append((f"Design Charges ({comm.get('designPercent', 9)}%)", fmt_inr(comm.get('designAmount', 0)), False))
+    if frt_enabled:
+        comm_items.append((f"Freight Charges ({comm.get('freightPercent', 2.5)}%)", fmt_inr(comm.get('freightAmount', 0)), False))
     if float(comm.get('discountAmount') or 0) > 0:
-        comm_items.append((f"Promotional Discount ({comm.get('discountPercent', 0)}%)", '- ' + fmt_inr(comm.get('discountAmount', 0)), False))
+        comm_items.append((f"Discount on Wood Work ({comm.get('discountPercent', 0)}%)", '- ' + fmt_inr(comm.get('discountAmount', 0)), False))
     if float(comm.get('adpAmount') or 0) > 0:
-        comm_items.append((f"Additional Discount ADP ({comm.get('adpPercent', 0)}%)", '- ' + fmt_inr(comm.get('adpAmount', 0)), False))
-    comm_items.append(('Net Estimate (Excl. GST)', fmt_inr(comm.get('netBeforeTax', 0)), True))
-    comm_items.append((f"GST Applicable ({comm.get('gstPercent', 18)}%)", fmt_inr(comm.get('gstAmount', 0)), False))
+        comm_items.append((f"Discount on Design Charge ({comm.get('adpPercent', 0)}%)", '- ' + fmt_inr(comm.get('adpAmount', 0)), False))
+    comm_items.append(('Grand Total (Without GST)', fmt_inr(comm.get('netBeforeTax', 0)), True))
+    if gst_enabled:
+        comm_items.append((f"GST ({comm.get('gstPercent', 18)}%)", fmt_inr(comm.get('gstAmount', 0)), False))
 
-    c_row_h = 340000 if len(comm_items) <= 8 else 305000
+    c_row_h = 330000 if len(comm_items) <= 8 else 295000
     comm_rows = [
-        (370000, [
-            build_ooxml_cell('COMMERCIAL SUMMARY & CHARGES', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=1050, align='l', border_hex='C00000'),
+        (360000, [
+            build_ooxml_cell('COST ESTIMATION SUMMARY', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=1050, align='l', border_hex='C00000'),
             build_ooxml_cell('AMOUNT', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=1050, align='r', border_hex='C00000'),
         ])
     ]
@@ -383,9 +392,17 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
         ]))
 
     grand_total = fmt_inr(comm.get('grandTotal', variant_quote.get('grandTotal', 0)))
-    comm_rows.append((490000, [
-        build_ooxml_cell('FINAL QUOTED VALUE (INCLUSIVE OF GST)', fill_hex='FEF9C3', text_hex='08231B', bold=True, font_sz=1150, align='l', border_hex='C00000'),
+    final_lbl = 'FINAL TOTAL (WITH GST)' if gst_enabled else 'FINAL TOTAL'
+    comm_rows.append((460000, [
+        build_ooxml_cell(final_lbl, fill_hex='FEF9C3', text_hex='08231B', bold=True, font_sz=1150, align='l', border_hex='C00000'),
         build_ooxml_cell(grand_total, fill_hex='FEF9C3', text_hex='C00000', bold=True, font_sz=1350, align='r', border_hex='C00000'),
+    ]))
+    total_savings = comm.get('totalSavings')
+    if total_savings is None:
+        total_savings = float(comm.get('discountAmount') or 0) + float(comm.get('adpAmount') or 0)
+    comm_rows.append((380000, [
+        build_ooxml_cell('YOUR SAVINGS', fill_hex='ECFDF5', text_hex='166534', bold=True, font_sz=1050, align='l', border_hex='16A34A'),
+        build_ooxml_cell(fmt_inr(total_savings), fill_hex='ECFDF5', text_hex='166534', bold=True, font_sz=1150, align='r', border_hex='16A34A'),
     ]))
 
     shapes.append(build_ooxml_table(

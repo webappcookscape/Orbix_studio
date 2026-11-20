@@ -493,25 +493,38 @@ def build_pdf(payload, out_path):
                 r_rows.append([f"{rm.get('name', 'Room')} ({rm.get('itemCount', 0)} units)", fmt_inr(rm.get('roomSubtotal', 0))])
             y = draw_table_ops(ops, r_rows, 30, y, PAGE_W - 60, [0.70, 0.30], font_size=8.6, header_fill=C_FOREST, right_cols={1}, bold_first=True, pad_y=5.0) + 14.0
 
+        acc_enabled = comm.get('accessoriesEnabled', True) is not False
+        app_enabled = comm.get('appliancesEnabled', True) is not False
+        frt_enabled = comm.get('freightEnabled', True) is not False
+        gst_enabled = comm.get('gstEnabled', True) is not False
+
         c_rows = [
-            ['COMMERCIAL SUMMARY & CHARGES', 'AMOUNT'],
+            ['COST ESTIMATION SUMMARY', 'AMOUNT'],
             ['Modular Woodwork Subtotal', fmt_inr(comm.get('woodworkSubtotal', 0))],
-            ['Additional Accessories', fmt_inr(comm.get('additionalAccessories', 0))],
-            ['Appliances', fmt_inr(comm.get('appliances', 0))],
-            [f"Design & Handling Fee ({comm.get('designPercent', 9)}%)", fmt_inr(comm.get('designAmount', 0))],
-            [f"Freight Charges ({comm.get('freightPercent', 2.5)}%)", fmt_inr(comm.get('freightAmount', 0))],
         ]
+        if acc_enabled:
+            c_rows.append(['Additional Accessories', fmt_inr(comm.get('additionalAccessories', 0))])
+        if app_enabled:
+            c_rows.append(['Appliances', fmt_inr(comm.get('appliances', 0))])
+        c_rows.append([f"Design Charges ({comm.get('designPercent', 9)}%)", fmt_inr(comm.get('designAmount', 0))])
+        if frt_enabled:
+            c_rows.append([f"Freight Charges ({comm.get('freightPercent', 2.5)}%)", fmt_inr(comm.get('freightAmount', 0))])
         if float(comm.get('discountAmount') or 0) > 0:
-            c_rows.append([f"Promotional Discount ({comm.get('discountPercent', 0)}%)", '- ' + fmt_inr(comm.get('discountAmount', 0))])
+            c_rows.append([f"Discount on Wood Work ({comm.get('discountPercent', 0)}%)", '- ' + fmt_inr(comm.get('discountAmount', 0))])
         if float(comm.get('adpAmount') or 0) > 0:
-            c_rows.append([f"Additional Discount ADP ({comm.get('adpPercent', 0)}%)", '- ' + fmt_inr(comm.get('adpAmount', 0))])
-        c_rows.append(['Net Estimate (Excl. GST)', fmt_inr(comm.get('netBeforeTax', 0))])
-        c_rows.append([f"GST Applicable ({comm.get('gstPercent', 18)}%)", fmt_inr(comm.get('gstAmount', 0))])
+            c_rows.append([f"Discount on Design Charge ({comm.get('adpPercent', 0)}%)", '- ' + fmt_inr(comm.get('adpAmount', 0))])
+        c_rows.append(['Grand Total (Without GST)', fmt_inr(comm.get('netBeforeTax', 0))])
+        if gst_enabled:
+            c_rows.append([f"GST ({comm.get('gstPercent', 18)}%)", fmt_inr(comm.get('gstAmount', 0))])
         c_rows.append({
-            'cells': ['FINAL QUOTED VALUE (INCLUSIVE OF GST)', fmt_inr(comm.get('grandTotal', vq.get('grandTotal', 0)))],
+            'cells': ['FINAL TOTAL (WITH GST)' if gst_enabled else 'FINAL TOTAL', fmt_inr(comm.get('grandTotal', vq.get('grandTotal', 0)))],
             'highlight': True,
             'accent': True
         })
+        total_savings = comm.get('totalSavings')
+        if total_savings is None:
+            total_savings = float(comm.get('discountAmount') or 0) + float(comm.get('adpAmount') or 0)
+        c_rows.append(['YOUR SAVINGS', fmt_inr(total_savings)])
 
         y = draw_table_ops(ops, c_rows, 30, y, PAGE_W - 60, [0.70, 0.30], font_size=8.8, header_fill=C_CRIMSON, right_cols={1}, bold_first=False, pad_y=5.5) + 14.0
         if y < PAGE_H - 55:

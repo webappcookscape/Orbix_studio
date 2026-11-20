@@ -213,17 +213,22 @@
       roomsSummary: roomsSummary,
       commercial: {
         woodworkSubtotal: comm.woodworkSubtotal,
+        accessoriesEnabled: comm.accessoriesEnabled !== false,
         additionalAccessories: comm.additionalAccessories,
+        appliancesEnabled: comm.appliancesEnabled !== false,
         appliances: comm.appliances,
         designPercent: comm.designPercent,
         designAmount: comm.designAmount,
+        freightEnabled: comm.freightEnabled !== false,
         freightPercent: comm.freightPercent,
         freightAmount: comm.freightAmount,
         discountPercent: comm.discountPercent,
         discountAmount: comm.discountAmount,
         adpPercent: comm.adpPercent,
         adpAmount: comm.adpAmount,
+        totalSavings: comm.totalSavings !== undefined ? comm.totalSavings : ((comm.discountAmount || 0) + (comm.adpAmount || 0)),
         netBeforeTax: comm.netValue,
+        gstEnabled: comm.gstEnabled !== false,
         gstPercent: comm.gstPercent,
         gstAmount: comm.gstAmount,
         grandTotal: comm.grandTotal,
@@ -245,24 +250,25 @@
     var modal = document.createElement('div');
     modal.id = 'clientQuoteShareModal';
     modal.className = 'orbix-modal';
+    modal.style.background = 'rgba(15, 23, 42, 0.58)';
+    modal.style.backdropFilter = 'blur(8px)';
+    modal.style.webkitBackdropFilter = 'blur(8px)';
     modal.innerHTML =
-      '<div class="orbix-modal-box" style="max-width:780px;width:95vw;max-height:92vh;display:flex;flex-direction:column;">' +
+      '<div class="orbix-modal-box" style="max-width:780px;width:95vw;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.45);border-radius:10px;overflow:hidden;">' +
       '  <div class="orbix-modal-hdr" style="background:linear-gradient(135deg,#08231B,#0F172A);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-radius:10px 10px 0 0;">' +
       '    <div>' +
       '      <div style="font-size:15px;font-weight:700;">🔐 Cookscape Client Quote Generator (Master Template)</div>' +
-      '      <div style="font-size:11.5px;color:#CBD5E1;margin-top:2px;">Cover + Intro (2–6) + Selected Variants (Divider • Specs • Unit Snips • Quotation) + Policy &amp; Terms (22–29)</div>' +
+      '      <div style="font-size:11.5px;color:#CBD5E1;margin-top:2px;">Cover + Intro (2–6) + Selected Variants (Divider • Specs • Unit Snips • Quotation) + Policy &amp; Terms (34–41)</div>' +
       '    </div>' +
-      '    <button type="button" id="cqCloseModalBtn" style="background:rgba(255,255,255,0.12);border:none;color:#fff;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px;">✕</button>' +
+      '    <button type="button" id="cqCloseModalBtn" title="Close" style="background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);color:#fff;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:16px;font-weight:700;">✕</button>' +
       '  </div>' +
       '  <div id="cqModalBody" style="padding:18px;overflow-y:auto;flex:1;background:#FFFFFF;color:#0F172A;"></div>' +
       '</div>';
     document.body.appendChild(modal);
 
+    // Close ONLY when the cross (✕) button is clicked — do NOT close on outside backdrop click
     modal.querySelector('#cqCloseModalBtn').addEventListener('click', function () {
       modal.classList.remove('is-open');
-    });
-    modal.addEventListener('click', function (e) {
-      if (e.target === modal) modal.classList.remove('is-open');
     });
     return modal;
   }
@@ -377,11 +383,6 @@
         '  </div>' +
         '</div>' +
 
-        '<div id="cqWaStatusBar" style="background:#F8FAFC;border:1px solid #CBD5E1;border-radius:8px;padding:8px 11px;margin-bottom:12px;font-size:11.5px;color:#334155;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">' +
-        '  <span id="cqWaStatusTxt">📲 Checking WhatsApp alert status (8838199428 &amp; 7418414780)...</span>' +
-        '  <button type="button" id="cqWaTestBtn" class="btn small" style="padding:3px 9px;font-size:11px;">📲 Test WhatsApp Alert</button>' +
-        '</div>' +
-
         '<div id="cqResultCard" style="display:none;background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:14px;margin-bottom:16px;"></div>' +
 
         '<div style="border-top:1px solid #E2E8F0;padding-top:12px;">' +
@@ -462,64 +463,6 @@
       body.querySelector('#cqRefreshListBtn').addEventListener('click', function () {
         self.loadExistingList(body, getActiveProjectId(app));
       });
-
-      (function loadWaStatus() {
-        var stTxt = body.querySelector('#cqWaStatusTxt');
-        var stBar = body.querySelector('#cqWaStatusBar');
-        var testBtn = body.querySelector('#cqWaTestBtn');
-        if (!stTxt) return;
-        fetch('/api/client-quotes/whatsapp-status', { credentials: 'same-origin', cache: 'no-store' })
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
-            if (!d || !d.success) return;
-            if (d.configured) {
-              stBar.style.background = '#ECFDF5';
-              stBar.style.borderColor = '#86EFAC';
-              stTxt.innerHTML = '✅ <b>WhatsApp Alerts Active</b> (' + esc(d.provider) + ') &rarr; <b>' + esc((d.recipients || []).join(', ')) + '</b>';
-            } else {
-              stBar.style.background = '#FEF2F2';
-              stBar.style.borderColor = '#FCA5A5';
-              stTxt.innerHTML = '⚠️ <b>WhatsApp Gateway Not Connected Yet</b> — Add CallMeBot / Meta Cloud / UltraMsg / Twilio keys in server <code>.env</code> so <b>8838199428 &amp; 7418414780</b> receive live messages.';
-            }
-          }).catch(function () {});
-
-        if (testBtn) {
-          testBtn.addEventListener('click', async function () {
-            var prev = this.textContent;
-            this.disabled = true;
-            this.textContent = '⏳ Sending...';
-            try {
-              var r = await fetch('/api/client-quotes/test-whatsapp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                  clientName: (body.querySelector('#cqClientName') && body.querySelector('#cqClientName').value.trim()) || 'Test Client',
-                  projectName: (proj.meta && proj.meta.title) || 'Orbix Project',
-                  projectId: getActiveProjectId(app),
-                  quoteCode: (body.querySelector('#cqQuoteCode') && body.querySelector('#cqQuoteCode').value.trim()) || 'TEST'
-                })
-              });
-              var d = await r.json();
-              if (!r.ok || !d.success) throw new Error(d.error || 'Test failed');
-              var delivered = (d.alert.results || []).filter(function (x) { return x.sent; }).length;
-              if (d.alert.provider === 'none') {
-                alert('WhatsApp API credentials are not configured in server .env yet.\nAlert message prepared for 8838199428 & 7418414780:\n\n' + d.alert.message);
-              } else {
-                var failDetails = (d.alert.results || []).filter(function (x) { return !x.sent; }).map(function (x) {
-                  return x.phone + ' -> HTTP ' + (x.status || 0) + ': ' + (x.error || x.detail || 'Failed');
-                }).join('\n');
-                alert('WhatsApp test dispatched via ' + d.alert.provider + ': ' + delivered + '/' + d.alert.recipients.length + ' delivered!' + (failDetails ? ('\n\nFailure details:\n' + failDetails) : ''));
-              }
-            } catch (err) {
-              alert(err.message || String(err));
-            } finally {
-              this.disabled = false;
-              this.textContent = prev;
-            }
-          });
-        }
-      })();
 
       body.querySelector('#cqCreateReviewBtn').addEventListener('click', async function () {
         showErr('');
@@ -621,10 +564,16 @@
           listEl.innerHTML = '<div style="padding:8px 0;color:#64748B;">No quotation review links created for this project yet. Generate a Head Review Link in Step 1 above.</div>';
           return;
         }
-        listEl.innerHTML = quotes.map(function (q) {
+        var renderQuoteCard = function (q, idx, totalCount, isHistoryItem) {
           var isApproved = q.approvalStatus === 'approved';
           var isActivated = Boolean(q.clientLinkActivated);
           var isExpired = q.expiresAt && new Date(q.expiresAt).getTime() < Date.now();
+          var revNum = totalCount - idx;
+
+          var accentBorder = q.isRevoked
+            ? '#DC2626'
+            : (isExpired ? '#D97706' : (isActivated ? '#0F766E' : (isApproved ? '#16A34A' : '#F59E0B')));
+          var cardBg = isHistoryItem ? '#F1F5F9' : '#FFFFFF';
 
           var approvalBadge = isApproved
             ? '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;color:#fff;background:#16A34A;">✅ Approved' + (q.approvedBy ? (' by ' + esc(q.approvedBy)) : '') + '</span>'
@@ -633,20 +582,16 @@
           var clientBadge = '';
           if (isActivated) {
             var cBg = q.isRevoked ? '#DC2626' : (isExpired ? '#D97706' : '#0F766E');
-            var cLbl = q.isRevoked ? 'Client Link Revoked' : (isExpired ? 'Client Link Expired' : 'Client Link Active');
+            var cLbl = q.isRevoked ? 'Revoked' : (isExpired ? 'Expired' : 'Client Link Active');
             clientBadge = ' <span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:700;color:#fff;background:' + cBg + ';">' + cLbl + '</span>';
           }
 
           var varSummaryHtml = (q.variantSummaries || []).map(function (vs) {
             var discNote = (vs.discountPercent || vs.adpPercent)
-              ? (' <span style="color:#B45309;">(Disc ' + vs.discountPercent + '%' + (vs.adpPercent ? (' + ADP ' + vs.adpPercent + '%') : '') + ')</span>')
+              ? (' <span style="color:#B45309;">(WW Disc ' + vs.discountPercent + '%' + (vs.adpPercent ? (' + Design Disc ' + vs.adpPercent + '%') : '') + ')</span>')
               : '';
-            return '<span style="display:inline-block;background:#fff;border:1px solid #E2E8F0;border-radius:5px;padding:2px 7px;margin:2px 4px 2px 0;font-size:11px;"><b>' + esc(vs.tierTitle || vs.tierKey) + '</b>: ' + esc(fmtINR(vs.grandTotal)) + discNote + '</span>';
+            return '<span style="display:inline-block;background:#FAF6F0;border:1px solid #E2D5C3;border-radius:5px;padding:2px 7px;margin:2px 4px 2px 0;font-size:11px;"><b>' + esc(vs.tierTitle || vs.tierKey) + '</b>: ' + esc(fmtINR(vs.grandTotal)) + discNote + '</span>';
           }).join('');
-
-          var waNotice = q.lastWhatsappAlert
-            ? '<div style="margin-top:5px;font-size:11px;color:#166534;background:#ECFDF5;border:1px solid #BBF7D0;border-radius:5px;padding:4px 8px;">📲 Client opened link &rarr; WhatsApp alert triggered for 8838199428 &amp; 7418414780 (' + esc(new Date(q.lastWhatsappAlert.sentAt).toLocaleString('en-IN')) + ')</div>'
-            : '';
 
           var step2Html = '';
           if (!isApproved) {
@@ -679,8 +624,7 @@
               '</div>';
           } else {
             step2Html =
-              '<div style="font-size:11.5px;color:#475569;margin-top:5px;">Client Login User: <code style="background:#E2E8F0;padding:1px 5px;border-radius:4px;">' + esc(q.clientUsername) + '</code> &bull; Views: <b>' + q.viewCount + '</b>' + (q.expiresAt ? (' &bull; Expires: ' + new Date(q.expiresAt).toLocaleDateString('en-IN')) : ' &bull; No Expiry') + '</div>' +
-              waNotice +
+              '<div style="font-size:11.5px;color:#475569;margin-top:5px;">Client Login User: <code style="background:#E2E8F0;padding:1px 5px;border-radius:4px;">' + esc(q.clientUsername) + '</code> &bull; Views: <b>' + q.viewCount + '</b>' + (q.expiresAt ? (' &bull; Expires: ' + new Date(q.expiresAt).toLocaleDateString('en-IN')) : ' &bull; No Expiry') + (q.lastViewedAt ? (' &bull; Last Opened: ' + new Date(q.lastViewedAt).toLocaleString('en-IN')) : '') + '</div>' +
               '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">' +
               '  <button type="button" class="btn small cq-act-copy" data-url="' + esc(q.shareUrl) + '" style="background:#166534;color:#fff;border-color:#166534;">📋 Copy Client Link</button>' +
               '  <button type="button" class="btn small cq-btn-pptx" data-id="' + esc(q.id) + '" data-client="' + esc(q.clientName) + '" style="background:#08231B;color:#fff;border-color:#08231B;">📊 Full PPTX</button>' +
@@ -691,16 +635,25 @@
               '</div>';
           }
 
-          return '<div class="cq-quote-card" style="border:1px solid #E2E8F0;border-radius:9px;padding:11px 13px;margin-bottom:10px;background:#F8FAFC;">' +
+          return '<div class="cq-quote-card" style="border:1px solid #CBD5E1;border-left:4px solid ' + accentBorder + ';border-radius:9px;padding:11px 13px;margin-bottom:10px;background:' + cardBg + ';box-shadow:0 2px 6px rgba(15,23,42,0.05);">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">' +
-            '  <div>' + approvalBadge + clientBadge + ' <b style="margin-left:4px;">' + esc(q.clientName) + '</b> <span style="color:#64748B;font-size:11px;">(' + esc(q.quoteCode || q.id) + ')</span></div>' +
-            '  <div style="font-size:11px;color:#64748B;">' + (q.createdAt ? new Date(q.createdAt).toLocaleDateString('en-IN') : '') + '</div>' +
+            '  <div><span style="display:inline-block;background:#08231B;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-right:5px;">Rev #' + revNum + '</span>' + approvalBadge + clientBadge + ' <b style="margin-left:4px;">' + esc(q.clientName) + '</b> <span style="color:#64748B;font-size:11px;">(' + esc(q.quoteCode || q.id) + ')</span></div>' +
+            '  <div style="font-size:11px;color:#475569;font-weight:600;">' + (q.createdAt ? new Date(q.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '') + '</div>' +
             '</div>' +
             '<div style="margin-top:6px;">' + varSummaryHtml + '</div>' +
             (q.approvalRemarks ? ('<div style="font-size:11.5px;color:#166534;margin-top:4px;">Head Remarks: <i>' + esc(q.approvalRemarks) + '</i></div>') : '') +
             step2Html +
             '</div>';
-        }).join('');
+        };
+
+        var latestHtml = '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#08231B;background:#EFE8DD;padding:5px 10px;border-radius:6px;margin-bottom:8px;">📌 Latest / Current Quotation</div>' +
+          renderQuoteCard(quotes[0], 0, quotes.length, false);
+        var historyHtml = '';
+        if (quotes.length > 1) {
+          historyHtml = '<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#475569;background:#E2E8F0;padding:5px 10px;border-radius:6px;margin:14px 0 8px 0;">🕘 Previous Quotation History (' + (quotes.length - 1) + ')</div>' +
+            quotes.slice(1).map(function (q, i) { return renderQuoteCard(q, i + 1, quotes.length, true); }).join('');
+        }
+        listEl.innerHTML = latestHtml + historyHtml;
 
         listEl.querySelectorAll('.cq-act-copy').forEach(function (b) {
           b.addEventListener('click', function () { copyText(this.getAttribute('data-url'), this, '✓ Copied'); });
