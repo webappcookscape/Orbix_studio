@@ -297,6 +297,8 @@
         if (planObj && planObj.furniture && planObj.furniture.length > 0) {
           var validIds = planObj.furniture.map(function (f) { return f.id; });
           S.units = d.units.filter(function (u) { return u._furnId && validIds.indexOf(u._furnId) !== -1; });
+        } else if (d.units && Array.isArray(d.units) && d.units.length > 0) {
+          S.units = d.units;
         } else {
           S.units = [];
         }

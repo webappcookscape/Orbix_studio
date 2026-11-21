@@ -1747,7 +1747,13 @@
             var localNewer = !!(localModMs > 0 && (!serverUpdatedMs || localModMs > serverUpdatedMs));
             var serverEmptyButLocalHasWork = !!(serverStats.total === 0 && localStats.total > 0);
             var serverMissingWalls = !!(serverStats.walls === 0 && localStats.walls > 0 && (!serverUpdatedMs || localModMs >= serverUpdatedMs));
-            if (localNewer || serverEmptyButLocalHasWork || serverMissingWalls) {
+
+            // CRITICAL: NEVER overwrite rich server work (e.g. 27 units or walls) with an empty local draft!
+            var serverHasRichWorkButLocalEmpty = (serverStats.total > 0 && localStats.total === 0) ||
+              (serverStats.furniture > 0 && localStats.furniture === 0) ||
+              (serverStats.walls > 0 && localStats.walls === 0);
+
+            if (!serverHasRichWorkButLocalEmpty && (localNewer || serverEmptyButLocalHasWork || serverMissingWalls)) {
               planToLoad = parsedLocal;
               self._isAwaitingHydration = false;
               if (!loadOpts.isHydration || !inMemSameProj || inMemStats.total !== localStats.total) {
@@ -1785,6 +1791,35 @@
             plan: { gridSize: 100, walls: [], openings: [], rooms: [], furniture: [] }
           };
         }
+      }
+
+      // Ensure units from project.data.units are NEVER lost if planToLoad has no furniture!
+      var targetInnerPlan = planToLoad;
+      while (targetInnerPlan && targetInnerPlan.plan && (targetInnerPlan.plan.furniture || targetInnerPlan.plan.walls || targetInnerPlan.plan.rooms || targetInnerPlan.plan.plan)) {
+        targetInnerPlan = targetInnerPlan.plan;
+      }
+      var existingFurnCount = (targetInnerPlan && Array.isArray(targetInnerPlan.furniture)) ? targetInnerPlan.furniture.length : 0;
+      var rawUnitsList = (project.data && Array.isArray(project.data.units) && project.data.units.length > 0) ? project.data.units :
+        (Array.isArray(project.units) && project.units.length > 0 ? project.units : null);
+
+      if (existingFurnCount === 0 && rawUnitsList && rawUnitsList.length > 0 && targetInnerPlan) {
+        targetInnerPlan.furniture = targetInnerPlan.furniture || [];
+        for (var ui = 0; ui < rawUnitsList.length; ui++) {
+          var rawU = rawUnitsList[ui];
+          var furnId = rawU._furnId || ('furn_' + (rawU.id || ui) + '_' + (activeId || Date.now()));
+          rawU._furnId = furnId;
+          targetInnerPlan.furniture.push({
+            id: furnId,
+            name: rawU.label || ('Unit ' + (ui + 1)),
+            category: rawU.ctype || 'wardrobe',
+            dimensions: { W: rawU.W || 900, H: rawU.H || 2100, D: rawU.D || 600 },
+            elevation: rawU.elev || 0,
+            pos: rawU.pos || { x: (ui % 6) * 1100 + 600, y: Math.floor(ui / 6) * 1100 + 600, z: rawU.elev || 0 },
+            rotY: rawU.rotY || 0,
+            unitConfig: Object.assign({}, rawU)
+          });
+        }
+        console.log('[Orbix Studio] Restored ' + rawUnitsList.length + ' units from project data into workspace plan.');
       }
 
       // Stamp authoritative project ID & normalize client/quote metadata into planToLoad
@@ -1860,6 +1895,10 @@
       }
 
       // 2. Synchronize 3D units strictly synchronized with live project
+      if (rawUnitsList && rawUnitsList.length > 0 && window.S) {
+        window.S.units = JSON.parse(JSON.stringify(rawUnitsList));
+        window.S.active = 0;
+      }
       if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
         window.OrbixUI.syncProjectUnitsTo3DStudio();
       } else if (window.S) {
