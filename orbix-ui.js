@@ -277,9 +277,16 @@
         var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
         if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
 
-        // Elevation Tier Shortcuts: Alt + F (Floor), Alt + W (Wall), Alt + L (Loft), Alt + A (All)
+        // Elevation Tier Shortcuts: Alt + F (Floor), Alt + W (Wall), Alt + L (Loft), Alt + A (All) & Hard Refresh: Alt + R
         if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
           var k = e.key.toLowerCase();
+          if (k === 'r') {
+            e.preventDefault();
+            if (typeof self.hardRefresh3D === 'function') {
+              self.hardRefresh3D();
+            }
+            return;
+          }
           if (k === 'f') {
             e.preventDefault();
             if (self.editor && typeof self.editor.setUnitTierFilter === 'function') {
@@ -8394,7 +8401,7 @@
       this.syncProjectUnitsTo3DStudio();
     },
 
-    render3DHome: function (keepCamera, isolatedRoomId, targetFurnId) {
+    render3DHome: function (keepCamera, isolatedRoomId, targetFurnId, forceHardRefresh) {
       if (typeof THREE === 'undefined' || !window.__cc || !window.__cc.gl) return;
       var gl = window.__cc.gl;
       var scene = gl.getScene ? gl.getScene() : null;
@@ -8405,7 +8412,6 @@
         this._3dDirty = true;
         return;
       }
-      this._3dDirty = false;
 
       // Ensure sky is daytime radiant sky blue and outer ground is lush lawn grass
       if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
@@ -8437,8 +8443,8 @@
         var homeObj = scene.getObjectByName('OrbixHome3D');
         var curProjId = proj ? String(proj.id || proj._projectId || '') : '';
 
-        // Instant Fast-Path: If 3D home is already built and 2D plan hasn't been edited, skip full CSG reconstruction!
-        if (!this._3dDirty && homeObj && this.archRenderer.group && this._lastRendered3DProjId === curProjId && isolatedRoomId === undefined) {
+        // Instant Fast-Path: Only if NOT hard-refreshing, NOT dirty, 3D home already built, and same project!
+        if (!forceHardRefresh && !this._3dDirty && homeObj && this.archRenderer.group && this._lastRendered3DProjId === curProjId && isolatedRoomId === undefined) {
           if (gl.apply) gl.apply();
           if (gl.settle) gl.settle();
           return;
@@ -8497,6 +8503,26 @@
       }
       if (typeof this.updateProjectDetailsBadges === 'function') {
         this.updateProjectDetailsBadges();
+      }
+    },
+
+    hardRefresh3D: function (opts) {
+      opts = opts || {};
+      this._3dDirty = true;
+      if (typeof this.update3DStudioRoomOptions === 'function') {
+        this.update3DStudioRoomOptions();
+      }
+      if (typeof this.syncProjectUnitsTo3DStudio === 'function') {
+        this.syncProjectUnitsTo3DStudio();
+      }
+      this.render3DHome(opts.keepCamera !== false, undefined, undefined, true);
+      if (window.__cc && window.__cc.gl) {
+        if (window.__cc.gl.frame && opts.keepCamera === false) window.__cc.gl.frame();
+        if (window.__cc.gl.apply) window.__cc.gl.apply();
+        if (window.__cc.gl.settle) window.__cc.gl.settle();
+      }
+      if (typeof window.showToast === 'function' && opts.silent !== true) {
+        window.showToast('🔄 3D Studio hard-refreshed from latest 2D floor plan');
       }
     },
 

@@ -5205,6 +5205,23 @@
     var f3dOut = document.getElementById('float3dZoomOut');
     var f3dReset = document.getElementById('float3dReset');
     var f3dPan = document.getElementById('float3dPan');
+    var f3dRefresh = document.getElementById('float3dHardRefresh');
+    var btnRefresh3D = document.getElementById('btnHardRefresh3D');
+
+    var doHardRefresh = function () {
+      if (window.OrbixUI && typeof window.OrbixUI.hardRefresh3D === 'function') {
+        window.OrbixUI.hardRefresh3D();
+      } else if (typeof buildScene === 'function') {
+        buildScene();
+      }
+    };
+
+    if (f3dRefresh) {
+      f3dRefresh.addEventListener('click', doHardRefresh);
+    }
+    if (btnRefresh3D) {
+      btnRefresh3D.addEventListener('click', doHardRefresh);
+    }
 
     if (f3dIn) {
       f3dIn.addEventListener('click', function () {
@@ -6442,6 +6459,9 @@
       }
 
       var run3DBackendWork = function () {
+        if (window.OrbixUI) {
+          window.OrbixUI._3dDirty = true;
+        }
         if (window.OrbixUI && typeof window.OrbixUI.update3DStudioRoomOptions === 'function') {
           window.OrbixUI.update3DStudioRoomOptions();
         }
@@ -6449,7 +6469,7 @@
           window.OrbixUI.syncProjectUnitsTo3DStudio();
         }
         if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
-          window.OrbixUI.render3DHome(true);
+          window.OrbixUI.render3DHome(true, undefined, undefined, true);
         } else if (typeof buildScene === 'function') {
           buildScene();
         }

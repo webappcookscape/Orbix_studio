@@ -235,6 +235,7 @@
               <button type="button" class="stage-nav-btn" id="float3dZoomOut" title="Zoom Out (-)">➖</button>
               <button type="button" class="stage-nav-btn" id="float3dReset" title="Re-Centre (Home)">🎯</button>
               <button type="button" class="stage-nav-btn" id="float3dPan" title="Pan View (Right-Click Drag or Left-Click in Pan mode)">✋</button>
+              <button type="button" class="stage-nav-btn" id="float3dHardRefresh" title="Hard Refresh 3D: Rebuild 3D scene from latest 2D Plan (Alt+R)" style="background:#e0f2fe;color:#0369a1;border-color:#7dd3fc;font-weight:bold;">🔄</button>
             </div>
           </div>
 
@@ -322,6 +323,11 @@
                   <button type="button" class="minibtn" id="modeUltraBtn"
                     title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic camera view, and presentation HUD overlay">🌟
                     Client Ultra</button>
+                  <button type="button" class="minibtn" id="btnHardRefresh3D"
+                    title="Hard Refresh 3D (Alt+R): Purge 3D cache and rebuild clean scene from 2D Floor Plan"
+                    style="display:inline-flex;align-items:center;gap:4px;font-weight:600;color:#0284c7;">
+                    🔄 Refresh 3D
+                  </button>
                 </div>
 
                 <!-- 3D Building Storey Floor View Selector -->

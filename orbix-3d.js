@@ -1026,11 +1026,23 @@
     }
     var targetIsoId = this.isolatedRoomId;
 
-    // Remove existing home group if any
-    if (this.group) {
-      this.scene.remove(this.group);
-      this.disposeGroup(this.group);
+    // Remove any existing home groups to eliminate stale meshes and old memos
+    var oldHomes = [];
+    if (this.scene.children && this.scene.children.length) {
+      for (var ci = this.scene.children.length - 1; ci >= 0; ci--) {
+        var child = this.scene.children[ci];
+        if (child && (child.name === 'OrbixHome3D' || child === this.group)) {
+          oldHomes.push(child);
+        }
+      }
     }
+    for (var h = 0; h < oldHomes.length; h++) {
+      this.scene.remove(oldHomes[h]);
+      if (typeof this.disposeGroup === 'function') {
+        this.disposeGroup(oldHomes[h]);
+      }
+    }
+    this.group = null;
 
     this.group = new THREE.Group();
     this.group.name = 'OrbixHome3D';

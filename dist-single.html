@@ -4203,6 +4203,7 @@ body.role-employee #adminCreateEmpBox,
               <button type="button" class="stage-nav-btn" id="float3dZoomOut" title="Zoom Out (-)">➖</button>
               <button type="button" class="stage-nav-btn" id="float3dReset" title="Re-Centre (Home)">🎯</button>
               <button type="button" class="stage-nav-btn" id="float3dPan" title="Pan View (Right-Click Drag or Left-Click in Pan mode)">✋</button>
+              <button type="button" class="stage-nav-btn" id="float3dHardRefresh" title="Hard Refresh 3D: Rebuild 3D scene from latest 2D Plan (Alt+R)" style="background:#e0f2fe;color:#0369a1;border-color:#7dd3fc;font-weight:bold;">🔄</button>
             </div>
           </div>
 
@@ -4290,6 +4291,11 @@ body.role-employee #adminCreateEmpBox,
                   <button type="button" class="minibtn" id="modeUltraBtn"
                     title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic camera view, and presentation HUD overlay">🌟
                     Client Ultra</button>
+                  <button type="button" class="minibtn" id="btnHardRefresh3D"
+                    title="Hard Refresh 3D (Alt+R): Purge 3D cache and rebuild clean scene from 2D Floor Plan"
+                    style="display:inline-flex;align-items:center;gap:4px;font-weight:600;color:#0284c7;">
+                    🔄 Refresh 3D
+                  </button>
                 </div>
 
                 <!-- 3D Building Storey Floor View Selector -->
@@ -30282,11 +30288,23 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     }
     var targetIsoId = this.isolatedRoomId;
 
-    // Remove existing home group if any
-    if (this.group) {
-      this.scene.remove(this.group);
-      this.disposeGroup(this.group);
+    // Remove any existing home groups to eliminate stale meshes and old memos
+    var oldHomes = [];
+    if (this.scene.children && this.scene.children.length) {
+      for (var ci = this.scene.children.length - 1; ci >= 0; ci--) {
+        var child = this.scene.children[ci];
+        if (child && (child.name === 'OrbixHome3D' || child === this.group)) {
+          oldHomes.push(child);
+        }
+      }
     }
+    for (var h = 0; h < oldHomes.length; h++) {
+      this.scene.remove(oldHomes[h]);
+      if (typeof this.disposeGroup === 'function') {
+        this.disposeGroup(oldHomes[h]);
+      }
+    }
+    this.group = null;
 
     this.group = new THREE.Group();
     this.group.name = 'OrbixHome3D';
@@ -35926,9 +35944,16 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
         if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
 
-        // Elevation Tier Shortcuts: Alt + F (Floor), Alt + W (Wall), Alt + L (Loft), Alt + A (All)
+        // Elevation Tier Shortcuts: Alt + F (Floor), Alt + W (Wall), Alt + L (Loft), Alt + A (All) & Hard Refresh: Alt + R
         if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
           var k = e.key.toLowerCase();
+          if (k === 'r') {
+            e.preventDefault();
+            if (typeof self.hardRefresh3D === 'function') {
+              self.hardRefresh3D();
+            }
+            return;
+          }
           if (k === 'f') {
             e.preventDefault();
             if (self.editor && typeof self.editor.setUnitTierFilter === 'function') {
@@ -44043,7 +44068,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       this.syncProjectUnitsTo3DStudio();
     },
 
-    render3DHome: function (keepCamera, isolatedRoomId, targetFurnId) {
+    render3DHome: function (keepCamera, isolatedRoomId, targetFurnId, forceHardRefresh) {
       if (typeof THREE === 'undefined' || !window.__cc || !window.__cc.gl) return;
       var gl = window.__cc.gl;
       var scene = gl.getScene ? gl.getScene() : null;
@@ -44054,7 +44079,6 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         this._3dDirty = true;
         return;
       }
-      this._3dDirty = false;
 
       // Ensure sky is daytime radiant sky blue and outer ground is lush lawn grass
       if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
@@ -44086,8 +44110,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var homeObj = scene.getObjectByName('OrbixHome3D');
         var curProjId = proj ? String(proj.id || proj._projectId || '') : '';
 
-        // Instant Fast-Path: If 3D home is already built and 2D plan hasn't been edited, skip full CSG reconstruction!
-        if (!this._3dDirty && homeObj && this.archRenderer.group && this._lastRendered3DProjId === curProjId && isolatedRoomId === undefined) {
+        // Instant Fast-Path: Only if NOT hard-refreshing, NOT dirty, 3D home already built, and same project!
+        if (!forceHardRefresh && !this._3dDirty && homeObj && this.archRenderer.group && this._lastRendered3DProjId === curProjId && isolatedRoomId === undefined) {
           if (gl.apply) gl.apply();
           if (gl.settle) gl.settle();
           return;
@@ -44146,6 +44170,26 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       }
       if (typeof this.updateProjectDetailsBadges === 'function') {
         this.updateProjectDetailsBadges();
+      }
+    },
+
+    hardRefresh3D: function (opts) {
+      opts = opts || {};
+      this._3dDirty = true;
+      if (typeof this.update3DStudioRoomOptions === 'function') {
+        this.update3DStudioRoomOptions();
+      }
+      if (typeof this.syncProjectUnitsTo3DStudio === 'function') {
+        this.syncProjectUnitsTo3DStudio();
+      }
+      this.render3DHome(opts.keepCamera !== false, undefined, undefined, true);
+      if (window.__cc && window.__cc.gl) {
+        if (window.__cc.gl.frame && opts.keepCamera === false) window.__cc.gl.frame();
+        if (window.__cc.gl.apply) window.__cc.gl.apply();
+        if (window.__cc.gl.settle) window.__cc.gl.settle();
+      }
+      if (typeof window.showToast === 'function' && opts.silent !== true) {
+        window.showToast('🔄 3D Studio hard-refreshed from latest 2D floor plan');
       }
     },
 
@@ -51208,6 +51252,23 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     var f3dOut = document.getElementById('float3dZoomOut');
     var f3dReset = document.getElementById('float3dReset');
     var f3dPan = document.getElementById('float3dPan');
+    var f3dRefresh = document.getElementById('float3dHardRefresh');
+    var btnRefresh3D = document.getElementById('btnHardRefresh3D');
+
+    var doHardRefresh = function () {
+      if (window.OrbixUI && typeof window.OrbixUI.hardRefresh3D === 'function') {
+        window.OrbixUI.hardRefresh3D();
+      } else if (typeof buildScene === 'function') {
+        buildScene();
+      }
+    };
+
+    if (f3dRefresh) {
+      f3dRefresh.addEventListener('click', doHardRefresh);
+    }
+    if (btnRefresh3D) {
+      btnRefresh3D.addEventListener('click', doHardRefresh);
+    }
 
     if (f3dIn) {
       f3dIn.addEventListener('click', function () {
@@ -52445,6 +52506,9 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       }
 
       var run3DBackendWork = function () {
+        if (window.OrbixUI) {
+          window.OrbixUI._3dDirty = true;
+        }
         if (window.OrbixUI && typeof window.OrbixUI.update3DStudioRoomOptions === 'function') {
           window.OrbixUI.update3DStudioRoomOptions();
         }
@@ -52452,7 +52516,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           window.OrbixUI.syncProjectUnitsTo3DStudio();
         }
         if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
-          window.OrbixUI.render3DHome(true);
+          window.OrbixUI.render3DHome(true, undefined, undefined, true);
         } else if (typeof buildScene === 'function') {
           buildScene();
         }
