@@ -47005,7 +47005,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       canvas.rect(tbX, tbY, tbW, tbH, '#000000', 2.5, '#ffffff');
 
       // Vertical Columns in Title Block
-      // Col 1: Client & Site (0 to 520)
+      // Col 1: Client & Site (0 to 540)
       canvas.line(tbX + 540, tbY, tbX + 540, tbY + tbH, '#000000', 1.5);
       // Col 2: Codes & Dates (540 to 980)
       canvas.line(tbX + 980, tbY, tbX + 980, tbY + tbH, '#000000', 1.5);
@@ -47096,135 +47096,276 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     },
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // PAGE GENERATORS MATCHING REFERENCE PDF
+    // LIVE PROJECT DATA EXTRACTOR
     // ─────────────────────────────────────────────────────────────────────────────
 
-    // PAGE 1: 2D Floor Layout Plan (Top View)
-    buildPage1_FloorPlan: function (pageNum, totalPages, planData) {
+    getProjectData: function () {
+      var ui = (typeof window !== 'undefined' && window.OrbixUI) || null;
+      var plan = null;
+      var proj = (ui && ui.project) ||
+                 (ui && ui.editor && ui.editor.project) ||
+                 (typeof window !== 'undefined' && window.OrbixProjects && window.OrbixProjects.currentProject);
+
+      if (ui && typeof ui.getPlan === 'function') {
+        try { plan = ui.getPlan(); } catch (_) {}
+      }
+
+      if (!plan && proj) {
+        plan = proj.plan || proj;
+        while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {
+          plan = plan.plan;
+        }
+      }
+
+      if (!plan && typeof localStorage !== 'undefined') {
+        try {
+          var raw = localStorage.getItem('orbix_working_project_draft');
+          if (raw) {
+            var draftObj = JSON.parse(raw);
+            plan = (draftObj && draftObj.plan) || draftObj;
+            if (plan && plan.plan) plan = plan.plan;
+          }
+        } catch (_) {}
+      }
+
+      plan = plan || {};
+      var walls = plan.walls || [];
+      var openings = plan.openings || [];
+      var rooms = plan.rooms || [];
+      var furniture = plan.furniture || [];
+
+      // Check editor project if plan had no walls or furniture
+      if ((!walls.length || !furniture.length) && ui && ui.editor && ui.editor.project && ui.editor.project.plan) {
+        var ep = ui.editor.project.plan;
+        if (!walls.length && ep.walls && ep.walls.length) walls = ep.walls;
+        if (!openings.length && ep.openings && ep.openings.length) openings = ep.openings;
+        if (!rooms.length && ep.rooms && ep.rooms.length) rooms = ep.rooms;
+        if (!furniture.length && ep.furniture && ep.furniture.length) furniture = ep.furniture;
+      }
+
+      // If empty in project.plan, also check window.S.units fallback
+      if ((!furniture || !furniture.length) && typeof window !== 'undefined' && window.S && window.S.units && window.S.units.length) {
+        furniture = window.S.units.map(function (u, uIdx) {
+          var wVal = parseFloat(u.W || u.width || 600);
+          var dVal = parseFloat(u.D || u.depth || 600);
+          var hVal = parseFloat(u.H || u.height || 720);
+          var uCode = u.code || ('U-' + (uIdx + 1));
+          var uCat = (u.label && u.label.toLowerCase().indexOf('wall') !== -1) ? 'wall' : 'base';
+          var hasSink = (u.label && u.label.toLowerCase().indexOf('sink') !== -1) || !!u.hasSink;
+          var hasHob = (u.label && (u.label.toLowerCase().indexOf('hob') !== -1 || u.label.toLowerCase().indexOf('gas') !== -1)) || !!u.hasHob;
+
+          return {
+            id: u.id || ('u_' + uIdx),
+            name: u.label || ('Unit ' + (uIdx + 1)),
+            code: uCode,
+            category: uCat,
+            dimensions: { W: wVal, D: dVal, H: hVal },
+            pos: { x: (uIdx * (wVal + 100)), y: 0, z: 0 },
+            unitConfig: {
+              shutters: u.shutters !== undefined ? u.shutters : (wVal > 1200 ? 3 : wVal > 600 ? 2 : 1),
+              drawers: u.drawers || 0,
+              dstyle: u.dstyle || 'slab',
+              handle: (u.handle && u.handle.kind) || (typeof u.handle === 'string' ? u.handle : 'gprof'),
+              carcass: u.carcass || 'Half White',
+              shutterCol: u.shutterCol || 'Surabhi',
+              loft: !!u.loft,
+              loftH: u.loftH || 600,
+              shelves: u.shelves || (hVal > 1500 ? 4 : hVal > 900 ? 2 : 1),
+              hasSink: hasSink,
+              hasHob: hasHob,
+              appliance: hasSink ? 'sink' : (hasHob ? 'hob' : null)
+            }
+          };
+        });
+      }
+
+      return {
+        project: proj,
+        plan: plan,
+        walls: walls,
+        openings: openings,
+        rooms: rooms,
+        furniture: furniture
+      };
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // DYNAMIC PAGE 1: REAL 2D ROOM FLOOR PLAN & APPLIANCE LAYOUT
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    buildDynamicPage1_FloorPlan: function (pageNum, totalPages, pData) {
       var canvas = this.createVectorCanvas();
-      this.drawA4Template(canvas, pageNum, totalPages, 'KITCHEN');
+      var m = this.meta;
+      this.drawA4Template(canvas, pageNum, totalPages, (m.dwgTitle || 'ROOM') + ' 2D PLAN');
       this.drawProductionDetails(canvas);
 
-      // Main Drafting Box (Top View Room Layout)
-      var originX = 140;
-      var originY = 320;
-      var scale = 0.55; // Plan mm to SVG px
+      var walls = pData.walls || [];
+      var openings = pData.openings || [];
+      var rooms = pData.rooms || [];
+      var furniture = pData.furniture || [];
 
-      // Draw Outer Kitchen Walls
-      var wallW = 2760 * scale; // ~1518
-      var wallH = 1330 * scale; // ~731
-      
-      // Walls Outline
-      canvas.rect(originX, originY, wallW, wallH, '#000000', 4);
-      canvas.rect(originX + 30, originY + 30, wallW - 60, wallH - 60, '#94a3b8', 1.5, '#f8fafc');
-
-      // Top Window (1205mm)
-      var winX = originX + (1450 * scale);
-      var winW = 1205 * scale;
-      canvas.rect(winX, originY - 15, winW, 45, '#0284c7', 2.5, '#e0f2fe');
-      canvas.text(winX + winW / 2, originY - 30, 'WINDOW — 1205', 22, 'bold', 'middle', '#0369a1');
-
-      // Sequence of Kitchen Base Units along the back wall
-      var units = [
-        { tag: 'WFM 60', w: 600, d: 300, type: 'wall' },
-        { tag: '50BS', w: 50, d: 600, type: 'filler' },
-        { tag: 'FMd2-450', w: 450, d: 600, type: 'drawers', notes: ['1. DRAWER HT-340mm', '2. DRAWER HT-335mm'] },
-        { tag: 'FM 410', w: 410, d: 600, type: 'shutter' },
-        { tag: '55BS', w: 55, d: 600, type: 'filler' },
-        { tag: 'GAS 560 O/S\nFMd3-60', w: 600, d: 600, type: 'hob', notes: ['1. PVC CUTLERY INLET (H-175mm)', '2. WOODEN DRAWER (H-150mm)', '3. PLATE BASKET (H-350mm)'] },
-        { tag: '50BS', w: 50, d: 600, type: 'filler' },
-        { tag: 'FM 450', w: 450, d: 600, type: 'shutter' },
-        { tag: 'SINK 750 O/S', w: 750, d: 600, type: 'sink', notes: ['SINK 750 O/S (NEED CNC CUT FOR VENT)'] },
-        { tag: '65BS', w: 65, d: 600, type: 'filler' }
-      ];
-
-      var currX = originX + 30;
-      var baseDepth = 600 * scale;
-
-      units.forEach(function (u) {
-        var uW = u.w * scale;
-        var uY = originY + 30;
-
-        if (u.type === 'filler') {
-          canvas.rect(currX, uY, uW, baseDepth, '#000000', 1.5, '#e2e8f0');
-          canvas.text(currX + uW / 2, uY + baseDepth / 2 + 6, u.tag, 16, 'bold', 'middle', '#000000', -90);
-        } else if (u.type === 'sink') {
-          canvas.rect(currX, uY, uW, baseDepth, '#000000', 2.5, '#ffffff');
-          // Sink bowl & drainboard
-          canvas.rect(currX + 15, uY + 15, (uW / 2) - 10, baseDepth - 30, '#0284c7', 2, '#f0f9ff', 6);
-          canvas.rect(currX + (uW / 2) + 10, uY + 20, (uW / 2) - 25, baseDepth - 40, '#0f172a', 1.5);
-          for (var sl = 0; sl < 5; sl++) {
-            canvas.line(currX + (uW / 2) + 20 + sl * 15, uY + 35, currX + (uW / 2) + 20 + sl * 15, uY + baseDepth - 55, '#0f172a', 1.5);
-          }
-          canvas.text(currX + uW / 2, uY + baseDepth + 35, u.tag, 20, 'bold', 'middle');
-        } else if (u.type === 'hob') {
-          canvas.rect(currX, uY, uW, baseDepth, '#000000', 2.5, '#ffffff');
-          // 4 Burner Gas Hob
-          var hCx = currX + uW / 2;
-          var hCy = uY + baseDepth / 2;
-          canvas.rect(hCx - 65, hCy - 65, 130, 130, '#000000', 1.8, '#f8fafc', 6);
-          canvas.circle(hCx - 32, hCy - 32, 18, '#000000', 2);
-          canvas.circle(hCx + 32, hCy - 32, 14, '#000000', 2);
-          canvas.circle(hCx - 32, hCy + 32, 14, '#000000', 2);
-          canvas.circle(hCx + 32, hCy + 32, 20, '#000000', 2);
-          canvas.text(currX + uW / 2, uY + baseDepth + 35, 'GAS 560 O/S / FMd3-60', 19, 'bold', 'middle');
-        } else {
-          canvas.rect(currX, uY, uW, baseDepth, '#000000', 2, '#ffffff');
-          canvas.text(currX + uW / 2, uY + baseDepth / 2 + 7, u.tag, 20, 'bold', 'middle');
+      // Calculate Bounding Box of all walls and furniture in mm
+      var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      walls.forEach(function (w) {
+        if (w.start) {
+          minX = Math.min(minX, w.start.x);
+          minY = Math.min(minY, w.start.y);
+          maxX = Math.max(maxX, w.start.x);
+          maxY = Math.max(maxY, w.start.y);
         }
-
-        // Leader annotations below unit
-        if (u.notes && u.notes.length > 0) {
-          var noteY = uY + baseDepth + 90;
-          for (var ni = 0; ni < u.notes.length; ni++) {
-            canvas.text(currX + uW / 2, noteY + (ni * 26), u.notes[ni], 15, 'bold', 'middle', '#334155');
-          }
+        if (w.end) {
+          minX = Math.min(minX, w.end.x);
+          minY = Math.min(minY, w.end.y);
+          maxX = Math.max(maxX, w.end.x);
+          maxY = Math.max(maxY, w.end.y);
         }
-
-        currX += uW;
       });
 
-      // Side Provisions (Dishwasher & Fridge)
-      var sideX = originX + wallW - 200;
-      var sideY = originY + (600 * scale) + 120;
-      
-      // Dishwasher
-      canvas.rect(sideX, sideY, 180, 180, '#000000', 2, '#ffffff');
-      canvas.text(sideX + 90, sideY + 80, 'DISH WASHER', 17, 'bold', 'middle');
-      canvas.text(sideX + 90, sideY + 110, 'PROVISION', 16, 'bold', 'middle');
+      furniture.forEach(function (f) {
+        var px = f.pos ? (f.pos.x || 0) : 0;
+        var py = f.pos ? (f.pos.y || 0) : 0;
+        var w = (f.dimensions && f.dimensions.W) ? parseFloat(f.dimensions.W) : 600;
+        var d = (f.dimensions && f.dimensions.D) ? parseFloat(f.dimensions.D) : 600;
+        minX = Math.min(minX, px - w);
+        minY = Math.min(minY, py - d);
+        maxX = Math.max(maxX, px + w);
+        maxY = Math.max(maxY, py + d);
+      });
 
-      // Fridge
-      var frX = sideX;
-      var frY = sideY + 230;
-      canvas.rect(frX, frY, 200, 240, '#000000', 2, '#ffffff');
-      canvas.text(frX + 100, frY + 115, 'PROVISION', 18, 'bold', 'middle');
-      canvas.text(frX + 100, frY + 145, 'FRIDGE', 18, 'bold', 'middle');
+      if (!isFinite(minX) || !isFinite(maxX)) {
+        minX = 0; minY = 0; maxX = 4000; maxY = 3000;
+      }
 
-      // Continuous Dimension Strings
-      canvas.dimH(originX + 30, originX + (2565 * scale), originY - 50, '2565', 0, true);
-      canvas.dimH(originX + (2565 * scale), originX + ((2565 + 1205) * scale), originY - 50, '1205', 0, true);
-      canvas.dimH(originX + ((2565 + 1205) * scale), originX + wallW - 30, originY - 50, '250', 0, true);
-      canvas.dimV(originY, originY + wallH, originX - 60, '1330', 0, true);
-      canvas.dimV(originY, originY + (2760 * scale * 0.7), originX + wallW + 80, '2760', 0, false);
+      var spanX = Math.max(1200, maxX - minX);
+      var spanY = Math.max(1200, maxY - minY);
+      var availW = 1850;
+      var availH = 1420;
+      var pad = 400;
+      var scale = Math.min(availW / (spanX + pad * 2), availH / (spanY + pad * 2));
+      scale = Math.max(0.12, Math.min(0.65, scale));
+
+      var centerX = (minX + maxX) / 2;
+      var centerY = (minY + maxY) / 2;
+      var targetX = 140 + availW / 2;
+      var targetY = 220 + availH / 2;
+
+      function toScreen(pt) {
+        return {
+          x: targetX + (pt.x - centerX) * scale,
+          y: targetY + (pt.y - centerY) * scale
+        };
+      }
+
+      // Draw Room Walls
+      walls.forEach(function (w) {
+        if (!w.start || !w.end) return;
+        var p1 = toScreen(w.start);
+        var p2 = toScreen(w.end);
+        var thick = Math.max(4, (w.thickness || 150) * scale);
+        
+        // Solid Wall Line
+        canvas.line(p1.x, p1.y, p2.x, p2.y, '#000000', thick);
+
+        // Wall Dimension string
+        var lenMm = Math.round(Math.hypot(w.end.x - w.start.x, w.end.y - w.start.y));
+        var midX = (p1.x + p2.x) / 2;
+        var midY = (p1.y + p2.y) / 2;
+        var dx = p2.x - p1.x, dy = p2.y - p1.y;
+        var len = Math.hypot(dx, dy) || 1;
+        var nx = -dy / len, ny = dx / len;
+        canvas.text(midX + nx * 24, midY + ny * 24, String(lenMm), 18, 'bold', 'middle', '#0f172a');
+      });
+
+      // Draw Doors & Windows (Openings)
+      openings.forEach(function (op) {
+        var hostWall = walls.find(function (w) { return w.id === op.wallId; });
+        if (!hostWall) return;
+        var wLen = Math.hypot(hostWall.end.x - hostWall.start.x, hostWall.end.y - hostWall.start.y);
+        if (wLen < 1) return;
+        var t = (op.offset || (wLen / 2)) / wLen;
+        var opX = hostWall.start.x + t * (hostWall.end.x - hostWall.start.x);
+        var opY = hostWall.start.y + t * (hostWall.end.y - hostWall.start.y);
+        var scPt = toScreen({ x: opX, y: opY });
+        var opW = (op.width || 900) * scale;
+
+        if (op.type === 'window') {
+          canvas.rect(scPt.x - opW / 2, scPt.y - 14, opW, 28, '#0284c7', 2, '#e0f2fe');
+          canvas.text(scPt.x, scPt.y - 24, 'WINDOW — ' + Math.round(op.width || 1200), 16, 'bold', 'middle', '#0284c7');
+        } else {
+          canvas.rect(scPt.x - opW / 2, scPt.y - 12, opW, 24, '#d97706', 2, '#fef3c7');
+          canvas.text(scPt.x, scPt.y - 20, 'DOOR — ' + Math.round(op.width || 900), 16, 'bold', 'middle', '#d97706');
+        }
+      });
+
+      // Draw Placed Modular Furniture Units
+      furniture.forEach(function (fn, idx) {
+        var px = fn.pos ? (fn.pos.x || 0) : 0;
+        var py = fn.pos ? (fn.pos.y || 0) : 0;
+        var scPt = toScreen({ x: px, y: py });
+        var wDims = fn.dimensions || {};
+        var fW = (parseFloat(wDims.W) || 600) * scale;
+        var fD = (parseFloat(wDims.D) || 600) * scale;
+        var uTag = fn.code || ('U' + (idx < 9 ? '0' : '') + (idx + 1));
+        var isSink = fn.unitConfig && (fn.unitConfig.appliance === 'sink' || fn.unitConfig.hasSink);
+        var isHob = fn.unitConfig && (fn.unitConfig.appliance === 'hob' || fn.unitConfig.hasHob);
+
+        // Unit Body
+        canvas.rect(scPt.x - fW / 2, scPt.y - fD / 2, fW, fD, '#000000', 2, '#ffffff');
+
+        if (isSink) {
+          canvas.rect(scPt.x - fW / 2 + 8, scPt.y - fD / 2 + 8, fW / 2 - 12, fD - 16, '#0284c7', 1.8, '#f0f9ff', 4);
+          canvas.text(scPt.x, scPt.y + fD / 2 + 25, 'SINK ' + Math.round(parseFloat(wDims.W) || 750) + ' (' + uTag + ')', 16, 'bold', 'middle', '#0284c7');
+        } else if (isHob) {
+          canvas.circle(scPt.x - fW * 0.2, scPt.y, fW * 0.14, '#b45309', 1.8);
+          canvas.circle(scPt.x + fW * 0.2, scPt.y, fW * 0.14, '#b45309', 1.8);
+          canvas.text(scPt.x, scPt.y + fD / 2 + 25, 'GAS 560 (' + uTag + ')', 16, 'bold', 'middle', '#b45309');
+        } else {
+          canvas.text(scPt.x, scPt.y + 6, uTag, 17, 'bold', 'middle', '#0f172a');
+        }
+
+        // Leader note showing unit name below
+        var shortName = (fn.name || 'Unit').replace(/\(Cookscape\)/i, '').trim();
+        canvas.text(scPt.x, scPt.y + fD / 2 + 45, shortName, 13, 'bold', 'middle', '#64748b');
+      });
+
+      // Draw Room Labels & Square Footage
+      rooms.forEach(function (r) {
+        if (!r.polygon || r.polygon.length < 3) return;
+        var cx = 0, cy = 0;
+        r.polygon.forEach(function (pt) { cx += pt.x; cy += pt.y; });
+        cx /= r.polygon.length;
+        cy /= r.polygon.length;
+        var sc = toScreen({ x: cx, y: cy });
+        var sqft = r.area ? Math.round(r.area / 92903.04) : 0;
+        canvas.text(sc.x, sc.y - 12, (r.name || 'ROOM').toUpperCase(), 22, 'bold', 'middle', '#0369a1');
+        if (sqft > 0) {
+          canvas.text(sc.x, sc.y + 16, sqft + ' SQ FT', 16, 'bold', 'middle', '#0284c7');
+        }
+      });
 
       return canvas.toSVG();
     },
 
-    // PAGE 2: 3D Axonometric Overview & Detailed Single Unit
-    buildPage2_3DAndDetail: function (pageNum, totalPages) {
+    // ─────────────────────────────────────────────────────────────────────────────
+    // DYNAMIC PAGE 2: REAL 3D AXONOMETRIC OVERVIEW OF ROOM & KEY UNIT
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    buildDynamicPage2_3DOverview: function (pageNum, totalPages, pData) {
       var canvas = this.createVectorCanvas();
-      this.drawA4Template(canvas, pageNum, totalPages, 'KITCHEN ELEVATION');
+      var m = this.meta;
+      this.drawA4Template(canvas, pageNum, totalPages, (m.dwgTitle || 'ROOM') + ' 3D OVERVIEW');
 
-      // Left Box: 3D Isometric View of Full Kitchen Run
-      var axX = 200, axY = 320;
-      canvas.text(axX + 450, axY - 60, '3D AXONOMETRIC VIEW — COMPLETE KITCHEN RUN', 24, 'bold', 'middle');
+      var furniture = pData.furniture || [];
 
-      // Draw 3D Isometric Kitchen Run (Wireframe vector lines at 30 degrees)
+      // Left Box: 3D Axonometric View of Room
+      var axX = 220, axY = 320;
+      canvas.text(axX + 480, axY - 60, '3D AXONOMETRIC VIEW', 28, 'bold', 'middle');
+
       var cos30 = Math.cos(Math.PI / 6), sin30 = Math.sin(Math.PI / 6);
       function iso(x, y, z) {
         return {
-          x: axX + 450 + (x - z) * cos30 * 0.28,
-          y: axY + 650 - y * 0.28 + (x + z) * sin30 * 0.28
+          x: axX + 500 + (x - z) * cos30 * 0.22,
+          y: axY + 680 - y * 0.22 + (x + z) * sin30 * 0.22
         };
       }
 
@@ -47254,416 +47395,368 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         canvas.line(p6.x, p6.y, p7.x, p7.y, '#000000', 1.8);
 
         if (label) {
-          canvas.text(p1.x + (p3.x - p1.x) / 2, p1.y + (p3.y - p1.y) / 2, label, 16, 'bold', 'middle', '#334155');
+          canvas.text(p1.x + (p3.x - p1.x) / 2, p1.y + (p3.y - p1.y) / 2, label, 15, 'bold', 'middle', '#334155');
         }
       }
 
-      // Base Cabinets Run
-      isoBox(0, 0, 0, 450, 720, 600, 'FM-450');
-      isoBox(450, 0, 0, 600, 720, 600, 'FM-60');
-      isoBox(1050, 0, 0, 600, 720, 600, 'HOB-60');
-      isoBox(1650, 0, 0, 450, 720, 600, 'FM-450');
-      isoBox(2100, 0, 0, 750, 720, 600, 'SINK-750');
+      // Draw Placed Units in 3D Isometric Space
+      var curIsoX = 0;
+      furniture.forEach(function (f, idx) {
+        var dims = f.dimensions || {};
+        var fw = parseFloat(dims.W) || 600;
+        var fd = parseFloat(dims.D) || 600;
+        var fh = parseFloat(dims.H) || 720;
+        var felev = parseFloat(f.elevation || 0);
+        var fTag = f.code || ('U' + (idx + 1));
+        isoBox(curIsoX, felev, 0, fw, fh, fd, fTag);
+        curIsoX += fw + 80;
+      });
 
-      // Wall Units & Chimney
-      isoBox(0, 1500, 0, 600, 600, 300, 'WM-60');
-      isoBox(1050, 1650, 0, 600, 450, 480, 'CHIMNEY');
+      // Right Column: Detail of Primary Unit (WFM600 in reference template, or first placed unit)
+      var keyUnit = furniture.find(function (f) {
+        var c = (f.code || '').toUpperCase();
+        var n = (f.name || '').toUpperCase();
+        return c.indexOf('WFM600') !== -1 || n.indexOf('WFM600') !== -1;
+      }) || furniture[0] || {
+        name: 'WFM600',
+        code: 'WFM600',
+        dimensions: { W: 600, H: 720, D: 350 }
+      };
 
-      // Fridge Tall Unit
-      isoBox(3000, 0, 0, 900, 1950, 650, 'FRIDGE TALL');
-
-      // Right Column: WFM600 DETAILED DRAWING
       var detX = 1950;
-      canvas.text(detX + 350, 240, 'WFM600 — DETAILED DRAWING', 26, 'bold', 'middle', '#000000');
+      var keyUnitTitle = (keyUnit.code && keyUnit.code.indexOf('WFM600') !== -1)
+        ? 'WFM600 — DETAILED DRAWING'
+        : (keyUnit.code ? keyUnit.code + ' — DETAILED DRAWING' : (keyUnit.name || 'UNIT DETAIL').toUpperCase());
+      canvas.text(detX + 350, 240, keyUnitTitle, 24, 'bold', 'middle', '#000000');
 
-      // 1. External View
+      // External View
       canvas.text(detX + 350, 310, 'EXTERNAL VIEW', 22, 'bold', 'middle', '#000000');
       canvas.line(detX + 230, 320, detX + 470, 320, '#000000', 1.5);
       
       canvas.rect(detX + 180, 380, 360, 450, '#000000', 2.5, '#ffffff');
-      canvas.rect(detX + 195, 395, 330, 420, '#000000', 1.8, '#f8fafc'); // Shutter
-      // Handle
+      canvas.rect(detX + 195, 395, 330, 420, '#000000', 1.8, '#f8fafc');
       canvas.line(detX + 480, 560, detX + 480, 660, '#000000', 5);
       canvas.text(detX + 580, 615, 'SHUTTER\nFINISH', 16, 'bold', 'start');
 
-      canvas.dimH(detX + 180, detX + 540, 860, '600', 30);
-      canvas.dimV(380, 830, detX + 140, '1190', 0, true);
+      canvas.dimH(detX + 180, detX + 540, 860, String(Math.round(parseFloat(keyUnit.dimensions.W) || 600)), 30);
+      canvas.dimV(380, 830, detX + 140, String(Math.round(parseFloat(keyUnit.dimensions.H) || 720)), 0, true);
 
-      // 2. Internal View (with 3-shelf division 303mm)
+      // Internal View
       canvas.text(detX + 350, 1000, 'INTERNAL VIEW', 22, 'bold', 'middle', '#000000');
       canvas.line(detX + 230, 1010, detX + 470, 1010, '#000000', 1.5);
 
       canvas.rect(detX + 180, 1080, 360, 480, '#000000', 2.5, '#ffffff');
-      canvas.line(detX + 180, 1200, detX + 540, 1200, '#000000', 2); // Shelf 1
-      canvas.line(detX + 180, 1320, detX + 540, 1320, '#000000', 2); // Shelf 2
-      canvas.line(detX + 180, 1440, detX + 540, 1440, '#000000', 2); // Shelf 3
+      canvas.line(detX + 180, 1240, detX + 540, 1240, '#000000', 2);
+      canvas.line(detX + 180, 1400, detX + 540, 1400, '#000000', 2);
 
-      // Shelf Heights Callouts
-      canvas.text(detX + 215, 1145, '303', 18, 'bold', 'start');
-      canvas.text(detX + 215, 1265, '303', 18, 'bold', 'start');
-      canvas.text(detX + 215, 1385, '303', 18, 'bold', 'start');
-      canvas.text(detX + 215, 1505, '303', 18, 'bold', 'start');
-
-      canvas.dimH(detX + 180, detX + 540, 1590, '600', 30);
-      canvas.dimV(1080, 1560, detX + 140, '1250', 0, true);
+      canvas.dimH(detX + 180, detX + 540, 1590, String(Math.round(parseFloat(keyUnit.dimensions.W) || 600)), 30);
+      canvas.dimV(1080, 1560, detX + 140, String(Math.round(parseFloat(keyUnit.dimensions.H) || 720)), 0, true);
 
       return canvas.toSVG();
     },
 
-    // PAGE 3: Side-by-Side EXTERNAL VIEW & INTERNAL VIEW
-    buildPage3_DualElevation: function (pageNum, totalPages, unitData) {
+    // ─────────────────────────────────────────────────────────────────────────────
+    // DYNAMIC PAGE 3+: DETAILED DUAL VIEW (EXTERNAL & INTERNAL) PER PLACED UNIT
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    buildDynamicUnitPage: function (pageNum, totalPages, fn, index, pData) {
       var canvas = this.createVectorCanvas();
-      var u = unitData || {
-        name: 'KITCHEN CORNER & BASE UNITS',
-        w: 1230,
-        h: 705,
-        d: 840,
-        shutters: 2,
-        shelfHeight: 326
-      };
+      var uName = (fn.name || 'MODULAR CABINET UNIT').replace(/\(Cookscape\)/i, '').trim();
+      var uCode = fn.code || ('U0' + (index + 1));
+      var pageTitle = uName + ' (' + uCode + ')';
 
-      this.drawA4Template(canvas, pageNum, totalPages, u.name);
-      this.drawProductionDetails(canvas);
+      this.drawA4Template(canvas, pageNum, totalPages, pageTitle);
 
-      var scale = 0.85;
+      var dims = fn.dimensions || {};
+      var W = parseFloat(dims.W) || 600;
+      var H = parseFloat(dims.H) || 720;
+      var D = parseFloat(dims.D) || 600;
+      var uConfig = fn.unitConfig || {};
+      var shutters = uConfig.shutters !== undefined ? uConfig.shutters : (W > 1200 ? 3 : W > 600 ? 2 : 1);
+      var drawers = uConfig.drawers || 0;
+      var shelves = uConfig.shelves || (H > 1500 ? 4 : H > 900 ? 2 : 1);
+      var isBaseUnit = (fn.category && fn.category.indexOf('base') !== -1) || H <= 900;
+
+      // Unit-specific production specs
+      var carcassFin = (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || uConfig.carcass || this.meta.carcassColor;
+      var shutterFin = (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || uConfig.shutterCol || this.meta.shutterType;
+
+      var unitSpecs = [
+        { label: 'UNIT TAG & CODE', val: uCode },
+        { label: 'UNIT NAME', val: uName },
+        { label: 'LENGTH / WIDTH', val: W + ' mm' },
+        { label: 'DEPTH', val: D + ' mm' },
+        { label: 'HEIGHT', val: H + ' mm' },
+        { label: 'CARCASS SPEC', val: '18mm BWP (' + carcassFin + ')' },
+        { label: 'SHUTTER SPEC', val: shutters + ' NO(S) (' + shutterFin + ')' },
+        { label: 'HANDLE TYPE', val: uConfig.handle || 'EXTENDED SHUTTER 20mm' },
+        { label: 'HINGES', val: 'EBCO SOFT CLOSING (110°)' },
+        { label: 'RUNNERS', val: drawers > 0 ? 'EBCO SOFT CLOSING TANDEM' : 'N/A' },
+        { label: 'PLINTH / BASE', val: isBaseUnit ? '110mm RCC / 100mm LEGS' : 'WALL MOUNTED' },
+        { label: 'EDGE BANDING', val: '2mm PVC MATCH SHUTTER' }
+      ];
+      this.drawProductionDetails(canvas, unitSpecs);
+
+      // Drafting Scale & Coordinates
+      var scale = Math.min(840 / W, 800 / H, 0.85);
+      var unitW = W * scale;
+      var unitH = H * scale;
       var extX = 260;
       var intX = 1180;
-      var baseY = 1100;
-      var unitW = u.w * scale; // 1230 * 0.85 = ~1045
-      var unitH = u.h * scale; // 705 * 0.85 = ~600
-      var plinthH = 110 * scale; // 93
-      var granH = 20 * scale; // 17
+      var baseY = 1160;
+      var plinthH = isBaseUnit ? (100 * scale) : 0;
+      var granH = isBaseUnit ? (20 * scale) : 0;
 
       // ── LEFT: EXTERNAL VIEW ──
       canvas.text(extX + unitW / 2, 280, 'EXTERNAL VIEW', 30, 'bold', 'middle');
       canvas.line(extX + unitW / 2 - 120, 292, extX + unitW / 2 + 120, 292, '#000000', 2);
 
-      // Granite Top
-      canvas.rect(extX - 25, baseY - unitH - granH, unitW + 50, granH, '#000000', 2, '#334155');
-      canvas.text(extX + unitW / 2, baseY - unitH - granH - 18, 'GRANITE TOP (EXISTING)', 20, 'bold', 'middle');
+      // Granite Top if Base
+      if (isBaseUnit) {
+        canvas.rect(extX - 20, baseY - unitH - granH, unitW + 40, granH, '#000000', 2, '#334155');
+        canvas.text(extX + unitW / 2, baseY - unitH - granH - 16, 'GRANITE TOP (EXISTING)', 19, 'bold', 'middle');
+      }
 
-      // Shutters Front
+      // Main Outer Box
       canvas.rect(extX, baseY - unitH, unitW, unitH, '#000000', 2.5, '#ffffff');
-      // Shutter Divide
-      canvas.line(extX + unitW / 2, baseY - unitH, extX + unitW / 2, baseY, '#000000', 2);
-      
-      // Handles
-      canvas.line(extX + unitW / 2 - 25, baseY - unitH + 40, extX + unitW / 2 - 25, baseY - unitH + 160, '#000000', 6);
-      canvas.line(extX + unitW / 2 + 25, baseY - unitH + 40, extX + unitW / 2 + 25, baseY - unitH + 160, '#000000', 6);
-      
-      // Extended Lip & Only Shuttering Note
-      canvas.text(extX + unitW / 2, baseY - unitH / 2, 'ONLY SHUTTERING', 26, 'bold', 'middle', '#64748b');
-      canvas.text(extX + unitW / 2, baseY - unitH - 60, '20mm EXTENDED SHUTTER', 18, 'bold', 'middle');
 
-      // RCC Plinth
-      canvas.rect(extX, baseY, unitW, plinthH, '#000000', 2, '#e2e8f0');
-      canvas.text(extX + unitW / 2, baseY + plinthH / 2 + 7, '110 RCC BASE', 18, 'bold', 'middle');
+      // Shutter Divisions or Drawers
+      if (drawers > 0) {
+        var drwH = unitH / drawers;
+        for (var d = 1; d < drawers; d++) {
+          canvas.line(extX, baseY - unitH + d * drwH, extX + unitW, baseY - unitH + d * drwH, '#000000', 2);
+        }
+        for (var dr = 0; dr < drawers; dr++) {
+          canvas.text(extX + unitW / 2, baseY - unitH + (dr + 0.5) * drwH + 6, 'DRAWER (' + Math.round(H / drawers) + 'mm)', 16, 'bold', 'middle');
+        }
+      } else {
+        var shCellW = unitW / shutters;
+        for (var s = 1; s < shutters; s++) {
+          canvas.line(extX + s * shCellW, baseY - unitH, extX + s * shCellW, baseY, '#000000', 2);
+        }
+        for (var sh = 0; sh < shutters; sh++) {
+          var hX = extX + sh * shCellW + (sh % 2 === 0 ? shCellW - 25 : 25);
+          canvas.line(hX, baseY - unitH + 40, hX, baseY - unitH + 160, '#000000', 6);
+        }
+        var isPooja = (uName.toLowerCase().indexOf('pooja') !== -1) || (uConfig && uConfig.isPooja);
+        if (isPooja) {
+          canvas.circle(extX + unitW / 2, baseY - unitH / 2, Math.min(unitW, unitH) * 0.22, '#b45309', 2, '#fffbeb');
+          canvas.circle(extX + unitW / 2, baseY - unitH / 2, Math.min(unitW, unitH) * 0.16, '#b45309', 1.5);
+          canvas.text(extX + unitW / 2, baseY - unitH / 2 + 14, 'ॐ', 40, 'bold', 'middle', '#b45309');
+          canvas.text(extX + unitW / 2, baseY - unitH / 2 + 70, 'CNC CUT JALI MANDALA', 16, 'bold', 'middle', '#b45309');
+        } else {
+          canvas.text(extX + unitW / 2, baseY - unitH / 2, shutters + ' SHUTTER(S) — ' + shutterFin, 20, 'bold', 'middle', '#64748b');
+        }
+      }
+
+      // Plinth Base
+      if (isBaseUnit) {
+        canvas.rect(extX, baseY, unitW, plinthH, '#000000', 2, '#e2e8f0');
+        canvas.text(extX + unitW / 2, baseY + plinthH / 2 + 7, '110 RCC BASE / 100mm PLINTH LEGS', 17, 'bold', 'middle');
+      }
 
       // Dimensions External
-      canvas.dimH(extX, extX + unitW / 2, baseY + plinthH + 40, '545', 0);
-      canvas.dimH(extX + unitW / 2, extX + unitW, baseY + plinthH + 40, '545', 0);
-      canvas.dimH(extX, extX + unitW, baseY + plinthH + 95, '1230', 0);
-      canvas.dimV(baseY - unitH, baseY, extX - 70, '705', 0, true);
-      canvas.dimV(baseY, baseY + plinthH, extX - 70, '110RCC', 0, true);
+      canvas.dimH(extX, extX + unitW, baseY + plinthH + 45, String(Math.round(W)));
+      canvas.dimV(baseY - unitH, baseY, extX - 65, String(Math.round(H)), 0, true);
 
 
       // ── RIGHT: INTERNAL VIEW ──
       canvas.text(intX + unitW / 2, 280, 'INTERNAL VIEW', 30, 'bold', 'middle');
       canvas.line(intX + unitW / 2 - 120, 292, intX + unitW / 2 + 120, 292, '#000000', 2);
 
-      // Granite Top
-      canvas.rect(intX - 25, baseY - unitH - granH, unitW + 50, granH, '#000000', 2, '#334155');
-      canvas.text(intX + unitW / 2, baseY - unitH - granH - 18, 'GRANITE TOP (EXISTING)', 20, 'bold', 'middle');
+      if (isBaseUnit) {
+        canvas.rect(intX - 20, baseY - unitH - granH, unitW + 40, granH, '#000000', 2, '#334155');
+        canvas.text(intX + unitW / 2, baseY - unitH - granH - 16, 'GRANITE TOP (EXISTING)', 19, 'bold', 'middle');
+      }
 
       // Carcass Gables
       canvas.rect(intX, baseY - unitH, unitW, unitH, '#000000', 2.5, '#ffffff');
-      // 18mm Side Gables & Center Partition
-      var t = 18 * scale;
+      var t = Math.max(8, 18 * scale);
       canvas.rect(intX, baseY - unitH, t, unitH, '#000000', 1.5, '#94a3b8');
       canvas.rect(intX + unitW - t, baseY - unitH, t, unitH, '#000000', 1.5, '#94a3b8');
-      canvas.rect(intX + unitW / 2 - t / 2, baseY - unitH, t, unitH, '#000000', 1.5, '#94a3b8');
 
-      // Internal Horizontal Shelf (326mm height)
-      var shelfY = baseY - (u.shelfHeight * scale);
-      canvas.rect(intX + t, shelfY, (unitW / 2) - 1.5 * t, t, '#000000', 1.5, '#94a3b8');
-      canvas.rect(intX + unitW / 2 + t / 2, shelfY, (unitW / 2) - 1.5 * t, t, '#000000', 1.5, '#94a3b8');
+      // Center Divider if wide
+      if (shutters > 1 && W >= 900) {
+        canvas.rect(intX + unitW / 2 - t / 2, baseY - unitH, t, unitH, '#000000', 1.5, '#94a3b8');
+      }
 
-      // Shelf Heights Callouts
-      canvas.text(intX + unitW * 0.25, shelfY - 45, '326', 22, 'bold', 'middle');
-      canvas.text(intX + unitW * 0.25, shelfY + 70, '326', 22, 'bold', 'middle');
-      canvas.text(intX + unitW * 0.75, shelfY - 45, '326', 22, 'bold', 'middle');
-      canvas.text(intX + unitW * 0.75, shelfY + 70, '326', 22, 'bold', 'middle');
+      // Internal Horizontal Shelves
+      var shelfSpan = (H - 2 * 18) / (shelves + 1);
+      for (var k = 1; k <= shelves; k++) {
+        var shY = baseY - (k * shelfSpan * scale);
+        canvas.rect(intX + t, shY, unitW - 2 * t, t, '#000000', 1.5, '#94a3b8');
+        canvas.text(intX + unitW / 2, shY - 20, Math.round(shelfSpan) + ' mm CLEAR', 18, 'bold', 'middle', '#0f172a');
+      }
 
-      // RCC Plinth
-      canvas.rect(intX, baseY, unitW, plinthH, '#000000', 2, '#e2e8f0');
-      canvas.text(intX + unitW / 2, baseY + plinthH / 2 + 7, '110 RCC BASE', 18, 'bold', 'middle');
+      if (isBaseUnit) {
+        canvas.rect(intX, baseY, unitW, plinthH, '#000000', 2, '#e2e8f0');
+        canvas.text(intX + unitW / 2, baseY + plinthH / 2 + 7, '100mm PLINTH / LEGS', 17, 'bold', 'middle');
+      }
 
       // Dimensions Internal
-      canvas.dimH(intX, intX + unitW / 2, baseY + plinthH + 40, '545', 0);
-      canvas.dimH(intX + unitW / 2, intX + unitW, baseY + plinthH + 40, '545', 0);
-      canvas.dimH(intX, intX + unitW, baseY + plinthH + 95, '1230', 0);
-      canvas.dimV(baseY - unitH, baseY, intX - 70, '705', 0, true);
+      canvas.dimH(intX, intX + unitW, baseY + plinthH + 45, String(Math.round(W)));
+      canvas.dimV(baseY - unitH, baseY, intX - 65, String(Math.round(H)), 0, true);
 
       return canvas.toSVG();
     },
 
-    // PAGE 4: Continuous Loft Shuttering Elevation
-    buildPage4_LoftShuttering: function (pageNum, totalPages) {
+    // ─────────────────────────────────────────────────────────────────────────────
+    // DYNAMIC LOFT RUN PAGE
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    buildDynamicLoftPage: function (pageNum, totalPages, loftUnits, pData) {
       var canvas = this.createVectorCanvas();
-      this.drawA4Template(canvas, pageNum, totalPages, 'KITCHEN LOFT');
+      this.drawA4Template(canvas, pageNum, totalPages, 'CONTINUOUS LOFT RUN (ONLY SHUTTERING)');
       this.drawProductionDetails(canvas);
 
       var startX = 220;
       var startY = 820;
-      var totalSpan = 4015;
-      var loftH = 860;
-      var scale = 0.42;
+      var totalSpan = 0;
+      loftUnits.forEach(function (lu) {
+        var w = (lu.dimensions && lu.dimensions.W) ? parseFloat(lu.dimensions.W) : 600;
+        totalSpan += w;
+      });
+      totalSpan = Math.max(1200, totalSpan);
+      var loftH = (loftUnits[0] && loftUnits[0].dimensions && parseFloat(loftUnits[0].dimensions.H)) || 600;
+      var scale = Math.min(1700 / totalSpan, 380 / loftH, 0.45);
 
-      var spanW = totalSpan * scale; // ~1686
-      var spanH = loftH * scale;     // ~361
+      var spanW = totalSpan * scale;
+      var spanH = loftH * scale;
 
-      canvas.text(startX + spanW / 2, 380, 'LOFT ONLY SHUTTERING', 38, 'bold', 'middle');
+      canvas.text(startX + spanW / 2, 380, 'CONTINUOUS LOFT RUN (ONLY SHUTTERING)', 34, 'bold', 'middle');
       canvas.line(startX + spanW / 2 - 250, 400, startX + spanW / 2 + 250, 400, '#000000', 2.5);
 
-      // Loft Enclosing Box
       canvas.rect(startX, startY - spanH, spanW, spanH, '#000000', 3, '#ffffff');
 
-      // 7 Equal Shutters (555mm each)
-      var nShutters = 7;
-      var cellW = 555 * scale;
+      var curX = startX;
+      loftUnits.forEach(function (lu) {
+        var w = ((lu.dimensions && parseFloat(lu.dimensions.W)) || 600) * scale;
+        canvas.line(curX + w, startY - spanH, curX + w, startY, '#000000', 2);
+        canvas.text(curX + w / 2, startY - spanH / 2, lu.code || 'LOFT', 18, 'bold', 'middle');
+        curX += w;
+      });
 
-      for (var i = 1; i < nShutters; i++) {
-        canvas.line(startX + (i * cellW), startY - spanH, startX + (i * cellW), startY, '#000000', 2);
-      }
-
-      // Shutter Handles (Pairs)
-      for (var j = 0; j < nShutters; j++) {
-        var hX = startX + (j * cellW) + (j % 2 === 0 ? cellW - 25 : 25);
-        canvas.line(hX, startY - 70, hX, startY - 20, '#000000', 6);
-      }
-
-      // Top Filler (60mm) & Left Filler (65mm)
-      canvas.rect(startX, startY - spanH - 25, spanW, 25, '#000000', 1.5, '#e2e8f0');
-      canvas.text(startX - 90, startY - spanH - 5, '60TOP BS', 16, 'bold', 'end');
-
-      // Bottom RCC Callout
-      canvas.text(startX + spanW / 2, startY + 65, 'RCC', 28, 'bold', 'middle');
-
-      // Running Width Dimensions
-      for (var k = 0; k < nShutters; k++) {
-        canvas.dimH(startX + (k * cellW), startX + ((k + 1) * cellW), startY - spanH - 60, '555', 0, true);
-      }
-      canvas.dimH(startX, startX + spanW, startY + 120, '4015', 0);
-      canvas.dimV(startY - spanH, startY, startX - 70, '860', 0, true);
-
-      return canvas.toSVG();
-    },
-
-    // PAGE 5: Living Room Feature Units (TV Unit with Ledges)
-    buildPage5_TVUnit: function (pageNum, totalPages) {
-      var canvas = this.createVectorCanvas();
-      this.drawA4Template(canvas, pageNum, totalPages, 'LIVING-TV UNIT');
-      this.drawProductionDetails(canvas);
-
-      var scale = 0.58;
-      var extX = 220;
-      var intX = 1180;
-      var baseY = 1100;
-      var tvW = 2400 * scale; // ~1392
-      var tvH = 320 * scale;  // ~185
-
-      // External View
-      canvas.text(extX + tvW / 2, 420, 'EXTERNAL VIEW', 28, 'bold', 'middle');
-      canvas.rect(extX, baseY - tvH, tvW, tvH, '#000000', 2.5, '#ffffff');
-
-      // Floating Ledges Above
-      var ledgW = 2400 * scale;
-      canvas.rect(extX, 580, ledgW, 35, '#000000', 2, '#f8fafc');
-      canvas.text(extX + ledgW / 2, 560, 'SF LEDGE 2400mm x 200mm', 19, 'bold', 'middle');
-
-      var subLedgW = 900 * scale;
-      canvas.rect(extX + 350, 680, subLedgW, 35, '#000000', 2, '#f8fafc');
-      canvas.text(extX + 350 + subLedgW / 2, 660, 'SF LEDGE 900mm x 200mm', 18, 'bold', 'middle');
-
-      // 5 Sections: 450, 450, 600, 450, 450 mm
-      var secWidths = [450, 450, 600, 450, 450];
-      var curX = extX;
-      for (var i = 0; i < secWidths.length; i++) {
-        var sW = secWidths[i] * scale;
-        if (i > 0) canvas.line(curX, baseY - tvH, curX, baseY, '#000000', 2);
-        var lbl = (i === 2) ? 'SF OPEN' : 'DRAWER';
-        canvas.text(curX + sW / 2, baseY - tvH / 2 + 7, lbl, 16, 'bold', 'middle');
-        canvas.dimH(curX, curX + sW, baseY + 40, String(secWidths[i]));
-        curX += sW;
-      }
-      canvas.dimH(extX, extX + tvW, baseY + 95, '2400');
-      canvas.dimV(baseY - tvH, baseY, extX - 60, '320', 0, true);
-
-      // Key Plan Box
-      var kpX = 260;
-      var kpY = 1380;
-      canvas.rect(kpX, kpY, 1300, 150, '#000000', 2, '#ffffff');
-      canvas.text(kpX + 650, kpY - 15, 'KEY PLAN — LIVING ROOM LAYOUT', 20, 'bold', 'middle');
-      canvas.rect(kpX + 350, kpY + 25, 600, 80, '#0284c7', 2, '#f0f9ff');
-      canvas.text(kpX + 650, kpY + 70, 'TV UNIT (2400mm)', 18, 'bold', 'middle');
-
-      return canvas.toSVG();
-    },
-
-    // PAGE 6: Pooja & Crockery Unit with CNC Om Cutout
-    buildPage6_PoojaCrockery: function (pageNum, totalPages) {
-      var canvas = this.createVectorCanvas();
-      this.drawA4Template(canvas, pageNum, totalPages, 'CROCKERY AND POOJA');
-      this.drawProductionDetails(canvas);
-
-      var pX = 280, pY = 1200;
-      var pW = 1600 * 0.45; // ~720
-      var pH = 1990 * 0.45; // ~895
-
-      // External View
-      canvas.text(pX + pW / 2, 260, 'EXTERNAL VIEW', 28, 'bold', 'middle');
-      canvas.rect(pX, pY - pH, pW, pH, '#000000', 2.5, '#ffffff');
-      
-      // Fluted Glass Shutters with Wood Frames
-      var shW = pW / 3;
-      canvas.rect(pX + 15, pY - pH + 20, shW - 25, pH * 0.7, '#0284c7', 2, '#f0f9ff');
-      canvas.rect(pX + shW + 15, pY - pH + 20, shW - 25, pH * 0.7, '#0284c7', 2, '#f0f9ff');
-      canvas.rect(pX + 2 * shW + 15, pY - pH + 20, shW - 25, pH * 0.7, '#0284c7', 2, '#f0f9ff');
-      canvas.text(pX + shW / 2, pY - pH + 150, 'FLUTED\nGLASS', 16, 'bold', 'middle');
-      canvas.text(pX + shW + shW / 2, pY - pH + 150, 'FLUTED\nGLASS', 16, 'bold', 'middle');
-      canvas.text(pX + 2 * shW + shW / 2, pY - pH + 150, 'FLUTED\nGLASS', 16, 'bold', 'middle');
-
-      // Internal View with CNC OM Cut
-      var inX = 1120;
-      canvas.text(inX + pW / 2, 260, 'INTERNAL VIEW', 28, 'bold', 'middle');
-      canvas.rect(inX, pY - pH, pW, pH, '#000000', 2.5, '#ffffff');
-      // CNC Om Mandala Circle
-      canvas.circle(inX + pW / 2, pY - pH + 280, 80, '#d97706', 2.5, '#fef3c7');
-      canvas.text(inX + pW / 2, pY - pH + 295, 'ॐ', 54, 'bold', 'middle', '#b45309');
-      canvas.text(inX + pW / 2, pY - pH + 410, 'CNC CUT MANDALA BACKPANEL', 17, 'bold', 'middle');
-
-      // Drawers below
-      canvas.rect(inX + 15, pY - 180, (pW / 2) - 20, 160, '#000000', 2, '#f8fafc');
-      canvas.rect(inX + pW / 2 + 10, pY - 180, (pW / 2) - 20, 160, '#000000', 2, '#f8fafc');
-      canvas.text(inX + pW * 0.25, pY - 95, 'DRAWER', 18, 'bold', 'middle');
-      canvas.text(inX + pW * 0.75, pY - 95, 'DRAWER', 18, 'bold', 'middle');
-
-      canvas.dimH(inX, inX + pW, pY + 50, '1600');
-      canvas.dimV(pY - pH, pY, inX - 60, '1990', 0, true);
-
-      return canvas.toSVG();
-    },
-
-    // PAGE 7: Living Shoe Rack with Fluted Panel & Reference Image
-    buildPage7_ShoeRack: function (pageNum, totalPages) {
-      var canvas = this.createVectorCanvas();
-      this.drawA4Template(canvas, pageNum, totalPages, 'LIVING-SHOE RACK');
-      this.drawProductionDetails(canvas);
-
-      var scale = 0.65;
-      var extX = 260;
-      var intX = 1140;
-      var baseY = 1180;
-      var w = 1140 * scale; // ~741
-      var h = 1050 * scale; // ~682
-      var flutedH = 917 * scale; // ~596
-
-      // External View
-      canvas.text(extX + w / 2, 240, 'EXTERNAL VIEW', 28, 'bold', 'middle');
-      // Fluted Back Panel
-      canvas.rect(extX, baseY - h - flutedH, w, flutedH, '#000000', 2, '#fef3c7');
-      for (var f = 0; f < w; f += 18) {
-        canvas.line(extX + f, baseY - h - flutedH, extX + f, baseY - h, '#b45309', 1.2);
-      }
-      canvas.text(extX + w / 2, baseY - h - flutedH / 2, '18mm FLUTED PANEL (1140 x 917mm)', 19, 'bold', 'middle');
-
-      // Base Shoe Cabinet
-      canvas.rect(extX, baseY - h, w, h, '#000000', 2.5, '#ffffff');
-      canvas.line(extX + w / 2, baseY - h, extX + w / 2, baseY, '#000000', 2);
-      canvas.dimH(extX, extX + w / 2, baseY + 40, '520');
-      canvas.dimH(extX + w / 2, extX + w, baseY + 40, '520');
-      canvas.dimH(extX, extX + w, baseY + 90, '1140');
-      canvas.dimV(baseY - h, baseY, extX - 60, '1050', 0, true);
-
-      // Internal View with 498mm Shelves
-      canvas.text(intX + w / 2, 240, 'INTERNAL VIEW', 28, 'bold', 'middle');
-      canvas.rect(intX, baseY - h, w, h, '#000000', 2.5, '#ffffff');
-      canvas.line(intX, baseY - h / 2, intX + w, baseY - h / 2, '#000000', 2);
-      canvas.text(intX + w / 2, baseY - h * 0.75, 'SHELF HEIGHT: 498mm', 20, 'bold', 'middle');
-      canvas.text(intX + w / 2, baseY - h * 0.25, 'SHELF HEIGHT: 498mm', 20, 'bold', 'middle');
-
-      // Reference Image Box
-      var imgX = 2200;
-      var imgY = 1250;
-      canvas.rect(imgX, imgY, 320, 240, '#000000', 2, '#f8fafc');
-      canvas.text(imgX + 160, imgY + 110, 'REFERENCE FINISH', 18, 'bold', 'middle');
-      canvas.text(imgX + 160, imgY + 140, 'IMAGE ATTACHED', 16, 'normal', 'middle');
-
-      return canvas.toSVG();
-    },
-
-    // PAGE 8: Master Bedroom Walk-In Wardrobe & Lofts
-    buildPage8_WardrobeWalkIn: function (pageNum, totalPages) {
-      var canvas = this.createVectorCanvas();
-      this.drawA4Template(canvas, pageNum, totalPages, 'BEDROOM 1 WALKIN WARDROBE');
-      this.drawProductionDetails(canvas);
-
-      var startX = 320;
-      var baseY = 1380;
-      var w = 2430 * 0.55; // ~1336
-      var h = 1865 * 0.55; // ~1025
-      var loftH = 850 * 0.55; // ~467
-
-      canvas.text(startX + w / 2, 260, 'ELEVATION — FULL WARDROBE & LOFT RUN', 32, 'bold', 'middle');
-
-      // Upper Lofts
-      canvas.rect(startX, baseY - h - loftH, w, loftH, '#000000', 2.5, '#ffffff');
-      canvas.text(startX + w / 2, baseY - h - loftH / 2, 'LOFT ONLY SHUTTERING (H: 850mm)', 22, 'bold', 'middle');
-
-      // Main Wardrobe
-      canvas.rect(startX, baseY - h, w, h, '#000000', 2.5, '#ffffff');
-      
-      // 4 Equal Doors (375mm, 375mm, 395mm, 395mm, 340mm)
-      var cell = w / 4;
-      for (var i = 1; i < 4; i++) {
-        canvas.line(startX + i * cell, baseY - h, startX + i * cell, baseY, '#000000', 2);
-      }
-      for (var j = 0; j < 4; j++) {
-        var hx = startX + j * cell + (j % 2 === 0 ? cell - 30 : 30);
-        canvas.line(hx, baseY - h * 0.6, hx, baseY - h * 0.35, '#000000', 6);
-      }
-
-      canvas.dimH(startX, startX + w, baseY + 50, '2430');
-      canvas.dimV(baseY - h, baseY, startX - 70, '1865', 0, true);
-      canvas.dimV(baseY - h - loftH, baseY - h, startX - 70, '850', 0, true);
+      canvas.dimH(startX, startX + spanW, startY + 80, String(Math.round(totalSpan)));
+      canvas.dimV(startY - spanH, startY, startX - 70, String(Math.round(loftH)), 0, true);
 
       return canvas.toSVG();
     },
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // MULTI-PAGE DECK COMPILER
+    // MULTI-PAGE DECK COMPILER (AUTOMATIC SWITCHING BETWEEN DYNAMIC & TEMPLATE)
     // ─────────────────────────────────────────────────────────────────────────────
 
     generateAllPages: function () {
+      var pData = this.getProjectData();
+      var walls = pData.walls || [];
+      var openings = pData.openings || [];
+      var rooms = pData.rooms || [];
+      var furniture = pData.furniture || [];
+      var proj = pData.project || {};
+      var meta = proj.meta || {};
+
+      // Sync active metadata
+      if (meta.clientName || proj.clientName) this.meta.client = meta.clientName || proj.clientName;
+      if (meta.title || proj.name) this.meta.site = meta.title || proj.name;
+      if (proj.code) this.meta.prCode = proj.code;
+      if (meta.designerName) this.meta.designer = meta.designerName;
+
       var pages = [];
-      var totalPages = 8; // standard 8 core templates, expandable to 16
 
-      // Sync active project metadata if available
-      if (window.OrbixProjects && window.OrbixProjects.currentProject) {
-        var p = window.OrbixProjects.currentProject;
-        if (p.clientName) this.meta.client = p.clientName;
-        if (p.name) this.meta.site = p.name;
-        if (p.code) this.meta.prCode = p.code;
+      // Check if project has user-drawn walls or placed modular units:
+      var isDynamicProject = (walls.length > 0 || furniture.length > 0);
+
+      if (isDynamicProject) {
+        var loftUnits = furniture.filter(function (f) {
+          var c = (f.category || '').toLowerCase(), n = (f.name || '').toLowerCase();
+          return c.indexOf('loft') !== -1 || n.indexOf('loft') !== -1 || (f.unitConfig && f.unitConfig.loft);
+        });
+
+        var totalPages = 2 + furniture.length + (loftUnits.length > 0 ? 1 : 0);
+
+        // Page 1: Real 2D Floor Plan
+        pages.push({
+          index: 1,
+          title: (this.meta.dwgTitle || 'ROOM') + ' 2D FLOOR PLAN & UNIT LAYOUT',
+          svg: this.buildDynamicPage1_FloorPlan(1, totalPages, pData)
+        });
+
+        // Page 2: Real 3D Axonometric Overview
+        pages.push({
+          index: 2,
+          title: (this.meta.dwgTitle || 'ROOM') + ' 3D AXONOMETRIC & KEY UNIT',
+          svg: this.buildDynamicPage2_3DOverview(2, totalPages, pData)
+        });
+
+        // Pages 3+: Individual Unit Detailed Shop Drawings (External & Internal)
+        for (var i = 0; i < furniture.length; i++) {
+          var uIdx = i + 1;
+          var curPageNum = 3 + i;
+          var fn = furniture[i];
+          var uTitle = (fn.name || 'MODULAR UNIT') + ' (' + (fn.code || ('U0' + uIdx)) + ')';
+          pages.push({
+            index: curPageNum,
+            title: uTitle,
+            svg: this.buildDynamicUnitPage(curPageNum, totalPages, fn, i, pData)
+          });
+        }
+
+        // Optional Loft Sheet
+        if (loftUnits.length > 0) {
+          var loftPageNum = totalPages;
+          pages.push({
+            index: loftPageNum,
+            title: 'CONTINUOUS LOFT RUN (ONLY SHUTTERING)',
+            svg: this.buildDynamicLoftPage(loftPageNum, totalPages, loftUnits, pData)
+          });
+        }
+
+      } else {
+        // Fallback to reference Cookscape standard demo deck (Pages 1-8) matching Mrs. Priyanka mam 2d.pdf
+        var demoWalls = [
+          { id: 'w1', start: { x: 0, y: 0 }, end: { x: 3080, y: 0 }, thickness: 150 },
+          { id: 'w2', start: { x: 3080, y: 0 }, end: { x: 3080, y: 2930 }, thickness: 150 },
+          { id: 'w3', start: { x: 3080, y: 2930 }, end: { x: 0, y: 2930 }, thickness: 150 },
+          { id: 'w4', start: { x: 0, y: 2930 }, end: { x: 0, y: 0 }, thickness: 150 }
+        ];
+        var demoOpenings = [
+          { id: 'op1', wallId: 'w1', type: 'window', offset: 1540, width: 1205 },
+          { id: 'op2', wallId: 'w3', type: 'door', offset: 1200, width: 900 }
+        ];
+        var demoFurniture = [
+          { id: 'df1', name: 'SINK UNIT 750', code: 'BU01', category: 'base', dimensions: { W: 750, D: 600, H: 860 }, pos: { x: 600, y: 350, z: 0 }, unitConfig: { shutters: 2, drawers: 0, hasSink: true, carcass: 'Half White', shutterCol: 'Surabhi' } },
+          { id: 'df2', name: 'CORNER UNIT 1050', code: 'BU02', category: 'base', dimensions: { W: 1050, D: 600, H: 860 }, pos: { x: 1550, y: 350, z: 0 }, unitConfig: { shutters: 1, drawers: 0, carcass: 'Half White', shutterCol: 'Surabhi' } },
+          { id: 'df3', name: 'GAS HOB UNIT 900', code: 'BU03', category: 'base', dimensions: { W: 900, D: 600, H: 860 }, pos: { x: 2400, y: 350, z: 0 }, unitConfig: { shutters: 2, drawers: 0, hasHob: true, carcass: 'Half White', shutterCol: 'Surabhi' } },
+          { id: 'df4', name: 'POOJA UNIT WITH CNC CUT JALI', code: 'PU01', category: 'tall', dimensions: { W: 900, D: 450, H: 1800 }, pos: { x: 2800, y: 1200, z: 0 }, unitConfig: { shutters: 2, drawers: 0, isPooja: true, carcass: 'Half White', shutterCol: 'Surabhi' } },
+          { id: 'df5', name: 'WALL UNIT 600 (WFM600)', code: 'WFM600', category: 'wall', dimensions: { W: 600, D: 350, H: 720 }, pos: { x: 600, y: 350, z: 1400 }, unitConfig: { shutters: 2, drawers: 0, shelves: 2, carcass: 'Half White', shutterCol: 'Surabhi' } },
+          { id: 'df6', name: 'WALL GLASS UNIT 900', code: 'WU02', category: 'wall', dimensions: { W: 900, D: 350, H: 720 }, pos: { x: 1550, y: 350, z: 1400 }, unitConfig: { shutters: 2, drawers: 0, shelves: 2, carcass: 'Half White', shutterCol: 'Frosty White' } }
+        ];
+        var demoRooms = [
+          { id: 'rm1', name: 'KITCHEN', area: 9024400, polygon: [{ x: 0, y: 0 }, { x: 3080, y: 0 }, { x: 3080, y: 2930 }, { x: 0, y: 2930 }] }
+        ];
+        var demoPData = {
+          project: proj,
+          plan: { walls: demoWalls, openings: demoOpenings, furniture: demoFurniture, rooms: demoRooms },
+          walls: demoWalls,
+          openings: demoOpenings,
+          rooms: demoRooms,
+          furniture: demoFurniture
+        };
+
+        var totalPages = 8;
+        pages.push({ index: 1, title: 'KITCHEN FLOOR PLAN & APPLIANCE LAYOUT (REFERENCE DEMO)', svg: this.buildDynamicPage1_FloorPlan(1, totalPages, demoPData) });
+        pages.push({ index: 2, title: '3D AXONOMETRIC & WFM600 DETAIL (REFERENCE DEMO)', svg: this.buildDynamicPage2_3DOverview(2, totalPages, demoPData) });
+
+        for (var d = 0; d < demoFurniture.length; d++) {
+          var dNum = 3 + d;
+          var dfn = demoFurniture[d];
+          pages.push({
+            index: dNum,
+            title: dfn.name + ' (' + dfn.code + ') [REFERENCE DEMO]',
+            svg: this.buildDynamicUnitPage(dNum, totalPages, dfn, d, demoPData)
+          });
+        }
       }
-
-      pages.push({ index: 1, title: 'KITCHEN FLOOR PLAN', svg: this.buildPage1_FloorPlan(1, totalPages) });
-      pages.push({ index: 2, title: '3D KITCHEN & UNIT DETAIL', svg: this.buildPage2_3DAndDetail(2, totalPages) });
-      pages.push({ index: 3, title: 'KITCHEN CORNER BASE UNITS', svg: this.buildPage3_DualElevation(3, totalPages) });
-      pages.push({ index: 4, title: 'KITCHEN LOFT SHUTTERING', svg: this.buildPage4_LoftShuttering(4, totalPages) });
-      pages.push({ index: 5, title: 'LIVING-TV UNIT & LEDGES', svg: this.buildPage5_TVUnit(5, totalPages) });
-      pages.push({ index: 6, title: 'CROCKERY AND POOJA UNIT', svg: this.buildPage6_PoojaCrockery(6, totalPages) });
-      pages.push({ index: 7, title: 'LIVING-SHOE RACK & FLUTED PANEL', svg: this.buildPage7_ShoeRack(7, totalPages) });
-      pages.push({ index: 8, title: 'BEDROOM 1 WALKIN WARDROBE', svg: this.buildPage8_WardrobeWalkIn(8, totalPages) });
 
       return pages;
     },
@@ -47714,18 +47807,24 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       out.push("0", "ENDSEC", "0", "EOF");
       var dxfContent = out.join("\r\n");
 
-      // Trigger download
-      var blob = new Blob([dxfContent], { type: 'application/dxf' });
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'cookscape-2d-drawing-page-' + (pageIndex + 1) + '.dxf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      // Trigger browser download if DOM environment
+      if (typeof document !== 'undefined' && document.body && typeof Blob !== 'undefined' && typeof URL !== 'undefined' && URL.createObjectURL) {
+        try {
+          var blob = new Blob([dxfContent], { type: 'application/dxf' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'cookscape-2d-drawing-page-' + (pageIndex + 1) + '.dxf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } catch (_) {}
+      }
 
-      if (typeof window.toast === 'function') {
+      if (typeof window !== 'undefined' && typeof window.toast === 'function') {
         window.toast('📐 Downloaded AutoCAD DXF (Page ' + (pageIndex + 1) + ')');
       }
+
+      return dxfContent;
     },
 
     // ── Print Multi-Page Vector PDF (A4 Landscape) ──
@@ -47812,7 +47911,6 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       if (metaBtn && metaModal) {
         metaBtn.onclick = function () {
-          // Populate modal inputs with current meta
           var cIn = document.getElementById('a4MetaClient'); if (cIn) cIn.value = self.meta.client;
           var sIn = document.getElementById('a4MetaSite'); if (sIn) sIn.value = self.meta.site;
           var prIn = document.getElementById('a4MetaPrCode'); if (prIn) prIn.value = self.meta.prCode;
