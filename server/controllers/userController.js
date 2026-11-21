@@ -15,6 +15,7 @@ class UserController {
         : users.map((u) => ({
             id: u.id,
             name: u.name,
+            phone: u.phone || '',
             role: u.role,
             designation: u.designation,
             company: u.company,

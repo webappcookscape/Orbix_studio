@@ -12,6 +12,7 @@ model User {
   name        String    @db.VarChar(128)
   username    String?   @unique @db.VarChar(64)
   email       String    @unique @db.VarChar(128)
+  phone       String?   @default("") @db.VarChar(64)
   password    String?   @default("123456") @db.VarChar(128)
   role        String?   @default("employee") @db.VarChar(64)
   designation String?   @default("Modular Designer") @db.VarChar(128)

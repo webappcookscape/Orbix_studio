@@ -597,6 +597,7 @@ async function checkDatabaseConnection() {
 async function ensureUpdatedAtColumns(client) {
   const stmts = [
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP',
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(64) DEFAULT ''",
     'ALTER TABLE project_shares ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP',
     'ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP'
   ];

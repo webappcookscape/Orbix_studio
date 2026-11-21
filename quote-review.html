@@ -67,9 +67,93 @@
     .status-pill.is-approved { background: var(--ok-bg); color: var(--ok-fg); }
 
     .container {
-      max-width: 1040px;
+      max-width: 1280px;
       margin: 22px auto 60px auto;
       padding: 0 16px;
+    }
+    .review-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 20px;
+      align-items: start;
+    }
+    .review-sidebar {
+      position: sticky;
+      top: 76px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(8, 35, 27, 0.07);
+    }
+    .review-sidebar-head {
+      background: linear-gradient(90deg, #08231B 0%, #113B2F 100%);
+      color: #fff;
+      padding: 13px 16px;
+    }
+    .review-sidebar-head h3 {
+      margin: 0;
+      font-size: 14.5px;
+      letter-spacing: 0.02em;
+    }
+    .review-sidebar-head p {
+      margin: 3px 0 0 0;
+      font-size: 11px;
+      color: #CBD5E1;
+    }
+    .review-sidebar-list {
+      padding: 10px 12px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ref-var-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 10px;
+      border: 1px solid #E5DDD2;
+      border-radius: 9px;
+      background: #FAF6F0;
+    }
+    .ref-var-item.is-selected {
+      background: #FEF2F2;
+      border-color: #C00000;
+      box-shadow: 0 2px 8px rgba(192, 0, 0, 0.08);
+    }
+    .ref-var-name {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--forest);
+      line-height: 1.25;
+    }
+    .ref-var-sub {
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .ref-var-badge {
+      display: inline-block;
+      margin-left: 5px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: #C00000;
+      color: #fff;
+      font-size: 9.5px;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+    .ref-var-price {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--crimson);
+      white-space: nowrap;
+    }
+    @media (max-width: 980px) {
+      .review-layout { grid-template-columns: 1fr; }
+      .review-sidebar { position: static; }
     }
     .meta-card {
       background: var(--card);
@@ -383,6 +467,7 @@
         var gstPct = comm.gstPercent !== undefined ? Number(comm.gstPercent) : 18;
         var designAmt = Math.round(woodwork * (dPct / 100));
         var freightAmt = freightEnabled ? Math.round(woodwork * (fPct / 100)) : 0;
+        var originalBillableValue = Math.round(woodwork + designAmt + freightAmt);
 
         var discP = Math.max(0, Math.min(100, Number(o.discountPercent !== undefined ? o.discountPercent : comm.discountPercent) || 0));
         var adpP = Math.max(0, Math.min(100, Number(o.adpPercent !== undefined ? o.adpPercent : comm.adpPercent) || 0));
@@ -392,6 +477,7 @@
         var adpAmt = Math.round(designAmt * (adpP / 100));
         var designAfterDiscount = Math.max(0, designAmt - adpAmt);
         var totalSavings = discAmt + adpAmt;
+        var hasDiscount = totalSavings > 0;
 
         // Grand Total (Without GST) = Net Woodwork + Net Design Charge (+ enabled Accessories, Appliances, Freight)
         var netBeforeTax = Math.max(0, Math.round(woodworkAfterDiscount + designAfterDiscount + acc + app + freightAmt));
@@ -411,6 +497,7 @@
           freightEnabled: freightEnabled,
           freightPercent: fPct,
           freightAmount: freightAmt,
+          originalBillableValue: originalBillableValue,
           discountPercent: discP,
           discountAmount: discAmt,
           woodworkAfterDiscount: woodworkAfterDiscount,
@@ -418,6 +505,7 @@
           adpAmount: adpAmt,
           designAfterDiscount: designAfterDiscount,
           totalSavings: totalSavings,
+          hasDiscount: hasDiscount,
           netBeforeTax: netBeforeTax,
           gstEnabled: gstEnabled,
           gstPercent: gstPct,
@@ -458,6 +546,9 @@
         var frtEl = card.querySelector('[data-f="freightAmt"]');
         if (frtEl) frtEl.textContent = c.freightEnabled ? fmtINR(c.freightAmount) : 'Disabled';
 
+        var origBillEl = card.querySelector('[data-f="origBillable"]');
+        if (origBillEl) origBillEl.textContent = fmtINR(c.originalBillableValue);
+
         var discCell = card.querySelector('[data-f="discAmt"]');
         if (discCell) {
           discCell.innerHTML = '<span>' + fmtINR(c.woodworkAfterDiscount) + '</span>' +
@@ -476,10 +567,18 @@
         if (gEl) gEl.textContent = c.gstEnabled ? fmtINR(c.gstAmount) : 'Disabled';
 
         var fLbl = card.querySelector('[data-f="finalLbl"]');
-        if (fLbl) fLbl.textContent = c.gstEnabled ? 'FINAL TOTAL (WITH GST)' : 'FINAL TOTAL';
+        if (fLbl) {
+          fLbl.textContent = c.hasDiscount
+            ? (c.gstEnabled ? 'FINAL DISCOUNTED VALUE (WITH GST)' : 'FINAL DISCOUNTED VALUE')
+            : (c.gstEnabled ? 'FINAL TOTAL (WITH GST)' : 'FINAL TOTAL');
+        }
         card.querySelector('[data-f="grandTotal"]').textContent = fmtINR(c.grandTotal);
         var sEl = card.querySelector('[data-f="totalSavings"]');
         if (sEl) sEl.textContent = fmtINR(c.totalSavings || 0);
+
+        // Live-sync updated selected variant total into the All Variants side reference
+        var sidePriceEl = document.querySelector('[data-side-tier="' + String(v.tierKey || '').replace(/"/g, '') + '"]');
+        if (sidePriceEl) sidePriceEl.textContent = fmtINR(c.grandTotal);
       }
 
       function renderPage() {
@@ -510,6 +609,8 @@
           '<div class="meta-item"><label>Quote Ref</label><div class="val">' + esc(r.quoteCode || '-') + '</div></div>' +
           '<div class="meta-item"><label>Designer / BH</label><div class="val">' + esc((r.designer && r.designer.name) || '-') + '</div></div>' +
           '</div>';
+
+        html += '<div class="review-layout"><div class="review-main">';
 
         state.variants.forEach(function (v, idx) {
           var c = v.commercial || {};
@@ -559,6 +660,7 @@
             '  <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="freightEnabled"' + (c.freightEnabled ? ' checked' : '') + '> <b>Freight Charges (' + esc(c.freightPercent) + '%)</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
             '  <td class="num" data-f="freightAmt">' + (c.freightEnabled ? fmtINR(c.freightAmount) : 'Disabled') + '</td>' +
             '</tr>' +
+            '<tr style="background:#F8FAFC;"><td><b>Original Billable Value</b></td><td class="num"><b data-f="origBillable">' + fmtINR(c.originalBillableValue) + '</b></td></tr>' +
             '<tr class="discount-row">' +
             '  <td><div class="disc-input-wrap"><b>Discount on Wood Work (%):</b> ' +
             '    <input type="number" step="0.5" min="0" max="100" class="disc-input" data-idx="' + idx + '" data-kind="discount" value="' + esc(c.discountPercent || 0) + '">' +
@@ -576,7 +678,7 @@
             '  <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="gstEnabled"' + (c.gstEnabled ? ' checked' : '') + '> <b>GST (' + esc(c.gstPercent) + '%)</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
             '  <td class="num" data-f="gstAmt">' + (c.gstEnabled ? fmtINR(c.gstAmount) : 'Disabled') + '</td>' +
             '</tr>' +
-            '<tr class="total-row"><td data-f="finalLbl">' + (c.gstEnabled ? 'FINAL TOTAL (WITH GST)' : 'FINAL TOTAL') + '</td><td class="num" data-f="grandTotal">' + fmtINR(c.grandTotal) + '</td></tr>' +
+            '<tr class="total-row"><td data-f="finalLbl">' + (c.hasDiscount ? (c.gstEnabled ? 'FINAL DISCOUNTED VALUE (WITH GST)' : 'FINAL DISCOUNTED VALUE') : (c.gstEnabled ? 'FINAL TOTAL (WITH GST)' : 'FINAL TOTAL')) + '</td><td class="num" data-f="grandTotal">' + fmtINR(c.grandTotal) + '</td></tr>' +
             '<tr style="background:#ECFDF5;"><td style="color:#166534;font-weight:800;">YOUR SAVINGS</td><td class="num" style="color:#166534;font-weight:800;" data-f="totalSavings">' + fmtINR(c.totalSavings || 0) + '</td></tr>' +
             '</tbody></table>' +
             '<div class="scope-strip">' +
@@ -599,6 +701,37 @@
           '<div id="approveErr" style="display:none;color:#B91C1C;font-size:13px;margin-bottom:10px;font-weight:600;"></div>' +
           '<button type="button" class="approve-btn" id="approveBtn">' + (isApproved ? '✅ Save Updated Discounts &amp; Re-Approve' : '✅ Approve Quotation &amp; Unlock Client Link') + '</button>' +
           '</section>';
+
+        html += '</div>'; // end .review-main
+
+        // Side Section: All Master Template Variant Types & Pricing Reference
+        var allVarRef = Array.isArray(r.allVariantsPricing) && r.allVariantsPricing.length
+          ? r.allVariantsPricing
+          : state.variants.map(function (v) {
+              return { tierKey: v.tierKey, tierTitle: v.tierTitle || v.tierKey, unitCount: 0, grandTotal: v.grandTotal || 0, selected: true };
+            });
+        var selectedKeySet = {};
+        state.variants.forEach(function (v) { selectedKeySet[String(v.tierKey || '').toLowerCase()] = v; });
+
+        html += '<aside class="review-sidebar">' +
+          '<div class="review-sidebar-head">' +
+          '  <h3>All Variant Types &amp; Pricing</h3>' +
+          '  <p>Reference pricing across all Master Template variants</p>' +
+          '</div>' +
+          '<div class="review-sidebar-list">';
+        allVarRef.forEach(function (av) {
+          var liveMatch = selectedKeySet[String(av.tierKey || '').toLowerCase()];
+          var isSel = Boolean(liveMatch || av.selected);
+          var displayPrice = liveMatch && liveMatch.commercial ? liveMatch.commercial.grandTotal : av.grandTotal;
+          html += '<div class="ref-var-item' + (isSel ? ' is-selected' : '') + '">' +
+            '<div>' +
+            '  <div class="ref-var-name">' + esc(av.tierTitle || av.tierKey) + (isSel ? '<span class="ref-var-badge">Selected</span>' : '') + '</div>' +
+            '  <div class="ref-var-sub">' + (av.unitCount ? (esc(av.unitCount) + ' units + quote') : 'Master Variant') + '</div>' +
+            '</div>' +
+            '<div class="ref-var-price" data-side-tier="' + esc(av.tierKey || '') + '">' + fmtINR(displayPrice || 0) + '</div>' +
+            '</div>';
+        });
+        html += '</div></aside></div>'; // end .review-layout
 
         main.innerHTML = html;
 

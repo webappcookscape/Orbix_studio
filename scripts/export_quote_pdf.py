@@ -345,6 +345,69 @@ def draw_table_ops(ops, rows, x, y, total_w, col_ratios, font_size=8.2, header_f
     return y
 
 
+def resolve_variant_unit_finish(tpl_v, item):
+    import re as _re
+    if item and str(item.get('refCode') or '').upper() == 'CIV':
+        return str(item.get('finish') or 'Included Civil Scope')
+    tables = (tpl_v or {}).get('specTables') or []
+    if not tables:
+        return str((item or {}).get('finish') or '-')
+    ctx = f"{(item or {}).get('room') or ''} {(item or {}).get('name') or ''}".lower()
+    is_kitchen = bool(_re.search(r'(kitchen|utility|pantry|crockery|hob|sink|tall\s*unit|base\s*unit|wall\s*unit|loft\s*kitchen)', ctx))
+
+    chosen = tables[0]
+    if len(tables) > 1:
+        k_tbl = next((t for t in tables if t and t[0] and 'kitchen' in str(t[0][0]).lower()), None)
+        w_tbl = next((t for t in tables if t and t[0] and 'wardrobe' in str(t[0][0]).lower()), None)
+        chosen = (k_tbl or tables[0]) if is_kitchen else (w_tbl or tables[1] or tables[0])
+
+    carcass = ''
+    k_carcass = ''
+    w_carcass = ''
+    shutter_mat = ''
+    shutter_finishes = []
+    laminate_brand = ''
+
+    for row in chosen[1:]:
+        if not isinstance(row, list) or len(row) < 2:
+            continue
+        k = str(row[0] or '').strip().lower()
+        v = str(row[1] or '').strip()
+        if not v or v == '-':
+            continue
+        if 'kitchen' in k and 'carcass' in k:
+            k_carcass = k_carcass or v
+        elif 'wardrobe' in k and 'carcass' in k:
+            w_carcass = w_carcass or v
+        elif k == 'carcass material' or 'carcass' in k:
+            carcass = carcass or v
+        elif k == 'shutter material':
+            shutter_mat = shutter_mat or v
+        elif k == 'shutter finish':
+            shutter_finishes.append(v)
+        elif 'laminate' in k and 'brand' in k:
+            laminate_brand = laminate_brand or v
+
+    resolved_carcass = (k_carcass or carcass or w_carcass) if is_kitchen else (w_carcass or carcass or k_carcass)
+    resolved_finish = (shutter_finishes[0] if is_kitchen else shutter_finishes[1]) if len(shutter_finishes) > 1 else (shutter_finishes[0] if shutter_finishes else '')
+
+    parts = []
+    if resolved_carcass:
+        parts.append('Carcass: ' + resolved_carcass)
+    s_bits = []
+    if shutter_mat:
+        s_bits.append(shutter_mat)
+    if resolved_finish and resolved_finish.lower() != shutter_mat.lower():
+        s_bits.append(resolved_finish)
+    if not s_bits and laminate_brand:
+        s_bits.append(laminate_brand)
+    if s_bits:
+        parts.append('Shutter: ' + ' / '.join(s_bits))
+
+    joined = _re.sub(r'\s+', ' ', ' | '.join(parts)).strip()
+    return joined or str((item or {}).get('finish') or '-')
+
+
 def build_pdf(payload, out_path):
     if not os.path.exists(TEMPLATE_DATA_PATH):
         raise FileNotFoundError(f'Missing {TEMPLATE_DATA_PATH}')
@@ -460,9 +523,10 @@ def build_pdf(payload, out_path):
             for idx, it in enumerate(ch):
                 ref = str(it.get('refCode') or f'{p_idx * 14 + idx + 1:02d}')
                 r_u = f"{it.get('room', 'Interior')} - {it.get('name', 'Modular Unit')}"
+                dyn_finish = resolve_variant_unit_finish(tpl_v, it)
                 rows.append([
                     ref, r_u, str(it.get('dimensions') or '-'),
-                    str(it.get('finish') or '-'), str(it.get('qtyText') or '1'),
+                    dyn_finish, str(it.get('qtyText') or '1'),
                     fmt_inr(it.get('amount') or 0)
                 ])
             if not ch:
@@ -509,6 +573,10 @@ def build_pdf(payload, out_path):
         c_rows.append(['Design Charges', fmt_inr(comm.get('designAmount', 0))])
         if frt_enabled:
             c_rows.append(['Freight Charges', fmt_inr(comm.get('freightAmount', 0))])
+        orig_billable = comm.get('originalBillableValue')
+        if orig_billable is None:
+            orig_billable = round(float(comm.get('woodworkSubtotal') or 0) + float(comm.get('designAmount') or 0) + (float(comm.get('freightAmount') or 0) if frt_enabled else 0))
+        c_rows.append(['Original Billable Value', fmt_inr(orig_billable)])
         if float(comm.get('discountAmount') or 0) > 0:
             ww_after = comm.get('woodworkAfterDiscount')
             if ww_after is None:
@@ -522,8 +590,10 @@ def build_pdf(payload, out_path):
         c_rows.append(['Grand Total (Without GST)', fmt_inr(comm.get('netBeforeTax', 0))])
         if gst_enabled:
             c_rows.append(['GST', fmt_inr(comm.get('gstAmount', 0))])
+        has_discount = (float(comm.get('discountAmount') or 0) > 0) or (float(comm.get('adpAmount') or 0) > 0) or (float(comm.get('totalSavings') or 0) > 0)
+        final_lbl = ('FINAL DISCOUNTED VALUE (WITH GST)' if gst_enabled else 'FINAL DISCOUNTED VALUE') if has_discount else ('FINAL TOTAL (WITH GST)' if gst_enabled else 'FINAL TOTAL')
         c_rows.append({
-            'cells': ['FINAL TOTAL (WITH GST)' if gst_enabled else 'FINAL TOTAL', fmt_inr(comm.get('grandTotal', vq.get('grandTotal', 0)))],
+            'cells': [final_lbl, fmt_inr(comm.get('grandTotal', vq.get('grandTotal', 0)))],
             'highlight': True,
             'accent': True
         })

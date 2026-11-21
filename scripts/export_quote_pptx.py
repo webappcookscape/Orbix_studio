@@ -20,6 +20,78 @@ import xml.etree.ElementTree as ET
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PPTX_PATH = os.path.join(ROOT_DIR, 'Master-Template.pptx')
+TEMPLATE_DATA_PATH = os.path.join(ROOT_DIR, 'server', 'quote-assets', 'template-data.json')
+
+
+def load_template_variants_by_key():
+    try:
+        with open(TEMPLATE_DATA_PATH, 'r', encoding='utf-8') as f:
+            tpl = json.load(f)
+        return {v['key']: v for v in (tpl.get('variants') or []) if v.get('key')}
+    except Exception:
+        return {}
+
+
+def resolve_variant_unit_finish(tpl_v, item):
+    if item and str(item.get('refCode') or '').upper() == 'CIV':
+        return str(item.get('finish') or 'Included Civil Scope')
+    tables = (tpl_v or {}).get('specTables') or []
+    if not tables:
+        return str((item or {}).get('finish') or '-')
+    ctx = f"{(item or {}).get('room') or ''} {(item or {}).get('name') or ''}".lower()
+    is_kitchen = bool(re.search(r'(kitchen|utility|pantry|crockery|hob|sink|tall\s*unit|base\s*unit|wall\s*unit|loft\s*kitchen)', ctx))
+
+    chosen = tables[0]
+    if len(tables) > 1:
+        k_tbl = next((t for t in tables if t and t[0] and 'kitchen' in str(t[0][0]).lower()), None)
+        w_tbl = next((t for t in tables if t and t[0] and 'wardrobe' in str(t[0][0]).lower()), None)
+        chosen = (k_tbl or tables[0]) if is_kitchen else (w_tbl or tables[1] or tables[0])
+
+    carcass = ''
+    k_carcass = ''
+    w_carcass = ''
+    shutter_mat = ''
+    shutter_finishes = []
+    laminate_brand = ''
+
+    for row in chosen[1:]:
+        if not isinstance(row, list) or len(row) < 2:
+            continue
+        k = str(row[0] or '').strip().lower()
+        v = str(row[1] or '').strip()
+        if not v or v == '-':
+            continue
+        if 'kitchen' in k and 'carcass' in k:
+            k_carcass = k_carcass or v
+        elif 'wardrobe' in k and 'carcass' in k:
+            w_carcass = w_carcass or v
+        elif k == 'carcass material' or 'carcass' in k:
+            carcass = carcass or v
+        elif k == 'shutter material':
+            shutter_mat = shutter_mat or v
+        elif k == 'shutter finish':
+            shutter_finishes.append(v)
+        elif 'laminate' in k and 'brand' in k:
+            laminate_brand = laminate_brand or v
+
+    resolved_carcass = (k_carcass or carcass or w_carcass) if is_kitchen else (w_carcass or carcass or k_carcass)
+    resolved_finish = (shutter_finishes[0] if is_kitchen else shutter_finishes[1]) if len(shutter_finishes) > 1 else (shutter_finishes[0] if shutter_finishes else '')
+
+    parts = []
+    if resolved_carcass:
+        parts.append('Carcass: ' + resolved_carcass)
+    s_bits = []
+    if shutter_mat:
+        s_bits.append(shutter_mat)
+    if resolved_finish and resolved_finish.lower() != shutter_mat.lower():
+        s_bits.append(resolved_finish)
+    if not s_bits and laminate_brand:
+        s_bits.append(laminate_brand)
+    if s_bits:
+        parts.append('Shutter: ' + ' / '.join(s_bits))
+
+    joined = re.sub(r'\s+', ' ', ' | '.join(parts)).strip()
+    return joined or str((item or {}).get('finish') or '-')
 
 VARIANT_SLIDE_GROUPS = {
     'zappo - el pearl': {'title': 'ZAPPO EL PEARL', 'slides': [7, 8, 9], 'quote_slide': 9},
@@ -369,6 +441,10 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
     comm_items.append(('Design Charges', fmt_inr(comm.get('designAmount', 0)), False))
     if frt_enabled:
         comm_items.append(('Freight Charges', fmt_inr(comm.get('freightAmount', 0)), False))
+    orig_billable = comm.get('originalBillableValue')
+    if orig_billable is None:
+        orig_billable = round(float(comm.get('woodworkSubtotal') or 0) + float(comm.get('designAmount') or 0) + (float(comm.get('freightAmount') or 0) if frt_enabled else 0))
+    comm_items.append(('Original Billable Value', fmt_inr(orig_billable), True))
     if float(comm.get('discountAmount') or 0) > 0:
         ww_after = comm.get('woodworkAfterDiscount')
         if ww_after is None:
@@ -383,7 +459,7 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
     if gst_enabled:
         comm_items.append(('GST', fmt_inr(comm.get('gstAmount', 0)), False))
 
-    c_row_h = 330000 if len(comm_items) <= 8 else 295000
+    c_row_h = 330000 if len(comm_items) <= 8 else 285000
     comm_rows = [
         (360000, [
             build_ooxml_cell('COST ESTIMATION SUMMARY', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=1050, align='l', border_hex='C00000'),
@@ -398,7 +474,8 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
         ]))
 
     grand_total = fmt_inr(comm.get('grandTotal', variant_quote.get('grandTotal', 0)))
-    final_lbl = 'FINAL TOTAL (WITH GST)' if gst_enabled else 'FINAL TOTAL'
+    has_discount = (float(comm.get('discountAmount') or 0) > 0) or (float(comm.get('adpAmount') or 0) > 0) or (float(comm.get('totalSavings') or 0) > 0)
+    final_lbl = ('FINAL DISCOUNTED VALUE (WITH GST)' if gst_enabled else 'FINAL DISCOUNTED VALUE') if has_discount else ('FINAL TOTAL (WITH GST)' if gst_enabled else 'FINAL TOTAL')
     comm_rows.append((460000, [
         build_ooxml_cell(final_lbl, fill_hex='FEF9C3', text_hex='08231B', bold=True, font_sz=1150, align='l', border_hex='C00000'),
         build_ooxml_cell(grand_total, fill_hex='FEF9C3', text_hex='C00000', bold=True, font_sz=1350, align='r', border_hex='C00000'),
@@ -594,10 +671,14 @@ def build_pptx(payload, out_path):
     footer_parts = [payload.get('clientName') or '', payload.get('siteAddress') or '', payload.get('clientPhone') or '']
     footer_text = ' | '.join([p for p in footer_parts if p]) or 'Cookscape Interiors'
 
+    tpl_variants_by_key = load_template_variants_by_key()
     unit_slides_by_quote_slide = {}
     unit_counter = 0
     for q_slide, (cfg, vq) in kept_variant_map.items():
-        items = vq.get('items') or []
+        tk_norm = normalize_tier_key(vq.get('tierKey') or vq.get('tierName') or vq.get('tierTitle') or cfg.get('title'))
+        tpl_v = tpl_variants_by_key.get(tk_norm)
+        raw_items = vq.get('items') or []
+        items = [dict(it, finish=resolve_variant_unit_finish(tpl_v, it)) for it in raw_items]
         chunks = [items[i:i + 9] for i in range(0, len(items), 9)] or [[]]
         unit_slides_by_quote_slide[q_slide] = []
         for p_idx, ch in enumerate(chunks):

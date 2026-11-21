@@ -424,6 +424,18 @@
           return buildVariantQuotePayload(app, tk, iconData.keyByItemKey, remarks);
         });
 
+        var allVariantsPricing = MASTER_VARIANTS.map(function (v) {
+          var info = tierPreviews[v.key] || { grandTotal: 0, unitCount: 0 };
+          var matchedSelected = variantQuotes.filter(function (vq) { return vq.tierKey === v.key; })[0];
+          return {
+            tierKey: v.key,
+            tierTitle: v.label,
+            unitCount: matchedSelected ? (matchedSelected.items || []).length : (info.unitCount || 0),
+            grandTotal: Math.round(matchedSelected ? (matchedSelected.grandTotal || 0) : (info.grandTotal || 0)),
+            selected: selectedTiers.indexOf(v.key) !== -1
+          };
+        });
+
         return {
           projectId: getActiveProjectId(app),
           title: (proj.meta.title || 'Modular Interior Proposal') + ' — ' + cName,
@@ -449,6 +461,7 @@
               email: designerEmail
             },
             variantQuotes: variantQuotes,
+            allVariantsPricing: allVariantsPricing,
             unitIcons: iconData.icons
           }
         };

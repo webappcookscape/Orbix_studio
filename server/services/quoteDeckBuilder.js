@@ -51,6 +51,65 @@ function chunkArray(arr, size) {
   return out;
 }
 
+// Dynamically resolve Material / Finish string for each unit from the selected variant's specification tables
+function resolveVariantUnitFinish(tplVar, item) {
+  if (item && String(item.refCode || '').toUpperCase() === 'CIV') {
+    return item.finish || 'Included Civil Scope';
+  }
+  const tables = (tplVar && Array.isArray(tplVar.specTables)) ? tplVar.specTables : [];
+  if (!tables.length) return (item && item.finish) || '-';
+
+  const contextStr = `${(item && item.room) || ''} ${(item && item.name) || ''}`.toLowerCase();
+  const isKitchen = /(kitchen|utility|pantry|crockery|hob|sink|tall\s*unit|base\s*unit|wall\s*unit|loft\s*kitchen)/i.test(contextStr);
+
+  // Pick Kitchen table vs Wardrobe table when a variant defines separate spec tables (e.g. LL ELITE)
+  let chosenTable = tables[0];
+  if (tables.length > 1) {
+    const kitchenTbl = tables.find((t) => t && t[0] && /kitchen/i.test(String(t[0][0] || '')));
+    const wardTbl = tables.find((t) => t && t[0] && /wardrobe/i.test(String(t[0][0] || '')));
+    chosenTable = isKitchen ? (kitchenTbl || tables[0]) : (wardTbl || tables[1] || tables[0]);
+  }
+
+  let carcass = '';
+  let kitchenCarcass = '';
+  let wardCarcass = '';
+  let shutterMat = '';
+  let shutterFinishes = [];
+  let laminateBrand = '';
+
+  for (let r = 1; r < chosenTable.length; r++) {
+    const row = chosenTable[r];
+    if (!Array.isArray(row) || row.length < 2) continue;
+    const k = String(row[0] || '').trim().toLowerCase();
+    const v = String(row[1] || '').trim();
+    if (!v || v === '-') continue;
+    if (k.includes('kitchen') && k.includes('carcass')) kitchenCarcass = kitchenCarcass || v;
+    else if (k.includes('wardrobe') && k.includes('carcass')) wardCarcass = wardCarcass || v;
+    else if (k === 'carcass material' || k.includes('carcass')) carcass = carcass || v;
+    else if (k === 'shutter material') shutterMat = shutterMat || v;
+    else if (k === 'shutter finish') shutterFinishes.push(v);
+    else if (k.includes('laminate') && k.includes('brand')) laminateBrand = laminateBrand || v;
+  }
+
+  const resolvedCarcass = isKitchen
+    ? (kitchenCarcass || carcass || wardCarcass)
+    : (wardCarcass || carcass || kitchenCarcass);
+  const resolvedFinish = shutterFinishes.length > 1
+    ? (isKitchen ? shutterFinishes[0] : shutterFinishes[1])
+    : (shutterFinishes[0] || '');
+
+  const parts = [];
+  if (resolvedCarcass) parts.push('Carcass: ' + resolvedCarcass);
+  const shutterBits = [];
+  if (shutterMat) shutterBits.push(shutterMat);
+  if (resolvedFinish && resolvedFinish.toLowerCase() !== shutterMat.toLowerCase()) shutterBits.push(resolvedFinish);
+  if (!shutterBits.length && laminateBrand) shutterBits.push(laminateBrand);
+  if (shutterBits.length) parts.push('Shutter: ' + shutterBits.join(' / '));
+
+  const joined = parts.join(' | ').replace(/\s+/g, ' ').trim();
+  return joined || (item && item.finish) || '-';
+}
+
 function buildClientQuoteDeck(quoteRecord) {
   const tpl = loadTemplateData();
   const snap = quoteRecord.quoteSnapshot || {};
@@ -157,7 +216,10 @@ function buildClientQuoteDeck(quoteRecord) {
     });
 
     // 3c. Unit Snips Slide(s) (Inserted right after Specification and before Quotation, matching quotegenerator)
-    const items = Array.isArray(vq.items) ? vq.items : [];
+    const rawItems = Array.isArray(vq.items) ? vq.items : [];
+    const items = rawItems.map((it) => Object.assign({}, it, {
+      finish: resolveVariantUnitFinish(tplVar, it)
+    }));
     const unitPages = items.length ? chunkArray(items, 9) : [[]];
     unitPages.forEach((pageItems, pIdx) => {
       slides.push({

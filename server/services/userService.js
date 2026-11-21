@@ -11,31 +11,75 @@ try {
     compare: async (pw, hash) => pw === hash
   };
 }
-const { prisma } = require('../config/prisma');
+const prismaConfig = require('../config/prisma');
+const { prisma } = prismaConfig;
 
 // Helper: Strip sensitive password hashes from user records
 function sanitizeUser(user) {
   if (!user) return null;
   const safe = { ...user };
   delete safe.password;
+  safe.phone = (safe.phone !== undefined && safe.phone !== null) ? String(safe.phone) : '';
   return safe;
+}
+
+async function ensurePhoneColumnSafe() {
+  if (!prismaConfig.isConnected) return false;
+  try {
+    await prisma.$executeRawUnsafe("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(64) DEFAULT ''");
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+async function persistPhoneViaRawSql(id, phone) {
+  if (!prismaConfig.isConnected || !id) return;
+  try {
+    await ensurePhoneColumnSafe();
+    await prisma.$executeRawUnsafe('UPDATE users SET phone = $1 WHERE id = $2', String(phone || ''), String(id));
+  } catch (err) {
+    console.warn('[UserService] Raw phone update notice:', err.message);
+  }
+}
+
+async function hydratePhonesIfMissing(users) {
+  if (!prismaConfig.isConnected || !Array.isArray(users) || !users.length) return users;
+  const needsHydrate = users.some((u) => u && u.phone === undefined);
+  if (!needsHydrate) return users;
+  try {
+    await ensurePhoneColumnSafe();
+    const rows = await prisma.$queryRawUnsafe('SELECT id, phone FROM users');
+    const byId = {};
+    for (const r of (rows || [])) {
+      if (r && r.id) byId[r.id] = r.phone || '';
+    }
+    return users.map((u) => (u ? Object.assign({}, u, { phone: byId[u.id] !== undefined ? byId[u.id] : (u.phone || '') }) : u));
+  } catch (_) {
+    return users;
+  }
 }
 
 class UserService {
   // 1. Get all users
   async getAllUsers() {
-    const users = await prisma.user.findMany({
+    let users = await prisma.user.findMany({
       orderBy: { name: 'asc' }
     });
+    users = await hydratePhonesIfMissing(users);
     return users.map(sanitizeUser);
   }
 
   // 2. Get user by ID
   async getUserById(id) {
     if (!id) return null;
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id }
     });
+    if (user && user.phone === undefined && prismaConfig.isConnected) {
+      const hydrated = await hydratePhonesIfMissing([user]);
+      user = hydrated[0];
+    }
     return sanitizeUser(user);
   }
 
@@ -97,21 +141,37 @@ class UserService {
     const role = (userData.role === 'admin') ? 'admin' : 'employee';
     const designation = (userData.designation || 'Modular Designer').trim();
     const company = (userData.company || 'Cookscape').trim();
+    const phone = String(userData.phone || '').trim().slice(0, 64);
     const avatar = (userData.avatar || name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)).trim();
 
-    const created = await prisma.user.create({
-      data: {
-        id,
-        name,
-        username,
-        email,
-        password: hashedPassword,
-        role,
-        designation,
-        company,
-        avatar
+    const createData = {
+      id,
+      name,
+      username,
+      email,
+      phone,
+      password: hashedPassword,
+      role,
+      designation,
+      company,
+      avatar
+    };
+
+    let created;
+    try {
+      created = await prisma.user.create({ data: createData });
+    } catch (err) {
+      // Zero-downtime fallback if live Prisma Client wasn't regenerated yet for the new phone column
+      if (err && /unknown argument|phone/i.test(String(err.message || ''))) {
+        const fallbackData = { ...createData };
+        delete fallbackData.phone;
+        created = await prisma.user.create({ data: fallbackData });
+        await persistPhoneViaRawSql(created.id, phone);
+        created = Object.assign({}, created, { phone });
+      } else {
+        throw err;
       }
-    });
+    }
 
     return sanitizeUser(created);
   }
@@ -124,9 +184,14 @@ class UserService {
     if (!existing) throw new Error('User not found');
 
     const data = {};
+    let phoneToSync = undefined;
     if (updates.name !== undefined && updates.name !== null) data.name = updates.name.trim();
     if (updates.username !== undefined && updates.username !== null) data.username = updates.username.trim();
     if (updates.email !== undefined && updates.email !== null) data.email = updates.email.trim().toLowerCase();
+    if (updates.phone !== undefined && updates.phone !== null) {
+      phoneToSync = String(updates.phone).trim().slice(0, 64);
+      data.phone = phoneToSync;
+    }
     if (updates.designation !== undefined && updates.designation !== null) data.designation = updates.designation.trim();
     if (updates.company !== undefined && updates.company !== null) data.company = updates.company.trim();
 
@@ -147,10 +212,32 @@ class UserService {
       data.avatar = data.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     }
 
-    const updated = await prisma.user.update({
-      where: { id },
-      data
-    });
+    let updated;
+    try {
+      updated = await prisma.user.update({
+        where: { id },
+        data
+      });
+    } catch (err) {
+      if (phoneToSync !== undefined && err && /unknown argument|phone/i.test(String(err.message || ''))) {
+        const fallbackData = { ...data };
+        delete fallbackData.phone;
+        if (Object.keys(fallbackData).length > 0) {
+          updated = await prisma.user.update({ where: { id }, data: fallbackData });
+        } else {
+          updated = existing;
+        }
+        await persistPhoneViaRawSql(id, phoneToSync);
+        updated = Object.assign({}, updated, { phone: phoneToSync });
+      } else {
+        throw err;
+      }
+    }
+
+    if (phoneToSync !== undefined && updated.phone === undefined) {
+      await persistPhoneViaRawSql(id, phoneToSync);
+      updated = Object.assign({}, updated, { phone: phoneToSync });
+    }
 
     return sanitizeUser(updated);
   }

@@ -79,6 +79,7 @@ function recalculateVariantCommercial(comm, overrides) {
 
   const designAmount = Math.round(woodwork * (designPercent / 100));
   const freightAmount = freightEnabled ? Math.round(woodwork * (freightPercent / 100)) : 0;
+  const originalBillableValue = Math.round(woodwork + designAmount + freightAmount);
 
   const discP = Math.max(0, Math.min(100, Number(o.discountPercent !== undefined ? o.discountPercent : c.discountPercent) || 0));
   const adpP = Math.max(0, Math.min(100, Number(o.adpPercent !== undefined ? o.adpPercent : c.adpPercent) || 0));
@@ -88,6 +89,7 @@ function recalculateVariantCommercial(comm, overrides) {
   const adpAmount = Math.round(designAmount * (adpP / 100));
   const designAfterDiscount = Math.max(0, designAmount - adpAmount);
   const totalSavings = discountAmount + adpAmount;
+  const hasDiscount = totalSavings > 0;
 
   // Grand Total (Without GST) = Net Woodwork + Net Design Charge (+ enabled Accessories, Appliances, Freight)
   const netBeforeTax = Math.max(0, Math.round(woodworkAfterDiscount + designAfterDiscount + acc + appliances + freightAmount));
@@ -107,6 +109,7 @@ function recalculateVariantCommercial(comm, overrides) {
     freightEnabled,
     freightPercent,
     freightAmount,
+    originalBillableValue,
     discountPercent: discP,
     discountAmount,
     woodworkAfterDiscount,
@@ -114,6 +117,7 @@ function recalculateVariantCommercial(comm, overrides) {
     adpAmount,
     designAfterDiscount,
     totalSavings,
+    hasDiscount,
     netBeforeTax,
     gstEnabled,
     gstPercent,
@@ -481,6 +485,7 @@ class ClientQuoteService {
           phone: ''
         },
         variantQuotes,
+        allVariantsPricing: Array.isArray(snapInput.allVariantsPricing) ? snapInput.allVariantsPricing : [],
         unitIcons
       },
       securitySettings: {
@@ -559,6 +564,7 @@ class ClientQuoteService {
           phone: ''
         },
         variantQuotes,
+        allVariantsPricing: Array.isArray(snapInput.allVariantsPricing) ? snapInput.allVariantsPricing : [],
         unitIcons
       },
       securitySettings: {
@@ -606,6 +612,15 @@ class ClientQuoteService {
       clientPhone: rec.clientPhone,
       siteAddress: rec.siteAddress,
       designer: snap.designer || {},
+      allVariantsPricing: (Array.isArray(snap.allVariantsPricing) && snap.allVariantsPricing.length)
+        ? snap.allVariantsPricing
+        : (snap.variantQuotes || []).map((v) => ({
+            tierKey: v.tierKey,
+            tierTitle: v.tierTitle || v.tierKey,
+            unitCount: Array.isArray(v.items) ? v.items.length : 0,
+            grandTotal: Math.round(Number(v.commercial?.grandTotal ?? v.grandTotal ?? 0)),
+            selected: true
+          })),
       variants: (snap.variantQuotes || []).map((v) => ({
         tierKey: v.tierKey,
         tierTitle: v.tierTitle || v.tierKey,
@@ -644,6 +659,22 @@ class ClientQuoteService {
         grandTotal: nextComm.grandTotal
       });
     });
+
+    // Keep allVariantsPricing side-reference totals synchronized with approved variant totals
+    if (Array.isArray(rec.quoteSnapshot.allVariantsPricing) && rec.quoteSnapshot.allVariantsPricing.length) {
+      const updatedTotalsByKey = {};
+      rec.quoteSnapshot.variantQuotes.forEach((vq) => {
+        const nk = quoteDeckBuilder.normalizeTemplateVariantKey(vq.tierKey || vq.tierTitle) || vq.tierKey;
+        if (nk) updatedTotalsByKey[nk] = Math.round(Number(vq.grandTotal || 0));
+      });
+      rec.quoteSnapshot.allVariantsPricing = rec.quoteSnapshot.allVariantsPricing.map((av) => {
+        const nk = quoteDeckBuilder.normalizeTemplateVariantKey(av.tierKey || av.tierTitle) || av.tierKey;
+        if (nk && updatedTotalsByKey[nk] !== undefined) {
+          return Object.assign({}, av, { grandTotal: updatedTotalsByKey[nk], selected: true });
+        }
+        return av;
+      });
+    }
 
     const nowIso = new Date().toISOString();
     const approvedBy = String(body.approvedBy || 'Business Head').trim().slice(0, 120) || 'Business Head';

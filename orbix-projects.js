@@ -2918,6 +2918,8 @@
           var name = document.getElementById('newEmpName').value.trim();
           var username = document.getElementById('newEmpUsername').value.trim();
           var email = document.getElementById('newEmpEmail').value.trim();
+          var phoneEl = document.getElementById('newEmpPhone');
+          var phone = phoneEl ? phoneEl.value.trim() : '';
           var password = document.getElementById('newEmpPassword').value;
           var title = document.getElementById('newEmpTitle').value.trim() || 'Modular Designer';
           var role = document.getElementById('newEmpRole').value || 'employee';
@@ -2934,6 +2936,7 @@
             name: name,
             username: username,
             email: email,
+            phone: phone,
             password: password,
             role: role,
             designation: title,
@@ -2964,11 +2967,13 @@
                   var elName = document.getElementById('ecaName');
                   var elUser = document.getElementById('ecaUsername');
                   var elEmail = document.getElementById('ecaEmail');
+                  var elPhone = document.getElementById('ecaPhone');
                   var elPass = document.getElementById('ecaPassword');
                   var elRole = document.getElementById('ecaRole');
                   if (elName) elName.textContent = data.user.name;
                   if (elUser) elUser.textContent = data.user.username || data.user.id;
                   if (elEmail) elEmail.textContent = data.user.email;
+                  if (elPhone) elPhone.textContent = data.user.phone || phone || '—';
                   if (elPass) elPass.textContent = data.user.password || password;
                   if (elRole) elRole.textContent = data.user.role === 'admin' ? 'Admin' : 'Employee';
                   alertBox.style.display = 'flex';
@@ -3134,6 +3139,8 @@
           var name = document.getElementById('editUserName').value.trim();
           var username = document.getElementById('editUserUsername').value.trim();
           var email = document.getElementById('editUserEmail').value.trim();
+          var phoneEl = document.getElementById('editUserPhone');
+          var phone = phoneEl ? phoneEl.value.trim() : '';
           var password = document.getElementById('editUserPassword').value.trim();
           var title = document.getElementById('editUserTitle').value.trim();
           var roleSelect = document.getElementById('editUserRole');
@@ -3148,6 +3155,7 @@
             name: name,
             username: username,
             email: email,
+            phone: phone,
             designation: title,
             role: role
           };
@@ -3423,71 +3431,134 @@
         return;
       }
 
-      // If Admin: show employee creation box and team directory (with Edit/Delete, no password-less switch)
+      // If Admin: show employee creation box and team directory (with Search, Filter & Edit/Delete)
       if (adminTeamSec) adminTeamSec.style.display = 'block';
       if (adminBox) adminBox.style.display = 'block';
 
-      var userListEl = document.getElementById('switchUsersList');
-      if (userListEl) {
-        var html = '';
-        this.users.forEach(function (u) {
-          var isCurrent = self.currentUser && self.currentUser.id === u.id;
-          var uIsAdmin = (u.role || '').toLowerCase() === 'admin' || (u.role || '').toLowerCase().indexOf('admin') !== -1;
-          var roleBadgeHtml = '<span class="role-badge ' + (uIsAdmin ? 'admin' : 'employee') + '">' + (uIsAdmin ? 'Admin' : 'Employee') + '</span>';
-          var isPrimaryAdmin = u.id === 'usr_admin' || (u.email && u.email.toLowerCase() === 'admin@cookscape.com');
-
-          var actionsHtml = '<div class="u-switch-actions">';
-          if (isCurrent) {
-            actionsHtml += '<span class="current-tag">Current</span>';
-          }
-          actionsHtml += '<button class="btn small edit-user-btn" data-uid="' + escHtml(u.id) + '" type="button" title="Edit account">Edit</button>';
-          if (!isPrimaryAdmin && (!self.currentUser || u.id !== self.currentUser.id)) {
-            actionsHtml += '<button class="btn small danger del-user-btn" data-uid="' + escHtml(u.id) + '" data-uname="' + escHtml(u.name || u.username || 'User') + '" type="button" title="Delete account">Delete</button>';
-          }
-          actionsHtml += '</div>';
-
-          var userMeta = '';
-          if (u.username) userMeta += '@' + escHtml(u.username) + ' • ';
-          userMeta += escHtml(u.email || '') + ' • ' + escHtml(u.designation || (uIsAdmin ? 'Admin' : 'Employee'));
-
-          html += '<div class="u-switch-item' + (isCurrent ? ' is-current' : '') + '" data-uid="' + escHtml(u.id) + '">' +
-            '<div class="u-info">' +
-            '<span class="u-avatar ' + (uIsAdmin ? 'is-admin-avatar' : '') + '">' + escHtml(u.avatar || 'US') + '</span>' +
-            '<div>' +
-            '<div style="display:flex;align-items:center;gap:6px;">' +
-            '<strong>' + escHtml(u.name) + (isCurrent ? ' (Active)' : '') + '</strong>' +
-            roleBadgeHtml +
-            '</div>' +
-            '<span>' + userMeta + '</span>' +
-            '</div>' +
-            '</div>' +
-            actionsHtml +
-            '</div>';
+      // Populate Designation filter dynamically from active users
+      var desigFilter = document.getElementById('userListDesigFilter');
+      if (desigFilter) {
+        var prevDesig = desigFilter.value || 'all';
+        var desigMap = {};
+        (this.users || []).forEach(function (u) {
+          var d = String(u.designation || '').trim();
+          if (d) desigMap[d.toLowerCase()] = d;
         });
-        userListEl.innerHTML = html;
-
-        // Edit user event
-        userListEl.querySelectorAll('.edit-user-btn').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var uid = this.getAttribute('data-uid');
-            var u = self.users.find(function (x) { return x.id === uid; });
-            if (u) self.openEditUserModal(u);
-          });
-        });
-
-        // Delete user event
-        userListEl.querySelectorAll('.del-user-btn').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var uid = this.getAttribute('data-uid');
-            var uname = this.getAttribute('data-uname');
-            if (confirm('Are you sure you want to delete employee "' + uname + '"?')) {
-              self.confirmAndDeleteUser(uid, uname);
-            }
-          });
-        });
+        var desigList = Object.keys(desigMap).map(function (k) { return desigMap[k]; }).sort();
+        desigFilter.innerHTML = '<option value="all">All Designations</option>' +
+          desigList.map(function (d) { return '<option value="' + escHtml(d) + '">' + escHtml(d) + '</option>'; }).join('');
+        if (prevDesig && desigList.indexOf(prevDesig) !== -1) {
+          desigFilter.value = prevDesig;
+        }
       }
 
+      // Bind live search & filter listeners once
+      if (!this._userFiltersBound) {
+        this._userFiltersBound = true;
+        var sEl = document.getElementById('userListSearch');
+        var rEl = document.getElementById('userListRoleFilter');
+        var dEl = document.getElementById('userListDesigFilter');
+        if (sEl) sEl.addEventListener('input', function () { self.renderTeamUsersList(); });
+        if (rEl) rEl.addEventListener('change', function () { self.renderTeamUsersList(); });
+        if (dEl) dEl.addEventListener('change', function () { self.renderTeamUsersList(); });
+      }
+
+      this.renderTeamUsersList();
       modal.classList.add('is-open');
+    },
+
+    renderTeamUsersList: function () {
+      var self = this;
+      var userListEl = document.getElementById('switchUsersList');
+      if (!userListEl) return;
+
+      var searchVal = ((document.getElementById('userListSearch') || {}).value || '').trim().toLowerCase();
+      var roleVal = ((document.getElementById('userListRoleFilter') || {}).value || 'all').toLowerCase();
+      var desigVal = ((document.getElementById('userListDesigFilter') || {}).value || 'all').toLowerCase();
+
+      var allUsers = this.users || [];
+      var filtered = allUsers.filter(function (u) {
+        var uIsAdmin = (u.role || '').toLowerCase() === 'admin' || (u.role || '').toLowerCase().indexOf('admin') !== -1;
+        if (roleVal === 'admin' && !uIsAdmin) return false;
+        if (roleVal === 'employee' && uIsAdmin) return false;
+        if (desigVal !== 'all' && String(u.designation || '').trim().toLowerCase() !== desigVal) return false;
+        if (searchVal) {
+          var hay = [u.name, u.username, u.email, u.phone, u.designation, u.role].filter(Boolean).join(' ').toLowerCase();
+          if (hay.indexOf(searchVal) === -1) return false;
+        }
+        return true;
+      });
+
+      var countEl = document.getElementById('userListCountBadge');
+      if (countEl) {
+        countEl.textContent = filtered.length === allUsers.length
+          ? (allUsers.length + ' total users')
+          : ('Showing ' + filtered.length + ' of ' + allUsers.length + ' users');
+      }
+
+      if (!filtered.length) {
+        userListEl.innerHTML = '<div style="padding:16px;text-align:center;color:#64748B;font-size:12.5px;">No matching users found. Try clearing the search or filter.</div>';
+        return;
+      }
+
+      var html = '';
+      filtered.forEach(function (u) {
+        var isCurrent = self.currentUser && self.currentUser.id === u.id;
+        var uIsAdmin = (u.role || '').toLowerCase() === 'admin' || (u.role || '').toLowerCase().indexOf('admin') !== -1;
+        var roleBadgeHtml = '<span class="role-badge ' + (uIsAdmin ? 'admin' : 'employee') + '">' + (uIsAdmin ? 'Admin' : 'Employee') + '</span>';
+        var isPrimaryAdmin = u.id === 'usr_admin' || (u.email && u.email.toLowerCase() === 'admin@cookscape.com');
+
+        var actionsHtml = '<div class="u-switch-actions">';
+        if (isCurrent) {
+          actionsHtml += '<span class="current-tag">Current</span>';
+        }
+        actionsHtml += '<button class="btn small edit-user-btn" data-uid="' + escHtml(u.id) + '" type="button" title="Edit account">Edit</button>';
+        if (!isPrimaryAdmin && (!self.currentUser || u.id !== self.currentUser.id)) {
+          actionsHtml += '<button class="btn small danger del-user-btn" data-uid="' + escHtml(u.id) + '" data-uname="' + escHtml(u.name || u.username || 'User') + '" type="button" title="Delete account">Delete</button>';
+        }
+        actionsHtml += '</div>';
+
+        var userMeta = '';
+        if (u.username) userMeta += '@' + escHtml(u.username) + ' • ';
+        userMeta += escHtml(u.email || '');
+        if (u.phone) userMeta += ' • 📞 ' + escHtml(u.phone);
+        userMeta += ' • ' + escHtml(u.designation || (uIsAdmin ? 'Admin' : 'Employee'));
+
+        html += '<div class="u-switch-item' + (isCurrent ? ' is-current' : '') + '" data-uid="' + escHtml(u.id) + '">' +
+          '<div class="u-info">' +
+          '<span class="u-avatar ' + (uIsAdmin ? 'is-admin-avatar' : '') + '">' + escHtml(u.avatar || 'US') + '</span>' +
+          '<div>' +
+          '<div style="display:flex;align-items:center;gap:6px;">' +
+          '<strong>' + escHtml(u.name) + (isCurrent ? ' (Active)' : '') + '</strong>' +
+          roleBadgeHtml +
+          '</div>' +
+          '<span>' + userMeta + '</span>' +
+          '</div>' +
+          '</div>' +
+          actionsHtml +
+          '</div>';
+      });
+      userListEl.innerHTML = html;
+
+      // Edit user event
+      userListEl.querySelectorAll('.edit-user-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var uid = this.getAttribute('data-uid');
+          var u = self.users.find(function (x) { return x.id === uid; });
+          if (u) self.openEditUserModal(u);
+        });
+      });
+
+      // Delete user event
+      userListEl.querySelectorAll('.del-user-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var uid = this.getAttribute('data-uid');
+          var uname = this.getAttribute('data-uname');
+          if (confirm('Are you sure you want to delete employee "' + uname + '"?')) {
+            self.confirmAndDeleteUser(uid, uname);
+          }
+        });
+      });
     },
 
     openEditUserModal: function (u) {
@@ -3499,6 +3570,7 @@
       var nameEl = document.getElementById('editUserName');
       var usernameEl = document.getElementById('editUserUsername');
       var emailEl = document.getElementById('editUserEmail');
+      var phoneEl = document.getElementById('editUserPhone');
       var passEl = document.getElementById('editUserPassword');
       var titleEl = document.getElementById('editUserTitle');
       var roleEl = document.getElementById('editUserRole');
@@ -3507,6 +3579,7 @@
       if (nameEl) nameEl.value = u.name || '';
       if (usernameEl) usernameEl.value = u.username || '';
       if (emailEl) emailEl.value = u.email || '';
+      if (phoneEl) phoneEl.value = u.phone || '';
       if (passEl) passEl.value = '';
       if (titleEl) titleEl.value = u.designation || '';
 
