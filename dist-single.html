@@ -44397,6 +44397,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         if (!keepCamera && gl.frame) gl.frame();
         if (gl.apply) gl.apply();
         if (gl.settle) gl.settle();
+        if (gl.updateWallCutaway) gl.updateWallCutaway(true);
       }
       if (typeof this.updateProjectDetailsBadges === 'function') {
         this.updateProjectDetailsBadges();
@@ -44417,6 +44418,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         if (window.__cc.gl.frame && opts.keepCamera === false) window.__cc.gl.frame();
         if (window.__cc.gl.apply) window.__cc.gl.apply();
         if (window.__cc.gl.settle) window.__cc.gl.settle();
+        if (window.__cc.gl.updateWallCutaway) window.__cc.gl.updateWallCutaway(true);
       }
       if (typeof window.showToast === 'function' && opts.silent !== true) {
         window.showToast('🔄 3D Studio hard-refreshed from latest 2D floor plan');
@@ -49511,6 +49513,31 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       return null;
     }
 
+    function getHomeWallsAndFurniture(homeObj) {
+      var wallMeshes = [];
+      var furnMeshes = [];
+      if (!homeObj) return { walls: wallMeshes, furniture: furnMeshes };
+
+      function collect(obj) {
+        if (!obj || !obj.children) return;
+        for (var i = 0; i < obj.children.length; i++) {
+          var child = obj.children[i];
+          if (!child) continue;
+          var ud = child.userData || {};
+          if (ud.isWall && (ud.start || ud.wall || ud.wallId)) {
+            wallMeshes.push(child);
+          } else if (ud.isFurniture || ud.isFurnitureGroup || (child.name && child.name.indexOf('Furniture_') === 0)) {
+            furnMeshes.push(child);
+          } else {
+            collect(child);
+          }
+        }
+      }
+
+      collect(homeObj);
+      return { walls: wallMeshes, furniture: furnMeshes };
+    }
+
     function syncWallCutSelect(wallMeshes) {
       var sel = document.getElementById('wallCutSelect');
       if (!sel || !wallMeshes || !wallMeshes.length) return;
@@ -49583,16 +49610,9 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       lastCutState.tz = target.z;
       lastCutState.mode = mode;
 
-      var wallMeshes = [];
-      var furnMeshes = [];
-
-      homeObj.children.forEach(function (child) {
-        if (child.userData && child.userData.isWall) {
-          wallMeshes.push(child);
-        } else if (child.userData && (child.userData.isFurniture || child.userData.isFurnitureGroup || (child.name && child.name.indexOf('Furniture_') === 0))) {
-          furnMeshes.push(child);
-        }
-      });
+      var homeItems = getHomeWallsAndFurniture(homeObj);
+      var wallMeshes = homeItems.walls;
+      var furnMeshes = homeItems.furniture;
 
       syncWallCutSelect(wallMeshes);
 
@@ -49618,15 +49638,14 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !isTarget;
         });
       } else {
-        // Rock-Solid Stable Face-Wall Auto Cut-Off:
-        // Strictly ONE face wall (the primary front wall between camera and room) is cut.
-        // The other 3 walls remain 100% visible and rock-solid stable without any flickering!
+        // Auto-Cut Modes: 'single_auto' (cut front obstructing wall) or 'all_obstructing' (cut all obstructing walls)
         var camPt = { x: camera.position.x, y: camera.position.z };
         var targPt = { x: target.x, y: target.z };
-        var viewDirX = targPt.x - camPt.x;
-        var viewDirZ = targPt.y - camPt.y;
-        var viewDist = Math.hypot(viewDirX, viewDirZ) || 1;
-        var uViewX = viewDirX / viewDist, uViewZ = viewDirZ / viewDist;
+        var viewDx = targPt.x - camPt.x;
+        var viewDy = targPt.y - camPt.y;
+        var viewDist = Math.hypot(viewDx, viewDy) || 1;
+        var perpX = -viewDy / viewDist;
+        var perpY = viewDx / viewDist;
 
         var candidates = [];
 
@@ -49637,30 +49656,30 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           if (!wStart || !wEnd) return;
           var wMid = uData.mid || { x: (wStart.x + wEnd.x) / 2, y: (wStart.y + wEnd.y) / 2 };
 
-          var wallDx = wEnd.x - wStart.x, wallDy = wEnd.y - wStart.y;
-          var wallLen = Math.hypot(wallDx, wallDy) || 1;
-          var wNormX = -wallDy / wallLen, wNormZ = wallDx / wallLen;
+          // Test primary line-of-sight ray intersection from camera to target
+          var hit = testRayWallIntersection(camPt, targPt, wStart, wEnd);
 
-          // Align normal to point outward toward camera
-          var dotCam = (camPt.x - wMid.x) * wNormX + (camPt.y - wMid.y) * wNormZ;
-          if (dotCam < 0) {
-            wNormX = -wNormX;
-            wNormZ = -wNormZ;
+          // Corridor check (+/- 250mm perpendicular to view ray) to catch walls blocking peripheral sight
+          if (!hit) {
+            var offset = 250;
+            var camL = { x: camPt.x + perpX * offset, y: camPt.y + perpY * offset };
+            var targL = { x: targPt.x + perpX * offset, y: targPt.y + perpY * offset };
+            hit = testRayWallIntersection(camL, targL, wStart, wEnd);
+            if (!hit) {
+              var camR = { x: camPt.x - perpX * offset, y: camPt.y - perpY * offset };
+              var targR = { x: targPt.x - perpX * offset, y: targPt.y - perpY * offset };
+              hit = testRayWallIntersection(camR, targR, wStart, wEnd);
+            }
           }
 
-          // Test ray intersection from camera to target
-          var hit = testRayWallIntersection(camPt, targPt, wStart, wEnd);
           var distToCam = hit ? Math.hypot(hit.pt.x - camPt.x, hit.pt.y - camPt.y) : Math.hypot(wMid.x - camPt.x, wMid.y - camPt.y);
-          var distToTarg = hit ? Math.hypot(hit.pt.x - targPt.x, hit.pt.y - targPt.y) : Math.hypot(wMid.x - targPt.x, wMid.y - targPt.y);
 
-          // Front-facing alignment score: ONLY walls that actually intersect the camera line of sight
-          // between the camera and the target can ever be candidates for cutaway.
-          // Background walls and unobstructed room interiors must NEVER be cut!
+          // In millimeter space, room coordinates and camera distances are ~1,000 to 25,000 mm.
+          // Walls that intersect line of sight between camera and target get positive scores,
+          // with closer obstructing walls receiving higher scores:
           var score = 0;
           if (hit) {
-            score = 1000 - distToCam; // Intersecting barrier in direct line of sight has top priority
-          } else {
-            score = 0; // If ray doesn't intersect this wall, it is NOT obstructing the target. Never cut it!
+            score = 1000000 - distToCam;
           }
 
           candidates.push({
@@ -49672,43 +49691,51 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           });
         });
 
-        // Determine the single face wall with hysteresis to eliminate jumping between walls.
-        // A wall is ONLY cut if it genuinely obstructs the line of sight (hit === true).
-        var singleCutWall = null;
-        if (candidates.length > 0) {
-          candidates.sort(function (a, b) { return b.score - a.score; });
-          var topCand = candidates[0];
+        if (mode === 'all_obstructing') {
+          // Hide ALL walls that obstruct line of sight
+          wallMeshes.forEach(function (wMesh) {
+            var cand = candidates.find(function (c) { return c.mesh === wMesh; });
+            var isCut = !!(cand && cand.hit && cand.score > 0);
+            wMesh.visible = !isCut;
+            if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !isCut;
+          });
+        } else {
+          // Default: single_auto
+          // Determine the single face wall with hysteresis to eliminate jumping between walls.
+          var singleCutWall = null;
+          if (candidates.length > 0) {
+            candidates.sort(function (a, b) { return b.score - a.score; });
+            var topCand = candidates[0];
 
-          if (topCand && topCand.hit && topCand.score > 0) {
-            if (!window._activeCutWallId) {
-              window._activeCutWallId = topCand.wallId;
-            } else {
-              // Hysteresis: keep active cut wall unless another wall scores at least 25% better
-              var activeCand = candidates.find(function (c) { return c.wallId === window._activeCutWallId; });
-              if (activeCand && activeCand.hit && (topCand.score - activeCand.score) < 120 && activeCand.score > 0) {
-                topCand = activeCand;
-              } else {
+            if (topCand && topCand.hit && topCand.score > 0) {
+              if (!window._activeCutWallId) {
                 window._activeCutWallId = topCand.wallId;
+              } else {
+                // Hysteresis: keep active cut wall unless another wall is at least 600mm closer
+                var activeCand = candidates.find(function (c) { return c.wallId === window._activeCutWallId; });
+                if (activeCand && activeCand.hit && (topCand.score - activeCand.score) < 600 && activeCand.score > 0) {
+                  topCand = activeCand;
+                } else {
+                  window._activeCutWallId = topCand.wallId;
+                }
               }
+              singleCutWall = topCand.mesh;
+            } else {
+              // Camera is inside room or unobstructed: keep all walls visible
+              window._activeCutWallId = null;
+              singleCutWall = null;
             }
-            singleCutWall = topCand.mesh;
-          } else {
-            // Camera is inside the room or unobstructed: all walls remain visible!
-            window._activeCutWallId = null;
-            singleCutWall = null;
           }
-        }
 
-        wallMeshes.forEach(function (wMesh) {
-          var isCut = (singleCutWall && wMesh === singleCutWall);
-          wMesh.visible = !isCut;
-          if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !isCut;
-        });
+          wallMeshes.forEach(function (wMesh) {
+            var isCut = (singleCutWall && wMesh === singleCutWall);
+            wMesh.visible = !isCut;
+            if (wMesh.userData && wMesh.userData.wallId) wallVisibility[wMesh.userData.wallId] = !isCut;
+          });
+        }
       }
 
       // Furniture Visibility: Units mounted on / attached to a hidden wall hide with that wall!
-      // Cutting front walls hides both the wall AND its attached cabinets/ledges so the interior is completely unobstructed.
-      // Units on visible walls and in the room interior remain 100% visible!
       furnMeshes.forEach(function (fMesh) {
         var fPos = fMesh.position;
         var hideThisFurn = false;
@@ -49718,6 +49745,14 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           if (wm.visible) continue; // This wall is visible: keep its units visible!
 
           var uData = wm.userData || {};
+
+          // 1. Direct association check by wallId
+          if (uData.wallId && fMesh.userData && fMesh.userData.wallId === uData.wallId) {
+            hideThisFurn = true;
+            break;
+          }
+
+          // 2. Geometric proximity fallback
           var wS = uData.start;
           var wE = uData.end;
           if (!wS || !wE) continue;
@@ -49737,7 +49772,6 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
           // Check if unit is within the wall span (with 150mm margin for edge units)
           if (tNorm >= -0.1 && tNorm <= 1.1) {
-            // Perpendicular distance from wall centerline
             var perpX = toU.x - tProj * dirX;
             var perpY = toU.y - tProj * dirY;
             var distPerp = Math.hypot(perpX, perpY);
@@ -49869,7 +49903,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       // If no furniture placed yet, frame the room walls gracefully
       if (furnObjs.length === 0) {
         var wallBox = new THREE.Box3();
-        homeObj.children.forEach(function (child) {
+        var allWalls = getHomeWallsAndFurniture(homeObj).walls;
+        allWalls.forEach(function (child) {
           if (child.userData && child.userData.isWall && child.visible) {
             wallBox.expandByObject(child);
           }
@@ -49961,7 +49996,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       // 5. Hide obstructing foreground walls
       var wallVisibilityBackup = [];
-      homeObj.children.forEach(function (child) {
+      var allWallsForShot = getHomeWallsAndFurniture(homeObj).walls;
+      allWallsForShot.forEach(function (child) {
         if (child.userData && child.userData.isWall) {
           wallVisibilityBackup.push({ mesh: child, visible: child.visible });
           var isHostWall = (bestWall && child.userData.wallId === bestWall.id);
@@ -53115,7 +53151,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         toast(msg);
       }
       if (GL.ok && GL.updateWallCutaway) {
-        GL.updateWallCutaway();
+        GL.updateWallCutaway(true);
         GL.settle();
       }
     }

@@ -8597,6 +8597,7 @@
         if (!keepCamera && gl.frame) gl.frame();
         if (gl.apply) gl.apply();
         if (gl.settle) gl.settle();
+        if (gl.updateWallCutaway) gl.updateWallCutaway(true);
       }
       if (typeof this.updateProjectDetailsBadges === 'function') {
         this.updateProjectDetailsBadges();
@@ -8617,6 +8618,7 @@
         if (window.__cc.gl.frame && opts.keepCamera === false) window.__cc.gl.frame();
         if (window.__cc.gl.apply) window.__cc.gl.apply();
         if (window.__cc.gl.settle) window.__cc.gl.settle();
+        if (window.__cc.gl.updateWallCutaway) window.__cc.gl.updateWallCutaway(true);
       }
       if (typeof window.showToast === 'function' && opts.silent !== true) {
         window.showToast('🔄 3D Studio hard-refreshed from latest 2D floor plan');
