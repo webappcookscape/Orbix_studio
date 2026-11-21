@@ -7844,11 +7844,105 @@
     return SURABHI_DESIGN_FEE_SLABS[11]; // 25 to 30L+
   }
 
+  // Cookscape Master Add-Ons & Accessories Catalog
+  var COOKSCAPE_ADDONS_CATALOG = [
+    { id: 'pvc_cutlery_450', name: 'PVC CUTLERY INLET - 450', category: 'Kitchen Inlets', rate: 942 },
+    { id: 'pvc_cutlery_600', name: 'PVC CUTLERY INLET - 600', category: 'Kitchen Inlets', rate: 1222 },
+    { id: 'pvc_cutlery_900', name: 'PVC CUTLERY INLET - 900', category: 'Kitchen Inlets', rate: 2634 },
+    { id: 'ss_cutlery_450', name: 'SS CUTLERY - 450', category: 'Kitchen Inlets', rate: 4871 },
+    { id: 'ss_cutlery_600', name: 'SS CUTLERY - 600', category: 'Kitchen Inlets', rate: 5650 },
+    { id: 'plain_basket_450', name: 'PLAIN BASKET - 450', category: 'Kitchen Baskets', rate: 2802 },
+    { id: 'plain_basket_600', name: 'PLAIN BASKET - 600', category: 'Kitchen Baskets', rate: 3393 },
+    { id: 'ss_plate_basket_450', name: 'SS PLATE BASKET - 450', category: 'Kitchen Baskets', rate: 4965 },
+    { id: 'ss_plate_basket_600', name: 'SS PLATE BASKET - 600', category: 'Kitchen Baskets', rate: 6283 },
+    { id: 'ss_plate_inlet', name: 'SS PLATE INLET', category: 'Kitchen Inlets', rate: 1920 },
+    { id: 'wicker_basket_450', name: 'WICKER BASKET - 450', category: 'Kitchen Baskets', rate: 9553 },
+    { id: 'wicker_basket_std', name: 'WICKER BASKET', category: 'Kitchen Baskets', rate: 9553 },
+    { id: 'magic_corner', name: 'MAGIC CORNER', category: 'Corner Solutions', rate: 40900 },
+    { id: 'magic_corner_dbl', name: 'MAGIC CORNER DOUBLE PULLOUT', category: 'Corner Solutions', rate: 34672 },
+    { id: 'double_corner_pullout', name: 'D0UBLE CORNER PULLOUT', category: 'Corner Solutions', rate: 20128 },
+    { id: 'corner_carousel', name: 'CORNER CAROUSEL', category: 'Corner Solutions', rate: 13781 },
+    { id: 'pantry_ss_450', name: 'PANTRY SS - 450', category: 'Pantries', rate: 16891 },
+    { id: 'pantry_ss_600', name: 'PANTRY SS - 600', category: 'Pantries', rate: 17610 },
+    { id: 'pantry_flat_450', name: 'PANTRY FLATE BASE - 450', category: 'Pantries', rate: 31292 },
+    { id: 'pantry_flat_600', name: 'PANTRY FLATE BASE - 600', category: 'Pantries', rate: 36324 },
+    { id: 'pantry_glass_450', name: 'PANTRY GLASS - 450', category: 'Pantries', rate: 43997 },
+    { id: 'pantry_glass_600', name: 'PANTRY GLASS - 600', category: 'Pantries', rate: 49363 },
+    { id: 'wardrobe_pullout', name: 'WARDROBE PULLOUT', category: 'Wardrobe Accessories', rate: 6979 },
+    { id: 'rolling_shutter_glass_600', name: 'ROLLING SHUTTER GLASS - 600', category: 'Kitchen Fittings', rate: 21710 },
+    { id: 'oil_pullout_tandem', name: 'OILPULLOUT TANDEM', category: 'Pullouts', rate: 9847 },
+    { id: 'oil_pullout_glass', name: 'OILPULLOUT - GLASS', category: 'Pullouts', rate: 11347 },
+    { id: 'oil_pullout_ss', name: 'OILPULLOUT SS', category: 'Pullouts', rate: 6506 },
+    { id: 'bottle_pullout_tandem', name: 'BOTTLE PULLOUT TANDEM', category: 'Pullouts', rate: 8419 },
+    { id: 'bottle_pullout_glass', name: 'BOTTLE PULLOUT - GLASS', category: 'Pullouts', rate: 10217 },
+    { id: 'bottle_pullout_ss', name: 'BOTTLE PULLOUT SS', category: 'Pullouts', rate: 5966 },
+    { id: 'side_pullout_organizer', name: 'SIDE PULLOUT ORGANIZER', category: 'Pullouts', rate: 20034 },
+    { id: 'pan_hanger_rack', name: 'PAN HANGER RACK', category: 'Kitchen Fittings', rate: 3445 },
+    { id: 'lid_holder_pan_hanger', name: 'LID HOLDER PAN HANGER', category: 'Kitchen Fittings', rate: 1238 },
+    { id: 'detergent_caddie', name: 'DETERGETN CADDIE', category: 'Cleaning & Waste', rate: 6602 },
+    { id: 'detergent_pullout', name: 'DETERGETN PULLOUT', category: 'Cleaning & Waste', rate: 3029 },
+    { id: 'mixer_lift_stand', name: 'MIXER LIFT UP STAND', category: 'Kitchen Fittings', rate: 11034 },
+    { id: 'gtpt_600', name: 'GTPT 600', category: 'Kitchen Fittings', rate: 4812 },
+    { id: 'gtpt_900', name: 'GTPT 900', category: 'Kitchen Fittings', rate: 6996 },
+    { id: 'swing_waste_bin', name: 'SWING OUT WASTE BIN', category: 'Cleaning & Waste', rate: 3674 },
+    { id: 'waste_bin_holder', name: 'WASTE BIN HOLDER', category: 'Cleaning & Waste', rate: 1022 },
+    { id: 'sliding_fittings', name: 'SLIDING FITTINGS', category: 'Wardrobe Hardware', rate: 16250 },
+    { id: 'wardrobe_lift_side_mount', name: 'WADREOBE LIFT SIDE MOUNT PULLOUT', category: 'Wardrobe Accessories', rate: 9382 },
+    { id: 'wardrobe_hanger_single', name: 'WARDROBE PULLOUT HANGER - SINGLE', category: 'Wardrobe Accessories', rate: 11044 },
+    { id: 'wardrobe_hanger_double', name: 'WARDROBE PULLOUT HANGER - DOUBLE', category: 'Wardrobe Accessories', rate: 13115 },
+    { id: 'wardrobe_trouser_600', name: 'WARDROBE TROUSER PULLOUT - 600', category: 'Wardrobe Accessories', rate: 6040 },
+    { id: 'wardrobe_trouser_900', name: 'WARDROBE TROUSER PULLOUT - 900', category: 'Wardrobe Accessories', rate: 8152 },
+    { id: 'wardrobe_basket_450', name: 'WARDROBE PULLOUT BASKET - 450', category: 'Wardrobe Accessories', rate: 11188 },
+    { id: 'wardrobe_basket_600', name: 'WARDROBE PULLOUT BASKET - 600', category: 'Wardrobe Accessories', rate: 13094 },
+    { id: 'wardrobe_basket_900', name: 'WARDROBE PULLOUT BASKET - 900', category: 'Wardrobe Accessories', rate: 16819 },
+    { id: 'wardrobe_drawer_450', name: 'WARDROBE PULLOUT DRAWER - 450', category: 'Wardrobe Accessories', rate: 10766 },
+    { id: 'wardrobe_drawer_600', name: 'WARDROBE PULLOUT DRAWER - 600', category: 'Wardrobe Accessories', rate: 12865 },
+    { id: 'wardrobe_drawer_900', name: 'WARDROBE PULLOUT DRAWER - 900', category: 'Wardrobe Accessories', rate: 17001 },
+    { id: 'wardrobe_utility_rack', name: 'WARDROBE PULLOUT UTILITY RACK', category: 'Wardrobe Accessories', rate: 3295 },
+    { id: 'wardrobe_ironing_board', name: 'WARDROBE PULLOUT IROING BOARD', category: 'Wardrobe Accessories', rate: 11455 },
+    { id: 'king_size_cot_storage', name: 'KING SIZE COT WITH STORAGE', category: 'Bedroom Cots', rate: 52800 },
+    { id: 'queen_size_cot_storage', name: 'QUEEN SIZE COT WITH STORAGE', category: 'Bedroom Cots', rate: 39400 },
+    { id: 'g_profile_handle', name: 'G PROFILE HANDLE 1meter', category: 'Profiles & Handles', rate: 1700, minRate: 1350, maxRate: 2050, unit: 'meter', isCustom: true },
+    { id: 'wallpaper_sqft', name: 'WALLPAPER 1sq feet', category: 'Wall Treatments', rate: 55, minRate: 45, maxRate: 70, unit: 'sqft', isCustom: true }
+  ];
+
+  function getCookscapeAddonsCatalog() {
+    return COOKSCAPE_ADDONS_CATALOG.slice();
+  }
+
+  function calculateAddonsSummary(selectedAddons, appliancesList) {
+    var items = Array.isArray(selectedAddons) ? selectedAddons : [];
+    var appliances = Array.isArray(appliancesList) ? appliancesList : [];
+    var addonsTotal = 0;
+    items.forEach(function (it) {
+      var qty = Math.max(1, Number(it.qty || 1));
+      var rate = Math.max(0, Number(it.rate || 0));
+      var amt = it.amount !== undefined ? Number(it.amount) : Math.round(qty * rate);
+      addonsTotal += amt;
+    });
+    var appliancesTotal = 0;
+    appliances.forEach(function (ap) {
+      var qty = Math.max(1, Number(ap.qty || 1));
+      var amt = ap.amount !== undefined ? Number(ap.amount) : (Math.max(0, Number(ap.rate || 0)) * qty);
+      appliancesTotal += amt;
+    });
+    return {
+      selectedAddons: items,
+      appliancesList: appliances,
+      addonsSubtotal: addonsTotal,
+      appliancesSubtotal: appliancesTotal,
+      grandAddonsTotal: addonsTotal + appliancesTotal
+    };
+  }
+
   return {
     SFT_FACTOR: SFT_FACTOR,
     SQM_FACTOR: SQM_FACTOR,
     SURABHI_DESIGN_FEE_SLABS: SURABHI_DESIGN_FEE_SLABS,
     getSurabhiDesignFeeSlab: getSurabhiDesignFeeSlab,
+    COOKSCAPE_ADDONS_CATALOG: COOKSCAPE_ADDONS_CATALOG,
+    getCookscapeAddonsCatalog: getCookscapeAddonsCatalog,
+    calculateAddonsSummary: calculateAddonsSummary,
     uid: uid,
     Vec2: Vec2,
     DEFAULT_RATE_CARD: DEFAULT_RATE_CARD,

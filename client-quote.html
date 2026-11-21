@@ -786,6 +786,7 @@
 
           var bg = isHeader ? (opts.headerBg || '#C00000') : (r % 2 === 0 ? '#FFFDF9' : '#FAF6F0');
           if (row._highlight) bg = '#FEF9C3';
+          if (row._bg) bg = row._bg;
 
           ctx.fillStyle = bg;
           ctx.fillRect(x, y, width, rowH);
@@ -803,7 +804,8 @@
             }
             var lines = cellWrapped[c2];
             var isRight = opts.rightAlignCols && opts.rightAlignCols.indexOf(c2) !== -1 && !isHeader;
-            ctx.fillStyle = isHeader ? '#FFFFFF' : (row._accent && c2 === colWidths.length - 1 ? '#C00000' : '#08231B');
+            var defColor = row._accent && c2 === colWidths.length - 1 ? '#C00000' : (row._textColor || '#08231B');
+            ctx.fillStyle = isHeader ? '#FFFFFF' : defColor;
             ctx.font = (isHeader || (c2 === 0 && opts.boldFirstCol) || row._highlight)
               ? ('bold ' + fontSize + 'px "Segoe UI", Arial, sans-serif')
               : (fontSize + 'px "Segoe UI", Arial, sans-serif');
@@ -1177,16 +1179,11 @@
         var frtEnabled = comm.freightEnabled !== false;
         var gstEnabled = comm.gstEnabled !== false;
 
+        // Core Woodwork Commercial Table (excludes Add-ons / Accessories & Appliances so they do not alter Final Discounted Value)
         var cRows = [
           ['Description', 'Amount'],
           ['Modular Woodwork Subtotal', fmtINR(comm.woodworkSubtotal || 0)]
         ];
-        if (accEnabled) {
-          cRows.push(['Additional Accessories', fmtINR(comm.additionalAccessories || 0)]);
-        }
-        if (appEnabled) {
-          cRows.push(['Appliances', fmtINR(comm.appliances || 0)]);
-        }
         cRows.push(['Design Charges', fmtINR(comm.designAmount || 0)]);
         if (frtEnabled) {
           cRows.push(['Freight Charges', fmtINR(comm.freightAmount || 0)]);
@@ -1230,7 +1227,7 @@
         });
 
         var totalSavings = Number(comm.totalSavings !== undefined ? comm.totalSavings : ((Number(comm.discountAmount) || 0) + (Number(comm.adpAmount) || 0)));
-        if (y + 52 < CANVAS_H - 90) {
+        if (y + 52 < CANVAS_H - 140) {
           y += 14;
           drawRoundedRect(ctx, 54, y, CANVAS_W - 108, 44, 8, '#ECFDF5', '#16A34A', 1.6);
           ctx.fillStyle = '#166534';
@@ -1241,6 +1238,68 @@
           ctx.fillText(fmtINR(totalSavings), CANVAS_W - 74, y + 27);
           ctx.textAlign = 'left';
           y += 50;
+        }
+
+        // ── ADD-ONS, ACCESSORIES & APPLIANCES (DOWN AFTER YOUR SAVINGS) ──
+        var selectedAddons = Array.isArray(comm.selectedAddons) ? comm.selectedAddons : [];
+        var appliancesList = Array.isArray(comm.appliancesList) ? comm.appliancesList : [];
+        var addAccVal = accEnabled ? Math.round(Number(comm.additionalAccessories || 0)) : 0;
+        var appVal = appEnabled ? Math.round(Number(comm.appliances || 0)) : 0;
+        var addonsTotal = comm.addonsTotal !== undefined ? Number(comm.addonsTotal) : (addAccVal + appVal);
+        var totalInvestment = comm.totalInvestmentWithAddons !== undefined
+          ? Number(comm.totalInvestmentWithAddons)
+          : (Number(comm.grandTotal || 0) + addonsTotal);
+
+        var hasAddonItems = (selectedAddons.length > 0) || (appliancesList.length > 0) || (addonsTotal > 0);
+
+        if (y + 70 < CANVAS_H - 120) {
+          y += 16;
+          var addonRows = [
+            ['ADD-ONS, ACCESSORIES & APPLIANCES (SELECTED ITEMS)', 'AMOUNT']
+          ];
+          if (selectedAddons.length > 0) {
+            selectedAddons.forEach(function (it) {
+              var q = Math.max(1, Number(it.qty || 1));
+              var r = Number(it.rate || 0);
+              var a = it.amount !== undefined ? Number(it.amount) : Math.round(q * r);
+              var rateLabel = r > 0 ? (' @ ' + fmtINR(r)) : '';
+              addonRows.push(['• ' + (it.name || 'Accessory Item') + ' (Qty: ' + q + rateLabel + ')', fmtINR(a)]);
+            });
+          } else if (addAccVal > 0) {
+            addonRows.push(['• Selected Hardware Accessories Package', fmtINR(addAccVal)]);
+          }
+
+          if (appliancesList.length > 0) {
+            appliancesList.forEach(function (ap) {
+              var q = Math.max(1, Number(ap.qty || 1));
+              var a = ap.amount !== undefined ? Number(ap.amount) : (Number(ap.rate || 0) * q);
+              addonRows.push(['• ' + (ap.name || 'Kitchen Appliance') + (q > 1 ? (' (Qty: ' + q + ')') : ''), fmtINR(a)]);
+            });
+          } else if (appVal > 0) {
+            addonRows.push(['• Selected Kitchen & Home Appliances Package', fmtINR(appVal)]);
+          }
+
+          if (hasAddonItems) {
+            var subRow = ['Add-ons & Accessories Subtotal', fmtINR(addonsTotal)];
+            subRow._highlight = true;
+            addonRows.push(subRow);
+
+            var investRow = ['TOTAL PROJECT INVESTMENT (PROPOSAL + ADD-ONS)', fmtINR(totalInvestment)];
+            investRow._bg = '#ECFDF5';
+            investRow._textColor = '#166534';
+            investRow._highlight = false;
+            addonRows.push(investRow);
+          } else {
+            addonRows.push(['None Selected (Optional Cookscape Master Add-ons available upon request)', '₹ 0']);
+          }
+
+          y = drawTable(ctx, addonRows, 54, y, CANVAS_W - 108, [0.70, 0.30], {
+            fontSize: 12.5,
+            padY: 6.5,
+            boldFirstCol: true,
+            rightAlignCols: [1],
+            headerBg: '#08231B'
+          });
         }
 
         y += 14;
