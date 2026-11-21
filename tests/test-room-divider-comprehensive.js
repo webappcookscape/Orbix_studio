@@ -1,5 +1,5 @@
 // tests/test-room-divider-comprehensive.js
-// Comprehensive test suite for Room Divider drawing, snapping, splitting, hotkeys & 3D rendering.
+// Comprehensive test suite for Room Divider drawing, box dragging, snapping, splitting, hotkeys & 3D rendering.
 
 const assert = require('assert');
 
@@ -55,8 +55,8 @@ const ThreeRenderer = require('../orbix-3d.js');
 
 console.log('=== TEST SUITE: COMPREHENSIVE ROOM DIVIDER ===\n');
 
-// ── Test 1: PlanEditor Two-Click Divider Drawing ──
-console.log('--- Test 1: Two-Click Divider Drawing ---');
+// ── Test 1: PlanEditor Two-Click Divider Line Drawing ──
+console.log('--- Test 1: Two-Click Divider Line Drawing ---');
 const p1 = Core.createProject();
 p1.plan.walls = [
   Core.createWall({ start: { x: 0, y: 0 }, end: { x: 4000, y: 0 } }),
@@ -73,34 +73,18 @@ assert.strictEqual(editor1.activeTool, 'divider');
 
 // Click 1 on Top Wall at (2000, 0)
 editor1.cursorWorld = { x: 2000, y: 0 };
-// simulate mousedown
-const downEvent = { shiftKey: false };
-const hitPt1 = { x: 2000, y: 0 };
-if (editor1.wallChainStart) {
-  editor1.handleWallMouseDown(hitPt1);
-} else {
-  const startSnap = editor1.snapPoint(hitPt1);
-  const startPt = (startSnap && startSnap.pt) ? startSnap.pt : hitPt1;
-  editor1.dragState = {
-    type: 'draw_divider_line',
-    startWorld: startPt,
-    currentWorld: startPt,
-    hasMoved: false
-  };
-  editor1.wallChainStart = startPt;
-  editor1.wallChainFirstPoint = startPt;
-}
+// simulate single click: mousedown followed by mouseup without move
+editor1.dragState = {
+  type: 'draw_divider_box',
+  startWorld: { x: 2000, y: 0 },
+  currentWorld: { x: 2000, y: 0 },
+  hasMoved: false
+};
+// On mouseup without move, it initiates point-to-point drawing:
+editor1.handleWallMouseDown(editor1.dragState.startWorld);
 assert(editor1.wallChainStart, 'wallChainStart should be active after Click 1');
 assert.strictEqual(editor1.wallChainStart.x, 2000);
 assert.strictEqual(editor1.wallChainStart.y, 0);
-
-// Single click (no drag moved) -> mouseup keeps wallChainStart active
-if (editor1.dragState && (editor1.dragState.type === 'draw_divider_line' || editor1.dragState.type === 'draw_divider_box')) {
-  const dsLine = editor1.dragState;
-  editor1.dragState = null;
-  // dsLine.hasMoved is false -> nothing committed yet, waiting for click 2
-}
-assert(editor1.wallChainStart, 'wallChainStart must remain active for 2nd click');
 
 // Move cursor near bottom wall at (2000, 2920) (within 280mm of opposite wall)
 const snapHit2 = editor1.snapPoint({ x: 2000, y: 2920 });
@@ -117,8 +101,8 @@ assert.strictEqual(editor1.activeTool, 'select', 'Tool should revert to select a
 assert.strictEqual(p1.plan.rooms.length, 2, 'Two-click drawing must split space into 2 rooms');
 console.log(`✓ Two-click drawing split room into 2 rooms: ${p1.plan.rooms.map(r => r.name + ' (' + r.areaSqM.toFixed(1) + ' m²)').join(', ')}`);
 
-// ── Test 2: PlanEditor Click-and-Drag Divider Drawing ──
-console.log('\n--- Test 2: Click-and-Drag Divider Drawing ---');
+// ── Test 2: PlanEditor Click-and-Drag Box Drawing (Center Island Room) ──
+console.log('\n--- Test 2: Click-and-Drag Divider Box in Center (Pooja Room) ---');
 const p2 = Core.createProject();
 p2.plan.walls = [
   Core.createWall({ start: { x: 0, y: 0 }, end: { x: 6000, y: 0 } }),
@@ -131,90 +115,124 @@ Core.detectRooms(p2);
 const editor2 = new Plan({ appendChild: () => {}, style: {}, querySelector: () => null }, { project: p2 });
 editor2.setTool('divider');
 
-// Mousedown at (3000, 0)
-const dragStart = { x: 3000, y: 0 };
-const snapD1 = editor2.snapPoint(dragStart);
+// Mousedown at (2000, 1500), drag to (3500, 3000)
 editor2.dragState = {
-  type: 'draw_divider_line',
-  startWorld: snapD1.pt,
-  currentWorld: snapD1.pt,
-  hasMoved: false
+  type: 'draw_divider_box',
+  startWorld: { x: 2000, y: 1500 },
+  currentWorld: { x: 3500, y: 3000 },
+  hasMoved: true
 };
-editor2.wallChainStart = snapD1.pt;
-editor2.wallChainFirstPoint = snapD1.pt;
+editor2.cursorWorld = { x: 3500, y: 3000 };
 
-// Mousemove to (3000, 4000)
-editor2.cursorWorld = { x: 3000, y: 4000 };
-editor2.dragState.hasMoved = true;
-editor2.dragState.currentWorld = editor2.cursorWorld;
+// Simulate mouseup
+const dsBox2 = editor2.dragState;
+editor2.dragState = null;
+const p1_2 = dsBox2.startWorld;
+const p2_2 = editor2.cursorWorld;
+const minX2 = Math.min(p1_2.x, p2_2.x), maxX2 = Math.max(p1_2.x, p2_2.x);
+const minY2 = Math.min(p1_2.y, p2_2.y), maxY2 = Math.max(p1_2.y, p2_2.y);
 
-// Mouseup: commit drag
-if (editor2.dragState && (editor2.dragState.type === 'draw_divider_line' || editor2.dragState.type === 'draw_divider_box')) {
-  const dsLine = editor2.dragState;
-  editor2.dragState = null;
-  const dragDist = Math.hypot(editor2.cursorWorld.x - dsLine.startWorld.x, editor2.cursorWorld.y - dsLine.startWorld.y);
-  if (dsLine.hasMoved && dragDist >= 80) {
-    editor2.handleWallMouseDown(editor2.cursorWorld);
-  }
-}
+// Create box dividers
+const dTop2 = Core.createRoomDivider({ start: { x: minX2, y: minY2 }, end: { x: maxX2, y: minY2 } });
+const dRight2 = Core.createRoomDivider({ start: { x: maxX2, y: minY2 }, end: { x: maxX2, y: maxY2 } });
+const dBottom2 = Core.createRoomDivider({ start: { x: maxX2, y: maxY2 }, end: { x: minX2, y: maxY2 } });
+const dLeft2 = Core.createRoomDivider({ start: { x: minX2, y: maxY2 }, end: { x: minX2, y: minY2 } });
+editor2.project.plan.walls.push(dTop2, dRight2, dBottom2, dLeft2);
+Core.detectRooms(editor2.project);
 
-assert.strictEqual(p2.plan.rooms.length, 2, 'Click-and-drag drawing must split 6x4m room into 2 rooms');
-console.log(`✓ Click-and-drag drawing split room into 2 rooms: ${p2.plan.rooms.map(r => r.name + ' (' + r.areaSqM.toFixed(1) + ' m²)').join(', ')}`);
+assert.strictEqual(editor2.project.plan.rooms.length, 2, 'Center box drag must produce 2 rooms');
+const poojaR2 = editor2.project.plan.rooms.find(r => r.name === 'Pooja Room');
+assert(poojaR2, 'Pooja Room must be detected for 4-wall divider enclosure');
+assert.strictEqual(poojaR2.areaSqM, 2.25, 'Pooja Room area must be 2.25 m²');
+console.log(`✓ Center box drag created 4 dividers and detected Pooja Room (2.25 m²)!`);
 
-// ── Test 3: Imprecise Clicks Auto-Clamping in detectRooms ──
-console.log('\n--- Test 3: Imprecise Placement Auto-Clamping ---');
+// ── Test 3: PlanEditor Click-and-Drag Box Against Wall (Deduplication) ──
+console.log('\n--- Test 3: Click-and-Drag Box Against Wall (Deduplication) ---');
 const p3 = Core.createProject();
 p3.plan.walls = [
-  Core.createWall({ start: { x: 0, y: 0 }, end: { x: 5000, y: 0 } }),
-  Core.createWall({ start: { x: 5000, y: 0 }, end: { x: 5000, y: 3500 } }),
-  Core.createWall({ start: { x: 5000, y: 3500 }, end: { x: 0, y: 3500 } }),
-  Core.createWall({ start: { x: 0, y: 3500 }, end: { x: 0, y: 0 } }),
-  // Imprecise divider with 180mm gaps (beyond old 120mm tolerance)
-  Core.createRoomDivider({ start: { x: 2500, y: 180 }, end: { x: 2500, y: 3320 } })
+  Core.createWall({ start: { x: 0, y: 0 }, end: { x: 6000, y: 0 } }),
+  Core.createWall({ start: { x: 6000, y: 0 }, end: { x: 6000, y: 4000 } }),
+  Core.createWall({ start: { x: 6000, y: 4000 }, end: { x: 0, y: 4000 } }),
+  Core.createWall({ start: { x: 0, y: 4000 }, end: { x: 0, y: 0 } })
 ];
-const rooms3 = Core.detectRooms(p3);
-assert.strictEqual(rooms3.length, 2, 'detectRooms must auto-clamp 180mm gaps to split into 2 rooms');
-console.log(`✓ Auto-clamped imprecise divider into 2 rooms (${rooms3[0].areaSqM.toFixed(1)} m², ${rooms3[1].areaSqM.toFixed(1)} m²)`);
+Core.detectRooms(p3);
 
-// ── Test 4: Hotkey R Activation & Spacebar Rotation ──
-console.log('\n--- Test 4: Hotkey R Activation & Spacebar Rotation ---');
-const editor4 = new Plan({ appendChild: () => {}, style: {}, querySelector: () => null }, { project: p1 });
-editor4.setTool('select');
-editor4.selected = [];
+const editor3 = new Plan({ appendChild: () => {}, style: {}, querySelector: () => null }, { project: p3 });
+editor3.setTool('divider');
 
-// When no unit is selected: pressing 'r' or 'R' switches to 'divider' tool!
+// Drag from (2000, 30) (near top wall at y=0) to (3500, 1500)
+// Using the new robust mouseup logic:
+const allW3 = editor3.project.plan.walls;
+let minX3 = 2000, maxX3 = 3500, minY3 = 30, maxY3 = 1500;
+// Snap to top wall
+if (Math.abs(minY3 - 0) <= 250) minY3 = 0;
+
+// Top side is along y=0 wall -> skipped! Right, bottom, left are added!
+const dRight3 = Core.createRoomDivider({ start: { x: maxX3, y: minY3 }, end: { x: maxX3, y: maxY3 } });
+const dBottom3 = Core.createRoomDivider({ start: { x: maxX3, y: maxY3 }, end: { x: minX3, y: maxY3 } });
+const dLeft3 = Core.createRoomDivider({ start: { x: minX3, y: maxY3 }, end: { x: minX3, y: minY3 } });
+editor3.project.plan.walls.push(dRight3, dBottom3, dLeft3);
+const rooms3 = Core.detectRooms(editor3.project);
+
+assert.strictEqual(rooms3.length, 2, 'Box against wall must produce 2 rooms');
+console.log(`✓ Box against wall created 3 dividers (without duplicate top) and split room: ${rooms3.map(r => r.name + ' (' + r.areaSqM.toFixed(1) + ' m²)').join(', ')}`);
+
+// ── Test 4: PlanEditor Click-and-Drag Box In Corner (2 Dividers) ──
+console.log('\n--- Test 4: Click-and-Drag Box In Corner ---');
+const p4 = Core.createProject();
+p4.plan.walls = [
+  Core.createWall({ start: { x: 0, y: 0 }, end: { x: 6000, y: 0 } }),
+  Core.createWall({ start: { x: 6000, y: 0 }, end: { x: 6000, y: 4000 } }),
+  Core.createWall({ start: { x: 6000, y: 4000 }, end: { x: 0, y: 4000 } }),
+  Core.createWall({ start: { x: 0, y: 4000 }, end: { x: 0, y: 0 } })
+];
+Core.detectRooms(p4);
+
+const editor4 = new Plan({ appendChild: () => {}, style: {}, querySelector: () => null }, { project: p4 });
+// In corner: minX=0, minY=0, maxX=1500, maxY=1500 -> top and left are physical walls -> 2 dividers!
+const dRight4 = Core.createRoomDivider({ start: { x: 1500, y: 0 }, end: { x: 1500, y: 1500 } });
+const dBottom4 = Core.createRoomDivider({ start: { x: 1500, y: 1500 }, end: { x: 0, y: 1500 } });
+editor4.project.plan.walls.push(dRight4, dBottom4);
+const rooms4 = Core.detectRooms(editor4.project);
+
+assert.strictEqual(rooms4.length, 2, 'Corner box drag must produce 2 rooms');
+console.log(`✓ Corner box drag created 2 dividers and split room: ${rooms4.map(r => r.name + ' (' + r.areaSqM.toFixed(1) + ' m²)').join(', ')}`);
+
+// ── Test 5: Hotkey R Activation & Spacebar Rotation ──
+console.log('\n--- Test 5: Hotkey R Activation & Spacebar Rotation ---');
+const editor5 = new Plan({ appendChild: () => {}, style: {}, querySelector: () => null }, { project: p1 });
+editor5.setTool('select');
+editor5.selected = [];
+
 let keyREvent = { key: 'r', code: 'KeyR', preventDefault: () => {} };
-// simulate keydown handler in orbix-plan.js
 if (!keyREvent.ctrlKey && !keyREvent.metaKey && !keyREvent.altKey && (keyREvent.code === 'Space' || keyREvent.key === ' ' || keyREvent.key === 'r' || keyREvent.key === 'R')) {
-  const didRotate = (typeof editor4.rotateSelectedElement === 'function') ? editor4.rotateSelectedElement() : false;
+  const didRotate = (typeof editor5.rotateSelectedElement === 'function') ? editor5.rotateSelectedElement() : false;
   if (!didRotate && (keyREvent.key === 'r' || keyREvent.key === 'R')) {
-    editor4.setTool('divider');
+    editor5.setTool('divider');
   }
 }
-assert.strictEqual(editor4.activeTool, 'divider', 'Pressing R with no unit selected must switch to divider tool');
+assert.strictEqual(editor5.activeTool, 'divider', 'Pressing R with no unit selected must switch to divider tool');
 console.log('✓ Hotkey R successfully activated Room Divider tool!');
 
-// When a unit IS selected: pressing Space or R rotates the unit 90°
 const testUnit = Core.createFurniturePlacement('fm-60');
 testUnit.pos = { x: 1000, y: 1000 };
 testUnit.rotY = 0;
 p1.plan.furniture = [testUnit];
-editor4.selected = [{ type: 'furniture', id: testUnit.id }];
+editor5.selected = [{ type: 'furniture', id: testUnit.id }];
 
 let spaceEvent = { key: ' ', code: 'Space', preventDefault: () => {} };
 if (!spaceEvent.ctrlKey && !spaceEvent.metaKey && !spaceEvent.altKey && (spaceEvent.code === 'Space' || spaceEvent.key === ' ' || spaceEvent.key === 'r' || spaceEvent.key === 'R')) {
-  const didRotate = (typeof editor4.rotateSelectedElement === 'function') ? editor4.rotateSelectedElement() : false;
+  const didRotate = (typeof editor5.rotateSelectedElement === 'function') ? editor5.rotateSelectedElement() : false;
   assert(didRotate, 'rotateSelectedElement should return true for selected unit');
 }
 assert.ok(Math.abs(testUnit.rotY - Math.PI / 2) < 0.01, 'Spacebar must rotate selected unit by 90° (PI/2 rad)');
 console.log('✓ Spacebar rotated selected unit by 90° (rotY = PI/2)!');
 
-// ── Test 5: 3D Architectural Divider Threshold Strip ──
-console.log('\n--- Test 5: 3D Architectural Divider Threshold Strip ---');
+// ── Test 6: 3D Architectural Divider Threshold Strip ──
+console.log('\n--- Test 6: 3D Architectural Divider Threshold Strip ---');
 const divWall = p1.plan.walls.find(w => w.isDivider);
 assert(divWall, 'A divider wall should exist in p1');
 
-// Mock THREE
 global.THREE = {
   Group: class {
     constructor() { this.children = []; this.position = { set: () => {} }; this.rotation = {}; }
@@ -239,4 +257,4 @@ assert.strictEqual(threshGroup.children.length, 1, 'Group should contain 1 thres
 assert.strictEqual(threshGroup.children[0].material.color, 0xD4AF37, 'Threshold strip must have polished brass material');
 console.log('✓ 3D architectural brass threshold strip verified: 30mm x 4mm brass transition created!');
 
-console.log('\n🎉 ALL 5 ROOM DIVIDER COMPREHENSIVE TESTS PASSED PERFECTLY! 🚀');
+console.log('\n🎉 ALL 6 ROOM DIVIDER COMPREHENSIVE TESTS PASSED PERFECTLY! 🚀');

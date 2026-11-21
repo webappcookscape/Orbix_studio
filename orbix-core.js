@@ -2097,21 +2097,43 @@
     for (var di = 0; di < walls.length; di++) {
       var dw = walls[di];
       if (!dw || !dw.isDivider || !dw.start || !dw.end) continue;
+
+      var startAlreadyJoined = false;
+      var endAlreadyJoined = false;
+      for (var k = 0; k < walls.length; k++) {
+        if (di === k) continue;
+        var kw = walls[k];
+        if (!kw || !kw.start || !kw.end) continue;
+        if (!startAlreadyJoined) {
+          var dS = projectPointOnSegment(dw.start, kw.start, kw.end);
+          if (dS.dist <= 15 && dS.t >= -0.05 && dS.t <= 1.05) startAlreadyJoined = true;
+        }
+        if (!endAlreadyJoined) {
+          var dE = projectPointOnSegment(dw.end, kw.start, kw.end);
+          if (dE.dist <= 15 && dE.t >= -0.05 && dE.t <= 1.05) endAlreadyJoined = true;
+        }
+        if (startAlreadyJoined && endAlreadyJoined) break;
+      }
+
       var bestPrS = null, bestDistS = Infinity;
       var bestPrE = null, bestDistE = Infinity;
       for (var dj = 0; dj < walls.length; dj++) {
         if (di === dj) continue;
         var ow = walls[dj];
         if (!ow || !ow.start || !ow.end) continue;
-        var prS = projectPointOnSegment(dw.start, ow.start, ow.end);
-        if (prS.dist <= 250 && prS.t >= -0.05 && prS.t <= 1.05 && prS.dist < bestDistS) {
-          bestDistS = prS.dist;
-          bestPrS = prS;
+        if (!startAlreadyJoined) {
+          var prS = projectPointOnSegment(dw.start, ow.start, ow.end);
+          if (prS.dist <= 250 && prS.t >= -0.05 && prS.t <= 1.05 && prS.dist < bestDistS) {
+            bestDistS = prS.dist;
+            bestPrS = prS;
+          }
         }
-        var prE = projectPointOnSegment(dw.end, ow.start, ow.end);
-        if (prE.dist <= 250 && prE.t >= -0.05 && prE.t <= 1.05 && prE.dist < bestDistE) {
-          bestDistE = prE.dist;
-          bestPrE = prE;
+        if (!endAlreadyJoined) {
+          var prE = projectPointOnSegment(dw.end, ow.start, ow.end);
+          if (prE.dist <= 250 && prE.t >= -0.05 && prE.t <= 1.05 && prE.dist < bestDistE) {
+            bestDistE = prE.dist;
+            bestPrE = prE;
+          }
         }
       }
       if (bestPrS) {
