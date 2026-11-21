@@ -7324,7 +7324,26 @@
       if (c.adpPercent === undefined) c.adpPercent = 0;
       if (c.gstPercent === undefined) c.gstPercent = 18;
       if (c.gstEnabled === undefined) c.gstEnabled = true;
+      if (!c.surabhiDesignSlab) c.surabhiDesignSlab = 'auto';
       return this.project.commercialCharges;
+    },
+
+    getSurabhiWoodworkSubtotal: function () {
+      if (!this.project) return 0;
+      try {
+        var baseRateCard = (this.project && this.project.rateCard) || (typeof Core !== 'undefined' ? Core.DEFAULT_RATE_CARD : {});
+        var surabhiRateCard = Object.assign({}, baseRateCard, { selectedTier: 'SURABHI', roomTiers: {} });
+        var surabhiProj = {
+          plan: this.project.plan || this.project,
+          rateCard: surabhiRateCard
+        };
+        var q = (typeof Core !== 'undefined' && Core.generateFullQuotation)
+          ? Core.generateFullQuotation(surabhiProj, this.selectedBOQRooms || ['all'])
+          : null;
+        return q && q.subtotalWoodwork ? q.subtotalWoodwork : 0;
+      } catch (_) {
+        return 0;
+      }
     },
 
     computeCommercialSummary: function (woodworkSubtotal, commCharges) {
@@ -7337,9 +7356,35 @@
       var addAccessories = accessoriesEnabled ? (parseFloat(charges.additionalAccessories || charges.accessories) || 0) : 0;
       var appliances = appliancesEnabled ? (parseFloat(charges.appliances) || 0) : 0;
 
-      var designPercent = (charges.designPercent !== undefined && charges.designPercent !== null && charges.designPercent !== '') ? parseFloat(charges.designPercent) : 9;
-      if (isNaN(designPercent)) designPercent = 9;
-      var designAmount = Math.round(woodworkSubtotal * (designPercent / 100));
+      // Elegant Surabhi Costing Benchmark & Slab Lookup
+      var slabId = charges.surabhiDesignSlab || 'auto';
+      var surabhiWoodwork = (charges.surabhiWoodworkSubtotal !== undefined)
+        ? Number(charges.surabhiWoodworkSubtotal)
+        : (this.getSurabhiWoodworkSubtotal ? this.getSurabhiWoodworkSubtotal() : woodworkSubtotal);
+      if (!surabhiWoodwork || isNaN(surabhiWoodwork)) surabhiWoodwork = woodworkSubtotal;
+
+      var activeSlab = (typeof Core !== 'undefined' && Core.getSurabhiDesignFeeSlab)
+        ? Core.getSurabhiDesignFeeSlab(surabhiWoodwork, slabId)
+        : null;
+
+      var designPercent = 9;
+      var designAmount = 0;
+      var adpPercent = 0;
+      var adpAmount = 0;
+
+      if (activeSlab && slabId !== 'custom') {
+        designAmount = activeSlab.fullDesignCharges;
+        adpPercent = activeSlab.discountPercent || 60;
+        adpAmount = Math.round(designAmount * (adpPercent / 100));
+        designPercent = (woodworkSubtotal > 0) ? (Math.round((designAmount / woodworkSubtotal) * 1000) / 10) : 9;
+      } else {
+        designPercent = (charges.designPercent !== undefined && charges.designPercent !== null && charges.designPercent !== '') ? parseFloat(charges.designPercent) : 9;
+        if (isNaN(designPercent)) designPercent = 9;
+        designAmount = Math.round(woodworkSubtotal * (designPercent / 100));
+
+        adpPercent = parseFloat(charges.adpPercent || charges.adp) || 0;
+        adpAmount = Math.round(designAmount * (adpPercent / 100));
+      }
 
       var freightPercent = (charges.freightPercent !== undefined && charges.freightPercent !== null && charges.freightPercent !== '') ? parseFloat(charges.freightPercent) : 2.5;
       if (isNaN(freightPercent)) freightPercent = 2.5;
@@ -7347,10 +7392,6 @@
 
       var discountPercent = parseFloat(charges.discountPercent || charges.discount) || 0;
       var discountAmount = Math.round(woodworkSubtotal * (discountPercent / 100));
-
-      // Discount on Design Charge (replaces ADP): % applied on Design Charges
-      var adpPercent = parseFloat(charges.adpPercent || charges.adp) || 0;
-      var adpAmount = Math.round(designAmount * (adpPercent / 100));
 
       var totalDeductions = discountAmount + adpAmount;
       var grossAdditions = addAccessories + appliances + designAmount + freightAmount;
@@ -7363,6 +7404,9 @@
 
       return {
         woodworkSubtotal: Math.round(woodworkSubtotal),
+        surabhiWoodworkSubtotal: Math.round(surabhiWoodwork),
+        surabhiDesignSlab: slabId,
+        activeSlab: activeSlab,
         accessoriesEnabled: accessoriesEnabled,
         additionalAccessories: addAccessories,
         appliancesEnabled: appliancesEnabled,
@@ -7811,6 +7855,32 @@
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
 
+        // Design Fee Slab Selector (Auto-applied by Elegant Surabhi costing benchmark & changeable by dropdown)
+        '<tr class="comm-charge-row" style="background:#F8FAFC;border-top:1px solid #E2E8F0;">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold" style="color:#1E3A8A;font-size:12px;">' +
+        '<div style="display:inline-flex;align-items:center;gap:6px;">' +
+        '<span>🏷️ Design Fee Slab <small style="color:#64748B;font-weight:normal;">(Elegant Surabhi benchmark)</small>:</span>' +
+        '</div></td>' +
+        '<td colspan="3" style="text-align:right">' +
+        '<select class="comm-status-select" data-key="surabhiDesignSlab" id="commSurabhiSlabSelect" style="max-width:280px;font-size:11px;font-weight:600;padding:3px 6px;border-radius:5px;border:1px solid #94A3B8;background:#fff;color:#0F172A;">' +
+        '<option value="auto"' + (commSummary.surabhiDesignSlab === 'auto' ? ' selected' : '') + '>✨ Auto: ' + (commSummary.activeSlab ? (commSummary.activeSlab.label + ' (₹' + commSummary.activeSlab.fullDesignCharges.toLocaleString('en-IN') + ' → ₹' + commSummary.activeSlab.discountedCharges.toLocaleString('en-IN') + ')') : '2 to 3 Lakhs') + '</option>' +
+        '<option value="2_to_3"' + (commSummary.surabhiDesignSlab === '2_to_3' ? ' selected' : '') + '>2 to 3 Lakhs (₹24,465 → ₹9,786)</option>' +
+        '<option value="4_to_5"' + (commSummary.surabhiDesignSlab === '4_to_5' ? ' selected' : '') + '>4 to 5 Lakhs (₹35,280 → ₹14,112)</option>' +
+        '<option value="5_to_7_entry"' + (commSummary.surabhiDesignSlab === '5_to_7_entry' ? ' selected' : '') + '>5 to 7 Lakhs - Entry (₹42,780 → ₹17,112)</option>' +
+        '<option value="5_to_7_mid"' + (commSummary.surabhiDesignSlab === '5_to_7_mid' ? ' selected' : '') + '>5 to 7 Lakhs - Mid (₹47,780 → ₹19,112)</option>' +
+        '<option value="5_to_7_upper"' + (commSummary.surabhiDesignSlab === '5_to_7_upper' ? ' selected' : '') + '>5 to 7 Lakhs - Upper (₹60,280 → ₹24,112)</option>' +
+        '<option value="7_to_8"' + (commSummary.surabhiDesignSlab === '7_to_8' ? ' selected' : '') + '>7 to 8 Lakhs (₹72,780 → ₹29,112)</option>' +
+        '<option value="9_to_10"' + (commSummary.surabhiDesignSlab === '9_to_10' ? ' selected' : '') + '>9 to 10 Lakhs (₹85,280 → ₹34,112)</option>' +
+        '<option value="10_to_11"' + (commSummary.surabhiDesignSlab === '10_to_11' ? ' selected' : '') + '>10 to 11 Lakhs (₹97,780 → ₹39,112)</option>' +
+        '<option value="12_to_15"' + (commSummary.surabhiDesignSlab === '12_to_15' ? ' selected' : '') + '>12 to 15 Lakhs (₹1,12,780 → ₹45,112)</option>' +
+        '<option value="15_to_20"' + (commSummary.surabhiDesignSlab === '15_to_20' ? ' selected' : '') + '>15 to 20 Lakhs (₹1,47,780 → ₹59,112)</option>' +
+        '<option value="20_to_25"' + (commSummary.surabhiDesignSlab === '20_to_25' ? ' selected' : '') + '>20 to 25 Lakhs (₹1,95,280 → ₹78,112)</option>' +
+        '<option value="25_to_30"' + (commSummary.surabhiDesignSlab === '25_to_30' ? ' selected' : '') + '>25 to 30 Lakhs (₹2,22,780 → ₹89,112)</option>' +
+        '<option value="custom"' + (commSummary.surabhiDesignSlab === 'custom' ? ' selected' : '') + '>✏️ Manual / Percentage %</option>' +
+        '</select>' +
+        '</td></tr>' +
+
         // Design Charges (editable %, 9% default)
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
@@ -7969,6 +8039,14 @@
         var summary = self.computeCommercialSummary(quote.subtotalWoodwork, self.project.commercialCharges);
         var designAmtEl = document.getElementById('commDesignAmount');
         if (designAmtEl) designAmtEl.textContent = summary.designAmount.toLocaleString('en-IN') + '.00';
+        var designInp = boqEl.querySelector('.comm-input[data-key="designPercent"]');
+        if (designInp && summary.surabhiDesignSlab !== 'custom') {
+          designInp.value = summary.designPercent;
+        }
+        var adpInp = boqEl.querySelector('.comm-input[data-key="adpPercent"]');
+        if (adpInp && summary.surabhiDesignSlab !== 'custom') {
+          adpInp.value = summary.adpPercent;
+        }
         var freightAmtEl = document.getElementById('commFreightAmount');
         if (freightAmtEl) freightAmtEl.textContent = summary.freightAmount.toLocaleString('en-IN') + '.00';
         var discAmtEl = document.getElementById('commDiscountAmount');
@@ -7987,6 +8065,14 @@
         if (savEl) savEl.textContent = '₹ ' + (summary.totalSavings || 0).toLocaleString('en-IN') + '.00';
         var headerTotalEl = document.getElementById('boqHeaderTotalAmount');
         if (headerTotalEl) headerTotalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
+
+        var autoOpt = boqEl.querySelector('#commSurabhiSlabSelect option[value="auto"]');
+        if (autoOpt && typeof Core !== 'undefined' && Core.getSurabhiDesignFeeSlab) {
+          var autoS = Core.getSurabhiDesignFeeSlab(summary.surabhiWoodworkSubtotal, 'auto');
+          if (autoS) {
+            autoOpt.textContent = '✨ Auto: ' + autoS.label + ' (₹' + autoS.fullDesignCharges.toLocaleString('en-IN') + ' → ₹' + autoS.discountedCharges.toLocaleString('en-IN') + ')';
+          }
+        }
       }
 
       // Commercial Charges live input bindings
@@ -8000,6 +8086,11 @@
 
           self.project.commercialCharges = self.project.commercialCharges || {};
           self.project.commercialCharges[key] = val;
+          if (key === 'designPercent' || key === 'adpPercent') {
+            self.project.commercialCharges.surabhiDesignSlab = 'custom';
+            var slabSel = boqEl.querySelector('#commSurabhiSlabSelect');
+            if (slabSel) slabSel.value = 'custom';
+          }
           refreshCommercialDom();
           self.saveToLocalStorage();
         });
@@ -8031,6 +8122,11 @@
           if (!key) return;
           self.project.commercialCharges = self.project.commercialCharges || {};
           self.project.commercialCharges[key] = sel.value;
+          if (key === 'surabhiDesignSlab') {
+            refreshCommercialDom();
+            self.saveToLocalStorage();
+            return;
+          }
           if (sel.value === 'Included') {
             sel.className = 'comm-status-select is-included';
           } else if (sel.value === 'Complementary') {

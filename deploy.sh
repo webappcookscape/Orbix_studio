@@ -31,12 +31,15 @@ echo -e "${BLUE}==============================================${NC}"
 if [ -d "$PROJECT_DIR/.git" ]; then
     echo -e "${YELLOW}[1/5] Pulling latest changes from Git...${NC}"
     cd "$PROJECT_DIR"
-    # Preserve runtime database and .env so created employees & projects are never lost on deploy
+    # Preserve runtime database, fallback data, and .env so created employees & projects are never lost on deploy
     if [ -f ".env" ]; then
         cp .env /tmp/orbix_env_backup 2>/dev/null || true
     fi
     if [ -f "db/local_store.json" ]; then
         cp db/local_store.json /tmp/orbix_local_store_backup.json 2>/dev/null || true
+    fi
+    if [ -d "data" ]; then
+        cp -r data /tmp/orbix_data_backup 2>/dev/null || true
     fi
     git fetch origin main
     git reset --hard origin/main
@@ -60,6 +63,9 @@ ENVEOF
     if [ -f "/tmp/orbix_local_store_backup.json" ]; then
         cp /tmp/orbix_local_store_backup.json db/local_store.json 2>/dev/null || true
     fi
+    if [ -d "/tmp/orbix_data_backup" ] && [ ! -d "data" ]; then
+        cp -r /tmp/orbix_data_backup data 2>/dev/null || true
+    fi
 else
     echo -e "${YELLOW}[1/5] Git directory not detected at ${PROJECT_DIR}.${NC}"
 fi
@@ -82,6 +88,10 @@ fi
 # 4. Configure PostgreSQL user & database
 echo -e "${YELLOW}[4/5] Configuring PostgreSQL credentials & database...${NC}"
 if command -v psql &> /dev/null; then
+    # Create an automatic pre-deploy database safety backup
+    mkdir -p /tmp/orbix_db_backups 2>/dev/null || true
+    sudo -u postgres pg_dump cupboard_cad > "/tmp/orbix_db_backups/cupboard_cad_$(date +%Y%m%d_%H%M%S).sql" 2>/dev/null || true
+
     # Set password for postgres user so password authentication succeeds
     sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';" 2>/dev/null || true
     # Create cupboard_cad database if it doesn't exist

@@ -17,6 +17,7 @@ const bcrypt = require('bcryptjs');
 const prismaConfig = require('../config/prisma');
 const quoteDeckBuilder = require('./quoteDeckBuilder');
 const whatsappAlertService = require('./whatsappAlertService');
+const Core = require('../../orbix-core');
 
 const ROOT_DIR = path.join(__dirname, '../..');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
@@ -72,21 +73,43 @@ function recalculateVariantCommercial(comm, overrides) {
   const baseApp = Math.max(0, Math.round(Number(rawApp) || 0));
   const acc = accessoriesEnabled ? baseAcc : 0;
   const appliances = appliancesEnabled ? baseApp : 0;
-  const rawDesign = o.designPercent !== undefined ? o.designPercent : c.designPercent;
-  const designPercent = (rawDesign !== undefined && rawDesign !== null && rawDesign !== '') ? Math.max(0, Math.min(100, Number(rawDesign) || 0)) : 9;
   const freightPercent = (c.freightPercent !== undefined && c.freightPercent !== null && c.freightPercent !== '') ? Number(c.freightPercent) : 2.5;
   const gstPercent = (c.gstPercent !== undefined && c.gstPercent !== null && c.gstPercent !== '') ? Number(c.gstPercent) : 18;
 
-  const designAmount = Math.round(woodwork * (designPercent / 100));
+  // Elegant Surabhi Costing Benchmark & Slab Lookup
+  const slabId = o.surabhiDesignSlab !== undefined ? o.surabhiDesignSlab : (c.surabhiDesignSlab || 'auto');
+  const surabhiWoodwork = (o.surabhiWoodworkSubtotal !== undefined)
+    ? Number(o.surabhiWoodworkSubtotal)
+    : (c.surabhiWoodworkSubtotal !== undefined ? Number(c.surabhiWoodworkSubtotal) : woodwork);
+
+  const activeSlab = (Core && Core.getSurabhiDesignFeeSlab)
+    ? Core.getSurabhiDesignFeeSlab(surabhiWoodwork, slabId)
+    : null;
+
+  let designPercent = 9;
+  let designAmount = 0;
+  let adpP = 0;
+  let adpAmount = 0;
+
+  if (activeSlab && slabId !== 'custom') {
+    designAmount = activeSlab.fullDesignCharges;
+    adpP = activeSlab.discountPercent || 60;
+    adpAmount = Math.round(designAmount * (adpP / 100));
+    designPercent = woodwork > 0 ? (Math.round((designAmount / woodwork) * 1000) / 10) : 9;
+  } else {
+    const rawDesign = o.designPercent !== undefined ? o.designPercent : c.designPercent;
+    designPercent = (rawDesign !== undefined && rawDesign !== null && rawDesign !== '') ? Math.max(0, Math.min(100, Number(rawDesign) || 0)) : 9;
+    designAmount = Math.round(woodwork * (designPercent / 100));
+    adpP = Math.max(0, Math.min(100, Number(o.adpPercent !== undefined ? o.adpPercent : c.adpPercent) || 0));
+    adpAmount = Math.round(designAmount * (adpP / 100));
+  }
+
   const freightAmount = freightEnabled ? Math.round(woodwork * (freightPercent / 100)) : 0;
   const originalBillableValue = Math.round(woodwork + designAmount + freightAmount);
 
   const discP = Math.max(0, Math.min(100, Number(o.discountPercent !== undefined ? o.discountPercent : c.discountPercent) || 0));
-  const adpP = Math.max(0, Math.min(100, Number(o.adpPercent !== undefined ? o.adpPercent : c.adpPercent) || 0));
   const discountAmount = Math.round(woodwork * (discP / 100));
   const woodworkAfterDiscount = Math.max(0, woodwork - discountAmount);
-  // Discount on Design Charge (replaces ADP): % of Design Charges
-  const adpAmount = Math.round(designAmount * (adpP / 100));
   const designAfterDiscount = Math.max(0, designAmount - adpAmount);
   const totalSavings = discountAmount + adpAmount;
   const hasDiscount = totalSavings > 0;
@@ -97,6 +120,9 @@ function recalculateVariantCommercial(comm, overrides) {
   const grandTotal = netBeforeTax + gstAmount;
 
   return Object.assign({}, c, {
+    surabhiDesignSlab: slabId,
+    surabhiWoodworkSubtotal: Math.round(surabhiWoodwork),
+    activeSlab,
     woodworkSubtotal: woodwork,
     baseAdditionalAccessories: baseAcc,
     baseAppliances: baseApp,
@@ -1032,4 +1058,6 @@ class ClientQuoteService {
   }
 }
 
-module.exports = new ClientQuoteService();
+const serviceInstance = new ClientQuoteService();
+serviceInstance.recalculateVariantCommercial = recalculateVariantCommercial;
+module.exports = serviceInstance;
