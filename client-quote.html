@@ -1168,46 +1168,46 @@
         var gstEnabled = comm.gstEnabled !== false;
 
         var cRows = [
-          ['Description', 'Basis / Rate', 'Amount'],
-          ['Modular Woodwork Subtotal', 'Measured Units Schedule', fmtINR(comm.woodworkSubtotal || 0)]
+          ['Description', 'Amount'],
+          ['Modular Woodwork Subtotal', fmtINR(comm.woodworkSubtotal || 0)]
         ];
         if (accEnabled) {
-          cRows.push(['Additional Accessories', 'Custom Hardware & Add-ons', fmtINR(comm.additionalAccessories || 0)]);
+          cRows.push(['Additional Accessories', fmtINR(comm.additionalAccessories || 0)]);
         }
         if (appEnabled) {
-          cRows.push(['Appliances', 'Selected Appliances', fmtINR(comm.appliances || 0)]);
+          cRows.push(['Appliances', fmtINR(comm.appliances || 0)]);
         }
-        cRows.push(['Design Charges', String(comm.designPercent !== undefined ? comm.designPercent : 9) + '%', fmtINR(comm.designAmount || 0)]);
+        cRows.push(['Design Charges', fmtINR(comm.designAmount || 0)]);
         if (frtEnabled) {
-          cRows.push(['Freight Charges', String(comm.freightPercent !== undefined ? comm.freightPercent : 2.5) + '%', fmtINR(comm.freightAmount || 0)]);
+          cRows.push(['Freight Charges', fmtINR(comm.freightAmount || 0)]);
         }
         if (Number(comm.discountAmount || 0) > 0) {
           var wwAfter = comm.woodworkAfterDiscount !== undefined
             ? Number(comm.woodworkAfterDiscount)
             : Math.max(0, Math.round((Number(comm.woodworkSubtotal) || 0) - (Number(comm.discountAmount) || 0)));
-          cRows.push(['Discount on Wood Work', String(comm.discountPercent || 0) + '% Off', fmtINR(wwAfter)]);
+          cRows.push(['Discount on Wood Work', fmtINR(wwAfter)]);
         }
         if (Number(comm.adpAmount || 0) > 0) {
           var dcAfter = comm.designAfterDiscount !== undefined
             ? Number(comm.designAfterDiscount)
             : Math.max(0, Math.round((Number(comm.designAmount) || 0) - (Number(comm.adpAmount) || 0)));
-          cRows.push(['Discount on Design Charge', String(comm.adpPercent || 0) + '% Off', fmtINR(dcAfter)]);
+          cRows.push(['Discount on Design Charge', fmtINR(dcAfter)]);
         }
-        cRows.push(['Grand Total (Without GST)', 'Net Estimate', fmtINR(comm.netBeforeTax || 0)]);
+        cRows.push(['Grand Total (Without GST)', fmtINR(comm.netBeforeTax || 0)]);
         if (gstEnabled) {
-          cRows.push(['GST', String(comm.gstPercent !== undefined ? comm.gstPercent : 18) + '%', fmtINR(comm.gstAmount || 0)]);
+          cRows.push(['GST', fmtINR(comm.gstAmount || 0)]);
         }
 
-        var grandRow = [gstEnabled ? 'FINAL TOTAL (WITH GST)' : 'FINAL TOTAL', 'Total Payable', fmtINR(comm.grandTotal || 0)];
+        var grandRow = [gstEnabled ? 'FINAL TOTAL (WITH GST)' : 'FINAL TOTAL', fmtINR(comm.grandTotal || 0)];
         grandRow._highlight = true;
         grandRow._accent = true;
         cRows.push(grandRow);
 
-        y = drawTable(ctx, cRows, 54, y, CANVAS_W - 108, [0.5, 0.24, 0.26], {
+        y = drawTable(ctx, cRows, 54, y, CANVAS_W - 108, [0.70, 0.30], {
           fontSize: 13.5,
           padY: 8.5,
           boldFirstCol: true,
-          rightAlignCols: [2],
+          rightAlignCols: [1],
           headerBg: '#C00000'
         });
 

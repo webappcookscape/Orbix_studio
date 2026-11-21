@@ -506,22 +506,22 @@ def build_pdf(payload, out_path):
             c_rows.append(['Additional Accessories', fmt_inr(comm.get('additionalAccessories', 0))])
         if app_enabled:
             c_rows.append(['Appliances', fmt_inr(comm.get('appliances', 0))])
-        c_rows.append([f"Design Charges ({comm.get('designPercent', 9)}%)", fmt_inr(comm.get('designAmount', 0))])
+        c_rows.append(['Design Charges', fmt_inr(comm.get('designAmount', 0))])
         if frt_enabled:
-            c_rows.append([f"Freight Charges ({comm.get('freightPercent', 2.5)}%)", fmt_inr(comm.get('freightAmount', 0))])
+            c_rows.append(['Freight Charges', fmt_inr(comm.get('freightAmount', 0))])
         if float(comm.get('discountAmount') or 0) > 0:
             ww_after = comm.get('woodworkAfterDiscount')
             if ww_after is None:
                 ww_after = max(0, round(float(comm.get('woodworkSubtotal') or 0) - float(comm.get('discountAmount') or 0)))
-            c_rows.append([f"Discount on Wood Work ({comm.get('discountPercent', 0)}%)", fmt_inr(ww_after)])
+            c_rows.append(['Discount on Wood Work', fmt_inr(ww_after)])
         if float(comm.get('adpAmount') or 0) > 0:
             dc_after = comm.get('designAfterDiscount')
             if dc_after is None:
                 dc_after = max(0, round(float(comm.get('designAmount') or 0) - float(comm.get('adpAmount') or 0)))
-            c_rows.append([f"Discount on Design Charge ({comm.get('adpPercent', 0)}%)", fmt_inr(dc_after)])
+            c_rows.append(['Discount on Design Charge', fmt_inr(dc_after)])
         c_rows.append(['Grand Total (Without GST)', fmt_inr(comm.get('netBeforeTax', 0))])
         if gst_enabled:
-            c_rows.append([f"GST ({comm.get('gstPercent', 18)}%)", fmt_inr(comm.get('gstAmount', 0))])
+            c_rows.append(['GST', fmt_inr(comm.get('gstAmount', 0))])
         c_rows.append({
             'cells': ['FINAL TOTAL (WITH GST)' if gst_enabled else 'FINAL TOTAL', fmt_inr(comm.get('grandTotal', vq.get('grandTotal', 0)))],
             'highlight': True,
