@@ -204,7 +204,42 @@ class ProjectService {
 
     const unitsCount = parseInt(projectData.units_count ?? projectData.unitsCount ?? 0, 10);
     const boardsEst = parseInt(projectData.boards_est ?? projectData.boardsEst ?? 0, 10);
-    const data = projectData.data || {};
+    const incomingData = (projectData.data && typeof projectData.data === 'object') ? projectData.data : {};
+    const incomingDetails = incomingData.details || (incomingData.plan && incomingData.plan.meta) || {};
+    const mergedDetails = {
+      clientName: client || incomingDetails.clientName || '',
+      contactNumber: projectData.contact_number || incomingDetails.contactNumber || incomingDetails.phone || '',
+      phone: projectData.contact_number || incomingDetails.contactNumber || incomingDetails.phone || '',
+      location: projectData.location || incomingDetails.location || incomingDetails.siteAddress || '',
+      siteAddress: projectData.location || incomingDetails.location || incomingDetails.siteAddress || '',
+      bhName: projectData.bh_name || incomingDetails.bhName || incomingDetails.designerName || ownerName,
+      designerName: projectData.bh_name || incomingDetails.bhName || incomingDetails.designerName || ownerName,
+      cpCode: projectData.cp_code || incomingDetails.cpCode || incomingDetails.quoteId || '',
+      quoteId: projectData.cp_code || incomingDetails.cpCode || incomingDetails.quoteId || '',
+      dateTime: projectData.date_time || incomingDetails.dateTime || incomingDetails.dateCreated || new Date().toISOString(),
+      dateCreated: projectData.date_time || incomingDetails.dateTime || incomingDetails.dateCreated || new Date().toISOString(),
+      ...incomingDetails
+    };
+    const finalData = {
+      ...incomingData,
+      details: mergedDetails
+    };
+    if (finalData.plan && typeof finalData.plan === 'object') {
+      finalData.plan.meta = Object.assign({}, finalData.plan.meta || {}, {
+        clientName: mergedDetails.clientName,
+        phone: mergedDetails.phone,
+        contactNumber: mergedDetails.contactNumber,
+        siteAddress: mergedDetails.siteAddress,
+        siteLocation: mergedDetails.location,
+        location: mergedDetails.location,
+        bhName: mergedDetails.bhName,
+        designerName: mergedDetails.designerName,
+        cpCode: mergedDetails.cpCode,
+        quoteId: mergedDetails.quoteId,
+        dateTime: mergedDetails.dateTime,
+        dateCreated: mergedDetails.dateCreated
+      });
+    }
 
     const created = await prisma.project.create({
       data: {
@@ -218,7 +253,7 @@ class ProjectService {
         ownerEmail,
         unitsCount,
         boardsEst,
-        data,
+        data: finalData,
         isShared: projectData.is_shared ?? projectData.isShared ?? false,
         forkCount: projectData.fork_count ?? projectData.forkCount ?? 0
       }
@@ -231,17 +266,29 @@ class ProjectService {
   async updateProject(id, updates, user) {
     if (!id) throw new Error('Project ID is required');
 
-    const existing = await prisma.project.findUnique({ where: { id } });
-    if (!existing) throw new Error('Project not found');
+    let existing = await prisma.project.findUnique({ where: { id } });
+    if (!existing) {
+      // Zero-Loss Upsert: If the project does not exist on the server yet (e.g. created locally
+      // while offline or during initial startup), auto-create it rather than failing with 404!
+      console.log(`[ProjectService] Project ${id} not found on server during update; auto-upserting...`);
+      return await this.createProject({ id, ...updates }, user);
+    }
 
     // Access control
     if (user && user.role !== 'admin' && existing.createdBy !== user.id) {
       throw new Error('Access denied: Only project owners or administrators can edit projects');
     }
 
+    const incomingData = (updates.data && typeof updates.data === 'object') ? updates.data : {};
+    const incomingDetails = incomingData.details || (incomingData.plan && incomingData.plan.meta) || {};
+
     const data = {};
     if (updates.title !== undefined) data.title = updates.title.trim();
+    else if (incomingDetails.title) data.title = incomingDetails.title.trim();
+
     if (updates.client !== undefined) data.client = updates.client.trim();
+    else if (incomingDetails.clientName) data.client = incomingDetails.clientName.trim();
+
     if (updates.type !== undefined) data.type = updates.type;
     if (updates.status !== undefined) data.status = updates.status;
 
@@ -255,20 +302,47 @@ class ProjectService {
     let planPreserved = false;
     if (updates.data !== undefined && updates.data && typeof updates.data === 'object') {
       const existingData = (existing.data && typeof existing.data === 'object') ? existing.data : {};
-      const incomingData = updates.data;
       const existingStats = getPlanIntegrityStats(existingData);
       const incomingStats = getPlanIntegrityStats(incomingData);
       const allowDestructive = isExplicitDestructiveUpdate(updates);
 
       // Start from a safe merge so metadata-only updates NEVER wipe existing plan/units/details
       const mergedData = Object.assign({}, existingData, incomingData);
-      if (existingData.details && typeof existingData.details === 'object') {
-        mergedData.details = Object.assign(
-          {},
-          existingData.details,
-          (incomingData.details && typeof incomingData.details === 'object') ? incomingData.details : {}
-        );
+
+      // Merge and protect details metadata against stale overwrites
+      const existingDetails = (existingData.details && typeof existingData.details === 'object') ? existingData.details : {};
+      const incDet = (incomingData.details && typeof incomingData.details === 'object') ? incomingData.details : incomingDetails;
+      const mergedDetails = Object.assign({}, existingDetails, incDet);
+
+      const clientName = updates.client || incDet.clientName || (existingDetails && existingDetails.clientName) || existing.client || '';
+      const contactNum = updates.contact_number || incDet.contactNumber || incDet.phone || (existingDetails && (existingDetails.contactNumber || existingDetails.phone)) || existing.contact_number || '';
+      const locationStr = updates.location || incDet.location || incDet.siteAddress || (existingDetails && (existingDetails.location || existingDetails.siteAddress)) || existing.location || '';
+      const bhNameStr = updates.bh_name || incDet.bhName || incDet.designerName || (existingDetails && (existingDetails.bhName || existingDetails.designerName)) || existing.bh_name || '';
+      const cpCodeStr = updates.cp_code || incDet.cpCode || incDet.quoteId || (existingDetails && (existingDetails.cpCode || existingDetails.quoteId)) || existing.cp_code || '';
+      const dateTimeStr = updates.date_time || incDet.dateTime || incDet.dateCreated || (existingDetails && (existingDetails.dateTime || existingDetails.dateCreated)) || existing.date_time || '';
+
+      if (clientName) mergedDetails.clientName = clientName;
+      if (contactNum) {
+        mergedDetails.contactNumber = contactNum;
+        mergedDetails.phone = contactNum;
       }
+      if (locationStr) {
+        mergedDetails.location = locationStr;
+        mergedDetails.siteAddress = locationStr;
+      }
+      if (bhNameStr) {
+        mergedDetails.bhName = bhNameStr;
+        mergedDetails.designerName = bhNameStr;
+      }
+      if (cpCodeStr) {
+        mergedDetails.cpCode = cpCodeStr;
+        mergedDetails.quoteId = cpCodeStr;
+      }
+      if (dateTimeStr) {
+        mergedDetails.dateTime = dateTimeStr;
+        mergedDetails.dateCreated = dateTimeStr;
+      }
+      mergedData.details = mergedDetails;
 
       if (!incomingStats.hasPlan && existingStats.hasPlan) {
         // Metadata-only update: retain existing floor plan and units untouched
@@ -321,6 +395,24 @@ class ProjectService {
             });
           }
         }
+      }
+
+      // Synchronize plan.meta with authoritative details metadata
+      if (mergedData.plan && typeof mergedData.plan === 'object' && mergedData.details) {
+        mergedData.plan.meta = Object.assign({}, mergedData.plan.meta || {}, {
+          clientName: mergedData.details.clientName || (mergedData.plan.meta && mergedData.plan.meta.clientName) || '',
+          phone: mergedData.details.phone || (mergedData.plan.meta && mergedData.plan.meta.phone) || '',
+          contactNumber: mergedData.details.contactNumber || (mergedData.plan.meta && mergedData.plan.meta.contactNumber) || '',
+          siteAddress: mergedData.details.siteAddress || (mergedData.plan.meta && mergedData.plan.meta.siteAddress) || '',
+          siteLocation: mergedData.details.location || (mergedData.plan.meta && mergedData.plan.meta.siteLocation) || '',
+          location: mergedData.details.location || (mergedData.plan.meta && mergedData.plan.meta.location) || '',
+          bhName: mergedData.details.bhName || (mergedData.plan.meta && mergedData.plan.meta.bhName) || '',
+          designerName: mergedData.details.designerName || (mergedData.plan.meta && mergedData.plan.meta.designerName) || '',
+          cpCode: mergedData.details.cpCode || (mergedData.plan.meta && mergedData.plan.meta.cpCode) || '',
+          quoteId: mergedData.details.quoteId || (mergedData.plan.meta && mergedData.plan.meta.quoteId) || '',
+          dateTime: mergedData.details.dateTime || (mergedData.plan.meta && mergedData.plan.meta.dateTime) || '',
+          dateCreated: mergedData.details.dateCreated || (mergedData.plan.meta && mergedData.plan.meta.dateCreated) || ''
+        });
       }
 
       // Automatic Rolling Revision History (keep last 5 snapshots)

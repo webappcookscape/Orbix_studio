@@ -7568,11 +7568,11 @@
       if (!formattedDate) formattedDate = '05-Nov-2026 23:36';
 
       var meta = this.project.meta || {};
-      var clientDisp = meta.clientName || 'Vikram Singhania';
-      var contactDisp = meta.phone || meta.contactNumber || '+91 98765 43210';
-      var locDisp = meta.siteAddress || meta.siteLocation || meta.location || 'Whitefield, Bengaluru';
-      var bhDisp = meta.bhName || meta.designerName || 'Sangathamizh';
-      var cpDisp = meta.cpCode || meta.quoteId || 'CP-9042';
+      var clientDisp = meta.clientName || 'Client';
+      var contactDisp = meta.phone || meta.contactNumber || '—';
+      var locDisp = meta.siteAddress || meta.siteLocation || meta.location || '—';
+      var bhDisp = meta.bhName || meta.designerName || 'Designer';
+      var cpDisp = meta.cpCode || meta.quoteId || (this.project.id ? 'CP-' + String(this.project.id).slice(-4).toUpperCase() : 'CP-REF');
 
       html += '<div class="quote-header-split">' +
         '<div class="qh-left">' +
@@ -8077,9 +8077,9 @@
           var dtInput = document.getElementById('editProjDateTime');
           var cpInput = document.getElementById('editProjCpCode');
 
-          if (clientInput) clientInput.value = m.clientName || 'Vikram Singhania';
-          if (contactInput) contactInput.value = m.phone || m.contactNumber || '+91 98765 43210';
-          if (locInput) locInput.value = m.siteAddress || m.siteLocation || m.location || 'Whitefield, Bengaluru';
+          if (clientInput) clientInput.value = m.clientName || '';
+          if (contactInput) contactInput.value = m.phone || m.contactNumber || '';
+          if (locInput) locInput.value = m.siteAddress || m.siteLocation || m.location || '';
           if (bhSelect) {
             var existingBh = m.bhName || m.designerName || '';
             if (window.OrbixProjects && typeof window.OrbixProjects.populateBhDropdown === 'function') {
@@ -8087,8 +8087,8 @@
             }
             if (existingBh) bhSelect.value = existingBh;
           }
-          if (dtInput) dtInput.value = m.dateTime || (m.dateCreated ? self.formatDisplayDate(m.dateCreated, true) : '05-11-2026 23:36');
-          if (cpInput) cpInput.value = m.cpCode || m.quoteId || 'CP-9042';
+          if (dtInput) dtInput.value = m.dateTime || (m.dateCreated ? self.formatDisplayDate(m.dateCreated, true) : '');
+          if (cpInput) cpInput.value = m.cpCode || m.quoteId || '';
 
           modal.classList.add('is-open');
         });
@@ -8858,9 +8858,9 @@
 
       // Meta Box Row 4
       setCell(4, 4, 'Client Name:', 3);
-      setCell(4, 5, meta.clientName || 'Vikram Singhania', 4);
+      setCell(4, 5, meta.clientName || 'Client', 4);
       setCell(4, 6, 'Contact:', 3);
-      setCell(4, 7, meta.phone || meta.contactNumber || '+91 98765 43210', 4);
+      setCell(4, 7, meta.phone || meta.contactNumber || '—', 4);
       setCell(4, 8, 'Active Tier:', 3);
       setCell(4, 9, currentTier, 4);
       setCell(4, 10, '', 4);
@@ -8868,12 +8868,12 @@
 
       // Meta Box Row 5
       setCell(5, 4, 'Site Address:', 3);
-      setCell(5, 5, meta.siteAddress || meta.siteLocation || meta.location || 'Whitefield, Bengaluru', 4);
+      setCell(5, 5, meta.siteAddress || meta.siteLocation || meta.location || '—', 4);
       setCell(5, 6, '', 4);
       setCell(5, 7, '', 4);
       addMerge(5, 5, 7, 5);
       setCell(5, 8, 'BH Name:', 3);
-      setCell(5, 9, meta.bhName || meta.designerName || 'Sangathamizh', 4);
+      setCell(5, 9, meta.bhName || meta.designerName || 'Designer', 4);
       setCell(5, 10, '', 4);
       addMerge(9, 5, 10, 5);
 

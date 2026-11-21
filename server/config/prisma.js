@@ -365,8 +365,28 @@ class MockPrismaClient {
       },
       async update(args) {
         const projs = self._read(self._projectsFile, []);
-        const idx = projs.findIndex(p => p.id === args.where.id);
-        if (idx === -1) throw new Error('Project not found');
+        let idx = projs.findIndex(p => p.id === args.where.id);
+        if (idx === -1) {
+          // Zero-Loss Upsert: if project was created locally but not yet in database file, auto-create it
+          const newProj = {
+            id: args.where.id,
+            title: (args.data && args.data.title) || 'Untitled CAD Project',
+            client: (args.data && args.data.client) || '',
+            type: (args.data && args.data.type) || 'Wardrobe',
+            status: (args.data && args.data.status) || 'Draft',
+            unitsCount: (args.data && args.data.unitsCount) || 0,
+            boardsEst: (args.data && args.data.boardsEst) || 0,
+            data: (args.data && args.data.data) || {},
+            isShared: (args.data && args.data.isShared) || false,
+            forkCount: (args.data && args.data.forkCount) || 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            ...args.data
+          };
+          projs.unshift(newProj);
+          self._write(self._projectsFile, projs);
+          return newProj;
+        }
         const updateData = { ...args.data };
         if (updateData.forkCount && typeof updateData.forkCount === 'object') {
           if (updateData.forkCount.increment) {
@@ -494,6 +514,41 @@ let activePrisma = shouldSkipPostgres ? new MockPrismaClient() : new PrismaClien
   errorFormat: 'minimal'
 });
 
+function wrapModel(modelName, targetObj) {
+  return new Proxy(targetObj, {
+    get(mTarget, method) {
+      const fn = mTarget[method];
+      if (typeof fn !== 'function') return fn;
+      return async function (...args) {
+        try {
+          return await fn.apply(mTarget, args);
+        } catch (err) {
+          const isConnErr = err && (
+            err.name === 'PrismaClientInitializationError' ||
+            (err.constructor && err.constructor.name === 'PrismaClientInitializationError') ||
+            String(err).includes("Can't reach database server") ||
+            String(err).includes('ECONNREFUSED') ||
+            String(err).includes('PrismaClientInitializationError')
+          );
+          if (isConnErr) {
+            if (!(activePrisma instanceof MockPrismaClient)) {
+              console.log('✓ Auto-switched to Resilient JSON Store fallback on connection error.');
+              activePrisma = new MockPrismaClient();
+              isConnected = false;
+              lastError = err.message || 'PostgreSQL offline';
+            }
+            const fallbackModel = activePrisma[modelName];
+            if (fallbackModel && typeof fallbackModel[method] === 'function') {
+              return await fallbackModel[method].apply(fallbackModel, args);
+            }
+          }
+          throw err;
+        }
+      };
+    }
+  });
+}
+
 // Dynamic proxy so existing imports (`const { prisma } = require('./config/prisma')`)
 // always route methods to the active connected client even after auto-recovery/fallback
 const prismaProxy = new Proxy({}, {
@@ -501,6 +556,9 @@ const prismaProxy = new Proxy({}, {
     const val = activePrisma[prop];
     if (typeof val === 'function') {
       return val.bind(activePrisma);
+    }
+    if (val && typeof val === 'object' && !(activePrisma instanceof MockPrismaClient)) {
+      return wrapModel(prop, val);
     }
     return val;
   }

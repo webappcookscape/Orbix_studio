@@ -443,14 +443,12 @@
         return true;
       } catch (err) {
         try {
-          var activeSuffix = this.activeProjectId ? ('_' + String(this.activeProjectId)) : '';
           var toRemove = [];
           for (var i = 0; i < localStorage.length; i++) {
             var k = localStorage.key(i);
             if (!k || k === key) continue;
-            if (k.indexOf('orbix_underlay_') === 0) {
-              toRemove.push(k);
-            } else if (k.indexOf('orbix_project_') === 0 && (!activeSuffix || k.slice(-activeSuffix.length) !== activeSuffix)) {
+            // Zero-Loss Protection: Only purge non-critical image underlays or render caches; NEVER wipe user project drafts!
+            if (k.indexOf('orbix_underlay_') === 0 || k.indexOf('orbix_texture_') === 0 || k.indexOf('orbix_cache_') === 0) {
               toRemove.push(k);
             }
           }
@@ -571,29 +569,17 @@
     },
 
     _purgeStaleProjectId: function (staleId) {
+      // Zero-Loss Protection: Never blindly delete user's working draft or active project ID!
       if (!staleId) return;
       var sid = String(staleId);
+      if (String(this.activeProjectId) === sid) {
+        console.warn('[OrbixProjects] Preserving active in-memory project draft for ' + sid + ' despite purge request.');
+        return;
+      }
       try {
-        localStorage.removeItem('orbix_active_project_id');
-        localStorage.removeItem('orbix_active_proj_anon');
-        if (this.currentUser) {
-          localStorage.removeItem('orbix_active_proj_' + this.currentUser.id);
-        }
-        for (var i = localStorage.length - 1; i >= 0; i--) {
-          var k = localStorage.key(i);
-          if (k && k.indexOf('orbix_active_proj_') === 0) {
-            if (localStorage.getItem(k) === sid) {
-              localStorage.removeItem(k);
-            }
-          }
-        }
-        var draftRaw = localStorage.getItem('orbix_working_project_draft');
-        if (draftRaw) {
-          var draftObj = JSON.parse(draftRaw);
-          if (draftObj && String(draftObj.projectId) === sid) {
-            draftObj.projectId = '';
-            localStorage.setItem('orbix_working_project_draft', JSON.stringify(draftObj));
-          }
+        var userActiveKey = 'orbix_active_proj_' + (this.currentUser ? this.currentUser.id : 'anon');
+        if (localStorage.getItem(userActiveKey) === sid) {
+          localStorage.removeItem(userActiveKey);
         }
       } catch (_) { }
     },
@@ -676,8 +662,42 @@
           if (self.projects && self.projects.length > 0) {
             var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
             var savedId = null;
-            try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
-            var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
+            try {
+              savedId = localStorage.getItem(userActiveKey) || localStorage.getItem('orbix_active_project_id');
+              if (!savedId) {
+                var rawDraft = localStorage.getItem('orbix_working_project_draft');
+                if (rawDraft) {
+                  var dObj = JSON.parse(rawDraft);
+                  if (dObj && dObj.projectId) savedId = dObj.projectId;
+                }
+              }
+            } catch (e) { }
+
+            var toOpen = null;
+            if (savedId) {
+              toOpen = self.projects.find(function (p) { return p && String(p.id) === String(savedId); });
+              if (!toOpen) {
+                // If saved project exists in local draft storage, restore it into self.projects so local work is never lost!
+                var uId = self.currentUser ? self.currentUser.id : 'anon';
+                var draftKey = 'orbix_project_' + uId + '_' + savedId;
+                var rawPlan = null;
+                try { rawPlan = localStorage.getItem(draftKey); } catch (_) { }
+                if (rawPlan) {
+                  try {
+                    var parsedPlan = JSON.parse(rawPlan);
+                    toOpen = {
+                      id: savedId,
+                      title: (parsedPlan && parsedPlan.meta && parsedPlan.meta.title) || 'Restored CAD Project',
+                      client: (parsedPlan && parsedPlan.meta && parsedPlan.meta.clientName) || '',
+                      data: { plan: parsedPlan, units: [] },
+                      created_at: new Date().toISOString()
+                    };
+                    self.projects.unshift(toOpen);
+                  } catch (_) { }
+                }
+              }
+            }
+            if (!toOpen) toOpen = self.projects[0];
             self.openProject(toOpen.id, false);
           }
           OrbixRouter.dispatchInitialRoute();
@@ -1601,11 +1621,11 @@
         .then(function (r) {
           if (!r.ok) {
             if (r.status === 404) {
-              console.warn('[OrbixProjects] Project ' + id + ' not found on server, stopping autosave for stale ID.');
-              if (String(self.activeProjectId) === String(id)) {
-                self.activeProjectId = null;
+              console.warn('[OrbixProjects] Project ' + id + ' not yet on remote server; preserving local draft & syncing to VPS.');
+              // Zero-Loss Protection: NEVER set activeProjectId = null or purge local draft on 404!
+              if (typeof self.syncLocalProjectsToVPS === 'function') {
+                self.syncLocalProjectsToVPS();
               }
-              self._purgeStaleProjectId(id);
             }
             throw new Error('Status ' + r.status);
           }
@@ -1777,16 +1797,52 @@
         if (activeId) planToLoad.meta.id = String(activeId);
         if (project.title || project.name) planToLoad.meta.title = project.title || project.name;
         var details = (project.data && project.data.details) || {};
-        planToLoad.meta.clientName = project.client || details.clientName || planToLoad.meta.clientName || 'Client';
-        planToLoad.meta.phone = project.contact_number || details.contactNumber || details.phone || planToLoad.meta.phone || '';
-        planToLoad.meta.contactNumber = planToLoad.meta.phone;
-        planToLoad.meta.siteAddress = project.location || details.location || details.siteAddress || planToLoad.meta.siteAddress || '';
-        planToLoad.meta.siteLocation = planToLoad.meta.siteAddress;
-        planToLoad.meta.quoteId = project.cp_code || details.cpCode || details.quoteId || planToLoad.meta.quoteId || ('ORB-' + (activeId ? String(activeId).slice(-6) : '089'));
+
+        var isGenericClient = function (val) {
+          if (!val) return true;
+          var s = String(val).trim().toLowerCase();
+          return s === '' || s === 'client' || s === 'vikram singhania';
+        };
+        var isGenericPhone = function (val) {
+          if (!val) return true;
+          var s = String(val).trim();
+          return s === '' || s === '+91 98765 43210';
+        };
+        var isGenericLoc = function (val) {
+          if (!val) return true;
+          var s = String(val).trim().toLowerCase();
+          return s === '' || s === 'whitefield, bengaluru';
+        };
+
+        var resolvedClient = '';
+        if (!isGenericClient(details.clientName)) resolvedClient = details.clientName;
+        else if (!isGenericClient(planToLoad.meta.clientName)) resolvedClient = planToLoad.meta.clientName;
+        else if (!isGenericClient(project.client)) resolvedClient = project.client;
+        else resolvedClient = details.clientName || planToLoad.meta.clientName || project.client || 'Client';
+
+        var resolvedPhone = '';
+        if (!isGenericPhone(details.contactNumber || details.phone)) resolvedPhone = details.contactNumber || details.phone;
+        else if (!isGenericPhone(planToLoad.meta.phone || planToLoad.meta.contactNumber)) resolvedPhone = planToLoad.meta.phone || planToLoad.meta.contactNumber;
+        else if (!isGenericPhone(project.contact_number)) resolvedPhone = project.contact_number;
+        else resolvedPhone = details.contactNumber || details.phone || planToLoad.meta.phone || project.contact_number || '';
+
+        var resolvedLoc = '';
+        if (!isGenericLoc(details.location || details.siteAddress)) resolvedLoc = details.location || details.siteAddress;
+        else if (!isGenericLoc(planToLoad.meta.siteAddress || planToLoad.meta.siteLocation || planToLoad.meta.location)) resolvedLoc = planToLoad.meta.siteAddress || planToLoad.meta.siteLocation || planToLoad.meta.location;
+        else if (!isGenericLoc(project.location)) resolvedLoc = project.location;
+        else resolvedLoc = details.location || details.siteAddress || planToLoad.meta.siteAddress || project.location || '';
+
+        planToLoad.meta.clientName = resolvedClient;
+        planToLoad.meta.phone = resolvedPhone;
+        planToLoad.meta.contactNumber = resolvedPhone;
+        planToLoad.meta.siteAddress = resolvedLoc;
+        planToLoad.meta.siteLocation = resolvedLoc;
+        planToLoad.meta.location = resolvedLoc;
+        planToLoad.meta.quoteId = details.cpCode || details.quoteId || planToLoad.meta.quoteId || project.cp_code || ('ORB-' + (activeId ? String(activeId).slice(-6) : '089'));
         planToLoad.meta.cpCode = planToLoad.meta.quoteId;
-        planToLoad.meta.designerName = project.bh_name || details.bhName || details.designerName || planToLoad.meta.designerName || (self.currentUser ? self.currentUser.name : 'Designer');
+        planToLoad.meta.designerName = details.bhName || details.designerName || planToLoad.meta.designerName || project.bh_name || (self.currentUser ? self.currentUser.name : 'Designer');
         planToLoad.meta.bhName = planToLoad.meta.designerName;
-        planToLoad.meta.dateCreated = project.date_time || details.dateTime || details.dateCreated || planToLoad.meta.dateCreated || new Date().toISOString();
+        planToLoad.meta.dateCreated = details.dateTime || details.dateCreated || planToLoad.meta.dateCreated || project.date_time || new Date().toISOString();
         planToLoad.meta.status = project.status || details.status || planToLoad.meta.status || 'Active Design';
       }
 
@@ -1979,9 +2035,30 @@
         this.currentUser &&
         !(typeof navigator !== 'undefined' && navigator.onLine === false)) {
         var project = this.projects ? this.projects.find(function (p) { return p && String(p.id) === String(activeId); }) : null;
-        var pData = project ? Object.assign({}, project.data || {}, { plan: currentPlan, units: currentUnits }) : { plan: currentPlan, units: currentUnits };
+        var activeMeta = (currentPlan && currentPlan.meta) || {};
+        var detailsObj = Object.assign({}, (project && project.data && project.data.details) || {}, {
+          clientName: activeMeta.clientName || (project && project.client) || '',
+          contactNumber: activeMeta.phone || activeMeta.contactNumber || (project && project.contact_number) || '',
+          phone: activeMeta.phone || activeMeta.contactNumber || (project && project.contact_number) || '',
+          location: activeMeta.siteAddress || activeMeta.siteLocation || activeMeta.location || (project && project.location) || '',
+          siteAddress: activeMeta.siteAddress || activeMeta.siteLocation || activeMeta.location || (project && project.location) || '',
+          bhName: activeMeta.bhName || activeMeta.designerName || (project && project.bh_name) || '',
+          designerName: activeMeta.bhName || activeMeta.designerName || (project && project.bh_name) || '',
+          cpCode: activeMeta.cpCode || activeMeta.quoteId || (project && project.cp_code) || '',
+          quoteId: activeMeta.cpCode || activeMeta.quoteId || (project && project.cp_code) || '',
+          dateTime: activeMeta.dateTime || activeMeta.dateCreated || (project && project.date_time) || '',
+          dateCreated: activeMeta.dateTime || activeMeta.dateCreated || (project && project.date_time) || ''
+        });
+        var pData = project ? Object.assign({}, project.data || {}, { plan: currentPlan, units: currentUnits, details: detailsObj }) : { plan: currentPlan, units: currentUnits, details: detailsObj };
         var stats = this._countPlanElements({ data: pData });
         var bodyStr = JSON.stringify({
+          title: activeMeta.title || (project && (project.title || project.name)) || '',
+          client: detailsObj.clientName,
+          contact_number: detailsObj.contactNumber,
+          location: detailsObj.location,
+          bh_name: detailsObj.bhName,
+          cp_code: detailsObj.cpCode,
+          date_time: detailsObj.dateTime,
           data: pData,
           units_count: stats.furniture,
           changeAction: 'flush_unload',
@@ -2019,15 +2096,37 @@
       self._saveInFlight = true;
       self.setSaveIndicator('saving');
 
+      var pData = payload.data || {};
+      var pPlan = pData.plan || {};
+      var pMeta = pPlan.meta || pData.meta || {};
+      var pDetails = pData.details || {};
+
+      var clientName = pMeta.clientName || pDetails.clientName || '';
+      var contactNum = pMeta.phone || pMeta.contactNumber || pDetails.contactNumber || pDetails.phone || '';
+      var locationStr = pMeta.siteAddress || pMeta.siteLocation || pMeta.location || pDetails.location || pDetails.siteAddress || '';
+      var bhName = pMeta.bhName || pMeta.designerName || pDetails.bhName || pDetails.designerName || '';
+      var cpCode = pMeta.cpCode || pMeta.quoteId || pDetails.cpCode || pDetails.quoteId || '';
+      var dateTime = pMeta.dateTime || pMeta.dateCreated || pDetails.dateTime || pDetails.dateCreated || '';
+      var titleStr = pMeta.title || pData.title || '';
+
+      var putBody = {
+        title: titleStr,
+        client: clientName,
+        contact_number: contactNum,
+        location: locationStr,
+        bh_name: bhName,
+        cp_code: cpCode,
+        date_time: dateTime,
+        data: payload.data,
+        units_count: payload.unitsCount,
+        changeAction: payload.changeAction || 'autosave',
+        allowEmptyPlan: !!payload.allowEmptyPlan
+      };
+
       OrbixProjects.apiFetch('/api/projects/' + payload.activeId, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          data: payload.data,
-          units_count: payload.unitsCount,
-          changeAction: payload.changeAction || 'autosave',
-          allowEmptyPlan: !!payload.allowEmptyPlan
-        })
+        body: JSON.stringify(putBody)
       })
         .then(function (r) {
           if (!r.ok) {
@@ -2037,11 +2136,19 @@
               self._lastCloudPauseAt = Date.now();
             }
             if (r.status === 404) {
-              console.warn('[OrbixProjects] Project ' + payload.activeId + ' not found on server, stopping autosave for stale ID.');
-              if (String(self.activeProjectId) === String(payload.activeId)) {
-                self.activeProjectId = null;
-              }
-              self._purgeStaleProjectId(payload.activeId);
+              console.warn('[OrbixProjects] Project ' + payload.activeId + ' not found on server during PUT, auto-upserting via POST...');
+              // Fallback: auto-register project on server via POST so it exists permanently!
+              return OrbixProjects.apiFetch('/api/projects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.assign({}, putBody, { id: payload.activeId }))
+              }).then(function (postRes) {
+                if (postRes.ok) {
+                  console.log('[OrbixProjects] Successfully auto-upserted project ' + payload.activeId + ' to server.');
+                  return postRes.json();
+                }
+                throw new Error('Auto-upsert POST status ' + postRes.status);
+              });
             }
             throw new Error('HTTP ' + r.status);
           }
@@ -2185,9 +2292,23 @@
         self._pendingChangeAction = null;
 
         var liveProject = self.projects ? self.projects.find(function (p) { return p && String(p.id) === String(activeId); }) : project;
+        var activeMeta = (currentPlan && currentPlan.meta) || {};
+        var detailsObj = Object.assign({}, (liveProject && liveProject.data && liveProject.data.details) || {}, {
+          clientName: activeMeta.clientName || (liveProject && liveProject.client) || '',
+          contactNumber: activeMeta.phone || activeMeta.contactNumber || (liveProject && liveProject.contact_number) || '',
+          phone: activeMeta.phone || activeMeta.contactNumber || (liveProject && liveProject.contact_number) || '',
+          location: activeMeta.siteAddress || activeMeta.siteLocation || activeMeta.location || (liveProject && liveProject.location) || '',
+          siteAddress: activeMeta.siteAddress || activeMeta.siteLocation || activeMeta.location || (liveProject && liveProject.location) || '',
+          bhName: activeMeta.bhName || activeMeta.designerName || (liveProject && liveProject.bh_name) || '',
+          designerName: activeMeta.bhName || activeMeta.designerName || (liveProject && liveProject.bh_name) || '',
+          cpCode: activeMeta.cpCode || activeMeta.quoteId || (liveProject && liveProject.cp_code) || '',
+          quoteId: activeMeta.cpCode || activeMeta.quoteId || (liveProject && liveProject.cp_code) || '',
+          dateTime: activeMeta.dateTime || activeMeta.dateCreated || (liveProject && liveProject.date_time) || '',
+          dateCreated: activeMeta.dateTime || activeMeta.dateCreated || (liveProject && liveProject.date_time) || ''
+        });
         var pData = liveProject
-          ? Object.assign({}, liveProject.data || {}, { plan: currentPlan, units: currentUnits })
-          : { plan: currentPlan, units: currentUnits };
+          ? Object.assign({}, liveProject.data || {}, { plan: currentPlan, units: currentUnits, details: detailsObj })
+          : { plan: currentPlan, units: currentUnits, details: detailsObj };
         var pStats = self._countPlanElements({ data: pData });
 
         // Clone snapshot at dispatch time so later mutations never half-mutate the JSON being sent
