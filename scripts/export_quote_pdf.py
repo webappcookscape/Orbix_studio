@@ -448,7 +448,7 @@ def build_pdf(payload, out_path):
         ('patron_location', site_addr, (255.4, 958.4, 379.9), 11.5, 'F3', 4.5),
         ('patron_date', issue_date, (255.4, 1006.6, 379.9), 12.0, 'F3', 4.5),
         ('designer_name', designer.get('name') or meta.get('designerName') or 'Cookscape Team', (664.8, 1127.3, 290.2), 10.0, 'F3', 3.0),
-        ('designer_phone', designer.get('phone') or '93611 84787', (664.8, 1178.9, 290.2), 10.0, 'F3', 3.0),
+        ('designer_phone', designer.get('phone') or meta.get('designerPhone') or '-', (664.8, 1178.9, 290.2), 10.0, 'F3', 3.0),
         ('designer_email', designer.get('email') or 'designs.cookscape@gmail.com', (664.8, 1223.5, 290.2), 9.0, 'F1', 3.5),
     ]
     for key, val, fb, sz, fnt, dy in slot_vals:

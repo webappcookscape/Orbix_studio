@@ -1,10 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // ORBIX STUDIO — WhatsApp Alert Service (Client Quote Link Opened Notifications)
-// Default alert recipients: 8838199428 & 7418414780 (+91)
+// Alert recipients are dynamically resolved per project (respective BH & Employee FA).
 // Supports Meta WhatsApp Cloud API, Twilio, UltraMsg, CallMeBot, or Webhook URL.
 // ═══════════════════════════════════════════════════════════════════════════════
-
-const DEFAULT_ALERT_RECIPIENTS = ['918838199428', '917418414780'];
 
 function normalizePhoneIndia(raw) {
   const digits = String(raw || '').replace(/\D+/g, '');
@@ -13,11 +11,28 @@ function normalizePhoneIndia(raw) {
   return digits;
 }
 
-function getAlertRecipients() {
+function getAlertRecipients(explicitRecipients) {
+  const seen = new Set();
+  const out = [];
+  const pushUnique = (raw) => {
+    const norm = normalizePhoneIndia(raw);
+    if (norm && norm.length >= 10 && !seen.has(norm)) {
+      seen.add(norm);
+      out.push(norm);
+    }
+  };
+  if (Array.isArray(explicitRecipients)) {
+    explicitRecipients.forEach(pushUnique);
+  } else if (typeof explicitRecipients === 'string' && explicitRecipients.trim()) {
+    explicitRecipients.split(',').forEach(pushUnique);
+  }
+  if (out.length) return out;
+
   const envList = String(process.env.WHATSAPP_ALERT_NUMBERS || '').trim();
-  if (!envList) return DEFAULT_ALERT_RECIPIENTS.slice();
-  const parsed = envList.split(',').map(normalizePhoneIndia).filter(Boolean);
-  return parsed.length ? parsed : DEFAULT_ALERT_RECIPIENTS.slice();
+  if (envList) {
+    envList.split(',').forEach(pushUnique);
+  }
+  return out;
 }
 
 function formatIstNow() {
@@ -262,11 +277,16 @@ function detectActiveProvider() {
 }
 
 async function sendClientOpenedAlert(info) {
-  const recipients = getAlertRecipients();
+  const recipients = getAlertRecipients(info && info.recipients);
   const openedAt = info.openedAt || formatIstNow();
   const meta = Object.assign({}, info, { openedAt });
   const message = buildQuoteOpenedMessage(meta);
   const provider = detectActiveProvider();
+
+  if (!recipients.length) {
+    console.warn(`[WhatsAppAlert] Skipped for client "${meta.clientName || ''}" (${meta.projectId || '-'}): no phone numbers found for project BH or employee.`);
+    return { provider, recipients: [], results: [], message };
+  }
 
   const results = [];
   for (const phone of recipients) {
@@ -324,7 +344,7 @@ async function sendClientOpenedAlert(info) {
 }
 
 module.exports = {
-  DEFAULT_ALERT_RECIPIENTS,
+  normalizePhoneIndia,
   getAlertRecipients,
   buildQuoteOpenedMessage,
   detectActiveProvider,

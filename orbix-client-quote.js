@@ -310,9 +310,28 @@
       var clientPhone = meta.phone || meta.contactNumber || '';
       var siteAddress = meta.siteAddress || meta.siteLocation || meta.location || '';
       var quoteCode = meta.cpCode || meta.quoteId || ('ORB-' + new Date().getFullYear());
-      var designerName = meta.designerName || currentUser.name || 'Cookscape Design Team';
-      var designerEmail = currentUser.email || 'designs.cookscape@gmail.com';
-      var designerPhone = currentUser.phone || meta.designerPhone || '93611 84787';
+
+      // Resolve the project's respective Employee (FA) name, phone & email (distinct from BH)
+      var activeProjId = getActiveProjectId(app);
+      var allProjects = (root.OrbixProjects && Array.isArray(root.OrbixProjects.projects)) ? root.OrbixProjects.projects : [];
+      var activeProj = allProjects.filter(function (p) { return p && String(p.id) === String(activeProjId); })[0] || null;
+      var allUsers = (root.OrbixProjects && Array.isArray(root.OrbixProjects.users)) ? root.OrbixProjects.users : [];
+      var faUser = null;
+      if (activeProj) {
+        var ownerId = activeProj.created_by || activeProj.createdBy || '';
+        var ownerEmail = String(activeProj.owner_email || activeProj.ownerEmail || '').trim().toLowerCase();
+        var ownerName = String(activeProj.owner_name || activeProj.ownerName || '').trim().toLowerCase();
+        if (ownerId) faUser = allUsers.filter(function (u) { return u && String(u.id) === String(ownerId); })[0] || null;
+        if (!faUser && ownerEmail) faUser = allUsers.filter(function (u) { return u && u.email && String(u.email).trim().toLowerCase() === ownerEmail; })[0] || null;
+        if (!faUser && ownerName) faUser = allUsers.filter(function (u) { return u && u.name && String(u.name).trim().toLowerCase() === ownerName; })[0] || null;
+      }
+      if (!faUser && currentUser && currentUser.id) {
+        faUser = allUsers.filter(function (u) { return u && String(u.id) === String(currentUser.id); })[0] || currentUser;
+      }
+      var bhName = (activeProj && (activeProj.bh_name || activeProj.bhName || (activeProj.data && activeProj.data.details && activeProj.data.details.bhName))) || meta.bhName || '';
+      var designerName = (faUser && faUser.name) || (activeProj && (activeProj.owner_name || activeProj.ownerName)) || currentUser.name || 'Cookscape Design Team';
+      var designerEmail = (faUser && faUser.email) || (activeProj && (activeProj.owner_email || activeProj.ownerEmail)) || currentUser.email || 'designs.cookscape@gmail.com';
+      var designerPhone = (faUser && faUser.phone) || currentUser.phone || '';
 
       var tierPreviews = {};
       MASTER_VARIANTS.forEach(function (v) {
@@ -453,6 +472,8 @@
               siteAddress: cLoc,
               quoteId: qCode,
               designerName: designerName,
+              designerPhone: designerPhone,
+              bhName: bhName,
               dateCreated: meta.dateCreated || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
             },
             designer: {
@@ -703,7 +724,7 @@
                 '<div style="font-size:12px;background:#fff;border:1px solid #BBF7D0;border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;">' +
                 '  <div><b>Client Link:</b> <a href="' + esc(d.sharePath) + '" target="_blank" style="color:#1D4ED8;">' + esc(d.shareUrl) + '</a></div>' +
                 '  <div style="margin-top:4px;"><b>Username:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(d.quote.clientUsername) + '</code> &nbsp; <b>Password:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(pVal) + '</code></div>' +
-                '  <div style="margin-top:4px;font-size:11px;color:#0F766E;">📲 WhatsApp alert will trigger to 8838199428 &amp; 7418414780 as soon as the client opens this link.</div>' +
+                '  <div style="margin-top:4px;font-size:11px;color:#0F766E;">📲 WhatsApp alert will trigger to the project\'s BH &amp; Employee as soon as the client opens this link.</div>' +
                 '</div>' +
                 '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
                 '  <button type="button" id="cqCopyClientUrlBtn" class="btn small">📋 Copy Client Link</button>' +

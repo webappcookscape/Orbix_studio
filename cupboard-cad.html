@@ -4203,6 +4203,7 @@ body.role-employee #adminCreateEmpBox,
               <button type="button" class="stage-nav-btn" id="float3dZoomOut" title="Zoom Out (-)">➖</button>
               <button type="button" class="stage-nav-btn" id="float3dReset" title="Re-Centre (Home)">🎯</button>
               <button type="button" class="stage-nav-btn" id="float3dPan" title="Pan View (Right-Click Drag or Left-Click in Pan mode)">✋</button>
+              <button type="button" class="stage-nav-btn" id="float3dHardRefresh" title="Hard Refresh 3D: Rebuild 3D scene from latest 2D Plan (Alt+R)" style="background:#e0f2fe;color:#0369a1;border-color:#7dd3fc;font-weight:bold;">🔄</button>
             </div>
           </div>
 
@@ -4290,6 +4291,11 @@ body.role-employee #adminCreateEmpBox,
                   <button type="button" class="minibtn" id="modeUltraBtn"
                     title="🌟 Client Ultra Mode: High-resolution PCF soft shadow maps (4096×4096), ACES Filmic tone mapping (exposure 1.12), panoramic camera view, and presentation HUD overlay">🌟
                     Client Ultra</button>
+                  <button type="button" class="minibtn" id="btnHardRefresh3D"
+                    title="Hard Refresh 3D (Alt+R): Purge 3D cache and rebuild clean scene from 2D Floor Plan"
+                    style="display:inline-flex;align-items:center;gap:4px;font-weight:600;color:#0284c7;">
+                    🔄 Refresh 3D
+                  </button>
                 </div>
 
                 <!-- 3D Building Storey Floor View Selector -->
@@ -7791,7 +7797,13 @@ body.role-employee #adminCreateEmpBox,
             var localNewer = !!(localModMs > 0 && (!serverUpdatedMs || localModMs > serverUpdatedMs));
             var serverEmptyButLocalHasWork = !!(serverStats.total === 0 && localStats.total > 0);
             var serverMissingWalls = !!(serverStats.walls === 0 && localStats.walls > 0 && (!serverUpdatedMs || localModMs >= serverUpdatedMs));
-            if (localNewer || serverEmptyButLocalHasWork || serverMissingWalls) {
+
+            // CRITICAL: NEVER overwrite rich server work (e.g. 27 units or walls) with an empty local draft!
+            var serverHasRichWorkButLocalEmpty = (serverStats.total > 0 && localStats.total === 0) ||
+              (serverStats.furniture > 0 && localStats.furniture === 0) ||
+              (serverStats.walls > 0 && localStats.walls === 0);
+
+            if (!serverHasRichWorkButLocalEmpty && (localNewer || serverEmptyButLocalHasWork || serverMissingWalls)) {
               planToLoad = parsedLocal;
               self._isAwaitingHydration = false;
               if (!loadOpts.isHydration || !inMemSameProj || inMemStats.total !== localStats.total) {
@@ -7829,6 +7841,35 @@ body.role-employee #adminCreateEmpBox,
             plan: { gridSize: 100, walls: [], openings: [], rooms: [], furniture: [] }
           };
         }
+      }
+
+      // Ensure units from project.data.units are NEVER lost if planToLoad has no furniture!
+      var targetInnerPlan = planToLoad;
+      while (targetInnerPlan && targetInnerPlan.plan && (targetInnerPlan.plan.furniture || targetInnerPlan.plan.walls || targetInnerPlan.plan.rooms || targetInnerPlan.plan.plan)) {
+        targetInnerPlan = targetInnerPlan.plan;
+      }
+      var existingFurnCount = (targetInnerPlan && Array.isArray(targetInnerPlan.furniture)) ? targetInnerPlan.furniture.length : 0;
+      var rawUnitsList = (project.data && Array.isArray(project.data.units) && project.data.units.length > 0) ? project.data.units :
+        (Array.isArray(project.units) && project.units.length > 0 ? project.units : null);
+
+      if (existingFurnCount === 0 && rawUnitsList && rawUnitsList.length > 0 && targetInnerPlan) {
+        targetInnerPlan.furniture = targetInnerPlan.furniture || [];
+        for (var ui = 0; ui < rawUnitsList.length; ui++) {
+          var rawU = rawUnitsList[ui];
+          var furnId = rawU._furnId || ('furn_' + (rawU.id || ui) + '_' + (activeId || Date.now()));
+          rawU._furnId = furnId;
+          targetInnerPlan.furniture.push({
+            id: furnId,
+            name: rawU.label || ('Unit ' + (ui + 1)),
+            category: rawU.ctype || 'wardrobe',
+            dimensions: { W: rawU.W || 900, H: rawU.H || 2100, D: rawU.D || 600 },
+            elevation: rawU.elev || 0,
+            pos: rawU.pos || { x: (ui % 6) * 1100 + 600, y: Math.floor(ui / 6) * 1100 + 600, z: rawU.elev || 0 },
+            rotY: rawU.rotY || 0,
+            unitConfig: Object.assign({}, rawU)
+          });
+        }
+        console.log('[Orbix Studio] Restored ' + rawUnitsList.length + ' units from project data into workspace plan.');
       }
 
       // Stamp authoritative project ID & normalize client/quote metadata into planToLoad
@@ -7904,6 +7945,10 @@ body.role-employee #adminCreateEmpBox,
       }
 
       // 2. Synchronize 3D units strictly synchronized with live project
+      if (rawUnitsList && rawUnitsList.length > 0 && window.S) {
+        window.S.units = JSON.parse(JSON.stringify(rawUnitsList));
+        window.S.active = 0;
+      }
       if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
         window.OrbixUI.syncProjectUnitsTo3DStudio();
       } else if (window.S) {
@@ -19961,9 +20006,56 @@ body.role-employee #adminCreateEmpBox,
     return fb;
   }
 
+  /* ─────────────────────────────────────────────────────────────────────────────
+     ELEGANT SURABHI Costing Slabs — Design Fee & 60% Discount Schedule
+  ───────────────────────────────────────────────────────────────────────────── */
+  var SURABHI_DESIGN_FEE_SLABS = [
+    { id: '2_to_3', label: '2 to 3 Lakhs', min: 200000, max: 300000, fullDesignCharges: 24465, discountedCharges: 9786, discountPercent: 60 },
+    { id: '4_to_5', label: '4 to 5 Lakhs', min: 400000, max: 500000, fullDesignCharges: 35280, discountedCharges: 14112, discountPercent: 60 },
+    { id: '5_to_7_entry', label: '5 to 7 Lakhs (Entry)', min: 500000, max: 566666, fullDesignCharges: 42780, discountedCharges: 17112, discountPercent: 60 },
+    { id: '5_to_7_mid', label: '5 to 7 Lakhs (Mid)', min: 566667, max: 633333, fullDesignCharges: 47780, discountedCharges: 19112, discountPercent: 60 },
+    { id: '5_to_7_upper', label: '5 to 7 Lakhs (Upper)', min: 633334, max: 700000, fullDesignCharges: 60280, discountedCharges: 24112, discountPercent: 60 },
+    { id: '7_to_8', label: '7 to 8 Lakhs', min: 700001, max: 800000, fullDesignCharges: 72780, discountedCharges: 29112, discountPercent: 60 },
+    { id: '9_to_10', label: '9 to 10 Lakhs', min: 900000, max: 1000000, fullDesignCharges: 85280, discountedCharges: 34112, discountPercent: 60 },
+    { id: '10_to_11', label: '10 to 11 Lakhs', min: 1000001, max: 1100000, fullDesignCharges: 97780, discountedCharges: 39112, discountPercent: 60 },
+    { id: '12_to_15', label: '12 to 15 Lakhs', min: 1200000, max: 1500000, fullDesignCharges: 112780, discountedCharges: 45112, discountPercent: 60 },
+    { id: '15_to_20', label: '15 to 20 Lakhs', min: 1500001, max: 2000000, fullDesignCharges: 147780, discountedCharges: 59112, discountPercent: 60 },
+    { id: '20_to_25', label: '20 to 25 Lakhs', min: 2000001, max: 2500000, fullDesignCharges: 195280, discountedCharges: 78112, discountPercent: 60 },
+    { id: '25_to_30', label: '25 to 30 Lakhs', min: 2500001, max: 3000000, fullDesignCharges: 222780, discountedCharges: 89112, discountPercent: 60 }
+  ];
+
+  function getSurabhiDesignFeeSlab(surabhiWoodworkAmount, selectedSlabId) {
+    if (selectedSlabId && selectedSlabId !== 'auto' && selectedSlabId !== 'custom') {
+      for (var i = 0; i < SURABHI_DESIGN_FEE_SLABS.length; i++) {
+        if (SURABHI_DESIGN_FEE_SLABS[i].id === selectedSlabId) {
+          return SURABHI_DESIGN_FEE_SLABS[i];
+        }
+      }
+    }
+    if (selectedSlabId === 'custom') {
+      return null;
+    }
+    // Auto-detect based on Elegant Surabhi costing
+    var val = Number(surabhiWoodworkAmount) || 0;
+    if (val <= 350000) return SURABHI_DESIGN_FEE_SLABS[0]; // 2 to 3L
+    if (val <= 500000) return SURABHI_DESIGN_FEE_SLABS[1]; // 4 to 5L
+    if (val <= 566666) return SURABHI_DESIGN_FEE_SLABS[2]; // 5 to 7L (Entry)
+    if (val <= 633333) return SURABHI_DESIGN_FEE_SLABS[3]; // 5 to 7L (Mid)
+    if (val <= 700000) return SURABHI_DESIGN_FEE_SLABS[4]; // 5 to 7L (Upper)
+    if (val <= 850000) return SURABHI_DESIGN_FEE_SLABS[5]; // 7 to 8L
+    if (val <= 1000000) return SURABHI_DESIGN_FEE_SLABS[6]; // 9 to 10L
+    if (val <= 1150000) return SURABHI_DESIGN_FEE_SLABS[7]; // 10 to 11L
+    if (val <= 1500000) return SURABHI_DESIGN_FEE_SLABS[8]; // 12 to 15L
+    if (val <= 2000000) return SURABHI_DESIGN_FEE_SLABS[9]; // 15 to 20L
+    if (val <= 2500000) return SURABHI_DESIGN_FEE_SLABS[10]; // 20 to 25L
+    return SURABHI_DESIGN_FEE_SLABS[11]; // 25 to 30L+
+  }
+
   return {
     SFT_FACTOR: SFT_FACTOR,
     SQM_FACTOR: SQM_FACTOR,
+    SURABHI_DESIGN_FEE_SLABS: SURABHI_DESIGN_FEE_SLABS,
+    getSurabhiDesignFeeSlab: getSurabhiDesignFeeSlab,
     uid: uid,
     Vec2: Vec2,
     DEFAULT_RATE_CARD: DEFAULT_RATE_CARD,
@@ -30235,11 +30327,23 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     }
     var targetIsoId = this.isolatedRoomId;
 
-    // Remove existing home group if any
-    if (this.group) {
-      this.scene.remove(this.group);
-      this.disposeGroup(this.group);
+    // Remove any existing home groups to eliminate stale meshes and old memos
+    var oldHomes = [];
+    if (this.scene.children && this.scene.children.length) {
+      for (var ci = this.scene.children.length - 1; ci >= 0; ci--) {
+        var child = this.scene.children[ci];
+        if (child && (child.name === 'OrbixHome3D' || child === this.group)) {
+          oldHomes.push(child);
+        }
+      }
     }
+    for (var h = 0; h < oldHomes.length; h++) {
+      this.scene.remove(oldHomes[h]);
+      if (typeof this.disposeGroup === 'function') {
+        this.disposeGroup(oldHomes[h]);
+      }
+    }
+    this.group = null;
 
     this.group = new THREE.Group();
     this.group.name = 'OrbixHome3D';
@@ -35879,9 +35983,16 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
         if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
 
-        // Elevation Tier Shortcuts: Alt + F (Floor), Alt + W (Wall), Alt + L (Loft), Alt + A (All)
+        // Elevation Tier Shortcuts: Alt + F (Floor), Alt + W (Wall), Alt + L (Loft), Alt + A (All) & Hard Refresh: Alt + R
         if (e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
           var k = e.key.toLowerCase();
+          if (k === 'r') {
+            e.preventDefault();
+            if (typeof self.hardRefresh3D === 'function') {
+              self.hardRefresh3D();
+            }
+            return;
+          }
           if (k === 'f') {
             e.preventDefault();
             if (self.editor && typeof self.editor.setUnitTierFilter === 'function') {
@@ -39695,14 +39806,51 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       window.S = window.S || {};
 
-      // If no furniture is placed on the 2D floor plan, 3D Studio must have 0 units!
+      // If no furniture is placed on the 2D floor plan, check if 3D Studio or project.data has units before clearing!
       if (!furnList.length) {
-        window.S.units = [];
-        window.S.active = 0;
-        if (typeof window.renderRail === 'function') window.renderRail();
-        if (typeof window.renderLegend === 'function') window.renderLegend();
-        if (typeof window.renderFoot === 'function') window.renderFoot();
-        return;
+        if (window.S.units && Array.isArray(window.S.units) && window.S.units.length > 0) {
+          furnList = plan.furniture = plan.furniture || [];
+          for (var fi = 0; fi < window.S.units.length; fi++) {
+            var su = window.S.units[fi];
+            var fId = su._furnId || ('furn_' + (su.id || fi) + '_' + Date.now());
+            su._furnId = fId;
+            furnList.push({
+              id: fId,
+              name: su.label || ('Unit ' + (fi + 1)),
+              category: su.ctype || 'wardrobe',
+              dimensions: { W: su.W || 900, H: su.H || 2100, D: su.D || 600 },
+              elevation: su.elev || 0,
+              pos: su.pos || { x: (fi % 6) * 1100 + 600, y: Math.floor(fi / 6) * 1100 + 600, z: su.elev || 0 },
+              rotY: su.rotY || 0,
+              unitConfig: Object.assign({}, su)
+            });
+          }
+        } else if (this.project && this.project.data && Array.isArray(this.project.data.units) && this.project.data.units.length > 0) {
+          window.S.units = JSON.parse(JSON.stringify(this.project.data.units));
+          furnList = plan.furniture = plan.furniture || [];
+          for (var fj = 0; fj < window.S.units.length; fj++) {
+            var su2 = window.S.units[fj];
+            var fId2 = su2._furnId || ('furn_' + (su2.id || fj) + '_' + Date.now());
+            su2._furnId = fId2;
+            furnList.push({
+              id: fId2,
+              name: su2.label || ('Unit ' + (fj + 1)),
+              category: su2.ctype || 'wardrobe',
+              dimensions: { W: su2.W || 900, H: su2.H || 2100, D: su2.D || 600 },
+              elevation: su2.elev || 0,
+              pos: su2.pos || { x: (fj % 6) * 1100 + 600, y: Math.floor(fj / 6) * 1100 + 600, z: su2.elev || 0 },
+              rotY: su2.rotY || 0,
+              unitConfig: Object.assign({}, su2)
+            });
+          }
+        } else {
+          window.S.units = [];
+          window.S.active = 0;
+          if (typeof window.renderRail === 'function') window.renderRail();
+          if (typeof window.renderLegend === 'function') window.renderLegend();
+          if (typeof window.renderFoot === 'function') window.renderFoot();
+          return;
+        }
       }
 
       window.S.units = window.S.units || [];
@@ -42926,7 +43074,26 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       if (c.adpPercent === undefined) c.adpPercent = 0;
       if (c.gstPercent === undefined) c.gstPercent = 18;
       if (c.gstEnabled === undefined) c.gstEnabled = true;
+      if (!c.surabhiDesignSlab) c.surabhiDesignSlab = 'auto';
       return this.project.commercialCharges;
+    },
+
+    getSurabhiWoodworkSubtotal: function () {
+      if (!this.project) return 0;
+      try {
+        var baseRateCard = (this.project && this.project.rateCard) || (typeof Core !== 'undefined' ? Core.DEFAULT_RATE_CARD : {});
+        var surabhiRateCard = Object.assign({}, baseRateCard, { selectedTier: 'SURABHI', roomTiers: {} });
+        var surabhiProj = {
+          plan: this.project.plan || this.project,
+          rateCard: surabhiRateCard
+        };
+        var q = (typeof Core !== 'undefined' && Core.generateFullQuotation)
+          ? Core.generateFullQuotation(surabhiProj, this.selectedBOQRooms || ['all'])
+          : null;
+        return q && q.subtotalWoodwork ? q.subtotalWoodwork : 0;
+      } catch (_) {
+        return 0;
+      }
     },
 
     computeCommercialSummary: function (woodworkSubtotal, commCharges) {
@@ -42939,9 +43106,35 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       var addAccessories = accessoriesEnabled ? (parseFloat(charges.additionalAccessories || charges.accessories) || 0) : 0;
       var appliances = appliancesEnabled ? (parseFloat(charges.appliances) || 0) : 0;
 
-      var designPercent = (charges.designPercent !== undefined && charges.designPercent !== null && charges.designPercent !== '') ? parseFloat(charges.designPercent) : 9;
-      if (isNaN(designPercent)) designPercent = 9;
-      var designAmount = Math.round(woodworkSubtotal * (designPercent / 100));
+      // Elegant Surabhi Costing Benchmark & Slab Lookup
+      var slabId = charges.surabhiDesignSlab || 'auto';
+      var surabhiWoodwork = (charges.surabhiWoodworkSubtotal !== undefined)
+        ? Number(charges.surabhiWoodworkSubtotal)
+        : (this.getSurabhiWoodworkSubtotal ? this.getSurabhiWoodworkSubtotal() : woodworkSubtotal);
+      if (!surabhiWoodwork || isNaN(surabhiWoodwork)) surabhiWoodwork = woodworkSubtotal;
+
+      var activeSlab = (typeof Core !== 'undefined' && Core.getSurabhiDesignFeeSlab)
+        ? Core.getSurabhiDesignFeeSlab(surabhiWoodwork, slabId)
+        : null;
+
+      var designPercent = 9;
+      var designAmount = 0;
+      var adpPercent = 0;
+      var adpAmount = 0;
+
+      if (activeSlab && slabId !== 'custom') {
+        designAmount = activeSlab.fullDesignCharges;
+        adpPercent = activeSlab.discountPercent || 60;
+        adpAmount = Math.round(designAmount * (adpPercent / 100));
+        designPercent = (woodworkSubtotal > 0) ? (Math.round((designAmount / woodworkSubtotal) * 1000) / 10) : 9;
+      } else {
+        designPercent = (charges.designPercent !== undefined && charges.designPercent !== null && charges.designPercent !== '') ? parseFloat(charges.designPercent) : 9;
+        if (isNaN(designPercent)) designPercent = 9;
+        designAmount = Math.round(woodworkSubtotal * (designPercent / 100));
+
+        adpPercent = parseFloat(charges.adpPercent || charges.adp) || 0;
+        adpAmount = Math.round(designAmount * (adpPercent / 100));
+      }
 
       var freightPercent = (charges.freightPercent !== undefined && charges.freightPercent !== null && charges.freightPercent !== '') ? parseFloat(charges.freightPercent) : 2.5;
       if (isNaN(freightPercent)) freightPercent = 2.5;
@@ -42949,10 +43142,6 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       var discountPercent = parseFloat(charges.discountPercent || charges.discount) || 0;
       var discountAmount = Math.round(woodworkSubtotal * (discountPercent / 100));
-
-      // Discount on Design Charge (replaces ADP): % applied on Design Charges
-      var adpPercent = parseFloat(charges.adpPercent || charges.adp) || 0;
-      var adpAmount = Math.round(designAmount * (adpPercent / 100));
 
       var totalDeductions = discountAmount + adpAmount;
       var grossAdditions = addAccessories + appliances + designAmount + freightAmount;
@@ -42965,6 +43154,9 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       return {
         woodworkSubtotal: Math.round(woodworkSubtotal),
+        surabhiWoodworkSubtotal: Math.round(surabhiWoodwork),
+        surabhiDesignSlab: slabId,
+        activeSlab: activeSlab,
         accessoriesEnabled: accessoriesEnabled,
         additionalAccessories: addAccessories,
         appliancesEnabled: appliancesEnabled,
@@ -43413,6 +43605,32 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
 
+        // Design Fee Slab Selector (Auto-applied by Elegant Surabhi costing benchmark & changeable by dropdown)
+        '<tr class="comm-charge-row" style="background:#F8FAFC;border-top:1px solid #E2E8F0;">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold" style="color:#1E3A8A;font-size:12px;">' +
+        '<div style="display:inline-flex;align-items:center;gap:6px;">' +
+        '<span>🏷️ Design Fee Slab <small style="color:#64748B;font-weight:normal;">(Elegant Surabhi benchmark)</small>:</span>' +
+        '</div></td>' +
+        '<td colspan="3" style="text-align:right">' +
+        '<select class="comm-status-select" data-key="surabhiDesignSlab" id="commSurabhiSlabSelect" style="max-width:280px;font-size:11px;font-weight:600;padding:3px 6px;border-radius:5px;border:1px solid #94A3B8;background:#fff;color:#0F172A;">' +
+        '<option value="auto"' + (commSummary.surabhiDesignSlab === 'auto' ? ' selected' : '') + '>✨ Auto: ' + (commSummary.activeSlab ? (commSummary.activeSlab.label + ' (₹' + commSummary.activeSlab.fullDesignCharges.toLocaleString('en-IN') + ' → ₹' + commSummary.activeSlab.discountedCharges.toLocaleString('en-IN') + ')') : '2 to 3 Lakhs') + '</option>' +
+        '<option value="2_to_3"' + (commSummary.surabhiDesignSlab === '2_to_3' ? ' selected' : '') + '>2 to 3 Lakhs (₹24,465 → ₹9,786)</option>' +
+        '<option value="4_to_5"' + (commSummary.surabhiDesignSlab === '4_to_5' ? ' selected' : '') + '>4 to 5 Lakhs (₹35,280 → ₹14,112)</option>' +
+        '<option value="5_to_7_entry"' + (commSummary.surabhiDesignSlab === '5_to_7_entry' ? ' selected' : '') + '>5 to 7 Lakhs - Entry (₹42,780 → ₹17,112)</option>' +
+        '<option value="5_to_7_mid"' + (commSummary.surabhiDesignSlab === '5_to_7_mid' ? ' selected' : '') + '>5 to 7 Lakhs - Mid (₹47,780 → ₹19,112)</option>' +
+        '<option value="5_to_7_upper"' + (commSummary.surabhiDesignSlab === '5_to_7_upper' ? ' selected' : '') + '>5 to 7 Lakhs - Upper (₹60,280 → ₹24,112)</option>' +
+        '<option value="7_to_8"' + (commSummary.surabhiDesignSlab === '7_to_8' ? ' selected' : '') + '>7 to 8 Lakhs (₹72,780 → ₹29,112)</option>' +
+        '<option value="9_to_10"' + (commSummary.surabhiDesignSlab === '9_to_10' ? ' selected' : '') + '>9 to 10 Lakhs (₹85,280 → ₹34,112)</option>' +
+        '<option value="10_to_11"' + (commSummary.surabhiDesignSlab === '10_to_11' ? ' selected' : '') + '>10 to 11 Lakhs (₹97,780 → ₹39,112)</option>' +
+        '<option value="12_to_15"' + (commSummary.surabhiDesignSlab === '12_to_15' ? ' selected' : '') + '>12 to 15 Lakhs (₹1,12,780 → ₹45,112)</option>' +
+        '<option value="15_to_20"' + (commSummary.surabhiDesignSlab === '15_to_20' ? ' selected' : '') + '>15 to 20 Lakhs (₹1,47,780 → ₹59,112)</option>' +
+        '<option value="20_to_25"' + (commSummary.surabhiDesignSlab === '20_to_25' ? ' selected' : '') + '>20 to 25 Lakhs (₹1,95,280 → ₹78,112)</option>' +
+        '<option value="25_to_30"' + (commSummary.surabhiDesignSlab === '25_to_30' ? ' selected' : '') + '>25 to 30 Lakhs (₹2,22,780 → ₹89,112)</option>' +
+        '<option value="custom"' + (commSummary.surabhiDesignSlab === 'custom' ? ' selected' : '') + '>✏️ Manual / Percentage %</option>' +
+        '</select>' +
+        '</td></tr>' +
+
         // Design Charges (editable %, 9% default)
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
@@ -43571,6 +43789,14 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var summary = self.computeCommercialSummary(quote.subtotalWoodwork, self.project.commercialCharges);
         var designAmtEl = document.getElementById('commDesignAmount');
         if (designAmtEl) designAmtEl.textContent = summary.designAmount.toLocaleString('en-IN') + '.00';
+        var designInp = boqEl.querySelector('.comm-input[data-key="designPercent"]');
+        if (designInp && summary.surabhiDesignSlab !== 'custom') {
+          designInp.value = summary.designPercent;
+        }
+        var adpInp = boqEl.querySelector('.comm-input[data-key="adpPercent"]');
+        if (adpInp && summary.surabhiDesignSlab !== 'custom') {
+          adpInp.value = summary.adpPercent;
+        }
         var freightAmtEl = document.getElementById('commFreightAmount');
         if (freightAmtEl) freightAmtEl.textContent = summary.freightAmount.toLocaleString('en-IN') + '.00';
         var discAmtEl = document.getElementById('commDiscountAmount');
@@ -43589,6 +43815,14 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         if (savEl) savEl.textContent = '₹ ' + (summary.totalSavings || 0).toLocaleString('en-IN') + '.00';
         var headerTotalEl = document.getElementById('boqHeaderTotalAmount');
         if (headerTotalEl) headerTotalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
+
+        var autoOpt = boqEl.querySelector('#commSurabhiSlabSelect option[value="auto"]');
+        if (autoOpt && typeof Core !== 'undefined' && Core.getSurabhiDesignFeeSlab) {
+          var autoS = Core.getSurabhiDesignFeeSlab(summary.surabhiWoodworkSubtotal, 'auto');
+          if (autoS) {
+            autoOpt.textContent = '✨ Auto: ' + autoS.label + ' (₹' + autoS.fullDesignCharges.toLocaleString('en-IN') + ' → ₹' + autoS.discountedCharges.toLocaleString('en-IN') + ')';
+          }
+        }
       }
 
       // Commercial Charges live input bindings
@@ -43602,6 +43836,11 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
           self.project.commercialCharges = self.project.commercialCharges || {};
           self.project.commercialCharges[key] = val;
+          if (key === 'designPercent' || key === 'adpPercent') {
+            self.project.commercialCharges.surabhiDesignSlab = 'custom';
+            var slabSel = boqEl.querySelector('#commSurabhiSlabSelect');
+            if (slabSel) slabSel.value = 'custom';
+          }
           refreshCommercialDom();
           self.saveToLocalStorage();
         });
@@ -43633,6 +43872,11 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           if (!key) return;
           self.project.commercialCharges = self.project.commercialCharges || {};
           self.project.commercialCharges[key] = sel.value;
+          if (key === 'surabhiDesignSlab') {
+            refreshCommercialDom();
+            self.saveToLocalStorage();
+            return;
+          }
           if (sel.value === 'Included') {
             sel.className = 'comm-status-select is-included';
           } else if (sel.value === 'Complementary') {
@@ -43900,7 +44144,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       this.syncProjectUnitsTo3DStudio();
     },
 
-    render3DHome: function (keepCamera, isolatedRoomId, targetFurnId) {
+    render3DHome: function (keepCamera, isolatedRoomId, targetFurnId, forceHardRefresh) {
       if (typeof THREE === 'undefined' || !window.__cc || !window.__cc.gl) return;
       var gl = window.__cc.gl;
       var scene = gl.getScene ? gl.getScene() : null;
@@ -43911,7 +44155,6 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         this._3dDirty = true;
         return;
       }
-      this._3dDirty = false;
 
       // Ensure sky is daytime radiant sky blue and outer ground is lush lawn grass
       if (!scene.background || !(scene.background instanceof THREE.Color) || scene.background.getHex() !== 0x82C3EC) {
@@ -43943,8 +44186,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var homeObj = scene.getObjectByName('OrbixHome3D');
         var curProjId = proj ? String(proj.id || proj._projectId || '') : '';
 
-        // Instant Fast-Path: If 3D home is already built and 2D plan hasn't been edited, skip full CSG reconstruction!
-        if (!this._3dDirty && homeObj && this.archRenderer.group && this._lastRendered3DProjId === curProjId && isolatedRoomId === undefined) {
+        // Instant Fast-Path: Only if NOT hard-refreshing, NOT dirty, 3D home already built, and same project!
+        if (!forceHardRefresh && !this._3dDirty && homeObj && this.archRenderer.group && this._lastRendered3DProjId === curProjId && isolatedRoomId === undefined) {
           if (gl.apply) gl.apply();
           if (gl.settle) gl.settle();
           return;
@@ -44003,6 +44246,26 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       }
       if (typeof this.updateProjectDetailsBadges === 'function') {
         this.updateProjectDetailsBadges();
+      }
+    },
+
+    hardRefresh3D: function (opts) {
+      opts = opts || {};
+      this._3dDirty = true;
+      if (typeof this.update3DStudioRoomOptions === 'function') {
+        this.update3DStudioRoomOptions();
+      }
+      if (typeof this.syncProjectUnitsTo3DStudio === 'function') {
+        this.syncProjectUnitsTo3DStudio();
+      }
+      this.render3DHome(opts.keepCamera !== false, undefined, undefined, true);
+      if (window.__cc && window.__cc.gl) {
+        if (window.__cc.gl.frame && opts.keepCamera === false) window.__cc.gl.frame();
+        if (window.__cc.gl.apply) window.__cc.gl.apply();
+        if (window.__cc.gl.settle) window.__cc.gl.settle();
+      }
+      if (typeof window.showToast === 'function' && opts.silent !== true) {
+        window.showToast('🔄 3D Studio hard-refreshed from latest 2D floor plan');
       }
     },
 
@@ -45382,9 +45645,28 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       var clientPhone = meta.phone || meta.contactNumber || '';
       var siteAddress = meta.siteAddress || meta.siteLocation || meta.location || '';
       var quoteCode = meta.cpCode || meta.quoteId || ('ORB-' + new Date().getFullYear());
-      var designerName = meta.designerName || currentUser.name || 'Cookscape Design Team';
-      var designerEmail = currentUser.email || 'designs.cookscape@gmail.com';
-      var designerPhone = currentUser.phone || meta.designerPhone || '93611 84787';
+
+      // Resolve the project's respective Employee (FA) name, phone & email (distinct from BH)
+      var activeProjId = getActiveProjectId(app);
+      var allProjects = (root.OrbixProjects && Array.isArray(root.OrbixProjects.projects)) ? root.OrbixProjects.projects : [];
+      var activeProj = allProjects.filter(function (p) { return p && String(p.id) === String(activeProjId); })[0] || null;
+      var allUsers = (root.OrbixProjects && Array.isArray(root.OrbixProjects.users)) ? root.OrbixProjects.users : [];
+      var faUser = null;
+      if (activeProj) {
+        var ownerId = activeProj.created_by || activeProj.createdBy || '';
+        var ownerEmail = String(activeProj.owner_email || activeProj.ownerEmail || '').trim().toLowerCase();
+        var ownerName = String(activeProj.owner_name || activeProj.ownerName || '').trim().toLowerCase();
+        if (ownerId) faUser = allUsers.filter(function (u) { return u && String(u.id) === String(ownerId); })[0] || null;
+        if (!faUser && ownerEmail) faUser = allUsers.filter(function (u) { return u && u.email && String(u.email).trim().toLowerCase() === ownerEmail; })[0] || null;
+        if (!faUser && ownerName) faUser = allUsers.filter(function (u) { return u && u.name && String(u.name).trim().toLowerCase() === ownerName; })[0] || null;
+      }
+      if (!faUser && currentUser && currentUser.id) {
+        faUser = allUsers.filter(function (u) { return u && String(u.id) === String(currentUser.id); })[0] || currentUser;
+      }
+      var bhName = (activeProj && (activeProj.bh_name || activeProj.bhName || (activeProj.data && activeProj.data.details && activeProj.data.details.bhName))) || meta.bhName || '';
+      var designerName = (faUser && faUser.name) || (activeProj && (activeProj.owner_name || activeProj.ownerName)) || currentUser.name || 'Cookscape Design Team';
+      var designerEmail = (faUser && faUser.email) || (activeProj && (activeProj.owner_email || activeProj.ownerEmail)) || currentUser.email || 'designs.cookscape@gmail.com';
+      var designerPhone = (faUser && faUser.phone) || currentUser.phone || '';
 
       var tierPreviews = {};
       MASTER_VARIANTS.forEach(function (v) {
@@ -45525,6 +45807,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
               siteAddress: cLoc,
               quoteId: qCode,
               designerName: designerName,
+              designerPhone: designerPhone,
+              bhName: bhName,
               dateCreated: meta.dateCreated || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })
             },
             designer: {
@@ -45775,7 +46059,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
                 '<div style="font-size:12px;background:#fff;border:1px solid #BBF7D0;border-radius:6px;padding:8px 10px;margin-bottom:8px;word-break:break-all;">' +
                 '  <div><b>Client Link:</b> <a href="' + esc(d.sharePath) + '" target="_blank" style="color:#1D4ED8;">' + esc(d.shareUrl) + '</a></div>' +
                 '  <div style="margin-top:4px;"><b>Username:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(d.quote.clientUsername) + '</code> &nbsp; <b>Password:</b> <code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;">' + esc(pVal) + '</code></div>' +
-                '  <div style="margin-top:4px;font-size:11px;color:#0F766E;">📲 WhatsApp alert will trigger to 8838199428 &amp; 7418414780 as soon as the client opens this link.</div>' +
+                '  <div style="margin-top:4px;font-size:11px;color:#0F766E;">📲 WhatsApp alert will trigger to the project\'s BH &amp; Employee as soon as the client opens this link.</div>' +
                 '</div>' +
                 '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
                 '  <button type="button" id="cqCopyClientUrlBtn" class="btn small">📋 Copy Client Link</button>' +
@@ -46157,6 +46441,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         if (planObj && planObj.furniture && planObj.furniture.length > 0) {
           var validIds = planObj.furniture.map(function (f) { return f.id; });
           S.units = d.units.filter(function (u) { return u._furnId && validIds.indexOf(u._furnId) !== -1; });
+        } else if (d.units && Array.isArray(d.units) && d.units.length > 0) {
+          S.units = d.units;
         } else {
           S.units = [];
         }
@@ -51065,6 +51351,23 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     var f3dOut = document.getElementById('float3dZoomOut');
     var f3dReset = document.getElementById('float3dReset');
     var f3dPan = document.getElementById('float3dPan');
+    var f3dRefresh = document.getElementById('float3dHardRefresh');
+    var btnRefresh3D = document.getElementById('btnHardRefresh3D');
+
+    var doHardRefresh = function () {
+      if (window.OrbixUI && typeof window.OrbixUI.hardRefresh3D === 'function') {
+        window.OrbixUI.hardRefresh3D();
+      } else if (typeof buildScene === 'function') {
+        buildScene();
+      }
+    };
+
+    if (f3dRefresh) {
+      f3dRefresh.addEventListener('click', doHardRefresh);
+    }
+    if (btnRefresh3D) {
+      btnRefresh3D.addEventListener('click', doHardRefresh);
+    }
 
     if (f3dIn) {
       f3dIn.addEventListener('click', function () {
@@ -52302,6 +52605,9 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       }
 
       var run3DBackendWork = function () {
+        if (window.OrbixUI) {
+          window.OrbixUI._3dDirty = true;
+        }
         if (window.OrbixUI && typeof window.OrbixUI.update3DStudioRoomOptions === 'function') {
           window.OrbixUI.update3DStudioRoomOptions();
         }
@@ -52309,7 +52615,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           window.OrbixUI.syncProjectUnitsTo3DStudio();
         }
         if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
-          window.OrbixUI.render3DHome(true);
+          window.OrbixUI.render3DHome(true, undefined, undefined, true);
         } else if (typeof buildScene === 'function') {
           buildScene();
         }

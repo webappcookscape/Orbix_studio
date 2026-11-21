@@ -166,7 +166,7 @@ function buildClientQuoteDeck(quoteRecord) {
       },
       designer: {
         name: designer.name || meta.designerName || 'Cookscape Design Team',
-        phone: designer.phone || '93611 84787',
+        phone: designer.phone || meta.designerPhone || '-',
         email: designer.email || 'designs.cookscape@gmail.com'
       }
     }

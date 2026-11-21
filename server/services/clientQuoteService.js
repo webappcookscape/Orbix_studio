@@ -7,7 +7,7 @@
 //   Stage 3: Employee generates full password-protected Client Link (/quote/:shareToken)
 //            (default username = Client Name) + downloads Full Master PPTX & Full PDF.
 //   Stage 4: When client logs in to /quote/:shareToken, triggers WhatsApp alert to
-//            8838199428 & 7418414780 with Client Name, Project Name & Project ID.
+//            the project's respective Business Head (BH) and Employee (FA) numbers.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const fs = require('fs');
@@ -15,6 +15,7 @@ const path = require('path');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const prismaConfig = require('../config/prisma');
+const userService = require('./userService');
 const quoteDeckBuilder = require('./quoteDeckBuilder');
 const whatsappAlertService = require('./whatsappAlertService');
 const Core = require('../../orbix-core');
@@ -334,6 +335,128 @@ async function assertProjectAccess(user, projectId) {
   }
 }
 
+function findUserByNameOrId(users, opts) {
+  if (!Array.isArray(users) || !users.length || !opts) return null;
+  if (opts.id) {
+    const byId = users.find((u) => u && String(u.id) === String(opts.id));
+    if (byId) return byId;
+  }
+  if (opts.email) {
+    const cleanE = String(opts.email).trim().toLowerCase();
+    const byEmail = users.find((u) => u && u.email && String(u.email).trim().toLowerCase() === cleanE);
+    if (byEmail) return byEmail;
+  }
+  if (opts.name) {
+    const cleanN = String(opts.name).trim().toLowerCase();
+    const matches = users.filter((u) => u && (
+      (u.name && String(u.name).trim().toLowerCase() === cleanN) ||
+      (u.username && String(u.username).trim().toLowerCase() === cleanN)
+    ));
+    if (matches.length > 1 && opts.preferBH) {
+      const bh = matches.find((u) => /business\s*head|\bbh\b/i.test(String(u.designation || '')));
+      if (bh) return bh;
+    }
+    if (matches.length) return matches[0];
+  }
+  return null;
+}
+
+// Resolve a project's respective Employee (FA) designer info AND respective BH + Employee WhatsApp alert phones
+async function resolveProjectContacts(projectInput, rec, fallbackUser) {
+  let project = projectInput || null;
+  const projectId = (project && project.id) || (rec && rec.projectId) || '';
+  if (!project && projectId) {
+    try {
+      project = await prismaConfig.prisma.project.findUnique({ where: { id: projectId } });
+    } catch (_) {
+      project = null;
+    }
+  }
+
+  let users = [];
+  try {
+    users = await userService.getAllUsers();
+  } catch (_) {
+    users = [];
+  }
+
+  const pData = (project && project.data && typeof project.data === 'object') ? project.data : {};
+  const pDetails = (pData.details && typeof pData.details === 'object') ? pData.details : {};
+  const pPlanMeta = (pData.plan && pData.plan.meta && typeof pData.plan.meta === 'object') ? pData.plan.meta : {};
+  const snap = (rec && rec.quoteSnapshot) || {};
+  const snapMeta = snap.meta || {};
+  const snapDesigner = snap.designer || {};
+
+  // 1. Respective Employee (FA): Project Owner first, then Quote Creator, then fallbackUser
+  const ownerUser = project
+    ? findUserByNameOrId(users, {
+        id: project.createdBy || project.created_by,
+        email: project.ownerEmail || project.owner_email,
+        name: project.ownerName || project.owner_name
+      })
+    : null;
+  const creatorUser = (rec && rec.createdBy)
+    ? findUserByNameOrId(users, { id: rec.createdBy })
+    : (fallbackUser ? (findUserByNameOrId(users, { id: fallbackUser.id, email: fallbackUser.email }) || fallbackUser) : null);
+
+  const faUser = ownerUser || creatorUser || fallbackUser || null;
+  const faName = (faUser && faUser.name) ||
+    (project && (project.ownerName || project.owner_name)) ||
+    snapDesigner.name ||
+    'Cookscape Design Team';
+  const faPhone = String(
+    (faUser && faUser.phone) ||
+    (creatorUser && creatorUser.phone) ||
+    snapDesigner.phone ||
+    ''
+  ).trim();
+  const faEmail = String(
+    (faUser && faUser.email) ||
+    (project && (project.ownerEmail || project.owner_email)) ||
+    snapDesigner.email ||
+    'designs.cookscape@gmail.com'
+  ).trim();
+
+  // 2. Respective Business Head (BH)
+  const bhName = String(
+    pDetails.bhName ||
+    (project && (project.bh_name || project.bhName)) ||
+    pPlanMeta.bhName ||
+    snapMeta.bhName ||
+    ''
+  ).trim();
+  const bhUser = bhName ? findUserByNameOrId(users, { name: bhName, preferBH: true }) : null;
+
+  // 3. WhatsApp Alert Recipients: respective BH + respective project Employee(s) (deduplicated)
+  const rawPhones = [];
+  if (bhUser && bhUser.phone) rawPhones.push(bhUser.phone);
+  if (ownerUser && ownerUser.phone) rawPhones.push(ownerUser.phone);
+  if (creatorUser && creatorUser.phone) rawPhones.push(creatorUser.phone);
+  if (faPhone) rawPhones.push(faPhone);
+
+  const seen = new Set();
+  const alertPhones = [];
+  for (const ph of rawPhones) {
+    const norm = whatsappAlertService.normalizePhoneIndia(ph);
+    if (norm && norm.length >= 10 && !seen.has(norm)) {
+      seen.add(norm);
+      alertPhones.push(norm);
+    }
+  }
+
+  return {
+    faUser,
+    bhUser,
+    bhName,
+    designer: {
+      name: faName,
+      phone: faPhone,
+      email: faEmail
+    },
+    alertPhones
+  };
+}
+
 async function findByToken(shareToken) {
   if (!shareToken) return null;
   if (await ensurePgTable()) {
@@ -511,6 +634,12 @@ class ClientQuoteService {
 
     const snapInput = payload.quoteSnapshot || {};
     const { variantQuotes, unitIcons } = extractValidatedVariantsAndIcons(snapInput);
+    const contacts = await resolveProjectContacts(project, { projectId, createdBy: user.id, quoteSnapshot: snapInput }, user);
+    const enrichedMeta = Object.assign({}, snapInput.meta || {}, {
+      designerName: contacts.designer.name,
+      designerPhone: contacts.designer.phone,
+      bhName: contacts.bhName || (snapInput.meta && snapInput.meta.bhName) || ''
+    });
 
     const now = new Date().toISOString();
     const reviewToken = 'rv_' + crypto.randomBytes(16).toString('hex');
@@ -529,12 +658,8 @@ class ClientQuoteService {
       passwordHash: '',
       selectedTiers: variantQuotes.map((v) => v.tierTitle || v.tierKey),
       quoteSnapshot: {
-        meta: snapInput.meta || {},
-        designer: snapInput.designer || {
-          name: user.name,
-          email: user.email,
-          phone: ''
-        },
+        meta: enrichedMeta,
+        designer: contacts.designer,
         variantQuotes,
         allVariantsPricing: Array.isArray(snapInput.allVariantsPricing) ? snapInput.allVariantsPricing : [],
         unitIcons
@@ -584,6 +709,12 @@ class ClientQuoteService {
 
     const snapInput = payload.quoteSnapshot || {};
     const { variantQuotes, unitIcons } = extractValidatedVariantsAndIcons(snapInput);
+    const contacts = await resolveProjectContacts(project, { projectId, createdBy: user.id, quoteSnapshot: snapInput }, user);
+    const enrichedMeta = Object.assign({}, snapInput.meta || {}, {
+      designerName: contacts.designer.name,
+      designerPhone: contacts.designer.phone,
+      bhName: contacts.bhName || (snapInput.meta && snapInput.meta.bhName) || ''
+    });
 
     const expiryDays = payload.expiryDays !== undefined && payload.expiryDays !== null && payload.expiryDays !== ''
       ? Number(payload.expiryDays)
@@ -609,12 +740,8 @@ class ClientQuoteService {
       passwordHash: await bcrypt.hash(clientPassword, 10),
       selectedTiers: variantQuotes.map((v) => v.tierTitle || v.tierKey),
       quoteSnapshot: {
-        meta: snapInput.meta || {},
-        designer: snapInput.designer || {
-          name: user.name,
-          email: user.email,
-          phone: ''
-        },
+        meta: enrichedMeta,
+        designer: contacts.designer,
         variantQuotes,
         allVariantsPricing: Array.isArray(snapInput.allVariantsPricing) ? snapInput.allVariantsPricing : [],
         unitIcons
@@ -651,6 +778,7 @@ class ClientQuoteService {
     if (rec.isRevoked) throw makeError('This quotation review link has been revoked.', 403);
     const snap = rec.quoteSnapshot || {};
     const wf = getWorkflowMeta(rec);
+    const contacts = await resolveProjectContacts(null, rec, null);
     return {
       id: rec.id,
       projectId: rec.projectId,
@@ -664,7 +792,8 @@ class ClientQuoteService {
       clientName: rec.clientName,
       clientPhone: rec.clientPhone,
       siteAddress: rec.siteAddress,
-      designer: snap.designer || {},
+      designer: contacts.designer,
+      bhName: contacts.bhName,
       allVariantsPricing: (Array.isArray(snap.allVariantsPricing) && snap.allVariantsPricing.length)
         ? snap.allVariantsPricing
         : (snap.variantQuotes || []).map((v) => ({
@@ -815,6 +944,7 @@ class ClientQuoteService {
       throw makeError('Head approval is required before downloading the full PPTX / PDF quotation.', 400);
     }
     const snap = rec.quoteSnapshot || {};
+    const contacts = await resolveProjectContacts(null, rec, user);
     const unitIconsDataUrls = {};
     if (snap.unitIcons && typeof snap.unitIcons === 'object') {
       for (const [k, entry] of Object.entries(snap.unitIcons)) {
@@ -829,8 +959,8 @@ class ClientQuoteService {
       clientEmail: rec.clientEmail,
       siteAddress: rec.siteAddress,
       quoteCode: rec.quoteCode,
-      meta: snap.meta || {},
-      designer: snap.designer || {},
+      meta: Object.assign({}, snap.meta || {}, { designerName: contacts.designer.name, designerPhone: contacts.designer.phone }),
+      designer: contacts.designer,
       variantQuotes: snap.variantQuotes || [],
       unitIcons: unitIconsDataUrls
     };
@@ -983,7 +1113,7 @@ class ClientQuoteService {
       ua: String(userAgent || '').slice(0, 90)
     });
 
-    // Dispatch WhatsApp alert to 8838199428 & 7418414780 with password-free employee quick-view link
+    // Dispatch WhatsApp alert to project's respective BH & Employee(s) with password-free quick-view link
     let waSummary = null;
     try {
       const snapMeta = (rec.quoteSnapshot && rec.quoteSnapshot.meta) || {};
@@ -991,12 +1121,14 @@ class ClientQuoteService {
       const staffKey = ensureStaffViewKey(rec);
       const baseQuoteUrl = quoteUrl || `${String(process.env.PUBLIC_APP_URL || 'https://studio.orbixdesigns.com').replace(/\/+$/, '')}/quote/${rec.shareToken}`;
       const employeeQuoteUrl = `${baseQuoteUrl}${baseQuoteUrl.includes('?') ? '&' : '?'}staff=${encodeURIComponent(staffKey)}`;
+      const contacts = await resolveProjectContacts(null, rec, null);
       const alertRes = await whatsappAlertService.sendClientOpenedAlert({
         clientName: rec.clientName,
         projectName,
         projectId: rec.projectId,
         quoteCode: rec.quoteCode || snapMeta.quoteId || rec.id,
-        quoteUrl: employeeQuoteUrl
+        quoteUrl: employeeQuoteUrl,
+        recipients: contacts.alertPhones
       });
       waSummary = {
         sentAt: nowIso,
@@ -1038,7 +1170,17 @@ class ClientQuoteService {
       throw makeError('Client login required', 401);
     }
 
-    const slides = quoteDeckBuilder.buildClientQuoteDeck(rec);
+    const contacts = await resolveProjectContacts(null, rec, null);
+    const hydratedRec = Object.assign({}, rec, {
+      quoteSnapshot: Object.assign({}, rec.quoteSnapshot || {}, {
+        meta: Object.assign({}, (rec.quoteSnapshot && rec.quoteSnapshot.meta) || {}, {
+          designerName: contacts.designer.name,
+          designerPhone: contacts.designer.phone
+        }),
+        designer: contacts.designer
+      })
+    });
+    const slides = quoteDeckBuilder.buildClientQuoteDeck(hydratedRec);
     return {
       title: rec.title,
       quoteCode: rec.quoteCode || '',
