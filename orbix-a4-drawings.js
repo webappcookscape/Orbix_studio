@@ -119,6 +119,72 @@
           this.line(dimX - 6, y2 - 6, dimX + 6, y2 + 6, '#0f172a', 2);
           this.text(textX, (y1 + y2) / 2 + 7, label, 20, 'bold', isLeft ? 'end' : 'start', '#0f172a');
         },
+        polygon: function (pts, stroke, strokeWidth, fill) {
+          stroke = stroke || '#111827';
+          strokeWidth = strokeWidth || 2;
+          fill = fill || 'none';
+          var ptsStr = pts.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
+          elements.push('<polygon points="' + ptsStr + '" stroke="' + stroke + '" stroke-width="' + strokeWidth + '" fill="' + fill + '"/>');
+        },
+        dimAligned: function (x1, y1, x2, y2, label, offset) {
+          offset = offset || 0;
+          var dx = x2 - x1, dy = y2 - y1;
+          var len = Math.hypot(dx, dy) || 1;
+          var nx = -dy / len, ny = dx / len;
+          var ax1 = x1 + nx * offset, ay1 = y1 + ny * offset;
+          var ax2 = x2 + nx * offset, ay2 = y2 + ny * offset;
+          this.line(x1, y1, ax1 + nx * 5, ay1 + ny * 5, '#0f172a', 1.2);
+          this.line(x2, y2, ax2 + nx * 5, ay2 + ny * 5, '#0f172a', 1.2);
+          this.line(ax1, ay1, ax2, ay2, '#0f172a', 1.8);
+          // Architectural ticks
+          this.line(ax1 - 6 * nx - 6 * ny, ay1 - 6 * ny + 6 * nx, ax1 + 6 * nx + 6 * ny, ay1 + 6 * ny - 6 * nx, '#0f172a', 2);
+          this.line(ax2 - 6 * nx - 6 * ny, ay2 - 6 * ny + 6 * nx, ax2 + 6 * nx + 6 * ny, ay2 + 6 * ny - 6 * nx, '#0f172a', 2);
+          var midX = (ax1 + ax2) / 2 + nx * 14;
+          var midY = (ay1 + ay2) / 2 + ny * 14;
+          var deg = Math.atan2(dy, dx) * 180 / Math.PI;
+          if (deg > 90 || deg < -90) deg += 180;
+          this.text(midX, midY, label, 18, 'bold', 'middle', '#0f172a', deg);
+        },
+        swatch: function (x, y, w, h, finishLabel) {
+          // Framed woodgrain texture swatch box matching Cookscape sample card
+          this.rect(x, y, w, h, '#000000', 2, '#ffffff');
+          this.rect(x + 8, y + 8, w - 16, h - 38, '#92400e', 1.5, '#78350f');
+          // Wood grain streaks
+          for (var g = 0; g < 6; g++) {
+            var gx1 = x + 14 + g * ((w - 28) / 5);
+            var gx2 = gx1 + (g % 2 === 0 ? 12 : -12);
+            this.line(gx1, y + 10, gx2, y + h - 32, '#9a3412', 1.8);
+          }
+          this.text(x + w / 2, y + h - 14, finishLabel || 'SURABHI TEAK', 14, 'bold', 'middle', '#0f172a');
+          this.text(x + w / 2, y - 10, 'REFERENCE IMAGE ATTACHED', 14, 'bold', 'middle', '#000000');
+        },
+        hatchRect: function (x, y, w, h, spacing, stroke) {
+          spacing = spacing || 14;
+          stroke = stroke || '#94a3b8';
+          this.rect(x, y, w, h, '#000000', 1.5, 'none');
+          for (var hx = x - h; hx < x + w; hx += spacing) {
+            var x1 = Math.max(x, hx);
+            var y1 = y + (x1 - hx);
+            var x2 = Math.min(x + w, hx + h);
+            var y2 = y + (x2 - hx);
+            if (x1 < x + w && y1 >= y && y2 <= y + h) {
+              this.line(x1, y1, x2, y2, stroke, 1);
+            }
+          }
+        },
+        dimInternalV: function (x, y1, y2, label) {
+          var topY = Math.min(y1, y2);
+          var botY = Math.max(y1, y2);
+          var h = botY - topY;
+          if (h < 18) return;
+          this.line(x, topY, x, botY, '#0f172a', 1.4);
+          this.line(x - 6, topY + 9, x, topY, '#0f172a', 1.8);
+          this.line(x + 6, topY + 9, x, topY, '#0f172a', 1.8);
+          this.line(x - 6, botY - 9, x, botY, '#0f172a', 1.8);
+          this.line(x + 6, botY - 9, x, botY, '#0f172a', 1.8);
+          this.rect(x - 48, (topY + botY) / 2 - 12, 96, 24, '#000000', 0.8, '#ffffff', 2);
+          this.text(x, (topY + botY) / 2 + 6, label, 15, 'bold', 'middle', '#0f172a');
+        },
         toSVG: function () {
           return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="100%" style="background:#ffffff;display:block;">' + elements.join('\n') + '</svg>';
         }
@@ -505,27 +571,47 @@
         };
       }
 
-      // Draw Room Walls
+      // Draw Room Walls (Double-line architectural walls with cavity hatch)
       walls.forEach(function (w) {
         if (!w.start || !w.end) return;
         var p1 = toScreen(w.start);
         var p2 = toScreen(w.end);
-        var thick = Math.max(4, (w.thickness || 150) * scale);
-        
-        // Solid Wall Line
-        canvas.line(p1.x, p1.y, p2.x, p2.y, '#000000', thick);
-
-        // Wall Dimension string
-        var lenMm = Math.round(Math.hypot(w.end.x - w.start.x, w.end.y - w.start.y));
-        var midX = (p1.x + p2.x) / 2;
-        var midY = (p1.y + p2.y) / 2;
+        var thick = Math.max(8, (w.thickness || 150) * scale);
         var dx = p2.x - p1.x, dy = p2.y - p1.y;
         var len = Math.hypot(dx, dy) || 1;
         var nx = -dy / len, ny = dx / len;
-        canvas.text(midX + nx * 24, midY + ny * 24, String(lenMm), 18, 'bold', 'middle', '#0f172a');
+
+        // Outer & Inner Wall Face Lines
+        var o1x = p1.x + nx * thick / 2, o1y = p1.y + ny * thick / 2;
+        var o2x = p2.x + nx * thick / 2, o2y = p2.y + ny * thick / 2;
+        var i1x = p1.x - nx * thick / 2, i1y = p1.y - ny * thick / 2;
+        var i2x = p2.x - nx * thick / 2, i2y = p2.y - ny * thick / 2;
+
+        canvas.line(o1x, o1y, o2x, o2y, '#000000', 2.5);
+        canvas.line(i1x, i1y, i2x, i2y, '#000000', 2.5);
+
+        // Wall Cavity Diagonal Hatching
+        var segs = Math.max(3, Math.floor(len / 18));
+        for (var s = 0; s <= segs; s++) {
+          var t = s / segs;
+          var h1x = o1x + (o2x - o1x) * t;
+          var h1y = o1y + (o2y - o1y) * t;
+          var h2x = i1x + (i2x - i1x) * Math.min(1, t + 0.08);
+          var h2y = i1y + (i2y - i1y) * Math.min(1, t + 0.08);
+          canvas.line(h1x, h1y, h2x, h2y, '#94a3b8', 1.2);
+        }
+
+        // Wall Dimension string & thickness callout
+        var lenMm = Math.round(Math.hypot(w.end.x - w.start.x, w.end.y - w.start.y));
+        var midX = (p1.x + p2.x) / 2;
+        var midY = (p1.y + p2.y) / 2;
+        canvas.text(midX + nx * (thick / 2 + 22), midY + ny * (thick / 2 + 22), String(lenMm), 18, 'bold', 'middle', '#0f172a');
+        if (lenMm > 1500) {
+          canvas.text(midX - nx * (thick / 2 + 16), midY - ny * (thick / 2 + 16), (w.thickness || 150) + ' THK WALL', 13, 'bold', 'middle', '#64748b');
+        }
       });
 
-      // Draw Doors & Windows (Openings)
+      // Draw Doors & Windows (Openings with true architectural swing arcs & glass lines)
       openings.forEach(function (op) {
         var hostWall = walls.find(function (w) { return w.id === op.wallId; });
         if (!hostWall) return;
@@ -538,15 +624,32 @@
         var opW = (op.width || 900) * scale;
 
         if (op.type === 'window') {
-          canvas.rect(scPt.x - opW / 2, scPt.y - 14, opW, 28, '#0284c7', 2, '#e0f2fe');
+          // Double Frame Window with Glazing Lines
+          canvas.rect(scPt.x - opW / 2, scPt.y - 15, opW, 30, '#0284c7', 2, '#ffffff');
+          canvas.line(scPt.x - opW / 2, scPt.y - 5, scPt.x + opW / 2, scPt.y - 5, '#0284c7', 1.5);
+          canvas.line(scPt.x - opW / 2, scPt.y + 5, scPt.x + opW / 2, scPt.y + 5, '#0284c7', 1.5);
           canvas.text(scPt.x, scPt.y - 24, 'WINDOW — ' + Math.round(op.width || 1200), 16, 'bold', 'middle', '#0284c7');
         } else {
-          canvas.rect(scPt.x - opW / 2, scPt.y - 12, opW, 24, '#d97706', 2, '#fef3c7');
+          // Architectural Door with Frame and 90-degree Swing Arc
+          canvas.rect(scPt.x - opW / 2, scPt.y - 12, opW, 24, '#d97706', 2, '#ffffff');
+          // Door leaf open at 90 deg
+          canvas.line(scPt.x - opW / 2, scPt.y - 12, scPt.x - opW / 2, scPt.y - 12 - opW, '#d97706', 2.5);
+          // Dashed Swing Arc
+          var arcPts = 8;
+          for (var a = 0; a < arcPts; a++) {
+            var ang1 = (a / arcPts) * (Math.PI / 2);
+            var ang2 = ((a + 0.6) / arcPts) * (Math.PI / 2);
+            var ax1 = (scPt.x - opW / 2) + Math.sin(ang1) * opW;
+            var ay1 = (scPt.y - 12) - Math.cos(ang1) * opW;
+            var ax2 = (scPt.x - opW / 2) + Math.sin(ang2) * opW;
+            var ay2 = (scPt.y - 12) - Math.cos(ang2) * opW;
+            canvas.line(ax1, ay1, ax2, ay2, '#d97706', 1.5);
+          }
           canvas.text(scPt.x, scPt.y - 20, 'DOOR — ' + Math.round(op.width || 900), 16, 'bold', 'middle', '#d97706');
         }
       });
 
-      // Draw Placed Modular Furniture Units
+      // Draw Placed Modular Furniture Units with Cookscape CAD Symbols
       furniture.forEach(function (fn, idx) {
         var pos = fn._renderPos || fn.pos || { x: 0, y: 0 };
         var px = pos.x || 0;
@@ -559,24 +662,95 @@
         var isSink = fn.unitConfig && (fn.unitConfig.appliance === 'sink' || fn.unitConfig.hasSink);
         var isHob = fn.unitConfig && (fn.unitConfig.appliance === 'hob' || fn.unitConfig.hasHob);
 
-        // Unit Body
+        // Unit Outer Body
         canvas.rect(scPt.x - fW / 2, scPt.y - fD / 2, fW, fD, '#000000', 2, '#ffffff');
 
-        if (isSink) {
-          canvas.rect(scPt.x - fW / 2 + 8, scPt.y - fD / 2 + 8, fW / 2 - 12, fD - 16, '#0284c7', 1.8, '#f0f9ff', 4);
-          canvas.text(scPt.x, scPt.y + fD / 2 + 25, 'SINK ' + Math.round(parseFloat(wDims.W) || 750) + ' (' + uTag + ')', 16, 'bold', 'middle', '#0284c7');
-        } else if (isHob) {
-          canvas.circle(scPt.x - fW * 0.2, scPt.y, fW * 0.14, '#b45309', 1.8);
-          canvas.circle(scPt.x + fW * 0.2, scPt.y, fW * 0.14, '#b45309', 1.8);
-          canvas.text(scPt.x, scPt.y + fD / 2 + 25, 'GAS 560 (' + uTag + ')', 16, 'bold', 'middle', '#b45309');
-        } else {
-          canvas.text(scPt.x, scPt.y + 6, uTag, 17, 'bold', 'middle', '#0f172a');
+        // Side Fillers indicator on modular runs
+        if (idx === 0 || idx === furniture.length - 1) {
+          canvas.rect(scPt.x - fW / 2, scPt.y - fD / 2, Math.max(6, 40 * scale), fD, '#000000', 1, '#f1f5f9');
+          canvas.text(scPt.x - fW / 2 + Math.max(3, 20 * scale), scPt.y, '50BS', 11, 'bold', 'middle', '#0f172a', -90);
         }
 
-        // Leader note showing unit name below
-        var shortName = (fn.name || 'Unit').replace(/\(Cookscape\)/i, '').trim();
-        canvas.text(scPt.x, scPt.y + fD / 2 + 45, shortName, 13, 'bold', 'middle', '#64748b');
+        if (isSink) {
+          // Cookscape Double/Single Sink with Drainboard & Faucet Symbol
+          var bowlW = fW * 0.48;
+          var bowlH = fD * 0.72;
+          canvas.rect(scPt.x - fW / 2 + 10, scPt.y - bowlH / 2, bowlW, bowlH, '#0284c7', 2, '#f0f9ff', 4);
+          // Center Stainless Steel Drain Strainer
+          canvas.circle(scPt.x - fW / 2 + 10 + bowlW / 2, scPt.y, 8, '#0284c7', 1.8, '#e0f2fe');
+          canvas.circle(scPt.x - fW / 2 + 10 + bowlW / 2, scPt.y, 3, '#0284c7', 1.2, '#0284c7');
+          // Drainboard Ribbed Grooves
+          var dbX = scPt.x - fW / 2 + 18 + bowlW;
+          var dbW = fW - bowlW - 28;
+          for (var r = 0; r < 5; r++) {
+            var ry = scPt.y - bowlH / 2 + 10 + r * (bowlH - 20) / 4;
+            canvas.line(dbX, ry, dbX + dbW, ry, '#0284c7', 1.2);
+          }
+          // Swivel Mixer Faucet Symbol & Plumbing Points
+          canvas.circle(scPt.x - fW / 2 + 10 + bowlW / 2, scPt.y - fD / 2 + 12, 6, '#0369a1', 2, '#ffffff');
+          canvas.line(scPt.x - fW / 2 + 10 + bowlW / 2, scPt.y - fD / 2 + 12, scPt.x - fW / 2 + 10 + bowlW / 2, scPt.y - fD / 2 + 24, '#0369a1', 2);
+          // Plumbing Callouts
+          canvas.text(scPt.x, scPt.y + fD / 2 + 22, 'SINK ' + Math.round(parseFloat(wDims.W) || 750) + ' (' + uTag + ')', 16, 'bold', 'middle', '#0284c7');
+          canvas.text(scPt.x, scPt.y + fD / 2 + 42, 'NEED CNC CUT FOR VENT | 1/2" CW + 40mm DRAIN', 12, 'bold', 'middle', '#0369a1');
+
+        } else if (isHob) {
+          // Cookscape 4-Burner Gas Hob with Brass Heads & Trivet Crosses
+          var hobW = fW * 0.78;
+          var hobD = fD * 0.74;
+          canvas.rect(scPt.x - hobW / 2, scPt.y - hobD / 2, hobW, hobD, '#b45309', 2, '#fffbeb', 6);
+          // 4 Burner Heads
+          var bOffX = hobW * 0.26, bOffY = hobD * 0.26;
+          var bCoords = [
+            { x: scPt.x - bOffX, y: scPt.y - bOffY, r: 16 },
+            { x: scPt.x + bOffX, y: scPt.y - bOffY, r: 14 },
+            { x: scPt.x - bOffX, y: scPt.y + bOffY, r: 14 },
+            { x: scPt.x + bOffX, y: scPt.y + bOffY, r: 18 }
+          ];
+          bCoords.forEach(function (bc) {
+            canvas.circle(bc.x, bc.y, bc.r, '#b45309', 1.8, '#fde68a');
+            canvas.circle(bc.x, bc.y, bc.r * 0.45, '#b45309', 1.5, '#b45309');
+            // Trivet Cross lines
+            canvas.line(bc.x - bc.r - 3, bc.y, bc.x + bc.r + 3, bc.y, '#78350f', 1.2);
+            canvas.line(bc.x, bc.y - bc.r - 3, bc.x, bc.y + bc.r + 3, '#78350f', 1.2);
+          });
+          // Control Knobs along front edge
+          for (var k = 0; k < 4; k++) {
+            canvas.circle(scPt.x - hobW * 0.3 + k * (hobW * 0.6 / 3), scPt.y + hobD / 2 - 6, 3, '#b45309', 1.2, '#ffffff');
+          }
+          canvas.text(scPt.x, scPt.y + fD / 2 + 22, 'GAS 560 (' + uTag + ')', 16, 'bold', 'middle', '#b45309');
+          canvas.text(scPt.x, scPt.y + fD / 2 + 42, '16A POWER POINT + GAS VALVE PROVISION', 12, 'bold', 'middle', '#b45309');
+
+        } else {
+          // Standard Modular Cabinet with Door Swing Direction & Tag
+          var cUName = (fn.name || '').toLowerCase();
+          if (cUName.indexOf('drawer') !== -1 || (fn.unitConfig && fn.unitConfig.drawers > 0)) {
+            // Drawer tandem horizontal division lines
+            var dCount = (fn.unitConfig && fn.unitConfig.drawers) || 3;
+            for (var dr = 1; dr < dCount; dr++) {
+              canvas.line(scPt.x - fW / 2, scPt.y - fD / 2 + dr * (fD / dCount), scPt.x + fW / 2, scPt.y - fD / 2 + dr * (fD / dCount), '#94a3b8', 1.2);
+            }
+          }
+          canvas.text(scPt.x, scPt.y - 4, uTag, 17, 'bold', 'middle', '#0f172a');
+          var shortName = (fn.name || 'Unit').replace(/\(Cookscape\)/i, '').trim();
+          canvas.text(scPt.x, scPt.y + 18, shortName, 13, 'bold', 'middle', '#64748b');
+        }
+
+        // Unit Dimensions Annotation
+        canvas.text(scPt.x, scPt.y + fD / 2 + 60, Math.round(parseFloat(wDims.W) || 600) + 'x' + Math.round(parseFloat(wDims.D) || 600), 12, 'normal', 'middle', '#0f172a');
       });
+
+      // Appliance / Special Equipment Floating Callouts (Dishwasher, Fridge, Floating Ledges)
+      var hasDishwasher = furniture.some(function (f) { return (f.name || '').toLowerCase().indexOf('dishwasher') !== -1; });
+      if (!hasDishwasher && furniture.length >= 3) {
+        // Place Dishwasher Provision Note on Floor Plan
+        canvas.rect(140 + 80, 220 + availH - 120, 180, 70, '#0284c7', 1.5, '#f0f9ff', 4);
+        canvas.text(140 + 170, 220 + availH - 85, 'DISH WASHER PROVISION', 14, 'bold', 'middle', '#0284c7');
+        canvas.text(140 + 170, 220 + availH - 65, '600mm SERVICE VOID', 12, 'normal', 'middle', '#0369a1');
+      }
+
+      // Floating Ledge Callout
+      canvas.rect(targetX + availW / 2 - 380, 220 + 40, 240, 50, '#94a3b8', 1.2, '#f8fafc', 2);
+      canvas.text(targetX + availW / 2 - 260, 220 + 70, 'SF LEDGE 750mmx150mm (2NO\'S)', 13, 'bold', 'middle', '#334155');
 
       // Draw Room Labels & Square Footage
       rooms.forEach(function (r) {
@@ -608,8 +782,9 @@
       var furniture = pData.furniture || [];
 
       // Left Box: 3D Axonometric View of Room
-      var axX = 220, axY = 320;
-      canvas.text(axX + 480, axY - 60, '3D AXONOMETRIC VIEW', 28, 'bold', 'middle');
+      var axX = 140, axY = 320;
+      canvas.text(axX + 680, axY - 60, '3D AXONOMETRIC VIEW & MODULAR ASSEMBLY', 28, 'bold', 'middle', '#000000');
+      canvas.line(axX + 280, axY - 48, axX + 1080, axY - 48, '#000000', 2);
 
       var cos30 = Math.cos(Math.PI / 6), sin30 = Math.sin(Math.PI / 6);
       var totalIsoSpan = 0;
@@ -617,17 +792,17 @@
         var fw = parseFloat((f.dimensions && (f.dimensions.W || f.dimensions.width)) || 600);
         totalIsoSpan += fw + 80;
       });
-      totalIsoSpan = Math.max(1200, totalIsoSpan);
-      var isoScale = Math.min(0.22, 1350 / (totalIsoSpan * cos30));
+      totalIsoSpan = Math.max(1400, totalIsoSpan);
+      var isoScale = Math.min(0.24, 1420 / (totalIsoSpan * cos30));
 
       function iso(x, y, z) {
         return {
-          x: axX + 220 + (x - z) * cos30 * isoScale,
-          y: axY + 680 - y * isoScale + (x + z) * sin30 * isoScale
+          x: axX + 260 + (x - z) * cos30 * isoScale,
+          y: axY + 820 - y * isoScale + (x + z) * sin30 * isoScale
         };
       }
 
-      function isoBox(x, y, z, w, h, d, label) {
+      function isoBox(x, y, z, w, h, d, label, isBase) {
         var p1 = iso(x, y, z);
         var p2 = iso(x + w, y, z);
         var p3 = iso(x + w, y + h, z);
@@ -637,27 +812,38 @@
         var p7 = iso(x + w, y + h, z + d);
         var p8 = iso(x, y + h, z + d);
 
-        // Front Face
-        canvas.line(p1.x, p1.y, p2.x, p2.y, '#000000', 2);
-        canvas.line(p2.x, p2.y, p3.x, p3.y, '#000000', 2);
-        canvas.line(p3.x, p3.y, p4.x, p4.y, '#000000', 2);
-        canvas.line(p4.x, p4.y, p1.x, p1.y, '#000000', 2);
+        // Front Face (Clean White / Soft Off-white)
+        var frontPts = [p1, p2, p3, p4];
+        canvas.polygon(frontPts, '#000000', 2, '#ffffff');
 
-        // Top Face
-        canvas.line(p4.x, p4.y, p8.x, p8.y, '#000000', 1.8);
-        canvas.line(p8.x, p8.y, p7.x, p7.y, '#000000', 1.8);
-        canvas.line(p7.x, p7.y, p3.x, p3.y, '#000000', 1.8);
+        // Top Face (Granite if base unit, or wood tone if wall/tall)
+        var topPts = [p4, p3, p7, p8];
+        canvas.polygon(topPts, '#000000', 1.8, isBase ? '#334155' : '#f1f5f9');
 
-        // Side Face
-        canvas.line(p2.x, p2.y, p6.x, p6.y, '#000000', 1.8);
-        canvas.line(p6.x, p6.y, p7.x, p7.y, '#000000', 1.8);
+        // Side Face (Shaded Gray depth)
+        var sidePts = [p2, p6, p7, p3];
+        canvas.polygon(sidePts, '#000000', 1.8, '#e2e8f0');
+
+        // Shutter Division line
+        if (w >= 750) {
+          var pMidBot = iso(x + w / 2, y, z);
+          var pMidTop = iso(x + w / 2, y + h, z);
+          canvas.line(pMidBot.x, pMidBot.y, pMidTop.x, pMidTop.y, '#000000', 1.5);
+        }
+
+        // Granite nosing overhang line if base unit
+        if (isBase) {
+          var gn1 = iso(x - 20, y + h, z - 20);
+          var gn2 = iso(x + w + 20, y + h, z - 20);
+          canvas.line(gn1.x, gn1.y, gn2.x, gn2.y, '#0f172a', 2.5);
+        }
 
         if (label) {
-          canvas.text(p1.x + (p3.x - p1.x) / 2, p1.y + (p3.y - p1.y) / 2, label, 15, 'bold', 'middle', '#334155');
+          canvas.text(p1.x + (p3.x - p1.x) / 2, p1.y + (p3.y - p1.y) / 2 + 5, label, 15, 'bold', 'middle', '#1e293b');
         }
       }
 
-      // Draw Placed Units in 3D Isometric Space
+      // Draw Placed Units in 3D Isometric Space with Granite & Assembly Details
       var curIsoX = 0;
       furniture.forEach(function (f, idx) {
         var dims = f.dimensions || {};
@@ -666,9 +852,17 @@
         var fh = parseFloat(dims.H) || 720;
         var felev = parseFloat(f.elevation || 0);
         var fTag = f.code || ('U' + (idx + 1));
-        isoBox(curIsoX, felev, 0, fw, fh, fd, fTag);
+        var isBase = (f.category && f.category.indexOf('base') !== -1) || fh <= 900;
+        isoBox(curIsoX, felev, 0, fw, fh, fd, fTag, isBase);
         curIsoX += fw + 80;
       });
+
+      // Assembly Notes on Left Perspective
+      canvas.rect(axX + 40, axY + 980, 560, 120, '#000000', 1.5, '#f8fafc', 4);
+      canvas.text(axX + 60, axY + 1012, '3D ASSEMBLY & ROOM MOUNTING SPECIFICATIONS:', 16, 'bold', 'start', '#0f172a');
+      canvas.text(axX + 60, axY + 1042, '• BASE MODULES SET ON 110mm RCC / 100mm WATERPROOF PVC LEGS', 13, 'bold', 'start', '#334155');
+      canvas.text(axX + 60, axY + 1068, '• WALL CABINETS MOUNTED WITH HEAVY-DUTY CONCEALED CAM-HANGERS', 13, 'bold', 'start', '#334155');
+      canvas.text(axX + 60, axY + 1092, '• GRANITE COUNTERTOP 20mm WITH BULLNOSE NOSING OVERHANG', 13, 'bold', 'start', '#334155');
 
       // Right Column: Detail of Primary Unit (WFM600 in reference template, or first placed unit)
       var keyUnit = furniture.find(function (f) {
@@ -681,34 +875,98 @@
         dimensions: { W: 600, H: 720, D: 350 }
       };
 
-      var detX = 1950;
+      var detX = 1920;
       var keyUnitTitle = (keyUnit.code && keyUnit.code.indexOf('WFM600') !== -1)
         ? 'WFM600 — DETAILED DRAWING'
         : (keyUnit.code ? keyUnit.code + ' — DETAILED DRAWING' : (keyUnit.name || 'UNIT DETAIL').toUpperCase());
-      canvas.text(detX + 350, 240, keyUnitTitle, 24, 'bold', 'middle', '#000000');
+      canvas.text(detX + 400, 240, keyUnitTitle, 24, 'bold', 'middle', '#000000');
+      canvas.line(detX + 160, 252, detX + 640, 252, '#000000', 1.8);
 
-      // External View
-      canvas.text(detX + 350, 310, 'EXTERNAL VIEW', 22, 'bold', 'middle', '#000000');
-      canvas.line(detX + 230, 320, detX + 470, 320, '#000000', 1.5);
-      
-      canvas.rect(detX + 180, 380, 360, 450, '#000000', 2.5, '#ffffff');
-      canvas.rect(detX + 195, 395, 330, 420, '#000000', 1.8, '#f8fafc');
-      canvas.line(detX + 480, 560, detX + 480, 660, '#000000', 5);
-      canvas.text(detX + 580, 615, 'SHUTTER\nFINISH', 16, 'bold', 'start');
+      var kW = parseFloat(keyUnit.dimensions.W) || 600;
+      var kH = parseFloat(keyUnit.dimensions.H) || 720;
+      var kD = parseFloat(keyUnit.dimensions.D) || 350;
 
-      canvas.dimH(detX + 180, detX + 540, 860, String(Math.round(parseFloat(keyUnit.dimensions.W) || 600)), 30);
-      canvas.dimV(380, 830, detX + 140, String(Math.round(parseFloat(keyUnit.dimensions.H) || 720)), 0, true);
+      // ── Key Unit: External View with 3D Depth ──
+      canvas.text(detX + 400, 310, 'EXTERNAL VIEW', 22, 'bold', 'middle', '#000000');
+      canvas.line(detX + 280, 320, detX + 520, 320, '#000000', 1.5);
 
-      // Internal View
-      canvas.text(detX + 350, 1000, 'INTERNAL VIEW', 22, 'bold', 'middle', '#000000');
-      canvas.line(detX + 230, 1010, detX + 470, 1010, '#000000', 1.5);
+      var kBoxX = detX + 200, kBoxY = 370;
+      var kBoxW = 380, kBoxH = 430;
+      var kdX = 55, kdY = 32;
 
-      canvas.rect(detX + 180, 1080, 360, 480, '#000000', 2.5, '#ffffff');
-      canvas.line(detX + 180, 1240, detX + 540, 1240, '#000000', 2);
-      canvas.line(detX + 180, 1400, detX + 540, 1400, '#000000', 2);
+      // Top Face 3D Depth
+      var kTopPoly = [
+        { x: kBoxX, y: kBoxY },
+        { x: kBoxX + kBoxW, y: kBoxY },
+        { x: kBoxX + kBoxW + kdX, y: kBoxY - kdY },
+        { x: kBoxX + kdX, y: kBoxY - kdY }
+      ];
+      canvas.polygon(kTopPoly, '#000000', 1.8, '#f1f5f9');
+      // Side Face 3D Depth
+      var kSidePoly = [
+        { x: kBoxX + kBoxW, y: kBoxY },
+        { x: kBoxX + kBoxW + kdX, y: kBoxY - kdY },
+        { x: kBoxX + kBoxW + kdX, y: kBoxY - kdY + kBoxH },
+        { x: kBoxX + kBoxW, y: kBoxY + kBoxH }
+      ];
+      canvas.polygon(kSidePoly, '#000000', 1.8, '#e2e8f0');
 
-      canvas.dimH(detX + 180, detX + 540, 1590, String(Math.round(parseFloat(keyUnit.dimensions.W) || 600)), 30);
-      canvas.dimV(1080, 1560, detX + 140, String(Math.round(parseFloat(keyUnit.dimensions.H) || 720)), 0, true);
+      // Front Face
+      canvas.rect(kBoxX, kBoxY, kBoxW, kBoxH, '#000000', 2.5, '#ffffff');
+      // Shutter Split & Swing Lines
+      canvas.line(kBoxX + kBoxW / 2, kBoxY, kBoxX + kBoxW / 2, kBoxY + kBoxH, '#000000', 2);
+      canvas.line(kBoxX + 6, kBoxY + 8, kBoxX + kBoxW / 2 - 6, kBoxY + kBoxH / 2, '#94a3b8', 1.2, '4,4');
+      canvas.line(kBoxX + 6, kBoxY + kBoxH - 8, kBoxX + kBoxW / 2 - 6, kBoxY + kBoxH / 2, '#94a3b8', 1.2, '4,4');
+      canvas.line(kBoxX + kBoxW - 6, kBoxY + 8, kBoxX + kBoxW / 2 + 6, kBoxY + kBoxH / 2, '#94a3b8', 1.2, '4,4');
+      canvas.line(kBoxX + kBoxW - 6, kBoxY + kBoxH - 8, kBoxX + kBoxW / 2 + 6, kBoxY + kBoxH / 2, '#94a3b8', 1.2, '4,4');
+
+      // Handles
+      canvas.line(kBoxX + kBoxW / 2 - 14, kBoxY + kBoxH / 2 - 40, kBoxX + kBoxW / 2 - 14, kBoxY + kBoxH / 2 + 40, '#000000', 4.5);
+      canvas.line(kBoxX + kBoxW / 2 + 14, kBoxY + kBoxH / 2 - 40, kBoxX + kBoxW / 2 + 14, kBoxY + kBoxH / 2 + 40, '#000000', 4.5);
+
+      canvas.line(kBoxX + kBoxW / 2 + 18, kBoxY + kBoxH / 2 + 40, kBoxX + kBoxW + 70, kBoxY + kBoxH / 2 + 70, '#000000', 1.2);
+      canvas.text(kBoxX + kBoxW + 75, kBoxY + kBoxH / 2 + 70, 'SHUTTER\nFINISH', 16, 'bold', 'start');
+
+      canvas.dimH(kBoxX, kBoxX + kBoxW, kBoxY + kBoxH + 35, String(Math.round(kW)));
+      canvas.dimV(kBoxY, kBoxY + kBoxH, kBoxX - 60, String(Math.round(kH)), 0, true);
+      canvas.dimAligned(kBoxX + kBoxW, kBoxY, kBoxX + kBoxW + kdX, kBoxY - kdY, String(Math.round(kD)), 24);
+
+      // ── Key Unit: Internal View with Compartment Clearances ──
+      var kIntY = 960;
+      canvas.text(detX + 400, kIntY - 20, 'INTERNAL VIEW', 22, 'bold', 'middle', '#000000');
+      canvas.line(detX + 280, kIntY - 10, detX + 520, kIntY - 10, '#000000', 1.5);
+
+      var kiBoxY = kIntY + 40;
+      var kiBoxH = 460;
+      // Carcass Gables
+      canvas.rect(kBoxX, kiBoxY, kBoxW, kiBoxH, '#000000', 2.5, '#ffffff');
+      canvas.rect(kBoxX, kiBoxY, 14, kiBoxH, '#000000', 1.5, '#94a3b8');
+      canvas.rect(kBoxX + kBoxW - 14, kiBoxY, 14, kiBoxH, '#000000', 1.5, '#94a3b8');
+      canvas.rect(kBoxX + 14, kiBoxY, kBoxW - 28, 14, '#000000', 1.5, '#94a3b8');
+      canvas.rect(kBoxX + 14, kiBoxY + kiBoxH - 14, kBoxW - 28, 14, '#000000', 1.5, '#94a3b8');
+
+      // 2 Adjustable Shelves (3 Compartments)
+      var compH = (kiBoxH - 28 - 28) / 3;
+      var sh1Y = kiBoxY + 14 + compH;
+      var sh2Y = sh1Y + 14 + compH;
+      canvas.rect(kBoxX + 14, sh1Y, kBoxW - 28, 14, '#000000', 1.5, '#94a3b8');
+      canvas.rect(kBoxX + 14, sh2Y, kBoxW - 28, 14, '#000000', 1.5, '#94a3b8');
+
+      // System 32 pin holes
+      for (var ph = 1; ph <= 8; ph++) {
+        var phy = kiBoxY + 20 + ph * ((kiBoxH - 40) / 9);
+        canvas.circle(kBoxX + 20, phy, 2, '#64748b', 1, '#64748b');
+        canvas.circle(kBoxX + kBoxW - 20, phy, 2, '#64748b', 1, '#64748b');
+      }
+
+      // Vertical Clearance Height Arrows inside compartments
+      var clrVal = Math.round((kH - 72) / 3);
+      canvas.dimInternalV(kBoxX + kBoxW / 2, kiBoxY + 14, sh1Y, clrVal + ' CLEAR');
+      canvas.dimInternalV(kBoxX + kBoxW / 2, sh1Y + 14, sh2Y, clrVal + ' CLEAR');
+      canvas.dimInternalV(kBoxX + kBoxW / 2, sh2Y + 14, kiBoxY + kiBoxH - 14, clrVal + ' CLEAR');
+
+      canvas.dimH(kBoxX, kBoxX + kBoxW, kiBoxY + kiBoxH + 35, String(Math.round(kW)));
+      canvas.dimV(kiBoxY, kiBoxY + kiBoxH, kBoxX - 60, String(Math.round(kH)), 0, true);
 
       return canvas.toSVG();
     },
@@ -734,6 +992,10 @@
       var drawers = uConfig.drawers || 0;
       var shelves = uConfig.shelves || (H > 1500 ? 4 : H > 900 ? 2 : 1);
       var isBaseUnit = (fn.category && fn.category.indexOf('base') !== -1) || H <= 900;
+      var isSink = (uName.toLowerCase().indexOf('sink') !== -1) || !!uConfig.hasSink;
+      var isHob = (uName.toLowerCase().indexOf('hob') !== -1 || uName.toLowerCase().indexOf('gas') !== -1) || !!uConfig.hasHob;
+      var isPooja = (uName.toLowerCase().indexOf('pooja') !== -1) || !!uConfig.isPooja;
+      var isWardrobe = (uName.toLowerCase().indexOf('wardrobe') !== -1) || (fn.category && fn.category.indexOf('wardrobe') !== -1) || H >= 1800;
 
       // Unit-specific production specs
       var carcassFin = (fn.materials && fn.materials.carcass && fn.materials.carcass.finish) || uConfig.carcass || this.meta.carcassColor;
@@ -746,7 +1008,7 @@
         { label: 'DEPTH', val: D + ' mm' },
         { label: 'HEIGHT', val: H + ' mm' },
         { label: 'CARCASS SPEC', val: '18mm BWP (' + carcassFin + ')' },
-        { label: 'SHUTTER SPEC', val: shutters + ' NO(S) (' + shutterFin + ')' },
+        { label: 'SHUTTER SPEC', val: (drawers > 0 ? drawers + ' DRAWERS' : shutters + ' NO(S)') + ' (' + shutterFin + ')' },
         { label: 'HANDLE TYPE', val: uConfig.handle || 'EXTENDED SHUTTER 20mm' },
         { label: 'HINGES', val: 'EBCO SOFT CLOSING (110°)' },
         { label: 'RUNNERS', val: drawers > 0 ? 'EBCO SOFT CLOSING TANDEM' : 'N/A' },
@@ -755,105 +1017,442 @@
       ];
       this.drawProductionDetails(canvas, unitSpecs);
 
-      // Drafting Scale & Coordinates
-      var scale = Math.min(840 / W, 800 / H, 0.85);
+      // Drafting Scale & Coordinates (allowing room for Cut-List Table & Swatch below)
+      var scale = Math.min(680 / W, 580 / H, 0.70);
       var unitW = W * scale;
       var unitH = H * scale;
-      var extX = 260;
-      var intX = 1180;
-      var baseY = 1160;
-      var plinthH = isBaseUnit ? (100 * scale) : 0;
-      var granH = isBaseUnit ? (20 * scale) : 0;
+      var extX = 220;
+      var intX = 1140;
+      var baseY = 1040;
+      var plinthH = isBaseUnit ? Math.max(26, 100 * scale) : 0;
+      var granH = isBaseUnit ? Math.max(14, 20 * scale) : 0;
 
-      // ── LEFT: EXTERNAL VIEW ──
-      canvas.text(extX + unitW / 2, 280, 'EXTERNAL VIEW', 30, 'bold', 'middle');
-      canvas.line(extX + unitW / 2 - 120, 292, extX + unitW / 2 + 120, 292, '#000000', 2);
+      // 3D Axonometric Depth Offsets (30-degree projection)
+      var dScale = Math.min(90, Math.max(35, D * scale * 0.35));
+      var cos30 = 0.866, sin30 = 0.5;
+      var dX = dScale * cos30;
+      var dY = dScale * sin30;
 
-      // Granite Top if Base
+      // ═════════════════════════════════════════════════════════════════════════
+      // ── LEFT: EXTERNAL VIEW (3D AXONOMETRIC CABINET PROJECTION) ──
+      // ═════════════════════════════════════════════════════════════════════════
+      canvas.text(extX + unitW / 2, 240, 'EXTERNAL VIEW', 30, 'bold', 'middle');
+      canvas.line(extX + unitW / 2 - 120, 252, extX + unitW / 2 + 120, 252, '#000000', 2);
+
+      var fx0 = extX, fy0 = baseY - unitH;
+
+      // 1. Top Face Projection (Granite Slab or Top Panel)
       if (isBaseUnit) {
-        canvas.rect(extX - 20, baseY - unitH - granH, unitW + 40, granH, '#000000', 2, '#334155');
-        canvas.text(extX + unitW / 2, baseY - unitH - granH - 16, 'GRANITE TOP (EXISTING)', 19, 'bold', 'middle');
+        // Granite Top with 15mm nosing overhang
+        var grExt = 15 * scale;
+        var grPoly = [
+          { x: fx0 - grExt, y: fy0 - granH },
+          { x: fx0 + unitW + grExt, y: fy0 - granH },
+          { x: fx0 + unitW + grExt + dX, y: fy0 - granH - dY },
+          { x: fx0 - grExt + dX, y: fy0 - granH - dY }
+        ];
+        canvas.polygon(grPoly, '#000000', 2, '#334155');
+        // Front Edge of Granite
+        canvas.rect(fx0 - grExt, fy0 - granH, unitW + 2 * grExt, granH, '#000000', 2, '#1e293b');
+        // Right Side Edge of Granite
+        var grSide = [
+          { x: fx0 + unitW + grExt, y: fy0 - granH },
+          { x: fx0 + unitW + grExt + dX, y: fy0 - granH - dY },
+          { x: fx0 + unitW + grExt + dX, y: fy0 - dY },
+          { x: fx0 + unitW + grExt, y: fy0 }
+        ];
+        canvas.polygon(grSide, '#000000', 1.8, '#1e293b');
+        canvas.text(fx0 + unitW / 2 + dX / 2, fy0 - granH - dY - 14, 'GRANITE TOP (EXISTING)', 18, 'bold', 'middle', '#0f172a');
+
+        // Granite callout pointer
+        canvas.line(fx0 + unitW + grExt + dX * 0.5, fy0 - granH - dY * 0.5, fx0 + unitW + 110, fy0 - granH - dY * 0.5 - 25, '#000000', 1.4);
+        canvas.text(fx0 + unitW + 115, fy0 - granH - dY * 0.5 - 25, 'GRANITE VISIBLE', 15, 'bold', 'start', '#0f172a');
+      } else {
+        // Top Panel Axonometric Face
+        var topPoly = [
+          { x: fx0, y: fy0 },
+          { x: fx0 + unitW, y: fy0 },
+          { x: fx0 + unitW + dX, y: fy0 - dY },
+          { x: fx0 + dX, y: fy0 - dY }
+        ];
+        canvas.polygon(topPoly, '#000000', 2, '#f1f5f9');
       }
 
-      // Main Outer Box
-      canvas.rect(extX, baseY - unitH, unitW, unitH, '#000000', 2.5, '#ffffff');
+      // 2. Right Side Face Projection (Shows Cabinet Depth & Gable)
+      var sidePoly = [
+        { x: fx0 + unitW, y: fy0 },
+        { x: fx0 + unitW + dX, y: fy0 - dY },
+        { x: fx0 + unitW + dX, y: fy0 - dY + unitH },
+        { x: fx0 + unitW, y: fy0 + unitH }
+      ];
+      canvas.polygon(sidePoly, '#000000', 2, '#e2e8f0');
 
-      // Shutter Divisions or Drawers
+      // Cabinet Depth Dimension along 30-deg receding edge
+      canvas.dimAligned(fx0 + unitW, fy0, fx0 + unitW + dX, fy0 - dY, String(Math.round(D)), 28);
+
+      // 3. Side Filler on Left (50BS / 55BS Blind Spacer)
+      var fillerW = Math.max(12, 50 * scale);
+      canvas.rect(fx0 - fillerW, fy0, fillerW, unitH, '#000000', 1.8, '#f8fafc');
+      canvas.text(fx0 - fillerW / 2, fy0 + unitH / 2, '50BS', 15, 'bold', 'middle', '#0f172a', -90);
+      canvas.dimH(fx0 - fillerW, fx0, baseY + plinthH + 35, '50BS');
+
+      // 4. Main Front Cabinet Box
+      canvas.rect(fx0, fy0, unitW, unitH, '#000000', 2.5, '#ffffff');
+
+      // 5. Front Shutters or Drawers with Cookscape Hardware Details
       if (drawers > 0) {
         var drwH = unitH / drawers;
-        for (var d = 1; d < drawers; d++) {
-          canvas.line(extX, baseY - unitH + d * drwH, extX + unitW, baseY - unitH + d * drwH, '#000000', 2);
-        }
+        var drwLabels = ['CUTLERY (140mm)', 'CUP & SAUCER (210mm)', 'THALI / POTS (280mm)', 'DEEP POT (350mm)'];
         for (var dr = 0; dr < drawers; dr++) {
-          canvas.text(extX + unitW / 2, baseY - unitH + (dr + 0.5) * drwH + 6, 'DRAWER (' + Math.round(H / drawers) + 'mm)', 16, 'bold', 'middle');
+          var dyPos = fy0 + dr * drwH;
+          canvas.rect(fx0 + 2, dyPos + 2, unitW - 4, drwH - 4, '#000000', 1.5, '#f8fafc');
+          // Drawer Tandem Horizontal Runner line
+          canvas.line(fx0 + 8, dyPos + drwH / 2, fx0 + unitW - 8, dyPos + drwH / 2, '#cbd5e1', 1, '4,4');
+          // G-Profile Handle line at top of drawer
+          canvas.line(fx0 + 16, dyPos + 8, fx0 + unitW - 16, dyPos + 8, '#0f172a', 3.5);
+          var drwLbl = dr < drwLabels.length ? drwLabels[dr] : ('DRAWER ' + (dr + 1));
+          canvas.text(fx0 + unitW / 2, dyPos + drwH / 2 + 6, drwLbl, 15, 'bold', 'middle', '#334155');
         }
-      } else {
+        // Handle callout pointer
+        canvas.line(fx0 + unitW - 20, fy0 + 8, fx0 + unitW + 80, fy0 - 20, '#000000', 1.2);
+        canvas.text(fx0 + unitW + 85, fy0 - 20, 'G-PROFILE HANDLE', 14, 'bold', 'start', '#0f172a');
+
+      } else if (isPooja) {
+        // Pooja Cabinet with CNC Cut Jali Mandala & Sacred Om
         var shCellW = unitW / shutters;
         for (var s = 1; s < shutters; s++) {
-          canvas.line(extX + s * shCellW, baseY - unitH, extX + s * shCellW, baseY, '#000000', 2);
+          canvas.line(fx0 + s * shCellW, fy0, fx0 + s * shCellW, fy0 + unitH, '#000000', 2);
+        }
+        // Jali Mandala Frame
+        var mRad = Math.min(unitW, unitH) * 0.24;
+        canvas.circle(fx0 + unitW / 2, fy0 + unitH / 2, mRad, '#b45309', 2.5, '#fffbeb');
+        canvas.circle(fx0 + unitW / 2, fy0 + unitH / 2, mRad * 0.75, '#b45309', 1.8);
+        canvas.circle(fx0 + unitW / 2, fy0 + unitH / 2, mRad * 0.50, '#b45309', 1.5);
+        // Mandala Radial Spokes
+        for (var spk = 0; spk < 8; spk++) {
+          var ang = spk * (Math.PI / 4);
+          canvas.line(
+            fx0 + unitW / 2 + Math.cos(ang) * mRad * 0.5,
+            fy0 + unitH / 2 + Math.sin(ang) * mRad * 0.5,
+            fx0 + unitW / 2 + Math.cos(ang) * mRad,
+            fy0 + unitH / 2 + Math.sin(ang) * mRad,
+            '#b45309', 1.4
+          );
+        }
+        canvas.text(fx0 + unitW / 2, fy0 + unitH / 2 + 15, 'ॐ', 42, 'bold', 'middle', '#b45309');
+        canvas.text(fx0 + unitW / 2, fy0 + unitH / 2 + 78, 'CNC CUT JALI MANDALA', 16, 'bold', 'middle', '#b45309');
+        canvas.text(fx0 + unitW / 2, fy0 + unitH - 24, shutters + ' SHUTTER(S) — ' + shutterFin, 16, 'bold', 'middle', '#64748b');
+
+      } else {
+        // Standard Shutters with 2mm Reveal & Architectural Swing Triangles
+        var shCellW = unitW / shutters;
+        for (var s = 1; s < shutters; s++) {
+          canvas.line(fx0 + s * shCellW, fy0, fx0 + s * shCellW, fy0 + unitH, '#000000', 2);
         }
         for (var sh = 0; sh < shutters; sh++) {
-          var hX = extX + sh * shCellW + (sh % 2 === 0 ? shCellW - 25 : 25);
-          canvas.line(hX, baseY - unitH + 40, hX, baseY - unitH + 160, '#000000', 6);
+          var scx1 = fx0 + sh * shCellW + 4;
+          var scx2 = fx0 + (sh + 1) * shCellW - 4;
+          var isLeftHinge = (sh % 2 === 0);
+          // Architectural Door Swing Dashed Triangles
+          var hx = isLeftHinge ? scx2 : scx1;
+          var hxOpp = isLeftHinge ? scx1 : scx2;
+          canvas.line(hxOpp, fy0 + 8, hx, fy0 + unitH / 2, '#94a3b8', 1.2, '4,4');
+          canvas.line(hxOpp, fy0 + unitH - 8, hx, fy0 + unitH / 2, '#94a3b8', 1.2, '4,4');
+
+          // Extended Shutter / Handle callout
+          var handleBarX = isLeftHinge ? scx2 - 14 : scx1 + 14;
+          canvas.line(handleBarX, fy0 + unitH / 2 - 50, handleBarX, fy0 + unitH / 2 + 50, '#000000', 5);
         }
-        var isPooja = (uName.toLowerCase().indexOf('pooja') !== -1) || (uConfig && uConfig.isPooja);
-        if (isPooja) {
-          canvas.circle(extX + unitW / 2, baseY - unitH / 2, Math.min(unitW, unitH) * 0.22, '#b45309', 2, '#fffbeb');
-          canvas.circle(extX + unitW / 2, baseY - unitH / 2, Math.min(unitW, unitH) * 0.16, '#b45309', 1.5);
-          canvas.text(extX + unitW / 2, baseY - unitH / 2 + 14, 'ॐ', 40, 'bold', 'middle', '#b45309');
-          canvas.text(extX + unitW / 2, baseY - unitH / 2 + 70, 'CNC CUT JALI MANDALA', 16, 'bold', 'middle', '#b45309');
-        } else {
-          canvas.text(extX + unitW / 2, baseY - unitH / 2, shutters + ' SHUTTER(S) — ' + shutterFin, 20, 'bold', 'middle', '#64748b');
-        }
+
+        // 20mm Extended Shutter Callout
+        canvas.line(fx0 + unitW - 14, fy0 + unitH / 2 + 50, fx0 + unitW + 70, fy0 + unitH / 2 + 70, '#000000', 1.2);
+        canvas.text(fx0 + unitW + 75, fy0 + unitH / 2 + 70, '20mm EXTENDED SHUTTER', 14, 'bold', 'start', '#0f172a');
+        canvas.text(fx0 + unitW / 2, fy0 + unitH - 24, shutters + ' SHUTTER(S) — ' + shutterFin, 16, 'bold', 'middle', '#64748b');
       }
 
-      // Plinth Base
+      // 6. Plinth Base with RCC / Legs Details
       if (isBaseUnit) {
-        canvas.rect(extX, baseY, unitW, plinthH, '#000000', 2, '#e2e8f0');
-        canvas.text(extX + unitW / 2, baseY + plinthH / 2 + 7, '110 RCC BASE / 100mm PLINTH LEGS', 17, 'bold', 'middle');
+        canvas.rect(fx0, baseY, unitW, plinthH, '#000000', 2, '#e2e8f0');
+        // Toe-kick 20mm setback lines
+        canvas.line(fx0 + 15, baseY, fx0 + 15, baseY + plinthH, '#000000', 1.5);
+        canvas.line(fx0 + unitW - 15, baseY, fx0 + unitW - 15, baseY + plinthH, '#000000', 1.5);
+        canvas.text(fx0 + unitW / 2, baseY + plinthH / 2 + 6, '110 RCC BASE / 100mm PLINTH LEGS', 16, 'bold', 'middle', '#0f172a');
       }
 
-      // Dimensions External
-      canvas.dimH(extX, extX + unitW, baseY + plinthH + 45, String(Math.round(W)));
-      canvas.dimV(baseY - unitH, baseY, extX - 65, String(Math.round(H)), 0, true);
-
-
-      // ── RIGHT: INTERNAL VIEW ──
-      canvas.text(intX + unitW / 2, 280, 'INTERNAL VIEW', 30, 'bold', 'middle');
-      canvas.line(intX + unitW / 2 - 120, 292, intX + unitW / 2 + 120, 292, '#000000', 2);
-
+      // 7. Multi-Tier External Dimension Chains
+      canvas.dimH(fx0, fx0 + unitW, baseY + plinthH + 35, String(Math.round(W)));
+      canvas.dimH(fx0 - fillerW, fx0 + unitW, baseY + plinthH + 75, String(Math.round(W + 50)) + ' (OVERALL)');
+      canvas.dimV(baseY - unitH, baseY, fx0 - 65, String(Math.round(H)), 0, true);
       if (isBaseUnit) {
-        canvas.rect(intX - 20, baseY - unitH - granH, unitW + 40, granH, '#000000', 2, '#334155');
-        canvas.text(intX + unitW / 2, baseY - unitH - granH - 16, 'GRANITE TOP (EXISTING)', 19, 'bold', 'middle');
+        canvas.dimV(baseY - unitH - granH, baseY + plinthH, fx0 - 110, String(Math.round(H + 110 + 20)), 0, true);
       }
 
-      // Carcass Gables
-      canvas.rect(intX, baseY - unitH, unitW, unitH, '#000000', 2.5, '#ffffff');
+      // ═════════════════════════════════════════════════════════════════════════
+      // ── RIGHT: INTERNAL VIEW (3D AXONOMETRIC OPEN CARCASS PROJECTION) ──
+      // ═════════════════════════════════════════════════════════════════════════
+      canvas.text(intX + unitW / 2, 240, 'INTERNAL VIEW', 30, 'bold', 'middle');
+      canvas.line(intX + unitW / 2 - 120, 252, intX + unitW / 2 + 120, 252, '#000000', 2);
+
+      var ix0 = intX, iy0 = baseY - unitH;
+
+      // 1. Granite Top on Internal View
+      if (isBaseUnit) {
+        var grExt = 15 * scale;
+        var grPolyInt = [
+          { x: ix0 - grExt, y: iy0 - granH },
+          { x: ix0 + unitW + grExt, y: iy0 - granH },
+          { x: ix0 + unitW + grExt + dX, y: iy0 - granH - dY },
+          { x: ix0 - grExt + dX, y: iy0 - granH - dY }
+        ];
+        canvas.polygon(grPolyInt, '#000000', 2, '#334155');
+        canvas.rect(ix0 - grExt, iy0 - granH, unitW + 2 * grExt, granH, '#000000', 2, '#1e293b');
+        var grSideInt = [
+          { x: ix0 + unitW + grExt, y: iy0 - granH },
+          { x: ix0 + unitW + grExt + dX, y: iy0 - granH - dY },
+          { x: ix0 + unitW + grExt + dX, y: iy0 - dY },
+          { x: ix0 + unitW + grExt, y: iy0 }
+        ];
+        canvas.polygon(grSideInt, '#000000', 1.8, '#1e293b');
+        canvas.text(ix0 + unitW / 2 + dX / 2, iy0 - granH - dY - 14, 'GRANITE TOP (EXISTING)', 18, 'bold', 'middle', '#0f172a');
+      }
+
+      // 2. Right Side Carcass Gable Axonometric Depth Face
+      var intSidePoly = [
+        { x: ix0 + unitW, y: iy0 },
+        { x: ix0 + unitW + dX, y: iy0 - dY },
+        { x: ix0 + unitW + dX, y: iy0 - dY + unitH },
+        { x: ix0 + unitW, y: iy0 + unitH }
+      ];
+      canvas.polygon(intSidePoly, '#000000', 2, '#cbd5e1');
+
+      // 3. Open Carcass Outer Outline
+      canvas.rect(ix0, iy0, unitW, unitH, '#000000', 2.5, '#ffffff');
+
+      // 4. 18mm Structural Panels (Gables, Bottom, Top Stretchers)
       var t = Math.max(8, 18 * scale);
-      canvas.rect(intX, baseY - unitH, t, unitH, '#000000', 1.5, '#94a3b8');
-      canvas.rect(intX + unitW - t, baseY - unitH, t, unitH, '#000000', 1.5, '#94a3b8');
+      // Left Gable (18mm)
+      canvas.rect(ix0, iy0, t, unitH, '#000000', 1.5, '#94a3b8');
+      // Right Gable (18mm)
+      canvas.rect(ix0 + unitW - t, iy0, t, unitH, '#000000', 1.5, '#94a3b8');
+      // Bottom Panel (18mm)
+      canvas.rect(ix0 + t, baseY - t, unitW - 2 * t, t, '#000000', 1.5, '#94a3b8');
+      // Top Rails / Stretchers (18mm)
+      canvas.rect(ix0 + t, iy0, unitW - 2 * t, t, '#000000', 1.5, '#94a3b8');
 
-      // Center Divider if wide
-      if (shutters > 1 && W >= 900) {
-        canvas.rect(intX + unitW / 2 - t / 2, baseY - unitH, t, unitH, '#000000', 1.5, '#94a3b8');
+      // 5. Center Divider (18mm) for Multi-Door / Wide Units
+      var hasCenterDivider = (shutters > 1 && W >= 900) || isWardrobe;
+      var divX = ix0 + unitW / 2 - t / 2;
+      if (hasCenterDivider) {
+        canvas.rect(divX, iy0 + t, t, unitH - 2 * t, '#000000', 1.5, '#94a3b8');
       }
 
-      // Internal Horizontal Shelves
-      var shelfSpan = (H - 2 * 18) / (shelves + 1);
-      for (var k = 1; k <= shelves; k++) {
-        var shY = baseY - (k * shelfSpan * scale);
-        canvas.rect(intX + t, shY, unitW - 2 * t, t, '#000000', 1.5, '#94a3b8');
-        canvas.text(intX + unitW / 2, shY - 20, Math.round(shelfSpan) + ' mm CLEAR', 18, 'bold', 'middle', '#0f172a');
+      // 6. System 32 Shelf Pin Holes Along Gables
+      var pinCount = Math.max(6, Math.floor((unitH - 2 * t) / 32));
+      for (var p = 1; p <= pinCount; p++) {
+        var pyHole = iy0 + t + p * ((unitH - 2 * t) / (pinCount + 1));
+        canvas.circle(ix0 + t + 6, pyHole, 2.5, '#64748b', 1, '#64748b');
+        canvas.circle(ix0 + unitW - t - 6, pyHole, 2.5, '#64748b', 1, '#64748b');
+        if (hasCenterDivider) {
+          canvas.circle(divX - 6, pyHole, 2.5, '#64748b', 1, '#64748b');
+          canvas.circle(divX + t + 6, pyHole, 2.5, '#64748b', 1, '#64748b');
+        }
+      }
+      canvas.text(ix0 + unitW - t - 14, iy0 + 26, 'AJDUSTABLE', 12, 'bold', 'end', '#64748b');
+
+      // 7. Internal Details & Exact Clearance Dimension Arrows (Clear Cavity Heights)
+      var netInnerH = H - 36; // minus top & bottom 18mm
+      if (isSink) {
+        // Sink Internal: CNC Cut Vent, Plumbing P-Trap, Hot/Cold Water Stubs
+        canvas.text(ix0 + unitW / 2, iy0 + unitH * 0.28, 'SINK 750 O/S (NEED CNC CUT FOR VENT)', 17, 'bold', 'middle', '#0284c7');
+        // P-Trap Plumbing Waste Schematic
+        var trX = ix0 + unitW / 2;
+        var trY = iy0 + unitH * 0.52;
+        canvas.line(trX, iy0 + 30, trX, trY, '#0284c7', 3);
+        canvas.circle(trX, trY + 14, 16, '#0284c7', 2.5, 'none');
+        canvas.line(trX + 16, trY + 14, trX + 45, trY + 35, '#0284c7', 3);
+        // Floor Plumbing Void Note
+        canvas.text(trX, baseY - t - 16, 'PLUMBING SERVICE CAVITY (1/2" INLET & 40mm DRAIN)', 13, 'bold', 'middle', '#0369a1');
+        // Vertical Clearance Arrow inside sink cabinet
+        canvas.dimInternalV(ix0 + t + 50, iy0 + t, baseY - t, Math.round(netInnerH) + ' CLEAR');
+
+      } else if (isHob) {
+        // Hob Internal: Gas 560 O/S, 2 Cylinders Provision & Vent Cut-outs
+        canvas.text(ix0 + unitW / 2, iy0 + 36, 'GAS 560 O/S (2 CYLINDERS PROVISION)', 17, 'bold', 'middle', '#b45309');
+        // Twin Cylinder Outlines on Bottom
+        var cylW = (unitW - 2 * t) / 2;
+        canvas.rect(ix0 + t + 10, baseY - t - 80, cylW - 20, 75, '#b45309', 1.8, '#fffbeb', 6);
+        canvas.text(ix0 + t + cylW / 2, baseY - t - 40, 'CYLINDER 1\n(320mm Ø)', 13, 'bold', 'middle', '#b45309');
+        canvas.rect(ix0 + t + cylW + 10, baseY - t - 80, cylW - 20, 75, '#b45309', 1.8, '#fffbeb', 6);
+        canvas.text(ix0 + t + cylW * 1.5, baseY - t - 40, 'CYLINDER 2\n(320mm Ø)', 13, 'bold', 'middle', '#b45309');
+        // Safety Air Vent Note
+        canvas.text(ix0 + unitW / 2, iy0 + unitH * 0.42, 'SAFETY AIR VENTILATION PROVISION', 13, 'bold', 'middle', '#78350f');
+        canvas.dimInternalV(ix0 + t + 50, iy0 + t, baseY - t - 85, Math.round(netInnerH - 220) + ' CLEAR');
+
+      } else if (isWardrobe) {
+        // Wardrobe Internal: Chrome Oval Hanging Rod + Internal Drawers + Top Shelf
+        // Top Shelf (350mm down)
+        var topShelfY = iy0 + t + (350 / H) * (unitH - 2 * t);
+        canvas.rect(ix0 + t, topShelfY, unitW - 2 * t, t, '#000000', 1.5, '#94a3b8');
+        canvas.dimInternalV(ix0 + t + 60, iy0 + t, topShelfY, '350 CLEAR');
+
+        // Chrome Hanging Rod on Left Side
+        var rodY = topShelfY + 45;
+        canvas.rect(ix0 + t + 8, rodY - 6, (hasCenterDivider ? divX - ix0 - t - 16 : unitW - 2 * t - 16), 12, '#000000', 1.8, '#e2e8f0', 4);
+        canvas.text(ix0 + t + (hasCenterDivider ? (divX - ix0 - t) / 2 : unitW / 2), rodY + 28, 'CHROME OVAL HANGING ROD', 13, 'bold', 'middle', '#0f172a');
+        canvas.dimInternalV(ix0 + t + 60, topShelfY + t, baseY - t, Math.round(netInnerH - 400) + ' CLEAR');
+
+        // Internal Drawer Chest on Right Side
+        if (hasCenterDivider) {
+          var rSecW = ix0 + unitW - t - (divX + t);
+          var drwTop = baseY - t - 3 * (60 * scale);
+          for (var dr = 0; dr < 3; dr++) {
+            var dry = drwTop + dr * (60 * scale);
+            canvas.rect(divX + t + 4, dry, rSecW - 8, 55 * scale, '#000000', 1.4, '#f8fafc');
+            canvas.text(divX + t + rSecW / 2, dry + 25 * scale, 'INT. DRAWER ' + (dr + 1), 13, 'bold', 'middle', '#334155');
+          }
+          canvas.dimInternalV(divX + t + rSecW / 2, topShelfY + t, drwTop, Math.round(netInnerH - 350 - 550) + ' CLEAR');
+        }
+
+      } else if (isPooja) {
+        // Pooja Internal: Backpanel with Spotlight + Diya Pull-out Tray
+        canvas.text(ix0 + unitW / 2, iy0 + 36, '75mm THICKNESS BACKPANEL WITH SPOTLIGHT', 16, 'bold', 'middle', '#b45309');
+        canvas.circle(ix0 + unitW / 2, iy0 + 65, 14, '#b45309', 2, '#fde68a');
+        canvas.text(ix0 + unitW / 2, iy0 + 95, 'LED WARM WHITE SPOTLIGHT', 12, 'bold', 'middle', '#b45309');
+        // Brass Diya Pull-out Tray on Telescopic Runners
+        var trayY = baseY - t - 110 * scale;
+        canvas.rect(ix0 + t + 6, trayY, unitW - 2 * t - 12, 22 * scale, '#b45309', 1.8, '#fef3c7');
+        canvas.text(ix0 + unitW / 2, trayY + 15 * scale, 'SLIDING PRASADAM / DIYA TRAY (TELESCOPIC RUNNER)', 13, 'bold', 'middle', '#b45309');
+        // Clear Height arrows
+        canvas.dimInternalV(ix0 + t + 60, iy0 + t, trayY, Math.round(netInnerH - 180) + ' CLEAR');
+        canvas.dimInternalV(ix0 + t + 60, trayY + 22 * scale, baseY - t, '160 CLEAR');
+
+      } else {
+        // Standard Shelving with Exact Vertical Clearance Height Arrows inside every compartment
+        var compCount = shelves + 1;
+        var clearH = (netInnerH - (shelves * 18)) / compCount;
+        var compH = (unitH - 2 * t - (shelves * t)) / compCount;
+
+        for (var k = 1; k <= shelves; k++) {
+          var shY = baseY - t - k * (compH + t);
+          canvas.rect(ix0 + t, shY, unitW - 2 * t, t, '#000000', 1.5, '#94a3b8');
+        }
+
+        // Draw Clearance Height Arrow inside each compartment
+        for (var c = 0; c < compCount; c++) {
+          var cTop = iy0 + t + c * (compH + t);
+          var cBot = cTop + compH;
+          var arrX = hasCenterDivider ? (ix0 + t + (divX - ix0 - t) / 2) : (ix0 + unitW / 2);
+          canvas.dimInternalV(arrX, cTop, cBot, Math.round(clearH) + ' CLEAR');
+          if (hasCenterDivider) {
+            canvas.dimInternalV(divX + t + (ix0 + unitW - t - divX - t) / 2, cTop, cBot, Math.round(clearH) + ' CLEAR');
+          }
+        }
       }
 
+      // 8. Plinth on Internal View
       if (isBaseUnit) {
-        canvas.rect(intX, baseY, unitW, plinthH, '#000000', 2, '#e2e8f0');
-        canvas.text(intX + unitW / 2, baseY + plinthH / 2 + 7, '100mm PLINTH / LEGS', 17, 'bold', 'middle');
+        canvas.rect(ix0, baseY, unitW, plinthH, '#000000', 2, '#e2e8f0');
+        canvas.text(ix0 + unitW / 2, baseY + plinthH / 2 + 6, '100mm PLINTH / LEGS', 16, 'bold', 'middle', '#0f172a');
       }
 
-      // Dimensions Internal
-      canvas.dimH(intX, intX + unitW, baseY + plinthH + 45, String(Math.round(W)));
-      canvas.dimV(baseY - unitH, baseY, intX - 65, String(Math.round(H)), 0, true);
+      // 9. Multi-Tier Internal Dimensions
+      canvas.dimH(ix0, ix0 + unitW, baseY + plinthH + 35, String(Math.round(W)));
+      canvas.dimV(baseY - unitH, baseY, ix0 - 65, String(Math.round(H)), 0, true);
+
+      // ═════════════════════════════════════════════════════════════════════════
+      // ── BOTTOM LEFT: 6-COLUMN PANEL SCHEDULE & BOM CUT-LIST TABLE ──
+      // ═════════════════════════════════════════════════════════════════════════
+      var tblX = 100, tblY = 1250;
+      var tblW = 1340, tblH = 490;
+      var rowH = 46;
+
+      // Outer Table Box & Header
+      canvas.rect(tblX, tblY, tblW, tblH, '#000000', 2.5, '#ffffff');
+      canvas.rect(tblX, tblY, tblW, 52, '#000000', 1.8, '#f1f5f9');
+      canvas.text(tblX + 20, tblY + 34, 'CABINET COMPONENT SCHEDULE & PANEL CUT-LIST (18mm BWP PLYWOOD / 8mm BACK)', 20, 'bold', 'start', '#0f172a');
+
+      // Column Header Row
+      var colY = tblY + 52;
+      canvas.rect(tblX, colY, tblW, 42, '#000000', 1.5, '#e2e8f0');
+      var cols = [
+        { label: 'SL', w: 60 },
+        { label: 'PART NAME', w: 310 },
+        { label: 'QTY', w: 80 },
+        { label: 'CUT LENGTH', w: 170 },
+        { label: 'CUT WIDTH', w: 170 },
+        { label: 'THK', w: 100 },
+        { label: 'MATERIAL SPECIFICATION', w: 450 }
+      ];
+
+      var cX = tblX;
+      cols.forEach(function (col, ci) {
+        if (ci > 0) canvas.line(cX, colY, cX, tblY + tblH, '#000000', 1.2);
+        canvas.text(cX + col.w / 2, colY + 27, col.label, 15, 'bold', 'middle', '#0f172a');
+        cX += col.w;
+      });
+
+      // Calculate Real Cut-List Dimensions
+      var gableL = isBaseUnit ? Math.round(H - 20) : Math.round(H);
+      var bottomL = Math.round(W - 36);
+      var shelfL = hasCenterDivider ? Math.round((W - 36 - 18) / 2) : Math.round(W - 36);
+      var backL = Math.round(H - 36), backW = Math.round(W - 18);
+      var shutterL = drawers > 0 ? Math.round((H - (drawers * 3)) / drawers) : Math.round(H - 4);
+      var shutterW = drawers > 0 ? Math.round(W - 4) : Math.round((W - (shutters * 3)) / shutters);
+
+      var bomRows = [
+        { sl: '01', name: 'LEFT GABLE (SIDE PANEL)', qty: '1', l: gableL + ' mm', w: Math.round(D) + ' mm', thk: '18 mm', mat: 'BWP Marine Ply (' + carcassFin + ')' },
+        { sl: '02', name: 'RIGHT GABLE (SIDE PANEL)', qty: '1', l: gableL + ' mm', w: Math.round(D) + ' mm', thk: '18 mm', mat: 'BWP Marine Ply (' + carcassFin + ')' },
+        { sl: '03', name: 'BOTTOM PANEL', qty: '1', l: bottomL + ' mm', w: Math.round(D) + ' mm', thk: '18 mm', mat: 'BWP Marine Ply (' + carcassFin + ')' },
+        { sl: '04', name: 'TOP STRETCHERS / RAILS', qty: '2', l: bottomL + ' mm', w: '100 mm', thk: '18 mm', mat: 'BWP Marine Ply (' + carcassFin + ')' },
+        { sl: '05', name: hasCenterDivider ? 'CENTER PARTITION' : 'INTERNAL SHELVES', qty: hasCenterDivider ? '1' : String(shelves), l: (hasCenterDivider ? Math.round(H - 56) : shelfL) + ' mm', w: Math.round(D - 20) + ' mm', thk: '18 mm', mat: 'BWP Marine Ply (' + carcassFin + ')' },
+        { sl: '06', name: hasCenterDivider ? 'INTERNAL SHELVES' : 'BACK PANEL (REBATE)', qty: hasCenterDivider ? String(shelves * 2) : '1', l: (hasCenterDivider ? shelfL : backL) + ' mm', w: (hasCenterDivider ? Math.round(D - 20) : backW) + ' mm', thk: hasCenterDivider ? '18 mm' : '8 mm', mat: 'BWP Marine Ply (' + carcassFin + ')' },
+        { sl: '07', name: hasCenterDivider ? 'BACK PANEL (REBATE)' : 'FRONT SHUTTER / DRAWERS', qty: hasCenterDivider ? '1' : String(drawers > 0 ? drawers : shutters), l: (hasCenterDivider ? backL : shutterL) + ' mm', w: (hasCenterDivider ? backW : shutterW) + ' mm', thk: hasCenterDivider ? '8 mm' : '18 mm', mat: hasCenterDivider ? 'BWP Marine Ply (Backer)' : ('BWP MDF (' + shutterFin + ')') },
+        { sl: '08', name: hasCenterDivider ? 'FRONT SHUTTER / DRAWERS' : 'SKIRTING / PLINTH FASCIA', qty: hasCenterDivider ? String(drawers > 0 ? drawers : shutters) : '1', l: (hasCenterDivider ? shutterL : Math.round(W)) + ' mm', w: (hasCenterDivider ? shutterW : 100) + ' mm', thk: '18 mm', mat: hasCenterDivider ? ('BWP MDF (' + shutterFin + ')') : 'PVC WATERPROOF MATCHING' }
+      ];
+
+      var rY = colY + 42;
+      bomRows.forEach(function (row, ri) {
+        if (rY + rowH > tblY + tblH + 5) return;
+        canvas.line(tblX, rY, tblX + tblW, rY, '#000000', 1);
+        var currColX = tblX;
+        var vals = [row.sl, row.name, row.qty, row.l, row.w, row.thk, row.mat];
+        vals.forEach(function (v, vi) {
+          var align = (vi === 1 || vi === 6) ? 'start' : 'middle';
+          var tx = (vi === 1 || vi === 6) ? currColX + 16 : currColX + cols[vi].w / 2;
+          canvas.text(tx, rY + 28, v, 14, vi === 1 ? 'bold' : 'normal', align, '#0f172a');
+          currColX += cols[vi].w;
+        });
+        rY += rowH;
+      });
+
+      // ═════════════════════════════════════════════════════════════════════════
+      // ── BOTTOM RIGHT: INSET WOODGRAIN SWATCH & HARDWARE SPECIFICATIONS ──
+      // ═════════════════════════════════════════════════════════════════════════
+      var swX = 1480, swY = 1250;
+      var swW = 560, swH = 260;
+
+      // Realistic Woodgrain Inset Texture Swatch Card
+      canvas.swatch(swX, swY + 20, swW, swH - 20, shutterFin);
+
+      // Hardware & Fitting Callout Box below Swatch
+      var hwY = swY + swH + 18;
+      var hwH = 190;
+      canvas.rect(swX, hwY, swW, hwH, '#000000', 2, '#f8fafc', 4);
+      canvas.text(swX + 20, hwY + 32, 'HARDWARE & FITTINGS SPECIFICATIONS', 17, 'bold', 'start', '#0f172a');
+      canvas.line(swX + 20, hwY + 40, swX + 380, hwY + 40, '#000000', 1.5);
+
+      var hwNotes = [
+        '• HINGES: EBCO / HETTICH 110° SOFT-CLOSE CLIP-ON',
+        '• RUNNERS: EBCO PROMOTION SOFT-CLOSE 450mm TANDEM',
+        '• HANDLE: ' + (uConfig.handle || 'G-PROFILE / 20mm EXTENDED SHUTTER'),
+        '• EDGE BAND: 2mm PVC ON EXPOSED / 0.8mm ON INNER GABLES',
+        '• FILLER: 50BS / 65BS (SCRIBE TO SITE WALL INCLUDED)'
+      ];
+      var nY = hwY + 68;
+      hwNotes.forEach(function (hn) {
+        canvas.text(swX + 20, nY, hn, 14, 'bold', 'start', '#334155');
+        nY += 24;
+      });
 
       return canvas.toSVG();
     },

@@ -228,8 +228,12 @@ for (var u = 0; u < 27; u++) {
   assert.ok(sheet.svg.includes(uTag), `Sheet for unit ${u + 1} must include tag ${uTag}`);
   assert.ok(sheet.svg.includes('EXTERNAL VIEW'), `Sheet for unit ${u + 1} must include EXTERNAL VIEW`);
   assert.ok(sheet.svg.includes('INTERNAL VIEW'), `Sheet for unit ${u + 1} must include INTERNAL VIEW`);
+  assert.ok(sheet.svg.includes('CLEAR'), `Sheet for unit ${u + 1} must include CLEAR cavity height arrow`);
+  assert.ok(sheet.svg.includes('CABINET COMPONENT SCHEDULE &amp; PANEL CUT-LIST') || sheet.svg.includes('CABINET COMPONENT SCHEDULE & PANEL CUT-LIST'), `Sheet for unit ${u + 1} must include panel schedule cut-list`);
+  assert.ok(sheet.svg.includes('REFERENCE IMAGE ATTACHED'), `Sheet for unit ${u + 1} must include woodgrain swatch reference image`);
+  assert.ok(sheet.svg.includes('50BS'), `Sheet for unit ${u + 1} must include 50BS filler detail`);
 }
-console.log('✓ All 27 individual unit shop drawing sheets verified.');
+console.log('✓ All 27 individual unit shop drawing sheets verified with clearance heights, BOM cut-list, swatch box & filler!');
 
 console.log('\n======================================================');
 console.log('ALL ORBIX A4 PRODUCTION DRAWING TESTS PASSED 100%!');
