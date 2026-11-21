@@ -54,7 +54,7 @@
       'users': '/users'
     },
 
-    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'boq'],
+    EMPLOYEE_ALLOWED: ['home', 'plan', 'design', 'elev', 'boq'],
 
     initialTargetView: (function () {
       var path = window.location.pathname.toLowerCase();
@@ -76,6 +76,9 @@
         '/kitchen': 'kitchen',
         '/sheet': 'sheet',
         '/elev': 'elev',
+        '/drawings': 'elev',
+        '/2d-drawings': 'elev',
+        '/a4-drawings': 'elev',
         '/panels': 'panels',
         '/nest': 'nest',
         '/upload': 'upload',
@@ -156,7 +159,7 @@
         if (typeof window.setView === 'function' && !window.setView._isRouterHooked) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            var allowed = ['home', 'plan', 'design', 'boq'];
+            var allowed = ['home', 'plan', 'design', 'elev', 'boq'];
             if (allowed.indexOf(v) === -1) {
               if (window.location.pathname !== '/home') {
                 self.updateUrl('home', false);
@@ -242,7 +245,7 @@
         return;
       }
 
-      var allowed = ['home', 'plan', 'design', 'boq'];
+      var allowed = ['home', 'plan', 'design', 'elev', 'boq'];
       if (allowed.indexOf(v) === -1) {
         v = 'home';
       }
@@ -291,7 +294,7 @@
         return;
       }
 
-      var allowed = ['home', 'plan', 'design', 'boq'];
+      var allowed = ['home', 'plan', 'design', 'elev', 'boq'];
       if (!v || allowed.indexOf(v) === -1) {
         v = 'home';
       }
@@ -895,7 +898,7 @@
         if (typeof window.setView === 'function' && !window.setView._isGuarded) {
           var origSetView = window.setView;
           window.setView = function (v) {
-            var allowedViews = ['home', 'plan', 'design', 'boq'];
+            var allowedViews = ['home', 'plan', 'design', 'elev', 'boq'];
             if (allowedViews.indexOf(v) === -1) {
               origSetView('home');
               if (root.OrbixRouter) root.OrbixRouter.updateUrl('home', true);
@@ -921,8 +924,8 @@
         userModalEl.classList.toggle('role-employee', !isAdm);
         userModalEl.classList.toggle('role-admin', isAdm);
       }
-      // Only these 4 pages are visible for all users: Home, Floor Plan (2D), 3D Studio, Pricing
-      var allowedViews = ['home', 'plan', 'design', 'boq'];
+      // Pages visible for all users: Home, Floor Plan (2D), 3D Studio, 2D Drawings (A4), Pricing
+      var allowedViews = ['home', 'plan', 'design', 'elev', 'boq'];
 
       // 1. Control visibility of top navigation tabs
       var navTabs = document.querySelectorAll('.topbar .views .vtab');
