@@ -42,16 +42,19 @@ function buildQuoteOpenedMessage(info) {
   const projectId = info.projectId || '-';
   const quoteCode = info.quoteCode || '-';
   const openedAt = info.openedAt || formatIstNow();
+  const quoteUrl = info.quoteUrl || 'https://studio.orbixdesigns.com';
 
   return [
     '🔔 *Client Opened Quotation Link*',
-    `• *Client Name:* ${clientName}`,
-    `• *Project Name:* ${projectName}`,
-    `• *Project ID:* ${projectId}`,
-    `• *Quote Ref:* ${quoteCode}`,
-    `• *Opened At:* ${openedAt}`,
+    `👤 *Client Name:* ${clientName}`,
+    `🏡 *Project Name:* ${projectName}`,
+    `🆔 *Project ID:* ${projectId}`,
+    `📄 *Quote Ref:* ${quoteCode}`,
+    `🕒 *Opened At:* ${openedAt}`,
     '',
-    `${clientName} opened the quotation link now. Please contact them.`
+    `🔗 *Quotation Link:* ${quoteUrl}`,
+    '',
+    '📢 Action Required: The client has viewed the quotation. Please contact the client and follow up regarding the quotation.'
   ].join('\n');
 }
 
@@ -65,7 +68,8 @@ async function postJson(url, body, headers) {
   return { ok: res.ok, status: res.status, body: text.slice(0, 300) };
 }
 
-const DEFAULT_UTILITY_TEMPLATE = 'orbix_quote_opened_alert';
+const DEFAULT_UTILITY_TEMPLATE = 'studio_quote_open_alert';
+const LEGACY_5PARAM_TEMPLATE = 'orbix_quote_opened_alert';
 let cachedTemplateCheck = { name: '', approved: false, language: 'en', checkedAt: 0 };
 
 function getMetaCredentials() {
@@ -78,12 +82,14 @@ function getMetaCredentials() {
 async function resolveApprovedTemplate() {
   const explicitName = String(process.env.WHATSAPP_TEMPLATE_NAME || '').trim();
   const targetName = explicitName || DEFAULT_UTILITY_TEMPLATE;
-  const explicitLang = String(process.env.WHATSAPP_TEMPLATE_LANG || 'en').trim();
-  if (explicitName) {
+  const explicitLang = String(process.env.WHATSAPP_TEMPLATE_LANG || '').trim();
+  if (explicitName && explicitLang) {
     return { name: explicitName, language: explicitLang, approved: true };
   }
   const { token, wabaId } = getMetaCredentials();
-  if (!token || !wabaId) return { name: targetName, language: explicitLang, approved: false };
+  if (!token || !wabaId) {
+    return { name: targetName, language: explicitLang || 'en', approved: Boolean(explicitName) };
+  }
 
   const now = Date.now();
   const ttl = cachedTemplateCheck.approved ? 15 * 60 * 1000 : 60 * 1000;
@@ -97,22 +103,29 @@ async function resolveApprovedTemplate() {
     if (res.ok) {
       const json = await res.json();
       const match = (json.data || []).find((t) => t.name === targetName && t.status === 'APPROVED');
-      cachedTemplateCheck = {
-        name: targetName,
-        approved: Boolean(match),
-        language: (match && match.language) || explicitLang,
-        checkedAt: now
-      };
-      return cachedTemplateCheck;
+      if (match) {
+        cachedTemplateCheck = {
+          name: targetName,
+          approved: true,
+          language: explicitLang || match.language || 'en',
+          checkedAt: now
+        };
+        return cachedTemplateCheck;
+      }
     }
   } catch (_) {}
-  cachedTemplateCheck = { name: targetName, approved: false, language: explicitLang, checkedAt: now };
+  cachedTemplateCheck = {
+    name: targetName,
+    approved: Boolean(explicitName),
+    language: explicitLang || 'en',
+    checkedAt: now
+  };
   return cachedTemplateCheck;
 }
 
-function cleanParam(val, fallback) {
+function cleanParam(val, fallback, maxLen) {
   const s = String(val || fallback || '-').replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim();
-  return (s || fallback || '-').slice(0, 120);
+  return (s || fallback || '-').slice(0, maxLen || 120);
 }
 
 async function sendViaMetaCloud(phone, message, meta) {
@@ -124,20 +137,35 @@ async function sendViaMetaCloud(phone, message, meta) {
   let payload;
   if (tpl && tpl.approved && process.env.WHATSAPP_USE_TEXT !== 'true') {
     const m = meta || {};
-    const components = tpl.name === 'hello_world'
-      ? []
-      : tpl.name === DEFAULT_UTILITY_TEMPLATE
-        ? [{
-            type: 'body',
-            parameters: [
-              { type: 'text', text: cleanParam(m.clientName, 'Valued Client') },
-              { type: 'text', text: cleanParam(m.projectName || m.title, 'Interior Project') },
-              { type: 'text', text: cleanParam(m.projectId, '-') },
-              { type: 'text', text: cleanParam(m.quoteCode, '-') },
-              { type: 'text', text: cleanParam(m.openedAt, formatIstNow()) }
-            ]
-          }]
-        : [{ type: 'body', parameters: [{ type: 'text', text: cleanParam(message, 'Client opened quote') }] }];
+    let components;
+    if (tpl.name === 'hello_world') {
+      components = [];
+    } else if (tpl.name === 'studio_quote_open_alert') {
+      components = [{
+        type: 'body',
+        parameters: [
+          { type: 'text', text: cleanParam(m.clientName, 'Valued Client') },
+          { type: 'text', text: cleanParam(m.projectName || m.title, 'Interior Project') },
+          { type: 'text', text: cleanParam(m.projectId, '-') },
+          { type: 'text', text: cleanParam(m.quoteCode, '-') },
+          { type: 'text', text: cleanParam(m.openedAt, formatIstNow()) },
+          { type: 'text', text: cleanParam(m.quoteUrl, 'https://studio.orbixdesigns.com', 300) }
+        ]
+      }];
+    } else if (tpl.name === LEGACY_5PARAM_TEMPLATE) {
+      components = [{
+        type: 'body',
+        parameters: [
+          { type: 'text', text: cleanParam(m.clientName, 'Valued Client') },
+          { type: 'text', text: cleanParam(m.projectName || m.title, 'Interior Project') },
+          { type: 'text', text: cleanParam(m.projectId, '-') },
+          { type: 'text', text: cleanParam(m.quoteCode, '-') },
+          { type: 'text', text: cleanParam(m.openedAt, formatIstNow()) }
+        ]
+      }];
+    } else {
+      components = [{ type: 'body', parameters: [{ type: 'text', text: cleanParam(message, 'Client opened quote') }] }];
+    }
 
     payload = {
       messaging_product: 'whatsapp',

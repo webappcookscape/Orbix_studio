@@ -595,9 +595,19 @@
 
       var pathParts = window.location.pathname.split('/').filter(Boolean);
       var shareToken = pathParts.length >= 2 && pathParts[0] === 'quote' ? pathParts[1] : '';
+      var staffKey = '';
+      try {
+        staffKey = new URLSearchParams(window.location.search).get('staff') || '';
+      } catch (_) {}
+
+      function withStaffParam(url) {
+        if (!staffKey) return url;
+        return url + (url.indexOf('?') === -1 ? '?' : '&') + 'staff=' + encodeURIComponent(staffKey);
+      }
 
       var state = {
         deck: null,
+        isStaffView: false,
         currentSlide: 0,
         zoomFactor: 1.0,
         shieldActive: false,
@@ -662,7 +672,7 @@
       async function fetchAssetBitmap(assetKey) {
         if (!assetKey) return null;
         if (state.bitmapCache[assetKey]) return state.bitmapCache[assetKey];
-        var res = await fetch('/api/client-portal/' + encodeURIComponent(shareToken) + '/asset/' + encodeURIComponent(assetKey), {
+        var res = await fetch(withStaffParam('/api/client-portal/' + encodeURIComponent(shareToken) + '/asset/' + encodeURIComponent(assetKey)), {
           credentials: 'same-origin',
           cache: 'no-store'
         });
@@ -1482,6 +1492,7 @@
 
       function activateShield(reason, auditEvent) {
         if (!state.deck) return;
+        if (state.isStaffView) return;
         if (state.deck.securitySettings && state.deck.securitySettings.blurShieldEnabled === false) return;
         state.shieldActive = true;
         wipeCanvasPixels();
@@ -1636,7 +1647,7 @@
       }
 
       async function loadAuthenticatedDeck() {
-        var res = await fetch('/api/client-portal/' + encodeURIComponent(shareToken) + '/payload', {
+        var res = await fetch(withStaffParam('/api/client-portal/' + encodeURIComponent(shareToken) + '/payload'), {
           credentials: 'same-origin',
           cache: 'no-store'
         });
@@ -1645,10 +1656,16 @@
           throw new Error(data.error || 'Unable to load quotation');
         }
         state.deck = data.deck;
+        state.isStaffView = Boolean(data.isStaffView);
         els.loginScreen.style.display = 'none';
         els.viewerShell.style.display = 'flex';
         els.viewerTitle.textContent = data.deck.title || 'Cookscape Interior Quotation';
-        els.protectionBadge.textContent = '🔒 Protected View for ' + (data.deck.clientName || 'Client') + ' • Read-Only';
+        if (state.isStaffView) {
+          els.protectionBadge.textContent = '⚡ Staff Quick View — ' + (data.deck.clientName || 'Client');
+          if (els.logoutBtn) els.logoutBtn.style.display = 'none';
+        } else {
+          els.protectionBadge.textContent = '🔒 Protected View for ' + (data.deck.clientName || 'Client') + ' • Read-Only';
+        }
         renderSidebar();
         buildScrollableSlides();
       }
@@ -1709,7 +1726,7 @@
         }
 
         try {
-          var res = await fetch('/api/client-portal/' + encodeURIComponent(shareToken) + '/info', {
+          var res = await fetch(withStaffParam('/api/client-portal/' + encodeURIComponent(shareToken) + '/info'), {
             credentials: 'same-origin',
             cache: 'no-store'
           });
@@ -1723,6 +1740,7 @@
           }
           els.metaTitle.textContent = info.title || 'Cookscape Interior Quotation';
           els.metaCode.textContent = info.quoteCode ? ('Reference: ' + info.quoteCode) : 'Verified Protected Quote Link';
+          if (info.isStaffView) state.isStaffView = true;
           if (info.authenticated) await loadAuthenticatedDeck();
         } catch (err) {
           showError('Unable to reach server. Please refresh and try again.');

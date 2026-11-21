@@ -50,6 +50,23 @@ function getClientPortalSessionEntry(req, token) {
   return bag[token] || null;
 }
 
+async function resolvePortalSessionEntry(req, token) {
+  let entry = getClientPortalSessionEntry(req, token);
+  if (entry && entry.token === token) return entry;
+  const staffKey = req.query && req.query.staff ? String(req.query.staff).trim() : '';
+  if (staffKey) {
+    const staffEntry = await clientQuoteService.verifyStaffQuickAccess(token, staffKey);
+    if (staffEntry) {
+      if (req.session) {
+        req.session.clientQuoteAuth = req.session.clientQuoteAuth || {};
+        req.session.clientQuoteAuth[token] = staffEntry;
+      }
+      return staffEntry;
+    }
+  }
+  return null;
+}
+
 function decorateUrls(req, q) {
   const baseOrigin = `${req.protocol}://${req.get('host')}`;
   const reviewPath = q.reviewToken ? `/quote-review/${q.reviewToken}` : '';
@@ -79,11 +96,13 @@ class ClientQuoteController {
   async sendTestWhatsappAlert(req, res, next) {
     try {
       const body = req.body || {};
+      const baseOrigin = `${req.protocol}://${req.get('host')}`;
       const result = await whatsappAlertService.sendClientOpenedAlert({
         clientName: body.clientName || 'Test Client',
         projectName: body.projectName || 'Orbix Studio Test Project',
         projectId: body.projectId || 'TEST-ID',
-        quoteCode: body.quoteCode || 'TEST-REF'
+        quoteCode: body.quoteCode || 'TEST-REF',
+        quoteUrl: body.quoteUrl || `${baseOrigin}/quote/test-preview`
       });
       res.json({ success: true, alert: result });
     } catch (err) {
@@ -266,10 +285,10 @@ class ClientQuoteController {
   async getPortalInfo(req, res, next) {
     try {
       const token = req.params.token;
-      const entry = getClientPortalSessionEntry(req, token);
+      const entry = await resolvePortalSessionEntry(req, token);
       const info = await clientQuoteService.getPortalPublicInfo(token, entry);
       res.setHeader('Cache-Control', 'no-store, private');
-      res.json({ success: true, ...info });
+      res.json({ success: true, ...info, isStaffView: Boolean(entry && entry.isStaffView) });
     } catch (err) {
       next(err);
     }
@@ -279,12 +298,14 @@ class ClientQuoteController {
     try {
       const token = req.params.token;
       const { username, password } = req.body || {};
+      const quoteUrl = `${req.protocol}://${req.get('host')}/quote/${token}`;
       const authEntry = await clientQuoteService.authenticatePortalClient(
         token,
         username,
         password,
         req.ip,
-        req.get('user-agent')
+        req.get('user-agent'),
+        quoteUrl
       );
       if (req.session) {
         req.session.clientQuoteAuth = req.session.clientQuoteAuth || {};
@@ -312,11 +333,11 @@ class ClientQuoteController {
   async getPortalPayload(req, res, next) {
     try {
       const token = req.params.token;
-      const entry = getClientPortalSessionEntry(req, token);
+      const entry = await resolvePortalSessionEntry(req, token);
       const payload = await clientQuoteService.getPortalDeckPayload(token, entry, req.ip);
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
       res.setHeader('Pragma', 'no-cache');
-      res.json({ success: true, deck: payload });
+      res.json({ success: true, deck: payload, isStaffView: Boolean(entry && entry.isStaffView) });
     } catch (err) {
       next(err);
     }
@@ -325,7 +346,7 @@ class ClientQuoteController {
   async getPortalAsset(req, res, next) {
     try {
       const token = req.params.token;
-      const entry = getClientPortalSessionEntry(req, token);
+      const entry = await resolvePortalSessionEntry(req, token);
       const asset = await clientQuoteService.resolvePortalAsset(token, req.params.assetKey, entry);
       res.setHeader('Content-Type', asset.mime);
       res.setHeader('Content-Disposition', 'inline');

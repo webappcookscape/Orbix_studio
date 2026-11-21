@@ -35,6 +35,31 @@ function makeError(message, statusCode) {
   return err;
 }
 
+function generateStaffViewKey() {
+  return 'stf_' + crypto.randomBytes(12).toString('hex');
+}
+
+function ensureStaffViewKey(rec) {
+  rec.securitySettings = rec.securitySettings || {};
+  if (!rec.securitySettings.staffViewKey) {
+    rec.securitySettings.staffViewKey = generateStaffViewKey();
+  }
+  return rec.securitySettings.staffViewKey;
+}
+
+function isValidStaffKey(rec, candidateKey) {
+  const expected = rec && rec.securitySettings && rec.securitySettings.staffViewKey;
+  if (!expected || !candidateKey || typeof candidateKey !== 'string') return false;
+  const a = Buffer.from(String(expected));
+  const b = Buffer.from(String(candidateKey).trim());
+  if (a.length !== b.length) return false;
+  try {
+    return crypto.timingSafeEqual(a, b);
+  } catch (_) {
+    return false;
+  }
+}
+
 function maskIp(ip) {
   if (!ip) return '';
   const clean = String(ip).replace('::ffff:', '');
@@ -518,6 +543,7 @@ class ClientQuoteService {
         watermarkEnabled: false,
         blurShieldEnabled: true,
         reviewToken,
+        staffViewKey: generateStaffViewKey(),
         approvalStatus: 'pending_approval',
         approvedAt: null,
         approvedBy: '',
@@ -597,6 +623,7 @@ class ClientQuoteService {
         watermarkEnabled: false,
         blurShieldEnabled: payload.securitySettings?.blurShieldEnabled !== false,
         reviewToken,
+        staffViewKey: generateStaffViewKey(),
         approvalStatus: 'approved',
         approvedAt: now,
         approvedBy: user.name || 'Designer',
@@ -904,8 +931,24 @@ class ClientQuoteService {
     };
   }
 
+  // Employee password-free quick access via secret ?staff=<staffViewKey> sent in WhatsApp alert
+  async verifyStaffQuickAccess(shareToken, staffKey) {
+    if (!shareToken || !staffKey) return null;
+    const rec = await findByToken(shareToken);
+    if (!rec || rec.isRevoked) return null;
+    if (!isValidStaffKey(rec, staffKey)) return null;
+    return {
+      token: rec.shareToken,
+      username: 'Employee Quick View',
+      clientName: rec.clientName,
+      quoteCode: rec.quoteCode || '',
+      isStaffView: true,
+      authenticatedAt: new Date().toISOString()
+    };
+  }
+
   // Stage 4: Client logs into /quote/:shareToken -> triggers WhatsApp Alert to 8838199428 & 7418414780
-  async authenticatePortalClient(shareToken, username, password, ip, userAgent) {
+  async authenticatePortalClient(shareToken, username, password, ip, userAgent, quoteUrl) {
     const rec = await findByToken(shareToken);
     const status = checkQuoteActiveStatus(rec);
     if (!status.active) {
@@ -940,16 +983,20 @@ class ClientQuoteService {
       ua: String(userAgent || '').slice(0, 90)
     });
 
-    // Dispatch WhatsApp alert to 8838199428 & 7418414780 (never blocks client login on external network error)
+    // Dispatch WhatsApp alert to 8838199428 & 7418414780 with password-free employee quick-view link
     let waSummary = null;
     try {
       const snapMeta = (rec.quoteSnapshot && rec.quoteSnapshot.meta) || {};
       const projectName = snapMeta.title || rec.title || 'Interior Project';
+      const staffKey = ensureStaffViewKey(rec);
+      const baseQuoteUrl = quoteUrl || `${String(process.env.PUBLIC_APP_URL || 'https://studio.orbixdesigns.com').replace(/\/+$/, '')}/quote/${rec.shareToken}`;
+      const employeeQuoteUrl = `${baseQuoteUrl}${baseQuoteUrl.includes('?') ? '&' : '?'}staff=${encodeURIComponent(staffKey)}`;
       const alertRes = await whatsappAlertService.sendClientOpenedAlert({
         clientName: rec.clientName,
         projectName,
         projectId: rec.projectId,
-        quoteCode: rec.quoteCode || snapMeta.quoteId || rec.id
+        quoteCode: rec.quoteCode || snapMeta.quoteId || rec.id,
+        quoteUrl: employeeQuoteUrl
       });
       waSummary = {
         sentAt: nowIso,
