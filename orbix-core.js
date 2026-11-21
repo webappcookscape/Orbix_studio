@@ -7799,9 +7799,56 @@
     return fb;
   }
 
+  /* ─────────────────────────────────────────────────────────────────────────────
+     ELEGANT SURABHI Costing Slabs — Design Fee & 60% Discount Schedule
+  ───────────────────────────────────────────────────────────────────────────── */
+  var SURABHI_DESIGN_FEE_SLABS = [
+    { id: '2_to_3', label: '2 to 3 Lakhs', min: 200000, max: 300000, fullDesignCharges: 24465, discountedCharges: 9786, discountPercent: 60 },
+    { id: '4_to_5', label: '4 to 5 Lakhs', min: 400000, max: 500000, fullDesignCharges: 35280, discountedCharges: 14112, discountPercent: 60 },
+    { id: '5_to_7_entry', label: '5 to 7 Lakhs (Entry)', min: 500000, max: 566666, fullDesignCharges: 42780, discountedCharges: 17112, discountPercent: 60 },
+    { id: '5_to_7_mid', label: '5 to 7 Lakhs (Mid)', min: 566667, max: 633333, fullDesignCharges: 47780, discountedCharges: 19112, discountPercent: 60 },
+    { id: '5_to_7_upper', label: '5 to 7 Lakhs (Upper)', min: 633334, max: 700000, fullDesignCharges: 60280, discountedCharges: 24112, discountPercent: 60 },
+    { id: '7_to_8', label: '7 to 8 Lakhs', min: 700001, max: 800000, fullDesignCharges: 72780, discountedCharges: 29112, discountPercent: 60 },
+    { id: '9_to_10', label: '9 to 10 Lakhs', min: 900000, max: 1000000, fullDesignCharges: 85280, discountedCharges: 34112, discountPercent: 60 },
+    { id: '10_to_11', label: '10 to 11 Lakhs', min: 1000001, max: 1100000, fullDesignCharges: 97780, discountedCharges: 39112, discountPercent: 60 },
+    { id: '12_to_15', label: '12 to 15 Lakhs', min: 1200000, max: 1500000, fullDesignCharges: 112780, discountedCharges: 45112, discountPercent: 60 },
+    { id: '15_to_20', label: '15 to 20 Lakhs', min: 1500001, max: 2000000, fullDesignCharges: 147780, discountedCharges: 59112, discountPercent: 60 },
+    { id: '20_to_25', label: '20 to 25 Lakhs', min: 2000001, max: 2500000, fullDesignCharges: 195280, discountedCharges: 78112, discountPercent: 60 },
+    { id: '25_to_30', label: '25 to 30 Lakhs', min: 2500001, max: 3000000, fullDesignCharges: 222780, discountedCharges: 89112, discountPercent: 60 }
+  ];
+
+  function getSurabhiDesignFeeSlab(surabhiWoodworkAmount, selectedSlabId) {
+    if (selectedSlabId && selectedSlabId !== 'auto' && selectedSlabId !== 'custom') {
+      for (var i = 0; i < SURABHI_DESIGN_FEE_SLABS.length; i++) {
+        if (SURABHI_DESIGN_FEE_SLABS[i].id === selectedSlabId) {
+          return SURABHI_DESIGN_FEE_SLABS[i];
+        }
+      }
+    }
+    if (selectedSlabId === 'custom') {
+      return null;
+    }
+    // Auto-detect based on Elegant Surabhi costing
+    var val = Number(surabhiWoodworkAmount) || 0;
+    if (val <= 350000) return SURABHI_DESIGN_FEE_SLABS[0]; // 2 to 3L
+    if (val <= 500000) return SURABHI_DESIGN_FEE_SLABS[1]; // 4 to 5L
+    if (val <= 566666) return SURABHI_DESIGN_FEE_SLABS[2]; // 5 to 7L (Entry)
+    if (val <= 633333) return SURABHI_DESIGN_FEE_SLABS[3]; // 5 to 7L (Mid)
+    if (val <= 700000) return SURABHI_DESIGN_FEE_SLABS[4]; // 5 to 7L (Upper)
+    if (val <= 850000) return SURABHI_DESIGN_FEE_SLABS[5]; // 7 to 8L
+    if (val <= 1000000) return SURABHI_DESIGN_FEE_SLABS[6]; // 9 to 10L
+    if (val <= 1150000) return SURABHI_DESIGN_FEE_SLABS[7]; // 10 to 11L
+    if (val <= 1500000) return SURABHI_DESIGN_FEE_SLABS[8]; // 12 to 15L
+    if (val <= 2000000) return SURABHI_DESIGN_FEE_SLABS[9]; // 15 to 20L
+    if (val <= 2500000) return SURABHI_DESIGN_FEE_SLABS[10]; // 20 to 25L
+    return SURABHI_DESIGN_FEE_SLABS[11]; // 25 to 30L+
+  }
+
   return {
     SFT_FACTOR: SFT_FACTOR,
     SQM_FACTOR: SQM_FACTOR,
+    SURABHI_DESIGN_FEE_SLABS: SURABHI_DESIGN_FEE_SLABS,
+    getSurabhiDesignFeeSlab: getSurabhiDesignFeeSlab,
     uid: uid,
     Vec2: Vec2,
     DEFAULT_RATE_CARD: DEFAULT_RATE_CARD,
