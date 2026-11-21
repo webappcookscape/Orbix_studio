@@ -139,10 +139,21 @@ function recalculateVariantCommercial(comm, overrides) {
   const totalSavings = discountAmount + adpAmount;
   const hasDiscount = totalSavings > 0;
 
-  // Grand Total (Without GST) = Net Woodwork + Net Design Charge (+ enabled Accessories, Appliances, Freight)
-  const netBeforeTax = Math.max(0, Math.round(woodworkAfterDiscount + designAfterDiscount + acc + appliances + freightAmount));
-  const gstAmount = gstEnabled ? Math.round(netBeforeTax * (gstPercent / 100)) : 0;
-  const grandTotal = netBeforeTax + gstAmount;
+  // Core Modular Proposal (Without Add-ons / Accessories & Appliances so they don't distort final discounted value)
+  const coreNetBeforeTax = Math.max(0, Math.round(woodworkAfterDiscount + designAfterDiscount + freightAmount));
+  const coreGstAmount = gstEnabled ? Math.round(coreNetBeforeTax * (gstPercent / 100)) : 0;
+  const coreGrandTotal = coreNetBeforeTax + coreGstAmount;
+
+  // Add-ons, Accessories & Appliances sit cleanly below savings without affecting the core proposal total
+  const selectedAddons = Array.isArray(o.selectedAddons) ? o.selectedAddons : (Array.isArray(c.selectedAddons) ? c.selectedAddons : []);
+  const appliancesList = Array.isArray(o.appliancesList) ? o.appliancesList : (Array.isArray(c.appliancesList) ? c.appliancesList : []);
+  const addonsTotal = acc + appliances;
+  const totalInvestmentWithAddons = coreGrandTotal + addonsTotal;
+
+  // Set netBeforeTax and grandTotal to core proposal values (unaffected by add-ons)
+  const netBeforeTax = coreNetBeforeTax;
+  const gstAmount = coreGstAmount;
+  const grandTotal = coreGrandTotal;
 
   return Object.assign({}, c, {
     surabhiDesignSlab: slabId,
@@ -155,6 +166,12 @@ function recalculateVariantCommercial(comm, overrides) {
     additionalAccessories: acc,
     appliancesEnabled,
     appliances,
+    selectedAddons,
+    appliancesList,
+    addonsTotal,
+    totalInvestmentWithAddons,
+    coreNetBeforeTax,
+    coreGrandTotal,
     designPercent,
     designAmount,
     freightEnabled,

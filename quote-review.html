@@ -479,10 +479,19 @@
         var totalSavings = discAmt + adpAmt;
         var hasDiscount = totalSavings > 0;
 
-        // Grand Total (Without GST) = Net Woodwork + Net Design Charge (+ enabled Accessories, Appliances, Freight)
-        var netBeforeTax = Math.max(0, Math.round(woodworkAfterDiscount + designAfterDiscount + acc + app + freightAmt));
-        var gstAmt = gstEnabled ? Math.round(netBeforeTax * (gstPct / 100)) : 0;
-        var grandTotal = netBeforeTax + gstAmt;
+        // Core Modular Proposal (Without Add-ons / Accessories & Appliances so they don't distort final discounted value)
+        var coreNetBeforeTax = Math.max(0, Math.round(woodworkAfterDiscount + designAfterDiscount + freightAmt));
+        var coreGstAmount = gstEnabled ? Math.round(coreNetBeforeTax * (gstPct / 100)) : 0;
+        var coreGrandTotal = coreNetBeforeTax + coreGstAmount;
+
+        var selectedAddons = Array.isArray(o.selectedAddons) ? o.selectedAddons : (Array.isArray(comm.selectedAddons) ? comm.selectedAddons : []);
+        var appliancesList = Array.isArray(o.appliancesList) ? o.appliancesList : (Array.isArray(comm.appliancesList) ? comm.appliancesList : []);
+        var addonsTotal = acc + app;
+        var totalInvestmentWithAddons = coreGrandTotal + addonsTotal;
+
+        var netBeforeTax = coreNetBeforeTax;
+        var gstAmt = coreGstAmount;
+        var grandTotal = coreGrandTotal;
 
         return Object.assign({}, comm, {
           woodworkSubtotal: woodwork,
@@ -492,6 +501,12 @@
           additionalAccessories: acc,
           appliancesEnabled: appliancesEnabled,
           appliances: app,
+          selectedAddons: selectedAddons,
+          appliancesList: appliancesList,
+          addonsTotal: addonsTotal,
+          totalInvestmentWithAddons: totalInvestmentWithAddons,
+          coreNetBeforeTax: coreNetBeforeTax,
+          coreGrandTotal: coreGrandTotal,
           designPercent: dPct,
           designAmount: designAmt,
           freightEnabled: freightEnabled,
@@ -576,6 +591,13 @@
         var sEl = card.querySelector('[data-f="totalSavings"]');
         if (sEl) sEl.textContent = fmtINR(c.totalSavings || 0);
 
+        var addSubEl = card.querySelector('[data-f="addonsTotal"]');
+        if (addSubEl) addSubEl.textContent = fmtINR(c.addonsTotal || 0);
+        var addBadgeEl = card.querySelector('[data-f="addonsTotalBadge"]');
+        if (addBadgeEl) addBadgeEl.textContent = '₹ ' + fmtINR(c.addonsTotal || 0);
+        var totInvEl = card.querySelector('[data-f="totalInvestment"]');
+        if (totInvEl) totInvEl.textContent = fmtINR(c.totalInvestmentWithAddons || 0);
+
         // Live-sync updated selected variant total into the All Variants side reference
         var sidePriceEl = document.querySelector('[data-side-tier="' + String(v.tierKey || '').replace(/"/g, '') + '"]');
         if (sidePriceEl) sidePriceEl.textContent = fmtINR(c.grandTotal);
@@ -632,24 +654,6 @@
 
           html += '<table><thead><tr><th class="crimson-hdr">Cost Estimation Summary &amp; Editable Controls</th><th class="crimson-hdr num">Amount</th></tr></thead><tbody>' +
             '<tr><td><b>Modular Woodwork Subtotal</b></td><td class="num"><b>' + fmtINR(c.woodworkSubtotal) + '</b></td></tr>' +
-            '<tr data-row="accessories" style="' + (c.accessoriesEnabled ? '' : 'opacity:0.5;') + '">' +
-            '  <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="accessoriesEnabled"' + (c.accessoriesEnabled ? ' checked' : '') + '> <b>Additional Accessories</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
-            '  <td class="num">' +
-            '    <span class="amt-input-wrap" data-wrap="accInput" style="display:' + (c.accessoriesEnabled ? 'inline-flex' : 'none') + ';">' +
-            '      <span>₹</span><input type="number" step="100" min="0" class="amt-input" data-idx="' + idx + '" data-kind="accessories" value="' + esc(c.baseAdditionalAccessories || 0) + '" placeholder="0">' +
-            '    </span>' +
-            '    <span data-f="accDisabled" style="display:' + (c.accessoriesEnabled ? 'none' : 'inline') + ';color:#64748B;">Disabled</span>' +
-            '  </td>' +
-            '</tr>' +
-            '<tr data-row="appliances" style="' + (c.appliancesEnabled ? '' : 'opacity:0.5;') + '">' +
-            '  <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="appliancesEnabled"' + (c.appliancesEnabled ? ' checked' : '') + '> <b>Appliances</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
-            '  <td class="num">' +
-            '    <span class="amt-input-wrap" data-wrap="appInput" style="display:' + (c.appliancesEnabled ? 'inline-flex' : 'none') + ';">' +
-            '      <span>₹</span><input type="number" step="100" min="0" class="amt-input" data-idx="' + idx + '" data-kind="appliances" value="' + esc(c.baseAppliances || 0) + '" placeholder="0">' +
-            '    </span>' +
-            '    <span data-f="appDisabled" style="display:' + (c.appliancesEnabled ? 'none' : 'inline') + ';color:#64748B;">Disabled</span>' +
-            '  </td>' +
-            '</tr>' +
             '<tr class="discount-row">' +
             '  <td><div class="disc-input-wrap"><b>Design Charges (%):</b> ' +
             '    <input type="number" step="0.5" min="0" max="100" class="disc-input" data-idx="' + idx + '" data-kind="design" value="' + esc(c.designPercent !== undefined ? c.designPercent : 9) + '">' +
@@ -681,6 +685,48 @@
             '<tr class="total-row"><td data-f="finalLbl">' + (c.hasDiscount ? (c.gstEnabled ? 'FINAL DISCOUNTED VALUE (WITH GST)' : 'FINAL DISCOUNTED VALUE') : (c.gstEnabled ? 'FINAL TOTAL (WITH GST)' : 'FINAL TOTAL')) + '</td><td class="num" data-f="grandTotal">' + fmtINR(c.grandTotal) + '</td></tr>' +
             '<tr style="background:#ECFDF5;"><td style="color:#166534;font-weight:800;">YOUR SAVINGS</td><td class="num" style="color:#166534;font-weight:800;" data-f="totalSavings">' + fmtINR(c.totalSavings || 0) + '</td></tr>' +
             '</tbody></table>' +
+
+            // ── ADD-ONS, ACCESSORIES & APPLIANCES (DOWN AFTER YOUR SAVINGS) ──
+            '<div style="margin-top:14px;border:1.5px solid #08231B;border-radius:8px;overflow:hidden;background:#fff;">' +
+            '  <div style="background:#08231B;color:#fff;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:12.5px;">' +
+            '    <span>ADD-ONS, ACCESSORIES &amp; APPLIANCES (SELECTED ITEMS)</span>' +
+            '    <span data-f="addonsTotalBadge" style="color:#FEF9C3;font-family:monospace;font-size:13px;">₹ ' + fmtINR(c.addonsTotal || 0) + '</span>' +
+            '  </div>' +
+            '  <table><tbody>' +
+            '    <tr data-row="accessories" style="' + (c.accessoriesEnabled ? '' : 'opacity:0.5;') + '">' +
+            '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="accessoriesEnabled"' + (c.accessoriesEnabled ? ' checked' : '') + '> <b>Additional Accessories</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
+            '      <td class="num">' +
+            '        <span class="amt-input-wrap" data-wrap="accInput" style="display:' + (c.accessoriesEnabled ? 'inline-flex' : 'none') + ';">' +
+            '          <span>₹</span><input type="number" step="100" min="0" class="amt-input" data-idx="' + idx + '" data-kind="accessories" value="' + esc(c.baseAdditionalAccessories || 0) + '" placeholder="0">' +
+            '        </span>' +
+            '        <span data-f="accDisabled" style="display:' + (c.accessoriesEnabled ? 'none' : 'inline') + ';color:#64748B;">Disabled</span>' +
+            '      </td>' +
+            '    </tr>' +
+            (c.selectedAddons && c.selectedAddons.length ? ('<tr><td colspan="2" style="background:#FAF6F0;padding:6px 12px;font-size:11.5px;color:#334155;">' +
+              c.selectedAddons.map(function(it){ return '<div style="margin:2px 0;">• <b>' + esc(it.name) + '</b> (Qty: ' + (it.qty||1) + ') &mdash; ₹' + Number(it.amount || ((it.qty||1)*(it.rate||0))).toLocaleString('en-IN') + '</div>'; }).join('') +
+              '</td></tr>') : '') +
+            '    <tr data-row="appliances" style="' + (c.appliancesEnabled ? '' : 'opacity:0.5;') + '">' +
+            '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="appliancesEnabled"' + (c.appliancesEnabled ? ' checked' : '') + '> <b>Appliances</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
+            '      <td class="num">' +
+            '        <span class="amt-input-wrap" data-wrap="appInput" style="display:' + (c.appliancesEnabled ? 'inline-flex' : 'none') + ';">' +
+            '          <span>₹</span><input type="number" step="100" min="0" class="amt-input" data-idx="' + idx + '" data-kind="appliances" value="' + esc(c.baseAppliances || 0) + '" placeholder="0">' +
+            '        </span>' +
+            '        <span data-f="appDisabled" style="display:' + (c.appliancesEnabled ? 'none' : 'inline') + ';color:#64748B;">Disabled</span>' +
+            '      </td>' +
+            '    </tr>' +
+            (c.appliancesList && c.appliancesList.length ? ('<tr><td colspan="2" style="background:#FAF6F0;padding:6px 12px;font-size:11.5px;color:#334155;">' +
+              c.appliancesList.map(function(ap){ return '<div style="margin:2px 0;">• <b>' + esc(ap.name) + '</b> &mdash; ₹' + Number(ap.amount || ((ap.rate||0)*(ap.qty||1))).toLocaleString('en-IN') + '</div>'; }).join('') +
+              '</td></tr>') : '') +
+            '    <tr style="background:#F8FAFC;font-weight:700;">' +
+            '      <td>Add-ons &amp; Accessories Subtotal</td>' +
+            '      <td class="num" data-f="addonsTotal">' + fmtINR(c.addonsTotal || 0) + '</td>' +
+            '    </tr>' +
+            '    <tr style="background:#ECFDF5;font-weight:800;border-top:1.5px solid #16A34A;">' +
+            '      <td style="color:#08231B;font-size:12.5px;">TOTAL PROJECT INVESTMENT (PROPOSAL + ADD-ONS)</td>' +
+            '      <td class="num" style="color:#166534;font-size:13.5px;" data-f="totalInvestment">' + fmtINR(c.totalInvestmentWithAddons || 0) + '</td>' +
+            '    </tr>' +
+            '  </tbody></table>' +
+            '</div>' + +
             '<div class="scope-strip">' +
             'Loading/Unloading: <b>' + esc(c.loadingUnloadingStatus || 'Additional') + '</b> &bull; ' +
             'Floor Mat: <b>' + esc(c.floorMatStatus || 'Not Included') + '</b> &bull; ' +

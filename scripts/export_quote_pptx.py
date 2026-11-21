@@ -434,10 +434,6 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
     comm_items = [
         ('Modular Woodwork Subtotal', fmt_inr(comm.get('woodworkSubtotal', 0)), True),
     ]
-    if acc_enabled:
-        comm_items.append(('Additional Accessories', fmt_inr(comm.get('additionalAccessories', 0)), False))
-    if app_enabled:
-        comm_items.append(('Appliances', fmt_inr(comm.get('appliances', 0)), False))
     comm_items.append(('Design Charges', fmt_inr(comm.get('designAmount', 0)), False))
     if frt_enabled:
         comm_items.append(('Freight Charges', fmt_inr(comm.get('freightAmount', 0)), False))
@@ -492,7 +488,83 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
         8102 + slide_id_seed * 20, f'OrbixCommTbl_{slide_id_seed}',
         x0, y, [6325700, 2800000], comm_rows
     ))
-    y += sum(rh for rh, _ in comm_rows) + 180000
+    y += sum(rh for rh, _ in comm_rows) + 160000
+
+    # ── ADD-ONS, ACCESSORIES & APPLIANCES (DOWN AFTER YOUR SAVINGS) ──
+    selected_addons = comm.get('selectedAddons') or []
+    appliances_list = comm.get('appliancesList') or []
+    add_acc_amt = float(comm.get('additionalAccessories') or 0) if acc_enabled else 0
+    app_amt = float(comm.get('appliances') or 0) if app_enabled else 0
+    addons_total = comm.get('addonsTotal')
+    if addons_total is None:
+        addons_total = add_acc_amt + app_amt
+    else:
+        addons_total = float(addons_total)
+    total_investment = comm.get('totalInvestmentWithAddons')
+    if total_investment is None:
+        total_investment = float(comm.get('grandTotal') or 0) + addons_total
+    else:
+        total_investment = float(total_investment)
+
+    has_addons = bool(selected_addons or appliances_list or (addons_total > 0))
+    if y < 11800000:
+        addon_rows = [
+            (320000, [
+                build_ooxml_cell('ADD-ONS, ACCESSORIES & APPLIANCES (SELECTED ITEMS)', fill_hex='08231B', text_hex='FFFFFF', bold=True, font_sz=980, align='l', border_hex='08231B'),
+                build_ooxml_cell('AMOUNT', fill_hex='08231B', text_hex='FFFFFF', bold=True, font_sz=980, align='r', border_hex='08231B'),
+            ])
+        ]
+        if selected_addons:
+            for it in selected_addons:
+                q = max(1, int(it.get('qty', 1)))
+                r = float(it.get('rate', 0))
+                amt = float(it.get('amount') if it.get('amount') is not None else (q * r))
+                rate_lbl = f" @ {fmt_inr(r)}" if r > 0 else ""
+                addon_rows.append((270000, [
+                    build_ooxml_cell(f"• {it.get('name', 'Accessory Item')} (Qty: {q}{rate_lbl})", fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='l'),
+                    build_ooxml_cell(fmt_inr(amt), fill_hex='FFFFFF', text_hex='08231B', bold=True, font_sz=920, align='r'),
+                ]))
+        elif add_acc_amt > 0:
+            addon_rows.append((270000, [
+                build_ooxml_cell('• Selected Hardware Accessories Package', fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='l'),
+                build_ooxml_cell(fmt_inr(add_acc_amt), fill_hex='FFFFFF', text_hex='08231B', bold=True, font_sz=920, align='r'),
+            ]))
+
+        if appliances_list:
+            for ap in appliances_list:
+                q = max(1, int(ap.get('qty', 1)))
+                amt = float(ap.get('amount') if ap.get('amount') is not None else (float(ap.get('rate', 0)) * q))
+                q_lbl = f" (Qty: {q})" if q > 1 else ""
+                addon_rows.append((270000, [
+                    build_ooxml_cell(f"• {ap.get('name', 'Kitchen Appliance')}{q_lbl}", fill_hex='FAF6F0', text_hex='08231B', bold=False, font_sz=920, align='l'),
+                    build_ooxml_cell(fmt_inr(amt), fill_hex='FAF6F0', text_hex='08231B', bold=True, font_sz=920, align='r'),
+                ]))
+        elif app_amt > 0:
+            addon_rows.append((270000, [
+                build_ooxml_cell('• Selected Kitchen & Home Appliances Package', fill_hex='FAF6F0', text_hex='08231B', bold=False, font_sz=920, align='l'),
+                build_ooxml_cell(fmt_inr(app_amt), fill_hex='FAF6F0', text_hex='08231B', bold=True, font_sz=920, align='r'),
+            ]))
+
+        if has_addons:
+            addon_rows.append((310000, [
+                build_ooxml_cell('Add-ons & Accessories Subtotal', fill_hex='FEF9C3', text_hex='08231B', bold=True, font_sz=980, align='l'),
+                build_ooxml_cell(fmt_inr(addons_total), fill_hex='FEF9C3', text_hex='08231B', bold=True, font_sz=1000, align='r'),
+            ]))
+            addon_rows.append((380000, [
+                build_ooxml_cell('TOTAL PROJECT INVESTMENT (PROPOSAL + ADD-ONS)', fill_hex='ECFDF5', text_hex='08231B', bold=True, font_sz=1050, align='l', border_hex='16A34A'),
+                build_ooxml_cell(fmt_inr(total_investment), fill_hex='ECFDF5', text_hex='166534', bold=True, font_sz=1200, align='r', border_hex='16A34A'),
+            ]))
+        else:
+            addon_rows.append((270000, [
+                build_ooxml_cell('None Selected (Optional Cookscape Master Add-ons available upon request)', fill_hex='FFFFFF', text_hex='64748B', bold=False, font_sz=900, align='l'),
+                build_ooxml_cell('Rs. 0', fill_hex='FFFFFF', text_hex='64748B', bold=True, font_sz=900, align='r'),
+            ]))
+
+        shapes.append(build_ooxml_table(
+            8104 + slide_id_seed * 20, f'OrbixAddonsTbl_{slide_id_seed}',
+            x0, y, [6325700, 2800000], addon_rows
+        ))
+        y += sum(rh for rh, _ in addon_rows) + 160000
 
     if y < 12650000:
         scope_notes = (

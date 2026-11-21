@@ -7438,13 +7438,23 @@
       var discountAmount = Math.round(woodworkSubtotal * (discountPercent / 100));
 
       var totalDeductions = discountAmount + adpAmount;
-      var grossAdditions = addAccessories + appliances + designAmount + freightAmount;
+      var grossAdditions = designAmount + freightAmount;
 
-      var netValue = Math.max(0, Math.round(woodworkSubtotal + grossAdditions - totalDeductions));
+      // Core proposal total (excludes Add-ons / Accessories & Appliances so they do not affect Final Discounted Value)
+      var coreNetBeforeTax = Math.max(0, Math.round(woodworkSubtotal + grossAdditions - totalDeductions));
       var gstPercent = (charges.gstPercent !== undefined && charges.gstPercent !== null && charges.gstPercent !== '') ? parseFloat(charges.gstPercent) : 18;
       if (isNaN(gstPercent)) gstPercent = 18;
-      var gstAmount = gstEnabled ? Math.round(netValue * (gstPercent / 100)) : 0;
-      var grandTotal = netValue + gstAmount;
+      var coreGstAmount = gstEnabled ? Math.round(coreNetBeforeTax * (gstPercent / 100)) : 0;
+      var coreGrandTotal = coreNetBeforeTax + coreGstAmount;
+
+      var selectedAddons = Array.isArray(charges.selectedAddons) ? charges.selectedAddons : [];
+      var appliancesList = Array.isArray(charges.appliancesList) ? charges.appliancesList : [];
+      var addonsTotal = addAccessories + appliances;
+      var totalInvestmentWithAddons = coreGrandTotal + addonsTotal;
+
+      var netValue = coreNetBeforeTax;
+      var gstAmount = coreGstAmount;
+      var grandTotal = coreGrandTotal;
 
       return {
         woodworkSubtotal: Math.round(woodworkSubtotal),
@@ -7455,6 +7465,12 @@
         additionalAccessories: addAccessories,
         appliancesEnabled: appliancesEnabled,
         appliances: appliances,
+        selectedAddons: selectedAddons,
+        appliancesList: appliancesList,
+        addonsTotal: addonsTotal,
+        totalInvestmentWithAddons: totalInvestmentWithAddons,
+        coreNetBeforeTax: coreNetBeforeTax,
+        coreGrandTotal: coreGrandTotal,
         designPercent: designPercent,
         designAmount: designAmount,
         freightEnabled: freightEnabled,
@@ -7877,10 +7893,15 @@
         '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
         '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>' +
 
-        // Additional Accessories (Enable/Disable + amount)
+        // Additional Accessories (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAccessories" style="' + (commSummary.accessoriesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Additional Accessories</label></td>' +
+        '<td colspan="4" class="bold">' +
+        '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Additional Accessories</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Add-Ons Catalog (58 Items)</button>' +
+        (commCharges.selectedAddons && commCharges.selectedAddons.length ? ('<span id="commAddonsCountBadge" style="font-size:11px;color:#166534;font-weight:700;">(' + commCharges.selectedAddons.length + ' items selected)</span>') : '<span id="commAddonsCountBadge" style="display:none;font-size:11px;color:#166534;font-weight:700;"></span>') +
+        '</div></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
@@ -8056,6 +8077,19 @@
         '<td colspan="4" class="bold" style="font-size:12.5px;color:#166534;">YOUR SAVINGS</td>' +
         '<td colspan="3" class="c-num bold" id="commTotalSavings" style="font-size:13.5px;color:#166534;">₹ ' + (commSummary.totalSavings || 0).toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
+
+        // ── ADD-ONS & TOTAL INVESTMENT (DOWN AFTER SAVINGS) ──
+        '<tr class="sec-bar-row" style="background:#08231B;color:#fff;"><td colspan="11"><b>Add-Ons, Accessories &amp; Appliances (Down After Savings)</b></td></tr>' +
+        '<tr>' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">Add-ons &amp; Accessories Subtotal</td>' +
+        '<td colspan="3" class="c-num bold" id="commAddonsSubtotal">₹ ' + (commSummary.addonsTotal || 0).toLocaleString('en-IN') + '.00</td>' +
+        '</tr>' +
+        '<tr style="background:#ECFDF5;border-top:1.5px solid #16A34A;">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold" style="font-size:13px;color:#08231B;">TOTAL PROJECT INVESTMENT (PROPOSAL + ADD-ONS)</td>' +
+        '<td colspan="3" class="c-num bold" id="commTotalInvestment" style="font-size:14px;color:#166534;">INR ' + (commSummary.totalInvestmentWithAddons || 0).toLocaleString('en-IN') + '.00</td>' +
+        '</tr>' +
         '</tbody></table></div>';
 
       // History Snapshots if available
@@ -8107,6 +8141,20 @@
         if (finalEl) finalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
         var savEl = document.getElementById('commTotalSavings');
         if (savEl) savEl.textContent = '₹ ' + (summary.totalSavings || 0).toLocaleString('en-IN') + '.00';
+        var addSubEl = document.getElementById('commAddonsSubtotal');
+        if (addSubEl) addSubEl.textContent = '₹ ' + (summary.addonsTotal || 0).toLocaleString('en-IN') + '.00';
+        var totInvEl = document.getElementById('commTotalInvestment');
+        if (totInvEl) totInvEl.textContent = 'INR ' + (summary.totalInvestmentWithAddons || 0).toLocaleString('en-IN') + '.00';
+        var badgeEl = document.getElementById('commAddonsCountBadge');
+        if (badgeEl) {
+          var selCount = (self.project.commercialCharges && self.project.commercialCharges.selectedAddons) ? self.project.commercialCharges.selectedAddons.length : 0;
+          if (selCount > 0) {
+            badgeEl.textContent = '(' + selCount + ' items selected)';
+            badgeEl.style.display = 'inline';
+          } else {
+            badgeEl.style.display = 'none';
+          }
+        }
         var headerTotalEl = document.getElementById('boqHeaderTotalAmount');
         if (headerTotalEl) headerTotalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
 
@@ -8181,6 +8229,18 @@
           self.saveToLocalStorage();
         });
       });
+
+      var btnAddonsPicker = boqEl.querySelector('#btnOpenAddonsPicker');
+      if (btnAddonsPicker) {
+        btnAddonsPicker.addEventListener('click', function () {
+          self.openAddonsPickerModal(function () {
+            refreshCommercialDom();
+            var accInp = boqEl.querySelector('.comm-input[data-key="additionalAccessories"]');
+            if (accInp) accInp.value = self.project.commercialCharges.additionalAccessories || 0;
+            self.saveToLocalStorage();
+          });
+        });
+      }
 
       // Event bindings for BOQ
       var printBtn = document.getElementById('boqPrintBtn');
@@ -8726,6 +8786,216 @@
       }
     },
 
+    openAddonsPickerModal: function (onApply) {
+      var self = this;
+      var catalog = (typeof Core !== 'undefined' && Core.getCookscapeAddonsCatalog)
+        ? Core.getCookscapeAddonsCatalog()
+        : [];
+      if (!catalog.length) return;
+
+      var currentCharges = this.getCommercialCharges();
+      var selectedMap = {};
+      (currentCharges.selectedAddons || []).forEach(function (it) {
+        selectedMap[it.id] = Math.max(0, Number(it.qty || 1));
+      });
+
+      var modalId = 'orbixAddonsModal';
+      var modal = document.getElementById(modalId);
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;justify-content:center;';
+        document.body.appendChild(modal);
+      }
+
+      var categories = ['All'];
+      catalog.forEach(function (it) {
+        if (it.category && categories.indexOf(it.category) === -1) {
+          categories.push(it.category);
+        }
+      });
+
+      var activeCategory = 'All';
+      var searchQuery = '';
+
+      function renderModalContent() {
+        var filtered = catalog.filter(function (it) {
+          var matchCat = (activeCategory === 'All') || (it.category === activeCategory);
+          var matchSearch = !searchQuery || (it.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) || (it.category.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1);
+          return matchCat && matchSearch;
+        });
+
+        var selectedCount = 0;
+        var selectedTotal = 0;
+        catalog.forEach(function (it) {
+          var q = selectedMap[it.id] || 0;
+          if (q > 0) {
+            selectedCount += q;
+            selectedTotal += q * (it.rate || 0);
+          }
+        });
+
+        modal.innerHTML =
+          '<div class="addons-backdrop" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,35,27,0.65);backdrop-filter:blur(3px);"></div>' +
+          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(900px, 94vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
+
+          // Header
+          '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
+          '    <div>' +
+          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Add-Ons &amp; Accessories Catalog</h3>' +
+          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">58 Master Hardware Items &bull; Will appear below Your Savings in the Client Proposal</div>' +
+          '    </div>' +
+          '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
+          '  </div>' +
+
+          // Search & Category Filters
+          '  <div style="background:#FAF6F0;padding:12px 20px;border-bottom:1px solid #E2D5C3;display:flex;flex-direction:column;gap:10px;">' +
+          '    <input type="text" id="addonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search by name or category (e.g. Magic Corner, Pantry, Basket, Cot, Shutter)..." style="width:100%;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;" id="addonsCatPills">' +
+          categories.map(function (cat) {
+            var isSel = cat === activeCategory;
+            return '<button type="button" class="addons-cat-btn" data-cat="' + cat.replace(/"/g, '&quot;') + '" style="padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#08231B' : '#CBD5E1') + ';background:' + (isSel ? '#08231B' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + cat + '</button>';
+          }).join('') +
+          '    </div>' +
+          '  </div>' +
+
+          // Item List Body
+          '  <div style="flex:1;overflow-y:auto;padding:12px 20px;" id="addonsItemList">' +
+          '    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">' +
+          '      <thead>' +
+          '        <tr style="border-bottom:2px solid #E2E8F0;color:#64748B;font-size:11px;text-align:left;">' +
+          '          <th style="padding:6px 8px;">ITEM NAME &amp; CATEGORY</th>' +
+          '          <th style="padding:6px 8px;text-align:right;">UNIT RATE</th>' +
+          '          <th style="padding:6px 8px;text-align:center;width:130px;">QUANTITY</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:110px;">SUBTOTAL</th>' +
+          '        </tr>' +
+          '      </thead>' +
+          '      <tbody>' +
+          (filtered.length ? filtered.map(function (it) {
+            var q = selectedMap[it.id] || 0;
+            var sub = q * (it.rate || 0);
+            var isCustom = it.isCustom;
+            var customRange = isCustom ? (' (' + (it.minRate || 0) + '-' + (it.maxRate || 0) + '/' + (it.unit || '') + ')') : '';
+            return '<tr style="border-bottom:1px solid #F1F5F9;' + (q > 0 ? 'background:#F0FDF4;' : '') + '">' +
+              '<td style="padding:8px;">' +
+              '  <div style="font-weight:700;color:#08231B;">' + it.name + '</div>' +
+              '  <div style="font-size:11px;color:#64748B;">' + it.category + customRange + '</div>' +
+              '</td>' +
+              '<td style="padding:8px;text-align:right;font-family:monospace;font-weight:600;color:#08231B;">₹ ' + (it.rate || 0).toLocaleString('en-IN') + '</td>' +
+              '<td style="padding:8px;text-align:center;">' +
+              '  <div style="display:inline-flex;align-items:center;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden;background:#FFF;">' +
+              '    <button type="button" class="addons-qty-btn" data-id="' + it.id + '" data-delta="-1" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">-</button>' +
+              '    <input type="number" min="0" class="addons-qty-inp" data-id="' + it.id + '" value="' + q + '" style="width:42px;height:26px;border:none;border-left:1px solid #E2E8F0;border-right:1px solid #E2E8F0;text-align:center;font-weight:700;font-size:12px;">' +
+              '    <button type="button" class="addons-qty-btn" data-id="' + it.id + '" data-delta="1" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">+</button>' +
+              '  </div>' +
+              '</td>' +
+              '<td style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (q > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
+              '</tr>';
+          }).join('') : '<tr><td colspan="4" style="text-align:center;padding:30px;color:#64748B;">No add-on items found matching search.</td></tr>') +
+          '      </tbody>' +
+          '    </table>' +
+          '  </div>' +
+
+          // Sticky Footer
+          '  <div style="background:#FAF6F0;border-top:1px solid #E2D5C3;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">' +
+          '    <div>' +
+          '      <span style="font-size:12px;color:#475569;font-weight:600;">Selected Add-Ons: </span>' +
+          '      <b style="color:#08231B;font-size:13px;">' + selectedCount + ' items</b> &bull; ' +
+          '      <span style="font-size:12px;color:#475569;font-weight:600;">Subtotal: </span>' +
+          '      <b style="color:#166534;font-size:15px;font-family:monospace;">₹ ' + selectedTotal.toLocaleString('en-IN') + '</b>' +
+          '    </div>' +
+          '    <div style="display:flex;gap:10px;">' +
+          '      <button type="button" class="addons-close-btn btn" style="background:#E2E8F0;color:#1E293B;border-radius:6px;padding:7px 14px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">Cancel</button>' +
+          '      <button type="button" id="addonsApplyBtn" class="btn" style="background:#08231B;color:#FFF;border-radius:6px;padding:7px 18px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">✅ Apply to Quotation</button>' +
+          '    </div>' +
+          '  </div>' +
+          '</div>';
+
+        // Bind events inside modal
+        modal.querySelectorAll('.addons-close-btn, .addons-backdrop').forEach(function (el) {
+          el.addEventListener('click', function () {
+            modal.style.display = 'none';
+          });
+        });
+
+        var sInp = modal.querySelector('#addonsSearchInput');
+        if (sInp) {
+          sInp.addEventListener('input', function () {
+            searchQuery = sInp.value;
+            renderModalContent();
+            var restored = modal.querySelector('#addonsSearchInput');
+            if (restored) {
+              restored.focus();
+              restored.setSelectionRange(restored.value.length, restored.value.length);
+            }
+          });
+        }
+
+        modal.querySelectorAll('.addons-cat-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activeCategory = btn.getAttribute('data-cat');
+            renderModalContent();
+          });
+        });
+
+        modal.querySelectorAll('.addons-qty-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-id');
+            var delta = Number(btn.getAttribute('data-delta')) || 0;
+            var cur = selectedMap[id] || 0;
+            var next = Math.max(0, cur + delta);
+            if (next === 0) delete selectedMap[id];
+            else selectedMap[id] = next;
+            renderModalContent();
+          });
+        });
+
+        modal.querySelectorAll('.addons-qty-inp').forEach(function (inp) {
+          inp.addEventListener('change', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseInt(inp.value, 10) || 0);
+            if (val === 0) delete selectedMap[id];
+            else selectedMap[id] = val;
+            renderModalContent();
+          });
+        });
+
+        var applyBtn = modal.querySelector('#addonsApplyBtn');
+        if (applyBtn) {
+          applyBtn.addEventListener('click', function () {
+            var chosen = [];
+            var totalAmt = 0;
+            catalog.forEach(function (it) {
+              var q = selectedMap[it.id] || 0;
+              if (q > 0) {
+                var amt = q * (it.rate || 0);
+                chosen.push({
+                  id: it.id,
+                  name: it.name,
+                  category: it.category,
+                  rate: it.rate,
+                  qty: q,
+                  amount: amt
+                });
+                totalAmt += amt;
+              }
+            });
+
+            self.project.commercialCharges = self.project.commercialCharges || {};
+            self.project.commercialCharges.selectedAddons = chosen;
+            self.project.commercialCharges.additionalAccessories = totalAmt;
+            self.project.commercialCharges.accessoriesEnabled = true;
+
+            modal.style.display = 'none';
+            if (typeof onApply === 'function') onApply();
+          });
+        }
+      }
+
+      modal.style.display = 'flex';
+      renderModalContent();
+    },
+
     downloadPDF: function () {
       this.sync3DStudioUnits();
       var oldTitle = document.title;
@@ -9217,15 +9487,9 @@
       var appliancesVal = Number(commCharges.appliances) || 0;
 
       var commRows = [
-        { label: 'Modular Woodwork Subtotal', status: 'Active Scope', amt: comm.woodworkSubtotal, style: 12 }
+        { label: 'Modular Woodwork Subtotal', status: 'Active Scope', amt: comm.woodworkSubtotal, style: 12 },
+        { label: 'Design Charges', status: comm.designPercent + '%', amt: comm.designAmount, style: 12 }
       ];
-      if (comm.accessoriesEnabled !== false) {
-        commRows.push({ label: 'Additional Accessories', status: comm.additionalAccessories > 0 ? 'Specified' : 'Standard', amt: comm.additionalAccessories, style: 12 });
-      }
-      if (comm.appliancesEnabled !== false) {
-        commRows.push({ label: 'Appliances', status: comm.appliances > 0 ? 'Specified' : 'Standard', amt: comm.appliances, style: 12 });
-      }
-      commRows.push({ label: 'Design Charges', status: comm.designPercent + '%', amt: comm.designAmount, style: 12 });
       if (comm.freightEnabled !== false) {
         commRows.push({ label: 'Freight Charges', status: comm.freightPercent + '%', amt: comm.freightAmount, style: 12 });
       }
@@ -9245,7 +9509,9 @@
       }
       commRows.push(
         { label: comm.gstEnabled !== false ? 'Final Total (With GST)' : 'Final Total', status: 'Net Payable', amt: comm.grandTotal, style: 22, isGrand: true },
-        { label: 'Your Savings', status: 'Total Discount', amt: comm.totalSavings || (comm.discountAmount + comm.adpAmount), style: 12 }
+        { label: 'Your Savings', status: 'Total Discount', amt: comm.totalSavings || (comm.discountAmount + comm.adpAmount), style: 12 },
+        { label: 'Add-ons & Accessories Subtotal', status: 'Optional Add-ons', amt: comm.addonsTotal || 0, style: 12 },
+        { label: 'TOTAL PROJECT INVESTMENT (PROPOSAL + ADD-ONS)', status: 'Final Investment', amt: comm.totalInvestmentWithAddons || comm.grandTotal, style: 22, isGrand: true }
       );
 
       for (var cr = 0; cr < commRows.length; cr++) {
