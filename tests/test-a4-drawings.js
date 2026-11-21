@@ -159,6 +159,78 @@ assert.ok(dxf.includes('AC1009'), 'DXF must be valid AC1009 format');
 assert.ok(dxf.includes('OUTLINE') && dxf.includes('TITLEBLOCK'), 'DXF must contain CAD layers');
 console.log('✓ AutoCAD DXF export verified.');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Test Dynamic Generation for Arbitrary Unit Counts (e.g. 27 Units)
+// ─────────────────────────────────────────────────────────────────────────────
+console.log('\nTesting Dynamic Generation with 27 Units (User Production Scale)...');
+
+var units27 = [];
+for (var k = 0; k < 27; k++) {
+  var uNum = k + 1;
+  var tag = 'U' + (uNum < 10 ? '0' : '') + uNum;
+  var isSink = (k === 0);
+  var isHob = (k === 1);
+  var isDrawers = (k % 3 === 0);
+  units27.push({
+    id: 'unit_27_' + k,
+    name: isSink ? 'SINK CABINET' : (isHob ? 'HOB CABINET' : (isDrawers ? '3-DRAWER TANDEM' : 'MODULAR CABINET ' + uNum)),
+    code: tag,
+    category: (k > 15) ? 'wall' : 'base',
+    dimensions: { W: isSink ? 800 : (isHob ? 900 : (k % 2 === 0 ? 600 : 450)), D: (k > 15) ? 350 : 600, H: (k > 15) ? 720 : 860 },
+    unitConfig: {
+      shutters: isDrawers ? 0 : 2,
+      drawers: isDrawers ? 3 : 0,
+      hasSink: isSink,
+      hasHob: isHob,
+      carcass: 'Action TESA BWP Half White',
+      shutterCol: 'Merino Surabhi Teak'
+    }
+  });
+}
+
+global.OrbixUI = {
+  project: {
+    meta: {
+      clientName: 'COOKSCAPE PREMIUM CLIENT',
+      title: 'CHENNAI VILLA PROJECT (27 UNITS)',
+      designerName: 'Ar. SHIVARANJANI',
+      code: 'CS-2026-27U'
+    },
+    plan: {
+      walls: [],
+      openings: [],
+      rooms: [],
+      furniture: units27
+    }
+  }
+};
+
+const pages27 = global.OrbixA4Drawings.generateAllPages();
+assert.ok(Array.isArray(pages27), 'Must return pages array');
+// 2 overview pages (Floor Plan + 3D) + 27 units = 29 pages total
+assert.strictEqual(pages27.length, 29, 'Must generate exactly 29 pages dynamically for 27 units');
+console.log(`✓ Successfully generated ${pages27.length} dynamic pages for 27 units!`);
+
+// Verify every single page has correct page number and total count
+pages27.forEach((page, pIdx) => {
+  var expectedPageNum = pIdx + 1;
+  var pNumStr = expectedPageNum < 10 ? '0' + expectedPageNum : String(expectedPageNum);
+  assert.ok(page.svg.includes('PAGE NO : ' + pNumStr), `Page ${expectedPageNum} must show PAGE NO : ${pNumStr}`);
+  assert.ok(page.svg.includes('TOTAL NO OF PAGES : 29'), `Page ${expectedPageNum} must show TOTAL NO OF PAGES : 29`);
+  assert.ok(page.svg.includes('COOKSCAPE PREMIUM CLIENT'), `Page ${expectedPageNum} must include client name`);
+});
+console.log('✓ Verified all 29 pages have dynamic PAGE NO and TOTAL NO OF PAGES : 29!');
+
+// Verify unit sheets 3 through 29
+for (var u = 0; u < 27; u++) {
+  var sheet = pages27[2 + u];
+  var uTag = 'U' + ((u + 1) < 10 ? '0' : '') + (u + 1);
+  assert.ok(sheet.svg.includes(uTag), `Sheet for unit ${u + 1} must include tag ${uTag}`);
+  assert.ok(sheet.svg.includes('EXTERNAL VIEW'), `Sheet for unit ${u + 1} must include EXTERNAL VIEW`);
+  assert.ok(sheet.svg.includes('INTERNAL VIEW'), `Sheet for unit ${u + 1} must include INTERNAL VIEW`);
+}
+console.log('✓ All 27 individual unit shop drawing sheets verified.');
+
 console.log('\n======================================================');
 console.log('ALL ORBIX A4 PRODUCTION DRAWING TESTS PASSED 100%!');
 console.log('======================================================');

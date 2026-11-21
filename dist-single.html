@@ -47102,28 +47102,58 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     getProjectData: function () {
       var ui = (typeof window !== 'undefined' && window.OrbixUI) || null;
       var plan = null;
-      var proj = (ui && ui.project) ||
-                 (ui && ui.editor && ui.editor.project) ||
-                 (typeof window !== 'undefined' && window.OrbixProjects && window.OrbixProjects.currentProject);
+      var proj = (ui && ui.project) || (ui && ui.editor && ui.editor.project) || null;
+
+      // 1. Inspect window.OrbixProjects for active project record
+      var activeRecord = null;
+      if (typeof window !== 'undefined' && window.OrbixProjects) {
+        var op = window.OrbixProjects;
+        var actId = op.activeProjectId || (typeof localStorage !== 'undefined' && localStorage.getItem('orbix_active_project_id'));
+        if (actId && Array.isArray(op.projects)) {
+          activeRecord = op.projects.find(function (p) {
+            return String(p.id) === String(actId);
+          });
+        }
+      }
+
+      if (activeRecord) {
+        proj = proj || activeRecord;
+        var pDet = (activeRecord.data && activeRecord.data.details) || activeRecord.details || {};
+        if (activeRecord.client || pDet.clientName) this.meta.client = activeRecord.client || pDet.clientName;
+        if (activeRecord.name || activeRecord.title || pDet.siteAddress || activeRecord.location) {
+          this.meta.site = activeRecord.name || activeRecord.title || pDet.siteAddress || activeRecord.location;
+        }
+        if (activeRecord.code || activeRecord.cp_code || pDet.cpCode) this.meta.prCode = activeRecord.code || activeRecord.cp_code || pDet.cpCode;
+        if (activeRecord.bh_name || pDet.bhName || pDet.designerName) this.meta.designer = activeRecord.bh_name || pDet.bhName || pDet.designerName;
+      }
 
       if (ui && typeof ui.getPlan === 'function') {
         try { plan = ui.getPlan(); } catch (_) {}
       }
 
       if (!plan && proj) {
-        plan = proj.plan || proj;
+        plan = (proj.data && proj.data.plan) || proj.plan || proj;
         while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {
           plan = plan.plan;
         }
       }
 
-      if (!plan && typeof localStorage !== 'undefined') {
+      if (!plan && activeRecord && activeRecord.data && activeRecord.data.plan) {
+        plan = activeRecord.data.plan;
+        while (plan && plan.plan && (plan.plan.walls || plan.plan.furniture || plan.plan.rooms || plan.plan.plan)) {
+          plan = plan.plan;
+        }
+      }
+
+      if (typeof localStorage !== 'undefined') {
         try {
           var raw = localStorage.getItem('orbix_working_project_draft');
           if (raw) {
             var draftObj = JSON.parse(raw);
-            plan = (draftObj && draftObj.plan) || draftObj;
-            if (plan && plan.plan) plan = plan.plan;
+            if (!plan || (!plan.walls && !plan.furniture)) {
+              plan = (draftObj && draftObj.plan) || draftObj;
+              if (plan && plan.plan) plan = plan.plan;
+            }
           }
         } catch (_) {}
       }
@@ -47143,24 +47173,56 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         if (!furniture.length && ep.furniture && ep.furniture.length) furniture = ep.furniture;
       }
 
-      // If empty in project.plan, also check window.S.units fallback
-      if ((!furniture || !furniture.length) && typeof window !== 'undefined' && window.S && window.S.units && window.S.units.length) {
-        furniture = window.S.units.map(function (u, uIdx) {
+      // Check activeRecord data.units or activeRecord.units
+      var rawUnits = null;
+      if (activeRecord && activeRecord.data && Array.isArray(activeRecord.data.units) && activeRecord.data.units.length > 0) {
+        rawUnits = activeRecord.data.units;
+      } else if (activeRecord && Array.isArray(activeRecord.units) && activeRecord.units.length > 0) {
+        rawUnits = activeRecord.units;
+      }
+
+      // Check localStorage draft units
+      if (typeof localStorage !== 'undefined') {
+        try {
+          var draftRaw = localStorage.getItem('orbix_working_project_draft');
+          if (draftRaw) {
+            var draftParsed = JSON.parse(draftRaw);
+            if (draftParsed && Array.isArray(draftParsed.units) && draftParsed.units.length > 0) {
+              if (!rawUnits || draftParsed.units.length > rawUnits.length) {
+                rawUnits = draftParsed.units;
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
+      // Check window.S.units
+      if (typeof window !== 'undefined' && window.S && Array.isArray(window.S.units) && window.S.units.length > 0) {
+        if (!rawUnits || window.S.units.length >= rawUnits.length) {
+          rawUnits = window.S.units;
+        }
+      }
+
+      // If rawUnits has more items than furniture, map them into furniture array
+      if (rawUnits && rawUnits.length > furniture.length) {
+        furniture = rawUnits.map(function (u, uIdx) {
           var wVal = parseFloat(u.W || u.width || 600);
           var dVal = parseFloat(u.D || u.depth || 600);
           var hVal = parseFloat(u.H || u.height || 720);
-          var uCode = u.code || ('U-' + (uIdx + 1));
-          var uCat = (u.label && u.label.toLowerCase().indexOf('wall') !== -1) ? 'wall' : 'base';
+          var uCode = u.code || ('U' + (uIdx < 9 ? '0' : '') + (uIdx + 1));
+          var uCat = u.ctype || u.category || ((u.label && u.label.toLowerCase().indexOf('wall') !== -1) ? 'wall' : 'base');
           var hasSink = (u.label && u.label.toLowerCase().indexOf('sink') !== -1) || !!u.hasSink;
           var hasHob = (u.label && (u.label.toLowerCase().indexOf('hob') !== -1 || u.label.toLowerCase().indexOf('gas') !== -1)) || !!u.hasHob;
+          var isPooja = (u.label && u.label.toLowerCase().indexOf('pooja') !== -1) || !!u.isPooja;
 
           return {
             id: u.id || ('u_' + uIdx),
-            name: u.label || ('Unit ' + (uIdx + 1)),
+            name: u.label || u.name || ('Modular Unit ' + (uIdx + 1)),
             code: uCode,
             category: uCat,
             dimensions: { W: wVal, D: dVal, H: hVal },
-            pos: { x: (uIdx * (wVal + 100)), y: 0, z: 0 },
+            pos: u.pos || { x: (uIdx % 6) * 1000 + 400, y: Math.floor(uIdx / 6) * 1000 + 400, z: u.elev || 0 },
+            rotY: u.rotY || 0,
             unitConfig: {
               shutters: u.shutters !== undefined ? u.shutters : (wVal > 1200 ? 3 : wVal > 600 ? 2 : 1),
               drawers: u.drawers || 0,
@@ -47173,6 +47235,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
               shelves: u.shelves || (hVal > 1500 ? 4 : hVal > 900 ? 2 : 1),
               hasSink: hasSink,
               hasHob: hasHob,
+              isPooja: isPooja,
               appliance: hasSink ? 'sink' : (hasHob ? 'hob' : null)
             }
           };
@@ -47204,6 +47267,39 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       var rooms = pData.rooms || [];
       var furniture = pData.furniture || [];
 
+      // Check if units have distinct layout positions or need automatic layout
+      var needsAutoLayout = (walls.length === 0);
+      if (!needsAutoLayout && furniture.length > 1) {
+        var fx0 = furniture[0].pos ? (furniture[0].pos.x || 0) : 0;
+        var fy0 = furniture[0].pos ? (furniture[0].pos.y || 0) : 0;
+        var identicalCount = 0;
+        for (var k = 1; k < furniture.length; k++) {
+          var fkx = furniture[k].pos ? (furniture[k].pos.x || 0) : 0;
+          var fky = furniture[k].pos ? (furniture[k].pos.y || 0) : 0;
+          if (Math.abs(fkx - fx0) < 5 && Math.abs(fky - fy0) < 5) identicalCount++;
+        }
+        if (identicalCount > furniture.length / 2) needsAutoLayout = true;
+      }
+
+      if (needsAutoLayout) {
+        var unitsPerRow = furniture.length > 18 ? 6 : (furniture.length > 8 ? 5 : 4);
+        var curRowX = 400;
+        var curRowY = 400;
+        var maxRowH = 700;
+
+        furniture.forEach(function (fn, idx) {
+          var w = parseFloat((fn.dimensions && (fn.dimensions.W || fn.dimensions.width)) || 600);
+          var d = parseFloat((fn.dimensions && (fn.dimensions.D || fn.dimensions.depth)) || 600);
+          if (idx > 0 && idx % unitsPerRow === 0) {
+            curRowX = 400;
+            curRowY += maxRowH + 350;
+          }
+          fn._renderPos = { x: curRowX + w / 2, y: curRowY + d / 2 };
+          curRowX += w + 200;
+          maxRowH = Math.max(maxRowH, d);
+        });
+      }
+
       // Calculate Bounding Box of all walls and furniture in mm
       var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
       walls.forEach(function (w) {
@@ -47222,14 +47318,15 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       });
 
       furniture.forEach(function (f) {
-        var px = f.pos ? (f.pos.x || 0) : 0;
-        var py = f.pos ? (f.pos.y || 0) : 0;
-        var w = (f.dimensions && f.dimensions.W) ? parseFloat(f.dimensions.W) : 600;
-        var d = (f.dimensions && f.dimensions.D) ? parseFloat(f.dimensions.D) : 600;
-        minX = Math.min(minX, px - w);
-        minY = Math.min(minY, py - d);
-        maxX = Math.max(maxX, px + w);
-        maxY = Math.max(maxY, py + d);
+        var pos = f._renderPos || f.pos || { x: 0, y: 0 };
+        var px = pos.x || 0;
+        var py = pos.y || 0;
+        var w = (f.dimensions && (f.dimensions.W || f.dimensions.width)) ? parseFloat(f.dimensions.W || f.dimensions.width) : 600;
+        var d = (f.dimensions && (f.dimensions.D || f.dimensions.depth)) ? parseFloat(f.dimensions.D || f.dimensions.depth) : 600;
+        minX = Math.min(minX, px - w / 2);
+        minY = Math.min(minY, py - d / 2);
+        maxX = Math.max(maxX, px + w / 2);
+        maxY = Math.max(maxY, py + d / 2);
       });
 
       if (!isFinite(minX) || !isFinite(maxX)) {
@@ -47299,12 +47396,13 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       // Draw Placed Modular Furniture Units
       furniture.forEach(function (fn, idx) {
-        var px = fn.pos ? (fn.pos.x || 0) : 0;
-        var py = fn.pos ? (fn.pos.y || 0) : 0;
+        var pos = fn._renderPos || fn.pos || { x: 0, y: 0 };
+        var px = pos.x || 0;
+        var py = pos.y || 0;
         var scPt = toScreen({ x: px, y: py });
         var wDims = fn.dimensions || {};
-        var fW = (parseFloat(wDims.W) || 600) * scale;
-        var fD = (parseFloat(wDims.D) || 600) * scale;
+        var fW = (parseFloat(wDims.W || wDims.width) || 600) * scale;
+        var fD = (parseFloat(wDims.D || wDims.depth) || 600) * scale;
         var uTag = fn.code || ('U' + (idx < 9 ? '0' : '') + (idx + 1));
         var isSink = fn.unitConfig && (fn.unitConfig.appliance === 'sink' || fn.unitConfig.hasSink);
         var isHob = fn.unitConfig && (fn.unitConfig.appliance === 'hob' || fn.unitConfig.hasHob);
@@ -47362,10 +47460,18 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       canvas.text(axX + 480, axY - 60, '3D AXONOMETRIC VIEW', 28, 'bold', 'middle');
 
       var cos30 = Math.cos(Math.PI / 6), sin30 = Math.sin(Math.PI / 6);
+      var totalIsoSpan = 0;
+      furniture.forEach(function (f) {
+        var fw = parseFloat((f.dimensions && (f.dimensions.W || f.dimensions.width)) || 600);
+        totalIsoSpan += fw + 80;
+      });
+      totalIsoSpan = Math.max(1200, totalIsoSpan);
+      var isoScale = Math.min(0.22, 1350 / (totalIsoSpan * cos30));
+
       function iso(x, y, z) {
         return {
-          x: axX + 500 + (x - z) * cos30 * 0.22,
-          y: axY + 680 - y * 0.22 + (x + z) * sin30 * 0.22
+          x: axX + 220 + (x - z) * cos30 * isoScale,
+          y: axY + 680 - y * isoScale + (x + z) * sin30 * isoScale
         };
       }
 
@@ -54396,6 +54502,9 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     return d;
   }
   function renderElev() {
+    if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
+      try { window.OrbixUI.syncProjectUnitsTo3DStudio(); } catch (_) {}
+    }
     if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {
       window.OrbixA4Drawings.renderActivePage();
       return;

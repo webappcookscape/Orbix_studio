@@ -6373,6 +6373,9 @@
     return d;
   }
   function renderElev() {
+    if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
+      try { window.OrbixUI.syncProjectUnitsTo3DStudio(); } catch (_) {}
+    }
     if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {
       window.OrbixA4Drawings.renderActivePage();
       return;
