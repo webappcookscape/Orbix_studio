@@ -3991,6 +3991,248 @@ body.role-employee #adminCreateEmpBox,
   transform: scale(0.98);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   2D A4 PRODUCTION DRAWINGS STUDIO
+   ═══════════════════════════════════════════════════════════════════════════ */
+.a4-studio-wrap {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 65px);
+  background: #cbd5e1;
+  overflow: hidden;
+  position: relative;
+}
+
+.a4-ribbon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  z-index: 10;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.a4-ribbon-left, .a4-ribbon-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.a4-title-tag {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.2px;
+}
+
+.a4-nav-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+.a4-page-select {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #94a3b8;
+  background: #ffffff;
+  cursor: pointer;
+  outline: none;
+}
+
+.a4-sheet-viewport {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px;
+}
+
+.a4-sheet-canvas-wrapper {
+  width: 96%;
+  max-width: 1380px;
+  aspect-ratio: 2970 / 2100;
+  background: #ffffff;
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(0,0,0,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.a4-sheet-canvas-wrapper #draft {
+  width: 100%;
+  height: 100%;
+}
+
+.a4-thumb-strip {
+  display: flex;
+  gap: 10px;
+  padding: 10px 18px;
+  background: #f8fafc;
+  border-top: 1px solid #cbd5e1;
+  overflow-x: auto;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.a4-thumb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.a4-thumb-chip:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.a4-thumb-chip.is-active {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(2, 132, 199, 0.3);
+}
+
+.a4-meta-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999999;
+}
+
+.a4-meta-modal-content {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 680px;
+  padding: 22px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.a4-meta-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+}
+
+.a4-modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.a4-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.a4-meta-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.a4-meta-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+}
+
+.a4-meta-field input {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+}
+
+.a4-meta-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+}
+
+/* ══════════ A4 LANDSCAPE PRINT RULES ══════════ */
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #a4PrintContainer, #a4PrintContainer * {
+    visibility: visible !important;
+  }
+  #a4PrintContainer {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    z-index: 99999999 !important;
+  }
+  .a4-print-page {
+    width: 297mm !important;
+    height: 210mm !important;
+    box-sizing: border-box !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: block !important;
+  }
+  .a4-print-page svg {
+    width: 297mm !important;
+    height: 210mm !important;
+    display: block !important;
+  }
+}
+
+
 
 
 

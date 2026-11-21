@@ -6373,6 +6373,10 @@
     return d;
   }
   function renderElev() {
+    if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {
+      window.OrbixA4Drawings.renderActivePage();
+      return;
+    }
     var draft = $("#draft"); if (!draft) return;
     var u = U();
     if (!u) { draft.innerHTML = '<div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px">No units in this project yet. Add furniture or draw walls in 2D Floor Plan.</div>'; return; }
@@ -6461,7 +6465,7 @@
   function setView(v) {
     // Check employee role restrictions
     if (window.OrbixProjects && window.OrbixProjects.currentUser && !window.OrbixProjects.isAdmin()) {
-      var allowed = ['home', 'plan', 'design', 'boq'];
+      var allowed = ['home', 'plan', 'design', 'boq', 'elev'];
       if (allowed.indexOf(v) === -1) {
         if (typeof showToast === 'function') {
           showToast('Access restricted: Employees can only access Home, Floor Plan, 3D Studio, and Pricing.');
@@ -6533,6 +6537,7 @@
     if (v === "nest") { renderNestOpts(); renderNest(); }
     if (v === "quote") renderQuote();
     if (v === "report") renderReport();
+    if (v === "elev") renderElev();
     if (v === "gallery") renderGallery();
     if (v === "plan" && window.OrbixUI && window.OrbixUI.editor) { window.OrbixUI.editor.resize(); window.OrbixUI.editor.render(); }
     if (v === "boq" && window.OrbixUI) { window.OrbixUI.renderBOQ(true); }

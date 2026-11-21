@@ -87,6 +87,7 @@
         <button class="vtab is-on" data-view="home">Home</button>
         <button class="vtab" data-view="plan">Floor Plan (2D)</button>
         <button class="vtab" data-view="design">3D Studio</button>
+        <button class="vtab" data-view="elev" id="vtab-drawings">2D Drawings (A4)</button>
         <button class="vtab" data-view="boq">Pricing</button>
       </nav>
       <div class="topacts">
@@ -614,9 +615,101 @@
         </div>
       </section>
 
-      <!-- ══════ ELEVATION ══════ -->
+      <!-- ══════ ELEVATION / 2D PRODUCTION DRAWINGS (A4) ══════ -->
       <section class="view" id="view-elev">
-        <div class="drafting" id="draft"></div>
+        <div class="a4-studio-wrap">
+          <!-- Top Drawing Controls Ribbon -->
+          <div class="a4-ribbon">
+            <div class="a4-ribbon-left">
+              <span class="a4-title-tag">📐 Production Drawings (A4 Landscape)</span>
+              <div class="a4-nav-group">
+                <button type="button" class="btn small" id="a4PrevBtn" title="Previous Page">◀ Prev</button>
+                <select id="a4PageSelect" class="a4-page-select" title="Select Drawing Page"></select>
+                <button type="button" class="btn small" id="a4NextBtn" title="Next Page">Next ▶</button>
+              </div>
+            </div>
+            <div class="a4-ribbon-right">
+              <button type="button" class="btn small" id="a4MetaBtn" title="Edit Client, Site, & Production Details">⚙ Edit Title Block</button>
+              <button type="button" class="btn small" id="a4DxfBtn" title="Download AutoCAD DXF / DWG format">📐 Download DXF</button>
+              <button type="button" class="btn small primary" id="a4PdfBtn" title="Download Complete Multi-Page PDF (A4 Landscape)">📥 Download PDF</button>
+              <button type="button" class="btn small" id="a4PrintBtn" title="Print A4 Landscape">🖨 Print</button>
+            </div>
+          </div>
+
+          <!-- A4 Drawing Sheet Container -->
+          <div class="a4-sheet-viewport" id="a4SheetViewport">
+            <div class="a4-sheet-canvas-wrapper" id="a4CanvasWrapper">
+              <div class="drafting" id="draft"></div>
+            </div>
+          </div>
+
+          <!-- Bottom Thumbnail Navigation Bar -->
+          <div class="a4-thumb-strip" id="a4ThumbStrip"></div>
+        </div>
+
+        <!-- Sheet Metadata Modal -->
+        <div id="a4MetaModal" class="a4-meta-modal" style="display:none;">
+          <div class="a4-meta-modal-content">
+            <div class="a4-meta-modal-header">
+              <h3 style="margin:0;font-size:16px;font-weight:700;">⚙ Edit Title Block & Production Specifications</h3>
+              <button type="button" class="a4-modal-close-btn" id="a4MetaCloseBtn">&times;</button>
+            </div>
+            <div class="a4-meta-grid">
+              <div class="a4-meta-field">
+                <label>Client Name</label>
+                <input type="text" id="a4MetaClient" value="PRIYANKA">
+              </div>
+              <div class="a4-meta-field">
+                <label>Site / Location</label>
+                <input type="text" id="a4MetaSite" value="THAZHAMPUR">
+              </div>
+              <div class="a4-meta-field">
+                <label>P.R. Code</label>
+                <input type="text" id="a4MetaPrCode" value="CP26-090004">
+              </div>
+              <div class="a4-meta-field">
+                <label>Branch</label>
+                <input type="text" id="a4MetaBranch" value="NANDHANAM">
+              </div>
+              <div class="a4-meta-field">
+                <label>Surveyor</label>
+                <input type="text" id="a4MetaSurveyor" value="Ar. RENUKHA">
+              </div>
+              <div class="a4-meta-field">
+                <label>Designer</label>
+                <input type="text" id="a4MetaDesigner" value="Ar. SHIVARANJANI">
+              </div>
+              <div class="a4-meta-field">
+                <label>Estimator</label>
+                <input type="text" id="a4MetaEstimator" value="Mr. LEO JENISON">
+              </div>
+              <div class="a4-meta-field">
+                <label>Project Engineer</label>
+                <input type="text" id="a4MetaEngineer" value="Mr. VENKAT">
+              </div>
+              <div class="a4-meta-field">
+                <label>Carcass Type</label>
+                <input type="text" id="a4MetaCarcassType" value="BWP">
+              </div>
+              <div class="a4-meta-field">
+                <label>Carcass Colour</label>
+                <input type="text" id="a4MetaCarcassColor" value="HALF WHITE">
+              </div>
+              <div class="a4-meta-field">
+                <label>Shutter Type</label>
+                <input type="text" id="a4MetaShutterType" value="SURABHI">
+              </div>
+              <div class="a4-meta-field">
+                <label>Hardware (Hinges/Runners)</label>
+                <input type="text" id="a4MetaHardware" value="EBCO SOFT CLOSING">
+              </div>
+            </div>
+            <div class="a4-meta-modal-footer">
+              <button type="button" class="btn small" id="a4MetaCancelBtn">Cancel</button>
+              <button type="button" class="btn small primary" id="a4MetaSaveBtn">Apply to All Sheets</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ══════ PANELS + DRILLING ══════ -->
@@ -1951,6 +2044,7 @@
   <script src="orbix-3d.js?v=15"></script>
   <script src="orbix-ui.js?v=15"></script>
   <script src="orbix-client-quote.js?v=2"></script>
+  <script src="orbix-a4-drawings.js?v=15"></script>
   <script src="app.js?v=15"></script>
   <script src="pwa.js?v=15"></script>
   <!-- ARTIFACT-END -->
