@@ -1259,11 +1259,13 @@
           ];
           if (selectedAddons.length > 0) {
             selectedAddons.forEach(function (it) {
-              var q = Math.max(1, Number(it.qty || 1));
-              var r = Number(it.rate || 0);
+              var q = Number(it.qty !== undefined ? it.qty : 1);
+              var r = Number((it.customRate !== undefined && it.customRate !== null && it.customRate !== '') ? it.customRate : (it.rate || 0));
               var a = it.amount !== undefined ? Number(it.amount) : Math.round(q * r);
-              var rateLabel = r > 0 ? (' @ ' + fmtINR(r)) : '';
-              addonRows.push(['• ' + (it.name || 'Accessory Item') + ' (Qty: ' + q + rateLabel + ')', fmtINR(a)]);
+              var uText = (it.unit === 'meter') ? (q + ' meters @ ' + fmtINR(r) + '/m') :
+                          ((it.unit === 'sqft') ? (q + ' sq.ft @ ' + fmtINR(r) + '/sqft') :
+                          ('Qty: ' + q + (r > 0 ? (' @ ' + fmtINR(r)) : '')));
+              addonRows.push(['• ' + (it.name || 'Accessory Item') + ' (' + uText + ')', fmtINR(a)]);
             });
           } else if (addAccVal > 0) {
             addonRows.push(['• Selected Hardware Accessories Package', fmtINR(addAccVal)]);

@@ -91,4 +91,29 @@ assert.strictEqual(summary.appliancesSubtotal, 25000, 'Appliances subtotal shoul
 assert.strictEqual(summary.grandAddonsTotal, 118700, 'Grand addons total should be 118,700');
 
 console.log('✅ Core.calculateAddonsSummary verified.');
+
+console.log('--- TEST: User Editable Rates & Custom Units (Meters & Sq.Ft) ---');
+const gProfileItem = catalog.find(i => i.id === 'g_profile_handle');
+assert.ok(gProfileItem, 'G Profile Handle must exist in catalog');
+assert.strictEqual(gProfileItem.unit, 'meter');
+assert.strictEqual(gProfileItem.minRate, 1350);
+assert.strictEqual(gProfileItem.maxRate, 2050);
+assert.strictEqual(gProfileItem.isCustom, true);
+
+const wallpaperItem = catalog.find(i => i.id === 'wallpaper_sqft');
+assert.ok(wallpaperItem, 'Wallpaper must exist in catalog');
+assert.strictEqual(wallpaperItem.unit, 'sqft');
+assert.strictEqual(wallpaperItem.minRate, 45);
+assert.strictEqual(wallpaperItem.maxRate, 70);
+assert.strictEqual(wallpaperItem.isCustom, true);
+
+// Test custom rate + custom measurements (5.5 meters & 150 sq.ft)
+const customAddons = [
+  { id: 'g_profile_handle', name: 'G PROFILE HANDLE 1meter', customRate: 1850, rate: 1700, unit: 'meter', qty: 5.5, amount: Math.round(5.5 * 1850) },
+  { id: 'wallpaper_sqft', name: 'WALLPAPER 1sq feet', customRate: 60, rate: 55, unit: 'sqft', qty: 150, amount: Math.round(150 * 60) }
+];
+const customSummary = Core.calculateAddonsSummary(customAddons, []);
+assert.strictEqual(customSummary.addonsSubtotal, 10175 + 9000, 'Custom addons subtotal must equal (5.5 * 1850) + (150 * 60) = 19,175');
+console.log('✅ Custom rate and meter/sq.ft measurements verified successfully!');
+
 console.log('🎉 ALL TESTS PASSED!');

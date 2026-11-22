@@ -8010,8 +8010,8 @@
     { id: 'wardrobe_ironing_board', name: 'WARDROBE PULLOUT IROING BOARD', category: 'Wardrobe Accessories', rate: 11455 },
     { id: 'king_size_cot_storage', name: 'KING SIZE COT WITH STORAGE', category: 'Bedroom Cots', rate: 52800 },
     { id: 'queen_size_cot_storage', name: 'QUEEN SIZE COT WITH STORAGE', category: 'Bedroom Cots', rate: 39400 },
-    { id: 'g_profile_handle', name: 'G PROFILE HANDLE 1meter', category: 'Profiles & Handles', rate: 1700, minRate: 1350, maxRate: 2050, unit: 'meter', isCustom: true },
-    { id: 'wallpaper_sqft', name: 'WALLPAPER 1sq feet', category: 'Wall Treatments', rate: 55, minRate: 45, maxRate: 70, unit: 'sqft', isCustom: true }
+    { id: 'g_profile_handle', name: 'G PROFILE HANDLE 1meter', category: 'Profiles & Handles', rate: 1700, minRate: 1350, maxRate: 2050, unit: 'meter', unitLabel: 'meter(s)', step: 0.5, isCustom: true },
+    { id: 'wallpaper_sqft', name: 'WALLPAPER 1sq feet', category: 'Wall Treatments', rate: 55, minRate: 45, maxRate: 70, unit: 'sqft', unitLabel: 'sq feet', step: 1, isCustom: true }
   ];
 
   function getCookscapeAddonsCatalog() {
@@ -8023,8 +8023,10 @@
     var appliances = Array.isArray(appliancesList) ? appliancesList : [];
     var addonsTotal = 0;
     items.forEach(function (it) {
-      var qty = Math.max(1, Number(it.qty || 1));
-      var rate = Math.max(0, Number(it.rate || 0));
+      var qty = Math.max(0, Number(it.qty || 1));
+      var rate = (it.customRate !== undefined && it.customRate !== null && it.customRate !== '')
+        ? Number(it.customRate)
+        : Math.max(0, Number(it.rate || 0));
       var amt = it.amount !== undefined ? Number(it.amount) : Math.round(qty * rate);
       addonsTotal += amt;
     });

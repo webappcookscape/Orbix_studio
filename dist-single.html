@@ -20555,8 +20555,8 @@ body.role-employee #adminCreateEmpBox,
     { id: 'wardrobe_ironing_board', name: 'WARDROBE PULLOUT IROING BOARD', category: 'Wardrobe Accessories', rate: 11455 },
     { id: 'king_size_cot_storage', name: 'KING SIZE COT WITH STORAGE', category: 'Bedroom Cots', rate: 52800 },
     { id: 'queen_size_cot_storage', name: 'QUEEN SIZE COT WITH STORAGE', category: 'Bedroom Cots', rate: 39400 },
-    { id: 'g_profile_handle', name: 'G PROFILE HANDLE 1meter', category: 'Profiles & Handles', rate: 1700, minRate: 1350, maxRate: 2050, unit: 'meter', isCustom: true },
-    { id: 'wallpaper_sqft', name: 'WALLPAPER 1sq feet', category: 'Wall Treatments', rate: 55, minRate: 45, maxRate: 70, unit: 'sqft', isCustom: true }
+    { id: 'g_profile_handle', name: 'G PROFILE HANDLE 1meter', category: 'Profiles & Handles', rate: 1700, minRate: 1350, maxRate: 2050, unit: 'meter', unitLabel: 'meter(s)', step: 0.5, isCustom: true },
+    { id: 'wallpaper_sqft', name: 'WALLPAPER 1sq feet', category: 'Wall Treatments', rate: 55, minRate: 45, maxRate: 70, unit: 'sqft', unitLabel: 'sq feet', step: 1, isCustom: true }
   ];
 
   function getCookscapeAddonsCatalog() {
@@ -20568,8 +20568,10 @@ body.role-employee #adminCreateEmpBox,
     var appliances = Array.isArray(appliancesList) ? appliancesList : [];
     var addonsTotal = 0;
     items.forEach(function (it) {
-      var qty = Math.max(1, Number(it.qty || 1));
-      var rate = Math.max(0, Number(it.rate || 0));
+      var qty = Math.max(0, Number(it.qty || 1));
+      var rate = (it.customRate !== undefined && it.customRate !== null && it.customRate !== '')
+        ? Number(it.customRate)
+        : Math.max(0, Number(it.rate || 0));
       var amt = it.amount !== undefined ? Number(it.amount) : Math.round(qty * rate);
       addonsTotal += amt;
     });
@@ -45127,8 +45129,12 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       var currentCharges = this.getCommercialCharges();
       var selectedMap = {};
+      var customRateMap = {};
       (currentCharges.selectedAddons || []).forEach(function (it) {
         selectedMap[it.id] = Math.max(0, Number(it.qty || 1));
+        if (it.customRate !== undefined || it.rate !== undefined) {
+          customRateMap[it.id] = Math.max(0, Number(it.customRate !== undefined ? it.customRate : it.rate));
+        }
       });
 
       var modalId = 'orbixAddonsModal';
@@ -45162,27 +45168,28 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         catalog.forEach(function (it) {
           var q = selectedMap[it.id] || 0;
           if (q > 0) {
-            selectedCount += q;
-            selectedTotal += q * (it.rate || 0);
+            selectedCount += (it.unit === 'sqft' || it.unit === 'meter') ? 1 : q;
+            var r = (customRateMap[it.id] !== undefined) ? customRateMap[it.id] : (it.rate || 0);
+            selectedTotal += Math.round(q * r);
           }
         });
 
         modal.innerHTML =
           '<div class="addons-backdrop" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,35,27,0.65);backdrop-filter:blur(3px);"></div>' +
-          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(900px, 94vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
+          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(920px, 95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
 
           // Header
           '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
           '    <div>' +
           '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Add-Ons &amp; Accessories Catalog</h3>' +
-          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">58 Master Hardware Items &bull; Will appear below Your Savings in the Client Proposal</div>' +
+          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">58 Master Hardware Items &bull; Customizable Rates &amp; Measurements (Meters / Sq.Ft)</div>' +
           '    </div>' +
           '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
           '  </div>' +
 
           // Search & Category Filters
           '  <div style="background:#FAF6F0;padding:12px 20px;border-bottom:1px solid #E2D5C3;display:flex;flex-direction:column;gap:10px;">' +
-          '    <input type="text" id="addonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search by name or category (e.g. Magic Corner, Pantry, Basket, Cot, Shutter)..." style="width:100%;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '    <input type="text" id="addonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search by name or category (e.g. G Profile Handle, Wallpaper, Magic Corner, Pantry, Basket, Cot)..." style="width:100%;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
           '    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;" id="addonsCatPills">' +
           categories.map(function (cat) {
             var isSel = cat === activeCategory;
@@ -45197,29 +45204,43 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           '      <thead>' +
           '        <tr style="border-bottom:2px solid #E2E8F0;color:#64748B;font-size:11px;text-align:left;">' +
           '          <th style="padding:6px 8px;">ITEM NAME &amp; CATEGORY</th>' +
-          '          <th style="padding:6px 8px;text-align:right;">UNIT RATE</th>' +
-          '          <th style="padding:6px 8px;text-align:center;width:130px;">QUANTITY</th>' +
-          '          <th style="padding:6px 8px;text-align:right;width:110px;">SUBTOTAL</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:170px;">UNIT RATE</th>' +
+          '          <th style="padding:6px 8px;text-align:center;width:150px;">QUANTITY / MEASURE</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:120px;">SUBTOTAL</th>' +
           '        </tr>' +
           '      </thead>' +
           '      <tbody>' +
           (filtered.length ? filtered.map(function (it) {
             var q = selectedMap[it.id] || 0;
-            var sub = q * (it.rate || 0);
-            var isCustom = it.isCustom;
-            var customRange = isCustom ? (' (' + (it.minRate || 0) + '-' + (it.maxRate || 0) + '/' + (it.unit || '') + ')') : '';
+            var curRate = (customRateMap[it.id] !== undefined) ? customRateMap[it.id] : (it.rate || 0);
+            var sub = Math.round(q * curRate);
+            var isCustom = Boolean(it.isCustom || it.unit === 'meter' || it.unit === 'sqft');
+            var unitLabel = it.unit === 'meter' ? 'meter' : (it.unit === 'sqft' ? 'sqft' : 'unit');
+            var unitPlural = it.unit === 'meter' ? 'meter(s)' : (it.unit === 'sqft' ? 'sq.feet' : '');
+            var stepVal = it.step || (it.unit === 'meter' ? 0.5 : 1);
+            var customRange = isCustom ? (' (' + (it.minRate || 0) + '-' + (it.maxRate || 0) + '/' + unitLabel + ')') : '';
+
+            var rateHtml = isCustom
+              ? ('<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;">' +
+                 '  <span style="font-weight:700;color:#08231B;font-size:12px;">₹</span>' +
+                 '  <input type="number" class="addons-rate-inp" data-id="' + it.id + '" min="' + (it.minRate || 0) + '" max="' + (it.maxRate || 999999) + '" step="1" value="' + curRate + '" title="User editable unit rate (' + (it.minRate || 0) + '-' + (it.maxRate || 0) + '/' + unitLabel + ')" style="width:74px;height:26px;border:1.5px solid #EA580C;border-radius:6px;padding:2px 6px;text-align:right;font-weight:700;font-size:12.5px;color:#9A3412;background:#FFF;outline:none;">' +
+                 '  <span style="font-size:11px;color:#64748B;">/' + unitLabel + '</span>' +
+                 '</div>')
+              : ('<span style="font-family:monospace;font-weight:600;color:#08231B;">₹ ' + (it.rate || 0).toLocaleString('en-IN') + '</span>');
+
             return '<tr style="border-bottom:1px solid #F1F5F9;' + (q > 0 ? 'background:#F0FDF4;' : '') + '">' +
               '<td style="padding:8px;">' +
               '  <div style="font-weight:700;color:#08231B;">' + it.name + '</div>' +
               '  <div style="font-size:11px;color:#64748B;">' + it.category + customRange + '</div>' +
               '</td>' +
-              '<td style="padding:8px;text-align:right;font-family:monospace;font-weight:600;color:#08231B;">₹ ' + (it.rate || 0).toLocaleString('en-IN') + '</td>' +
+              '<td style="padding:8px;text-align:right;">' + rateHtml + '</td>' +
               '<td style="padding:8px;text-align:center;">' +
               '  <div style="display:inline-flex;align-items:center;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden;background:#FFF;">' +
-              '    <button type="button" class="addons-qty-btn" data-id="' + it.id + '" data-delta="-1" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">-</button>' +
-              '    <input type="number" min="0" class="addons-qty-inp" data-id="' + it.id + '" value="' + q + '" style="width:42px;height:26px;border:none;border-left:1px solid #E2E8F0;border-right:1px solid #E2E8F0;text-align:center;font-weight:700;font-size:12px;">' +
-              '    <button type="button" class="addons-qty-btn" data-id="' + it.id + '" data-delta="1" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">+</button>' +
+              '    <button type="button" class="addons-qty-btn" data-id="' + it.id + '" data-delta="' + (-stepVal) + '" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">-</button>' +
+              '    <input type="number" min="0" step="' + stepVal + '" class="addons-qty-inp" data-id="' + it.id + '" value="' + q + '" style="width:' + (isCustom ? '56px' : '42px') + ';height:26px;border:none;border-left:1px solid #E2E8F0;border-right:1px solid #E2E8F0;text-align:center;font-weight:700;font-size:12px;">' +
+              '    <button type="button" class="addons-qty-btn" data-id="' + it.id + '" data-delta="' + stepVal + '" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">+</button>' +
               '  </div>' +
+              (unitPlural ? ('<div style="font-size:10.5px;color:#08231B;font-weight:700;margin-top:2px;">' + unitPlural + '</div>') : '') +
               '</td>' +
               '<td style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (q > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
               '</tr>';
@@ -45270,22 +45291,39 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           });
         });
 
+        // User-Editable Unit Rate change
+        modal.querySelectorAll('.addons-rate-inp').forEach(function (inp) {
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseFloat(inp.value) || 0);
+            customRateMap[id] = val;
+            renderModalContent();
+            var restored = modal.querySelector('.addons-rate-inp[data-id="' + id + '"]');
+            if (restored) {
+              restored.focus();
+              restored.setSelectionRange(restored.value.length, restored.value.length);
+            }
+          });
+        });
+
+        // Quantity delta increment/decrement
         modal.querySelectorAll('.addons-qty-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var id = btn.getAttribute('data-id');
-            var delta = Number(btn.getAttribute('data-delta')) || 0;
-            var cur = selectedMap[id] || 0;
-            var next = Math.max(0, cur + delta);
+            var delta = parseFloat(btn.getAttribute('data-delta')) || 0;
+            var cur = parseFloat(selectedMap[id]) || 0;
+            var next = Math.max(0, Math.round((cur + delta) * 10) / 10);
             if (next === 0) delete selectedMap[id];
             else selectedMap[id] = next;
             renderModalContent();
           });
         });
 
+        // Quantity manual input
         modal.querySelectorAll('.addons-qty-inp').forEach(function (inp) {
           inp.addEventListener('change', function () {
             var id = inp.getAttribute('data-id');
-            var val = Math.max(0, parseInt(inp.value, 10) || 0);
+            var val = Math.max(0, parseFloat(inp.value) || 0);
             if (val === 0) delete selectedMap[id];
             else selectedMap[id] = val;
             renderModalContent();
@@ -45300,12 +45338,15 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             catalog.forEach(function (it) {
               var q = selectedMap[it.id] || 0;
               if (q > 0) {
-                var amt = q * (it.rate || 0);
+                var r = (customRateMap[it.id] !== undefined) ? customRateMap[it.id] : (it.rate || 0);
+                var amt = Math.round(q * r);
                 chosen.push({
                   id: it.id,
                   name: it.name,
                   category: it.category,
-                  rate: it.rate,
+                  rate: r,
+                  customRate: r,
+                  unit: it.unit || 'unit',
                   qty: q,
                   amount: amt
                 });

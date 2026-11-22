@@ -795,7 +795,15 @@
             '      </td>' +
             '    </tr>' +
             (c.selectedAddons && c.selectedAddons.length ? ('<tr><td colspan="2" style="background:#FAF6F0;padding:6px 12px;font-size:11.5px;color:#334155;">' +
-              c.selectedAddons.map(function(it){ return '<div style="margin:2px 0;">• <b>' + esc(it.name) + '</b> (Qty: ' + (it.qty||1) + ') &mdash; ₹' + Number(it.amount || ((it.qty||1)*(it.rate||0))).toLocaleString('en-IN') + '</div>'; }).join('') +
+              c.selectedAddons.map(function(it){
+                var q = it.qty !== undefined ? it.qty : 1;
+                var r = (it.customRate !== undefined && it.customRate !== null && it.customRate !== '') ? Number(it.customRate) : Number(it.rate || 0);
+                var a = it.amount !== undefined ? Number(it.amount) : Math.round(q * r);
+                var uText = (it.unit === 'meter') ? (q + ' meters @ ₹' + r.toLocaleString('en-IN') + '/m') :
+                            ((it.unit === 'sqft') ? (q + ' sq.ft @ ₹' + r.toLocaleString('en-IN') + '/sqft') :
+                            ('Qty: ' + q + (r > 0 ? (' @ ₹' + r.toLocaleString('en-IN')) : '')));
+                return '<div style="margin:2px 0;">• <b>' + esc(it.name) + '</b> (' + uText + ') &mdash; ₹' + a.toLocaleString('en-IN') + '</div>';
+              }).join('') +
               '</td></tr>') : '') +
             '    <tr data-row="appliances" style="' + (c.appliancesEnabled ? '' : 'opacity:0.5;') + '">' +
             '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="appliancesEnabled"' + (c.appliancesEnabled ? ' checked' : '') + '> <b>Appliances</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
