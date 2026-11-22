@@ -3312,7 +3312,7 @@
     var fTop = fElev + fH;
 
     var bestJoint = null;
-    var minJointDist = 180; // mm magnetic snap threshold
+    var minJointDist = 75; // mm magnetic snap threshold (gentle, natural contact zone)
 
     // Unit-to-unit jointing & multi-point magnetic snapping is only evaluated for regular woodwork cabinets
     // Ledges, panels, and civil items snap flush to walls without hijacking cursor via unit joints
@@ -3369,7 +3369,7 @@
         // 1. Center aligned plumb
         var plumbCenterPos = backFlushPos;
         var dPlumbCenter = Math.hypot(pos.x - plumbCenterPos.x, pos.y - plumbCenterPos.y);
-        if (dPlumbCenter < minJointDist + 60 && dPlumbCenter < (bestJoint ? bestJoint.dist : 9999)) {
+        if (dPlumbCenter < 160 && dPlumbCenter < (bestJoint ? bestJoint.dist : 9999)) {
           bestJoint = {
             pos: plumbCenterPos,
             rotY: oRot,
@@ -3389,7 +3389,7 @@
           y: backFlushPos.y - ((oW - fW) / 2) * uO.y
         };
         var dPlumbLeft = Math.hypot(pos.x - plumbLeftPos.x, pos.y - plumbLeftPos.y);
-        if (dPlumbLeft < minJointDist + 60 && dPlumbLeft < (bestJoint ? bestJoint.dist : 9999)) {
+        if (dPlumbLeft < 160 && dPlumbLeft < (bestJoint ? bestJoint.dist : 9999)) {
           bestJoint = {
             pos: plumbLeftPos,
             rotY: oRot,
@@ -3409,7 +3409,7 @@
           y: backFlushPos.y + ((oW - fW) / 2) * uO.y
         };
         var dPlumbRight = Math.hypot(pos.x - plumbRightPos.x, pos.y - plumbRightPos.y);
-        if (dPlumbRight < minJointDist + 60 && dPlumbRight < (bestJoint ? bestJoint.dist : 9999)) {
+        if (dPlumbRight < 160 && dPlumbRight < (bestJoint ? bestJoint.dist : 9999)) {
           bestJoint = {
             pos: plumbRightPos,
             rotY: oRot,
@@ -3450,7 +3450,7 @@
             y: oPos.y + (-cW / 2 - fW / 2) * uO.y + (-cD / 2 + fD / 2) * vO.y
           };
           var dArm1 = Math.hypot(pos.x - targetPosArm1.x, pos.y - targetPosArm1.y);
-          if (dArm1 < minJointDist + 120 && dArm1 < (bestJoint ? bestJoint.dist : 9999)) {
+          if (dArm1 < 90 && dArm1 < (bestJoint ? bestJoint.dist : 9999)) {
             bestJoint = {
               pos: targetPosArm1,
               rotY: oRot,
@@ -3470,7 +3470,7 @@
             y: oPos.y + (cW / 2 - fD / 2) * uO.y + (cD / 2 + fW / 2) * vO.y
           };
           var dArm2 = Math.hypot(pos.x - targetPosArm2.x, pos.y - targetPosArm2.y);
-          if (dArm2 < minJointDist + 120 && dArm2 < (bestJoint ? bestJoint.dist : 9999)) {
+          if (dArm2 < 90 && dArm2 < (bestJoint ? bestJoint.dist : 9999)) {
             bestJoint = {
               pos: targetPosArm2,
               rotY: rotArm2,
