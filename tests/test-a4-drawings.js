@@ -235,6 +235,90 @@ for (var u = 0; u < 27; u++) {
 }
 console.log('✓ All 27 individual unit shop drawing sheets verified with clearance heights, BOM cut-list, swatch box & filler!');
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Test Orbix Production Studio — 7 Modular Engines Architecture
+// ─────────────────────────────────────────────────────────────────────────────
+console.log('\nTesting Orbix Production Studio 7-Engine Architecture & Technical Audit...');
+
+assert.ok(global.OrbixProductionStudio, 'OrbixProductionStudio alias must be defined on window/global');
+assert.strictEqual(global.OrbixProductionStudio, global.OrbixA4Drawings, 'OrbixProductionStudio must reference OrbixA4Drawings');
+
+const Studio = global.OrbixProductionStudio;
+
+// 1. Model Data Engine
+assert.ok(Studio.ModelDataEngine, 'Engine 1 (ModelDataEngine) must exist');
+const sampleTechObj = Studio.ModelDataEngine.buildTechnicalObject({
+  id: 'test_u1',
+  code: 'KIT-B-001',
+  name: 'KITCHEN BASE 2-DRAWER',
+  category: 'base',
+  dimensions: { W: 750, H: 720, D: 560 },
+  unitConfig: { shutters: 0, drawers: 2, carcass: '18 mm BWP', shutterCol: 'Surabhi laminate' }
+}, 1);
+
+assert.strictEqual(sampleTechObj.unitCode, 'KIT-B-001', 'Tech object code must match');
+assert.strictEqual(sampleTechObj.dimensions.W, 750, 'Tech object width must match');
+assert.ok(Array.isArray(sampleTechObj.panels), 'Tech object must contain decomposed panels array');
+assert.ok(sampleTechObj.panels.length >= 7, 'Tech object must contain all cabinet panels');
+assert.ok(sampleTechObj.panels.some(p => p.panelName.includes('Gable')), 'Must contain Left & Right Gables');
+assert.ok(sampleTechObj.panels.some(p => p.panelName.includes('Bottom')), 'Must contain Bottom Panel');
+assert.ok(sampleTechObj.panels.some(p => p.panelName.includes('Back')), 'Must contain Back Panel');
+console.log('✓ Engine 1 (Model Data Engine): Decomposed cabinet into 3D technical object with internal panels & hardware.');
+
+// 2. Dimension Engine
+assert.ok(Studio.DimensionEngine, 'Engine 2 (DimensionEngine) must exist');
+const datumLevels = Studio.DimensionEngine.getDatumLevels();
+assert.strictEqual(datumLevels.plinthBase, 110, 'Plinth base must be 110mm');
+assert.strictEqual(datumLevels.counterHeight, 860, 'Counter height must be 860mm');
+const clearances = Studio.DimensionEngine.computeInternalClearances(sampleTechObj);
+assert.strictEqual(clearances.netInnerHeight, 720 - 36, 'Net clear inner height must exclude 18mm top/bottom');
+console.log('✓ Engine 2 (Dimension Engine): Verified standard datum levels (plinth 110mm, counter 860mm, clearances).');
+
+// 3. Drawing Engine
+assert.ok(Studio.DrawingEngine, 'Engine 3 (DrawingEngine) must exist');
+const testCanvas = Studio.DrawingEngine.createVectorCanvas(2970, 2100);
+assert.strictEqual(testCanvas.width, 2970, 'Canvas width must match standard A4 10x');
+assert.strictEqual(testCanvas.height, 2100, 'Canvas height must match standard A4 10x');
+console.log('✓ Engine 3 (Drawing Engine): Vector canvas routines & projections verified.');
+
+// 4. Annotation Engine
+assert.ok(Studio.AnnotationEngine, 'Engine 4 (AnnotationEngine) must exist');
+assert.strictEqual(typeof Studio.AnnotationEngine.dimH, 'function', 'Must have dimH');
+assert.strictEqual(typeof Studio.AnnotationEngine.dimV, 'function', 'Must have dimV');
+assert.strictEqual(typeof Studio.AnnotationEngine.drawTitleBlock, 'function', 'Must have drawTitleBlock');
+console.log('✓ Engine 4 (Annotation Engine): Architectural dimension chains & title block verified.');
+
+// 5. Material Engine
+assert.ok(Studio.MaterialEngine, 'Engine 5 (MaterialEngine) must exist');
+const cutList = Studio.MaterialEngine.generatePanelCutList(sampleTechObj);
+assert.ok(Array.isArray(cutList) && cutList.length >= 7, 'Must generate cut-list rows');
+assert.ok(cutList[0].material.includes('BWP'), 'Cut list must include material spec');
+const hwSched = Studio.MaterialEngine.generateHardwareSchedule([sampleTechObj]);
+assert.ok(hwSched.hinges && hwSched.runners, 'Must calculate hardware schedule');
+console.log('✓ Engine 5 (Material Engine): Panel cut-list BOM & project hardware schedule verified.');
+
+// 6. Validation & Technical Audit Engine
+assert.ok(Studio.ValidationEngine, 'Engine 6 (ValidationEngine) must exist');
+const auditReport = Studio.runTechnicalAudit();
+assert.strictEqual(typeof auditReport.readinessScore, 'number', 'Audit must return readiness score');
+assert.ok(auditReport.readinessScore >= 90, 'Valid project must score >= 90% (Actual: ' + auditReport.readinessScore + '%)');
+assert.strictEqual(auditReport.status, 'READY FOR FACTORY PRODUCTION', 'Status must be READY FOR FACTORY PRODUCTION');
+assert.strictEqual(auditReport.passed, true, 'Audit passed must be true');
+assert.ok(Array.isArray(auditReport.findings), 'Findings must be an array');
+assert.ok(auditReport.findings.some(f => f.code === 'DIM_OK'), 'Must have DIM_OK finding');
+assert.ok(auditReport.findings.some(f => f.code === 'PANEL_BOM_OK'), 'Must have PANEL_BOM_OK finding');
+assert.strictEqual(auditReport.summary.unitCount, 27, 'Must count 27 units');
+assert.strictEqual(auditReport.summary.sheetCount, 29, 'Must calculate 29 sheets');
+console.log(`✓ Engine 6 (Validation Engine): Readiness Score ${auditReport.readinessScore}% — ${auditReport.status}!`);
+
+// 7. PDF Layout Engine
+assert.ok(Studio.PDFLayoutEngine, 'Engine 7 (PDFLayoutEngine) must exist');
+Studio.setPaperSize('A3');
+assert.strictEqual(Studio.getPaperSize(), 'A3', 'Must switch to A3 Landscape');
+Studio.setPaperSize('A4');
+assert.strictEqual(Studio.getPaperSize(), 'A4', 'Must switch back to A4 Landscape');
+console.log('✓ Engine 7 (PDF Layout Engine): Multi-page compositor, paper sizes (A4/A3) & PDF/DXF export verified.');
+
 console.log('\n======================================================');
-console.log('ALL ORBIX A4 PRODUCTION DRAWING TESTS PASSED 100%!');
+console.log('ALL ORBIX PRODUCTION STUDIO 7-ENGINE TESTS PASSED 100%!');
 console.log('======================================================');

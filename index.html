@@ -87,7 +87,7 @@
         <button class="vtab is-on" data-view="home">Home</button>
         <button class="vtab" data-view="plan">Floor Plan (2D)</button>
         <button class="vtab" data-view="design">3D Studio</button>
-        <button class="vtab" data-view="elev" id="vtab-drawings">2D Drawings (A4)</button>
+        <button class="vtab" data-view="elev" id="vtab-drawings">🏭 Production Studio</button>
         <button class="vtab" data-view="boq">Pricing</button>
       </nav>
       <div class="topacts">
@@ -621,7 +621,9 @@
           <!-- Top Drawing Controls Ribbon -->
           <div class="a4-ribbon">
             <div class="a4-ribbon-left">
-              <span class="a4-title-tag">📐 Production Drawings (A4 Landscape)</span>
+              <span class="a4-title-tag">🏭 Orbix Production Studio</span>
+              <span id="a4UnitCountBadge" class="a4-stat-badge" title="Active Modular Furniture Units in Project">Units: 0</span>
+              <span id="a4PageCountBadge" class="a4-stat-badge a4-stat-pages" title="Total Production Sheets">Pages: 0</span>
               <div class="a4-nav-group">
                 <button type="button" class="btn small" id="a4PrevBtn" title="Previous Page">◀ Prev</button>
                 <select id="a4PageSelect" class="a4-page-select" title="Select Drawing Page"></select>
@@ -629,10 +631,12 @@
               </div>
             </div>
             <div class="a4-ribbon-right">
+              <button type="button" class="btn small" id="a4PaperSizeBtn" title="Switch Sheet Size (A4 Landscape / A3 Landscape)">📐 A4 Landscape</button>
+              <button type="button" class="btn small" id="a4AuditBtn" style="background:#0f766e;color:#fff;border-color:#0d9488;" title="Run Manufacturing Technical Audit & Check Readiness Score">🩺 Technical Audit <span id="a4AuditScoreBadge" style="background:#14b8a6;color:#ffffff;padding:1px 6px;border-radius:10px;font-size:10px;margin-left:4px;font-weight:700;">100%</span></button>
               <button type="button" class="btn small" id="a4MetaBtn" title="Edit Client, Site, & Production Details">⚙ Edit Title Block</button>
               <button type="button" class="btn small" id="a4DxfBtn" title="Download AutoCAD DXF / DWG format">📐 Download DXF</button>
               <button type="button" class="btn small primary" id="a4PdfBtn" title="Download Complete Multi-Page PDF (A4 Landscape)">📥 Download PDF</button>
-              <button type="button" class="btn small" id="a4PrintBtn" title="Print A4 Landscape">🖨 Print</button>
+              <button type="button" class="btn small" id="a4PrintBtn" title="Print Production Book">🖨 Print</button>
             </div>
           </div>
 
@@ -707,6 +711,62 @@
             <div class="a4-meta-modal-footer">
               <button type="button" class="btn small" id="a4MetaCancelBtn">Cancel</button>
               <button type="button" class="btn small primary" id="a4MetaSaveBtn">Apply to All Sheets</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Technical Validation & Production Audit Modal -->
+        <div id="a4AuditModal" class="a4-audit-modal" style="display:none;">
+          <div class="a4-audit-modal-content">
+            <div class="a4-audit-modal-header">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:22px;">🏭</span>
+                <div>
+                  <h3 style="margin:0;font-size:16px;font-weight:700;color:#0f172a;">Manufacturing Technical Audit & Readiness Report</h3>
+                  <p style="margin:2px 0 0 0;font-size:11.5px;color:#64748b;">Factory validation checks for dimensions, panels, materials, clearances & hardware</p>
+                </div>
+              </div>
+              <button type="button" class="a4-modal-close-btn" id="a4AuditCloseBtn">&times;</button>
+            </div>
+
+            <!-- Readiness Score Banner -->
+            <div class="a4-audit-score-card" id="a4AuditScoreCard">
+              <div class="a4-audit-score-circle" id="a4AuditScoreCircle">100%</div>
+              <div class="a4-audit-score-info">
+                <div class="a4-audit-score-title" id="a4AuditScoreTitle">READY FOR FACTORY PRODUCTION</div>
+                <div class="a4-audit-score-sub" id="a4AuditScoreSub">All dimensions, materials, and hardware specifications have passed technical validation.</div>
+              </div>
+            </div>
+
+            <!-- Summary KPI Grid -->
+            <div class="a4-audit-kpi-grid">
+              <div class="a4-audit-kpi">
+                <span class="a4-audit-kpi-val" id="a4AuditKpiUnits">0</span>
+                <span class="a4-audit-kpi-lbl">Modular Units</span>
+              </div>
+              <div class="a4-audit-kpi">
+                <span class="a4-audit-kpi-val" id="a4AuditKpiPanels">0</span>
+                <span class="a4-audit-kpi-lbl">Panel Components</span>
+              </div>
+              <div class="a4-audit-kpi">
+                <span class="a4-audit-kpi-val" id="a4AuditKpiHardware">0</span>
+                <span class="a4-audit-kpi-lbl">Hardware Fittings</span>
+              </div>
+              <div class="a4-audit-kpi">
+                <span class="a4-audit-kpi-val" id="a4AuditKpiSheets">0</span>
+                <span class="a4-audit-kpi-lbl">Drawing Sheets</span>
+              </div>
+            </div>
+
+            <!-- Audit Verification Checks List -->
+            <div class="a4-audit-findings-wrap">
+              <div style="font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;margin-bottom:8px;letter-spacing:0.3px;">Engineering Check Results</div>
+              <div class="a4-audit-findings-list" id="a4AuditFindingsList"></div>
+            </div>
+
+            <div class="a4-audit-modal-footer">
+              <button type="button" class="btn small" id="a4AuditRerunBtn">🔄 Re-run Audit</button>
+              <button type="button" class="btn small primary" id="a4AuditDoneBtn">Done</button>
             </div>
           </div>
         </div>
