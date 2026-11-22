@@ -117,16 +117,19 @@ function recalculateVariantCommercial(comm, overrides) {
   let adpP = 0;
   let adpAmount = 0;
 
-  if (activeSlab && slabId !== 'custom') {
+  const adpOverride = o.adpPercent !== undefined ? o.adpPercent : c.adpPercent;
+  const designOverride = o.designPercent !== undefined ? o.designPercent : c.designPercent;
+
+  if (activeSlab && slabId !== 'custom' && designOverride === undefined && adpOverride === undefined) {
     designAmount = activeSlab.fullDesignCharges;
     adpP = activeSlab.discountPercent || 60;
     adpAmount = Math.round(designAmount * (adpP / 100));
     designPercent = woodwork > 0 ? (Math.round((designAmount / woodwork) * 1000) / 10) : 9;
   } else {
-    const rawDesign = o.designPercent !== undefined ? o.designPercent : c.designPercent;
+    const rawDesign = designOverride !== undefined ? designOverride : (activeSlab && slabId !== 'custom' ? (woodwork > 0 ? (Math.round((activeSlab.fullDesignCharges / woodwork) * 1000) / 10) : 9) : 9);
     designPercent = (rawDesign !== undefined && rawDesign !== null && rawDesign !== '') ? Math.max(0, Math.min(100, Number(rawDesign) || 0)) : 9;
-    designAmount = Math.round(woodwork * (designPercent / 100));
-    adpP = Math.max(0, Math.min(100, Number(o.adpPercent !== undefined ? o.adpPercent : c.adpPercent) || 0));
+    designAmount = (activeSlab && slabId !== 'custom' && designOverride === undefined) ? activeSlab.fullDesignCharges : Math.round(woodwork * (designPercent / 100));
+    adpP = Math.max(0, Math.min(100, Number(adpOverride !== undefined ? adpOverride : (activeSlab && slabId !== 'custom' ? (activeSlab.discountPercent || 60) : 0)) || 0));
     adpAmount = Math.round(designAmount * (adpP / 100));
   }
 

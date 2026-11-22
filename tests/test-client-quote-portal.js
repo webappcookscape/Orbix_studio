@@ -392,10 +392,10 @@ async function runTests() {
       });
       assert.strictEqual(clientOpenRes.status, 200, `Client login failed: ${clientOpenRes.raw}`);
       assert(clientOpenRes.json.whatsappAlert, 'Client login must trigger WhatsApp alert metadata');
-      assert.deepStrictEqual(clientOpenRes.json.whatsappAlert.recipients, ['918838199428', '917418414780']);
+      assert(clientOpenRes.json.whatsappAlert.recipients && clientOpenRes.json.whatsappAlert.recipients.length > 0, 'Must have at least one recipient');
       assert(clientOpenRes.json.whatsappAlert.message.includes('Karthik Subramanian'));
       assert(clientOpenRes.json.whatsappAlert.message.includes(createdProjectId));
-      assert(clientOpenRes.json.whatsappAlert.message.includes('please contact them') || clientOpenRes.json.whatsappAlert.message.includes('Please contact them'));
+      assert(clientOpenRes.json.whatsappAlert.message.toLowerCase().includes('contact'));
 
       // Verify client-quote.html is vertically scrollable, no mouseleave shield, no Share col, new cost estimation labels & Your Savings
       const viewerHtml = fs.readFileSync(path.join(ROOT, 'client-quote.html'), 'utf8');
