@@ -77,8 +77,195 @@
       return String(Math.round(parseFloat(num)));
     },
 
+    // ── Universal AutoCAD R12 (AC1009) Strict DXF Serializer ──
+    _buildDXF: function (cadEntities, width, height, extMinX, extMinY, extMaxX, extMaxY) {
+      cadEntities = cadEntities || [];
+      extMinX = (typeof extMinX === 'number') ? extMinX : 0;
+      extMinY = (typeof extMinY === 'number') ? extMinY : 0;
+      extMaxX = (typeof extMaxX === 'number') ? extMaxX : (width || 2970);
+      extMaxY = (typeof extMaxY === 'number') ? extMaxY : (height || 2100);
+
+      var lines = [];
+      function add(code, val) {
+        lines.push(String(code));
+        lines.push(String(val));
+      }
+
+      function cleanStr(s) {
+        if (!s) return "";
+        return String(s)
+          .replace(/[\r\n]+/g, " ")
+          .replace(/[·—–]/g, "-")
+          .replace(/×/g, "x")
+          .replace(/Ø|&Oslash;/gi, "%%c")
+          .replace(/°/g, "%%d")
+          .replace(/±/g, "%%p")
+          .replace(/₹/g, "Rs.")
+          .replace(/ॐ/g, "OM")
+          .replace(/\\/g, "/")
+          .replace(/[^\x20-\x7E]/g, " ")
+          .trim();
+      }
+
+      var midX = (extMinX + extMaxX) / 2;
+      var midY = (extMinY + extMaxY) / 2;
+      var viewH = Math.max(100, (extMaxY - extMinY) * 1.15);
+
+      // ── HEADER SECTION ──
+      add(0, "SECTION");
+      add(2, "HEADER");
+      add(9, "$ACADVER");
+      add(1, "AC1009");
+      add(9, "$INSUNITS");
+      add(70, 4); // 4 = Millimeters
+      add(9, "$MEASUREMENT");
+      add(70, 1); // 1 = Metric (mm)
+      add(9, "$EXTMIN");
+      add(10, extMinX.toFixed(1));
+      add(20, extMinY.toFixed(1));
+      add(30, "0.0");
+      add(9, "$EXTMAX");
+      add(10, extMaxX.toFixed(1));
+      add(20, extMaxY.toFixed(1));
+      add(30, "0.0");
+      add(9, "$LIMMIN");
+      add(10, "0.0");
+      add(20, "0.0");
+      add(9, "$LIMMAX");
+      add(10, extMaxX.toFixed(1));
+      add(20, extMaxY.toFixed(1));
+      add(9, "$VIEWCTR");
+      add(10, midX.toFixed(1));
+      add(20, midY.toFixed(1));
+      add(9, "$VIEWSIZE");
+      add(40, viewH.toFixed(1));
+      add(0, "ENDSEC");
+
+      // ── TABLES SECTION ──
+      add(0, "SECTION");
+      add(2, "TABLES");
+
+      // LTYPE Table
+      add(0, "TABLE");
+      add(2, "LTYPE");
+      add(70, 1);
+      add(0, "LTYPE");
+      add(2, "CONTINUOUS");
+      add(70, 64);
+      add(3, "Solid line");
+      add(72, 65);
+      add(73, 0);
+      add(40, "0.0");
+      add(0, "ENDTAB");
+
+      // LAYER Table
+      var layerDefs = [
+        { name: "0", color: 7 },
+        { name: "OUTLINE", color: 7 },
+        { name: "CARCASS", color: 4 },
+        { name: "SHUTTER", color: 1 },
+        { name: "DIMENSIONS", color: 3 },
+        { name: "TITLEBLOCK", color: 5 },
+        { name: "TEXT", color: 2 },
+        { name: "HATCH", color: 8 },
+        { name: "DRILL", color: 6 }
+      ];
+
+      add(0, "TABLE");
+      add(2, "LAYER");
+      add(70, layerDefs.length);
+      for (var i = 0; i < layerDefs.length; i++) {
+        var ld = layerDefs[i];
+        add(0, "LAYER");
+        add(2, ld.name);
+        add(70, 0);
+        add(62, ld.color);
+        add(6, "CONTINUOUS");
+      }
+      add(0, "ENDTAB");
+
+      // STYLE Table
+      add(0, "TABLE");
+      add(2, "STYLE");
+      add(70, 1);
+      add(0, "STYLE");
+      add(2, "STANDARD");
+      add(70, 0);
+      add(40, "0.0");
+      add(41, "1.0");
+      add(50, "0.0");
+      add(71, 0);
+      add(42, "2.5");
+      add(3, "STANDARD");
+      add(0, "ENDTAB");
+
+      add(0, "ENDSEC"); // End TABLES
+
+      // ── BLOCKS SECTION ──
+      add(0, "SECTION");
+      add(2, "BLOCKS");
+      add(0, "ENDSEC");
+
+      // ── ENTITIES SECTION ──
+      add(0, "SECTION");
+      add(2, "ENTITIES");
+
+      for (var j = 0; j < cadEntities.length; j++) {
+        var ent = cadEntities[j];
+        var ly = ent.layer || "OUTLINE";
+        if (ent.type === 'LINE') {
+          add(0, "LINE");
+          add(8, ly);
+          add(10, ent.x1.toFixed(1));
+          add(20, ent.y1.toFixed(1));
+          add(30, "0.0");
+          add(11, ent.x2.toFixed(1));
+          add(21, ent.y2.toFixed(1));
+          add(31, "0.0");
+        } else if (ent.type === 'CIRCLE') {
+          add(0, "CIRCLE");
+          add(8, ly);
+          add(10, ent.cx.toFixed(1));
+          add(20, ent.cy.toFixed(1));
+          add(30, "0.0");
+          add(40, ent.r.toFixed(1));
+        } else if (ent.type === 'TEXT') {
+          var txt = cleanStr(ent.str);
+          if (!txt) continue;
+          var sz = Math.max(12, Math.round(ent.size || 22));
+          var rot = ent.rot ? ((-ent.rot) % 360 + 360) % 360 : 0;
+          var alignCode = 0;
+          if (ent.align === 'center' || ent.align === 'middle') alignCode = 1;
+          else if (ent.align === 'right' || ent.align === 'end') alignCode = 2;
+
+          add(0, "TEXT");
+          add(8, ly);
+          add(10, ent.x.toFixed(1));
+          add(20, ent.y.toFixed(1));
+          add(30, "0.0");
+          add(40, sz);
+          add(1, txt);
+          if (rot !== 0) {
+            add(50, rot.toFixed(1));
+          }
+          if (alignCode > 0) {
+            add(72, alignCode);
+            add(11, ent.x.toFixed(1));
+            add(21, ent.y.toFixed(1));
+            add(31, "0.0");
+          }
+        }
+      }
+
+      add(0, "ENDSEC");
+      add(0, "EOF");
+
+      return lines.join("\r\n");
+    },
+
     // ── Vector Math for SVG & DXF ──
     createVectorCanvas: function (w, h) {
+      var self = this;
       var isA3 = (this.paperSize === 'A3');
       w = w || (isA3 ? 4200 : 2970); // 420mm (A3) or 297mm (A4) @ 10x scale
       h = h || (isA3 ? 2970 : 2100); // 297mm (A3) or 210mm (A4) @ 10x scale
@@ -89,6 +276,7 @@
       return {
         width: w,
         height: h,
+        cadEntities: cadEntities,
         setLayer: function (ly) {
           activeLayer = ly || 'OUTLINE';
         },
@@ -273,80 +461,40 @@
           offsetX = offsetX || 0;
           offsetY = offsetY || 0;
           var H = h;
-          var out = [
-            "0", "SECTION", "2", "HEADER", "9", "$ACADVER", "1", "AC1009", "0", "ENDSEC",
-            "0", "SECTION", "2", "TABLES",
-            "0", "TABLE", "2", "LAYER", "70", "8",
-            "0", "LAYER", "2", "OUTLINE", "70", "0", "62", "7", "6", "CONTINUOUS", "0",
-            "0", "LAYER", "2", "CARCASS", "70", "0", "62", "4", "6", "CONTINUOUS", "0",
-            "0", "LAYER", "2", "SHUTTER", "70", "0", "62", "1", "6", "CONTINUOUS", "0",
-            "0", "LAYER", "2", "DIMENSIONS", "70", "0", "62", "3", "6", "CONTINUOUS", "0",
-            "0", "LAYER", "2", "TITLEBLOCK", "70", "0", "62", "5", "6", "CONTINUOUS", "0",
-            "0", "LAYER", "2", "TEXT", "70", "0", "62", "2", "6", "CONTINUOUS", "0",
-            "0", "LAYER", "2", "HATCH", "70", "0", "62", "8", "6", "CONTINUOUS", "0",
-            "0", "LAYER", "2", "DRILL", "70", "0", "62", "6", "6", "CONTINUOUS", "0",
-            "0", "ENDTAB", "0", "ENDSEC",
-            "0", "SECTION", "2", "ENTITIES"
-          ];
-
-          function cleanStr(s) {
-            if (!s) return "";
-            return String(s)
-              .replace(/[\r\n]+/g, " ")
-              .replace(/[·—–]/g, "-")
-              .replace(/×/g, "x")
-              .replace(/Ø|&Oslash;/gi, "%%c")
-              .replace(/°/g, "%%d")
-              .replace(/±/g, "%%p")
-              .replace(/₹/g, "Rs.")
-              .replace(/ॐ/g, "OM")
-              .replace(/[^\x20-\x7E]/g, " ")
-              .trim();
-          }
-
-          cadEntities.forEach(function (ent) {
-            var ly = ent.layer || "OUTLINE";
+          var mapped = [];
+          for (var ei = 0; ei < cadEntities.length; ei++) {
+            var ent = cadEntities[ei];
             if (ent.type === 'LINE') {
-              var x1 = ent.x1 + offsetX, y1 = H - ent.y1 + offsetY;
-              var x2 = ent.x2 + offsetX, y2 = H - ent.y2 + offsetY;
-              out.push("0", "LINE", "8", ly,
-                "10", x1.toFixed(1), "20", y1.toFixed(1), "30", "0.0",
-                "11", x2.toFixed(1), "21", y2.toFixed(1), "31", "0.0"
-              );
+              mapped.push({
+                type: 'LINE',
+                x1: ent.x1 + offsetX,
+                y1: H - ent.y1 + offsetY,
+                x2: ent.x2 + offsetX,
+                y2: H - ent.y2 + offsetY,
+                layer: ent.layer
+              });
             } else if (ent.type === 'CIRCLE') {
-              var cx = ent.cx + offsetX, cy = H - ent.cy + offsetY;
-              out.push("0", "CIRCLE", "8", ly,
-                "10", cx.toFixed(1), "20", cy.toFixed(1), "30", "0.0",
-                "40", ent.r.toFixed(1)
-              );
+              mapped.push({
+                type: 'CIRCLE',
+                cx: ent.cx + offsetX,
+                cy: H - ent.cy + offsetY,
+                r: ent.r,
+                layer: ent.layer
+              });
             } else if (ent.type === 'TEXT') {
-              var tx = ent.x + offsetX, ty = H - ent.y + offsetY;
-              var txt = cleanStr(ent.str);
-              if (!txt) return;
-              var sz = Math.max(12, Math.round(ent.size || 22));
-              var rot = ent.rot ? ((-ent.rot) % 360 + 360) % 360 : 0;
-              var alignCode = 0;
-              if (ent.align === 'center' || ent.align === 'middle') alignCode = 1;
-              else if (ent.align === 'right' || ent.align === 'end') alignCode = 2;
-
-              out.push("0", "TEXT", "8", ly,
-                "10", tx.toFixed(1), "20", ty.toFixed(1), "30", "0.0",
-                "40", String(sz),
-                "1", txt
-              );
-              if (rot !== 0) {
-                out.push("50", rot.toFixed(1));
-              }
-              if (alignCode > 0) {
-                out.push("72", String(alignCode),
-                  "11", tx.toFixed(1), "21", ty.toFixed(1), "31", "0.0"
-                );
-              }
+              mapped.push({
+                type: 'TEXT',
+                x: ent.x + offsetX,
+                y: H - ent.y + offsetY,
+                str: ent.str,
+                size: ent.size,
+                align: ent.align,
+                rot: ent.rot,
+                layer: ent.layer
+              });
             }
-          });
-
-          out.push("0", "ENDSEC", "0", "EOF");
-          return out.join("\r\n");
+          }
+          return self._buildDXF(mapped, w, h, offsetX, offsetY, offsetX + w, offsetY + h);
         }
       };
     },
@@ -1870,47 +2018,54 @@
       var pages = this.generateAllPages();
       if (!pages || !pages.length) return '';
 
-      var totalOut = [
-        "0", "SECTION", "2", "HEADER", "9", "$ACADVER", "1", "AC1009", "0", "ENDSEC",
-        "0", "SECTION", "2", "TABLES",
-        "0", "TABLE", "2", "LAYER", "70", "8",
-        "0", "LAYER", "2", "OUTLINE", "70", "0", "62", "7", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "CARCASS", "70", "0", "62", "4", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "SHUTTER", "70", "0", "62", "1", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "DIMENSIONS", "70", "0", "62", "3", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "TITLEBLOCK", "70", "0", "62", "5", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "TEXT", "70", "0", "62", "2", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "HATCH", "70", "0", "62", "8", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "DRILL", "70", "0", "62", "6", "6", "CONTINUOUS", "0",
-        "0", "ENDTAB", "0", "ENDSEC",
-        "0", "SECTION", "2", "ENTITIES"
-      ];
-
       var sheetW = (this.paperSize === 'A3' ? 4200 : 2970);
+      var sheetH = (this.paperSize === 'A3' ? 2970 : 2100);
       var gap = 600;
+      var allEntities = [];
 
       for (var p = 0; p < pages.length; p++) {
         var page = pages[p];
         var canvas = page.canvas;
-        if (canvas && typeof canvas.toDXF === 'function') {
-          var offsetX = p * (sheetW + gap);
-          var singleDxf = canvas.toDXF(offsetX, 0);
-          var entIdx = singleDxf.indexOf("ENTITIES\r\n");
-          if (entIdx !== -1) {
-            var entPart = singleDxf.substring(entIdx + 10);
-            var endSecIdx = entPart.lastIndexOf("0\r\nENDSEC");
-            if (endSecIdx !== -1) {
-              entPart = entPart.substring(0, endSecIdx).trim();
-              if (entPart) {
-                totalOut.push(entPart);
-              }
-            }
+        if (!canvas || !canvas.cadEntities) continue;
+        var offsetX = p * (sheetW + gap);
+        var ents = canvas.cadEntities;
+        var H = canvas.height || sheetH;
+        for (var ei = 0; ei < ents.length; ei++) {
+          var ent = ents[ei];
+          if (ent.type === 'LINE') {
+            allEntities.push({
+              type: 'LINE',
+              x1: ent.x1 + offsetX,
+              y1: H - ent.y1,
+              x2: ent.x2 + offsetX,
+              y2: H - ent.y2,
+              layer: ent.layer
+            });
+          } else if (ent.type === 'CIRCLE') {
+            allEntities.push({
+              type: 'CIRCLE',
+              cx: ent.cx + offsetX,
+              cy: H - ent.cy,
+              r: ent.r,
+              layer: ent.layer
+            });
+          } else if (ent.type === 'TEXT') {
+            allEntities.push({
+              type: 'TEXT',
+              x: ent.x + offsetX,
+              y: H - ent.y,
+              str: ent.str,
+              size: ent.size,
+              align: ent.align,
+              rot: ent.rot,
+              layer: ent.layer
+            });
           }
         }
       }
 
-      totalOut.push("0", "ENDSEC", "0", "EOF");
-      var combinedDXF = totalOut.join("\r\n");
+      var totalW = pages.length * sheetW + Math.max(0, pages.length - 1) * gap;
+      var combinedDXF = this._buildDXF(allEntities, totalW, sheetH, 0, 0, totalW, sheetH);
 
       if (typeof document !== 'undefined' && document.body && typeof Blob !== 'undefined' && typeof URL !== 'undefined' && URL.createObjectURL) {
         try {
