@@ -465,9 +465,16 @@
         var prevProjId = (this.project && (this.project._projectId || (this.project.meta && this.project.meta.id) || this.project.id)) || '';
         var nextProjId = proj._projectId || (proj.meta && proj.meta.id) || proj.id || '';
         if (nextProjId) proj._projectId = String(nextProjId);
-        if (window.S && (!prevProjId || !nextProjId || String(prevProjId) !== String(nextProjId))) {
-          window.S.units = [];
-          window.S.active = 0;
+        var projHasNoFurn = (!proj.plan || !proj.plan.furniture || !proj.plan.furniture.length);
+        if (window.S && (loadOpts.isNewProject || projHasNoFurn || !prevProjId || !nextProjId || String(prevProjId) !== String(nextProjId))) {
+          if (loadOpts.isNewProject || projHasNoFurn || String(prevProjId) !== String(nextProjId)) {
+            window.S.units = [];
+            window.S.active = 0;
+            if (typeof window.renderRail === 'function') window.renderRail();
+            if (typeof window.renderLegend === 'function') window.renderLegend();
+            if (typeof window.renderFoot === 'function') window.renderFoot();
+            if (typeof window.renderAll === 'function') window.renderAll();
+          }
         }
         this.project = proj;
         if (proj && proj.plan) {
@@ -549,15 +556,35 @@
     },
 
     createNewProject: function (title, clientName) {
+      if (window.S) {
+        window.S.units = [];
+        window.S.active = 0;
+        if (typeof window.renderRail === 'function') window.renderRail();
+        if (typeof window.renderLegend === 'function') window.renderLegend();
+        if (typeof window.renderFoot === 'function') window.renderFoot();
+        if (typeof window.renderAll === 'function') window.renderAll();
+      }
+      try { localStorage.removeItem('cupboard-cad'); } catch (e) { }
       var fresh = Core.createProject(title || 'New Project');
       if (clientName && fresh.meta) fresh.meta.clientName = clientName;
-      this.loadProject(fresh, { skipAutoSave: true });
+      fresh.data = { units: [] };
+      this.loadProject(fresh, { skipAutoSave: true, isNewProject: true });
       return fresh;
     },
 
     resetProject: function (title) {
+      if (window.S) {
+        window.S.units = [];
+        window.S.active = 0;
+        if (typeof window.renderRail === 'function') window.renderRail();
+        if (typeof window.renderLegend === 'function') window.renderLegend();
+        if (typeof window.renderFoot === 'function') window.renderFoot();
+        if (typeof window.renderAll === 'function') window.renderAll();
+      }
+      try { localStorage.removeItem('cupboard-cad'); } catch (e) { }
       var fresh = Core.createProject(title || 'Untitled Project');
-      this.loadProject(fresh, { changeAction: 'reset_project', allowEmptyPlan: true });
+      fresh.data = { units: [] };
+      this.loadProject(fresh, { changeAction: 'reset_project', allowEmptyPlan: true, isNewProject: true });
       return fresh;
     },
 
@@ -4100,26 +4127,9 @@
 
       window.S = window.S || {};
 
-      // If no furniture is placed on the 2D floor plan, check if 3D Studio or project.data has units before clearing!
+      // If no furniture is placed on the 2D floor plan, clean 3D Studio units
       if (!furnList.length) {
-        if (window.S.units && Array.isArray(window.S.units) && window.S.units.length > 0) {
-          furnList = plan.furniture = plan.furniture || [];
-          for (var fi = 0; fi < window.S.units.length; fi++) {
-            var su = window.S.units[fi];
-            var fId = su._furnId || ('furn_' + (su.id || fi) + '_' + Date.now());
-            su._furnId = fId;
-            furnList.push({
-              id: fId,
-              name: su.label || ('Unit ' + (fi + 1)),
-              category: su.ctype || 'wardrobe',
-              dimensions: { W: su.W || 900, H: su.H || 2100, D: su.D || 600 },
-              elevation: su.elev || 0,
-              pos: su.pos || { x: (fi % 6) * 1100 + 600, y: Math.floor(fi / 6) * 1100 + 600, z: su.elev || 0 },
-              rotY: su.rotY || 0,
-              unitConfig: Object.assign({}, su)
-            });
-          }
-        } else if (this.project && this.project.data && Array.isArray(this.project.data.units) && this.project.data.units.length > 0) {
+        if (this.project && this.project._isHydratingLegacyData && this.project.data && Array.isArray(this.project.data.units) && this.project.data.units.length > 0) {
           window.S.units = JSON.parse(JSON.stringify(this.project.data.units));
           furnList = plan.furniture = plan.furniture || [];
           for (var fj = 0; fj < window.S.units.length; fj++) {
@@ -4137,12 +4147,14 @@
               unitConfig: Object.assign({}, su2)
             });
           }
+          delete this.project._isHydratingLegacyData;
         } else {
           window.S.units = [];
           window.S.active = 0;
           if (typeof window.renderRail === 'function') window.renderRail();
           if (typeof window.renderLegend === 'function') window.renderLegend();
           if (typeof window.renderFoot === 'function') window.renderFoot();
+          if (typeof window.renderAll === 'function') window.renderAll();
           return;
         }
       }

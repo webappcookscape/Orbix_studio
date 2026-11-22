@@ -9540,6 +9540,16 @@ body.role-employee #adminCreateEmpBox,
                   }));
                 } catch (e) { }
 
+                if (window.S) {
+                  window.S.units = [];
+                  window.S.active = 0;
+                  if (typeof window.renderRail === 'function') window.renderRail();
+                  if (typeof window.renderLegend === 'function') window.renderLegend();
+                  if (typeof window.renderFoot === 'function') window.renderFoot();
+                  if (typeof window.renderAll === 'function') window.renderAll();
+                }
+                try { localStorage.removeItem('cupboard-cad'); } catch (e) { }
+
                 self.closeModal('createProjectModal');
                 createForm.reset();
                 self.renderProjectsList();
@@ -9593,6 +9603,16 @@ body.role-employee #adminCreateEmpBox,
                   units: []
                 }));
               } catch (e) { }
+              if (window.S) {
+                window.S.units = [];
+                window.S.active = 0;
+                if (typeof window.renderRail === 'function') window.renderRail();
+                if (typeof window.renderLegend === 'function') window.renderLegend();
+                if (typeof window.renderFoot === 'function') window.renderFoot();
+                if (typeof window.renderAll === 'function') window.renderAll();
+              }
+              try { localStorage.removeItem('cupboard-cad'); } catch (e) { }
+
               self.closeModal('createProjectModal');
               createForm.reset();
               self.renderProjectsList();
@@ -22292,6 +22312,28 @@ body.role-employee #adminCreateEmpBox,
         Core.detectRooms(this.project);
       }
       var deletedFurnIds = this.selected.filter(function (it) { return it.type === 'furniture'; }).map(function (it) { return it.id; });
+      if (deletedFurnIds.length > 0) {
+        if (typeof window !== 'undefined' && window.S && Array.isArray(window.S.units)) {
+          window.S.units = window.S.units.filter(function (u) {
+            return !u._furnId || deletedFurnIds.indexOf(u._furnId) === -1;
+          });
+          if (window.S.active >= window.S.units.length) {
+            window.S.active = Math.max(0, window.S.units.length - 1);
+          }
+          if (typeof window.renderRail === 'function') window.renderRail();
+          if (typeof window.renderLegend === 'function') window.renderLegend();
+          if (typeof window.renderFoot === 'function') window.renderFoot();
+          if (typeof window.renderAll === 'function') window.renderAll();
+        }
+        if (this.project && this.project.data && Array.isArray(this.project.data.units)) {
+          this.project.data.units = this.project.data.units.filter(function (u) {
+            return !u._furnId || deletedFurnIds.indexOf(u._furnId) === -1;
+          });
+        }
+        if (typeof window !== 'undefined' && window.OrbixUI && typeof window.OrbixUI.saveToLocalStorage === 'function') {
+          window.OrbixUI.saveToLocalStorage({ preserveTimestamp: true });
+        }
+      }
       this.selected = [];
       this.onSelectionChange(this.selected);
       this.pushHistory(hasWallOrRoomOrOpening ? 'Delete' : 'Delete Furniture');
@@ -24565,7 +24607,8 @@ body.role-employee #adminCreateEmpBox,
     }
   }
 
-    if (bestJoint) {
+    // Plumb vertical stacking above/below an existing unit takes priority
+    if (bestJoint && bestJoint.snapMode === 'plumb') {
       return bestJoint;
     }
 
@@ -24575,7 +24618,7 @@ body.role-employee #adminCreateEmpBox,
     var rooms = plan.rooms || [];
     var bestWallSnap = null;
     var isFreeMode = !!(this.isShiftDown || this.forceFreePlacement || this.isAltDown);
-    var minWallDist = isFreeMode ? 0 : (isDecorF ? 60 : 110); // Precise 110mm natural magnetic snap zone (never hijacks from far away!)
+    var minWallDist = isFreeMode ? 0 : (isDecorF ? 80 : 250); // Natural 250mm magnetic snap zone for flush wall mounting
     var halfD = fD / 2;
     var halfW = fW / 2;
 
@@ -24988,84 +25031,10 @@ body.role-employee #adminCreateEmpBox,
       var candT = (bestWallSnap.proj.x - bwWall.start.x) * bwDir.x + (bestWallSnap.proj.y - bwWall.start.y) * bwDir.y;
       var halfActiveW = fW / 2;
 
-      // A. Determine clear inner wall bounds [tMin, tMax] considering corner adjoining walls & adjoining corner units
+      // A. Clear wall bounds [tMin, tMax] based on physical wall span
       var bwLen = Core.wallLength(bwWall);
-      var tMin = 0;
-      var tMax = bwLen;
-
-      for (var awi = 0; awi < walls.length; awi++) {
-        var aWall = walls[awi];
-        if (aWall.id === bwWall.id || aWall.isDivider) continue;
-        var aHalfT = (aWall.thickness || 150) / 2;
-
-        // Check if an adjoining wall meets bwWall.start
-        var meetsStart = (Vec2.dist(bwWall.start, aWall.start) < 150 || Vec2.dist(bwWall.start, aWall.end) < 150);
-        if (meetsStart) {
-          var aDir = Core.wallDirection(aWall);
-          var dotAdj = Math.abs(bwDir.x * aDir.x + bwDir.y * aDir.y);
-          if (dotAdj < 0.7) { // Corner meeting (~90°)
-            var boundStart = aHalfT;
-            for (var afi = 0; afi < furnList.length; afi++) {
-              var aFn = furnList[afi];
-              if (activeId && aFn.id === activeId) continue;
-              if (!aFn.pos) continue;
-              var aDims = aFn.dimensions || { W: 600, D: 600, H: 850 };
-              var aElev = (aFn.elevation !== undefined && aFn.elevation !== null && aFn.elevation !== '') ? parseFloat(aFn.elevation) : 0;
-              var aH = aDims.H ? parseFloat(aDims.H) : 850;
-              if (fTop <= aElev + 5 || (aElev + aH) <= fElev + 5) continue;
-
-              var distFromCorner = Math.hypot(aFn.pos.x - bwWall.start.x, aFn.pos.y - bwWall.start.y);
-              var aIsLCorner = !!(
-                (aFn.unitConfig && (aFn.unitConfig.geometryType === 'l_shaped_corner' || aFn.unitConfig.unitType === 'fbcm' || aFn.unitConfig.unitType === 'wbcm' || (aFn.unitConfig.corner && aFn.unitConfig.corner.enabled))) ||
-                aFn.catalogItemId === 'fbcm' || aFn.id === 'fbcm' || aFn.catalogItemId === 'fbcm-1500' || aFn.catalogItemId === 'wbcm' ||
-                (aFn.id && /fbcm|wbcm/i.test(aFn.id)) ||
-                (aFn.catalogItemId && /fbcm|wbcm/i.test(aFn.catalogItemId)) ||
-                (aFn.code && /fbcm|wbcm/i.test(aFn.code))
-              );
-              var aArmLength = aIsLCorner ? ((aFn.unitConfig && aFn.unitConfig.corner && aFn.unitConfig.corner.legW) || aDims.W || 900) : ((aDims.D && aDims.D > 100) ? aDims.D : 600);
-              if (distFromCorner < aArmLength + aHalfT + 120) {
-                var cornerReserve = aArmLength + aHalfT;
-                if (cornerReserve > boundStart) boundStart = cornerReserve;
-              }
-            }
-            if (boundStart > tMin) tMin = boundStart;
-          }
-        }
-
-        // Check if an adjoining wall meets bwWall.end
-        var meetsEnd = (Vec2.dist(bwWall.end, aWall.start) < 150 || Vec2.dist(bwWall.end, aWall.end) < 150);
-        if (meetsEnd) {
-          var aDir2 = Core.wallDirection(aWall);
-          var dotAdj2 = Math.abs(bwDir.x * aDir2.x + bwDir.y * aDir2.y);
-          if (dotAdj2 < 0.7) {
-            var boundEnd = bwLen - aHalfT;
-            for (var afi2 = 0; afi2 < furnList.length; afi2++) {
-              var aFn2 = furnList[afi2];
-              if (activeId && aFn2.id === activeId) continue;
-              if (!aFn2.pos) continue;
-              var aDims2 = aFn2.dimensions || { W: 600, D: 600, H: 850 };
-              var aElev2 = (aFn2.elevation !== undefined && aFn2.elevation !== null && aFn2.elevation !== '') ? parseFloat(aFn2.elevation) : 0;
-              var aH2 = aDims2.H ? parseFloat(aDims2.H) : 850;
-              if (fTop <= aElev2 + 5 || (aElev2 + aH2) <= fElev + 5) continue;
-
-              var distFromCorner2 = Math.hypot(aFn2.pos.x - bwWall.end.x, aFn2.pos.y - bwWall.end.y);
-              var a2IsLCorner = !!(
-                (aFn2.unitConfig && (aFn2.unitConfig.geometryType === 'l_shaped_corner' || aFn2.unitConfig.unitType === 'fbcm' || aFn2.unitConfig.unitType === 'wbcm' || (aFn2.unitConfig.corner && aFn2.unitConfig.corner.enabled))) ||
-                aFn2.catalogItemId === 'fbcm' || aFn2.id === 'fbcm' || aFn2.catalogItemId === 'fbcm-1500' || aFn2.catalogItemId === 'wbcm' ||
-                (aFn2.id && /fbcm|wbcm/i.test(aFn2.id)) ||
-                (aFn2.catalogItemId && /fbcm|wbcm/i.test(aFn2.catalogItemId)) ||
-                (aFn2.code && /fbcm|wbcm/i.test(aFn2.code))
-              );
-              var a2ArmLength = a2IsLCorner ? ((aFn2.unitConfig && aFn2.unitConfig.corner && aFn2.unitConfig.corner.legW) || aDims2.W || 900) : ((aDims2.D && aDims2.D > 100) ? aDims2.D : 600);
-              if (distFromCorner2 < a2ArmLength + aHalfT + 120) {
-                var cornerReserve2 = bwLen - (a2ArmLength + aHalfT);
-                if (cornerReserve2 < boundEnd) boundEnd = cornerReserve2;
-              }
-            }
-            if (boundEnd < tMax) tMax = boundEnd;
-          }
-        }
-      }
+      var tMin = halfActiveW;
+      var tMax = Math.max(halfActiveW, bwLen - halfActiveW);
 
       // Allow user to freely position anywhere along the wall span right up to and across corners without artificial clamping
       var snapCornerStartT = halfActiveW;
@@ -25268,30 +25237,38 @@ body.role-employee #adminCreateEmpBox,
             var occ = occupiedIntervals[oii];
             var myStart = candT - halfActiveW;
             var myEnd = candT + halfActiveW;
-            // Check overlap with 2mm tolerance
-            if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
+            // Check direct physical overlap with 1mm tolerance
+            if (myStart < occ.end - 1 && myEnd > occ.start + 1) {
               collided = true;
               didShift = true;
               shiftedAgainst = occ;
               if (candT >= occ.center) {
-                // Push to positive side of existing unit
+                // Push to positive side of existing unit (flush against it)
                 candT = occ.end + halfActiveW;
               } else {
-                // Push to negative side of existing unit
+                // Push to negative side of existing unit (flush against it)
                 candT = occ.start - halfActiveW;
+              }
+            } else {
+              // Gentle magnetic side-by-side snap when within 35mm contact zone
+              var dFlushRight = Math.abs(candT - (occ.end + halfActiveW));
+              var dFlushLeft = Math.abs(candT - (occ.start - halfActiveW));
+              if (dFlushRight < 35 && dFlushRight < dFlushLeft) {
+                candT = occ.end + halfActiveW;
+                didShift = true;
+                shiftedAgainst = occ;
+              } else if (dFlushLeft < 35) {
+                candT = occ.start - halfActiveW;
+                didShift = true;
+                shiftedAgainst = occ;
               }
             }
           }
-          // Re-clamp within wall bounds after shifting
-          if (tMax - tMin >= fW) {
-            candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
+          // Clamp within physical wall bounds
+          if (bwLen >= fW) {
+            candT = Math.max(halfActiveW, Math.min(bwLen - halfActiveW, candT));
           }
           if (!collided) break;
-        }
-        // If pushing would fling the unit far away (> 85% of unit width), keep it where user placed it!
-        if (Math.abs(candT - origCandT) > fW * 0.85) {
-          candT = origCandT;
-          didShift = false;
         }
       }
 
@@ -25315,6 +25292,10 @@ body.role-employee #adminCreateEmpBox,
       }
 
       return bestWallSnap;
+    }
+
+    if (bestJoint) {
+      return bestJoint;
     }
 
     // Units can be placed inside wall recesses, alcoves, and near RCC points without unwanted forced ejection
@@ -36893,9 +36874,16 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var prevProjId = (this.project && (this.project._projectId || (this.project.meta && this.project.meta.id) || this.project.id)) || '';
         var nextProjId = proj._projectId || (proj.meta && proj.meta.id) || proj.id || '';
         if (nextProjId) proj._projectId = String(nextProjId);
-        if (window.S && (!prevProjId || !nextProjId || String(prevProjId) !== String(nextProjId))) {
-          window.S.units = [];
-          window.S.active = 0;
+        var projHasNoFurn = (!proj.plan || !proj.plan.furniture || !proj.plan.furniture.length);
+        if (window.S && (loadOpts.isNewProject || projHasNoFurn || !prevProjId || !nextProjId || String(prevProjId) !== String(nextProjId))) {
+          if (loadOpts.isNewProject || projHasNoFurn || String(prevProjId) !== String(nextProjId)) {
+            window.S.units = [];
+            window.S.active = 0;
+            if (typeof window.renderRail === 'function') window.renderRail();
+            if (typeof window.renderLegend === 'function') window.renderLegend();
+            if (typeof window.renderFoot === 'function') window.renderFoot();
+            if (typeof window.renderAll === 'function') window.renderAll();
+          }
         }
         this.project = proj;
         if (proj && proj.plan) {
@@ -36977,15 +36965,35 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     },
 
     createNewProject: function (title, clientName) {
+      if (window.S) {
+        window.S.units = [];
+        window.S.active = 0;
+        if (typeof window.renderRail === 'function') window.renderRail();
+        if (typeof window.renderLegend === 'function') window.renderLegend();
+        if (typeof window.renderFoot === 'function') window.renderFoot();
+        if (typeof window.renderAll === 'function') window.renderAll();
+      }
+      try { localStorage.removeItem('cupboard-cad'); } catch (e) { }
       var fresh = Core.createProject(title || 'New Project');
       if (clientName && fresh.meta) fresh.meta.clientName = clientName;
-      this.loadProject(fresh, { skipAutoSave: true });
+      fresh.data = { units: [] };
+      this.loadProject(fresh, { skipAutoSave: true, isNewProject: true });
       return fresh;
     },
 
     resetProject: function (title) {
+      if (window.S) {
+        window.S.units = [];
+        window.S.active = 0;
+        if (typeof window.renderRail === 'function') window.renderRail();
+        if (typeof window.renderLegend === 'function') window.renderLegend();
+        if (typeof window.renderFoot === 'function') window.renderFoot();
+        if (typeof window.renderAll === 'function') window.renderAll();
+      }
+      try { localStorage.removeItem('cupboard-cad'); } catch (e) { }
       var fresh = Core.createProject(title || 'Untitled Project');
-      this.loadProject(fresh, { changeAction: 'reset_project', allowEmptyPlan: true });
+      fresh.data = { units: [] };
+      this.loadProject(fresh, { changeAction: 'reset_project', allowEmptyPlan: true, isNewProject: true });
       return fresh;
     },
 
@@ -40528,26 +40536,9 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       window.S = window.S || {};
 
-      // If no furniture is placed on the 2D floor plan, check if 3D Studio or project.data has units before clearing!
+      // If no furniture is placed on the 2D floor plan, clean 3D Studio units
       if (!furnList.length) {
-        if (window.S.units && Array.isArray(window.S.units) && window.S.units.length > 0) {
-          furnList = plan.furniture = plan.furniture || [];
-          for (var fi = 0; fi < window.S.units.length; fi++) {
-            var su = window.S.units[fi];
-            var fId = su._furnId || ('furn_' + (su.id || fi) + '_' + Date.now());
-            su._furnId = fId;
-            furnList.push({
-              id: fId,
-              name: su.label || ('Unit ' + (fi + 1)),
-              category: su.ctype || 'wardrobe',
-              dimensions: { W: su.W || 900, H: su.H || 2100, D: su.D || 600 },
-              elevation: su.elev || 0,
-              pos: su.pos || { x: (fi % 6) * 1100 + 600, y: Math.floor(fi / 6) * 1100 + 600, z: su.elev || 0 },
-              rotY: su.rotY || 0,
-              unitConfig: Object.assign({}, su)
-            });
-          }
-        } else if (this.project && this.project.data && Array.isArray(this.project.data.units) && this.project.data.units.length > 0) {
+        if (this.project && this.project._isHydratingLegacyData && this.project.data && Array.isArray(this.project.data.units) && this.project.data.units.length > 0) {
           window.S.units = JSON.parse(JSON.stringify(this.project.data.units));
           furnList = plan.furniture = plan.furniture || [];
           for (var fj = 0; fj < window.S.units.length; fj++) {
@@ -40565,12 +40556,14 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
               unitConfig: Object.assign({}, su2)
             });
           }
+          delete this.project._isHydratingLegacyData;
         } else {
           window.S.units = [];
           window.S.active = 0;
           if (typeof window.renderRail === 'function') window.renderRail();
           if (typeof window.renderLegend === 'function') window.renderLegend();
           if (typeof window.renderFoot === 'function') window.renderFoot();
+          if (typeof window.renderAll === 'function') window.renderAll();
           return;
         }
       }
@@ -55984,7 +55977,21 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       nb.addEventListener("click", function () { S.units.push(newUnit("UNIT " + (S.units.length + 1))); S.active = S.units.length - 1; renderRail(); renderAll(); });
       if (S.units.length > 1) {
         var rbi = el("btn danger", g8i, "button"); rbi.textContent = "Remove";
-        rbi.addEventListener("click", function () { S.units.splice(S.active, 1); S.active = Math.max(0, S.active - 1); renderRail(); renderAll(); });
+        rbi.addEventListener("click", function () {
+          var remU = S.units[S.active];
+          var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+          if (remU && remU._furnId && plan && plan.furniture) {
+            plan.furniture = plan.furniture.filter(function (it) { return it.id !== remU._furnId; });
+            if (window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+            if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+            if (window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+          }
+          S.units.splice(S.active, 1);
+          S.active = Math.max(0, S.active - 1);
+          if (window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+          renderRail();
+          renderAll();
+        });
       }
       return;
     }

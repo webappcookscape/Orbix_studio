@@ -5740,7 +5740,21 @@
       nb.addEventListener("click", function () { S.units.push(newUnit("UNIT " + (S.units.length + 1))); S.active = S.units.length - 1; renderRail(); renderAll(); });
       if (S.units.length > 1) {
         var rbi = el("btn danger", g8i, "button"); rbi.textContent = "Remove";
-        rbi.addEventListener("click", function () { S.units.splice(S.active, 1); S.active = Math.max(0, S.active - 1); renderRail(); renderAll(); });
+        rbi.addEventListener("click", function () {
+          var remU = S.units[S.active];
+          var plan = (window.OrbixUI && typeof window.OrbixUI.getPlan === 'function') ? window.OrbixUI.getPlan() : (window.OrbixUI && window.OrbixUI.project && window.OrbixUI.project.plan);
+          if (remU && remU._furnId && plan && plan.furniture) {
+            plan.furniture = plan.furniture.filter(function (it) { return it.id !== remU._furnId; });
+            if (window.OrbixUI && window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+            if (window.OrbixProjects && window.OrbixProjects.saveActiveProject) window.OrbixProjects.saveActiveProject();
+            if (window.OrbixUI && window.OrbixUI.editor) window.OrbixUI.editor.render();
+          }
+          S.units.splice(S.active, 1);
+          S.active = Math.max(0, S.active - 1);
+          if (window.OrbixUI && window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+          renderRail();
+          renderAll();
+        });
       }
       return;
     }

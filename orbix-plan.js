@@ -1357,6 +1357,28 @@
         Core.detectRooms(this.project);
       }
       var deletedFurnIds = this.selected.filter(function (it) { return it.type === 'furniture'; }).map(function (it) { return it.id; });
+      if (deletedFurnIds.length > 0) {
+        if (typeof window !== 'undefined' && window.S && Array.isArray(window.S.units)) {
+          window.S.units = window.S.units.filter(function (u) {
+            return !u._furnId || deletedFurnIds.indexOf(u._furnId) === -1;
+          });
+          if (window.S.active >= window.S.units.length) {
+            window.S.active = Math.max(0, window.S.units.length - 1);
+          }
+          if (typeof window.renderRail === 'function') window.renderRail();
+          if (typeof window.renderLegend === 'function') window.renderLegend();
+          if (typeof window.renderFoot === 'function') window.renderFoot();
+          if (typeof window.renderAll === 'function') window.renderAll();
+        }
+        if (this.project && this.project.data && Array.isArray(this.project.data.units)) {
+          this.project.data.units = this.project.data.units.filter(function (u) {
+            return !u._furnId || deletedFurnIds.indexOf(u._furnId) === -1;
+          });
+        }
+        if (typeof window !== 'undefined' && window.OrbixUI && typeof window.OrbixUI.saveToLocalStorage === 'function') {
+          window.OrbixUI.saveToLocalStorage({ preserveTimestamp: true });
+        }
+      }
       this.selected = [];
       this.onSelectionChange(this.selected);
       this.pushHistory(hasWallOrRoomOrOpening ? 'Delete' : 'Delete Furniture');
@@ -3630,7 +3652,8 @@
     }
   }
 
-    if (bestJoint) {
+    // Plumb vertical stacking above/below an existing unit takes priority
+    if (bestJoint && bestJoint.snapMode === 'plumb') {
       return bestJoint;
     }
 
@@ -3640,7 +3663,7 @@
     var rooms = plan.rooms || [];
     var bestWallSnap = null;
     var isFreeMode = !!(this.isShiftDown || this.forceFreePlacement || this.isAltDown);
-    var minWallDist = isFreeMode ? 0 : (isDecorF ? 60 : 110); // Precise 110mm natural magnetic snap zone (never hijacks from far away!)
+    var minWallDist = isFreeMode ? 0 : (isDecorF ? 80 : 250); // Natural 250mm magnetic snap zone for flush wall mounting
     var halfD = fD / 2;
     var halfW = fW / 2;
 
@@ -4053,84 +4076,10 @@
       var candT = (bestWallSnap.proj.x - bwWall.start.x) * bwDir.x + (bestWallSnap.proj.y - bwWall.start.y) * bwDir.y;
       var halfActiveW = fW / 2;
 
-      // A. Determine clear inner wall bounds [tMin, tMax] considering corner adjoining walls & adjoining corner units
+      // A. Clear wall bounds [tMin, tMax] based on physical wall span
       var bwLen = Core.wallLength(bwWall);
-      var tMin = 0;
-      var tMax = bwLen;
-
-      for (var awi = 0; awi < walls.length; awi++) {
-        var aWall = walls[awi];
-        if (aWall.id === bwWall.id || aWall.isDivider) continue;
-        var aHalfT = (aWall.thickness || 150) / 2;
-
-        // Check if an adjoining wall meets bwWall.start
-        var meetsStart = (Vec2.dist(bwWall.start, aWall.start) < 150 || Vec2.dist(bwWall.start, aWall.end) < 150);
-        if (meetsStart) {
-          var aDir = Core.wallDirection(aWall);
-          var dotAdj = Math.abs(bwDir.x * aDir.x + bwDir.y * aDir.y);
-          if (dotAdj < 0.7) { // Corner meeting (~90°)
-            var boundStart = aHalfT;
-            for (var afi = 0; afi < furnList.length; afi++) {
-              var aFn = furnList[afi];
-              if (activeId && aFn.id === activeId) continue;
-              if (!aFn.pos) continue;
-              var aDims = aFn.dimensions || { W: 600, D: 600, H: 850 };
-              var aElev = (aFn.elevation !== undefined && aFn.elevation !== null && aFn.elevation !== '') ? parseFloat(aFn.elevation) : 0;
-              var aH = aDims.H ? parseFloat(aDims.H) : 850;
-              if (fTop <= aElev + 5 || (aElev + aH) <= fElev + 5) continue;
-
-              var distFromCorner = Math.hypot(aFn.pos.x - bwWall.start.x, aFn.pos.y - bwWall.start.y);
-              var aIsLCorner = !!(
-                (aFn.unitConfig && (aFn.unitConfig.geometryType === 'l_shaped_corner' || aFn.unitConfig.unitType === 'fbcm' || aFn.unitConfig.unitType === 'wbcm' || (aFn.unitConfig.corner && aFn.unitConfig.corner.enabled))) ||
-                aFn.catalogItemId === 'fbcm' || aFn.id === 'fbcm' || aFn.catalogItemId === 'fbcm-1500' || aFn.catalogItemId === 'wbcm' ||
-                (aFn.id && /fbcm|wbcm/i.test(aFn.id)) ||
-                (aFn.catalogItemId && /fbcm|wbcm/i.test(aFn.catalogItemId)) ||
-                (aFn.code && /fbcm|wbcm/i.test(aFn.code))
-              );
-              var aArmLength = aIsLCorner ? ((aFn.unitConfig && aFn.unitConfig.corner && aFn.unitConfig.corner.legW) || aDims.W || 900) : ((aDims.D && aDims.D > 100) ? aDims.D : 600);
-              if (distFromCorner < aArmLength + aHalfT + 120) {
-                var cornerReserve = aArmLength + aHalfT;
-                if (cornerReserve > boundStart) boundStart = cornerReserve;
-              }
-            }
-            if (boundStart > tMin) tMin = boundStart;
-          }
-        }
-
-        // Check if an adjoining wall meets bwWall.end
-        var meetsEnd = (Vec2.dist(bwWall.end, aWall.start) < 150 || Vec2.dist(bwWall.end, aWall.end) < 150);
-        if (meetsEnd) {
-          var aDir2 = Core.wallDirection(aWall);
-          var dotAdj2 = Math.abs(bwDir.x * aDir2.x + bwDir.y * aDir2.y);
-          if (dotAdj2 < 0.7) {
-            var boundEnd = bwLen - aHalfT;
-            for (var afi2 = 0; afi2 < furnList.length; afi2++) {
-              var aFn2 = furnList[afi2];
-              if (activeId && aFn2.id === activeId) continue;
-              if (!aFn2.pos) continue;
-              var aDims2 = aFn2.dimensions || { W: 600, D: 600, H: 850 };
-              var aElev2 = (aFn2.elevation !== undefined && aFn2.elevation !== null && aFn2.elevation !== '') ? parseFloat(aFn2.elevation) : 0;
-              var aH2 = aDims2.H ? parseFloat(aDims2.H) : 850;
-              if (fTop <= aElev2 + 5 || (aElev2 + aH2) <= fElev + 5) continue;
-
-              var distFromCorner2 = Math.hypot(aFn2.pos.x - bwWall.end.x, aFn2.pos.y - bwWall.end.y);
-              var a2IsLCorner = !!(
-                (aFn2.unitConfig && (aFn2.unitConfig.geometryType === 'l_shaped_corner' || aFn2.unitConfig.unitType === 'fbcm' || aFn2.unitConfig.unitType === 'wbcm' || (aFn2.unitConfig.corner && aFn2.unitConfig.corner.enabled))) ||
-                aFn2.catalogItemId === 'fbcm' || aFn2.id === 'fbcm' || aFn2.catalogItemId === 'fbcm-1500' || aFn2.catalogItemId === 'wbcm' ||
-                (aFn2.id && /fbcm|wbcm/i.test(aFn2.id)) ||
-                (aFn2.catalogItemId && /fbcm|wbcm/i.test(aFn2.catalogItemId)) ||
-                (aFn2.code && /fbcm|wbcm/i.test(aFn2.code))
-              );
-              var a2ArmLength = a2IsLCorner ? ((aFn2.unitConfig && aFn2.unitConfig.corner && aFn2.unitConfig.corner.legW) || aDims2.W || 900) : ((aDims2.D && aDims2.D > 100) ? aDims2.D : 600);
-              if (distFromCorner2 < a2ArmLength + aHalfT + 120) {
-                var cornerReserve2 = bwLen - (a2ArmLength + aHalfT);
-                if (cornerReserve2 < boundEnd) boundEnd = cornerReserve2;
-              }
-            }
-            if (boundEnd < tMax) tMax = boundEnd;
-          }
-        }
-      }
+      var tMin = halfActiveW;
+      var tMax = Math.max(halfActiveW, bwLen - halfActiveW);
 
       // Allow user to freely position anywhere along the wall span right up to and across corners without artificial clamping
       var snapCornerStartT = halfActiveW;
@@ -4333,30 +4282,38 @@
             var occ = occupiedIntervals[oii];
             var myStart = candT - halfActiveW;
             var myEnd = candT + halfActiveW;
-            // Check overlap with 2mm tolerance
-            if (myStart < occ.end - 2 && myEnd > occ.start + 2) {
+            // Check direct physical overlap with 1mm tolerance
+            if (myStart < occ.end - 1 && myEnd > occ.start + 1) {
               collided = true;
               didShift = true;
               shiftedAgainst = occ;
               if (candT >= occ.center) {
-                // Push to positive side of existing unit
+                // Push to positive side of existing unit (flush against it)
                 candT = occ.end + halfActiveW;
               } else {
-                // Push to negative side of existing unit
+                // Push to negative side of existing unit (flush against it)
                 candT = occ.start - halfActiveW;
+              }
+            } else {
+              // Gentle magnetic side-by-side snap when within 35mm contact zone
+              var dFlushRight = Math.abs(candT - (occ.end + halfActiveW));
+              var dFlushLeft = Math.abs(candT - (occ.start - halfActiveW));
+              if (dFlushRight < 35 && dFlushRight < dFlushLeft) {
+                candT = occ.end + halfActiveW;
+                didShift = true;
+                shiftedAgainst = occ;
+              } else if (dFlushLeft < 35) {
+                candT = occ.start - halfActiveW;
+                didShift = true;
+                shiftedAgainst = occ;
               }
             }
           }
-          // Re-clamp within wall bounds after shifting
-          if (tMax - tMin >= fW) {
-            candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
+          // Clamp within physical wall bounds
+          if (bwLen >= fW) {
+            candT = Math.max(halfActiveW, Math.min(bwLen - halfActiveW, candT));
           }
           if (!collided) break;
-        }
-        // If pushing would fling the unit far away (> 85% of unit width), keep it where user placed it!
-        if (Math.abs(candT - origCandT) > fW * 0.85) {
-          candT = origCandT;
-          didShift = false;
         }
       }
 
@@ -4380,6 +4337,10 @@
       }
 
       return bestWallSnap;
+    }
+
+    if (bestJoint) {
+      return bestJoint;
     }
 
     // Units can be placed inside wall recesses, alcoves, and near RCC points without unwanted forced ejection

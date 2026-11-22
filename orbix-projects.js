@@ -2884,6 +2884,16 @@
                   }));
                 } catch (e) { }
 
+                if (window.S) {
+                  window.S.units = [];
+                  window.S.active = 0;
+                  if (typeof window.renderRail === 'function') window.renderRail();
+                  if (typeof window.renderLegend === 'function') window.renderLegend();
+                  if (typeof window.renderFoot === 'function') window.renderFoot();
+                  if (typeof window.renderAll === 'function') window.renderAll();
+                }
+                try { localStorage.removeItem('cupboard-cad'); } catch (e) { }
+
                 self.closeModal('createProjectModal');
                 createForm.reset();
                 self.renderProjectsList();
@@ -2937,6 +2947,16 @@
                   units: []
                 }));
               } catch (e) { }
+              if (window.S) {
+                window.S.units = [];
+                window.S.active = 0;
+                if (typeof window.renderRail === 'function') window.renderRail();
+                if (typeof window.renderLegend === 'function') window.renderLegend();
+                if (typeof window.renderFoot === 'function') window.renderFoot();
+                if (typeof window.renderAll === 'function') window.renderAll();
+              }
+              try { localStorage.removeItem('cupboard-cad'); } catch (e) { }
+
               self.closeModal('createProjectModal');
               createForm.reset();
               self.renderProjectsList();
