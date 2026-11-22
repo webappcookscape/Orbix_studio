@@ -14592,8 +14592,13 @@ body.role-employee #adminCreateEmpBox,
 
       var wallPoly = wallPolygon(w);
       // Tolerance = 25mm (or 60mm for only-shutter): touching the wall surface (intentional contact) does NOT collide;
-      // penetration deeper than tolerance into the wall core triggers overlap
-      var tol = isOS_f ? 60 : 25;
+      // When a unit is placed near wall corners/endpoints, increase tolerance so corner placement does not falsely collide with meeting walls!
+      var dToEnds = Math.min(
+        Math.hypot(f.pos.x - w.start.x, f.pos.y - w.start.y),
+        Math.hypot(f.pos.x - w.end.x, f.pos.y - w.end.y)
+      );
+      var unitW = (f.dimensions && f.dimensions.W) ? f.dimensions.W : 600;
+      var tol = isOS_f ? 60 : (dToEnds < Math.max(unitW, 800) ? 140 : 25);
       if (polygonsIntersect(polyF, wallPoly, tol)) {
         return { hasOverlap: true, type: "wall", target: w };
       }
@@ -24183,71 +24188,24 @@ body.role-employee #adminCreateEmpBox,
     }
 
     // ─── RCC COLUMN / STRUCTURAL PILLAR DETECTION ───
-    // If user is intentionally placing or hovering on/near an RCC column,
-    // snap flush to the RCC column faces or stay on the RCC column without walls snatching it!
+    // Disabled to prevent unwanted hijacking of units near corners and columns.
+    // Retains passive structure for rcc_placement and rcc_snap if explicitly requested.
     var rccCol = null;
-    for (var rci = 0; rci < furnList.length; rci++) {
-      var rItem = furnList[rci];
-      if (activeId && rItem.id === activeId) continue;
-      var isRcc = (rItem.category === 'structural' || rItem.category === 'civil' ||
-                   /rcc|column|pillar|post|structural/i.test(rItem.name || '') ||
-                   /rcc|column|pillar|post|structural/i.test(rItem.id || '') ||
-                   /rcc|column|pillar|post|structural/i.test(rItem.catalogItemId || ''));
-      if (!isRcc) continue;
-      var rw = (rItem.dimensions && rItem.dimensions.W) || 300;
-      var rd = (rItem.dimensions && rItem.dimensions.D) || 300;
-      var rx = rItem.pos ? rItem.pos.x : 0;
-      var ry = rItem.pos ? rItem.pos.y : 0;
-      var rRot = rItem.rotY || 0;
-      var dToRcc = Math.hypot(pos.x - rx, pos.y - ry);
-      if (dToRcc <= Math.max(rw, rd) + Math.max(fW, fD) * 0.7) {
-        rccCol = { item: rItem, x: rx, y: ry, w: rw, d: rd, rotY: rRot, dist: dToRcc };
-        break;
-      }
-    }
-
-    if (rccCol) {
-      // Check if cursor is directly inside or on top of the RCC column footprint
-      var insideRcc = Math.abs(pos.x - rccCol.x) <= rccCol.w / 2 &&
-                      Math.abs(pos.y - rccCol.y) <= rccCol.d / 2;
-      if (insideRcc) {
-        return {
-          pos: { x: pos.x, y: pos.y },
-          rotY: rotY,
-          type: 'rcc_placement',
-          target: rccCol.item,
-          badgeLabel: '✓ Placed on RCC Column'
-        };
-      }
-
-      // 4 Flush Faces of RCC Column: Front, Back, Left, Right
-      var halfW = fW / 2;
-      var halfD = fD / 2;
-      var rFaces = [
-        { x: rccCol.x, y: rccCol.y + rccCol.d / 2 + halfD, rot: 0, label: 'Front' },
-        { x: rccCol.x, y: rccCol.y - rccCol.d / 2 - halfD, rot: Math.PI, label: 'Back' },
-        { x: rccCol.x - rccCol.w / 2 - halfW, y: rccCol.y, rot: Math.PI / 2, label: 'Left' },
-        { x: rccCol.x + rccCol.w / 2 + halfW, y: rccCol.y, rot: -Math.PI / 2, label: 'Right' }
-      ];
-      var bestRFace = null;
-      var minRDist = 9999;
-      for (var rfi = 0; rfi < rFaces.length; rfi++) {
-        var rf = rFaces[rfi];
-        var dRf = Math.hypot(pos.x - rf.x, pos.y - rf.y);
-        if (dRf < 160 && dRf < minRDist) {
-          minRDist = dRf;
-          bestRFace = rf;
+    if (this.forceRccSnapping) {
+      for (var rci = 0; rci < furnList.length; rci++) {
+        var rItem = furnList[rci];
+        if (activeId && rItem.id === activeId) continue;
+        var isRcc = (rItem.category === 'structural' || rItem.category === 'civil');
+        if (!isRcc) continue;
+        var rw = (rItem.dimensions && rItem.dimensions.W) || 300;
+        var rd = (rItem.dimensions && rItem.dimensions.D) || 300;
+        var rx = rItem.pos ? rItem.pos.x : 0;
+        var ry = rItem.pos ? rItem.pos.y : 0;
+        var insideRcc = Math.abs(pos.x - rx) <= rw / 2 && Math.abs(pos.y - ry) <= rd / 2;
+        if (insideRcc) {
+          return { pos: { x: pos.x, y: pos.y }, rotY: rotY, type: 'rcc_placement', target: rItem, badgeLabel: '✓ Placed on RCC Column' };
         }
-      }
-
-      if (bestRFace) {
-        return {
-          pos: { x: bestRFace.x, y: bestRFace.y },
-          rotY: bestRFace.rot,
-          type: 'rcc_snap',
-          target: rccCol.item,
-          badgeLabel: '✓ Snapped Flush to RCC Column (' + bestRFace.label + ')'
-        };
+        return { pos: { x: pos.x, y: pos.y }, rotY: rotY, type: 'rcc_snap', target: rItem, badgeLabel: '✓ Snapped Flush to RCC Column' };
       }
     }
 
@@ -25109,22 +25067,18 @@ body.role-employee #adminCreateEmpBox,
         }
       }
 
-      // Initial edge clamp: ensure unit outer edge sits cleanly within wall bounds [tMin, tMax]
-      if (tMax - tMin >= fW) {
-        candT = Math.max(tMin + halfActiveW, Math.min(tMax - halfActiveW, candT));
-      }
-
-      // Magnetic attraction to wall corner edges and adjacent corner units (Item 6)
-      var snapCornerStartT = tMin + halfActiveW;
-      var snapCornerEndT = tMax - halfActiveW;
+      // Allow user to freely position anywhere along the wall span right up to and across corners without artificial clamping
+      var snapCornerStartT = halfActiveW;
+      var snapCornerEndT = Math.max(halfActiveW, bwLen - halfActiveW);
       var isCornerSnap = false;
-      if (Math.abs(candT - snapCornerStartT) < 140) {
+      // Gentle guide right at the corner edge (within 25mm), never jumping or blocking from far away
+      if (Math.abs(candT - snapCornerStartT) < 25) {
         candT = snapCornerStartT;
-        bestWallSnap.badgeLabel = (tMin > 100) ? '✓ Snapped Flush to Corner Unit' : '✓ Snapped Flush to Corner Edge';
+        bestWallSnap.badgeLabel = '✓ Snapped Flush to Corner Edge';
         isCornerSnap = true;
-      } else if (Math.abs(candT - snapCornerEndT) < 140) {
+      } else if (Math.abs(candT - snapCornerEndT) < 25) {
         candT = snapCornerEndT;
-        bestWallSnap.badgeLabel = (tMax < bwLen - 100) ? '✓ Snapped Flush to Corner Unit' : '✓ Snapped Flush to Corner Edge';
+        bestWallSnap.badgeLabel = '✓ Snapped Flush to Corner Edge';
         isCornerSnap = true;
       }
 
@@ -26437,51 +26391,6 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // ── PASS 4: Render Architectural Structural Black RCC Columns at Wall Corners & Junctions ──
-    var columnPts = [];
-    var isUniqueCorner = function (pt) {
-      for (var ci = 0; ci < columnPts.length; ci++) {
-        if (Vec2.dist(pt, columnPts[ci]) < 50) return false;
-      }
-      return true;
-    };
-    for (var wci = 0; wci < walls.length; wci++) {
-      var wItem = walls[wci];
-      if (wItem.isDivider || wItem.thickness === 0) continue;
-      if (wItem.start && isUniqueCorner(wItem.start)) columnPts.push(wItem.start);
-      if (wItem.end && isUniqueCorner(wItem.end)) columnPts.push(wItem.end);
-    }
-
-    for (var cpi = 0; cpi < columnPts.length; cpi++) {
-      var colPt = columnPts[cpi];
-      var meetingWalls = walls.filter(function (w) {
-        if (w.isDivider || w.thickness === 0) return false;
-        return (w.start && Vec2.dist(colPt, w.start) < 40) || (w.end && Vec2.dist(colPt, w.end) < 40);
-      });
-      var wallThick = meetingWalls.length > 0 ? (meetingWalls[0].thickness || 150) : 150;
-      var colSizeMm = Math.min(wallThick, 150); // RCC Column stays strictly WITHIN the wall width!
-      var colSizePx = colSizeMm * this.zoom;
-      if (colSizePx >= 3) {
-        var sCol = this.worldToScreen(colPt);
-        ctx.save();
-        ctx.fillStyle = '#1e293b'; // Deep architectural graphite poche
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 1;
-        ctx.fillRect(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2, colSizePx, colSizePx);
-        ctx.strokeRect(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2, colSizePx, colSizePx);
-        if (colSizePx >= 12) {
-          ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-          ctx.lineWidth = 0.8;
-          ctx.beginPath();
-          ctx.moveTo(sCol.x - colSizePx / 2, sCol.y - colSizePx / 2);
-          ctx.lineTo(sCol.x + colSizePx / 2, sCol.y + colSizePx / 2);
-          ctx.moveTo(sCol.x + colSizePx / 2, sCol.y - colSizePx / 2);
-          ctx.lineTo(sCol.x - colSizePx / 2, sCol.y + colSizePx / 2);
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
-    }
     this.renderDadoTiles(ctx);
   };
 

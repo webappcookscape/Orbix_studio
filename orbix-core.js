@@ -1776,8 +1776,13 @@
 
       var wallPoly = wallPolygon(w);
       // Tolerance = 25mm (or 60mm for only-shutter): touching the wall surface (intentional contact) does NOT collide;
-      // penetration deeper than tolerance into the wall core triggers overlap
-      var tol = isOS_f ? 60 : 25;
+      // When a unit is placed near wall corners/endpoints, increase tolerance so corner placement does not falsely collide with meeting walls!
+      var dToEnds = Math.min(
+        Math.hypot(f.pos.x - w.start.x, f.pos.y - w.start.y),
+        Math.hypot(f.pos.x - w.end.x, f.pos.y - w.end.y)
+      );
+      var unitW = (f.dimensions && f.dimensions.W) ? f.dimensions.W : 600;
+      var tol = isOS_f ? 60 : (dToEnds < Math.max(unitW, 800) ? 140 : 25);
       if (polygonsIntersect(polyF, wallPoly, tol)) {
         return { hasOverlap: true, type: "wall", target: w };
       }
