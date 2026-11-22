@@ -83,31 +83,55 @@
       w = w || (isA3 ? 4200 : 2970); // 420mm (A3) or 297mm (A4) @ 10x scale
       h = h || (isA3 ? 2970 : 2100); // 297mm (A3) or 210mm (A4) @ 10x scale
       var elements = [];
+      var cadEntities = [];
+      var activeLayer = 'OUTLINE';
 
       return {
         width: w,
         height: h,
+        setLayer: function (ly) {
+          activeLayer = ly || 'OUTLINE';
+        },
+        getLayer: function () {
+          return activeLayer;
+        },
         add: function (svgSnippet) { elements.push(svgSnippet); },
-        line: function (x1, y1, x2, y2, stroke, strokeWidth, dashArray) {
+        line: function (x1, y1, x2, y2, stroke, strokeWidth, dashArray, layer) {
           stroke = stroke || '#111827';
           strokeWidth = strokeWidth || 2;
           var dash = dashArray ? ' stroke-dasharray="' + dashArray + '"' : '';
           elements.push('<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="' + stroke + '" stroke-width="' + strokeWidth + '"' + dash + ' stroke-linecap="round"/>');
+          cadEntities.push({
+            type: 'LINE',
+            x1: x1, y1: y1,
+            x2: x2, y2: y2,
+            layer: layer || activeLayer
+          });
         },
-        rect: function (x, y, rw, rh, stroke, strokeWidth, fill, rx) {
+        rect: function (x, y, rw, rh, stroke, strokeWidth, fill, rx, layer) {
           stroke = stroke || '#111827';
           strokeWidth = strokeWidth || 2;
           fill = fill || 'none';
           var rAttr = rx ? ' rx="' + rx + '" ry="' + rx + '"' : '';
           elements.push('<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + rw.toFixed(1) + '" height="' + rh.toFixed(1) + '" stroke="' + stroke + '" stroke-width="' + strokeWidth + '" fill="' + fill + '"' + rAttr + '/>');
+          var ly = layer || activeLayer;
+          cadEntities.push({ type: 'LINE', x1: x, y1: y, x2: x + rw, y2: y, layer: ly });
+          cadEntities.push({ type: 'LINE', x1: x + rw, y1: y, x2: x + rw, y2: y + rh, layer: ly });
+          cadEntities.push({ type: 'LINE', x1: x + rw, y1: y + rh, x2: x, y2: y + rh, layer: ly });
+          cadEntities.push({ type: 'LINE', x1: x, y1: y + rh, x2: x, y2: y, layer: ly });
         },
-        circle: function (cx, cy, r, stroke, strokeWidth, fill) {
+        circle: function (cx, cy, r, stroke, strokeWidth, fill, layer) {
           stroke = stroke || '#111827';
           strokeWidth = strokeWidth || 2;
           fill = fill || 'none';
           elements.push('<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + r.toFixed(1) + '" stroke="' + stroke + '" stroke-width="' + strokeWidth + '" fill="' + fill + '"/>');
+          cadEntities.push({
+            type: 'CIRCLE',
+            cx: cx, cy: cy, r: r,
+            layer: layer || activeLayer
+          });
         },
-        text: function (x, y, str, size, weight, align, fill, rot) {
+        text: function (x, y, str, size, weight, align, fill, rot, layer) {
           size = size || 24;
           weight = weight || 'normal';
           align = align || 'middle';
@@ -115,39 +139,61 @@
           var rotAttr = rot ? ' transform="rotate(' + rot + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ')"' : '';
           var textAnchor = (align === 'center' || align === 'middle') ? 'middle' : (align === 'right' || align === 'end' ? 'end' : 'start');
           elements.push('<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" font-size="' + size + '" font-weight="' + weight + '" text-anchor="' + textAnchor + '" fill="' + fill + '" font-family="Arial, Helvetica, sans-serif"' + rotAttr + '>' + str + '</text>');
+          cadEntities.push({
+            type: 'TEXT',
+            x: x, y: y,
+            str: str,
+            size: size,
+            weight: weight,
+            align: align,
+            rot: rot || 0,
+            layer: layer || (activeLayer === 'TITLEBLOCK' ? 'TITLEBLOCK' : (activeLayer === 'DIMENSIONS' ? 'DIMENSIONS' : 'TEXT'))
+          });
         },
         // Dimension Line (Horizontal) with arrowheads and text
         dimH: function (x1, x2, y, label, offset, isAbove) {
           offset = offset || 0;
           var dimY = y + offset;
           var textY = isAbove ? dimY - 10 : dimY + 22;
-          this.line(x1, y - 8, x1, dimY + 8, '#0f172a', 1.5);
-          this.line(x2, y - 8, x2, dimY + 8, '#0f172a', 1.5);
-          this.line(x1, dimY, x2, dimY, '#0f172a', 1.8);
+          var prevLy = activeLayer;
+          activeLayer = 'DIMENSIONS';
+          this.line(x1, y - 8, x1, dimY + 8, '#0f172a', 1.5, null, 'DIMENSIONS');
+          this.line(x2, y - 8, x2, dimY + 8, '#0f172a', 1.5, null, 'DIMENSIONS');
+          this.line(x1, dimY, x2, dimY, '#0f172a', 1.8, null, 'DIMENSIONS');
           // Architectural cross ticks
-          this.line(x1 - 6, dimY - 6, x1 + 6, dimY + 6, '#0f172a', 2);
-          this.line(x2 - 6, dimY - 6, x2 + 6, dimY + 6, '#0f172a', 2);
-          this.text((x1 + x2) / 2, textY, label, 20, 'bold', 'middle', '#0f172a');
+          this.line(x1 - 6, dimY - 6, x1 + 6, dimY + 6, '#0f172a', 2, null, 'DIMENSIONS');
+          this.line(x2 - 6, dimY - 6, x2 + 6, dimY + 6, '#0f172a', 2, null, 'DIMENSIONS');
+          this.text((x1 + x2) / 2, textY, label, 20, 'bold', 'middle', '#0f172a', 0, 'DIMENSIONS');
+          activeLayer = prevLy;
         },
         // Dimension Line (Vertical) with arrowheads and text
         dimV: function (y1, y2, x, label, offset, isLeft) {
           offset = offset || 0;
           var dimX = x + offset;
           var textX = isLeft ? dimX - 12 : dimX + 14;
-          this.line(x - 8, y1, dimX + 8, y1, '#0f172a', 1.5);
-          this.line(x - 8, y2, dimX + 8, y2, '#0f172a', 1.5);
-          this.line(dimX, y1, dimX, y2, '#0f172a', 1.8);
+          var prevLy = activeLayer;
+          activeLayer = 'DIMENSIONS';
+          this.line(x - 8, y1, dimX + 8, y1, '#0f172a', 1.5, null, 'DIMENSIONS');
+          this.line(x - 8, y2, dimX + 8, y2, '#0f172a', 1.5, null, 'DIMENSIONS');
+          this.line(dimX, y1, dimX, y2, '#0f172a', 1.8, null, 'DIMENSIONS');
           // Architectural cross ticks
-          this.line(dimX - 6, y1 - 6, dimX + 6, y1 + 6, '#0f172a', 2);
-          this.line(dimX - 6, y2 - 6, dimX + 6, y2 + 6, '#0f172a', 2);
-          this.text(textX, (y1 + y2) / 2 + 7, label, 20, 'bold', isLeft ? 'end' : 'start', '#0f172a');
+          this.line(dimX - 6, y1 - 6, dimX + 6, y1 + 6, '#0f172a', 2, null, 'DIMENSIONS');
+          this.line(dimX - 6, y2 - 6, dimX + 6, y2 + 6, '#0f172a', 2, null, 'DIMENSIONS');
+          this.text(textX, (y1 + y2) / 2 + 7, label, 20, 'bold', isLeft ? 'end' : 'start', '#0f172a', 0, 'DIMENSIONS');
+          activeLayer = prevLy;
         },
-        polygon: function (pts, stroke, strokeWidth, fill) {
+        polygon: function (pts, stroke, strokeWidth, fill, layer) {
           stroke = stroke || '#111827';
           strokeWidth = strokeWidth || 2;
           fill = fill || 'none';
           var ptsStr = pts.map(function (p) { return p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
           elements.push('<polygon points="' + ptsStr + '" stroke="' + stroke + '" stroke-width="' + strokeWidth + '" fill="' + fill + '"/>');
+          var ly = layer || activeLayer;
+          for (var pi = 0; pi < pts.length; pi++) {
+            var pA = pts[pi];
+            var pB = pts[(pi + 1) % pts.length];
+            cadEntities.push({ type: 'LINE', x1: pA.x, y1: pA.y, x2: pB.x, y2: pB.y, layer: ly });
+          }
         },
         dimAligned: function (x1, y1, x2, y2, label, offset) {
           offset = offset || 0;
@@ -156,60 +202,151 @@
           var nx = -dy / len, ny = dx / len;
           var ax1 = x1 + nx * offset, ay1 = y1 + ny * offset;
           var ax2 = x2 + nx * offset, ay2 = y2 + ny * offset;
-          this.line(x1, y1, ax1 + nx * 5, ay1 + ny * 5, '#0f172a', 1.2);
-          this.line(x2, y2, ax2 + nx * 5, ay2 + ny * 5, '#0f172a', 1.2);
-          this.line(ax1, ay1, ax2, ay2, '#0f172a', 1.8);
+          var prevLy = activeLayer;
+          activeLayer = 'DIMENSIONS';
+          this.line(x1, y1, ax1 + nx * 5, ay1 + ny * 5, '#0f172a', 1.2, null, 'DIMENSIONS');
+          this.line(x2, y2, ax2 + nx * 5, ay2 + ny * 5, '#0f172a', 1.2, null, 'DIMENSIONS');
+          this.line(ax1, ay1, ax2, ay2, '#0f172a', 1.8, null, 'DIMENSIONS');
           // Architectural ticks
-          this.line(ax1 - 6 * nx - 6 * ny, ay1 - 6 * ny + 6 * nx, ax1 + 6 * nx + 6 * ny, ay1 + 6 * ny - 6 * nx, '#0f172a', 2);
-          this.line(ax2 - 6 * nx - 6 * ny, ay2 - 6 * ny + 6 * nx, ax2 + 6 * nx + 6 * ny, ay2 + 6 * ny - 6 * nx, '#0f172a', 2);
+          this.line(ax1 - 6 * nx - 6 * ny, ay1 - 6 * ny + 6 * nx, ax1 + 6 * nx + 6 * ny, ay1 + 6 * ny - 6 * nx, '#0f172a', 2, null, 'DIMENSIONS');
+          this.line(ax2 - 6 * nx - 6 * ny, ay2 - 6 * ny + 6 * nx, ax2 + 6 * nx + 6 * ny, ay2 + 6 * ny - 6 * nx, '#0f172a', 2, null, 'DIMENSIONS');
           var midX = (ax1 + ax2) / 2 + nx * 14;
           var midY = (ay1 + ay2) / 2 + ny * 14;
           var deg = Math.atan2(dy, dx) * 180 / Math.PI;
           if (deg > 90 || deg < -90) deg += 180;
-          this.text(midX, midY, label, 18, 'bold', 'middle', '#0f172a', deg);
+          this.text(midX, midY, label, 18, 'bold', 'middle', '#0f172a', deg, 'DIMENSIONS');
+          activeLayer = prevLy;
         },
         swatch: function (x, y, w, h, finishLabel) {
           // Framed woodgrain texture swatch box matching Cookscape sample card
-          this.rect(x, y, w, h, '#000000', 2, '#ffffff');
-          this.rect(x + 8, y + 8, w - 16, h - 38, '#92400e', 1.5, '#78350f');
+          var prevLy = activeLayer;
+          activeLayer = 'HATCH';
+          this.rect(x, y, w, h, '#000000', 2, '#ffffff', 0, 'HATCH');
+          this.rect(x + 8, y + 8, w - 16, h - 38, '#92400e', 1.5, '#78350f', 0, 'HATCH');
           // Wood grain streaks
           for (var g = 0; g < 6; g++) {
             var gx1 = x + 14 + g * ((w - 28) / 5);
             var gx2 = gx1 + (g % 2 === 0 ? 12 : -12);
-            this.line(gx1, y + 10, gx2, y + h - 32, '#9a3412', 1.8);
+            this.line(gx1, y + 10, gx2, y + h - 32, '#9a3412', 1.8, null, 'HATCH');
           }
-          this.text(x + w / 2, y + h - 14, finishLabel || 'SURABHI TEAK', 14, 'bold', 'middle', '#0f172a');
-          this.text(x + w / 2, y - 10, 'REFERENCE IMAGE ATTACHED', 14, 'bold', 'middle', '#000000');
+          this.text(x + w / 2, y + h - 14, finishLabel || 'SURABHI TEAK', 14, 'bold', 'middle', '#0f172a', 0, 'TEXT');
+          this.text(x + w / 2, y - 10, 'REFERENCE IMAGE ATTACHED', 14, 'bold', 'middle', '#000000', 0, 'TEXT');
+          activeLayer = prevLy;
         },
         hatchRect: function (x, y, w, h, spacing, stroke) {
           spacing = spacing || 14;
           stroke = stroke || '#94a3b8';
-          this.rect(x, y, w, h, '#000000', 1.5, 'none');
+          var prevLy = activeLayer;
+          activeLayer = 'HATCH';
+          this.rect(x, y, w, h, '#000000', 1.5, 'none', 0, 'HATCH');
           for (var hx = x - h; hx < x + w; hx += spacing) {
             var x1 = Math.max(x, hx);
             var y1 = y + (x1 - hx);
             var x2 = Math.min(x + w, hx + h);
             var y2 = y + (x2 - hx);
             if (x1 < x + w && y1 >= y && y2 <= y + h) {
-              this.line(x1, y1, x2, y2, stroke, 1);
+              this.line(x1, y1, x2, y2, stroke, 1, null, 'HATCH');
             }
           }
+          activeLayer = prevLy;
         },
         dimInternalV: function (x, y1, y2, label) {
           var topY = Math.min(y1, y2);
           var botY = Math.max(y1, y2);
           var h = botY - topY;
           if (h < 18) return;
-          this.line(x, topY, x, botY, '#0f172a', 1.4);
-          this.line(x - 6, topY + 9, x, topY, '#0f172a', 1.8);
-          this.line(x + 6, topY + 9, x, topY, '#0f172a', 1.8);
-          this.line(x - 6, botY - 9, x, botY, '#0f172a', 1.8);
-          this.line(x + 6, botY - 9, x, botY, '#0f172a', 1.8);
-          this.rect(x - 48, (topY + botY) / 2 - 12, 96, 24, '#000000', 0.8, '#ffffff', 2);
-          this.text(x, (topY + botY) / 2 + 6, label, 15, 'bold', 'middle', '#0f172a');
+          var prevLy = activeLayer;
+          activeLayer = 'DIMENSIONS';
+          this.line(x, topY, x, botY, '#0f172a', 1.4, null, 'DIMENSIONS');
+          this.line(x - 6, topY + 9, x, topY, '#0f172a', 1.8, null, 'DIMENSIONS');
+          this.line(x + 6, topY + 9, x, topY, '#0f172a', 1.8, null, 'DIMENSIONS');
+          this.line(x - 6, botY - 9, x, botY, '#0f172a', 1.8, null, 'DIMENSIONS');
+          this.line(x + 6, botY - 9, x, botY, '#0f172a', 1.8, null, 'DIMENSIONS');
+          this.rect(x - 48, (topY + botY) / 2 - 12, 96, 24, '#000000', 0.8, '#ffffff', 2, 'DIMENSIONS');
+          this.text(x, (topY + botY) / 2 + 6, label, 15, 'bold', 'middle', '#0f172a', 0, 'DIMENSIONS');
+          activeLayer = prevLy;
         },
         toSVG: function () {
           return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="100%" style="background:#ffffff;display:block;">' + elements.join('\n') + '</svg>';
+        },
+        toDXF: function (offsetX, offsetY) {
+          offsetX = offsetX || 0;
+          offsetY = offsetY || 0;
+          var H = h;
+          var out = [
+            "0", "SECTION", "2", "HEADER", "9", "$ACADVER", "1", "AC1009", "0", "ENDSEC",
+            "0", "SECTION", "2", "TABLES",
+            "0", "TABLE", "2", "LAYER", "70", "8",
+            "0", "LAYER", "2", "OUTLINE", "70", "0", "62", "7", "6", "CONTINUOUS", "0",
+            "0", "LAYER", "2", "CARCASS", "70", "0", "62", "4", "6", "CONTINUOUS", "0",
+            "0", "LAYER", "2", "SHUTTER", "70", "0", "62", "1", "6", "CONTINUOUS", "0",
+            "0", "LAYER", "2", "DIMENSIONS", "70", "0", "62", "3", "6", "CONTINUOUS", "0",
+            "0", "LAYER", "2", "TITLEBLOCK", "70", "0", "62", "5", "6", "CONTINUOUS", "0",
+            "0", "LAYER", "2", "TEXT", "70", "0", "62", "2", "6", "CONTINUOUS", "0",
+            "0", "LAYER", "2", "HATCH", "70", "0", "62", "8", "6", "CONTINUOUS", "0",
+            "0", "LAYER", "2", "DRILL", "70", "0", "62", "6", "6", "CONTINUOUS", "0",
+            "0", "ENDTAB", "0", "ENDSEC",
+            "0", "SECTION", "2", "ENTITIES"
+          ];
+
+          function cleanStr(s) {
+            if (!s) return "";
+            return String(s)
+              .replace(/[\r\n]+/g, " ")
+              .replace(/[·—–]/g, "-")
+              .replace(/×/g, "x")
+              .replace(/Ø|&Oslash;/gi, "%%c")
+              .replace(/°/g, "%%d")
+              .replace(/±/g, "%%p")
+              .replace(/₹/g, "Rs.")
+              .replace(/ॐ/g, "OM")
+              .replace(/[^\x20-\x7E]/g, " ")
+              .trim();
+          }
+
+          cadEntities.forEach(function (ent) {
+            var ly = ent.layer || "OUTLINE";
+            if (ent.type === 'LINE') {
+              var x1 = ent.x1 + offsetX, y1 = H - ent.y1 + offsetY;
+              var x2 = ent.x2 + offsetX, y2 = H - ent.y2 + offsetY;
+              out.push("0", "LINE", "8", ly,
+                "10", x1.toFixed(1), "20", y1.toFixed(1), "30", "0.0",
+                "11", x2.toFixed(1), "21", y2.toFixed(1), "31", "0.0"
+              );
+            } else if (ent.type === 'CIRCLE') {
+              var cx = ent.cx + offsetX, cy = H - ent.cy + offsetY;
+              out.push("0", "CIRCLE", "8", ly,
+                "10", cx.toFixed(1), "20", cy.toFixed(1), "30", "0.0",
+                "40", ent.r.toFixed(1)
+              );
+            } else if (ent.type === 'TEXT') {
+              var tx = ent.x + offsetX, ty = H - ent.y + offsetY;
+              var txt = cleanStr(ent.str);
+              if (!txt) return;
+              var sz = Math.max(12, Math.round(ent.size || 22));
+              var rot = ent.rot ? ((-ent.rot) % 360 + 360) % 360 : 0;
+              var alignCode = 0;
+              if (ent.align === 'center' || ent.align === 'middle') alignCode = 1;
+              else if (ent.align === 'right' || ent.align === 'end') alignCode = 2;
+
+              out.push("0", "TEXT", "8", ly,
+                "10", tx.toFixed(1), "20", ty.toFixed(1), "30", "0.0",
+                "40", String(sz),
+                "1", txt
+              );
+              if (rot !== 0) {
+                out.push("50", rot.toFixed(1));
+              }
+              if (alignCode > 0) {
+                out.push("72", String(alignCode),
+                  "11", tx.toFixed(1), "21", ty.toFixed(1), "31", "0.0"
+                );
+              }
+            }
+          });
+
+          out.push("0", "ENDSEC", "0", "EOF");
+          return out.join("\r\n");
         }
       };
     },
@@ -491,6 +628,17 @@
         rooms: rooms,
         furniture: furniture
       };
+    },
+
+    // ── Helper: Wrap canvas with both SVG string & full DXF CAD representation ──
+    _wrapCanvas: function (canvas) {
+      var svg = canvas.toSVG();
+      var dxf = (typeof canvas.toDXF === 'function') ? canvas.toDXF() : '';
+      var res = new String(svg);
+      res.svg = svg;
+      res.dxf = dxf;
+      res.canvas = canvas;
+      return res;
     },
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -790,7 +938,7 @@
         }
       });
 
-      return canvas.toSVG();
+      return this._wrapCanvas(canvas);
     },
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -991,7 +1139,7 @@
       canvas.dimH(kBoxX, kBoxX + kBoxW, kiBoxY + kiBoxH + 35, String(Math.round(kW)));
       canvas.dimV(kiBoxY, kiBoxY + kiBoxH, kBoxX - 60, String(Math.round(kH)), 0, true);
 
-      return canvas.toSVG();
+      return this._wrapCanvas(canvas);
     },
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -1477,7 +1625,7 @@
         nY += 24;
       });
 
-      return canvas.toSVG();
+      return this._wrapCanvas(canvas);
     },
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -1519,7 +1667,7 @@
       canvas.dimH(startX, startX + spanW, startY + 80, String(Math.round(totalSpan)));
       canvas.dimV(startY - spanH, startY, startX - 70, String(Math.round(loftH)), 0, true);
 
-      return canvas.toSVG();
+      return this._wrapCanvas(canvas);
     },
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -1555,17 +1703,23 @@
         var totalPages = 2 + furniture.length + (loftUnits.length > 0 ? 1 : 0);
 
         // Page 1: Real 2D Floor Plan
+        var p1 = this.buildDynamicPage1_FloorPlan(1, totalPages, pData);
         pages.push({
           index: 1,
           title: (this.meta.dwgTitle || 'ROOM') + ' 2D FLOOR PLAN & UNIT LAYOUT',
-          svg: this.buildDynamicPage1_FloorPlan(1, totalPages, pData)
+          svg: String(p1.svg || p1),
+          dxf: p1.dxf || (p1.canvas ? p1.canvas.toDXF() : ''),
+          canvas: p1.canvas || null
         });
 
         // Page 2: Real 3D Axonometric Overview
+        var p2 = this.buildDynamicPage2_3DOverview(2, totalPages, pData);
         pages.push({
           index: 2,
           title: (this.meta.dwgTitle || 'ROOM') + ' 3D AXONOMETRIC & KEY UNIT',
-          svg: this.buildDynamicPage2_3DOverview(2, totalPages, pData)
+          svg: String(p2.svg || p2),
+          dxf: p2.dxf || (p2.canvas ? p2.canvas.toDXF() : ''),
+          canvas: p2.canvas || null
         });
 
         // Pages 3+: Individual Unit Detailed Shop Drawings (External & Internal)
@@ -1574,20 +1728,26 @@
           var curPageNum = 3 + i;
           var fn = furniture[i];
           var uTitle = (fn.name || 'MODULAR UNIT') + ' (' + (fn.code || ('U0' + uIdx)) + ')';
+          var pu = this.buildDynamicUnitPage(curPageNum, totalPages, fn, i, pData);
           pages.push({
             index: curPageNum,
             title: uTitle,
-            svg: this.buildDynamicUnitPage(curPageNum, totalPages, fn, i, pData)
+            svg: String(pu.svg || pu),
+            dxf: pu.dxf || (pu.canvas ? pu.canvas.toDXF() : ''),
+            canvas: pu.canvas || null
           });
         }
 
         // Optional Loft Sheet
         if (loftUnits.length > 0) {
           var loftPageNum = totalPages;
+          var pl = this.buildDynamicLoftPage(loftPageNum, totalPages, loftUnits, pData);
           pages.push({
             index: loftPageNum,
             title: 'CONTINUOUS LOFT RUN (ONLY SHUTTERING)',
-            svg: this.buildDynamicLoftPage(loftPageNum, totalPages, loftUnits, pData)
+            svg: String(pl.svg || pl),
+            dxf: pl.dxf || (pl.canvas ? pl.canvas.toDXF() : ''),
+            canvas: pl.canvas || null
           });
         }
 
@@ -1624,16 +1784,21 @@
         };
 
         var totalPages = 8;
-        pages.push({ index: 1, title: 'KITCHEN FLOOR PLAN & APPLIANCE LAYOUT (REFERENCE DEMO)', svg: this.buildDynamicPage1_FloorPlan(1, totalPages, demoPData) });
-        pages.push({ index: 2, title: '3D AXONOMETRIC & WFM600 DETAIL (REFERENCE DEMO)', svg: this.buildDynamicPage2_3DOverview(2, totalPages, demoPData) });
+        var dp1 = this.buildDynamicPage1_FloorPlan(1, totalPages, demoPData);
+        pages.push({ index: 1, title: 'KITCHEN FLOOR PLAN & APPLIANCE LAYOUT (REFERENCE DEMO)', svg: String(dp1.svg || dp1), dxf: dp1.dxf || (dp1.canvas ? dp1.canvas.toDXF() : ''), canvas: dp1.canvas || null });
+        var dp2 = this.buildDynamicPage2_3DOverview(2, totalPages, demoPData);
+        pages.push({ index: 2, title: '3D AXONOMETRIC & WFM600 DETAIL (REFERENCE DEMO)', svg: String(dp2.svg || dp2), dxf: dp2.dxf || (dp2.canvas ? dp2.canvas.toDXF() : ''), canvas: dp2.canvas || null });
 
         for (var d = 0; d < demoFurniture.length; d++) {
           var dNum = 3 + d;
           var dfn = demoFurniture[d];
+          var dpu = this.buildDynamicUnitPage(dNum, totalPages, dfn, d, demoPData);
           pages.push({
             index: dNum,
             title: dfn.name + ' (' + dfn.code + ') [REFERENCE DEMO]',
-            svg: this.buildDynamicUnitPage(dNum, totalPages, dfn, d, demoPData)
+            svg: String(dpu.svg || dpu),
+            dxf: dpu.dxf || (dpu.canvas ? dpu.canvas.toDXF() : ''),
+            canvas: dpu.canvas || null
           });
         }
       }
@@ -1642,69 +1807,134 @@
     },
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // AUTOCAD DXF R12 EXPORT (AC1009)
+    // AUTOCAD DXF R12 EXPORT (AC1009) — FULL ENGINEERING VECTOR EXPORTER
     // ─────────────────────────────────────────────────────────────────────────────
 
     exportDXF: function (pageIndex) {
-      var m = this.meta;
-      var out = [
-        "0", "SECTION", "2", "HEADER", "9", "$ACADVER", "1", "AC1009", "0", "ENDSEC",
-        "0", "SECTION", "2", "TABLES",
-        "0", "TABLE", "2", "LAYER", "70", "6",
-        "0", "LAYER", "2", "OUTLINE", "70", "0", "62", "7", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "CARCASS", "70", "0", "62", "4", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "SHUTTER", "70", "0", "62", "1", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "DIMENSIONS", "70", "0", "62", "3", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "TITLEBLOCK", "70", "0", "62", "2", "6", "CONTINUOUS", "0",
-        "0", "LAYER", "2", "TEXT", "70", "0", "62", "7", "6", "CONTINUOUS", "0",
-        "0", "ENDTAB", "0", "ENDSEC",
-        "0", "SECTION", "2", "ENTITIES"
-      ];
+      if (pageIndex === undefined || pageIndex === null) {
+        pageIndex = this.activePageIndex || 0;
+      }
+      var pages = this.generateAllPages();
+      if (!pages || !pages.length) return '';
+      if (pageIndex >= pages.length || pageIndex < 0) pageIndex = 0;
 
-      function line(x1, y1, x2, y2, layer) {
-        out.push("0", "LINE", "8", layer || "OUTLINE", "10", x1.toFixed(1), "20", y1.toFixed(1), "11", x2.toFixed(1), "21", y2.toFixed(1));
+      var curPage = pages[pageIndex];
+      var dxfContent = curPage.dxf;
+      if (!dxfContent && curPage.canvas && typeof curPage.canvas.toDXF === 'function') {
+        dxfContent = curPage.canvas.toDXF();
       }
 
-      function text(x, y, str, size, layer) {
-        var clean = String(str).replace(/[^\x20-\x7E]/g, " ");
-        out.push("0", "TEXT", "8", layer || "TEXT", "10", x.toFixed(1), "20", y.toFixed(1), "40", String(size || 35), "1", clean);
+      if (!dxfContent) {
+        var canvas = this.createVectorCanvas();
+        this.drawA4Template(canvas, pageIndex + 1, pages.length, curPage.title || 'DRAWING');
+        dxfContent = canvas.toDXF();
       }
-
-      // Outer A4 Border (2970 x 2100 mm in CAD space)
-      line(40, 40, 2930, 40, "TITLEBLOCK");
-      line(2930, 40, 2930, 2060, "TITLEBLOCK");
-      line(2930, 2060, 40, 2060, "TITLEBLOCK");
-      line(40, 2060, 40, 40, "TITLEBLOCK");
-
-      // Title Block
-      line(60, 310, 2910, 310, "TITLEBLOCK");
-      text(100, 220, "CLIENT : " + m.client, 40, "TEXT");
-      text(100, 140, "SITE   : " + m.site, 40, "TEXT");
-      text(100, 60, "DWG    : 2D PRODUCTION DRAWINGS", 40, "TEXT");
-      text(1200, 220, m.companyName + " — " + m.companyFull, 45, "TITLEBLOCK");
-      text(1200, 140, "PAGE " + (pageIndex + 1) + " | P.R. CODE: " + m.prCode, 35, "TEXT");
-
-      out.push("0", "ENDSEC", "0", "EOF");
-      var dxfContent = out.join("\r\n");
 
       // Trigger browser download if DOM environment
       if (typeof document !== 'undefined' && document.body && typeof Blob !== 'undefined' && typeof URL !== 'undefined' && URL.createObjectURL) {
         try {
-          var blob = new Blob([dxfContent], { type: 'application/dxf' });
+          var cleanTitle = (curPage.title || 'drawing')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+          var pageNumStr = (pageIndex + 1 < 10) ? ('0' + (pageIndex + 1)) : String(pageIndex + 1);
+          var fileName = 'orbix-shop-drawing-p' + pageNumStr + '-' + cleanTitle + '.dxf';
+
+          var blob = new Blob([dxfContent], { type: 'application/dxf;charset=utf-8' });
           var a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
-          a.download = 'cookscape-2d-drawing-page-' + (pageIndex + 1) + '.dxf';
+          a.download = fileName;
           document.body.appendChild(a);
           a.click();
-          document.body.removeChild(a);
-        } catch (_) {}
-      }
+          setTimeout(function () {
+            URL.revokeObjectURL(a.href);
+            a.remove();
+          }, 1500);
 
-      if (typeof window !== 'undefined' && typeof window.toast === 'function') {
-        window.toast('📐 Downloaded AutoCAD DXF (Page ' + (pageIndex + 1) + ')');
+          if (typeof window !== 'undefined' && typeof window.toast === 'function') {
+            window.toast('📐 Downloaded AutoCAD DXF: ' + fileName);
+          }
+        } catch (e) {
+          console.error('DXF export download error:', e);
+        }
       }
 
       return dxfContent;
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // COMBINED AUTOCAD DXF (ALL PAGES TILED IN CAD MODEL SPACE)
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    exportAllDXF: function () {
+      var pages = this.generateAllPages();
+      if (!pages || !pages.length) return '';
+
+      var totalOut = [
+        "0", "SECTION", "2", "HEADER", "9", "$ACADVER", "1", "AC1009", "0", "ENDSEC",
+        "0", "SECTION", "2", "TABLES",
+        "0", "TABLE", "2", "LAYER", "70", "8",
+        "0", "LAYER", "2", "OUTLINE", "70", "0", "62", "7", "6", "CONTINUOUS", "0",
+        "0", "LAYER", "2", "CARCASS", "70", "0", "62", "4", "6", "CONTINUOUS", "0",
+        "0", "LAYER", "2", "SHUTTER", "70", "0", "62", "1", "6", "CONTINUOUS", "0",
+        "0", "LAYER", "2", "DIMENSIONS", "70", "0", "62", "3", "6", "CONTINUOUS", "0",
+        "0", "LAYER", "2", "TITLEBLOCK", "70", "0", "62", "5", "6", "CONTINUOUS", "0",
+        "0", "LAYER", "2", "TEXT", "70", "0", "62", "2", "6", "CONTINUOUS", "0",
+        "0", "LAYER", "2", "HATCH", "70", "0", "62", "8", "6", "CONTINUOUS", "0",
+        "0", "LAYER", "2", "DRILL", "70", "0", "62", "6", "6", "CONTINUOUS", "0",
+        "0", "ENDTAB", "0", "ENDSEC",
+        "0", "SECTION", "2", "ENTITIES"
+      ];
+
+      var sheetW = (this.paperSize === 'A3' ? 4200 : 2970);
+      var gap = 600;
+
+      for (var p = 0; p < pages.length; p++) {
+        var page = pages[p];
+        var canvas = page.canvas;
+        if (canvas && typeof canvas.toDXF === 'function') {
+          var offsetX = p * (sheetW + gap);
+          var singleDxf = canvas.toDXF(offsetX, 0);
+          var entIdx = singleDxf.indexOf("ENTITIES\r\n");
+          if (entIdx !== -1) {
+            var entPart = singleDxf.substring(entIdx + 10);
+            var endSecIdx = entPart.lastIndexOf("0\r\nENDSEC");
+            if (endSecIdx !== -1) {
+              entPart = entPart.substring(0, endSecIdx).trim();
+              if (entPart) {
+                totalOut.push(entPart);
+              }
+            }
+          }
+        }
+      }
+
+      totalOut.push("0", "ENDSEC", "0", "EOF");
+      var combinedDXF = totalOut.join("\r\n");
+
+      if (typeof document !== 'undefined' && document.body && typeof Blob !== 'undefined' && typeof URL !== 'undefined' && URL.createObjectURL) {
+        try {
+          var fileName = 'orbix-complete-production-book-all-' + pages.length + '-sheets.dxf';
+          var blob = new Blob([combinedDXF], { type: 'application/dxf;charset=utf-8' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () {
+            URL.revokeObjectURL(a.href);
+            a.remove();
+          }, 1500);
+
+          if (typeof window !== 'undefined' && typeof window.toast === 'function') {
+            window.toast('📐 Downloaded Complete Multi-Sheet DXF (' + pages.length + ' sheets)');
+          }
+        } catch (e) {
+          console.error('Combined DXF Download error:', e);
+        }
+      }
+
+      return combinedDXF;
     },
 
     // ── Print Multi-Page Vector PDF (A4 Landscape) ──
@@ -1771,6 +2001,13 @@
       if (dxfBtn) {
         dxfBtn.onclick = function () {
           self.exportDXF(self.activePageIndex);
+        };
+      }
+
+      var dxfAllBtn = document.getElementById('a4DxfAllBtn');
+      if (dxfAllBtn) {
+        dxfAllBtn.onclick = function () {
+          self.exportAllDXF();
         };
       }
 
@@ -2389,6 +2626,9 @@
     },
     exportDXF: function (pageIndex) {
       return A4Engine.exportDXF(pageIndex);
+    },
+    exportAllDXF: function () {
+      return A4Engine.exportAllDXF();
     },
     printAllPages: function () {
       return A4Engine.printAllPages();

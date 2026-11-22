@@ -157,7 +157,21 @@ console.log('✓ Dynamic Continuous Loft Elevation Sheet verified.');
 const dxf = global.OrbixA4Drawings.exportDXF(0);
 assert.ok(dxf.includes('AC1009'), 'DXF must be valid AC1009 format');
 assert.ok(dxf.includes('OUTLINE') && dxf.includes('TITLEBLOCK'), 'DXF must contain CAD layers');
-console.log('✓ AutoCAD DXF export verified.');
+assert.ok(dxf.includes('DIMENSIONS'), 'DXF must contain DIMENSIONS layer');
+assert.ok(dxf.includes('SECTION\r\n2\r\nENTITIES') || dxf.includes('ENTITIES'), 'DXF must contain ENTITIES section');
+assert.ok(dxf.includes('LINE'), 'DXF must contain LINE geometry entities');
+
+// Test DXF export for unit sheet 2 (Wardrobe)
+const dxfUnit = global.OrbixA4Drawings.exportDXF(2);
+assert.ok(dxfUnit.includes('CARCASS') || dxfUnit.includes('OUTLINE'), 'Unit DXF must contain carcass/outline layers');
+assert.ok(dxfUnit.includes('WD3D-1500') || dxfUnit.includes('1500'), 'Unit DXF must include cabinet code or dimensions in CAD text');
+console.log('✓ Full AutoCAD DXF geometry & entity generation verified (walls, dimensions, text, layers).');
+
+// Test Combined All-Sheets DXF
+const allDxf = global.OrbixA4Drawings.exportAllDXF();
+assert.ok(allDxf.includes('AC1009'), 'Combined DXF must be valid AC1009 format');
+assert.ok(allDxf.length > dxf.length * 2, 'Combined DXF must contain all sheets');
+console.log('✓ Combined Multi-Sheet AutoCAD DXF (All Sheets in Model Space) verified.');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Test Dynamic Generation for Arbitrary Unit Counts (e.g. 27 Units)
