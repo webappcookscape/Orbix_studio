@@ -47160,7 +47160,12 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
               '  <div style="font-size:11.5px;font-weight:700;color:#166534;margin-bottom:7px;">Step 2 Unlocked: Generate Full Client Link (Username = Client Name) &amp; Download PPTX / PDF</div>' +
               '  <div style="display:grid;grid-template-columns:1fr 1fr 125px;gap:7px;margin-bottom:8px;">' +
               '    <div><label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:2px;">Client Username</label><input type="text" class="cq-act-user" value="' + esc(q.clientName) + '" style="width:100%;padding:6px 8px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;"></div>' +
-              '    <div><label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:2px;">Client Password</label><input type="text" class="cq-act-pass-in" value="' + esc(defaultPw) + '" style="width:100%;padding:6px 8px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;font-family:monospace;font-weight:700;"></div>' +
+              '    <div><label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:2px;">Client Password</label>' +
+              '      <div style="display:flex;gap:4px;">' +
+              '        <input type="text" class="cq-act-pass-in" value="' + esc(defaultPw) + '" style="flex:1;min-width:0;padding:6px 8px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;font-family:monospace;font-weight:700;">' +
+              '        <button type="button" class="btn small cq-btn-act-gen-rnd" title="Generate Random Password" style="background:#F3F4F6;padding:6px 8px;flex-shrink:0;">🎲</button>' +
+              '      </div>' +
+              '    </div>' +
               '    <div><label style="display:block;font-size:10.5px;font-weight:700;color:#475569;margin-bottom:2px;">Validity</label>' +
               '      <select class="cq-act-exp" style="width:100%;padding:6px 6px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;">' +
               '        <option value="1">1 Day</option><option value="7">7 Days</option><option value="15" selected>15 Days</option><option value="30">30 Days</option><option value="365">1 Year</option><option value="0">No Expiry</option>' +
@@ -47184,6 +47189,16 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
               '  <button type="button" class="btn small cq-act-pass" data-id="' + esc(q.id) + '" data-user="' + esc(q.clientUsername) + '">🔑 Reset Pass</button>' +
               '  <button type="button" class="btn small cq-act-toggle" data-id="' + esc(q.id) + '" data-revoked="' + (q.isRevoked ? '1' : '0') + '">' + (q.isRevoked ? '✅ Reactivate' : '⛔ Revoke') + '</button>' +
               '  <button type="button" class="btn small cq-act-del" data-id="' + esc(q.id) + '" style="color:#B91C1C;border-color:#FECACA;">🗑 Delete</button>' +
+              '</div>' +
+              '<div class="cq-pass-edit-pane" style="display:none;margin-top:9px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:7px;padding:9px 11px;">' +
+              '  <div style="font-size:11.5px;font-weight:700;color:#92400E;margin-bottom:6px;">🔑 Reset Client Password for <code>' + esc(q.clientUsername) + '</code>:</div>' +
+              '  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">' +
+              '    <input type="text" class="cq-custom-pass-val" placeholder="Type custom password or click 🎲..." style="flex:1;min-width:160px;padding:6px 8px;border:1px solid #CBD5E1;border-radius:5px;font-size:12px;font-family:monospace;font-weight:700;">' +
+              '    <button type="button" class="btn small cq-btn-gen-rnd" title="Generate Random Password" style="background:#F3F4F6;">🎲 Random</button>' +
+              '    <button type="button" class="btn small cq-btn-save-custom-pass" data-id="' + esc(q.id) + '" data-user="' + esc(q.clientUsername) + '" style="background:#C00000;color:#fff;border-color:#900000;font-weight:700;">💾 Save Password</button>' +
+              '    <button type="button" class="btn small cq-btn-cancel-pass" style="background:#fff;border-color:#CBD5E1;color:#475569;">Cancel</button>' +
+              '  </div>' +
+              '  <div class="cq-pass-err-msg" style="color:#B91C1C;font-size:11px;margin-top:4px;display:none;"></div>' +
               '</div>';
           }
 
@@ -47285,23 +47300,110 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             OrbixClientQuote.loadExistingList(body, projectId);
           });
         });
+        listEl.querySelectorAll('.cq-btn-act-gen-rnd').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var box = this.closest('div');
+            if (box) {
+              var inp = box.querySelector('.cq-act-pass-in');
+              if (inp) inp.value = randomPassword();
+            }
+          });
+        });
         listEl.querySelectorAll('.cq-act-pass').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var card = this.closest('.cq-quote-card');
+            if (!card) return;
+            var pane = card.querySelector('.cq-pass-edit-pane');
+            if (!pane) return;
+            var isHidden = (pane.style.display === 'none' || !pane.style.display);
+            pane.style.display = isHidden ? 'block' : 'none';
+            if (isHidden) {
+              var passInput = pane.querySelector('.cq-custom-pass-val');
+              if (passInput) {
+                if (!passInput.value) passInput.value = randomPassword();
+                passInput.focus();
+                passInput.select();
+              }
+            }
+          });
+        });
+        listEl.querySelectorAll('.cq-btn-gen-rnd').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var pane = this.closest('.cq-pass-edit-pane');
+            if (pane) {
+              var inp = pane.querySelector('.cq-custom-pass-val');
+              if (inp) {
+                inp.value = randomPassword();
+                inp.focus();
+              }
+            }
+          });
+        });
+        listEl.querySelectorAll('.cq-btn-cancel-pass').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var pane = this.closest('.cq-pass-edit-pane');
+            if (pane) pane.style.display = 'none';
+          });
+        });
+        listEl.querySelectorAll('.cq-btn-save-custom-pass').forEach(function (b) {
           b.addEventListener('click', async function () {
-            var newPw = randomPassword();
+            var pane = this.closest('.cq-pass-edit-pane');
             var qId = this.getAttribute('data-id');
             var cUser = this.getAttribute('data-user');
-            var r = await fetch('/api/client-quotes/' + encodeURIComponent(qId), {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'same-origin',
-              body: JSON.stringify({ clientPassword: newPw })
-            });
-            if (r.ok) {
-              var resCard = body.querySelector('#cqResultCard');
-              if (resCard) {
-                resCard.style.display = 'block';
-                resCard.innerHTML = '<b>🔑 Password Updated for <code>' + esc(cUser) + '</code>:</b> New Password = <code>' + esc(newPw) + '</code>';
+            var passInput = pane ? pane.querySelector('.cq-custom-pass-val') : null;
+            var errEl = pane ? pane.querySelector('.cq-pass-err-msg') : null;
+            var newPw = passInput ? passInput.value.trim() : '';
+
+            if (!newPw || newPw.length < 4) {
+              if (errEl) {
+                errEl.innerText = 'Password must be at least 4 characters long.';
+                errEl.style.display = 'block';
+              } else {
+                alert('Password must be at least 4 characters long.');
               }
+              return;
+            }
+            if (errEl) errEl.style.display = 'none';
+
+            var btn = this;
+            btn.disabled = true;
+            var origText = btn.innerText;
+            btn.innerText = 'Saving...';
+            try {
+              var r = await fetch('/api/client-quotes/' + encodeURIComponent(qId), {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ clientPassword: newPw })
+              });
+              if (r.ok) {
+                if (pane) pane.style.display = 'none';
+                var resCard = body.querySelector('#cqResultCard');
+                if (resCard) {
+                  resCard.style.display = 'block';
+                  resCard.innerHTML = '<b>🔑 Password Updated for <code>' + esc(cUser) + '</code>:</b> New Password = <code style="background:#FEF3C7;padding:2px 7px;border-radius:4px;font-size:13px;color:#92400E;font-weight:700;">' + esc(newPw) + '</code>';
+                }
+                if (typeof showToast === 'function') {
+                  showToast('✓ Password updated for ' + cUser, 'success');
+                }
+              } else {
+                var errJson = await r.json().catch(function () { return {}; });
+                var msg = errJson.error || ('Failed to update password (' + r.status + ')');
+                if (errEl) {
+                  errEl.innerText = msg;
+                  errEl.style.display = 'block';
+                } else {
+                  alert(msg);
+                }
+              }
+            } catch (err) {
+              if (errEl) {
+                errEl.innerText = err.message;
+                errEl.style.display = 'block';
+              }
+            } finally {
+              btn.disabled = false;
+              btn.innerText = origText;
             }
           });
         });
