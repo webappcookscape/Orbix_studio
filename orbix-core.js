@@ -2705,7 +2705,7 @@
     };
   }
 
-  function generateFullQuotation(project, selectedRoomIds) {
+  function generateFullQuotation(project, selectedRoomIds, selectedFloorId) {
     project = project || {};
     var rateCard = project.rateCard || DEFAULT_RATE_CARD;
     var plan = project;
@@ -2713,22 +2713,79 @@
       plan = plan.plan;
     }
     plan = plan || {};
-    var furniture = plan.furniture || [];
-    var rooms = plan.rooms || [];
+
+    // ── Multi-Floor Resolution & Synchronization ──
+    var floors = (plan.floors && plan.floors.length > 0)
+      ? plan.floors
+      : [{ id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }];
+    var activeFloorId = plan.activeFloorId || plan.activeFloor || 'ground';
+    plan.floorsData = plan.floorsData || {};
+
+    var rootFurn = plan.furniture || plan.furnitureUnits || [];
+    // Keep active floor synchronized in floorsData
+    if (!plan.floorsData[activeFloorId] || (rootFurn.length > (plan.floorsData[activeFloorId].furniture || plan.floorsData[activeFloorId].furnitureUnits || []).length)) {
+      plan.floorsData[activeFloorId] = plan.floorsData[activeFloorId] || {};
+      plan.floorsData[activeFloorId].furniture = rootFurn;
+      plan.floorsData[activeFloorId].rooms = plan.rooms || [];
+      plan.floorsData[activeFloorId].walls = plan.walls || [];
+    }
+
+    // Collect all modular furniture and rooms across all floors
+    var allFurniture = [];
+    var allRooms = [];
+    var floorMap = {};
+    floors.forEach(function (fl) {
+      floorMap[fl.id] = fl;
+      var fData = (fl.id === activeFloorId && rootFurn.length)
+        ? plan
+        : (plan.floorsData[fl.id] || { furniture: [], rooms: [] });
+      var fFurn = fData.furniture || fData.furnitureUnits || [];
+      var fRooms = fData.rooms || [];
+
+      fFurn.forEach(function (fu) {
+        var itemCopy = JSON.parse(JSON.stringify(fu));
+        itemCopy.floorId = fl.id;
+        itemCopy.floorName = fl.name || fl.id;
+        itemCopy.floorLevel = fl.level !== undefined ? fl.level : 0;
+        allFurniture.push(itemCopy);
+      });
+
+      fRooms.forEach(function (rm) {
+        var rmCopy = JSON.parse(JSON.stringify(rm));
+        rmCopy.floorId = fl.id;
+        rmCopy.floorName = fl.name || fl.id;
+        allRooms.push(rmCopy);
+      });
+    });
+
+    if (allFurniture.length === 0 && rootFurn.length) {
+      rootFurn.forEach(function (fu) {
+        var itemCopy = JSON.parse(JSON.stringify(fu));
+        itemCopy.floorId = activeFloorId;
+        itemCopy.floorName = (floorMap[activeFloorId] && floorMap[activeFloorId].name) || 'Ground Floor';
+        itemCopy.floorLevel = (floorMap[activeFloorId] && floorMap[activeFloorId].level) || 0;
+        allFurniture.push(itemCopy);
+      });
+      allRooms = plan.rooms || [];
+    }
+
+    var furniture = allFurniture;
+    var rooms = allRooms;
 
     var roomMap = {};
     for (var r = 0; r < rooms.length; r++) {
       roomMap[rooms[r].id] = rooms[r];
     }
 
-    // Associate furniture items with their enclosing room (prioritizing smaller divided rooms, e.g. Pooja Room inside Living Room)
+    // Associate furniture items with their enclosing room on the SAME floor
     for (var fIdx = 0; fIdx < furniture.length; fIdx++) {
       var fu = furniture[fIdx];
       if (fu.pos) {
         var matchingRooms = [];
         for (var rmIdx = 0; rmIdx < rooms.length; rmIdx++) {
-          if (rooms[rmIdx].polygon && Vec2.pointInPolygon(fu.pos, rooms[rmIdx].polygon)) {
-            matchingRooms.push(rooms[rmIdx]);
+          var candRm = rooms[rmIdx];
+          if (candRm.floorId === fu.floorId && candRm.polygon && Vec2.pointInPolygon(fu.pos, candRm.polygon)) {
+            matchingRooms.push(candRm);
           }
         }
         if (matchingRooms.length > 0) {
@@ -2743,7 +2800,10 @@
       }
     }
 
-    // Normalize room filter
+    // Normalize floor and room filters
+    var isFloorFiltered = (selectedFloorId && selectedFloorId !== 'all');
+    var targetFloorId = isFloorFiltered ? selectedFloorId : null;
+
     var isFiltered = false;
     var filterMap = {};
     if (selectedRoomIds && Array.isArray(selectedRoomIds) && selectedRoomIds.length > 0 && selectedRoomIds.indexOf('all') === -1) {
@@ -2753,6 +2813,19 @@
       }
     }
 
+    // Initialize floor breakdown metrics map
+    var floorSummaries = {};
+    floors.forEach(function (fl) {
+      floorSummaries[fl.id] = {
+        id: fl.id,
+        name: fl.name || fl.id,
+        level: fl.level !== undefined ? fl.level : 0,
+        itemCount: 0,
+        woodworkSubtotal: 0,
+        percentShare: 0
+      };
+    });
+
     // Initialize room breakdown metrics map for all detected rooms
     var roomSummaries = {};
     for (var rj = 0; rj < rooms.length; rj++) {
@@ -2761,6 +2834,8 @@
       roomSummaries[rObj.id] = {
         id: rObj.id,
         name: rObj.name || ('Room ' + (rj + 1)),
+        floorId: rObj.floorId || activeFloorId,
+        floorName: rObj.floorName || 'Ground Floor',
         variant: rmTier,
         areaSqFt: rObj.areaSqFt || 0,
         areaSqM: rObj.areaSqM || 0,
@@ -2774,6 +2849,8 @@
     roomSummaries['_general'] = {
       id: '_general',
       name: 'General / Unassigned',
+      floorId: activeFloorId,
+      floorName: 'Ground Floor',
       variant: (rateCard.roomTiers && rateCard.roomTiers['_general']) || rateCard.selectedTier || 'zappo - el pearl',
       areaSqFt: 0,
       areaSqM: 0,
@@ -2814,8 +2891,25 @@
       if (!cost || cost.isDecor) continue;
       cost.roomId = fRoomId;
       cost.roomName = (f.roomId && roomMap[f.roomId]) ? roomMap[f.roomId].name : 'General';
+      cost.floorId = f.floorId || activeFloorId;
+      cost.floorName = f.floorName || (floorMap[cost.floorId] && floorMap[cost.floorId].name) || 'Ground Floor';
+      cost.floorLevel = f.floorLevel !== undefined ? f.floorLevel : ((floorMap[cost.floorId] && floorMap[cost.floorId].level) || 0);
 
       allItemsTotalWoodwork += cost.totalAmount;
+
+      // Update floor metrics
+      if (!floorSummaries[cost.floorId]) {
+        floorSummaries[cost.floorId] = {
+          id: cost.floorId,
+          name: cost.floorName,
+          level: cost.floorLevel,
+          itemCount: 0,
+          woodworkSubtotal: 0,
+          percentShare: 0
+        };
+      }
+      floorSummaries[cost.floorId].itemCount++;
+      floorSummaries[cost.floorId].woodworkSubtotal += cost.totalAmount;
 
       var bId = roomMap[cost.roomId] ? cost.roomId : '_general';
       if (roomSummaries[bId]) {
@@ -2824,8 +2918,9 @@
         roomSummaries[bId].roomSubtotal += cost.totalAmount;
       }
 
-      var matchesFilter = !isFiltered || filterMap[cost.roomId] || filterMap[cost.roomName];
-      if (matchesFilter) {
+      var matchesFloor = !isFloorFiltered || (cost.floorId === targetFloorId);
+      var matchesRoom = !isFiltered || filterMap[cost.roomId] || filterMap[cost.roomName];
+      if (matchesFloor && matchesRoom) {
         lineItems.push(cost);
         subtotal += cost.totalAmount;
         categoryTotals[cost.category] = (categoryTotals[cost.category] || 0) + cost.totalAmount;
@@ -2833,62 +2928,68 @@
       }
     }
 
-    // 2. Civil / Architectural Line Items (Optional: False Ceiling, Flooring, Painting from detected rooms)
+    // 2. Civil / Architectural Line Items (Excluded from Quotation Total - zero impact on pricing)
     var civilLineItems = [];
     for (var rm = 0; rm < rooms.length; rm++) {
       var room = rooms[rm];
       if (room.areaSqFt > 0) {
-        var civilMatches = !isFiltered || filterMap[room.id] || filterMap[room.name];
+        var civilFloorMatch = !isFloorFiltered || (room.floorId === targetFloorId);
+        var civilMatches = civilFloorMatch && (!isFiltered || filterMap[room.id] || filterMap[room.name]);
 
-        // Flooring (Opt-in only: room.includeFlooring)
+        // Flooring (Recorded for architectural information only, zero pricing addition)
         if (room.includeFlooring && rateCard.categories.flooring && rateCard.categories.flooring.baseRatePerSft) {
           var floorCost = room.areaSqFt * rateCard.categories.flooring.baseRatePerSft;
-          if (roomSummaries[room.id]) {
-            roomSummaries[room.id].civilSubtotal += floorCost;
-            roomSummaries[room.id].roomSubtotal += floorCost;
-          }
           if (civilMatches) {
             civilLineItems.push({
               name: 'Flooring: ' + room.name,
               category: 'flooring',
               roomName: room.name,
               roomId: room.id,
+              floorId: room.floorId || activeFloorId,
+              floorName: room.floorName || 'Ground Floor',
               areaSft: room.areaSqFt,
               baseRate: rateCard.categories.flooring.baseRatePerSft,
-              totalAmount: floorCost,
-              formulaDescription: room.areaSqFt.toFixed(1) + ' SFT @ ' + rateCard.currencySymbol + rateCard.categories.flooring.baseRatePerSft + '/SFT'
+              totalAmount: 0, // Zero price impact
+              formulaDescription: room.areaSqFt.toFixed(1) + ' SFT (Civil Work Excluded From Woodwork Quote)'
             });
-            subtotal += floorCost;
-            categoryTotals.flooring = (categoryTotals.flooring || 0) + floorCost;
-            roomTotals[room.name] = (roomTotals[room.name] || 0) + floorCost;
           }
         }
 
-        // False Ceiling (if enabled for the room)
+        // False Ceiling (Recorded for architectural information only, zero pricing addition)
         if (room.falseCeiling && rateCard.categories.false_ceiling) {
           var fcCost = room.areaSqFt * rateCard.categories.false_ceiling.baseRatePerSft;
-          if (roomSummaries[room.id]) {
-            roomSummaries[room.id].civilSubtotal += fcCost;
-            roomSummaries[room.id].roomSubtotal += fcCost;
-          }
           if (civilMatches) {
             civilLineItems.push({
               name: 'False Ceiling: ' + room.name,
               category: 'false_ceiling',
               roomName: room.name,
               roomId: room.id,
+              floorId: room.floorId || activeFloorId,
+              floorName: room.floorName || 'Ground Floor',
               areaSft: room.areaSqFt,
               baseRate: rateCard.categories.false_ceiling.baseRatePerSft,
-              totalAmount: fcCost,
-              formulaDescription: room.areaSqFt.toFixed(1) + ' SFT @ ' + rateCard.currencySymbol + rateCard.categories.false_ceiling.baseRatePerSft + '/SFT'
+              totalAmount: 0, // Zero price impact
+              formulaDescription: room.areaSqFt.toFixed(1) + ' SFT (Civil Work Excluded From Woodwork Quote)'
             });
-            subtotal += fcCost;
-            categoryTotals.false_ceiling = (categoryTotals.false_ceiling || 0) + fcCost;
-            roomTotals[room.name] = (roomTotals[room.name] || 0) + fcCost;
           }
         }
       }
     }
+
+    // Compute Floor Summaries array & % Share of Total Project Woodwork
+    var allFloorsSummary = [];
+    var totalWoodworkAllFloors = 0;
+    for (var fKey in floorSummaries) {
+      totalWoodworkAllFloors += floorSummaries[fKey].woodworkSubtotal;
+    }
+    if (totalWoodworkAllFloors <= 0) totalWoodworkAllFloors = 1;
+
+    for (var fKey in floorSummaries) {
+      var flItem = floorSummaries[fKey];
+      flItem.percentShare = Math.round((flItem.woodworkSubtotal / totalWoodworkAllFloors) * 100);
+      allFloorsSummary.push(flItem);
+    }
+    allFloorsSummary.sort(function (a, b) { return a.level - b.level; });
 
     // 3. Labor, Installation & Transport (Zero impact on total)
     var totalWoodworkSft = 0;
@@ -2962,13 +3063,20 @@
       priceTiers: rateCard.priceTiers || PRICE_TIERS,
       modelRates: rateCard.modelRates || MODEL_RATES_MATRIX,
       selectedRoomIds: selectedRoomIds || ['all'],
+      selectedFloorId: selectedFloorId || 'all',
       isFiltered: isFiltered,
+      isFloorFiltered: isFloorFiltered,
+      allFloorsSummary: allFloorsSummary,
+      floorSummaries: allFloorsSummary,
+      floorTotals: floorSummaries,
       allRoomsSummary: allRoomsSummary,
       furnitureItems: lineItems,
+      items: lineItems,
       civilItems: civilLineItems,
       categoryTotals: categoryTotals,
       roomTotals: roomTotals,
       subtotalWoodwork: subtotal,
+      subtotal: subtotal,
       installCharge: installCharge,
       transportCharge: transportCharge,
       laborTotal: laborTotal,

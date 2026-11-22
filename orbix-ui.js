@@ -7514,8 +7514,11 @@
       if (!this.selectedBOQRooms) {
         this.selectedBOQRooms = ['all'];
       }
+      if (!this.selectedBOQFloor) {
+        this.selectedBOQFloor = 'all';
+      }
 
-      var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms);
+      var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms, this.selectedBOQFloor);
       var sym = quote.currencySymbol;
       var rateCard = (this.project && this.project.rateCard) || Core.DEFAULT_RATE_CARD;
       var self = this;
@@ -7536,10 +7539,78 @@
         '<button class="btn" id="boqEditDetailsBtn" style="font-weight:600;border-color:#2563EB;color:#2563EB">✏️ Edit Client Details</button>' +
         '<button class="btn" id="boqLockVersionBtn">Issue Quotation Snapshot</button>' +
         '<button class="btn" id="boqToggleRateCardBtn">Configure Company Rates</button>' +
-        '</div>' +
+        '</div>';
 
-        // ── Room Scope & Filter Bar ──
-        '<div class="boq-room-filter-bar no-print">' +
+      // ── FLOOR PRICING SCOPE & FILTER BAR ──
+      var allFloors = quote.allFloorsSummary || [];
+      var isAllFloors = (!this.selectedBOQFloor || this.selectedBOQFloor === 'all');
+      var totalFloorsWoodwork = allFloors.reduce(function (acc, f) { return acc + (f.woodworkSubtotal || 0); }, 0);
+      var totalFloorsUnits = allFloors.reduce(function (acc, f) { return acc + (f.itemCount || 0); }, 0);
+
+      html += '<div class="boq-floor-filter-bar no-print" style="margin-bottom:12px;padding:10px 14px;background:#F1F5F9;border:1px solid #CBD5E1;border-radius:6px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">' +
+        '<div class="boq-floor-filter-label" style="font-size:13px;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:6px;">' +
+        '<span class="floor-icon">🏢</span> <b>Floor Pricing Scope:</b>' +
+        '</div>' +
+        '<div class="floor-pill-group" style="display:flex;gap:8px;flex-wrap:wrap;">' +
+        '<button class="btn small floor-filter-pill' + (isAllFloors ? ' primary' : '') + '" data-floor="all" style="font-weight:700;padding:5px 12px;border-radius:20px;' + (isAllFloors ? 'background:#08231B;color:#FFF;' : 'background:#FFF;color:#334155;border:1px solid #CBD5E1;') + '">' +
+        '🏛️ All Floors (Total Home) <span style="margin-left:6px;font-size:11px;opacity:0.85;padding:1px 6px;border-radius:10px;background:' + (isAllFloors ? '#1E3A8A' : '#E2E8F0') + ';color:' + (isAllFloors ? '#FFF' : '#0F172A') + '">' + totalFloorsUnits + ' units · ₹ ' + Math.round(totalFloorsWoodwork).toLocaleString('en-IN') + '</span>' +
+        '</button>';
+
+      for (var flIdx = 0; flIdx < allFloors.length; flIdx++) {
+        var fObj = allFloors[flIdx];
+        var isThisFloorActive = !isAllFloors && self.selectedBOQFloor === fObj.id;
+        html += '<button class="btn small floor-filter-pill' + (isThisFloorActive ? ' primary' : '') + '" data-floor="' + fObj.id + '" style="font-weight:700;padding:5px 12px;border-radius:20px;' + (isThisFloorActive ? 'background:#08231B;color:#FFF;' : 'background:#FFF;color:#334155;border:1px solid #CBD5E1;') + '">' +
+          '🏢 ' + fObj.name + ' <span style="margin-left:6px;font-size:11px;opacity:0.85;padding:1px 6px;border-radius:10px;background:' + (isThisFloorActive ? '#1E3A8A' : '#E2E8F0') + ';color:' + (isThisFloorActive ? '#FFF' : '#0F172A') + '">' + fObj.itemCount + ' units · ₹ ' + Math.round(fObj.woodworkSubtotal).toLocaleString('en-IN') + '</span>' +
+          '</button>';
+      }
+      html += '</div></div>';
+
+      // ── FLOOR-WISE PURE MODULAR WOODWORK BREAKDOWN TABLE ──
+      if (allFloors.length > 0) {
+        html += '<div class="boq-floor-summary-card no-print" style="margin-bottom:16px;padding:14px 18px;background:#FFFFFF;border:1px solid #CBD5E1;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">' +
+          '<h4 style="margin:0;font-size:14px;font-weight:800;color:#0F172A;text-transform:uppercase;letter-spacing:0.04em;">🏢 Floor-Wise Pure Modular Woodwork Breakdown</h4>' +
+          '<span style="font-size:11px;font-weight:700;color:#16A34A;background:#DCFCE7;padding:3px 8px;border-radius:4px;">100% Pure Cabinetry (Zero Civil Work)</span>' +
+          '</div>' +
+          '<div style="overflow-x:auto;">' +
+          '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
+          '<thead><tr style="background:#F8FAFC;border-bottom:2px solid #CBD5E1;text-align:left;">' +
+          '<th style="padding:8px 12px;">Floor Level</th>' +
+          '<th style="padding:8px 12px;text-align:center;">Cabinet Units</th>' +
+          '<th style="padding:8px 12px;text-align:right;">Modular Woodwork Total</th>' +
+          '<th style="padding:8px 12px;text-align:center;">% Share</th>' +
+          '<th style="padding:8px 12px;text-align:center;">Scope Filter</th>' +
+          '</tr></thead><tbody>';
+
+        for (var fls = 0; fls < allFloors.length; fls++) {
+          var fRow = allFloors[fls];
+          var isRowActive = !isAllFloors && self.selectedBOQFloor === fRow.id;
+          html += '<tr style="border-bottom:1px solid #E2E8F0;' + (isRowActive ? 'background:#EFF6FF;' : '') + '">' +
+            '<td style="padding:8px 12px;font-weight:700;color:#0F172A;">🏢 ' + fRow.name + '</td>' +
+            '<td style="padding:8px 12px;text-align:center;font-weight:600;color:#475569;">' + fRow.itemCount + ' units</td>' +
+            '<td style="padding:8px 12px;text-align:right;font-family:var(--mono);font-weight:700;color:#1E3A8A;">₹ ' + Math.round(fRow.woodworkSubtotal).toLocaleString('en-IN') + '.00</td>' +
+            '<td style="padding:8px 12px;text-align:center;font-weight:700;color:#16A34A;">' + fRow.percentShare + '%</td>' +
+            '<td style="padding:8px 12px;text-align:center;">' +
+            '<button class="btn small floor-filter-pill" data-floor="' + fRow.id + '" style="font-size:11px;padding:3px 8px;' + (isRowActive ? 'background:#2563EB;color:#FFF;' : '') + '">' +
+            (isRowActive ? '✓ Active' : 'Filter Floor') +
+            '</button>' +
+            '</td>' +
+            '</tr>';
+        }
+
+        html += '<tr style="background:#F1F5F9;font-weight:800;border-top:2px solid #0F172A;">' +
+          '<td style="padding:10px 12px;color:#0F172A;">🏛️ Entire Residence (Combined Total)</td>' +
+          '<td style="padding:10px 12px;text-align:center;">' + totalFloorsUnits + ' units</td>' +
+          '<td style="padding:10px 12px;text-align:right;font-family:var(--mono);color:#08231B;">₹ ' + Math.round(totalFloorsWoodwork).toLocaleString('en-IN') + '.00</td>' +
+          '<td style="padding:10px 12px;text-align:center;color:#16A34A;">100%</td>' +
+          '<td style="padding:10px 12px;text-align:center;">' +
+          '<button class="btn small floor-filter-pill" data-floor="all" style="font-size:11px;padding:3px 8px;' + (isAllFloors ? 'background:#08231B;color:#FFF;' : '') + '">View All</button>' +
+          '</td>' +
+          '</tr></tbody></table></div></div>';
+      }
+
+      // ── Room Scope & Filter Bar ──
+      html += '<div class="boq-room-filter-bar no-print">' +
         '<div class="boq-room-filter-label"><span class="room-icon">🏠</span> <b>Room Pricing Scope:</b></div>' +
         '<div class="room-pill-group">';
 
@@ -7752,6 +7823,7 @@
             '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
             '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
             '<span style="font-size:15px">🏠</span><b>Room: ' + rName + '</b>' +
+            (rItems[0] && rItems[0].floorName ? (' &nbsp;<span style="background:#E2E8F0;color:#0F172A;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;">🏢 ' + rItems[0].floorName + '</span>') : '') +
             (rAreaStr ? (' &nbsp;<span style="color:#64748B;font-size:11px">(' + rAreaStr + ')</span>') : '') +
             ' &nbsp;·&nbsp; <span style="color:#2563EB;font-weight:600">' + rItems.length + ' Unit' + (rItems.length === 1 ? '' : 's') + '</span>' +
             ' &nbsp;·&nbsp; <span style="font-size:12px;color:#475569;font-weight:600;">Variant:</span>' +
@@ -7781,6 +7853,7 @@
               '<td class="c-center p-0">' + svgThumb + '</td>' +
               '<td>' +
               '<div class="item-name">' + item.name + '</div>' +
+              (item.floorName ? ('<div style="font-size:11px;font-weight:700;color:#2563EB;margin:1px 0;">🏢 ' + item.floorName + '</div>') : '') +
               '<div class="item-sub">Group: ' + (item.modelLabel || item.modelType || 'WR 2 DOOR SHELF') + '</div>' +
               '<div class="item-sub">Model: ' + item.name + '</div>' +
               '</td>' +
@@ -8369,6 +8442,17 @@
           self.renderBOQ();
         });
       }
+
+      // Floor filter pill clicks
+      var floorFilterBtns = boqEl.querySelectorAll('.floor-filter-pill');
+      floorFilterBtns.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var fTarget = btn.getAttribute('data-floor') || 'all';
+          self.selectedBOQFloor = fTarget;
+          self.renderBOQ();
+        });
+      });
 
       // Room filter pill clicks & Stat card clicks
       var roomFilterBtns = boqEl.querySelectorAll('.room-filter-pill, .boq-room-select-btn');
@@ -9012,10 +9096,11 @@
     exportXLSX: async function () {
       var self = this;
       this.sync3DStudioUnits();
-      var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms);
+      var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms, this.selectedBOQFloor);
       var currentTier = (this.project.rateCard && (Core.normalizeTierName ? Core.normalizeTierName(this.project.rateCard.selectedTier) : this.project.rateCard.selectedTier)) || 'zappo - el pearl';
       var meta = (this.project && this.project.meta) || {};
-      var roomScopeText = quote.isFiltered ? ('Filtered: ' + (self.selectedBOQRooms || []).join(', ')) : 'All Rooms (Entire Home)';
+      var floorScopeText = (this.selectedBOQFloor && this.selectedBOQFloor !== 'all') ? ('Floor: ' + this.selectedBOQFloor + ' · ') : 'All Floors · ';
+      var roomScopeText = quote.isFiltered ? (floorScopeText + 'Filtered: ' + (self.selectedBOQRooms || []).join(', ')) : (floorScopeText + 'All Rooms (Entire Home)');
 
       // UI Button feedback
       var xlsxBtn = document.getElementById('boqXlsxBtn');
@@ -9343,7 +9428,8 @@
         var rActiveTier = (rFound && rFound.variant) || currentTier;
 
         // Room Header Bar
-        var roomTitleText = '🏠 Room: ' + rName + ' · ' + rItems.length + ' Units · Variant: ' + rActiveTier;
+        var flPrefix = (rItems[0] && rItems[0].floorName) ? ('🏢 ' + rItems[0].floorName + ' · ') : '';
+        var roomTitleText = flPrefix + '🏠 Room: ' + rName + ' · ' + rItems.length + ' Units · Variant: ' + rActiveTier;
         setCell(currRow, 0, roomTitleText, 7);
         for (var rc = 1; rc <= 7; rc++) setCell(currRow, rc, '', 7);
         addMerge(0, currRow, 7, currRow);
@@ -9386,7 +9472,7 @@
           setCell(currRow, 0, globalItemIdx, sCenter, 'n');
           setCell(currRow, 1, refCode, sCenter);
           setCell(currRow, 2, '', sCenter);
-          setCell(currRow, 3, it.name + '\nGroup: ' + (it.modelLabel || it.modelType || 'Cabinet') + '\nModel: ' + it.name, sLeft);
+          setCell(currRow, 3, it.name + (it.floorName ? ('\nFloor: 🏢 ' + it.floorName) : '') + '\nGroup: ' + (it.modelLabel || it.modelType || 'Cabinet') + '\nModel: ' + it.name, sLeft);
           setCell(currRow, 4, 'Width: ' + d.W + '\nDepth: ' + d.D + '\nHeight: ' + d.H, sLeft);
           setCell(currRow, 5, it.categoryName || 'Wardrobe', sCenter);
           setCell(currRow, 6, 'Shutter: ' + smat.material + ' (' + smat.finish + ')\nCarcass: ' + cmat.material + ' (' + cmat.finish + ')', sLeft);
@@ -9457,6 +9543,70 @@
         for (var sh = 1; sh <= 9; sh++) setCell(currRow, sh, '', 17);
         addMerge(0, currRow, 9, currRow);
         setCell(currRow, 10, 0, 18, 'n');
+        rowHeights[currRow] = 24;
+        currRow++;
+
+        currRow++; // Spacing row
+      }
+
+      // --- SECTION 2.5: FLOOR-WISE MODULAR WOODWORK BREAKDOWN ---
+      if (quote.allFloorsSummary && quote.allFloorsSummary.length > 1) {
+        setCell(currRow, 0, '2.5. Floor-Wise Modular Woodwork Breakdown (Pure Cabinetry Only)', 5);
+        for (var fwc = 1; fwc <= 10; fwc++) setCell(currRow, fwc, '', 5);
+        addMerge(0, currRow, 10, currRow);
+        rowHeights[currRow] = 24;
+        currRow++;
+
+        setCell(currRow, 0, 'Floor Name', 6);
+        for (var fn = 1; fn <= 3; fn++) setCell(currRow, fn, '', 6);
+        addMerge(0, currRow, 3, currRow);
+
+        setCell(currRow, 4, 'Level', 6);
+        setCell(currRow, 5, 'Modular Units', 6);
+
+        setCell(currRow, 6, 'Share of Total', 6);
+        for (var fsh = 7; fsh <= 7; fsh++) setCell(currRow, fsh, '', 6);
+        addMerge(6, currRow, 7, currRow);
+
+        setCell(currRow, 8, 'Woodwork Subtotal (INR)', 6);
+        for (var fst = 9; fst <= 10; fst++) setCell(currRow, fst, '', 6);
+        addMerge(8, currRow, 10, currRow);
+        rowHeights[currRow] = 22;
+        currRow++;
+
+        for (var flIdx = 0; flIdx < quote.allFloorsSummary.length; flIdx++) {
+          var flSummary = quote.allFloorsSummary[flIdx];
+          var isFZebra = (flIdx % 2 === 1);
+          var sFLCenter = isFZebra ? 13 : 9;
+          var sFLLeft = isFZebra ? 14 : 10;
+          var sFLNum = isFZebra ? 15 : 11;
+          var sFLCur = isFZebra ? 16 : 12;
+
+          setCell(currRow, 0, '🏢 ' + flSummary.name, sFLLeft);
+          for (var fls = 1; fls <= 3; fls++) setCell(currRow, fls, '', sFLLeft);
+          addMerge(0, currRow, 3, currRow);
+
+          setCell(currRow, 4, 'Level ' + flSummary.level, sFLCenter);
+          setCell(currRow, 5, flSummary.itemCount + ' Units', sFLCenter);
+
+          setCell(currRow, 6, flSummary.percentShare + '%', sFLCenter);
+          setCell(currRow, 7, '', sFLCenter);
+          addMerge(6, currRow, 7, currRow);
+
+          setCell(currRow, 8, Math.round(flSummary.woodworkSubtotal), sFLCur, 'n');
+          for (var fla = 9; fla <= 10; fla++) setCell(currRow, fla, '', sFLCur);
+          addMerge(8, currRow, 10, currRow);
+
+          rowHeights[currRow] = 22;
+          currRow++;
+        }
+
+        setCell(currRow, 0, 'TOTAL MODULAR WOODWORK (ALL FLOORS)', 17);
+        for (var ft = 1; ft <= 7; ft++) setCell(currRow, ft, '', 17);
+        addMerge(0, currRow, 7, currRow);
+        setCell(currRow, 8, Math.round(quote.subtotalWoodwork), 18, 'n');
+        for (var fta = 9; fta <= 10; fta++) setCell(currRow, fta, '', 18);
+        addMerge(8, currRow, 10, currRow);
         rowHeights[currRow] = 24;
         currRow++;
 

@@ -15250,7 +15250,7 @@ body.role-employee #adminCreateEmpBox,
     };
   }
 
-  function generateFullQuotation(project, selectedRoomIds) {
+  function generateFullQuotation(project, selectedRoomIds, selectedFloorId) {
     project = project || {};
     var rateCard = project.rateCard || DEFAULT_RATE_CARD;
     var plan = project;
@@ -15258,22 +15258,79 @@ body.role-employee #adminCreateEmpBox,
       plan = plan.plan;
     }
     plan = plan || {};
-    var furniture = plan.furniture || [];
-    var rooms = plan.rooms || [];
+
+    // ── Multi-Floor Resolution & Synchronization ──
+    var floors = (plan.floors && plan.floors.length > 0)
+      ? plan.floors
+      : [{ id: 'ground', name: 'Ground Floor', level: 0, elevation: 0, isDefault: true }];
+    var activeFloorId = plan.activeFloorId || plan.activeFloor || 'ground';
+    plan.floorsData = plan.floorsData || {};
+
+    var rootFurn = plan.furniture || plan.furnitureUnits || [];
+    // Keep active floor synchronized in floorsData
+    if (!plan.floorsData[activeFloorId] || (rootFurn.length > (plan.floorsData[activeFloorId].furniture || plan.floorsData[activeFloorId].furnitureUnits || []).length)) {
+      plan.floorsData[activeFloorId] = plan.floorsData[activeFloorId] || {};
+      plan.floorsData[activeFloorId].furniture = rootFurn;
+      plan.floorsData[activeFloorId].rooms = plan.rooms || [];
+      plan.floorsData[activeFloorId].walls = plan.walls || [];
+    }
+
+    // Collect all modular furniture and rooms across all floors
+    var allFurniture = [];
+    var allRooms = [];
+    var floorMap = {};
+    floors.forEach(function (fl) {
+      floorMap[fl.id] = fl;
+      var fData = (fl.id === activeFloorId && rootFurn.length)
+        ? plan
+        : (plan.floorsData[fl.id] || { furniture: [], rooms: [] });
+      var fFurn = fData.furniture || fData.furnitureUnits || [];
+      var fRooms = fData.rooms || [];
+
+      fFurn.forEach(function (fu) {
+        var itemCopy = JSON.parse(JSON.stringify(fu));
+        itemCopy.floorId = fl.id;
+        itemCopy.floorName = fl.name || fl.id;
+        itemCopy.floorLevel = fl.level !== undefined ? fl.level : 0;
+        allFurniture.push(itemCopy);
+      });
+
+      fRooms.forEach(function (rm) {
+        var rmCopy = JSON.parse(JSON.stringify(rm));
+        rmCopy.floorId = fl.id;
+        rmCopy.floorName = fl.name || fl.id;
+        allRooms.push(rmCopy);
+      });
+    });
+
+    if (allFurniture.length === 0 && rootFurn.length) {
+      rootFurn.forEach(function (fu) {
+        var itemCopy = JSON.parse(JSON.stringify(fu));
+        itemCopy.floorId = activeFloorId;
+        itemCopy.floorName = (floorMap[activeFloorId] && floorMap[activeFloorId].name) || 'Ground Floor';
+        itemCopy.floorLevel = (floorMap[activeFloorId] && floorMap[activeFloorId].level) || 0;
+        allFurniture.push(itemCopy);
+      });
+      allRooms = plan.rooms || [];
+    }
+
+    var furniture = allFurniture;
+    var rooms = allRooms;
 
     var roomMap = {};
     for (var r = 0; r < rooms.length; r++) {
       roomMap[rooms[r].id] = rooms[r];
     }
 
-    // Associate furniture items with their enclosing room (prioritizing smaller divided rooms, e.g. Pooja Room inside Living Room)
+    // Associate furniture items with their enclosing room on the SAME floor
     for (var fIdx = 0; fIdx < furniture.length; fIdx++) {
       var fu = furniture[fIdx];
       if (fu.pos) {
         var matchingRooms = [];
         for (var rmIdx = 0; rmIdx < rooms.length; rmIdx++) {
-          if (rooms[rmIdx].polygon && Vec2.pointInPolygon(fu.pos, rooms[rmIdx].polygon)) {
-            matchingRooms.push(rooms[rmIdx]);
+          var candRm = rooms[rmIdx];
+          if (candRm.floorId === fu.floorId && candRm.polygon && Vec2.pointInPolygon(fu.pos, candRm.polygon)) {
+            matchingRooms.push(candRm);
           }
         }
         if (matchingRooms.length > 0) {
@@ -15288,7 +15345,10 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // Normalize room filter
+    // Normalize floor and room filters
+    var isFloorFiltered = (selectedFloorId && selectedFloorId !== 'all');
+    var targetFloorId = isFloorFiltered ? selectedFloorId : null;
+
     var isFiltered = false;
     var filterMap = {};
     if (selectedRoomIds && Array.isArray(selectedRoomIds) && selectedRoomIds.length > 0 && selectedRoomIds.indexOf('all') === -1) {
@@ -15298,6 +15358,19 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
+    // Initialize floor breakdown metrics map
+    var floorSummaries = {};
+    floors.forEach(function (fl) {
+      floorSummaries[fl.id] = {
+        id: fl.id,
+        name: fl.name || fl.id,
+        level: fl.level !== undefined ? fl.level : 0,
+        itemCount: 0,
+        woodworkSubtotal: 0,
+        percentShare: 0
+      };
+    });
+
     // Initialize room breakdown metrics map for all detected rooms
     var roomSummaries = {};
     for (var rj = 0; rj < rooms.length; rj++) {
@@ -15306,6 +15379,8 @@ body.role-employee #adminCreateEmpBox,
       roomSummaries[rObj.id] = {
         id: rObj.id,
         name: rObj.name || ('Room ' + (rj + 1)),
+        floorId: rObj.floorId || activeFloorId,
+        floorName: rObj.floorName || 'Ground Floor',
         variant: rmTier,
         areaSqFt: rObj.areaSqFt || 0,
         areaSqM: rObj.areaSqM || 0,
@@ -15319,6 +15394,8 @@ body.role-employee #adminCreateEmpBox,
     roomSummaries['_general'] = {
       id: '_general',
       name: 'General / Unassigned',
+      floorId: activeFloorId,
+      floorName: 'Ground Floor',
       variant: (rateCard.roomTiers && rateCard.roomTiers['_general']) || rateCard.selectedTier || 'zappo - el pearl',
       areaSqFt: 0,
       areaSqM: 0,
@@ -15359,8 +15436,25 @@ body.role-employee #adminCreateEmpBox,
       if (!cost || cost.isDecor) continue;
       cost.roomId = fRoomId;
       cost.roomName = (f.roomId && roomMap[f.roomId]) ? roomMap[f.roomId].name : 'General';
+      cost.floorId = f.floorId || activeFloorId;
+      cost.floorName = f.floorName || (floorMap[cost.floorId] && floorMap[cost.floorId].name) || 'Ground Floor';
+      cost.floorLevel = f.floorLevel !== undefined ? f.floorLevel : ((floorMap[cost.floorId] && floorMap[cost.floorId].level) || 0);
 
       allItemsTotalWoodwork += cost.totalAmount;
+
+      // Update floor metrics
+      if (!floorSummaries[cost.floorId]) {
+        floorSummaries[cost.floorId] = {
+          id: cost.floorId,
+          name: cost.floorName,
+          level: cost.floorLevel,
+          itemCount: 0,
+          woodworkSubtotal: 0,
+          percentShare: 0
+        };
+      }
+      floorSummaries[cost.floorId].itemCount++;
+      floorSummaries[cost.floorId].woodworkSubtotal += cost.totalAmount;
 
       var bId = roomMap[cost.roomId] ? cost.roomId : '_general';
       if (roomSummaries[bId]) {
@@ -15369,8 +15463,9 @@ body.role-employee #adminCreateEmpBox,
         roomSummaries[bId].roomSubtotal += cost.totalAmount;
       }
 
-      var matchesFilter = !isFiltered || filterMap[cost.roomId] || filterMap[cost.roomName];
-      if (matchesFilter) {
+      var matchesFloor = !isFloorFiltered || (cost.floorId === targetFloorId);
+      var matchesRoom = !isFiltered || filterMap[cost.roomId] || filterMap[cost.roomName];
+      if (matchesFloor && matchesRoom) {
         lineItems.push(cost);
         subtotal += cost.totalAmount;
         categoryTotals[cost.category] = (categoryTotals[cost.category] || 0) + cost.totalAmount;
@@ -15378,62 +15473,68 @@ body.role-employee #adminCreateEmpBox,
       }
     }
 
-    // 2. Civil / Architectural Line Items (Optional: False Ceiling, Flooring, Painting from detected rooms)
+    // 2. Civil / Architectural Line Items (Excluded from Quotation Total - zero impact on pricing)
     var civilLineItems = [];
     for (var rm = 0; rm < rooms.length; rm++) {
       var room = rooms[rm];
       if (room.areaSqFt > 0) {
-        var civilMatches = !isFiltered || filterMap[room.id] || filterMap[room.name];
+        var civilFloorMatch = !isFloorFiltered || (room.floorId === targetFloorId);
+        var civilMatches = civilFloorMatch && (!isFiltered || filterMap[room.id] || filterMap[room.name]);
 
-        // Flooring (Opt-in only: room.includeFlooring)
+        // Flooring (Recorded for architectural information only, zero pricing addition)
         if (room.includeFlooring && rateCard.categories.flooring && rateCard.categories.flooring.baseRatePerSft) {
           var floorCost = room.areaSqFt * rateCard.categories.flooring.baseRatePerSft;
-          if (roomSummaries[room.id]) {
-            roomSummaries[room.id].civilSubtotal += floorCost;
-            roomSummaries[room.id].roomSubtotal += floorCost;
-          }
           if (civilMatches) {
             civilLineItems.push({
               name: 'Flooring: ' + room.name,
               category: 'flooring',
               roomName: room.name,
               roomId: room.id,
+              floorId: room.floorId || activeFloorId,
+              floorName: room.floorName || 'Ground Floor',
               areaSft: room.areaSqFt,
               baseRate: rateCard.categories.flooring.baseRatePerSft,
-              totalAmount: floorCost,
-              formulaDescription: room.areaSqFt.toFixed(1) + ' SFT @ ' + rateCard.currencySymbol + rateCard.categories.flooring.baseRatePerSft + '/SFT'
+              totalAmount: 0, // Zero price impact
+              formulaDescription: room.areaSqFt.toFixed(1) + ' SFT (Civil Work Excluded From Woodwork Quote)'
             });
-            subtotal += floorCost;
-            categoryTotals.flooring = (categoryTotals.flooring || 0) + floorCost;
-            roomTotals[room.name] = (roomTotals[room.name] || 0) + floorCost;
           }
         }
 
-        // False Ceiling (if enabled for the room)
+        // False Ceiling (Recorded for architectural information only, zero pricing addition)
         if (room.falseCeiling && rateCard.categories.false_ceiling) {
           var fcCost = room.areaSqFt * rateCard.categories.false_ceiling.baseRatePerSft;
-          if (roomSummaries[room.id]) {
-            roomSummaries[room.id].civilSubtotal += fcCost;
-            roomSummaries[room.id].roomSubtotal += fcCost;
-          }
           if (civilMatches) {
             civilLineItems.push({
               name: 'False Ceiling: ' + room.name,
               category: 'false_ceiling',
               roomName: room.name,
               roomId: room.id,
+              floorId: room.floorId || activeFloorId,
+              floorName: room.floorName || 'Ground Floor',
               areaSft: room.areaSqFt,
               baseRate: rateCard.categories.false_ceiling.baseRatePerSft,
-              totalAmount: fcCost,
-              formulaDescription: room.areaSqFt.toFixed(1) + ' SFT @ ' + rateCard.currencySymbol + rateCard.categories.false_ceiling.baseRatePerSft + '/SFT'
+              totalAmount: 0, // Zero price impact
+              formulaDescription: room.areaSqFt.toFixed(1) + ' SFT (Civil Work Excluded From Woodwork Quote)'
             });
-            subtotal += fcCost;
-            categoryTotals.false_ceiling = (categoryTotals.false_ceiling || 0) + fcCost;
-            roomTotals[room.name] = (roomTotals[room.name] || 0) + fcCost;
           }
         }
       }
     }
+
+    // Compute Floor Summaries array & % Share of Total Project Woodwork
+    var allFloorsSummary = [];
+    var totalWoodworkAllFloors = 0;
+    for (var fKey in floorSummaries) {
+      totalWoodworkAllFloors += floorSummaries[fKey].woodworkSubtotal;
+    }
+    if (totalWoodworkAllFloors <= 0) totalWoodworkAllFloors = 1;
+
+    for (var fKey in floorSummaries) {
+      var flItem = floorSummaries[fKey];
+      flItem.percentShare = Math.round((flItem.woodworkSubtotal / totalWoodworkAllFloors) * 100);
+      allFloorsSummary.push(flItem);
+    }
+    allFloorsSummary.sort(function (a, b) { return a.level - b.level; });
 
     // 3. Labor, Installation & Transport (Zero impact on total)
     var totalWoodworkSft = 0;
@@ -15507,13 +15608,20 @@ body.role-employee #adminCreateEmpBox,
       priceTiers: rateCard.priceTiers || PRICE_TIERS,
       modelRates: rateCard.modelRates || MODEL_RATES_MATRIX,
       selectedRoomIds: selectedRoomIds || ['all'],
+      selectedFloorId: selectedFloorId || 'all',
       isFiltered: isFiltered,
+      isFloorFiltered: isFloorFiltered,
+      allFloorsSummary: allFloorsSummary,
+      floorSummaries: allFloorsSummary,
+      floorTotals: floorSummaries,
       allRoomsSummary: allRoomsSummary,
       furnitureItems: lineItems,
+      items: lineItems,
       civilItems: civilLineItems,
       categoryTotals: categoryTotals,
       roomTotals: roomTotals,
       subtotalWoodwork: subtotal,
+      subtotal: subtotal,
       installCharge: installCharge,
       transportCharge: transportCharge,
       laborTotal: laborTotal,
@@ -43652,8 +43760,11 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       if (!this.selectedBOQRooms) {
         this.selectedBOQRooms = ['all'];
       }
+      if (!this.selectedBOQFloor) {
+        this.selectedBOQFloor = 'all';
+      }
 
-      var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms);
+      var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms, this.selectedBOQFloor);
       var sym = quote.currencySymbol;
       var rateCard = (this.project && this.project.rateCard) || Core.DEFAULT_RATE_CARD;
       var self = this;
@@ -43674,10 +43785,78 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         '<button class="btn" id="boqEditDetailsBtn" style="font-weight:600;border-color:#2563EB;color:#2563EB">✏️ Edit Client Details</button>' +
         '<button class="btn" id="boqLockVersionBtn">Issue Quotation Snapshot</button>' +
         '<button class="btn" id="boqToggleRateCardBtn">Configure Company Rates</button>' +
-        '</div>' +
+        '</div>';
 
-        // ── Room Scope & Filter Bar ──
-        '<div class="boq-room-filter-bar no-print">' +
+      // ── FLOOR PRICING SCOPE & FILTER BAR ──
+      var allFloors = quote.allFloorsSummary || [];
+      var isAllFloors = (!this.selectedBOQFloor || this.selectedBOQFloor === 'all');
+      var totalFloorsWoodwork = allFloors.reduce(function (acc, f) { return acc + (f.woodworkSubtotal || 0); }, 0);
+      var totalFloorsUnits = allFloors.reduce(function (acc, f) { return acc + (f.itemCount || 0); }, 0);
+
+      html += '<div class="boq-floor-filter-bar no-print" style="margin-bottom:12px;padding:10px 14px;background:#F1F5F9;border:1px solid #CBD5E1;border-radius:6px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">' +
+        '<div class="boq-floor-filter-label" style="font-size:13px;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:6px;">' +
+        '<span class="floor-icon">🏢</span> <b>Floor Pricing Scope:</b>' +
+        '</div>' +
+        '<div class="floor-pill-group" style="display:flex;gap:8px;flex-wrap:wrap;">' +
+        '<button class="btn small floor-filter-pill' + (isAllFloors ? ' primary' : '') + '" data-floor="all" style="font-weight:700;padding:5px 12px;border-radius:20px;' + (isAllFloors ? 'background:#08231B;color:#FFF;' : 'background:#FFF;color:#334155;border:1px solid #CBD5E1;') + '">' +
+        '🏛️ All Floors (Total Home) <span style="margin-left:6px;font-size:11px;opacity:0.85;padding:1px 6px;border-radius:10px;background:' + (isAllFloors ? '#1E3A8A' : '#E2E8F0') + ';color:' + (isAllFloors ? '#FFF' : '#0F172A') + '">' + totalFloorsUnits + ' units · ₹ ' + Math.round(totalFloorsWoodwork).toLocaleString('en-IN') + '</span>' +
+        '</button>';
+
+      for (var flIdx = 0; flIdx < allFloors.length; flIdx++) {
+        var fObj = allFloors[flIdx];
+        var isThisFloorActive = !isAllFloors && self.selectedBOQFloor === fObj.id;
+        html += '<button class="btn small floor-filter-pill' + (isThisFloorActive ? ' primary' : '') + '" data-floor="' + fObj.id + '" style="font-weight:700;padding:5px 12px;border-radius:20px;' + (isThisFloorActive ? 'background:#08231B;color:#FFF;' : 'background:#FFF;color:#334155;border:1px solid #CBD5E1;') + '">' +
+          '🏢 ' + fObj.name + ' <span style="margin-left:6px;font-size:11px;opacity:0.85;padding:1px 6px;border-radius:10px;background:' + (isThisFloorActive ? '#1E3A8A' : '#E2E8F0') + ';color:' + (isThisFloorActive ? '#FFF' : '#0F172A') + '">' + fObj.itemCount + ' units · ₹ ' + Math.round(fObj.woodworkSubtotal).toLocaleString('en-IN') + '</span>' +
+          '</button>';
+      }
+      html += '</div></div>';
+
+      // ── FLOOR-WISE PURE MODULAR WOODWORK BREAKDOWN TABLE ──
+      if (allFloors.length > 0) {
+        html += '<div class="boq-floor-summary-card no-print" style="margin-bottom:16px;padding:14px 18px;background:#FFFFFF;border:1px solid #CBD5E1;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">' +
+          '<h4 style="margin:0;font-size:14px;font-weight:800;color:#0F172A;text-transform:uppercase;letter-spacing:0.04em;">🏢 Floor-Wise Pure Modular Woodwork Breakdown</h4>' +
+          '<span style="font-size:11px;font-weight:700;color:#16A34A;background:#DCFCE7;padding:3px 8px;border-radius:4px;">100% Pure Cabinetry (Zero Civil Work)</span>' +
+          '</div>' +
+          '<div style="overflow-x:auto;">' +
+          '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
+          '<thead><tr style="background:#F8FAFC;border-bottom:2px solid #CBD5E1;text-align:left;">' +
+          '<th style="padding:8px 12px;">Floor Level</th>' +
+          '<th style="padding:8px 12px;text-align:center;">Cabinet Units</th>' +
+          '<th style="padding:8px 12px;text-align:right;">Modular Woodwork Total</th>' +
+          '<th style="padding:8px 12px;text-align:center;">% Share</th>' +
+          '<th style="padding:8px 12px;text-align:center;">Scope Filter</th>' +
+          '</tr></thead><tbody>';
+
+        for (var fls = 0; fls < allFloors.length; fls++) {
+          var fRow = allFloors[fls];
+          var isRowActive = !isAllFloors && self.selectedBOQFloor === fRow.id;
+          html += '<tr style="border-bottom:1px solid #E2E8F0;' + (isRowActive ? 'background:#EFF6FF;' : '') + '">' +
+            '<td style="padding:8px 12px;font-weight:700;color:#0F172A;">🏢 ' + fRow.name + '</td>' +
+            '<td style="padding:8px 12px;text-align:center;font-weight:600;color:#475569;">' + fRow.itemCount + ' units</td>' +
+            '<td style="padding:8px 12px;text-align:right;font-family:var(--mono);font-weight:700;color:#1E3A8A;">₹ ' + Math.round(fRow.woodworkSubtotal).toLocaleString('en-IN') + '.00</td>' +
+            '<td style="padding:8px 12px;text-align:center;font-weight:700;color:#16A34A;">' + fRow.percentShare + '%</td>' +
+            '<td style="padding:8px 12px;text-align:center;">' +
+            '<button class="btn small floor-filter-pill" data-floor="' + fRow.id + '" style="font-size:11px;padding:3px 8px;' + (isRowActive ? 'background:#2563EB;color:#FFF;' : '') + '">' +
+            (isRowActive ? '✓ Active' : 'Filter Floor') +
+            '</button>' +
+            '</td>' +
+            '</tr>';
+        }
+
+        html += '<tr style="background:#F1F5F9;font-weight:800;border-top:2px solid #0F172A;">' +
+          '<td style="padding:10px 12px;color:#0F172A;">🏛️ Entire Residence (Combined Total)</td>' +
+          '<td style="padding:10px 12px;text-align:center;">' + totalFloorsUnits + ' units</td>' +
+          '<td style="padding:10px 12px;text-align:right;font-family:var(--mono);color:#08231B;">₹ ' + Math.round(totalFloorsWoodwork).toLocaleString('en-IN') + '.00</td>' +
+          '<td style="padding:10px 12px;text-align:center;color:#16A34A;">100%</td>' +
+          '<td style="padding:10px 12px;text-align:center;">' +
+          '<button class="btn small floor-filter-pill" data-floor="all" style="font-size:11px;padding:3px 8px;' + (isAllFloors ? 'background:#08231B;color:#FFF;' : '') + '">View All</button>' +
+          '</td>' +
+          '</tr></tbody></table></div></div>';
+      }
+
+      // ── Room Scope & Filter Bar ──
+      html += '<div class="boq-room-filter-bar no-print">' +
         '<div class="boq-room-filter-label"><span class="room-icon">🏠</span> <b>Room Pricing Scope:</b></div>' +
         '<div class="room-pill-group">';
 
@@ -43890,6 +44069,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
             '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
             '<span style="font-size:15px">🏠</span><b>Room: ' + rName + '</b>' +
+            (rItems[0] && rItems[0].floorName ? (' &nbsp;<span style="background:#E2E8F0;color:#0F172A;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;">🏢 ' + rItems[0].floorName + '</span>') : '') +
             (rAreaStr ? (' &nbsp;<span style="color:#64748B;font-size:11px">(' + rAreaStr + ')</span>') : '') +
             ' &nbsp;·&nbsp; <span style="color:#2563EB;font-weight:600">' + rItems.length + ' Unit' + (rItems.length === 1 ? '' : 's') + '</span>' +
             ' &nbsp;·&nbsp; <span style="font-size:12px;color:#475569;font-weight:600;">Variant:</span>' +
@@ -43919,6 +44099,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
               '<td class="c-center p-0">' + svgThumb + '</td>' +
               '<td>' +
               '<div class="item-name">' + item.name + '</div>' +
+              (item.floorName ? ('<div style="font-size:11px;font-weight:700;color:#2563EB;margin:1px 0;">🏢 ' + item.floorName + '</div>') : '') +
               '<div class="item-sub">Group: ' + (item.modelLabel || item.modelType || 'WR 2 DOOR SHELF') + '</div>' +
               '<div class="item-sub">Model: ' + item.name + '</div>' +
               '</td>' +
@@ -44507,6 +44688,17 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           self.renderBOQ();
         });
       }
+
+      // Floor filter pill clicks
+      var floorFilterBtns = boqEl.querySelectorAll('.floor-filter-pill');
+      floorFilterBtns.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var fTarget = btn.getAttribute('data-floor') || 'all';
+          self.selectedBOQFloor = fTarget;
+          self.renderBOQ();
+        });
+      });
 
       // Room filter pill clicks & Stat card clicks
       var roomFilterBtns = boqEl.querySelectorAll('.room-filter-pill, .boq-room-select-btn');
@@ -45150,10 +45342,11 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     exportXLSX: async function () {
       var self = this;
       this.sync3DStudioUnits();
-      var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms);
+      var quote = Core.generateFullQuotation(this.project, this.selectedBOQRooms, this.selectedBOQFloor);
       var currentTier = (this.project.rateCard && (Core.normalizeTierName ? Core.normalizeTierName(this.project.rateCard.selectedTier) : this.project.rateCard.selectedTier)) || 'zappo - el pearl';
       var meta = (this.project && this.project.meta) || {};
-      var roomScopeText = quote.isFiltered ? ('Filtered: ' + (self.selectedBOQRooms || []).join(', ')) : 'All Rooms (Entire Home)';
+      var floorScopeText = (this.selectedBOQFloor && this.selectedBOQFloor !== 'all') ? ('Floor: ' + this.selectedBOQFloor + ' · ') : 'All Floors · ';
+      var roomScopeText = quote.isFiltered ? (floorScopeText + 'Filtered: ' + (self.selectedBOQRooms || []).join(', ')) : (floorScopeText + 'All Rooms (Entire Home)');
 
       // UI Button feedback
       var xlsxBtn = document.getElementById('boqXlsxBtn');
@@ -45481,7 +45674,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var rActiveTier = (rFound && rFound.variant) || currentTier;
 
         // Room Header Bar
-        var roomTitleText = '🏠 Room: ' + rName + ' · ' + rItems.length + ' Units · Variant: ' + rActiveTier;
+        var flPrefix = (rItems[0] && rItems[0].floorName) ? ('🏢 ' + rItems[0].floorName + ' · ') : '';
+        var roomTitleText = flPrefix + '🏠 Room: ' + rName + ' · ' + rItems.length + ' Units · Variant: ' + rActiveTier;
         setCell(currRow, 0, roomTitleText, 7);
         for (var rc = 1; rc <= 7; rc++) setCell(currRow, rc, '', 7);
         addMerge(0, currRow, 7, currRow);
@@ -45524,7 +45718,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           setCell(currRow, 0, globalItemIdx, sCenter, 'n');
           setCell(currRow, 1, refCode, sCenter);
           setCell(currRow, 2, '', sCenter);
-          setCell(currRow, 3, it.name + '\nGroup: ' + (it.modelLabel || it.modelType || 'Cabinet') + '\nModel: ' + it.name, sLeft);
+          setCell(currRow, 3, it.name + (it.floorName ? ('\nFloor: 🏢 ' + it.floorName) : '') + '\nGroup: ' + (it.modelLabel || it.modelType || 'Cabinet') + '\nModel: ' + it.name, sLeft);
           setCell(currRow, 4, 'Width: ' + d.W + '\nDepth: ' + d.D + '\nHeight: ' + d.H, sLeft);
           setCell(currRow, 5, it.categoryName || 'Wardrobe', sCenter);
           setCell(currRow, 6, 'Shutter: ' + smat.material + ' (' + smat.finish + ')\nCarcass: ' + cmat.material + ' (' + cmat.finish + ')', sLeft);
@@ -45595,6 +45789,70 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         for (var sh = 1; sh <= 9; sh++) setCell(currRow, sh, '', 17);
         addMerge(0, currRow, 9, currRow);
         setCell(currRow, 10, 0, 18, 'n');
+        rowHeights[currRow] = 24;
+        currRow++;
+
+        currRow++; // Spacing row
+      }
+
+      // --- SECTION 2.5: FLOOR-WISE MODULAR WOODWORK BREAKDOWN ---
+      if (quote.allFloorsSummary && quote.allFloorsSummary.length > 1) {
+        setCell(currRow, 0, '2.5. Floor-Wise Modular Woodwork Breakdown (Pure Cabinetry Only)', 5);
+        for (var fwc = 1; fwc <= 10; fwc++) setCell(currRow, fwc, '', 5);
+        addMerge(0, currRow, 10, currRow);
+        rowHeights[currRow] = 24;
+        currRow++;
+
+        setCell(currRow, 0, 'Floor Name', 6);
+        for (var fn = 1; fn <= 3; fn++) setCell(currRow, fn, '', 6);
+        addMerge(0, currRow, 3, currRow);
+
+        setCell(currRow, 4, 'Level', 6);
+        setCell(currRow, 5, 'Modular Units', 6);
+
+        setCell(currRow, 6, 'Share of Total', 6);
+        for (var fsh = 7; fsh <= 7; fsh++) setCell(currRow, fsh, '', 6);
+        addMerge(6, currRow, 7, currRow);
+
+        setCell(currRow, 8, 'Woodwork Subtotal (INR)', 6);
+        for (var fst = 9; fst <= 10; fst++) setCell(currRow, fst, '', 6);
+        addMerge(8, currRow, 10, currRow);
+        rowHeights[currRow] = 22;
+        currRow++;
+
+        for (var flIdx = 0; flIdx < quote.allFloorsSummary.length; flIdx++) {
+          var flSummary = quote.allFloorsSummary[flIdx];
+          var isFZebra = (flIdx % 2 === 1);
+          var sFLCenter = isFZebra ? 13 : 9;
+          var sFLLeft = isFZebra ? 14 : 10;
+          var sFLNum = isFZebra ? 15 : 11;
+          var sFLCur = isFZebra ? 16 : 12;
+
+          setCell(currRow, 0, '🏢 ' + flSummary.name, sFLLeft);
+          for (var fls = 1; fls <= 3; fls++) setCell(currRow, fls, '', sFLLeft);
+          addMerge(0, currRow, 3, currRow);
+
+          setCell(currRow, 4, 'Level ' + flSummary.level, sFLCenter);
+          setCell(currRow, 5, flSummary.itemCount + ' Units', sFLCenter);
+
+          setCell(currRow, 6, flSummary.percentShare + '%', sFLCenter);
+          setCell(currRow, 7, '', sFLCenter);
+          addMerge(6, currRow, 7, currRow);
+
+          setCell(currRow, 8, Math.round(flSummary.woodworkSubtotal), sFLCur, 'n');
+          for (var fla = 9; fla <= 10; fla++) setCell(currRow, fla, '', sFLCur);
+          addMerge(8, currRow, 10, currRow);
+
+          rowHeights[currRow] = 22;
+          currRow++;
+        }
+
+        setCell(currRow, 0, 'TOTAL MODULAR WOODWORK (ALL FLOORS)', 17);
+        for (var ft = 1; ft <= 7; ft++) setCell(currRow, ft, '', 17);
+        addMerge(0, currRow, 7, currRow);
+        setCell(currRow, 8, Math.round(quote.subtotalWoodwork), 18, 'n');
+        for (var fta = 9; fta <= 10; fta++) setCell(currRow, fta, '', 18);
+        addMerge(8, currRow, 10, currRow);
         rowHeights[currRow] = 24;
         currRow++;
 
