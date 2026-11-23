@@ -222,6 +222,14 @@
 
       var targetProjectId = String(self.activeProjectId);
       var normalizedAction = self._normalizeActionName(action);
+      var actLower = normalizedAction.toLowerCase();
+      var isImmediate = self._isDestructiveAction(normalizedAction) ||
+        actLower.indexOf('place') !== -1 ||
+        actLower.indexOf('delete') !== -1 ||
+        actLower.indexOf('add') !== -1 ||
+        actLower.indexOf('drop') !== -1 ||
+        actLower.indexOf('switch') !== -1;
+      var debounceMs = isImmediate ? 250 : 800;
 
       clearTimeout(self.broadcastDebounceTimer);
       self.broadcastDebounceTimer = setTimeout(function () {
@@ -252,20 +260,24 @@
         var ts = (currentPlan && currentPlan._lastModified) ? Number(currentPlan._lastModified) : Date.now();
         if (currentPlan && !currentPlan._lastModified) currentPlan._lastModified = ts;
 
+        var broadcastPlan = (root.OrbixProjects && typeof root.OrbixProjects._stripHeavyLocalData === 'function')
+          ? root.OrbixProjects._stripHeavyLocalData(currentPlan)
+          : currentPlan;
+
         try {
           self.socket.send(JSON.stringify({
             type: 'project_change',
             projectId: targetProjectId,
             clientId: self.clientId,
             action: normalizedAction,
-            plan: currentPlan,
+            plan: broadcastPlan,
             units: currentUnits,
             timestamp: ts
           }));
         } catch (e) {
           console.warn('[LiveSync] Broadcast error:', e);
         }
-      }, 100);
+      }, debounceMs);
     },
 
     handleMessage: function (msg) {

@@ -369,12 +369,15 @@ class ProjectService {
         const isAccidentalTotalWipe = !!(existingStats.totalElements > 0 && incomingStats.totalElements === 0 && !allowDestructive);
 
         if (isCrossProjectLeak || isStaleTimestamp || isAccidentalWallWipe || isAccidentalFurnWipe || isAccidentalTotalWipe) {
-          const reason = isCrossProjectLeak
-            ? `cross-project mismatch (${incomingPlanId} != ${id})`
-            : isStaleTimestamp
-              ? `stale snapshot (${incomingStats.lastModified} < ${existingStats.lastModified})`
+          if (isStaleTimestamp) {
+            // Benign timestamp collision between concurrent REST and WS sync: retain existing fresher DB state cleanly
+            console.log(`[ProjectService] Kept fresher database snapshot for ${id} (DB: ${existingStats.lastModified} >= incoming: ${incomingStats.lastModified})`);
+          } else {
+            const reason = isCrossProjectLeak
+              ? `cross-project mismatch (${incomingPlanId} != ${id})`
               : `unintentional empty wipe (existing: ${existingStats.walls} walls, ${existingStats.furniture} units; incoming: ${incomingStats.walls} walls, ${incomingStats.furniture} units)`;
-          console.warn(`[ProjectService] Protected project ${id} from destructive plan overwrite: ${reason}`);
+            console.warn(`[ProjectService] Protected project ${id} from destructive plan overwrite: ${reason}`);
+          }
           mergedData.plan = existingData.plan;
           if (existingData.units !== undefined) {
             mergedData.units = existingData.units;

@@ -194,7 +194,7 @@ class LiveSyncService {
               const incomingTs = Number(timestamp || (plan && plan._lastModified) || 0) || Date.now();
               const prevTs = this.lastTimestampByProject.get(projectId) || 0;
               if (prevTs > 0 && incomingTs < prevTs) {
-                console.warn(`[LiveSync] Ignored stale out-of-order change for ${projectId} (${incomingTs} < ${prevTs})`);
+                // Benign out-of-order socket packet: discard older snapshot quietly
                 return;
               }
               this.lastTimestampByProject.set(projectId, incomingTs);
@@ -324,10 +324,9 @@ class LiveSyncService {
         const incomingStats = countPlanElements(plan, units);
         const isExplicitClear = isExplicitDestructiveAction(action);
 
-        // Stale-timestamp guard: never let an older WebSocket debounce overwrite a newer HTTP PUT save
+        // Stale-timestamp guard: if authoritative HTTP PUT or peer save has already persisted equal or newer state, gracefully exit
         const incomingMod = incomingStats.lastModified || Number(timestamp || 0) || 0;
-        if (existingStats.lastModified > 0 && incomingMod > 0 && incomingMod < existingStats.lastModified) {
-          console.warn(`[LiveSync] Skipped stale DB save for ${projectId} (${incomingMod} < ${existingStats.lastModified}).`);
+        if (existingStats.lastModified > 0 && incomingMod > 0 && incomingMod <= existingStats.lastModified) {
           return;
         }
 
@@ -370,7 +369,7 @@ class LiveSyncService {
       } catch (err) {
         console.warn(`[LiveSync] Database persistence notice for ${projectId}:`, err.message);
       }
-    }, 800);
+    }, 6000);
 
     this.saveDebounceTimers.set(projectId, timer);
   }

@@ -612,10 +612,7 @@
             allowEmptyPlan: isDestructive
           });
         }
-        if (typeof window !== 'undefined' && window.OrbixLiveSync && typeof window.OrbixLiveSync.broadcastChange === 'function') {
-          window.OrbixLiveSync.broadcastChange(act);
-        }
-      }, delayMs !== undefined ? delayMs : 250);
+      }, delayMs !== undefined ? delayMs : 1200);
     },
 
     flushAutoSave: function () {

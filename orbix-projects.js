@@ -418,24 +418,33 @@
     _stripHeavyLocalData: function (planObj) {
       if (!planObj || typeof planObj !== 'object') return planObj;
       try {
-        var copy = JSON.parse(JSON.stringify(planObj));
-        var scrubUnderlay = function (u) {
-          if (u && typeof u === 'object' && typeof u.dataUrl === 'string' && u.dataUrl.length > 32000) {
-            u.dataUrl = '';
-            u._storedInIDB = true;
-          }
+        var needsScrub = false;
+        var checkUnderlay = function (u) {
+          return u && typeof u === 'object' && typeof u.dataUrl === 'string' && u.dataUrl.length > 32000;
         };
-        if (copy.plan && typeof copy.plan === 'object') {
-          scrubUnderlay(copy.plan.underlay);
-          if (copy.plan.floorsData && typeof copy.plan.floorsData === 'object') {
-            for (var fk in copy.plan.floorsData) {
-              if (Object.prototype.hasOwnProperty.call(copy.plan.floorsData, fk) && copy.plan.floorsData[fk]) {
-                scrubUnderlay(copy.plan.floorsData[fk].underlay);
+        if (checkUnderlay(planObj.underlay)) needsScrub = true;
+        if (!needsScrub && planObj.plan && typeof planObj.plan === 'object') {
+          if (checkUnderlay(planObj.plan.underlay)) needsScrub = true;
+          if (!needsScrub && planObj.plan.floorsData) {
+            for (var fk in planObj.plan.floorsData) {
+              if (checkUnderlay(planObj.plan.floorsData[fk] && planObj.plan.floorsData[fk].underlay)) {
+                needsScrub = true;
+                break;
               }
             }
           }
-        } else {
-          scrubUnderlay(copy.underlay);
+        }
+        // ZERO MAIN-THREAD FREEZE: If no heavy underlay data is embedded, return reference immediately
+        if (!needsScrub) return planObj;
+
+        var copy = Object.assign({}, planObj);
+        if (copy.plan && typeof copy.plan === 'object') {
+          copy.plan = Object.assign({}, copy.plan);
+          if (checkUnderlay(copy.plan.underlay)) {
+            copy.plan.underlay = Object.assign({}, copy.plan.underlay, { dataUrl: '', _storedInIDB: true });
+          }
+        } else if (checkUnderlay(copy.underlay)) {
+          copy.underlay = Object.assign({}, copy.underlay, { dataUrl: '', _storedInIDB: true });
         }
         return copy;
       } catch (_) {
@@ -2381,13 +2390,10 @@
           : { plan: currentPlan, units: currentUnits, details: detailsObj };
         var pStats = self._countPlanElements({ data: pData });
 
-        // Clone snapshot at dispatch time so later mutations never half-mutate the JSON being sent
-        var snapshotData;
-        try { snapshotData = JSON.parse(JSON.stringify(pData)); } catch (_) { snapshotData = pData; }
-
+        // Dispatch server save directly (JSON.stringify in apiFetch serializes the exact snapshot without blocking main thread)
         self._dispatchServerSave({
           activeId: String(activeId),
-          data: snapshotData,
+          data: pData,
           unitsCount: pStats.furniture,
           changeAction: finalAction,
           allowEmptyPlan: finalAllowEmpty,
@@ -2404,7 +2410,7 @@
         this._saveDebounce = setTimeout(function () {
           self._saveDebounce = null;
           scheduleRun();
-        }, 400);
+        }, 1000);
       }
     },
 
