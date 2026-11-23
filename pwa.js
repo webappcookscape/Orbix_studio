@@ -7,10 +7,10 @@
 
   var deferredPrompt = null;
 
-  // 1. Register Service Worker
-  if ('serviceWorker' in navigator) {
+  // 1. Register Service Worker (web browsers only, not file:// in desktop app)
+  if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=24')
+      navigator.serviceWorker.register('./sw.js?v=25')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 

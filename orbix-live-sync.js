@@ -63,10 +63,13 @@
         return;
       }
 
-      var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      var host = window.location.host;
-      if (!host) return;
-      var wsUrl = protocol + '//' + host + '/ws';
+      var wsUrl = '';
+      if (!window.location.host || window.location.protocol === 'file:') {
+        wsUrl = 'wss://studio.orbixdesigns.com/ws';
+      } else {
+        var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsUrl = protocol + '//' + window.location.host + '/ws';
+      }
 
       try {
         self.socket = new WebSocket(wsUrl);

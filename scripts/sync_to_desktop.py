@@ -19,7 +19,19 @@ files_to_copy = [
     "orbix-decors-catalog.js",
     "orbix-unit-icons.js",
     "orbix-projects.js",
-    "style.css"
+    "orbix-live-sync.js",
+    "orbix-client-quote.js",
+    "orbix-a4-drawings.js",
+    "orbix-dado-textures.js",
+    "orbix-floor-textures.js",
+    "orbix-countertop-textures.js",
+    "pwa.js",
+    "sw.js",
+    "units_data.json",
+    "units.csv",
+    "style.css",
+    "electron-main.js",
+    "electron-preload.js"
 ]
 
 for target in targets:

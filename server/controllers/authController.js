@@ -19,20 +19,21 @@ class AuthController {
 
   // GET /api/me
   getCurrentUser(req, res) {
-    if (!req.user || !req.session || !req.session.userId) {
+    if (!req.user) {
       return res.status(401).json({ success: false, error: 'Not authenticated' });
     }
-    if (req.session.loginExpiresAt && Date.now() > Number(req.session.loginExpiresAt)) {
+    if (req.session && req.session.loginExpiresAt && Date.now() > Number(req.session.loginExpiresAt)) {
       if (typeof req.session.destroy === 'function') {
         req.session.destroy(() => {});
       }
       res.clearCookie('orbix.sid', { path: '/' });
       return res.status(401).json({ success: false, error: 'Session expired. Please sign in again.' });
     }
+    const expiresAt = (req.session && req.session.loginExpiresAt) || (Date.now() + SESSION_DURATION_MS);
     res.json({
       success: true,
       user: req.user,
-      sessionExpiresAt: req.session.loginExpiresAt || (Date.now() + SESSION_DURATION_MS)
+      sessionExpiresAt: expiresAt
     });
   }
 

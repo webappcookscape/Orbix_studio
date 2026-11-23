@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, session } = require('electron');
 const path = require('path');
 
 // High-performance discrete/integrated GPU acceleration for 3D CAD & WebGL rendering
@@ -9,7 +9,40 @@ app.commandLine.appendSwitch('high-dpi-support', '1');
 
 let mainWindow = null;
 
+function setupNetworkInterceptors() {
+  const filter = {
+    urls: ['https://*/*', 'http://*/*']
+  };
+
+  session.defaultSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
+    const url = details.url || '';
+    if (url.includes('orbixdesigns.com') || url.includes('localhost') || url.includes('127.0.0.1')) {
+      details.requestHeaders['Origin'] = 'https://studio.orbixdesigns.com';
+      details.requestHeaders['Referer'] = 'https://studio.orbixdesigns.com/';
+    }
+    callback({ requestHeaders: details.requestHeaders });
+  });
+
+  session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
+    const url = details.url || '';
+    const responseHeaders = Object.assign({}, details.responseHeaders);
+
+    if (url.includes('orbixdesigns.com') || url.includes('localhost') || url.includes('127.0.0.1')) {
+      responseHeaders['Access-Control-Allow-Origin'] = ['*'];
+      responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
+      responseHeaders['Access-Control-Allow-Methods'] = ['GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH'];
+      responseHeaders['Access-Control-Allow-Headers'] = ['*'];
+      delete responseHeaders['x-frame-options'];
+      delete responseHeaders['X-Frame-Options'];
+    }
+
+    callback({ responseHeaders });
+  });
+}
+
 function createWindow() {
+  setupNetworkInterceptors();
+
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
