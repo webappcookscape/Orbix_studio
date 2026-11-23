@@ -170,6 +170,7 @@ const extraOrigins = (process.env.ALLOWED_ORIGINS || '')
 
 function isAllowedOrigin(origin) {
   if (!origin) return true; // Same-origin or non-browser client
+  if (origin === 'null' || origin.startsWith('file://') || origin.startsWith('vscode-file://')) return true;
   try {
     const u = new URL(origin);
     const host = (u.hostname || '').toLowerCase();
@@ -182,7 +183,7 @@ function isAllowedOrigin(origin) {
 
 app.use(cors({
   origin: (origin, cb) => {
-    if (isAllowedOrigin(origin)) return cb(null, true);
+    if (isAllowedOrigin(origin)) return cb(null, origin || true);
     return cb(null, false);
   },
   credentials: true
@@ -214,8 +215,9 @@ if (session) {
   });
 }
 
-// ── Session User Hydration Middleware (Strictly session-authenticated, 3-day expiry) ──
+// ── Session User Hydration Middleware (Strictly session-authenticated, 3-day expiry + Desktop header fallback) ──
 app.use(async (req, res, next) => {
+  let userId = null;
   if (req.session && req.session.userId) {
     if (req.session.loginExpiresAt && Date.now() > Number(req.session.loginExpiresAt)) {
       try {
@@ -233,9 +235,14 @@ app.use(async (req, res, next) => {
       req.user = null;
       return next();
     }
+    userId = req.session.userId;
+  } else if (req.headers['x-user-id']) {
+    userId = req.headers['x-user-id'];
+  }
 
+  if (userId) {
     try {
-      const user = await userService.getUserById(req.session.userId);
+      const user = await userService.getUserById(userId);
       if (user) {
         req.user = user;
         req.sessionAuthenticated = true;

@@ -36,7 +36,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=24">
+  <link rel="stylesheet" href="style.css?v=25">
 
   <!-- ══════ FULL AUTH / LOGIN SCREEN ══════ -->
   <div id="authScreen" class="auth-screen" style="display:flex;">
@@ -71,6 +71,16 @@
 
         <button type="submit" class="btn primary big auth-submit-btn" id="authScreenSubmitBtn">
           Sign In to Workspace
+        </button>
+
+        <div style="display:flex;align-items:center;justify-content:center;margin:14px 0 8px;gap:10px;">
+          <span style="height:1px;background:#334155;flex:1;"></span>
+          <span style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;">Or</span>
+          <span style="height:1px;background:#334155;flex:1;"></span>
+        </div>
+
+        <button type="button" class="btn secondary big" id="authOfflineBtn" style="width:100%;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:8px;background:#1E293B;border:1px solid #334155;color:#E2E8F0;font-weight:600;padding:11px;border-radius:8px;cursor:pointer;">
+          <span>💻</span> Continue in Offline / Local Mode
         </button>
       </form>
     </div>
@@ -2093,60 +2103,21 @@
 
   <script src="assets/three.min.js"></script>
   <script src="assets/GLTFLoader.js"></script>
-  <script>
-    // Lazy-loader for heavy texture packs & A4 drawings (keeps initial page boot ~2 MB lighter on web; instant no-op when inlined in single-file bundle)
-    window.OrbixLazyLoader = (function () {
-      var loaded = {};
-      function loadScript(src) {
-        if (loaded[src]) return loaded[src];
-        loaded[src] = new Promise(function (resolve) {
-          var s = document.createElement('script');
-          s.src = src;
-          s.async = true;
-          s.onload = function () { resolve(true); };
-          s.onerror = function () { console.warn('[OrbixLazyLoader] Failed to load:', src); resolve(false); };
-          document.body.appendChild(s);
-        });
-        return loaded[src];
-      }
-      var api = {
-        load3DTextures: function () {
-          var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=24'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=24'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=24'));
-          return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
-        },
-        loadA4Drawings: function () {
-          if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=24');
-        }
-      };
-      // Gently warm 3D texture packs in the background after initial page load completes
-      if (typeof window !== 'undefined') {
-        window.addEventListener('load', function () {
-          var warm = function () { api.load3DTextures(); };
-          if (typeof window.requestIdleCallback === 'function') {
-            window.requestIdleCallback(warm, { timeout: 6000 });
-          } else {
-            setTimeout(warm, 3500);
-          }
-        });
-      }
-      return api;
-    })();
-  </script>
-  <script src="orbix-unit-icons.js?v=24"></script>
-  <script src="orbix-projects.js?v=24"></script>
-  <script src="orbix-live-sync.js?v=24"></script>
-  <script src="orbix-decors-catalog.js?v=24"></script>
-  <script src="orbix-core.js?v=24"></script>
-  <script src="orbix-plan.js?v=24"></script>
-  <script src="orbix-3d.js?v=24"></script>
-  <script src="orbix-ui.js?v=24"></script>
-  <script src="orbix-client-quote.js?v=24"></script>
-  <script src="app.js?v=24"></script>
-  <script src="pwa.js?v=24"></script>
+  <script src="orbix-unit-icons.js?v=25"></script>
+  <script src="orbix-projects.js?v=25"></script>
+  <script src="orbix-live-sync.js?v=25"></script>
+  <script src="orbix-decors-catalog.js?v=25"></script>
+  <script src="orbix-core.js?v=25"></script>
+  <script src="orbix-plan.js?v=25"></script>
+  <script src="orbix-dado-textures.js?v=25"></script>
+  <script src="orbix-floor-textures.js?v=25"></script>
+  <script src="orbix-countertop-textures.js?v=25"></script>
+  <script src="orbix-3d.js?v=25"></script>
+  <script src="orbix-ui.js?v=25"></script>
+  <script src="orbix-client-quote.js?v=25"></script>
+  <script src="orbix-a4-drawings.js?v=25"></script>
+  <script src="app.js?v=25"></script>
+  <script src="pwa.js?v=25"></script>
   <!-- ARTIFACT-END -->
 </body>
 

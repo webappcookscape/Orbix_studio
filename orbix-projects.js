@@ -227,11 +227,16 @@
       }
 
       if (!OrbixProjects.currentUser || (typeof OrbixProjects.isLocalSessionValid === 'function' && !OrbixProjects.isLocalSessionValid())) {
-        try { this.updateUrl('login', true); } catch (_) { }
-        if (typeof OrbixProjects.showLogin === 'function') {
-          OrbixProjects.showLogin();
+        if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+          var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+          OrbixProjects.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+        } else {
+          try { this.updateUrl('login', true); } catch (_) { }
+          if (typeof OrbixProjects.showLogin === 'function') {
+            OrbixProjects.showLogin();
+          }
+          return;
         }
-        return;
       }
 
       if (v === 'users') {
@@ -285,11 +290,17 @@
     dispatchInitialRoute: function () {
       var isAuth = !!(OrbixProjects.currentUser && (typeof OrbixProjects.isLocalSessionValid !== 'function' || OrbixProjects.isLocalSessionValid()));
       if (!isAuth) {
-        this.updateUrl('login', true);
-        if (typeof OrbixProjects.showLogin === 'function') {
-          OrbixProjects.showLogin();
+        if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+          var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+          OrbixProjects.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+          isAuth = true;
+        } else {
+          this.updateUrl('login', true);
+          if (typeof OrbixProjects.showLogin === 'function') {
+            OrbixProjects.showLogin();
+          }
+          return;
         }
-        return;
       }
 
       var v = this.initialTargetView || this.getInitialView();
@@ -591,6 +602,11 @@
         var exp = Number(expRaw);
         if (!parsed || !parsed.id || !exp || isNaN(exp)) return false;
         if (Date.now() > exp) {
+          if (parsed.id === 'usr_local') {
+            // Indefinite renewal for local offline desktop sessions
+            localStorage.setItem('orbix_session_expires_at', String(Date.now() + (365 * 24 * 60 * 60 * 1000)));
+            return true;
+          }
           localStorage.removeItem('orbix_current_user');
           localStorage.removeItem('orbix_session_expires_at');
           return false;
@@ -650,6 +666,14 @@
                   self.saveActiveProject();
                 }
               } else {
+                if (self.currentUser && self.currentUser.id === 'usr_local') {
+                  self._cloudSyncPaused = true;
+                  return;
+                }
+                if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+                  self._cloudSyncPaused = true;
+                  return;
+                }
                 self.currentUser = null;
                 self._isUnauthorized = true;
                 self._cloudSyncPaused = true;
@@ -658,6 +682,15 @@
               }
             });
           } else if (r.status === 401) {
+            if (self.currentUser && self.currentUser.id === 'usr_local') {
+              self._cloudSyncPaused = true;
+              return;
+            }
+            if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+              console.warn('[OrbixProjects] Cloud session unauthenticated; continuing in local desktop mode.');
+              self._cloudSyncPaused = true;
+              return;
+            }
             self.currentUser = null;
             self._isUnauthorized = true;
             self._cloudSyncPaused = true;
@@ -668,6 +701,8 @@
             if (self.isLocalSessionValid()) {
               self.showApp();
               self.updateUserUI();
+            } else if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+              self.showApp();
             } else {
               self.currentUser = null;
               self.clearAuthStorage();
@@ -680,6 +715,8 @@
           if (self.isLocalSessionValid()) {
             self.showApp();
             self.updateUserUI();
+          } else if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+            self.showApp();
           } else {
             self.currentUser = null;
             self.clearAuthStorage();
@@ -694,9 +731,14 @@
     loadAfterAuth: function () {
       var self = this;
       if (!this.currentUser || !this.isLocalSessionValid()) {
-        this.showLogin();
-        OrbixRouter.updateUrl('login', true);
-        return;
+        if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+          var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+          this.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+        } else {
+          this.showLogin();
+          OrbixRouter.updateUrl('login', true);
+          return;
+        }
       }
       this.applyRolePermissions();
       this.fetchUsers(function () {
@@ -798,6 +840,13 @@
     loadCachedUser: function () {
       try {
         if (!this.isLocalSessionValid()) {
+          if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+            var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+            this.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+            this.showApp();
+            this.updateUserUI();
+            return;
+          }
           this.currentUser = null;
           this.clearAuthStorage();
           this.showLogin();
@@ -813,7 +862,7 @@
             this.showLogin();
             return;
           }
-          if (this.currentUser.id === 'usr_admin') {
+          if (this.currentUser.id === 'usr_admin' || this.currentUser.id === 'usr_local') {
             this.currentUser.role = 'admin';
           } else if (!this.currentUser.role || (this.currentUser.role !== 'admin' && this.currentUser.role !== 'employee')) {
             this.currentUser.role = 'employee';
@@ -821,10 +870,24 @@
           this.showApp();
           this.updateUserUI();
         } else {
+          if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+            var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+            this.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+            this.showApp();
+            this.updateUserUI();
+            return;
+          }
           this.currentUser = null;
           this.showLogin();
         }
       } catch (e) {
+        if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+          var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+          this.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+          this.showApp();
+          this.updateUserUI();
+          return;
+        }
         this.currentUser = null;
         this.clearAuthStorage();
         this.showLogin();
@@ -848,6 +911,10 @@
         if (errAlert) errAlert.style.display = 'none';
         var idInput = document.getElementById('authIdentifier');
         if (idInput) setTimeout(function () { idInput.focus(); }, 100);
+        var closeAuthBtn = document.getElementById('closeAuthScreenBtn');
+        if (closeAuthBtn && (window.OrbixDesktop || (window.location && window.location.protocol === 'file:') || (this.currentUser && this.isLocalSessionValid()))) {
+          closeAuthBtn.style.display = 'block';
+        }
       }
     },
 
@@ -1048,7 +1115,7 @@
 
     fetchDBStatus: function () {
       var self = this;
-      fetch('/api/status')
+      OrbixProjects.apiFetch('/api/status')
         .then(function (r) { return r.json(); })
         .then(function (data) {
           self.dbStatus = data.db;
@@ -3193,8 +3260,17 @@
                 submitBtn.textContent = 'Sign In to Workspace';
               }
               if (errAlert) {
-                errAlert.textContent = 'Unable to reach authentication server. Please verify connection and try again.';
+                errAlert.innerHTML = 'Unable to reach authentication server.<br><button type="button" id="authErrorOfflineBtn" style="margin-top:8px;background:#2563EB;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;">💻 Continue in Offline Mode</button>';
                 errAlert.style.display = 'block';
+                var errOfflineBtn = document.getElementById('authErrorOfflineBtn');
+                if (errOfflineBtn) {
+                  errOfflineBtn.onclick = function () {
+                    var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+                    self.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+                    self.showApp();
+                    if (root.OrbixRouter) root.OrbixRouter.navigateTo('home', true);
+                  };
+                }
               }
             });
         });
@@ -3203,8 +3279,28 @@
       var closeAuthBtn = document.getElementById('closeAuthScreenBtn');
       if (closeAuthBtn) {
         closeAuthBtn.addEventListener('click', function () {
-          if (self.currentUser && self.isLocalSessionValid()) {
-            self.showApp();
+          if (!self.currentUser || !self.isLocalSessionValid()) {
+            var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+            self.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+          }
+          self.showApp();
+          if (root.OrbixRouter) {
+            root.OrbixRouter.navigateTo('home', true);
+          }
+        });
+      }
+
+      var offlineBtn = document.getElementById('authOfflineBtn');
+      if (offlineBtn) {
+        offlineBtn.addEventListener('click', function () {
+          var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+          self.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+          self.showApp();
+          if (root.OrbixRouter) {
+            root.OrbixRouter.navigateTo('home', true);
+          }
+          if (typeof showToast === 'function') {
+            showToast('✓ Working in Offline / Local Mode (Full CAD features enabled)');
           }
         });
       }
