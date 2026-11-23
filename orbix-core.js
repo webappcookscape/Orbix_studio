@@ -6833,11 +6833,11 @@
     "modelType": "wall_paneling",
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
-    "areaSqft": 1.291669806,
+    "areaSqft": 1.20556,
     "icon": "🪵",
     "dimensions": {
       "W": 18,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -6881,11 +6881,11 @@
     "modelType": "wall_paneling",
     "category": "wall_paneling",
     "costCategory": "Wall Paneling",
-    "areaSqft": 0.484376,
+    "areaSqft": 0.452085,
     "icon": "🪵",
     "dimensions": {
       "W": 60,
-      "H": 750,
+      "H": 700,
       "D": 18
     },
     "materials": {
