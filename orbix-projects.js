@@ -198,10 +198,14 @@
         }
         var canonical = this.VIEW_TO_PATH[view] || ('/' + view);
         if (window.location && window.location.pathname.toLowerCase() !== canonical.toLowerCase()) {
-          if (replace) {
+          if (replace || (typeof window.history.length === 'number' && window.history.length <= 1)) {
             window.history.replaceState({ view: view }, '', canonical);
           } else {
-            window.history.pushState({ view: view }, '', canonical);
+            try {
+              window.history.pushState({ view: view }, '', canonical);
+            } catch (_) {
+              try { window.history.replaceState({ view: view }, '', canonical); } catch (e) { }
+            }
           }
         }
       } catch (err) {
@@ -439,6 +443,8 @@
       }
     },
 
+    _lastQuotaWarn: 0,
+
     _safeLocalSet: function (key, valueStr) {
       if (typeof localStorage === 'undefined') return false;
       try {
@@ -461,7 +467,11 @@
           localStorage.setItem(key, valueStr);
           return true;
         } catch (err2) {
-          console.warn('[OrbixProjects] localStorage quota full for key ' + key + ':', err2 && err2.message ? err2.message : err2);
+          var now = Date.now();
+          if (!this._lastQuotaWarn || (now - this._lastQuotaWarn > 10000)) {
+            this._lastQuotaWarn = now;
+            console.warn('[OrbixProjects] localStorage quota full for key ' + key + ':', err2 && err2.message ? err2.message : err2);
+          }
           return false;
         }
       }
@@ -471,15 +481,36 @@
       if (!this.projects || !this.currentUser) return;
       try {
         var self = this;
+        var uId = this.currentUser.id || 'anon';
         var lightList = this.projects.map(function (p) {
-          if (!p || !p.data || !p.data.plan) return p;
-          return Object.assign({}, p, {
-            data: Object.assign({}, p.data, {
-              plan: self._stripHeavyLocalData(p.data.plan)
-            })
-          });
-        });
-        this._safeLocalSet('orbix_local_projects_' + this.currentUser.id, JSON.stringify(lightList));
+          if (!p) return null;
+          var details = (p.data && p.data.details) ? p.data.details : null;
+          return {
+            id: p.id,
+            title: p.title || p.name || 'Untitled Project',
+            name: p.name || p.title || 'Untitled Project',
+            client: p.client || (p.meta && p.meta.clientName) || (details && (details.clientName || details.client)) || '',
+            owner_name: p.owner_name || p.ownerName || '',
+            owner_email: p.owner_email || p.ownerEmail || '',
+            created_by: p.created_by || p.createdBy || '',
+            created_at: p.created_at || p.createdAt || '',
+            updated_at: p.updated_at || p.updatedAt || '',
+            units_count: p.units_count !== undefined ? p.units_count : (p.unitsCount || 0),
+            boards_est: p.boards_est !== undefined ? p.boards_est : (p.boardsEst || 0),
+            is_shared: !!p.is_shared,
+            fork_count: p.fork_count || 0,
+            contact_number: p.contact_number || (details && (details.contactNumber || details.phone)) || '',
+            location: p.location || (details && (details.location || details.siteAddress)) || '',
+            bh_name: p.bh_name || (details && (details.bhName || details.designerName)) || '',
+            date_time: p.date_time || (details && details.dateTime) || '',
+            cp_code: p.cp_code || (details && (details.cpCode || details.quoteId)) || '',
+            type: p.type || '',
+            data: {
+              details: details
+            }
+          };
+        }).filter(Boolean);
+        this._safeLocalSet('orbix_local_projects_' + uId, JSON.stringify(lightList));
       } catch (_) { }
     },
 
@@ -1187,10 +1218,7 @@
           })
         }).then(function () {
           delete p._needsVpsPush;
-          var uId = self.currentUser ? self.currentUser.id : 'anon';
-          try {
-            localStorage.setItem('orbix_local_projects_' + uId, JSON.stringify(self.projects));
-          } catch (e) { }
+          self._persistLightweightProjectList();
         }).catch(function () { });
       });
     },
@@ -2401,10 +2429,7 @@
         copy._needsVpsPush = true;
         self.projects = self.projects || [];
         self.projects.unshift(copy);
-        var uId = self.currentUser ? self.currentUser.id : 'anon';
-        try {
-          localStorage.setItem('orbix_local_projects_' + uId, JSON.stringify(self.projects));
-        } catch (e) { }
+        self._persistLightweightProjectList();
         self.renderProjectsList();
         self.openProject(newId);
         self.showCopyNotification(original.title, copy.title);
@@ -2430,10 +2455,7 @@
             var newP = data.project || data;
             self.projects = self.projects || [];
             self.projects.unshift(newP);
-            var uId = self.currentUser ? self.currentUser.id : 'anon';
-            try {
-              localStorage.setItem('orbix_local_projects_' + uId, JSON.stringify(self.projects));
-            } catch (e) { }
+            self._persistLightweightProjectList();
             self.renderProjectsList();
             self.openProject(newP.id);
             self.showCopyNotification(original.title, newP.title);
@@ -2869,8 +2891,8 @@
 
                 // Initialize fresh local draft for this new project (clears old project units)
                 var uId = self.currentUser ? self.currentUser.id : 'anon';
+                self._persistLightweightProjectList();
                 try {
-                  localStorage.setItem('orbix_local_projects_' + uId, JSON.stringify(self.projects));
                   localStorage.setItem('orbix_active_proj_' + uId, newProj.id);
                   localStorage.setItem('orbix_active_project_id', newProj.id);
                   var projDraftKey = 'orbix_project_' + uId + '_' + newProj.id;

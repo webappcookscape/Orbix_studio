@@ -4677,10 +4677,7 @@
         }
       }
       if (this.project) this.project.units_count = furnList.length;
-      this.saveToLocalStorage();
-      if (root.OrbixProjects && typeof root.OrbixProjects.saveActiveProject === 'function') {
-        root.OrbixProjects.saveActiveProject({ plan: this.project });
-      }
+      this.queueAutoSave(400, 'sync_units');
       if (this.editor) this.editor.render();
       if (this.render3DHome) this.render3DHome(true);
       if (window.S && window.S.units && window.S.units[window.S.active]) {
