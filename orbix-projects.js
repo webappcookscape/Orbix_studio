@@ -559,7 +559,11 @@
     apiFetch: function (url, options) {
       var self = this;
       options = options || {};
-      options.credentials = 'include';
+      if (typeof window !== 'undefined' && (window.location.protocol === 'file:' || window.OrbixDesktop)) {
+        options.credentials = 'omit';
+      } else {
+        options.credentials = 'include';
+      }
       if (!options.headers) {
         options.headers = {};
       }

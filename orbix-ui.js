@@ -6051,7 +6051,8 @@
 
       var self = this;
       if (typeof fetch === 'function' && !self._serverAIKeyConfigured && window.OrbixProjects && window.OrbixProjects.currentUser) {
-        fetch('/api/ai/config', { credentials: 'include' }).then(function (res) {
+        var apiFn = (window.OrbixProjects && typeof window.OrbixProjects.apiFetch === 'function') ? window.OrbixProjects.apiFetch.bind(window.OrbixProjects) : fetch;
+        apiFn('/api/ai/config', { credentials: 'include' }).then(function (res) {
           if (res.ok) return res.json();
         }).then(function (data) {
           if (data && data.configured) {
@@ -6177,7 +6178,8 @@
 
       // Check server AI configuration when authenticated without fetching or persisting raw API keys
       if (typeof fetch === 'function' && window.OrbixProjects && window.OrbixProjects.currentUser) {
-        fetch('/api/ai/config', { credentials: 'include' }).then(function (res) {
+        var apiFn2 = (window.OrbixProjects && typeof window.OrbixProjects.apiFetch === 'function') ? window.OrbixProjects.apiFetch.bind(window.OrbixProjects) : fetch;
+        apiFn2('/api/ai/config', { credentials: 'include' }).then(function (res) {
           if (res.ok) return res.json();
         }).then(function (data) {
           if (data && data.configured) {
@@ -6306,7 +6308,8 @@
 
             // Prefer authenticated server-side AI proxy so server keys never leave the backend
             var data = null;
-            var srvRes = await fetch('/api/ai/render', {
+            var renderApiFn = (window.OrbixProjects && typeof window.OrbixProjects.apiFetch === 'function') ? window.OrbixProjects.apiFetch.bind(window.OrbixProjects) : fetch;
+            var srvRes = await renderApiFn('/api/ai/render', {
               method: 'POST',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },

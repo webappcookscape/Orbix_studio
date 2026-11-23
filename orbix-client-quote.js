@@ -33,6 +33,13 @@
     return '₹ ' + n.toLocaleString('en-IN');
   }
 
+  function apiCall(url, opts) {
+    if (root.OrbixProjects && typeof root.OrbixProjects.apiFetch === 'function') {
+      return root.OrbixProjects.apiFetch(url, opts);
+    }
+    return fetch(url, opts);
+  }
+
   function randomPassword() {
     var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
     var out = 'CS-';
@@ -509,7 +516,7 @@
         btn.textContent = '⏳ Generating Head Review Link...';
         try {
           var payload = await gatherReviewPayload();
-          var res = await fetch('/api/client-quotes/review', {
+          var res = await apiCall('/api/client-quotes/review', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
@@ -562,7 +569,7 @@
       btnEl.textContent = format === 'pdf' ? '⏳ Building PDF...' : '⏳ Building PPTX...';
       try {
         var endpoint = '/api/client-quotes/' + encodeURIComponent(quoteId) + (format === 'pdf' ? '/export-pdf' : '/export-pptx');
-        var res = await fetch(endpoint, { method: 'POST', credentials: 'same-origin' });
+        var res = await apiCall(endpoint, { method: 'POST', credentials: 'same-origin' });
         if (!res.ok) {
           var errJson = await res.json().catch(function () { return {}; });
           throw new Error(errJson.error || (format.toUpperCase() + ' export failed'));
@@ -591,7 +598,7 @@
       var listEl = body.querySelector('#cqExistingList');
       if (!listEl) return;
       try {
-        var res = await fetch('/api/client-quotes/project/' + encodeURIComponent(projectId), {
+        var res = await apiCall('/api/client-quotes/project/' + encodeURIComponent(projectId), {
           credentials: 'same-origin',
           cache: 'no-store'
         });
@@ -721,7 +728,7 @@
             this.disabled = true;
             this.textContent = '⏳ Activating...';
             try {
-              var r = await fetch('/api/client-quotes/' + encodeURIComponent(qId) + '/activate-client-link', {
+              var r = await apiCall('/api/client-quotes/' + encodeURIComponent(qId) + '/activate-client-link', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
@@ -777,7 +784,7 @@
           b.addEventListener('click', async function () {
             var qId = this.getAttribute('data-id');
             var curRev = this.getAttribute('data-revoked') === '1';
-            await fetch('/api/client-quotes/' + encodeURIComponent(qId), {
+            await apiCall('/api/client-quotes/' + encodeURIComponent(qId), {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'same-origin',
@@ -856,7 +863,7 @@
             var origText = btn.innerText;
             btn.innerText = 'Saving...';
             try {
-              var r = await fetch('/api/client-quotes/' + encodeURIComponent(qId), {
+              var r = await apiCall('/api/client-quotes/' + encodeURIComponent(qId), {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
@@ -897,7 +904,7 @@
           b.addEventListener('click', async function () {
             if (!confirm('Delete this quotation link permanently?')) return;
             var qId = this.getAttribute('data-id');
-            await fetch('/api/client-quotes/' + encodeURIComponent(qId), {
+            await apiCall('/api/client-quotes/' + encodeURIComponent(qId), {
               method: 'DELETE',
               credentials: 'same-origin'
             });
