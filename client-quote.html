@@ -767,36 +767,43 @@
         for (var r = 0; r < rows.length; r++) {
           var row = rows[r];
           var isHeader = r < headerRows;
-          ctx.font = (isHeader ? 'bold ' : '') + fontSize + 'px "Segoe UI", Arial, sans-serif';
+          var rFont = (!isHeader && row._fontSize) ? row._fontSize : fontSize;
+          var rValFont = (!isHeader && row._valFontSize) ? row._valFontSize : rFont;
+          var rPadY = (!isHeader && row._padY) ? row._padY : padY;
+          var rLineH = Math.round(Math.max(rFont, rValFont) * 1.38);
+          var isRowBold = isHeader || !!row._highlight || !!row._bold;
 
           var cellWrapped = [];
           var maxLines = 1;
           for (var c = 0; c < colWidths.length; c++) {
             var val = row[c] !== undefined ? String(row[c]) : '';
-            ctx.font = (isHeader || (c === 0 && opts.boldFirstCol))
-              ? ('bold ' + fontSize + 'px "Segoe UI", Arial, sans-serif')
-              : (fontSize + 'px "Segoe UI", Arial, sans-serif');
+            var cFont = (c === colWidths.length - 1) ? rValFont : rFont;
+            ctx.font = (isRowBold || (c === 0 && opts.boldFirstCol))
+              ? ('bold ' + cFont + 'px "Segoe UI", Arial, sans-serif')
+              : (cFont + 'px "Segoe UI", Arial, sans-serif');
             var wrapped = wrapLines(ctx, val, Math.max(28, colWidths[c] - padX * 2));
             cellWrapped.push(wrapped);
             if (wrapped.length > maxLines) maxLines = wrapped.length;
           }
 
-          var rowH = maxLines * lineH + padY * 2;
+          var rowH = maxLines * rLineH + rPadY * 2;
           if (y + rowH > CANVAS_H - 60) break;
 
           var bg = isHeader ? (opts.headerBg || '#C00000') : (r % 2 === 0 ? '#FFFDF9' : '#FAF6F0');
-          if (row._highlight) bg = '#FEF9C3';
+          if (row._highlight) bg = '#FEF3C7';
           if (row._bg) bg = row._bg;
 
           ctx.fillStyle = bg;
           ctx.fillRect(x, y, width, rowH);
-          ctx.strokeStyle = '#D2C6B6';
-          ctx.lineWidth = 1;
+          ctx.strokeStyle = row._borderColor || (row._highlight ? '#C00000' : '#D2C6B6');
+          ctx.lineWidth = row._borderWidth || (row._highlight ? 2 : 1);
           ctx.strokeRect(x, y, width, rowH);
 
           var cx = x;
           for (var c2 = 0; c2 < colWidths.length; c2++) {
             if (c2 > 0) {
+              ctx.strokeStyle = row._borderColor || '#D2C6B6';
+              ctx.lineWidth = 1;
               ctx.beginPath();
               ctx.moveTo(cx, y);
               ctx.lineTo(cx, y + rowH);
@@ -804,15 +811,20 @@
             }
             var lines = cellWrapped[c2];
             var isRight = opts.rightAlignCols && opts.rightAlignCols.indexOf(c2) !== -1 && !isHeader;
-            var defColor = row._accent && c2 === colWidths.length - 1 ? '#C00000' : (row._textColor || '#08231B');
+            var isLastCol = (c2 === colWidths.length - 1);
+            var cFont2 = isLastCol ? rValFont : rFont;
+            var defColor = isLastCol
+              ? (row._valColor || (row._accent ? '#C00000' : (row._textColor || '#08231B')))
+              : (row._textColor || '#08231B');
             ctx.fillStyle = isHeader ? '#FFFFFF' : defColor;
-            ctx.font = (isHeader || (c2 === 0 && opts.boldFirstCol) || row._highlight)
-              ? ('bold ' + fontSize + 'px "Segoe UI", Arial, sans-serif')
-              : (fontSize + 'px "Segoe UI", Arial, sans-serif');
+            ctx.font = (isRowBold || (c2 === 0 && opts.boldFirstCol))
+              ? ('bold ' + cFont2 + 'px "Segoe UI", Arial, sans-serif')
+              : (cFont2 + 'px "Segoe UI", Arial, sans-serif');
             ctx.textAlign = isRight ? 'right' : 'left';
             var tx = isRight ? (cx + colWidths[c2] - padX) : (cx + padX);
+            var baseOffsetY = y + (rowH - lines.length * rLineH) / 2 + cFont2 * 0.86;
             for (var li = 0; li < lines.length; li++) {
-              ctx.fillText(lines[li], tx, y + padY + fontSize + li * lineH - 2);
+              ctx.fillText(lines[li], tx, baseOffsetY + li * rLineH);
             }
             cx += colWidths[c2];
           }
@@ -1196,13 +1208,33 @@
           var wwAfter = comm.woodworkAfterDiscount !== undefined
             ? Number(comm.woodworkAfterDiscount)
             : Math.max(0, Math.round((Number(comm.woodworkSubtotal) || 0) - (Number(comm.discountAmount) || 0)));
-          cRows.push(['Discount on Wood Work', fmtINR(wwAfter)]);
+          var wwDiscRow = ['Discount on Wood Work', fmtINR(wwAfter)];
+          wwDiscRow._bg = '#FFF4E5';
+          wwDiscRow._borderColor = '#EA580C';
+          wwDiscRow._borderWidth = 1.4;
+          wwDiscRow._textColor = '#9A3412';
+          wwDiscRow._valColor = '#C2410C';
+          wwDiscRow._bold = true;
+          wwDiscRow._fontSize = 15;
+          wwDiscRow._valFontSize = 16;
+          wwDiscRow._padY = 10;
+          cRows.push(wwDiscRow);
         }
         if (Number(comm.adpAmount || 0) > 0) {
           var dcAfter = comm.designAfterDiscount !== undefined
             ? Number(comm.designAfterDiscount)
             : Math.max(0, Math.round((Number(comm.designAmount) || 0) - (Number(comm.adpAmount) || 0)));
-          cRows.push(['Discount on Design Charge', fmtINR(dcAfter)]);
+          var dcDiscRow = ['Discount on Design Charge', fmtINR(dcAfter)];
+          dcDiscRow._bg = '#FFF4E5';
+          dcDiscRow._borderColor = '#EA580C';
+          dcDiscRow._borderWidth = 1.4;
+          dcDiscRow._textColor = '#9A3412';
+          dcDiscRow._valColor = '#C2410C';
+          dcDiscRow._bold = true;
+          dcDiscRow._fontSize = 15;
+          dcDiscRow._valFontSize = 16;
+          dcDiscRow._padY = 10;
+          cRows.push(dcDiscRow);
         }
         cRows.push(['Grand Total (Without GST)', fmtINR(comm.netBeforeTax || 0)]);
         if (gstEnabled) {
@@ -1216,6 +1248,14 @@
         var grandRow = [finalTitle, fmtINR(comm.grandTotal || 0)];
         grandRow._highlight = true;
         grandRow._accent = true;
+        grandRow._bg = '#FEF3C7';
+        grandRow._borderColor = '#C00000';
+        grandRow._borderWidth = 2.2;
+        grandRow._textColor = '#08231B';
+        grandRow._valColor = '#C00000';
+        grandRow._fontSize = 17;
+        grandRow._valFontSize = 21;
+        grandRow._padY = 12;
         cRows.push(grandRow);
 
         y = drawTable(ctx, cRows, 54, y, CANVAS_W - 108, [0.70, 0.30], {
@@ -1227,17 +1267,18 @@
         });
 
         var totalSavings = Number(comm.totalSavings !== undefined ? comm.totalSavings : ((Number(comm.discountAmount) || 0) + (Number(comm.adpAmount) || 0)));
-        if (y + 52 < CANVAS_H - 140) {
+        if (y + 58 < CANVAS_H - 140) {
           y += 14;
-          drawRoundedRect(ctx, 54, y, CANVAS_W - 108, 44, 8, '#ECFDF5', '#16A34A', 1.6);
-          ctx.fillStyle = '#166534';
-          ctx.font = 'bold 14.5px "Segoe UI", Arial, sans-serif';
-          ctx.fillText('YOUR SAVINGS', 74, y + 27);
+          drawRoundedRect(ctx, 54, y, CANVAS_W - 108, 52, 9, '#DCFCE7', '#16A34A', 2.2);
+          ctx.fillStyle = '#14532D';
+          ctx.font = 'bold 16.5px "Segoe UI", Arial, sans-serif';
+          ctx.fillText('YOUR SAVINGS', 74, y + 32);
           ctx.textAlign = 'right';
-          ctx.font = 'bold 16px "Segoe UI", Arial, sans-serif';
-          ctx.fillText(fmtINR(totalSavings), CANVAS_W - 74, y + 27);
+          ctx.fillStyle = '#15803D';
+          ctx.font = 'bold 20px "Segoe UI", Arial, sans-serif';
+          ctx.fillText(fmtINR(totalSavings), CANVAS_W - 74, y + 33);
           ctx.textAlign = 'left';
-          y += 50;
+          y += 58;
         }
 
         // ── ADD-ONS, ACCESSORIES & APPLIANCES (DOWN AFTER YOUR SAVINGS) ──

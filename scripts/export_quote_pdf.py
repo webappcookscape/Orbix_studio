@@ -32,7 +32,15 @@ C_WHITE = (1.0, 1.0, 1.0)
 C_ALT = (250 / 255.0, 246 / 255.0, 240 / 255.0)
 C_BORDER = (210 / 255.0, 198 / 255.0, 182 / 255.0)
 C_MUTED = (71 / 255.0, 85 / 255.0, 105 / 255.0)
-C_GOLD = (254 / 255.0, 249 / 255.0, 195 / 255.0)
+C_GOLD = (254 / 255.0, 243 / 255.0, 199 / 255.0)
+C_DISC_BG = (255 / 255.0, 244 / 255.0, 229 / 255.0)
+C_DISC_BORDER = (234 / 255.0, 88 / 255.0, 12 / 255.0)
+C_DISC_TEXT = (154 / 255.0, 52 / 255.0, 18 / 255.0)
+C_DISC_VAL = (194 / 255.0, 65 / 255.0, 12 / 255.0)
+C_SAVE_BG = (220 / 255.0, 252 / 255.0, 231 / 255.0)
+C_SAVE_BORDER = (22 / 255.0, 163 / 255.0, 74 / 255.0)
+C_SAVE_TEXT = (20 / 255.0, 83 / 255.0, 45 / 255.0)
+C_SAVE_VAL = (21 / 255.0, 128 / 255.0, 61 / 255.0)
 
 
 def normalize_tier_key(raw):
@@ -297,48 +305,86 @@ def draw_frame_header(pdf, ops, used_assets, logo_asset, logo_rect, title, subti
 def draw_table_ops(ops, rows, x, y, total_w, col_ratios, font_size=8.2, header_fill=C_CRIMSON, right_cols=None, bold_first=False, pad_y=4.5):
     right_cols = set(right_cols or [])
     col_ws = [total_w * r for r in col_ratios]
-    line_h = font_size * 1.28
 
     for r_idx, row in enumerate(rows):
         is_hdr = (r_idx == 0)
         is_hl = False
         is_accent = False
+        is_bold_row = False
+        custom_bg = None
+        custom_border = None
+        custom_lw = None
+        custom_text_color = None
+        custom_val_color = None
+        r_font = font_size
+        r_val_font = font_size
+        r_pad_y = pad_y
         cells = row
         if isinstance(row, dict):
             cells = row.get('cells', [])
             is_hl = bool(row.get('highlight'))
             is_accent = bool(row.get('accent'))
+            is_bold_row = bool(row.get('bold')) or is_hl
+            custom_bg = row.get('bg')
+            custom_border = row.get('border')
+            custom_lw = row.get('lw')
+            custom_text_color = row.get('text_color')
+            custom_val_color = row.get('val_color')
+            if row.get('font_size'):
+                r_font = float(row['font_size'])
+            r_val_font = float(row.get('val_font_size') or r_font)
+            if row.get('pad_y'):
+                r_pad_y = float(row['pad_y'])
+
+        line_h = max(r_font, r_val_font) * 1.28
 
         wrapped = []
         max_lines = 1
         for c_idx in range(len(col_ws)):
             raw_val = cells[c_idx] if c_idx < len(cells) else ''
-            ls = wrap_text(raw_val, col_ws[c_idx] - 10, font_size, bold=(is_hdr or is_hl or (c_idx == 0 and bold_first)))
+            c_fs = r_val_font if (c_idx == len(col_ws) - 1 and not is_hdr) else r_font
+            ls = wrap_text(raw_val, col_ws[c_idx] - 10, c_fs, bold=(is_hdr or is_bold_row or (c_idx == 0 and bold_first)))
             wrapped.append(ls)
             max_lines = max(max_lines, len(ls))
 
-        row_h = max(18.0, max_lines * line_h + pad_y * 2)
+        row_h = max(18.0, max_lines * line_h + r_pad_y * 2)
         if y + row_h > PAGE_H - 36:
             break
 
         if is_hdr:
             bg = header_fill
+        elif custom_bg is not None:
+            bg = custom_bg
         elif is_hl:
             bg = C_GOLD
         else:
             bg = C_WHITE if r_idx % 2 == 1 else C_ALT
 
-        ops.append(op_rect(x, y, total_w, row_h, fill=bg, stroke=(C_CRIMSON if is_hl else C_BORDER), lw=(1.0 if is_hl else 0.5)))
+        stroke_c = custom_border if custom_border is not None else (C_CRIMSON if is_hl else C_BORDER)
+        stroke_lw = custom_lw if custom_lw is not None else (1.3 if is_hl else 0.5)
+        ops.append(op_rect(x, y, total_w, row_h, fill=bg, stroke=stroke_c, lw=stroke_lw))
 
         cx = x
         for c_idx, cw in enumerate(col_ws):
             if c_idx > 0:
-                ops.append(op_rect(cx, y, 0.5, row_h, fill=C_BORDER))
-            fnt = 'F2' if (is_hdr or is_hl or (c_idx == 0 and bold_first)) else 'F1'
-            clr = C_WHITE if is_hdr else (C_CRIMSON if (is_accent and c_idx == len(col_ws) - 1) else C_FOREST)
+                ops.append(op_rect(cx, y, 0.5, row_h, fill=(custom_border or C_BORDER)))
+            is_last_col = (c_idx == len(col_ws) - 1)
+            c_fs = r_val_font if (is_last_col and not is_hdr) else r_font
+            fnt = 'F2' if (is_hdr or is_bold_row or (c_idx == 0 and bold_first)) else 'F1'
+            if is_hdr:
+                clr = C_WHITE
+            elif is_last_col and custom_val_color is not None:
+                clr = custom_val_color
+            elif is_last_col and is_accent:
+                clr = C_CRIMSON
+            elif custom_text_color is not None:
+                clr = custom_text_color
+            else:
+                clr = C_FOREST
             algn = 'r' if (c_idx in right_cols and not is_hdr) else 'l'
+            text_y_start = y + (row_h - len(wrapped[c_idx]) * line_h) / 2.0 + (line_h - c_fs) * 0.35
             for li, line in enumerate(wrapped[c_idx]):
-                ops.append(op_text(line, cx + 5, y + pad_y + li * line_h, size=font_size, color=clr, font=fnt, align=algn, box_w=cw - 10))
+                ops.append(op_text(line, cx + 5, text_y_start + li * line_h, size=c_fs, color=clr, font=fnt, align=algn, box_w=cw - 10))
             cx += cw
 
         y += row_h
@@ -581,12 +627,34 @@ def build_pdf(payload, out_path):
             ww_after = comm.get('woodworkAfterDiscount')
             if ww_after is None:
                 ww_after = max(0, round(float(comm.get('woodworkSubtotal') or 0) - float(comm.get('discountAmount') or 0)))
-            c_rows.append(['Discount on Wood Work', fmt_inr(ww_after)])
+            c_rows.append({
+                'cells': ['Discount on Wood Work', fmt_inr(ww_after)],
+                'bg': C_DISC_BG,
+                'border': C_DISC_BORDER,
+                'lw': 0.9,
+                'text_color': C_DISC_TEXT,
+                'val_color': C_DISC_VAL,
+                'bold': True,
+                'font_size': 9.8,
+                'val_font_size': 10.4,
+                'pad_y': 6.2
+            })
         if float(comm.get('adpAmount') or 0) > 0:
             dc_after = comm.get('designAfterDiscount')
             if dc_after is None:
                 dc_after = max(0, round(float(comm.get('designAmount') or 0) - float(comm.get('adpAmount') or 0)))
-            c_rows.append(['Discount on Design Charge', fmt_inr(dc_after)])
+            c_rows.append({
+                'cells': ['Discount on Design Charge', fmt_inr(dc_after)],
+                'bg': C_DISC_BG,
+                'border': C_DISC_BORDER,
+                'lw': 0.9,
+                'text_color': C_DISC_TEXT,
+                'val_color': C_DISC_VAL,
+                'bold': True,
+                'font_size': 9.8,
+                'val_font_size': 10.4,
+                'pad_y': 6.2
+            })
         c_rows.append(['Grand Total (Without GST)', fmt_inr(comm.get('netBeforeTax', 0))])
         if gst_enabled:
             c_rows.append(['GST', fmt_inr(comm.get('gstAmount', 0))])
@@ -595,12 +663,31 @@ def build_pdf(payload, out_path):
         c_rows.append({
             'cells': [final_lbl, fmt_inr(comm.get('grandTotal', vq.get('grandTotal', 0)))],
             'highlight': True,
-            'accent': True
+            'accent': True,
+            'bg': C_GOLD,
+            'border': C_CRIMSON,
+            'lw': 1.5,
+            'text_color': C_FOREST,
+            'val_color': C_CRIMSON,
+            'font_size': 11.2,
+            'val_font_size': 13.2,
+            'pad_y': 8.0
         })
         total_savings = comm.get('totalSavings')
         if total_savings is None:
             total_savings = float(comm.get('discountAmount') or 0) + float(comm.get('adpAmount') or 0)
-        c_rows.append(['YOUR SAVINGS', fmt_inr(total_savings)])
+        c_rows.append({
+            'cells': ['YOUR SAVINGS', fmt_inr(total_savings)],
+            'bg': C_SAVE_BG,
+            'border': C_SAVE_BORDER,
+            'lw': 1.3,
+            'text_color': C_SAVE_TEXT,
+            'val_color': C_SAVE_VAL,
+            'bold': True,
+            'font_size': 10.6,
+            'val_font_size': 12.4,
+            'pad_y': 7.5
+        })
 
         y = draw_table_ops(ops, c_rows, 30, y, PAGE_W - 60, [0.70, 0.30], font_size=8.8, header_fill=C_CRIMSON, right_cols={1}, bold_first=False, pad_y=5.5) + 14.0
         if y < PAGE_H - 55:
