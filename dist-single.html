@@ -4492,6 +4492,16 @@ body.role-employee #adminCreateEmpBox,
         <button type="submit" class="btn primary big auth-submit-btn" id="authScreenSubmitBtn">
           Sign In to Workspace
         </button>
+
+        <div style="display:flex;align-items:center;justify-content:center;margin:14px 0 8px;gap:10px;">
+          <span style="height:1px;background:#334155;flex:1;"></span>
+          <span style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;">Or</span>
+          <span style="height:1px;background:#334155;flex:1;"></span>
+        </div>
+
+        <button type="button" class="btn secondary big" id="authOfflineBtn" style="width:100%;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:8px;background:#1E293B;border:1px solid #334155;color:#E2E8F0;font-weight:600;padding:11px;border-radius:8px;cursor:pointer;">
+          <span>💻</span> Continue in Offline / Local Mode
+        </button>
       </form>
     </div>
   </div>
@@ -6532,14 +6542,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=24'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=24'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=24'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=26'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=26'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=26'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=24');
+          return loadScript('orbix-a4-drawings.js?v=26');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -6926,11 +6936,16 @@ body.role-employee #adminCreateEmpBox,
       }
 
       if (!OrbixProjects.currentUser || (typeof OrbixProjects.isLocalSessionValid === 'function' && !OrbixProjects.isLocalSessionValid())) {
-        try { this.updateUrl('login', true); } catch (_) { }
-        if (typeof OrbixProjects.showLogin === 'function') {
-          OrbixProjects.showLogin();
+        if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+          var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+          OrbixProjects.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+        } else {
+          try { this.updateUrl('login', true); } catch (_) { }
+          if (typeof OrbixProjects.showLogin === 'function') {
+            OrbixProjects.showLogin();
+          }
+          return;
         }
-        return;
       }
 
       if (v === 'users') {
@@ -6984,11 +6999,17 @@ body.role-employee #adminCreateEmpBox,
     dispatchInitialRoute: function () {
       var isAuth = !!(OrbixProjects.currentUser && (typeof OrbixProjects.isLocalSessionValid !== 'function' || OrbixProjects.isLocalSessionValid()));
       if (!isAuth) {
-        this.updateUrl('login', true);
-        if (typeof OrbixProjects.showLogin === 'function') {
-          OrbixProjects.showLogin();
+        if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+          var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+          OrbixProjects.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+          isAuth = true;
+        } else {
+          this.updateUrl('login', true);
+          if (typeof OrbixProjects.showLogin === 'function') {
+            OrbixProjects.showLogin();
+          }
+          return;
         }
-        return;
       }
 
       var v = this.initialTargetView || this.getInitialView();
@@ -7247,7 +7268,11 @@ body.role-employee #adminCreateEmpBox,
     apiFetch: function (url, options) {
       var self = this;
       options = options || {};
-      options.credentials = 'include';
+      if (typeof window !== 'undefined' && (window.location.protocol === 'file:' || window.OrbixDesktop)) {
+        options.credentials = 'omit';
+      } else {
+        options.credentials = 'include';
+      }
       if (!options.headers) {
         options.headers = {};
       }
@@ -7290,6 +7315,11 @@ body.role-employee #adminCreateEmpBox,
         var exp = Number(expRaw);
         if (!parsed || !parsed.id || !exp || isNaN(exp)) return false;
         if (Date.now() > exp) {
+          if (parsed.id === 'usr_local') {
+            // Indefinite renewal for local offline desktop sessions
+            localStorage.setItem('orbix_session_expires_at', String(Date.now() + (365 * 24 * 60 * 60 * 1000)));
+            return true;
+          }
           localStorage.removeItem('orbix_current_user');
           localStorage.removeItem('orbix_session_expires_at');
           return false;
@@ -7349,6 +7379,14 @@ body.role-employee #adminCreateEmpBox,
                   self.saveActiveProject();
                 }
               } else {
+                if (self.currentUser && self.currentUser.id === 'usr_local') {
+                  self._cloudSyncPaused = true;
+                  return;
+                }
+                if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+                  self._cloudSyncPaused = true;
+                  return;
+                }
                 self.currentUser = null;
                 self._isUnauthorized = true;
                 self._cloudSyncPaused = true;
@@ -7357,6 +7395,15 @@ body.role-employee #adminCreateEmpBox,
               }
             });
           } else if (r.status === 401) {
+            if (self.currentUser && self.currentUser.id === 'usr_local') {
+              self._cloudSyncPaused = true;
+              return;
+            }
+            if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+              console.warn('[OrbixProjects] Cloud session unauthenticated; continuing in local desktop mode.');
+              self._cloudSyncPaused = true;
+              return;
+            }
             self.currentUser = null;
             self._isUnauthorized = true;
             self._cloudSyncPaused = true;
@@ -7367,6 +7414,8 @@ body.role-employee #adminCreateEmpBox,
             if (self.isLocalSessionValid()) {
               self.showApp();
               self.updateUserUI();
+            } else if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+              self.showApp();
             } else {
               self.currentUser = null;
               self.clearAuthStorage();
@@ -7379,6 +7428,8 @@ body.role-employee #adminCreateEmpBox,
           if (self.isLocalSessionValid()) {
             self.showApp();
             self.updateUserUI();
+          } else if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+            self.showApp();
           } else {
             self.currentUser = null;
             self.clearAuthStorage();
@@ -7393,9 +7444,14 @@ body.role-employee #adminCreateEmpBox,
     loadAfterAuth: function () {
       var self = this;
       if (!this.currentUser || !this.isLocalSessionValid()) {
-        this.showLogin();
-        OrbixRouter.updateUrl('login', true);
-        return;
+        if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+          var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+          this.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+        } else {
+          this.showLogin();
+          OrbixRouter.updateUrl('login', true);
+          return;
+        }
       }
       this.applyRolePermissions();
       this.fetchUsers(function () {
@@ -7497,6 +7553,13 @@ body.role-employee #adminCreateEmpBox,
     loadCachedUser: function () {
       try {
         if (!this.isLocalSessionValid()) {
+          if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+            var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+            this.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+            this.showApp();
+            this.updateUserUI();
+            return;
+          }
           this.currentUser = null;
           this.clearAuthStorage();
           this.showLogin();
@@ -7512,7 +7575,7 @@ body.role-employee #adminCreateEmpBox,
             this.showLogin();
             return;
           }
-          if (this.currentUser.id === 'usr_admin') {
+          if (this.currentUser.id === 'usr_admin' || this.currentUser.id === 'usr_local') {
             this.currentUser.role = 'admin';
           } else if (!this.currentUser.role || (this.currentUser.role !== 'admin' && this.currentUser.role !== 'employee')) {
             this.currentUser.role = 'employee';
@@ -7520,10 +7583,24 @@ body.role-employee #adminCreateEmpBox,
           this.showApp();
           this.updateUserUI();
         } else {
+          if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+            var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+            this.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+            this.showApp();
+            this.updateUserUI();
+            return;
+          }
           this.currentUser = null;
           this.showLogin();
         }
       } catch (e) {
+        if (window.OrbixDesktop || (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')) {
+          var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+          this.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+          this.showApp();
+          this.updateUserUI();
+          return;
+        }
         this.currentUser = null;
         this.clearAuthStorage();
         this.showLogin();
@@ -7547,6 +7624,10 @@ body.role-employee #adminCreateEmpBox,
         if (errAlert) errAlert.style.display = 'none';
         var idInput = document.getElementById('authIdentifier');
         if (idInput) setTimeout(function () { idInput.focus(); }, 100);
+        var closeAuthBtn = document.getElementById('closeAuthScreenBtn');
+        if (closeAuthBtn && (window.OrbixDesktop || (window.location && window.location.protocol === 'file:') || (this.currentUser && this.isLocalSessionValid()))) {
+          closeAuthBtn.style.display = 'block';
+        }
       }
     },
 
@@ -7747,7 +7828,7 @@ body.role-employee #adminCreateEmpBox,
 
     fetchDBStatus: function () {
       var self = this;
-      fetch('/api/status')
+      OrbixProjects.apiFetch('/api/status')
         .then(function (r) { return r.json(); })
         .then(function (data) {
           self.dbStatus = data.db;
@@ -9892,8 +9973,17 @@ body.role-employee #adminCreateEmpBox,
                 submitBtn.textContent = 'Sign In to Workspace';
               }
               if (errAlert) {
-                errAlert.textContent = 'Unable to reach authentication server. Please verify connection and try again.';
+                errAlert.innerHTML = 'Unable to reach authentication server.<br><button type="button" id="authErrorOfflineBtn" style="margin-top:8px;background:#2563EB;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;">💻 Continue in Offline Mode</button>';
                 errAlert.style.display = 'block';
+                var errOfflineBtn = document.getElementById('authErrorOfflineBtn');
+                if (errOfflineBtn) {
+                  errOfflineBtn.onclick = function () {
+                    var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+                    self.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+                    self.showApp();
+                    if (root.OrbixRouter) root.OrbixRouter.navigateTo('home', true);
+                  };
+                }
               }
             });
         });
@@ -9902,8 +9992,28 @@ body.role-employee #adminCreateEmpBox,
       var closeAuthBtn = document.getElementById('closeAuthScreenBtn');
       if (closeAuthBtn) {
         closeAuthBtn.addEventListener('click', function () {
-          if (self.currentUser && self.isLocalSessionValid()) {
-            self.showApp();
+          if (!self.currentUser || !self.isLocalSessionValid()) {
+            var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+            self.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+          }
+          self.showApp();
+          if (root.OrbixRouter) {
+            root.OrbixRouter.navigateTo('home', true);
+          }
+        });
+      }
+
+      var offlineBtn = document.getElementById('authOfflineBtn');
+      if (offlineBtn) {
+        offlineBtn.addEventListener('click', function () {
+          var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+          self.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+          self.showApp();
+          if (root.OrbixRouter) {
+            root.OrbixRouter.navigateTo('home', true);
+          }
+          if (typeof showToast === 'function') {
+            showToast('✓ Working in Offline / Local Mode (Full CAD features enabled)');
           }
         });
       }
@@ -10503,10 +10613,13 @@ body.role-employee #adminCreateEmpBox,
         return;
       }
 
-      var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      var host = window.location.host;
-      if (!host) return;
-      var wsUrl = protocol + '//' + host + '/ws';
+      var wsUrl = '';
+      if (!window.location.host || window.location.protocol === 'file:') {
+        wsUrl = 'wss://studio.orbixdesigns.com/ws';
+      } else {
+        var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsUrl = protocol + '//' + window.location.host + '/ws';
+      }
 
       try {
         self.socket = new WebSocket(wsUrl);
@@ -42599,7 +42712,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       var self = this;
       if (typeof fetch === 'function' && !self._serverAIKeyConfigured && window.OrbixProjects && window.OrbixProjects.currentUser) {
-        fetch('/api/ai/config', { credentials: 'include' }).then(function (res) {
+        var apiFn = (window.OrbixProjects && typeof window.OrbixProjects.apiFetch === 'function') ? window.OrbixProjects.apiFetch.bind(window.OrbixProjects) : fetch;
+        apiFn('/api/ai/config', { credentials: 'include' }).then(function (res) {
           if (res.ok) return res.json();
         }).then(function (data) {
           if (data && data.configured) {
@@ -42725,7 +42839,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       // Check server AI configuration when authenticated without fetching or persisting raw API keys
       if (typeof fetch === 'function' && window.OrbixProjects && window.OrbixProjects.currentUser) {
-        fetch('/api/ai/config', { credentials: 'include' }).then(function (res) {
+        var apiFn2 = (window.OrbixProjects && typeof window.OrbixProjects.apiFetch === 'function') ? window.OrbixProjects.apiFetch.bind(window.OrbixProjects) : fetch;
+        apiFn2('/api/ai/config', { credentials: 'include' }).then(function (res) {
           if (res.ok) return res.json();
         }).then(function (data) {
           if (data && data.configured) {
@@ -42854,7 +42969,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
             // Prefer authenticated server-side AI proxy so server keys never leave the backend
             var data = null;
-            var srvRes = await fetch('/api/ai/render', {
+            var renderApiFn = (window.OrbixProjects && typeof window.OrbixProjects.apiFetch === 'function') ? window.OrbixProjects.apiFetch.bind(window.OrbixProjects) : fetch;
+            var srvRes = await renderApiFn('/api/ai/render', {
               method: 'POST',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
@@ -46702,6 +46818,13 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     return '₹ ' + n.toLocaleString('en-IN');
   }
 
+  function apiCall(url, opts) {
+    if (root.OrbixProjects && typeof root.OrbixProjects.apiFetch === 'function') {
+      return root.OrbixProjects.apiFetch(url, opts);
+    }
+    return fetch(url, opts);
+  }
+
   function randomPassword() {
     var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
     var out = 'CS-';
@@ -47178,7 +47301,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         btn.textContent = '⏳ Generating Head Review Link...';
         try {
           var payload = await gatherReviewPayload();
-          var res = await fetch('/api/client-quotes/review', {
+          var res = await apiCall('/api/client-quotes/review', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
@@ -47231,7 +47354,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       btnEl.textContent = format === 'pdf' ? '⏳ Building PDF...' : '⏳ Building PPTX...';
       try {
         var endpoint = '/api/client-quotes/' + encodeURIComponent(quoteId) + (format === 'pdf' ? '/export-pdf' : '/export-pptx');
-        var res = await fetch(endpoint, { method: 'POST', credentials: 'same-origin' });
+        var res = await apiCall(endpoint, { method: 'POST', credentials: 'same-origin' });
         if (!res.ok) {
           var errJson = await res.json().catch(function () { return {}; });
           throw new Error(errJson.error || (format.toUpperCase() + ' export failed'));
@@ -47260,7 +47383,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       var listEl = body.querySelector('#cqExistingList');
       if (!listEl) return;
       try {
-        var res = await fetch('/api/client-quotes/project/' + encodeURIComponent(projectId), {
+        var res = await apiCall('/api/client-quotes/project/' + encodeURIComponent(projectId), {
           credentials: 'same-origin',
           cache: 'no-store'
         });
@@ -47390,7 +47513,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             this.disabled = true;
             this.textContent = '⏳ Activating...';
             try {
-              var r = await fetch('/api/client-quotes/' + encodeURIComponent(qId) + '/activate-client-link', {
+              var r = await apiCall('/api/client-quotes/' + encodeURIComponent(qId) + '/activate-client-link', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
@@ -47446,7 +47569,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           b.addEventListener('click', async function () {
             var qId = this.getAttribute('data-id');
             var curRev = this.getAttribute('data-revoked') === '1';
-            await fetch('/api/client-quotes/' + encodeURIComponent(qId), {
+            await apiCall('/api/client-quotes/' + encodeURIComponent(qId), {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'same-origin',
@@ -47525,7 +47648,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             var origText = btn.innerText;
             btn.innerText = 'Saving...';
             try {
-              var r = await fetch('/api/client-quotes/' + encodeURIComponent(qId), {
+              var r = await apiCall('/api/client-quotes/' + encodeURIComponent(qId), {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
@@ -47566,7 +47689,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           b.addEventListener('click', async function () {
             if (!confirm('Delete this quotation link permanently?')) return;
             var qId = this.getAttribute('data-id');
-            await fetch('/api/client-quotes/' + encodeURIComponent(qId), {
+            await apiCall('/api/client-quotes/' + encodeURIComponent(qId), {
               method: 'DELETE',
               credentials: 'same-origin'
             });
@@ -58393,10 +58516,22 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
   var deferredPrompt = null;
 
-  // 1. Register Service Worker
-  if ('serviceWorker' in navigator) {
+  // Unregister any active service worker if running in desktop app or file:// scheme
+  if (typeof window !== 'undefined' && (window.location.protocol === 'file:' || window.OrbixDesktop)) {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (var i = 0; i < registrations.length; i++) {
+          registrations[i].unregister();
+        }
+      }).catch(function () {});
+    }
+    return;
+  }
+
+  // 1. Register Service Worker (web browsers only, not file:// in desktop app)
+  if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=24')
+      navigator.serviceWorker.register('./sw.js?v=26')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 
