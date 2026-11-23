@@ -1168,13 +1168,22 @@
         if (!lp) {
           map[rp.id] = rp;
         } else {
+          var rpIsSummary = !!(rp.data && rp.data._isSummary);
+          var lpHasPlan = !!(lp.data && lp.data.plan && (lp.data.plan.plan || lp.data.plan.walls || lp.data.plan.furniture));
           var localMod = (lp.data && lp.data.plan && lp.data.plan._lastModified) || 0;
           var remoteMod = rp.updatedAt ? new Date(rp.updatedAt).getTime() : (rp.updated_at ? new Date(rp.updated_at).getTime() : 0);
-          if (localMod > remoteMod && lp.data) {
+          if (localMod > remoteMod && lp.data && lpHasPlan) {
             map[rp.id] = Object.assign({}, rp, {
               data: lp.data,
               units_count: lp.units_count !== undefined ? lp.units_count : rp.units_count,
               _needsVpsPush: true
+            });
+          } else if (rpIsSummary && lpHasPlan && remoteMod > 0 && localMod >= remoteMod) {
+            map[rp.id] = Object.assign({}, rp, {
+              data: Object.assign({}, lp.data, {
+                details: (rp.data && rp.data.details) || (lp.data && lp.data.details) || {},
+                shareNotice: (rp.data && rp.data.shareNotice !== undefined) ? rp.data.shareNotice : (lp.data && lp.data.shareNotice)
+              })
             });
           } else {
             map[rp.id] = rp;

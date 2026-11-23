@@ -1420,7 +1420,7 @@
       var mouseScreenAfter = self.worldToScreen(mouseWorldBefore);
       self.pan.x += (mouseScreen.x - mouseScreenAfter.x);
       self.pan.y += (mouseScreen.y - mouseScreenAfter.y);
-      self.render();
+      self.requestRender();
     }, { passive: false });
 
     this.canvas.addEventListener('dblclick', function (e) {
@@ -1737,6 +1737,7 @@
     });
 
     window.addEventListener('mousemove', function (e) {
+      if (!self.canvas || self.canvas.offsetParent === null) return;
       var rect = self.canvas.getBoundingClientRect();
       var mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       self.lastMouseScreen = mouseScreen;
@@ -4761,12 +4762,16 @@
   };
 
   PlanEditor.prototype.resize = function () {
-    var dpr = window.devicePixelRatio || 1;
+    var dpr = Math.min(1.5, window.devicePixelRatio || 1);
     var w = this.container.clientWidth || 800;
     var h = this.container.clientHeight || 600;
-    this.canvas.width = w * dpr;
-    this.canvas.height = h * dpr;
-    this.ctx.scale(dpr, dpr);
+    this.canvas.width = Math.round(w * dpr);
+    this.canvas.height = Math.round(h * dpr);
+    if (this.ctx.setTransform) {
+      this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    } else {
+      this.ctx.scale(dpr, dpr);
+    }
     this.width = w;
     this.height = h;
     this.render();
@@ -5365,8 +5370,13 @@
 
       ctx.save();
       if (isDivSel) {
-        ctx.shadowColor = 'rgba(124, 58, 237, 0.45)';
-        ctx.shadowBlur = 8;
+        // Fast translucent halo stroke instead of slow software ctx.shadowBlur
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(124, 58, 237, 0.25)';
+        ctx.lineWidth = 8;
+        ctx.moveTo(pStart.x, pStart.y);
+        ctx.lineTo(pEnd.x, pEnd.y);
+        ctx.stroke();
       }
       ctx.beginPath();
       ctx.setLineDash([8, 5, 2, 5]); // Architectural dash-dot standard
@@ -5378,7 +5388,6 @@
 
       // End-point circle nodes
       ctx.setLineDash([]);
-      ctx.shadowBlur = 0;
       ctx.fillStyle = isDivSel ? '#6D28D9' : '#8B5CF6';
       ctx.beginPath();
       ctx.arc(pStart.x, pStart.y, isDivSel ? 4.5 : 3.5, 0, Math.PI * 2);

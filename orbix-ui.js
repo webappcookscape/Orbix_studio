@@ -5498,6 +5498,11 @@
       plan.activeFloor = plan.activeFloor || 'ground';
       plan.floorsData = plan.floorsData || {};
 
+      // Avoid JSON.stringify/parse deep-cloning multi-MB base64 underlay images on every edit
+      var underlayCopy = null;
+      if (plan.underlay && typeof plan.underlay === 'object') {
+        underlayCopy = Object.assign({}, plan.underlay);
+      }
       plan.floorsData[plan.activeFloor] = {
         walls: JSON.parse(JSON.stringify(plan.walls || [])),
         openings: JSON.parse(JSON.stringify(plan.openings || [])),
@@ -5505,7 +5510,7 @@
         furniture: JSON.parse(JSON.stringify(plan.furniture || [])),
         stairs: JSON.parse(JSON.stringify(plan.stairs || [])),
         dimensions: JSON.parse(JSON.stringify(plan.dimensions || [])),
-        underlay: plan.underlay ? JSON.parse(JSON.stringify(plan.underlay)) : null
+        underlay: underlayCopy
       };
     },
 
@@ -8667,8 +8672,9 @@
           var targetFurn = plan && plan.furniture && plan.furniture.find(function (it) { return it.id === targetFurnId; });
           if (targetFurn) {
             this.archRenderer.addOrUpdateFurnitureMesh(targetFurn);
+            if (gl.invalidateShadows) gl.invalidateShadows();
             if (typeof this.updateProjectDetailsBadges === 'function') this.updateProjectDetailsBadges();
-            if (gl.apply) gl.apply();
+            if (gl.apply) gl.apply(true);
             if (gl.settle) gl.settle();
             return;
           }
@@ -8679,6 +8685,7 @@
         }
         try {
           this.archRenderer.buildHome(proj, this.currentIsolatedRoomId);
+          if (gl.invalidateShadows) gl.invalidateShadows();
         } catch (homeErr) {
           console.error('[Orbix UI] Error building 3D home:', homeErr);
         }

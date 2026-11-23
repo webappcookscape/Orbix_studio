@@ -1669,6 +1669,13 @@
   var GL = (function () {
     var ok = false, renderer, scene, camera, root, floor, pmrem, matCache = {}, texCache3 = {}, target, dist = 3000, keyL = null;
     var composer = null, ssao = null, smaa = null;
+    var highDpr = Math.min(1.5, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
+    var dprRestoreTimer = null;
+    function invalidateShadows() {
+      if (renderer && renderer.shadowMap) {
+        renderer.shadowMap.needsUpdate = true;
+      }
+    }
     function render() {
       if (typeof document !== 'undefined') {
         var designTab = document.querySelector('.vtab[data-tab="design"]');
@@ -1925,12 +1932,14 @@
           return false;
         }
       }
-      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setPixelRatio(highDpr);
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = (NEO || FX) ? 1.06 : 1.08;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.shadowMap.autoUpdate = false;
+      renderer.shadowMap.needsUpdate = true;
       renderer.domElement.id = "gl";
 
       // Gracefully handle WebGL context loss (Back-Forward cache, GPU memory pressure, sleep/wake)
@@ -1968,7 +1977,7 @@
       window.spotlightIntensity = (window.spotlightIntensity !== undefined) ? window.spotlightIntensity : 0;
       keyL = new THREE.DirectionalLight(0xfffbf2, window.sunlightIntensity);
       keyL.position.set(-3800, 7200, 5600); keyL.castShadow = true;
-      keyL.shadow.mapSize.set(4096, 4096);
+      keyL.shadow.mapSize.set(2048, 2048);
       var sc = keyL.shadow.camera; sc.left = -9500; sc.right = 9500; sc.top = 9500; sc.bottom = -9500; sc.near = 200; sc.far = 30000;
       keyL.shadow.bias = -0.0001; keyL.shadow.normalBias = 1.2; keyL.shadow.radius = 2.4;
       scene.add(keyL); scene.add(keyL.target);
@@ -2472,6 +2481,7 @@
         });
         lay.rods.forEach(function (r) { var rod = new THREE.Mesh(new THREE.CylinderGeometry(12, 12, r.len, 20), metalMat(r.fin)); rod.rotation.z = Math.PI / 2; rod.position.set(r.x, r.y, r.z); rod.castShadow = true; g.add(rod); });
       });
+      invalidateShadows();
       frame();
     }
     function applyDoor(d) {
@@ -2485,12 +2495,13 @@
         var d = doors[id];
         if (Math.abs(d.t - d.target) > 0.001) { d.t += (d.target - d.t) * 0.16; if (Math.abs(d.t - d.target) < 0.004) d.t = d.target; applyDoor(d); busy = true; }
       }
+      if (busy) invalidateShadows();
       render();
       if (busy) requestAnimationFrame(tick); else anim = false;
     }
     function kick() { if (!anim) { anim = true; requestAnimationFrame(tick); } }
     /* jump every door to its resolved end state (hidden tabs get no animation frames) */
-    function settle() { for (var id in doors) { var d = doors[id]; d.t = d.target; applyDoor(d); } if (ok) render(); }
+    function settle() { for (var id in doors) { var d = doors[id]; d.t = d.target; applyDoor(d); } invalidateShadows(); if (ok) render(); }
     /* req = what was asked; target = what the cabinet physically allows */
     function resolve() {
       for (var id in doors) {
@@ -3307,6 +3318,33 @@
 
     function apply(forceSync) {
       if (!ok) return;
+      // Dynamic DPR: render at crisp 1.0 DPR during active camera orbit/pan/zoom, then restore full highDpr 160ms after idle
+      if (renderer && renderer.setPixelRatio && highDpr > 1) {
+        if (forceSync) {
+          if (dprRestoreTimer) { clearTimeout(dprRestoreTimer); dprRestoreTimer = null; }
+          if (renderer.getPixelRatio && renderer.getPixelRatio() !== highDpr) {
+            renderer.setPixelRatio(highDpr);
+          }
+        } else {
+          if (renderer.getPixelRatio && renderer.getPixelRatio() !== 1) {
+            renderer.setPixelRatio(1);
+          }
+          if (dprRestoreTimer) clearTimeout(dprRestoreTimer);
+          dprRestoreTimer = setTimeout(function () {
+            dprRestoreTimer = null;
+            if (!ok || !renderer) return;
+            if (renderer.getPixelRatio && renderer.getPixelRatio() !== highDpr) {
+              renderer.setPixelRatio(highDpr);
+              var rr = cachedStageRect || stage.getBoundingClientRect();
+              if (rr && rr.width > 0 && rr.height > 0) {
+                renderer.setSize(Math.floor(rr.width), Math.floor(rr.height), false);
+                if (typeof fxResize === 'function') fxResize();
+              }
+            }
+            requestRender();
+          }, 160);
+        }
+      }
       var liveR = stage.getBoundingClientRect();
       if (liveR && liveR.width > 0 && liveR.height > 0) {
         cachedStageRect = liveR;
@@ -3983,7 +4021,7 @@
       });
       return out;
     }
-    return { init: init, show: show, frame: frame, apply: apply, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickWall: pickWall, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setSunlightIntensity: function (val) {
+    return { init: init, show: show, frame: frame, apply: apply, invalidateShadows: invalidateShadows, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickWall: pickWall, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } invalidateShadows(); render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); invalidateShadows(); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setSunlightIntensity: function (val) {
       val = parseFloat(val);
       if (!isFinite(val)) return;
       window.sunlightIntensity = val;
@@ -4088,6 +4126,7 @@
       if (spotSlider) spotSlider.value = spotIntensity;
       if (spotLabel) spotLabel.textContent = Number(spotIntensity).toFixed(1);
 
+      invalidateShadows();
       render();
     },
     setRenderMode: function (mode) {
@@ -4143,6 +4182,7 @@
       }
 
       if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
+        invalidateShadows();
         window.OrbixUI.render3DHome(true);
       }
       apply(true);
@@ -6390,6 +6430,19 @@
     if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
       try { window.OrbixUI.syncProjectUnitsTo3DStudio(); } catch (_) {}
     }
+    if (!window.OrbixA4Drawings && window.OrbixLazyLoader && typeof window.OrbixLazyLoader.loadA4Drawings === 'function') {
+      var draftEl = $("#draft");
+      if (draftEl) draftEl.innerHTML = '<div style="padding:40px;text-align:center;color:#64748b;font-size:13px">Loading 2D Production Drawings engine...</div>';
+      window.OrbixLazyLoader.loadA4Drawings().then(function () {
+        if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.initUI === 'function') {
+          try { window.OrbixA4Drawings.initUI(); } catch (_) {}
+        }
+        if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {
+          window.OrbixA4Drawings.renderActivePage();
+        }
+      });
+      return;
+    }
     if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {
       window.OrbixA4Drawings.renderActivePage();
       return;
@@ -6516,9 +6569,12 @@
       }
 
       var run3DBackendWork = function () {
-        if (window.OrbixUI) {
-          window.OrbixUI._3dDirty = true;
-        }
+        var curProj = window.OrbixUI && (window.OrbixUI.project || (window.OrbixUI.editor && window.OrbixUI.editor.project));
+        var curProjId = curProj ? String(curProj.id || curProj._projectId || '') : '';
+        var glScene = (GL.ok && GL.getScene) ? GL.getScene() : null;
+        var hasBuiltHome = !!(glScene && glScene.getObjectByName('OrbixHome3D'));
+        var canReuse3D = !!(window.OrbixUI && window.OrbixUI._3dDirty === false && hasBuiltHome && window.OrbixUI._lastRendered3DProjId === curProjId);
+
         if (window.OrbixUI && typeof window.OrbixUI.update3DStudioRoomOptions === 'function') {
           window.OrbixUI.update3DStudioRoomOptions();
         }
@@ -6526,7 +6582,7 @@
           window.OrbixUI.syncProjectUnitsTo3DStudio();
         }
         if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
-          window.OrbixUI.render3DHome(true, undefined, undefined, true);
+          window.OrbixUI.render3DHome(true, undefined, undefined, !canReuse3D);
         } else if (typeof buildScene === 'function') {
           buildScene();
         }
@@ -6544,10 +6600,22 @@
         if (GL.ok && GL.settle) GL.settle();
       };
 
-      try {
-        run3DBackendWork();
-      } catch (err) {
-        console.error("3D Backend Work Error:", err);
+      var texturesReady = !!(window.ORBIX_DADO_TEXTURES && window.ORBIX_FLOOR_TEXTURES && window.ORBIX_COUNTERTOP_TEXTURES);
+      if (!texturesReady && window.OrbixLazyLoader && typeof window.OrbixLazyLoader.load3DTextures === 'function') {
+        window.OrbixLazyLoader.load3DTextures().then(function () {
+          try {
+            if (window.OrbixUI) window.OrbixUI._3dDirty = true;
+            run3DBackendWork();
+          } catch (err) {
+            console.error("3D Backend Work Error:", err);
+          }
+        });
+      } else {
+        try {
+          run3DBackendWork();
+        } catch (err) {
+          console.error("3D Backend Work Error:", err);
+        }
       }
     }
     if (v === "panels") renderPanels();

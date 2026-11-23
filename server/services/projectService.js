@@ -134,8 +134,26 @@ function formatProject(p) {
   };
 }
 
+// Helper: Lightweight project card summary for GET /api/projects (omits heavy data.plan / data.units / base64 underlays)
+function formatProjectSummary(p) {
+  const full = formatProject(p);
+  if (!full) return null;
+  const rawData = (p && p.data && typeof p.data === 'object') ? p.data : {};
+  const lightData = {
+    details: (rawData.details && typeof rawData.details === 'object') ? rawData.details : {},
+    _isSummary: true
+  };
+  if (rawData.shareNotice) {
+    lightData.shareNotice = rawData.shareNotice;
+  }
+  return {
+    ...full,
+    data: lightData
+  };
+}
+
 class ProjectService {
-  // 1. Get all accessible projects for user
+  // 1. Get all accessible projects for user (lightweight metadata summaries; full plan loads on GET /api/projects/:id)
   async getProjects(user) {
     let where = {};
     if (user && user.role !== 'admin') {
@@ -151,7 +169,7 @@ class ProjectService {
       where,
       orderBy: { updatedAt: 'desc' }
     });
-    return projects.map(formatProject);
+    return projects.map(formatProjectSummary);
   }
 
   // 2. Get project by ID

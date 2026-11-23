@@ -6,6 +6,7 @@
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const zlib = require('zlib');
 const ROOT_DIR = path.join(__dirname, '..');
 require('dotenv').config({ path: path.join(ROOT_DIR, '.env') });
 require('dotenv').config();
@@ -58,6 +59,106 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
+// ── Built-in Gzip Response Compression (Zero extra dependencies; cuts JS/CSS/JSON transfer ~75-80%) ──
+const COMPRESSIBLE_MIME_RE = /^(?:text\/|application\/(?:json|javascript|x-javascript|xml|manifest\+json)|image\/svg\+xml)/i;
+const GZIP_MIN_BYTES = 1024;
+app.use((req, res, next) => {
+  if (req.method === 'HEAD' || req.headers.range) return next();
+  const acceptEnc = String(req.headers['accept-encoding'] || '');
+  if (!/\bgzip\b/i.test(acceptEnc)) return next();
+
+  const existingVary = res.getHeader('Vary');
+  if (!existingVary) {
+    res.setHeader('Vary', 'Accept-Encoding');
+  } else if (!/\baccept-encoding\b/i.test(String(existingVary))) {
+    res.setHeader('Vary', String(existingVary) + ', Accept-Encoding');
+  }
+
+  const origWrite = res.write;
+  const origEnd = res.end;
+  let decided = false;
+  let gz = null;
+
+  function decideCompression(firstChunk, isEndOnly) {
+    if (decided) return;
+    decided = true;
+    if (res.headersSent) return;
+    if (res.statusCode < 200 || res.statusCode === 204 || res.statusCode === 304) return;
+    if (res.getHeader('Content-Encoding')) return;
+
+    const ct = String(res.getHeader('Content-Type') || '');
+    if (!COMPRESSIBLE_MIME_RE.test(ct)) return;
+
+    const clHeader = res.getHeader('Content-Length');
+    const knownLen = (clHeader !== undefined && clHeader !== null && !isNaN(Number(clHeader))) ? Number(clHeader) : null;
+    if (knownLen !== null && knownLen < GZIP_MIN_BYTES) return;
+    if (isEndOnly && knownLen === null) {
+      const chunkBytes = firstChunk ? (Buffer.isBuffer(firstChunk) ? firstChunk.length : Buffer.byteLength(String(firstChunk))) : 0;
+      if (chunkBytes < GZIP_MIN_BYTES) return;
+    }
+
+    res.removeHeader('Content-Length');
+    res.setHeader('Content-Encoding', 'gzip');
+
+    gz = zlib.createGzip({ level: 6 });
+    let socketPaused = false;
+    gz.on('data', (chunk) => {
+      if (origWrite.call(res, chunk) === false) {
+        socketPaused = true;
+        gz.pause();
+        res.once('drain', () => {
+          socketPaused = false;
+          if (gz && !gz.destroyed) gz.resume();
+        });
+      }
+    });
+    gz.on('drain', () => {
+      if (!socketPaused) {
+        res.emit('drain');
+      }
+    });
+    gz.on('end', () => {
+      origEnd.call(res);
+    });
+    gz.on('error', () => {
+      try { origEnd.call(res); } catch (_) {}
+    });
+  }
+
+  res.write = function (chunk, encoding, cb) {
+    decideCompression(chunk, false);
+    if (gz) return gz.write(chunk, encoding, cb);
+    return origWrite.call(this, chunk, encoding, cb);
+  };
+
+  res.end = function (chunk, encoding, cb) {
+    if (typeof chunk === 'function') {
+      cb = chunk;
+      chunk = undefined;
+      encoding = undefined;
+    } else if (typeof encoding === 'function') {
+      cb = encoding;
+      encoding = undefined;
+    }
+    decideCompression(chunk, true);
+    if (gz) {
+      if (cb) res.once('finish', cb);
+      if (chunk !== undefined) gz.end(chunk, encoding);
+      else gz.end();
+      return this;
+    }
+    return origEnd.call(this, chunk, encoding, cb);
+  };
+
+  res.on('close', () => {
+    if (gz && !gz.destroyed) {
+      try { gz.destroy(); } catch (_) {}
+    }
+  });
+
   next();
 });
 
@@ -216,8 +317,23 @@ app.post('/api/login', (req, res, next) => {
   next();
 });
 
-// ── Serve Static Assets ──
-app.use(express.static(ROOT_DIR, { dotfiles: 'deny' }));
+// ── Serve Static Assets (with ETag + Smart Browser Caching for fast repeat loads) ──
+app.use(express.static(ROOT_DIR, {
+  dotfiles: 'deny',
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    const ext = path.extname(filePath).toLowerCase();
+    const reqUrl = (res.req && res.req.url) ? res.req.url : '';
+    if (ext === '.html') {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else if (reqUrl.indexOf('?v=') !== -1 || filePath.indexOf(path.sep + 'assets' + path.sep) !== -1) {
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+    } else if (/\.(js|css|png|jpg|jpeg|gif|svg|webp|woff2?|glb|gltf|ico)$/i.test(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+    }
+  }
+}));
 
 // ── Mount Layered REST API Routes ──
 app.use('/api', apiRoutes);
