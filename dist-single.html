@@ -13492,7 +13492,7 @@ body.role-employee #adminCreateEmpBox,
         pricingModel: 'running_ft', // running feet based
         baseRatePerRft: 2800,
         standardDepth: 600,
-        standardHeight: 850
+        standardHeight: 700
       },
       kitchen_wall: {
         name: 'Kitchen Wall Units',
@@ -15484,7 +15484,14 @@ body.role-employee #adminCreateEmpBox,
       /ledge|shelf/i.test(item.code || '')
     );
     var isLedgeFace = isLedge && (dims.H <= 50 || /ledge-std|ledge-ctop/i.test(item.id || '') || (item.name && item.name.indexOf('VERTICAL') === -1));
-    var frontAreaSft = isLedgeFace ? ((dims.W * dims.D) / SFT_FACTOR) : ((dims.W * dims.H) / SFT_FACTOR);
+    var isBaseFloorUnit = (catKey === 'base' || catKey === 'kitchen' || catKey === 'floor' || catKey === 'kitchen_base' || /base|floor|sink|hob|kbase/i.test(catKey) || /base|floor|sink|hob|kbase|bu\d+/i.test(item.name || '') || /base|floor|sink|hob|kbase|bu\d+/i.test(item.code || '') || /base|floor|sink|hob|kbase|bu\d+/i.test(item.id || '')) && !(/wall|overhead|loft/i.test(catKey) || /wall|overhead|loft/i.test(item.name || ''));
+    var pricingH = dims.H;
+    if (isBaseFloorUnit) {
+      // Pricing calculates strictly on the carcass box height (700mm), excluding 100mm legs and 20mm countertop stone
+      pricingH = (dims.H >= 800) ? Math.max(100, dims.H - 120) : (dims.H || 700);
+      if (pricingH < 100) pricingH = 700;
+    }
+    var frontAreaSft = isLedgeFace ? ((dims.W * dims.D) / SFT_FACTOR) : ((dims.W * pricingH) / SFT_FACTOR);
     var runningFt = (dims.W / 304.8);
 
     var modelType = resolveModelType(item);
@@ -15527,7 +15534,7 @@ body.role-employee #adminCreateEmpBox,
 
     var dimFormula = isLedgeFace ?
       (dims.W + ' mm (L) × ' + dims.D + ' mm (D) ÷ 92903.04') :
-      (dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04');
+      (dims.W + ' mm × ' + Math.round(pricingH) + ' mm ÷ 92903.04');
 
     if (activeTier && modelDef && modelDef.pricingModel === 'front_area') {
       baseAmount = frontAreaSft * baseRate;
@@ -24320,7 +24327,7 @@ body.role-employee #adminCreateEmpBox,
       (furn.name && /rolling\s*shutter/i.test(furn.name)) ||
       (furn.unitConfig && (furn.unitConfig.isRollingShutter || furn.unitConfig.shutterType === 'rolling_shutter'))
     );
-    var defElevF = isRollingF ? 750 : (isOpenBoxF ? 1500 : (isSpiceRackF ? 1350 : (isWallU ? 1500 : 0)));
+    var defElevF = isRollingF ? 820 : (isOpenBoxF ? 1500 : (isSpiceRackF ? 1350 : (isWallU ? 1500 : 0)));
     var fElev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
@@ -25378,9 +25385,9 @@ body.role-employee #adminCreateEmpBox,
     var isLoftPlan = (catPlan.indexOf('loft') !== -1 || nmPlan.indexOf('loft') !== -1 || idPlan.indexOf('loft') !== -1 || cdPlan.indexOf('loft') !== -1);
     var isSpicePlan = (catPlan.indexOf('spice') !== -1 || nmPlan.indexOf('spice') !== -1 || idPlan.indexOf('spice') !== -1 || idPlan.indexOf('sr-') === 0);
     var defPlanElev = isLoftPlan ? 2100 : (isSpicePlan ? 1350 : (isWall ? 1500 : 0));
-    if (idPlan === 'wfm60-roll' || cdPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && (this.furniturePreset.unitConfig.isRollingShutter || this.furniturePreset.unitConfig.shutterType === 'rolling_shutter'))) defPlanElev = 750;
+    if (idPlan === 'wfm60-roll' || cdPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && (this.furniturePreset.unitConfig.isRollingShutter || this.furniturePreset.unitConfig.shutterType === 'rolling_shutter'))) defPlanElev = 820;
     else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 1200;
-    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 850;
+    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 820;
     else if (idPlan === 'ledge-vert' || nmPlan.indexOf('vertical ledge') !== -1) defPlanElev = 0;
     else if (idPlan === 'pnl-back' || nmPlan.indexOf('back panel') !== -1) defPlanElev = 300;
     else if (idPlan === 'pnl-wall' || nmPlan.indexOf('wall panel') !== -1 || catPlan === 'wall_paneling') defPlanElev = 0;
@@ -34163,7 +34170,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       fg.add(s2Mesh);
     }
 
-    // 7. Countertop Stone (35mm Black Stone, counterH = 35)
+    // 7. Countertop Stone (20mm Stone, counterH = 20)
     if (counterH > 0) {
       var cY = plinthH + bodyH + counterH / 2;
       var c1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W + 20, counterH, depth + 20), counterMat);
@@ -34317,7 +34324,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     var isFcmCornerOS = /fcm[-_ ]*(rt|lt)/i.test(furn.id || furn.catalogItemId || furn.code || furn.name || '') || (furn.unitConfig && /fcm[-_ ]*(rt|lt)/i.test(furn.unitConfig.unitType || ''));
     var baseD = (dims.D && dims.D >= 18) ? dims.D : (isWrbOS ? 18 : (isWallOS ? 350 : (isBaseOS || isLoftOS ? 550 : 350)));
     var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false && !isFcmCornerOS) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
-    var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none' && !isFcmCornerOS) ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 35)) : 0;
+    var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none' && !isFcmCornerOS) ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 20)) : 0;
 
     if (isBaseOS && baseD > 50) {
       // 1. Plinth Kickboard & Adjustable Cabinet Legs
@@ -35263,8 +35270,15 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       }
     }
     var plinthH = hasLegs ? 100 : 0;
-    var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
-    var bodyH = (dims.H <= 350) ? dims.H : Math.max(100, dims.H - plinthH - counterH);
+    var counterH = (isBase && counterColorName !== 'none') ? 20 : 0;
+    var bodyH;
+    if (isBase) {
+      // Floor unit: Carcass height is 700mm. Total finished height = 100mm leg + 700mm carcass + 20mm countertop = 820mm
+      bodyH = (dims.H >= 800) ? Math.max(100, dims.H - plinthH - counterH) : (dims.H || 700);
+      if (bodyH < 100) bodyH = 700;
+    } else {
+      bodyH = (dims.H <= 350) ? dims.H : Math.max(100, dims.H - plinthH - counterH);
+    }
     var topOfCarcass = plinthH + bodyH;
     var innerW = dims.W - 36;
     var innerD = dims.D - 20;
@@ -38335,7 +38349,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         modelType: 'kitchen_fm',
         refCode: 'fm-60',
         pos: { x: 2400, y: 6600 },
-        dimensions: { W: 600, H: 750, D: 550 },
+        dimensions: { W: 600, H: 700, D: 550 },
         unitConfig: { shutterCol: 'MDF 7707', carcass: 'MDF 6601', shutters: 1, handle: 'gprof' },
         materials: {
           shutter: { material: 'HDHMR_18MM', finish: 'MDF 7707' },
@@ -39262,7 +39276,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           (fn.unitConfig && (fn.unitConfig.isRollingShutter || fn.unitConfig.shutterType === 'rolling_shutter'))
         );
         var isWallInsp = !isLoftInsp && !isRollingInsp && isWall;
-        var defInspElev = isRollingInsp ? 750 : (isLoftInsp ? 2100 : (isOpenBoxInsp ? 1500 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0))));
+        var defInspElev = isRollingInsp ? 820 : (isLoftInsp ? 2100 : (isOpenBoxInsp ? 1500 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0))));
 
         var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '' && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp && !isRollingInsp || parseFloat(fn.elevation) > 0)) ?
           parseFloat(fn.elevation) :
@@ -39418,7 +39432,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             '<div class="insp-row" style="margin-bottom:4px;"><label>Floor Elevation (AFFL)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
             '<div style="display:flex;gap:4px;margin-top:6px;">' +
               '<button type="button" class="btn small" id="btnPresetFloor" style="flex:1;font-size:10px;padding:3px;background:#f8fafc;border:1px solid #cbd5e1;">Floor (0 mm)</button>' +
-              '<button type="button" class="btn small" id="btnPresetCounter" style="flex:1;font-size:10px;padding:3px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;">Counter (750 mm)</button>' +
+              '<button type="button" class="btn small" id="btnPresetCounter" style="flex:1;font-size:10px;padding:3px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;">Counter (820 mm)</button>' +
               '<button type="button" class="btn small" id="btnPresetWall" style="flex:1;font-size:10px;padding:3px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;">Wall (1500 mm)</button>' +
               '<button type="button" class="btn small" id="btnPresetLoft" style="flex:1;font-size:10px;padding:3px;background:#ede9fe;border:1px solid #ddd6fe;color:#5b21b6;">Loft (2100 mm)</button>' +
             '</div>' +
@@ -39974,12 +39988,12 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         var btnCounter = document.getElementById('btnPresetCounter');
         if (btnCounter) {
           btnCounter.addEventListener('click', function () {
-            fn.elevation = 750;
-            if (fn.pos) fn.pos.z = 750;
+            fn.elevation = 820;
+            if (fn.pos) fn.pos.z = 820;
             var elevElC = document.getElementById('inspFurnElev');
-            if (elevElC) elevElC.value = 750;
+            if (elevElC) elevElC.value = 820;
             syncInspectorTo3D();
-            self.editor.pushHistory('Set Elevation: 750mm (Countertop)');
+            self.editor.pushHistory('Set Elevation: 820mm (Countertop)');
             self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
             self.renderInspector(self.editor.selected);
@@ -40634,7 +40648,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           (fn.unitConfig && (fn.unitConfig.isRollingShutter || fn.unitConfig.shutterType === 'rolling_shutter')) ||
           /rolling\s*shutter/i.test(fn.name || '')
         );
-        var defUnitElev = isRolling ? 750 : (isWall ? 1500 : 0);
+        var defUnitElev = isRolling ? 820 : (isWall ? 1500 : 0);
         var unitElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
           parseFloat(fn.elevation) : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? parseFloat(fn.pos.z) : defUnitElev);
 
@@ -40889,7 +40903,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
-          var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 450 : 2100));
+          var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 700 : (fn.category === 'tv_unit' ? 450 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
           var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 450);
           var sColNew = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7707';
@@ -43172,7 +43186,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
       function mapItemToCard(it) {
         var w = (it.dimensions && it.dimensions.W) || 600;
-        var h = (it.dimensions && it.dimensions.H) || 750;
+        var h = (it.dimensions && it.dimensions.H) || 700;
         var d = (it.dimensions && it.dimensions.D) || 560;
         var variants = [w];
         if (w === 600) variants = [450, 500, 600, 800, 900];
@@ -43425,7 +43439,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
               id: cardData.id,
               name: cardData.name,
               category: cardData.category || (isPanelOrLedge ? 'wall_paneling' : (isWallUnit ? 'kitchen_wall' : (isLoftUnit ? 'loft' : (cat === 'base_unit' ? 'kitchen_base' : cat)))),
-              dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: (isLoftUnit ? 400 : (isWallUnit ? 600 : 750)), D: (isWallUnit ? 350 : 560) }),
+              dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: (isLoftUnit ? 400 : (isWallUnit ? 600 : 700)), D: (isWallUnit ? 350 : 560) }),
               elevation: finalElev,
               unitConfig: Object.assign({}, cardData.unitConfig || {})
             };
@@ -49946,8 +49960,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
   var DimensionEngine = {
     getDatumLevels: function () {
       return {
-        plinthBase: 110,
-        counterHeight: 860,
+        plinthBase: 100,
+        counterHeight: 820,
         backsplash: 600,
         wallBottom: 1460,
         wallTop: 2180,
@@ -50796,7 +50810,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     { id: "wardrobe", label: "Wardrobe · hinged", set: { type: "hinged", H: 2100, W: 1800, D: 600, shutters: 3, sections: 2, shelves: 4, drawers: 2, loft: true, loftH: 600, loftShutters: 3, elev: 0, drawEvery: false } },
     { id: "sliding", label: "Wardrobe · sliding", set: { type: "sliding", H: 2100, W: 2400, D: 650, shutters: 2, sections: 3, shelves: 4, drawers: 2, loft: true, loftH: 600, loftShutters: 4, elev: 0, drawEvery: false } },
     { id: "overhead", label: "Overhead / loft", set: { type: "hinged", H: 600, W: 1800, D: 450, shutters: 3, sections: 1, shelves: 0, drawers: 0, loft: false, elev: 1500, drawEvery: false } },
-    { id: "kbase", label: "Kitchen base run", set: { type: "hinged", H: 720, W: 2400, D: 580, shutters: 4, sections: 4, shelves: 1, drawers: 3, loft: false, elev: 100, drawerH: 170, drawEvery: false } },
+    { id: "kbase", label: "Kitchen base run", set: { type: "hinged", H: 700, W: 2400, D: 580, shutters: 4, sections: 4, shelves: 1, drawers: 3, loft: false, elev: 100, drawerH: 170, drawEvery: false } },
     { id: "kwall", label: "Kitchen wall run", set: { type: "hinged", H: 720, W: 2400, D: 350, shutters: 4, sections: 4, shelves: 1, drawers: 0, loft: false, elev: 1450, drawEvery: false } },
     { id: "tall", label: "Tall / pantry", set: { type: "hinged", H: 2100, W: 600, D: 600, shutters: 1, sections: 1, shelves: 5, drawers: 0, loft: false, elev: 0, drawEvery: false } },
     {
@@ -51052,7 +51066,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     });
     var hasCounter = (u.counter && u.counter !== "none") || (ct === "kbase" && u.counter !== "none");
     if (hasCounter) {
-      B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 38, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
+      B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 20, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
     }
     if (ct === "kbase") {
       var isFcm = (u.unitType === "fcm-rt" || u.unitType === "fcm-lt" || u.unitType === "wcm-rt" || u.unitType === "wcm-lt" ||

@@ -2490,8 +2490,8 @@
   var DimensionEngine = {
     getDatumLevels: function () {
       return {
-        plinthBase: 110,
-        counterHeight: 860,
+        plinthBase: 100,
+        counterHeight: 820,
         backsplash: 600,
         wallBottom: 1460,
         wallTop: 2180,

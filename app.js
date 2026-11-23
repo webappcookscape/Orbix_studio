@@ -525,7 +525,7 @@
     { id: "wardrobe", label: "Wardrobe · hinged", set: { type: "hinged", H: 2100, W: 1800, D: 600, shutters: 3, sections: 2, shelves: 4, drawers: 2, loft: true, loftH: 600, loftShutters: 3, elev: 0, drawEvery: false } },
     { id: "sliding", label: "Wardrobe · sliding", set: { type: "sliding", H: 2100, W: 2400, D: 650, shutters: 2, sections: 3, shelves: 4, drawers: 2, loft: true, loftH: 600, loftShutters: 4, elev: 0, drawEvery: false } },
     { id: "overhead", label: "Overhead / loft", set: { type: "hinged", H: 600, W: 1800, D: 450, shutters: 3, sections: 1, shelves: 0, drawers: 0, loft: false, elev: 1500, drawEvery: false } },
-    { id: "kbase", label: "Kitchen base run", set: { type: "hinged", H: 720, W: 2400, D: 580, shutters: 4, sections: 4, shelves: 1, drawers: 3, loft: false, elev: 100, drawerH: 170, drawEvery: false } },
+    { id: "kbase", label: "Kitchen base run", set: { type: "hinged", H: 700, W: 2400, D: 580, shutters: 4, sections: 4, shelves: 1, drawers: 3, loft: false, elev: 100, drawerH: 170, drawEvery: false } },
     { id: "kwall", label: "Kitchen wall run", set: { type: "hinged", H: 720, W: 2400, D: 350, shutters: 4, sections: 4, shelves: 1, drawers: 0, loft: false, elev: 1450, drawEvery: false } },
     { id: "tall", label: "Tall / pantry", set: { type: "hinged", H: 2100, W: 600, D: 600, shutters: 1, sections: 1, shelves: 5, drawers: 0, loft: false, elev: 0, drawEvery: false } },
     {
@@ -781,7 +781,7 @@
     });
     var hasCounter = (u.counter && u.counter !== "none") || (ct === "kbase" && u.counter !== "none");
     if (hasCounter) {
-      B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 38, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
+      B.push({ x: 0, y: u.H + elev, z: 12, w: u.W + 30, h: 20, d: u.D + 30, mat: "stone:" + counterKind(u), tile: 1200 });
     }
     if (ct === "kbase") {
       var isFcm = (u.unitType === "fcm-rt" || u.unitType === "fcm-lt" || u.unitType === "wcm-rt" || u.unitType === "wcm-lt" ||

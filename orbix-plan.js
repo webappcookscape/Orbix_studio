@@ -3325,7 +3325,7 @@
       (furn.name && /rolling\s*shutter/i.test(furn.name)) ||
       (furn.unitConfig && (furn.unitConfig.isRollingShutter || furn.unitConfig.shutterType === 'rolling_shutter'))
     );
-    var defElevF = isRollingF ? 750 : (isOpenBoxF ? 1500 : (isSpiceRackF ? 1350 : (isWallU ? 1500 : 0)));
+    var defElevF = isRollingF ? 820 : (isOpenBoxF ? 1500 : (isSpiceRackF ? 1350 : (isWallU ? 1500 : 0)));
     var fElev = (furn.elevation !== undefined && furn.elevation !== null && furn.elevation !== '') ?
       parseFloat(furn.elevation) :
       ((furn.pos && furn.pos.z !== undefined && furn.pos.z !== null && furn.pos.z !== 0) ?
@@ -4383,9 +4383,9 @@
     var isLoftPlan = (catPlan.indexOf('loft') !== -1 || nmPlan.indexOf('loft') !== -1 || idPlan.indexOf('loft') !== -1 || cdPlan.indexOf('loft') !== -1);
     var isSpicePlan = (catPlan.indexOf('spice') !== -1 || nmPlan.indexOf('spice') !== -1 || idPlan.indexOf('spice') !== -1 || idPlan.indexOf('sr-') === 0);
     var defPlanElev = isLoftPlan ? 2100 : (isSpicePlan ? 1350 : (isWall ? 1500 : 0));
-    if (idPlan === 'wfm60-roll' || cdPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && (this.furniturePreset.unitConfig.isRollingShutter || this.furniturePreset.unitConfig.shutterType === 'rolling_shutter'))) defPlanElev = 750;
+    if (idPlan === 'wfm60-roll' || cdPlan === 'wfm60-roll' || /rolling\s*shutter/i.test(nmPlan) || (this.furniturePreset.unitConfig && (this.furniturePreset.unitConfig.isRollingShutter || this.furniturePreset.unitConfig.shutterType === 'rolling_shutter'))) defPlanElev = 820;
     else if (idPlan === 'ledge-std' || nmPlan === 'ledge' || idPlan.indexOf('ledge-std') !== -1) defPlanElev = 1200;
-    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 850;
+    else if (idPlan === 'ledge-ctop' || nmPlan.indexOf('ledge countertop') !== -1) defPlanElev = 820;
     else if (idPlan === 'ledge-vert' || nmPlan.indexOf('vertical ledge') !== -1) defPlanElev = 0;
     else if (idPlan === 'pnl-back' || nmPlan.indexOf('back panel') !== -1) defPlanElev = 300;
     else if (idPlan === 'pnl-wall' || nmPlan.indexOf('wall panel') !== -1 || catPlan === 'wall_paneling') defPlanElev = 0;

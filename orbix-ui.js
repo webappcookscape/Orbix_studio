@@ -1886,7 +1886,7 @@
         modelType: 'kitchen_fm',
         refCode: 'fm-60',
         pos: { x: 2400, y: 6600 },
-        dimensions: { W: 600, H: 750, D: 550 },
+        dimensions: { W: 600, H: 700, D: 550 },
         unitConfig: { shutterCol: 'MDF 7707', carcass: 'MDF 6601', shutters: 1, handle: 'gprof' },
         materials: {
           shutter: { material: 'HDHMR_18MM', finish: 'MDF 7707' },
@@ -2813,7 +2813,7 @@
           (fn.unitConfig && (fn.unitConfig.isRollingShutter || fn.unitConfig.shutterType === 'rolling_shutter'))
         );
         var isWallInsp = !isLoftInsp && !isRollingInsp && isWall;
-        var defInspElev = isRollingInsp ? 750 : (isLoftInsp ? 2100 : (isOpenBoxInsp ? 1500 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0))));
+        var defInspElev = isRollingInsp ? 820 : (isLoftInsp ? 2100 : (isOpenBoxInsp ? 1500 : (isSpiceInsp ? 1350 : (isWallInsp ? 1500 : 0))));
 
         var curElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '' && (!isWallInsp && !isLoftInsp && !isSpiceInsp && !isOpenBoxInsp && !isRollingInsp || parseFloat(fn.elevation) > 0)) ?
           parseFloat(fn.elevation) :
@@ -2969,7 +2969,7 @@
             '<div class="insp-row" style="margin-bottom:4px;"><label>Floor Elevation (AFFL)</label><input type="number" id="inspFurnElev" value="' + curElev + '" step="50" min="0" max="3000"></div>' +
             '<div style="display:flex;gap:4px;margin-top:6px;">' +
               '<button type="button" class="btn small" id="btnPresetFloor" style="flex:1;font-size:10px;padding:3px;background:#f8fafc;border:1px solid #cbd5e1;">Floor (0 mm)</button>' +
-              '<button type="button" class="btn small" id="btnPresetCounter" style="flex:1;font-size:10px;padding:3px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;">Counter (750 mm)</button>' +
+              '<button type="button" class="btn small" id="btnPresetCounter" style="flex:1;font-size:10px;padding:3px;background:#ecfdf5;border:1px solid #a7f3d0;color:#047857;">Counter (820 mm)</button>' +
               '<button type="button" class="btn small" id="btnPresetWall" style="flex:1;font-size:10px;padding:3px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;">Wall (1500 mm)</button>' +
               '<button type="button" class="btn small" id="btnPresetLoft" style="flex:1;font-size:10px;padding:3px;background:#ede9fe;border:1px solid #ddd6fe;color:#5b21b6;">Loft (2100 mm)</button>' +
             '</div>' +
@@ -3525,12 +3525,12 @@
         var btnCounter = document.getElementById('btnPresetCounter');
         if (btnCounter) {
           btnCounter.addEventListener('click', function () {
-            fn.elevation = 750;
-            if (fn.pos) fn.pos.z = 750;
+            fn.elevation = 820;
+            if (fn.pos) fn.pos.z = 820;
             var elevElC = document.getElementById('inspFurnElev');
-            if (elevElC) elevElC.value = 750;
+            if (elevElC) elevElC.value = 820;
             syncInspectorTo3D();
-            self.editor.pushHistory('Set Elevation: 750mm (Countertop)');
+            self.editor.pushHistory('Set Elevation: 820mm (Countertop)');
             self.saveToLocalStorage();
             if (self.render3DHome) self.render3DHome(true);
             self.renderInspector(self.editor.selected);
@@ -4185,7 +4185,7 @@
           (fn.unitConfig && (fn.unitConfig.isRollingShutter || fn.unitConfig.shutterType === 'rolling_shutter')) ||
           /rolling\s*shutter/i.test(fn.name || '')
         );
-        var defUnitElev = isRolling ? 750 : (isWall ? 1500 : 0);
+        var defUnitElev = isRolling ? 820 : (isWall ? 1500 : 0);
         var unitElev = (fn.elevation !== undefined && fn.elevation !== null && fn.elevation !== '') ?
           parseFloat(fn.elevation) : ((fn.pos && fn.pos.z !== undefined && fn.pos.z !== null && fn.pos.z !== 0) ? parseFloat(fn.pos.z) : defUnitElev);
 
@@ -4440,7 +4440,7 @@
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
-          var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 750 : (fn.category === 'tv_unit' ? 450 : 2100));
+          var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 700 : (fn.category === 'tv_unit' ? 450 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
           var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 450);
           var sColNew = (fn.unitConfig && fn.unitConfig.shutterCol) || (fn.materials && fn.materials.shutter && fn.materials.shutter.finish) || 'MDF 7707';
@@ -6723,7 +6723,7 @@
 
       function mapItemToCard(it) {
         var w = (it.dimensions && it.dimensions.W) || 600;
-        var h = (it.dimensions && it.dimensions.H) || 750;
+        var h = (it.dimensions && it.dimensions.H) || 700;
         var d = (it.dimensions && it.dimensions.D) || 560;
         var variants = [w];
         if (w === 600) variants = [450, 500, 600, 800, 900];
@@ -6976,7 +6976,7 @@
               id: cardData.id,
               name: cardData.name,
               category: cardData.category || (isPanelOrLedge ? 'wall_paneling' : (isWallUnit ? 'kitchen_wall' : (isLoftUnit ? 'loft' : (cat === 'base_unit' ? 'kitchen_base' : cat)))),
-              dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: (isLoftUnit ? 400 : (isWallUnit ? 600 : 750)), D: (isWallUnit ? 350 : 560) }),
+              dimensions: Object.assign({}, cardData.dimensions || { W: 900, H: (isLoftUnit ? 400 : (isWallUnit ? 600 : 700)), D: (isWallUnit ? 350 : 560) }),
               elevation: finalElev,
               unitConfig: Object.assign({}, cardData.unitConfig || {})
             };

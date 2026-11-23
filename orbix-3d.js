@@ -4119,7 +4119,7 @@
       fg.add(s2Mesh);
     }
 
-    // 7. Countertop Stone (35mm Black Stone, counterH = 35)
+    // 7. Countertop Stone (20mm Stone, counterH = 20)
     if (counterH > 0) {
       var cY = plinthH + bodyH + counterH / 2;
       var c1Mesh = new THREE.Mesh(new THREE.BoxGeometry(W + 20, counterH, depth + 20), counterMat);
@@ -4273,7 +4273,7 @@
     var isFcmCornerOS = /fcm[-_ ]*(rt|lt)/i.test(furn.id || furn.catalogItemId || furn.code || furn.name || '') || (furn.unitConfig && /fcm[-_ ]*(rt|lt)/i.test(furn.unitConfig.unitType || ''));
     var baseD = (dims.D && dims.D >= 18) ? dims.D : (isWrbOS ? 18 : (isWallOS ? 350 : (isBaseOS || isLoftOS ? 550 : 350)));
     var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false && !isFcmCornerOS) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
-    var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none' && !isFcmCornerOS) ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 35)) : 0;
+    var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none' && !isFcmCornerOS) ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 20)) : 0;
 
     if (isBaseOS && baseD > 50) {
       // 1. Plinth Kickboard & Adjustable Cabinet Legs
@@ -5219,8 +5219,15 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       }
     }
     var plinthH = hasLegs ? 100 : 0;
-    var counterH = (isBase && counterColorName !== 'none') ? 35 : 0;
-    var bodyH = (dims.H <= 350) ? dims.H : Math.max(100, dims.H - plinthH - counterH);
+    var counterH = (isBase && counterColorName !== 'none') ? 20 : 0;
+    var bodyH;
+    if (isBase) {
+      // Floor unit: Carcass height is 700mm. Total finished height = 100mm leg + 700mm carcass + 20mm countertop = 820mm
+      bodyH = (dims.H >= 800) ? Math.max(100, dims.H - plinthH - counterH) : (dims.H || 700);
+      if (bodyH < 100) bodyH = 700;
+    } else {
+      bodyH = (dims.H <= 350) ? dims.H : Math.max(100, dims.H - plinthH - counterH);
+    }
     var topOfCarcass = plinthH + bodyH;
     var innerW = dims.W - 36;
     var innerD = dims.D - 20;

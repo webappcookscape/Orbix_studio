@@ -616,7 +616,7 @@
         pricingModel: 'running_ft', // running feet based
         baseRatePerRft: 2800,
         standardDepth: 600,
-        standardHeight: 850
+        standardHeight: 700
       },
       kitchen_wall: {
         name: 'Kitchen Wall Units',
@@ -2608,7 +2608,14 @@
       /ledge|shelf/i.test(item.code || '')
     );
     var isLedgeFace = isLedge && (dims.H <= 50 || /ledge-std|ledge-ctop/i.test(item.id || '') || (item.name && item.name.indexOf('VERTICAL') === -1));
-    var frontAreaSft = isLedgeFace ? ((dims.W * dims.D) / SFT_FACTOR) : ((dims.W * dims.H) / SFT_FACTOR);
+    var isBaseFloorUnit = (catKey === 'base' || catKey === 'kitchen' || catKey === 'floor' || catKey === 'kitchen_base' || /base|floor|sink|hob|kbase/i.test(catKey) || /base|floor|sink|hob|kbase|bu\d+/i.test(item.name || '') || /base|floor|sink|hob|kbase|bu\d+/i.test(item.code || '') || /base|floor|sink|hob|kbase|bu\d+/i.test(item.id || '')) && !(/wall|overhead|loft/i.test(catKey) || /wall|overhead|loft/i.test(item.name || ''));
+    var pricingH = dims.H;
+    if (isBaseFloorUnit) {
+      // Pricing calculates strictly on the carcass box height (700mm), excluding 100mm legs and 20mm countertop stone
+      pricingH = (dims.H >= 800) ? Math.max(100, dims.H - 120) : (dims.H || 700);
+      if (pricingH < 100) pricingH = 700;
+    }
+    var frontAreaSft = isLedgeFace ? ((dims.W * dims.D) / SFT_FACTOR) : ((dims.W * pricingH) / SFT_FACTOR);
     var runningFt = (dims.W / 304.8);
 
     var modelType = resolveModelType(item);
@@ -2651,7 +2658,7 @@
 
     var dimFormula = isLedgeFace ?
       (dims.W + ' mm (L) × ' + dims.D + ' mm (D) ÷ 92903.04') :
-      (dims.W + ' mm × ' + dims.H + ' mm ÷ 92903.04');
+      (dims.W + ' mm × ' + Math.round(pricingH) + ' mm ÷ 92903.04');
 
     if (activeTier && modelDef && modelDef.pricingModel === 'front_area') {
       baseAmount = frontAreaSft * baseRate;
