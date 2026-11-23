@@ -3,7 +3,7 @@
    Offline CAD engine, cache-first app shell & resilient background sync
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'orbix-studio-v25';
+const CACHE_NAME = 'orbix-studio-v26';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -26,6 +26,9 @@ const STATIC_ASSETS = [
 
 // Installation: Cache App Shell
 self.addEventListener('install', (event) => {
+  if (self.location && self.location.protocol.indexOf('http') !== 0) {
+    return self.skipWaiting();
+  }
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return Promise.allSettled(

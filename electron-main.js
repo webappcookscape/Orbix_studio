@@ -28,7 +28,7 @@ function setupNetworkInterceptors() {
     const responseHeaders = Object.assign({}, details.responseHeaders);
 
     if (url.includes('orbixdesigns.com') || url.includes('localhost') || url.includes('127.0.0.1')) {
-      responseHeaders['Access-Control-Allow-Origin'] = ['*'];
+      responseHeaders['Access-Control-Allow-Origin'] = ['file://'];
       responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
       responseHeaders['Access-Control-Allow-Methods'] = ['GET, POST, PUT, DELETE, OPTIONS, HEAD, PATCH'];
       responseHeaders['Access-Control-Allow-Headers'] = ['*'];
