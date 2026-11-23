@@ -292,7 +292,7 @@
       ta.value = text;
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand('copy'); } catch (_2) {}
+      try { document.execCommand('copy'); } catch (_2) { }
       document.body.removeChild(ta);
     }
     if (btnEl) {
