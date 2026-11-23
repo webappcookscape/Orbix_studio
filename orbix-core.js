@@ -3215,16 +3215,40 @@
     }
     if (!data.rateCard) data.rateCard = JSON.parse(JSON.stringify(DEFAULT_RATE_CARD));
     if (!data.commercialCharges) data.commercialCharges = {};
-    // Ensure all furniture items have guaranteed unique instance IDs (de-duplicate legacy projects)
+    // Ensure all furniture items have guaranteed unique instance IDs & auto-migrate floor unit heights
+    function migrateFloorUnit(fn) {
+      if (!fn) return;
+      var catL = String(fn.category || '').toLowerCase();
+      var isFloorU = (catL === 'kitchen_base' || catL === 'kitchen_fm' || catL === 'kitchen_corner' || catL === 'kitchen_drawers' || catL === 'crockery' || catL === 'base' || catL === 'floor' || (fn.name && /base/i.test(fn.name)) || (fn.id && /^(fm|fcm|fbcm|ctvb)/i.test(fn.id))) && !(/wall|overhead|loft/i.test(catL) || /wall|overhead|loft/i.test(fn.name || ''));
+      if (isFloorU && fn.dimensions) {
+        if (fn.dimensions.H === 750 || fn.dimensions.H === 720 || fn.dimensions.H === 850 || fn.dimensions.H === 860) {
+          fn.dimensions.H = 700;
+        }
+      }
+    }
+
     if (data.plan && Array.isArray(data.plan.furniture)) {
       var seenFurnIds = {};
       for (var fi = 0; fi < data.plan.furniture.length; fi++) {
         var fn = data.plan.furniture[fi];
+        if (!fn) continue;
         if (!fn.id || seenFurnIds[fn.id]) {
           if (!fn.catalogItemId) fn.catalogItemId = fn.id || fn.code;
           fn.id = uid('furn');
         }
         seenFurnIds[fn.id] = true;
+        migrateFloorUnit(fn);
+      }
+    }
+
+    if (data.plan && data.plan.floorsData && typeof data.plan.floorsData === 'object') {
+      for (var fk in data.plan.floorsData) {
+        var fd = data.plan.floorsData[fk];
+        if (fd && Array.isArray(fd.furniture)) {
+          for (var fdi = 0; fdi < fd.furniture.length; fdi++) {
+            migrateFloorUnit(fd.furniture[fdi]);
+          }
+        }
       }
     }
     try {
@@ -3250,7 +3274,7 @@
     "icon": "📺",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 450
     },
     "materials": {
@@ -3302,7 +3326,7 @@
     "icon": "📺",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 450
     },
     "materials": {
@@ -3354,7 +3378,7 @@
     "icon": "📺",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 450
     },
     "materials": {
@@ -3459,7 +3483,7 @@
     "icon": "🛕",
     "dimensions": {
       "W": 750,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -3511,7 +3535,7 @@
     "icon": "📺",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 450
     },
     "materials": {
@@ -3913,7 +3937,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 1050,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "elevation": 0,
@@ -3978,7 +4002,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 1050,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "elevation": 0,
@@ -4230,7 +4254,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "elevation": 0,
@@ -4506,7 +4530,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 1200,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -4554,7 +4578,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -4602,7 +4626,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -4650,7 +4674,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 750,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -4698,7 +4722,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -4746,7 +4770,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -4797,7 +4821,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 750,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -4848,7 +4872,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -4899,7 +4923,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -4950,7 +4974,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 750,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -5001,7 +5025,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -5052,7 +5076,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -5104,7 +5128,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -5156,7 +5180,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -6163,7 +6187,7 @@
     "icon": "📦",
     "dimensions": {
       "W": 750,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -6216,7 +6240,7 @@
     "icon": "🧂",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 450
     },
     "materials": {
@@ -6417,7 +6441,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 300,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -6468,7 +6492,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -6519,7 +6543,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -7458,7 +7482,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 1200,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -7512,7 +7536,7 @@
     "icon": "🍳",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {

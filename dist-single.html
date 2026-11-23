@@ -16091,16 +16091,40 @@ body.role-employee #adminCreateEmpBox,
     }
     if (!data.rateCard) data.rateCard = JSON.parse(JSON.stringify(DEFAULT_RATE_CARD));
     if (!data.commercialCharges) data.commercialCharges = {};
-    // Ensure all furniture items have guaranteed unique instance IDs (de-duplicate legacy projects)
+    // Ensure all furniture items have guaranteed unique instance IDs & auto-migrate floor unit heights
+    function migrateFloorUnit(fn) {
+      if (!fn) return;
+      var catL = String(fn.category || '').toLowerCase();
+      var isFloorU = (catL === 'kitchen_base' || catL === 'kitchen_fm' || catL === 'kitchen_corner' || catL === 'kitchen_drawers' || catL === 'crockery' || catL === 'base' || catL === 'floor' || (fn.name && /base/i.test(fn.name)) || (fn.id && /^(fm|fcm|fbcm|ctvb)/i.test(fn.id))) && !(/wall|overhead|loft/i.test(catL) || /wall|overhead|loft/i.test(fn.name || ''));
+      if (isFloorU && fn.dimensions) {
+        if (fn.dimensions.H === 750 || fn.dimensions.H === 720 || fn.dimensions.H === 850 || fn.dimensions.H === 860) {
+          fn.dimensions.H = 700;
+        }
+      }
+    }
+
     if (data.plan && Array.isArray(data.plan.furniture)) {
       var seenFurnIds = {};
       for (var fi = 0; fi < data.plan.furniture.length; fi++) {
         var fn = data.plan.furniture[fi];
+        if (!fn) continue;
         if (!fn.id || seenFurnIds[fn.id]) {
           if (!fn.catalogItemId) fn.catalogItemId = fn.id || fn.code;
           fn.id = uid('furn');
         }
         seenFurnIds[fn.id] = true;
+        migrateFloorUnit(fn);
+      }
+    }
+
+    if (data.plan && data.plan.floorsData && typeof data.plan.floorsData === 'object') {
+      for (var fk in data.plan.floorsData) {
+        var fd = data.plan.floorsData[fk];
+        if (fd && Array.isArray(fd.furniture)) {
+          for (var fdi = 0; fdi < fd.furniture.length; fdi++) {
+            migrateFloorUnit(fd.furniture[fdi]);
+          }
+        }
       }
     }
     try {
@@ -16126,7 +16150,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "📺",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 450
     },
     "materials": {
@@ -16178,7 +16202,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "📺",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 450
     },
     "materials": {
@@ -16230,7 +16254,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "📺",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 450
     },
     "materials": {
@@ -16335,7 +16359,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🛕",
     "dimensions": {
       "W": 750,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -16387,7 +16411,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "📺",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 450
     },
     "materials": {
@@ -16789,7 +16813,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 1050,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "elevation": 0,
@@ -16854,7 +16878,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 1050,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "elevation": 0,
@@ -17106,7 +17130,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "elevation": 0,
@@ -17382,7 +17406,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 1200,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17430,7 +17454,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17478,7 +17502,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17526,7 +17550,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 750,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17574,7 +17598,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17622,7 +17646,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17673,7 +17697,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 750,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17724,7 +17748,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17775,7 +17799,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17826,7 +17850,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 750,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17877,7 +17901,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17928,7 +17952,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 450,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -17980,7 +18004,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -18032,7 +18056,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 900,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -19039,7 +19063,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "📦",
     "dimensions": {
       "W": 750,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -19092,7 +19116,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🧂",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 450
     },
     "materials": {
@@ -19293,7 +19317,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 300,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -19344,7 +19368,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -19395,7 +19419,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -20334,7 +20358,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 1200,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -20388,7 +20412,7 @@ body.role-employee #adminCreateEmpBox,
     "icon": "🍳",
     "dimensions": {
       "W": 600,
-      "H": 750,
+      "H": 700,
       "D": 550
     },
     "materials": {
@@ -36976,6 +37000,24 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           if (typeof this.updateFloorSwitcherUI === 'function') {
             this.updateFloorSwitcherUI();
           }
+          var autoMigrateList = function (fList) {
+            if (!Array.isArray(fList)) return;
+            for (var m = 0; m < fList.length; m++) {
+              var itemM = fList[m];
+              if (!itemM || !itemM.dimensions) continue;
+              var cL = String(itemM.category || '').toLowerCase();
+              var isBF = (cL === 'kitchen_base' || cL === 'kitchen_fm' || cL === 'kitchen_corner' || cL === 'kitchen_drawers' || cL === 'crockery' || cL === 'base' || cL === 'floor' || (itemM.name && /base/i.test(itemM.name)) || (itemM.id && /^(fm|fcm|fbcm|ctvb)/i.test(itemM.id))) && !(/wall|overhead|loft/i.test(cL) || /wall|overhead|loft/i.test(itemM.name || ''));
+              if (isBF && (itemM.dimensions.H === 750 || itemM.dimensions.H === 720 || itemM.dimensions.H === 850 || itemM.dimensions.H === 860)) {
+                itemM.dimensions.H = 700;
+              }
+            }
+          };
+          autoMigrateList(proj.plan.furniture);
+          if (proj.plan.floorsData) {
+            for (var fk in proj.plan.floorsData) {
+              if (proj.plan.floorsData[fk]) autoMigrateList(proj.plan.floorsData[fk].furniture);
+            }
+          }
         }
         if (typeof Core !== 'undefined' && typeof Core.healCollinearWalls === 'function') {
           try { Core.healCollinearWalls(this.project); } catch (e) { }
@@ -40903,6 +40945,10 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
+          var isBaseFloor = (isBase || isKitchen || (fn.category && /base|floor/i.test(fn.category))) && !isWall;
+          if (isBaseFloor && fn.dimensions && (fn.dimensions.H === 750 || fn.dimensions.H === 720 || fn.dimensions.H === 850 || fn.dimensions.H === 860)) {
+            fn.dimensions.H = 700;
+          }
           var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 700 : (fn.category === 'tv_unit' ? 450 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
           var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 450);
@@ -58214,7 +58260,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
   // 1. Register Service Worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=23')
+      navigator.serviceWorker.register('./sw.js?v=24')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 

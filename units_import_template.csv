@@ -1,8 +1,8 @@
 Item_Code,Item_Name,Category,Model_Type,Width_mm,Height_mm,Depth_mm,Shutters_Count,Door_Type,Door_Style,Glass_Tint,Profile_Color,Internal_Sections,Shelves_Count,Drawers_Count,Has_Loft,Loft_Height_mm,Shutter_Material,Shutter_Finish,Carcass_Material,Carcass_Finish,Countertop,Handle_Type,Handle_Finish,LED_Light,Unit_Rate_INR,Area_Sqft
 ctvb-1d-1dr,CROCKERY/TV BASE 1DOOR 1 DRAWER,TV UNIT CABINET,TV UNIT CABINET,450,200,450,2,hinged,slab,none,none,0,1,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,0.9687523546
 ctvb-1dr,CROCKERY/TV BASE 1 DRAWER,TV UNIT CABINET,TV UNIT CABINET,600,200,350,1,sliding,slab,none,none,0,0,1,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,1.291669806
-ctvb-2d,CROCKERY /TV BASE 2 DOOR,POOJA WITH CNC,POOJA WITH CNC,750,750,450,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,6.054702216
-ctvb-2d-2dr,CROCKERY/TV BASE 2 DOOR 2 DRAWER,TV UNIT CABINET,TV UNIT CABINET,900,750,450,4,hinged,slab,none,none,0,1,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,7.26564266
+ctvb-2d,CROCKERY /TV BASE 2 DOOR,POOJA WITH CNC,POOJA WITH CNC,750,700,450,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,6.054702216
+ctvb-2d-2dr,CROCKERY/TV BASE 2 DOOR 2 DRAWER,TV UNIT CABINET,TV UNIT CABINET,900,700,450,4,hinged,slab,none,none,0,1,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,7.26564266
 ctvb-2dr,CROCKERY/TV BASE 2 DRAWER,TV UNIT CABINET,TV UNIT CABINET,450,500,350,2,sliding,slab,none,none,0,0,2,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,2.421880887
 ctvw-2d,CROCKERY/TV WALL 2 DOOR,POOJA WITH CNC,POOJA WITH CNC,900,600,300,2,hinged,slab,none,none,0,1,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,5.812514128
 ctvw-obs-02,CROCKERY/TV WALL OPEN BOX STORAGE 2,Spice Rack,Spice Rack,1500,300,200,0,none,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,BWP_18mm,Absolute White,BLUE,g prof,black,False,,4.843761773
@@ -42,7 +42,7 @@ ob-200-300,OPEN BOX-200 - 300,Spice Rack,Spice Rack,300,300,200,0,none,slab,none
 ob-300-600,OPEN BOX 300 - 600,Spice Rack,Spice Rack,600,600,300,0,none,slab,none,none,0,1,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,3.875009418
 ledge-std,LEDGE,WALL PANELING,WALL PANELING,1200,18,200,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,0.2325005651
 pnl-back,BACK PANEL,WALL PANELING,WALL PANELING,1200,1500,18,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,19.37504709
-ctvb-doors-only,CROCKERY / TV BASE ONLY DOORS,Loft-OS,Loft-OS,750,750,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,6.054702216
+ctvb-doors-only,CROCKERY / TV BASE ONLY DOORS,Loft-OS,Loft-OS,750,700,0,2,hinged,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,none,g prof,black,False,,6.054702216
 ctvb-open-storage,CROCKERY/TV BASE OPEN STORAGE,Spice Rack,Spice Rack,600,300,300,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,BLUE,g prof,black,False,,1.937504709
 ctvw-doors-only,CROCKERY/TV WALL UNIT ONLY DOOR,Loft-OS,Loft-OS,300,600,0,1,none,slab,none,none,0,0,0,False,0,HDHMR_18mm,BLUE,none,none,BLUE,g prof,black,False,,1.937504709
 ctvw-open-box,CROCKERY/TV WALL OPEN BOX STORAGE,Spice Rack,Spice Rack,600,200,300,0,none,slab,none,none,0,0,0,False,0,none,none,BWP_18mm,Absolute White,none,none,none,False,,1.291669806

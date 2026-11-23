@@ -513,6 +513,24 @@
           if (typeof this.updateFloorSwitcherUI === 'function') {
             this.updateFloorSwitcherUI();
           }
+          var autoMigrateList = function (fList) {
+            if (!Array.isArray(fList)) return;
+            for (var m = 0; m < fList.length; m++) {
+              var itemM = fList[m];
+              if (!itemM || !itemM.dimensions) continue;
+              var cL = String(itemM.category || '').toLowerCase();
+              var isBF = (cL === 'kitchen_base' || cL === 'kitchen_fm' || cL === 'kitchen_corner' || cL === 'kitchen_drawers' || cL === 'crockery' || cL === 'base' || cL === 'floor' || (itemM.name && /base/i.test(itemM.name)) || (itemM.id && /^(fm|fcm|fbcm|ctvb)/i.test(itemM.id))) && !(/wall|overhead|loft/i.test(cL) || /wall|overhead|loft/i.test(itemM.name || ''));
+              if (isBF && (itemM.dimensions.H === 750 || itemM.dimensions.H === 720 || itemM.dimensions.H === 850 || itemM.dimensions.H === 860)) {
+                itemM.dimensions.H = 700;
+              }
+            }
+          };
+          autoMigrateList(proj.plan.furniture);
+          if (proj.plan.floorsData) {
+            for (var fk in proj.plan.floorsData) {
+              if (proj.plan.floorsData[fk]) autoMigrateList(proj.plan.floorsData[fk].furniture);
+            }
+          }
         }
         if (typeof Core !== 'undefined' && typeof Core.healCollinearWalls === 'function') {
           try { Core.healCollinearWalls(this.project); } catch (e) { }
@@ -4440,6 +4458,10 @@
             fn.id === 'fcm-lt' || fn.catalogItemId === 'fcm-lt' ||
             fn.id === 'fm-lt-01' || fn.catalogItemId === 'fm-lt-01'
           );
+          var isBaseFloor = (isBase || isKitchen || (fn.category && /base|floor/i.test(fn.category))) && !isWall;
+          if (isBaseFloor && fn.dimensions && (fn.dimensions.H === 750 || fn.dimensions.H === 720 || fn.dimensions.H === 850 || fn.dimensions.H === 860)) {
+            fn.dimensions.H = 700;
+          }
           var defH = (fn.dimensions && fn.dimensions.H) || (isWall ? 600 : isKitchen ? 700 : (fn.category === 'tv_unit' ? 450 : 2100));
           var defW = (fn.dimensions && fn.dimensions.W) || (isKitchen ? 600 : 1200);
           var defD = (fn.dimensions && fn.dimensions.D) || (isWall ? 350 : isKitchen ? 550 : 450);

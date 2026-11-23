@@ -5,6 +5,7 @@ const path = require('path');
 console.log('=== TEST SUITE: Floor Units Height (100 leg + 700 carcass + 20 countertop = 820mm) & Carcass-Only Pricing ===\n');
 
 // Load Core
+delete require.cache[require.resolve('../orbix-core.js')];
 const Core = require('../orbix-core.js');
 
 // 1. Verify Pricing Engine calculates strictly on 700mm Carcass Height in Front Area SFT pricing
@@ -60,5 +61,43 @@ assert(uiJs.includes('isWall ? 600 : isKitchen ? 700'), 'Kitchen base unit defau
 assert(uiJs.includes('Counter (820 mm)'), 'Countertop preset button must display 820 mm');
 assert(uiJs.includes('fn.elevation = 820;'), 'Countertop preset click sets elevation to 820mm');
 console.log('✓ Test 5 Passed: orbix-ui.js defaults floor cabinets to 700mm carcass and counter elevation to 820mm');
+
+// 6. Verify FURNITURE_CATALOG floor units in orbix-core.js are updated to H: 700
+console.log('[TEST 6] Verifying FURNITURE_CATALOG base units in orbix-core.js...');
+const catalog = Core.FURNITURE_CATALOG || [];
+const fm60 = catalog.find(u => u.id === 'fm-60');
+assert(fm60 && fm60.dimensions.H === 700, `fm-60 height must be 700, got ${fm60 ? fm60.dimensions.H : 'missing'}`);
+const ctvb60 = catalog.find(u => u.id === 'ctvb-60');
+assert(ctvb60 && ctvb60.dimensions.H === 700, `ctvb-60 height must be 700, got ${ctvb60 ? ctvb60.dimensions.H : 'missing'}`);
+console.log('✓ Test 6 Passed: Catalog units (FM 60, CTVB 60, etc.) are standardized to H: 700');
+
+// 7. Verify Auto-Migration on deserializeProject for legacy saved projects
+console.log('[TEST 7] Verifying auto-migration of legacy saved projects with 750/720/850/860 floor units...');
+const legacyProject = {
+  id: 'legacy_proj_1',
+  plan: {
+    walls: [],
+    furniture: [
+      { id: 'f1', name: 'Legacy FM 60', category: 'kitchen_base', dimensions: { W: 600, H: 750, D: 560 } },
+      { id: 'f2', name: 'Legacy L-Corner', category: 'kitchen_corner', dimensions: { W: 900, H: 720, D: 560 } },
+      { id: 'f3', name: 'Legacy Overall 860', category: 'kitchen_base', dimensions: { W: 600, H: 860, D: 560 } }
+    ]
+  }
+};
+const migrated = Core.deserializeProject(legacyProject);
+assert.strictEqual(migrated.plan.furniture[0].dimensions.H, 700, 'Legacy 750 base unit must auto-migrate to 700');
+assert.strictEqual(migrated.plan.furniture[1].dimensions.H, 700, 'Legacy 720 base unit must auto-migrate to 700');
+assert.strictEqual(migrated.plan.furniture[2].dimensions.H, 700, 'Legacy 860 base unit must auto-migrate to 700');
+console.log('✓ Test 7 Passed: Legacy floor units automatically migrate to 700mm carcass height on load');
+
+// 8. Verify cache-busting version bumped to v24 in index.html, pwa.js, and sw.js
+console.log('[TEST 8] Verifying cache-busting version v24 across index.html, pwa.js, sw.js...');
+const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const pwaJs = fs.readFileSync(path.join(__dirname, '..', 'pwa.js'), 'utf8');
+const swJs = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
+assert(indexHtml.includes('orbix-core.js?v=24'), 'index.html must reference ?v=24 for core');
+assert(pwaJs.includes('./sw.js?v=24'), 'pwa.js must register sw.js?v=24');
+assert(swJs.includes('orbix-studio-v24'), 'sw.js CACHE_NAME must be orbix-studio-v24');
+console.log('✓ Test 8 Passed: Version bumped to v24 to force browser cache purge and fresh deployment load');
 
 console.log('\n=== ALL FLOOR UNIT HEIGHT & CARCASS PRICING TESTS PASSED 100%! ===');
