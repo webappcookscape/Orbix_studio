@@ -6117,14 +6117,21 @@
       save();
     }, geometry ? 70 : 0);
   }
+  var _isRenderingAll = false;
   function renderAll() {
-    nestBust();
-    if (window.OrbixUI && typeof window.OrbixUI.sync3DStudioUnits === 'function') {
-      window.OrbixUI.sync3DStudioUnits();
+    if (_isRenderingAll) return;
+    _isRenderingAll = true;
+    try {
+      nestBust();
+      if (window.OrbixUI && typeof window.OrbixUI.sync3DStudioUnits === 'function') {
+        window.OrbixUI.sync3DStudioUnits();
+      }
+      fit(); buildScene(); renderLegend(); renderFoot(); renderSheet(); renderElev();
+      refreshHeavy(true);
+      save();
+    } finally {
+      _isRenderingAll = false;
     }
-    fit(); buildScene(); renderLegend(); renderFoot(); renderSheet(); renderElev();
-    refreshHeavy(true);
-    save();
   }
   /* Panels / nesting / quote are only computed for the view you are
      actually looking at — nesting is the expensive one. */
@@ -6427,20 +6434,23 @@
     return d;
   }
   function renderElev() {
-    if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
-      try { window.OrbixUI.syncProjectUnitsTo3DStudio(); } catch (_) {}
-    }
     if (!window.OrbixA4Drawings && window.OrbixLazyLoader && typeof window.OrbixLazyLoader.loadA4Drawings === 'function') {
       var draftEl = $("#draft");
       if (draftEl) draftEl.innerHTML = '<div style="padding:40px;text-align:center;color:#64748b;font-size:13px">Loading 2D Production Drawings engine...</div>';
-      window.OrbixLazyLoader.loadA4Drawings().then(function () {
-        if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.initUI === 'function') {
-          try { window.OrbixA4Drawings.initUI(); } catch (_) {}
-        }
-        if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {
-          window.OrbixA4Drawings.renderActivePage();
-        }
-      });
+      if (!renderElev._isLoadingA4) {
+        renderElev._isLoadingA4 = true;
+        window.OrbixLazyLoader.loadA4Drawings().then(function () {
+          renderElev._isLoadingA4 = false;
+          if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.initUI === 'function') {
+            try { window.OrbixA4Drawings.initUI(); } catch (_) {}
+          }
+          if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {
+            window.OrbixA4Drawings.renderActivePage();
+          }
+        }).catch(function () {
+          renderElev._isLoadingA4 = false;
+        });
+      }
       return;
     }
     if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {

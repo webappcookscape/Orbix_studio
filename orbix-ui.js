@@ -4147,45 +4147,47 @@
     },
 
     syncProjectUnitsTo3DStudio: function (selectFurnId) {
-      if (this.sync3DStudioUnits && window.S && window.S.units && window.S.units.length > 0) {
-        this.sync3DStudioUnits();
-      }
-      var plan = this.getPlan();
-      var furnList = (plan && plan.furniture) || [];
-
-      window.S = window.S || {};
-
-      // If no furniture is placed on the 2D floor plan, clean 3D Studio units
-      if (!furnList.length) {
-        if (this.project && this.project._isHydratingLegacyData && this.project.data && Array.isArray(this.project.data.units) && this.project.data.units.length > 0) {
-          window.S.units = JSON.parse(JSON.stringify(this.project.data.units));
-          furnList = plan.furniture = plan.furniture || [];
-          for (var fj = 0; fj < window.S.units.length; fj++) {
-            var su2 = window.S.units[fj];
-            var fId2 = su2._furnId || ('furn_' + (su2.id || fj) + '_' + Date.now());
-            su2._furnId = fId2;
-            furnList.push({
-              id: fId2,
-              name: su2.label || ('Unit ' + (fj + 1)),
-              category: su2.ctype || 'wardrobe',
-              dimensions: { W: su2.W || 900, H: su2.H || 2100, D: su2.D || 600 },
-              elevation: su2.elev || 0,
-              pos: su2.pos || { x: (fj % 6) * 1100 + 600, y: Math.floor(fj / 6) * 1100 + 600, z: su2.elev || 0 },
-              rotY: su2.rotY || 0,
-              unitConfig: Object.assign({}, su2)
-            });
-          }
-          delete this.project._isHydratingLegacyData;
-        } else {
-          window.S.units = [];
-          window.S.active = 0;
-          if (typeof window.renderRail === 'function') window.renderRail();
-          if (typeof window.renderLegend === 'function') window.renderLegend();
-          if (typeof window.renderFoot === 'function') window.renderFoot();
-          if (typeof window.renderAll === 'function') window.renderAll();
-          return;
+      if (this._isSyncingUnitsTo3D) return;
+      this._isSyncingUnitsTo3D = true;
+      try {
+        if (this.sync3DStudioUnits && window.S && window.S.units && window.S.units.length > 0) {
+          this.sync3DStudioUnits();
         }
-      }
+        var plan = this.getPlan();
+        var furnList = (plan && plan.furniture) || [];
+
+        window.S = window.S || {};
+
+        // If no furniture is placed on the 2D floor plan, clean 3D Studio units
+        if (!furnList.length) {
+          if (this.project && this.project._isHydratingLegacyData && this.project.data && Array.isArray(this.project.data.units) && this.project.data.units.length > 0) {
+            window.S.units = JSON.parse(JSON.stringify(this.project.data.units));
+            furnList = plan.furniture = plan.furniture || [];
+            for (var fj = 0; fj < window.S.units.length; fj++) {
+              var su2 = window.S.units[fj];
+              var fId2 = su2._furnId || ('furn_' + (su2.id || fj) + '_' + Date.now());
+              su2._furnId = fId2;
+              furnList.push({
+                id: fId2,
+                name: su2.label || ('Unit ' + (fj + 1)),
+                category: su2.ctype || 'wardrobe',
+                dimensions: { W: su2.W || 900, H: su2.H || 2100, D: su2.D || 600 },
+                elevation: su2.elev || 0,
+                pos: su2.pos || { x: (fj % 6) * 1100 + 600, y: Math.floor(fj / 6) * 1100 + 600, z: su2.elev || 0 },
+                rotY: su2.rotY || 0,
+                unitConfig: Object.assign({}, su2)
+              });
+            }
+            delete this.project._isHydratingLegacyData;
+          } else {
+            window.S.units = [];
+            window.S.active = 0;
+            if (typeof window.renderRail === 'function') window.renderRail();
+            if (typeof window.renderLegend === 'function') window.renderLegend();
+            if (typeof window.renderFoot === 'function') window.renderFoot();
+            return;
+          }
+        }
 
       window.S.units = window.S.units || [];
 
@@ -4548,7 +4550,10 @@
         if (typeof window.renderLegend === 'function') window.renderLegend();
         if (typeof window.renderFoot === 'function') window.renderFoot();
       }
-    },
+    } finally {
+      this._isSyncingUnitsTo3D = false;
+    }
+  },
 
     selectFurnitureIn3DStudio: function (furnId) {
       if (furnId === undefined || furnId === null) return;

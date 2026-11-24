@@ -6537,14 +6537,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=27'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=27'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=27'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=28'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=28'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=28'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=27');
+          return loadScript('orbix-a4-drawings.js?v=28');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -40849,45 +40849,47 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     },
 
     syncProjectUnitsTo3DStudio: function (selectFurnId) {
-      if (this.sync3DStudioUnits && window.S && window.S.units && window.S.units.length > 0) {
-        this.sync3DStudioUnits();
-      }
-      var plan = this.getPlan();
-      var furnList = (plan && plan.furniture) || [];
-
-      window.S = window.S || {};
-
-      // If no furniture is placed on the 2D floor plan, clean 3D Studio units
-      if (!furnList.length) {
-        if (this.project && this.project._isHydratingLegacyData && this.project.data && Array.isArray(this.project.data.units) && this.project.data.units.length > 0) {
-          window.S.units = JSON.parse(JSON.stringify(this.project.data.units));
-          furnList = plan.furniture = plan.furniture || [];
-          for (var fj = 0; fj < window.S.units.length; fj++) {
-            var su2 = window.S.units[fj];
-            var fId2 = su2._furnId || ('furn_' + (su2.id || fj) + '_' + Date.now());
-            su2._furnId = fId2;
-            furnList.push({
-              id: fId2,
-              name: su2.label || ('Unit ' + (fj + 1)),
-              category: su2.ctype || 'wardrobe',
-              dimensions: { W: su2.W || 900, H: su2.H || 2100, D: su2.D || 600 },
-              elevation: su2.elev || 0,
-              pos: su2.pos || { x: (fj % 6) * 1100 + 600, y: Math.floor(fj / 6) * 1100 + 600, z: su2.elev || 0 },
-              rotY: su2.rotY || 0,
-              unitConfig: Object.assign({}, su2)
-            });
-          }
-          delete this.project._isHydratingLegacyData;
-        } else {
-          window.S.units = [];
-          window.S.active = 0;
-          if (typeof window.renderRail === 'function') window.renderRail();
-          if (typeof window.renderLegend === 'function') window.renderLegend();
-          if (typeof window.renderFoot === 'function') window.renderFoot();
-          if (typeof window.renderAll === 'function') window.renderAll();
-          return;
+      if (this._isSyncingUnitsTo3D) return;
+      this._isSyncingUnitsTo3D = true;
+      try {
+        if (this.sync3DStudioUnits && window.S && window.S.units && window.S.units.length > 0) {
+          this.sync3DStudioUnits();
         }
-      }
+        var plan = this.getPlan();
+        var furnList = (plan && plan.furniture) || [];
+
+        window.S = window.S || {};
+
+        // If no furniture is placed on the 2D floor plan, clean 3D Studio units
+        if (!furnList.length) {
+          if (this.project && this.project._isHydratingLegacyData && this.project.data && Array.isArray(this.project.data.units) && this.project.data.units.length > 0) {
+            window.S.units = JSON.parse(JSON.stringify(this.project.data.units));
+            furnList = plan.furniture = plan.furniture || [];
+            for (var fj = 0; fj < window.S.units.length; fj++) {
+              var su2 = window.S.units[fj];
+              var fId2 = su2._furnId || ('furn_' + (su2.id || fj) + '_' + Date.now());
+              su2._furnId = fId2;
+              furnList.push({
+                id: fId2,
+                name: su2.label || ('Unit ' + (fj + 1)),
+                category: su2.ctype || 'wardrobe',
+                dimensions: { W: su2.W || 900, H: su2.H || 2100, D: su2.D || 600 },
+                elevation: su2.elev || 0,
+                pos: su2.pos || { x: (fj % 6) * 1100 + 600, y: Math.floor(fj / 6) * 1100 + 600, z: su2.elev || 0 },
+                rotY: su2.rotY || 0,
+                unitConfig: Object.assign({}, su2)
+              });
+            }
+            delete this.project._isHydratingLegacyData;
+          } else {
+            window.S.units = [];
+            window.S.active = 0;
+            if (typeof window.renderRail === 'function') window.renderRail();
+            if (typeof window.renderLegend === 'function') window.renderLegend();
+            if (typeof window.renderFoot === 'function') window.renderFoot();
+            return;
+          }
+        }
 
       window.S.units = window.S.units || [];
 
@@ -41250,7 +41252,10 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         if (typeof window.renderLegend === 'function') window.renderLegend();
         if (typeof window.renderFoot === 'function') window.renderFoot();
       }
-    },
+    } finally {
+      this._isSyncingUnitsTo3D = false;
+    }
+  },
 
     selectFurnitureIn3DStudio: function (furnId) {
       if (furnId === undefined || furnId === null) return;
@@ -56693,14 +56698,21 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       save();
     }, geometry ? 70 : 0);
   }
+  var _isRenderingAll = false;
   function renderAll() {
-    nestBust();
-    if (window.OrbixUI && typeof window.OrbixUI.sync3DStudioUnits === 'function') {
-      window.OrbixUI.sync3DStudioUnits();
+    if (_isRenderingAll) return;
+    _isRenderingAll = true;
+    try {
+      nestBust();
+      if (window.OrbixUI && typeof window.OrbixUI.sync3DStudioUnits === 'function') {
+        window.OrbixUI.sync3DStudioUnits();
+      }
+      fit(); buildScene(); renderLegend(); renderFoot(); renderSheet(); renderElev();
+      refreshHeavy(true);
+      save();
+    } finally {
+      _isRenderingAll = false;
     }
-    fit(); buildScene(); renderLegend(); renderFoot(); renderSheet(); renderElev();
-    refreshHeavy(true);
-    save();
   }
   /* Panels / nesting / quote are only computed for the view you are
      actually looking at — nesting is the expensive one. */
@@ -57003,20 +57015,23 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     return d;
   }
   function renderElev() {
-    if (window.OrbixUI && typeof window.OrbixUI.syncProjectUnitsTo3DStudio === 'function') {
-      try { window.OrbixUI.syncProjectUnitsTo3DStudio(); } catch (_) {}
-    }
     if (!window.OrbixA4Drawings && window.OrbixLazyLoader && typeof window.OrbixLazyLoader.loadA4Drawings === 'function') {
       var draftEl = $("#draft");
       if (draftEl) draftEl.innerHTML = '<div style="padding:40px;text-align:center;color:#64748b;font-size:13px">Loading 2D Production Drawings engine...</div>';
-      window.OrbixLazyLoader.loadA4Drawings().then(function () {
-        if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.initUI === 'function') {
-          try { window.OrbixA4Drawings.initUI(); } catch (_) {}
-        }
-        if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {
-          window.OrbixA4Drawings.renderActivePage();
-        }
-      });
+      if (!renderElev._isLoadingA4) {
+        renderElev._isLoadingA4 = true;
+        window.OrbixLazyLoader.loadA4Drawings().then(function () {
+          renderElev._isLoadingA4 = false;
+          if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.initUI === 'function') {
+            try { window.OrbixA4Drawings.initUI(); } catch (_) {}
+          }
+          if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {
+            window.OrbixA4Drawings.renderActivePage();
+          }
+        }).catch(function () {
+          renderElev._isLoadingA4 = false;
+        });
+      }
       return;
     }
     if (window.OrbixA4Drawings && typeof window.OrbixA4Drawings.renderActivePage === 'function') {
@@ -58602,7 +58617,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
   // 1. Register Service Worker (web browsers only, not file:// in desktop app)
   if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=26')
+      navigator.serviceWorker.register('./sw.js?v=28')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 
