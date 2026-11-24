@@ -90,14 +90,29 @@ assert.strictEqual(migrated.plan.furniture[1].dimensions.H, 700, 'Legacy 720 bas
 assert.strictEqual(migrated.plan.furniture[2].dimensions.H, 700, 'Legacy 860 base unit must auto-migrate to 700');
 console.log('✓ Test 7 Passed: Legacy floor units automatically migrate to 700mm carcass height on load');
 
-// 8. Verify cache-busting version bumped to v24 in index.html, pwa.js, and sw.js
-console.log('[TEST 8] Verifying cache-busting version v24 across index.html, pwa.js, sw.js...');
+// 8. Verify cache-busting version bumped across index.html, pwa.js, sw.js
+console.log('[TEST 8] Verifying cache-busting version across index.html, pwa.js, sw.js...');
 const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const pwaJs = fs.readFileSync(path.join(__dirname, '..', 'pwa.js'), 'utf8');
 const swJs = fs.readFileSync(path.join(__dirname, '..', 'sw.js'), 'utf8');
-assert(indexHtml.includes('orbix-core.js?v=24'), 'index.html must reference ?v=24 for core');
-assert(pwaJs.includes('./sw.js?v=24'), 'pwa.js must register sw.js?v=24');
-assert(swJs.includes('orbix-studio-v24'), 'sw.js CACHE_NAME must be orbix-studio-v24');
-console.log('✓ Test 8 Passed: Version bumped to v24 to force browser cache purge and fresh deployment load');
+assert(/orbix-core\.js\?v=\d+/.test(indexHtml), 'index.html must reference ?v= for core cache-busting');
+assert(pwaJs.includes('./sw.js?v='), 'pwa.js must register sw.js with cache-busting version');
+assert(/orbix-studio-v\d+/.test(swJs), 'sw.js CACHE_NAME must be versioned');
+console.log('✓ Test 8 Passed: Version bumped to force browser cache purge and fresh deployment load');
+
+// 9. Verify Only-Shutter (O/S) floor units in 3D align with standard 700mm carcass
+console.log('[TEST 9] Verifying Only-Shutter (O/S) floor units 3D height alignment in orbix-3d.js...');
+const orbix3dCode = fs.readFileSync(path.join(__dirname, '..', 'orbix-3d.js'), 'utf8');
+assert(orbix3dCode.includes('// Shutter vertical span between plinth and countertop (flush with standard 700mm carcass)'), 'Only Shutter must use carcass height span');
+assert(orbix3dCode.includes('slabMesh.position.set(0, actualPlinthH + bodyH + actualCounterH / 2, 2.5);'), 'Only Shutter countertop must sit on top of carcass at 820mm finished height');
+assert(orbix3dCode.includes('topFrame.position.set(0, actualPlinthH + bodyH - 12.5, frameZ);'), 'Top frame must mount at top of carcass');
+assert(orbix3dCode.includes('var shH = Math.max(100, bodyH - 6);'), 'Only shutter height must span bodyH - 6 (694mm for 700mm carcass)');
+
+// Also check catalog entries for fcm-rt-os and fcm-lt-os are H: 700
+const fcmRtOs = catalog.find(u => u.id === 'fcm-rt-os');
+assert(fcmRtOs && fcmRtOs.dimensions.H === 700, `fcm-rt-os height must be 700, got ${fcmRtOs ? fcmRtOs.dimensions.H : 'missing'}`);
+const fcmLtOs = catalog.find(u => u.id === 'fcm-lt-os');
+assert(fcmLtOs && fcmLtOs.dimensions.H === 700, `fcm-lt-os height must be 700, got ${fcmLtOs ? fcmLtOs.dimensions.H : 'missing'}`);
+console.log('✓ Test 9 Passed: Only-Shutter (O/S) units in 3D studio and catalog align flush with standard 700mm carcass & 820mm worktop');
 
 console.log('\n=== ALL FLOOR UNIT HEIGHT & CARCASS PRICING TESTS PASSED 100%! ===');

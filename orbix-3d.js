@@ -4274,6 +4274,14 @@
     var baseD = (dims.D && dims.D >= 18) ? dims.D : (isWrbOS ? 18 : (isWallOS ? 350 : (isBaseOS || isLoftOS ? 550 : 350)));
     var actualPlinthH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.hasLegs === false && !isFcmCornerOS) ? 0 : ((plinthH !== undefined && plinthH > 0) ? plinthH : 100)) : 0;
     var actualCounterH = isBaseOS ? ((furn.unitConfig && furn.unitConfig.counter === 'none' && !isFcmCornerOS) ? 0 : ((counterH !== undefined && counterH > 0) ? counterH : 20)) : 0;
+    var bodyH;
+    if (isBaseOS) {
+      // Floor unit: Carcass height is 700mm. Total finished height = 100mm leg + 700mm carcass + 20mm countertop = 820mm
+      bodyH = (H >= 800) ? Math.max(100, H - actualPlinthH - actualCounterH) : (H || 700);
+      if (bodyH < 100) bodyH = 700;
+    } else {
+      bodyH = (H <= 350) ? H : Math.max(100, H - actualPlinthH - actualCounterH);
+    }
 
     if (isBaseOS && baseD > 50) {
       // 1. Plinth Kickboard & Adjustable Cabinet Legs
@@ -4319,7 +4327,7 @@
           envMapIntensity: 1.15
         });
         var slabMesh = new THREE.Mesh(slabGeo, sMat);
-        slabMesh.position.set(0, H - actualCounterH / 2, 2.5);
+        slabMesh.position.set(0, actualPlinthH + bodyH + actualCounterH / 2, 2.5);
         slabMesh.castShadow = true; slabMesh.receiveShadow = true;
         slabMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
         fg.add(slabMesh);
@@ -4327,9 +4335,9 @@
         var hasHobOS = !!(furn.unitConfig && (furn.unitConfig.appliance === 'hob' || furn.unitConfig.hasHob));
         var hasSinkOS = !!(furn.unitConfig && (furn.unitConfig.appliance === 'sink' || furn.unitConfig.hasSink));
         if (hasHobOS) {
-          ArchitecturalRenderer.buildBuiltInHob(fg, slabW, slabD, H, furn.id);
+          ArchitecturalRenderer.buildBuiltInHob(fg, slabW, slabD, actualPlinthH + bodyH + actualCounterH, furn.id);
         } else if (hasSinkOS) {
-          ArchitecturalRenderer.buildBuiltInSink(fg, slabW, slabD, H, furn.id);
+          ArchitecturalRenderer.buildBuiltInSink(fg, slabW, slabD, actualPlinthH + bodyH + actualCounterH, furn.id);
         }
       }
     }
@@ -4338,8 +4346,8 @@
       parseInt(furn.unitConfig.shutters) : (W > 1200 ? 3 : W > 600 ? 2 : 1);
     numShutters = Math.max(1, numShutters);
 
-    // Shutter vertical span between plinth and countertop
-    var shH = Math.max(100, H - actualPlinthH - actualCounterH - 6);
+    // Shutter vertical span between plinth and countertop (flush with standard 700mm carcass)
+    var shH = Math.max(100, bodyH - 6);
     var hingeY = actualPlinthH + 3 + shH / 2;
     var frontZ = baseD / 2 - 9;
     var frameZ = frontZ - 12.5;
@@ -4347,12 +4355,12 @@
     // Slim perimeter mounting frame (25mm reveal)
     var frameMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7, metalness: 0.1 });
     var topFrame = new THREE.Mesh(new THREE.BoxGeometry(W, 25, 25), frameMat);
-    topFrame.position.set(0, H - actualCounterH - 12.5, frameZ);
+    topFrame.position.set(0, actualPlinthH + bodyH - 12.5, frameZ);
     fg.add(topFrame);
     var botFrame = new THREE.Mesh(new THREE.BoxGeometry(W, 25, 25), frameMat);
     botFrame.position.set(0, actualPlinthH + 12.5, frameZ);
     fg.add(botFrame);
-    var frameH = Math.max(10, H - actualPlinthH - actualCounterH - 50);
+    var frameH = Math.max(10, bodyH - 50);
     var leftFrame = new THREE.Mesh(new THREE.BoxGeometry(25, frameH, 25), frameMat);
     leftFrame.position.set(-W / 2 + 12.5, hingeY, frameZ);
     fg.add(leftFrame);
