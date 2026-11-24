@@ -5715,6 +5715,7 @@
       if (typeof window.showToast === 'function') {
         window.showToast('🌿 Placed ' + newDecor.name + ' (Excluded from Woodwork Pricing)');
       }
+      return newDecor;
     },
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -6242,21 +6243,34 @@
             if (window.ArchitecturalRenderer && self._customDecorScene) {
               window.ArchitecturalRenderer._gltfCache[self._customDecorDataUrl] = self._customDecorScene;
             }
+            if (self._lastPlacedDecorItem && self._lastPlacedDecorItem.id) {
+              self._lastPlacedDecorItem.modelUrl = self._customDecorDataUrl;
+              self.saveToLocalStorage();
+            }
           };
           reader.readAsDataURL(file);
 
-          if (blobUrl && typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+          function parseGLB(targetUrl) {
+            if (!window.THREE || !window.THREE.GLTFLoader) {
+              if (typeof window.ensureGLTFLoader === 'function') {
+                window.ensureGLTFLoader(function () { parseGLB(targetUrl); });
+              } else {
+                setTimeout(function () { parseGLB(targetUrl); }, 80);
+              }
+              return;
+            }
             var loader = new THREE.GLTFLoader();
-            loader.load(blobUrl, function (gltf) {
+            loader.load(targetUrl, function (gltf) {
               self._customDecorScene = gltf.scene;
               if (window.ArchitecturalRenderer) {
-                window.ArchitecturalRenderer._gltfCache[blobUrl] = gltf.scene;
+                window.ArchitecturalRenderer._gltfCache[targetUrl] = gltf.scene;
                 if (self._customDecorDataUrl) {
                   window.ArchitecturalRenderer._gltfCache[self._customDecorDataUrl] = gltf.scene;
                 }
               }
 
               // Compute true natural bounding box
+              gltf.scene.updateMatrixWorld(true);
               var bbox = new THREE.Box3().setFromObject(gltf.scene);
               var size = new THREE.Vector3();
               bbox.getSize(size);
@@ -6283,6 +6297,10 @@
                 statusEl.style.display = 'block';
               }
             });
+          }
+
+          if (blobUrl) {
+            parseGLB(blobUrl);
           } else if (statusEl) {
             statusEl.innerHTML = '✅ File loaded: <b>' + fileName + '</b> (' + ext.toUpperCase() + ')';
             statusEl.style.display = 'block';
@@ -6330,7 +6348,7 @@
           var chosenModelUrl = self._customDecorDataUrl || self._customDecorBlobUrl || null;
           var chosenBlobUrl = self._customDecorBlobUrl || null;
 
-          self.placeDecorItem({
+          var placed = self.placeDecorItem({
             name: name,
             decorType: decType,
             dimensions: { W: w, H: h, D: d },
@@ -6339,6 +6357,11 @@
             blobUrl: chosenBlobUrl,
             modelFormat: 'glb'
           });
+          self._lastPlacedDecorItem = placed;
+          if (self._customDecorScene && window.ArchitecturalRenderer) {
+            if (chosenModelUrl) window.ArchitecturalRenderer._gltfCache[chosenModelUrl] = self._customDecorScene;
+            if (chosenBlobUrl) window.ArchitecturalRenderer._gltfCache[chosenBlobUrl] = self._customDecorScene;
+          }
           self.closeDecorModal();
         });
       }

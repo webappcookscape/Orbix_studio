@@ -1669,7 +1669,7 @@
   var GL = (function () {
     var ok = false, renderer, scene, camera, root, floor, pmrem, matCache = {}, texCache3 = {}, target, dist = 3000, keyL = null;
     var composer = null, ssao = null, smaa = null;
-    var highDpr = Math.min(1.5, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
+    var highDpr = Math.min(1.25, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
     var dprRestoreTimer = null;
     function invalidateShadows() {
       if (renderer && renderer.shadowMap) {
@@ -1977,7 +1977,7 @@
       window.spotlightIntensity = (window.spotlightIntensity !== undefined) ? window.spotlightIntensity : 0;
       keyL = new THREE.DirectionalLight(0xfffbf2, window.sunlightIntensity);
       keyL.position.set(-3800, 7200, 5600); keyL.castShadow = true;
-      keyL.shadow.mapSize.set(2048, 2048);
+      keyL.shadow.mapSize.set(1024, 1024);
       var sc = keyL.shadow.camera; sc.left = -9500; sc.right = 9500; sc.top = 9500; sc.bottom = -9500; sc.near = 200; sc.far = 30000;
       keyL.shadow.bias = -0.0001; keyL.shadow.normalBias = 1.2; keyL.shadow.radius = 2.4;
       scene.add(keyL); scene.add(keyL.target);
@@ -3015,9 +3015,12 @@
     }
 
     function getHomeWallsAndFurniture(homeObj) {
+      if (!homeObj) return { walls: [], furniture: [] };
+      if (homeObj._cachedWalls && homeObj._cachedFurniture && !homeObj._cacheDirty) {
+        return { walls: homeObj._cachedWalls, furniture: homeObj._cachedFurniture };
+      }
       var wallMeshes = [];
       var furnMeshes = [];
-      if (!homeObj) return { walls: wallMeshes, furniture: furnMeshes };
 
       function collect(obj) {
         if (!obj || !obj.children) return;
@@ -3036,6 +3039,9 @@
       }
 
       collect(homeObj);
+      homeObj._cachedWalls = wallMeshes;
+      homeObj._cachedFurniture = furnMeshes;
+      homeObj._cacheDirty = false;
       return { walls: wallMeshes, furniture: furnMeshes };
     }
 
@@ -3318,36 +3324,17 @@
 
     function apply(forceSync) {
       if (!ok) return;
-      // Dynamic DPR: render at crisp 1.0 DPR during active camera orbit/pan/zoom, then restore full highDpr 160ms after idle
+      // Stable DPR: keep consistent pixel ratio without thrashing GPU buffers during orbit
       if (renderer && renderer.setPixelRatio && highDpr > 1) {
-        if (forceSync) {
-          if (dprRestoreTimer) { clearTimeout(dprRestoreTimer); dprRestoreTimer = null; }
-          if (renderer.getPixelRatio && renderer.getPixelRatio() !== highDpr) {
-            renderer.setPixelRatio(highDpr);
-          }
-        } else {
-          if (renderer.getPixelRatio && renderer.getPixelRatio() !== 1) {
-            renderer.setPixelRatio(1);
-          }
-          if (dprRestoreTimer) clearTimeout(dprRestoreTimer);
-          dprRestoreTimer = setTimeout(function () {
-            dprRestoreTimer = null;
-            if (!ok || !renderer) return;
-            if (renderer.getPixelRatio && renderer.getPixelRatio() !== highDpr) {
-              renderer.setPixelRatio(highDpr);
-              var rr = cachedStageRect || stage.getBoundingClientRect();
-              if (rr && rr.width > 0 && rr.height > 0) {
-                renderer.setSize(Math.floor(rr.width), Math.floor(rr.height), false);
-                if (typeof fxResize === 'function') fxResize();
-              }
-            }
-            requestRender();
-          }, 160);
+        if (renderer.getPixelRatio && renderer.getPixelRatio() !== highDpr) {
+          renderer.setPixelRatio(highDpr);
         }
       }
-      var liveR = stage.getBoundingClientRect();
-      if (liveR && liveR.width > 0 && liveR.height > 0) {
-        cachedStageRect = liveR;
+      if (!cachedStageRect && stage) {
+        var liveR = stage.getBoundingClientRect();
+        if (liveR && liveR.width > 0 && liveR.height > 0) {
+          cachedStageRect = liveR;
+        }
       }
       var r = cachedStageRect;
       if (r && r.width && r.height) {

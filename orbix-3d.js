@@ -2933,6 +2933,7 @@
       // Deep clone the cached scene
       var model = sourceScene.clone(true);
       model.name = '__decor_model__';
+      model.updateMatrixWorld(true);
 
       // Compute bounding box
       var bbox = new THREE.Box3().setFromObject(model);
@@ -2947,7 +2948,7 @@
       // Center horizontally, ground bottom to 0
       model.position.set(-center.x, -bbox.min.y, -center.z);
 
-      // Enable realistic shadows and materials
+      // Enable realistic shadows and materials (FrontSide enables GPU backface culling for 60fps)
       model.traverse(function (child) {
         if (child.isMesh) {
           child.castShadow = true;
@@ -2955,7 +2956,11 @@
           child.userData = child.userData || {};
           child.userData.isGltfMesh = true;
           if (child.material) {
-            child.material.side = THREE.DoubleSide;
+            if (!child.material.transparent && child.material.opacity >= 0.99) {
+              child.material.side = THREE.FrontSide;
+            } else {
+              child.material.side = THREE.DoubleSide;
+            }
             if (child.material.isMeshStandardMaterial || child.material.isMeshPhysicalMaterial) {
               child.material.roughness = Math.min(Math.max(child.material.roughness, 0.2), 0.95);
               child.material.metalness = Math.min(Math.max(child.material.metalness, 0.0), 0.9);
@@ -2967,7 +2972,7 @@
       });
 
       // Scale proportionally: maintain true aspect ratio without squishing
-      if (dims && dims.W && dims.H && dims.D && size.x > 0.01 && size.y > 0.01 && size.z > 0.01) {
+      if (dims && dims.W && dims.H && dims.D && size.x > 0.001 && size.y > 0.001 && size.z > 0.001) {
         var sx = dims.W / size.x;
         var sy = dims.H / size.y;
         var sz = dims.D / size.z;
@@ -2994,7 +2999,10 @@
         }
       }
 
-      if (self.requestRender) self.requestRender();
+      if (window.__cc && window.__cc.gl) {
+        if (window.__cc.gl.apply) window.__cc.gl.apply(true);
+        if (window.__cc.gl.settle) window.__cc.gl.settle();
+      }
       if (typeof onLoaded === 'function') onLoaded(wrapper);
     }
 
@@ -3031,6 +3039,44 @@
         }
         return;
       }
+
+      // Fast-path: Decode Base64 Data URL directly into ArrayBuffer for 100% reliable local/offline parsing
+      if (typeof url === 'string' && url.indexOf('data:') === 0) {
+        try {
+          var b64Idx = url.indexOf('base64,');
+          if (b64Idx !== -1) {
+            var rawB64 = url.substring(b64Idx + 7);
+            var binStr = atob(rawB64);
+            var binLen = binStr.length;
+            var u8Arr = new Uint8Array(binLen);
+            for (var bi = 0; bi < binLen; bi++) {
+              u8Arr[bi] = binStr.charCodeAt(bi);
+            }
+            var b64Loader = new THREE.GLTFLoader();
+            b64Loader.parse(u8Arr.buffer, '', function (gltf) {
+              ArchitecturalRenderer._gltfCache[url] = gltf.scene;
+              var cbs = ArchitecturalRenderer._gltfPending[url] || [];
+              delete ArchitecturalRenderer._gltfPending[url];
+              cbs.forEach(function (cb) {
+                try { cb(gltf.scene); } catch (e) { console.error(e); }
+              });
+              if (window.__cc && window.__cc.gl) {
+                if (window.__cc.gl.apply) window.__cc.gl.apply(true);
+                if (window.__cc.gl.settle) window.__cc.gl.settle();
+              }
+            }, function (parseErr) {
+              console.warn('[Orbix 3D] Base64 GLTF parse error:', parseErr);
+              var ph = parentGroup ? parentGroup.getObjectByName('__decor_placeholder__') : null;
+              if (ph && parentGroup) parentGroup.remove(ph);
+              delete ArchitecturalRenderer._gltfPending[url];
+            });
+            return;
+          }
+        } catch (b64Ex) {
+          console.warn('[Orbix 3D] Failed base64 decoding of GLTF:', b64Ex);
+        }
+      }
+
       var loader = new THREE.GLTFLoader();
       loader.load(url, function (gltf) {
         ArchitecturalRenderer._gltfCache[url] = gltf.scene;
@@ -3039,12 +3085,19 @@
         cbs.forEach(function (cb) {
           try { cb(gltf.scene); } catch (e) { console.error(e); }
         });
+        if (window.__cc && window.__cc.gl) {
+          if (window.__cc.gl.apply) window.__cc.gl.apply(true);
+          if (window.__cc.gl.settle) window.__cc.gl.settle();
+        }
       }, undefined, function (err) {
         console.warn('[Orbix 3D] Failed to load decor model:', url, err);
         var ph = parentGroup ? parentGroup.getObjectByName('__decor_placeholder__') : null;
         if (ph && parentGroup) parentGroup.remove(ph);
         delete ArchitecturalRenderer._gltfPending[url];
-        if (self.requestRender) self.requestRender();
+        if (window.__cc && window.__cc.gl) {
+          if (window.__cc.gl.apply) window.__cc.gl.apply(true);
+          if (window.__cc.gl.settle) window.__cc.gl.settle();
+        }
       });
     }
 
@@ -5147,7 +5200,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     };
     var cat = (furn.category || 'wardrobe').toLowerCase();
     var name = (furn.name || '').toLowerCase();
-    var isDecor = !!(furn.isDecor || furn.excludeFromPricing || cat === 'decor' || cat === 'appliance_decor' || furn.decorType);
+    var hasCustomModel = !!(furn.modelUrl || furn.blobUrl || furn.glbPath);
+    var isDecor = !!(furn.isDecor || furn.excludeFromPricing || cat === 'decor' || cat === 'appliance_decor' || furn.decorType || hasCustomModel);
     if (isDecor) {
       return this.buildDecorMesh(furn, fg, dims);
     }
