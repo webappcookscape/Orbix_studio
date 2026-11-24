@@ -1065,6 +1065,7 @@
       slug: opts.slug || null,
       thumbnailUrl: opts.thumbnailUrl || null,
       modelUrl: opts.modelUrl || null,
+      blobUrl: opts.blobUrl || null,
       modelFormat: opts.modelFormat || null,
       notes: opts.notes || ''
     };

@@ -2921,7 +2921,7 @@
   ArchitecturalRenderer._gltfCache = ArchitecturalRenderer._gltfCache || {};
   ArchitecturalRenderer._gltfPending = ArchitecturalRenderer._gltfPending || {};
 
-  ArchitecturalRenderer.prototype.loadAndAttachGLB = function (url, parentGroup, dims, onLoaded) {
+  ArchitecturalRenderer.prototype.loadAndAttachGLB = function (url, parentGroup, dims, onLoaded, furn) {
     var self = this;
     if (!url || typeof THREE === 'undefined') return;
 
@@ -2998,8 +2998,9 @@
       if (typeof onLoaded === 'function') onLoaded(wrapper);
     }
 
-    if (ArchitecturalRenderer._gltfCache[url]) {
-      applyModel(ArchitecturalRenderer._gltfCache[url]);
+    var cached = ArchitecturalRenderer._gltfCache[url] || (furn && furn.blobUrl && ArchitecturalRenderer._gltfCache[furn.blobUrl]) || (furn && furn.modelUrl && ArchitecturalRenderer._gltfCache[furn.modelUrl]);
+    if (cached) {
+      applyModel(cached);
       return;
     }
 
@@ -3061,7 +3062,7 @@
     var code = (furn.code || furn.catalogItemId || '').toLowerCase();
 
     // 1. Resolve exact .glb model URL
-    var glbUrl = furn.modelUrl || furn.glbPath || null;
+    var glbUrl = furn.blobUrl || furn.modelUrl || furn.glbPath || null;
     if (glbUrl && typeof glbUrl === 'string' && /\.skp$/i.test(glbUrl)) {
       // Map old .skp path to new .glb model
       var base = glbUrl.replace(/^.*[\\\/]/, '').replace(/\.skp$/i, '');
@@ -3165,7 +3166,7 @@
 
     // If photorealistic SketchUp GLB model is available, attach it directly!
     if (glbUrl) {
-      this.loadAndAttachGLB(glbUrl, fg, dims);
+      this.loadAndAttachGLB(glbUrl, fg, dims, undefined, furn);
       var posX = (furn.pos && furn.pos.x) || 0;
       var posY = (furn.pos && furn.pos.y) || 0;
       fg.position.set(posX, elev, posY);

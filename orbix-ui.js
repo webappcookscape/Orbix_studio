@@ -2788,6 +2788,211 @@
         }
         if (!fn) return;
 
+        // Dedicated Inspector for 3D Decors & Custom Imported Models
+        if (fn.isDecor || fn.category === 'decor' || fn.category === 'appliance_decor') {
+          var hasModel = !!(fn.modelUrl || fn.blobUrl);
+          var decorHtml =
+            '<div class="insp-header" style="margin-bottom:12px;">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+            '<div style="font-size:14px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">🌿 ' + (fn.name || 'Decor Item') + '</div>' +
+            '<span style="font-size:10px;font-weight:700;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:12px;border:1px solid #86efac;white-space:nowrap;">₹0 BOQ</span>' +
+            '</div>' +
+            '<div style="font-size:11px;color:#15803d;margin-top:2px;">Excluded from Woodwork quotation</div>' +
+            '</div>' +
+
+            // Name
+            '<div class="insp-group" style="margin-bottom:12px;">' +
+            '<label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">Item Name / Label</label>' +
+            '<input type="text" id="inspDecorName" class="form-input" value="' + (fn.name || '') + '" style="width:100%;font-size:12px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:5px;box-sizing:border-box;">' +
+            '</div>' +
+
+            // 3D Model Attachment Status & Replace Button
+            '<div style="background:#f8fafc;border:1px solid ' + (hasModel ? '#bbf7d0' : '#fed7aa') + ';border-radius:8px;padding:12px;margin-bottom:14px;">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
+            '<span style="font-size:11px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.5px;">📦 3D Model (.glb)</span>' +
+            '<span style="font-size:10.5px;font-weight:600;color:' + (hasModel ? '#15803d' : '#c2410c') + ';">' + (hasModel ? '✅ Attached' : '⚠️ Box Placeholder') + '</span>' +
+            '</div>' +
+            '<div style="font-size:11.5px;color:#64748b;margin-bottom:10px;">' +
+            (hasModel ? 'Custom 3D model is rendered in 3D Studio.' : 'No 3D file attached yet. Upload your .glb model below to replace this box.') +
+            '</div>' +
+            '<button type="button" class="btn small" id="inspDecorUploadModelBtn" style="width:100%;font-size:11.5px;font-weight:600;padding:6px 10px;background:#3b82f6;color:#ffffff;border:none;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">' +
+            '<span>📁</span> <span>' + (hasModel ? 'Replace 3D Model (.glb)' : 'Upload 3D Model (.glb)') + '</span>' +
+            '</button>' +
+            '<input type="file" id="inspDecorGlbInput" accept=".glb,.gltf" style="display:none;">' +
+            '<div id="inspDecorUploadStatus" style="display:none;font-size:11px;color:#166534;margin-top:6px;font-weight:600;"></div>' +
+            '</div>' +
+
+            // Dimensions W x H x D
+            '<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:14px;">' +
+            '<div style="font-size:11px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📐 Dimensions (mm)</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">' +
+            '<div>' +
+            '<label style="font-size:10.5px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Width</label>' +
+            '<input type="number" id="inspDecorW" value="' + (fn.dimensions.W || 900) + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;">' +
+            '</div>' +
+            '<div>' +
+            '<label style="font-size:10.5px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Height</label>' +
+            '<input type="number" id="inspDecorH" value="' + (fn.dimensions.H || 1800) + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;">' +
+            '</div>' +
+            '<div>' +
+            '<label style="font-size:10.5px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Depth</label>' +
+            '<input type="number" id="inspDecorD" value="' + (fn.dimensions.D || 700) + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;">' +
+            '</div>' +
+            '</div>' +
+
+            // Elevation
+            '<div>' +
+            '<label style="font-size:10.5px;font-weight:600;color:#64748b;display:block;margin-bottom:3px;">Mounting Elevation (AFFL mm)</label>' +
+            '<input type="number" id="inspDecorElev" value="' + (parseFloat(fn.elevation) || 0) + '" step="50" style="width:100%;font-size:11.5px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:4px;box-sizing:border-box;">' +
+            '</div>' +
+            '</div>' +
+
+            // Actions: Rotate & Delete
+            '<div style="display:flex;gap:8px;">' +
+            '<button type="button" class="btn small" id="inspDecorRotateBtn" style="flex:1;font-size:11.5px;padding:6px;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;border-radius:5px;cursor:pointer;">↻ Rotate 90°</button>' +
+            '<button type="button" class="btn small danger" id="inspDecorDeleteBtn" style="flex:1;font-size:11.5px;padding:6px;background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;border-radius:5px;cursor:pointer;">🗑️ Delete Item</button>' +
+            '</div>';
+
+          panel.innerHTML = decorHtml;
+
+          // Wire up listeners
+          var nameInp = document.getElementById('inspDecorName');
+          if (nameInp) {
+            nameInp.addEventListener('change', function () {
+              fn.name = nameInp.value.trim() || 'Decor Item';
+              self.editor.pushHistory('Rename Decor');
+              self.saveToLocalStorage();
+              if (self.render3DHome) self.render3DHome(true);
+            });
+          }
+
+          var uploadBtn = document.getElementById('inspDecorUploadModelBtn');
+          var fileInp = document.getElementById('inspDecorGlbInput');
+
+          if (uploadBtn && fileInp) {
+            uploadBtn.addEventListener('click', function () {
+              fileInp.click();
+            });
+
+            fileInp.addEventListener('change', function () {
+              var files = fileInp.files;
+              if (!files || !files.length) return;
+              var f = files[0];
+              var blobUrl = (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') ? URL.createObjectURL(f) : null;
+              fn.blobUrl = blobUrl;
+              fn.modelFormat = 'glb';
+
+              var reader = new FileReader();
+              reader.onload = function (ev) {
+                fn.modelUrl = ev.target.result;
+                if (window.ArchitecturalRenderer && self._lastScene) {
+                  window.ArchitecturalRenderer._gltfCache[fn.modelUrl] = self._lastScene;
+                }
+                self.saveToLocalStorage();
+              };
+              reader.readAsDataURL(f);
+
+              if (blobUrl && typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+                var loader = new THREE.GLTFLoader();
+                loader.load(blobUrl, function (gltf) {
+                  self._lastScene = gltf.scene;
+                  if (window.ArchitecturalRenderer) {
+                    window.ArchitecturalRenderer._gltfCache[blobUrl] = gltf.scene;
+                  }
+                  var bbox = new THREE.Box3().setFromObject(gltf.scene);
+                  var size = new THREE.Vector3();
+                  bbox.getSize(size);
+                  var maxDim = Math.max(size.x, size.y, size.z);
+                  var scale = (maxDim > 0.02 && maxDim < 15) ? 1000 : 1;
+                  var wMm = Math.round(size.x * scale);
+                  var hMm = Math.round(size.y * scale);
+                  var dMm = Math.round(size.z * scale);
+                  if (wMm > 50) fn.dimensions.W = wMm;
+                  if (hMm > 50) fn.dimensions.H = hMm;
+                  if (dMm > 50) fn.dimensions.D = dMm;
+
+                  fn.modelUrl = fn.modelUrl || blobUrl;
+                  self.editor.pushHistory('Attach 3D Model');
+                  self.saveToLocalStorage();
+                  if (self.render3DHome) self.render3DHome(true, undefined, fn.id);
+                  self.highlight3DFurniture(fn.id);
+                  self.renderInspector(self.editor.selected);
+                  if (typeof window.showToast === 'function') {
+                    window.showToast('✅ 3D Model attached: ' + f.name);
+                  }
+                }, undefined, function (err) {
+                  console.warn('[Orbix] GLTF parse error:', err);
+                  fn.modelUrl = fn.modelUrl || blobUrl;
+                  self.saveToLocalStorage();
+                  if (self.render3DHome) self.render3DHome(true, undefined, fn.id);
+                  self.renderInspector(self.editor.selected);
+                });
+              } else {
+                fn.modelUrl = blobUrl;
+                self.saveToLocalStorage();
+                if (self.render3DHome) self.render3DHome(true, undefined, fn.id);
+                self.renderInspector(self.editor.selected);
+              }
+            });
+          }
+
+          var wInp = document.getElementById('inspDecorW');
+          var hInp = document.getElementById('inspDecorH');
+          var dInp = document.getElementById('inspDecorD');
+          var elevInp = document.getElementById('inspDecorElev');
+
+          function updateDims() {
+            if (wInp) fn.dimensions.W = parseFloat(wInp.value) || fn.dimensions.W;
+            if (hInp) fn.dimensions.H = parseFloat(hInp.value) || fn.dimensions.H;
+            if (dInp) fn.dimensions.D = parseFloat(dInp.value) || fn.dimensions.D;
+            if (elevInp) {
+              fn.elevation = parseFloat(elevInp.value) || 0;
+              if (fn.pos) fn.pos.z = fn.elevation;
+            }
+            self.editor.pushHistory('Update Decor Dimensions');
+            self.saveToLocalStorage();
+            if (self.render3DHome) self.render3DHome(true, undefined, fn.id);
+            self.editor.render();
+          }
+
+          if (wInp) wInp.addEventListener('change', updateDims);
+          if (hInp) hInp.addEventListener('change', updateDims);
+          if (dInp) dInp.addEventListener('change', updateDims);
+          if (elevInp) elevInp.addEventListener('change', updateDims);
+
+          var rotBtn = document.getElementById('inspDecorRotateBtn');
+          if (rotBtn) {
+            rotBtn.addEventListener('click', function () {
+              fn.rotY = ((fn.rotY || 0) + Math.PI / 2) % (Math.PI * 2);
+              self.editor.pushHistory('Rotate Decor');
+              self.saveToLocalStorage();
+              if (self.render3DHome) self.render3DHome(true, undefined, fn.id);
+              self.editor.render();
+            });
+          }
+
+          var delBtn = document.getElementById('inspDecorDeleteBtn');
+          if (delBtn) {
+            delBtn.addEventListener('click', function () {
+              var fIdx = self.project.plan.furniture.findIndex(function (it) { return it.id === fn.id; });
+              if (fIdx !== -1) {
+                self.project.plan.furniture.splice(fIdx, 1);
+                self.editor.selected = [];
+                self.editor.pushHistory('Delete Decor Item');
+                self.saveToLocalStorage();
+                if (self.render3DHome) self.render3DHome(true);
+                self.editor.render();
+                self.renderInspector([]);
+                if (typeof window.showToast === 'function') {
+                  window.showToast('🗑️ Deleted ' + fn.name);
+                }
+              }
+            });
+          }
+
+          return;
+        }
+
         var rooms = this.project.plan.rooms || [];
         var roomOptions = '<option value="">(None / General)</option>';
         for (var r = 0; r < rooms.length; r++) {
@@ -4638,6 +4843,12 @@
           gl.gizmoSet(selGroup, furnId);
         }
       }
+      if (this.editor && furnId) {
+        this.editor.selected = [{ type: 'furniture', id: furnId }];
+        if (typeof this.renderInspector === 'function') {
+          this.renderInspector(this.editor.selected);
+        }
+      }
       if (gl.settle) gl.settle();
     },
 
@@ -5444,14 +5655,17 @@
         excludeFromPricing: true,
         decorType: preset.decorType || 'general',
         modelUrl: preset.modelUrl || null,
+        blobUrl: preset.blobUrl || null,
         thumbnailUrl: preset.thumbnailUrl || null,
-        modelFormat: preset.modelFormat || (preset.modelUrl && /\.glb$/i.test(preset.modelUrl) ? 'glb' : null),
+        modelFormat: preset.modelFormat || (preset.modelUrl && /\.glb$/i.test(preset.modelUrl) ? 'glb' : (preset.blobUrl ? 'glb' : null)),
         elevation: initElev,
         pos: { x: cX, y: cY, z: initElev },
         rotY: 0,
         dimensions: dims,
         unitConfig: { shutters: 0, drawers: 0, dstyle: 'none', handle: 'none' }
       });
+      if (preset.blobUrl) newDecor.blobUrl = preset.blobUrl;
+      if (preset.modelUrl) newDecor.modelUrl = preset.modelUrl;
 
       plan.furniture.push(newDecor);
       // Ensure all plan references (editor.project, this.project) stay synchronized
@@ -5941,6 +6155,11 @@
         var fileName = file.name;
         var ext = fileName.split('.').pop().toLowerCase();
 
+        self._customDecorFile = file;
+        self._customDecorBlobUrl = null;
+        self._customDecorDataUrl = null;
+        self._customDecorScene = null;
+
         if (nameInput) {
           nameInput.value = fileName.replace(/\.[^/.]+$/, "");
         }
@@ -5967,6 +6186,10 @@
             typeSelect.value = 'ro_purifier';
             if (wInput) wInput.value = 400; if (hInput) hInput.value = 520; if (dInput) dInput.value = 260;
             if (elevInput) elevInput.value = 1200;
+          } else if (lower.indexOf('chair') !== -1 || lower.indexOf('armchair') !== -1 || lower.indexOf('seat') !== -1) {
+            typeSelect.value = 'chair';
+            if (wInput) wInput.value = 600; if (hInput) hInput.value = 950; if (dInput) dInput.value = 600;
+            if (elevInput) elevInput.value = 0;
           } else if (lower.indexOf('dining') !== -1 || lower.indexOf('1ewt') !== -1 || (lower.indexOf('table') !== -1 && lower.indexOf('top') === -1)) {
             typeSelect.value = 'dining_table';
             if (wInput) wInput.value = 1200; if (hInput) hInput.value = 760; if (dInput) dInput.value = 800;
@@ -6006,7 +6229,65 @@
         }
 
         var statusEl = document.getElementById('customDecorFileStatus');
-        if (statusEl) {
+
+        // Parse and cache 3D Model if GLB / GLTF
+        if (ext === 'glb' || ext === 'gltf' || ext === 'obj') {
+          var blobUrl = (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') ? URL.createObjectURL(file) : null;
+          self._customDecorBlobUrl = blobUrl;
+
+          // Read Base64 Data URL for persistent storage in project save files
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            self._customDecorDataUrl = e.target.result;
+            if (window.ArchitecturalRenderer && self._customDecorScene) {
+              window.ArchitecturalRenderer._gltfCache[self._customDecorDataUrl] = self._customDecorScene;
+            }
+          };
+          reader.readAsDataURL(file);
+
+          if (blobUrl && typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+            var loader = new THREE.GLTFLoader();
+            loader.load(blobUrl, function (gltf) {
+              self._customDecorScene = gltf.scene;
+              if (window.ArchitecturalRenderer) {
+                window.ArchitecturalRenderer._gltfCache[blobUrl] = gltf.scene;
+                if (self._customDecorDataUrl) {
+                  window.ArchitecturalRenderer._gltfCache[self._customDecorDataUrl] = gltf.scene;
+                }
+              }
+
+              // Compute true natural bounding box
+              var bbox = new THREE.Box3().setFromObject(gltf.scene);
+              var size = new THREE.Vector3();
+              bbox.getSize(size);
+
+              // Detect units: if maximum dimension is < 15, model was designed in meters (e.g. 0.65m)
+              var maxDim = Math.max(size.x, size.y, size.z);
+              var scale = (maxDim > 0.02 && maxDim < 15) ? 1000 : 1;
+              var wMm = Math.round(size.x * scale);
+              var hMm = Math.round(size.y * scale);
+              var dMm = Math.round(size.z * scale);
+
+              if (wMm > 50 && wInput) wInput.value = wMm;
+              if (hMm > 50 && hInput) hInput.value = hMm;
+              if (dMm > 50 && dInput) dInput.value = dMm;
+
+              if (statusEl) {
+                statusEl.innerHTML = '✅ 3D Model ready: <b>' + fileName + '</b> (' + (wMm || 600) + ' × ' + (hMm || 900) + ' × ' + (dMm || 600) + ' mm)';
+                statusEl.style.display = 'block';
+              }
+            }, undefined, function (err) {
+              console.warn('[Orbix] GLTF parse error:', err);
+              if (statusEl) {
+                statusEl.innerHTML = '✅ File loaded: <b>' + fileName + '</b> (' + ext.toUpperCase() + ')';
+                statusEl.style.display = 'block';
+              }
+            });
+          } else if (statusEl) {
+            statusEl.innerHTML = '✅ File loaded: <b>' + fileName + '</b> (' + ext.toUpperCase() + ')';
+            statusEl.style.display = 'block';
+          }
+        } else if (statusEl) {
           statusEl.innerHTML = '✅ Loaded <b>' + fileName + '</b> (' + (ext.toUpperCase()) + ') — Dimensions and elevation configured!';
           statusEl.style.display = 'block';
         }
@@ -6046,11 +6327,17 @@
           var elev = parseFloat(elevInput ? elevInput.value : 0) || 0;
           var decType = (typeSelect && typeSelect.value) || 'general';
 
+          var chosenModelUrl = self._customDecorDataUrl || self._customDecorBlobUrl || null;
+          var chosenBlobUrl = self._customDecorBlobUrl || null;
+
           self.placeDecorItem({
             name: name,
             decorType: decType,
             dimensions: { W: w, H: h, D: d },
-            elevation: elev
+            elevation: elev,
+            modelUrl: chosenModelUrl,
+            blobUrl: chosenBlobUrl,
+            modelFormat: 'glb'
           });
           self.closeDecorModal();
         });

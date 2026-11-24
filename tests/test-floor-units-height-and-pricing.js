@@ -115,4 +115,22 @@ const fcmLtOs = catalog.find(u => u.id === 'fcm-lt-os');
 assert(fcmLtOs && fcmLtOs.dimensions.H === 700, `fcm-lt-os height must be 700, got ${fcmLtOs ? fcmLtOs.dimensions.H : 'missing'}`);
 console.log('✓ Test 9 Passed: Only-Shutter (O/S) units in 3D studio and catalog align flush with standard 700mm carcass & 820mm worktop');
 
+// 10. Verify Custom 3D Decor GLB attachment and preservation in Core.createFurniturePlacement
+console.log('[TEST 10] Verifying custom 3D model (.glb) decor preservation in orbix-core.js & orbix-ui.js...');
+const customDecorPlacement = Core.createFurniturePlacement({
+  name: 'Ergonomic Office Chair',
+  category: 'decor',
+  isDecor: true,
+  decorType: 'chair',
+  modelUrl: 'data:model/gltf-binary;base64,mockGlbData',
+  blobUrl: 'blob:http://localhost/mock-uuid',
+  dimensions: { W: 650, H: 980, D: 650 }
+});
+assert.strictEqual(customDecorPlacement.isDecor, true, 'isDecor must be true');
+assert.strictEqual(customDecorPlacement.excludeFromPricing, true, 'Custom decor must be excluded from woodwork pricing');
+assert.strictEqual(customDecorPlacement.modelUrl, 'data:model/gltf-binary;base64,mockGlbData', 'modelUrl must be preserved');
+assert.strictEqual(customDecorPlacement.blobUrl, 'blob:http://localhost/mock-uuid', 'blobUrl must be preserved');
+assert.strictEqual(customDecorPlacement.dimensions.H, 980, 'Custom 3D model height must be preserved');
+console.log('✓ Test 10 Passed: Custom 3D model (.glb) decors preserve modelUrl, blobUrl, and real dimensions');
+
 console.log('\n=== ALL FLOOR UNIT HEIGHT & CARCASS PRICING TESTS PASSED 100%! ===');
