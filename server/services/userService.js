@@ -23,10 +23,22 @@ function sanitizeUser(user) {
   return safe;
 }
 
+// Short-lived in-memory user cache (30s TTL) to avoid redundant PostgreSQL hits on concurrent API calls
+const USER_CACHE_TTL_MS = 30 * 1000;
+const _userCache = new Map();
+let _phoneColumnEnsured = false;
+
+function invalidateUserCache(id) {
+  if (id) _userCache.delete(String(id));
+  else _userCache.clear();
+}
+
 async function ensurePhoneColumnSafe() {
   if (!prismaConfig.isConnected) return false;
+  if (_phoneColumnEnsured) return true;
   try {
     await prisma.$executeRawUnsafe("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(64) DEFAULT ''");
+    _phoneColumnEnsured = true;
     return true;
   } catch (_) {
     return false;
@@ -70,9 +82,14 @@ class UserService {
     return users.map(sanitizeUser);
   }
 
-  // 2. Get user by ID
+  // 2. Get user by ID (cached 30s in memory for instant session hydration)
   async getUserById(id) {
     if (!id) return null;
+    const cacheKey = String(id);
+    const cached = _userCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.user;
+    }
     let user = await prisma.user.findUnique({
       where: { id }
     });
@@ -80,7 +97,11 @@ class UserService {
       const hydrated = await hydratePhonesIfMissing([user]);
       user = hydrated[0];
     }
-    return sanitizeUser(user);
+    const sanitized = sanitizeUser(user);
+    if (sanitized) {
+      _userCache.set(cacheKey, { user: sanitized, expiresAt: Date.now() + USER_CACHE_TTL_MS });
+    }
+    return sanitized;
   }
 
   // 3. Get user by username or email (for login/auth)
@@ -105,20 +126,27 @@ class UserService {
 
     let isValid = false;
     if (user.password && user.password.startsWith('$2')) {
-      isValid = bcrypt.compareSync(password, user.password);
+      isValid = typeof bcrypt.compare === 'function'
+        ? await bcrypt.compare(password, user.password)
+        : bcrypt.compareSync(password, user.password);
     } else if (user.password === password) {
       isValid = true;
-      // Upgrade plaintext password to bcrypt hash in background
-      try {
-        const hashedPassword = bcrypt.hashSync(password, 10);
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { password: hashedPassword }
-        });
-        console.log(`✓ Upgraded password for user ${user.id} to bcrypt hash.`);
-      } catch (err) {
-        console.warn(`Failed to upgrade password for user ${user.id}:`, err.message);
-      }
+      // Upgrade plaintext password to bcrypt hash in background without delaying login
+      Promise.resolve().then(async () => {
+        try {
+          const hashedPassword = typeof bcrypt.hash === 'function'
+            ? await bcrypt.hash(password, 10)
+            : bcrypt.hashSync(password, 10);
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { password: hashedPassword }
+          });
+          invalidateUserCache(user.id);
+          console.log(`✓ Upgraded password for user ${user.id} to bcrypt hash.`);
+        } catch (err) {
+          console.warn(`Failed to upgrade password for user ${user.id}:`, err.message);
+        }
+      });
     }
 
     return isValid ? sanitizeUser(user) : null;
@@ -173,7 +201,9 @@ class UserService {
       }
     }
 
-    return sanitizeUser(created);
+    const sanitized = sanitizeUser(created);
+    if (sanitized && sanitized.id) invalidateUserCache(sanitized.id);
+    return sanitized;
   }
 
   // 6. Update user (Admin Only)
@@ -239,6 +269,7 @@ class UserService {
       updated = Object.assign({}, updated, { phone: phoneToSync });
     }
 
+    invalidateUserCache(id);
     return sanitizeUser(updated);
   }
 
@@ -259,6 +290,7 @@ class UserService {
     }
 
     await prisma.user.delete({ where: { id } });
+    invalidateUserCache(id);
     return { success: true, id };
   }
 }

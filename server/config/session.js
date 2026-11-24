@@ -124,7 +124,13 @@ class ResilientSessionStore extends BaseStore {
         try { sock.destroy(); } catch (_) {}
         if (ok) {
           try {
-            const pool = new Pool({ connectionString: urlStr, max: 2 });
+            const pool = new Pool({
+              connectionString: urlStr,
+              max: 5,
+              connectionTimeoutMillis: 2000,
+              idleTimeoutMillis: 30000,
+              statement_timeout: 3000
+            });
             pool.on('error', () => {});
             this.pgStore = new pgSession({
               pool,
@@ -156,17 +162,25 @@ class ResilientSessionStore extends BaseStore {
       this.saveDiskCache();
     }
     if (this.pgStore) {
+      let settled = false;
+      const done = (err, val) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        fn(err, val);
+      };
+      const timer = setTimeout(() => done(null, null), 2000);
       this.pgStore.get(sid, (err, sess) => {
         if (!err && sess && isSessionActive(sess, Date.now())) {
           this.memorySessions.set(sid, sess);
           this.saveDiskCache();
-          return fn(null, sess);
+          return done(null, sess);
         }
         if (sess && !isSessionActive(sess, Date.now())) {
-          this.destroy(sid, () => fn(null, null));
+          this.destroy(sid, () => done(null, null));
           return;
         }
-        fn(null, null);
+        done(null, null);
       });
     } else {
       fn(null, null);
@@ -176,35 +190,33 @@ class ResilientSessionStore extends BaseStore {
   set(sid, sess, fn) {
     this.memorySessions.set(sid, sess);
     this.saveDiskCache();
+    // Respond immediately once persisted in memory + disk cache; mirror to PostgreSQL asynchronously so login never hangs on PG pool stalls
+    if (fn) fn(null);
     if (this.pgStore) {
-      this.pgStore.set(sid, sess, () => {
-        if (fn) fn(null);
-      });
-    } else {
-      if (fn) fn(null);
+      try {
+        this.pgStore.set(sid, sess, () => {});
+      } catch (_) {}
     }
   }
 
   destroy(sid, fn) {
     this.memorySessions.delete(sid);
     this.saveDiskCache();
+    if (fn) fn(null);
     if (this.pgStore) {
-      this.pgStore.destroy(sid, () => {
-        if (fn) fn(null);
-      });
-    } else {
-      if (fn) fn(null);
+      try {
+        this.pgStore.destroy(sid, () => {});
+      } catch (_) {}
     }
   }
 
   touch(sid, sess, fn) {
     this.memorySessions.set(sid, sess);
+    if (fn) fn(null);
     if (this.pgStore && typeof this.pgStore.touch === 'function') {
-      this.pgStore.touch(sid, sess, () => {
-        if (fn) fn(null);
-      });
-    } else {
-      if (fn) fn(null);
+      try {
+        this.pgStore.touch(sid, sess, () => {});
+      } catch (_) {}
     }
   }
 }

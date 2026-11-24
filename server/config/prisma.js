@@ -599,7 +599,10 @@ async function ensureUpdatedAtColumns(client) {
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP',
     "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(64) DEFAULT ''",
     'ALTER TABLE project_shares ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP',
-    'ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP'
+    'ALTER TABLE project_forks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP',
+    'CREATE INDEX IF NOT EXISTS idx_projects_updated_at ON projects (updated_at DESC)',
+    'CREATE INDEX IF NOT EXISTS idx_projects_created_by ON projects (created_by)',
+    'CREATE INDEX IF NOT EXISTS idx_projects_is_shared ON projects (is_shared)'
   ];
   for (const sql of stmts) {
     try {

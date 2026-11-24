@@ -561,11 +561,24 @@
           this.restoreUnderlay(proj);
         }
         this.updateUI();
-        this.renderBOQ();
-        if (typeof window.buildScene === 'function') window.buildScene();
-        if (typeof this.render3DHome === 'function') this.render3DHome();
-        if (typeof window.fit === 'function') window.fit();
-        if (typeof window.camApply === 'function') window.camApply();
+        // Only run heavy BOQ pricing and 3D scene rebuild if those tabs are currently active;
+        // otherwise mark dirty so they render instantly when the user opens Pricing or 3D Studio.
+        var isBoqActive = (typeof document !== 'undefined') && document.getElementById('view-boq') && document.getElementById('view-boq').classList.contains('is-on');
+        var isDesignActive = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+        if (isBoqActive) {
+          this._boqDirty = false;
+          this.renderBOQ();
+        } else {
+          this._boqDirty = true;
+        }
+        if (isDesignActive) {
+          if (typeof window.buildScene === 'function') window.buildScene();
+          if (typeof this.render3DHome === 'function') this.render3DHome();
+          if (typeof window.fit === 'function') window.fit();
+          if (typeof window.camApply === 'function') window.camApply();
+        } else {
+          this._3dDirty = true;
+        }
       } finally {
         setTimeout(function () {
           self._isProjectLoading = false;

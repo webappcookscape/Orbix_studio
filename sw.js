@@ -3,24 +3,12 @@
    Offline CAD engine, cache-first app shell & resilient background sync
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'orbix-studio-v26';
+const CACHE_NAME = 'orbix-studio-v27';
 const STATIC_ASSETS = [
   './',
-  './index.html',
-  './style.css',
-  './app.js',
-  './orbix-projects.js',
-  './orbix-live-sync.js',
-  './orbix-core.js',
-  './orbix-plan.js',
-  './orbix-3d.js',
-  './orbix-ui.js',
-  './orbix-client-quote.js',
   './logo.jpeg',
   './icon.svg',
   './icon-192.png',
-  './icon-512.png',
-  './apple-touch-icon.png',
   './manifest.json'
 ];
 
@@ -117,8 +105,39 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Local App Code (HTML, JS, CSS) & SPA Navigation: Network-First to guarantee latest code loads
+  // 2. Local Static Assets & App Shell:
+  // - Versioned (?v=...) JS/CSS, /assets/*, and images: Cache-First for instant repeat loads!
+  // - HTML / SPA navigation & unversioned files: Network-First so new deploys appear immediately.
   if (url.origin === location.origin) {
+    const isImmutableVersioned =
+      url.search.indexOf('v=') !== -1 ||
+      url.pathname.indexOf('/assets/') === 0 ||
+      /\.(png|jpg|jpeg|gif|svg|webp|ico|woff2?|glb|gltf)$/i.test(url.pathname);
+
+    if (isImmutableVersioned && request.mode !== 'navigate') {
+      event.respondWith(
+        caches.match(request).then((cached) => {
+          if (cached) return cached;
+          return fetch(request).then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const resClone = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, resClone));
+            }
+            return networkResponse;
+          }).catch(() => {
+            if (request.destination === 'image' || url.pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico)$/i)) {
+              return new Response(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>',
+                { headers: { 'Content-Type': 'image/svg+xml' } }
+              );
+            }
+            return new Response('Offline — asset unavailable', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+          });
+        })
+      );
+      return;
+    }
+
     event.respondWith(
       fetch(request)
         .then((networkResponse) => {

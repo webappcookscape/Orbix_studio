@@ -259,6 +259,16 @@
         v = 'home';
       }
 
+      // If user jumps directly from Home to a workspace tab before clicking a project card,
+      // seamlessly open their last active project (or newest project) on demand.
+      if (v !== 'home' && !OrbixProjects.activeProjectId && Array.isArray(OrbixProjects.projects) && OrbixProjects.projects.length > 0) {
+        var pendingId = OrbixProjects._pendingAutoOpenProjectId;
+        var toOpen = (pendingId && OrbixProjects.projects.find(function (p) { return p && String(p.id) === String(pendingId); })) || OrbixProjects.projects[0];
+        if (toOpen && toOpen.id && typeof OrbixProjects.openProject === 'function') {
+          OrbixProjects.openProject(toOpen.id, false);
+        }
+      }
+
       if (typeof window.setView === 'function') {
         try {
           window.setView(v);
@@ -745,52 +755,60 @@
         }
       }
       this.applyRolePermissions();
+      // Run users and projects fetches IN PARALLEL instead of blocking project list on /api/users
       this.fetchUsers(function () {
         self.applyRolePermissions();
-        self.fetchProjects(function () {
-          if (self.projects && self.projects.length > 0) {
-            var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
-            var savedId = null;
-            try {
-              savedId = localStorage.getItem(userActiveKey) || localStorage.getItem('orbix_active_project_id');
-              if (!savedId) {
-                var rawDraft = localStorage.getItem('orbix_working_project_draft');
-                if (rawDraft) {
-                  var dObj = JSON.parse(rawDraft);
-                  if (dObj && dObj.projectId) savedId = dObj.projectId;
-                }
-              }
-            } catch (e) { }
-
-            var toOpen = null;
-            if (savedId) {
-              toOpen = self.projects.find(function (p) { return p && String(p.id) === String(savedId); });
-              if (!toOpen) {
-                // If saved project exists in local draft storage, restore it into self.projects so local work is never lost!
-                var uId = self.currentUser ? self.currentUser.id : 'anon';
-                var draftKey = 'orbix_project_' + uId + '_' + savedId;
-                var rawPlan = null;
-                try { rawPlan = localStorage.getItem(draftKey); } catch (_) { }
-                if (rawPlan) {
-                  try {
-                    var parsedPlan = JSON.parse(rawPlan);
-                    toOpen = {
-                      id: savedId,
-                      title: (parsedPlan && parsedPlan.meta && parsedPlan.meta.title) || 'Restored CAD Project',
-                      client: (parsedPlan && parsedPlan.meta && parsedPlan.meta.clientName) || '',
-                      data: { plan: parsedPlan, units: [] },
-                      created_at: new Date().toISOString()
-                    };
-                    self.projects.unshift(toOpen);
-                  } catch (_) { }
-                }
+      });
+      this.fetchProjects(function () {
+        if (self.projects && self.projects.length > 0) {
+          var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
+          var savedId = null;
+          try {
+            savedId = localStorage.getItem(userActiveKey) || localStorage.getItem('orbix_active_project_id');
+            if (!savedId) {
+              var rawDraft = localStorage.getItem('orbix_working_project_draft');
+              if (rawDraft) {
+                var dObj = JSON.parse(rawDraft);
+                if (dObj && dObj.projectId) savedId = dObj.projectId;
               }
             }
-            if (!toOpen) toOpen = self.projects[0];
+          } catch (e) { }
+
+          var toOpen = null;
+          if (savedId) {
+            toOpen = self.projects.find(function (p) { return p && String(p.id) === String(savedId); });
+            if (!toOpen) {
+              // If saved project exists in local draft storage, restore it into self.projects so local work is never lost!
+              var uId = self.currentUser ? self.currentUser.id : 'anon';
+              var draftKey = 'orbix_project_' + uId + '_' + savedId;
+              var rawPlan = null;
+              try { rawPlan = localStorage.getItem(draftKey); } catch (_) { }
+              if (rawPlan) {
+                try {
+                  var parsedPlan = JSON.parse(rawPlan);
+                  toOpen = {
+                    id: savedId,
+                    title: (parsedPlan && parsedPlan.meta && parsedPlan.meta.title) || 'Restored CAD Project',
+                    client: (parsedPlan && parsedPlan.meta && parsedPlan.meta.clientName) || '',
+                    data: { plan: parsedPlan, units: [] },
+                    created_at: new Date().toISOString()
+                  };
+                  self.projects.unshift(toOpen);
+                } catch (_) { }
+              }
+            }
+          }
+          if (!toOpen) toOpen = self.projects[0];
+          self._pendingAutoOpenProjectId = toOpen ? toOpen.id : null;
+
+          // Only eagerly download the full project when loading directly into a workspace view (/2d-plan, /3d-studio, /pricing, /drawings).
+          // On Home dashboard, keep post-login load instant and hydrate on demand when the user opens a project!
+          var initView = OrbixRouter.initialTargetView || OrbixRouter.getInitialView();
+          if (toOpen && initView && initView !== 'home' && initView !== 'login') {
             self.openProject(toOpen.id, false);
           }
-          OrbixRouter.dispatchInitialRoute();
-        });
+        }
+        OrbixRouter.dispatchInitialRoute();
       });
     },
 
@@ -963,15 +981,15 @@
         localStorage.removeItem('cupboard-cad');
       } catch (e) { }
 
-      // Reset workspace to clean project for the newly logged-in account
-      if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
-        window.OrbixUI.resetProject('New Project');
-      }
+      // Lightweight workspace reset on login (avoid synchronous 3D/BOQ rebuild while landing on Home)
       if (window.S) {
         window.S.units = [];
         window.S.active = 0;
         if (typeof renderRail === 'function') renderRail();
-        if (typeof buildScene === 'function') buildScene();
+      }
+      if (window.OrbixUI) {
+        window.OrbixUI._3dDirty = true;
+        window.OrbixUI._boqDirty = true;
       }
 
       this._cloudSyncPaused = false;
@@ -980,6 +998,13 @@
       this.updateUserUI();
       this.applyRolePermissions();
 
+      // Always navigate to home page immediately on login so dashboard appears without waiting
+      if (root.OrbixRouter) {
+        root.OrbixRouter.navigateTo('home', true);
+      } else if (typeof window.setView === 'function') {
+        window.setView('home');
+      }
+
       var self = this;
       this.fetchProjects(function () {
         if (self.projects && self.projects.length > 0) {
@@ -987,13 +1012,7 @@
           var savedId = null;
           try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
           var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
-          self.openProject(toOpen.id, false);
-        }
-        // Always navigate to home page after login
-        if (root.OrbixRouter) {
-          root.OrbixRouter.navigateTo('home', true);
-        } else if (typeof window.setView === 'function') {
-          window.setView('home');
+          self._pendingAutoOpenProjectId = toOpen ? toOpen.id : null;
         }
       });
 
@@ -3240,9 +3259,20 @@
           OrbixProjects.apiFetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ identifier: identifier, password: password })
+            body: JSON.stringify({ identifier: identifier, password: password }),
+            timeoutMs: 20000
           })
-            .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+            .then(function (r) {
+              return r.text().then(function (txt) {
+                var parsed = {};
+                try { parsed = txt ? JSON.parse(txt) : {}; } catch (_) {
+                  var parseErr = new Error('Server returned non-JSON response (HTTP ' + r.status + ')');
+                  parseErr.httpStatus = r.status;
+                  throw parseErr;
+                }
+                return { status: r.status, data: parsed };
+              });
+            })
             .then(function (res) {
               if (submitBtn) {
                 submitBtn.disabled = false;
@@ -3250,7 +3280,11 @@
               }
               var data = res.data || {};
               if (data.success && data.user) {
-                completeLogin(data.user, data.sessionExpiresAt);
+                try {
+                  completeLogin(data.user, data.sessionExpiresAt);
+                } catch (uiErr) {
+                  console.error('[OrbixProjects] Post-login UI initialization notice:', uiErr);
+                }
               } else {
                 if (errAlert) {
                   errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
@@ -3258,13 +3292,17 @@
                 }
               }
             })
-            .catch(function () {
+            .catch(function (err) {
               if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign In to Workspace';
               }
               if (errAlert) {
-                errAlert.innerHTML = 'Unable to reach authentication server.<br><button type="button" id="authErrorOfflineBtn" style="margin-top:8px;background:#2563EB;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;">💻 Continue in Offline Mode</button>';
+                var isTimeout = err && err.name === 'AbortError';
+                var errMsg = isTimeout
+                  ? 'Authentication timed out (server took too long to respond). Please try again.'
+                  : (err && err.httpStatus ? ('Authentication server error (HTTP ' + err.httpStatus + '). Please try again.') : 'Unable to reach authentication server.');
+                errAlert.innerHTML = errMsg + '<br><button type="button" id="authErrorOfflineBtn" style="margin-top:8px;background:#2563EB;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;">💻 Continue in Offline Mode</button>';
                 errAlert.style.display = 'block';
                 var errOfflineBtn = document.getElementById('authErrorOfflineBtn');
                 if (errOfflineBtn) {

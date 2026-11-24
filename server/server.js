@@ -189,10 +189,68 @@ app.use(cors({
   credentials: true
 }));
 
+// ── Block Direct HTTP Access to Internal Code, Stores, Config & Backups ──
+const BLOCKED_PREFIXES = ['/server', '/db', '/data', '/node_modules', '/tests', '/prisma', '/shots', '/dist-desktop'];
+const BLOCKED_EXACT = new Set([
+  '/package.json', '/package-lock.json', '/build.py', '/electron-main.js',
+  '/.env', '/.sessions_cache.json', '/.session_secret', '/.gitignore'
+]);
+app.use((req, res, next) => {
+  let cleanPath = '';
+  try {
+    cleanPath = decodeURIComponent(req.path || '').replace(/\\/g, '/').toLowerCase();
+  } catch (_) {
+    return res.status(400).send('Bad Request');
+  }
+  if (cleanPath.includes('\0') || cleanPath.includes('..')) {
+    return res.status(403).send('Forbidden');
+  }
+  if (BLOCKED_EXACT.has(cleanPath) || cleanPath.includes('/.')) {
+    return res.status(404).send('Not found');
+  }
+  if (BLOCKED_PREFIXES.some((p) => cleanPath === p || cleanPath.startsWith(p + '/'))) {
+    return res.status(404).send('Not found');
+  }
+  if (/\.(bak|backup|sql|log|py|md|env|ts)$/i.test(cleanPath) || cleanPath.includes('.bak') || /_store\.json$/i.test(cleanPath)) {
+    return res.status(404).send('Not found');
+  }
+  next();
+});
+
+// ── PWA Service Worker & Manifest Handlers (served before session/DB middleware) ──
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(ROOT_DIR, 'sw.js'));
+});
+
+app.get('/manifest.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+  res.sendFile(path.join(ROOT_DIR, 'manifest.json'));
+});
+
+// ── Serve Static Assets BEFORE Session & DB User Hydration (zero PostgreSQL queries on .js/.css/images) ──
+app.use(express.static(ROOT_DIR, {
+  dotfiles: 'deny',
+  etag: true,
+  lastModified: true,
+  setHeaders: (res, filePath) => {
+    const ext = path.extname(filePath).toLowerCase();
+    const reqUrl = (res.req && res.req.url) ? res.req.url : '';
+    if (ext === '.html') {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else if (reqUrl.indexOf('?v=') !== -1 || filePath.indexOf(path.sep + 'assets' + path.sep) !== -1) {
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+    } else if (/\.(js|css|png|jpg|jpeg|gif|svg|webp|woff2?|glb|gltf|ico)$/i.test(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+    }
+  }
+}));
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// ── Session Middleware (3-day session persistence) ──
+// ── Session Middleware (3-day session persistence; only runs for API & dynamic routes) ──
 if (session) {
   app.use(session({
     store: new ResilientSessionStore(),
@@ -254,46 +312,6 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// ── PWA Service Worker & Manifest Handlers ──
-app.get('/sw.js', (req, res) => {
-  res.setHeader('Service-Worker-Allowed', '/');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.sendFile(path.join(ROOT_DIR, 'sw.js'));
-});
-
-app.get('/manifest.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
-  res.sendFile(path.join(ROOT_DIR, 'manifest.json'));
-});
-
-// ── Block Direct HTTP Access to Internal Code, Stores, Config & Backups ──
-const BLOCKED_PREFIXES = ['/server', '/db', '/data', '/node_modules', '/tests', '/prisma', '/shots', '/dist-desktop'];
-const BLOCKED_EXACT = new Set([
-  '/package.json', '/package-lock.json', '/build.py', '/electron-main.js',
-  '/.env', '/.sessions_cache.json', '/.session_secret', '/.gitignore'
-]);
-app.use((req, res, next) => {
-  let cleanPath = '';
-  try {
-    cleanPath = decodeURIComponent(req.path || '').replace(/\\/g, '/').toLowerCase();
-  } catch (_) {
-    return res.status(400).send('Bad Request');
-  }
-  if (cleanPath.includes('\0') || cleanPath.includes('..')) {
-    return res.status(403).send('Forbidden');
-  }
-  if (BLOCKED_EXACT.has(cleanPath) || cleanPath.includes('/.')) {
-    return res.status(404).send('Not found');
-  }
-  if (BLOCKED_PREFIXES.some((p) => cleanPath === p || cleanPath.startsWith(p + '/'))) {
-    return res.status(404).send('Not found');
-  }
-  if (/\.(bak|backup|sql|log|py|md|env|ts)$/i.test(cleanPath) || cleanPath.includes('.bak') || /_store\.json$/i.test(cleanPath)) {
-    return res.status(404).send('Not found');
-  }
-  next();
-});
-
 // ── Brute-Force Rate Limit on POST /api/login ──
 const loginAttempts = new Map();
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
@@ -323,24 +341,6 @@ app.post('/api/login', (req, res, next) => {
   });
   next();
 });
-
-// ── Serve Static Assets (with ETag + Smart Browser Caching for fast repeat loads) ──
-app.use(express.static(ROOT_DIR, {
-  dotfiles: 'deny',
-  etag: true,
-  lastModified: true,
-  setHeaders: (res, filePath) => {
-    const ext = path.extname(filePath).toLowerCase();
-    const reqUrl = (res.req && res.req.url) ? res.req.url : '';
-    if (ext === '.html') {
-      res.setHeader('Cache-Control', 'no-cache');
-    } else if (reqUrl.indexOf('?v=') !== -1 || filePath.indexOf(path.sep + 'assets' + path.sep) !== -1) {
-      res.setHeader('Cache-Control', 'public, max-age=604800');
-    } else if (/\.(js|css|png|jpg|jpeg|gif|svg|webp|woff2?|glb|gltf|ico)$/i.test(ext)) {
-      res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
-    }
-  }
-}));
 
 // ── Mount Layered REST API Routes ──
 app.use('/api', apiRoutes);

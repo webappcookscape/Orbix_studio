@@ -6569,6 +6569,9 @@
       }
 
       var run3DBackendWork = function () {
+        if (typeof ensureGLReady === 'function') {
+          ensureGLReady();
+        }
         var curProj = window.OrbixUI && (window.OrbixUI.project || (window.OrbixUI.editor && window.OrbixUI.editor.project));
         var curProjId = curProj ? String(curProj.id || curProj._projectId || '') : '';
         var glScene = (GL.ok && GL.getScene) ? GL.getScene() : null;
@@ -7940,18 +7943,32 @@
   window.renderSheet = renderSheet;
   window.renderElev = renderElev;
 
+  var _glBooted = false;
+  function ensureGLReady() {
+    if (_glBooted || GL.ok) return true;
+    _glBooted = true;
+    loadThree(function () {
+      if (GL.init()) { fit(); buildScene(); }
+      if (FX && GL.ok) loadFX(function () { if (GL.fxInit()) camApply(); });
+      if (EMBED) {
+        cam.yaw = ROOM.walls ? -12 : -30; cam.pitch = ROOM.walls ? -8 : -9; cam.zoom = 0.06; fit(); camApply();
+        postUp({ event: "ready", rooms: NEO_ROOMS.map(function (r) { return { id: r.id, name: r.name, blurb: r.blurb, units: r.units.map(function (x) { return x.label; }) }; }), finishes: NEO_FINISHES.map(function (f) { return { id: f.id, name: f.name }; }) });
+        roomReport();
+        if (PARAMS.get("tour") === "1") tour(true); else if (PARAMS.get("spin") === "1") spin(true);
+      }
+    });
+    return GL.ok;
+  }
+  window.ensureGLReady = ensureGLReady;
+
   renderRail();
-  renderAll();
-  loadThree(function () {
-    if (GL.init()) { fit(); buildScene(); }
-    if (FX && GL.ok) loadFX(function () { if (GL.fxInit()) camApply(); });
-    if (EMBED) {
-      cam.yaw = ROOM.walls ? -12 : -30; cam.pitch = ROOM.walls ? -8 : -9; cam.zoom = 0.06; fit(); camApply();
-      postUp({ event: "ready", rooms: NEO_ROOMS.map(function (r) { return { id: r.id, name: r.name, blurb: r.blurb, units: r.units.map(function (x) { return x.label; }) }; }), finishes: NEO_FINISHES.map(function (f) { return { id: f.id, name: f.name }; }) });
-      roomReport();
-      if (PARAMS.get("tour") === "1") tour(true); else if (PARAMS.get("spin") === "1") spin(true);
-    }
-  });
+  // Defer heavy WebGL context + PMREMGenerator environment cubemap bake until user actually enters 3D Studio
+  // (eliminates 400-900ms GPU/CPU freeze on Login and Home page boot; EMBED mode still initializes immediately)
+  var initialDesignOn = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+  if (EMBED || initialDesignOn) {
+    renderAll();
+    ensureGLReady();
+  }
   $all("[data-go]").forEach(function (b) {
     b.addEventListener("click", function () {
       if (b.dataset.go === "kitchen") { galState.type = "kitchen"; setView("gallery"); return; }

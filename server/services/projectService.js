@@ -2,7 +2,8 @@
 // ORBIX STUDIO — Project Service (Prisma ORM)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const { prisma } = require('../config/prisma');
+const prismaConfig = require('../config/prisma');
+const { prisma } = prismaConfig;
 
 function extractPlanNode(dataObj) {
   if (!dataObj || typeof dataObj !== 'object') return null;
@@ -155,6 +156,54 @@ function formatProjectSummary(p) {
 class ProjectService {
   // 1. Get all accessible projects for user (lightweight metadata summaries; full plan loads on GET /api/projects/:id)
   async getProjects(user) {
+    // Fast-path for live PostgreSQL: extract ONLY lightweight card metadata & data->'details'/'shareNotice'
+    // inside PostgreSQL so multi-MB data->'plan' / base64 underlays are NEVER read or transferred on list load!
+    if (prismaConfig.isConnected && typeof prisma.$queryRawUnsafe === 'function') {
+      try {
+        const baseCols = `
+          SELECT
+            id,
+            title,
+            client,
+            type,
+            status,
+            created_by AS "createdBy",
+            owner_name AS "ownerName",
+            owner_email AS "ownerEmail",
+            units_count AS "unitsCount",
+            boards_est AS "boardsEst",
+            is_shared AS "isShared",
+            fork_count AS "forkCount",
+            created_at AS "createdAt",
+            updated_at AS "updatedAt",
+            jsonb_build_object(
+              'details', COALESCE(data->'details', '{}'::jsonb),
+              'shareNotice', data->'shareNotice'
+            ) AS data
+          FROM projects
+        `;
+        let rows;
+        if (user && user.role !== 'admin') {
+          rows = await prisma.$queryRawUnsafe(
+            `${baseCols} WHERE created_by = $1 OR is_shared = true ORDER BY updated_at DESC`,
+            String(user.id || '')
+          );
+        } else {
+          rows = await prisma.$queryRawUnsafe(`${baseCols} ORDER BY updated_at DESC`);
+        }
+        if (Array.isArray(rows)) {
+          return rows.map((r) => {
+            if (r && r.data && r.data.shareNotice === null) {
+              delete r.data.shareNotice;
+            }
+            return formatProjectSummary(r);
+          });
+        }
+      } catch (sqlErr) {
+        console.warn('[ProjectService] Selective SQL summary fallback:', sqlErr.message);
+      }
+    }
+
     let where = {};
     if (user && user.role !== 'admin') {
       where = {

@@ -1,9 +1,4 @@
 <title>Orbix Studio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
-    rel="stylesheet">
   <style>
 /* ═══════════════════════════════════════════════════════════════
    CUPBOARD CAD
@@ -6542,14 +6537,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=26'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=26'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=26'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=27'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=27'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=27'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=26');
+          return loadScript('orbix-a4-drawings.js?v=27');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -6966,6 +6961,16 @@ body.role-employee #adminCreateEmpBox,
       var allowed = ['home', 'plan', 'design', 'elev', 'boq'];
       if (allowed.indexOf(v) === -1) {
         v = 'home';
+      }
+
+      // If user jumps directly from Home to a workspace tab before clicking a project card,
+      // seamlessly open their last active project (or newest project) on demand.
+      if (v !== 'home' && !OrbixProjects.activeProjectId && Array.isArray(OrbixProjects.projects) && OrbixProjects.projects.length > 0) {
+        var pendingId = OrbixProjects._pendingAutoOpenProjectId;
+        var toOpen = (pendingId && OrbixProjects.projects.find(function (p) { return p && String(p.id) === String(pendingId); })) || OrbixProjects.projects[0];
+        if (toOpen && toOpen.id && typeof OrbixProjects.openProject === 'function') {
+          OrbixProjects.openProject(toOpen.id, false);
+        }
       }
 
       if (typeof window.setView === 'function') {
@@ -7454,52 +7459,60 @@ body.role-employee #adminCreateEmpBox,
         }
       }
       this.applyRolePermissions();
+      // Run users and projects fetches IN PARALLEL instead of blocking project list on /api/users
       this.fetchUsers(function () {
         self.applyRolePermissions();
-        self.fetchProjects(function () {
-          if (self.projects && self.projects.length > 0) {
-            var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
-            var savedId = null;
-            try {
-              savedId = localStorage.getItem(userActiveKey) || localStorage.getItem('orbix_active_project_id');
-              if (!savedId) {
-                var rawDraft = localStorage.getItem('orbix_working_project_draft');
-                if (rawDraft) {
-                  var dObj = JSON.parse(rawDraft);
-                  if (dObj && dObj.projectId) savedId = dObj.projectId;
-                }
-              }
-            } catch (e) { }
-
-            var toOpen = null;
-            if (savedId) {
-              toOpen = self.projects.find(function (p) { return p && String(p.id) === String(savedId); });
-              if (!toOpen) {
-                // If saved project exists in local draft storage, restore it into self.projects so local work is never lost!
-                var uId = self.currentUser ? self.currentUser.id : 'anon';
-                var draftKey = 'orbix_project_' + uId + '_' + savedId;
-                var rawPlan = null;
-                try { rawPlan = localStorage.getItem(draftKey); } catch (_) { }
-                if (rawPlan) {
-                  try {
-                    var parsedPlan = JSON.parse(rawPlan);
-                    toOpen = {
-                      id: savedId,
-                      title: (parsedPlan && parsedPlan.meta && parsedPlan.meta.title) || 'Restored CAD Project',
-                      client: (parsedPlan && parsedPlan.meta && parsedPlan.meta.clientName) || '',
-                      data: { plan: parsedPlan, units: [] },
-                      created_at: new Date().toISOString()
-                    };
-                    self.projects.unshift(toOpen);
-                  } catch (_) { }
-                }
+      });
+      this.fetchProjects(function () {
+        if (self.projects && self.projects.length > 0) {
+          var userActiveKey = 'orbix_active_proj_' + (self.currentUser ? self.currentUser.id : 'anon');
+          var savedId = null;
+          try {
+            savedId = localStorage.getItem(userActiveKey) || localStorage.getItem('orbix_active_project_id');
+            if (!savedId) {
+              var rawDraft = localStorage.getItem('orbix_working_project_draft');
+              if (rawDraft) {
+                var dObj = JSON.parse(rawDraft);
+                if (dObj && dObj.projectId) savedId = dObj.projectId;
               }
             }
-            if (!toOpen) toOpen = self.projects[0];
+          } catch (e) { }
+
+          var toOpen = null;
+          if (savedId) {
+            toOpen = self.projects.find(function (p) { return p && String(p.id) === String(savedId); });
+            if (!toOpen) {
+              // If saved project exists in local draft storage, restore it into self.projects so local work is never lost!
+              var uId = self.currentUser ? self.currentUser.id : 'anon';
+              var draftKey = 'orbix_project_' + uId + '_' + savedId;
+              var rawPlan = null;
+              try { rawPlan = localStorage.getItem(draftKey); } catch (_) { }
+              if (rawPlan) {
+                try {
+                  var parsedPlan = JSON.parse(rawPlan);
+                  toOpen = {
+                    id: savedId,
+                    title: (parsedPlan && parsedPlan.meta && parsedPlan.meta.title) || 'Restored CAD Project',
+                    client: (parsedPlan && parsedPlan.meta && parsedPlan.meta.clientName) || '',
+                    data: { plan: parsedPlan, units: [] },
+                    created_at: new Date().toISOString()
+                  };
+                  self.projects.unshift(toOpen);
+                } catch (_) { }
+              }
+            }
+          }
+          if (!toOpen) toOpen = self.projects[0];
+          self._pendingAutoOpenProjectId = toOpen ? toOpen.id : null;
+
+          // Only eagerly download the full project when loading directly into a workspace view (/2d-plan, /3d-studio, /pricing, /drawings).
+          // On Home dashboard, keep post-login load instant and hydrate on demand when the user opens a project!
+          var initView = OrbixRouter.initialTargetView || OrbixRouter.getInitialView();
+          if (toOpen && initView && initView !== 'home' && initView !== 'login') {
             self.openProject(toOpen.id, false);
           }
-          OrbixRouter.dispatchInitialRoute();
-        });
+        }
+        OrbixRouter.dispatchInitialRoute();
       });
     },
 
@@ -7672,15 +7685,15 @@ body.role-employee #adminCreateEmpBox,
         localStorage.removeItem('cupboard-cad');
       } catch (e) { }
 
-      // Reset workspace to clean project for the newly logged-in account
-      if (window.OrbixUI && typeof window.OrbixUI.resetProject === 'function') {
-        window.OrbixUI.resetProject('New Project');
-      }
+      // Lightweight workspace reset on login (avoid synchronous 3D/BOQ rebuild while landing on Home)
       if (window.S) {
         window.S.units = [];
         window.S.active = 0;
         if (typeof renderRail === 'function') renderRail();
-        if (typeof buildScene === 'function') buildScene();
+      }
+      if (window.OrbixUI) {
+        window.OrbixUI._3dDirty = true;
+        window.OrbixUI._boqDirty = true;
       }
 
       this._cloudSyncPaused = false;
@@ -7689,6 +7702,13 @@ body.role-employee #adminCreateEmpBox,
       this.updateUserUI();
       this.applyRolePermissions();
 
+      // Always navigate to home page immediately on login so dashboard appears without waiting
+      if (root.OrbixRouter) {
+        root.OrbixRouter.navigateTo('home', true);
+      } else if (typeof window.setView === 'function') {
+        window.setView('home');
+      }
+
       var self = this;
       this.fetchProjects(function () {
         if (self.projects && self.projects.length > 0) {
@@ -7696,13 +7716,7 @@ body.role-employee #adminCreateEmpBox,
           var savedId = null;
           try { savedId = localStorage.getItem(userActiveKey); } catch (e) { }
           var toOpen = self.projects.find(function (p) { return p.id === savedId; }) || self.projects[0];
-          self.openProject(toOpen.id, false);
-        }
-        // Always navigate to home page after login
-        if (root.OrbixRouter) {
-          root.OrbixRouter.navigateTo('home', true);
-        } else if (typeof window.setView === 'function') {
-          window.setView('home');
+          self._pendingAutoOpenProjectId = toOpen ? toOpen.id : null;
         }
       });
 
@@ -9949,9 +9963,20 @@ body.role-employee #adminCreateEmpBox,
           OrbixProjects.apiFetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ identifier: identifier, password: password })
+            body: JSON.stringify({ identifier: identifier, password: password }),
+            timeoutMs: 20000
           })
-            .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+            .then(function (r) {
+              return r.text().then(function (txt) {
+                var parsed = {};
+                try { parsed = txt ? JSON.parse(txt) : {}; } catch (_) {
+                  var parseErr = new Error('Server returned non-JSON response (HTTP ' + r.status + ')');
+                  parseErr.httpStatus = r.status;
+                  throw parseErr;
+                }
+                return { status: r.status, data: parsed };
+              });
+            })
             .then(function (res) {
               if (submitBtn) {
                 submitBtn.disabled = false;
@@ -9959,7 +9984,11 @@ body.role-employee #adminCreateEmpBox,
               }
               var data = res.data || {};
               if (data.success && data.user) {
-                completeLogin(data.user, data.sessionExpiresAt);
+                try {
+                  completeLogin(data.user, data.sessionExpiresAt);
+                } catch (uiErr) {
+                  console.error('[OrbixProjects] Post-login UI initialization notice:', uiErr);
+                }
               } else {
                 if (errAlert) {
                   errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
@@ -9967,13 +9996,17 @@ body.role-employee #adminCreateEmpBox,
                 }
               }
             })
-            .catch(function () {
+            .catch(function (err) {
               if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign In to Workspace';
               }
               if (errAlert) {
-                errAlert.innerHTML = 'Unable to reach authentication server.<br><button type="button" id="authErrorOfflineBtn" style="margin-top:8px;background:#2563EB;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;">💻 Continue in Offline Mode</button>';
+                var isTimeout = err && err.name === 'AbortError';
+                var errMsg = isTimeout
+                  ? 'Authentication timed out (server took too long to respond). Please try again.'
+                  : (err && err.httpStatus ? ('Authentication server error (HTTP ' + err.httpStatus + '). Please try again.') : 'Unable to reach authentication server.');
+                errAlert.innerHTML = errMsg + '<br><button type="button" id="authErrorOfflineBtn" style="margin-top:8px;background:#2563EB;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;">💻 Continue in Offline Mode</button>';
                 errAlert.style.display = 'block';
                 var errOfflineBtn = document.getElementById('authErrorOfflineBtn');
                 if (errOfflineBtn) {
@@ -37222,11 +37255,24 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           this.restoreUnderlay(proj);
         }
         this.updateUI();
-        this.renderBOQ();
-        if (typeof window.buildScene === 'function') window.buildScene();
-        if (typeof this.render3DHome === 'function') this.render3DHome();
-        if (typeof window.fit === 'function') window.fit();
-        if (typeof window.camApply === 'function') window.camApply();
+        // Only run heavy BOQ pricing and 3D scene rebuild if those tabs are currently active;
+        // otherwise mark dirty so they render instantly when the user opens Pricing or 3D Studio.
+        var isBoqActive = (typeof document !== 'undefined') && document.getElementById('view-boq') && document.getElementById('view-boq').classList.contains('is-on');
+        var isDesignActive = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+        if (isBoqActive) {
+          this._boqDirty = false;
+          this.renderBOQ();
+        } else {
+          this._boqDirty = true;
+        }
+        if (isDesignActive) {
+          if (typeof window.buildScene === 'function') window.buildScene();
+          if (typeof this.render3DHome === 'function') this.render3DHome();
+          if (typeof window.fit === 'function') window.fit();
+          if (typeof window.camApply === 'function') window.camApply();
+        } else {
+          this._3dDirty = true;
+        }
       } finally {
         setTimeout(function () {
           self._isProjectLoading = false;
@@ -47077,7 +47123,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       ta.value = text;
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand('copy'); } catch (_2) {}
+      try { document.execCommand('copy'); } catch (_2) { }
       document.body.removeChild(ta);
     }
     if (btnEl) {
@@ -57091,6 +57137,9 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       }
 
       var run3DBackendWork = function () {
+        if (typeof ensureGLReady === 'function') {
+          ensureGLReady();
+        }
         var curProj = window.OrbixUI && (window.OrbixUI.project || (window.OrbixUI.editor && window.OrbixUI.editor.project));
         var curProjId = curProj ? String(curProj.id || curProj._projectId || '') : '';
         var glScene = (GL.ok && GL.getScene) ? GL.getScene() : null;
@@ -58462,18 +58511,32 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
   window.renderSheet = renderSheet;
   window.renderElev = renderElev;
 
+  var _glBooted = false;
+  function ensureGLReady() {
+    if (_glBooted || GL.ok) return true;
+    _glBooted = true;
+    loadThree(function () {
+      if (GL.init()) { fit(); buildScene(); }
+      if (FX && GL.ok) loadFX(function () { if (GL.fxInit()) camApply(); });
+      if (EMBED) {
+        cam.yaw = ROOM.walls ? -12 : -30; cam.pitch = ROOM.walls ? -8 : -9; cam.zoom = 0.06; fit(); camApply();
+        postUp({ event: "ready", rooms: NEO_ROOMS.map(function (r) { return { id: r.id, name: r.name, blurb: r.blurb, units: r.units.map(function (x) { return x.label; }) }; }), finishes: NEO_FINISHES.map(function (f) { return { id: f.id, name: f.name }; }) });
+        roomReport();
+        if (PARAMS.get("tour") === "1") tour(true); else if (PARAMS.get("spin") === "1") spin(true);
+      }
+    });
+    return GL.ok;
+  }
+  window.ensureGLReady = ensureGLReady;
+
   renderRail();
-  renderAll();
-  loadThree(function () {
-    if (GL.init()) { fit(); buildScene(); }
-    if (FX && GL.ok) loadFX(function () { if (GL.fxInit()) camApply(); });
-    if (EMBED) {
-      cam.yaw = ROOM.walls ? -12 : -30; cam.pitch = ROOM.walls ? -8 : -9; cam.zoom = 0.06; fit(); camApply();
-      postUp({ event: "ready", rooms: NEO_ROOMS.map(function (r) { return { id: r.id, name: r.name, blurb: r.blurb, units: r.units.map(function (x) { return x.label; }) }; }), finishes: NEO_FINISHES.map(function (f) { return { id: f.id, name: f.name }; }) });
-      roomReport();
-      if (PARAMS.get("tour") === "1") tour(true); else if (PARAMS.get("spin") === "1") spin(true);
-    }
-  });
+  // Defer heavy WebGL context + PMREMGenerator environment cubemap bake until user actually enters 3D Studio
+  // (eliminates 400-900ms GPU/CPU freeze on Login and Home page boot; EMBED mode still initializes immediately)
+  var initialDesignOn = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+  if (EMBED || initialDesignOn) {
+    renderAll();
+    ensureGLReady();
+  }
   $all("[data-go]").forEach(function (b) {
     b.addEventListener("click", function () {
       if (b.dataset.go === "kitchen") { galState.type = "kitchen"; setView("gallery"); return; }
