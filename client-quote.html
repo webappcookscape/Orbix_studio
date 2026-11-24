@@ -1146,7 +1146,31 @@
         drawMasterContentFrame(ctx, slide, logoBmp, slide.variantTitle, 'Quotation');
 
         var comm = slide.commercial || {};
-        var rooms = slide.roomsSummary || [];
+        function getRoomRank(name) {
+          var s = String(name || '').toLowerCase().trim();
+          if (!s) return 99;
+          if (/\bcommon\b/.test(s) && /(vanity|wash|bath|toilet|basin)/.test(s)) return 8;
+          if (/\bpowder\b|hand\s*wash|wash\s*basin/.test(s)) return 8;
+          if (/(bathroom|bath\s*vanity|washroom|toilet|restroom|vanity|ensuite|\bbath\b)/.test(s)) return 9;
+          if (/\bkitchen\b|modular\s*kitchen|wet\s*kitchen|dry\s*kitchen|pantry/.test(s)) return 1;
+          if (/\btv\b|tv\s*unit|media\s*wall|entertainment|\bliving\b|\bhall\b|drawing\s*room/.test(s)) return 2;
+          if (/pooja|puja|prayer|mandir/.test(s)) return 3;
+          if (/crockery|dining|\bbar\b/.test(s)) return 4;
+          if (/\bmaster\b|\bmbr\b|primary\s*bed/.test(s)) return 5;
+          if (/\bkids?\b|child|children/.test(s)) return 6;
+          if (/\bguest\b|parents?\s*bed/.test(s)) return 7;
+          if (/bed\s*room|bedroom/.test(s)) return 7.5;
+          if (/shoe\s*rack|\bshoe\b|foyer|entrance|entry|mudroom/.test(s)) return 10;
+          return 99;
+        }
+        var rooms = (slide.roomsSummary || [])
+          .map(function (r, idx) { return { r: r, idx: idx }; })
+          .filter(function (x) { return x.r && Number(x.r.itemCount || 0) > 0; })
+          .sort(function (a, b) {
+            var ra = getRoomRank(a.r.name), rb = getRoomRank(b.r.name);
+            return ra !== rb ? (ra - rb) : (a.idx - b.idx);
+          })
+          .map(function (x) { return x.r; });
         var y = 232;
 
         // Scope info strip
@@ -1168,7 +1192,7 @@
           ctx.fillText('ROOM-WISE BREAKDOWN', 54, y);
           y += 12;
           var rRows = [['Room / Zone', 'Units', 'Modular Subtotal']];
-          rooms.slice(0, 10).forEach(function (r) {
+          rooms.slice(0, 12).forEach(function (r) {
             rRows.push([r.name, String(r.itemCount || 0), fmtINR(r.roomSubtotal || 0)]);
           });
           y = drawTable(ctx, rRows, 54, y, CANVAS_W - 108, [0.56, 0.16, 0.28], {

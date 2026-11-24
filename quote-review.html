@@ -728,7 +728,7 @@
         html += '<div class="variants-stack">';
         state.variants.forEach(function (v, idx) {
           var c = v.commercial || {};
-          var rooms = v.roomsSummary || [];
+          var rooms = (v.roomsSummary || []).filter(function (rm) { return rm && Number(rm.itemCount || 0) > 0; });
           html += '<section class="variant-card" id="variantCard_' + idx + '" data-var-idx="' + idx + '">' +
             '<div class="variant-head">' +
             '  <h2>' + esc(v.tierTitle || v.tierKey) + ' — QUOTATION</h2>' +

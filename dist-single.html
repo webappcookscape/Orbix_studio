@@ -47042,14 +47042,45 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       });
     });
 
-    var roomsSummary = (quote.allRoomsSummary || []).map(function (r) {
-      return {
-        name: r.name,
-        itemCount: r.itemCount || 0,
-        roomSubtotal: Math.round(r.roomSubtotal || 0),
-        percentShare: r.percentShare || 0
-      };
-    });
+    function getRoomSummaryRank(name) {
+      var s = String(name || '').toLowerCase().trim();
+      if (!s) return 99;
+      if (/\bcommon\b/.test(s) && /(vanity|wash|bath|toilet|basin)/.test(s)) return 8;
+      if (/\bpowder\b|hand\s*wash|wash\s*basin/.test(s)) return 8;
+      if (/(bathroom|bath\s*vanity|washroom|toilet|restroom|vanity|ensuite|\bbath\b)/.test(s)) return 9;
+      if (/\bkitchen\b|modular\s*kitchen|wet\s*kitchen|dry\s*kitchen|pantry/.test(s)) return 1;
+      if (/\btv\b|tv\s*unit|media\s*wall|entertainment|\bliving\b|\bhall\b|drawing\s*room/.test(s)) return 2;
+      if (/pooja|puja|prayer|mandir/.test(s)) return 3;
+      if (/crockery|dining|\bbar\b/.test(s)) return 4;
+      if (/\bmaster\b|\bmbr\b|primary\s*bed/.test(s)) return 5;
+      if (/\bkids?\b|child|children/.test(s)) return 6;
+      if (/\bguest\b|parents?\s*bed/.test(s)) return 7;
+      if (/bed\s*room|bedroom/.test(s)) return 7.5;
+      if (/shoe\s*rack|\bshoe\b|foyer|entrance|entry|mudroom/.test(s)) return 10;
+      return 99;
+    }
+
+    var roomsSummary = (quote.allRoomsSummary || [])
+      .filter(function (r) { return Number(r && r.itemCount || 0) > 0; })
+      .map(function (r, idx) {
+        return {
+          name: r.name,
+          itemCount: Number(r.itemCount || 0),
+          roomSubtotal: Math.round(r.roomSubtotal || 0),
+          percentShare: r.percentShare || 0,
+          _origIdx: idx
+        };
+      })
+      .sort(function (a, b) {
+        var ra = getRoomSummaryRank(a.name);
+        var rb = getRoomSummaryRank(b.name);
+        if (ra !== rb) return ra - rb;
+        return a._origIdx - b._origIdx;
+      })
+      .map(function (r) {
+        delete r._origIdx;
+        return r;
+      });
 
     var roomScopeLabel = quote.isFiltered
       ? ('Selected: ' + roomsSummary.map(function (r) { return r.name; }).join(', '))

@@ -828,7 +828,7 @@ class ClientQuoteService {
         tierTitle: v.tierTitle || v.tierKey,
         roomScopeLabel: v.roomScopeLabel || 'All Rooms',
         currencySymbol: v.currencySymbol || '₹',
-        roomsSummary: v.roomsSummary || [],
+        roomsSummary: quoteDeckBuilder.normalizeRoomsSummary(v.roomsSummary || []),
         commercial: recalculateVariantCommercial(v.commercial || {}),
         grandTotal: Math.round(Number(v.commercial?.grandTotal ?? v.grandTotal ?? 0))
       }))
@@ -981,7 +981,9 @@ class ClientQuoteService {
       quoteCode: rec.quoteCode,
       meta: Object.assign({}, snap.meta || {}, { designerName: contacts.designer.name, designerPhone: contacts.designer.phone }),
       designer: contacts.designer,
-      variantQuotes: snap.variantQuotes || [],
+      variantQuotes: (snap.variantQuotes || []).map((vq) => Object.assign({}, vq, {
+        roomsSummary: quoteDeckBuilder.normalizeRoomsSummary(vq.roomsSummary || [])
+      })),
       unitIcons: unitIconsDataUrls
     };
   }

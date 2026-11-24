@@ -43,6 +43,38 @@ function normalizeTemplateVariantKey(raw) {
   return null;
 }
 
+function getRoomSummaryRank(name) {
+  const s = String(name || '').toLowerCase().trim();
+  if (!s) return 99;
+  if (/\bcommon\b/.test(s) && /(vanity|wash|bath|toilet|basin)/.test(s)) return 8;
+  if (/\bpowder\b|hand\s*wash|wash\s*basin/.test(s)) return 8;
+  if (/(bathroom|bath\s*vanity|washroom|toilet|restroom|vanity|ensuite|\bbath\b)/.test(s)) return 9;
+  if (/\bkitchen\b|modular\s*kitchen|wet\s*kitchen|dry\s*kitchen|pantry/.test(s)) return 1;
+  if (/\btv\b|tv\s*unit|media\s*wall|entertainment|\bliving\b|\bhall\b|drawing\s*room/.test(s)) return 2;
+  if (/pooja|puja|prayer|mandir/.test(s)) return 3;
+  if (/crockery|dining|\bbar\b/.test(s)) return 4;
+  if (/\bmaster\b|\bmbr\b|primary\s*bed/.test(s)) return 5;
+  if (/\bkids?\b|child|children/.test(s)) return 6;
+  if (/\bguest\b|parents?\s*bed/.test(s)) return 7;
+  if (/bed\s*room|bedroom/.test(s)) return 7.5;
+  if (/shoe\s*rack|\bshoe\b|foyer|entrance|entry|mudroom/.test(s)) return 10;
+  return 99;
+}
+
+function normalizeRoomsSummary(rooms) {
+  if (!Array.isArray(rooms)) return [];
+  return rooms
+    .map((r, idx) => ({ r, idx }))
+    .filter(({ r }) => r && Number(r.itemCount || 0) > 0)
+    .sort((a, b) => {
+      const ra = getRoomSummaryRank(a.r.name);
+      const rb = getRoomSummaryRank(b.r.name);
+      if (ra !== rb) return ra - rb;
+      return a.idx - b.idx;
+    })
+    .map(({ r }) => r);
+}
+
 function chunkArray(arr, size) {
   const out = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -252,7 +284,7 @@ function buildClientQuoteDeck(quoteRecord) {
       quoteCode: quoteRecord.quoteCode || meta.quoteId || '',
       roomScopeLabel: vq.roomScopeLabel || 'All Rooms (Entire Home)',
       currencySymbol: vq.currencySymbol || '₹',
-      roomsSummary: vq.roomsSummary || [],
+      roomsSummary: normalizeRoomsSummary(vq.roomsSummary),
       commercial: vq.commercial || {},
       footer: footerText
     });
@@ -364,5 +396,6 @@ module.exports = {
   loadTemplateData,
   resolveTemplateAssetPath,
   normalizeTemplateVariantKey,
+  normalizeRoomsSummary,
   buildClientQuoteDeck
 };

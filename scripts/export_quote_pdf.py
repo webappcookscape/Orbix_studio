@@ -66,6 +66,46 @@ def normalize_tier_key(raw):
     return None
 
 
+def get_room_summary_rank(name):
+    s = str(name or '').lower().strip()
+    if not s:
+        return 99.0
+    if re.search(r'\bcommon\b', s) and re.search(r'(vanity|wash|bath|toilet|basin)', s):
+        return 8.0
+    if re.search(r'\bpowder\b|hand\s*wash|wash\s*basin', s):
+        return 8.0
+    if re.search(r'(bathroom|bath\s*vanity|washroom|toilet|restroom|vanity|ensuite|\bbath\b)', s):
+        return 9.0
+    if re.search(r'\bkitchen\b|modular\s*kitchen|wet\s*kitchen|dry\s*kitchen|pantry', s):
+        return 1.0
+    if re.search(r'\btv\b|tv\s*unit|media\s*wall|entertainment|\bliving\b|\bhall\b|drawing\s*room', s):
+        return 2.0
+    if re.search(r'pooja|puja|prayer|mandir', s):
+        return 3.0
+    if re.search(r'crockery|dining|\bbar\b', s):
+        return 4.0
+    if re.search(r'\bmaster\b|\bmbr\b|primary\s*bed', s):
+        return 5.0
+    if re.search(r'\bkids?\b|child|children', s):
+        return 6.0
+    if re.search(r'\bguest\b|parents?\s*bed', s):
+        return 7.0
+    if re.search(r'bed\s*room|bedroom', s):
+        return 7.5
+    if re.search(r'shoe\s*rack|\bshoe\b|foyer|entrance|entry|mudroom', s):
+        return 10.0
+    return 99.0
+
+
+def normalize_rooms_summary(rooms):
+    filtered = [
+        (idx, rm) for idx, rm in enumerate(rooms or [])
+        if isinstance(rm, dict) and int(rm.get('itemCount') or 0) > 0
+    ]
+    filtered.sort(key=lambda pair: (get_room_summary_rank(pair[1].get('name')), pair[0]))
+    return [rm for _, rm in filtered]
+
+
 def fmt_inr(val):
     n = int(round(float(val or 0)))
     neg = n < 0
@@ -595,12 +635,14 @@ def build_pdf(payload, out_path):
         used = set()
         draw_frame_header(pdf, ops, used, logo_asset, logo_rect, f'{v_title} - QUOTATION', f'Patron: {client_name}  |  Scope: {vq.get("roomScopeLabel", "All Rooms")}  |  Ref: {quote_code}')
         y = 128.0
-        rooms = (vq.get('roomsSummary') or [])[:12]
+        rooms = normalize_rooms_summary(vq.get('roomsSummary') or [])[:12]
         comm = vq.get('commercial') or {}
         if rooms:
             r_rows = [['ROOM-WISE BREAKDOWN', 'AMOUNT']]
             for rm in rooms:
-                r_rows.append([f"{rm.get('name', 'Room')} ({rm.get('itemCount', 0)} units)", fmt_inr(rm.get('roomSubtotal', 0))])
+                cnt = int(rm.get('itemCount') or 0)
+                u_lbl = 'unit' if cnt == 1 else 'units'
+                r_rows.append([f"{rm.get('name', 'Room')} ({cnt} {u_lbl})", fmt_inr(rm.get('roomSubtotal', 0))])
             y = draw_table_ops(ops, r_rows, 30, y, PAGE_W - 60, [0.70, 0.30], font_size=8.6, header_fill=C_FOREST, right_cols={1}, bold_first=True, pad_y=5.0) + 14.0
 
         acc_enabled = comm.get('accessoriesEnabled', True) is not False
