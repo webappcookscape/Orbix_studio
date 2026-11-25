@@ -20,7 +20,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Cookscape Admin',
     username: 'admin',
     email: 'admin@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'admin',
     designation: 'System Administrator',
     company: 'Cookscape',
@@ -33,7 +33,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Sangathamizh',
     username: 'sangathamizh',
     email: 'designteam.cookscape@gmail.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'admin',
     designation: 'Business Head',
     company: 'Cookscape',
@@ -46,7 +46,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Dinesh Kumar',
     username: 'dinesh',
     email: 'dinesh@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'admin',
     designation: 'Managing Director',
     company: 'Cookscape',
@@ -61,7 +61,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Elakkiya',
     username: 'elakkiya',
     email: 'elakkiya.sakthivelu3089@gmail.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Floor Architect / FA',
     company: 'Cookscape',
@@ -74,7 +74,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Aravind',
     username: 'aravind',
     email: 'webapp.cookscape@gmail.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Floor Architect / FA',
     company: 'Cookscape',
@@ -87,7 +87,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Dev Kancheti',
     username: 'dev',
     email: 'dev@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Design Lead',
     company: 'Cookscape',
@@ -100,7 +100,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Priya Sharma',
     username: 'priya',
     email: 'priya@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Senior Modular Designer',
     company: 'Cookscape',
@@ -113,7 +113,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Rahul Verma',
     username: 'rahul',
     email: 'rahul@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Kitchen Specialist',
     company: 'Cookscape',
@@ -126,7 +126,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Karthik Raman',
     username: 'karthik',
     email: 'karthik@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Wardrobe CAD Engineer',
     company: 'Cookscape',
@@ -139,7 +139,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Sneha Patel',
     username: 'sneha',
     email: 'sneha@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Interior Architect',
     company: 'Cookscape',
@@ -152,7 +152,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Vikram Singhania',
     username: 'vikram',
     email: 'vikram@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Floor Architect / FA',
     company: 'Cookscape',
@@ -165,7 +165,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Ananya Iyer',
     username: 'ananya',
     email: 'ananya@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Space Planner',
     company: 'Cookscape',
@@ -178,7 +178,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Rajesh Nair',
     username: 'rajesh',
     email: 'rajesh@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Modular Kitchen Designer',
     company: 'Cookscape',
@@ -191,7 +191,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Deepa Menon',
     username: 'deepa',
     email: 'deepa@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Floor Architect / FA',
     company: 'Cookscape',
@@ -204,7 +204,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Suresh Babu',
     username: 'suresh',
     email: 'suresh@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Cabinetry Drafter',
     company: 'Cookscape',
@@ -217,7 +217,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Meera Krishnan',
     username: 'meera',
     email: 'meera@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: '3D Visualizer & Designer',
     company: 'Cookscape',
@@ -230,7 +230,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Pooja Hegde',
     username: 'pooja',
     email: 'pooja@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Floor Architect / FA',
     company: 'Cookscape',
@@ -243,7 +243,7 @@ const DEFAULT_FALLBACK_USERS = [
     name: 'Naveen Prasad',
     username: 'naveen',
     email: 'naveen@cookscape.com',
-    password: 'password123',
+    password: 'studio@2026',
     role: 'employee',
     designation: 'Modular CAD Specialist',
     company: 'Cookscape',
@@ -511,7 +511,7 @@ function probePostgresTcp(urlStr, timeoutMs) {
       try { sock.destroy(); } catch (_) {}
       resolve(ok);
     };
-    sock.setTimeout(timeoutMs || 250);
+    sock.setTimeout(timeoutMs || 2500);
     sock.once('connect', () => finish(true));
     sock.once('timeout', () => finish(false));
     sock.once('error', () => finish(false));
@@ -585,14 +585,14 @@ async function checkDatabaseConnection() {
   }
 
   // Fast silent TCP check so missing local PostgreSQL never emits noisy prisma:error stderr logs
-  const primaryReachable = await probePostgresTcp(currentUrl, 250);
+  const primaryReachable = await probePostgresTcp(currentUrl, 2500);
   if (!primaryReachable) {
     const is5433 = currentUrl.includes(':5433');
     const is5432 = currentUrl.includes(':5432');
     const altUrl = (is5433 || is5432)
       ? (is5433 ? currentUrl.replace(':5433', ':5432') : currentUrl.replace(':5432', ':5433'))
       : null;
-    const altReachable = altUrl ? await probePostgresTcp(altUrl, 250) : false;
+    const altReachable = altUrl ? await probePostgresTcp(altUrl, 2500) : false;
     if (!altReachable) {
       isConnected = false;
       lastError = 'PostgreSQL offline';

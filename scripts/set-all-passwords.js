@@ -32,6 +32,30 @@ async function main() {
     console.error('Update error:', err.message);
   }
 
+  // Also directly update any JSON stores on disk (for zero-loss fallback mode)
+  const fs = require('fs');
+  const possibleStores = [
+    path.join(ROOT_DIR, 'db', 'users_store.json'),
+    path.join(ROOT_DIR, 'server', 'db', 'users_store.json'),
+    path.join(ROOT_DIR, 'data', 'users_store.json')
+  ];
+  for (const storePath of possibleStores) {
+    if (fs.existsSync(storePath)) {
+      try {
+        const users = JSON.parse(fs.readFileSync(storePath, 'utf8'));
+        if (Array.isArray(users)) {
+          for (const u of users) {
+            u.password = hash;
+          }
+          fs.writeFileSync(storePath, JSON.stringify(users, null, 2), 'utf8');
+          console.log(`✓ Directly updated JSON store at: ${storePath}`);
+        }
+      } catch (e) {
+        console.warn(`Notice updating ${storePath}:`, e.message);
+      }
+    }
+  }
+
   // Verify authentication with both username and email
   console.log('\n=== TESTING AUTHENTICATION ===');
   const u1 = await userService.authenticateUser('admin', targetPassword);
