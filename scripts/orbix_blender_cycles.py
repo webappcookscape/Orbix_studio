@@ -232,14 +232,32 @@ def run():
         b_mesh.materials.append(assigned_mat)
 
         # Smooth shading for organic/curved surfaces
-        role = obj_info.get("role", "")
+        role = (obj_info.get("role") or "").lower()
+
+        # If camera is viewing from above/outside, don't let ceiling mesh block interior camera view
+        cam_pos = data.get("camera", {}).get("position", [0, -3.5, 1.6])
+        if role == 'ceiling' or 'ceiling' in name.lower():
+            if cam_pos[2] > 2.3:
+                continue
+
         if role in ["handle", "decor", "chair", "plant", "upholstery"]:
             for p in b_mesh.polygons:
                 p.use_smooth = True
 
-    # 7. Setup Window Area Lights (Directional Daylight entering through room openings)
+    # 7. Setup Architectural Sunlight (Direct warm sunlight entering the kitchen)
+    sun_data = bpy.data.lights.new(name="OrbixSunlight", type='SUN')
+    sun_data.energy = max(2.5, daylight_pct * 0.16)
+    sun_data.color = (1.0, 0.98, 0.93) # 5500K warm architectural daylight
+    sun_data.angle = math.radians(2.5) # Soft realistic shadow penumbra
+    sun_obj = bpy.data.objects.new(name="OrbixSunlight", object_data=sun_data)
+    # Direct sunlight at a 55-degree architectural angle
+    sun_direction = mathutils.Vector((-0.45, -0.65, -0.75)).normalized()
+    sun_obj.rotation_euler = (-sun_direction).to_track_quat('-Z', 'Y').to_euler()
+    bpy.context.collection.objects.link(sun_obj)
+
+    # 8. Setup Window Area Lights (Directional Daylight entering through room openings)
     windows_data = data.get("windows", [])
-    window_energy_mult = daylight_pct * 3.5
+    window_energy_mult = daylight_pct * 12.0
 
     for idx, win in enumerate(windows_data):
         pos = win.get("pos", [0, 0, 1.2]) # [x, y, z] in meters
@@ -251,8 +269,8 @@ def run():
         w_light_data.shape = 'RECTANGLE'
         w_light_data.size = w
         w_light_data.size_y = h
-        w_light_data.energy = max(5.0, window_energy_mult * (w * h))
-        w_light_data.color = (0.92, 0.95, 1.0) # Daylight 6500K tint
+        w_light_data.energy = max(80.0, window_energy_mult * (w * h) * 4.0)
+        w_light_data.color = (0.92, 0.96, 1.0) # Daylight 6500K tint
 
         w_light_obj = bpy.data.objects.new(name=f"WindowLight_{idx+1}", object_data=w_light_data)
         w_light_obj.location = (pos[0], pos[1], pos[2])
@@ -263,17 +281,15 @@ def run():
 
         bpy.context.collection.objects.link(w_light_obj)
 
-    # 8. Setup Warm Interior Fill Lights (Soft ceiling bounce to lift deep cabinet shadows)
+    # 9. Setup Warm Interior Fill Lights (Soft ceiling bounce to lift deep cabinet shadows)
     fill_light_data = bpy.data.lights.new(name="InteriorWarmFill", type='POINT')
-    fill_light_data.energy = max(1.0, fill_watts * 8.0)
-    fill_light_data.color = (1.0, 0.88, 0.72) # 3200K warm interior illumination
-    fill_light_data.shadow_soft_size = 0.65
+    fill_light_data.energy = max(180.0, fill_watts * 45.0)
+    fill_light_data.color = (1.0, 0.90, 0.78) # 3200K warm interior illumination
+    fill_light_data.shadow_soft_size = 0.85
 
-    cam_pos = data.get("camera", {}).get("position", [0, -3.5, 1.6])
     cam_tgt = data.get("camera", {}).get("target", [0, 0, 0.9])
 
     fill_obj = bpy.data.objects.new(name="InteriorWarmFill", object_data=fill_light_data)
-    # Position centrally above target and camera midpoint
     fill_obj.location = (
         (cam_pos[0] + cam_tgt[0]) * 0.5,
         (cam_pos[1] + cam_tgt[1]) * 0.5,
@@ -281,24 +297,23 @@ def run():
     )
     bpy.context.collection.objects.link(fill_obj)
 
-    # 9. Setup Camera
+    # 10. Setup Camera (Physically-accurate orientation targeting scene center)
     cam_data = bpy.data.cameras.new("OrbixCamera")
     fov = float(data.get("camera", {}).get("fov", 50.0))
     cam_data.angle = math.radians(fov)
     cam_data.clip_start = 0.05
-    cam_data.clip_end = 100.0
+    cam_data.clip_end = 250.0
 
     cam_obj = bpy.data.objects.new("OrbixCamera", cam_data)
     cam_obj.location = (cam_pos[0], cam_pos[1], cam_pos[2])
 
-    # Direct camera to look at target
-    dx = cam_tgt[0] - cam_pos[0]
-    dy = cam_tgt[1] - cam_pos[1]
-    dz = cam_tgt[2] - cam_pos[2]
-    dist_xy = math.hypot(dx, dy)
-    yaw = math.atan2(dx, -dy)
-    pitch = math.atan2(dz, dist_xy)
-    cam_obj.rotation_euler = (math.pi / 2 - pitch, 0, yaw)
+    # Direct camera to look precisely at target using Blender's native look-at tracking
+    cam_direction = mathutils.Vector(cam_tgt) - mathutils.Vector(cam_pos)
+    if cam_direction.length > 0.0001:
+        rot_quat = cam_direction.to_track_quat('-Z', 'Y')
+        cam_obj.rotation_euler = rot_quat.to_euler()
+    else:
+        cam_obj.rotation_euler = (math.radians(65), 0, 0)
 
     bpy.context.collection.objects.link(cam_obj)
     scene.camera = cam_obj

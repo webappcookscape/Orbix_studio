@@ -6741,9 +6741,23 @@
       target: [0, 0, 0.9],
       fov: 50
     };
-    if (window.GL && typeof window.GL.getCam === 'function') {
+    var actualCam = (window.GL && typeof window.GL.getCamera === 'function') ? window.GL.getCamera() : ((window.__cc && window.__cc.gl && typeof window.__cc.gl.getCamera === 'function') ? window.__cc.gl.getCamera() : null);
+    var tgt = (window.GL && window.GL.getTarget && window.GL.getTarget()) ? window.GL.getTarget() : { x: 0, y: 1200, z: 0 };
+
+    if (actualCam && actualCam.position) {
+      camData.position = [
+        parseFloat((actualCam.position.x / 1000).toFixed(4)),
+        parseFloat((-actualCam.position.z / 1000).toFixed(4)),
+        parseFloat((actualCam.position.y / 1000).toFixed(4))
+      ];
+      camData.target = [
+        parseFloat((tgt.x / 1000).toFixed(4)),
+        parseFloat((-tgt.z / 1000).toFixed(4)),
+        parseFloat((tgt.y / 1000).toFixed(4))
+      ];
+      camData.fov = actualCam.fov || 50;
+    } else if (window.GL && typeof window.GL.getCam === 'function') {
       var gc = window.GL.getCam();
-      var tgt = (window.GL.getTarget && window.GL.getTarget()) ? window.GL.getTarget() : { x: 0, y: 1200, z: 0 };
       var dist = (window.GL.getDist ? window.GL.getDist() : 3500) / Math.max(0.18, 1 + (gc.zoom || 0));
       var yawRad = (gc.yaw || 0) * Math.PI / 180;
       var pitchRad = -(gc.pitch || 0) * Math.PI / 180;

@@ -37360,9 +37360,23 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       target: [0, 0, 0.9],
       fov: 50
     };
-    if (window.GL && typeof window.GL.getCam === 'function') {
+    var actualCam = (window.GL && typeof window.GL.getCamera === 'function') ? window.GL.getCamera() : ((window.__cc && window.__cc.gl && typeof window.__cc.gl.getCamera === 'function') ? window.__cc.gl.getCamera() : null);
+    var tgt = (window.GL && window.GL.getTarget && window.GL.getTarget()) ? window.GL.getTarget() : { x: 0, y: 1200, z: 0 };
+
+    if (actualCam && actualCam.position) {
+      camData.position = [
+        parseFloat((actualCam.position.x / 1000).toFixed(4)),
+        parseFloat((-actualCam.position.z / 1000).toFixed(4)),
+        parseFloat((actualCam.position.y / 1000).toFixed(4))
+      ];
+      camData.target = [
+        parseFloat((tgt.x / 1000).toFixed(4)),
+        parseFloat((-tgt.z / 1000).toFixed(4)),
+        parseFloat((tgt.y / 1000).toFixed(4))
+      ];
+      camData.fov = actualCam.fov || 50;
+    } else if (window.GL && typeof window.GL.getCam === 'function') {
       var gc = window.GL.getCam();
-      var tgt = (window.GL.getTarget && window.GL.getTarget()) ? window.GL.getTarget() : { x: 0, y: 1200, z: 0 };
       var dist = (window.GL.getDist ? window.GL.getDist() : 3500) / Math.max(0.18, 1 + (gc.zoom || 0));
       var yawRad = (gc.yaw || 0) * Math.PI / 180;
       var pitchRad = -(gc.pitch || 0) * Math.PI / 180;
@@ -56403,7 +56417,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       });
       return out;
     }
-    return { init: init, show: show, frame: frame, apply: apply, invalidateShadows: invalidateShadows, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickWall: pickWall, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } invalidateShadows(); render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); invalidateShadows(); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoMove: gizmoMove, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setSunlightIntensity: function (val) {
+    return { init: init, show: show, frame: frame, apply: apply, invalidateShadows: invalidateShadows, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickWall: pickWall, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } invalidateShadows(); render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); invalidateShadows(); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getCamera: function () { return camera; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoMove: gizmoMove, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setSunlightIntensity: function (val) {
       val = parseFloat(val);
       if (!isFinite(val)) return;
       window.sunlightIntensity = val;
