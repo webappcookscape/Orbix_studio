@@ -56,6 +56,38 @@ const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8')
 assert(indexHtml.includes('id="cpExportCyclesBtn"'), 'index.html must include cpExportCyclesBtn');
 assert(indexHtml.includes('id="planPlaceNextBtn"'), 'index.html must include planPlaceNextBtn');
 assert(indexHtml.includes('id="planWallOffsetInput"'), 'index.html must include planWallOffsetInput');
+assert(indexHtml.includes('orbix-3d.js?v=40'), 'index.html must use asset cache version v40');
 console.log('✓ [UI Integration] Buttons, inputs, and toolbar controls verified');
+
+// 6. Verify Material Options Sanitizer & Three.js r128 Protection
+const swJs = fs.readFileSync(path.join(__dirname, '../sw.js'), 'utf8');
+assert(swJs.includes('orbix-studio-v40'), 'sw.js must define CACHE_NAME as orbix-studio-v40');
+
+assert(orbix3dJs.includes('function sanitizeMaterialOptions'), 'orbix-3d.js must implement sanitizeMaterialOptions');
+assert(orbix3dJs.includes('hookPhysicalMaterialSafeguards'), 'orbix-3d.js must implement hookPhysicalMaterialSafeguards');
+
+// Emulate THREE environment to test sanitizer logic
+global.THREE = {
+  Color: function () {
+    this.r = 0; this.g = 0; this.b = 0;
+    this.setScalar = function (s) { this.r = s; this.g = s; this.b = s; return this; };
+  }
+};
+const Core = require('../orbix-core.js');
+const Orbix3D = require('../orbix-3d.js');
+const sanitize = Orbix3D.sanitizeMaterialOptions;
+assert(typeof sanitize === 'function', 'sanitizeMaterialOptions must be exported on ArchitecturalRenderer');
+
+const dirtyOpts = {
+  color: 0xffffff,
+  sheen: 0.15,
+  sheenRoughness: 0.25,
+  thickness: 1.2
+};
+const cleaned = sanitize(dirtyOpts);
+assert(cleaned.sheen instanceof global.THREE.Color, 'Numeric sheen must be converted to THREE.Color');
+assert.strictEqual(cleaned.sheenRoughness, undefined, 'sheenRoughness must be stripped');
+assert.strictEqual(cleaned.thickness, undefined, 'thickness must be stripped');
+console.log('✓ [Material Sanitizer] Three.js r128 compatibility safeguards & v40 cache verified');
 
 console.log('\n=== ALL TESTS PASSED SUCCESSFULLY! ===\n');

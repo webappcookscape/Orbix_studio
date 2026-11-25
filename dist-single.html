@@ -6544,14 +6544,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=37'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=37'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=37'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=40'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=40'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=40'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=37');
+          return loadScript('orbix-a4-drawings.js?v=40');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -30507,7 +30507,43 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
 
   var Vec2 = Core.Vec2;
 
+  // Material options sanitizer to guarantee 100% compatibility across Three.js versions (e.g. r128)
+  // In Three.js r128, sheen is a THREE.Color (or null), NOT a scalar number.
+  // Passing a numeric sheen (e.g. 0.12) causes gl.uniform3fv to fail with:
+  // "TypeError: Failed to execute 'uniform3fv' on 'WebGL2RenderingContext': The object must have a callable @@iterator property"
+  // Furthermore, sheenRoughness and thickness are not supported in r128 and log console warnings.
+  function sanitizeMaterialOptions(opts) {
+    if (!opts || typeof opts !== 'object') return opts;
+    if ('sheen' in opts) {
+      if (typeof opts.sheen === 'number') {
+        if (opts.sheen > 0 && typeof THREE !== 'undefined' && THREE.Color) {
+          opts.sheen = new THREE.Color().setScalar(opts.sheen);
+        } else {
+          delete opts.sheen;
+        }
+      }
+    }
+    if ('sheenRoughness' in opts) delete opts.sheenRoughness;
+    if ('thickness' in opts) delete opts.thickness;
+    return opts;
+  }
+
+  function hookPhysicalMaterialSafeguards() {
+    if (typeof THREE !== 'undefined' && THREE.MeshPhysicalMaterial && THREE.MeshPhysicalMaterial.prototype && !THREE.MeshPhysicalMaterial._sanitizerHooked) {
+      THREE.MeshPhysicalMaterial._sanitizerHooked = true;
+      var origSetValues = THREE.MeshPhysicalMaterial.prototype.setValues;
+      if (origSetValues) {
+        THREE.MeshPhysicalMaterial.prototype.setValues = function (values) {
+          if (values) sanitizeMaterialOptions(values);
+          return origSetValues.call(this, values);
+        };
+      }
+    }
+  }
+  hookPhysicalMaterialSafeguards();
+
   function ArchitecturalRenderer(scene, opts) {
+    hookPhysicalMaterialSafeguards();
     this.scene = scene;
     this.opts = opts || {};
     this.group = null;
@@ -30518,6 +30554,8 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     this.isolatedRoomId = null;
     this.initMaterials();
   }
+
+  ArchitecturalRenderer.sanitizeMaterialOptions = sanitizeMaterialOptions;
 
   ArchitecturalRenderer._floorTextures = ArchitecturalRenderer._floorTextures || {};
   ArchitecturalRenderer._floorMaterials = ArchitecturalRenderer._floorMaterials || {};
@@ -59951,7 +59989,7 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
   // 1. Register Service Worker (web browsers only, not file:// in desktop app)
   if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=32')
+      navigator.serviceWorker.register('./sw.js?v=40')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 

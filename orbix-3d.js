@@ -15,7 +15,43 @@
 
   var Vec2 = Core.Vec2;
 
+  // Material options sanitizer to guarantee 100% compatibility across Three.js versions (e.g. r128)
+  // In Three.js r128, sheen is a THREE.Color (or null), NOT a scalar number.
+  // Passing a numeric sheen (e.g. 0.12) causes gl.uniform3fv to fail with:
+  // "TypeError: Failed to execute 'uniform3fv' on 'WebGL2RenderingContext': The object must have a callable @@iterator property"
+  // Furthermore, sheenRoughness and thickness are not supported in r128 and log console warnings.
+  function sanitizeMaterialOptions(opts) {
+    if (!opts || typeof opts !== 'object') return opts;
+    if ('sheen' in opts) {
+      if (typeof opts.sheen === 'number') {
+        if (opts.sheen > 0 && typeof THREE !== 'undefined' && THREE.Color) {
+          opts.sheen = new THREE.Color().setScalar(opts.sheen);
+        } else {
+          delete opts.sheen;
+        }
+      }
+    }
+    if ('sheenRoughness' in opts) delete opts.sheenRoughness;
+    if ('thickness' in opts) delete opts.thickness;
+    return opts;
+  }
+
+  function hookPhysicalMaterialSafeguards() {
+    if (typeof THREE !== 'undefined' && THREE.MeshPhysicalMaterial && THREE.MeshPhysicalMaterial.prototype && !THREE.MeshPhysicalMaterial._sanitizerHooked) {
+      THREE.MeshPhysicalMaterial._sanitizerHooked = true;
+      var origSetValues = THREE.MeshPhysicalMaterial.prototype.setValues;
+      if (origSetValues) {
+        THREE.MeshPhysicalMaterial.prototype.setValues = function (values) {
+          if (values) sanitizeMaterialOptions(values);
+          return origSetValues.call(this, values);
+        };
+      }
+    }
+  }
+  hookPhysicalMaterialSafeguards();
+
   function ArchitecturalRenderer(scene, opts) {
+    hookPhysicalMaterialSafeguards();
     this.scene = scene;
     this.opts = opts || {};
     this.group = null;
@@ -26,6 +62,8 @@
     this.isolatedRoomId = null;
     this.initMaterials();
   }
+
+  ArchitecturalRenderer.sanitizeMaterialOptions = sanitizeMaterialOptions;
 
   ArchitecturalRenderer._floorTextures = ArchitecturalRenderer._floorTextures || {};
   ArchitecturalRenderer._floorMaterials = ArchitecturalRenderer._floorMaterials || {};
