@@ -311,10 +311,11 @@
                 <button type="button" class="cp-pill" data-opt="B" id="cpOptBBtn">Option B (Luxury Compare)</button>
               </div>
 
-              <!-- 4K Ultra Render Export & AI Decor -->
+              <!-- 4K Ultra Render Export & Cloud Raytracing -->
               <div class="cp-pill-group">
-                <button type="button" class="cp-render-btn" id="cpExport4KBtn">📸 Download 4K Ultra Render</button>
-                <button type="button" class="cp-render-btn" id="cpExportCyclesBtn" title="Export complete scene as .cycles.json for Blender Cycles Raytracing">🌀 Blender Cycles 4K</button>
+                <button type="button" class="cp-render-btn" id="cpExport4KBtn">📸 4K Canvas Snapshot</button>
+                <button type="button" class="cp-render-btn" id="cpCloudRenderBtn" style="background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(2,132,199,0.3);" title="One-click background raytracing on VPS server">⚡ Render in Cloud</button>
+                <button type="button" class="cp-render-btn" id="cpExportCyclesBtn" title="Export complete scene as .cycles.json for Blender Cycles Raytracing">🌀 Export Cycles</button>
               </div>
             </div>
           </div>
@@ -2112,6 +2113,122 @@
     </div>
   </div>
   </div>
+
+  <!-- ══════ CLOUD RAYTRACING (BLENDER CYCLES) MODAL ══════ -->
+  <div id="cloudRenderModal" class="modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:16px;">
+    <div class="modal-card" style="background:#fff;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,0.25);width:100%;max-width:560px;overflow:hidden;border:1px solid #e2e8f0;display:flex;flex-direction:column;max-height:92vh;">
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;color:#fff;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:22px;">⚡</span>
+          <div>
+            <div style="font-size:15px;font-weight:700;letter-spacing:-0.2px;">Orbix Cloud Raytracing</div>
+            <div style="font-size:11px;color:#94a3b8;">Blender Cycles CPU Engine on Server • No Local Install Needed</div>
+          </div>
+        </div>
+        <button type="button" id="closeCloudRenderModalBtn" style="background:none;border:none;color:#94a3b8;font-size:22px;line-height:1;cursor:pointer;padding:0 4px;">&times;</button>
+      </div>
+
+      <!-- Body -->
+      <div style="padding:18px 20px;overflow-y:auto;flex:1;">
+        <!-- Preset Choice -->
+        <label style="font-size:11.5px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">Render Preset</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+          <label id="crPresetPreviewCard" style="border:2px solid #0284c7;background:#f0f9ff;border-radius:8px;padding:12px;cursor:pointer;display:block;transition:all 0.15s ease;">
+            <input type="radio" name="crPresetRadio" value="preview" checked style="margin-right:6px;">
+            <span style="font-size:13px;font-weight:700;color:#0369a1;">Fast Preview</span>
+            <div style="font-size:11px;color:#0284c7;margin-top:3px;">1080p (1920×1080) • 48 Samples</div>
+            <div style="font-size:10.5px;color:#64748b;margin-top:2px;">~1.5 – 3 mins on VPS CPU</div>
+          </label>
+          <label id="crPresetUltraCard" style="border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:12px;cursor:pointer;display:block;transition:all 0.15s ease;">
+            <input type="radio" name="crPresetRadio" value="ultra" style="margin-right:6px;">
+            <span style="font-size:13px;font-weight:700;color:#0f172a;">Ultra Presentation</span>
+            <div style="font-size:11px;color:#475569;margin-top:3px;">4K (3840×2160) • 128 Samples</div>
+            <div style="font-size:10.5px;color:#64748b;margin-top:2px;">~8 – 12 mins on VPS CPU</div>
+          </label>
+        </div>
+
+        <!-- Lighting Tuning -->
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+          <div style="font-size:11.5px;font-weight:700;color:#334155;margin-bottom:8px;">Physically-Based Lighting Controls</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569;margin-bottom:3px;">
+                <span>Daylight (Windows & Sky)</span>
+                <span id="crDaylightVal" style="font-weight:700;color:#0284c7;">20%</span>
+              </div>
+              <input type="range" id="crDaylightRange" min="0" max="100" value="20" style="width:100%;">
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569;margin-bottom:3px;">
+                <span>Warm Interior Fill</span>
+                <span id="crFillVal" style="font-weight:700;color:#d97706;">10 W</span>
+              </div>
+              <input type="range" id="crFillRange" min="0" max="60" value="10" style="width:100%;">
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:#475569;margin-bottom:3px;">
+              <span>Scene Exposure (EV)</span>
+              <span id="crExposureVal" style="font-weight:700;color:#334155;">0.0 EV</span>
+            </div>
+            <input type="range" id="crExposureRange" min="-2.0" max="2.0" step="0.2" value="0.0" style="width:100%;">
+          </div>
+        </div>
+
+        <!-- Live Job Status Card (Shown when queued or rendering) -->
+        <div id="crStatusCard" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:14px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span id="crStatusSpinner" style="display:inline-block;">⏳</span>
+              <span id="crStatusStage" style="font-size:13px;font-weight:700;color:#0369a1;">Queued in server...</span>
+            </div>
+            <button type="button" id="crCancelJobBtn" style="font-size:11px;color:#ef4444;background:none;border:none;cursor:pointer;text-decoration:underline;">Cancel</button>
+          </div>
+          <!-- Progress Bar -->
+          <div style="background:#e0f2fe;border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px;">
+            <div id="crProgressBar" style="width:5%;height:100%;background:linear-gradient(90deg,#0284c7,#38bdf8);transition:width 0.3s ease;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#0284c7;">
+            <span id="crProgressSamples">Initializing scene geometry</span>
+            <span id="crProgressTime">Elapsed: 00:00</span>
+          </div>
+        </div>
+
+        <!-- Output Result Card (Shown when completed) -->
+        <div id="crResultCard" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:13px;font-weight:700;color:#15803d;">✨ Raytracing Render Ready!</span>
+            <span id="crDurationBadge" style="font-size:10.5px;color:#16a34a;background:#dcfce7;padding:2px 6px;border-radius:4px;">1m 45s</span>
+          </div>
+          <div style="position:relative;border-radius:6px;overflow:hidden;border:1px solid #cbd5e1;background:#000;margin-bottom:10px;">
+            <img id="crResultImg" style="width:100%;max-height:220px;object-fit:cover;display:block;cursor:pointer;" alt="Blender Cycles Render" title="Click to view full size">
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button type="button" class="btn" id="crViewFullBtn" style="font-size:12px;padding:6px 12px;">🔍 View Fullscreen</button>
+            <button type="button" class="btn" id="crDownloadPngBtn" style="font-size:12px;padding:6px 14px;background:#15803d;color:#fff;border-color:#15803d;font-weight:700;">💾 Download PNG</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:11px;color:#64748b;">Background render • Safe to close window</div>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn" id="crCloseBtn" style="padding:8px 16px;">Close</button>
+          <button type="button" class="btn primary" id="crStartBtn" style="background:linear-gradient(135deg,#0284c7,#0369a1);border:none;color:#fff;font-weight:700;padding:8px 20px;border-radius:6px;box-shadow:0 3px 10px rgba(2,132,199,0.3);display:inline-flex;align-items:center;gap:6px;">
+            <span>⚡ Start Render in Cloud</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Persistent Floating Status Badge (Shown when rendering in background and modal is closed) -->
+  <button type="button" id="crFloatingBadge" style="display:none;position:fixed;bottom:24px;right:24px;z-index:9000;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;border:none;border-radius:30px;padding:9px 18px;font-size:12px;font-weight:700;box-shadow:0 4px 16px rgba(2,132,199,0.4);cursor:pointer;align-items:center;gap:8px;">
+    <span id="crFloatingIcon">⏳</span>
+    <span id="crFloatingText">Cloud Render: Queued</span>
+  </button>
 
   <script src="assets/three.min.js"></script>
   <script src="assets/GLTFLoader.js"></script>

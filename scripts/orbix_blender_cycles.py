@@ -97,12 +97,27 @@ def run():
     except Exception:
         pass
 
-    # Color Management (AgX or Filmic)
+    # Color Management (AgX, Filmic or Fallback Standard)
     lighting_cfg = data.get("lighting", {})
     exp_ev = float(lighting_cfg.get("exposureEV", 0.0))
-    scene.view_settings.view_transform = 'Filmic' if 'Filmic' in [c.name for c in bpy.types.ColorManagedViewSettings.bl_rna.properties['view_transform'].enum_items] else 'AgX'
-    scene.view_settings.look = 'Medium High Contrast'
-    scene.view_settings.exposure = exp_ev
+    try:
+        transforms = [c.name for c in bpy.types.ColorManagedViewSettings.bl_rna.properties['view_transform'].enum_items]
+        if 'Filmic' in transforms:
+            scene.view_settings.view_transform = 'Filmic'
+        elif 'AgX' in transforms:
+            scene.view_settings.view_transform = 'AgX'
+    except Exception:
+        pass
+
+    try:
+        scene.view_settings.look = 'Medium High Contrast'
+    except Exception:
+        pass
+
+    try:
+        scene.view_settings.exposure = exp_ev
+    except Exception:
+        pass
 
     # 3. Create Lighting Master Controller Object
     daylight_pct = float(lighting_cfg.get("daylightPercent", 20.0))

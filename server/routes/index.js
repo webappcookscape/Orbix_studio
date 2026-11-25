@@ -13,6 +13,7 @@ const aiRoutes = require('./aiRoutes');
 const clientQuoteRoutes = require('./clientQuoteRoutes');
 const clientPortalRoutes = require('./clientPortalRoutes');
 const quoteReviewRoutes = require('./quoteReviewRoutes');
+const renderRoutes = require('./renderRoutes');
 
 // Mount Sub-Routers
 router.use('/', authRoutes);
@@ -23,6 +24,7 @@ router.use('/ai', aiRoutes);
 router.use('/client-quotes', clientQuoteRoutes);
 router.use('/client-portal', clientPortalRoutes);
 router.use('/quote-review', quoteReviewRoutes);
+router.use('/render', renderRoutes);
 
 module.exports = router;
 

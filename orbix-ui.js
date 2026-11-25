@@ -1501,7 +1501,15 @@
         });
       }
 
-      // Blender Cycles 4K Raytracing Exporter
+      // Blender Cycles 4K Raytracing Exporter & Cloud Raytracing
+      var cpCloudRenderBtn = document.getElementById('cpCloudRenderBtn');
+      if (cpCloudRenderBtn) {
+        cpCloudRenderBtn.addEventListener('click', function () {
+          var modal = document.getElementById('cloudRenderModal');
+          if (modal) modal.style.display = 'flex';
+        });
+      }
+
       var cpExportCyclesBtn = document.getElementById('cpExportCyclesBtn');
       if (cpExportCyclesBtn) {
         cpExportCyclesBtn.addEventListener('click', function () {
@@ -1610,6 +1618,7 @@
       if (typeof self.initDecorModal === 'function') self.initDecorModal();
       if (typeof self.initAIDecorModal === 'function') self.initAIDecorModal();
       if (typeof self.initAIRenderModal === 'function') self.initAIRenderModal();
+      if (typeof self.initCloudRenderModal === 'function') self.initCloudRenderModal();
       if (typeof self.initFurnishUI === 'function') self.initFurnishUI();
 
       if (furnSel && Core.FURNITURE_CATALOG) {
@@ -7043,6 +7052,315 @@
             if (progressCont) progressCont.style.display = 'none';
             startBtn.disabled = false;
           }
+        });
+      }
+    },
+
+    initCloudRenderModal: function () {
+      var self = this;
+      var modal = document.getElementById('cloudRenderModal');
+      var openBtn = document.getElementById('cpCloudRenderBtn');
+      var closeBtn = document.getElementById('closeCloudRenderModalBtn');
+      var closeFootBtn = document.getElementById('crCloseBtn');
+      var startBtn = document.getElementById('crStartBtn');
+      var floatingBadge = document.getElementById('crFloatingBadge');
+      var floatingIcon = document.getElementById('crFloatingIcon');
+      var floatingText = document.getElementById('crFloatingText');
+
+      if (!modal) return;
+
+      var daylightRange = document.getElementById('crDaylightRange');
+      var daylightVal = document.getElementById('crDaylightVal');
+      var fillRange = document.getElementById('crFillRange');
+      var fillVal = document.getElementById('crFillVal');
+      var exposureRange = document.getElementById('crExposureRange');
+      var exposureVal = document.getElementById('crExposureVal');
+
+      var statusCard = document.getElementById('crStatusCard');
+      var statusStage = document.getElementById('crStatusStage');
+      var progressBar = document.getElementById('crProgressBar');
+      var progressSamples = document.getElementById('crProgressSamples');
+      var progressTime = document.getElementById('crProgressTime');
+      var cancelJobBtn = document.getElementById('crCancelJobBtn');
+
+      var resultCard = document.getElementById('crResultCard');
+      var resultImg = document.getElementById('crResultImg');
+      var durationBadge = document.getElementById('crDurationBadge');
+      var viewFullBtn = document.getElementById('crViewFullBtn');
+      var downloadPngBtn = document.getElementById('crDownloadPngBtn');
+
+      var previewCard = document.getElementById('crPresetPreviewCard');
+      var ultraCard = document.getElementById('crPresetUltraCard');
+      var radios = document.getElementsByName('crPresetRadio');
+
+      var currentJobId = null;
+      var pollTimer = null;
+      var startTimeMs = 0;
+      var lastCompletedUrl = null;
+
+      function openModal() {
+        modal.style.display = 'flex';
+      }
+      function closeModal() {
+        modal.style.display = 'none';
+      }
+
+      if (openBtn) openBtn.addEventListener('click', openModal);
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      if (closeFootBtn) closeFootBtn.addEventListener('click', closeModal);
+      if (floatingBadge) floatingBadge.addEventListener('click', openModal);
+
+      // Preset card styling toggle
+      for (var i = 0; i < radios.length; i++) {
+        radios[i].addEventListener('change', function () {
+          var val = this.value;
+          if (val === 'preview') {
+            if (previewCard) {
+              previewCard.style.border = '2px solid #0284c7';
+              previewCard.style.background = '#f0f9ff';
+            }
+            if (ultraCard) {
+              ultraCard.style.border = '1px solid #cbd5e1';
+              ultraCard.style.background = '#fff';
+            }
+          } else {
+            if (ultraCard) {
+              ultraCard.style.border = '2px solid #0284c7';
+              ultraCard.style.background = '#f0f9ff';
+            }
+            if (previewCard) {
+              previewCard.style.border = '1px solid #cbd5e1';
+              previewCard.style.background = '#fff';
+            }
+          }
+        });
+      }
+
+      // Slider dynamic labels
+      if (daylightRange && daylightVal) {
+        daylightRange.addEventListener('input', function () { daylightVal.textContent = daylightRange.value + '%'; });
+      }
+      if (fillRange && fillVal) {
+        fillRange.addEventListener('input', function () { fillVal.textContent = fillRange.value + ' W'; });
+      }
+      if (exposureRange && exposureVal) {
+        exposureRange.addEventListener('input', function () {
+          var v = parseFloat(exposureRange.value);
+          exposureVal.textContent = (v > 0 ? '+' : '') + v.toFixed(1) + ' EV';
+        });
+      }
+
+      function updateFloatingBadge(statusText, isSpinning) {
+        if (!floatingBadge) return;
+        floatingBadge.style.display = 'inline-flex';
+        if (floatingText) floatingText.textContent = statusText;
+        if (floatingIcon) floatingIcon.textContent = isSpinning ? '⏳' : '✨';
+      }
+
+      function hideFloatingBadge() {
+        if (floatingBadge) floatingBadge.style.display = 'none';
+      }
+
+      function stopPolling() {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      }
+
+      function pollJob(jobId) {
+        stopPolling();
+        startTimeMs = Date.now();
+        var apiFn = (window.OrbixProjects && typeof window.OrbixProjects.apiFetch === 'function')
+          ? window.OrbixProjects.apiFetch.bind(window.OrbixProjects)
+          : fetch;
+
+        pollTimer = setInterval(async function () {
+          try {
+            var res = await apiFn('/api/render/jobs/' + jobId);
+            if (!res.ok) return;
+            var data = await res.json();
+            var job = data.job;
+            if (!job) return;
+
+            var elapsedSec = Math.round((Date.now() - startTimeMs) / 1000);
+            var m = Math.floor(elapsedSec / 60);
+            var s = elapsedSec % 60;
+            var timeStr = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+
+            if (job.status === 'queued') {
+              if (statusCard) statusCard.style.display = 'block';
+              if (resultCard) resultCard.style.display = 'none';
+              if (statusStage) statusStage.textContent = 'Queued in server' + (job.queuePosition ? ' (Position #' + job.queuePosition + ')' : '...');
+              if (progressBar) progressBar.style.width = '10%';
+              if (progressSamples) progressSamples.textContent = 'Waiting for worker process...';
+              if (progressTime) progressTime.textContent = 'Elapsed: ' + timeStr;
+              updateFloatingBadge('Cloud Render: Queued', true);
+            } else if (job.status === 'rendering') {
+              if (statusCard) statusCard.style.display = 'block';
+              if (resultCard) resultCard.style.display = 'none';
+              var pct = (job.progress && job.progress.percent) || 20;
+              if (progressBar) progressBar.style.width = Math.min(96, Math.max(10, pct)) + '%';
+              if (statusStage) statusStage.textContent = (job.progress && job.progress.stage) || 'Rendering on server CPU...';
+              if (progressSamples) {
+                var sDone = (job.progress && job.progress.samplesDone) || 0;
+                var sTotal = (job.progress && job.progress.samplesTotal) || job.samples || 48;
+                var rem = (job.progress && job.progress.timeRemaining) ? (' • ~' + job.progress.timeRemaining + ' left') : '';
+                progressSamples.textContent = 'Sample ' + sDone + ' / ' + sTotal + rem;
+              }
+              if (progressTime) progressTime.textContent = 'Elapsed: ' + timeStr;
+              updateFloatingBadge('Cloud Render: ' + pct + '%', true);
+            } else if (job.status === 'completed') {
+              stopPolling();
+              if (statusCard) statusCard.style.display = 'none';
+              if (resultCard) resultCard.style.display = 'block';
+              if (startBtn) startBtn.disabled = false;
+              lastCompletedUrl = job.outputUrl;
+
+              if (resultImg && job.outputUrl) {
+                resultImg.src = job.outputUrl;
+                resultImg.onclick = function () { window.open(job.outputUrl, '_blank'); };
+              }
+              if (durationBadge) {
+                durationBadge.textContent = (job.durationSeconds ? job.durationSeconds + 's' : timeStr);
+              }
+              updateFloatingBadge('Cloud Render Ready!', false);
+              if (typeof window.showToast === 'function') {
+                window.showToast('✨ Cloud Raytracing Render Ready!');
+              } else if (typeof window.toast === 'function') {
+                window.toast('✨ Cloud Raytracing Render Ready!');
+              }
+            } else if (job.status === 'failed') {
+              stopPolling();
+              if (statusCard) statusCard.style.display = 'none';
+              if (startBtn) startBtn.disabled = false;
+              hideFloatingBadge();
+              alert('Cloud render failed: ' + (job.error || 'Unknown server error'));
+            }
+          } catch (pollErr) {
+            console.warn('[CloudRender] Polling notice:', pollErr);
+          }
+        }, 3000);
+      }
+
+      if (startBtn) {
+        startBtn.addEventListener('click', async function () {
+          var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+          if (!self.archRenderer && root.Orbix3D) {
+            self.archRenderer = new root.Orbix3D(scene);
+          }
+
+          var selectedPreset = 'preview';
+          for (var r = 0; r < radios.length; r++) {
+            if (radios[r].checked) { selectedPreset = radios[r].value; break; }
+          }
+
+          var dl = daylightRange ? parseFloat(daylightRange.value) : 20;
+          var fill = fillRange ? parseFloat(fillRange.value) : 10;
+          var exp = exposureRange ? parseFloat(exposureRange.value) : 0;
+
+          var res = null;
+          try {
+            if (self.archRenderer && typeof self.archRenderer.exportToCyclesJson === 'function') {
+              res = self.archRenderer.exportToCyclesJson(self.project, scene, {
+                daylightPercent: dl,
+                interiorFillWatts: fill,
+                exposureEV: exp,
+                preset: selectedPreset
+              });
+            }
+          } catch (e) {
+            alert('Could not export 3D geometry: ' + e.message);
+            return;
+          }
+
+          if (!res || !res.cyclesJson) {
+            alert('No 3D walls or cabinets in current scene. Please add cabinets to render.');
+            return;
+          }
+
+          var cyclesObj;
+          try {
+            cyclesObj = JSON.parse(res.cyclesJson);
+          } catch (parseErr) {
+            alert('Invalid scene structure: ' + parseErr.message);
+            return;
+          }
+
+          startBtn.disabled = true;
+          if (statusCard) statusCard.style.display = 'block';
+          if (resultCard) resultCard.style.display = 'none';
+          if (statusStage) statusStage.textContent = 'Submitting job to VPS...';
+          if (progressBar) progressBar.style.width = '5%';
+          updateFloatingBadge('Cloud Render: Submitting...', true);
+
+          try {
+            var apiFn = (window.OrbixProjects && typeof window.OrbixProjects.apiFetch === 'function')
+              ? window.OrbixProjects.apiFetch.bind(window.OrbixProjects)
+              : fetch;
+
+            var response = await apiFn('/api/render/jobs', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                cyclesData: cyclesObj,
+                preset: selectedPreset,
+                lighting: {
+                  daylightPercent: dl,
+                  interiorFillWatts: fill,
+                  exposureEV: exp
+                },
+                projectId: (self.project && self.project.meta && self.project.meta.id) || 'current'
+              })
+            });
+
+            if (!response.ok) {
+              var errData = await response.json().catch(function () { return {}; });
+              throw new Error(errData.error || ('Server returned HTTP ' + response.status));
+            }
+
+            var jobData = await response.json();
+            currentJobId = jobData.job.id;
+            pollJob(currentJobId);
+          } catch (err) {
+            startBtn.disabled = false;
+            if (statusCard) statusCard.style.display = 'none';
+            hideFloatingBadge();
+            alert('Could not start cloud render: ' + err.message);
+          }
+        });
+      }
+
+      if (cancelJobBtn) {
+        cancelJobBtn.addEventListener('click', async function () {
+          if (!currentJobId) return;
+          if (!confirm('Are you sure you want to cancel this cloud render?')) return;
+          stopPolling();
+          try {
+            var apiFn = (window.OrbixProjects && typeof window.OrbixProjects.apiFetch === 'function')
+              ? window.OrbixProjects.apiFetch.bind(window.OrbixProjects)
+              : fetch;
+            await apiFn('/api/render/jobs/' + currentJobId + '/cancel', { method: 'POST' });
+          } catch (_) {}
+          if (statusCard) statusCard.style.display = 'none';
+          if (startBtn) startBtn.disabled = false;
+          hideFloatingBadge();
+        });
+      }
+
+      if (viewFullBtn && resultImg) {
+        viewFullBtn.addEventListener('click', function () {
+          if (lastCompletedUrl) window.open(lastCompletedUrl, '_blank');
+        });
+      }
+
+      if (downloadPngBtn) {
+        downloadPngBtn.addEventListener('click', function () {
+          if (!lastCompletedUrl) return;
+          var a = document.createElement('a');
+          a.href = lastCompletedUrl + '?download=1';
+          a.download = 'orbix-cycles-render.png';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
         });
       }
     },

@@ -20,3 +20,6 @@ server/db/local_store.json
 .sessions_cache.json
 .session_secret
 data/
+renders/jobs/
+renders/output/
+renders/*.json
