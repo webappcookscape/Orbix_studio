@@ -322,6 +322,16 @@ class MockPrismaClient {
         self._write(self._usersFile, users);
         return users[idx];
       },
+      async updateMany(args) {
+        const users = self._read(self._usersFile, DEFAULT_FALLBACK_USERS);
+        let count = 0;
+        for (let i = 0; i < users.length; i++) {
+          users[i] = { ...users[i], ...args.data, updatedAt: new Date() };
+          count++;
+        }
+        self._write(self._usersFile, users);
+        return { count };
+      },
       async delete(args) {
         let users = self._read(self._usersFile, DEFAULT_FALLBACK_USERS);
         users = users.filter(u => u.id !== args.where.id);
