@@ -2809,7 +2809,17 @@
                 return true;
               }
             }
-            return false;
+            if (window.OrbixUI && window.OrbixUI.editor) {
+              window.OrbixUI.editor.selected = [{ type: 'furniture', id: fId }];
+              if (window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
+            }
+            if (window.OrbixUI && typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function') {
+              window.OrbixUI.selectFurnitureIn3DStudio(fId);
+            }
+            if (window.OrbixUI && typeof window.OrbixUI.highlight3DFurniture === 'function') {
+              window.OrbixUI.highlight3DFurniture(fId);
+            }
+            return true;
           }
         }
       }
@@ -2846,6 +2856,11 @@
         var ho = hits[i].object;
         if (!ho || !ho.isMesh || !isVisObj(ho, scene)) continue;
 
+        // Skip ground contact shadows or invisible helper planes
+        if (ho.name === '__contact_shadow_plane__' || (ho.userData && ho.userData.isContactShadow)) {
+          continue;
+        }
+
         var cur = ho;
         var matchedId = null;
         var matchedGroup = null;
@@ -2864,8 +2879,21 @@
         if (matchedId) {
           return { object: (matchedGroup || ho), id: matchedId, hitPoint: hits[i].point };
         }
+
+        // Floors and ceilings do NOT block furniture selection
+        var ud = ho.userData || {};
+        if (ud.isFloorMesh || (ho.name && ho.name.indexOf('Floor_') === 0)) {
+          continue;
+        }
+        if (ud.isCeilingMesh || (ho.name && ho.name.indexOf('Ceiling_') === 0)) {
+          continue;
+        }
+
+        // Only opaque, visible walls strictly in front of the camera occlude
         if (isObstructionObj(ho, homeObj)) {
-          return null;
+          if (ho.visible && (!ho.material || ho.material.opacity > 0.85)) {
+            return null;
+          }
         }
       }
       return null;
@@ -3242,61 +3270,18 @@
         }
       }
 
-      // Furniture Visibility: Units mounted on / attached to a hidden wall hide with that wall!
+      // Keep furniture visible so units remain interactive and selectable from all angles
       furnMeshes.forEach(function (fMesh) {
-        var fPos = fMesh.position;
-        var hideThisFurn = false;
-
-        for (var wi = 0; wi < wallMeshes.length; wi++) {
-          var wm = wallMeshes[wi];
-          if (wm.visible) continue; // This wall is visible: keep its units visible!
-
-          var uData = wm.userData || {};
-
-          // 1. Direct association check by wallId
-          if (uData.wallId && fMesh.userData && fMesh.userData.wallId === uData.wallId) {
-            hideThisFurn = true;
-            break;
-          }
-
-          // 2. Geometric proximity fallback
-          var wS = uData.start;
-          var wE = uData.end;
-          if (!wS || !wE) continue;
-
-          var dx = wE.x - wS.x;
-          var dy = wE.y - wS.y;
-          var wallLen = Math.hypot(dx, dy);
-          if (wallLen < 1) continue;
-
-          var dirX = dx / wallLen;
-          var dirY = dy / wallLen;
-
-          // Vector from wall start to furniture position in world X-Z
-          var toU = { x: fPos.x - wS.x, y: fPos.z - wS.y };
-          var tProj = (toU.x * dirX + toU.y * dirY);
-          var tNorm = tProj / wallLen;
-
-          // Check if unit is within the wall span (with 150mm margin for edge units)
-          if (tNorm >= -0.1 && tNorm <= 1.1) {
-            var perpX = toU.x - tProj * dirX;
-            var perpY = toU.y - tProj * dirY;
-            var distPerp = Math.hypot(perpX, perpY);
-
-            var furnObj = (fMesh.userData && fMesh.userData.furniture) || {};
-            var fDims = furnObj.dimensions || {};
-            var fDepth = parseFloat(fDims.D) || 600;
-            var wallThick = (uData.wall && uData.wall.thickness) ? uData.wall.thickness : 150;
-            var maxAttachDist = wallThick / 2 + fDepth + 150;
-
-            if (distPerp <= maxAttachDist) {
-              hideThisFurn = true;
-              break;
-            }
-          }
+        var ud = fMesh.userData || {};
+        var furnObj = ud.furniture || {};
+        var isWallMounted = (furnObj.category && furnObj.category.indexOf('wall') !== -1) ||
+                            (furnObj.elevation !== undefined && parseFloat(furnObj.elevation) >= 1200);
+        // Only high wall-mounted cabinets directly on a cut wall hide; all floor, base, and decor units stay visible!
+        if (isWallMounted && ud.wallId && wallVisibility[ud.wallId] === false) {
+          fMesh.visible = false;
+        } else {
+          fMesh.visible = true;
         }
-
-        fMesh.visible = !hideThisFurn;
       });
     }
 
@@ -3317,7 +3302,10 @@
       });
       if (typeof ResizeObserver !== 'undefined' && stage) {
         try {
-          new ResizeObserver(function () { cachedStageRect = null; }).observe(stage);
+          new ResizeObserver(function () {
+            cachedStageRect = null;
+            if (ok) apply(true);
+          }).observe(stage);
         } catch (roErr) { }
       }
     }
@@ -3330,8 +3318,8 @@
           renderer.setPixelRatio(highDpr);
         }
       }
-      if (!cachedStageRect && stage) {
-        var liveR = stage.getBoundingClientRect();
+      if (forceSync || !cachedStageRect || cachedStageRect.width <= 0) {
+        var liveR = stage ? stage.getBoundingClientRect() : null;
         if (liveR && liveR.width > 0 && liveR.height > 0) {
           cachedStageRect = liveR;
         }
@@ -4799,37 +4787,11 @@
     });
 
     var gizmoDrag = null;
-    // Capture phase: Handle 3D Gizmo arrows and furniture selection
+    // Capture phase: Handle 3D Gizmo arrows and room resize handles
     stage.addEventListener("pointerdown", function (e) {
       downAt = { x: e.clientX, y: e.clientY, t: Date.now() };
 
-      // 1. Click unit: Select furniture unit in inspector without moving it in 3D
-      // Per user request: units do NOT move in 3D; mouse moves strictly orbit/pan the camera!
-      if (GL.ok && GL.pickFurniture && e.button === 0) {
-        var fHit = GL.pickFurniture(e.clientX, e.clientY);
-        if (fHit) {
-          if (window.OrbixUI && window.OrbixUI.editor) {
-            window.OrbixUI.editor.selected = [{ type: 'furniture', id: fHit.id }];
-            if (window.OrbixUI.editor.render) window.OrbixUI.editor.render();
-            if (window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
-          }
-          if (window.OrbixUI && typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function') {
-            window.OrbixUI.selectFurnitureIn3DStudio(fHit.id);
-          }
-          // Do NOT capture pointer or initiate drag: keeps units strictly fixed in 3D!
-        } else if (GL.pickWall) {
-          var wHit = GL.pickWall(e.clientX, e.clientY);
-          if (wHit && wHit.wallId) {
-            if (window.OrbixUI && window.OrbixUI.editor) {
-              window.OrbixUI.editor.selected = [{ type: 'wall', id: wHit.wallId }];
-              if (window.OrbixUI.editor.render) window.OrbixUI.editor.render();
-              if (window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
-            }
-          }
-        }
-      }
-
-      // 2. Check room resize handle
+      // 1. Check room resize handle
       if (ROOM.id && GL.ok) {
         var h = GL.handleAt(e.clientX, e.clientY);
         if (h) {
@@ -5190,9 +5152,27 @@
       delete pts[e.pointerId];
       lastD = 0;
       if (!Object.keys(pts).length) stage.classList.remove("grab");
-      if (downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) < 5 && Date.now() - downAt.t < 500) {
-        var didPick = GL.pick(e.clientX, e.clientY);
-        if (!didPick && GL.pickWall) {
+      if (downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) < 6 && Date.now() - downAt.t < 500) {
+        // 1. First priority: Check if a 3D furniture unit was clicked!
+        var fHit = (GL.ok && GL.pickFurniture) ? GL.pickFurniture(e.clientX, e.clientY) : null;
+        if (fHit && fHit.id) {
+          if (window.OrbixUI) {
+            if (window.OrbixUI.editor) {
+              window.OrbixUI.editor.selected = [{ type: 'furniture', id: fHit.id }];
+              if (window.OrbixUI.editor.render) window.OrbixUI.editor.render();
+              if (window.OrbixUI.renderInspector) window.OrbixUI.renderInspector(window.OrbixUI.editor.selected);
+            }
+            if (typeof window.OrbixUI.selectFurnitureIn3DStudio === 'function') {
+              window.OrbixUI.selectFurnitureIn3DStudio(fHit.id);
+            }
+            if (typeof window.OrbixUI.highlight3DFurniture === 'function') {
+              window.OrbixUI.highlight3DFurniture(fHit.id);
+            }
+          }
+          // Also toggle shutter or drawer if shutter/drawer was specifically clicked
+          if (GL.pick) GL.pick(e.clientX, e.clientY);
+        } else if (GL.pickWall) {
+          // 2. Second priority: Only if no furniture was clicked, check if a wall was clicked
           var wHit = GL.pickWall(e.clientX, e.clientY);
           if (wHit && wHit.wallId) {
             if (window.OrbixUI && window.OrbixUI.editor) {

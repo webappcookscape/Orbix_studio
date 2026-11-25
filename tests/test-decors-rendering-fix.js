@@ -65,5 +65,28 @@ if (!orbix3d.includes('ensureGLTFLoader')) {
 }
 console.log('✓ orbix-3d.js has subtle wireframe placeholder and proactive ensureGLTFLoader');
 
+// 6. Verify office chair GLB and thumbnail exist and are wired in catalog
+const chairGlb = path.join(assetsDir, 'decors', 'chair_1.glb');
+if (!fs.existsSync(chairGlb) || fs.statSync(chairGlb).size < 1000000) {
+  throw new Error('assets/decors/chair_1.glb missing or incomplete');
+}
+const chairThumb = path.join(assetsDir, 'decors', 'chair_1_thumb.png');
+if (!fs.existsSync(chairThumb)) {
+  throw new Error('assets/decors/chair_1_thumb.png missing');
+}
+console.log('✓ Office chair GLB model and thumbnail exist on disk');
+
+const catalogPath = path.join(__dirname, '..', 'orbix-decors-catalog.js');
+const catalogJs = fs.readFileSync(catalogPath, 'utf8');
+if (!catalogJs.includes('decor_chair_1') || !catalogJs.includes('chair_1.glb')) {
+  throw new Error('orbix-decors-catalog.js missing decor_chair_1 entry');
+}
+console.log('✓ orbix-decors-catalog.js contains Ergonomic Office Chair catalog entry');
+
+if (!orbix3d.includes('chair_1.glb')) {
+  throw new Error('orbix-3d.js missing chair_1.glb fallback mapping');
+}
+console.log('✓ orbix-3d.js maps chair models directly to chair_1.glb');
+
 console.log('\nALL VERIFICATION CHECKS PASSED SUCCESSFULLY!');
 

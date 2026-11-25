@@ -2,6 +2,39 @@
 (function() {
   var catalog = [
   {
+    "id": "decor_chair_1",
+    "slug": "chair_1",
+    "original_filename": "chair (1).skp",
+    "name": "Ergonomic Executive Office Chair",
+    "category": "decor",
+    "decorType": "chair",
+    "subCategory": "Sofas & Seating",
+    "icon": "💺",
+    "modelUrl": "assets/decors/chair_1.glb",
+    "thumbnailUrl": "assets/decors/chair_1_thumb.png",
+    "dimensions": {
+      "W": 500,
+      "H": 800,
+      "D": 510
+    },
+    "elevation": 0,
+    "bounds": {
+      "min": [
+        0.0,
+        0.0,
+        -510.8
+      ],
+      "max": [
+        497.1,
+        787.5,
+        0.0
+      ]
+    },
+    "fileSizeGlb": 3524920,
+    "excludeFromPricing": true,
+    "isDecor": true
+  },
+  {
     "id": "decor_023",
     "slug": "023",
     "original_filename": "023.skp",

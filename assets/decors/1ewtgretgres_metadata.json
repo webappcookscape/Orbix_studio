@@ -1,0 +1,1131 @@
+{
+  "format_version": "1.0",
+  "source_file": "1ewtgretgres",
+  "model_source": "sketchup",
+  "sketchup_version": "{26.1.189}",
+  "total_definitions": 25,
+  "total_meshes": 33,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "[0003_DeepPink]1__Ceramic",
+      "color": {
+        "r": 168,
+        "g": 168,
+        "b": 168
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "vray_JianE_Mtl_7__Plastic",
+      "color": {
+        "r": 73,
+        "g": 73,
+        "b": 73
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 1
+    },
+    {
+      "name": "vray_JianE_Mtl_202012310298471_14",
+      "color": {
+        "r": 176,
+        "g": 176,
+        "b": 176
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "E:\\ModelReview\\TemporaryModel\\JianE_Map_202012310295138.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "vray_JianE_Mtl_202012310298472_3",
+      "color": {
+        "r": 181,
+        "g": 181,
+        "b": 181
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "E:\\ModelReview\\TemporaryModel\\JianE_Map_202012310296356.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "vray_JianE_Mtl_202012310298472_4",
+      "color": {
+        "r": 185,
+        "g": 185,
+        "b": 185
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "E:\\ModelReview\\TemporaryModel\\JianE_Map_202012310295459.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "vray_JianE_Mtl_202012310298470_7",
+      "color": {
+        "r": 185,
+        "g": 185,
+        "b": 185
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "E:\\ModelReview\\TemporaryModel\\JianE_Map_202012310295301.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "vray_JianE_Mtl_202012310298470_8",
+      "color": {
+        "r": 147,
+        "g": 147,
+        "b": 147
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "[0003_DeepPink]",
+      "color": {
+        "r": 221,
+        "g": 177,
+        "b": 177
+      },
+      "transparency": 0.15000000000000002,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "vray_JianE_Mtl_202151985625393__Marble",
+      "color": {
+        "r": 185,
+        "g": 185,
+        "b": 185
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "Texture.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "J-其他_树叶_hs11_007",
+      "color": {
+        "r": 86,
+        "g": 116,
+        "b": 53
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:/OneDrive - business-cn/MAP/J-其他/树叶/hs11_007.jpg",
+        "x_scale": 40.944881889763785,
+        "y_scale": 80.62992125984252
+      }
+    },
+    {
+      "name": "J-其他_树叶_2041.UUU13062",
+      "color": {
+        "r": 137,
+        "g": 172,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:/OneDrive - business-cn/MAP/J-其他/树叶/2041.UUU13062.jpg",
+        "x_scale": 34.645669291338585,
+        "y_scale": 34.645669291338585
+      }
+    },
+    {
+      "name": "vray_JianE_Mtl_6__Wood",
+      "color": {
+        "r": 122,
+        "g": 110,
+        "b": 95
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 1,
+      "texture": {
+        "filename": "Texture.jpg",
+        "x_scale": 1.0,
+        "y_scale": 1.0
+      }
+    },
+    {
+      "name": "J-其他_树叶_JianE_Map_202091414033236",
+      "color": {
+        "r": 94,
+        "g": 87,
+        "b": 72
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:/OneDrive - business-cn/MAP/J-其他/树叶/JianE_Map_202091414033236.jpg",
+        "x_scale": 31.496062992125985,
+        "y_scale": 32.99212598425197
+      }
+    },
+    {
+      "name": "vray_vray Zara Home Mat Light 2__Acryl",
+      "color": {
+        "r": 209,
+        "g": 209,
+        "b": 209
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "vray_vray Zara Home Mat Light 3__Plastic",
+      "color": {
+        "r": 71,
+        "g": 71,
+        "b": 71
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "vray_vray Zara Home Mat Light 4",
+      "color": {
+        "r": 0,
+        "g": 0,
+        "b": 0
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    },
+    {
+      "name": "0-优秀布艺、皮革_2-皮革_0-优秀1",
+      "color": {
+        "r": 154,
+        "g": 143,
+        "b": 125
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "E:\\0-设计师小铺\\国外3DSKY单体模型库 更新至6150个 详细分类\\01家居空间\\02椅子\\04扶手椅\\ID04336\\White-Leather-Texture-Free-Download33.jpg",
+        "x_scale": 4.125492125984252,
+        "y_scale": 2.99972224075804
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__组055__JianE_model_202012310298469_Layer0": {
+      "name": "JianE_model_202012310298469",
+      "definition_name": "Component27#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2058.58,
+        1127.74,
+        714.46
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组055 / JianE_model_202012310298469"
+    },
+    "mesh_1_ROOT__组055__JianE_model_202012310298469_Layer0": {
+      "name": "JianE_model_202012310298469",
+      "definition_name": "Component29#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2019.77,
+        1098.2,
+        766.41
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组055 / JianE_model_202012310298469"
+    },
+    "mesh_2_ROOT__组041__组040__Rectangle260_Layer0": {
+      "name": "Rectangle260",
+      "definition_name": "Component21#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2405.94,
+        1071.56,
+        349.66
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组041 / 组040 / Rectangle260"
+    },
+    "mesh_3_ROOT__组041__组040__Rectangle259_Layer0": {
+      "name": "Rectangle259",
+      "definition_name": "Component24#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2401.21,
+        1111.56,
+        349.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组041 / 组040 / Rectangle259"
+    },
+    "mesh_4_ROOT__组041__Rectangle261_Layer0": {
+      "name": "Rectangle261",
+      "definition_name": "Component24#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1308.01,
+        1058.9,
+        349.5
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组041 / Rectangle261"
+    },
+    "mesh_5_ROOT__组041__Rectangle262_Layer0": {
+      "name": "Rectangle262",
+      "definition_name": "Component21#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1269.44,
+        1047.3,
+        349.66
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组041 / Rectangle262"
+    },
+    "mesh_6_ROOT__组041__Rectangle263_Layer0": {
+      "name": "Rectangle263",
+      "definition_name": "Component21#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1260.08,
+        1055.5,
+        349.66
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组041 / Rectangle263"
+    },
+    "mesh_7_ROOT__组041__JianE_model_202151985625386_Layer0": {
+      "name": "JianE_model_202151985625386",
+      "definition_name": "Component25#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1595.67,
+        1091.56,
+        697.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组041 / JianE_model_202151985625386"
+    },
+    "mesh_8_ROOT__组058__组035__组034__Zara_Home_Light_1__Zara_Home_7_Layer0_209_209_209_ds": {
+      "name": "Zara Home 7",
+      "definition_name": "Component30#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2295.89,
+        1087.47,
+        866.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组058 / 组035 / 组034 / Zara Home Light 1 / Zara Home 7"
+    },
+    "mesh_9_ROOT__组058__组035__组034__Zara_Home_Light_1__Zara_Home_7_Layer0_71_71_71_ds": {
+      "name": "Zara Home 7",
+      "definition_name": "Component30#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2295.89,
+        1087.47,
+        866.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组058 / 组035 / 组034 / Zara Home Light 1 / Zara Home 7"
+    },
+    "mesh_10_ROOT__组058__组035__组034__Zara_Home_Light_1__Zara_Home_7_Layer0_0_0_0_ds": {
+      "name": "Zara Home 7",
+      "definition_name": "Component30#1",
+      "layer": "Layer0",
+      "position_mm": [
+        2295.89,
+        1087.47,
+        866.99
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组058 / 组035 / 组034 / Zara Home Light 1 / Zara Home 7"
+    },
+    "mesh_11_ROOT__JianE_model_202012310298469__JianE_model_202012310298469_Layer0": {
+      "name": "JianE_model_202012310298469",
+      "definition_name": "Component70#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1443.0,
+        1108.3,
+        839.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / JianE_model_202012310298469 / JianE_model_202012310298469"
+    },
+    "mesh_12_ROOT__JianE_model_759904563_Layer0": {
+      "name": "JianE_model_759904563",
+      "definition_name": "Component59#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1144.87,
+        418.36,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / JianE_model_759904563"
+    },
+    "mesh_13_ROOT__JianE_model_202012310298468_Layer0_185_185_185_ds": {
+      "name": "JianE_model_202012310298468",
+      "definition_name": "Component72#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1402.25,
+        1085.18,
+        733.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / JianE_model_202012310298468"
+    },
+    "mesh_14_ROOT__JianE_model_202012310298468_Layer0_147_147_147_ds": {
+      "name": "JianE_model_202012310298468",
+      "definition_name": "Component72#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1402.25,
+        1085.18,
+        733.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / JianE_model_202012310298468"
+    },
+    "mesh_15_ROOT__JianE_model_202012310298468_Layer0_181_181_181_ds": {
+      "name": "JianE_model_202012310298468",
+      "definition_name": "Component72#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1402.25,
+        1085.18,
+        733.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / JianE_model_202012310298468"
+    },
+    "mesh_16_ROOT__JianE_model_202012310298468_Layer0_185_185_185_ds": {
+      "name": "JianE_model_202012310298468",
+      "definition_name": "Component72#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1402.25,
+        1085.18,
+        733.78
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / JianE_model_202012310298468"
+    },
+    "mesh_17_ROOT__网格006_Layer0_154_143_125_ss": {
+      "name": "网格006",
+      "definition_name": "Component60#2",
+      "layer": "Layer0",
+      "position_mm": [
+        1144.87,
+        418.36,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 网格006"
+    },
+    "mesh_18_ROOT__网格006_Layer0_255_84_84_ss": {
+      "name": "网格006",
+      "definition_name": "Component60#2",
+      "layer": "Layer0",
+      "position_mm": [
+        1144.87,
+        418.36,
+        0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 网格006"
+    },
+    "mesh_19_ROOT__JianE_model_202012310298468_Layer0_176_176_176_ds": {
+      "name": "JianE_model_202012310298468",
+      "definition_name": "Component73#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1404.87,
+        1083.23,
+        754.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / JianE_model_202012310298468"
+    },
+    "mesh_20_ROOT__JianE_model_202012310298468_Layer0_181_181_181_ds": {
+      "name": "JianE_model_202012310298468",
+      "definition_name": "Component73#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1404.87,
+        1083.23,
+        754.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / JianE_model_202012310298468"
+    },
+    "mesh_21_ROOT__JianE_model_202012310298468_Layer0_185_185_185_ds": {
+      "name": "JianE_model_202012310298468",
+      "definition_name": "Component73#1",
+      "layer": "Layer0",
+      "position_mm": [
+        1404.87,
+        1083.23,
+        754.13
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / JianE_model_202012310298468"
+    },
+    "mesh_22_ROOT__网格006_Layer0_154_143_125_ss": {
+      "name": "网格006",
+      "definition_name": "Component60#2",
+      "layer": "Layer0",
+      "position_mm": [
+        2251.92,
+        1789.34,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 网格006"
+    },
+    "mesh_23_ROOT__网格006_Layer0_255_84_84_ss": {
+      "name": "网格006",
+      "definition_name": "Component60#2",
+      "layer": "Layer0",
+      "position_mm": [
+        2251.92,
+        1789.34,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 网格006"
+    },
+    "mesh_24_ROOT__网格006_Layer0_154_143_125_ss": {
+      "name": "网格006",
+      "definition_name": "Component60#2",
+      "layer": "Layer0",
+      "position_mm": [
+        1151.29,
+        1789.34,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 网格006"
+    },
+    "mesh_25_ROOT__网格006_Layer0_255_84_84_ss": {
+      "name": "网格006",
+      "definition_name": "Component60#2",
+      "layer": "Layer0",
+      "position_mm": [
+        1151.29,
+        1789.34,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 网格006"
+    },
+    "mesh_26_ROOT__111213424__组002__建E_model_202196105946280144_Layer0_86_116_53_ss": {
+      "name": "建E_model_202196105946280144",
+      "definition_name": "Component#3",
+      "layer": "Layer0",
+      "position_mm": [
+        1287.57,
+        1048.51,
+        1153.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 111213424 / 组002 / 建E_model_202196105946280144"
+    },
+    "mesh_27_ROOT__111213424__组002__建E_model_202196105946280144_Layer0_137_172_84_ss": {
+      "name": "建E_model_202196105946280144",
+      "definition_name": "Component#3",
+      "layer": "Layer0",
+      "position_mm": [
+        1287.57,
+        1048.51,
+        1153.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 111213424 / 组002 / 建E_model_202196105946280144"
+    },
+    "mesh_28_ROOT__111213424__组002__建E_model_202196105946280145_Layer0": {
+      "name": "建E_model_202196105946280145",
+      "definition_name": "Component3#3",
+      "layer": "Layer0",
+      "position_mm": [
+        1106.4,
+        1066.35,
+        778.21
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 111213424 / 组002 / 建E_model_202196105946280145"
+    },
+    "mesh_29_ROOT__111213424__组002__建E_model_202196105946280143_Layer0_94_87_72_ss": {
+      "name": "建E_model_202196105946280143",
+      "definition_name": "Component4#2",
+      "layer": "Layer0",
+      "position_mm": [
+        1287.57,
+        1048.51,
+        1153.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 111213424 / 组002 / 建E_model_202196105946280143"
+    },
+    "mesh_30_ROOT__111213424__组002__建E_model_202196105946280143_Layer0_255_84_84_ss": {
+      "name": "建E_model_202196105946280143",
+      "definition_name": "Component4#2",
+      "layer": "Layer0",
+      "position_mm": [
+        1287.57,
+        1048.51,
+        1153.44
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 111213424 / 组002 / 建E_model_202196105946280143"
+    },
+    "mesh_31_ROOT__1QWERFEWFRE__网格006_Layer0_154_143_125_ss": {
+      "name": "网格006",
+      "definition_name": "Component60#2",
+      "layer": "Layer0",
+      "position_mm": [
+        2240.27,
+        332.53,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 1QWERFEWFRE / 网格006"
+    },
+    "mesh_32_ROOT__1QWERFEWFRE__网格006_Layer0_255_84_84_ss": {
+      "name": "网格006",
+      "definition_name": "Component60#2",
+      "layer": "Layer0",
+      "position_mm": [
+        2240.27,
+        332.53,
+        -0.0
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 1QWERFEWFRE / 网格006"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "组055",
+        "definition_name": "Component28",
+        "layer": "Layer0",
+        "position_mm": [
+          2054.36,
+          1082.6,
+          832.05
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "JianE_model_202012310298469",
+            "definition_name": "Component27#1",
+            "layer": "Layer0",
+            "position_mm": [
+              2058.58,
+              1127.74,
+              714.46
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "JianE_model_202012310298469",
+            "definition_name": "Component29#1",
+            "layer": "Layer0",
+            "position_mm": [
+              2019.77,
+              1098.2,
+              766.41
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "组041",
+        "definition_name": "Component22#1",
+        "layer": "Layer0",
+        "position_mm": [
+          1726.84,
+          1091.56,
+          367.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "组040",
+            "definition_name": "Component23#1",
+            "layer": "Layer0",
+            "position_mm": [
+              2343.13,
+              1091.56,
+              349.66
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "Rectangle260",
+                "definition_name": "Component21#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2405.94,
+                  1071.56,
+                  349.66
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "Rectangle259",
+                "definition_name": "Component24#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2401.21,
+                  1111.56,
+                  349.5
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Rectangle261",
+            "definition_name": "Component24#1",
+            "layer": "Layer0",
+            "position_mm": [
+              1308.01,
+              1058.9,
+              349.5
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Rectangle262",
+            "definition_name": "Component21#1",
+            "layer": "Layer0",
+            "position_mm": [
+              1269.44,
+              1047.3,
+              349.66
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Rectangle263",
+            "definition_name": "Component21#1",
+            "layer": "Layer0",
+            "position_mm": [
+              1260.08,
+              1055.5,
+              349.66
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "JianE_model_202151985625386",
+            "definition_name": "Component25#1",
+            "layer": "Layer0",
+            "position_mm": [
+              1595.67,
+              1091.56,
+              697.78
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "组058",
+        "definition_name": "Component31#1",
+        "layer": "Layer0",
+        "position_mm": [
+          2295.89,
+          1087.47,
+          866.99
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "组035",
+            "definition_name": "Component32#1",
+            "layer": "Layer0",
+            "position_mm": [
+              2295.89,
+              1087.47,
+              866.99
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "组034",
+                "definition_name": "Component33#1",
+                "layer": "Layer0",
+                "position_mm": [
+                  2295.89,
+                  1087.47,
+                  866.99
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": [
+                  {
+                    "name": "Zara Home Light 1",
+                    "definition_name": "Component34#1",
+                    "layer": "Layer0",
+                    "position_mm": [
+                      2295.89,
+                      1087.47,
+                      866.99
+                    ],
+                    "properties": {},
+                    "attribute_dictionaries": {},
+                    "children": [
+                      {
+                        "name": "Zara Home 7",
+                        "definition_name": "Component30#1",
+                        "layer": "Layer0",
+                        "position_mm": [
+                          2295.89,
+                          1087.47,
+                          866.99
+                        ],
+                        "properties": {},
+                        "attribute_dictionaries": {},
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "JianE_model_202012310298469",
+        "definition_name": "Component71#1",
+        "layer": "Layer0",
+        "position_mm": [
+          1405.64,
+          1082.14,
+          798.1
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "JianE_model_202012310298469",
+            "definition_name": "Component70#1",
+            "layer": "Layer0",
+            "position_mm": [
+              1443.0,
+              1108.3,
+              839.78
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "JianE_model_759904563",
+        "definition_name": "Component59#1",
+        "layer": "Layer0",
+        "position_mm": [
+          1144.87,
+          418.36,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "JianE_model_202012310298468",
+        "definition_name": "Component72#1",
+        "layer": "Layer0",
+        "position_mm": [
+          1402.25,
+          1085.18,
+          733.78
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "网格006",
+        "definition_name": "Component60#2",
+        "layer": "Layer0",
+        "position_mm": [
+          1144.87,
+          418.36,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "JianE_model_202012310298468",
+        "definition_name": "Component73#1",
+        "layer": "Layer0",
+        "position_mm": [
+          1404.87,
+          1083.23,
+          754.13
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "网格006",
+        "definition_name": "Component60#2",
+        "layer": "Layer0",
+        "position_mm": [
+          2251.92,
+          1789.34,
+          -0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "网格006",
+        "definition_name": "Component60#2",
+        "layer": "Layer0",
+        "position_mm": [
+          1151.29,
+          1789.34,
+          -0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": []
+      },
+      {
+        "name": "111213424",
+        "definition_name": "111213424",
+        "layer": "Layer0",
+        "position_mm": [
+          1511.74,
+          885.37,
+          733.78
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "组002",
+            "definition_name": "Component2#3",
+            "layer": "Layer0",
+            "position_mm": [
+              1150.41,
+              1048.66,
+              1056.53
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": [
+              {
+                "name": "建E_model_202196105946280144",
+                "definition_name": "Component#3",
+                "layer": "Layer0",
+                "position_mm": [
+                  1287.57,
+                  1048.51,
+                  1153.44
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "建E_model_202196105946280145",
+                "definition_name": "Component3#3",
+                "layer": "Layer0",
+                "position_mm": [
+                  1106.4,
+                  1066.35,
+                  778.21
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              },
+              {
+                "name": "建E_model_202196105946280143",
+                "definition_name": "Component4#2",
+                "layer": "Layer0",
+                "position_mm": [
+                  1287.57,
+                  1048.51,
+                  1153.44
+                ],
+                "properties": {},
+                "attribute_dictionaries": {},
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "1QWERFEWFRE",
+        "definition_name": "1QWERFEWFRE",
+        "layer": "Layer0",
+        "position_mm": [
+          1870.86,
+          0.0,
+          4.49
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "网格006",
+            "definition_name": "Component60#2",
+            "layer": "Layer0",
+            "position_mm": [
+              2240.27,
+              332.53,
+              -0.0
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

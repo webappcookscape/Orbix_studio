@@ -1,0 +1,279 @@
+{
+  "format_version": "1.0",
+  "source_file": "chair_1",
+  "model_source": "sketchup",
+  "sketchup_version": "{21.0.0}",
+  "total_definitions": 7,
+  "total_meshes": 8,
+  "total_layers": 1,
+  "layers": [
+    {
+      "name": "Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      }
+    }
+  ],
+  "layer_hidden": {
+    "Layer0": false
+  },
+  "materials": [
+    {
+      "name": "[Color A04]",
+      "color": {
+        "r": 206,
+        "g": 177,
+        "b": 143
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "F:\\贴图\\木贴图\\arroway tiles volume one木\\055.jpg",
+        "x_scale": 3.1496062992125986,
+        "y_scale": 6.822384507833876
+      }
+    },
+    {
+      "name": "[Color B04]",
+      "color": {
+        "r": 91,
+        "g": 53,
+        "b": 27
+      },
+      "transparency": 1.0,
+      "colorized": true,
+      "colorize_type": 0,
+      "texture": {
+        "filename": "F:\\贴图\\t贴图自选\\025-wood2.JPG",
+        "x_scale": 6.456692913385827,
+        "y_scale": 4.087391436585449
+      }
+    },
+    {
+      "name": "Layer_Layer0",
+      "color": {
+        "r": 255,
+        "g": 84,
+        "b": 84
+      },
+      "transparency": 1.0,
+      "colorized": false,
+      "colorize_type": 0
+    }
+  ],
+  "mesh_index": {
+    "mesh_0_ROOT__组#1__Box005_Layer0_206_177_143_ss": {
+      "name": "Box005",
+      "definition_name": "Box005",
+      "layer": "Layer0",
+      "position_mm": [
+        1802.85,
+        214.42,
+        72.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Box005"
+    },
+    "mesh_1_ROOT__组#1__Box005_Layer0_91_53_27_ss": {
+      "name": "Box005",
+      "definition_name": "Box005",
+      "layer": "Layer0",
+      "position_mm": [
+        1802.85,
+        214.42,
+        72.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Box005"
+    },
+    "mesh_2_ROOT__组#1__Plane005_Layer0": {
+      "name": "Plane005",
+      "definition_name": "Plane005",
+      "layer": "Layer0",
+      "position_mm": [
+        1790.31,
+        221.39,
+        72.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Plane005"
+    },
+    "mesh_3_ROOT__组#1__Rectangle06_Layer0": {
+      "name": "Rectangle06",
+      "definition_name": "Rectangle06",
+      "layer": "Layer0",
+      "position_mm": [
+        -1088.45,
+        185.09,
+        72.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Rectangle06"
+    },
+    "mesh_4_ROOT__组#1__Box004_Layer0": {
+      "name": "Box004",
+      "definition_name": "Box004",
+      "layer": "Layer0",
+      "position_mm": [
+        1802.85,
+        219.42,
+        72.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Box004"
+    },
+    "mesh_5_ROOT__组#1__Rectangle0_Layer0_206_177_143_ss": {
+      "name": "Rectangle0",
+      "definition_name": "Rectangle0",
+      "layer": "Layer0",
+      "position_mm": [
+        1585.56,
+        185.09,
+        72.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Rectangle0"
+    },
+    "mesh_6_ROOT__组#1__Rectangle0_Layer0_91_53_27_ss": {
+      "name": "Rectangle0",
+      "definition_name": "Rectangle0",
+      "layer": "Layer0",
+      "position_mm": [
+        1585.56,
+        185.09,
+        72.35
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Rectangle0"
+    },
+    "mesh_7_ROOT__组#1__Plane006_Layer0": {
+      "name": "Plane006",
+      "definition_name": "Plane006",
+      "layer": "Layer0",
+      "position_mm": [
+        1792.85,
+        223.32,
+        70.98
+      ],
+      "properties": {},
+      "attribute_dictionaries": {},
+      "path": "ROOT / 组#1 / Plane006"
+    }
+  },
+  "scene_hierarchy": {
+    "name": "ROOT",
+    "definition_name": "ROOT_MODEL",
+    "layer": "Layer0",
+    "position_mm": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "properties": {},
+    "attribute_dictionaries": {},
+    "children": [
+      {
+        "name": "组#1",
+        "definition_name": "组#1",
+        "layer": "Layer0",
+        "position_mm": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "properties": {},
+        "attribute_dictionaries": {},
+        "children": [
+          {
+            "name": "Box005",
+            "definition_name": "Box005",
+            "layer": "Layer0",
+            "position_mm": [
+              1802.85,
+              214.42,
+              72.35
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Plane005",
+            "definition_name": "Plane005",
+            "layer": "Layer0",
+            "position_mm": [
+              1790.31,
+              221.39,
+              72.35
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Rectangle06",
+            "definition_name": "Rectangle06",
+            "layer": "Layer0",
+            "position_mm": [
+              -1088.45,
+              185.09,
+              72.35
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Box004",
+            "definition_name": "Box004",
+            "layer": "Layer0",
+            "position_mm": [
+              1802.85,
+              219.42,
+              72.35
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Rectangle0",
+            "definition_name": "Rectangle0",
+            "layer": "Layer0",
+            "position_mm": [
+              1585.56,
+              185.09,
+              72.35
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          },
+          {
+            "name": "Plane006",
+            "definition_name": "Plane006",
+            "layer": "Layer0",
+            "position_mm": [
+              1792.85,
+              223.32,
+              70.98
+            ],
+            "properties": {},
+            "attribute_dictionaries": {},
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

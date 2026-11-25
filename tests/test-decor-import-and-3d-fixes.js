@@ -306,21 +306,14 @@ const woodUnit2 = Core.createFurniturePlacement({
 quoteProj.plan.furniture = [woodUnit1, woodUnit2, fridge, chiller, plant, customSkp];
 
 const quotation = Core.generateFullQuotation(quoteProj);
-assert(quotation.furnitureItems.length === 6, 'Quotation must include all 6 items');
-
-// Find decor items in quotation
-const decorQuotes = quotation.furnitureItems.filter(item => item.isDecor || item.excludeFromPricing);
-assert.strictEqual(decorQuotes.length, 4, 'Should identify 4 decor items in quotation');
-decorQuotes.forEach(dq => {
-  assert.strictEqual(dq.totalAmount, 0, `Decor item "${dq.itemName}" must have totalAmount = 0`);
-  assert.strictEqual(dq.baseRate, 0, `Decor item "${dq.itemName}" must have baseRate = 0`);
-});
+assert.strictEqual(quotation.furnitureItems.length, 2, 'Quotation must only include the 2 woodwork units (decors 100% excluded from woodwork BOQ)');
 
 // Compare grand total with quotation of only woodwork units
 const woodworkOnlyProj = Core.createProject('Woodwork Only', 'Client A');
 woodworkOnlyProj.plan.furniture = [woodUnit1, woodUnit2];
 const woodworkQuotation = Core.generateFullQuotation(woodworkOnlyProj);
 
+// Verify woodwork items are priced and decors contribute ₹0.00 to quotation
 assert.strictEqual(
   quotation.subtotalWoodwork,
   woodworkQuotation.subtotalWoodwork,

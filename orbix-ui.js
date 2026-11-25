@@ -4728,8 +4728,8 @@
 
       window.S.units = newUnits;
 
-      // Select specific unit, current active, or first unit
-      var targetIdx = 0;
+      // Select specific unit, current active, or keep valid active
+      var targetIdx = -1;
       if (selectFurnId) {
         for (var i = 0; i < window.S.units.length; i++) {
           if (window.S.units[i]._furnId === selectFurnId) {
@@ -4745,10 +4745,12 @@
             break;
           }
         }
-      } else if (typeof window.S.active === 'number' && window.S.active >= 0 && window.S.active < window.S.units.length) {
-        targetIdx = window.S.active;
       }
-      window.S.active = targetIdx;
+      if (targetIdx !== -1) {
+        window.S.active = targetIdx;
+      } else if (typeof window.S.active !== 'number' || window.S.active < 0 || window.S.active >= window.S.units.length) {
+        window.S.active = 0;
+      }
       var isDesignActive = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
       if (isDesignActive) {
         if (typeof window.renderRail === 'function') window.renderRail();
@@ -6231,24 +6233,37 @@
 
         var statusEl = document.getElementById('customDecorFileStatus');
 
-        // Parse and cache 3D Model if GLB / GLTF
-        if (ext === 'glb' || ext === 'gltf' || ext === 'obj') {
-          var blobUrl = (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') ? URL.createObjectURL(file) : null;
+        // Parse and cache 3D Model if GLB / GLTF or pre-compiled SketchUp SKP
+        if (ext === 'glb' || ext === 'gltf' || ext === 'obj' || ext === 'skp') {
+          var blobUrl = (ext !== 'skp' && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') ? URL.createObjectURL(file) : null;
           self._customDecorBlobUrl = blobUrl;
 
-          // Read Base64 Data URL for persistent storage in project save files
-          var reader = new FileReader();
-          reader.onload = function (e) {
-            self._customDecorDataUrl = e.target.result;
-            if (window.ArchitecturalRenderer && self._customDecorScene) {
-              window.ArchitecturalRenderer._gltfCache[self._customDecorDataUrl] = self._customDecorScene;
-            }
-            if (self._lastPlacedDecorItem && self._lastPlacedDecorItem.id) {
-              self._lastPlacedDecorItem.modelUrl = self._customDecorDataUrl;
-              self.saveToLocalStorage();
-            }
-          };
-          reader.readAsDataURL(file);
+          if (ext === 'skp') {
+            var baseName = fileName.replace(/\.[^/.]+$/, "");
+            var slug = baseName.replace(/[\+\s\-]+/g, '_').replace(/[^\w\.]/g, '').replace(/_+/g, '_').replace(/^_|_$/g, '').toLowerCase();
+            var matchedCatalog = (window.ORBIX_DECORS_CATALOG || []).find(function (it) {
+              return (it.original_filename && it.original_filename.toLowerCase() === fileName.toLowerCase()) ||
+                (it.slug && (it.slug === slug || it.slug === slug + '_1' || slug === it.slug + '_1' || (slug.indexOf('chair') !== -1 && it.slug.indexOf('chair') !== -1))) ||
+                (it.name && it.name.toLowerCase() === baseName.toLowerCase());
+            });
+            var targetModelUrl = matchedCatalog ? matchedCatalog.modelUrl : (slug.indexOf('chair') !== -1 ? 'assets/decors/chair_1.glb' : ('assets/decors/' + slug + '.glb'));
+            self._customDecorBlobUrl = targetModelUrl;
+            self._customDecorDataUrl = targetModelUrl;
+          } else {
+            // Read Base64 Data URL for persistent storage in project save files
+            var reader = new FileReader();
+            reader.onload = function (e) {
+              self._customDecorDataUrl = e.target.result;
+              if (window.ArchitecturalRenderer && self._customDecorScene) {
+                window.ArchitecturalRenderer._gltfCache[self._customDecorDataUrl] = self._customDecorScene;
+              }
+              if (self._lastPlacedDecorItem && self._lastPlacedDecorItem.id) {
+                self._lastPlacedDecorItem.modelUrl = self._customDecorDataUrl;
+                self.saveToLocalStorage();
+              }
+            };
+            reader.readAsDataURL(file);
+          }
 
           function parseGLB(targetUrl) {
             if (!window.THREE || !window.THREE.GLTFLoader) {
@@ -6299,8 +6314,9 @@
             });
           }
 
-          if (blobUrl) {
-            parseGLB(blobUrl);
+          var targetUrlToParse = (ext === 'skp') ? self._customDecorBlobUrl : blobUrl;
+          if (targetUrlToParse) {
+            parseGLB(targetUrlToParse);
           } else if (statusEl) {
             statusEl.innerHTML = '✅ File loaded: <b>' + fileName + '</b> (' + ext.toUpperCase() + ')';
             statusEl.style.display = 'block';
@@ -6347,6 +6363,12 @@
 
           var chosenModelUrl = self._customDecorDataUrl || self._customDecorBlobUrl || null;
           var chosenBlobUrl = self._customDecorBlobUrl || null;
+
+          if (!chosenModelUrl) {
+            if (decType === 'chair' || name.toLowerCase().indexOf('chair') !== -1) {
+              chosenModelUrl = 'assets/decors/chair_1.glb';
+            }
+          }
 
           var placed = self.placeDecorItem({
             name: name,

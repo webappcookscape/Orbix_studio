@@ -3119,8 +3119,12 @@
     if (glbUrl && typeof glbUrl === 'string' && /\.skp$/i.test(glbUrl)) {
       // Map old .skp path to new .glb model
       var base = glbUrl.replace(/^.*[\\\/]/, '').replace(/\.skp$/i, '');
-      var slug = base.replace(/[\+\s\-]+/g, '_').replace(/[^\w\.]/g, '').replace(/_+/g, '_').toLowerCase();
-      glbUrl = 'assets/decors/' + slug + '.glb';
+      var slug = base.replace(/[\+\s\-]+/g, '_').replace(/[^\w\.]/g, '').replace(/_+/g, '_').replace(/^_|_$/g, '').toLowerCase();
+      if (slug === 'chair_1' || slug === 'chair' || slug.indexOf('chair') !== -1) {
+        glbUrl = 'assets/decors/chair_1.glb';
+      } else {
+        glbUrl = 'assets/decors/' + slug + '.glb';
+      }
     }
 
     // 2. Lookup in window.ORBIX_DECORS_CATALOG (46 models)
@@ -3160,6 +3164,7 @@
       else if (name.indexOf('refrigerator') !== -1 || name.indexOf('fridge') !== -1) glbUrl = 'assets/decors/r7250_refrigerator_freezer_20_cubic_feet.glb';
       else if (name.indexOf('washing') !== -1 || name.indexOf('sansung') !== -1) glbUrl = 'assets/decors/maquina_de_lavar_roupas_sansung.glb';
       else if (name.indexOf('chimney') !== -1 || name.indexOf('hood') !== -1) glbUrl = 'assets/decors/chimney.glb';
+      else if (name.indexOf('chair') !== -1 || furn.decorType === 'chair' || (furn.original_filename && furn.original_filename.toLowerCase().indexOf('chair') !== -1)) glbUrl = 'assets/decors/chair_1.glb';
     }
 
     var decorType = furn.decorType || (
