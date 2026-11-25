@@ -312,6 +312,16 @@
           }
         },
         onSelectionChange: function (selected) {
+          if (selected && selected.length === 1 && selected[0].type === 'furniture' && selected[0].id) {
+            var sId = selected[0].id;
+            if (window.S && Array.isArray(window.S.units)) {
+              var sIdx = window.S.units.findIndex(function (u) { return u._furnId === sId; });
+              if (sIdx !== -1) {
+                window.S.active = sIdx;
+                if (typeof window.renderRail === 'function') window.renderRail();
+              }
+            }
+          }
           self.renderInspector(selected);
         },
         onCalibrateRequest: function (pixelDist, worldDist) {
@@ -4934,7 +4944,8 @@
           gl.gizmoSet(selGroup, furnId);
         }
       }
-      if (this.editor && furnId) {
+      var is3DOn = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+      if (is3DOn && this.editor && furnId) {
         this.editor.selected = [{ type: 'furniture', id: furnId }];
         if (typeof this.renderInspector === 'function') {
           this.renderInspector(this.editor.selected);
@@ -5018,10 +5029,13 @@
       if (this.project) this.project.units_count = furnList.length;
       this.queueAutoSave(400, 'sync_units');
       if (this.editor) this.editor.render();
-      if (this.render3DHome) this.render3DHome(true);
-      if (window.S && window.S.units && window.S.units[window.S.active]) {
-        var curU = window.S.units[window.S.active];
-        if (curU && curU._furnId) this.highlight3DFurniture(curU._furnId);
+      var is3DOn = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+      if (is3DOn) {
+        if (this.render3DHome) this.render3DHome(true);
+        if (window.S && window.S.units && window.S.units[window.S.active]) {
+          var curU = window.S.units[window.S.active];
+          if (curU && curU._furnId) this.highlight3DFurniture(curU._furnId);
+        }
       }
     },
 
@@ -9284,11 +9298,11 @@
         }
         var homeObj = scene.getObjectByName('OrbixHome3D');
         var selFurnId = null;
-        if (window.S && window.S.units && window.S.units[window.S.active]) {
-          selFurnId = window.S.units[window.S.active]._furnId;
-        } else if (this.editor && this.editor.selected && this.editor.selected.length > 0) {
+        if (this.editor && this.editor.selected && this.editor.selected.length > 0) {
           var selItem = this.editor.selected.find(function (it) { return it.type === 'furniture'; });
           if (selItem) selFurnId = selItem.id;
+        } else if (window.S && window.S.units && window.S.units[window.S.active]) {
+          selFurnId = window.S.units[window.S.active]._furnId;
         } else if (gl.getGizmoFurnId) {
           selFurnId = gl.getGizmoFurnId();
         }

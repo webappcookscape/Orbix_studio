@@ -6604,7 +6604,14 @@
     if (v === "report") renderReport();
     if (v === "elev") renderElev();
     if (v === "gallery") renderGallery();
-    if (v === "plan" && window.OrbixUI && window.OrbixUI.editor) { window.OrbixUI.editor.resize(); window.OrbixUI.editor.render(); }
+    if (v === "plan" && window.OrbixUI && window.OrbixUI.editor) {
+      if (window.OrbixUI.editor.activeTool !== 'select' && window.OrbixUI.editor.activeTool !== 'wall' && window.OrbixUI.editor.activeTool !== 'divider' && window.OrbixUI.editor.activeTool !== 'door' && window.OrbixUI.editor.activeTool !== 'window') {
+        if (typeof window.OrbixUI.editor.setTool === 'function') window.OrbixUI.editor.setTool('select');
+        else window.OrbixUI.editor.activeTool = 'select';
+      }
+      window.OrbixUI.editor.resize();
+      window.OrbixUI.editor.render();
+    }
     if (v === "boq" && window.OrbixUI) { window.OrbixUI.renderBOQ(true); }
   }
   window.setView = setView;

@@ -6538,14 +6538,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=33'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=33'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=33'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=34'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=34'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=34'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=33');
+          return loadScript('orbix-a4-drawings.js?v=34');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -22860,17 +22860,20 @@ body.role-employee #adminCreateEmpBox,
       if (!clickedWallCore) {
         for (var fi = furnList.length - 1; fi >= 0; fi--) {
           var fn = furnList[fi];
-          if (self.unitTierFilter && self.unitTierFilter !== 'all') {
-            if (self.getUnitTier(fn) !== self.unitTierFilter) continue;
-          }
           if (self.hitTestFurniture(worldPt, fn)) {
             matchingHits.push(fn);
           }
         }
+        // If an elevation tier filter is active (floor/wall/loft), prioritize units in that tier
+        if (self.unitTierFilter && self.unitTierFilter !== 'all') {
+          var tierHits = matchingHits.filter(function (fn) { return self.getUnitTier(fn) === self.unitTierFilter; });
+          if (tierHits.length > 0) matchingHits = tierHits;
+        }
       }
 
-      // When in select tool, clicking a placed furniture unit selects and allows moving it
-      if (matchingHits.length > 0 && self.activeTool === 'select') {
+      // Allow selecting placed furniture units when in select, pan, or idle furniture tool
+      var isToolAllowed = (self.activeTool === 'select' || (self.activeTool === 'furniture' && !self.furniturePreset) || self.activeTool === 'pan');
+      if (matchingHits.length > 0 && isToolAllowed) {
         // Priority to higher elevation units (wall units AFFL 1500/2100 over base units AFFL 0), tie-break by center proximity
         var getUnitElevation = function (f) {
           if (f.elevation !== undefined && f.elevation !== null) return parseFloat(f.elevation) || 0;
@@ -22888,15 +22891,15 @@ body.role-employee #adminCreateEmpBox,
         });
 
         var curSelId = (self.selected && self.selected.length === 1 && self.selected[0].type === 'furniture') ? self.selected[0].id : null;
-        var isAlreadySelected = curSelId && matchingHits.some(function (h) { return h.id === curSelId; });
+        var hitFurn = matchingHits[0];
 
-        var hitFurn;
-        if (isAlreadySelected) {
-          // If a unit is already selected, KEEP that selected unit so moving it never switches to unit underneath!
-          hitFurn = matchingHits.find(function (h) { return h.id === curSelId; });
-        } else {
-          // If clicking an unselected unit, select the topmost unit (wall unit over base unit)
-          hitFurn = matchingHits[0];
+        // If multiple overlapping/stacked units are under cursor (e.g. FM60 base unit & WM30 wall unit),
+        // repeated clicks at the same location seamlessly cycle through them instead of permanently locking!
+        if (curSelId && matchingHits.length > 1) {
+          var curIdx = matchingHits.findIndex(function (h) { return h.id === curSelId; });
+          if (curIdx !== -1) {
+            hitFurn = matchingHits[(curIdx + 1) % matchingHits.length];
+          }
         }
 
         if (typeof self.setTool === 'function') self.setTool('select');
@@ -37157,6 +37160,16 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           }
         },
         onSelectionChange: function (selected) {
+          if (selected && selected.length === 1 && selected[0].type === 'furniture' && selected[0].id) {
+            var sId = selected[0].id;
+            if (window.S && Array.isArray(window.S.units)) {
+              var sIdx = window.S.units.findIndex(function (u) { return u._furnId === sId; });
+              if (sIdx !== -1) {
+                window.S.active = sIdx;
+                if (typeof window.renderRail === 'function') window.renderRail();
+              }
+            }
+          }
           self.renderInspector(selected);
         },
         onCalibrateRequest: function (pixelDist, worldDist) {
@@ -41779,7 +41792,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
           gl.gizmoSet(selGroup, furnId);
         }
       }
-      if (this.editor && furnId) {
+      var is3DOn = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+      if (is3DOn && this.editor && furnId) {
         this.editor.selected = [{ type: 'furniture', id: furnId }];
         if (typeof this.renderInspector === 'function') {
           this.renderInspector(this.editor.selected);
@@ -41863,10 +41877,13 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
       if (this.project) this.project.units_count = furnList.length;
       this.queueAutoSave(400, 'sync_units');
       if (this.editor) this.editor.render();
-      if (this.render3DHome) this.render3DHome(true);
-      if (window.S && window.S.units && window.S.units[window.S.active]) {
-        var curU = window.S.units[window.S.active];
-        if (curU && curU._furnId) this.highlight3DFurniture(curU._furnId);
+      var is3DOn = (typeof document !== 'undefined') && document.getElementById('view-design') && document.getElementById('view-design').classList.contains('is-on');
+      if (is3DOn) {
+        if (this.render3DHome) this.render3DHome(true);
+        if (window.S && window.S.units && window.S.units[window.S.active]) {
+          var curU = window.S.units[window.S.active];
+          if (curU && curU._furnId) this.highlight3DFurniture(curU._furnId);
+        }
       }
     },
 
@@ -46129,11 +46146,11 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         }
         var homeObj = scene.getObjectByName('OrbixHome3D');
         var selFurnId = null;
-        if (window.S && window.S.units && window.S.units[window.S.active]) {
-          selFurnId = window.S.units[window.S.active]._furnId;
-        } else if (this.editor && this.editor.selected && this.editor.selected.length > 0) {
+        if (this.editor && this.editor.selected && this.editor.selected.length > 0) {
           var selItem = this.editor.selected.find(function (it) { return it.type === 'furniture'; });
           if (selItem) selFurnId = selItem.id;
+        } else if (window.S && window.S.units && window.S.units[window.S.active]) {
+          selFurnId = window.S.units[window.S.active]._furnId;
         } else if (gl.getGizmoFurnId) {
           selFurnId = gl.getGizmoFurnId();
         }
@@ -57931,7 +57948,14 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     if (v === "report") renderReport();
     if (v === "elev") renderElev();
     if (v === "gallery") renderGallery();
-    if (v === "plan" && window.OrbixUI && window.OrbixUI.editor) { window.OrbixUI.editor.resize(); window.OrbixUI.editor.render(); }
+    if (v === "plan" && window.OrbixUI && window.OrbixUI.editor) {
+      if (window.OrbixUI.editor.activeTool !== 'select' && window.OrbixUI.editor.activeTool !== 'wall' && window.OrbixUI.editor.activeTool !== 'divider' && window.OrbixUI.editor.activeTool !== 'door' && window.OrbixUI.editor.activeTool !== 'window') {
+        if (typeof window.OrbixUI.editor.setTool === 'function') window.OrbixUI.editor.setTool('select');
+        else window.OrbixUI.editor.activeTool = 'select';
+      }
+      window.OrbixUI.editor.resize();
+      window.OrbixUI.editor.render();
+    }
     if (v === "boq" && window.OrbixUI) { window.OrbixUI.renderBOQ(true); }
   }
   window.setView = setView;

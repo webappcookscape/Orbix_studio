@@ -1601,17 +1601,20 @@
       if (!clickedWallCore) {
         for (var fi = furnList.length - 1; fi >= 0; fi--) {
           var fn = furnList[fi];
-          if (self.unitTierFilter && self.unitTierFilter !== 'all') {
-            if (self.getUnitTier(fn) !== self.unitTierFilter) continue;
-          }
           if (self.hitTestFurniture(worldPt, fn)) {
             matchingHits.push(fn);
           }
         }
+        // If an elevation tier filter is active (floor/wall/loft), prioritize units in that tier
+        if (self.unitTierFilter && self.unitTierFilter !== 'all') {
+          var tierHits = matchingHits.filter(function (fn) { return self.getUnitTier(fn) === self.unitTierFilter; });
+          if (tierHits.length > 0) matchingHits = tierHits;
+        }
       }
 
-      // When in select tool, clicking a placed furniture unit selects and allows moving it
-      if (matchingHits.length > 0 && self.activeTool === 'select') {
+      // Allow selecting placed furniture units when in select, pan, or idle furniture tool
+      var isToolAllowed = (self.activeTool === 'select' || (self.activeTool === 'furniture' && !self.furniturePreset) || self.activeTool === 'pan');
+      if (matchingHits.length > 0 && isToolAllowed) {
         // Priority to higher elevation units (wall units AFFL 1500/2100 over base units AFFL 0), tie-break by center proximity
         var getUnitElevation = function (f) {
           if (f.elevation !== undefined && f.elevation !== null) return parseFloat(f.elevation) || 0;
@@ -1629,15 +1632,15 @@
         });
 
         var curSelId = (self.selected && self.selected.length === 1 && self.selected[0].type === 'furniture') ? self.selected[0].id : null;
-        var isAlreadySelected = curSelId && matchingHits.some(function (h) { return h.id === curSelId; });
+        var hitFurn = matchingHits[0];
 
-        var hitFurn;
-        if (isAlreadySelected) {
-          // If a unit is already selected, KEEP that selected unit so moving it never switches to unit underneath!
-          hitFurn = matchingHits.find(function (h) { return h.id === curSelId; });
-        } else {
-          // If clicking an unselected unit, select the topmost unit (wall unit over base unit)
-          hitFurn = matchingHits[0];
+        // If multiple overlapping/stacked units are under cursor (e.g. FM60 base unit & WM30 wall unit),
+        // repeated clicks at the same location seamlessly cycle through them instead of permanently locking!
+        if (curSelId && matchingHits.length > 1) {
+          var curIdx = matchingHits.findIndex(function (h) { return h.id === curSelId; });
+          if (curIdx !== -1) {
+            hitFurn = matchingHits[(curIdx + 1) % matchingHits.length];
+          }
         }
 
         if (typeof self.setTool === 'function') self.setTool('select');
