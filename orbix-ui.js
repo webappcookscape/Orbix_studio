@@ -7106,6 +7106,8 @@
       }
 
       if (openBtn) openBtn.addEventListener('click', openModal);
+      var stagebarCloudRenderBtn = document.getElementById('stagebarCloudRenderBtn');
+      if (stagebarCloudRenderBtn) stagebarCloudRenderBtn.addEventListener('click', openModal);
       if (closeBtn) closeBtn.addEventListener('click', closeModal);
       if (closeFootBtn) closeFootBtn.addEventListener('click', closeModal);
       if (floatingBadge) floatingBadge.addEventListener('click', openModal);
@@ -7397,6 +7399,8 @@
       }
 
       if (openBtn) openBtn.addEventListener('click', openModal);
+      var stagebarCloudRenderBtn = document.getElementById('stagebarCloudRenderBtn');
+      if (stagebarCloudRenderBtn) stagebarCloudRenderBtn.addEventListener('click', openModal);
       if (closeBtn) closeBtn.addEventListener('click', closeModal);
       if (closeFootBtn) closeFootBtn.addEventListener('click', closeModal);
       if (backdrop) backdrop.addEventListener('click', closeModal);
