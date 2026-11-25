@@ -6945,40 +6945,42 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         ctx.fillStyle = isSelected ? '#047857' : '#059669';
         ctx.lineWidth = 1.2;
 
-        if (dType === 'sink') {
+        if (dType === 'sink' && wPx >= 12 && dPx >= 12) {
           // Basin cutout & drain
-          var bW = wPx * 0.52, bD = dPx * 0.74, bX = -wPx * 0.2;
+          var bW = Math.max(4, wPx * 0.52), bD = Math.max(4, dPx * 0.74), bX = -wPx * 0.2;
           ctx.strokeRect(bX - bW / 2, -bD / 2, bW, bD);
-          ctx.beginPath(); ctx.arc(bX, 0, Math.min(bW, bD) * 0.16, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(bX, 0, Math.max(0.5, Math.min(bW, bD) * 0.16), 0, Math.PI * 2); ctx.stroke();
           // Faucet
-          ctx.beginPath(); ctx.arc(bX, -bD / 2 + 6, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(bX, -bD / 2 + 6, Math.max(0.5, Math.min(4, bD * 0.15)), 0, Math.PI * 2); ctx.fill();
           ctx.beginPath(); ctx.moveTo(bX, -bD / 2 + 6); ctx.lineTo(bX, -bD / 2 + 16); ctx.stroke();
           // Drainboard ribs
-          var dbW = wPx * 0.36, dbX = wPx * 0.26;
+          var dbW = Math.max(2, wPx * 0.36), dbX = wPx * 0.26;
           for (var r = -2; r <= 2; r++) {
             ctx.beginPath(); ctx.moveTo(dbX - dbW / 2 + 4, r * (bD / 6)); ctx.lineTo(dbX + dbW / 2 - 4, r * (bD / 6)); ctx.stroke();
           }
-        } else if (dType === 'gas_hob') {
+        } else if (dType === 'gas_hob' && wPx >= 12 && dPx >= 12) {
           // 2 Burners with crosshairs
+          var hR1 = Math.max(0.5, Math.min(wPx, dPx) * 0.22);
+          var hR2 = Math.max(0.2, Math.min(wPx, dPx) * 0.11);
           [-wPx * 0.25, wPx * 0.25].forEach(function (bx) {
-            ctx.beginPath(); ctx.arc(bx, -dPx * 0.05, Math.min(wPx, dPx) * 0.22, 0, Math.PI * 2); ctx.stroke();
-            ctx.beginPath(); ctx.arc(bx, -dPx * 0.05, Math.min(wPx, dPx) * 0.11, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(bx - Math.min(wPx, dPx) * 0.26, -dPx * 0.05); ctx.lineTo(bx + Math.min(wPx, dPx) * 0.26, -dPx * 0.05); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(bx, -dPx * 0.05 - Math.min(wPx, dPx) * 0.26); ctx.lineTo(bx, -dPx * 0.05 + Math.min(wPx, dPx) * 0.26); ctx.stroke();
+            ctx.beginPath(); ctx.arc(bx, -dPx * 0.05, hR1, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(bx, -dPx * 0.05, hR2, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(bx - Math.max(0.5, Math.min(wPx, dPx) * 0.26), -dPx * 0.05); ctx.lineTo(bx + Math.max(0.5, Math.min(wPx, dPx) * 0.26), -dPx * 0.05); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(bx, -dPx * 0.05 - Math.max(0.5, Math.min(wPx, dPx) * 0.26)); ctx.lineTo(bx, -dPx * 0.05 + Math.max(0.5, Math.min(wPx, dPx) * 0.26)); ctx.stroke();
           });
           // 2 Knobs at front
           [-wPx * 0.14, wPx * 0.14].forEach(function (kx) {
-            ctx.beginPath(); ctx.arc(kx, dPx / 2 - 6, 3, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(kx, dPx / 2 - 6, Math.max(0.5, Math.min(3, dPx * 0.1)), 0, Math.PI * 2); ctx.fill();
           });
-        } else if (dType === 'washing_machine') {
+        } else if (dType === 'washing_machine' && wPx >= 12 && dPx >= 12) {
           // Outer circular door & inner drum
-          ctx.beginPath(); ctx.arc(0, 0, Math.min(wPx, dPx) * 0.36, 0, Math.PI * 2); ctx.stroke();
-          ctx.beginPath(); ctx.arc(0, 0, Math.min(wPx, dPx) * 0.24, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, Math.max(0.5, Math.min(wPx, dPx) * 0.36), 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, Math.max(0.3, Math.min(wPx, dPx) * 0.24), 0, Math.PI * 2); ctx.stroke();
           // Detergent drawer
-          ctx.strokeRect(-wPx / 2 + 4, -dPx / 2 + 4, wPx * 0.26, dPx * 0.2);
+          ctx.strokeRect(-wPx / 2 + 4, -dPx / 2 + 4, Math.max(2, wPx * 0.26), Math.max(2, dPx * 0.2));
         } else if (dType === 'dining_table') {
           // 4 chair outlines around table
-          var chW = wPx * 0.3, chD = 8;
+          var chW = Math.max(2, wPx * 0.3), chD = Math.max(2, Math.min(8, dPx * 0.15));
           ctx.strokeRect(-wPx * 0.35, dPx / 2 + 2, chW, chD);
           ctx.strokeRect(wPx * 0.05, dPx / 2 + 2, chW, chD);
           ctx.strokeRect(-wPx * 0.35, -dPx / 2 - 10, chW, chD);
@@ -7017,10 +7019,10 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
             var nsH = dPx * 0.28;
             // Left nightstand
             ctx.strokeRect(-wPx / 2 - nsW, -dPx / 2, nsW, nsH);
-            ctx.beginPath(); ctx.arc(-wPx / 2 - nsW / 2, -dPx / 2 + nsH / 2, nsW * 0.28, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(-wPx / 2 - nsW / 2, -dPx / 2 + nsH / 2, Math.max(0.5, nsW * 0.28), 0, Math.PI * 2); ctx.stroke();
             // Right nightstand
             ctx.strokeRect(wPx / 2, -dPx / 2, nsW, nsH);
-            ctx.beginPath(); ctx.arc(wPx / 2 + nsW / 2, -dPx / 2 + nsH / 2, nsW * 0.28, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(wPx / 2 + nsW / 2, -dPx / 2 + nsH / 2, Math.max(0.5, nsW * 0.28), 0, Math.PI * 2); ctx.stroke();
           }
         } else if (dType === 'kid_bed') {
           // Kid Single Bed (Headboard, 1 Pillow & Duvet)
@@ -7074,26 +7076,27 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           ctx.restore();
         } else if (dType === 'chair') {
           // Architectural Accent Armchair (Curved Backrest, Armrests & Seat Cushion)
-          var chArmW = Math.max(6, wPx * 0.14);
-          var chBackD = Math.max(6, dPx * 0.25);
+          var chArmW = Math.max(4, wPx * 0.14);
+          var chBackD = Math.max(4, dPx * 0.25);
+          var chArcR = Math.max(0.5, wPx / 2 - 2);
           // Curved backrest arc
           ctx.beginPath();
-          ctx.arc(0, -dPx / 2 + chBackD, wPx / 2 - 2, Math.PI, 0);
+          ctx.arc(0, -dPx / 2 + chBackD, chArcR, Math.PI, 0);
           ctx.stroke();
           // Armrests
-          ctx.strokeRect(-wPx / 2, -dPx / 2 + chBackD * 0.5, chArmW, dPx - chBackD * 0.5);
-          ctx.strokeRect(wPx / 2 - chArmW, -dPx / 2 + chBackD * 0.5, chArmW, dPx - chBackD * 0.5);
+          ctx.strokeRect(-wPx / 2, -dPx / 2 + chBackD * 0.5, chArmW, Math.max(2, dPx - chBackD * 0.5));
+          ctx.strokeRect(wPx / 2 - chArmW, -dPx / 2 + chBackD * 0.5, chArmW, Math.max(2, dPx - chBackD * 0.5));
           // Seat cushion
-          ctx.strokeRect(-wPx / 2 + chArmW + 2, -dPx / 2 + chBackD + 2, wPx - 2 * chArmW - 4, dPx - chBackD - 6);
+          ctx.strokeRect(-wPx / 2 + chArmW + 2, -dPx / 2 + chBackD + 2, Math.max(2, wPx - 2 * chArmW - 4), Math.max(2, dPx - chBackD - 6));
         } else if (dType === 'stool') {
           // Architectural Bar / Dressing Stool (Circular cushion with cross bracing)
-          var stR = Math.min(wPx, dPx) * 0.42;
+          var stR = Math.max(0.5, Math.min(wPx, dPx) * 0.42);
           ctx.beginPath(); ctx.arc(0, 0, stR, 0, Math.PI * 2); ctx.stroke();
-          ctx.beginPath(); ctx.arc(0, 0, stR * 0.65, 0, Math.PI * 2); ctx.stroke();
-          ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(0, 0, Math.max(0.2, stR * 0.65), 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(0, 0, Math.max(0.5, Math.min(3, stR * 0.2)), 0, Math.PI * 2); ctx.fill();
         } else if (dType === 'mirror') {
           // Architectural Vanity Mirror (Double reflective lines + wall clip brackets)
-          ctx.strokeRect(-wPx / 2 + 4, -dPx / 2 + 2, wPx - 8, dPx - 4);
+          ctx.strokeRect(-wPx / 2 + 4, -dPx / 2 + 2, Math.max(2, wPx - 8), Math.max(2, dPx - 4));
           // Reflective hash lines
           [-wPx * 0.2, 0, wPx * 0.2].forEach(function (mx) {
             ctx.beginPath();
@@ -7108,17 +7111,18 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           // Modern Smart TV Screen with Console Stand
           var scrThick = Math.max(4, dPx * 0.25);
           ctx.fillStyle = isSelected ? '#047857' : '#0f172a';
-          ctx.fillRect(-wPx / 2 + 2, dPx / 2 - scrThick, wPx - 4, scrThick - 2);
-          ctx.strokeRect(-wPx / 2 + 2, dPx / 2 - scrThick, wPx - 4, scrThick - 2);
+          ctx.fillRect(-wPx / 2 + 2, dPx / 2 - scrThick, Math.max(2, wPx - 4), Math.max(2, scrThick - 2));
+          ctx.strokeRect(-wPx / 2 + 2, dPx / 2 - scrThick, Math.max(2, wPx - 4), Math.max(2, scrThick - 2));
           // Console credenza behind screen
-          ctx.strokeRect(-wPx / 2 + 6, -dPx / 2 + 4, wPx - 12, dPx - scrThick - 6);
+          ctx.strokeRect(-wPx / 2 + 6, -dPx / 2 + 4, Math.max(2, wPx - 12), Math.max(2, dPx - scrThick - 6));
         } else if (dType === 'plant') {
-          ctx.beginPath(); ctx.arc(0, 0, Math.min(wPx, dPx) * 0.35, 0, Math.PI * 2); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(-wPx * 0.25, 0); ctx.lineTo(wPx * 0.25, 0); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(0, -dPx * 0.25); ctx.lineTo(0, dPx * 0.25); ctx.stroke();
+          var plR = Math.max(0.5, Math.min(wPx, dPx) * 0.35);
+          ctx.beginPath(); ctx.arc(0, 0, plR, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(-plR * 0.7, 0); ctx.lineTo(plR * 0.7, 0); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(0, -plR * 0.7); ctx.lineTo(0, plR * 0.7); ctx.stroke();
         } else {
           // Subtle inner border for general decor
-          ctx.strokeRect(-wPx / 2 + 4, -dPx / 2 + 4, wPx - 8, dPx - 8);
+          ctx.strokeRect(-wPx / 2 + 4, -dPx / 2 + 4, Math.max(2, wPx - 8), Math.max(2, dPx - 8));
         }
       } else if (!isLCorner) {
         // Shutter dividers
@@ -7200,36 +7204,41 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         var hasHobAppliance = !isDecor && !!(f.unitConfig && (f.unitConfig.appliance === 'hob' || f.unitConfig.hasHob));
         var hasSinkAppliance = !isDecor && !!(f.unitConfig && (f.unitConfig.appliance === 'sink' || f.unitConfig.hasSink));
 
-        if (hasHobAppliance) {
+        if (hasHobAppliance && wPx >= 16 && dPx >= 16) {
           ctx.save();
           ctx.strokeStyle = isSelected ? '#b45309' : '#d97706';
           ctx.fillStyle = isSelected ? '#b45309' : '#d97706';
           ctx.lineWidth = 1.3;
-          var cW = Math.min(wPx * 0.85, wPx - 10), cD = Math.min(dPx * 0.78, dPx - 10);
+          var cW = Math.max(6, Math.min(wPx * 0.85, wPx - 6)), cD = Math.max(6, Math.min(dPx * 0.78, dPx - 6));
           ctx.strokeRect(-cW / 2, -cD / 2, cW, cD);
+          var burnerR = Math.max(0.5, Math.min(cW, cD) * 0.24);
+          var burnerInnerR = Math.max(0.2, Math.min(cW, cD) * 0.11);
           [-cW * 0.25, cW * 0.25].forEach(function (bx) {
-            ctx.beginPath(); ctx.arc(bx, -cD * 0.06, Math.min(cW, cD) * 0.24, 0, Math.PI * 2); ctx.stroke();
-            ctx.beginPath(); ctx.arc(bx, -cD * 0.06, Math.min(cW, cD) * 0.11, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(bx - Math.min(cW, cD) * 0.28, -cD * 0.06); ctx.lineTo(bx + Math.min(cW, cD) * 0.28, -cD * 0.06); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(bx, -cD * 0.06 - Math.min(cW, cD) * 0.28); ctx.lineTo(bx, -cD * 0.06 + Math.min(cW, cD) * 0.28); ctx.stroke();
+            ctx.beginPath(); ctx.arc(bx, -cD * 0.06, burnerR, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(bx, -cD * 0.06, burnerInnerR, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(bx - burnerR * 1.15, -cD * 0.06); ctx.lineTo(bx + burnerR * 1.15, -cD * 0.06); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(bx, -cD * 0.06 - burnerR * 1.15); ctx.lineTo(bx, -cD * 0.06 + burnerR * 1.15); ctx.stroke();
           });
           [-cW * 0.16, 0, cW * 0.16].forEach(function (kx) {
-            ctx.beginPath(); ctx.arc(kx, cD / 2 - 5, 2.5, 0, Math.PI * 2); ctx.fill();
+            var knobR = Math.max(0.5, Math.min(2.5, cD * 0.15));
+            ctx.beginPath(); ctx.arc(kx, cD / 2 - knobR - 1, knobR, 0, Math.PI * 2); ctx.fill();
           });
           ctx.restore();
-        } else if (hasSinkAppliance) {
+        } else if (hasSinkAppliance && wPx >= 16 && dPx >= 16) {
           ctx.save();
           ctx.strokeStyle = isSelected ? '#0369a1' : '#0284c7';
           ctx.fillStyle = isSelected ? '#0369a1' : '#0284c7';
           ctx.lineWidth = 1.3;
-          var sW = Math.min(wPx * 0.88, wPx - 10), sD = Math.min(dPx * 0.82, dPx - 10);
+          var sW = Math.max(6, Math.min(wPx * 0.88, wPx - 6)), sD = Math.max(6, Math.min(dPx * 0.82, dPx - 6));
           ctx.strokeRect(-sW / 2, -sD / 2, sW, sD);
-          var bowlW = sW * 0.55, bowlD = sD * 0.82, bowlX = -sW * 0.18;
+          var bowlW = Math.max(3, sW * 0.55), bowlD = Math.max(3, sD * 0.82), bowlX = -sW * 0.18;
           ctx.strokeRect(bowlX - bowlW / 2, -bowlD / 2, bowlW, bowlD);
-          ctx.beginPath(); ctx.arc(bowlX, 0, Math.min(bowlW, bowlD) * 0.16, 0, Math.PI * 2); ctx.stroke();
-          ctx.beginPath(); ctx.arc(bowlX, -bowlD / 2 + 5, 3.5, 0, Math.PI * 2); ctx.fill();
-          ctx.beginPath(); ctx.moveTo(bowlX, -bowlD / 2 + 5); ctx.lineTo(bowlX, -bowlD / 2 + 14); ctx.stroke();
-          var drW = sW * 0.32, drX = sW * 0.28;
+          var drainR = Math.max(0.5, Math.min(bowlW, bowlD) * 0.16);
+          ctx.beginPath(); ctx.arc(bowlX, 0, drainR, 0, Math.PI * 2); ctx.stroke();
+          var faucetR = Math.max(0.5, Math.min(3.5, bowlD * 0.15));
+          ctx.beginPath(); ctx.arc(bowlX, -bowlD / 2 + 5, faucetR, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(bowlX, -bowlD / 2 + 5); ctx.lineTo(bowlX, -bowlD / 2 + Math.min(14, bowlD * 0.35)); ctx.stroke();
+          var drW = Math.max(2, sW * 0.32), drX = sW * 0.28;
           for (var dr = -2; dr <= 2; dr++) {
             ctx.beginPath();
             ctx.moveTo(drX - drW / 2 + 3, dr * (bowlD / 6));
