@@ -6567,5 +6567,252 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     return renderer.exportToSketchUpCollada(project, scene, opts);
   };
 
+  /* ─────────────────────────────────────────────────────────────────────────────
+     BLENDER CYCLES PHOTOREALISTIC RAYTRACING SCENE EXPORTER (.CYCLES.JSON)
+     Serializes complete room architecture, modular cabinetry, PBR materials,
+     window locations, camera, and lighting parameters (Daylight %, Interior Fill W,
+     Exposure EV) for raytracing in Blender Cycles.
+     ───────────────────────────────────────────────────────────────────────────── */
+  ArchitecturalRenderer.prototype.exportToCyclesJson = function (project, scene, opts) {
+    opts = opts || {};
+    var title = (project && project.meta && project.meta.title) || 'Orbix-Kitchen';
+    var safeTitle = title.replace(/[^a-zA-Z0-9_\-]/g, '_');
+
+    var homeObj = null;
+    if (scene && typeof scene.getObjectByName === 'function') {
+      homeObj = scene.getObjectByName('OrbixHome3D');
+    }
+    if (!homeObj && project && typeof THREE !== 'undefined') {
+      homeObj = this.buildHome(project);
+    }
+
+    var meshes = [];
+    function harvestMeshes(node) {
+      if (!node) return;
+      if (typeof node.updateMatrixWorld === 'function') node.updateMatrixWorld(true);
+      node.traverse(function (obj) {
+        if (obj.isMesh && obj.visible !== false && obj.geometry) {
+          var geoParams = obj.geometry.parameters;
+          if (geoParams && (geoParams.width > 50000 || geoParams.height > 50000)) return;
+          if (obj.name === 'infinite_floor' || obj.name === 'floor_grass') return;
+          meshes.push(obj);
+        }
+      });
+    }
+
+    if (homeObj) harvestMeshes(homeObj);
+
+    if (scene && scene.children) {
+      for (var c = 0; c < scene.children.length; c++) {
+        var child = scene.children[c];
+        if (child !== homeObj && child.type === 'Group') {
+          var hasCabinetParts = false;
+          child.traverse(function (o) {
+            if (o.isMesh && o.userData && (o.userData.role || o.userData.isFurniturePart || o.userData.role === 'box')) {
+              hasCabinetParts = true;
+            }
+          });
+          if (hasCabinetParts) harvestMeshes(child);
+        }
+      }
+    }
+
+    // Process Materials
+    var materials = {};
+    var matCounter = 1;
+
+    meshes.forEach(function (mesh) {
+      var mat = mesh.material;
+      if (Array.isArray(mat)) mat = mat[0];
+      if (!mat) return;
+
+      var matKey = mat.uuid || ('mat_' + matCounter++);
+      if (!materials[matKey]) {
+        var baseColor = [0.8, 0.8, 0.8];
+        if (mat.color && typeof mat.color.r === 'number') {
+          baseColor = [
+            parseFloat(mat.color.r.toFixed(3)),
+            parseFloat(mat.color.g.toFixed(3)),
+            parseFloat(mat.color.b.toFixed(3))
+          ];
+        }
+
+        var roughness = (typeof mat.roughness === 'number') ? parseFloat(mat.roughness.toFixed(3)) : 0.45;
+        var metallic = (typeof mat.metalness === 'number') ? parseFloat(mat.metalness.toFixed(3)) : 0.0;
+        var transmission = (typeof mat.transmission === 'number') ? parseFloat(mat.transmission.toFixed(3)) : 0.0;
+        var ior = (typeof mat.ior === 'number') ? parseFloat(mat.ior.toFixed(3)) : 1.45;
+        var clearcoat = (typeof mat.clearcoat === 'number') ? parseFloat(mat.clearcoat.toFixed(3)) : 0.0;
+
+        materials[matKey] = {
+          name: mat.name || ('Material_' + Object.keys(materials).length),
+          baseColor: baseColor,
+          roughness: roughness,
+          metallic: metallic,
+          transmission: transmission,
+          ior: ior,
+          clearcoat: clearcoat,
+          opacity: (typeof mat.opacity === 'number') ? mat.opacity : 1.0
+        };
+      }
+      mesh.userData.cyclesMatId = matKey;
+    });
+
+    // Process Objects & Geometry
+    var objects = [];
+    var totalTriangles = 0;
+
+    meshes.forEach(function (mesh, mIdx) {
+      var geo = mesh.geometry;
+      var posAttr = geo.getAttribute ? geo.getAttribute('position') : null;
+      if (!posAttr) return;
+
+      var indexAttr = geo.getIndex ? geo.getIndex() : null;
+      var vertices = [];
+      var faces = [];
+
+      var v = new THREE.Vector3();
+      for (var vi = 0; vi < posAttr.count; vi++) {
+        v.fromBufferAttribute(posAttr, vi);
+        v.applyMatrix4(mesh.matrixWorld);
+        vertices.push([
+          parseFloat((v.x / 1000).toFixed(4)),
+          parseFloat((-v.z / 1000).toFixed(4)),
+          parseFloat((v.y / 1000).toFixed(4))
+        ]);
+      }
+
+      if (indexAttr) {
+        for (var fi = 0; fi < indexAttr.count; fi += 3) {
+          faces.push([indexAttr.getX(fi), indexAttr.getX(fi + 1), indexAttr.getX(fi + 2)]);
+          totalTriangles++;
+        }
+      } else {
+        for (var vi2 = 0; vi2 < posAttr.count; vi2 += 3) {
+          faces.push([vi2, vi2 + 1, vi2 + 2]);
+          totalTriangles++;
+        }
+      }
+
+      objects.push({
+        name: (mesh.name || ('Object_' + (mIdx + 1))),
+        role: mesh.userData.role || '',
+        material: mesh.userData.cyclesMatId,
+        vertices: vertices,
+        faces: faces
+      });
+    });
+
+    // Camera parameters
+    var camData = {
+      position: [0, -3.5, 1.6],
+      target: [0, 0, 0.9],
+      fov: 50
+    };
+    if (window.GL && typeof window.GL.getCam === 'function') {
+      var gc = window.GL.getCam();
+      var tgt = (window.GL.getTarget && window.GL.getTarget()) ? window.GL.getTarget() : { x: 0, y: 1200, z: 0 };
+      var dist = (window.GL.getDist ? window.GL.getDist() : 3500) / Math.max(0.18, 1 + (gc.zoom || 0));
+      var yawRad = (gc.yaw || 0) * Math.PI / 180;
+      var pitchRad = -(gc.pitch || 0) * Math.PI / 180;
+
+      var cx = tgt.x + Math.sin(yawRad) * Math.cos(pitchRad) * dist;
+      var cy = tgt.y + Math.sin(pitchRad) * dist;
+      var cz = tgt.z + Math.cos(yawRad) * Math.cos(pitchRad) * dist;
+
+      camData.position = [
+        parseFloat((cx / 1000).toFixed(4)),
+        parseFloat((-cz / 1000).toFixed(4)),
+        parseFloat((cy / 1000).toFixed(4))
+      ];
+      camData.target = [
+        parseFloat((tgt.x / 1000).toFixed(4)),
+        parseFloat((-tgt.z / 1000).toFixed(4)),
+        parseFloat((tgt.y / 1000).toFixed(4))
+      ];
+      if (opts.camera && opts.camera.fov) camData.fov = opts.camera.fov;
+    }
+
+    // Windows
+    var windows = [];
+    var pOpenings = (project && project.plan && project.plan.openings) || [];
+    var pWalls = (project && project.plan && project.plan.walls) || [];
+
+    pOpenings.forEach(function (op) {
+      if (op.type === 'window') {
+        var w = pWalls.find(function (wObj) { return wObj.id === op.wallId; });
+        if (w) {
+          var dx = w.end.x - w.start.x, dy = w.end.y - w.start.y;
+          var wLen = Math.hypot(dx, dy) || 1;
+          var ux = dx / wLen, uy = dy / wLen;
+          var nx = -uy, ny = ux;
+          var off = (typeof op.offset === 'number') ? op.offset : (wLen / 2);
+          var wx = w.start.x + ux * off;
+          var wy = w.start.y + uy * off;
+          var sillH = (typeof op.sillHeight === 'number') ? op.sillHeight : 900;
+          var winH = op.height || 1200;
+          var wz = sillH + winH / 2;
+
+          windows.push({
+            pos: [
+              parseFloat((wx / 1000).toFixed(4)),
+              parseFloat((-wy / 1000).toFixed(4)),
+              parseFloat((wz / 1000).toFixed(4))
+            ],
+            width: parseFloat(((op.width || 1200) / 1000).toFixed(3)),
+            height: parseFloat((winH / 1000).toFixed(3)),
+            normal: [parseFloat(nx.toFixed(3)), parseFloat((-ny).toFixed(3)), 0]
+          });
+        }
+      }
+    });
+
+    var cyclesExportData = {
+      version: '1.0',
+      generator: 'Orbix Studio Blender Cycles Exporter',
+      timestamp: new Date().toISOString(),
+      project: {
+        title: title
+      },
+      renderSettings: {
+        resolution: opts.resolution || [3840, 2160],
+        samples: opts.samples || 128,
+        denoiser: 'OPENIMAGEDENOISE',
+        engine: 'CYCLES'
+      },
+      lighting: {
+        daylightPercent: (opts.daylightPercent !== undefined ? opts.daylightPercent : 20),
+        interiorFillWatts: (opts.interiorFillWatts !== undefined ? opts.interiorFillWatts : 10),
+        exposureEV: (opts.exposureEV !== undefined ? opts.exposureEV : 0.0)
+      },
+      camera: camData,
+      windows: windows,
+      materials: materials,
+      objects: objects
+    };
+
+    var jsonStr = JSON.stringify(cyclesExportData, null, 2);
+
+    return {
+      cyclesJson: jsonStr,
+      filename: safeTitle + '.cycles.json',
+      stats: {
+        title: title,
+        walls: pWalls.length,
+        openings: pOpenings.length,
+        furniture: (project && project.plan && project.plan.furniture ? project.plan.furniture.length : 0),
+        meshCount: objects.length,
+        triangleCount: totalTriangles,
+        daylightPercent: cyclesExportData.lighting.daylightPercent,
+        interiorFillWatts: cyclesExportData.lighting.interiorFillWatts,
+        exposureEV: cyclesExportData.lighting.exposureEV
+      }
+    };
+  };
+
+  ArchitecturalRenderer.exportCycles = function (project, scene, opts) {
+    var renderer = new ArchitecturalRenderer(scene);
+    return renderer.exportToCyclesJson(project, scene, opts);
+  };
+
   return ArchitecturalRenderer;
 });

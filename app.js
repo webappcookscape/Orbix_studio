@@ -3814,6 +3814,13 @@
 
     }
 
+    function gizmoMove(furnObj) {
+      if (!gizmoGroup || !furnObj || !gizmoGroup.visible) return;
+      gizmoGroup.position.set(furnObj.position.x, furnObj.position.y || 0, furnObj.position.z);
+      gizmoGroup.rotation.y = furnObj.rotation.y || 0;
+      render();
+    }
+
     function gizmoSet(furnObj, furnId) {
       if (!scene) return;
       if (!gizmoGroup) {
@@ -3996,7 +4003,7 @@
       });
       return out;
     }
-    return { init: init, show: show, frame: frame, apply: apply, invalidateShadows: invalidateShadows, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickWall: pickWall, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } invalidateShadows(); render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); invalidateShadows(); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setSunlightIntensity: function (val) {
+    return { init: init, show: show, frame: frame, apply: apply, invalidateShadows: invalidateShadows, updateWallCutaway: updateWallCutaway, debug: debug, toggleAll: toggleAll, settle: settle, pick: pick, pickFurniture: pickFurniture, pickWall: pickWall, pickPanel: pickPanel, clearSelect: function () { clearSelect(); render(); }, fxInit: fxInit, fxToggle: fxToggle, setDoors: function (t) { for (var id in doors) { var d = doors[id]; d.t = Math.max(0, Math.min(1, t)) * (d.target || 1); if (!d.target) { d.req = 1; resolve(); d.t = Math.max(0, Math.min(1, t)) * d.target; } applyDoor(d); } invalidateShadows(); render(); }, setExplode: function (t) { if (!xItems) explodeSetup(); xT = t; xSet(t); invalidateShadows(); }, handlesSet: handlesSet, plateSet: plateSet, handleAt: handleAt, floorPoint: floorPoint, thumb: thumb, snapshot: snapshot, explode: explode, assemble: assemble, get exploded() { return xT > 0.5; }, get fx() { return !!composer; }, lights: function () { var n = []; if (scene) scene.traverse(function (o) { if (o.isLight) n.push(o.type + ":" + o.intensity); }); return n; }, get ok() { return ok; }, getScene: function () { return scene; }, getTarget: function () { return target; }, setTarget: function (x, y, z) { if (target) target.set(x, y, z); }, gizmoSet: gizmoSet, gizmoMove: gizmoMove, gizmoPick: gizmoPick, setUnitOverlapVisual: setUnitOverlapVisual, getGizmoTarget: function () { return gizmoGroup ? gizmoGroup.userData.targetObj : null; }, getGizmoFurnId: function () { return gizmoGroup ? gizmoGroup.userData.furnId : null; }, setSunlightIntensity: function (val) {
       val = parseFloat(val);
       if (!isFinite(val)) return;
       window.sunlightIntensity = val;
@@ -4105,10 +4112,13 @@
       render();
     },
     setRenderMode: function (mode) {
+      var prevMode = window.orbixRenderMode || 'realistic';
       mode = (mode || 'realistic').toLowerCase();
       if (mode === 'ultra') mode = 'presentation';
       window.orbixRenderMode = mode;
       if (!renderer) return;
+
+      var sharingGeometry = (prevMode === 'realistic' && mode === 'presentation') || (prevMode === 'presentation' && mode === 'realistic');
 
       if (mode === 'design') {
         renderer.shadowMap.enabled = false;
@@ -4156,9 +4166,12 @@
         }
       }
 
-      if (window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
+      // Realistic and Client Ultra share the same scene geometry, so avoid tearing down and rebuilding the kitchen
+      if (!sharingGeometry && window.OrbixUI && typeof window.OrbixUI.render3DHome === 'function') {
         invalidateShadows();
         window.OrbixUI.render3DHome(true);
+      } else {
+        invalidateShadows();
       }
       apply(true);
       render();
@@ -4759,6 +4772,15 @@
     var span = u.shape === "lcorner" ? u.W + u.D + Math.max(u.D, (u.W2 || 1200) * 0.55) : Math.max(u.W, u.D * 1.6);
     scale = Math.max(0.05, Math.min((r.height * 0.72) / totalH, (r.width * 0.64) / span));
   }
+  var camRafId = null;
+  function scheduleCamApply() {
+    if (camRafId) return;
+    camRafId = requestAnimationFrame(function () {
+      camRafId = null;
+      camApply();
+    });
+  }
+
   function camApply() {
     cam.pitch = Math.max(-85, Math.min(85, cam.pitch));
     cam.zoom = Math.max(-0.82, Math.min(25.0, cam.zoom));
@@ -4866,8 +4888,9 @@
           setUnitOverlapVisual(gizmoDrag.obj, chk.hasOverlap);
         }
 
-        GL.gizmoSet(gizmoDrag.obj, gizmoDrag.id);
-        GL.settle();
+        // Smoothly translate existing gizmo handles without tearing down and recreating meshes
+        GL.gizmoMove(gizmoDrag.obj);
+        // Defer expensive contact shadow & ground plane recalculation to drop (pointerup)
         return;
       }
 
@@ -5145,10 +5168,15 @@
           cam.pitch += dy * 0.18;
         }
       }
-      camApply();
+      scheduleCamApply();
     });
 
     function up(e) {
+      if (camRafId) {
+        cancelAnimationFrame(camRafId);
+        camRafId = null;
+        camApply();
+      }
       delete pts[e.pointerId];
       lastD = 0;
       if (!Object.keys(pts).length) stage.classList.remove("grab");

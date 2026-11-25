@@ -1501,6 +1501,14 @@
         });
       }
 
+      // Blender Cycles 4K Raytracing Exporter
+      var cpExportCyclesBtn = document.getElementById('cpExportCyclesBtn');
+      if (cpExportCyclesBtn) {
+        cpExportCyclesBtn.addEventListener('click', function () {
+          self.exportCycles();
+        });
+      }
+
       var btnExportJson = document.getElementById('planExportJson');
       if (btnExportJson) {
         btnExportJson.addEventListener('click', function () {
@@ -1654,24 +1662,64 @@
         });
       }
 
-      // ── Wall Snapping vs Free Placement Toggle ──
+      // ── Four Snap Modes Toggle: Auto ➔ Wall Only ➔ Adjacent Unit ➔ Free ──
       var btnSnapToggle = document.getElementById('planSnapToggleBtn');
+      var wallOffsetWrap = document.getElementById('wallOffsetWrapper');
+      var wallOffsetInput = document.getElementById('planWallOffsetInput');
+
+      function updateSnapButtonUI(mode) {
+        if (!btnSnapToggle) return;
+        if (mode === 'wall') {
+          btnSnapToggle.innerHTML = '🧱 Snap: Wall Only';
+          btnSnapToggle.style.color = '#0284c7';
+          btnSnapToggle.style.borderColor = '#0284c7';
+          btnSnapToggle.style.background = '#e0f2fe';
+          if (wallOffsetWrap) wallOffsetWrap.style.display = 'inline-flex';
+        } else if (mode === 'adjacent') {
+          btnSnapToggle.innerHTML = '🪵 Snap: Adjacent';
+          btnSnapToggle.style.color = '#15803d';
+          btnSnapToggle.style.borderColor = '#16a34a';
+          btnSnapToggle.style.background = '#dcfce7';
+          if (wallOffsetWrap) wallOffsetWrap.style.display = 'none';
+        } else if (mode === 'free') {
+          btnSnapToggle.innerHTML = '🔓 Snap: Free';
+          btnSnapToggle.style.color = '#b45309';
+          btnSnapToggle.style.borderColor = '#d97706';
+          btnSnapToggle.style.background = '#fef3c7';
+          if (wallOffsetWrap) wallOffsetWrap.style.display = 'none';
+        } else {
+          btnSnapToggle.innerHTML = '🧲 Snap: Auto';
+          btnSnapToggle.style.color = '#0369a1';
+          btnSnapToggle.style.borderColor = '#0284c7';
+          btnSnapToggle.style.background = '#f0f9ff';
+          if (wallOffsetWrap) wallOffsetWrap.style.display = 'none';
+        }
+      }
+
       if (btnSnapToggle) {
         btnSnapToggle.addEventListener('click', function () {
-          self.editor.forceFreePlacement = !self.editor.forceFreePlacement;
-          if (self.editor.forceFreePlacement) {
-            btnSnapToggle.innerHTML = '🔓 Free: No Wall Snap';
-            btnSnapToggle.style.color = '#b45309';
-            btnSnapToggle.style.borderColor = '#d97706';
-            btnSnapToggle.style.background = '#fef3c7';
-            if (self.showToast) self.showToast('Free Placement active: units place anywhere without wall snapping', 'info');
-          } else {
-            btnSnapToggle.innerHTML = '🧲 Snap: Wall Flush';
-            btnSnapToggle.style.color = '#0369a1';
-            btnSnapToggle.style.borderColor = '#0284c7';
-            btnSnapToggle.style.background = '#f0f9ff';
-            if (self.showToast) self.showToast('Wall Snap active: units snap flush to wall faces', 'info');
-          }
+          var modes = ['auto', 'wall', 'adjacent', 'free'];
+          var curIdx = modes.indexOf(self.editor.furnitureSnapMode || 'auto');
+          var nextMode = modes[(curIdx + 1) % modes.length];
+          self.editor.setFurnitureSnapMode(nextMode);
+          updateSnapButtonUI(nextMode);
+        });
+      }
+
+      if (wallOffsetInput) {
+        wallOffsetInput.addEventListener('input', function () {
+          self.editor.setWallOffsetMm(wallOffsetInput.value);
+        });
+      }
+
+      // ── Place Next Rapid Runs Toggle ──
+      var btnPlaceNext = document.getElementById('planPlaceNextBtn');
+      if (btnPlaceNext) {
+        btnPlaceNext.addEventListener('click', function () {
+          var on = self.editor.togglePlaceNextMode();
+          btnPlaceNext.style.background = on ? '#dcfce7' : '';
+          btnPlaceNext.style.color = on ? '#15803d' : '';
+          btnPlaceNext.style.borderColor = on ? '#16a34a' : '';
         });
       }
 
@@ -7878,6 +7926,51 @@
       bottomTray.style.display = 'none';
       isFurnishMenuOpen = false;
       try { switchCategory('base_unit', 'Base Unit'); } catch (_) {}
+    },
+
+    exportCycles: function (opts) {
+      opts = opts || {};
+      var self = this;
+      var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+
+      if (!this.archRenderer && root.Orbix3D) {
+        this.archRenderer = new root.Orbix3D(scene);
+      }
+
+      var res;
+      try {
+        if (this.archRenderer && typeof this.archRenderer.exportToCyclesJson === 'function') {
+          res = this.archRenderer.exportToCyclesJson(this.project, scene, opts);
+        } else if (root.Orbix3D && typeof root.Orbix3D.exportCycles === 'function') {
+          res = root.Orbix3D.exportCycles(this.project, scene, opts);
+        }
+      } catch (err) {
+        console.error('Blender Cycles export error:', err);
+        alert('Could not export to Blender Cycles: ' + err.message);
+        return;
+      }
+
+      if (!res || !res.cyclesJson) {
+        alert('No 3D geometry available to export. Please add walls or modular units first.');
+        return;
+      }
+
+      var filename = res.filename || 'kitchen.cycles.json';
+      var blob = new Blob([res.cyclesJson], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+
+      var msg = '🌀 Exported ' + filename + ' (' + (res.stats ? res.stats.meshCount : 0) + ' meshes) for Blender Cycles 4K Raytracing!';
+      if (typeof window.showToast === 'function') {
+        window.showToast(msg);
+      } else if (typeof window.toast === 'function') {
+        window.toast(msg);
+      }
     },
 
     exportSketchUp: function (format) {

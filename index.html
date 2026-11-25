@@ -314,7 +314,8 @@
               <!-- 4K Ultra Render Export & AI Decor -->
               <div class="cp-pill-group">
                 <button type="button" class="cp-render-btn" id="cpExport4KBtn">📸 Download 4K Ultra Render</button>
-                </div>
+                <button type="button" class="cp-render-btn" id="cpExportCyclesBtn" title="Export complete scene as .cycles.json for Blender Cycles Raytracing">🌀 Blender Cycles 4K</button>
+              </div>
             </div>
           </div>
           <button type="button" class="stagebar-floating-expand-btn" id="stagebarFloatingExpandBtn"
@@ -899,10 +900,15 @@
               <!-- AI Decor Auto-placement Button -->
               </div>
 
-            <div class="plan-toolgroup" style="margin-left:auto;gap:10px;">
+            <div class="plan-toolgroup" style="margin-left:auto;gap:10px;align-items:center;">
+              <button class="plan-tool-btn" id="planPlaceNextBtn"
+                title="Place Next: Keep same cabinet active after placement for continuous runs along a wall">⚡ Place Next</button>
               <button class="plan-tool-btn" id="planSnapToggleBtn"
                 style="font-weight:700;color:#0369a1;border-color:#0284c7;background:#f0f9ff;"
-                title="Toggle Wall Snapping vs Free Placement (Or hold Shift / Alt while dragging)">🧲 Snap: Wall Flush</button>
+                title="Four Snap Modes: Auto ➔ Wall Only ➔ Adjacent Unit ➔ Free">🧲 Snap: Auto</button>
+              <span id="wallOffsetWrapper" style="display:none;align-items:center;gap:4px;">
+                <input type="number" id="planWallOffsetInput" placeholder="Edge Offset mm" style="width:85px;padding:3px 6px;font-size:11px;border:1px solid #0284c7;border-radius:4px;" title="Offset cabinet edge in millimeters from wall start (e.g. 50 or -50)">
+              </span>
               <button class="plan-tool-btn" id="planUnitToggleBtn"
                 style="font-weight:700;color:#1B4F72;border-color:#1B4F72;background:#F0F7FF;"
                 title="Switch 2D measurement unit between Millimeters (mm) and Feet & Inches (ft-in)">📐 Unit:
@@ -2128,14 +2134,14 @@
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=35'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=35'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=35'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=36'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=36'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=36'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=35');
+          return loadScript('orbix-a4-drawings.js?v=36');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -2152,17 +2158,17 @@
       return api;
     })();
   </script>
-  <script src="orbix-unit-icons.js?v=35"></script>
-  <script src="orbix-projects.js?v=35"></script>
-  <script src="orbix-live-sync.js?v=35"></script>
-  <script src="orbix-decors-catalog.js?v=35"></script>
-  <script src="orbix-core.js?v=35"></script>
-  <script src="orbix-plan.js?v=35"></script>
-  <script src="orbix-3d.js?v=35"></script>
-  <script src="orbix-ui.js?v=35"></script>
-  <script src="orbix-client-quote.js?v=35"></script>
-  <script src="app.js?v=35"></script>
-  <script src="pwa.js?v=35"></script>
+  <script src="orbix-unit-icons.js?v=36"></script>
+  <script src="orbix-projects.js?v=36"></script>
+  <script src="orbix-live-sync.js?v=36"></script>
+  <script src="orbix-decors-catalog.js?v=36"></script>
+  <script src="orbix-core.js?v=36"></script>
+  <script src="orbix-plan.js?v=36"></script>
+  <script src="orbix-3d.js?v=36"></script>
+  <script src="orbix-ui.js?v=36"></script>
+  <script src="orbix-client-quote.js?v=36"></script>
+  <script src="app.js?v=36"></script>
+  <script src="pwa.js?v=36"></script>
   <!-- ARTIFACT-END -->
 </body>
 

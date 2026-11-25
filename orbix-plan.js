@@ -45,6 +45,9 @@
     this.isShiftDown = false;
     this.isAltDown = false;
     this.forceFreePlacement = false;
+    this.furnitureSnapMode = 'auto'; // 'auto' | 'wall' | 'adjacent' | 'free'
+    this.wallOffsetMm = null; // Exact millimeter offset from wall edge in 'wall' snap mode
+    this.placeNextMode = false; // Continuous rapid unit placement
     this.cursorWorld = { x: 0, y: 0 };
     this.numericInputBuffer = '';
     this.clipboard = [];
@@ -80,6 +83,32 @@
     this.resize();
     this.render();
   }
+
+  PlanEditor.prototype.setFurnitureSnapMode = function (mode) {
+    var valid = ['auto', 'wall', 'adjacent', 'free'];
+    this.furnitureSnapMode = valid.indexOf(mode) !== -1 ? mode : 'auto';
+    this.forceFreePlacement = (this.furnitureSnapMode === 'free');
+    this.requestRender();
+    if (typeof window !== 'undefined' && typeof window.toast === 'function') {
+      var labels = { auto: 'Auto Snap', wall: 'Wall Only Snap', adjacent: 'Adjacent Unit Snap', free: 'Free Placement' };
+      window.toast('Snap Mode: ' + (labels[this.furnitureSnapMode] || this.furnitureSnapMode));
+    }
+  };
+
+  PlanEditor.prototype.setWallOffsetMm = function (offset) {
+    var val = parseFloat(offset);
+    this.wallOffsetMm = isFinite(val) ? val : null;
+    this.requestRender();
+  };
+
+  PlanEditor.prototype.togglePlaceNextMode = function (val) {
+    if (val !== undefined) this.placeNextMode = !!val;
+    else this.placeNextMode = !this.placeNextMode;
+    if (typeof window !== 'undefined' && typeof window.toast === 'function') {
+      window.toast(this.placeNextMode ? 'Place Next: ON (Continuous)' : 'Place Next: OFF');
+    }
+    return this.placeNextMode;
+  };
 
   // 2D Unit Formatting: mm or ft & in
   PlanEditor.prototype.formatDim = function (mm) {
@@ -2429,7 +2458,7 @@
               window.OrbixUI.showToast('Note: Unit placed near adjacent element', 'info');
             }
           }
-          if (self.dragState.furniture) {
+          if (self.dragState.furniture && self.dragState.hasMoved) {
             var isRcc = self.dragState.furniture.category === 'structural' ||
                         self.dragState.furniture.category === 'civil' ||
                         /rcc|column|pillar|post/i.test(self.dragState.furniture.name || '') ||
@@ -2438,7 +2467,10 @@
               Core.detectRooms(self.project);
             }
           }
-          self.pushHistory('Move Furniture');
+          if (self.dragState.hasMoved) {
+            self.pushHistory('Move Furniture');
+            if (typeof self.onPlanChange === 'function') self.onPlanChange();
+          }
         } else if (self.dragState.type === 'move_opening') {
           Core.detectRooms(self.project);
           self.pushHistory('Move Opening');
@@ -2764,6 +2796,33 @@
           self.numericInputBuffer = '';
           self.render();
           return;
+        }
+      }
+
+      // Keyboard Arrow Keys: Nudge selected cabinet by 1 mm (or 10 mm with Shift)
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        var selFurn = self.selected && self.selected.find(function (it) { return it.type === 'furniture'; });
+        if (selFurn && self.project && self.project.plan && self.project.plan.furniture) {
+          var fObj = self.project.plan.furniture.find(function (f) { return f.id === selFurn.id; });
+          if (fObj) {
+            e.preventDefault();
+            var step = e.shiftKey ? 10 : 1;
+            var dx = 0, dy = 0;
+            if (e.key === 'ArrowLeft') dx = -step;
+            else if (e.key === 'ArrowRight') dx = step;
+            else if (e.key === 'ArrowUp') dy = -step;
+            else if (e.key === 'ArrowDown') dy = step;
+
+            fObj.pos.x = Math.round((fObj.pos.x || 0) + dx);
+            fObj.pos.y = Math.round((fObj.pos.y || 0) + dy);
+            self.pushHistory('Nudge ' + (fObj.name || 'Cabinet'));
+            self.render();
+            if (typeof window !== 'undefined' && window.OrbixUI) {
+              if (window.OrbixUI.render3DHome) window.OrbixUI.render3DHome(true);
+              if (window.OrbixUI.saveToLocalStorage) window.OrbixUI.saveToLocalStorage();
+            }
+            return;
+          }
         }
       }
 
@@ -3273,8 +3332,9 @@
       (furn.id && /ledge|rcc|civil|column|pillar|post|structural/i.test(furn.id)) ||
       (furn.catalogItemId && /ledge|rcc|civil|panel/i.test(furn.catalogItemId));
 
-    // Shift, Alt, or Free Placement Mode completely disables all snapping for pixel-precision free positioning
-    if (this.isShiftDown || this.isAltDown || this.forceFreePlacement) {
+    // 4 Snap modes: 'auto' | 'wall' | 'adjacent' | 'free'
+    var snapMode = this.furnitureSnapMode || 'auto';
+    if (this.isShiftDown || this.isAltDown || this.forceFreePlacement || snapMode === 'free') {
       return { pos: pos, rotY: rotY, type: 'free_placement', badgeLabel: '🔓 Free Placement' };
     }
 
@@ -3341,8 +3401,8 @@
     var minJointDist = 75; // mm magnetic snap threshold (gentle, natural contact zone)
 
     // Unit-to-unit jointing & multi-point magnetic snapping is only evaluated for regular woodwork cabinets
-    // Ledges, panels, and civil items snap flush to walls without hijacking cursor via unit joints
-    if (!isDecorF && !isCivilOrPanel) {
+    // In 'wall' snap mode, adjacent unit jointing is bypassed to lock strictly to wall face
+    if (!isDecorF && !isCivilOrPanel && snapMode !== 'wall') {
       for (var i = 0; i < furnList.length; i++) {
         var other = furnList[i];
         if (activeId && other.id === activeId) continue;
@@ -3659,6 +3719,12 @@
     // Plumb vertical stacking above/below an existing unit takes priority
     if (bestJoint && bestJoint.snapMode === 'plumb') {
       return bestJoint;
+    }
+
+    // In 'adjacent' snap mode, only jointing to other units is permitted
+    if (snapMode === 'adjacent') {
+      if (bestJoint) return bestJoint;
+      return { pos: pos, rotY: rotY, type: 'adjacent_searching', badgeLabel: '📍 Adjacent Snap (Bring near unit)' };
     }
 
     // 2. WALL SNATCHING (FLUSH SNAP TO WALL FACE) & WALL OVERLAP PREVENTION
@@ -4085,6 +4151,21 @@
       var tMin = halfActiveW;
       var tMax = Math.max(halfActiveW, bwLen - halfActiveW);
 
+      // Exact millimeter edge offset in 'wall' snap mode
+      if (this.furnitureSnapMode === 'wall' && this.wallOffsetMm !== null && isFinite(this.wallOffsetMm)) {
+        var reqOffset = parseFloat(this.wallOffsetMm);
+        if (reqOffset >= 0) {
+          candT = reqOffset + halfActiveW;
+        } else {
+          candT = bwLen + reqOffset - halfActiveW;
+        }
+        bestWallSnap.badgeLabel = '✓ Wall Edge Offset: ' + Math.abs(reqOffset) + ' mm';
+        bestWallSnap.isExactOffset = true;
+        if (candT - halfActiveW < -1 || candT + halfActiveW > bwLen + 1) {
+          bestWallSnap.warning = 'Offset extends past wall bounds (' + Math.round(bwLen) + ' mm)';
+        }
+      }
+
       // Allow user to freely position anywhere along the wall span right up to and across corners without artificial clamping
       var snapCornerStartT = halfActiveW;
       var snapCornerEndT = Math.max(halfActiveW, bwLen - halfActiveW);
@@ -4353,7 +4434,7 @@
 
   PlanEditor.prototype.handleFurnitureMouseDown = function (worldPt) {
     if (!this.furniturePreset) return;
-    var clickPt = { x: Math.round(worldPt.x / 10) * 10, y: Math.round(worldPt.y / 10) * 10 };
+    var clickPt = (this.furnitureSnapMode === 'free') ? worldPt : { x: Math.round(worldPt.x / 10) * 10, y: Math.round(worldPt.y / 10) * 10 };
 
     // Apply smart snapping (jointing to adjacent units or snatching to wall face)
     var snapRes = this.snapFurniture(this.furniturePreset, clickPt, this.furnitureRotY || 0);
@@ -4454,10 +4535,19 @@
 
     this.project.plan.furniture.push(furn);
     this.pushHistory('Place ' + furn.name, furn);
-    if (typeof this.setTool === 'function') this.setTool('select');
-    else this.activeTool = 'select';
-    this.selected = [{ type: 'furniture', id: furn.id }];
-    this.onSelectionChange(this.selected);
+    if (this.placeNextMode) {
+      // Place next keeps the same cabinet ready after each placement for rapid continuous runs
+      this.selected = [{ type: 'furniture', id: furn.id }];
+      this.onSelectionChange(this.selected);
+      if (typeof window !== 'undefined' && typeof window.toast === 'function') {
+        window.toast('✓ Placed ' + furn.name + ' (Place Next ready)');
+      }
+    } else {
+      if (typeof this.setTool === 'function') this.setTool('select');
+      else this.activeTool = 'select';
+      this.selected = [{ type: 'furniture', id: furn.id }];
+      this.onSelectionChange(this.selected);
+    }
     this.render();
   };
 
@@ -8084,57 +8174,109 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
 
     // 4. Furniture placement ghost preview (with live snapping to walls & jointing to adjacent units)
     if (this.activeTool === 'furniture' && this.furniturePreset) {
-      var candidatePos = this.cursorWorld;
+      // Made placement preview match click exactly using identical position calculation
+      var candidatePos = (this.furnitureSnapMode === 'free') ? this.cursorWorld : { x: Math.round(this.cursorWorld.x / 10) * 10, y: Math.round(this.cursorWorld.y / 10) * 10 };
       var snapRes = this.snapFurniture(this.furniturePreset, candidatePos, this.furnitureRotY || 0);
       var gPos = snapRes.pos;
       var gRot = snapRes.rotY !== undefined ? snapRes.rotY : (this.furnitureRotY || 0);
 
-      var fW = (this.furniturePreset.dimensions.W || 1200) * this.zoom;
-      var fD = (this.furniturePreset.dimensions.D || 600) * this.zoom;
+      var rawW = this.furniturePreset.dimensions.W || 1200;
+      var rawD = this.furniturePreset.dimensions.D || 600;
+      var fW = rawW * this.zoom;
+      var fD = rawD * this.zoom;
       var sGhost = this.worldToScreen(gPos);
+
+      // Check overlap or bounds collision for live warning
+      var hasOverlap = !!snapRes.warning;
+      var planM = this.project && this.project.plan;
+      if (!hasOverlap && Core && Core.checkPlacementOverlap && planM) {
+        var testFurn = {
+          id: '__preview_ghost__',
+          pos: { x: gPos.x, y: gPos.y },
+          rotY: gRot,
+          dimensions: this.furniturePreset.dimensions
+        };
+        var chk = Core.checkPlacementOverlap(testFurn, planM, '__preview_ghost__');
+        if (chk && chk.hasOverlap) {
+          hasOverlap = true;
+          snapRes.warning = 'Overlaps adjacent cabinet or wall';
+        }
+      }
+
+      // Compute nearby gap to nearest cabinet or wall corner
+      var nearbyGap = null;
+      if (planM && planM.furniture && planM.furniture.length > 0) {
+        var minD = 99999;
+        for (var nfi = 0; nfi < planM.furniture.length; nfi++) {
+          var nfItem = planM.furniture[nfi];
+          var distToNf = Math.hypot(nfItem.pos.x - gPos.x, nfItem.pos.y - gPos.y) - (rawW / 2 + ((nfItem.dimensions && nfItem.dimensions.W) || 600) / 2);
+          if (distToNf > 0 && distToNf < minD) {
+            minD = distToNf;
+            nearbyGap = Math.round(distToNf);
+          }
+        }
+      }
 
       ctx.save();
       ctx.translate(sGhost.x, sGhost.y);
       ctx.rotate(gRot);
 
       var isSnap = (snapRes.type === 'unit_joint' || snapRes.type === 'wall_snap');
-      ctx.strokeStyle = (snapRes.type === 'unit_joint') ? '#10b981' : ((snapRes.type === 'wall_snap') ? '#0284c7' : '#2E7BB5');
-      ctx.lineWidth = isSnap ? 2.2 : 1.5;
+      if (hasOverlap) {
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2.4;
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.22)';
+      } else {
+        ctx.strokeStyle = (snapRes.type === 'unit_joint') ? '#10b981' : ((snapRes.type === 'wall_snap') ? '#0284c7' : '#2E7BB5');
+        ctx.lineWidth = isSnap ? 2.2 : 1.5;
+        ctx.fillStyle = (snapRes.type === 'unit_joint') ? 'rgba(16, 185, 129, 0.2)' : ((snapRes.type === 'wall_snap') ? 'rgba(2, 132, 199, 0.2)' : 'rgba(46, 123, 181, 0.15)');
+      }
       ctx.setLineDash(isSnap ? [] : [4, 4]);
-      ctx.fillStyle = (snapRes.type === 'unit_joint') ? 'rgba(16, 185, 129, 0.2)' : ((snapRes.type === 'wall_snap') ? 'rgba(2, 132, 199, 0.2)' : 'rgba(46, 123, 181, 0.15)');
       ctx.fillRect(-fW / 2, -fD / 2, fW, fD);
       ctx.strokeRect(-fW / 2, -fD / 2, fW, fD);
       ctx.setLineDash([]);
 
-      // Points on ghost preview removed per user request for visual cleanliness
-
       // Shutter front edge indicator
-      ctx.strokeStyle = (snapRes.type === 'unit_joint') ? '#059669' : '#0369a1';
+      ctx.strokeStyle = hasOverlap ? '#b91c1c' : ((snapRes.type === 'unit_joint') ? '#059669' : '#0369a1');
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(-fW / 2, fD / 2);
       ctx.lineTo(fW / 2, fD / 2);
       ctx.stroke();
 
-      ctx.fillStyle = (snapRes.type === 'unit_joint') ? '#065f46' : '#1B4F72';
+      // Cabinet name & dimensions label
+      ctx.fillStyle = hasOverlap ? '#991b1b' : ((snapRes.type === 'unit_joint') ? '#065f46' : '#1B4F72');
       ctx.font = '600 11px "IBM Plex Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(this.furniturePreset.name, 0, -6);
+      var dimLabel = this.furniturePreset.name + ' (' + rawW + ' mm)';
+      ctx.fillText(dimLabel, 0, -8);
 
-      // Snap feedback text badge
-      if (snapRes.badgeLabel) {
+      // Snap feedback / Warning badge / Gap indicator
+      if (hasOverlap && snapRes.warning) {
+        ctx.fillStyle = '#dc2626';
+        ctx.font = '700 9.5px "IBM Plex Sans", sans-serif';
+        ctx.fillText('⚠️ ' + snapRes.warning, 0, 8);
+      } else if (snapRes.badgeLabel) {
         ctx.fillStyle = (snapRes.type === 'unit_joint') ? '#10b981' : '#0284c7';
         ctx.font = '700 9.5px "IBM Plex Sans", sans-serif';
-        ctx.fillText(snapRes.badgeLabel, 0, 9);
+        var badgeStr = snapRes.badgeLabel;
+        if (nearbyGap !== null && nearbyGap < 1000) {
+          badgeStr += ' · Gap: ' + nearbyGap + ' mm';
+        }
+        ctx.fillText(badgeStr, 0, 8);
+      } else if (nearbyGap !== null && nearbyGap < 1000) {
+        ctx.fillStyle = '#0284c7';
+        ctx.font = '700 9.5px "IBM Plex Sans", sans-serif';
+        ctx.fillText('Gap to unit: ' + nearbyGap + ' mm', 0, 8);
       } else if (snapRes.type === 'unit_joint') {
         ctx.fillStyle = '#10b981';
         ctx.font = '700 9.5px "IBM Plex Sans", sans-serif';
-        ctx.fillText('✓ Snapped & Jointed to Unit', 0, 9);
+        ctx.fillText('✓ Snapped & Jointed to Unit', 0, 8);
       } else if (snapRes.type === 'wall_snap') {
         ctx.fillStyle = '#0284c7';
         ctx.font = '700 9.5px "IBM Plex Sans", sans-serif';
-        ctx.fillText('✓ Snapped Flush to Wall', 0, 9);
+        ctx.fillText('✓ Snapped Flush to Wall', 0, 8);
       }
 
       ctx.restore();
