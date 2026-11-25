@@ -945,8 +945,6 @@
       metalness: 0.0,
       clearcoat: 0.05,
       clearcoatRoughness: 0.6,
-      sheen: 0.12,
-      sheenRoughness: 0.8,
       reflectivity: 0.25,
       bumpMap: wallBump,
       bumpScale: 0.035
@@ -1042,7 +1040,6 @@
       metalness: 0.02,
       transmission: 0.94,
       ior: 1.52,
-      thickness: 4.0,
       clearcoat: 1.0,
       clearcoatRoughness: 0.02,
       reflectivity: 0.85,
@@ -2549,8 +2546,6 @@
       matOpts.clearcoat = 0.08;
       matOpts.clearcoatRoughness = 0.45;
       matOpts.reflectivity = 0.35;
-      matOpts.sheen = 0.18;
-      matOpts.sheenRoughness = 0.65;
       matOpts.envMapIntensity = 0.85;
     }
 
