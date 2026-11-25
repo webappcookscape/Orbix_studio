@@ -3006,10 +3006,27 @@
       if (typeof onLoaded === 'function') onLoaded(wrapper);
     }
 
-    var cached = ArchitecturalRenderer._gltfCache[url] || (furn && furn.blobUrl && ArchitecturalRenderer._gltfCache[furn.blobUrl]) || (furn && furn.modelUrl && ArchitecturalRenderer._gltfCache[furn.modelUrl]);
+    var cached = ArchitecturalRenderer._gltfCache[url] || (furn && furn.id && ArchitecturalRenderer._gltfCache[furn.id]) || (furn && furn.blobUrl && ArchitecturalRenderer._gltfCache[furn.blobUrl]) || (furn && furn.modelUrl && ArchitecturalRenderer._gltfCache[furn.modelUrl]);
     if (cached) {
       applyModel(cached);
       return;
+    }
+
+    // Check IndexedDB OrbixModelDB for offline/custom uploaded model buffers
+    if (furn && furn.id && window.OrbixModelDB && typeof window.OrbixModelDB.get === 'function') {
+      window.OrbixModelDB.get(furn.id, function (buf) {
+        if (buf && window.THREE && window.THREE.GLTFLoader) {
+          try {
+            var dbLoader = new THREE.GLTFLoader();
+            dbLoader.parse(buf, '', function (gltf) {
+              ArchitecturalRenderer._gltfCache[furn.id] = gltf.scene;
+              if (url) ArchitecturalRenderer._gltfCache[url] = gltf.scene;
+              applyModel(gltf.scene);
+            });
+            return;
+          } catch (_) {}
+        }
+      });
     }
 
     // Add lightweight wireframe outline placeholder instead of solid/translucent block
@@ -3040,21 +3057,14 @@
         return;
       }
 
-      // Fast-path: Decode Base64 Data URL directly into ArrayBuffer for 100% reliable local/offline parsing
+      // Fast-path: Decode Base64 Data URL directly via fetch -> ArrayBuffer for 100% reliable local/offline parsing without atob stack limits
       if (typeof url === 'string' && url.indexOf('data:') === 0) {
-        try {
-          var b64Idx = url.indexOf('base64,');
-          if (b64Idx !== -1) {
-            var rawB64 = url.substring(b64Idx + 7);
-            var binStr = atob(rawB64);
-            var binLen = binStr.length;
-            var u8Arr = new Uint8Array(binLen);
-            for (var bi = 0; bi < binLen; bi++) {
-              u8Arr[bi] = binStr.charCodeAt(bi);
-            }
+        if (typeof fetch === 'function') {
+          fetch(url).then(function (res) { return res.arrayBuffer(); }).then(function (buf) {
             var b64Loader = new THREE.GLTFLoader();
-            b64Loader.parse(u8Arr.buffer, '', function (gltf) {
+            b64Loader.parse(buf, '', function (gltf) {
               ArchitecturalRenderer._gltfCache[url] = gltf.scene;
+              if (furn && furn.id) ArchitecturalRenderer._gltfCache[furn.id] = gltf.scene;
               var cbs = ArchitecturalRenderer._gltfPending[url] || [];
               delete ArchitecturalRenderer._gltfPending[url];
               cbs.forEach(function (cb) {
@@ -3066,20 +3076,37 @@
               }
             }, function (parseErr) {
               console.warn('[Orbix 3D] Base64 GLTF parse error:', parseErr);
-              var ph = parentGroup ? parentGroup.getObjectByName('__decor_placeholder__') : null;
-              if (ph && parentGroup) parentGroup.remove(ph);
-              delete ArchitecturalRenderer._gltfPending[url];
+              recoverFailedModel();
             });
-            return;
-          }
-        } catch (b64Ex) {
-          console.warn('[Orbix 3D] Failed base64 decoding of GLTF:', b64Ex);
+          }).catch(function (fetchErr) {
+            console.warn('[Orbix 3D] Failed fetch of data URL:', fetchErr);
+            recoverFailedModel();
+          });
+          return;
+        }
+      }
+
+      function recoverFailedModel() {
+        var ph = parentGroup ? parentGroup.getObjectByName('__decor_placeholder__') : null;
+        if (ph && parentGroup) parentGroup.remove(ph);
+        delete ArchitecturalRenderer._gltfPending[url];
+        // Smart recovery: If the item was a chair or has chair in name, load chair_1.glb fallback!
+        var furnName = (furn && furn.name ? furn.name : '').toLowerCase();
+        var isChair = (furn && furn.decorType === 'chair') || furnName.indexOf('chair') !== -1 || furnName.indexOf('seat') !== -1 || furnName.indexOf('office') !== -1;
+        if (isChair && url !== 'assets/decors/chair_1.glb') {
+          self.loadAndAttachGLB('assets/decors/chair_1.glb', parentGroup, dims, onLoaded, furn);
+          return;
+        }
+        if (window.__cc && window.__cc.gl) {
+          if (window.__cc.gl.apply) window.__cc.gl.apply(true);
+          if (window.__cc.gl.settle) window.__cc.gl.settle();
         }
       }
 
       var loader = new THREE.GLTFLoader();
       loader.load(url, function (gltf) {
         ArchitecturalRenderer._gltfCache[url] = gltf.scene;
+        if (furn && furn.id) ArchitecturalRenderer._gltfCache[furn.id] = gltf.scene;
         var cbs = ArchitecturalRenderer._gltfPending[url] || [];
         delete ArchitecturalRenderer._gltfPending[url];
         cbs.forEach(function (cb) {
@@ -3091,13 +3118,7 @@
         }
       }, undefined, function (err) {
         console.warn('[Orbix 3D] Failed to load decor model:', url, err);
-        var ph = parentGroup ? parentGroup.getObjectByName('__decor_placeholder__') : null;
-        if (ph && parentGroup) parentGroup.remove(ph);
-        delete ArchitecturalRenderer._gltfPending[url];
-        if (window.__cc && window.__cc.gl) {
-          if (window.__cc.gl.apply) window.__cc.gl.apply(true);
-          if (window.__cc.gl.settle) window.__cc.gl.settle();
-        }
+        recoverFailedModel();
       });
     }
 
@@ -3164,7 +3185,7 @@
       else if (name.indexOf('refrigerator') !== -1 || name.indexOf('fridge') !== -1) glbUrl = 'assets/decors/r7250_refrigerator_freezer_20_cubic_feet.glb';
       else if (name.indexOf('washing') !== -1 || name.indexOf('sansung') !== -1) glbUrl = 'assets/decors/maquina_de_lavar_roupas_sansung.glb';
       else if (name.indexOf('chimney') !== -1 || name.indexOf('hood') !== -1) glbUrl = 'assets/decors/chimney.glb';
-      else if (name.indexOf('chair') !== -1 || furn.decorType === 'chair' || (furn.original_filename && furn.original_filename.toLowerCase().indexOf('chair') !== -1)) glbUrl = 'assets/decors/chair_1.glb';
+      else if (name.indexOf('chair') !== -1 || furn.decorType === 'chair' || name.indexOf('seat') !== -1 || name.indexOf('office') !== -1 || name.indexOf('armchair') !== -1 || (furn.id && String(furn.id).indexOf('chair') !== -1) || (furn.original_filename && furn.original_filename.toLowerCase().indexOf('chair') !== -1)) glbUrl = 'assets/decors/chair_1.glb';
     }
 
     var decorType = furn.decorType || (
@@ -4049,11 +4070,29 @@
       fg.add(mGlass);
 
     } else {
-      var genMat = new THREE.MeshStandardMaterial({ color: 0x64748B, roughness: 0.4, metalness: 0.2 });
-      var box = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), genMat);
-      box.position.set(0, H / 2, 0);
-      box.castShadow = true;
-      fg.add(box);
+      // Smart Recovery: Never leave a generic monolith rectangle box if hints exist
+      if (name.indexOf('chair') !== -1 || furn.decorType === 'chair' || name.indexOf('seat') !== -1 || name.indexOf('office') !== -1 || name.indexOf('armchair') !== -1 || (furn.id && String(furn.id).indexOf('chair') !== -1)) {
+        this.loadAndAttachGLB('assets/decors/chair_1.glb', fg, dims, undefined, furn);
+      } else if (name.indexOf('table') !== -1 || name.indexOf('desk') !== -1 || name.indexOf('dining') !== -1) {
+        this.loadAndAttachGLB('assets/decors/dining_table2.glb', fg, dims, undefined, furn);
+      } else if (name.indexOf('sofa') !== -1 || name.indexOf('couch') !== -1) {
+        this.loadAndAttachGLB('assets/decors/ashley_padova_3_seater_sofa.glb', fg, dims, undefined, furn);
+      } else if (name.indexOf('bed') !== -1) {
+        this.loadAndAttachGLB('assets/decors/cama_3.glb', fg, dims, undefined, furn);
+      } else {
+        // Modern styled architectural showcase stand with chamfered top instead of massive solid box
+        var standH = Math.min(H, 800);
+        var genMat = new THREE.MeshStandardMaterial({ color: 0x94A3B8, roughness: 0.35, metalness: 0.2 });
+        var box = new THREE.Mesh(new THREE.BoxGeometry(W, standH, D), genMat);
+        box.position.set(0, standH / 2, 0);
+        box.castShadow = true;
+        fg.add(box);
+
+        var topBevel = new THREE.Mesh(new THREE.BoxGeometry(W + 8, 12, D + 8), new THREE.MeshStandardMaterial({ color: 0xCBD5E1, roughness: 0.25, metalness: 0.4 }));
+        topBevel.position.set(0, standH + 6, 0);
+        topBevel.castShadow = true;
+        fg.add(topBevel);
+      }
     }
 
     var posX = (furn.pos && furn.pos.x) || 0;

@@ -41,7 +41,7 @@
 <body>
   <!-- ARTIFACT-START -->
   <title>Orbix Studio</title>
-  <link rel="stylesheet" href="style.css?v=32">
+  <link rel="stylesheet" href="style.css?v=33">
 
   <!-- ══════ FULL AUTH / LOGIN SCREEN ══════ -->
   <div id="authScreen" class="auth-screen" style="display:flex;">
@@ -2128,14 +2128,14 @@
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=32'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=32'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=32'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=33'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=33'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=33'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=32');
+          return loadScript('orbix-a4-drawings.js?v=33');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -2152,17 +2152,17 @@
       return api;
     })();
   </script>
-  <script src="orbix-unit-icons.js?v=32"></script>
-  <script src="orbix-projects.js?v=32"></script>
-  <script src="orbix-live-sync.js?v=32"></script>
-  <script src="orbix-decors-catalog.js?v=32"></script>
-  <script src="orbix-core.js?v=32"></script>
-  <script src="orbix-plan.js?v=32"></script>
-  <script src="orbix-3d.js?v=32"></script>
-  <script src="orbix-ui.js?v=32"></script>
-  <script src="orbix-client-quote.js?v=32"></script>
-  <script src="app.js?v=32"></script>
-  <script src="pwa.js?v=32"></script>
+  <script src="orbix-unit-icons.js?v=33"></script>
+  <script src="orbix-projects.js?v=33"></script>
+  <script src="orbix-live-sync.js?v=33"></script>
+  <script src="orbix-decors-catalog.js?v=33"></script>
+  <script src="orbix-core.js?v=33"></script>
+  <script src="orbix-plan.js?v=33"></script>
+  <script src="orbix-3d.js?v=33"></script>
+  <script src="orbix-ui.js?v=33"></script>
+  <script src="orbix-client-quote.js?v=33"></script>
+  <script src="app.js?v=33"></script>
+  <script src="pwa.js?v=33"></script>
   <!-- ARTIFACT-END -->
 </body>
 

@@ -116,6 +116,74 @@
   })();
   if (typeof window !== 'undefined') window.OrbixUnderlayDB = OrbixUnderlayDB;
 
+  // IndexedDB Persistence for Custom 3D Models (avoids LocalStorage 5MB quota)
+  var OrbixModelDB = (function () {
+    var DB_NAME = 'orbix_models_db';
+    var STORE_NAME = 'models';
+    var dbPromise = null;
+
+    function getDB() {
+      if (dbPromise) return dbPromise;
+      if (typeof indexedDB === 'undefined') return Promise.resolve(null);
+      dbPromise = new Promise(function (resolve) {
+        try {
+          var req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = function (e) {
+            var db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+              db.createObjectStore(STORE_NAME, { keyPath: 'modelId' });
+            }
+          };
+          req.onsuccess = function (e) { resolve(e.target.result); };
+          req.onerror = function () { resolve(null); };
+        } catch (_) { resolve(null); }
+      });
+      return dbPromise;
+    }
+
+    return {
+      save: function (modelId, arrayBuffer) {
+        if (!modelId || !arrayBuffer) return;
+        getDB().then(function (db) {
+          if (!db) return;
+          try {
+            var tx = db.transaction([STORE_NAME], 'readwrite');
+            var store = tx.objectStore(STORE_NAME);
+            store.put({ modelId: String(modelId), buffer: arrayBuffer, timestamp: Date.now() });
+          } catch (_) {}
+        });
+      },
+      get: function (modelId, callback) {
+        if (!modelId) { if (callback) callback(null); return; }
+        getDB().then(function (db) {
+          if (!db) { if (callback) callback(null); return; }
+          try {
+            var tx = db.transaction([STORE_NAME], 'readonly');
+            var store = tx.objectStore(STORE_NAME);
+            var req = store.get(String(modelId));
+            req.onsuccess = function () {
+              var res = req.result ? req.result.buffer : null;
+              if (callback) callback(res);
+            };
+            req.onerror = function () { if (callback) callback(null); };
+          } catch (_) { if (callback) callback(null); }
+        });
+      },
+      remove: function (modelId) {
+        if (!modelId) return;
+        getDB().then(function (db) {
+          if (!db) return;
+          try {
+            var tx = db.transaction([STORE_NAME], 'readwrite');
+            var store = tx.objectStore(STORE_NAME);
+            store.delete(String(modelId));
+          } catch (_) {}
+        });
+      }
+    };
+  })();
+  if (typeof window !== 'undefined') window.OrbixModelDB = OrbixModelDB;
+
   var OrbixUI = {
     editor: null,
     project: null,
@@ -2809,16 +2877,21 @@
             // 3D Model Attachment Status & Replace Button
             '<div style="background:#f8fafc;border:1px solid ' + (hasModel ? '#bbf7d0' : '#fed7aa') + ';border-radius:8px;padding:12px;margin-bottom:14px;">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
-            '<span style="font-size:11px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.5px;">📦 3D Model (.glb)</span>' +
+            '<span style="font-size:11px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:0.5px;">📦 3D Model</span>' +
             '<span style="font-size:10.5px;font-weight:600;color:' + (hasModel ? '#15803d' : '#c2410c') + ';">' + (hasModel ? '✅ Attached' : '⚠️ Box Placeholder') + '</span>' +
             '</div>' +
             '<div style="font-size:11.5px;color:#64748b;margin-bottom:10px;">' +
-            (hasModel ? 'Custom 3D model is rendered in 3D Studio.' : 'No 3D file attached yet. Upload your .glb model below to replace this box.') +
+            (hasModel ? '3D model is active in 3D Studio.' : 'No 3D model attached yet. Pick from catalog or upload a .glb model to replace this box.') +
             '</div>' +
-            '<button type="button" class="btn small" id="inspDecorUploadModelBtn" style="width:100%;font-size:11.5px;font-weight:600;padding:6px 10px;background:#3b82f6;color:#ffffff;border:none;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">' +
-            '<span>📁</span> <span>' + (hasModel ? 'Replace 3D Model (.glb)' : 'Upload 3D Model (.glb)') + '</span>' +
+            '<div style="display:flex;flex-direction:column;gap:6px;">' +
+            '<button type="button" class="btn small" id="inspDecorPickCatalogBtn" style="width:100%;font-size:11.5px;font-weight:600;padding:6px 10px;background:#15803d;color:#ffffff;border:none;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">' +
+            '<span>✨</span> <span>Choose from 3D Catalog (46 Models)</span>' +
             '</button>' +
-            '<input type="file" id="inspDecorGlbInput" accept=".glb,.gltf" style="display:none;">' +
+            '<button type="button" class="btn small" id="inspDecorUploadModelBtn" style="width:100%;font-size:11.5px;font-weight:600;padding:6px 10px;background:#3b82f6;color:#ffffff;border:none;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">' +
+            '<span>📁</span> <span>' + (hasModel ? 'Upload / Replace .glb Model' : 'Upload Custom .glb Model') + '</span>' +
+            '</button>' +
+            '</div>' +
+            '<input type="file" id="inspDecorGlbInput" accept=".glb,.gltf,.skp" style="display:none;">' +
             '<div id="inspDecorUploadStatus" style="display:none;font-size:11px;color:#166534;margin-top:6px;font-weight:600;"></div>' +
             '</div>' +
 
@@ -2866,6 +2939,14 @@
             });
           }
 
+          var pickCatBtn = document.getElementById('inspDecorPickCatalogBtn');
+          if (pickCatBtn) {
+            pickCatBtn.addEventListener('click', function () {
+              self._targetDecorForCatalogPick = fn;
+              self.openDecorModal();
+            });
+          }
+
           var uploadBtn = document.getElementById('inspDecorUploadModelBtn');
           var fileInp = document.getElementById('inspDecorGlbInput');
 
@@ -2882,57 +2963,65 @@
               fn.blobUrl = blobUrl;
               fn.modelFormat = 'glb';
 
+              // Robust parsing via ArrayBuffer to avoid atob and quota limits
               var reader = new FileReader();
               reader.onload = function (ev) {
-                fn.modelUrl = ev.target.result;
-                if (window.ArchitecturalRenderer && self._lastScene) {
-                  window.ArchitecturalRenderer._gltfCache[fn.modelUrl] = self._lastScene;
+                var buffer = ev.target.result;
+                if (window.OrbixModelDB && typeof window.OrbixModelDB.save === 'function') {
+                  window.OrbixModelDB.save(fn.id, buffer);
                 }
-                self.saveToLocalStorage();
+                function parseLoadedBuffer() {
+                  if (!window.THREE || !window.THREE.GLTFLoader) {
+                    if (typeof window.ensureGLTFLoader === 'function') {
+                      window.ensureGLTFLoader(parseLoadedBuffer);
+                    } else {
+                      setTimeout(parseLoadedBuffer, 80);
+                    }
+                    return;
+                  }
+                  try {
+                    var loader = new THREE.GLTFLoader();
+                    loader.parse(buffer, '', function (gltf) {
+                      self._lastScene = gltf.scene;
+                      if (window.ArchitecturalRenderer) {
+                        window.ArchitecturalRenderer._gltfCache[fn.id] = gltf.scene;
+                        if (blobUrl) window.ArchitecturalRenderer._gltfCache[blobUrl] = gltf.scene;
+                      }
+                      var bbox = new THREE.Box3().setFromObject(gltf.scene);
+                      var size = new THREE.Vector3();
+                      bbox.getSize(size);
+                      var maxDim = Math.max(size.x, size.y, size.z);
+                      var scale = (maxDim > 0.02 && maxDim < 15) ? 1000 : 1;
+                      var wMm = Math.round(size.x * scale);
+                      var hMm = Math.round(size.y * scale);
+                      var dMm = Math.round(size.z * scale);
+                      if (wMm > 50) fn.dimensions.W = wMm;
+                      if (hMm > 50) fn.dimensions.H = hMm;
+                      if (dMm > 50) fn.dimensions.D = dMm;
+
+                      fn.modelUrl = blobUrl || ('model_' + fn.id);
+                      self.editor.pushHistory('Attach 3D Model');
+                      self.saveToLocalStorage();
+                      if (self.render3DHome) self.render3DHome(true, undefined, fn.id);
+                      self.highlight3DFurniture(fn.id);
+                      self.renderInspector(self.editor.selected);
+                      if (typeof window.showToast === 'function') {
+                        window.showToast('✅ 3D Model attached: ' + f.name);
+                      }
+                    }, function (err) {
+                      console.warn('[Orbix] GLTF parse error:', err);
+                      fn.modelUrl = blobUrl;
+                      self.saveToLocalStorage();
+                      if (self.render3DHome) self.render3DHome(true, undefined, fn.id);
+                      self.renderInspector(self.editor.selected);
+                    });
+                  } catch (parseEx) {
+                    console.warn('[Orbix] GLTF parse exception:', parseEx);
+                  }
+                }
+                parseLoadedBuffer();
               };
-              reader.readAsDataURL(f);
-
-              if (blobUrl && typeof THREE !== 'undefined' && THREE.GLTFLoader) {
-                var loader = new THREE.GLTFLoader();
-                loader.load(blobUrl, function (gltf) {
-                  self._lastScene = gltf.scene;
-                  if (window.ArchitecturalRenderer) {
-                    window.ArchitecturalRenderer._gltfCache[blobUrl] = gltf.scene;
-                  }
-                  var bbox = new THREE.Box3().setFromObject(gltf.scene);
-                  var size = new THREE.Vector3();
-                  bbox.getSize(size);
-                  var maxDim = Math.max(size.x, size.y, size.z);
-                  var scale = (maxDim > 0.02 && maxDim < 15) ? 1000 : 1;
-                  var wMm = Math.round(size.x * scale);
-                  var hMm = Math.round(size.y * scale);
-                  var dMm = Math.round(size.z * scale);
-                  if (wMm > 50) fn.dimensions.W = wMm;
-                  if (hMm > 50) fn.dimensions.H = hMm;
-                  if (dMm > 50) fn.dimensions.D = dMm;
-
-                  fn.modelUrl = fn.modelUrl || blobUrl;
-                  self.editor.pushHistory('Attach 3D Model');
-                  self.saveToLocalStorage();
-                  if (self.render3DHome) self.render3DHome(true, undefined, fn.id);
-                  self.highlight3DFurniture(fn.id);
-                  self.renderInspector(self.editor.selected);
-                  if (typeof window.showToast === 'function') {
-                    window.showToast('✅ 3D Model attached: ' + f.name);
-                  }
-                }, undefined, function (err) {
-                  console.warn('[Orbix] GLTF parse error:', err);
-                  fn.modelUrl = fn.modelUrl || blobUrl;
-                  self.saveToLocalStorage();
-                  if (self.render3DHome) self.render3DHome(true, undefined, fn.id);
-                  self.renderInspector(self.editor.selected);
-                });
-              } else {
-                fn.modelUrl = blobUrl;
-                self.saveToLocalStorage();
-                if (self.render3DHome) self.render3DHome(true, undefined, fn.id);
-                self.renderInspector(self.editor.selected);
-              }
+              reader.readAsArrayBuffer(f);
             });
           }
 
@@ -6075,12 +6164,34 @@
             + '</div>';
         }).join('');
 
-        // Attach click handlers to place
+        // Attach click handlers to place or replace target unit
         grid.querySelectorAll('.decor-preset-card').forEach(function (card) {
           card.addEventListener('click', function () {
             var slug = card.getAttribute('data-slug');
             var item = (window.ORBIX_DECORS_CATALOG || []).find(function (d) { return d.slug === slug; });
             if (!item) return;
+
+            if (self._targetDecorForCatalogPick) {
+              var target = self._targetDecorForCatalogPick;
+              self._targetDecorForCatalogPick = null;
+              target.slug = item.slug;
+              target.name = item.name;
+              target.decorType = item.decorType;
+              target.dimensions = Object.assign({}, item.dimensions);
+              target.elevation = item.elevation;
+              target.modelUrl = item.modelUrl;
+              target.thumbnailUrl = item.thumbnailUrl;
+              target.blobUrl = null;
+              self.saveToLocalStorage();
+              if (self.render3DHome) self.render3DHome(true, undefined, target.id);
+              self.highlight3DFurniture(target.id);
+              if (self.editor && self.renderInspector) self.renderInspector(self.editor.selected);
+              if (typeof window.showToast === 'function') {
+                window.showToast('✨ Replaced 3D Model: ' + item.name);
+              }
+              self.closeDecorModal();
+              return;
+            }
 
             self.placeDecorItem({
               id: item.id,
@@ -6249,8 +6360,57 @@
             var targetModelUrl = matchedCatalog ? matchedCatalog.modelUrl : (slug.indexOf('chair') !== -1 ? 'assets/decors/chair_1.glb' : ('assets/decors/' + slug + '.glb'));
             self._customDecorBlobUrl = targetModelUrl;
             self._customDecorDataUrl = targetModelUrl;
+            self._customDecorModelId = targetModelUrl;
+            parseGLB(targetModelUrl);
           } else {
-            // Read Base64 Data URL for persistent storage in project save files
+            // Read ArrayBuffer for high-speed offline IndexedDB storage and direct GLTFLoader parsing
+            var arrayReader = new FileReader();
+            arrayReader.onload = function (evt) {
+              var buffer = evt.target.result;
+              self._customDecorBuffer = buffer;
+              var mId = 'custom_glb_' + Date.now();
+              self._customDecorModelId = mId;
+              if (window.OrbixModelDB && typeof window.OrbixModelDB.save === 'function') {
+                window.OrbixModelDB.save(mId, buffer);
+              }
+              if (window.THREE && window.THREE.GLTFLoader) {
+                var loader = new THREE.GLTFLoader();
+                loader.parse(buffer, '', function (gltf) {
+                  self._customDecorScene = gltf.scene;
+                  if (window.ArchitecturalRenderer) {
+                    window.ArchitecturalRenderer._gltfCache[mId] = gltf.scene;
+                    if (blobUrl) window.ArchitecturalRenderer._gltfCache[blobUrl] = gltf.scene;
+                    if (self._customDecorDataUrl) window.ArchitecturalRenderer._gltfCache[self._customDecorDataUrl] = gltf.scene;
+                  }
+
+                  // Compute true natural bounding box
+                  gltf.scene.updateMatrixWorld(true);
+                  var bbox = new THREE.Box3().setFromObject(gltf.scene);
+                  var size = new THREE.Vector3();
+                  bbox.getSize(size);
+
+                  var maxDim = Math.max(size.x, size.y, size.z);
+                  var scale = (maxDim > 0.02 && maxDim < 15) ? 1000 : 1;
+                  var wMm = Math.round(size.x * scale);
+                  var hMm = Math.round(size.y * scale);
+                  var dMm = Math.round(size.z * scale);
+
+                  if (wMm > 50 && wInput) wInput.value = wMm;
+                  if (hMm > 50 && hInput) hInput.value = hMm;
+                  if (dMm > 50 && dInput) dInput.value = dMm;
+
+                  if (statusEl) {
+                    statusEl.innerHTML = '✅ 3D Model ready: <b>' + fileName + '</b> (' + (wMm || 600) + ' × ' + (hMm || 900) + ' × ' + (dMm || 600) + ' mm)';
+                    statusEl.style.display = 'block';
+                  }
+                }, function (parseErr) {
+                  console.warn('[Orbix UI] GLTF buffer parse error:', parseErr);
+                });
+              }
+            };
+            arrayReader.readAsArrayBuffer(file);
+
+            // Read Base64 Data URL for fallback storage
             var reader = new FileReader();
             reader.onload = function (e) {
               self._customDecorDataUrl = e.target.result;
@@ -6315,9 +6475,9 @@
           }
 
           var targetUrlToParse = (ext === 'skp') ? self._customDecorBlobUrl : blobUrl;
-          if (targetUrlToParse) {
+          if (targetUrlToParse && ext !== 'skp') {
             parseGLB(targetUrlToParse);
-          } else if (statusEl) {
+          } else if (statusEl && ext !== 'skp') {
             statusEl.innerHTML = '✅ File loaded: <b>' + fileName + '</b> (' + ext.toUpperCase() + ')';
             statusEl.style.display = 'block';
           }
@@ -6361,13 +6521,21 @@
           var elev = parseFloat(elevInput ? elevInput.value : 0) || 0;
           var decType = (typeSelect && typeSelect.value) || 'general';
 
-          var chosenModelUrl = self._customDecorDataUrl || self._customDecorBlobUrl || null;
+          var chosenModelUrl = self._customDecorModelId || self._customDecorDataUrl || self._customDecorBlobUrl || null;
           var chosenBlobUrl = self._customDecorBlobUrl || null;
 
           if (!chosenModelUrl) {
             if (decType === 'chair' || name.toLowerCase().indexOf('chair') !== -1) {
               chosenModelUrl = 'assets/decors/chair_1.glb';
             }
+          }
+
+          // Pre-cache into ArchitecturalRenderer._gltfCache BEFORE calling placeDecorItem
+          // so synchronous addOrUpdateFurnitureMesh immediately finds and renders the real 3D mesh
+          if (self._customDecorScene && window.ArchitecturalRenderer) {
+            if (chosenModelUrl) window.ArchitecturalRenderer._gltfCache[chosenModelUrl] = self._customDecorScene;
+            if (chosenBlobUrl) window.ArchitecturalRenderer._gltfCache[chosenBlobUrl] = self._customDecorScene;
+            if (self._customDecorModelId) window.ArchitecturalRenderer._gltfCache[self._customDecorModelId] = self._customDecorScene;
           }
 
           var placed = self.placeDecorItem({
@@ -6380,6 +6548,14 @@
             modelFormat: 'glb'
           });
           self._lastPlacedDecorItem = placed;
+          if (placed && placed.id) {
+            if (self._customDecorBuffer && window.OrbixModelDB) {
+              window.OrbixModelDB.save(placed.id, self._customDecorBuffer);
+            }
+            if (self._customDecorScene && window.ArchitecturalRenderer) {
+              window.ArchitecturalRenderer._gltfCache[placed.id] = self._customDecorScene;
+            }
+          }
           if (self._customDecorScene && window.ArchitecturalRenderer) {
             if (chosenModelUrl) window.ArchitecturalRenderer._gltfCache[chosenModelUrl] = self._customDecorScene;
             if (chosenBlobUrl) window.ArchitecturalRenderer._gltfCache[chosenBlobUrl] = self._customDecorScene;
@@ -6387,6 +6563,70 @@
           self.closeDecorModal();
         });
       }
+
+      // Direct Canvas Drag & Drop: Allow users to drag .glb/.gltf/.skp directly onto 3D Studio or 2D Plan
+      ['view-design', 'planCanvas'].forEach(function (targetId) {
+        var el = document.getElementById(targetId);
+        if (!el) return;
+        el.addEventListener('dragover', function (e) {
+          if (e.dataTransfer && e.dataTransfer.types && (e.dataTransfer.types.includes ? e.dataTransfer.types.includes('Files') : true)) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+          }
+        });
+        el.addEventListener('drop', function (e) {
+          if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+          var droppedFile = e.dataTransfer.files[0];
+          var fName = droppedFile.name || '';
+          var ext = fName.split('.').pop().toLowerCase();
+          if (['glb', 'gltf', 'obj', 'skp'].indexOf(ext) === -1) return;
+          e.preventDefault();
+          e.stopPropagation();
+
+          var fReader = new FileReader();
+          fReader.onload = function (evt) {
+            var buf = evt.target.result;
+            var mId = 'custom_glb_' + Date.now();
+            if (window.OrbixModelDB) window.OrbixModelDB.save(mId, buf);
+            if (window.THREE && window.THREE.GLTFLoader) {
+              var loader = new THREE.GLTFLoader();
+              loader.parse(buf, '', function (gltf) {
+                var baseName = fName.replace(/\.[^/.]+$/, "");
+                var isChair = baseName.toLowerCase().indexOf('chair') !== -1 || baseName.toLowerCase().indexOf('seat') !== -1;
+                gltf.scene.updateMatrixWorld(true);
+                var bbox = new THREE.Box3().setFromObject(gltf.scene);
+                var sz = new THREE.Vector3();
+                bbox.getSize(sz);
+                var maxD = Math.max(sz.x, sz.y, sz.z);
+                var sc = (maxD > 0.02 && maxD < 15) ? 1000 : 1;
+                var wM = Math.round(sz.x * sc) || (isChair ? 650 : 900);
+                var hM = Math.round(sz.y * sc) || (isChair ? 980 : 850);
+                var dM = Math.round(sz.z * sc) || (isChair ? 650 : 700);
+
+                if (window.ArchitecturalRenderer) {
+                  window.ArchitecturalRenderer._gltfCache[mId] = gltf.scene;
+                }
+                var p = self.placeDecorItem({
+                  name: baseName,
+                  decorType: isChair ? 'chair' : 'general',
+                  dimensions: { W: wM, H: hM, D: dM },
+                  elevation: 0,
+                  modelUrl: mId,
+                  modelFormat: 'glb'
+                });
+                if (p && p.id) {
+                  if (window.OrbixModelDB) window.OrbixModelDB.save(p.id, buf);
+                  if (window.ArchitecturalRenderer) window.ArchitecturalRenderer._gltfCache[p.id] = gltf.scene;
+                }
+                if (typeof window.showToast === 'function') {
+                  window.showToast('🌿 Imported 3D Model: ' + baseName);
+                }
+              });
+            }
+          };
+          fReader.readAsArrayBuffer(droppedFile);
+        });
+      });
     },
 
     _getFallbackOpenAIKey: function () {
