@@ -40,7 +40,7 @@ class AuthController {
   // POST /api/login
   async login(req, res) {
     try {
-      const { identifier, password } = req.body;
+      const { identifier, password } = req.body || {};
       if (!identifier || !password) {
         return res.status(400).json({
           success: false,
@@ -50,11 +50,15 @@ class AuthController {
 
       const user = await userService.authenticateUser(identifier, password);
       if (!user) {
+        const found = await userService.getUserByIdentifier(identifier);
+        console.warn(`[Auth Login 401] Invalid credentials for identifier: "${identifier}". User exists in DB: ${!!found}`);
         return res.status(401).json({
           success: false,
           error: 'Invalid username/email or password.'
         });
       }
+
+      console.log(`[Auth Login 200] Successful login for: ${user.name} (${user.id})`);
 
       req.session.regenerate((err) => {
         if (err) {
