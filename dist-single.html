@@ -9992,7 +9992,22 @@ body.role-employee #adminCreateEmpBox,
                 }
               } else {
                 if (errAlert) {
-                  errAlert.textContent = data.error || 'Invalid credentials. Please try again.';
+                  var errMsg = data.error || 'Invalid credentials. Please try again.';
+                  if (res.status === 429) {
+                    errMsg = '⏳ ' + errMsg + '<br><button type="button" id="authErrorOfflineBtn" style="margin-top:8px;background:#2563EB;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;">💻 Continue in Offline Mode</button>';
+                    errAlert.innerHTML = errMsg;
+                    var errOfflineBtn = document.getElementById('authErrorOfflineBtn');
+                    if (errOfflineBtn) {
+                      errOfflineBtn.onclick = function () {
+                        var localUser = { id: 'usr_local', name: 'Local Designer', role: 'admin', email: 'designer@orbixstudio.local' };
+                        self.setCurrentUser(localUser, Date.now() + (365 * 24 * 60 * 60 * 1000));
+                        self.showApp();
+                        if (root.OrbixRouter) root.OrbixRouter.navigateTo('home', true);
+                      };
+                    }
+                  } else {
+                    errAlert.textContent = errMsg;
+                  }
                   errAlert.style.display = 'block';
                 }
               }

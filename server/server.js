@@ -312,28 +312,61 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// ── Brute-Force Rate Limit on POST /api/login ──
-const loginAttempts = new Map();
-const LOGIN_WINDOW_MS = 15 * 60 * 1000;
-const MAX_LOGIN_FAILS = 15;
-app.post('/api/login', (req, res, next) => {
-  const ip = req.ip || 'unknown';
-  const now = Date.now();
-  const entry = loginAttempts.get(ip);
-  if (entry && entry.resetAt > now && entry.count >= MAX_LOGIN_FAILS) {
-    return res.status(429).json({
-      success: false,
-      error: 'Too many login attempts. Please wait a few minutes and try again.'
-    });
+// ── Helper: Resolve Real Client IP Behind Cloudflare & Nginx ──
+function resolveClientIp(req) {
+  const cf = req.headers['cf-connecting-ip'];
+  if (cf && typeof cf === 'string' && cf.trim()) return cf.trim();
+  const xReal = req.headers['x-real-ip'];
+  if (xReal && typeof xReal === 'string' && xReal.trim()) return xReal.trim();
+  const xff = req.headers['x-forwarded-for'];
+  if (xff && typeof xff === 'string') {
+    const first = xff.split(',')[0].trim();
+    if (first) return first;
   }
+  return req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
+}
+
+// ── Brute-Force Rate Limit on POST /api/login (Per-User + Real IP) ──
+const loginAttempts = new Map();
+const LOGIN_WINDOW_MS = 5 * 60 * 1000; // 5-minute cooldown window
+const MAX_LOGIN_FAILS = 15; // 15 failed attempts per user+IP
+
+// Periodic cleanup of expired rate limit entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of loginAttempts.entries()) {
+    if (v.resetAt <= now) loginAttempts.delete(k);
+  }
+}, 10 * 60 * 1000).unref();
+
+app.post('/api/login', (req, res, next) => {
+  const clientIp = resolveClientIp(req);
+  const identifier = String(req.body && (req.body.identifier || req.body.email || req.body.username) || '').toLowerCase().trim();
+  const key = identifier ? `${clientIp}::${identifier}` : clientIp;
+  const now = Date.now();
+
+  const entry = loginAttempts.get(key);
+  if (entry) {
+    if (entry.resetAt <= now) {
+      loginAttempts.delete(key);
+    } else if (entry.count >= MAX_LOGIN_FAILS) {
+      const waitSec = Math.max(1, Math.ceil((entry.resetAt - now) / 1000));
+      return res.status(429).json({
+        success: false,
+        error: `Too many login attempts. Please wait ${waitSec} seconds and try again, or continue offline.`
+      });
+    }
+  }
+
   res.on('finish', () => {
     const t = Date.now();
     if (res.statusCode === 200) {
-      loginAttempts.delete(ip);
+      loginAttempts.delete(key);
+      loginAttempts.delete(clientIp);
     } else if (res.statusCode === 401 || res.statusCode === 400) {
-      const cur = loginAttempts.get(ip);
+      const cur = loginAttempts.get(key);
       if (!cur || cur.resetAt <= t) {
-        loginAttempts.set(ip, { count: 1, resetAt: t + LOGIN_WINDOW_MS });
+        loginAttempts.set(key, { count: 1, resetAt: t + LOGIN_WINDOW_MS });
       } else {
         cur.count += 1;
       }
