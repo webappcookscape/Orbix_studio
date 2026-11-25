@@ -843,11 +843,15 @@
                         type === 'tile_2' || type === 'designer_tile_2' || type === 'custom_tile_2' || type === 'floor_tile_2' ||
                         type === 'tile_3' || type === 'designer_tile_3' || type === 'custom_tile_3' || type === 'floor_tile_3');
 
-    // Natural architectural matte finish — eliminates glossy mirror reflections and glare
-    return new THREE.MeshStandardMaterial({
+    // Architectural PBR Physical Floor Tile Finish with calibrated specular sheen & clearcoat
+    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+    return new MatClass({
       map: tex,
-      roughness: isWood ? 0.78 : (isCustomTile ? 0.76 : (isWhite ? 0.82 : 0.85)),
-      metalness: 0.0,
+      roughness: isWood ? 0.38 : (isCustomTile ? 0.16 : (isWhite ? 0.18 : 0.22)),
+      metalness: 0.02,
+      clearcoat: isWood ? 0.15 : 0.72,
+      clearcoatRoughness: 0.06,
+      reflectivity: isWood ? 0.45 : 0.85,
       polygonOffset: true,
       polygonOffsetFactor: -1.0,
       polygonOffsetUnits: -1.0,
@@ -871,17 +875,28 @@
     this.materials.floorTile = this.createFloorMaterial(this.selectedFloorType);
     this.materials.floorWood = (this.selectedFloorType === 'wooden' ? this.materials.floorTile : this.createFloorMaterial('wooden'));
 
-    // Dynamic Skirting color update to match current floor tile
+    // Dynamic Skirting: Inherits exact chosen floor tile texture, color, and PBR clearcoat
     var skirtingTileColor = ArchitecturalRenderer.getFloorTileColor(this.selectedFloorType);
-    if (this.materials.skirting && this.materials.skirting.color && typeof this.materials.skirting.color.setHex === 'function') {
-      this.materials.skirting.color.setHex(skirtingTileColor);
-      this.materials.skirting.needsUpdate = true;
-    }
+    var floorMat = this.materials.floorTile;
+    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
+    var isWood = (this.selectedFloorType === 'wooden' || this.selectedFloorType === 'tile_3' || this.selectedFloorType === 'designer_tile_3' || this.selectedFloorType === 'floor_tile_3');
+
+    this.materials.skirting = new MatClass({
+      color: (floorMat && floorMat.color) ? floorMat.color : skirtingTileColor,
+      map: (floorMat && floorMat.map) ? floorMat.map : null,
+      roughness: isWood ? 0.38 : 0.18,
+      metalness: 0.02,
+      clearcoat: isWood ? 0.20 : 0.70,
+      clearcoatRoughness: 0.06
+    });
 
     if (this.group) {
       var self = this;
       var tileSize = (this.selectedFloorType === 'wooden') ? 1200 : (this.selectedFloorType === 'white_tile' ? 1600 : 1200);
       this.group.traverse(function (o) {
+        if (o.userData && o.userData.isSkirting) {
+          o.material = self.materials.skirting;
+        }
         if (o.userData && o.userData.isFloorMesh) {
           // If targetRoomId is specified, update ONLY that specific room's floor mesh within its walls!
           if (targetRoomId && o.userData.roomId !== targetRoomId) {
@@ -920,29 +935,27 @@
   ArchitecturalRenderer.prototype.initMaterials = function () {
     if (typeof THREE === 'undefined') return;
 
+    var MatClass = (typeof THREE.MeshPhysicalMaterial === 'function') ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
     var wallBump = ArchitecturalRenderer.createWallBumpTexture();
-    // Wall Plaster (Rich Architectural Dark Beige Plaster)
-    this.materials.wall = new THREE.MeshStandardMaterial({
+
+    // Wall Plaster: Architectural PBR Plaster with subtle tactile micro-pore relief & velvety sheen
+    this.materials.wall = new MatClass({
       color: 0xB89F82, // Elegant authentic Dark Beige plaster
       roughness: 0.88,
-      metalness: 0.01,
+      metalness: 0.0,
+      clearcoat: 0.05,
+      clearcoatRoughness: 0.6,
+      sheen: 0.12,
+      sheenRoughness: 0.8,
+      reflectivity: 0.25,
       bumpMap: wallBump,
-      bumpScale: 0.04
+      bumpScale: 0.035
     });
 
     // Wall Core (Cutaway section interior)
-    this.materials.wallCore = new THREE.MeshStandardMaterial({
+    this.materials.wallCore = new MatClass({
       color: 0x9E836A, // Dark beige plaster core
       roughness: 0.9,
-      metalness: 0.0
-    });
-
-    // Skirting Board (Architectural Baseboards matching Floor Tile Color)
-    this.selectedFloorType = this.selectedFloorType || 'white_tile';
-    var skirtingTileColor = ArchitecturalRenderer.getFloorTileColor(this.selectedFloorType);
-    this.materials.skirting = new THREE.MeshStandardMaterial({
-      color: skirtingTileColor,
-      roughness: 0.8,
       metalness: 0.0
     });
 
@@ -951,11 +964,24 @@
     this.materials.floorTile = this.createFloorMaterial(this.selectedFloorType);
     this.materials.floorWood = this.createFloorMaterial('wooden');
 
+    // Skirting Board: Dynamically inherits exact chosen floor tile texture, color, and PBR clearcoat
+    var skirtingTileColor = ArchitecturalRenderer.getFloorTileColor(this.selectedFloorType);
+    var floorMat = this.materials.floorTile;
+    var isWood = (this.selectedFloorType === 'wooden' || this.selectedFloorType === 'tile_3' || this.selectedFloorType === 'designer_tile_3' || this.selectedFloorType === 'floor_tile_3');
+    this.materials.skirting = new MatClass({
+      color: (floorMat && floorMat.color) ? floorMat.color : skirtingTileColor,
+      map: (floorMat && floorMat.map) ? floorMat.map : null,
+      roughness: isWood ? 0.38 : 0.18,
+      metalness: 0.02,
+      clearcoat: isWood ? 0.20 : 0.70,
+      clearcoatRoughness: 0.06
+    });
+
     // Dado Tile Wall Finish (Backsplash)
     this.materials.dadoTile = this.createDadoTileMaterial();
 
     // Ceiling & False Ceiling (FrontSide facing downward -Y so bird's-eye camera looks inside cleanly)
-    this.materials.ceiling = new THREE.MeshStandardMaterial({
+    this.materials.ceiling = new MatClass({
       color: 0xF8FAFC,
       roughness: 0.92,
       metalness: 0.0,
@@ -967,15 +993,17 @@
     var woodBump = ArchitecturalRenderer.createWoodGrainBumpTexture();
 
     // Door Wood & Frame (Rich Teak / Dark Walnut with micro-pore relief)
-    this.materials.doorWood = new THREE.MeshStandardMaterial({
+    this.materials.doorWood = new MatClass({
       color: 0x543B2B, // Dark Walnut / Teak
       roughness: 0.42,
       metalness: 0.06,
+      clearcoat: 0.15,
+      clearcoatRoughness: 0.3,
       bumpMap: woodBump,
       bumpScale: 0.025
     });
 
-    this.materials.doorFrame = new THREE.MeshStandardMaterial({
+    this.materials.doorFrame = new MatClass({
       color: 0x332218, // Hardwood Frame
       roughness: 0.48,
       metalness: 0.10,
@@ -991,26 +1019,33 @@
     });
 
     // Window Aluminum Frame & Glazing
-    this.materials.windowFrame = new THREE.MeshStandardMaterial({
+    this.materials.windowFrame = new MatClass({
       color: 0x1E2024, // Charcoal Architectural Aluminum
       roughness: 0.28,
       metalness: 0.85
     });
 
-    this.materials.sillStone = new THREE.MeshStandardMaterial({
+    this.materials.sillStone = new MatClass({
       color: 0xF5F3EE, // Polished white marble sill ledge
       roughness: 0.25,
-      metalness: 0.04
+      metalness: 0.04,
+      clearcoat: 0.6,
+      clearcoatRoughness: 0.1
     });
 
+    // Physical Glass: True physical transmission, optical IOR, clearcoat and subtle tint
     this.materials.glass = new THREE.MeshPhysicalMaterial({
       color: 0xD8ECF8,
       transparent: true,
-      opacity: 0.32,
-      roughness: 0.03,
-      metalness: 0.05,
+      opacity: 0.28,
+      roughness: 0.02,
+      metalness: 0.02,
+      transmission: 0.94,
+      ior: 1.52,
+      thickness: 4.0,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.03,
+      clearcoatRoughness: 0.02,
+      reflectivity: 0.85,
       side: THREE.DoubleSide
     });
   };
@@ -1458,10 +1493,12 @@
       var skF = new THREE.Mesh(skGeo, self.materials.skirting);
       skF.position.set(startX + len / 2, skH / 2, wThick / 2 + skT / 2);
       skF.receiveShadow = true;
+      skF.userData = { isSkirting: true };
       group.add(skF);
       var skB = new THREE.Mesh(skGeo, self.materials.skirting);
       skB.position.set(startX + len / 2, skH / 2, -wThick / 2 - skT / 2);
       skB.receiveShadow = true;
+      skB.userData = { isSkirting: true };
       group.add(skB);
     }
 
@@ -2483,20 +2520,20 @@
 
     if (isGloss) {
       // Luxury High Gloss Acrylic / PU Finish
-      matOpts.roughness = 0.05;
-      matOpts.metalness = 0.04;
+      matOpts.roughness = 0.04;
+      matOpts.metalness = 0.05;
       matOpts.clearcoat = 1.0;
-      matOpts.clearcoatRoughness = 0.04;
-      matOpts.reflectivity = 0.88;
-      matOpts.envMapIntensity = 1.25;
+      matOpts.clearcoatRoughness = 0.03;
+      matOpts.reflectivity = 0.92;
+      matOpts.envMapIntensity = 1.40;
     } else if (isWood) {
       // Natural Timber Grain with Micro Bump Depth
-      matOpts.roughness = 0.48;
+      matOpts.roughness = 0.42;
       matOpts.metalness = 0.02;
-      matOpts.clearcoat = 0.12;
+      matOpts.clearcoat = 0.15;
       matOpts.clearcoatRoughness = 0.28;
       matOpts.reflectivity = 0.45;
-      matOpts.envMapIntensity = 0.90;
+      matOpts.envMapIntensity = 0.95;
 
       var woodTex = ArchitecturalRenderer.createWoodLaminateTexture(threeCol, str);
       var woodBump = ArchitecturalRenderer.createWoodGrainBumpTexture();
@@ -2507,11 +2544,14 @@
       }
     } else {
       // Velvety Architectural Matte Laminate (MDF 7707, MDF 6601, Suede/SF)
-      matOpts.roughness = 0.82;
-      matOpts.metalness = 0.0;
-      matOpts.clearcoat = 0.0;
-      matOpts.reflectivity = 0.22;
-      matOpts.envMapIntensity = 0.55;
+      matOpts.roughness = 0.68;
+      matOpts.metalness = 0.01;
+      matOpts.clearcoat = 0.08;
+      matOpts.clearcoatRoughness = 0.45;
+      matOpts.reflectivity = 0.35;
+      matOpts.sheen = 0.18;
+      matOpts.sheenRoughness = 0.65;
+      matOpts.envMapIntensity = 0.85;
     }
 
     return new MatClass(matOpts);
@@ -3013,20 +3053,33 @@
     }
 
     // Check IndexedDB OrbixModelDB for offline/custom uploaded model buffers
-    if (furn && furn.id && window.OrbixModelDB && typeof window.OrbixModelDB.get === 'function') {
-      window.OrbixModelDB.get(furn.id, function (buf) {
-        if (buf && window.THREE && window.THREE.GLTFLoader) {
-          try {
-            var dbLoader = new THREE.GLTFLoader();
-            dbLoader.parse(buf, '', function (gltf) {
-              ArchitecturalRenderer._gltfCache[furn.id] = gltf.scene;
-              if (url) ArchitecturalRenderer._gltfCache[url] = gltf.scene;
-              applyModel(gltf.scene);
-            });
-            return;
-          } catch (_) {}
-        }
-      });
+    if (window.OrbixModelDB && typeof window.OrbixModelDB.get === 'function') {
+      var keysToCheck = [];
+      if (furn && furn.id) keysToCheck.push(furn.id);
+      if (furn && furn.modelUrl) keysToCheck.push(furn.modelUrl);
+      if (url && keysToCheck.indexOf(url) === -1) keysToCheck.push(url);
+
+      var checkIdx = 0;
+      function tryNextDbKey() {
+        if (checkIdx >= keysToCheck.length) return;
+        var k = keysToCheck[checkIdx++];
+        window.OrbixModelDB.get(k, function (buf) {
+          if (buf && window.THREE && window.THREE.GLTFLoader) {
+            try {
+              var dbLoader = new THREE.GLTFLoader();
+              dbLoader.parse(buf, '', function (gltf) {
+                ArchitecturalRenderer._gltfCache[k] = gltf.scene;
+                if (furn && furn.id) ArchitecturalRenderer._gltfCache[furn.id] = gltf.scene;
+                if (url) ArchitecturalRenderer._gltfCache[url] = gltf.scene;
+                applyModel(gltf.scene);
+              });
+              return;
+            } catch (_) {}
+          }
+          tryNextDbKey();
+        });
+      }
+      tryNextDbKey();
     }
 
     // Add lightweight wireframe outline placeholder instead of solid/translucent block
@@ -3055,6 +3108,37 @@
           setTimeout(doLoad, 80);
         }
         return;
+      }
+
+      function recoverFailedModel() {
+        var ph = parentGroup ? parentGroup.getObjectByName('__decor_placeholder__') : null;
+        if (ph && parentGroup) parentGroup.remove(ph);
+        delete ArchitecturalRenderer._gltfPending[url];
+        // Smart recovery: If the item was a chair or has chair in name, load chair_1.glb fallback!
+        var furnName = (furn && furn.name ? furn.name : '').toLowerCase();
+        var isChair = (furn && furn.decorType === 'chair') || furnName.indexOf('chair') !== -1 || furnName.indexOf('seat') !== -1 || furnName.indexOf('office') !== -1;
+        if (isChair && url !== 'assets/decors/chair_1.glb') {
+          self.loadAndAttachGLB('assets/decors/chair_1.glb', parentGroup, dims, onLoaded, furn);
+          return;
+        }
+        if (furnName.indexOf('table') !== -1 || furnName.indexOf('desk') !== -1 || furnName.indexOf('dining') !== -1) {
+          self.loadAndAttachGLB('assets/decors/dining_table2.glb', parentGroup, dims, onLoaded, furn);
+          return;
+        }
+        if (furnName.indexOf('sofa') !== -1 || furnName.indexOf('couch') !== -1) {
+          self.loadAndAttachGLB('assets/decors/ashley_padova_3_seater_sofa.glb', parentGroup, dims, onLoaded, furn);
+          return;
+        }
+        if (furnName.indexOf('bed') !== -1) {
+          self.loadAndAttachGLB('assets/decors/cama_3.glb', parentGroup, dims, onLoaded, furn);
+          return;
+        }
+        // Universal Smart Fallback: default to photorealistic office chair model
+        self.loadAndAttachGLB('assets/decors/chair_1.glb', parentGroup, dims, onLoaded, furn);
+        if (window.__cc && window.__cc.gl) {
+          if (window.__cc.gl.apply) window.__cc.gl.apply(true);
+          if (window.__cc.gl.settle) window.__cc.gl.settle();
+        }
       }
 
       // Fast-path: Decode Base64 Data URL directly via fetch -> ArrayBuffer for 100% reliable local/offline parsing without atob stack limits
@@ -3086,21 +3170,11 @@
         }
       }
 
-      function recoverFailedModel() {
-        var ph = parentGroup ? parentGroup.getObjectByName('__decor_placeholder__') : null;
-        if (ph && parentGroup) parentGroup.remove(ph);
-        delete ArchitecturalRenderer._gltfPending[url];
-        // Smart recovery: If the item was a chair or has chair in name, load chair_1.glb fallback!
-        var furnName = (furn && furn.name ? furn.name : '').toLowerCase();
-        var isChair = (furn && furn.decorType === 'chair') || furnName.indexOf('chair') !== -1 || furnName.indexOf('seat') !== -1 || furnName.indexOf('office') !== -1;
-        if (isChair && url !== 'assets/decors/chair_1.glb') {
-          self.loadAndAttachGLB('assets/decors/chair_1.glb', parentGroup, dims, onLoaded, furn);
-          return;
-        }
-        if (window.__cc && window.__cc.gl) {
-          if (window.__cc.gl.apply) window.__cc.gl.apply(true);
-          if (window.__cc.gl.settle) window.__cc.gl.settle();
-        }
+      // If url is a custom model ID rather than an HTTP URL, do not fire a 404 network request
+      var isHttpUrl = typeof url === 'string' && (url.indexOf('http://') === 0 || url.indexOf('https://') === 0 || url.indexOf('/') === 0 || url.indexOf('assets/') === 0 || url.indexOf('blob:') === 0);
+      if (!isHttpUrl) {
+        recoverFailedModel();
+        return;
       }
 
       var loader = new THREE.GLTFLoader();
@@ -5421,38 +5495,17 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
 
 
       // 1. Headboard (against back wall)
-
       var hbGeo = new THREE.BoxGeometry(dims.W, headboardH, headboardT);
-
-      var hbMat = new THREE.MeshStandardMaterial({
-
-        color: carcassColor,
-
-        roughness: 0.5,
-
-        metalness: 0.05
-
-      });
-
-      var hbMesh = new THREE.Mesh(hbGeo, hbMat);
-
+      var hbMesh = new THREE.Mesh(hbGeo, carcassMat);
       hbMesh.position.set(0, headboardH / 2, -dims.D / 2 + headboardT / 2);
-
       hbMesh.castShadow = true; hbMesh.receiveShadow = true;
-
       hbMesh.userData = { isFurniturePart: true, parentGroup: fg, furnitureId: furn.id };
-
       fg.add(hbMesh);
 
-
-
       // 2. Bed Base Frame
-
       var frameD = dims.D - headboardT;
-
       var frameGeo = new THREE.BoxGeometry(dims.W - 10, bedFrameH, frameD);
-
-      var frameMat = new THREE.MeshStandardMaterial({ color: carcassColor, roughness: 0.6 });
+      var frameMesh = new THREE.Mesh(frameGeo, carcassMat);
 
       var frameMesh = new THREE.Mesh(frameGeo, frameMat);
 

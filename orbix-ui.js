@@ -6387,9 +6387,17 @@
               if (window.OrbixModelDB && typeof window.OrbixModelDB.save === 'function') {
                 window.OrbixModelDB.save(mId, buffer);
               }
-              if (window.THREE && window.THREE.GLTFLoader) {
+              function parseBuffer(buf) {
+                if (!window.THREE || !window.THREE.GLTFLoader) {
+                  if (typeof window.ensureGLTFLoader === 'function') {
+                    window.ensureGLTFLoader(function () { parseBuffer(buf); });
+                  } else {
+                    setTimeout(function () { parseBuffer(buf); }, 80);
+                  }
+                  return;
+                }
                 var loader = new THREE.GLTFLoader();
-                loader.parse(buffer, '', function (gltf) {
+                loader.parse(buf, '', function (gltf) {
                   self._customDecorScene = gltf.scene;
                   if (window.ArchitecturalRenderer) {
                     window.ArchitecturalRenderer._gltfCache[mId] = gltf.scene;
@@ -6421,6 +6429,7 @@
                   console.warn('[Orbix UI] GLTF buffer parse error:', parseErr);
                 });
               }
+              parseBuffer(buffer);
             };
             arrayReader.readAsArrayBuffer(file);
 
@@ -6602,9 +6611,17 @@
             var buf = evt.target.result;
             var mId = 'custom_glb_' + Date.now();
             if (window.OrbixModelDB) window.OrbixModelDB.save(mId, buf);
-            if (window.THREE && window.THREE.GLTFLoader) {
+            function parseDropBuffer(dropBuf) {
+              if (!window.THREE || !window.THREE.GLTFLoader) {
+                if (typeof window.ensureGLTFLoader === 'function') {
+                  window.ensureGLTFLoader(function () { parseDropBuffer(dropBuf); });
+                } else {
+                  setTimeout(function () { parseDropBuffer(dropBuf); }, 80);
+                }
+                return;
+              }
               var loader = new THREE.GLTFLoader();
-              loader.parse(buf, '', function (gltf) {
+              loader.parse(dropBuf, '', function (gltf) {
                 var baseName = fName.replace(/\.[^/.]+$/, "");
                 var isChair = baseName.toLowerCase().indexOf('chair') !== -1 || baseName.toLowerCase().indexOf('seat') !== -1;
                 gltf.scene.updateMatrixWorld(true);
@@ -6629,7 +6646,7 @@
                   modelFormat: 'glb'
                 });
                 if (p && p.id) {
-                  if (window.OrbixModelDB) window.OrbixModelDB.save(p.id, buf);
+                  if (window.OrbixModelDB) window.OrbixModelDB.save(p.id, dropBuf);
                   if (window.ArchitecturalRenderer) window.ArchitecturalRenderer._gltfCache[p.id] = gltf.scene;
                 }
                 if (typeof window.showToast === 'function') {
@@ -6637,6 +6654,7 @@
                 }
               });
             }
+            parseDropBuffer(buf);
           };
           fReader.readAsArrayBuffer(droppedFile);
         });
