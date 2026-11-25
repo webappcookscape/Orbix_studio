@@ -82,6 +82,18 @@ exports.cancelRenderJob = (req, res) => {
   });
 };
 
+exports.clearRenderQueue = (req, res) => {
+  try {
+    const result = renderService.clearQueue();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+};
+
 exports.serveOutput = (req, res) => {
   const filename = req.params.filename;
   const filePath = renderService.getOutputFilePath(filename);

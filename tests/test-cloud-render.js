@@ -11,6 +11,7 @@ assert(typeof renderService.createJob === 'function', 'renderService must have c
 assert(typeof renderService.getJob === 'function', 'renderService must have getJob');
 assert(typeof renderService.listJobs === 'function', 'renderService must have listJobs');
 assert(typeof renderService.cancelJob === 'function', 'renderService must have cancelJob');
+assert(typeof renderService.clearQueue === 'function', 'renderService must have clearQueue');
 
 const info = renderService.getBlenderInfo();
 console.log('✓ [Render Service] Blender detection result:', info);
@@ -38,7 +39,7 @@ const jobResult = renderService.createJob({
 assert(jobResult.success, 'createJob must succeed');
 assert(jobResult.job.id, 'job must have an id');
 assert.strictEqual(jobResult.job.preset, 'preview', 'job preset must be preview');
-assert.strictEqual(jobResult.job.samples, 48, 'preview preset must use 48 samples');
+assert.strictEqual(jobResult.job.samples, 28, 'preview preset must use 28 samples');
 
 const fetchedJob = renderService.getJob(jobResult.job.id);
 assert(fetchedJob, 'getJob must find created job');
@@ -49,7 +50,11 @@ const cancelled = renderService.cancelJob(jobResult.job.id);
 assert(cancelled, 'cancelJob must succeed for queued test job');
 const afterCancel = renderService.getJob(jobResult.job.id);
 assert.strictEqual(afterCancel.status, 'failed', 'cancelled job status must be failed');
-console.log('✓ [Render Service Queue] createJob, getJob, presets, and cancelJob verified');
+
+// Test clearQueue
+const clearResult = renderService.clearQueue();
+assert(clearResult.success, 'clearQueue must succeed');
+console.log('✓ [Render Service Queue] createJob, getJob, presets, cancelJob, and clearQueue verified');
 
 // 2. Verify renderController and routes
 const renderController = require('../server/controllers/renderController');
@@ -57,6 +62,7 @@ assert(typeof renderController.createRenderJob === 'function', 'renderController
 assert(typeof renderController.getRenderJob === 'function', 'renderController must export getRenderJob');
 assert(typeof renderController.listRenderJobs === 'function', 'renderController must export listRenderJobs');
 assert(typeof renderController.cancelRenderJob === 'function', 'renderController must export cancelRenderJob');
+assert(typeof renderController.clearRenderQueue === 'function', 'renderController must export clearRenderQueue');
 assert(typeof renderController.serveOutput === 'function', 'renderController must export serveOutput');
 
 const apiRouter = require('../server/routes/index.js');
@@ -76,12 +82,14 @@ assert(indexHtml.includes('id="cloudRenderModal"'), 'index.html must include clo
 assert(indexHtml.includes('id="crStartBtn"'), 'index.html must include crStartBtn');
 assert(indexHtml.includes('id="crFloatingBadge"'), 'index.html must include crFloatingBadge');
 assert(indexHtml.includes('id="crStatusCard"'), 'index.html must include crStatusCard');
+assert(indexHtml.includes('id="crResetQueueBtn"'), 'index.html must include crResetQueueBtn');
 assert(indexHtml.includes('id="crResultCard"'), 'index.html must include crResultCard');
 
 const uiJs = fs.readFileSync(path.join(__dirname, '../orbix-ui.js'), 'utf8');
 assert(uiJs.includes('initCloudRenderModal'), 'orbix-ui.js must implement initCloudRenderModal');
 assert(uiJs.includes('cpCloudRenderBtn'), 'orbix-ui.js must bind cpCloudRenderBtn');
 assert(uiJs.includes('/api/render/jobs'), 'orbix-ui.js must post to /api/render/jobs');
+assert(uiJs.includes('/api/render/queue/clear'), 'orbix-ui.js must support /api/render/queue/clear');
 console.log('✓ [Frontend UI] Modal, presets, lighting sliders, live progress & floating badge verified');
 
 console.log('\n=== ALL CLOUD RENDER TESTS PASSED SUCCESSFULLY! ===\n');

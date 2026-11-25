@@ -27,14 +27,14 @@ const PRESETS = {
   preview: {
     label: 'Fast Preview (1080p)',
     resolution: [1920, 1080],
-    samples: 48,
-    timeoutMs: 10 * 60 * 1000 // 10 minutes
+    samples: 28,
+    timeoutMs: 3 * 60 * 1000 // 3 minutes max
   },
   ultra: {
     label: 'Ultra Presentation (4K)',
     resolution: [3840, 2160],
-    samples: 128,
-    timeoutMs: 30 * 60 * 1000 // 30 minutes
+    samples: 64,
+    timeoutMs: 12 * 60 * 1000 // 12 minutes max
   }
 };
 
@@ -136,6 +136,35 @@ class RenderService {
       if (lighting.daylightPercent !== undefined) cyclesData.lighting.daylightPercent = Number(lighting.daylightPercent);
       if (lighting.interiorFillWatts !== undefined) cyclesData.lighting.interiorFillWatts = Number(lighting.interiorFillWatts);
       if (lighting.exposureEV !== undefined) cyclesData.lighting.exposureEV = Number(lighting.exposureEV);
+    }
+
+    // Auto-cancel and prune older queued jobs for this user/project to prevent queue pileups
+    const targetUser = userId || 'anonymous';
+    for (let i = this.queue.length - 1; i >= 0; i--) {
+      const queuedJob = this.jobs.get(this.queue[i]);
+      if (queuedJob && (queuedJob.userId === targetUser || targetUser === 'anonymous' || (projectId && queuedJob.projectId === projectId))) {
+        queuedJob.status = 'failed';
+        queuedJob.error = 'Superseded by newer render request';
+        queuedJob.completedAt = new Date().toISOString();
+        this.queue.splice(i, 1);
+      }
+    }
+
+    // If an active process is already running for this user/project, terminate it so new request starts fresh
+    if (this.activeJobId && this.activeProcess) {
+      const activeJob = this.jobs.get(this.activeJobId);
+      if (activeJob && (activeJob.userId === targetUser || targetUser === 'anonymous' || (projectId && activeJob.projectId === projectId))) {
+        console.log(`[RenderService] Superseding previous active job ${this.activeJobId} with new render.`);
+        try { this.activeProcess.kill('SIGTERM'); } catch (_) {}
+        setTimeout(() => {
+          if (this.activeProcess) {
+            try { this.activeProcess.kill('SIGKILL'); } catch (_) {}
+          }
+        }, 1500);
+        activeJob.status = 'failed';
+        activeJob.error = 'Superseded by newer render request';
+        activeJob.completedAt = new Date().toISOString();
+      }
     }
 
     const id = 'rnd_' + Date.now().toString(36) + '_' + crypto.randomBytes(3).toString('hex');
@@ -266,29 +295,48 @@ class RenderService {
       return setImmediate(() => this.processNext());
     }
 
+    // Activity tracker & stall heartbeat
+    let lastActivityTime = Date.now();
+    const heartbeatTimer = setInterval(() => {
+      if (this.activeJobId === job.id && this.activeProcess) {
+        if (Date.now() - lastActivityTime > 60000) {
+          console.warn(`[RenderService] Job ${job.id} stalled (no output for 60s). Terminating process.`);
+          clearInterval(heartbeatTimer);
+          try { this.activeProcess.kill('SIGKILL'); } catch (_) {}
+        }
+      } else {
+        clearInterval(heartbeatTimer);
+      }
+    }, 15000);
+
     // Safety timeout
     const timeoutTimer = setTimeout(() => {
       if (this.activeProcess && this.activeJobId === job.id) {
         console.warn(`[RenderService] Job ${job.id} exceeded maximum timeout of ${cfg.timeoutMs / 60000}m. Killing process.`);
         try { this.activeProcess.kill('SIGTERM'); } catch (_) {}
         setTimeout(() => {
-          try { this.activeProcess.kill('SIGKILL'); } catch (_) {}
-        }, 3000);
+          if (this.activeProcess) {
+            try { this.activeProcess.kill('SIGKILL'); } catch (_) {}
+          }
+        }, 2000);
       }
     }, cfg.timeoutMs);
 
     this.activeProcess.stdout.on('data', (chunk) => {
+      lastActivityTime = Date.now();
       const text = chunk.toString();
       stdoutBuffer += text;
       this.parseProgress(job, text);
     });
 
     this.activeProcess.stderr.on('data', (chunk) => {
+      lastActivityTime = Date.now();
       stderrBuffer += chunk.toString();
     });
 
     this.activeProcess.on('close', (code) => {
       clearTimeout(timeoutTimer);
+      clearInterval(heartbeatTimer);
       this.activeProcess = null;
       this.activeJobId = null;
       const durationSec = Math.round((Date.now() - startTime) / 1000);
@@ -317,6 +365,7 @@ class RenderService {
 
     this.activeProcess.on('error', (err) => {
       clearTimeout(timeoutTimer);
+      clearInterval(heartbeatTimer);
       this.activeProcess = null;
       this.activeJobId = null;
       job.status = 'failed';
@@ -377,24 +426,80 @@ class RenderService {
     if (!job) return false;
 
     if (this.activeJobId === id && this.activeProcess) {
+      console.log(`[RenderService] Cancelling active render job ${id}`);
       try { this.activeProcess.kill('SIGTERM'); } catch (_) {}
+      setTimeout(() => {
+        if (this.activeProcess) {
+          try { this.activeProcess.kill('SIGKILL'); } catch (_) {}
+        }
+      }, 1000);
       job.status = 'failed';
       job.error = 'Render cancelled by user';
       job.completedAt = new Date().toISOString();
+      this.activeJobId = null;
+      this.activeProcess = null;
       this.saveJobsStore();
+      setImmediate(() => this.processNext());
       return true;
     }
 
     const idx = this.queue.indexOf(id);
     if (idx !== -1) {
+      console.log(`[RenderService] Removing job ${id} from queue`);
       this.queue.splice(idx, 1);
       job.status = 'failed';
       job.error = 'Render cancelled before execution';
+      job.completedAt = new Date().toISOString();
       this.saveJobsStore();
       return true;
     }
 
     return false;
+  }
+
+  // Force-reset worker and purge entire queue
+  clearQueue() {
+    console.log('[RenderService] Explicit queue clear & worker reset requested.');
+    let clearedCount = this.queue.length;
+
+    if (this.activeProcess) {
+      clearedCount++;
+      try { this.activeProcess.kill('SIGTERM'); } catch (_) {}
+      setTimeout(() => {
+        if (this.activeProcess) {
+          try { this.activeProcess.kill('SIGKILL'); } catch (_) {}
+        }
+      }, 800);
+      this.activeProcess = null;
+    }
+
+    if (this.activeJobId) {
+      const active = this.jobs.get(this.activeJobId);
+      if (active) {
+        active.status = 'failed';
+        active.error = 'Worker reset by user';
+        active.completedAt = new Date().toISOString();
+      }
+      this.activeJobId = null;
+    }
+
+    for (const qId of this.queue) {
+      const qJob = this.jobs.get(qId);
+      if (qJob) {
+        qJob.status = 'failed';
+        qJob.error = 'Queue reset by user';
+        qJob.completedAt = new Date().toISOString();
+      }
+    }
+    this.queue = [];
+    this.saveJobsStore();
+
+    return {
+      success: true,
+      message: `Cleared ${clearedCount} job(s) and reset worker process.`,
+      activeJobId: null,
+      queueLength: 0
+    };
   }
 
   getOutputFilePath(filename) {

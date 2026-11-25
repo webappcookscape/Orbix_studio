@@ -7245,6 +7245,9 @@
       if (startBtn) {
         startBtn.addEventListener('click', async function () {
           var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+          if (window.GL && typeof window.GL.updateWallCutaway === 'function') {
+            try { window.GL.updateWallCutaway(true); } catch (_) {}
+          }
           if (!self.archRenderer && root.Orbix3D) {
             self.archRenderer = new root.Orbix3D(scene);
           }
@@ -7347,6 +7350,29 @@
           hideFloatingBadge();
         });
       }
+
+      var resetQueueBtn = document.getElementById('crResetQueueBtn');
+      var resetWorkerBtn = document.getElementById('crResetWorkerBtn');
+      var handleResetQueue = async function () {
+        if (!confirm('Clear all queued cloud renders and reset the Blender worker process?')) return;
+        stopPolling();
+        currentJobId = null;
+        try {
+          var apiFn = (window.OrbixProjects && typeof window.OrbixProjects.apiFetch === 'function')
+            ? window.OrbixProjects.apiFetch.bind(window.OrbixProjects)
+            : fetch;
+          var res = await apiFn('/api/render/queue/clear', { method: 'POST' });
+          var data = await res.json();
+          alert(data.message || 'Render queue cleared and worker reset!');
+        } catch (err) {
+          alert('Could not clear queue: ' + err.message);
+        }
+        if (statusCard) statusCard.style.display = 'none';
+        if (startBtn) startBtn.disabled = false;
+        hideFloatingBadge();
+      };
+      if (resetQueueBtn) resetQueueBtn.addEventListener('click', handleResetQueue);
+      if (resetWorkerBtn) resetWorkerBtn.addEventListener('click', handleResetQueue);
 
       if (viewFullBtn && resultImg) {
         viewFullBtn.addEventListener('click', function () {

@@ -14,6 +14,7 @@ router.post('/jobs', renderController.createRenderJob);
 router.get('/jobs', renderController.listRenderJobs);
 router.get('/jobs/:id', renderController.getRenderJob);
 router.post('/jobs/:id/cancel', renderController.cancelRenderJob);
+router.post('/queue/clear', renderController.clearRenderQueue);
 
 // Output image serving & downloading
 router.get('/output/:filename', renderController.serveOutput);

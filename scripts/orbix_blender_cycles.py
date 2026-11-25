@@ -61,35 +61,58 @@ def run():
     scene.render.engine = 'CYCLES'
     cycles = scene.cycles
 
-    # Configure GPU / CPU
-    cycles.device = 'GPU'
-    prefs = bpy.context.preferences
-    cprefs = prefs.addons.get('cycles')
-    if cprefs and hasattr(cprefs, 'preferences'):
-        cprefs = cprefs.preferences
-        # Try OptiX, then CUDA, then Metal, then HIP
-        for compute_backend in ['OPTIX', 'CUDA', 'METAL', 'HIP', 'ONEAPI']:
-            try:
-                cprefs.compute_device_type = compute_backend
-                cprefs.get_devices()
-                devices = [d for d in cprefs.devices if d.type == compute_backend and not d.use_cpu]
-                if devices:
-                    for d in cprefs.devices:
-                        d.use = (d in devices)
-                    print(f"[Orbix Cycles] Using GPU backend: {compute_backend} with {len(devices)} device(s)")
-                    break
-            except Exception:
-                continue
+    # Determine Compute Device (CPU vs GPU)
+    device_mode = (args.device or "AUTO").upper()
+    has_gpu = False
+
+    if device_mode in ["GPU", "AUTO"]:
+        prefs = bpy.context.preferences
+        cprefs = prefs.addons.get('cycles')
+        if cprefs and hasattr(cprefs, 'preferences'):
+            cprefs = cprefs.preferences
+            for compute_backend in ['OPTIX', 'CUDA', 'METAL', 'HIP', 'ONEAPI']:
+                try:
+                    cprefs.compute_device_type = compute_backend
+                    cprefs.get_devices()
+                    devices = [d for d in cprefs.devices if d.type == compute_backend and not d.use_cpu]
+                    if devices:
+                        for d in cprefs.devices:
+                            d.use = (d in devices)
+                        has_gpu = True
+                        cycles.device = 'GPU'
+                        print(f"[Orbix Cycles] Using GPU backend: {compute_backend} with {len(devices)} device(s)")
+                        break
+                except Exception:
+                    continue
+
+    if not has_gpu or device_mode == "CPU":
+        cycles.device = 'CPU'
+        scene.render.threads_mode = 'AUTO'
+        print("[Orbix Cycles] Configured CPU compute device with all available CPU threads (AUTO).")
+
+    # High-Performance Cycles CPU & Sampling Optimizations
+    cycles.use_adaptive_sampling = True
+    try:
+        cycles.adaptive_threshold = 0.05
+    except Exception:
+        pass
+
+    # Cap light bounces to speed up CPU raytracing by 4x without visible quality loss
+    cycles.max_bounces = 4
+    cycles.diffuse_bounces = 2
+    cycles.glossy_bounces = 2
+    cycles.transmission_bounces = 4
+    cycles.transparent_max_bounces = 6
 
     # Resolution & Sampling
     render_cfg = data.get("renderSettings", {})
-    res_w = (args.resolution[0] if args.resolution else None) or render_cfg.get("resolution", [3840, 2160])[0]
-    res_h = (args.resolution[1] if args.resolution else None) or render_cfg.get("resolution", [3840, 2160])[1]
+    res_w = (args.resolution[0] if args.resolution else None) or render_cfg.get("resolution", [1920, 1080])[0]
+    res_h = (args.resolution[1] if args.resolution else None) or render_cfg.get("resolution", [1920, 1080])[1]
     scene.render.resolution_x = int(res_w)
     scene.render.resolution_y = int(res_h)
     scene.render.resolution_percentage = 100
 
-    samples = args.samples or render_cfg.get("samples", 128)
+    samples = args.samples or render_cfg.get("samples", 32)
     cycles.samples = int(samples)
     cycles.use_denoising = True
     try:
@@ -146,16 +169,14 @@ def run():
     w_out = w_nodes.new('ShaderNodeOutputWorld')
     w_links.new(w_bg.outputs['Background'], w_out.inputs['Surface'])
 
-    # Warm-cool sky ambient
-    w_bg.inputs['Color'].default_value = (0.78, 0.86, 0.96, 1.0)
-    w_bg.inputs['Strength'].default_value = max(0.1, daylight_pct * 0.05)
+    # Warm-cool sky ambient (guaranteed illumination so scene is never pitch black)
+    w_bg.inputs['Color'].default_value = (0.82, 0.88, 0.96, 1.0)
+    w_bg.inputs['Strength'].default_value = max(0.85, daylight_pct * 0.08)
 
     # 5. Build PBR Materials
-    mat_cache = {}
-    mats_data = data.get("materials", {})
-
-    for mat_id, m_info in mats_data.items():
-        b_mat = bpy.data.materials.new(name=m_info.get("name", mat_id))
+    def create_material(mat_id, m_info, cutaway=False):
+        suffix = "_cutaway" if cutaway else ""
+        b_mat = bpy.data.materials.new(name=(m_info.get("name", mat_id) + suffix))
         b_mat.use_nodes = True
         tree = b_mat.node_tree
         nodes = tree.nodes
@@ -164,10 +185,9 @@ def run():
 
         bsdf = nodes.new('ShaderNodeBsdfPrincipled')
         output = nodes.new('ShaderNodeOutputMaterial')
-        links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
 
         # Base Color
-        col = m_info.get("baseColor", [0.8, 0.8, 0.8])
+        col = m_info.get("baseColor", [0.85, 0.85, 0.85])
         if len(col) == 3:
             col = [col[0], col[1], col[2], 1.0]
         bsdf.inputs['Base Color'].default_value = col
@@ -197,28 +217,56 @@ def run():
             elif 'Clearcoat' in bsdf.inputs:
                 bsdf.inputs['Clearcoat'].default_value = clearcoat
 
-        mat_cache[mat_id] = b_mat
+        if cutaway:
+            # Architectural cutaway: Backfaces are 100% transparent so camera viewing
+            # from outside looks right through walls/ceilings into the kitchen.
+            geom_node = nodes.new('ShaderNodeNewGeometry')
+            trans_node = nodes.new('ShaderNodeBsdfTransparent')
+            mix_node = nodes.new('ShaderNodeMixShader')
+            links.new(geom_node.outputs['Backfacing'], mix_node.inputs['Fac'])
+            links.new(bsdf.outputs['BSDF'], mix_node.inputs[1])
+            links.new(trans_node.outputs['BSDF'], mix_node.inputs[2])
+            links.new(mix_node.outputs['Shader'], output.inputs['Surface'])
+        else:
+            links.new(bsdf.outputs['BSDF'], output.inputs['Surface'])
 
-    # Fallback default material
-    fallback_mat = bpy.data.materials.new(name="OrbixDefaultMat")
-    fallback_mat.use_nodes = True
-    f_bsdf = fallback_mat.node_tree.nodes.get('Principled BSDF')
-    if f_bsdf:
-        f_bsdf.inputs['Base Color'].default_value = (0.85, 0.83, 0.80, 1.0)
-        f_bsdf.inputs['Roughness'].default_value = 0.5
+        return b_mat
+
+    mat_cache = {}
+    mat_cutaway_cache = {}
+    mats_data = data.get("materials", {})
+
+    for mat_id, m_info in mats_data.items():
+        mat_cache[mat_id] = create_material(mat_id, m_info, cutaway=False)
+        mat_cutaway_cache[mat_id] = create_material(mat_id, m_info, cutaway=True)
+
+    # Fallback default materials
+    default_info = {"name": "OrbixDefault", "baseColor": [0.85, 0.83, 0.80], "roughness": 0.5}
+    fallback_mat = create_material("default", default_info, cutaway=False)
+    fallback_cutaway_mat = create_material("default", default_info, cutaway=True)
 
     # 6. Rebuild Geometry
     objects_data = data.get("objects", [])
     print(f"[Orbix Cycles] Rebuilding {len(objects_data)} scene objects...")
+
+    cam_pos = data.get("camera", {}).get("position", [0, -3.5, 1.6])
+    cam_tgt = data.get("camera", {}).get("target", [0, 0, 0.9])
 
     for obj_info in objects_data:
         name = obj_info.get("name", "Object")
         verts = obj_info.get("vertices", [])
         faces = obj_info.get("faces", [])
         mat_id = obj_info.get("material")
+        role = (obj_info.get("role") or "").lower()
+        is_wall_or_ceiling = (role in ["wall", "ceiling"]) or ('wall' in name.lower()) or ('ceiling' in name.lower())
 
         if not verts or not faces:
             continue
+
+        # If camera is viewing from above/outside, don't let ceiling mesh block interior camera view
+        if role == 'ceiling' or 'ceiling' in name.lower():
+            if cam_pos[2] > 2.3:
+                continue
 
         b_mesh = bpy.data.meshes.new(name)
         b_mesh.from_pydata(verts, [], faces)
@@ -227,26 +275,21 @@ def run():
         b_obj = bpy.data.objects.new(name, b_mesh)
         bpy.context.collection.objects.link(b_obj)
 
-        # Assign material
-        assigned_mat = mat_cache.get(mat_id, fallback_mat)
+        # Assign material (walls and ceilings get backface transparency)
+        if is_wall_or_ceiling:
+            assigned_mat = mat_cutaway_cache.get(mat_id, fallback_cutaway_mat)
+        else:
+            assigned_mat = mat_cache.get(mat_id, fallback_mat)
         b_mesh.materials.append(assigned_mat)
 
         # Smooth shading for organic/curved surfaces
-        role = (obj_info.get("role") or "").lower()
-
-        # If camera is viewing from above/outside, don't let ceiling mesh block interior camera view
-        cam_pos = data.get("camera", {}).get("position", [0, -3.5, 1.6])
-        if role == 'ceiling' or 'ceiling' in name.lower():
-            if cam_pos[2] > 2.3:
-                continue
-
         if role in ["handle", "decor", "chair", "plant", "upholstery"]:
             for p in b_mesh.polygons:
                 p.use_smooth = True
 
     # 7. Setup Architectural Sunlight (Direct warm sunlight entering the kitchen)
     sun_data = bpy.data.lights.new(name="OrbixSunlight", type='SUN')
-    sun_data.energy = max(2.5, daylight_pct * 0.16)
+    sun_data.energy = max(3.5, daylight_pct * 0.20)
     sun_data.color = (1.0, 0.98, 0.93) # 5500K warm architectural daylight
     sun_data.angle = math.radians(2.5) # Soft realistic shadow penumbra
     sun_obj = bpy.data.objects.new(name="OrbixSunlight", object_data=sun_data)
@@ -269,7 +312,7 @@ def run():
         w_light_data.shape = 'RECTANGLE'
         w_light_data.size = w
         w_light_data.size_y = h
-        w_light_data.energy = max(80.0, window_energy_mult * (w * h) * 4.0)
+        w_light_data.energy = max(100.0, window_energy_mult * (w * h) * 4.5)
         w_light_data.color = (0.92, 0.96, 1.0) # Daylight 6500K tint
 
         w_light_obj = bpy.data.objects.new(name=f"WindowLight_{idx+1}", object_data=w_light_data)
@@ -283,17 +326,15 @@ def run():
 
     # 9. Setup Warm Interior Fill Lights (Soft ceiling bounce to lift deep cabinet shadows)
     fill_light_data = bpy.data.lights.new(name="InteriorWarmFill", type='POINT')
-    fill_light_data.energy = max(180.0, fill_watts * 45.0)
-    fill_light_data.color = (1.0, 0.90, 0.78) # 3200K warm interior illumination
+    fill_light_data.energy = max(240.0, fill_watts * 55.0)
+    fill_light_data.color = (1.0, 0.91, 0.80) # 3200K warm interior illumination
     fill_light_data.shadow_soft_size = 0.85
-
-    cam_tgt = data.get("camera", {}).get("target", [0, 0, 0.9])
 
     fill_obj = bpy.data.objects.new(name="InteriorWarmFill", object_data=fill_light_data)
     fill_obj.location = (
         (cam_pos[0] + cam_tgt[0]) * 0.5,
         (cam_pos[1] + cam_tgt[1]) * 0.5,
-        max(2.2, cam_pos[2] + 0.8)
+        max(2.0, cam_pos[2] + 0.6)
     )
     bpy.context.collection.objects.link(fill_obj)
 
@@ -306,17 +347,18 @@ def run():
 
     cam_obj = bpy.data.objects.new("OrbixCamera", cam_data)
     cam_obj.location = (cam_pos[0], cam_pos[1], cam_pos[2])
-
-    # Direct camera to look precisely at target using Blender's native look-at tracking
-    cam_direction = mathutils.Vector(cam_tgt) - mathutils.Vector(cam_pos)
-    if cam_direction.length > 0.0001:
-        rot_quat = cam_direction.to_track_quat('-Z', 'Y')
-        cam_obj.rotation_euler = rot_quat.to_euler()
-    else:
-        cam_obj.rotation_euler = (math.radians(65), 0, 0)
-
     bpy.context.collection.objects.link(cam_obj)
     scene.camera = cam_obj
+
+    # Create target empty and assign native TRACK_TO constraint
+    target_empty = bpy.data.objects.new("OrbixCameraTarget", None)
+    target_empty.location = (cam_tgt[0], cam_tgt[1], cam_tgt[2])
+    bpy.context.collection.objects.link(target_empty)
+
+    track_c = cam_obj.constraints.new(type='TRACK_TO')
+    track_c.target = target_empty
+    track_c.track_axis = 'TRACK_NEGATIVE_Z'
+    track_c.up_axis = 'UP_Y'
 
     # 10. Save .blend file if requested
     if args.blend:

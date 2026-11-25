@@ -41,7 +41,7 @@
 <body>
   <!-- ARTIFACT-START -->
   <title>Orbix Studio</title>
-  <link rel="stylesheet" href="style.css?v=40">
+  <link rel="stylesheet" href="style.css?v=41">
 
   <!-- ══════ FULL AUTH / LOGIN SCREEN ══════ -->
   <div id="authScreen" class="auth-screen" style="display:flex;">
@@ -2142,14 +2142,14 @@
           <label id="crPresetPreviewCard" style="border:2px solid #0284c7;background:#f0f9ff;border-radius:8px;padding:12px;cursor:pointer;display:block;transition:all 0.15s ease;">
             <input type="radio" name="crPresetRadio" value="preview" checked style="margin-right:6px;">
             <span style="font-size:13px;font-weight:700;color:#0369a1;">Fast Preview</span>
-            <div style="font-size:11px;color:#0284c7;margin-top:3px;">1080p (1920×1080) • 48 Samples</div>
-            <div style="font-size:10.5px;color:#64748b;margin-top:2px;">~1.5 – 3 mins on VPS CPU</div>
+            <div style="font-size:11px;color:#0284c7;margin-top:3px;">1080p (1920×1080) • 28 Samples</div>
+            <div style="font-size:10.5px;color:#64748b;margin-top:2px;">~30 – 60s on VPS CPU</div>
           </label>
           <label id="crPresetUltraCard" style="border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:12px;cursor:pointer;display:block;transition:all 0.15s ease;">
             <input type="radio" name="crPresetRadio" value="ultra" style="margin-right:6px;">
             <span style="font-size:13px;font-weight:700;color:#0f172a;">Ultra Presentation</span>
-            <div style="font-size:11px;color:#475569;margin-top:3px;">4K (3840×2160) • 128 Samples</div>
-            <div style="font-size:10.5px;color:#64748b;margin-top:2px;">~8 – 12 mins on VPS CPU</div>
+            <div style="font-size:11px;color:#475569;margin-top:3px;">4K (3840×2160) • 64 Samples</div>
+            <div style="font-size:10.5px;color:#64748b;margin-top:2px;">~3 – 5 mins on VPS CPU</div>
           </label>
         </div>
 
@@ -2188,7 +2188,10 @@
               <span id="crStatusSpinner" style="display:inline-block;">⏳</span>
               <span id="crStatusStage" style="font-size:13px;font-weight:700;color:#0369a1;">Queued in server...</span>
             </div>
-            <button type="button" id="crCancelJobBtn" style="font-size:11px;color:#ef4444;background:none;border:none;cursor:pointer;text-decoration:underline;">Cancel</button>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button type="button" id="crResetQueueBtn" style="font-size:11px;color:#b45309;background:#fef3c7;border:1px solid #fde68a;padding:3px 8px;border-radius:4px;cursor:pointer;font-weight:600;" title="Instantly clear queued jobs and reset Blender worker">⚡ Clear Queue</button>
+              <button type="button" id="crCancelJobBtn" style="font-size:11px;color:#ef4444;background:none;border:none;cursor:pointer;text-decoration:underline;">Cancel</button>
+            </div>
           </div>
           <!-- Progress Bar -->
           <div style="background:#e0f2fe;border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px;">
@@ -2218,7 +2221,10 @@
 
       <!-- Footer Buttons -->
       <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:11px;color:#64748b;">Background render • Safe to close window</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:11px;color:#64748b;">Background render • Safe to close window</div>
+          <button type="button" id="crResetWorkerBtn" style="font-size:10.5px;color:#94a3b8;background:none;border:none;cursor:pointer;text-decoration:underline;" title="Reset Blender worker process if queue is ever stuck">Reset Worker</button>
+        </div>
         <div style="display:flex;gap:8px;">
           <button type="button" class="btn" id="crCloseBtn" style="padding:8px 16px;">Close</button>
           <button type="button" class="btn primary" id="crStartBtn" style="background:linear-gradient(135deg,#0284c7,#0369a1);border:none;color:#fff;font-weight:700;padding:8px 20px;border-radius:6px;box-shadow:0 3px 10px rgba(2,132,199,0.3);display:inline-flex;align-items:center;gap:6px;">
@@ -2256,14 +2262,14 @@
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=40'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=40'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=40'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=41'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=41'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=41'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=40');
+          return loadScript('orbix-a4-drawings.js?v=41');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -2280,17 +2286,17 @@
       return api;
     })();
   </script>
-  <script src="orbix-unit-icons.js?v=40"></script>
-  <script src="orbix-projects.js?v=40"></script>
-  <script src="orbix-live-sync.js?v=40"></script>
-  <script src="orbix-decors-catalog.js?v=40"></script>
-  <script src="orbix-core.js?v=40"></script>
-  <script src="orbix-plan.js?v=40"></script>
-  <script src="orbix-3d.js?v=40"></script>
-  <script src="orbix-ui.js?v=40"></script>
-  <script src="orbix-client-quote.js?v=40"></script>
-  <script src="app.js?v=40"></script>
-  <script src="pwa.js?v=40"></script>
+  <script src="orbix-unit-icons.js?v=41"></script>
+  <script src="orbix-projects.js?v=41"></script>
+  <script src="orbix-live-sync.js?v=41"></script>
+  <script src="orbix-decors-catalog.js?v=41"></script>
+  <script src="orbix-core.js?v=41"></script>
+  <script src="orbix-plan.js?v=41"></script>
+  <script src="orbix-3d.js?v=41"></script>
+  <script src="orbix-ui.js?v=41"></script>
+  <script src="orbix-client-quote.js?v=41"></script>
+  <script src="app.js?v=41"></script>
+  <script src="pwa.js?v=41"></script>
   <!-- ARTIFACT-END -->
 </body>
 
