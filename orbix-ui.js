@@ -8418,8 +8418,8 @@
     },
 
     COMMERCIAL_FIELDS: [
-      { key: 'additionalAccessories', label: 'Additional Accessories', type: 'amount', isDeduction: false },
-      { key: 'appliances', label: 'Appliances', type: 'amount', isDeduction: false },
+      { key: 'additionalAccessories', label: 'Accessories', type: 'amount', isDeduction: false },
+      { key: 'appliances', label: 'Add ons', type: 'amount', isDeduction: false },
       { key: 'designCharges', label: 'Design Charges', type: 'percent', defaultPercent: 9, isDeduction: false },
       { key: 'freightCharges', label: 'Freight Charges', type: 'percent', defaultPercent: 2.5, isDeduction: false },
       { key: 'loadingUnloading', label: 'Loading and unloading (material)', type: 'select', options: ['Additional', 'Included'], defaultVal: 'Additional' },
@@ -8474,6 +8474,23 @@
       if (c.gstPercent === undefined) c.gstPercent = 18;
       if (c.gstEnabled === undefined) c.gstEnabled = true;
       if (!c.surabhiDesignSlab) c.surabhiDesignSlab = 'auto';
+      if (c.appliances && c.appliances > 10000000 && Array.isArray(c.selectedCustomAddons)) {
+        var fixedTotal = 0;
+        c.selectedCustomAddons.forEach(function (it) {
+          var len = Number(it.length || 0);
+          var wid = Number(it.width || 0);
+          var q = Number(it.qty || 0);
+          if (len > 0 && wid > 0 && (len > 50 || wid > 50)) {
+            var correctSqft = Math.round(((len * wid) / 92903.04) * 100) / 100;
+            if (q > 500 || Math.abs(q - (len * wid)) < 5) {
+              it.qty = correctSqft;
+              q = correctSqft;
+            }
+          }
+          fixedTotal += Math.round(q * (it.effectiveRate || it.rate || 0));
+        });
+        if (fixedTotal < 10000000) c.appliances = fixedTotal;
+      }
       return this.project.commercialCharges;
     },
 
@@ -9071,13 +9088,13 @@
         '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
         '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>' +
 
-        // Additional Accessories (Enable/Disable + amount + catalog selector button)
+        // Accessories (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAccessories" style="' + (commSummary.accessoriesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
         '<td colspan="4" class="bold">' +
         '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Additional Accessories</label>' +
-        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Add-Ons Catalog (58 Items)</button>' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Accessories</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Accessories (69 Items)</button>' +
         (commCharges.selectedAddons && commCharges.selectedAddons.length ? ('<span id="commAddonsCountBadge" style="font-size:11px;color:#166534;font-weight:700;">(' + commCharges.selectedAddons.length + ' items selected)</span>') : '<span id="commAddonsCountBadge" style="display:none;font-size:11px;color:#166534;font-weight:700;"></span>') +
         '</div></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
@@ -9087,10 +9104,15 @@
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
 
-        // Appliances (Enable/Disable + amount)
+        // Add ons (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAppliances" style="' + (commSummary.appliancesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Appliances</label></td>' +
+        '<td colspan="4" class="bold">' +
+        '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Add ons</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenCustomAddonsConfigurator" style="background:#047857;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Add-Ons (Regular / Premium)</button>' +
+        (commCharges.selectedCustomAddons && commCharges.selectedCustomAddons.length ? ('<span id="commCustomAddonsCountBadge" style="font-size:11px;color:#047857;font-weight:700;">(' + commCharges.selectedCustomAddons.length + ' items selected)</span>') : '<span id="commCustomAddonsCountBadge" style="display:none;font-size:11px;color:#047857;font-weight:700;"></span>') +
+        '</div></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
@@ -9256,11 +9278,11 @@
         '<td colspan="3" class="c-num bold" id="commTotalSavings" style="font-size:13.5px;color:#166534;">₹ ' + (commSummary.totalSavings || 0).toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
 
-        // ── ADD-ONS & TOTAL INVESTMENT (DOWN AFTER SAVINGS) ──
-        '<tr class="sec-bar-row" style="background:#08231B;color:#fff;"><td colspan="11"><b>Add-Ons, Accessories &amp; Appliances (Down After Savings)</b></td></tr>' +
+        // ── ACCESSORIES, ADD-ONS & TOTAL INVESTMENT (DOWN AFTER SAVINGS) ──
+        '<tr class="sec-bar-row" style="background:#08231B;color:#fff;"><td colspan="11"><b>Accessories &amp; Add ons (Down After Savings)</b></td></tr>' +
         '<tr>' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">Add-ons &amp; Accessories Subtotal</td>' +
+        '<td colspan="4" class="bold">Accessories &amp; Add ons Subtotal</td>' +
         '<td colspan="3" class="c-num bold" id="commAddonsSubtotal">₹ ' + (commSummary.addonsTotal || 0).toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
         '<tr style="background:#ECFDF5;border-top:1.5px solid #16A34A;">' +
@@ -9415,6 +9437,18 @@
             refreshCommercialDom();
             var accInp = boqEl.querySelector('.comm-input[data-key="additionalAccessories"]');
             if (accInp) accInp.value = self.project.commercialCharges.additionalAccessories || 0;
+            self.saveToLocalStorage();
+          });
+        });
+      }
+
+      var btnCustomAddons = boqEl.querySelector('#btnOpenCustomAddonsConfigurator');
+      if (btnCustomAddons) {
+        btnCustomAddons.addEventListener('click', function () {
+          self.openCustomAddonsConfiguratorModal(function () {
+            refreshCommercialDom();
+            var appInp = boqEl.querySelector('.comm-input[data-key="appliances"]');
+            if (appInp) appInp.value = self.project.commercialCharges.appliances || 0;
             self.saveToLocalStorage();
           });
         });
@@ -10006,20 +10040,31 @@
       }
 
       var categories = ['All'];
+      var brands = ['All Brands'];
       catalog.forEach(function (it) {
         if (it.category && categories.indexOf(it.category) === -1) {
           categories.push(it.category);
         }
+        var b = (it.brand || '').trim().toUpperCase();
+        if (b && brands.indexOf(b) === -1) {
+          brands.push(b);
+        }
       });
 
       var activeCategory = 'All';
+      var activeBrand = 'All Brands';
       var searchQuery = '';
 
       function renderModalContent() {
         var filtered = catalog.filter(function (it) {
           var matchCat = (activeCategory === 'All') || (it.category === activeCategory);
-          var matchSearch = !searchQuery || (it.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) || (it.category.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1);
-          return matchCat && matchSearch;
+          var itBrand = (it.brand || '').trim().toUpperCase();
+          var matchBrand = (activeBrand === 'All Brands') || (itBrand === activeBrand);
+          var matchSearch = !searchQuery ||
+            (it.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.category.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (itBrand.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1);
+          return matchCat && matchBrand && matchSearch;
         });
 
         var selectedCount = 0;
@@ -10033,26 +10078,51 @@
           }
         });
 
+        // Preserve scroll position across full filter re-renders
+        var prevScrollTop = 0;
+        var prevList = modal.querySelector('#addonsItemList');
+        if (prevList) prevScrollTop = prevList.scrollTop;
+
         modal.innerHTML =
           '<div class="addons-backdrop" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,35,27,0.65);backdrop-filter:blur(3px);"></div>' +
-          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(920px, 95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
+          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(960px, 95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
 
           // Header
           '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
           '    <div>' +
-          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Add-Ons &amp; Accessories Catalog</h3>' +
-          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">58 Master Hardware Items &bull; Customizable Rates &amp; Measurements (Meters / Sq.Ft)</div>' +
+          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Accessories Catalog</h3>' +
+          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">69 Master Accessories &bull; Brand Rate Cards (Ebco, Hettich, Grass, Livsmart) &bull; Custom Profiles (Meters)</div>' +
           '    </div>' +
           '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
           '  </div>' +
 
-          // Search & Category Filters
+          // Search, Brand Switcher & Filters
           '  <div style="background:#FAF6F0;padding:12px 20px;border-bottom:1px solid #E2D5C3;display:flex;flex-direction:column;gap:10px;">' +
-          '    <input type="text" id="addonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search by name or category (e.g. G Profile Handle, Wallpaper, Magic Corner, Pantry, Basket, Cot)..." style="width:100%;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">' +
+          '      <input type="text" id="addonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search by name, brand, or category (e.g. Cutlery, Tandem, Magic Corner, Pantry, Ebco, Hettich)..." style="flex:1;min-width:240px;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '      <div style="display:flex;gap:6px;align-items:center;">' +
+          '        <span style="font-size:11px;font-weight:700;color:#64748B;">⚡ SET ALL:</span>' +
+          '        <button type="button" id="addonsSetAllEbco" style="padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;background:#E0F2FE;border:1px solid #7DD3FC;color:#0369A1;cursor:pointer;">EBCO Rates</button>' +
+          '        <button type="button" id="addonsSetAllHettich" style="padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;background:#FEF3C7;border:1px solid #FCD34D;color:#B45309;cursor:pointer;">Hettich Rates</button>' +
+          '        <button type="button" id="addonsSetAllGrass" style="padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;background:#DCFCE7;border:1px solid #86EFAC;color:#15803D;cursor:pointer;">Grass Rates</button>' +
+          '      </div>' +
+          '    </div>' +
+
+          // Brand Pills
+          '    <div style="display:flex;gap:6px;align-items:center;overflow-x:auto;padding-bottom:2px;">' +
+          '      <span style="font-size:11px;font-weight:700;color:#64748B;white-space:nowrap;">BRAND:</span>' +
+          brands.map(function (b) {
+            var isSel = b === activeBrand;
+            return '<button type="button" class="addons-brand-btn" data-brand="' + b.replace(/"/g, '&quot;') + '" style="padding:3px 9px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#047857' : '#CBD5E1') + ';background:' + (isSel ? '#047857' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + b + '</button>';
+          }).join('') +
+          '    </div>' +
+
+          // Category Pills
           '    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;" id="addonsCatPills">' +
+          '      <span style="font-size:11px;font-weight:700;color:#64748B;white-space:nowrap;align-self:center;">CATEGORY:</span>' +
           categories.map(function (cat) {
             var isSel = cat === activeCategory;
-            return '<button type="button" class="addons-cat-btn" data-cat="' + cat.replace(/"/g, '&quot;') + '" style="padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#08231B' : '#CBD5E1') + ';background:' + (isSel ? '#08231B' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + cat + '</button>';
+            return '<button type="button" class="addons-cat-btn" data-cat="' + cat.replace(/"/g, '&quot;') + '" style="padding:3px 9px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#08231B' : '#CBD5E1') + ';background:' + (isSel ? '#08231B' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + cat + '</button>';
           }).join('') +
           '    </div>' +
           '  </div>' +
@@ -10062,8 +10132,8 @@
           '    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">' +
           '      <thead>' +
           '        <tr style="border-bottom:2px solid #E2E8F0;color:#64748B;font-size:11px;text-align:left;">' +
-          '          <th style="padding:6px 8px;">ITEM NAME &amp; CATEGORY</th>' +
-          '          <th style="padding:6px 8px;text-align:right;width:170px;">UNIT RATE</th>' +
+          '          <th style="padding:6px 8px;">ITEM NAME &amp; BRAND</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:240px;">BRAND RATE CARDS &amp; UNIT RATE</th>' +
           '          <th style="padding:6px 8px;text-align:center;width:150px;">QUANTITY / MEASURE</th>' +
           '          <th style="padding:6px 8px;text-align:right;width:120px;">SUBTOTAL</th>' +
           '        </tr>' +
@@ -10078,21 +10148,47 @@
             var unitPlural = it.unit === 'meter' ? 'meter(s)' : (it.unit === 'sqft' ? 'sq.feet' : '');
             var stepVal = it.step || (it.unit === 'meter' ? 0.5 : 1);
             var customRange = isCustom ? (' (' + (it.minRate || 0) + '-' + (it.maxRate || 0) + '/' + unitLabel + ')') : '';
+            var itBrand = (it.brand || '').trim().toUpperCase();
 
-            var rateHtml = isCustom
-              ? ('<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;">' +
-                 '  <span style="font-weight:700;color:#08231B;font-size:12px;">₹</span>' +
-                 '  <input type="number" class="addons-rate-inp" data-id="' + it.id + '" min="' + (it.minRate || 0) + '" max="' + (it.maxRate || 999999) + '" step="1" value="' + curRate + '" title="User editable unit rate (' + (it.minRate || 0) + '-' + (it.maxRate || 0) + '/' + unitLabel + ')" style="width:74px;height:26px;border:1.5px solid #EA580C;border-radius:6px;padding:2px 6px;text-align:right;font-weight:700;font-size:12.5px;color:#9A3412;background:#FFF;outline:none;">' +
-                 '  <span style="font-size:11px;color:#64748B;">/' + unitLabel + '</span>' +
-                 '</div>')
-              : ('<span style="font-family:monospace;font-weight:600;color:#08231B;">₹ ' + (it.rate || 0).toLocaleString('en-IN') + '</span>');
+            // Brand rate selector pills
+            var brandPillsHtml = '';
+            var hasBrandRates = (it.ebcoRate || it.hettichRate || it.grassRate);
+            if (hasBrandRates) {
+              brandPillsHtml = '<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;margin-bottom:4px;">';
+              if (it.ebcoRate) {
+                var isEbcoActive = Math.abs(curRate - it.ebcoRate) < 0.05;
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-brand="ebco" data-rate="' + it.ebcoRate + '" title="Apply Ebco Rate: ₹ ' + it.ebcoRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isEbcoActive ? '#0284C7' : '#BAE6FD') + ';background:' + (isEbcoActive ? '#0284C7' : '#F0F9FF') + ';color:' + (isEbcoActive ? '#FFF' : '#0369A1') + ';">EBCO ₹' + Math.round(it.ebcoRate).toLocaleString('en-IN') + '</button>';
+              }
+              if (it.hettichRate) {
+                var isHettichActive = Math.abs(curRate - it.hettichRate) < 0.05;
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-brand="hettich" data-rate="' + it.hettichRate + '" title="Apply Hettich Rate: ₹ ' + it.hettichRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isHettichActive ? '#D97706' : '#FDE68A') + ';background:' + (isHettichActive ? '#D97706' : '#FFFBEB') + ';color:' + (isHettichActive ? '#FFF' : '#92400E') + ';">HETTICH ₹' + Math.round(it.hettichRate).toLocaleString('en-IN') + '</button>';
+              }
+              if (it.grassRate) {
+                var isGrassActive = Math.abs(curRate - it.grassRate) < 0.05;
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-brand="grass" data-rate="' + it.grassRate + '" title="Apply Grass Rate: ₹ ' + it.grassRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isGrassActive ? '#16A34A' : '#BBF7D0') + ';background:' + (isGrassActive ? '#16A34A' : '#F0FDF4') + ';color:' + (isGrassActive ? '#FFF' : '#15803D') + ';">GRASS ₹' + Math.round(it.grassRate).toLocaleString('en-IN') + '</button>';
+              }
+              brandPillsHtml += '</div>';
+            }
 
-            return '<tr style="border-bottom:1px solid #F1F5F9;' + (q > 0 ? 'background:#F0FDF4;' : '') + '">' +
+            var rateInputHtml =
+              '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;">' +
+              '  <span style="font-weight:700;color:#08231B;font-size:12px;">₹</span>' +
+              '  <input type="number" class="addons-rate-inp" data-id="' + it.id + '" min="' + (it.minRate || 0) + '" max="' + (it.maxRate || 999999) + '" step="0.5" value="' + curRate + '" title="Editable unit rate" style="width:84px;height:26px;border:1.5px solid ' + (hasBrandRates ? '#047857' : (isCustom ? '#EA580C' : '#CBD5E1')) + ';border-radius:6px;padding:2px 6px;text-align:right;font-weight:700;font-size:12.5px;color:#08231B;background:#FFF;outline:none;">' +
+              '  <span style="font-size:11px;color:#64748B;">/' + unitLabel + '</span>' +
+              '</div>';
+
+            var brandBadgeHtml = itBrand
+              ? ('<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;margin-left:6px;">' + itBrand + '</span>')
+              : '';
+
+            return '<tr class="addons-row" data-id="' + it.id + '" style="border-bottom:1px solid #F1F5F9;' + (q > 0 ? 'background:#F0FDF4;' : '') + '">' +
               '<td style="padding:8px;">' +
-              '  <div style="font-weight:700;color:#08231B;">' + it.name + '</div>' +
+              '  <div style="font-weight:700;color:#08231B;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">' +
+              '    <span>' + it.name + '</span>' + brandBadgeHtml +
+              '  </div>' +
               '  <div style="font-size:11px;color:#64748B;">' + it.category + customRange + '</div>' +
               '</td>' +
-              '<td style="padding:8px;text-align:right;">' + rateHtml + '</td>' +
+              '<td style="padding:8px;text-align:right;">' + brandPillsHtml + rateInputHtml + '</td>' +
               '<td style="padding:8px;text-align:center;">' +
               '  <div style="display:inline-flex;align-items:center;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden;background:#FFF;">' +
               '    <button type="button" class="addons-qty-btn" data-id="' + it.id + '" data-delta="' + (-stepVal) + '" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">-</button>' +
@@ -10101,7 +10197,7 @@
               '  </div>' +
               (unitPlural ? ('<div style="font-size:10.5px;color:#08231B;font-weight:700;margin-top:2px;">' + unitPlural + '</div>') : '') +
               '</td>' +
-              '<td style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (q > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
+              '<td class="addons-subtotal-cell" data-id="' + it.id + '" style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (q > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
               '</tr>';
           }).join('') : '<tr><td colspan="4" style="text-align:center;padding:30px;color:#64748B;">No add-on items found matching search.</td></tr>') +
           '      </tbody>' +
@@ -10112,9 +10208,9 @@
           '  <div style="background:#FAF6F0;border-top:1px solid #E2D5C3;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">' +
           '    <div>' +
           '      <span style="font-size:12px;color:#475569;font-weight:600;">Selected Add-Ons: </span>' +
-          '      <b style="color:#08231B;font-size:13px;">' + selectedCount + ' items</b> &bull; ' +
+          '      <b id="addonsSelectedCount" style="color:#08231B;font-size:13px;">' + selectedCount + ' items</b> &bull; ' +
           '      <span style="font-size:12px;color:#475569;font-weight:600;">Subtotal: </span>' +
-          '      <b style="color:#166534;font-size:15px;font-family:monospace;">₹ ' + selectedTotal.toLocaleString('en-IN') + '</b>' +
+          '      <b id="addonsSelectedTotal" style="color:#166534;font-size:15px;font-family:monospace;">₹ ' + selectedTotal.toLocaleString('en-IN') + '</b>' +
           '    </div>' +
           '    <div style="display:flex;gap:10px;">' +
           '      <button type="button" class="addons-close-btn btn" style="background:#E2E8F0;color:#1E293B;border-radius:6px;padding:7px 14px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">Cancel</button>' +
@@ -10122,6 +10218,77 @@
           '    </div>' +
           '  </div>' +
           '</div>';
+
+        // Restore scroll position after DOM rebuild
+        var nextList = modal.querySelector('#addonsItemList');
+        if (nextList && prevScrollTop > 0) {
+          nextList.scrollTop = prevScrollTop;
+        }
+
+        // Live in-place DOM update helpers to prevent scroll jumps and preserve input focus
+        function updateFooterSummary() {
+          var count = 0;
+          var total = 0;
+          catalog.forEach(function (it) {
+            var q = selectedMap[it.id] || 0;
+            if (q > 0) {
+              count += (it.unit === 'sqft' || it.unit === 'meter') ? 1 : q;
+              var r = (customRateMap[it.id] !== undefined) ? customRateMap[it.id] : (it.rate || 0);
+              total += Math.round(q * r);
+            }
+          });
+          var cEl = modal.querySelector('#addonsSelectedCount');
+          if (cEl) cEl.textContent = count + ' items';
+          var tEl = modal.querySelector('#addonsSelectedTotal');
+          if (tEl) tEl.textContent = '₹ ' + total.toLocaleString('en-IN');
+        }
+
+        function updateRowDisplay(id, skipQtyInput) {
+          var row = modal.querySelector('tr.addons-row[data-id="' + id + '"]');
+          var it = catalog.find(function (x) { return x.id === id; });
+          if (!row || !it) return;
+
+          var q = selectedMap[id] || 0;
+          var curRate = (customRateMap[id] !== undefined) ? customRateMap[id] : (it.rate || 0);
+          var sub = Math.round(q * curRate);
+
+          row.style.background = q > 0 ? '#F0FDF4' : '';
+
+          var subCell = row.querySelector('.addons-subtotal-cell[data-id="' + id + '"]');
+          if (subCell) {
+            subCell.textContent = '₹ ' + sub.toLocaleString('en-IN');
+            subCell.style.color = q > 0 ? '#166534' : '#94A3B8';
+          }
+
+          if (!skipQtyInput) {
+            var qInp = row.querySelector('.addons-qty-inp[data-id="' + id + '"]');
+            if (qInp && document.activeElement !== qInp) {
+              qInp.value = q;
+            }
+          }
+
+          // Update active brand pill styling in this row
+          row.querySelectorAll('.addons-brand-rate-pill[data-id="' + id + '"]').forEach(function (p) {
+            var pRate = parseFloat(p.getAttribute('data-rate')) || 0;
+            var isActive = Math.abs(curRate - pRate) < 0.05;
+            var brandType = p.getAttribute('data-brand') || '';
+            if (brandType === 'ebco') {
+              p.style.border = '1px solid ' + (isActive ? '#0284C7' : '#BAE6FD');
+              p.style.background = isActive ? '#0284C7' : '#F0F9FF';
+              p.style.color = isActive ? '#FFF' : '#0369A1';
+            } else if (brandType === 'hettich') {
+              p.style.border = '1px solid ' + (isActive ? '#D97706' : '#FDE68A');
+              p.style.background = isActive ? '#D97706' : '#FFFBEB';
+              p.style.color = isActive ? '#FFF' : '#92400E';
+            } else if (brandType === 'grass') {
+              p.style.border = '1px solid ' + (isActive ? '#16A34A' : '#BBF7D0');
+              p.style.background = isActive ? '#16A34A' : '#F0FDF4';
+              p.style.color = isActive ? '#FFF' : '#15803D';
+            }
+          });
+
+          updateFooterSummary();
+        }
 
         // Bind events inside modal
         modal.querySelectorAll('.addons-close-btn, .addons-backdrop').forEach(function (el) {
@@ -10150,22 +10317,88 @@
           });
         });
 
-        // User-Editable Unit Rate change
-        modal.querySelectorAll('.addons-rate-inp').forEach(function (inp) {
-          inp.addEventListener('input', function () {
-            var id = inp.getAttribute('data-id');
-            var val = Math.max(0, parseFloat(inp.value) || 0);
-            customRateMap[id] = val;
+        modal.querySelectorAll('.addons-brand-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activeBrand = btn.getAttribute('data-brand');
             renderModalContent();
-            var restored = modal.querySelector('.addons-rate-inp[data-id="' + id + '"]');
-            if (restored) {
-              restored.focus();
-              restored.setSelectionRange(restored.value.length, restored.value.length);
+          });
+        });
+
+        // Clickable Brand Rate Pills per row (updates in-place without page jump)
+        modal.querySelectorAll('.addons-brand-rate-pill').forEach(function (pill) {
+          pill.addEventListener('click', function () {
+            var id = pill.getAttribute('data-id');
+            var rate = parseFloat(pill.getAttribute('data-rate')) || 0;
+            if (id && rate > 0) {
+              customRateMap[id] = rate;
+              var row = modal.querySelector('tr.addons-row[data-id="' + id + '"]');
+              if (row) {
+                var rInp = row.querySelector('.addons-rate-inp[data-id="' + id + '"]');
+                if (rInp) rInp.value = rate;
+                updateRowDisplay(id);
+              }
             }
           });
         });
 
-        // Quantity delta increment/decrement
+        // Set All Brand Rates Batch Buttons
+        var setEbcoBtn = modal.querySelector('#addonsSetAllEbco');
+        if (setEbcoBtn) {
+          setEbcoBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              if (it.ebcoRate) customRateMap[it.id] = it.ebcoRate;
+            });
+            renderModalContent();
+          });
+        }
+
+        var setHettichBtn = modal.querySelector('#addonsSetAllHettich');
+        if (setHettichBtn) {
+          setHettichBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              if (it.hettichRate) customRateMap[it.id] = it.hettichRate;
+            });
+            renderModalContent();
+          });
+        }
+
+        var setGrassBtn = modal.querySelector('#addonsSetAllGrass');
+        if (setGrassBtn) {
+          setGrassBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              if (it.grassRate) customRateMap[it.id] = it.grassRate;
+            });
+            renderModalContent();
+          });
+        }
+
+        // User-Editable Unit Rate change (updates in-place without page jump)
+        modal.querySelectorAll('.addons-rate-inp').forEach(function (inp) {
+          inp.addEventListener('focus', function () {
+            this.select();
+          });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var val = parseFloat(inp.value);
+            if (!isNaN(val)) {
+              customRateMap[id] = Math.max(0, val);
+              updateRowDisplay(id);
+            }
+          });
+          inp.addEventListener('blur', function () {
+            var id = inp.getAttribute('data-id');
+            var val = parseFloat(inp.value);
+            if (isNaN(val) || val < 0) {
+              var item = catalog.find(function (x) { return x.id === id; });
+              var fallback = item ? item.rate : 0;
+              customRateMap[id] = fallback;
+              inp.value = fallback;
+            }
+            updateRowDisplay(id);
+          });
+        });
+
+        // Quantity delta increment/decrement (+ / - buttons, updates in-place)
         modal.querySelectorAll('.addons-qty-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var id = btn.getAttribute('data-id');
@@ -10174,18 +10407,46 @@
             var next = Math.max(0, Math.round((cur + delta) * 10) / 10);
             if (next === 0) delete selectedMap[id];
             else selectedMap[id] = next;
-            renderModalContent();
+            var row = modal.querySelector('tr.addons-row[data-id="' + id + '"]');
+            if (row) {
+              var qInp = row.querySelector('.addons-qty-inp[data-id="' + id + '"]');
+              if (qInp) qInp.value = next;
+              updateRowDisplay(id);
+            }
           });
         });
 
-        // Quantity manual input
+        // Quantity manual input [- 0 +] (updates in-place, auto-selects, zero scroll jump)
         modal.querySelectorAll('.addons-qty-inp').forEach(function (inp) {
-          inp.addEventListener('change', function () {
+          inp.addEventListener('focus', function () {
+            this.select(); // Auto-selects existing value so user can immediately type desired quantity
+          });
+          inp.addEventListener('input', function () {
             var id = inp.getAttribute('data-id');
-            var val = Math.max(0, parseFloat(inp.value) || 0);
-            if (val === 0) delete selectedMap[id];
-            else selectedMap[id] = val;
-            renderModalContent();
+            if (inp.value === '') {
+              delete selectedMap[id];
+              updateRowDisplay(id, true);
+              return;
+            }
+            var val = parseFloat(inp.value);
+            if (!isNaN(val)) {
+              val = Math.max(0, val);
+              if (val === 0) delete selectedMap[id];
+              else selectedMap[id] = val;
+              updateRowDisplay(id, true);
+            }
+          });
+          inp.addEventListener('blur', function () {
+            var id = inp.getAttribute('data-id');
+            var val = parseFloat(inp.value);
+            if (isNaN(val) || val <= 0) {
+              delete selectedMap[id];
+              inp.value = 0;
+            } else {
+              selectedMap[id] = val;
+              inp.value = val;
+            }
+            updateRowDisplay(id);
           });
         });
 
@@ -10217,6 +10478,496 @@
             self.project.commercialCharges.selectedAddons = chosen;
             self.project.commercialCharges.additionalAccessories = totalAmt;
             self.project.commercialCharges.accessoriesEnabled = true;
+
+            modal.style.display = 'none';
+            if (typeof onApply === 'function') onApply();
+          });
+        }
+      }
+
+      modal.style.display = 'flex';
+      renderModalContent();
+    },
+
+    openCustomAddonsConfiguratorModal: function (onApply) {
+      var self = this;
+      var catalog = (typeof Core !== 'undefined' && Core.getCookscapeCustomAddonsPairs)
+        ? Core.getCookscapeCustomAddonsPairs()
+        : [];
+      if (!catalog.length) return;
+
+      var currentCharges = this.getCommercialCharges();
+      var itemStateMap = {};
+      (currentCharges.selectedCustomAddons || []).forEach(function (it) {
+        var len = Number(it.length || 0);
+        var wid = Number(it.width || 0);
+        var q = Number(it.qty || 0);
+        // Auto-correct any legacy raw mm multiplication to proper Sq.Ft (l * w / 92903.04)
+        if (len > 0 && wid > 0 && (len > 50 || wid > 50)) {
+          var correctSqft = Math.round(((len * wid) / 92903.04) * 100) / 100;
+          if (q > 500 || Math.abs(q - (len * wid)) < 5) {
+            q = correctSqft;
+          }
+        }
+        itemStateMap[it.id] = {
+          grade: it.grade || 'regular',
+          length: len,
+          width: wid,
+          qty: q,
+          subOption: it.subOption || 0
+        };
+      });
+
+      var modalId = 'orbixCustomAddonsModal';
+      var modal = document.getElementById(modalId);
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;justify-content:center;';
+        document.body.appendChild(modal);
+      }
+
+      var categories = ['All'];
+      catalog.forEach(function (it) {
+        if (it.category && categories.indexOf(it.category) === -1) {
+          categories.push(it.category);
+        }
+      });
+
+      var activeCategory = 'All';
+      var searchQuery = '';
+
+      function getEffectiveRate(it, state) {
+        if (state.grade === 'premium') {
+          return it.premium.rate;
+        }
+        if (it.regular.subOptions && state.subOption !== undefined) {
+          var opt = it.regular.subOptions[state.subOption] || it.regular.subOptions[0];
+          return opt.rate;
+        }
+        return it.regular.rate;
+      }
+
+      function getEffectiveName(it, state) {
+        if (state.grade === 'premium') {
+          return it.premium.name;
+        }
+        if (it.regular.subOptions && state.subOption !== undefined) {
+          var opt = it.regular.subOptions[state.subOption] || it.regular.subOptions[0];
+          return opt.name;
+        }
+        return it.regular.name;
+      }
+
+      function renderModalContent() {
+        var filtered = catalog.filter(function (it) {
+          var matchCat = (activeCategory === 'All') || (it.category === activeCategory);
+          var matchSearch = !searchQuery ||
+            (it.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.category.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.regular.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.premium.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1);
+          return matchCat && matchSearch;
+        });
+
+        var selectedCount = 0;
+        var selectedTotal = 0;
+        catalog.forEach(function (it) {
+          var st = itemStateMap[it.id];
+          if (st && st.qty > 0) {
+            selectedCount += 1;
+            selectedTotal += Math.round(st.qty * getEffectiveRate(it, st));
+          }
+        });
+
+        // Preserve scroll position across re-renders
+        var prevScrollTop = 0;
+        var prevList = modal.querySelector('#customAddonsItemList');
+        if (prevList) prevScrollTop = prevList.scrollTop;
+
+        modal.innerHTML =
+          '<div class="addons-backdrop" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,35,27,0.65);backdrop-filter:blur(3px);"></div>' +
+          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(1040px, 96vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
+
+          // Header
+          '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
+          '    <div>' +
+          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Add-Ons Catalog (Regular vs Premium)</h3>' +
+          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">Enter value once &bull; Auto-syncs to Regular &amp; Premium &bull; 1-Click Grade Toggle &bull; Length &times; Width Area Calculation</div>' +
+          '    </div>' +
+          '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
+          '  </div>' +
+
+          // Search, Batch Switcher & Category Filters
+          '  <div style="background:#FAF6F0;padding:12px 20px;border-bottom:1px solid #E2D5C3;display:flex;flex-direction:column;gap:10px;">' +
+          '    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">' +
+          '      <input type="text" id="customAddonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search add-ons (e.g. Panelling, Partition, Cot, Headboard, Glass, Ceiling, Grill)..." style="flex:1;min-width:240px;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '      <div style="display:flex;gap:6px;align-items:center;">' +
+          '        <span style="font-size:11px;font-weight:700;color:#64748B;">⚡ SWITCH ALL:</span>' +
+          '        <button type="button" id="addonsSwitchAllRegular" style="padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;background:#E0F2FE;border:1px solid #7DD3FC;color:#0369A1;cursor:pointer;">⚪ All to Regular (Codes 1-9)</button>' +
+          '        <button type="button" id="addonsSwitchAllPremium" style="padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;background:#FEF3C7;border:1px solid #FCD34D;color:#B45309;cursor:pointer;">⭐ All to Premium (Codes 10-90)</button>' +
+          '      </div>' +
+          '    </div>' +
+
+          // Category Pills
+          '    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;" id="customAddonsCatPills">' +
+          '      <span style="font-size:11px;font-weight:700;color:#64748B;white-space:nowrap;align-self:center;">CATEGORY:</span>' +
+          categories.map(function (cat) {
+            var isSel = cat === activeCategory;
+            return '<button type="button" class="addons-cat-btn" data-cat="' + cat.replace(/"/g, '&quot;') + '" style="padding:3px 9px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#08231B' : '#CBD5E1') + ';background:' + (isSel ? '#08231B' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + cat + '</button>';
+          }).join('') +
+          '    </div>' +
+          '  </div>' +
+
+          // Item List Body
+          '  <div style="flex:1;overflow-y:auto;padding:12px 20px;" id="customAddonsItemList">' +
+          '    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">' +
+          '      <thead>' +
+          '        <tr style="border-bottom:2px solid #E2E8F0;color:#64748B;font-size:11px;text-align:left;">' +
+          '          <th style="padding:6px 8px;width:240px;">CODE &amp; ITEM DETAILS</th>' +
+          '          <th style="padding:6px 8px;text-align:center;width:240px;">MEASUREMENT / QUANTITY</th>' +
+          '          <th style="padding:6px 8px;text-align:center;width:280px;">GRADE (1 vs 10 SWITCHER)</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:110px;">UNIT RATE</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:120px;">SUBTOTAL</th>' +
+          '        </tr>' +
+          '      </thead>' +
+          '      <tbody>' +
+          (filtered.length ? filtered.map(function (it) {
+            var st = itemStateMap[it.id] || { grade: it.defaultGrade || 'regular', length: 0, width: 0, qty: 0, subOption: 0 };
+            var curGrade = st.grade || 'regular';
+            var curRate = getEffectiveRate(it, st);
+            var sub = Math.round((st.qty || 0) * curRate);
+            var isPrem = (curGrade === 'premium');
+
+            // Grade Switcher HTML
+            var gradeHtml =
+              '<div style="display:inline-flex;gap:4px;background:#F1F5F9;padding:3px;border-radius:7px;border:1px solid #CBD5E1;">' +
+              '  <button type="button" class="addons-grade-toggle-btn" data-id="' + it.id + '" data-grade="regular" style="padding:3px 8px;border-radius:5px;font-size:10.5px;font-weight:700;cursor:pointer;border:none;background:' + (!isPrem ? '#0284C7' : 'transparent') + ';color:' + (!isPrem ? '#FFF' : '#475569') + ';">' +
+              '    ⚪ ' + (it.regular.code ? ('[' + it.regular.code + '] ') : '') + 'Regular ₹' + Math.round(it.regular.rate).toLocaleString('en-IN') +
+              '  </button>' +
+              '  <button type="button" class="addons-grade-toggle-btn" data-id="' + it.id + '" data-grade="premium" style="padding:3px 8px;border-radius:5px;font-size:10.5px;font-weight:700;cursor:pointer;border:none;background:' + (isPrem ? '#D97706' : 'transparent') + ';color:' + (isPrem ? '#FFF' : '#475569') + ';">' +
+              '    ⭐ ' + (it.premium.code ? ('[' + it.premium.code + '] ') : '') + 'Premium ₹' + Math.round(it.premium.rate).toLocaleString('en-IN') +
+              '  </button>' +
+              '</div>';
+
+            // Measurement HTML
+            var measureHtml = '';
+            if (it.hasDimensions) {
+              measureHtml =
+                '<div style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;">' +
+                '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
+                '    <span style="font-size:10px;color:#64748B;font-weight:700;">L:</span>' +
+                '    <input type="number" min="0" step="10" class="addons-dim-len" data-id="' + it.id + '" value="' + (st.length || '') + '" placeholder="mm" title="Length in millimeters (or feet)" style="width:58px;height:24px;border:1px solid #CBD5E1;border-radius:4px;padding:2px 4px;font-size:11.5px;text-align:center;font-weight:700;">' +
+                '  </div>' +
+                '  <span style="color:#94A3B8;font-size:11px;">&times;</span>' +
+                '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
+                '    <span style="font-size:10px;color:#64748B;font-weight:700;">W:</span>' +
+                '    <input type="number" min="0" step="10" class="addons-dim-wid" data-id="' + it.id + '" value="' + (st.width || '') + '" placeholder="mm" title="Width in millimeters (or feet)" style="width:58px;height:24px;border:1px solid #CBD5E1;border-radius:4px;padding:2px 4px;font-size:11.5px;text-align:center;font-weight:700;">' +
+                '  </div>' +
+                '  <span style="color:#94A3B8;font-size:11px;">=</span>' +
+                '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
+                '    <input type="number" min="0" step="0.01" class="addons-dim-qty" data-id="' + it.id + '" value="' + (st.qty || '') + '" placeholder="0" title="Calculated area in Sq.Ft" style="width:64px;height:24px;border:1.5px solid #047857;border-radius:4px;padding:2px 4px;font-size:12px;text-align:center;font-weight:700;color:#047857;background:#F0FDF4;">' +
+                '    <span style="font-size:10.5px;color:#64748B;font-weight:600;">sq.ft</span>' +
+                '  </div>' +
+                '</div>';
+            } else {
+              measureHtml =
+                '<div style="display:inline-flex;align-items:center;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden;background:#FFF;">' +
+                '  <button type="button" class="addons-unit-qty-btn" data-id="' + it.id + '" data-delta="-1" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">-</button>' +
+                '  <input type="number" min="0" step="1" class="addons-unit-qty-inp" data-id="' + it.id + '" value="' + (st.qty || 0) + '" style="width:46px;height:26px;border:none;border-left:1px solid #E2E8F0;border-right:1px solid #E2E8F0;text-align:center;font-weight:700;font-size:12px;">' +
+                '  <button type="button" class="addons-unit-qty-btn" data-id="' + it.id + '" data-delta="1" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">+</button>' +
+                '</div>' +
+                '<span style="font-size:11px;color:#64748B;margin-left:5px;">' + (it.unit === 'roll' ? 'roll(s)' : 'unit(s)') + '</span>';
+            }
+
+            var activeSpecText = isPrem ? it.premium.name : it.regular.name;
+
+            return '<tr class="addons-pair-row" data-id="' + it.id + '" style="border-bottom:1px solid #F1F5F9;' + (st.qty > 0 ? 'background:#F0FDF4;' : '') + '">' +
+              '<td style="padding:8px;">' +
+              '  <div style="display:flex;align-items:center;gap:6px;">' +
+              '    <span style="font-size:10px;font-weight:800;background:#E2E8F0;color:#334155;padding:2px 5px;border-radius:4px;font-family:monospace;">' + it.code + '</span>' +
+              '    <span style="font-weight:700;color:#08231B;">' + it.name + '</span>' +
+              '  </div>' +
+              '  <div class="addons-active-spec" data-id="' + it.id + '" style="font-size:11px;color:' + (isPrem ? '#B45309' : '#0369A1') + ';margin-top:2px;font-weight:600;">' + activeSpecText + '</div>' +
+              '</td>' +
+              '<td style="padding:8px;text-align:center;">' + measureHtml + '</td>' +
+              '<td style="padding:8px;text-align:center;">' + gradeHtml + '</td>' +
+              '<td class="addons-rate-cell" data-id="' + it.id + '" style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:#08231B;">₹ ' + curRate.toLocaleString('en-IN') + '</td>' +
+              '<td class="addons-pair-subtotal-cell" data-id="' + it.id + '" style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (st.qty > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
+              '</tr>';
+          }).join('') : '<tr><td colspan="5" style="text-align:center;padding:30px;color:#64748B;">No add-on items found.</td></tr>') +
+          '      </tbody>' +
+          '    </table>' +
+          '  </div>' +
+
+          // Sticky Footer
+          '  <div style="background:#FAF6F0;border-top:1px solid #E2D5C3;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">' +
+          '    <div>' +
+          '      <span style="font-size:12px;color:#475569;font-weight:600;">Selected Add-Ons: </span>' +
+          '      <b id="customAddonsSelectedCount" style="color:#08231B;font-size:13px;">' + selectedCount + ' items</b> &bull; ' +
+          '      <span style="font-size:12px;color:#475569;font-weight:600;">Subtotal: </span>' +
+          '      <b id="customAddonsSelectedTotal" style="color:#166534;font-size:15px;font-family:monospace;">₹ ' + selectedTotal.toLocaleString('en-IN') + '</b>' +
+          '    </div>' +
+          '    <div style="display:flex;gap:10px;">' +
+          '      <button type="button" class="addons-close-btn btn" style="background:#E2E8F0;color:#1E293B;border-radius:6px;padding:7px 14px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">Cancel</button>' +
+          '      <button type="button" id="customAddonsApplyBtn" class="btn" style="background:#047857;color:#FFF;border-radius:6px;padding:7px 18px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">✅ Apply to Quotation</button>' +
+          '    </div>' +
+          '  </div>' +
+          '</div>';
+
+        // Restore scroll position after DOM rebuild
+        var nextList = modal.querySelector('#customAddonsItemList');
+        if (nextList && prevScrollTop > 0) {
+          nextList.scrollTop = prevScrollTop;
+        }
+
+        // Live in-place row & footer update helpers
+        function updateFooterSummary() {
+          var count = 0;
+          var total = 0;
+          catalog.forEach(function (it) {
+            var st = itemStateMap[it.id];
+            if (st && st.qty > 0) {
+              count += 1;
+              total += Math.round(st.qty * getEffectiveRate(it, st));
+            }
+          });
+          var cEl = modal.querySelector('#customAddonsSelectedCount');
+          if (cEl) cEl.textContent = count + ' items';
+          var tEl = modal.querySelector('#customAddonsSelectedTotal');
+          if (tEl) tEl.textContent = '₹ ' + total.toLocaleString('en-IN');
+        }
+
+        function updateRowDisplay(id, skipInputClass) {
+          var row = modal.querySelector('tr.addons-pair-row[data-id="' + id + '"]');
+          var it = catalog.find(function (x) { return x.id === id; });
+          if (!row || !it) return;
+
+          var st = itemStateMap[id] || { grade: it.defaultGrade || 'regular', length: 0, width: 0, qty: 0 };
+          var curRate = getEffectiveRate(it, st);
+          var sub = Math.round((st.qty || 0) * curRate);
+          var isPrem = (st.grade === 'premium');
+
+          row.style.background = st.qty > 0 ? '#F0FDF4' : '';
+
+          var specEl = row.querySelector('.addons-active-spec[data-id="' + id + '"]');
+          if (specEl) {
+            specEl.textContent = getEffectiveName(it, st);
+            specEl.style.color = isPrem ? '#B45309' : '#0369A1';
+          }
+
+          var rateCell = row.querySelector('.addons-rate-cell[data-id="' + id + '"]');
+          if (rateCell) {
+            rateCell.textContent = '₹ ' + curRate.toLocaleString('en-IN');
+          }
+
+          var subCell = row.querySelector('.addons-pair-subtotal-cell[data-id="' + id + '"]');
+          if (subCell) {
+            subCell.textContent = '₹ ' + sub.toLocaleString('en-IN');
+            subCell.style.color = st.qty > 0 ? '#166534' : '#94A3B8';
+          }
+
+          // Grade button styles
+          var regBtn = row.querySelector('.addons-grade-toggle-btn[data-grade="regular"]');
+          var premBtn = row.querySelector('.addons-grade-toggle-btn[data-grade="premium"]');
+          if (regBtn) {
+            regBtn.style.background = !isPrem ? '#0284C7' : 'transparent';
+            regBtn.style.color = !isPrem ? '#FFF' : '#475569';
+          }
+          if (premBtn) {
+            premBtn.style.background = isPrem ? '#D97706' : 'transparent';
+            premBtn.style.color = isPrem ? '#FFF' : '#475569';
+          }
+
+          // Input values sync
+          if (skipInputClass !== 'qty') {
+            var qtyInp = row.querySelector('.addons-dim-qty[data-id="' + id + '"], .addons-unit-qty-inp[data-id="' + id + '"]');
+            if (qtyInp && document.activeElement !== qtyInp) {
+              qtyInp.value = st.qty || 0;
+            }
+          }
+
+          updateFooterSummary();
+        }
+
+        // Close handlers
+        modal.querySelectorAll('.addons-close-btn, .addons-backdrop').forEach(function (el) {
+          el.addEventListener('click', function () {
+            modal.style.display = 'none';
+          });
+        });
+
+        // Search handler
+        var sInp = modal.querySelector('#customAddonsSearchInput');
+        if (sInp) {
+          sInp.addEventListener('input', function () {
+            searchQuery = sInp.value;
+            renderModalContent();
+            var restored = modal.querySelector('#customAddonsSearchInput');
+            if (restored) {
+              restored.focus();
+              restored.setSelectionRange(restored.value.length, restored.value.length);
+            }
+          });
+        }
+
+        // Category filter pills
+        modal.querySelectorAll('.addons-cat-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activeCategory = btn.getAttribute('data-cat');
+            renderModalContent();
+          });
+        });
+
+        // Switch All Regular / Premium Buttons
+        var allRegBtn = modal.querySelector('#addonsSwitchAllRegular');
+        if (allRegBtn) {
+          allRegBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              itemStateMap[it.id] = itemStateMap[it.id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+              itemStateMap[it.id].grade = 'regular';
+              updateRowDisplay(it.id);
+            });
+          });
+        }
+
+        var allPremBtn = modal.querySelector('#addonsSwitchAllPremium');
+        if (allPremBtn) {
+          allPremBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              itemStateMap[it.id] = itemStateMap[it.id] || { grade: 'premium', length: 0, width: 0, qty: 0 };
+              itemStateMap[it.id].grade = 'premium';
+              updateRowDisplay(it.id);
+            });
+          });
+        }
+
+        // 1-Click Grade Toggle per Row (In-place update)
+        modal.querySelectorAll('.addons-grade-toggle-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-id');
+            var grade = btn.getAttribute('data-grade');
+            var it = catalog.find(function (x) { return x.id === id; });
+            if (it && grade) {
+              itemStateMap[id] = itemStateMap[id] || { grade: grade, length: 0, width: 0, qty: 0 };
+              itemStateMap[id].grade = grade;
+              updateRowDisplay(id);
+            }
+          });
+        });
+
+        // Dimension inputs: Length & Width change calculates Sq.Ft Area live (converts mm² to sq.ft via SFT_FACTOR 92903.04)
+        modal.querySelectorAll('.addons-dim-len, .addons-dim-wid').forEach(function (inp) {
+          inp.addEventListener('focus', function () { this.select(); });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var row = modal.querySelector('tr.addons-pair-row[data-id="' + id + '"]');
+            if (!row) return;
+            var lInp = row.querySelector('.addons-dim-len');
+            var wInp = row.querySelector('.addons-dim-wid');
+            var l = Math.max(0, parseFloat(lInp ? lInp.value : 0) || 0);
+            var w = Math.max(0, parseFloat(wInp ? wInp.value : 0) || 0);
+            // SFT_FACTOR = 92903.04 mm² (304.8mm * 304.8mm). If l > 50 or w > 50, it is millimeters (CAD standard).
+            var area = 0;
+            if (l > 0 && w > 0) {
+              if (l > 50 || w > 50) {
+                area = Math.round(((l * w) / 92903.04) * 100) / 100;
+              } else {
+                area = Math.round((l * w) * 100) / 100;
+              }
+            }
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].length = l;
+            itemStateMap[id].width = w;
+            itemStateMap[id].qty = area;
+            var qInp = row.querySelector('.addons-dim-qty');
+            if (qInp) qInp.value = area;
+            updateRowDisplay(id, 'qty');
+          });
+        });
+
+        // Direct Qty input for dimensioned items (allows direct sq.ft override)
+        modal.querySelectorAll('.addons-dim-qty').forEach(function (inp) {
+          inp.addEventListener('focus', function () { this.select(); });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseFloat(inp.value) || 0);
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].qty = val;
+            updateRowDisplay(id, 'qty');
+          });
+        });
+
+        // Unit Qty Delta (+ / -)
+        modal.querySelectorAll('.addons-unit-qty-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-id');
+            var delta = parseFloat(btn.getAttribute('data-delta')) || 0;
+            var st = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            var next = Math.max(0, Math.round(((st.qty || 0) + delta) * 10) / 10);
+            st.qty = next;
+            itemStateMap[id] = st;
+            var row = modal.querySelector('tr.addons-pair-row[data-id="' + id + '"]');
+            if (row) {
+              var qInp = row.querySelector('.addons-unit-qty-inp');
+              if (qInp) qInp.value = next;
+              updateRowDisplay(id, 'qty');
+            }
+          });
+        });
+
+        // Unit Qty Input
+        modal.querySelectorAll('.addons-unit-qty-inp').forEach(function (inp) {
+          inp.addEventListener('focus', function () { this.select(); });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseFloat(inp.value) || 0);
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].qty = val;
+            updateRowDisplay(id, 'qty');
+          });
+          inp.addEventListener('blur', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseFloat(inp.value) || 0);
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].qty = val;
+            inp.value = val;
+            updateRowDisplay(id);
+          });
+        });
+
+        // Apply to Quotation
+        var applyBtn = modal.querySelector('#customAddonsApplyBtn');
+        if (applyBtn) {
+          applyBtn.addEventListener('click', function () {
+            var chosen = [];
+            var totalAmt = 0;
+            catalog.forEach(function (it) {
+              var st = itemStateMap[it.id];
+              if (st && st.qty > 0) {
+                var r = getEffectiveRate(it, st);
+                var amt = Math.round(st.qty * r);
+                chosen.push({
+                  id: it.id,
+                  name: it.name,
+                  category: it.category,
+                  grade: st.grade || 'regular',
+                  gradeName: getEffectiveName(it, st),
+                  length: st.length || 0,
+                  width: st.width || 0,
+                  unit: it.unit || 'sqft',
+                  qty: st.qty,
+                  rate: r,
+                  amount: amt
+                });
+                totalAmt += amt;
+              }
+            });
+
+            self.project.commercialCharges = self.project.commercialCharges || {};
+            self.project.commercialCharges.selectedCustomAddons = chosen;
+            self.project.commercialCharges.appliances = totalAmt;
+            self.project.commercialCharges.appliancesEnabled = true;
 
             modal.style.display = 'none';
             if (typeof onApply === 'function') onApply();

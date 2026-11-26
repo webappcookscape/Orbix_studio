@@ -655,9 +655,9 @@ def build_pdf(payload, out_path):
             ['Modular Woodwork Subtotal', fmt_inr(comm.get('woodworkSubtotal', 0))],
         ]
         if acc_enabled:
-            c_rows.append(['Additional Accessories', fmt_inr(comm.get('additionalAccessories', 0))])
+            c_rows.append(['Accessories', fmt_inr(comm.get('additionalAccessories', 0))])
         if app_enabled:
-            c_rows.append(['Appliances', fmt_inr(comm.get('appliances', 0))])
+            c_rows.append(['Add ons', fmt_inr(comm.get('appliances', 0))])
         c_rows.append(['Design Charges', fmt_inr(comm.get('designAmount', 0))])
         if frt_enabled:
             c_rows.append(['Freight Charges', fmt_inr(comm.get('freightAmount', 0))])

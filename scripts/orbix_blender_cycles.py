@@ -277,6 +277,7 @@ def run():
         b_mesh.update()
 
         b_obj = bpy.data.objects.new(name, b_mesh)
+        b_obj["role"] = role
         bpy.context.collection.objects.link(b_obj)
 
         # Assign material (walls and ceilings get backface transparency)

@@ -778,15 +778,15 @@
             '<tr style="background:#ECFDF5;"><td style="color:#166534;font-weight:800;">YOUR SAVINGS</td><td class="num" style="color:#166534;font-weight:800;" data-f="totalSavings">' + fmtINR(c.totalSavings || 0) + '</td></tr>' +
             '</tbody></table>' +
 
-            // ── ADD-ONS, ACCESSORIES & APPLIANCES (DOWN AFTER YOUR SAVINGS) ──
+            // ── ACCESSORIES & ADD-ONS (DOWN AFTER YOUR SAVINGS) ──
             '<div style="margin-top:14px;border:1.5px solid #08231B;border-radius:8px;overflow:hidden;background:#fff;">' +
             '  <div style="background:#08231B;color:#fff;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:12.5px;">' +
-            '    <span>ADD-ONS, ACCESSORIES &amp; APPLIANCES (SELECTED ITEMS)</span>' +
+            '    <span>ACCESSORIES &amp; ADD ONS (SELECTED ITEMS)</span>' +
             '    <span data-f="addonsTotalBadge" style="color:#FEF9C3;font-family:monospace;font-size:13px;">₹ ' + fmtINR(c.addonsTotal || 0) + '</span>' +
             '  </div>' +
             '  <table><tbody>' +
             '    <tr data-row="accessories" style="' + (c.accessoriesEnabled ? '' : 'opacity:0.5;') + '">' +
-            '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="accessoriesEnabled"' + (c.accessoriesEnabled ? ' checked' : '') + '> <b>Additional Accessories</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
+            '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="accessoriesEnabled"' + (c.accessoriesEnabled ? ' checked' : '') + '> <b>Accessories</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
             '      <td class="num">' +
             '        <span class="amt-input-wrap" data-wrap="accInput" style="display:' + (c.accessoriesEnabled ? 'inline-flex' : 'none') + ';">' +
             '          <span>₹</span><input type="number" step="100" min="0" class="amt-input" data-idx="' + idx + '" data-kind="accessories" value="' + esc(c.baseAdditionalAccessories || 0) + '" placeholder="0">' +
@@ -806,7 +806,7 @@
               }).join('') +
               '</td></tr>') : '') +
             '    <tr data-row="appliances" style="' + (c.appliancesEnabled ? '' : 'opacity:0.5;') + '">' +
-            '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="appliancesEnabled"' + (c.appliancesEnabled ? ' checked' : '') + '> <b>Appliances</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
+            '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="appliancesEnabled"' + (c.appliancesEnabled ? ' checked' : '') + '> <b>Add ons</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
             '      <td class="num">' +
             '        <span class="amt-input-wrap" data-wrap="appInput" style="display:' + (c.appliancesEnabled ? 'inline-flex' : 'none') + ';">' +
             '          <span>₹</span><input type="number" step="100" min="0" class="amt-input" data-idx="' + idx + '" data-kind="appliances" value="' + esc(c.baseAppliances || 0) + '" placeholder="0">' +
@@ -814,6 +814,13 @@
             '        <span data-f="appDisabled" style="display:' + (c.appliancesEnabled ? 'none' : 'inline') + ';color:#64748B;">Disabled</span>' +
             '      </td>' +
             '    </tr>' +
+            (c.selectedCustomAddons && c.selectedCustomAddons.length ? ('<tr><td colspan="2" style="background:#FAF6F0;padding:6px 12px;font-size:11.5px;color:#334155;">' +
+              c.selectedCustomAddons.map(function(ap){
+                var gBadge = ap.grade === 'premium' ? ' <span style="color:#B45309;font-weight:700;">[⭐ Premium]</span>' : ' <span style="color:#0369A1;font-weight:700;">[⚪ Regular]</span>';
+                var dimText = (ap.length > 0 && ap.width > 0) ? (' (' + ap.length + '\' &times; ' + ap.width + '\' = ' + ap.qty + ' sq.ft)') : (' (Qty: ' + ap.qty + ')');
+                return '<div style="margin:2px 0;">• <b>' + esc(ap.name) + '</b> &mdash; ' + (ap.gradeName ? esc(ap.gradeName) : '') + gBadge + dimText + ' &mdash; ₹' + Number(ap.amount || 0).toLocaleString('en-IN') + '</div>';
+              }).join('') +
+              '</td></tr>') : '') +
             (c.appliancesList && c.appliancesList.length ? ('<tr><td colspan="2" style="background:#FAF6F0;padding:6px 12px;font-size:11.5px;color:#334155;">' +
               c.appliancesList.map(function(ap){ return '<div style="margin:2px 0;">• <b>' + esc(ap.name) + '</b> &mdash; ₹' + Number(ap.amount || ((ap.rate||0)*(ap.qty||1))).toLocaleString('en-IN') + '</div>'; }).join('') +
               '</td></tr>') : '') +

@@ -6677,14 +6677,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=43'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=43'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=43'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=50'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=50'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=50'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=43');
+          return loadScript('orbix-a4-drawings.js?v=50');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -21251,70 +21251,319 @@ body.role-employee #adminCreateEmpBox,
     return SURABHI_DESIGN_FEE_SLABS[11]; // 25 to 30L+
   }
 
-  // Cookscape Master Add-Ons & Accessories Catalog
+  // Cookscape Master Add-Ons & Accessories Catalog with Multi-Brand Rates (Ebco, Hettich, Grass, Livsmart)
   var COOKSCAPE_ADDONS_CATALOG = [
-    { id: 'pvc_cutlery_450', name: 'PVC CUTLERY INLET - 450', category: 'Kitchen Inlets', rate: 942 },
-    { id: 'pvc_cutlery_600', name: 'PVC CUTLERY INLET - 600', category: 'Kitchen Inlets', rate: 1222 },
-    { id: 'pvc_cutlery_900', name: 'PVC CUTLERY INLET - 900', category: 'Kitchen Inlets', rate: 2634 },
-    { id: 'ss_cutlery_450', name: 'SS CUTLERY - 450', category: 'Kitchen Inlets', rate: 4871 },
-    { id: 'ss_cutlery_600', name: 'SS CUTLERY - 600', category: 'Kitchen Inlets', rate: 5650 },
-    { id: 'plain_basket_450', name: 'PLAIN BASKET - 450', category: 'Kitchen Baskets', rate: 2802 },
-    { id: 'plain_basket_600', name: 'PLAIN BASKET - 600', category: 'Kitchen Baskets', rate: 3393 },
-    { id: 'ss_plate_basket_450', name: 'SS PLATE BASKET - 450', category: 'Kitchen Baskets', rate: 4965 },
-    { id: 'ss_plate_basket_600', name: 'SS PLATE BASKET - 600', category: 'Kitchen Baskets', rate: 6283 },
-    { id: 'ss_plate_inlet', name: 'SS PLATE INLET', category: 'Kitchen Inlets', rate: 1920 },
-    { id: 'wicker_basket_450', name: 'WICKER BASKET - 450', category: 'Kitchen Baskets', rate: 9553 },
-    { id: 'wicker_basket_std', name: 'WICKER BASKET', category: 'Kitchen Baskets', rate: 9553 },
-    { id: 'magic_corner', name: 'MAGIC CORNER', category: 'Corner Solutions', rate: 40900 },
-    { id: 'magic_corner_dbl', name: 'MAGIC CORNER DOUBLE PULLOUT', category: 'Corner Solutions', rate: 34672 },
-    { id: 'double_corner_pullout', name: 'D0UBLE CORNER PULLOUT', category: 'Corner Solutions', rate: 20128 },
-    { id: 'corner_carousel', name: 'CORNER CAROUSEL', category: 'Corner Solutions', rate: 13781 },
-    { id: 'pantry_ss_450', name: 'PANTRY SS - 450', category: 'Pantries', rate: 16891 },
-    { id: 'pantry_ss_600', name: 'PANTRY SS - 600', category: 'Pantries', rate: 17610 },
-    { id: 'pantry_flat_450', name: 'PANTRY FLATE BASE - 450', category: 'Pantries', rate: 31292 },
-    { id: 'pantry_flat_600', name: 'PANTRY FLATE BASE - 600', category: 'Pantries', rate: 36324 },
-    { id: 'pantry_glass_450', name: 'PANTRY GLASS - 450', category: 'Pantries', rate: 43997 },
-    { id: 'pantry_glass_600', name: 'PANTRY GLASS - 600', category: 'Pantries', rate: 49363 },
-    { id: 'wardrobe_pullout', name: 'WARDROBE PULLOUT', category: 'Wardrobe Accessories', rate: 6979 },
-    { id: 'rolling_shutter_glass_600', name: 'ROLLING SHUTTER GLASS - 600', category: 'Kitchen Fittings', rate: 21710 },
-    { id: 'oil_pullout_tandem', name: 'OILPULLOUT TANDEM', category: 'Pullouts', rate: 9847 },
-    { id: 'oil_pullout_glass', name: 'OILPULLOUT - GLASS', category: 'Pullouts', rate: 11347 },
-    { id: 'oil_pullout_ss', name: 'OILPULLOUT SS', category: 'Pullouts', rate: 6506 },
-    { id: 'bottle_pullout_tandem', name: 'BOTTLE PULLOUT TANDEM', category: 'Pullouts', rate: 8419 },
-    { id: 'bottle_pullout_glass', name: 'BOTTLE PULLOUT - GLASS', category: 'Pullouts', rate: 10217 },
-    { id: 'bottle_pullout_ss', name: 'BOTTLE PULLOUT SS', category: 'Pullouts', rate: 5966 },
-    { id: 'side_pullout_organizer', name: 'SIDE PULLOUT ORGANIZER', category: 'Pullouts', rate: 20034 },
-    { id: 'pan_hanger_rack', name: 'PAN HANGER RACK', category: 'Kitchen Fittings', rate: 3445 },
-    { id: 'lid_holder_pan_hanger', name: 'LID HOLDER PAN HANGER', category: 'Kitchen Fittings', rate: 1238 },
-    { id: 'detergent_caddie', name: 'DETERGETN CADDIE', category: 'Cleaning & Waste', rate: 6602 },
-    { id: 'detergent_pullout', name: 'DETERGETN PULLOUT', category: 'Cleaning & Waste', rate: 3029 },
-    { id: 'mixer_lift_stand', name: 'MIXER LIFT UP STAND', category: 'Kitchen Fittings', rate: 11034 },
-    { id: 'gtpt_600', name: 'GTPT 600', category: 'Kitchen Fittings', rate: 4812 },
-    { id: 'gtpt_900', name: 'GTPT 900', category: 'Kitchen Fittings', rate: 6996 },
-    { id: 'swing_waste_bin', name: 'SWING OUT WASTE BIN', category: 'Cleaning & Waste', rate: 3674 },
-    { id: 'waste_bin_holder', name: 'WASTE BIN HOLDER', category: 'Cleaning & Waste', rate: 1022 },
-    { id: 'sliding_fittings', name: 'SLIDING FITTINGS', category: 'Wardrobe Hardware', rate: 16250 },
-    { id: 'wardrobe_lift_side_mount', name: 'WADREOBE LIFT SIDE MOUNT PULLOUT', category: 'Wardrobe Accessories', rate: 9382 },
-    { id: 'wardrobe_hanger_single', name: 'WARDROBE PULLOUT HANGER - SINGLE', category: 'Wardrobe Accessories', rate: 11044 },
-    { id: 'wardrobe_hanger_double', name: 'WARDROBE PULLOUT HANGER - DOUBLE', category: 'Wardrobe Accessories', rate: 13115 },
-    { id: 'wardrobe_trouser_600', name: 'WARDROBE TROUSER PULLOUT - 600', category: 'Wardrobe Accessories', rate: 6040 },
-    { id: 'wardrobe_trouser_900', name: 'WARDROBE TROUSER PULLOUT - 900', category: 'Wardrobe Accessories', rate: 8152 },
-    { id: 'wardrobe_basket_450', name: 'WARDROBE PULLOUT BASKET - 450', category: 'Wardrobe Accessories', rate: 11188 },
-    { id: 'wardrobe_basket_600', name: 'WARDROBE PULLOUT BASKET - 600', category: 'Wardrobe Accessories', rate: 13094 },
-    { id: 'wardrobe_basket_900', name: 'WARDROBE PULLOUT BASKET - 900', category: 'Wardrobe Accessories', rate: 16819 },
-    { id: 'wardrobe_drawer_450', name: 'WARDROBE PULLOUT DRAWER - 450', category: 'Wardrobe Accessories', rate: 10766 },
-    { id: 'wardrobe_drawer_600', name: 'WARDROBE PULLOUT DRAWER - 600', category: 'Wardrobe Accessories', rate: 12865 },
-    { id: 'wardrobe_drawer_900', name: 'WARDROBE PULLOUT DRAWER - 900', category: 'Wardrobe Accessories', rate: 17001 },
-    { id: 'wardrobe_utility_rack', name: 'WARDROBE PULLOUT UTILITY RACK', category: 'Wardrobe Accessories', rate: 3295 },
-    { id: 'wardrobe_ironing_board', name: 'WARDROBE PULLOUT IROING BOARD', category: 'Wardrobe Accessories', rate: 11455 },
-    { id: 'king_size_cot_storage', name: 'KING SIZE COT WITH STORAGE', category: 'Bedroom Cots', rate: 52800 },
-    { id: 'queen_size_cot_storage', name: 'QUEEN SIZE COT WITH STORAGE', category: 'Bedroom Cots', rate: 39400 },
-    { id: 'g_profile_handle', name: 'G PROFILE HANDLE 1meter', category: 'Profiles & Handles', rate: 1700, minRate: 1350, maxRate: 2050, unit: 'meter', unitLabel: 'meter(s)', step: 0.5, isCustom: true },
-    { id: 'wallpaper_sqft', name: 'WALLPAPER 1sq feet', category: 'Wall Treatments', rate: 55, minRate: 45, maxRate: 70, unit: 'sqft', unitLabel: 'sq feet', step: 1, isCustom: true }
+    { id: 'pvc_cutlery_inlet_450', name: 'PVC CUTLERY INLET - 450', category: 'Kitchen Inlets', brand: 'HETTICH', rate: 1385.00, ebcoRate: 1271.70, hettichRate: 1385.00 },
+    { id: 'pvc_cutlery_inlet_600', name: 'PVC CUTLERY INLET - 600', category: 'Kitchen Inlets', brand: 'HETTICH', rate: 1775.00, ebcoRate: 1649.70, hettichRate: 1775.00 },
+    { id: 'pvc_cutlery_inlet_900', name: 'PVC CUTLERY INLET - 900', category: 'Kitchen Inlets', brand: 'HETTICH', rate: 4520.00, ebcoRate: 3555.90, hettichRate: 4520.00 },
+    { id: 'ss_cutlery_450', name: 'SS CUTLERY - 450', category: 'Kitchen Inlets', brand: 'HETTICH', rate: 7150.00, ebcoRate: 6332.30, hettichRate: 7150.00 },
+    { id: 'ss_cutlery_600', name: 'SS CUTLERY - 600', category: 'Kitchen Inlets', brand: 'HETTICH', rate: 7855.00, ebcoRate: 7627.50, hettichRate: 7855.00 },
+    { id: 'plain_basket_450', name: 'PLAIN BASKET - 450', category: 'Kitchen Baskets', brand: 'HETTICH', rate: 4483.20, ebcoRate: 4062.90, hettichRate: 4483.20 },
+    { id: 'plain_basket_600', name: 'PLAIN BASKET - 600', category: 'Kitchen Baskets', brand: 'HETTICH', rate: 5428.80, ebcoRate: 4919.85, hettichRate: 5428.80 },
+    { id: 'ss_plate_basket_450', name: 'SS PLATE BASKET - 450', category: 'Kitchen Baskets', brand: 'HETTICH', rate: 6951.00, ebcoRate: 6454.50, hettichRate: 6951.00 },
+    { id: 'ss_plate_basket_600', name: 'SS PLATE BASKET - 600', category: 'Kitchen Baskets', brand: 'HETTICH', rate: 7847.07, ebcoRate: 7299.60, hettichRate: 7847.07 },
+    { id: 'ss_plate_basket_900', name: 'SS PLATE BASKET - 900', category: 'Kitchen Baskets', brand: 'HETTICH', rate: 8105.07, ebcoRate: 7853.75, hettichRate: 8105.07 },
+    { id: 'ss_plate_inlet', name: 'SS PLATE INLET', category: 'Kitchen Inlets', brand: 'HETTICH', rate: 2611.45, ebcoRate: 2496.00, hettichRate: 2611.45 },
+    { id: 'tandem_drawer_30kg', name: 'TANDEM DRAWER - 30Kg', category: 'Kitchen Baskets', brand: 'HETTICH', rate: 7936.50, ebcoRate: 7187.50, hettichRate: 7936.50 },
+    { id: 'tandem_50kg_rice', name: 'TANDEM - 50KG (RICE TANDEM)', category: 'Kitchen Baskets', brand: 'HETTICH', rate: 14902.80, ebcoRate: 12321.25, hettichRate: 14902.80, grassRate: 11977.00 },
+    { id: 'wicker_basket_450', name: 'WICKER BASKET - 450', category: 'Kitchen Baskets', brand: 'EBCO', rate: 11463.60, ebcoRate: 11463.60, hettichRate: 5599.00 },
+    { id: 'wicker_basket_600', name: 'WICKER BASKET - 600', category: 'Kitchen Baskets', brand: 'EBCO', rate: 9553.00, ebcoRate: 9553.00, hettichRate: 6875.00 },
+    { id: 'magic_corner', name: 'MAGIC CORNER', category: 'Corner Solutions', brand: 'HETTICH', rate: 41932.00, ebcoRate: 41401.92, hettichRate: 41932.00 },
+    { id: 'magic_corner_ss', name: 'MAGIC CORNER - SS', category: 'Corner Solutions', brand: 'HETTICH', rate: 45744.00, hettichRate: 45744.00 },
+    { id: 'magic_corner_dbl', name: 'MAGIC CORNER DOUBLE PULLOUT', category: 'Corner Solutions', brand: 'HETTICH', rate: 34200.00, ebcoRate: 36699.60, hettichRate: 34200.00 },
+    { id: 'magic_corner_dbl_glass', name: 'MAGIC CORNER DOUBLE PULLOUT - GLASS', category: 'Corner Solutions', brand: 'EBCO', rate: 41606.40, ebcoRate: 41606.40 },
+    { id: 'double_corner_pullout', name: 'D0UBLE CORNER PULLOUT', category: 'Corner Solutions', brand: 'HETTICH', rate: 38592.00, ebcoRate: 26730.00, hettichRate: 38592.00 },
+    { id: 'corner_carousel', name: 'CORNER CAROUSEL', category: 'Corner Solutions', brand: 'EBCO', rate: 13640.40, ebcoRate: 13640.40, hettichRate: 30876.00 },
+    { id: 'kitchen_d_carousel', name: 'KITCHEN D CARROUSEL', category: 'Corner Solutions', brand: 'EBCO', rate: 13784.85, ebcoRate: 13784.85, hettichRate: 60306.00 },
+    { id: 'pantry_ss_450', name: 'PANTRY SS - 450', category: 'Pantries', brand: 'EBCO', rate: 20269.20, ebcoRate: 20269.20 },
+    { id: 'pantry_ss_600', name: 'PANTRY SS - 600', category: 'Pantries', brand: 'EBCO', rate: 22664.40, ebcoRate: 22664.40 },
+    { id: 'pantry_flat_450', name: 'PANTRY FLATE BASE - 450', category: 'Pantries', brand: 'LIVSMART', rate: 35352.00, ebcoRate: 35352.00, hettichRate: 24600.00 },
+    { id: 'pantry_flat_600', name: 'PANTRY FLATE BASE - 600', category: 'Pantries', brand: 'LIVSMART', rate: 43588.80, ebcoRate: 43588.80, hettichRate: 26040.00 },
+    { id: 'pantry_glass_450', name: 'PANTRY GLASS - 450', category: 'Pantries', brand: 'LIVSMART', rate: 52796.40, ebcoRate: 52796.40 },
+    { id: 'pantry_glass_600', name: 'PANTRY GLASS - 600', category: 'Pantries', brand: 'LIVSMART', rate: 59235.60, ebcoRate: 59235.60 },
+    { id: 'pullout_pantry_450', name: 'PULLOUT PANTRY - 450', category: 'Pantries', brand: 'HETTICH', rate: 22920.00, ebcoRate: 43022.40, hettichRate: 22920.00 },
+    { id: 'pullout_pantry_600', name: 'PULLOUT PANTRY - 600', category: 'Pantries', brand: 'HETTICH', rate: 20760.00, ebcoRate: 48650.40, hettichRate: 20760.00 },
+    { id: 'wardrobe_pullout', name: 'WARDROBE PULLOUT', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 8025.85, ebcoRate: 8025.85 },
+    { id: 'rolling_shutter_glass_600', name: 'ROLLING SHUTTER GLASS - 600', category: 'Kitchen Fittings', brand: 'GJ', rate: 31545.60, ebcoRate: 31545.60 },
+    { id: 'rolling_shutter_pvc_600', name: 'ROLLING SHUTTER PVC- 600', category: 'Kitchen Fittings', brand: 'EBCO', rate: 23808.00, ebcoRate: 23808.00 },
+    { id: 'oil_pullout_tandem', name: 'OILPULLOUT TANDEM', category: 'Pullouts', brand: 'HETTICH', rate: 12275.00, ebcoRate: 12275.00 },
+    { id: 'oil_pullout_glass', name: 'OILPULLOUT - GLASS', category: 'Pullouts', brand: 'EBCO', rate: 18512.50, ebcoRate: 18512.50 },
+    { id: 'oil_pullout_ss', name: 'OILPULLOUT SS', category: 'Pullouts', brand: 'HETTICH', rate: 7812.50, ebcoRate: 8132.50, hettichRate: 7812.50 },
+    { id: 'bottle_pullout_tandem', name: 'BOTTLE PULLOUT TANDEM', category: 'Pullouts', brand: 'HETTICH', rate: 10523.75, ebcoRate: 10523.75 },
+    { id: 'bottle_pullout_glass', name: 'BOTTLE PULLOUT - GLASS', category: 'Pullouts', brand: 'HETTICH', rate: 12093.75, ebcoRate: 12093.75 },
+    { id: 'bottle_pullout_ss', name: 'BOTTLE PULLOUT SS', category: 'Pullouts', brand: 'HETTICH', rate: 6737.50, ebcoRate: 7457.50, hettichRate: 6737.50 },
+    { id: 'pan_hanger_rack', name: 'PAN HANGER RACK', category: 'Kitchen Fittings', brand: 'HETTICH', rate: 4478.50, ebcoRate: 4478.50 },
+    { id: 'lid_holder_pan_hanger', name: 'LID HOLDER PAN HANGER', category: 'Kitchen Fittings', brand: 'HETTICH', rate: 1547.50, ebcoRate: 1547.50 },
+    { id: 'detergent_caddie', name: 'DETERGENT CADDIE', category: 'Cleaning & Waste', brand: 'HETTICH', rate: 8252.50, ebcoRate: 8252.50 },
+    { id: 'detergent_holder_ss', name: 'DETERGETN HOLDER - SS', category: 'Cleaning & Waste', brand: 'HETTICH', rate: 2433.75, ebcoRate: 1970.00, hettichRate: 2433.75 },
+    { id: 'mixer_lift_stand', name: 'MIXER LIFT UP STAND', category: 'Kitchen Fittings', brand: 'HETTICH', rate: 13792.50, ebcoRate: 13792.50 },
+    { id: 'gtpt_600', name: 'GTPT 600', category: 'Kitchen Fittings', brand: 'HETTICH', rate: 6632.50, ebcoRate: 6112.50, hettichRate: 6632.50 },
+    { id: 'gtpt_900', name: 'GTPT 900', category: 'Kitchen Fittings', brand: 'HETTICH', rate: 8919.60, ebcoRate: 8316.00, hettichRate: 8919.60 },
+    { id: 'swing_waste_bin', name: 'SWING OUT WASTE BIN', category: 'Cleaning & Waste', brand: 'HETTICH', rate: 4612.50, ebcoRate: 4612.50 },
+    { id: 'waste_bin_holder', name: 'WASTE BIN HOLDER', category: 'Cleaning & Waste', brand: 'HETTICH', rate: 2052.00, ebcoRate: 1323.00, hettichRate: 2052.00 },
+    { id: 'laundry_basket_ss', name: 'LAUNDRY BASKET - SS', category: 'Cleaning & Waste', brand: 'HETTICH', rate: 9130.00, hettichRate: 9130.00 },
+    { id: 'laundry_basket_wh', name: 'LAUNDRY BASKET - WH', category: 'Cleaning & Waste', brand: 'EBCO', rate: 12788.75, ebcoRate: 12788.75 },
+    { id: 'sliding_fittings_cnr', name: 'SLIDING FITTINGS', category: 'Wardrobe Hardware', brand: 'CNR', rate: 20450.00, ebcoRate: 20450.00 },
+    { id: 'shoe_rack_side_fitting', name: 'SHOE RACK SIDE FITTING', category: 'Wardrobe Accessories', brand: 'HETTICH', rate: 1604.40, hettichRate: 1604.40 },
+    { id: 'wardrobe_lift_side_mount', name: 'WADREOBE LIFT SIDE MOUNT PULLOUT', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 11258.40, ebcoRate: 11258.40, hettichRate: 6588.00 },
+    { id: 'wardrobe_mounted_cloth_rack', name: 'WARDROBE MOUNTED CLOTH RACK', category: 'Wardrobe Accessories', brand: 'HETTICH', rate: 6840.00, hettichRate: 6840.00 },
+    { id: 'wardrobe_hanger_single', name: 'WARDROBE PULLOUT HANGER - SINGLE', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 12972.00, ebcoRate: 12972.00, hettichRate: 7476.00 },
+    { id: 'wardrobe_hanger_double', name: 'WARDROBE PULLOUT HANGER - DOUBLE', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 14976.00, ebcoRate: 14976.00, hettichRate: 9516.00 },
+    { id: 'wardrobe_trouser_600', name: 'WARDROBE TROUSER PULLOUT - 600', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 12108.00, ebcoRate: 7248.00, hettichRate: 12108.00 },
+    { id: 'wardrobe_trouser_900', name: 'WARDROBE TROUSER PULLOUT - 900', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 15337.50, ebcoRate: 9782.40, hettichRate: 15337.50 },
+    { id: 'wardrobe_basket_450', name: 'WARDROBE PULLOUT BASKET - 450', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 13425.60, ebcoRate: 13425.60 },
+    { id: 'wardrobe_basket_600', name: 'WARDROBE PULLOUT BASKET - 600', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 16100.00, ebcoRate: 15408.00, hettichRate: 16100.00 },
+    { id: 'wardrobe_basket_900', name: 'WARDROBE PULLOUT BASKET - 900', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 20186.40, ebcoRate: 20186.40, hettichRate: 18780.00 },
+    { id: 'wardrobe_drawer_450', name: 'WARDROBE PULLOUT DRAWER - 450', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 13194.00, ebcoRate: 13194.00 },
+    { id: 'wardrobe_drawer_org_600', name: 'WARDROBE PULLOUT DRAWER ORGANISER - 600', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 20340.00, ebcoRate: 15438.00, hettichRate: 20340.00 },
+    { id: 'wardrobe_drawer_org_900', name: 'WARDROBE PULLOUT DRAWER ORGANISER - 900', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 23340.00, ebcoRate: 20328.00, hettichRate: 23340.00 },
+    { id: 'wardrobe_utility_rack', name: 'WARDROBE PULLOUT UTILITY RACK', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 3954.00, ebcoRate: 3954.00, hettichRate: 2616.00 },
+    { id: 'cloths_holder', name: 'CLOTHS HOLDER', category: 'Wardrobe Accessories', brand: 'HETTICH', rate: 5272.20, hettichRate: 5272.20 },
+    { id: 'wardrobe_ironing_board', name: 'WARDROBE PULLOUT IROING BOARD', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 23948.58, ebcoRate: 12027.75, hettichRate: 23948.58 },
+    { id: 'g_profile_handle_1m', name: 'G PROFILE HANDLE 1 meter', category: 'Profiles & Handles', brand: 'CUSTOM', rate: 1250.00, ebcoRate: 1250.00, hettichRate: 1250.00, minRate: 950, maxRate: 1850, unit: 'meter', unitLabel: 'meter(s)', step: 0.5, isCustom: true },
+    { id: 'golden_strip', name: 'GOLDEN STRIP', category: 'Profiles & Handles', brand: 'CUSTOM', rate: 850.00, ebcoRate: 850.00, hettichRate: 850.00, minRate: 450, maxRate: 1500, unit: 'meter', unitLabel: 'meter(s)', step: 0.5, isCustom: true }
+  ];
+
+  var COOKSCAPE_CUSTOM_ADDONS_PAIRS = [
+    {
+      id: 'wooden_panelling',
+      code: '1 / 10',
+      name: 'Wooden Panelling',
+      category: 'Wall Treatments',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '1', name: 'Wooden Panelling Regular', rate: 1150.00 },
+      premium: { code: '10', name: 'Wooden Panelling - Multi Texture/ Premium', rate: 1575.00 }
+    },
+    {
+      id: 'wooden_partition',
+      code: '1 / 10',
+      name: 'Wooden Partition',
+      category: 'Partitions',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '1', name: 'Wooden Partition', rate: 1350.00 },
+      premium: { code: '10', name: 'Wooden Partition - Premium', rate: 1350.00 }
+    },
+    {
+      id: 'wallpaper_per_roll',
+      code: '2 / 20',
+      name: 'Wallpaper (Per Roll)',
+      category: 'Wall Treatments',
+      unit: 'roll',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '2', name: 'WALLPAPER ( Per Roll)', rate: 4850.00 },
+      premium: { code: '20', name: 'Texture WALLPAPER - Washable ( Per Roll)', rate: 7860.00 }
+    },
+    {
+      id: 'fluted_panels',
+      code: '2 / 20',
+      name: 'Fluted Panels',
+      category: 'Wall Treatments',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '2', name: 'Fluted panels', rate: 680.00 },
+      premium: { code: '20', name: 'Fluted panels - Premium Grade', rate: 840.00 }
+    },
+    {
+      id: 'tinted_fluted_glass',
+      code: '3 / 30',
+      name: 'Tinted / Fluted / Designer Glass',
+      category: 'Glass & Partitions',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '3', name: 'Tinted Glass (₹550) / Fluted Glass (₹650)', rate: 550.00, altRate: 650.00, altName: 'Fluted Glass' },
+      premium: { code: '30', name: 'Designer Glass', rate: 750.00 }
+    },
+    {
+      id: 'bathroom_partition_openable',
+      code: '3 / 40',
+      name: 'Bathroom Partition - Openable',
+      category: 'Bathroom Fittings',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '3', name: 'Bathroom Partition - Open able (Omega Fittings)', rate: 850.00 },
+      premium: { code: '40', name: 'Bathroom Partition - Open able (Ozone Fittings)', rate: 1250.00 }
+    },
+    {
+      id: 'bathroom_partition_sliding',
+      code: '3 / 40',
+      name: 'Bathroom Partition - Sliding',
+      category: 'Bathroom Fittings',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '3', name: 'Bathroom Partition - Sliding (Omega Fittings)', rate: 925.00 },
+      premium: { code: '40', name: 'Bathroom Partition - Sliding (Ozone Fittings)', rate: 1375.00 }
+    },
+    {
+      id: 'king_size_cot_storage',
+      code: '5 / 50',
+      name: 'KING SIZE COT WITH STORAGE',
+      category: 'Beds & Cots',
+      unit: 'unit',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '5', name: 'KING SIZE COT WITH STORAGE - Prelam MDF', rate: 59740.00 },
+      premium: { code: '50', name: 'KING SIZE COT WITH STORAGE - BWP Plywood - Laminated', rate: 66920.00 }
+    },
+    {
+      id: 'headboard_6x3',
+      code: '5 / 50',
+      name: "HEADBOARD (6' X 3')",
+      category: 'Beds & Cots',
+      unit: 'unit',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '5', name: "PLAIN PANEL HEADBOARD (6' X 3')", rate: 890.00 },
+      premium: { code: '50', name: "HEAD BOARD WITH CUSSION (6' X 3')", rate: 1450.00 }
+    },
+    {
+      id: 'queen_size_cot_storage',
+      code: '6 / 60',
+      name: 'QUEEN SIZE COT WITH STORAGE',
+      category: 'Beds & Cots',
+      unit: 'unit',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '6', name: 'QUEEN SIZE COT WITH STORAGE - Prelam MDF', rate: 42650.00 },
+      premium: { code: '60', name: 'QUEEN SIZE COT WITH STORAGE - BWP Plywood - Laminated', rate: 48500.00 }
+    },
+    {
+      id: 'headboard_5x3',
+      code: '6 / 60',
+      name: "HEADBOARD (5' X 3')",
+      category: 'Beds & Cots',
+      unit: 'unit',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '6', name: "PLAIN PANEL HEADBOARD (5' X 3')", rate: 1250.00 },
+      premium: { code: '60', name: "HEAD BOARD WITH CUSSION (5' X 3')", rate: 1350.00 }
+    },
+    {
+      id: 'false_ceiling',
+      code: '7 / 70',
+      name: 'False Ceiling',
+      category: 'Ceiling Works',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '7', name: 'False Ceiling - PREMIUM Grade', rate: 75.00 },
+      premium: { code: '70', name: 'False Ceiling - Elite with HD Channels', rate: 95.00 }
+    },
+    {
+      id: 'bunker_cot_stairs',
+      code: '8 / 80',
+      name: 'Bunker Cot With Wooden Stairs',
+      category: 'Beds & Cots',
+      unit: 'unit',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '8', name: 'Bunker Cot With Wooden Stairs - Ply wood laminated', rate: 118240.00 },
+      premium: { code: '80', name: 'Bunker Cot With Wooden Stairs - Rubber wood - lacquered', rate: 144760.00 }
+    },
+    {
+      id: 'safety_grill',
+      code: '9 / 90',
+      name: 'INVISIBLE SAFETY GRILL',
+      category: 'Safety & Grills',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '9', name: 'INVISIBLE SAFETY GRILL Regular', rate: 145.00 },
+      premium: { code: '90', name: 'INVISIBLE SAFETY GRILL Premium', rate: 225.00 }
+    },
+    {
+      id: 'granite_supply_installation',
+      code: '11 / 110',
+      name: 'Granite Supply and Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '11', name: 'Granite Supply and Installation', rate: 680.00 },
+      premium: { code: '110', name: 'Granite Supply and Installation', rate: 680.00 }
+    },
+    {
+      id: 'granite_only_installation',
+      code: '12 / 120',
+      name: 'Granite Only Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '12', name: 'Granite Only Installation', rate: 380.00 },
+      premium: { code: '120', name: 'Granite Only Installation', rate: 380.00 }
+    },
+    {
+      id: 'dado_tile_supply_installation',
+      code: '13 / 130',
+      name: 'Dado tile Supply and Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '13', name: 'Dado tile Supply and Installation', rate: 375.00 },
+      premium: { code: '130', name: 'Dado tile Supply and Installation', rate: 375.00 }
+    },
+    {
+      id: 'dado_tile_only_installation',
+      code: '14 / 140',
+      name: 'Dado tile Only Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '14', name: 'Dado tile Only Installation', rate: 225.00 },
+      premium: { code: '140', name: 'Dado tile Only Installation', rate: 225.00 }
+    },
+    {
+      id: 'wall_painting_regular',
+      code: '15 / 150',
+      name: 'Wall painting - regular (Putty including - Asian Paint)',
+      category: 'Painting & Finishes',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '15', name: 'Wall painting - regular (Putty including - Asian Paint)', rate: 40.00 },
+      premium: { code: '150', name: 'Wall painting - regular (Putty including - Asian Paint)', rate: 40.00 }
+    },
+    {
+      id: 'texture_paint',
+      code: '16 / 160',
+      name: 'Texture Paint',
+      category: 'Painting & Finishes',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '16', name: 'Texture Paint', rate: 180.00 },
+      premium: { code: '160', name: 'Texture Paint - Premium', rate: 245.00 }
+    },
+    {
+      id: 'grill_work_ms',
+      code: '17 / 170',
+      name: 'Grill Work - MS',
+      category: 'Safety & Grills',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '17', name: 'Grill Work - MS', rate: 350.00 },
+      premium: { code: '170', name: 'Grill Work - MS', rate: 350.00 }
+    }
   ];
 
   function getCookscapeAddonsCatalog() {
     return COOKSCAPE_ADDONS_CATALOG.slice();
+  }
+
+  function getCookscapeCustomAddonsPairs() {
+    return COOKSCAPE_CUSTOM_ADDONS_PAIRS.slice();
   }
 
   function calculateAddonsSummary(selectedAddons, appliancesList) {
@@ -21351,6 +21600,8 @@ body.role-employee #adminCreateEmpBox,
     getSurabhiDesignFeeSlab: getSurabhiDesignFeeSlab,
     COOKSCAPE_ADDONS_CATALOG: COOKSCAPE_ADDONS_CATALOG,
     getCookscapeAddonsCatalog: getCookscapeAddonsCatalog,
+    COOKSCAPE_CUSTOM_ADDONS_PAIRS: COOKSCAPE_CUSTOM_ADDONS_PAIRS,
+    getCookscapeCustomAddonsPairs: getCookscapeCustomAddonsPairs,
     calculateAddonsSummary: calculateAddonsSummary,
     uid: uid,
     Vec2: Vec2,
@@ -45977,8 +46228,8 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     },
 
     COMMERCIAL_FIELDS: [
-      { key: 'additionalAccessories', label: 'Additional Accessories', type: 'amount', isDeduction: false },
-      { key: 'appliances', label: 'Appliances', type: 'amount', isDeduction: false },
+      { key: 'additionalAccessories', label: 'Accessories', type: 'amount', isDeduction: false },
+      { key: 'appliances', label: 'Add ons', type: 'amount', isDeduction: false },
       { key: 'designCharges', label: 'Design Charges', type: 'percent', defaultPercent: 9, isDeduction: false },
       { key: 'freightCharges', label: 'Freight Charges', type: 'percent', defaultPercent: 2.5, isDeduction: false },
       { key: 'loadingUnloading', label: 'Loading and unloading (material)', type: 'select', options: ['Additional', 'Included'], defaultVal: 'Additional' },
@@ -46033,6 +46284,23 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       if (c.gstPercent === undefined) c.gstPercent = 18;
       if (c.gstEnabled === undefined) c.gstEnabled = true;
       if (!c.surabhiDesignSlab) c.surabhiDesignSlab = 'auto';
+      if (c.appliances && c.appliances > 10000000 && Array.isArray(c.selectedCustomAddons)) {
+        var fixedTotal = 0;
+        c.selectedCustomAddons.forEach(function (it) {
+          var len = Number(it.length || 0);
+          var wid = Number(it.width || 0);
+          var q = Number(it.qty || 0);
+          if (len > 0 && wid > 0 && (len > 50 || wid > 50)) {
+            var correctSqft = Math.round(((len * wid) / 92903.04) * 100) / 100;
+            if (q > 500 || Math.abs(q - (len * wid)) < 5) {
+              it.qty = correctSqft;
+              q = correctSqft;
+            }
+          }
+          fixedTotal += Math.round(q * (it.effectiveRate || it.rate || 0));
+        });
+        if (fixedTotal < 10000000) c.appliances = fixedTotal;
+      }
       return this.project.commercialCharges;
     },
 
@@ -46630,13 +46898,13 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
         '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>' +
 
-        // Additional Accessories (Enable/Disable + amount + catalog selector button)
+        // Accessories (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAccessories" style="' + (commSummary.accessoriesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
         '<td colspan="4" class="bold">' +
         '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Additional Accessories</label>' +
-        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Add-Ons Catalog (58 Items)</button>' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Accessories</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Accessories (69 Items)</button>' +
         (commCharges.selectedAddons && commCharges.selectedAddons.length ? ('<span id="commAddonsCountBadge" style="font-size:11px;color:#166534;font-weight:700;">(' + commCharges.selectedAddons.length + ' items selected)</span>') : '<span id="commAddonsCountBadge" style="display:none;font-size:11px;color:#166534;font-weight:700;"></span>') +
         '</div></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
@@ -46646,10 +46914,15 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
 
-        // Appliances (Enable/Disable + amount)
+        // Add ons (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAppliances" style="' + (commSummary.appliancesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Appliances</label></td>' +
+        '<td colspan="4" class="bold">' +
+        '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Add ons</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenCustomAddonsConfigurator" style="background:#047857;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Add-Ons (Regular / Premium)</button>' +
+        (commCharges.selectedCustomAddons && commCharges.selectedCustomAddons.length ? ('<span id="commCustomAddonsCountBadge" style="font-size:11px;color:#047857;font-weight:700;">(' + commCharges.selectedCustomAddons.length + ' items selected)</span>') : '<span id="commCustomAddonsCountBadge" style="display:none;font-size:11px;color:#047857;font-weight:700;"></span>') +
+        '</div></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
@@ -46815,11 +47088,11 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         '<td colspan="3" class="c-num bold" id="commTotalSavings" style="font-size:13.5px;color:#166534;">₹ ' + (commSummary.totalSavings || 0).toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
 
-        // ── ADD-ONS & TOTAL INVESTMENT (DOWN AFTER SAVINGS) ──
-        '<tr class="sec-bar-row" style="background:#08231B;color:#fff;"><td colspan="11"><b>Add-Ons, Accessories &amp; Appliances (Down After Savings)</b></td></tr>' +
+        // ── ACCESSORIES, ADD-ONS & TOTAL INVESTMENT (DOWN AFTER SAVINGS) ──
+        '<tr class="sec-bar-row" style="background:#08231B;color:#fff;"><td colspan="11"><b>Accessories &amp; Add ons (Down After Savings)</b></td></tr>' +
         '<tr>' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">Add-ons &amp; Accessories Subtotal</td>' +
+        '<td colspan="4" class="bold">Accessories &amp; Add ons Subtotal</td>' +
         '<td colspan="3" class="c-num bold" id="commAddonsSubtotal">₹ ' + (commSummary.addonsTotal || 0).toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
         '<tr style="background:#ECFDF5;border-top:1.5px solid #16A34A;">' +
@@ -46974,6 +47247,18 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
             refreshCommercialDom();
             var accInp = boqEl.querySelector('.comm-input[data-key="additionalAccessories"]');
             if (accInp) accInp.value = self.project.commercialCharges.additionalAccessories || 0;
+            self.saveToLocalStorage();
+          });
+        });
+      }
+
+      var btnCustomAddons = boqEl.querySelector('#btnOpenCustomAddonsConfigurator');
+      if (btnCustomAddons) {
+        btnCustomAddons.addEventListener('click', function () {
+          self.openCustomAddonsConfiguratorModal(function () {
+            refreshCommercialDom();
+            var appInp = boqEl.querySelector('.comm-input[data-key="appliances"]');
+            if (appInp) appInp.value = self.project.commercialCharges.appliances || 0;
             self.saveToLocalStorage();
           });
         });
@@ -47565,20 +47850,31 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       }
 
       var categories = ['All'];
+      var brands = ['All Brands'];
       catalog.forEach(function (it) {
         if (it.category && categories.indexOf(it.category) === -1) {
           categories.push(it.category);
         }
+        var b = (it.brand || '').trim().toUpperCase();
+        if (b && brands.indexOf(b) === -1) {
+          brands.push(b);
+        }
       });
 
       var activeCategory = 'All';
+      var activeBrand = 'All Brands';
       var searchQuery = '';
 
       function renderModalContent() {
         var filtered = catalog.filter(function (it) {
           var matchCat = (activeCategory === 'All') || (it.category === activeCategory);
-          var matchSearch = !searchQuery || (it.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) || (it.category.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1);
-          return matchCat && matchSearch;
+          var itBrand = (it.brand || '').trim().toUpperCase();
+          var matchBrand = (activeBrand === 'All Brands') || (itBrand === activeBrand);
+          var matchSearch = !searchQuery ||
+            (it.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.category.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (itBrand.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1);
+          return matchCat && matchBrand && matchSearch;
         });
 
         var selectedCount = 0;
@@ -47592,26 +47888,51 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           }
         });
 
+        // Preserve scroll position across full filter re-renders
+        var prevScrollTop = 0;
+        var prevList = modal.querySelector('#addonsItemList');
+        if (prevList) prevScrollTop = prevList.scrollTop;
+
         modal.innerHTML =
           '<div class="addons-backdrop" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,35,27,0.65);backdrop-filter:blur(3px);"></div>' +
-          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(920px, 95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
+          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(960px, 95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
 
           // Header
           '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
           '    <div>' +
-          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Add-Ons &amp; Accessories Catalog</h3>' +
-          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">58 Master Hardware Items &bull; Customizable Rates &amp; Measurements (Meters / Sq.Ft)</div>' +
+          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Accessories Catalog</h3>' +
+          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">69 Master Accessories &bull; Brand Rate Cards (Ebco, Hettich, Grass, Livsmart) &bull; Custom Profiles (Meters)</div>' +
           '    </div>' +
           '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
           '  </div>' +
 
-          // Search & Category Filters
+          // Search, Brand Switcher & Filters
           '  <div style="background:#FAF6F0;padding:12px 20px;border-bottom:1px solid #E2D5C3;display:flex;flex-direction:column;gap:10px;">' +
-          '    <input type="text" id="addonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search by name or category (e.g. G Profile Handle, Wallpaper, Magic Corner, Pantry, Basket, Cot)..." style="width:100%;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">' +
+          '      <input type="text" id="addonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search by name, brand, or category (e.g. Cutlery, Tandem, Magic Corner, Pantry, Ebco, Hettich)..." style="flex:1;min-width:240px;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '      <div style="display:flex;gap:6px;align-items:center;">' +
+          '        <span style="font-size:11px;font-weight:700;color:#64748B;">⚡ SET ALL:</span>' +
+          '        <button type="button" id="addonsSetAllEbco" style="padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;background:#E0F2FE;border:1px solid #7DD3FC;color:#0369A1;cursor:pointer;">EBCO Rates</button>' +
+          '        <button type="button" id="addonsSetAllHettich" style="padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;background:#FEF3C7;border:1px solid #FCD34D;color:#B45309;cursor:pointer;">Hettich Rates</button>' +
+          '        <button type="button" id="addonsSetAllGrass" style="padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;background:#DCFCE7;border:1px solid #86EFAC;color:#15803D;cursor:pointer;">Grass Rates</button>' +
+          '      </div>' +
+          '    </div>' +
+
+          // Brand Pills
+          '    <div style="display:flex;gap:6px;align-items:center;overflow-x:auto;padding-bottom:2px;">' +
+          '      <span style="font-size:11px;font-weight:700;color:#64748B;white-space:nowrap;">BRAND:</span>' +
+          brands.map(function (b) {
+            var isSel = b === activeBrand;
+            return '<button type="button" class="addons-brand-btn" data-brand="' + b.replace(/"/g, '&quot;') + '" style="padding:3px 9px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#047857' : '#CBD5E1') + ';background:' + (isSel ? '#047857' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + b + '</button>';
+          }).join('') +
+          '    </div>' +
+
+          // Category Pills
           '    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;" id="addonsCatPills">' +
+          '      <span style="font-size:11px;font-weight:700;color:#64748B;white-space:nowrap;align-self:center;">CATEGORY:</span>' +
           categories.map(function (cat) {
             var isSel = cat === activeCategory;
-            return '<button type="button" class="addons-cat-btn" data-cat="' + cat.replace(/"/g, '&quot;') + '" style="padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#08231B' : '#CBD5E1') + ';background:' + (isSel ? '#08231B' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + cat + '</button>';
+            return '<button type="button" class="addons-cat-btn" data-cat="' + cat.replace(/"/g, '&quot;') + '" style="padding:3px 9px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#08231B' : '#CBD5E1') + ';background:' + (isSel ? '#08231B' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + cat + '</button>';
           }).join('') +
           '    </div>' +
           '  </div>' +
@@ -47621,8 +47942,8 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           '    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">' +
           '      <thead>' +
           '        <tr style="border-bottom:2px solid #E2E8F0;color:#64748B;font-size:11px;text-align:left;">' +
-          '          <th style="padding:6px 8px;">ITEM NAME &amp; CATEGORY</th>' +
-          '          <th style="padding:6px 8px;text-align:right;width:170px;">UNIT RATE</th>' +
+          '          <th style="padding:6px 8px;">ITEM NAME &amp; BRAND</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:240px;">BRAND RATE CARDS &amp; UNIT RATE</th>' +
           '          <th style="padding:6px 8px;text-align:center;width:150px;">QUANTITY / MEASURE</th>' +
           '          <th style="padding:6px 8px;text-align:right;width:120px;">SUBTOTAL</th>' +
           '        </tr>' +
@@ -47637,21 +47958,47 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
             var unitPlural = it.unit === 'meter' ? 'meter(s)' : (it.unit === 'sqft' ? 'sq.feet' : '');
             var stepVal = it.step || (it.unit === 'meter' ? 0.5 : 1);
             var customRange = isCustom ? (' (' + (it.minRate || 0) + '-' + (it.maxRate || 0) + '/' + unitLabel + ')') : '';
+            var itBrand = (it.brand || '').trim().toUpperCase();
 
-            var rateHtml = isCustom
-              ? ('<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;">' +
-                 '  <span style="font-weight:700;color:#08231B;font-size:12px;">₹</span>' +
-                 '  <input type="number" class="addons-rate-inp" data-id="' + it.id + '" min="' + (it.minRate || 0) + '" max="' + (it.maxRate || 999999) + '" step="1" value="' + curRate + '" title="User editable unit rate (' + (it.minRate || 0) + '-' + (it.maxRate || 0) + '/' + unitLabel + ')" style="width:74px;height:26px;border:1.5px solid #EA580C;border-radius:6px;padding:2px 6px;text-align:right;font-weight:700;font-size:12.5px;color:#9A3412;background:#FFF;outline:none;">' +
-                 '  <span style="font-size:11px;color:#64748B;">/' + unitLabel + '</span>' +
-                 '</div>')
-              : ('<span style="font-family:monospace;font-weight:600;color:#08231B;">₹ ' + (it.rate || 0).toLocaleString('en-IN') + '</span>');
+            // Brand rate selector pills
+            var brandPillsHtml = '';
+            var hasBrandRates = (it.ebcoRate || it.hettichRate || it.grassRate);
+            if (hasBrandRates) {
+              brandPillsHtml = '<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;margin-bottom:4px;">';
+              if (it.ebcoRate) {
+                var isEbcoActive = Math.abs(curRate - it.ebcoRate) < 0.05;
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-brand="ebco" data-rate="' + it.ebcoRate + '" title="Apply Ebco Rate: ₹ ' + it.ebcoRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isEbcoActive ? '#0284C7' : '#BAE6FD') + ';background:' + (isEbcoActive ? '#0284C7' : '#F0F9FF') + ';color:' + (isEbcoActive ? '#FFF' : '#0369A1') + ';">EBCO ₹' + Math.round(it.ebcoRate).toLocaleString('en-IN') + '</button>';
+              }
+              if (it.hettichRate) {
+                var isHettichActive = Math.abs(curRate - it.hettichRate) < 0.05;
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-brand="hettich" data-rate="' + it.hettichRate + '" title="Apply Hettich Rate: ₹ ' + it.hettichRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isHettichActive ? '#D97706' : '#FDE68A') + ';background:' + (isHettichActive ? '#D97706' : '#FFFBEB') + ';color:' + (isHettichActive ? '#FFF' : '#92400E') + ';">HETTICH ₹' + Math.round(it.hettichRate).toLocaleString('en-IN') + '</button>';
+              }
+              if (it.grassRate) {
+                var isGrassActive = Math.abs(curRate - it.grassRate) < 0.05;
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-brand="grass" data-rate="' + it.grassRate + '" title="Apply Grass Rate: ₹ ' + it.grassRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isGrassActive ? '#16A34A' : '#BBF7D0') + ';background:' + (isGrassActive ? '#16A34A' : '#F0FDF4') + ';color:' + (isGrassActive ? '#FFF' : '#15803D') + ';">GRASS ₹' + Math.round(it.grassRate).toLocaleString('en-IN') + '</button>';
+              }
+              brandPillsHtml += '</div>';
+            }
 
-            return '<tr style="border-bottom:1px solid #F1F5F9;' + (q > 0 ? 'background:#F0FDF4;' : '') + '">' +
+            var rateInputHtml =
+              '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;">' +
+              '  <span style="font-weight:700;color:#08231B;font-size:12px;">₹</span>' +
+              '  <input type="number" class="addons-rate-inp" data-id="' + it.id + '" min="' + (it.minRate || 0) + '" max="' + (it.maxRate || 999999) + '" step="0.5" value="' + curRate + '" title="Editable unit rate" style="width:84px;height:26px;border:1.5px solid ' + (hasBrandRates ? '#047857' : (isCustom ? '#EA580C' : '#CBD5E1')) + ';border-radius:6px;padding:2px 6px;text-align:right;font-weight:700;font-size:12.5px;color:#08231B;background:#FFF;outline:none;">' +
+              '  <span style="font-size:11px;color:#64748B;">/' + unitLabel + '</span>' +
+              '</div>';
+
+            var brandBadgeHtml = itBrand
+              ? ('<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;margin-left:6px;">' + itBrand + '</span>')
+              : '';
+
+            return '<tr class="addons-row" data-id="' + it.id + '" style="border-bottom:1px solid #F1F5F9;' + (q > 0 ? 'background:#F0FDF4;' : '') + '">' +
               '<td style="padding:8px;">' +
-              '  <div style="font-weight:700;color:#08231B;">' + it.name + '</div>' +
+              '  <div style="font-weight:700;color:#08231B;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">' +
+              '    <span>' + it.name + '</span>' + brandBadgeHtml +
+              '  </div>' +
               '  <div style="font-size:11px;color:#64748B;">' + it.category + customRange + '</div>' +
               '</td>' +
-              '<td style="padding:8px;text-align:right;">' + rateHtml + '</td>' +
+              '<td style="padding:8px;text-align:right;">' + brandPillsHtml + rateInputHtml + '</td>' +
               '<td style="padding:8px;text-align:center;">' +
               '  <div style="display:inline-flex;align-items:center;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden;background:#FFF;">' +
               '    <button type="button" class="addons-qty-btn" data-id="' + it.id + '" data-delta="' + (-stepVal) + '" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">-</button>' +
@@ -47660,7 +48007,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
               '  </div>' +
               (unitPlural ? ('<div style="font-size:10.5px;color:#08231B;font-weight:700;margin-top:2px;">' + unitPlural + '</div>') : '') +
               '</td>' +
-              '<td style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (q > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
+              '<td class="addons-subtotal-cell" data-id="' + it.id + '" style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (q > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
               '</tr>';
           }).join('') : '<tr><td colspan="4" style="text-align:center;padding:30px;color:#64748B;">No add-on items found matching search.</td></tr>') +
           '      </tbody>' +
@@ -47671,9 +48018,9 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           '  <div style="background:#FAF6F0;border-top:1px solid #E2D5C3;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">' +
           '    <div>' +
           '      <span style="font-size:12px;color:#475569;font-weight:600;">Selected Add-Ons: </span>' +
-          '      <b style="color:#08231B;font-size:13px;">' + selectedCount + ' items</b> &bull; ' +
+          '      <b id="addonsSelectedCount" style="color:#08231B;font-size:13px;">' + selectedCount + ' items</b> &bull; ' +
           '      <span style="font-size:12px;color:#475569;font-weight:600;">Subtotal: </span>' +
-          '      <b style="color:#166534;font-size:15px;font-family:monospace;">₹ ' + selectedTotal.toLocaleString('en-IN') + '</b>' +
+          '      <b id="addonsSelectedTotal" style="color:#166534;font-size:15px;font-family:monospace;">₹ ' + selectedTotal.toLocaleString('en-IN') + '</b>' +
           '    </div>' +
           '    <div style="display:flex;gap:10px;">' +
           '      <button type="button" class="addons-close-btn btn" style="background:#E2E8F0;color:#1E293B;border-radius:6px;padding:7px 14px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">Cancel</button>' +
@@ -47681,6 +48028,77 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           '    </div>' +
           '  </div>' +
           '</div>';
+
+        // Restore scroll position after DOM rebuild
+        var nextList = modal.querySelector('#addonsItemList');
+        if (nextList && prevScrollTop > 0) {
+          nextList.scrollTop = prevScrollTop;
+        }
+
+        // Live in-place DOM update helpers to prevent scroll jumps and preserve input focus
+        function updateFooterSummary() {
+          var count = 0;
+          var total = 0;
+          catalog.forEach(function (it) {
+            var q = selectedMap[it.id] || 0;
+            if (q > 0) {
+              count += (it.unit === 'sqft' || it.unit === 'meter') ? 1 : q;
+              var r = (customRateMap[it.id] !== undefined) ? customRateMap[it.id] : (it.rate || 0);
+              total += Math.round(q * r);
+            }
+          });
+          var cEl = modal.querySelector('#addonsSelectedCount');
+          if (cEl) cEl.textContent = count + ' items';
+          var tEl = modal.querySelector('#addonsSelectedTotal');
+          if (tEl) tEl.textContent = '₹ ' + total.toLocaleString('en-IN');
+        }
+
+        function updateRowDisplay(id, skipQtyInput) {
+          var row = modal.querySelector('tr.addons-row[data-id="' + id + '"]');
+          var it = catalog.find(function (x) { return x.id === id; });
+          if (!row || !it) return;
+
+          var q = selectedMap[id] || 0;
+          var curRate = (customRateMap[id] !== undefined) ? customRateMap[id] : (it.rate || 0);
+          var sub = Math.round(q * curRate);
+
+          row.style.background = q > 0 ? '#F0FDF4' : '';
+
+          var subCell = row.querySelector('.addons-subtotal-cell[data-id="' + id + '"]');
+          if (subCell) {
+            subCell.textContent = '₹ ' + sub.toLocaleString('en-IN');
+            subCell.style.color = q > 0 ? '#166534' : '#94A3B8';
+          }
+
+          if (!skipQtyInput) {
+            var qInp = row.querySelector('.addons-qty-inp[data-id="' + id + '"]');
+            if (qInp && document.activeElement !== qInp) {
+              qInp.value = q;
+            }
+          }
+
+          // Update active brand pill styling in this row
+          row.querySelectorAll('.addons-brand-rate-pill[data-id="' + id + '"]').forEach(function (p) {
+            var pRate = parseFloat(p.getAttribute('data-rate')) || 0;
+            var isActive = Math.abs(curRate - pRate) < 0.05;
+            var brandType = p.getAttribute('data-brand') || '';
+            if (brandType === 'ebco') {
+              p.style.border = '1px solid ' + (isActive ? '#0284C7' : '#BAE6FD');
+              p.style.background = isActive ? '#0284C7' : '#F0F9FF';
+              p.style.color = isActive ? '#FFF' : '#0369A1';
+            } else if (brandType === 'hettich') {
+              p.style.border = '1px solid ' + (isActive ? '#D97706' : '#FDE68A');
+              p.style.background = isActive ? '#D97706' : '#FFFBEB';
+              p.style.color = isActive ? '#FFF' : '#92400E';
+            } else if (brandType === 'grass') {
+              p.style.border = '1px solid ' + (isActive ? '#16A34A' : '#BBF7D0');
+              p.style.background = isActive ? '#16A34A' : '#F0FDF4';
+              p.style.color = isActive ? '#FFF' : '#15803D';
+            }
+          });
+
+          updateFooterSummary();
+        }
 
         // Bind events inside modal
         modal.querySelectorAll('.addons-close-btn, .addons-backdrop').forEach(function (el) {
@@ -47709,22 +48127,88 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           });
         });
 
-        // User-Editable Unit Rate change
-        modal.querySelectorAll('.addons-rate-inp').forEach(function (inp) {
-          inp.addEventListener('input', function () {
-            var id = inp.getAttribute('data-id');
-            var val = Math.max(0, parseFloat(inp.value) || 0);
-            customRateMap[id] = val;
+        modal.querySelectorAll('.addons-brand-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activeBrand = btn.getAttribute('data-brand');
             renderModalContent();
-            var restored = modal.querySelector('.addons-rate-inp[data-id="' + id + '"]');
-            if (restored) {
-              restored.focus();
-              restored.setSelectionRange(restored.value.length, restored.value.length);
+          });
+        });
+
+        // Clickable Brand Rate Pills per row (updates in-place without page jump)
+        modal.querySelectorAll('.addons-brand-rate-pill').forEach(function (pill) {
+          pill.addEventListener('click', function () {
+            var id = pill.getAttribute('data-id');
+            var rate = parseFloat(pill.getAttribute('data-rate')) || 0;
+            if (id && rate > 0) {
+              customRateMap[id] = rate;
+              var row = modal.querySelector('tr.addons-row[data-id="' + id + '"]');
+              if (row) {
+                var rInp = row.querySelector('.addons-rate-inp[data-id="' + id + '"]');
+                if (rInp) rInp.value = rate;
+                updateRowDisplay(id);
+              }
             }
           });
         });
 
-        // Quantity delta increment/decrement
+        // Set All Brand Rates Batch Buttons
+        var setEbcoBtn = modal.querySelector('#addonsSetAllEbco');
+        if (setEbcoBtn) {
+          setEbcoBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              if (it.ebcoRate) customRateMap[it.id] = it.ebcoRate;
+            });
+            renderModalContent();
+          });
+        }
+
+        var setHettichBtn = modal.querySelector('#addonsSetAllHettich');
+        if (setHettichBtn) {
+          setHettichBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              if (it.hettichRate) customRateMap[it.id] = it.hettichRate;
+            });
+            renderModalContent();
+          });
+        }
+
+        var setGrassBtn = modal.querySelector('#addonsSetAllGrass');
+        if (setGrassBtn) {
+          setGrassBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              if (it.grassRate) customRateMap[it.id] = it.grassRate;
+            });
+            renderModalContent();
+          });
+        }
+
+        // User-Editable Unit Rate change (updates in-place without page jump)
+        modal.querySelectorAll('.addons-rate-inp').forEach(function (inp) {
+          inp.addEventListener('focus', function () {
+            this.select();
+          });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var val = parseFloat(inp.value);
+            if (!isNaN(val)) {
+              customRateMap[id] = Math.max(0, val);
+              updateRowDisplay(id);
+            }
+          });
+          inp.addEventListener('blur', function () {
+            var id = inp.getAttribute('data-id');
+            var val = parseFloat(inp.value);
+            if (isNaN(val) || val < 0) {
+              var item = catalog.find(function (x) { return x.id === id; });
+              var fallback = item ? item.rate : 0;
+              customRateMap[id] = fallback;
+              inp.value = fallback;
+            }
+            updateRowDisplay(id);
+          });
+        });
+
+        // Quantity delta increment/decrement (+ / - buttons, updates in-place)
         modal.querySelectorAll('.addons-qty-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var id = btn.getAttribute('data-id');
@@ -47733,18 +48217,46 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
             var next = Math.max(0, Math.round((cur + delta) * 10) / 10);
             if (next === 0) delete selectedMap[id];
             else selectedMap[id] = next;
-            renderModalContent();
+            var row = modal.querySelector('tr.addons-row[data-id="' + id + '"]');
+            if (row) {
+              var qInp = row.querySelector('.addons-qty-inp[data-id="' + id + '"]');
+              if (qInp) qInp.value = next;
+              updateRowDisplay(id);
+            }
           });
         });
 
-        // Quantity manual input
+        // Quantity manual input [- 0 +] (updates in-place, auto-selects, zero scroll jump)
         modal.querySelectorAll('.addons-qty-inp').forEach(function (inp) {
-          inp.addEventListener('change', function () {
+          inp.addEventListener('focus', function () {
+            this.select(); // Auto-selects existing value so user can immediately type desired quantity
+          });
+          inp.addEventListener('input', function () {
             var id = inp.getAttribute('data-id');
-            var val = Math.max(0, parseFloat(inp.value) || 0);
-            if (val === 0) delete selectedMap[id];
-            else selectedMap[id] = val;
-            renderModalContent();
+            if (inp.value === '') {
+              delete selectedMap[id];
+              updateRowDisplay(id, true);
+              return;
+            }
+            var val = parseFloat(inp.value);
+            if (!isNaN(val)) {
+              val = Math.max(0, val);
+              if (val === 0) delete selectedMap[id];
+              else selectedMap[id] = val;
+              updateRowDisplay(id, true);
+            }
+          });
+          inp.addEventListener('blur', function () {
+            var id = inp.getAttribute('data-id');
+            var val = parseFloat(inp.value);
+            if (isNaN(val) || val <= 0) {
+              delete selectedMap[id];
+              inp.value = 0;
+            } else {
+              selectedMap[id] = val;
+              inp.value = val;
+            }
+            updateRowDisplay(id);
           });
         });
 
@@ -47776,6 +48288,496 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
             self.project.commercialCharges.selectedAddons = chosen;
             self.project.commercialCharges.additionalAccessories = totalAmt;
             self.project.commercialCharges.accessoriesEnabled = true;
+
+            modal.style.display = 'none';
+            if (typeof onApply === 'function') onApply();
+          });
+        }
+      }
+
+      modal.style.display = 'flex';
+      renderModalContent();
+    },
+
+    openCustomAddonsConfiguratorModal: function (onApply) {
+      var self = this;
+      var catalog = (typeof Core !== 'undefined' && Core.getCookscapeCustomAddonsPairs)
+        ? Core.getCookscapeCustomAddonsPairs()
+        : [];
+      if (!catalog.length) return;
+
+      var currentCharges = this.getCommercialCharges();
+      var itemStateMap = {};
+      (currentCharges.selectedCustomAddons || []).forEach(function (it) {
+        var len = Number(it.length || 0);
+        var wid = Number(it.width || 0);
+        var q = Number(it.qty || 0);
+        // Auto-correct any legacy raw mm multiplication to proper Sq.Ft (l * w / 92903.04)
+        if (len > 0 && wid > 0 && (len > 50 || wid > 50)) {
+          var correctSqft = Math.round(((len * wid) / 92903.04) * 100) / 100;
+          if (q > 500 || Math.abs(q - (len * wid)) < 5) {
+            q = correctSqft;
+          }
+        }
+        itemStateMap[it.id] = {
+          grade: it.grade || 'regular',
+          length: len,
+          width: wid,
+          qty: q,
+          subOption: it.subOption || 0
+        };
+      });
+
+      var modalId = 'orbixCustomAddonsModal';
+      var modal = document.getElementById(modalId);
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;justify-content:center;';
+        document.body.appendChild(modal);
+      }
+
+      var categories = ['All'];
+      catalog.forEach(function (it) {
+        if (it.category && categories.indexOf(it.category) === -1) {
+          categories.push(it.category);
+        }
+      });
+
+      var activeCategory = 'All';
+      var searchQuery = '';
+
+      function getEffectiveRate(it, state) {
+        if (state.grade === 'premium') {
+          return it.premium.rate;
+        }
+        if (it.regular.subOptions && state.subOption !== undefined) {
+          var opt = it.regular.subOptions[state.subOption] || it.regular.subOptions[0];
+          return opt.rate;
+        }
+        return it.regular.rate;
+      }
+
+      function getEffectiveName(it, state) {
+        if (state.grade === 'premium') {
+          return it.premium.name;
+        }
+        if (it.regular.subOptions && state.subOption !== undefined) {
+          var opt = it.regular.subOptions[state.subOption] || it.regular.subOptions[0];
+          return opt.name;
+        }
+        return it.regular.name;
+      }
+
+      function renderModalContent() {
+        var filtered = catalog.filter(function (it) {
+          var matchCat = (activeCategory === 'All') || (it.category === activeCategory);
+          var matchSearch = !searchQuery ||
+            (it.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.category.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.regular.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.premium.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1);
+          return matchCat && matchSearch;
+        });
+
+        var selectedCount = 0;
+        var selectedTotal = 0;
+        catalog.forEach(function (it) {
+          var st = itemStateMap[it.id];
+          if (st && st.qty > 0) {
+            selectedCount += 1;
+            selectedTotal += Math.round(st.qty * getEffectiveRate(it, st));
+          }
+        });
+
+        // Preserve scroll position across re-renders
+        var prevScrollTop = 0;
+        var prevList = modal.querySelector('#customAddonsItemList');
+        if (prevList) prevScrollTop = prevList.scrollTop;
+
+        modal.innerHTML =
+          '<div class="addons-backdrop" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,35,27,0.65);backdrop-filter:blur(3px);"></div>' +
+          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(1040px, 96vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
+
+          // Header
+          '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
+          '    <div>' +
+          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Add-Ons Catalog (Regular vs Premium)</h3>' +
+          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">Enter value once &bull; Auto-syncs to Regular &amp; Premium &bull; 1-Click Grade Toggle &bull; Length &times; Width Area Calculation</div>' +
+          '    </div>' +
+          '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
+          '  </div>' +
+
+          // Search, Batch Switcher & Category Filters
+          '  <div style="background:#FAF6F0;padding:12px 20px;border-bottom:1px solid #E2D5C3;display:flex;flex-direction:column;gap:10px;">' +
+          '    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">' +
+          '      <input type="text" id="customAddonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search add-ons (e.g. Panelling, Partition, Cot, Headboard, Glass, Ceiling, Grill)..." style="flex:1;min-width:240px;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '      <div style="display:flex;gap:6px;align-items:center;">' +
+          '        <span style="font-size:11px;font-weight:700;color:#64748B;">⚡ SWITCH ALL:</span>' +
+          '        <button type="button" id="addonsSwitchAllRegular" style="padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;background:#E0F2FE;border:1px solid #7DD3FC;color:#0369A1;cursor:pointer;">⚪ All to Regular (Codes 1-9)</button>' +
+          '        <button type="button" id="addonsSwitchAllPremium" style="padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;background:#FEF3C7;border:1px solid #FCD34D;color:#B45309;cursor:pointer;">⭐ All to Premium (Codes 10-90)</button>' +
+          '      </div>' +
+          '    </div>' +
+
+          // Category Pills
+          '    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;" id="customAddonsCatPills">' +
+          '      <span style="font-size:11px;font-weight:700;color:#64748B;white-space:nowrap;align-self:center;">CATEGORY:</span>' +
+          categories.map(function (cat) {
+            var isSel = cat === activeCategory;
+            return '<button type="button" class="addons-cat-btn" data-cat="' + cat.replace(/"/g, '&quot;') + '" style="padding:3px 9px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#08231B' : '#CBD5E1') + ';background:' + (isSel ? '#08231B' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + cat + '</button>';
+          }).join('') +
+          '    </div>' +
+          '  </div>' +
+
+          // Item List Body
+          '  <div style="flex:1;overflow-y:auto;padding:12px 20px;" id="customAddonsItemList">' +
+          '    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">' +
+          '      <thead>' +
+          '        <tr style="border-bottom:2px solid #E2E8F0;color:#64748B;font-size:11px;text-align:left;">' +
+          '          <th style="padding:6px 8px;width:240px;">CODE &amp; ITEM DETAILS</th>' +
+          '          <th style="padding:6px 8px;text-align:center;width:240px;">MEASUREMENT / QUANTITY</th>' +
+          '          <th style="padding:6px 8px;text-align:center;width:280px;">GRADE (1 vs 10 SWITCHER)</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:110px;">UNIT RATE</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:120px;">SUBTOTAL</th>' +
+          '        </tr>' +
+          '      </thead>' +
+          '      <tbody>' +
+          (filtered.length ? filtered.map(function (it) {
+            var st = itemStateMap[it.id] || { grade: it.defaultGrade || 'regular', length: 0, width: 0, qty: 0, subOption: 0 };
+            var curGrade = st.grade || 'regular';
+            var curRate = getEffectiveRate(it, st);
+            var sub = Math.round((st.qty || 0) * curRate);
+            var isPrem = (curGrade === 'premium');
+
+            // Grade Switcher HTML
+            var gradeHtml =
+              '<div style="display:inline-flex;gap:4px;background:#F1F5F9;padding:3px;border-radius:7px;border:1px solid #CBD5E1;">' +
+              '  <button type="button" class="addons-grade-toggle-btn" data-id="' + it.id + '" data-grade="regular" style="padding:3px 8px;border-radius:5px;font-size:10.5px;font-weight:700;cursor:pointer;border:none;background:' + (!isPrem ? '#0284C7' : 'transparent') + ';color:' + (!isPrem ? '#FFF' : '#475569') + ';">' +
+              '    ⚪ ' + (it.regular.code ? ('[' + it.regular.code + '] ') : '') + 'Regular ₹' + Math.round(it.regular.rate).toLocaleString('en-IN') +
+              '  </button>' +
+              '  <button type="button" class="addons-grade-toggle-btn" data-id="' + it.id + '" data-grade="premium" style="padding:3px 8px;border-radius:5px;font-size:10.5px;font-weight:700;cursor:pointer;border:none;background:' + (isPrem ? '#D97706' : 'transparent') + ';color:' + (isPrem ? '#FFF' : '#475569') + ';">' +
+              '    ⭐ ' + (it.premium.code ? ('[' + it.premium.code + '] ') : '') + 'Premium ₹' + Math.round(it.premium.rate).toLocaleString('en-IN') +
+              '  </button>' +
+              '</div>';
+
+            // Measurement HTML
+            var measureHtml = '';
+            if (it.hasDimensions) {
+              measureHtml =
+                '<div style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;">' +
+                '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
+                '    <span style="font-size:10px;color:#64748B;font-weight:700;">L:</span>' +
+                '    <input type="number" min="0" step="10" class="addons-dim-len" data-id="' + it.id + '" value="' + (st.length || '') + '" placeholder="mm" title="Length in millimeters (or feet)" style="width:58px;height:24px;border:1px solid #CBD5E1;border-radius:4px;padding:2px 4px;font-size:11.5px;text-align:center;font-weight:700;">' +
+                '  </div>' +
+                '  <span style="color:#94A3B8;font-size:11px;">&times;</span>' +
+                '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
+                '    <span style="font-size:10px;color:#64748B;font-weight:700;">W:</span>' +
+                '    <input type="number" min="0" step="10" class="addons-dim-wid" data-id="' + it.id + '" value="' + (st.width || '') + '" placeholder="mm" title="Width in millimeters (or feet)" style="width:58px;height:24px;border:1px solid #CBD5E1;border-radius:4px;padding:2px 4px;font-size:11.5px;text-align:center;font-weight:700;">' +
+                '  </div>' +
+                '  <span style="color:#94A3B8;font-size:11px;">=</span>' +
+                '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
+                '    <input type="number" min="0" step="0.01" class="addons-dim-qty" data-id="' + it.id + '" value="' + (st.qty || '') + '" placeholder="0" title="Calculated area in Sq.Ft" style="width:64px;height:24px;border:1.5px solid #047857;border-radius:4px;padding:2px 4px;font-size:12px;text-align:center;font-weight:700;color:#047857;background:#F0FDF4;">' +
+                '    <span style="font-size:10.5px;color:#64748B;font-weight:600;">sq.ft</span>' +
+                '  </div>' +
+                '</div>';
+            } else {
+              measureHtml =
+                '<div style="display:inline-flex;align-items:center;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden;background:#FFF;">' +
+                '  <button type="button" class="addons-unit-qty-btn" data-id="' + it.id + '" data-delta="-1" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">-</button>' +
+                '  <input type="number" min="0" step="1" class="addons-unit-qty-inp" data-id="' + it.id + '" value="' + (st.qty || 0) + '" style="width:46px;height:26px;border:none;border-left:1px solid #E2E8F0;border-right:1px solid #E2E8F0;text-align:center;font-weight:700;font-size:12px;">' +
+                '  <button type="button" class="addons-unit-qty-btn" data-id="' + it.id + '" data-delta="1" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">+</button>' +
+                '</div>' +
+                '<span style="font-size:11px;color:#64748B;margin-left:5px;">' + (it.unit === 'roll' ? 'roll(s)' : 'unit(s)') + '</span>';
+            }
+
+            var activeSpecText = isPrem ? it.premium.name : it.regular.name;
+
+            return '<tr class="addons-pair-row" data-id="' + it.id + '" style="border-bottom:1px solid #F1F5F9;' + (st.qty > 0 ? 'background:#F0FDF4;' : '') + '">' +
+              '<td style="padding:8px;">' +
+              '  <div style="display:flex;align-items:center;gap:6px;">' +
+              '    <span style="font-size:10px;font-weight:800;background:#E2E8F0;color:#334155;padding:2px 5px;border-radius:4px;font-family:monospace;">' + it.code + '</span>' +
+              '    <span style="font-weight:700;color:#08231B;">' + it.name + '</span>' +
+              '  </div>' +
+              '  <div class="addons-active-spec" data-id="' + it.id + '" style="font-size:11px;color:' + (isPrem ? '#B45309' : '#0369A1') + ';margin-top:2px;font-weight:600;">' + activeSpecText + '</div>' +
+              '</td>' +
+              '<td style="padding:8px;text-align:center;">' + measureHtml + '</td>' +
+              '<td style="padding:8px;text-align:center;">' + gradeHtml + '</td>' +
+              '<td class="addons-rate-cell" data-id="' + it.id + '" style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:#08231B;">₹ ' + curRate.toLocaleString('en-IN') + '</td>' +
+              '<td class="addons-pair-subtotal-cell" data-id="' + it.id + '" style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (st.qty > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
+              '</tr>';
+          }).join('') : '<tr><td colspan="5" style="text-align:center;padding:30px;color:#64748B;">No add-on items found.</td></tr>') +
+          '      </tbody>' +
+          '    </table>' +
+          '  </div>' +
+
+          // Sticky Footer
+          '  <div style="background:#FAF6F0;border-top:1px solid #E2D5C3;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">' +
+          '    <div>' +
+          '      <span style="font-size:12px;color:#475569;font-weight:600;">Selected Add-Ons: </span>' +
+          '      <b id="customAddonsSelectedCount" style="color:#08231B;font-size:13px;">' + selectedCount + ' items</b> &bull; ' +
+          '      <span style="font-size:12px;color:#475569;font-weight:600;">Subtotal: </span>' +
+          '      <b id="customAddonsSelectedTotal" style="color:#166534;font-size:15px;font-family:monospace;">₹ ' + selectedTotal.toLocaleString('en-IN') + '</b>' +
+          '    </div>' +
+          '    <div style="display:flex;gap:10px;">' +
+          '      <button type="button" class="addons-close-btn btn" style="background:#E2E8F0;color:#1E293B;border-radius:6px;padding:7px 14px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">Cancel</button>' +
+          '      <button type="button" id="customAddonsApplyBtn" class="btn" style="background:#047857;color:#FFF;border-radius:6px;padding:7px 18px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">✅ Apply to Quotation</button>' +
+          '    </div>' +
+          '  </div>' +
+          '</div>';
+
+        // Restore scroll position after DOM rebuild
+        var nextList = modal.querySelector('#customAddonsItemList');
+        if (nextList && prevScrollTop > 0) {
+          nextList.scrollTop = prevScrollTop;
+        }
+
+        // Live in-place row & footer update helpers
+        function updateFooterSummary() {
+          var count = 0;
+          var total = 0;
+          catalog.forEach(function (it) {
+            var st = itemStateMap[it.id];
+            if (st && st.qty > 0) {
+              count += 1;
+              total += Math.round(st.qty * getEffectiveRate(it, st));
+            }
+          });
+          var cEl = modal.querySelector('#customAddonsSelectedCount');
+          if (cEl) cEl.textContent = count + ' items';
+          var tEl = modal.querySelector('#customAddonsSelectedTotal');
+          if (tEl) tEl.textContent = '₹ ' + total.toLocaleString('en-IN');
+        }
+
+        function updateRowDisplay(id, skipInputClass) {
+          var row = modal.querySelector('tr.addons-pair-row[data-id="' + id + '"]');
+          var it = catalog.find(function (x) { return x.id === id; });
+          if (!row || !it) return;
+
+          var st = itemStateMap[id] || { grade: it.defaultGrade || 'regular', length: 0, width: 0, qty: 0 };
+          var curRate = getEffectiveRate(it, st);
+          var sub = Math.round((st.qty || 0) * curRate);
+          var isPrem = (st.grade === 'premium');
+
+          row.style.background = st.qty > 0 ? '#F0FDF4' : '';
+
+          var specEl = row.querySelector('.addons-active-spec[data-id="' + id + '"]');
+          if (specEl) {
+            specEl.textContent = getEffectiveName(it, st);
+            specEl.style.color = isPrem ? '#B45309' : '#0369A1';
+          }
+
+          var rateCell = row.querySelector('.addons-rate-cell[data-id="' + id + '"]');
+          if (rateCell) {
+            rateCell.textContent = '₹ ' + curRate.toLocaleString('en-IN');
+          }
+
+          var subCell = row.querySelector('.addons-pair-subtotal-cell[data-id="' + id + '"]');
+          if (subCell) {
+            subCell.textContent = '₹ ' + sub.toLocaleString('en-IN');
+            subCell.style.color = st.qty > 0 ? '#166534' : '#94A3B8';
+          }
+
+          // Grade button styles
+          var regBtn = row.querySelector('.addons-grade-toggle-btn[data-grade="regular"]');
+          var premBtn = row.querySelector('.addons-grade-toggle-btn[data-grade="premium"]');
+          if (regBtn) {
+            regBtn.style.background = !isPrem ? '#0284C7' : 'transparent';
+            regBtn.style.color = !isPrem ? '#FFF' : '#475569';
+          }
+          if (premBtn) {
+            premBtn.style.background = isPrem ? '#D97706' : 'transparent';
+            premBtn.style.color = isPrem ? '#FFF' : '#475569';
+          }
+
+          // Input values sync
+          if (skipInputClass !== 'qty') {
+            var qtyInp = row.querySelector('.addons-dim-qty[data-id="' + id + '"], .addons-unit-qty-inp[data-id="' + id + '"]');
+            if (qtyInp && document.activeElement !== qtyInp) {
+              qtyInp.value = st.qty || 0;
+            }
+          }
+
+          updateFooterSummary();
+        }
+
+        // Close handlers
+        modal.querySelectorAll('.addons-close-btn, .addons-backdrop').forEach(function (el) {
+          el.addEventListener('click', function () {
+            modal.style.display = 'none';
+          });
+        });
+
+        // Search handler
+        var sInp = modal.querySelector('#customAddonsSearchInput');
+        if (sInp) {
+          sInp.addEventListener('input', function () {
+            searchQuery = sInp.value;
+            renderModalContent();
+            var restored = modal.querySelector('#customAddonsSearchInput');
+            if (restored) {
+              restored.focus();
+              restored.setSelectionRange(restored.value.length, restored.value.length);
+            }
+          });
+        }
+
+        // Category filter pills
+        modal.querySelectorAll('.addons-cat-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activeCategory = btn.getAttribute('data-cat');
+            renderModalContent();
+          });
+        });
+
+        // Switch All Regular / Premium Buttons
+        var allRegBtn = modal.querySelector('#addonsSwitchAllRegular');
+        if (allRegBtn) {
+          allRegBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              itemStateMap[it.id] = itemStateMap[it.id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+              itemStateMap[it.id].grade = 'regular';
+              updateRowDisplay(it.id);
+            });
+          });
+        }
+
+        var allPremBtn = modal.querySelector('#addonsSwitchAllPremium');
+        if (allPremBtn) {
+          allPremBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              itemStateMap[it.id] = itemStateMap[it.id] || { grade: 'premium', length: 0, width: 0, qty: 0 };
+              itemStateMap[it.id].grade = 'premium';
+              updateRowDisplay(it.id);
+            });
+          });
+        }
+
+        // 1-Click Grade Toggle per Row (In-place update)
+        modal.querySelectorAll('.addons-grade-toggle-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-id');
+            var grade = btn.getAttribute('data-grade');
+            var it = catalog.find(function (x) { return x.id === id; });
+            if (it && grade) {
+              itemStateMap[id] = itemStateMap[id] || { grade: grade, length: 0, width: 0, qty: 0 };
+              itemStateMap[id].grade = grade;
+              updateRowDisplay(id);
+            }
+          });
+        });
+
+        // Dimension inputs: Length & Width change calculates Sq.Ft Area live (converts mm² to sq.ft via SFT_FACTOR 92903.04)
+        modal.querySelectorAll('.addons-dim-len, .addons-dim-wid').forEach(function (inp) {
+          inp.addEventListener('focus', function () { this.select(); });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var row = modal.querySelector('tr.addons-pair-row[data-id="' + id + '"]');
+            if (!row) return;
+            var lInp = row.querySelector('.addons-dim-len');
+            var wInp = row.querySelector('.addons-dim-wid');
+            var l = Math.max(0, parseFloat(lInp ? lInp.value : 0) || 0);
+            var w = Math.max(0, parseFloat(wInp ? wInp.value : 0) || 0);
+            // SFT_FACTOR = 92903.04 mm² (304.8mm * 304.8mm). If l > 50 or w > 50, it is millimeters (CAD standard).
+            var area = 0;
+            if (l > 0 && w > 0) {
+              if (l > 50 || w > 50) {
+                area = Math.round(((l * w) / 92903.04) * 100) / 100;
+              } else {
+                area = Math.round((l * w) * 100) / 100;
+              }
+            }
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].length = l;
+            itemStateMap[id].width = w;
+            itemStateMap[id].qty = area;
+            var qInp = row.querySelector('.addons-dim-qty');
+            if (qInp) qInp.value = area;
+            updateRowDisplay(id, 'qty');
+          });
+        });
+
+        // Direct Qty input for dimensioned items (allows direct sq.ft override)
+        modal.querySelectorAll('.addons-dim-qty').forEach(function (inp) {
+          inp.addEventListener('focus', function () { this.select(); });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseFloat(inp.value) || 0);
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].qty = val;
+            updateRowDisplay(id, 'qty');
+          });
+        });
+
+        // Unit Qty Delta (+ / -)
+        modal.querySelectorAll('.addons-unit-qty-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-id');
+            var delta = parseFloat(btn.getAttribute('data-delta')) || 0;
+            var st = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            var next = Math.max(0, Math.round(((st.qty || 0) + delta) * 10) / 10);
+            st.qty = next;
+            itemStateMap[id] = st;
+            var row = modal.querySelector('tr.addons-pair-row[data-id="' + id + '"]');
+            if (row) {
+              var qInp = row.querySelector('.addons-unit-qty-inp');
+              if (qInp) qInp.value = next;
+              updateRowDisplay(id, 'qty');
+            }
+          });
+        });
+
+        // Unit Qty Input
+        modal.querySelectorAll('.addons-unit-qty-inp').forEach(function (inp) {
+          inp.addEventListener('focus', function () { this.select(); });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseFloat(inp.value) || 0);
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].qty = val;
+            updateRowDisplay(id, 'qty');
+          });
+          inp.addEventListener('blur', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseFloat(inp.value) || 0);
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].qty = val;
+            inp.value = val;
+            updateRowDisplay(id);
+          });
+        });
+
+        // Apply to Quotation
+        var applyBtn = modal.querySelector('#customAddonsApplyBtn');
+        if (applyBtn) {
+          applyBtn.addEventListener('click', function () {
+            var chosen = [];
+            var totalAmt = 0;
+            catalog.forEach(function (it) {
+              var st = itemStateMap[it.id];
+              if (st && st.qty > 0) {
+                var r = getEffectiveRate(it, st);
+                var amt = Math.round(st.qty * r);
+                chosen.push({
+                  id: it.id,
+                  name: it.name,
+                  category: it.category,
+                  grade: st.grade || 'regular',
+                  gradeName: getEffectiveName(it, st),
+                  length: st.length || 0,
+                  width: st.width || 0,
+                  unit: it.unit || 'sqft',
+                  qty: st.qty,
+                  rate: r,
+                  amount: amt
+                });
+                totalAmt += amt;
+              }
+            });
+
+            self.project.commercialCharges = self.project.commercialCharges || {};
+            self.project.commercialCharges.selectedCustomAddons = chosen;
+            self.project.commercialCharges.appliances = totalAmt;
+            self.project.commercialCharges.appliancesEnabled = true;
 
             modal.style.display = 'none';
             if (typeof onApply === 'function') onApply();
@@ -60558,7 +61560,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
   // 1. Register Service Worker (web browsers only, not file:// in desktop app)
   if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=43')
+      navigator.serviceWorker.register('./sw.js?v=50')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 

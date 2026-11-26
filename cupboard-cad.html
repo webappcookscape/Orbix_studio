@@ -44069,8 +44069,8 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
     },
 
     COMMERCIAL_FIELDS: [
-      { key: 'additionalAccessories', label: 'Additional Accessories', type: 'amount', isDeduction: false },
-      { key: 'appliances', label: 'Appliances', type: 'amount', isDeduction: false },
+      { key: 'additionalAccessories', label: 'Accessories', type: 'amount', isDeduction: false },
+      { key: 'appliances', label: 'Add ons', type: 'amount', isDeduction: false },
       { key: 'designCharges', label: 'Design Charges', type: 'percent', defaultPercent: 9, isDeduction: false },
       { key: 'freightCharges', label: 'Freight Charges', type: 'percent', defaultPercent: 2.5, isDeduction: false },
       { key: 'loadingUnloading', label: 'Loading and unloading (material)', type: 'select', options: ['Additional', 'Included'], defaultVal: 'Additional' },
@@ -44722,13 +44722,13 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
         '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>' +
 
-        // Additional Accessories (Enable/Disable + amount + catalog selector button)
+        // Accessories (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAccessories" style="' + (commSummary.accessoriesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
         '<td colspan="4" class="bold">' +
         '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Additional Accessories</label>' +
-        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Add-Ons Catalog (58 Items)</button>' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Accessories</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Accessories (69 Items)</button>' +
         (commCharges.selectedAddons && commCharges.selectedAddons.length ? ('<span id="commAddonsCountBadge" style="font-size:11px;color:#166534;font-weight:700;">(' + commCharges.selectedAddons.length + ' items selected)</span>') : '<span id="commAddonsCountBadge" style="display:none;font-size:11px;color:#166534;font-weight:700;"></span>') +
         '</div></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
@@ -44738,10 +44738,15 @@ ArchitecturalRenderer.prototype.buildFurnitureMesh = function (furn) {
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
 
-        // Appliances (Enable/Disable + amount)
+        // Add ons (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAppliances" style="' + (commSummary.appliancesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Appliances</label></td>' +
+        '<td colspan="4" class="bold">' +
+        '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Add ons</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenCustomAddonsConfigurator" style="background:#047857;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Add-Ons (Regular / Premium)</button>' +
+        (commCharges.selectedCustomAddons && commCharges.selectedCustomAddons.length ? ('<span id="commCustomAddonsCountBadge" style="font-size:11px;color:#047857;font-weight:700;">(' + commCharges.selectedCustomAddons.length + ' items selected)</span>') : '<span id="commCustomAddonsCountBadge" style="display:none;font-size:11px;color:#047857;font-weight:700;"></span>') +
+        '</div></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +

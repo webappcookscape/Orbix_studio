@@ -9,19 +9,16 @@ const clientQuoteService = require('../server/services/clientQuoteService');
 console.log('--- TEST: Cookscape Master Add-Ons Catalog ---');
 const catalog = Core.getCookscapeAddonsCatalog();
 assert(Array.isArray(catalog), 'Catalog must be an array');
-assert.strictEqual(catalog.length, 58, `Catalog must have exactly 58 items, found ${catalog.length}`);
+assert.strictEqual(catalog.length, 69, `Catalog must have exactly 69 items, found ${catalog.length}`);
 
 // Verify key catalog items
 const magicCorner = catalog.find(i => i.id === 'magic_corner');
-assert(magicCorner && magicCorner.rate === 40900, 'Magic Corner rate should be 40,900');
+assert(magicCorner && magicCorner.rate === 41932.00, 'Magic Corner rate should be 41,932');
 
-const pvcCutlery600 = catalog.find(i => i.id === 'pvc_cutlery_600');
-assert(pvcCutlery600 && pvcCutlery600.rate === 1222, 'PVC Cutlery 600 rate should be 1,222');
+const pvcCutlery450 = catalog.find(i => i.id === 'pvc_cutlery_inlet_450');
+assert(pvcCutlery450 && pvcCutlery450.rate === 1385.00, 'PVC Cutlery 450 rate should be 1,385');
 
-const kingCot = catalog.find(i => i.id === 'king_size_cot_storage');
-assert(kingCot && kingCot.rate === 52800, 'King Size Cot rate should be 52,800');
-
-console.log('✅ Master Catalog: 58 items verified.');
+console.log('✅ Master Catalog: 69 items verified.');
 
 console.log('--- TEST: Commercial Calculation Independence (Add-ons do NOT affect Core Grand Total) ---');
 
@@ -92,28 +89,58 @@ assert.strictEqual(summary.grandAddonsTotal, 118700, 'Grand addons total should 
 
 console.log('✅ Core.calculateAddonsSummary verified.');
 
-console.log('--- TEST: User Editable Rates & Custom Units (Meters & Sq.Ft) ---');
-const gProfileItem = catalog.find(i => i.id === 'g_profile_handle');
+console.log('--- TEST: User Editable Rates & Custom Units (Meters) ---');
+const gProfileItem = catalog.find(i => i.id === 'g_profile_handle_1m');
 assert.ok(gProfileItem, 'G Profile Handle must exist in catalog');
 assert.strictEqual(gProfileItem.unit, 'meter');
-assert.strictEqual(gProfileItem.minRate, 1350);
-assert.strictEqual(gProfileItem.maxRate, 2050);
+assert.strictEqual(gProfileItem.minRate, 950);
+assert.strictEqual(gProfileItem.maxRate, 1850);
 assert.strictEqual(gProfileItem.isCustom, true);
 
-const wallpaperItem = catalog.find(i => i.id === 'wallpaper_sqft');
-assert.ok(wallpaperItem, 'Wallpaper must exist in catalog');
-assert.strictEqual(wallpaperItem.unit, 'sqft');
-assert.strictEqual(wallpaperItem.minRate, 45);
-assert.strictEqual(wallpaperItem.maxRate, 70);
-assert.strictEqual(wallpaperItem.isCustom, true);
+// Verify King Cot, Queen Cot, and Wallpaper were removed as requested
+assert.strictEqual(catalog.find(i => i.id === 'king_size_cot_storage'), undefined, 'King Size Cot must be removed from accessories');
+assert.strictEqual(catalog.find(i => i.id === 'queen_size_cot_storage'), undefined, 'Queen Size Cot must be removed from accessories');
+assert.strictEqual(catalog.find(i => i.id === 'wallpaper_sqft'), undefined, 'Wallpaper must be removed from accessories');
 
-// Test custom rate + custom measurements (5.5 meters & 150 sq.ft)
+// Test custom rate + custom measurements (5.5 meters)
 const customAddons = [
-  { id: 'g_profile_handle', name: 'G PROFILE HANDLE 1meter', customRate: 1850, rate: 1700, unit: 'meter', qty: 5.5, amount: Math.round(5.5 * 1850) },
-  { id: 'wallpaper_sqft', name: 'WALLPAPER 1sq feet', customRate: 60, rate: 55, unit: 'sqft', qty: 150, amount: Math.round(150 * 60) }
+  { id: 'g_profile_handle_1m', name: 'G PROFILE HANDLE 1 meter', customRate: 1450, rate: 1250, unit: 'meter', qty: 5.5, amount: Math.round(5.5 * 1450) }
 ];
 const customSummary = Core.calculateAddonsSummary(customAddons, []);
-assert.strictEqual(customSummary.addonsSubtotal, 10175 + 9000, 'Custom addons subtotal must equal (5.5 * 1850) + (150 * 60) = 19,175');
-console.log('✅ Custom rate and meter/sq.ft measurements verified successfully!');
+assert.strictEqual(customSummary.addonsSubtotal, 7975, 'Custom addons subtotal must equal (5.5 * 1450) = 7,975');
+console.log('✅ Custom rate and meter measurements verified successfully!');
+
+console.log('--- TEST: Paired Custom Add-Ons Catalog (Regular vs Premium) ---');
+const pairedCatalog = Core.getCookscapeCustomAddonsPairs();
+assert(Array.isArray(pairedCatalog), 'Paired catalog must be an array');
+assert(pairedCatalog.length >= 13, `Paired catalog must have at least 13 item pairs, found ${pairedCatalog.length}`);
+
+const kingCotPair = pairedCatalog.find(i => i.id === 'king_size_cot_storage');
+assert.ok(kingCotPair, 'King Size Cot must exist in paired catalog');
+assert.strictEqual(kingCotPair.regular.rate, 59740.00, 'King Size Cot Regular rate must be 59,740');
+assert.strictEqual(kingCotPair.premium.rate, 66920.00, 'King Size Cot Premium rate must be 66,920');
+
+const panellingPair = pairedCatalog.find(i => i.id === 'wooden_panelling');
+assert.ok(panellingPair, 'Wooden panelling must exist in paired catalog');
+assert.strictEqual(panellingPair.regular.rate, 1150.00, 'Wooden panelling Regular rate must be 1,150');
+assert.strictEqual(panellingPair.premium.rate, 1575.00, 'Wooden panelling Premium rate must be 1,575');
+assert.strictEqual(panellingPair.hasDimensions, true, 'Wooden panelling must support dimensions (Length x Width)');
+
+const ceilingPair = pairedCatalog.find(i => i.id === 'false_ceiling');
+assert.ok(ceilingPair, 'False ceiling must exist in paired catalog');
+assert.strictEqual(ceilingPair.regular.rate, 75.00, 'False ceiling Regular rate must be 75');
+assert.strictEqual(ceilingPair.premium.rate, 95.00, 'False ceiling Premium rate must be 95');
+
+const graniteSupply = pairedCatalog.find(i => i.id === 'granite_supply_installation');
+assert.ok(graniteSupply, 'Granite supply must exist in paired catalog');
+assert.strictEqual(graniteSupply.regular.rate, 680.00, 'Granite supply regular rate must be 680');
+assert.strictEqual(graniteSupply.premium.rate, 680.00, 'Granite supply premium rate must be 680');
+
+const texturePaint = pairedCatalog.find(i => i.id === 'texture_paint');
+assert.ok(texturePaint, 'Texture paint must exist in paired catalog');
+assert.strictEqual(texturePaint.regular.rate, 180.00, 'Texture paint regular rate must be 180');
+assert.strictEqual(texturePaint.premium.rate, 245.00, 'Texture paint premium rate must be 245');
+
+console.log('✅ Paired Custom Add-Ons Catalog (Regular vs Premium) verified successfully!');
 
 console.log('🎉 ALL TESTS PASSED!');
