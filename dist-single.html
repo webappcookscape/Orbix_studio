@@ -6677,14 +6677,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=44'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=44'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=44'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=45'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=45'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=45'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=44');
+          return loadScript('orbix-a4-drawings.js?v=45');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -47614,6 +47614,11 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           }
         });
 
+        // Preserve scroll position across full filter re-renders
+        var prevScrollTop = 0;
+        var prevList = modal.querySelector('#addonsItemList');
+        if (prevList) prevScrollTop = prevList.scrollTop;
+
         modal.innerHTML =
           '<div class="addons-backdrop" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,35,27,0.65);backdrop-filter:blur(3px);"></div>' +
           '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(960px, 95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
@@ -47688,15 +47693,15 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
               brandPillsHtml = '<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;margin-bottom:4px;">';
               if (it.ebcoRate) {
                 var isEbcoActive = Math.abs(curRate - it.ebcoRate) < 0.05;
-                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-rate="' + it.ebcoRate + '" title="Apply Ebco Rate: ₹ ' + it.ebcoRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isEbcoActive ? '#0284C7' : '#BAE6FD') + ';background:' + (isEbcoActive ? '#0284C7' : '#F0F9FF') + ';color:' + (isEbcoActive ? '#FFF' : '#0369A1') + ';">EBCO ₹' + Math.round(it.ebcoRate).toLocaleString('en-IN') + '</button>';
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-brand="ebco" data-rate="' + it.ebcoRate + '" title="Apply Ebco Rate: ₹ ' + it.ebcoRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isEbcoActive ? '#0284C7' : '#BAE6FD') + ';background:' + (isEbcoActive ? '#0284C7' : '#F0F9FF') + ';color:' + (isEbcoActive ? '#FFF' : '#0369A1') + ';">EBCO ₹' + Math.round(it.ebcoRate).toLocaleString('en-IN') + '</button>';
               }
               if (it.hettichRate) {
                 var isHettichActive = Math.abs(curRate - it.hettichRate) < 0.05;
-                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-rate="' + it.hettichRate + '" title="Apply Hettich Rate: ₹ ' + it.hettichRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isHettichActive ? '#D97706' : '#FDE68A') + ';background:' + (isHettichActive ? '#D97706' : '#FFFBEB') + ';color:' + (isHettichActive ? '#FFF' : '#92400E') + ';">HETTICH ₹' + Math.round(it.hettichRate).toLocaleString('en-IN') + '</button>';
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-brand="hettich" data-rate="' + it.hettichRate + '" title="Apply Hettich Rate: ₹ ' + it.hettichRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isHettichActive ? '#D97706' : '#FDE68A') + ';background:' + (isHettichActive ? '#D97706' : '#FFFBEB') + ';color:' + (isHettichActive ? '#FFF' : '#92400E') + ';">HETTICH ₹' + Math.round(it.hettichRate).toLocaleString('en-IN') + '</button>';
               }
               if (it.grassRate) {
                 var isGrassActive = Math.abs(curRate - it.grassRate) < 0.05;
-                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-rate="' + it.grassRate + '" title="Apply Grass Rate: ₹ ' + it.grassRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isGrassActive ? '#16A34A' : '#BBF7D0') + ';background:' + (isGrassActive ? '#16A34A' : '#F0FDF4') + ';color:' + (isGrassActive ? '#FFF' : '#15803D') + ';">GRASS ₹' + Math.round(it.grassRate).toLocaleString('en-IN') + '</button>';
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-brand="grass" data-rate="' + it.grassRate + '" title="Apply Grass Rate: ₹ ' + it.grassRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isGrassActive ? '#16A34A' : '#BBF7D0') + ';background:' + (isGrassActive ? '#16A34A' : '#F0FDF4') + ';color:' + (isGrassActive ? '#FFF' : '#15803D') + ';">GRASS ₹' + Math.round(it.grassRate).toLocaleString('en-IN') + '</button>';
               }
               brandPillsHtml += '</div>';
             }
@@ -47712,7 +47717,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
               ? ('<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;margin-left:6px;">' + itBrand + '</span>')
               : '';
 
-            return '<tr style="border-bottom:1px solid #F1F5F9;' + (q > 0 ? 'background:#F0FDF4;' : '') + '">' +
+            return '<tr class="addons-row" data-id="' + it.id + '" style="border-bottom:1px solid #F1F5F9;' + (q > 0 ? 'background:#F0FDF4;' : '') + '">' +
               '<td style="padding:8px;">' +
               '  <div style="font-weight:700;color:#08231B;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">' +
               '    <span>' + it.name + '</span>' + brandBadgeHtml +
@@ -47728,7 +47733,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
               '  </div>' +
               (unitPlural ? ('<div style="font-size:10.5px;color:#08231B;font-weight:700;margin-top:2px;">' + unitPlural + '</div>') : '') +
               '</td>' +
-              '<td style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (q > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
+              '<td class="addons-subtotal-cell" data-id="' + it.id + '" style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (q > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
               '</tr>';
           }).join('') : '<tr><td colspan="4" style="text-align:center;padding:30px;color:#64748B;">No add-on items found matching search.</td></tr>') +
           '      </tbody>' +
@@ -47739,9 +47744,9 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           '  <div style="background:#FAF6F0;border-top:1px solid #E2D5C3;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">' +
           '    <div>' +
           '      <span style="font-size:12px;color:#475569;font-weight:600;">Selected Add-Ons: </span>' +
-          '      <b style="color:#08231B;font-size:13px;">' + selectedCount + ' items</b> &bull; ' +
+          '      <b id="addonsSelectedCount" style="color:#08231B;font-size:13px;">' + selectedCount + ' items</b> &bull; ' +
           '      <span style="font-size:12px;color:#475569;font-weight:600;">Subtotal: </span>' +
-          '      <b style="color:#166534;font-size:15px;font-family:monospace;">₹ ' + selectedTotal.toLocaleString('en-IN') + '</b>' +
+          '      <b id="addonsSelectedTotal" style="color:#166534;font-size:15px;font-family:monospace;">₹ ' + selectedTotal.toLocaleString('en-IN') + '</b>' +
           '    </div>' +
           '    <div style="display:flex;gap:10px;">' +
           '      <button type="button" class="addons-close-btn btn" style="background:#E2E8F0;color:#1E293B;border-radius:6px;padding:7px 14px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">Cancel</button>' +
@@ -47749,6 +47754,77 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           '    </div>' +
           '  </div>' +
           '</div>';
+
+        // Restore scroll position after DOM rebuild
+        var nextList = modal.querySelector('#addonsItemList');
+        if (nextList && prevScrollTop > 0) {
+          nextList.scrollTop = prevScrollTop;
+        }
+
+        // Live in-place DOM update helpers to prevent scroll jumps and preserve input focus
+        function updateFooterSummary() {
+          var count = 0;
+          var total = 0;
+          catalog.forEach(function (it) {
+            var q = selectedMap[it.id] || 0;
+            if (q > 0) {
+              count += (it.unit === 'sqft' || it.unit === 'meter') ? 1 : q;
+              var r = (customRateMap[it.id] !== undefined) ? customRateMap[it.id] : (it.rate || 0);
+              total += Math.round(q * r);
+            }
+          });
+          var cEl = modal.querySelector('#addonsSelectedCount');
+          if (cEl) cEl.textContent = count + ' items';
+          var tEl = modal.querySelector('#addonsSelectedTotal');
+          if (tEl) tEl.textContent = '₹ ' + total.toLocaleString('en-IN');
+        }
+
+        function updateRowDisplay(id, skipQtyInput) {
+          var row = modal.querySelector('tr.addons-row[data-id="' + id + '"]');
+          var it = catalog.find(function (x) { return x.id === id; });
+          if (!row || !it) return;
+
+          var q = selectedMap[id] || 0;
+          var curRate = (customRateMap[id] !== undefined) ? customRateMap[id] : (it.rate || 0);
+          var sub = Math.round(q * curRate);
+
+          row.style.background = q > 0 ? '#F0FDF4' : '';
+
+          var subCell = row.querySelector('.addons-subtotal-cell[data-id="' + id + '"]');
+          if (subCell) {
+            subCell.textContent = '₹ ' + sub.toLocaleString('en-IN');
+            subCell.style.color = q > 0 ? '#166534' : '#94A3B8';
+          }
+
+          if (!skipQtyInput) {
+            var qInp = row.querySelector('.addons-qty-inp[data-id="' + id + '"]');
+            if (qInp && document.activeElement !== qInp) {
+              qInp.value = q;
+            }
+          }
+
+          // Update active brand pill styling in this row
+          row.querySelectorAll('.addons-brand-rate-pill[data-id="' + id + '"]').forEach(function (p) {
+            var pRate = parseFloat(p.getAttribute('data-rate')) || 0;
+            var isActive = Math.abs(curRate - pRate) < 0.05;
+            var brandType = p.getAttribute('data-brand') || '';
+            if (brandType === 'ebco') {
+              p.style.border = '1px solid ' + (isActive ? '#0284C7' : '#BAE6FD');
+              p.style.background = isActive ? '#0284C7' : '#F0F9FF';
+              p.style.color = isActive ? '#FFF' : '#0369A1';
+            } else if (brandType === 'hettich') {
+              p.style.border = '1px solid ' + (isActive ? '#D97706' : '#FDE68A');
+              p.style.background = isActive ? '#D97706' : '#FFFBEB';
+              p.style.color = isActive ? '#FFF' : '#92400E';
+            } else if (brandType === 'grass') {
+              p.style.border = '1px solid ' + (isActive ? '#16A34A' : '#BBF7D0');
+              p.style.background = isActive ? '#16A34A' : '#F0FDF4';
+              p.style.color = isActive ? '#FFF' : '#15803D';
+            }
+          });
+
+          updateFooterSummary();
+        }
 
         // Bind events inside modal
         modal.querySelectorAll('.addons-close-btn, .addons-backdrop').forEach(function (el) {
@@ -47784,14 +47860,19 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           });
         });
 
-        // Clickable Brand Rate Pills per row
+        // Clickable Brand Rate Pills per row (updates in-place without page jump)
         modal.querySelectorAll('.addons-brand-rate-pill').forEach(function (pill) {
           pill.addEventListener('click', function () {
             var id = pill.getAttribute('data-id');
             var rate = parseFloat(pill.getAttribute('data-rate')) || 0;
             if (id && rate > 0) {
               customRateMap[id] = rate;
-              renderModalContent();
+              var row = modal.querySelector('tr.addons-row[data-id="' + id + '"]');
+              if (row) {
+                var rInp = row.querySelector('.addons-rate-inp[data-id="' + id + '"]');
+                if (rInp) rInp.value = rate;
+                updateRowDisplay(id);
+              }
             }
           });
         });
@@ -47827,22 +47908,33 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           });
         }
 
-        // User-Editable Unit Rate change
+        // User-Editable Unit Rate change (updates in-place without page jump)
         modal.querySelectorAll('.addons-rate-inp').forEach(function (inp) {
+          inp.addEventListener('focus', function () {
+            this.select();
+          });
           inp.addEventListener('input', function () {
             var id = inp.getAttribute('data-id');
-            var val = Math.max(0, parseFloat(inp.value) || 0);
-            customRateMap[id] = val;
-            renderModalContent();
-            var restored = modal.querySelector('.addons-rate-inp[data-id="' + id + '"]');
-            if (restored) {
-              restored.focus();
-              restored.setSelectionRange(restored.value.length, restored.value.length);
+            var val = parseFloat(inp.value);
+            if (!isNaN(val)) {
+              customRateMap[id] = Math.max(0, val);
+              updateRowDisplay(id);
             }
+          });
+          inp.addEventListener('blur', function () {
+            var id = inp.getAttribute('data-id');
+            var val = parseFloat(inp.value);
+            if (isNaN(val) || val < 0) {
+              var item = catalog.find(function (x) { return x.id === id; });
+              var fallback = item ? item.rate : 0;
+              customRateMap[id] = fallback;
+              inp.value = fallback;
+            }
+            updateRowDisplay(id);
           });
         });
 
-        // Quantity delta increment/decrement
+        // Quantity delta increment/decrement (+ / - buttons, updates in-place)
         modal.querySelectorAll('.addons-qty-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var id = btn.getAttribute('data-id');
@@ -47851,18 +47943,46 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
             var next = Math.max(0, Math.round((cur + delta) * 10) / 10);
             if (next === 0) delete selectedMap[id];
             else selectedMap[id] = next;
-            renderModalContent();
+            var row = modal.querySelector('tr.addons-row[data-id="' + id + '"]');
+            if (row) {
+              var qInp = row.querySelector('.addons-qty-inp[data-id="' + id + '"]');
+              if (qInp) qInp.value = next;
+              updateRowDisplay(id);
+            }
           });
         });
 
-        // Quantity manual input
+        // Quantity manual input [- 0 +] (updates in-place, auto-selects, zero scroll jump)
         modal.querySelectorAll('.addons-qty-inp').forEach(function (inp) {
-          inp.addEventListener('change', function () {
+          inp.addEventListener('focus', function () {
+            this.select(); // Auto-selects existing value so user can immediately type desired quantity
+          });
+          inp.addEventListener('input', function () {
             var id = inp.getAttribute('data-id');
-            var val = Math.max(0, parseFloat(inp.value) || 0);
-            if (val === 0) delete selectedMap[id];
-            else selectedMap[id] = val;
-            renderModalContent();
+            if (inp.value === '') {
+              delete selectedMap[id];
+              updateRowDisplay(id, true);
+              return;
+            }
+            var val = parseFloat(inp.value);
+            if (!isNaN(val)) {
+              val = Math.max(0, val);
+              if (val === 0) delete selectedMap[id];
+              else selectedMap[id] = val;
+              updateRowDisplay(id, true);
+            }
+          });
+          inp.addEventListener('blur', function () {
+            var id = inp.getAttribute('data-id');
+            var val = parseFloat(inp.value);
+            if (isNaN(val) || val <= 0) {
+              delete selectedMap[id];
+              inp.value = 0;
+            } else {
+              selectedMap[id] = val;
+              inp.value = val;
+            }
+            updateRowDisplay(id);
           });
         });
 
@@ -60676,7 +60796,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
   // 1. Register Service Worker (web browsers only, not file:// in desktop app)
   if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=44')
+      navigator.serviceWorker.register('./sw.js?v=45')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 
