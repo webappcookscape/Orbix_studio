@@ -102,13 +102,13 @@ function recalculateVariantCommercial(comm, overrides) {
   const freightPercent = (c.freightPercent !== undefined && c.freightPercent !== null && c.freightPercent !== '') ? Number(c.freightPercent) : 2.5;
   const gstPercent = (c.gstPercent !== undefined && c.gstPercent !== null && c.gstPercent !== '') ? Number(c.gstPercent) : 18;
 
-  // Elegant Surabhi Costing Benchmark & Slab Lookup
-  const slabId = o.surabhiDesignSlab !== undefined ? o.surabhiDesignSlab : (c.surabhiDesignSlab || 'auto');
+  // Elegant Surabhi Costing Benchmark & Slab Lookup (only active if explicitly specified)
+  const slabId = o.surabhiDesignSlab !== undefined ? o.surabhiDesignSlab : c.surabhiDesignSlab;
   const surabhiWoodwork = (o.surabhiWoodworkSubtotal !== undefined)
     ? Number(o.surabhiWoodworkSubtotal)
     : (c.surabhiWoodworkSubtotal !== undefined ? Number(c.surabhiWoodworkSubtotal) : woodwork);
 
-  const activeSlab = (Core && Core.getSurabhiDesignFeeSlab)
+  const activeSlab = (slabId && Core && Core.getSurabhiDesignFeeSlab)
     ? Core.getSurabhiDesignFeeSlab(surabhiWoodwork, slabId)
     : null;
 
