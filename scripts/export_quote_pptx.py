@@ -283,6 +283,7 @@ def replace_cover_tokens(slide1_xml, payload):
     d_phone = str(designer.get('phone') or '')
     d_email = str(designer.get('email') or '')
     cover_replacements = [
+        (r'Designer\s+Details', 'Architect Details'),
         (r'Mr\.\s*Aravindan', c_name),
         (r'7418414780', c_phone),
         (r'Webapp\.cookscape@gmail\.com', c_email),
@@ -482,18 +483,18 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
     orig_billable = comm.get('originalBillableValue')
     if orig_billable is None:
         orig_billable = round(float(comm.get('woodworkSubtotal') or 0) + float(comm.get('designAmount') or 0) + (float(comm.get('freightAmount') or 0) if frt_enabled else 0))
-    comm_items.append(('Original Billable Value', fmt_inr(orig_billable), True, 'normal'))
+    comm_items.append(('Original Billable Value', fmt_inr(orig_billable), False, 'orig'))
     if float(comm.get('discountAmount') or 0) > 0:
         ww_after = comm.get('woodworkAfterDiscount')
         if ww_after is None:
             ww_after = max(0, round(float(comm.get('woodworkSubtotal') or 0) - float(comm.get('discountAmount') or 0)))
-        comm_items.append(('Discount on Wood Work', fmt_inr(ww_after), True, 'discount'))
+        comm_items.append(('Discount on Wood Work', fmt_inr(ww_after), False, 'discount'))
     if float(comm.get('adpAmount') or 0) > 0:
         dc_after = comm.get('designAfterDiscount')
         if dc_after is None:
             dc_after = max(0, round(float(comm.get('designAmount') or 0) - float(comm.get('adpAmount') or 0)))
-        comm_items.append(('Discount on Design Charge', fmt_inr(dc_after), True, 'discount'))
-    comm_items.append(('Grand Total (Without GST)', fmt_inr(comm.get('netBeforeTax', 0)), True, 'normal'))
+        comm_items.append(('Discount on Design Charge', fmt_inr(dc_after), False, 'discount'))
+    comm_items.append(('Grand Total (Without GST)', fmt_inr(comm.get('netBeforeTax', 0)), False, 'normal'))
     if gst_enabled:
         comm_items.append(('GST', fmt_inr(comm.get('gstAmount', 0)), False, 'normal'))
 
@@ -505,31 +506,36 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
         ])
     ]
     for idx, (lbl, val, is_b, style_kind) in enumerate(comm_items):
-        if style_kind == 'discount':
+        if style_kind == 'orig':
             comm_rows.append((c_row_h, [
-                build_ooxml_cell(lbl, fill_hex='FFF4E5', text_hex='9A3412', bold=True, font_sz=1000, align='l', border_hex='EA580C'),
-                build_ooxml_cell(val, fill_hex='FFF4E5', text_hex='C2410C', bold=True, font_sz=1000, align='r', border_hex='EA580C'),
+                build_ooxml_cell(lbl, fill_hex='EFF6FF', text_hex='1E3A8A', bold=False, font_sz=1000, align='l', border_hex='2563EB'),
+                build_ooxml_cell(val, fill_hex='EFF6FF', text_hex='1D4ED8', bold=False, font_sz=1000, align='r', border_hex='2563EB'),
+            ]))
+        elif style_kind == 'discount':
+            comm_rows.append((c_row_h, [
+                build_ooxml_cell(lbl, fill_hex='FFF4E5', text_hex='9A3412', bold=False, font_sz=1000, align='l', border_hex='EA580C'),
+                build_ooxml_cell(val, fill_hex='FFF4E5', text_hex='C2410C', bold=False, font_sz=1000, align='r', border_hex='EA580C'),
             ]))
         else:
             bg = 'FFFFFF' if idx % 2 == 0 else 'FAF6F0'
             comm_rows.append((c_row_h, [
-                build_ooxml_cell(lbl, fill_hex=bg, text_hex='08231B', bold=is_b, font_sz=1000, align='l'),
-                build_ooxml_cell(val, fill_hex=bg, text_hex='08231B', bold=True, font_sz=1000, align='r'),
+                build_ooxml_cell(lbl, fill_hex=bg, text_hex='08231B', bold=False, font_sz=1000, align='l'),
+                build_ooxml_cell(val, fill_hex=bg, text_hex='08231B', bold=False, font_sz=1000, align='r'),
             ]))
 
     grand_total = fmt_inr(comm.get('grandTotal', variant_quote.get('grandTotal', 0)))
     has_discount = (float(comm.get('discountAmount') or 0) > 0) or (float(comm.get('adpAmount') or 0) > 0) or (float(comm.get('totalSavings') or 0) > 0)
     final_lbl = ('FINAL DISCOUNTED VALUE (WITH GST)' if gst_enabled else 'FINAL DISCOUNTED VALUE') if has_discount else ('FINAL TOTAL (WITH GST)' if gst_enabled else 'FINAL TOTAL')
     comm_rows.append((c_row_h, [
-        build_ooxml_cell(final_lbl, fill_hex='FEF3C7', text_hex='08231B', bold=True, font_sz=1000, align='l', border_hex='C00000'),
-        build_ooxml_cell(grand_total, fill_hex='FEF3C7', text_hex='C00000', bold=True, font_sz=1000, align='r', border_hex='C00000'),
+        build_ooxml_cell(final_lbl, fill_hex='FEF3C7', text_hex='08231B', bold=False, font_sz=1000, align='l', border_hex='C00000'),
+        build_ooxml_cell(grand_total, fill_hex='FEF3C7', text_hex='C00000', bold=False, font_sz=1000, align='r', border_hex='C00000'),
     ]))
     total_savings = comm.get('totalSavings')
     if total_savings is None:
         total_savings = float(comm.get('discountAmount') or 0) + float(comm.get('adpAmount') or 0)
     comm_rows.append((c_row_h, [
-        build_ooxml_cell('YOUR SAVINGS', fill_hex='DCFCE7', text_hex='14532D', bold=True, font_sz=1000, align='l', border_hex='16A34A'),
-        build_ooxml_cell(fmt_inr(total_savings), fill_hex='DCFCE7', text_hex='15803D', bold=True, font_sz=1000, align='r', border_hex='16A34A'),
+        build_ooxml_cell('YOUR SAVINGS', fill_hex='DCFCE7', text_hex='14532D', bold=False, font_sz=1000, align='l', border_hex='16A34A'),
+        build_ooxml_cell(fmt_inr(total_savings), fill_hex='DCFCE7', text_hex='15803D', bold=False, font_sz=1000, align='r', border_hex='16A34A'),
     ]))
 
     shapes.append(build_ooxml_table(

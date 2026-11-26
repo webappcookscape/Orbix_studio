@@ -33,6 +33,10 @@ C_ALT = (250 / 255.0, 246 / 255.0, 240 / 255.0)
 C_BORDER = (210 / 255.0, 198 / 255.0, 182 / 255.0)
 C_MUTED = (71 / 255.0, 85 / 255.0, 105 / 255.0)
 C_GOLD = (254 / 255.0, 243 / 255.0, 199 / 255.0)
+C_ORIG_BG = (239 / 255.0, 246 / 255.0, 255 / 255.0)
+C_ORIG_BORDER = (37 / 255.0, 99 / 255.0, 235 / 255.0)
+C_ORIG_TEXT = (30 / 255.0, 58 / 255.0, 138 / 255.0)
+C_ORIG_VAL = (29 / 255.0, 78 / 255.0, 216 / 255.0)
 C_DISC_BG = (255 / 255.0, 244 / 255.0, 229 / 255.0)
 C_DISC_BORDER = (234 / 255.0, 88 / 255.0, 12 / 255.0)
 C_DISC_TEXT = (154 / 255.0, 52 / 255.0, 18 / 255.0)
@@ -664,7 +668,15 @@ def build_pdf(payload, out_path):
         orig_billable = comm.get('originalBillableValue')
         if orig_billable is None:
             orig_billable = round(float(comm.get('woodworkSubtotal') or 0) + float(comm.get('designAmount') or 0) + (float(comm.get('freightAmount') or 0) if frt_enabled else 0))
-        c_rows.append(['Original Billable Value', fmt_inr(orig_billable)])
+        c_rows.append({
+            'cells': ['Original Billable Value', fmt_inr(orig_billable)],
+            'bg': C_ORIG_BG,
+            'border': C_ORIG_BORDER,
+            'lw': 0.8,
+            'text_color': C_ORIG_TEXT,
+            'val_color': C_ORIG_VAL,
+            'bold': False
+        })
         if float(comm.get('discountAmount') or 0) > 0:
             ww_after = comm.get('woodworkAfterDiscount')
             if ww_after is None:
@@ -676,7 +688,7 @@ def build_pdf(payload, out_path):
                 'lw': 0.8,
                 'text_color': C_DISC_TEXT,
                 'val_color': C_DISC_VAL,
-                'bold': True
+                'bold': False
             })
         if float(comm.get('adpAmount') or 0) > 0:
             dc_after = comm.get('designAfterDiscount')
@@ -689,7 +701,7 @@ def build_pdf(payload, out_path):
                 'lw': 0.8,
                 'text_color': C_DISC_TEXT,
                 'val_color': C_DISC_VAL,
-                'bold': True
+                'bold': False
             })
         c_rows.append(['Grand Total (Without GST)', fmt_inr(comm.get('netBeforeTax', 0))])
         if gst_enabled:
@@ -698,14 +710,12 @@ def build_pdf(payload, out_path):
         final_lbl = ('FINAL DISCOUNTED VALUE (WITH GST)' if gst_enabled else 'FINAL DISCOUNTED VALUE') if has_discount else ('FINAL TOTAL (WITH GST)' if gst_enabled else 'FINAL TOTAL')
         c_rows.append({
             'cells': [final_lbl, fmt_inr(comm.get('grandTotal', vq.get('grandTotal', 0)))],
-            'highlight': True,
-            'accent': True,
             'bg': C_GOLD,
             'border': C_CRIMSON,
-            'lw': 1.0,
+            'lw': 0.9,
             'text_color': C_FOREST,
             'val_color': C_CRIMSON,
-            'bold': True
+            'bold': False
         })
         total_savings = comm.get('totalSavings')
         if total_savings is None:
@@ -714,10 +724,10 @@ def build_pdf(payload, out_path):
             'cells': ['YOUR SAVINGS', fmt_inr(total_savings)],
             'bg': C_SAVE_BG,
             'border': C_SAVE_BORDER,
-            'lw': 0.9,
+            'lw': 0.8,
             'text_color': C_SAVE_TEXT,
             'val_color': C_SAVE_VAL,
-            'bold': True
+            'bold': False
         })
 
         y = draw_table_ops(ops, c_rows, 30, y, PAGE_W - 60, [0.70, 0.30], font_size=8.8, header_fill=C_CRIMSON, right_cols={1}, bold_first=False, pad_y=5.5) + 14.0

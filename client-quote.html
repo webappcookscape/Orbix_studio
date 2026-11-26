@@ -520,8 +520,39 @@
         </div>
         <div class="field-group">
           <label for="clientPassInput">Client Password</label>
-          <input id="clientPassInput" type="password" placeholder="Enter your password" required autocomplete="off">
+          <div style="position:relative;display:flex;align-items:center;">
+            <input id="clientPassInput" type="password" placeholder="Enter your password" required autocomplete="off" style="padding-right:42px;width:100%;">
+            <button type="button" id="clientPassEyeBtn" aria-label="Show password" aria-pressed="false" title="Show password"
+              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;padding:4px;cursor:pointer;color:#94a3b8;display:inline-flex;align-items:center;justify-content:center;border-radius:4px;">
+              <svg id="clientPassEyeOpen" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg id="clientPassEyeClosed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
         </div>
+        <script>
+          (function () {
+            var b = document.getElementById('clientPassEyeBtn');
+            var inp = document.getElementById('clientPassInput');
+            if (!b || !inp) return;
+            b.addEventListener('click', function () {
+              var show = (inp.type === 'password');
+              inp.type = show ? 'text' : 'password';
+              b.setAttribute('aria-pressed', show ? 'true' : 'false');
+              b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+              b.title = show ? 'Hide password' : 'Show password';
+              var o = document.getElementById('clientPassEyeOpen');
+              var c = document.getElementById('clientPassEyeClosed');
+              if (o) o.style.display = show ? 'none' : '';
+              if (c) c.style.display = show ? '' : 'none';
+            });
+          })();
+        </script>
         <button type="submit" class="btn-primary" id="loginSubmitBtn">Unlock Protected Quote</button>
       </form>
 
@@ -1227,7 +1258,13 @@
         var origBillable = comm.originalBillableValue !== undefined
           ? Number(comm.originalBillableValue)
           : Math.round((Number(comm.woodworkSubtotal) || 0) + (Number(comm.designAmount) || 0) + (frtEnabled ? (Number(comm.freightAmount) || 0) : 0));
-        cRows.push(['Original Billable Value', fmtINR(origBillable)]);
+        var origRow = ['Original Billable Value', fmtINR(origBillable)];
+        origRow._bg = '#EFF6FF';
+        origRow._borderColor = '#2563EB';
+        origRow._borderWidth = 1.2;
+        origRow._textColor = '#1E3A8A';
+        origRow._valColor = '#1D4ED8';
+        cRows.push(origRow);
         if (Number(comm.discountAmount || 0) > 0) {
           var wwAfter = comm.woodworkAfterDiscount !== undefined
             ? Number(comm.woodworkAfterDiscount)
@@ -1238,7 +1275,6 @@
           wwDiscRow._borderWidth = 1.2;
           wwDiscRow._textColor = '#9A3412';
           wwDiscRow._valColor = '#C2410C';
-          wwDiscRow._bold = true;
           cRows.push(wwDiscRow);
         }
         if (Number(comm.adpAmount || 0) > 0) {
@@ -1251,7 +1287,6 @@
           dcDiscRow._borderWidth = 1.2;
           dcDiscRow._textColor = '#9A3412';
           dcDiscRow._valColor = '#C2410C';
-          dcDiscRow._bold = true;
           cRows.push(dcDiscRow);
         }
         cRows.push(['Grand Total (Without GST)', fmtINR(comm.netBeforeTax || 0)]);
@@ -1264,14 +1299,11 @@
           ? (gstEnabled ? 'FINAL DISCOUNTED VALUE (WITH GST)' : 'FINAL DISCOUNTED VALUE')
           : (gstEnabled ? 'FINAL TOTAL (WITH GST)' : 'FINAL TOTAL');
         var grandRow = [finalTitle, fmtINR(comm.grandTotal || 0)];
-        grandRow._highlight = true;
-        grandRow._accent = true;
         grandRow._bg = '#FEF3C7';
         grandRow._borderColor = '#C00000';
-        grandRow._borderWidth = 1.4;
+        grandRow._borderWidth = 1.2;
         grandRow._textColor = '#08231B';
         grandRow._valColor = '#C00000';
-        grandRow._bold = true;
         cRows.push(grandRow);
 
         var totalSavings = Number(comm.totalSavings !== undefined ? comm.totalSavings : ((Number(comm.discountAmount) || 0) + (Number(comm.adpAmount) || 0)));
@@ -1281,13 +1313,12 @@
         savingsRow._borderWidth = 1.2;
         savingsRow._textColor = '#14532D';
         savingsRow._valColor = '#15803D';
-        savingsRow._bold = true;
         cRows.push(savingsRow);
 
         y = drawTable(ctx, cRows, 54, y, CANVAS_W - 108, [0.70, 0.30], {
           fontSize: 13.5,
           padY: 8.5,
-          boldFirstCol: true,
+          boldFirstCol: false,
           rightAlignCols: [1],
           headerBg: '#C00000'
         });
