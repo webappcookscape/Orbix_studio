@@ -342,6 +342,8 @@ class RenderService {
       const durationSec = Math.round((Date.now() - startTime) / 1000);
       job.durationSeconds = durationSec;
       job.completedAt = new Date().toISOString();
+      job.stdout = stdoutBuffer.slice(-4000);
+      job.stderr = stderrBuffer.slice(-4000);
 
       // Check if output PNG exists
       if (fs.existsSync(job.outputPath) && fs.statSync(job.outputPath).size > 1024) {

@@ -88,6 +88,13 @@ def run():
     if not has_gpu or device_mode == "CPU":
         cycles.device = 'CPU'
         scene.render.threads_mode = 'AUTO'
+        try:
+            prefs = bpy.context.preferences
+            cprefs = prefs.addons.get('cycles')
+            if cprefs and hasattr(cprefs, 'preferences'):
+                cprefs.preferences.compute_device_type = 'NONE'
+        except Exception:
+            pass
         print("[Orbix Cycles] Configured CPU compute device with all available CPU threads (AUTO).")
 
     # High-Performance Cycles CPU & Sampling Optimizations
@@ -112,13 +119,10 @@ def run():
     scene.render.resolution_y = int(res_h)
     scene.render.resolution_percentage = 100
 
-    samples = args.samples or render_cfg.get("samples", 32)
+    samples = args.samples or render_cfg.get("samples", 16)
     cycles.samples = int(samples)
-    cycles.use_denoising = True
-    try:
-        cycles.denoiser = 'OPENIMAGEDENOISE'
-    except Exception:
-        pass
+    # On headless servers without desktop OpenImageDenoise libraries, disable denoiser to prevent black buffer overwrite
+    cycles.use_denoising = False
 
     # Color Management (AgX, Filmic or Fallback Standard)
     lighting_cfg = data.get("lighting", {})
@@ -363,9 +367,9 @@ def run():
     sun_data.color = (1.0, 0.98, 0.93) # 5500K warm architectural daylight
     sun_data.angle = math.radians(2.5) # Soft realistic shadow penumbra
     sun_obj = bpy.data.objects.new(name="OrbixSunlight", object_data=sun_data)
-    # Direct sunlight at a 55-degree architectural angle
+    # Direct sunlight at a 55-degree architectural angle pointing down into the room
     sun_direction = mathutils.Vector((-0.45, -0.65, -0.75)).normalized()
-    sun_obj.rotation_euler = (-sun_direction).to_track_quat('-Z', 'Y').to_euler()
+    sun_obj.rotation_euler = sun_direction.to_track_quat('-Z', 'Y').to_euler()
     bpy.context.collection.objects.link(sun_obj)
 
     # 9. Setup Window Area Lights (Directional Daylight entering through room openings)
@@ -404,9 +408,18 @@ def run():
     fill_obj.location = (
         bbox_center.x,
         bbox_center.y,
-        min_z + bbox_size.z * 0.85
+        max(max_z + 0.3, min_z + bbox_size.z + 0.3)
     )
     bpy.context.collection.objects.link(fill_obj)
+
+    # Guaranteed Camera Vantage Fill (illuminates visible surfaces along camera line of sight)
+    cam_fill_data = bpy.data.lights.new(name="CameraAmbientFill", type='POINT')
+    cam_fill_data.energy = max(300.0, fill_watts * 50.0)
+    cam_fill_data.color = (1.0, 0.95, 0.90)
+    cam_fill_data.shadow_soft_size = 1.2
+    cam_fill_obj = bpy.data.objects.new(name="CameraAmbientFill", object_data=cam_fill_data)
+    cam_fill_obj.location = (cam_pos[0], cam_pos[1], cam_pos[2])
+    bpy.context.collection.objects.link(cam_fill_obj)
 
     # 11. Setup Camera (Physically-accurate orientation targeting scene center)
     cam_data = bpy.data.cameras.new("OrbixCamera")
