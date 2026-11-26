@@ -618,11 +618,12 @@ function checkQuoteActiveStatus(rec) {
 
 function extractValidatedVariantsAndIcons(snapInput) {
   const rawVariants = Array.isArray(snapInput.variantQuotes) ? snapInput.variantQuotes : [];
-  const variantQuotes = rawVariants.filter((vq) =>
-    Boolean(quoteDeckBuilder.normalizeTemplateVariantKey(vq.tierKey || vq.tierName || vq.tierTitle))
-  );
+  const variantQuotes = rawVariants.filter((vq) => {
+    const rawKey = String(vq.tierKey || vq.tierName || vq.tierTitle || '').toLowerCase().trim();
+    return Boolean(quoteDeckBuilder.normalizeTemplateVariantKey(rawKey)) || rawKey === 'custom' || vq.isCustomVariant === true || rawKey.includes('custom');
+  });
   if (!variantQuotes.length) {
-    throw makeError('Please select at least one Master Template variant (ZAPPO EL PEARL, POT & CAFE, HOME SPACE, CAFÉ HUNT, LL ELITE, CAPRICOAST MATTE, CAPRICOST GLOSSY, ELEGANT SURABHI, or 4X TUFF GLOSS).', 400);
+    throw makeError('Please select at least one Master Template variant (ZAPPO EL PEARL, POT & CAFE, HOME SPACE, CAFÉ HUNT, LL ELITE, CAPRICOAST MATTE, CAPRICOST GLOSSY, ELEGANT SURABHI, 4X TUFF GLOSS, or CUSTOM VARIANT).', 400);
   }
 
   const unitIcons = {};

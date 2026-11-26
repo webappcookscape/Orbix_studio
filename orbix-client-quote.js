@@ -19,6 +19,47 @@
     { key: 'MR+', label: '4X TUFF GLOSS', slideRange: 'Slides 31–33' }
   ];
 
+  function getVariantLabel(key) {
+    if (!key) return 'CAPRICOAST MATTE';
+    var norm = (Core && Core.normalizeTierName) ? Core.normalizeTierName(key) : key;
+    var found = MASTER_VARIANTS.filter(function (v) { return v.key === norm || v.key === key; })[0];
+    if (found) return found.label;
+    if (norm === 'custom' || key === 'custom') return 'CUSTOM (ROOM-WISE)';
+    return String(key).toUpperCase();
+  }
+
+  function getProjectRooms(proj) {
+    var rooms = [];
+    var seen = {};
+
+    var planRooms = (proj && proj.plan && Array.isArray(proj.plan.rooms)) ? proj.plan.rooms : [];
+    planRooms.forEach(function (rm) {
+      if (!rm || !rm.id || seen[rm.id]) return;
+      seen[rm.id] = true;
+      rooms.push({
+        id: rm.id,
+        name: rm.name || ('Room ' + (rooms.length + 1)),
+        unitCount: 0
+      });
+    });
+
+    var furniture = (proj && proj.plan && Array.isArray(proj.plan.furniture)) ? proj.plan.furniture : [];
+    furniture.forEach(function (f) {
+      if (!f || f.isDecor) return;
+      var rId = f.roomId || '_general';
+      var rName = f.roomName || 'General';
+      if (!seen[rId]) {
+        seen[rId] = true;
+        rooms.push({ id: rId, name: rName, unitCount: 1 });
+      } else {
+        var existing = rooms.filter(function (r) { return r.id === rId; })[0];
+        if (existing) existing.unitCount = (existing.unitCount || 0) + 1;
+      }
+    });
+
+    return rooms;
+  }
+
   function esc(str) {
     return String(str === undefined || str === null ? '' : str)
       .replace(/&/g, '&amp;')
@@ -141,14 +182,20 @@
   function buildVariantQuotePayload(app, tierKey, iconLookup, unitRemarks) {
     var proj = app.project || {};
     var origRateCard = proj.rateCard || {};
-    var normalized = (Core && Core.normalizeTierName) ? Core.normalizeTierName(tierKey) : tierKey;
+    var isCustom = (tierKey === 'custom' || tierKey === 'custom variant' || tierKey === 'custom (room-wise)');
+    var normalized = isCustom ? 'custom' : ((Core && Core.normalizeTierName) ? Core.normalizeTierName(tierKey) : tierKey);
 
     var clonedRateCard = JSON.parse(JSON.stringify(origRateCard));
-    clonedRateCard.selectedTier = normalized;
-    if (clonedRateCard.roomTiers && typeof clonedRateCard.roomTiers === 'object') {
-      Object.keys(clonedRateCard.roomTiers).forEach(function (rk) {
-        clonedRateCard.roomTiers[rk] = normalized;
-      });
+    if (isCustom) {
+      clonedRateCard.selectedTier = 'custom';
+      clonedRateCard.roomTiers = Object.assign({}, origRateCard.roomTiers || {});
+    } else {
+      clonedRateCard.selectedTier = normalized;
+      if (clonedRateCard.roomTiers && typeof clonedRateCard.roomTiers === 'object') {
+        Object.keys(clonedRateCard.roomTiers).forEach(function (rk) {
+          clonedRateCard.roomTiers[rk] = normalized;
+        });
+      }
     }
 
     var clonedProj = {
@@ -163,7 +210,7 @@
     var comm = app.computeCommercialSummary(quote.subtotalWoodwork, commCharges);
 
     var varMeta = MASTER_VARIANTS.filter(function (v) { return v.key === normalized; })[0];
-    var tierTitle = (varMeta && varMeta.label) || normalized.toUpperCase();
+    var tierTitle = isCustom ? 'CUSTOM VARIANT (Room-Wise)' : ((varMeta && varMeta.label) || normalized.toUpperCase());
 
     var items = (quote.furnitureItems || []).map(function (it, idx) {
       var d = it.dimensions || { W: 0, D: 0, H: 0 };
@@ -219,8 +266,12 @@
     var roomsSummary = (quote.allRoomsSummary || [])
       .filter(function (r) { return Number(r && r.itemCount || 0) > 0; })
       .map(function (r, idx) {
+        var rawTier = (clonedRateCard.roomTiers && (clonedRateCard.roomTiers[r.id] || clonedRateCard.roomTiers[r.name])) || r.variant || clonedRateCard.selectedTier || 'CC MATTE';
         return {
+          id: r.id,
           name: r.name,
+          variant: rawTier,
+          variantLabel: getVariantLabel(rawTier),
           itemCount: Number(r.itemCount || 0),
           roomSubtotal: Math.round(r.roomSubtotal || 0),
           percentShare: r.percentShare || 0,
@@ -245,10 +296,13 @@
     return {
       tierKey: normalized,
       tierTitle: tierTitle,
+      isCustomVariant: isCustom,
+      roomTiers: clonedRateCard.roomTiers || {},
       roomScopeLabel: roomScopeLabel,
       currencySymbol: quote.currencySymbol || '₹',
       grandTotal: Math.round(comm.grandTotal || 0),
       roomsSummary: roomsSummary,
+      roomBreakdown: roomsSummary,
       commercial: {
         woodworkSubtotal: comm.woodworkSubtotal,
         accessoriesEnabled: comm.accessoriesEnabled !== false,
@@ -428,7 +482,37 @@
         '  </div>' +
 
         '  <div style="margin-bottom:12px;">' +
-        '    <div style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:6px;">Select Master Template Variant(s) for Quotation</div>' +
+        '    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">' +
+        '      <div style="font-size:12px;font-weight:700;color:#0F172A;">Select Master Template Variant(s) for Quotation</div>' +
+        '      <button type="button" id="cqOpenCustomVariantBtn" class="btn small" style="background:#0F766E;color:#fff;border-color:#0D9488;font-weight:700;padding:5px 12px;border-radius:6px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">' +
+        '        <span>🎨 Custom Variant</span>' +
+        '      </button>' +
+        '    </div>' +
+        '    <div id="cqCustomVariantCardWrap" style="margin-bottom:8px;"></div>' +
+        '    <div id="cqRoomWiseSelectorDrawer" style="display:none;background:#F8FAFC;border:1.5px solid #0D9488;border-radius:8px;padding:12px 14px;margin-bottom:12px;box-shadow:0 3px 10px rgba(13,148,136,0.12);">' +
+        '      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">' +
+        '        <div>' +
+        '          <div style="font-size:12.5px;font-weight:700;color:#0F766E;">🎨 Room-Wise Custom Variant Configuration</div>' +
+        '          <div style="font-size:11px;color:#64748B;">Assign specific finishes to individual rooms (e.g. 4X Tuff Gloss for Kitchen, Capricoast Matte for Bed)</div>' +
+        '        </div>' +
+        '        <div style="display:flex;align-items:center;gap:6px;">' +
+        '          <label style="font-size:11px;color:#475569;font-weight:600;">Bulk Set:</label>' +
+        '          <select id="cqBulkRoomTierSelect" style="font-size:11px;padding:3px 6px;border-radius:4px;border:1px solid #CBD5E1;background:#fff;">' +
+        '            <option value="">-- Apply to all rooms --</option>' +
+        MASTER_VARIANTS.map(function (v) { return '<option value="' + esc(v.key) + '">' + esc(v.label) + '</option>'; }).join('') +
+        '          </select>' +
+        '        </div>' +
+        '      </div>' +
+        '      <div id="cqRoomRowsList" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:220px;overflow-y:auto;padding-right:4px;margin-bottom:10px;"></div>' +
+        '      <div style="display:flex;justify-content:space-between;align-items:center;background:#F0FDFA;border:1px solid #CCFBF1;border-radius:6px;padding:8px 12px;margin-bottom:10px;">' +
+        '        <span style="font-size:11.5px;font-weight:600;color:#0F766E;">Estimated Custom Woodwork Total:</span>' +
+        '        <span id="cqCustomLiveTotal" style="font-family:monospace;font-size:13px;font-weight:800;color:#0F766E;">₹ 0</span>' +
+        '      </div>' +
+        '      <div style="display:flex;gap:8px;justify-content:flex-end;">' +
+        '        <button type="button" id="cqCancelCustomBtn" class="btn small" style="padding:5px 12px;font-size:11.5px;">Cancel</button>' +
+        '        <button type="button" id="cqApplyCustomBtn" class="btn small" style="background:#0F766E;color:#fff;border-color:#0D9488;font-weight:700;padding:5px 16px;font-size:11.5px;">✅ Apply &amp; Select Custom Variant</button>' +
+        '      </div>' +
+        '    </div>' +
         variantCheckboxesHtml +
         '  </div>' +
 
@@ -455,6 +539,164 @@
         '</div>';
 
       modal.classList.add('is-open');
+
+      var customCardWrap = body.querySelector('#cqCustomVariantCardWrap');
+      var roomDrawer = body.querySelector('#cqRoomWiseSelectorDrawer');
+      var projectRooms = getProjectRooms(proj);
+
+      function renderCustomCard(quote) {
+        if (!quote) {
+          if (customCardWrap) customCardWrap.innerHTML = '';
+          return;
+        }
+        var rmCount = Object.keys(quote.roomTiers || {}).length;
+        customCardWrap.innerHTML =
+          '<label style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1.5px solid #0D9488;border-radius:8px;cursor:pointer;background:#F0FDFA;box-shadow:0 1px 3px rgba(13,148,136,0.12);">' +
+          '  <span style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#0F766E;">' +
+          '    <input type="checkbox" class="cq-tier-chk" value="custom" checked> ' +
+          '    <span>' +
+          '      🎨 CUSTOM VARIANT (Room-Wise)' +
+          '      <span style="display:block;font-weight:500;color:#0D9488;font-size:10.5px;">' +
+          '        ' + (quote.items ? quote.items.length : 0) + ' units + quote · ' + rmCount + ' rooms configured' +
+          '      </span>' +
+          '    </span>' +
+          '  </span>' +
+          '  <span style="display:flex;align-items:center;gap:10px;">' +
+          '    <button type="button" class="btn small" id="cqEditRoomsBtn" style="font-size:11px;padding:3px 8px;background:#CCFBF1;color:#0F766E;border-color:#5EEAD4;font-weight:600;">✏️ Edit Rooms</button>' +
+          '    <span style="font-family:monospace;font-size:12.5px;font-weight:800;color:#0F766E;white-space:nowrap;">' +
+          '      ' + esc(fmtINR(quote.grandTotal)) +
+          '    </span>' +
+          '  </span>' +
+          '</label>';
+
+        var editBtn = customCardWrap.querySelector('#cqEditRoomsBtn');
+        if (editBtn) {
+          editBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleRoomDrawer(true);
+          });
+        }
+      }
+
+      function populateRoomDrawer() {
+        var currentTiers = (proj.rateCard && proj.rateCard.roomTiers) ? proj.rateCard.roomTiers : {};
+        var listEl = roomDrawer.querySelector('#cqRoomRowsList');
+        if (!listEl) return;
+
+        var html = '';
+        projectRooms.forEach(function (rm) {
+          var selTier = currentTiers[rm.id] || currentTiers[rm.name] || proj.rateCard.selectedTier || 'CC MATTE';
+          html += '<div style="background:#fff;border:1px solid #E2E8F0;border-radius:6px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+            '  <div>' +
+            '    <div style="font-size:12px;font-weight:700;color:#0F172A;">' + esc(rm.name) + '</div>' +
+            '    <div style="font-size:10.5px;color:#64748B;">' + (rm.unitCount || 0) + ' units</div>' +
+            '  </div>' +
+            '  <select class="cq-room-tier-select" data-room-id="' + esc(rm.id) + '" style="font-size:11px;padding:4px 6px;border-radius:5px;border:1px solid #CBD5E1;background:#fff;color:#0F172A;font-weight:600;max-width:160px;">' +
+            MASTER_VARIANTS.map(function (v) {
+              return '<option value="' + esc(v.key) + '"' + (v.key === selTier ? ' selected' : '') + '>' + esc(v.label) + '</option>';
+            }).join('') +
+            '  </select>' +
+            '</div>';
+        });
+
+        listEl.innerHTML = html;
+        updateDrawerLiveTotal();
+      }
+
+      function updateDrawerLiveTotal() {
+        var tempRoomTiers = {};
+        roomDrawer.querySelectorAll('.cq-room-tier-select').forEach(function (sel) {
+          var rId = sel.getAttribute('data-room-id');
+          if (rId) tempRoomTiers[rId] = sel.value;
+        });
+
+        var tempRateCard = Object.assign({}, proj.rateCard || {}, { roomTiers: tempRoomTiers, selectedTier: 'custom' });
+        var tempProj = {
+          plan: proj.plan,
+          rateCard: tempRateCard,
+          commercialCharges: proj.commercialCharges,
+          meta: proj.meta
+        };
+        try {
+          var q = Core.generateFullQuotation(tempProj, app.selectedBOQRooms || ['all']);
+          var comm = app.computeCommercialSummary(q.subtotalWoodwork, app.getCommercialCharges());
+          var liveEl = roomDrawer.querySelector('#cqCustomLiveTotal');
+          if (liveEl) liveEl.textContent = fmtINR(comm.grandTotal);
+        } catch (_) {}
+      }
+
+      function toggleRoomDrawer(show) {
+        var isOpen = show !== undefined ? show : (roomDrawer.style.display !== 'none');
+        if (!isOpen) {
+          populateRoomDrawer();
+          roomDrawer.style.display = 'block';
+        } else {
+          roomDrawer.style.display = 'none';
+        }
+      }
+
+      var openBtn = body.querySelector('#cqOpenCustomVariantBtn');
+      if (openBtn) {
+        openBtn.addEventListener('click', function () {
+          toggleRoomDrawer();
+        });
+      }
+
+      var cancelBtn = roomDrawer.querySelector('#cqCancelCustomBtn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+          toggleRoomDrawer(false);
+        });
+      }
+
+      var bulkSelect = roomDrawer.querySelector('#cqBulkRoomTierSelect');
+      if (bulkSelect) {
+        bulkSelect.addEventListener('change', function () {
+          var val = this.value;
+          if (!val) return;
+          roomDrawer.querySelectorAll('.cq-room-tier-select').forEach(function (s) {
+            s.value = val;
+          });
+          updateDrawerLiveTotal();
+        });
+      }
+
+      roomDrawer.addEventListener('change', function (e) {
+        if (e.target && e.target.classList.contains('cq-room-tier-select')) {
+          updateDrawerLiveTotal();
+        }
+      });
+
+      var applyBtn = roomDrawer.querySelector('#cqApplyCustomBtn');
+      if (applyBtn) {
+        applyBtn.addEventListener('click', function () {
+          var newRoomTiers = {};
+          roomDrawer.querySelectorAll('.cq-room-tier-select').forEach(function (sel) {
+            var rId = sel.getAttribute('data-room-id');
+            if (rId) newRoomTiers[rId] = sel.value;
+          });
+          proj.rateCard = proj.rateCard || {};
+          proj.rateCard.roomTiers = newRoomTiers;
+          if (typeof app.saveToLocalStorage === 'function') app.saveToLocalStorage();
+
+          try {
+            var cq = buildVariantQuotePayload(app, 'custom', {}, '');
+            renderCustomCard(cq);
+          } catch (err) {
+            console.error('Failed to build custom variant quote:', err);
+          }
+          toggleRoomDrawer(false);
+        });
+      }
+
+      // If project already has roomTiers defined, render custom card on load
+      if (proj.rateCard && proj.rateCard.roomTiers && Object.keys(proj.rateCard.roomTiers).length > 0) {
+        try {
+          var initCq = buildVariantQuotePayload(app, 'custom', {}, '');
+          renderCustomCard(initCq);
+        } catch (_) {}
+      }
 
       async function gatherReviewPayload() {
         var selectedTiers = [];
@@ -496,6 +738,20 @@
             selected: selectedTiers.indexOf(v.key) !== -1
           };
         });
+
+        var customMatched = variantQuotes.filter(function (vq) { return vq.tierKey === 'custom'; })[0];
+        if (customMatched || (proj.rateCard && proj.rateCard.roomTiers && Object.keys(proj.rateCard.roomTiers).length)) {
+          var cInfo = customMatched || buildVariantQuotePayload(app, 'custom', {}, '');
+          allVariantsPricing.push({
+            tierKey: 'custom',
+            tierTitle: 'CUSTOM VARIANT (Room-Wise)',
+            isCustomVariant: true,
+            unitCount: (cInfo.items || []).length,
+            grandTotal: Math.round(cInfo.grandTotal || 0),
+            selected: selectedTiers.indexOf('custom') !== -1,
+            roomBreakdown: cInfo.roomsSummary || []
+          });
+        }
 
         return {
           projectId: getActiveProjectId(app),

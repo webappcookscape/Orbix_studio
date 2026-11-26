@@ -31,6 +31,7 @@ function resolveTemplateAssetPath(assetFileName) {
 
 function normalizeTemplateVariantKey(raw) {
   const s = String(raw || '').trim().toLowerCase();
+  if (s === 'custom' || s === 'custom variant' || s === 'custom (room-wise)') return 'custom';
   if (s === 'zappo - el pearl' || s === 'zappo-el pearl' || s === 'zappo-el-pearl' || s === 'zappo el pearl' || s === 'zappo' || s === 'p1' || s === 'price 1' || s === 'price1') return 'zappo - el pearl';
   if (s === 'pot&cafe' || s === 'pot & cafe' || s === 'pot and cafe' || s === 'pot cafe' || s === 'p2' || s === 'price 2' || s === 'price2') return 'pot&cafe';
   if (s === 'homespace' || s === 'home space' || s === 'home-space' || s === 'p3' || s === 'price 3' || s === 'price3') return 'homespace';
@@ -170,6 +171,30 @@ function buildClientQuoteDeck(quoteRecord) {
     const tk = normalizeTemplateVariantKey(vq.tierKey || vq.tierName || vq.tierTitle);
     if (tk && !selectedByKey[tk]) selectedByKey[tk] = vq;
   }
+
+  if (selectedByKey['custom']) {
+    const customVq = selectedByKey['custom'];
+    const customTpl = {
+      key: 'custom',
+      title: 'CUSTOM VARIANT (Room-Wise)',
+      shortTitle: 'Custom Variant',
+      dividerAsset: (tpl.assets && tpl.assets.customDividerAsset) || 'slide_22.jpg',
+      specTables: [
+        {
+          title: 'Room-Wise Custom Finishes',
+          rows: (customVq.roomBreakdown || customVq.roomsSummary || []).map((rm) => [
+            rm.name || 'Room',
+            rm.variantLabel || rm.variant || 'Custom Finish',
+            `${rm.itemCount || 0} Units`,
+            `₹ ${(rm.roomSubtotal || 0).toLocaleString('en-IN')}`
+          ])
+        }
+      ]
+    };
+    variantMap['custom'] = customTpl;
+    templateOrder.push('custom');
+  }
+
   const orderedVariants = templateOrder.filter((k) => Boolean(selectedByKey[k])).map((k) => ({
     tplVar: variantMap[k],
     vq: selectedByKey[k]

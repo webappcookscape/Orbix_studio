@@ -716,7 +716,7 @@
             '<div>' +
             '  <div class="ref-var-name">' + esc(av.tierTitle || av.tierKey) + '</div>' +
             (isSel ? '  <div><span class="ref-var-badge">Selected</span></div>' : '') +
-            '  <div class="ref-var-sub">' + (av.unitCount ? (esc(av.unitCount) + ' units + quote') : 'Master Variant') + '</div>' +
+            '  <div class="ref-var-sub">' + (av.isCustomVariant ? 'Room-Wise Custom' : (av.unitCount ? (esc(av.unitCount) + ' units + quote') : 'Master Variant')) + '</div>' +
             '</div>' +
             '<div class="ref-var-price" data-side-tier="' + esc(av.tierKey || '') + '">' + fmtINR(displayPrice || 0) + '</div>' +
             '</div>';
@@ -737,9 +737,12 @@
             '<div class="variant-body">';
 
           if (rooms.length) {
-            html += '<table><thead><tr><th>Room-Wise Breakdown</th><th class="num">Units</th><th class="num">Amount</th></tr></thead><tbody>';
+            html += '<table><thead><tr><th>Room-Wise Breakdown &amp; Finishes</th><th class="num">Units</th><th class="num">Amount</th></tr></thead><tbody>';
             rooms.forEach(function (rm) {
-              html += '<tr><td><b>' + esc(rm.name || 'Room') + '</b></td><td class="num">' + (rm.itemCount || 0) + '</td><td class="num"><b>' + fmtINR(rm.roomSubtotal) + '</b></td></tr>';
+              var finishBadge = rm.variantLabel || rm.variant;
+              html += '<tr><td><b>' + esc(rm.name || 'Room') + '</b>' +
+                (finishBadge ? (' <span style="display:inline-block;margin-left:6px;padding:2px 7px;font-size:10.5px;font-weight:700;border-radius:4px;background:#E0F2FE;color:#0369A1;">' + esc(finishBadge) + '</span>') : '') +
+                '</td><td class="num">' + (rm.itemCount || 0) + '</td><td class="num"><b>' + fmtINR(rm.roomSubtotal) + '</b></td></tr>';
             });
             html += '</tbody></table>';
           }
