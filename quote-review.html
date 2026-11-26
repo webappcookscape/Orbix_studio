@@ -542,6 +542,10 @@
         var gstAmt = coreGstAmount;
         var grandTotal = coreGrandTotal;
 
+        var dPct = (comm.designPercent !== undefined && comm.designPercent !== null)
+          ? Number(comm.designPercent)
+          : (woodwork > 0 ? (Math.round((designAmt / woodwork) * 1000) / 10) : 9);
+
         return Object.assign({}, comm, {
           woodworkSubtotal: woodwork,
           baseAdditionalAccessories: baseAcc,
@@ -875,10 +879,13 @@
           };
           var accInput = card.querySelector('[data-kind="accessories"]');
           var appInput = card.querySelector('[data-kind="appliances"]');
+          var discInp = card.querySelector('[data-kind="discount"]');
+          var dInp = card.querySelector('[data-kind="design"]');
+          var adpInp = card.querySelector('[data-kind="adp"]');
           return {
-            designPercent: card.querySelector('[data-kind="design"]').value,
-            discountPercent: card.querySelector('[data-kind="discount"]').value,
-            adpPercent: card.querySelector('[data-kind="adp"]').value,
+            designPercent: dInp ? dInp.value : undefined,
+            discountPercent: discInp ? discInp.value : 0,
+            adpPercent: adpInp ? adpInp.value : 60,
             additionalAccessories: accInput ? accInput.value : 0,
             appliances: appInput ? appInput.value : 0,
             accessoriesEnabled: getChk('accessoriesEnabled'),

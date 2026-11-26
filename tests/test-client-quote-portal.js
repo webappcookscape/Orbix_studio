@@ -348,19 +348,19 @@ async function runTests() {
       assert.strictEqual((await request(port, 'POST', `/api/client-quotes/${revQuoteId}/activate-client-link`, { clientUsername: 'Karthik Subramanian', clientPassword: 'Pass#123' }, { Cookie: emp1Cookie })).status, 400);
       assert.strictEqual((await request(port, 'POST', `/api/client-quotes/${revQuoteId}/export-pdf`, null, { Cookie: emp1Cookie })).status, 400);
 
-      // Head edits Discount (5%) + ADP (2%) on Zappo El Pearl and clicks Approve
+      // Head edits Discount (5%) on Zappo El Pearl and clicks Approve (adpPercent is fixed at standard 60%)
       const approveRes = await request(port, 'POST', `/api/quote-review/${revToken}/approve`, {
         approvedBy: 'Sangathamizh',
-        approvalRemarks: 'Approved 5% + 2% discount',
+        approvalRemarks: 'Approved 5% discount on woodwork',
         variantDiscounts: [
-          { tierKey: 'zappo - el pearl', discountPercent: 5, adpPercent: 2 }
+          { tierKey: 'zappo - el pearl', discountPercent: 5 }
         ]
       });
       assert.strictEqual(approveRes.status, 200, `Head approval failed: ${approveRes.raw}`);
       assert.strictEqual(approveRes.json.review.approvalStatus, 'approved');
       const zappoVar = approveRes.json.review.variants.find((v) => v.tierKey === 'zappo - el pearl');
       assert.strictEqual(zappoVar.commercial.discountPercent, 5);
-      assert.strictEqual(zappoVar.commercial.adpPercent, 2);
+      assert.strictEqual(zappoVar.commercial.adpPercent, 60);
       assert(zappoVar.commercial.discountAmount > 0 && zappoVar.commercial.adpAmount > 0);
 
       // Employee refreshes list -> sees Approved status, activates Full Client Link with Username = Client Name
@@ -428,23 +428,21 @@ async function runTests() {
       assert.strictEqual(decorTestQuote.furnitureItems.length, 1, 'Decors must be completely removed from Pricing & Quotation');
       assert.strictEqual(decorTestQuote.allRoomsSummary[0].itemCount, 1, 'Room unit count must exclude decors');
 
-      // Verify Discount on Design Charge math + all 4 Review Link enable/disable toggles (Accessories, Appliances, Freight, GST)
+      // Verify Fixed 60% Discount on Design Charge + all 4 Review Link enable/disable toggles (Accessories, Appliances, Freight, GST)
       const revHtml = fs.readFileSync(path.join(ROOT, 'quote-review.html'), 'utf8');
       assert(revHtml.includes('data-toggle="accessoriesEnabled"') && revHtml.includes('data-toggle="appliancesEnabled"') && revHtml.includes('data-toggle="freightEnabled"') && revHtml.includes('data-toggle="gstEnabled"'), 'Review link must include enable/disable toggles for Accessories, Appliances, Freight & GST');
       const reviewResp = await request(port, 'POST', `/api/quote-review/${revToken}/approve`, {
         approvedBy: 'Sangathamizh',
         approvalRemarks: 'Test Design Discount + Toggles',
         variantDiscounts: [
-          { tierKey: 'zappo - el pearl', designPercent: 10, discountPercent: 5, adpPercent: 50, accessoriesEnabled: false, appliancesEnabled: false, freightEnabled: false, gstEnabled: false }
+          { tierKey: 'zappo - el pearl', discountPercent: 5, accessoriesEnabled: false, appliancesEnabled: false, freightEnabled: false, gstEnabled: false }
         ]
       });
       assert.strictEqual(reviewResp.status, 200);
       const zv = reviewResp.json.review.variants.find((v) => v.tierKey === 'zappo - el pearl');
-      const expectedDesign = Math.round(zv.commercial.woodworkSubtotal * 0.10);
-      const expectedDesignDisc = Math.round(expectedDesign * 0.50);
-      assert.strictEqual(zv.commercial.designAmount, expectedDesign, 'Editable design % must recalculate design charge');
-      assert.strictEqual(zv.commercial.adpAmount, expectedDesignDisc, 'Discount on Design Charge must be % of Design Charge');
-      assert.strictEqual(zv.commercial.totalSavings, zv.commercial.discountAmount + expectedDesignDisc, 'Your Savings must equal Wood Work Discount + Design Charge Discount');
+      assert.strictEqual(zv.commercial.designAmount, 24465, 'Design fee must come from Surabhi slab table');
+      assert.strictEqual(zv.commercial.adpPercent, 60, 'Design fee discount must be fixed at 60%');
+      assert.strictEqual(zv.commercial.totalSavings, zv.commercial.discountAmount + zv.commercial.adpAmount, 'Your Savings must equal Wood Work Discount + Design Charge Discount');
       assert.strictEqual(zv.commercial.accessoriesEnabled, false);
       assert.strictEqual(zv.commercial.additionalAccessories, 0);
       assert.strictEqual(zv.commercial.appliancesEnabled, false);
