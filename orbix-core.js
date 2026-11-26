@@ -8059,10 +8059,7 @@
     { id: 'cloths_holder', name: 'CLOTHS HOLDER', category: 'Wardrobe Accessories', brand: 'HETTICH', rate: 5272.20, hettichRate: 5272.20 },
     { id: 'wardrobe_ironing_board', name: 'WARDROBE PULLOUT IROING BOARD', category: 'Wardrobe Accessories', brand: 'LIVSMART', rate: 23948.58, ebcoRate: 12027.75, hettichRate: 23948.58 },
     { id: 'g_profile_handle_1m', name: 'G PROFILE HANDLE 1 meter', category: 'Profiles & Handles', brand: 'CUSTOM', rate: 1250.00, ebcoRate: 1250.00, hettichRate: 1250.00, minRate: 950, maxRate: 1850, unit: 'meter', unitLabel: 'meter(s)', step: 0.5, isCustom: true },
-    { id: 'golden_strip', name: 'GOLDEN STRIP', category: 'Profiles & Handles', brand: 'CUSTOM', rate: 850.00, ebcoRate: 850.00, hettichRate: 850.00, minRate: 450, maxRate: 1500, unit: 'meter', unitLabel: 'meter(s)', step: 0.5, isCustom: true },
-    { id: 'king_size_cot_storage', name: 'KING SIZE COT WITH STORAGE', category: 'Bedroom Cots', brand: 'COOKSCAPE', rate: 52800 },
-    { id: 'queen_size_cot_storage', name: 'QUEEN SIZE COT WITH STORAGE', category: 'Bedroom Cots', brand: 'COOKSCAPE', rate: 39400 },
-    { id: 'wallpaper_sqft', name: 'WALLPAPER 1sq feet', category: 'Wall Treatments', brand: 'CUSTOM', rate: 55, minRate: 45, maxRate: 70, unit: 'sqft', unitLabel: 'sq feet', step: 1, isCustom: true }
+    { id: 'golden_strip', name: 'GOLDEN STRIP', category: 'Profiles & Handles', brand: 'CUSTOM', rate: 850.00, ebcoRate: 850.00, hettichRate: 850.00, minRate: 450, maxRate: 1500, unit: 'meter', unitLabel: 'meter(s)', step: 0.5, isCustom: true }
   ];
 
   function getCookscapeAddonsCatalog() {

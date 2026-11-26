@@ -10052,7 +10052,7 @@
           '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
           '    <div>' +
           '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Add-Ons &amp; Accessories Catalog</h3>' +
-          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">69 Master Accessories &bull; Brand Rate Cards (Ebco, Hettich, Grass, Livsmart) &bull; Custom Measurements (Meters / Sq.Ft)</div>' +
+          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">69 Master Accessories &bull; Brand Rate Cards (Ebco, Hettich, Grass, Livsmart) &bull; Custom Profiles (Meters)</div>' +
           '    </div>' +
           '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
           '  </div>' +

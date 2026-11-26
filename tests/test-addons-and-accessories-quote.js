@@ -9,19 +9,16 @@ const clientQuoteService = require('../server/services/clientQuoteService');
 console.log('--- TEST: Cookscape Master Add-Ons Catalog ---');
 const catalog = Core.getCookscapeAddonsCatalog();
 assert(Array.isArray(catalog), 'Catalog must be an array');
-assert.strictEqual(catalog.length, 58, `Catalog must have exactly 58 items, found ${catalog.length}`);
+assert.strictEqual(catalog.length, 69, `Catalog must have exactly 69 items, found ${catalog.length}`);
 
 // Verify key catalog items
 const magicCorner = catalog.find(i => i.id === 'magic_corner');
-assert(magicCorner && magicCorner.rate === 40900, 'Magic Corner rate should be 40,900');
+assert(magicCorner && magicCorner.rate === 41932.00, 'Magic Corner rate should be 41,932');
 
-const pvcCutlery600 = catalog.find(i => i.id === 'pvc_cutlery_600');
-assert(pvcCutlery600 && pvcCutlery600.rate === 1222, 'PVC Cutlery 600 rate should be 1,222');
+const pvcCutlery450 = catalog.find(i => i.id === 'pvc_cutlery_inlet_450');
+assert(pvcCutlery450 && pvcCutlery450.rate === 1385.00, 'PVC Cutlery 450 rate should be 1,385');
 
-const kingCot = catalog.find(i => i.id === 'king_size_cot_storage');
-assert(kingCot && kingCot.rate === 52800, 'King Size Cot rate should be 52,800');
-
-console.log('✅ Master Catalog: 58 items verified.');
+console.log('✅ Master Catalog: 69 items verified.');
 
 console.log('--- TEST: Commercial Calculation Independence (Add-ons do NOT affect Core Grand Total) ---');
 
@@ -92,28 +89,25 @@ assert.strictEqual(summary.grandAddonsTotal, 118700, 'Grand addons total should 
 
 console.log('✅ Core.calculateAddonsSummary verified.');
 
-console.log('--- TEST: User Editable Rates & Custom Units (Meters & Sq.Ft) ---');
-const gProfileItem = catalog.find(i => i.id === 'g_profile_handle');
+console.log('--- TEST: User Editable Rates & Custom Units (Meters) ---');
+const gProfileItem = catalog.find(i => i.id === 'g_profile_handle_1m');
 assert.ok(gProfileItem, 'G Profile Handle must exist in catalog');
 assert.strictEqual(gProfileItem.unit, 'meter');
-assert.strictEqual(gProfileItem.minRate, 1350);
-assert.strictEqual(gProfileItem.maxRate, 2050);
+assert.strictEqual(gProfileItem.minRate, 950);
+assert.strictEqual(gProfileItem.maxRate, 1850);
 assert.strictEqual(gProfileItem.isCustom, true);
 
-const wallpaperItem = catalog.find(i => i.id === 'wallpaper_sqft');
-assert.ok(wallpaperItem, 'Wallpaper must exist in catalog');
-assert.strictEqual(wallpaperItem.unit, 'sqft');
-assert.strictEqual(wallpaperItem.minRate, 45);
-assert.strictEqual(wallpaperItem.maxRate, 70);
-assert.strictEqual(wallpaperItem.isCustom, true);
+// Verify King Cot, Queen Cot, and Wallpaper were removed as requested
+assert.strictEqual(catalog.find(i => i.id === 'king_size_cot_storage'), undefined, 'King Size Cot must be removed from accessories');
+assert.strictEqual(catalog.find(i => i.id === 'queen_size_cot_storage'), undefined, 'Queen Size Cot must be removed from accessories');
+assert.strictEqual(catalog.find(i => i.id === 'wallpaper_sqft'), undefined, 'Wallpaper must be removed from accessories');
 
-// Test custom rate + custom measurements (5.5 meters & 150 sq.ft)
+// Test custom rate + custom measurements (5.5 meters)
 const customAddons = [
-  { id: 'g_profile_handle', name: 'G PROFILE HANDLE 1meter', customRate: 1850, rate: 1700, unit: 'meter', qty: 5.5, amount: Math.round(5.5 * 1850) },
-  { id: 'wallpaper_sqft', name: 'WALLPAPER 1sq feet', customRate: 60, rate: 55, unit: 'sqft', qty: 150, amount: Math.round(150 * 60) }
+  { id: 'g_profile_handle_1m', name: 'G PROFILE HANDLE 1 meter', customRate: 1450, rate: 1250, unit: 'meter', qty: 5.5, amount: Math.round(5.5 * 1450) }
 ];
 const customSummary = Core.calculateAddonsSummary(customAddons, []);
-assert.strictEqual(customSummary.addonsSubtotal, 10175 + 9000, 'Custom addons subtotal must equal (5.5 * 1850) + (150 * 60) = 19,175');
-console.log('✅ Custom rate and meter/sq.ft measurements verified successfully!');
+assert.strictEqual(customSummary.addonsSubtotal, 7975, 'Custom addons subtotal must equal (5.5 * 1450) = 7,975');
+console.log('✅ Custom rate and meter measurements verified successfully!');
 
 console.log('🎉 ALL TESTS PASSED!');
