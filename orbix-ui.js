@@ -7244,7 +7244,9 @@
 
       if (startBtn) {
         startBtn.addEventListener('click', async function () {
-          var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+          var scene = (window.__cc && window.__cc.gl && typeof window.__cc.gl.getScene === 'function')
+            ? window.__cc.gl.getScene()
+            : ((window.GL && typeof window.GL.getScene === 'function') ? window.GL.getScene() : null);
           if (window.GL && typeof window.GL.updateWallCutaway === 'function') {
             try { window.GL.updateWallCutaway(true); } catch (_) {}
           }
@@ -8279,7 +8281,9 @@
     exportCycles: function (opts) {
       opts = opts || {};
       var self = this;
-      var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+      var scene = (window.__cc && window.__cc.gl && typeof window.__cc.gl.getScene === 'function')
+        ? window.__cc.gl.getScene()
+        : ((window.GL && typeof window.GL.getScene === 'function') ? window.GL.getScene() : null);
 
       if (!this.archRenderer && root.Orbix3D) {
         this.archRenderer = new root.Orbix3D(scene);
@@ -8324,7 +8328,9 @@
     exportSketchUp: function (format) {
       format = format || 'dae';
       var self = this;
-      var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+      var scene = (window.__cc && window.__cc.gl && typeof window.__cc.gl.getScene === 'function')
+        ? window.__cc.gl.getScene()
+        : ((window.GL && typeof window.GL.getScene === 'function') ? window.GL.getScene() : null);
 
       if (!this.archRenderer && root.Orbix3D) {
         this.archRenderer = new root.Orbix3D(scene);

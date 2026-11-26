@@ -6677,14 +6677,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=41'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=41'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=41'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=42'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=42'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=42'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=41');
+          return loadScript('orbix-a4-drawings.js?v=42');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -37360,25 +37360,68 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       });
     });
 
-    // Camera parameters
+    // Calculate scene bounding box across harvested geometry
+    var bboxMin = { x: Infinity, y: Infinity, z: Infinity };
+    var bboxMax = { x: -Infinity, y: -Infinity, z: -Infinity };
+    var hasValidGeo = false;
+
+    meshes.forEach(function (mesh) {
+      if (!mesh.geometry) return;
+      if (!mesh.geometry.boundingBox) {
+        try { mesh.geometry.computeBoundingBox(); } catch (_) {}
+      }
+      var b = mesh.geometry.boundingBox;
+      if (!b) return;
+      var vMin = b.min.clone().applyMatrix4(mesh.matrixWorld);
+      var vMax = b.max.clone().applyMatrix4(mesh.matrixWorld);
+      bboxMin.x = Math.min(bboxMin.x, vMin.x, vMax.x);
+      bboxMin.y = Math.min(bboxMin.y, vMin.y, vMax.y);
+      bboxMin.z = Math.min(bboxMin.z, vMin.z, vMax.z);
+      bboxMax.x = Math.max(bboxMax.x, vMin.x, vMax.x);
+      bboxMax.y = Math.max(bboxMax.y, vMin.y, vMax.y);
+      bboxMax.z = Math.max(bboxMax.z, vMin.z, vMax.z);
+      hasValidGeo = true;
+    });
+
+    var geoCenter = hasValidGeo
+      ? { x: (bboxMin.x + bboxMax.x) / 2, y: (bboxMin.y + bboxMax.y) / 2, z: (bboxMin.z + bboxMax.z) / 2 }
+      : { x: 0, y: 1200, z: 0 };
+    var geoSize = hasValidGeo
+      ? { x: bboxMax.x - bboxMin.x, y: bboxMax.y - bboxMin.y, z: bboxMax.z - bboxMin.z }
+      : { x: 4000, y: 2400, z: 4000 };
+    var maxDim = Math.max(geoSize.x, geoSize.y, geoSize.z, 2200);
+
+    // Camera parameters auto-centered on project geometry
     var camData = {
-      position: [0, -3.5, 1.6],
-      target: [0, 0, 0.9],
+      position: [
+        parseFloat(((geoCenter.x + Math.sin(0.6) * maxDim * 1.4) / 1000).toFixed(4)),
+        parseFloat(((-geoCenter.z - Math.cos(0.6) * maxDim * 1.4) / 1000).toFixed(4)),
+        parseFloat(((geoCenter.y + maxDim * 0.5) / 1000).toFixed(4))
+      ],
+      target: [
+        parseFloat((geoCenter.x / 1000).toFixed(4)),
+        parseFloat((-geoCenter.z / 1000).toFixed(4)),
+        parseFloat((geoCenter.y / 1000).toFixed(4))
+      ],
       fov: 50
     };
     var actualCam = (window.GL && typeof window.GL.getCamera === 'function') ? window.GL.getCamera() : ((window.__cc && window.__cc.gl && typeof window.__cc.gl.getCamera === 'function') ? window.__cc.gl.getCamera() : null);
-    var tgt = (window.GL && window.GL.getTarget && window.GL.getTarget()) ? window.GL.getTarget() : { x: 0, y: 1200, z: 0 };
+    var tgt = (window.GL && window.GL.getTarget && window.GL.getTarget()) ? window.GL.getTarget() : geoCenter;
 
     if (actualCam && actualCam.position) {
+      // If user camera target is reasonably near the geometry, use actual user vantage
+      var distToCenter = Math.hypot(tgt.x - geoCenter.x, tgt.z - geoCenter.z);
+      var effectiveTgt = (distToCenter < maxDim * 1.5) ? tgt : geoCenter;
+
       camData.position = [
         parseFloat((actualCam.position.x / 1000).toFixed(4)),
         parseFloat((-actualCam.position.z / 1000).toFixed(4)),
         parseFloat((actualCam.position.y / 1000).toFixed(4))
       ];
       camData.target = [
-        parseFloat((tgt.x / 1000).toFixed(4)),
-        parseFloat((-tgt.z / 1000).toFixed(4)),
-        parseFloat((tgt.y / 1000).toFixed(4))
+        parseFloat((effectiveTgt.x / 1000).toFixed(4)),
+        parseFloat((-effectiveTgt.z / 1000).toFixed(4)),
+        parseFloat((effectiveTgt.y / 1000).toFixed(4))
       ];
       camData.fov = actualCam.fov || 50;
     } else if (window.GL && typeof window.GL.getCam === 'function') {
@@ -37387,9 +37430,9 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       var yawRad = (gc.yaw || 0) * Math.PI / 180;
       var pitchRad = -(gc.pitch || 0) * Math.PI / 180;
 
-      var cx = tgt.x + Math.sin(yawRad) * Math.cos(pitchRad) * dist;
-      var cy = tgt.y + Math.sin(pitchRad) * dist;
-      var cz = tgt.z + Math.cos(yawRad) * Math.cos(pitchRad) * dist;
+      var cx = geoCenter.x + Math.sin(yawRad) * Math.cos(pitchRad) * dist;
+      var cy = geoCenter.y + Math.sin(pitchRad) * dist;
+      var cz = geoCenter.z + Math.cos(yawRad) * Math.cos(pitchRad) * dist;
 
       camData.position = [
         parseFloat((cx / 1000).toFixed(4)),
@@ -37397,9 +37440,9 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
         parseFloat((cy / 1000).toFixed(4))
       ];
       camData.target = [
-        parseFloat((tgt.x / 1000).toFixed(4)),
-        parseFloat((-tgt.z / 1000).toFixed(4)),
-        parseFloat((tgt.y / 1000).toFixed(4))
+        parseFloat((geoCenter.x / 1000).toFixed(4)),
+        parseFloat((-geoCenter.z / 1000).toFixed(4)),
+        parseFloat((geoCenter.y / 1000).toFixed(4))
       ];
       if (opts.camera && opts.camera.fov) camData.fov = opts.camera.fov;
     }
@@ -44735,7 +44778,9 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
 
       if (startBtn) {
         startBtn.addEventListener('click', async function () {
-          var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+          var scene = (window.__cc && window.__cc.gl && typeof window.__cc.gl.getScene === 'function')
+            ? window.__cc.gl.getScene()
+            : ((window.GL && typeof window.GL.getScene === 'function') ? window.GL.getScene() : null);
           if (window.GL && typeof window.GL.updateWallCutaway === 'function') {
             try { window.GL.updateWallCutaway(true); } catch (_) {}
           }
@@ -45770,7 +45815,9 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     exportCycles: function (opts) {
       opts = opts || {};
       var self = this;
-      var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+      var scene = (window.__cc && window.__cc.gl && typeof window.__cc.gl.getScene === 'function')
+        ? window.__cc.gl.getScene()
+        : ((window.GL && typeof window.GL.getScene === 'function') ? window.GL.getScene() : null);
 
       if (!this.archRenderer && root.Orbix3D) {
         this.archRenderer = new root.Orbix3D(scene);
@@ -45815,7 +45862,9 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     exportSketchUp: function (format) {
       format = format || 'dae';
       var self = this;
-      var scene = (window.__cc && window.__cc.gl && window.__cc.gl.getScene) ? window.__cc.gl.getScene() : null;
+      var scene = (window.__cc && window.__cc.gl && typeof window.__cc.gl.getScene === 'function')
+        ? window.__cc.gl.getScene()
+        : ((window.GL && typeof window.GL.getScene === 'function') ? window.GL.getScene() : null);
 
       if (!this.archRenderer && root.Orbix3D) {
         this.archRenderer = new root.Orbix3D(scene);
@@ -60484,7 +60533,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
   // 1. Register Service Worker (web browsers only, not file:// in desktop app)
   if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=41')
+      navigator.serviceWorker.register('./sw.js?v=42')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 

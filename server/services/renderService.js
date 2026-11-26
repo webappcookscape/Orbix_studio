@@ -27,7 +27,7 @@ const PRESETS = {
   preview: {
     label: 'Fast Preview (1080p)',
     resolution: [1920, 1080],
-    samples: 28,
+    samples: 16,
     timeoutMs: 3 * 60 * 1000 // 3 minutes max
   },
   ultra: {

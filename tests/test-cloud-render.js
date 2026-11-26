@@ -39,7 +39,7 @@ const jobResult = renderService.createJob({
 assert(jobResult.success, 'createJob must succeed');
 assert(jobResult.job.id, 'job must have an id');
 assert.strictEqual(jobResult.job.preset, 'preview', 'job preset must be preview');
-assert.strictEqual(jobResult.job.samples, 28, 'preview preset must use 28 samples');
+assert.strictEqual(jobResult.job.samples, 16, 'preview preset must use 16 samples');
 
 const fetchedJob = renderService.getJob(jobResult.job.id);
 assert(fetchedJob, 'getJob must find created job');

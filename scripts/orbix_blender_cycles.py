@@ -287,7 +287,77 @@ def run():
             for p in b_mesh.polygons:
                 p.use_smooth = True
 
-    # 7. Setup Architectural Sunlight (Direct warm sunlight entering the kitchen)
+        # Ensure ceiling NEVER blocks the camera from viewing interior geometry
+        if role == 'ceiling' or 'ceiling' in name.lower():
+            b_obj.visible_camera = False
+
+    # 7. Setup Scene Bounding Box & Architectural Auto-Framing
+    mesh_objs = [o for o in bpy.context.scene.objects if o.type == 'MESH']
+    all_coords = []
+    for obj in mesh_objs:
+        for v in obj.data.vertices:
+            all_coords.append(obj.matrix_world @ v.co)
+
+    if all_coords:
+        min_x = min(p.x for p in all_coords)
+        max_x = max(p.x for p in all_coords)
+        min_y = min(p.y for p in all_coords)
+        max_y = max(p.y for p in all_coords)
+        min_z = min(p.z for p in all_coords)
+        max_z = max(p.z for p in all_coords)
+        bbox_center = mathutils.Vector(((min_x + max_x) * 0.5, (min_y + max_y) * 0.5, (min_z + max_z) * 0.5))
+        bbox_size = mathutils.Vector((max_x - min_x, max_y - min_y, max_z - min_z))
+        max_dim = max(bbox_size.x, bbox_size.y, bbox_size.z, 2.0)
+    else:
+        min_z = 0.0
+        bbox_center = mathutils.Vector((0.0, 0.0, 1.0))
+        bbox_size = mathutils.Vector((4.0, 4.0, 2.8))
+        max_dim = 4.0
+
+    # Auto-align camera target if default or pointing into empty void
+    cam_tgt_vec = mathutils.Vector(cam_tgt)
+    if cam_tgt_vec.length < 0.1 or (cam_tgt_vec - bbox_center).length > max_dim * 1.5:
+        cam_tgt = [bbox_center.x, bbox_center.y, bbox_center.z]
+        print(f"[Orbix Cycles] Auto-aligned camera target to scene center: {cam_tgt}")
+
+    # Auto-frame camera position if lost, inside geometry or far out
+    cam_pos_vec = mathutils.Vector(cam_pos)
+    if (cam_pos_vec - bbox_center).length > max_dim * 4.0 or (cam_pos_vec - bbox_center).length < 0.3:
+        dist = max(3.2, max_dim * 1.5)
+        cam_pos = [
+            bbox_center.x + math.sin(math.radians(35)) * dist,
+            bbox_center.y - math.cos(math.radians(35)) * dist,
+            bbox_center.z + max_dim * 0.65
+        ]
+        print(f"[Orbix Cycles] Auto-framed camera position to architectural vantage: {cam_pos}")
+
+    # Architectural Cutaway: Make front walls obstructing camera view invisible to camera rays
+    cam_xy = mathutils.Vector((cam_pos[0], cam_pos[1]))
+    tgt_xy = mathutils.Vector((cam_tgt[0], cam_tgt[1]))
+    view_dir = (tgt_xy - cam_xy)
+    view_dist = view_dir.length
+
+    if view_dist > 0.01:
+        view_dir_norm = view_dir.normalized()
+        for obj in mesh_objs:
+            name_l = obj.name.lower()
+            role_l = (obj.get("role") or "").lower()
+            if 'wall' in name_l or role_l == 'wall':
+                w_coords = [obj.matrix_world @ v.co for v in obj.data.vertices]
+                if not w_coords:
+                    continue
+                w_cx = sum(p.x for p in w_coords) / len(w_coords)
+                w_cy = sum(p.y for p in w_coords) / len(w_coords)
+                w_pt = mathutils.Vector((w_cx, w_cy))
+                to_wall = w_pt - cam_xy
+                proj = to_wall.dot(view_dir_norm)
+                if 0.1 < proj < (view_dist * 0.85):
+                    perp_dist = (to_wall - view_dir_norm * proj).length
+                    if perp_dist < max_dim * 0.45:
+                        obj.visible_camera = False
+                        print(f"[Orbix Cycles] Cutaway: Made obstructing front wall '{obj.name}' camera-invisible.")
+
+    # 8. Setup Architectural Sunlight (Direct warm sunlight entering the kitchen)
     sun_data = bpy.data.lights.new(name="OrbixSunlight", type='SUN')
     sun_data.energy = max(3.5, daylight_pct * 0.20)
     sun_data.color = (1.0, 0.98, 0.93) # 5500K warm architectural daylight
@@ -298,7 +368,7 @@ def run():
     sun_obj.rotation_euler = (-sun_direction).to_track_quat('-Z', 'Y').to_euler()
     bpy.context.collection.objects.link(sun_obj)
 
-    # 8. Setup Window Area Lights (Directional Daylight entering through room openings)
+    # 9. Setup Window Area Lights (Directional Daylight entering through room openings)
     windows_data = data.get("windows", [])
     window_energy_mult = daylight_pct * 12.0
 
@@ -324,21 +394,21 @@ def run():
 
         bpy.context.collection.objects.link(w_light_obj)
 
-    # 9. Setup Warm Interior Fill Lights (Soft ceiling bounce to lift deep cabinet shadows)
+    # 10. Setup Warm Interior Fill Lights (Soft ceiling bounce centered inside the room)
     fill_light_data = bpy.data.lights.new(name="InteriorWarmFill", type='POINT')
-    fill_light_data.energy = max(240.0, fill_watts * 55.0)
-    fill_light_data.color = (1.0, 0.91, 0.80) # 3200K warm interior illumination
-    fill_light_data.shadow_soft_size = 0.85
+    fill_light_data.energy = max(350.0, fill_watts * 65.0)
+    fill_light_data.color = (1.0, 0.92, 0.82) # 3200K warm interior illumination
+    fill_light_data.shadow_soft_size = 1.0
 
     fill_obj = bpy.data.objects.new(name="InteriorWarmFill", object_data=fill_light_data)
     fill_obj.location = (
-        (cam_pos[0] + cam_tgt[0]) * 0.5,
-        (cam_pos[1] + cam_tgt[1]) * 0.5,
-        max(2.0, cam_pos[2] + 0.6)
+        bbox_center.x,
+        bbox_center.y,
+        min_z + bbox_size.z * 0.85
     )
     bpy.context.collection.objects.link(fill_obj)
 
-    # 10. Setup Camera (Physically-accurate orientation targeting scene center)
+    # 11. Setup Camera (Physically-accurate orientation targeting scene center)
     cam_data = bpy.data.cameras.new("OrbixCamera")
     fov = float(data.get("camera", {}).get("fov", 50.0))
     cam_data.angle = math.radians(fov)
@@ -359,6 +429,9 @@ def run():
     track_c.target = target_empty
     track_c.track_axis = 'TRACK_NEGATIVE_Z'
     track_c.up_axis = 'UP_Y'
+
+    # Evaluate dependency graph so camera orientation & matrix are updated before render
+    bpy.context.view_layer.update()
 
     # 10. Save .blend file if requested
     if args.blend:
