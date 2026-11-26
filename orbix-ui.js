@@ -10006,20 +10006,31 @@
       }
 
       var categories = ['All'];
+      var brands = ['All Brands'];
       catalog.forEach(function (it) {
         if (it.category && categories.indexOf(it.category) === -1) {
           categories.push(it.category);
         }
+        var b = (it.brand || '').trim().toUpperCase();
+        if (b && brands.indexOf(b) === -1) {
+          brands.push(b);
+        }
       });
 
       var activeCategory = 'All';
+      var activeBrand = 'All Brands';
       var searchQuery = '';
 
       function renderModalContent() {
         var filtered = catalog.filter(function (it) {
           var matchCat = (activeCategory === 'All') || (it.category === activeCategory);
-          var matchSearch = !searchQuery || (it.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) || (it.category.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1);
-          return matchCat && matchSearch;
+          var itBrand = (it.brand || '').trim().toUpperCase();
+          var matchBrand = (activeBrand === 'All Brands') || (itBrand === activeBrand);
+          var matchSearch = !searchQuery ||
+            (it.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.category.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (itBrand.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1);
+          return matchCat && matchBrand && matchSearch;
         });
 
         var selectedCount = 0;
@@ -10035,24 +10046,44 @@
 
         modal.innerHTML =
           '<div class="addons-backdrop" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,35,27,0.65);backdrop-filter:blur(3px);"></div>' +
-          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(920px, 95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
+          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(960px, 95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
 
           // Header
           '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
           '    <div>' +
           '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Add-Ons &amp; Accessories Catalog</h3>' +
-          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">58 Master Hardware Items &bull; Customizable Rates &amp; Measurements (Meters / Sq.Ft)</div>' +
+          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">69 Master Accessories &bull; Brand Rate Cards (Ebco, Hettich, Grass, Livsmart) &bull; Custom Measurements (Meters / Sq.Ft)</div>' +
           '    </div>' +
           '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
           '  </div>' +
 
-          // Search & Category Filters
+          // Search, Brand Switcher & Filters
           '  <div style="background:#FAF6F0;padding:12px 20px;border-bottom:1px solid #E2D5C3;display:flex;flex-direction:column;gap:10px;">' +
-          '    <input type="text" id="addonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search by name or category (e.g. G Profile Handle, Wallpaper, Magic Corner, Pantry, Basket, Cot)..." style="width:100%;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">' +
+          '      <input type="text" id="addonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search by name, brand, or category (e.g. Cutlery, Tandem, Magic Corner, Pantry, Ebco, Hettich)..." style="flex:1;min-width:240px;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '      <div style="display:flex;gap:6px;align-items:center;">' +
+          '        <span style="font-size:11px;font-weight:700;color:#64748B;">⚡ SET ALL:</span>' +
+          '        <button type="button" id="addonsSetAllEbco" style="padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;background:#E0F2FE;border:1px solid #7DD3FC;color:#0369A1;cursor:pointer;">EBCO Rates</button>' +
+          '        <button type="button" id="addonsSetAllHettich" style="padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;background:#FEF3C7;border:1px solid #FCD34D;color:#B45309;cursor:pointer;">Hettich Rates</button>' +
+          '        <button type="button" id="addonsSetAllGrass" style="padding:5px 9px;border-radius:6px;font-size:11px;font-weight:700;background:#DCFCE7;border:1px solid #86EFAC;color:#15803D;cursor:pointer;">Grass Rates</button>' +
+          '      </div>' +
+          '    </div>' +
+
+          // Brand Pills
+          '    <div style="display:flex;gap:6px;align-items:center;overflow-x:auto;padding-bottom:2px;">' +
+          '      <span style="font-size:11px;font-weight:700;color:#64748B;white-space:nowrap;">BRAND:</span>' +
+          brands.map(function (b) {
+            var isSel = b === activeBrand;
+            return '<button type="button" class="addons-brand-btn" data-brand="' + b.replace(/"/g, '&quot;') + '" style="padding:3px 9px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#047857' : '#CBD5E1') + ';background:' + (isSel ? '#047857' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + b + '</button>';
+          }).join('') +
+          '    </div>' +
+
+          // Category Pills
           '    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;" id="addonsCatPills">' +
+          '      <span style="font-size:11px;font-weight:700;color:#64748B;white-space:nowrap;align-self:center;">CATEGORY:</span>' +
           categories.map(function (cat) {
             var isSel = cat === activeCategory;
-            return '<button type="button" class="addons-cat-btn" data-cat="' + cat.replace(/"/g, '&quot;') + '" style="padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#08231B' : '#CBD5E1') + ';background:' + (isSel ? '#08231B' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + cat + '</button>';
+            return '<button type="button" class="addons-cat-btn" data-cat="' + cat.replace(/"/g, '&quot;') + '" style="padding:3px 9px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#08231B' : '#CBD5E1') + ';background:' + (isSel ? '#08231B' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + cat + '</button>';
           }).join('') +
           '    </div>' +
           '  </div>' +
@@ -10062,8 +10093,8 @@
           '    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">' +
           '      <thead>' +
           '        <tr style="border-bottom:2px solid #E2E8F0;color:#64748B;font-size:11px;text-align:left;">' +
-          '          <th style="padding:6px 8px;">ITEM NAME &amp; CATEGORY</th>' +
-          '          <th style="padding:6px 8px;text-align:right;width:170px;">UNIT RATE</th>' +
+          '          <th style="padding:6px 8px;">ITEM NAME &amp; BRAND</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:240px;">BRAND RATE CARDS &amp; UNIT RATE</th>' +
           '          <th style="padding:6px 8px;text-align:center;width:150px;">QUANTITY / MEASURE</th>' +
           '          <th style="padding:6px 8px;text-align:right;width:120px;">SUBTOTAL</th>' +
           '        </tr>' +
@@ -10078,21 +10109,47 @@
             var unitPlural = it.unit === 'meter' ? 'meter(s)' : (it.unit === 'sqft' ? 'sq.feet' : '');
             var stepVal = it.step || (it.unit === 'meter' ? 0.5 : 1);
             var customRange = isCustom ? (' (' + (it.minRate || 0) + '-' + (it.maxRate || 0) + '/' + unitLabel + ')') : '';
+            var itBrand = (it.brand || '').trim().toUpperCase();
 
-            var rateHtml = isCustom
-              ? ('<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;">' +
-                 '  <span style="font-weight:700;color:#08231B;font-size:12px;">₹</span>' +
-                 '  <input type="number" class="addons-rate-inp" data-id="' + it.id + '" min="' + (it.minRate || 0) + '" max="' + (it.maxRate || 999999) + '" step="1" value="' + curRate + '" title="User editable unit rate (' + (it.minRate || 0) + '-' + (it.maxRate || 0) + '/' + unitLabel + ')" style="width:74px;height:26px;border:1.5px solid #EA580C;border-radius:6px;padding:2px 6px;text-align:right;font-weight:700;font-size:12.5px;color:#9A3412;background:#FFF;outline:none;">' +
-                 '  <span style="font-size:11px;color:#64748B;">/' + unitLabel + '</span>' +
-                 '</div>')
-              : ('<span style="font-family:monospace;font-weight:600;color:#08231B;">₹ ' + (it.rate || 0).toLocaleString('en-IN') + '</span>');
+            // Brand rate selector pills
+            var brandPillsHtml = '';
+            var hasBrandRates = (it.ebcoRate || it.hettichRate || it.grassRate);
+            if (hasBrandRates) {
+              brandPillsHtml = '<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;margin-bottom:4px;">';
+              if (it.ebcoRate) {
+                var isEbcoActive = Math.abs(curRate - it.ebcoRate) < 0.05;
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-rate="' + it.ebcoRate + '" title="Apply Ebco Rate: ₹ ' + it.ebcoRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isEbcoActive ? '#0284C7' : '#BAE6FD') + ';background:' + (isEbcoActive ? '#0284C7' : '#F0F9FF') + ';color:' + (isEbcoActive ? '#FFF' : '#0369A1') + ';">EBCO ₹' + Math.round(it.ebcoRate).toLocaleString('en-IN') + '</button>';
+              }
+              if (it.hettichRate) {
+                var isHettichActive = Math.abs(curRate - it.hettichRate) < 0.05;
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-rate="' + it.hettichRate + '" title="Apply Hettich Rate: ₹ ' + it.hettichRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isHettichActive ? '#D97706' : '#FDE68A') + ';background:' + (isHettichActive ? '#D97706' : '#FFFBEB') + ';color:' + (isHettichActive ? '#FFF' : '#92400E') + ';">HETTICH ₹' + Math.round(it.hettichRate).toLocaleString('en-IN') + '</button>';
+              }
+              if (it.grassRate) {
+                var isGrassActive = Math.abs(curRate - it.grassRate) < 0.05;
+                brandPillsHtml += '<button type="button" class="addons-brand-rate-pill" data-id="' + it.id + '" data-rate="' + it.grassRate + '" title="Apply Grass Rate: ₹ ' + it.grassRate.toFixed(2) + '" style="padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid ' + (isGrassActive ? '#16A34A' : '#BBF7D0') + ';background:' + (isGrassActive ? '#16A34A' : '#F0FDF4') + ';color:' + (isGrassActive ? '#FFF' : '#15803D') + ';">GRASS ₹' + Math.round(it.grassRate).toLocaleString('en-IN') + '</button>';
+              }
+              brandPillsHtml += '</div>';
+            }
+
+            var rateInputHtml =
+              '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;">' +
+              '  <span style="font-weight:700;color:#08231B;font-size:12px;">₹</span>' +
+              '  <input type="number" class="addons-rate-inp" data-id="' + it.id + '" min="' + (it.minRate || 0) + '" max="' + (it.maxRate || 999999) + '" step="0.5" value="' + curRate + '" title="Editable unit rate" style="width:84px;height:26px;border:1.5px solid ' + (hasBrandRates ? '#047857' : (isCustom ? '#EA580C' : '#CBD5E1')) + ';border-radius:6px;padding:2px 6px;text-align:right;font-weight:700;font-size:12.5px;color:#08231B;background:#FFF;outline:none;">' +
+              '  <span style="font-size:11px;color:#64748B;">/' + unitLabel + '</span>' +
+              '</div>';
+
+            var brandBadgeHtml = itBrand
+              ? ('<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:#F1F5F9;color:#475569;border:1px solid #CBD5E1;margin-left:6px;">' + itBrand + '</span>')
+              : '';
 
             return '<tr style="border-bottom:1px solid #F1F5F9;' + (q > 0 ? 'background:#F0FDF4;' : '') + '">' +
               '<td style="padding:8px;">' +
-              '  <div style="font-weight:700;color:#08231B;">' + it.name + '</div>' +
+              '  <div style="font-weight:700;color:#08231B;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">' +
+              '    <span>' + it.name + '</span>' + brandBadgeHtml +
+              '  </div>' +
               '  <div style="font-size:11px;color:#64748B;">' + it.category + customRange + '</div>' +
               '</td>' +
-              '<td style="padding:8px;text-align:right;">' + rateHtml + '</td>' +
+              '<td style="padding:8px;text-align:right;">' + brandPillsHtml + rateInputHtml + '</td>' +
               '<td style="padding:8px;text-align:center;">' +
               '  <div style="display:inline-flex;align-items:center;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden;background:#FFF;">' +
               '    <button type="button" class="addons-qty-btn" data-id="' + it.id + '" data-delta="' + (-stepVal) + '" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">-</button>' +
@@ -10149,6 +10206,56 @@
             renderModalContent();
           });
         });
+
+        modal.querySelectorAll('.addons-brand-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activeBrand = btn.getAttribute('data-brand');
+            renderModalContent();
+          });
+        });
+
+        // Clickable Brand Rate Pills per row
+        modal.querySelectorAll('.addons-brand-rate-pill').forEach(function (pill) {
+          pill.addEventListener('click', function () {
+            var id = pill.getAttribute('data-id');
+            var rate = parseFloat(pill.getAttribute('data-rate')) || 0;
+            if (id && rate > 0) {
+              customRateMap[id] = rate;
+              renderModalContent();
+            }
+          });
+        });
+
+        // Set All Brand Rates Batch Buttons
+        var setEbcoBtn = modal.querySelector('#addonsSetAllEbco');
+        if (setEbcoBtn) {
+          setEbcoBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              if (it.ebcoRate) customRateMap[it.id] = it.ebcoRate;
+            });
+            renderModalContent();
+          });
+        }
+
+        var setHettichBtn = modal.querySelector('#addonsSetAllHettich');
+        if (setHettichBtn) {
+          setHettichBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              if (it.hettichRate) customRateMap[it.id] = it.hettichRate;
+            });
+            renderModalContent();
+          });
+        }
+
+        var setGrassBtn = modal.querySelector('#addonsSetAllGrass');
+        if (setGrassBtn) {
+          setGrassBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              if (it.grassRate) customRateMap[it.id] = it.grassRate;
+            });
+            renderModalContent();
+          });
+        }
 
         // User-Editable Unit Rate change
         modal.querySelectorAll('.addons-rate-inp').forEach(function (inp) {
