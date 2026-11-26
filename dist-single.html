@@ -6677,14 +6677,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=50'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=50'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=50'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=51'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=51'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=51'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=50');
+          return loadScript('orbix-a4-drawings.js?v=51');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -51509,7 +51509,14 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       var walls = pData.walls || [];
       var openings = pData.openings || [];
       var rooms = pData.rooms || [];
-      var furniture = pData.furniture || [];
+      var furniture = (pData.furniture || []).filter(function (fn) {
+        var c = (fn.category || '').toLowerCase();
+        var n = (fn.name || '').toLowerCase();
+        var code = (fn.code || '').toLowerCase();
+        var cfg = fn.unitConfig || {};
+        var isLoft = c.indexOf('loft') !== -1 || n.indexOf('loft') !== -1 || code.indexOf('loft') !== -1 || cfg.loft || cfg.isLoft || (cfg.isOnlyShutter && (fn.elevation || 0) >= 2000);
+        return !isLoft;
+      });
 
       // Check if units have distinct layout positions or need automatic layout
       var needsAutoLayout = (walls.length === 0);
@@ -51805,7 +51812,14 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       var m = this.meta;
       this.drawA4Template(canvas, pageNum, totalPages, (m.dwgTitle || 'ROOM') + ' 3D OVERVIEW');
 
-      var furniture = pData.furniture || [];
+      var furniture = (pData.furniture || []).filter(function (fn) {
+        var c = (fn.category || '').toLowerCase();
+        var n = (fn.name || '').toLowerCase();
+        var code = (fn.code || '').toLowerCase();
+        var cfg = fn.unitConfig || {};
+        var isLoft = c.indexOf('loft') !== -1 || n.indexOf('loft') !== -1 || code.indexOf('loft') !== -1 || cfg.loft || cfg.isLoft || (cfg.isOnlyShutter && (fn.elevation || 0) >= 2000);
+        return !isLoft;
+      });
 
       // Left Box: 3D Axonometric View of Room
       var axX = 140, axY = 320;
@@ -52526,9 +52540,811 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
     },
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // MULTI-PAGE DECK COMPILER (AUTOMATIC SWITCHING BETWEEN DYNAMIC & TEMPLATE)
     // ─────────────────────────────────────────────────────────────────────────────
+    // POINT IN POLYGON SPATIAL HELPER
+    // ─────────────────────────────────────────────────────────────────────────────
+    // POINT IN POLYGON SPATIAL HELPER
+    // ─────────────────────────────────────────────────────────────────────────────
+    // POINT IN POLYGON SPATIAL HELPER
+    // ─────────────────────────────────────────────────────────────────────────────
+    // POINT IN POLYGON SPATIAL HELPER
+    // ─────────────────────────────────────────────────────────────────────────────
+    _pointInPolygon: function (x, y, poly) {
+      if (!poly || poly.length < 3) return false;
+      var inside = false;
+      for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        var xi = poly[i].x, yi = poly[i].y;
+        var xj = poly[j].x, yj = poly[j].y;
+        var intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    },
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // INTELLIGENT OBJECT CLASSIFICATION & ROOM GROUPING ENGINE (V2)
+    // ─────────────────────────────────────────────────────────────────────────────
+    classifyProjectObjects: function (pData) {
+      pData = pData || {};
+      var furniture = pData.furniture || [];
+      var rooms = pData.rooms || [];
+      var walls = pData.walls || [];
+      var self = this;
+
+      var groups = {
+        kitchen: {
+          baseUnits: [],
+          wallUnits: [],
+          tallUnits: [],
+          appliances: [],
+          loftUnits: [],
+          civilShuttering: [],
+          breakfastCounter: [],
+          island: [],
+          fillers: [],
+          allUnits: []
+        },
+        living: {
+          tvUnits: [],
+          shoeRacks: [],
+          partitions: [],
+          seaters: [],
+          wallPanels: [],
+          storageUnits: [],
+          allUnits: []
+        },
+        dining: {
+          crockeryUnits: [],
+          poojaUnits: [],
+          allUnits: []
+        },
+        bedrooms: {},
+        balcony: [],
+        utility: [],
+        others: []
+      };
+
+      furniture.forEach(function (fn) {
+        var cat = (fn.category || '').toLowerCase();
+        var name = (fn.name || '').toLowerCase();
+        var code = (fn.code || '').toLowerCase();
+        var roomName = (fn.room || fn.roomName || '').toLowerCase();
+        var cfg = fn.unitConfig || {};
+        var pos = fn.pos || { x: 0, y: 0, z: 0 };
+        var dims = fn.dimensions || { W: 600, D: 600, H: 720 };
+        var elev = parseFloat(fn.elevation !== undefined ? fn.elevation : pos.z) || 0;
+
+        // Auto-detect room via polygon containment if room not explicitly tagged
+        if (!roomName && rooms.length > 0) {
+          for (var r = 0; r < rooms.length; r++) {
+            var rm = rooms[r];
+            if (rm.polygon && self._pointInPolygon(pos.x, pos.y, rm.polygon)) {
+              roomName = (rm.name || '').toLowerCase();
+              break;
+            }
+          }
+        }
+
+        var isLoft = cat.indexOf('loft') !== -1 || name.indexOf('loft') !== -1 || code.indexOf('loft') !== -1 || cfg.loft || cfg.isLoft || (cfg.isOnlyShutter && elev >= 2000);
+        var isPooja = cat.indexOf('pooja') !== -1 || name.indexOf('pooja') !== -1 || cfg.isPooja;
+        var isCrockery = cat.indexOf('crockery') !== -1 || name.indexOf('crockery') !== -1;
+        var isShoeRack = cat.indexOf('shoe') !== -1 || name.indexOf('shoe') !== -1;
+        var isTVUnit = cat.indexOf('tv') !== -1 || name.indexOf('tv') !== -1;
+        var isPartition = cat.indexOf('partition') !== -1 || name.indexOf('partition') !== -1;
+        var isSeater = cat.indexOf('seater') !== -1 || name.indexOf('seater') !== -1 || name.indexOf('bench') !== -1;
+        var isWardrobe = cat.indexOf('wardrobe') !== -1 || name.indexOf('wardrobe') !== -1 || code.indexOf('wr') !== -1;
+        var isStudy = cat.indexOf('study') !== -1 || name.indexOf('study') !== -1 || name.indexOf('desk') !== -1;
+        var isCounter = cat.indexOf('breakfast') !== -1 || name.indexOf('breakfast') !== -1 || cat.indexOf('island') !== -1 || name.indexOf('island') !== -1;
+
+        // 1. POOJA & CROCKERY (Special Room / Assembly)
+        if (isPooja || isCrockery || roomName.indexOf('pooja') !== -1 || roomName.indexOf('dining') !== -1) {
+          if (isPooja) groups.dining.poojaUnits.push(fn);
+          else if (isCrockery) groups.dining.crockeryUnits.push(fn);
+          else groups.dining.allUnits.push(fn);
+          return;
+        }
+
+        // 2. LIVING ROOM
+        if (roomName.indexOf('living') !== -1 || roomName.indexOf('foyer') !== -1 || isShoeRack || isTVUnit || isPartition || isSeater) {
+          if (isShoeRack) groups.living.shoeRacks.push(fn);
+          else if (isTVUnit) groups.living.tvUnits.push(fn);
+          else if (isPartition) groups.living.partitions.push(fn);
+          else if (isSeater) groups.living.seaters.push(fn);
+          else if (cat.indexOf('panel') !== -1 || name.indexOf('panel') !== -1) groups.living.wallPanels.push(fn);
+          else groups.living.storageUnits.push(fn);
+          groups.living.allUnits.push(fn);
+          return;
+        }
+
+        // 3. BEDROOMS
+        if (roomName.indexOf('bed') !== -1 || roomName.indexOf('master') !== -1 || isWardrobe || isStudy) {
+          var bKey = fn.room || fn.roomName || 'Master Bedroom';
+          if (!groups.bedrooms[bKey]) {
+            groups.bedrooms[bKey] = {
+              wardrobes: [],
+              studyUnits: [],
+              seaters: [],
+              walkIn: [],
+              lofts: [],
+              allUnits: []
+            };
+          }
+          if (isLoft) groups.bedrooms[bKey].lofts.push(fn);
+          else if (isWardrobe) groups.bedrooms[bKey].wardrobes.push(fn);
+          else if (isStudy) groups.bedrooms[bKey].studyUnits.push(fn);
+          else if (isSeater) groups.bedrooms[bKey].seaters.push(fn);
+          else groups.bedrooms[bKey].allUnits.push(fn);
+          groups.bedrooms[bKey].allUnits.push(fn);
+          return;
+        }
+
+        // 4. BALCONY & UTILITY
+        if (roomName.indexOf('balcony') !== -1) {
+          groups.balcony.push(fn);
+          return;
+        }
+        if (roomName.indexOf('utility') !== -1) {
+          groups.utility.push(fn);
+          return;
+        }
+
+        // 5. KITCHEN (Default for cabinetry if not otherwise classified)
+        if (isLoft) {
+          groups.kitchen.loftUnits.push(fn);
+        } else if (isCounter) {
+          groups.kitchen.breakfastCounter.push(fn);
+        } else if (cat.indexOf('wall') !== -1 || name.indexOf('wall') !== -1 || elev >= 1200) {
+          groups.kitchen.wallUnits.push(fn);
+        } else if (cat.indexOf('tall') !== -1 || name.indexOf('tall') !== -1 || dims.H > 1800) {
+          groups.kitchen.tallUnits.push(fn);
+        } else if (cat.indexOf('base') !== -1 || name.indexOf('base') !== -1 || dims.H <= 900) {
+          groups.kitchen.baseUnits.push(fn);
+        } else {
+          groups.kitchen.baseUnits.push(fn);
+        }
+        groups.kitchen.allUnits.push(fn);
+      });
+
+      return groups;
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // COMBINED ELEVATION RUN SHEET (EXTERNAL & INTERNAL SIDE-BY-SIDE)
+    // ─────────────────────────────────────────────────────────────────────────────
+    buildDynamicElevationRunSheet: function (pageNum, totalPages, baseUnits, wallUnits, pData, title, runOptions) {
+      baseUnits = baseUnits || [];
+      wallUnits = wallUnits || [];
+      runOptions = runOptions || {};
+      var canvas = this.createVectorCanvas();
+      var sheetTitle = title || (this.meta.dwgTitle || 'KITCHEN') + ' — MAIN ELEVATION (EXTERNAL & INTERNAL)';
+      this.drawA4Template(canvas, pageNum, totalPages, sheetTitle);
+
+      var specs = [
+        { label: 'ELEVATION', val: runOptions.elevationType || 'L-SHAPED RUN (SIDE-BY-SIDE)' },
+        { label: 'ROOM', val: runOptions.roomName || 'KITCHEN' },
+        { label: 'CARCASS', val: '18mm BWP MARINE PLY (Half White)' },
+        { label: 'SHUTTERS', val: '18mm BWP LAMINATED / HIGH GLOSS' },
+        { label: 'HARDWARE', val: 'EBCO SOFT CLOSING (Tandem / Clip-on)' },
+        { label: 'COUNTERTOP', val: '18mm JET BLACK GRANITE (40mm NOSE)' },
+        { label: 'PLINTH', val: '110mm RCC / PVC WATERPROOF BASE' }
+      ];
+      this.drawProductionDetails(canvas, specs);
+
+      var totalBaseW = 0;
+      baseUnits.forEach(function (u) { totalBaseW += ((u.dimensions && parseFloat(u.dimensions.W)) || 600); });
+      var totalWallW = 0;
+      wallUnits.forEach(function (u) { totalWallW += ((u.dimensions && parseFloat(u.dimensions.W)) || 600); });
+      var maxSpanW = Math.max(totalBaseW, totalWallW, 1200);
+
+      var availWPerView = 900;
+      var availHPerView = 850;
+      var scale = Math.min(availWPerView / maxSpanW, availHPerView / 2200, 0.38);
+
+      var baseY = 1380;
+      var extStartX = 220;
+      var intStartX = 1140;
+
+      // ── LEFT: EXTERNAL VIEW ──
+      canvas.text(extStartX + (maxSpanW * scale) / 2, 260, 'EXTERNAL VIEW', 30, 'bold', 'middle', '#000000');
+      canvas.line(extStartX + (maxSpanW * scale) / 2 - 140, 274, extStartX + (maxSpanW * scale) / 2 + 140, 274, '#000000', 2);
+
+      // Plinth
+      var plinthH = 110 * scale;
+      canvas.rect(extStartX, baseY, maxSpanW * scale, plinthH, '#000000', 2, '#e2e8f0');
+      canvas.text(extStartX + (maxSpanW * scale) / 2, baseY + plinthH / 2 + 5, '110 RCC BASE', 14, 'bold', 'middle', '#334155');
+
+      // Continuous Granite Countertop
+      var granH = 40 * scale;
+      var grOverhang = 20 * scale;
+      canvas.rect(extStartX - grOverhang, baseY - 720 * scale - granH, maxSpanW * scale + 2 * grOverhang, granH, '#000000', 2, '#1e293b');
+      canvas.text(extStartX + (maxSpanW * scale) / 2, baseY - 720 * scale - granH / 2 + 3, 'GRANITE TOP (40mm NOSE)', 11, 'bold', 'middle', '#ffffff');
+
+      // Base Cabinets (External)
+      var curX = extStartX;
+      baseUnits.forEach(function (bu) {
+        var w = ((bu.dimensions && parseFloat(bu.dimensions.W)) || 600) * scale;
+        var h = ((bu.dimensions && parseFloat(bu.dimensions.H)) || 720) * scale;
+        var uCfg = bu.unitConfig || {};
+        var uTag = bu.code || 'BU';
+
+        canvas.rect(curX, baseY - h, w, h, '#000000', 2, '#f8fafc');
+
+        if (uCfg.drawers && uCfg.drawers > 0) {
+          var dH = h / uCfg.drawers;
+          for (var d = 0; d < uCfg.drawers; d++) {
+            canvas.rect(curX + 4, baseY - h + d * dH + 3, w - 8, dH - 6, '#0f172a', 1.5, '#ffffff');
+            canvas.line(curX + w / 2 - 25, baseY - h + d * dH + dH / 2, curX + w / 2 + 25, baseY - h + d * dH + dH / 2, '#0f172a', 3);
+          }
+        } else {
+          var shutters = uCfg.shutters || (w / scale > 600 ? 2 : 1);
+          var sW = w / shutters;
+          for (var s = 1; s < shutters; s++) {
+            canvas.line(curX + s * sW, baseY - h, curX + s * sW, baseY, '#000000', 1.5);
+          }
+          for (var sh = 0; sh < shutters; sh++) {
+            var hx = (sh % 2 === 0) ? (curX + (sh + 1) * sW - 12) : (curX + sh * sW + 12);
+            canvas.line(hx, baseY - h + 20, hx, baseY - h + 70, '#0f172a', 3);
+          }
+        }
+
+        if (uCfg.hasSink || (bu.name && bu.name.toLowerCase().indexOf('sink') !== -1)) {
+          canvas.rect(curX + 15, baseY - h - granH - 10, w - 30, 10, '#0284c7', 1.5, '#f0f9ff');
+          canvas.text(curX + w / 2, baseY - h / 2 + 5, 'SINK', 14, 'bold', 'middle', '#0369a1');
+        } else if (uCfg.hasHob || (bu.name && bu.name.toLowerCase().indexOf('hob') !== -1)) {
+          canvas.circle(curX + w / 2 - 12, baseY - h - granH - 8, 4, '#b45309', 2, '#fffbeb');
+          canvas.circle(curX + w / 2 + 12, baseY - h - granH - 8, 4, '#b45309', 2, '#fffbeb');
+          canvas.text(curX + w / 2, baseY - h / 2 + 5, 'HOB', 14, 'bold', 'middle', '#b45309');
+        }
+
+        canvas.text(curX + w / 2, baseY - 14, uTag, 13, 'bold', 'middle', '#64748b');
+        canvas.dimH(curX, curX + w, baseY + plinthH + 30, String(Math.round(w / scale)));
+        curX += w;
+      });
+
+      // Wall Cabinets (External)
+      var curWX = extStartX;
+      wallUnits.forEach(function (wu) {
+        var w = ((wu.dimensions && parseFloat(wu.dimensions.W)) || 600) * scale;
+        var h = ((wu.dimensions && parseFloat(wu.dimensions.H)) || 720) * scale;
+        var wallY = baseY - 1460 * scale;
+        var uTag = wu.code || 'WU';
+
+        canvas.rect(curWX, wallY, w, h, '#000000', 2, '#f8fafc');
+        var shutters = (wu.unitConfig && wu.unitConfig.shutters) || (w / scale > 600 ? 2 : 1);
+        var sW = w / shutters;
+        for (var s = 1; s < shutters; s++) {
+          canvas.line(curWX + s * sW, wallY, curWX + s * sW, wallY + h, '#000000', 1.5);
+        }
+        canvas.text(curWX + w / 2, wallY + h / 2 + 5, uTag, 14, 'bold', 'middle', '#334155');
+        canvas.dimH(curWX, curWX + w, wallY - 25, String(Math.round(w / scale)));
+        curWX += w;
+      });
+
+      // Side Fillers
+      var fillerW = 50 * scale;
+      canvas.rect(extStartX - fillerW, baseY - 720 * scale, fillerW, 720 * scale, '#000000', 1.5, '#f1f5f9');
+      canvas.text(extStartX - fillerW / 2, baseY - 360 * scale, '50BS', 12, 'bold', 'middle', '#0f172a', -90);
+
+      // Overall External Dimensions
+      canvas.dimH(extStartX, extStartX + maxSpanW * scale, baseY + plinthH + 65, String(Math.round(maxSpanW)) + ' OVERALL');
+      canvas.dimV(baseY - 720 * scale, baseY, extStartX - 60, '720', 0, true);
+      canvas.dimV(baseY - 1460 * scale, baseY, extStartX - 100, '1460', 0, true);
+
+      // ── RIGHT: INTERNAL VIEW ──
+      canvas.text(intStartX + (maxSpanW * scale) / 2, 260, 'INTERNAL VIEW', 30, 'bold', 'middle', '#000000');
+      canvas.line(intStartX + (maxSpanW * scale) / 2 - 140, 274, intStartX + (maxSpanW * scale) / 2 + 140, 274, '#000000', 2);
+
+      // Plinth on Internal
+      canvas.rect(intStartX, baseY, maxSpanW * scale, plinthH, '#000000', 2, '#e2e8f0');
+      canvas.text(intStartX + (maxSpanW * scale) / 2, baseY + plinthH / 2 + 5, '110 RCC BASE', 14, 'bold', 'middle', '#334155');
+
+      // Granite on Internal
+      canvas.rect(intStartX - grOverhang, baseY - 720 * scale - granH, maxSpanW * scale + 2 * grOverhang, granH, '#000000', 2, '#1e293b');
+
+      // Base Cabinets (Internal open carcass)
+      var curIX = intStartX;
+      baseUnits.forEach(function (bu) {
+        var w = ((bu.dimensions && parseFloat(bu.dimensions.W)) || 600) * scale;
+        var h = ((bu.dimensions && parseFloat(bu.dimensions.H)) || 720) * scale;
+        var uCfg = bu.unitConfig || {};
+        var drawers = uCfg.drawers || 0;
+        var gThk = Math.max(3, 18 * scale);
+
+        // Carcass gables & bottom
+        canvas.rect(curIX, baseY - h, w, h, '#000000', 2, '#ffffff');
+        canvas.rect(curIX, baseY - h, gThk, h, '#000000', 1, '#f1f5f9');
+        canvas.rect(curIX + w - gThk, baseY - h, gThk, h, '#000000', 1, '#f1f5f9');
+        canvas.rect(curIX + gThk, baseY - gThk, w - 2 * gThk, gThk, '#000000', 1, '#f1f5f9');
+
+        if (drawers > 0) {
+          var dH = (h - gThk) / drawers;
+          for (var d = 0; d < drawers; d++) {
+            var boxY = baseY - h + d * dH + 12;
+            canvas.rect(curIX + gThk + 4, boxY, w - 2 * gThk - 8, dH - 18, '#0f172a', 1.5, '#ffffff');
+            canvas.line(curIX + gThk, boxY + dH / 2, curIX + w - gThk, boxY + dH / 2, '#94a3b8', 1, '3,3');
+          }
+        } else if (uCfg.hasSink || (bu.name && bu.name.toLowerCase().indexOf('sink') !== -1)) {
+          canvas.rect(curIX + w / 2 - 25, baseY - h + 20, 50, h - 35, '#0284c7', 1.5, '#f0f9ff');
+          canvas.text(curIX + w / 2, baseY - h / 2, 'PLUMBING CUTAWAY', 12, 'bold', 'middle', '#0369a1');
+        } else {
+          canvas.rect(curIX + gThk, baseY - h / 2 - gThk / 2, w - 2 * gThk, gThk, '#000000', 1, '#cbd5e1');
+          canvas.dimInternalV(curIX + w / 2, baseY - h + gThk, baseY - h / 2 - gThk / 2, '340 CLR');
+          canvas.dimInternalV(curIX + w / 2, baseY - h / 2 + gThk / 2, baseY - gThk, '340 CLR');
+        }
+
+        canvas.dimH(curIX, curIX + w, baseY + plinthH + 30, String(Math.round(w / scale)));
+        curIX += w;
+      });
+
+      // Wall Cabinets (Internal open carcass)
+      var curIWX = intStartX;
+      wallUnits.forEach(function (wu) {
+        var w = ((wu.dimensions && parseFloat(wu.dimensions.W)) || 600) * scale;
+        var h = ((wu.dimensions && parseFloat(wu.dimensions.H)) || 720) * scale;
+        var wallY = baseY - 1460 * scale;
+        var gThk = Math.max(3, 18 * scale);
+
+        canvas.rect(curIWX, wallY, w, h, '#000000', 2, '#ffffff');
+        canvas.rect(curIWX, wallY, gThk, h, '#000000', 1, '#f1f5f9');
+        canvas.rect(curIWX + w - gThk, wallY, gThk, h, '#000000', 1, '#f1f5f9');
+        canvas.rect(curIWX + gThk, wallY + h - gThk, w - 2 * gThk, gThk, '#000000', 1, '#f1f5f9');
+        canvas.rect(curIWX + gThk, wallY + h / 2 - gThk / 2, w - 2 * gThk, gThk, '#000000', 1, '#cbd5e1');
+        canvas.text(curIWX + w / 2, wallY + h / 2 + 5, wu.code || 'WU', 14, 'bold', 'middle', '#334155');
+        canvas.dimH(curIWX, curIWX + w, wallY - 25, String(Math.round(w / scale)));
+        curIWX += w;
+      });
+
+      canvas.dimH(intStartX, intStartX + maxSpanW * scale, baseY + plinthH + 65, String(Math.round(maxSpanW)) + ' OVERALL');
+
+      return this._wrapCanvas(canvas);
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // LIVING ROOM ASSEMBLY ELEVATION SHEET (SHOE RACK, PARTITION, SEATER, TV UNIT)
+    // ─────────────────────────────────────────────────────────────────────────────
+    buildDynamicLivingAssemblySheet: function (pageNum, totalPages, assemblyType, units, pData) {
+      units = units || [];
+      var canvas = this.createVectorCanvas();
+      var titles = {
+        'shoe_rack': 'LIVING FOYER — SHOE RACK ASSEMBLY',
+        'partition': 'LIVING / DINING — ROOM DIVIDER & PARTITION',
+        'seater': 'LIVING FOYER — SEATER BENCH & STORAGE',
+        'tv_unit': 'LIVING ROOM — TV ENTERTAINMENT UNIT ASSEMBLY'
+      };
+      var sheetTitle = titles[assemblyType] || 'LIVING ROOM — FURNITURE ASSEMBLY';
+      this.drawA4Template(canvas, pageNum, totalPages, sheetTitle);
+
+      var primary = units[0] || {};
+      var dims = primary.dimensions || {};
+      var W = parseFloat(dims.W) || (assemblyType === 'tv_unit' ? 1800 : (assemblyType === 'partition' ? 1200 : 900));
+      var H = parseFloat(dims.H) || (assemblyType === 'partition' ? 2100 : (assemblyType === 'shoe_rack' ? 1000 : 450));
+      var D = parseFloat(dims.D) || (assemblyType === 'partition' ? 100 : 400);
+
+      var specs = [
+        { label: 'ASSEMBLY', val: (assemblyType || 'FURNITURE').toUpperCase().replace('_', ' ') },
+        { label: 'ROOM', val: 'LIVING ROOM' },
+        { label: 'OVERALL SIZE', val: W + ' x ' + H + ' x ' + D + ' mm' },
+        { label: 'CARCASS', val: '18mm BWP (Half White / Fabric)' },
+        { label: 'SHUTTER/FACE', val: '18mm BWP LAMINATED / VENEER' },
+        { label: 'HARDWARE', val: 'EBCO SOFT CLOSING' }
+      ];
+      this.drawProductionDetails(canvas, specs);
+
+      var scale = Math.min(840 / W, 720 / H, 0.38);
+      var extX = 220;
+      var intX = 1140;
+      var baseY = 1380;
+      var sW = W * scale;
+      var sH = H * scale;
+
+      // ── EXTERNAL VIEW ──
+      canvas.text(extX + sW / 2, 260, 'EXTERNAL VIEW', 30, 'bold', 'middle');
+      canvas.line(extX + sW / 2 - 120, 274, extX + sW / 2 + 120, 274, '#000000', 2);
+      canvas.rect(extX, baseY - sH, sW, sH, '#000000', 2.5, '#ffffff');
+
+      if (assemblyType === 'tv_unit') {
+        canvas.rect(extX + sW * 0.15, baseY - sH * 0.85, sW * 0.7, sH * 0.65, '#0f172a', 2, '#1e293b');
+        canvas.text(extX + sW / 2, baseY - sH * 0.5, '55" LED TV PROVISION', 14, 'bold', 'middle', '#94a3b8');
+        canvas.rect(extX, baseY - sH * 0.3, sW, sH * 0.3, '#000000', 2, '#f8fafc');
+        canvas.line(extX + sW / 3, baseY - sH * 0.3, extX + sW / 3, baseY, '#000000', 1.5);
+        canvas.line(extX + 2 * sW / 3, baseY - sH * 0.3, extX + 2 * sW / 3, baseY, '#000000', 1.5);
+        canvas.text(extX + sW / 2, baseY - sH * 0.15, 'LOWER CREDENZA DRAWERS', 12, 'bold', 'middle', '#475569');
+      } else if (assemblyType === 'shoe_rack') {
+        var doors = sW > 300 ? 2 : 1;
+        if (doors === 2) canvas.line(extX + sW / 2, baseY - sH, extX + sW / 2, baseY, '#000000', 1.5);
+        canvas.text(extX + sW / 2, baseY - sH / 2, 'LOUVERED / VENTILATED SHUTTERS', 13, 'bold', 'middle', '#64748b');
+      } else if (assemblyType === 'partition') {
+        var slats = 8;
+        for (var st = 1; st < slats; st++) {
+          canvas.line(extX + st * (sW / slats), baseY - sH, extX + st * (sW / slats), baseY, '#b45309', 2);
+        }
+        canvas.text(extX + sW / 2, baseY - sH / 2, 'CNC CUT SLATS / JAALI', 16, 'bold', 'middle', '#b45309');
+      }
+
+      canvas.dimH(extX, extX + sW, baseY + 40, String(Math.round(W)));
+      canvas.dimV(baseY - sH, baseY, extX - 55, String(Math.round(H)), 0, true);
+
+      // ── INTERNAL VIEW ──
+      canvas.text(intX + sW / 2, 260, 'INTERNAL VIEW', 30, 'bold', 'middle');
+      canvas.line(intX + sW / 2 - 120, 274, intX + sW / 2 + 120, 274, '#000000', 2);
+      canvas.rect(intX, baseY - sH, sW, sH, '#000000', 2.5, '#ffffff');
+
+      var shelves = 3;
+      for (var sh = 1; sh <= shelves; sh++) {
+        var shY = baseY - sh * (sH / (shelves + 1));
+        canvas.rect(intX + 6, shY, sW - 12, 6, '#000000', 1, '#cbd5e1');
+        canvas.dimInternalV(intX + sW / 2, shY, shY + sH / (shelves + 1), 'CLR');
+      }
+
+      canvas.dimH(intX, intX + sW, baseY + 40, String(Math.round(W)));
+      canvas.dimV(baseY - sH, baseY, intX - 55, String(Math.round(H)), 0, true);
+
+      return this._wrapCanvas(canvas);
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // CROCKERY & POOJA COMBINED ELEVATION SHEET
+    // ─────────────────────────────────────────────────────────────────────────────
+    buildDynamicCrockeryPoojaSheet: function (pageNum, totalPages, crockeryUnits, poojaUnits, pData) {
+      crockeryUnits = crockeryUnits || [];
+      poojaUnits = poojaUnits || [];
+      var canvas = this.createVectorCanvas();
+      this.drawA4Template(canvas, pageNum, totalPages, 'DINING & POOJA — CROCKERY & POOJA UNIT ELEVATION');
+
+      var specs = [
+        { label: 'ASSEMBLY', val: 'CROCKERY & POOJA COMBINED' },
+        { label: 'ROOM', val: 'DINING & POOJA' },
+        { label: 'SHUTTER TYPE', val: 'GLASS WITH BRASS & CNC MANDALA' },
+        { label: 'CARCASS', val: '18mm BWP (Half White)' },
+        { label: 'LIGHTING', val: 'WARM 3000K LED PROFILE STRIP' },
+        { label: 'HARDWARE', val: 'EBCO SOFT CLOSING' }
+      ];
+      this.drawProductionDetails(canvas, specs);
+
+      var scale = 0.40;
+      var extX = 220;
+      var intX = 1140;
+      var baseY = 1380;
+
+      // ── LEFT: EXTERNAL VIEW ──
+      canvas.text(extX + 380, 260, 'EXTERNAL VIEW', 30, 'bold', 'middle');
+      canvas.line(extX + 260, 274, extX + 500, 274, '#000000', 2);
+
+      // Crockery Section (Left side: 900mm)
+      var crkW = 450 * scale * 2;
+      var crkH = 1800 * scale;
+      canvas.rect(extX, baseY - crkH, crkW, crkH, '#000000', 2, '#ffffff');
+      canvas.line(extX + crkW / 2, baseY - crkH, extX + crkW / 2, baseY, '#000000', 1.5);
+      canvas.rect(extX + 10, baseY - crkH + 15, crkW / 2 - 20, crkH - 30, '#0284c7', 1.5, '#f0f9ff', 2);
+      canvas.rect(extX + crkW / 2 + 10, baseY - crkH + 15, crkW / 2 - 20, crkH - 30, '#0284c7', 1.5, '#f0f9ff', 2);
+      canvas.text(extX + crkW / 2, baseY - 20, 'CROCKERY UNIT', 14, 'bold', 'middle', '#0284c7');
+
+      // Pooja Section (Right side: 900mm)
+      var pujX = extX + crkW + 30;
+      var pujW = 450 * scale * 2;
+      var pujH = 1800 * scale;
+      canvas.rect(pujX, baseY - pujH, pujW, pujH, '#000000', 2, '#ffffff');
+      var mRad = Math.min(pujW, pujH) * 0.22;
+      canvas.circle(pujX + pujW / 2, baseY - pujH / 2, mRad, '#b45309', 2, '#fffbeb');
+      canvas.circle(pujX + pujW / 2, baseY - pujH / 2, mRad * 0.7, '#b45309', 1.5);
+      canvas.text(pujX + pujW / 2, baseY - pujH / 2 + 15, 'ॐ', 40, 'bold', 'middle', '#b45309');
+      canvas.text(pujX + pujW / 2, baseY - 20, 'POOJA UNIT (CNC CUT JALI)', 14, 'bold', 'middle', '#b45309');
+
+      canvas.dimH(extX, extX + crkW, baseY + 35, '900');
+      canvas.dimH(pujX, pujX + pujW, baseY + 35, '900');
+      canvas.dimH(extX, pujX + pujW, baseY + 70, '1830 OVERALL');
+      canvas.dimV(baseY - crkH, baseY, extX - 55, '1800', 0, true);
+
+      // ── RIGHT: INTERNAL VIEW & ENLARGED DETAIL ──
+      canvas.text(intX + 380, 260, 'INTERNAL VIEW & DETAIL', 30, 'bold', 'middle');
+      canvas.line(intX + 260, 274, intX + 500, 274, '#000000', 2);
+
+      // Internal Crockery (Adjustable glass shelves)
+      canvas.rect(intX, baseY - crkH, crkW, crkH, '#000000', 2, '#ffffff');
+      for (var s = 1; s <= 4; s++) {
+        canvas.line(intX + 8, baseY - s * (crkH / 5), intX + crkW - 8, baseY - s * (crkH / 5), '#0284c7', 1.8);
+      }
+      canvas.text(intX + crkW / 2, baseY - crkH / 2, 'ADJUSTABLE GLASS SHELVES', 12, 'bold', 'middle', '#0369a1');
+
+      // Internal Pooja
+      var ipujX = intX + crkW + 30;
+      canvas.rect(ipujX, baseY - pujH, pujW, pujH, '#000000', 2, '#ffffff');
+      canvas.rect(ipujX + 8, baseY - pujH * 0.45, pujW - 16, 12, '#b45309', 1.8, '#fde68a');
+      canvas.text(ipujX + pujW / 2, baseY - pujH * 0.45 - 15, 'DEITY PLATFORM', 13, 'bold', 'middle', '#92400e');
+      canvas.rect(ipujX + 8, baseY - 50, pujW - 16, 45, '#000000', 1.5, '#fef3c7');
+      canvas.text(ipujX + pujW / 2, baseY - 26, 'DIYA PULLOUT TRAY', 12, 'bold', 'middle', '#92400e');
+
+      canvas.dimH(intX, ipujX + pujW, baseY + 45, '1830 OVERALL');
+
+      return this._wrapCanvas(canvas);
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // BEDROOM WARDROBE & ASSOCIATED ELEVATION SHEET
+    // ─────────────────────────────────────────────────────────────────────────────
+    buildDynamicBedroomAssemblySheet: function (pageNum, totalPages, roomName, units, pData) {
+      units = units || [];
+      var canvas = this.createVectorCanvas();
+      var rTitle = (roomName || 'BEDROOM 1').toUpperCase();
+      this.drawA4Template(canvas, pageNum, totalPages, rTitle + ' — WARDROBE & ASSOCIATED UNITS ELEVATION');
+
+      var primary = units.find(function (u) { return (u.category || '').indexOf('wardrobe') !== -1 || (u.dimensions && u.dimensions.H > 1500); }) || units[0] || {};
+      var dims = primary.dimensions || {};
+      var W = parseFloat(dims.W) || 1500;
+      var H = parseFloat(dims.H) || 2100;
+      var D = parseFloat(dims.D) || 600;
+
+      var specs = [
+        { label: 'ROOM', val: rTitle },
+        { label: 'ASSEMBLY', val: 'WARDROBE & STUDY / SEATER' },
+        { label: 'WARDROBE SIZE', val: W + ' mm x ' + H + ' mm x ' + D + ' mm' },
+        { label: 'UNIT CODE', val: primary.code || 'WD01' },
+        { label: 'CARCASS', val: (primary.unitConfig && primary.unitConfig.carcass) || '18mm BWP (Half White / Fab White)' },
+        { label: 'SHUTTER', val: (primary.unitConfig && primary.unitConfig.shutterCol) || 'SURABHI / WALNUT LAMINATE (18mm)' },
+        { label: 'HANDLE TYPE', val: (primary.unitConfig && primary.unitConfig.handle) || 'FULL HEIGHT G-PROFILE / EXTENDED' },
+        { label: 'HARDWARE', val: 'EBCO SOFT CLOSING HINGES & RUNNERS' },
+        { label: 'PLINTH', val: '75mm WOODEN / RCC PLINTH' }
+      ];
+      this.drawProductionDetails(canvas, specs);
+
+      var scale = Math.min(840 / Math.max(1500, W), 720 / Math.max(2100, H), 0.35);
+      var extX = 220;
+      var intX = 1140;
+      var baseY = 1380;
+      var sW = W * scale;
+      var sH = H * scale;
+
+      // ── LEFT: EXTERNAL VIEW ──
+      canvas.text(extX + sW / 2, 260, 'EXTERNAL VIEW', 30, 'bold', 'middle');
+      canvas.line(extX + sW / 2 - 120, 274, extX + sW / 2 + 120, 274, '#000000', 2);
+
+      // Wardrobe Box
+      canvas.rect(extX, baseY - sH, sW, sH, '#000000', 2.5, '#ffffff');
+
+      // Shutters (3 shutters or 2 shutters)
+      var shutters = W > 1800 ? 4 : (W > 1200 ? 3 : 2);
+      var shW = sW / shutters;
+      for (var s = 1; s < shutters; s++) {
+        canvas.line(extX + s * shW, baseY - sH, extX + s * shW, baseY, '#000000', 2);
+      }
+      for (var sh = 0; sh < shutters; sh++) {
+        var isLeft = (sh % 2 === 0);
+        var hx = isLeft ? (extX + (sh + 1) * shW - 8) : (extX + sh * shW + 8);
+        canvas.line(hx, baseY - sH + 30, hx, baseY - 30, '#0f172a', 3.5);
+      }
+      canvas.text(extX + sW / 2, baseY - sH / 2, shutters + ' DOOR SHUTTERING (' + W + 'mm)', 14, 'bold', 'middle', '#64748b');
+
+      canvas.dimH(extX, extX + sW, baseY + 35, String(Math.round(W)));
+      canvas.dimV(baseY - sH, baseY, extX - 55, String(Math.round(H)), 0, true);
+
+      // ── RIGHT: INTERNAL VIEW ──
+      canvas.text(intX + sW / 2, 260, 'INTERNAL VIEW', 30, 'bold', 'middle');
+      canvas.line(intX + sW / 2 - 120, 274, intX + sW / 2 + 120, 274, '#000000', 2);
+
+      canvas.rect(intX, baseY - sH, sW, sH, '#000000', 2.5, '#ffffff');
+      for (var v = 1; v < shutters; v++) {
+        canvas.line(intX + v * shW, baseY - sH, intX + v * shW, baseY, '#000000', 1.8);
+      }
+      // Section 1: Long Hanging Rod (Coat/Dress)
+      canvas.line(intX + 12, baseY - sH + 50, intX + shW - 12, baseY - sH + 50, '#0f172a', 3);
+      canvas.text(intX + shW / 2, baseY - sH + 120, 'HANGING ROD', 13, 'bold', 'middle', '#334155');
+      canvas.dimInternalV(intX + shW / 2, baseY - sH + 50, baseY - 40, '1000 CLR');
+
+      // Section 2: Internal Shelves + Security Drawer with Lock
+      var sec2X = intX + shW;
+      canvas.rect(sec2X + 8, baseY - sH * 0.4, shW - 16, 35, '#000000', 1.5, '#fef3c7');
+      canvas.text(sec2X + shW / 2, baseY - sH * 0.4 + 20, 'DRAWER WITH LOCK', 11, 'bold', 'middle', '#92400e');
+      canvas.line(sec2X + 8, baseY - sH * 0.65, sec2X + shW - 8, baseY - sH * 0.65, '#000000', 1.5);
+      canvas.text(sec2X + shW / 2, baseY - sH * 0.75, 'SAREE / TROUSER SHELF', 12, 'bold', 'middle', '#334155');
+
+      canvas.dimH(intX, intX + sW, baseY + 35, String(Math.round(W)));
+      canvas.dimV(baseY - sH, baseY, intX - 55, String(Math.round(H)), 0, true);
+
+      return this._wrapCanvas(canvas);
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // CONTINUOUS LOFT ELEVATION SHEET (LOFT ONLY SHUTTERING)
+    // ─────────────────────────────────────────────────────────────────────────────
+    buildDynamicLoftPage: function (pageNum, totalPages, loftUnits, pData) {
+      loftUnits = loftUnits || [];
+      var canvas = this.createVectorCanvas();
+      var title = (this.meta.dwgTitle || 'KITCHEN') + ' LOFT — LOFT ONLY SHUTTERING';
+      this.drawA4Template(canvas, pageNum, totalPages, title);
+
+      var specs = [
+        { label: 'ASSEMBLY', val: 'CONTINUOUS LOFT RUN' },
+        { label: 'ROOM', val: 'KITCHEN' },
+        { label: 'SHUTTER TYPE', val: '18mm BWP LAMINATED / ACRYLIC' },
+        { label: 'OPENING', val: 'OVERHEAD FLAP / SOFT-CLOSE HINGE' },
+        { label: 'CEILING FILLER', val: '50mm TOP INFILL / PACKER' },
+        { label: 'RCC BEAM', val: '2400 LEVEL OVERHEAD' }
+      ];
+      this.drawProductionDetails(canvas, specs);
+
+      var scale = 0.40;
+      var startX = 260;
+      var ceilingY = 500;
+
+      // Header banner on drawing
+      canvas.text(1485, 260, 'CONTINUOUS LOFT RUN & OVERHEAD SHUTTERING', 30, 'bold', 'middle', '#000000');
+      canvas.line(1485 - 350, 274, 1485 + 350, 274, '#000000', 2);
+
+      // Ceiling slab / RCC Beam line
+      canvas.line(startX - 100, ceilingY, startX + 2200, ceilingY, '#0f172a', 3);
+      canvas.rect(startX - 100, ceilingY - 30, 2300, 30, '#0f172a', 1, '#e2e8f0');
+      canvas.text(startX + 1000, ceilingY - 10, 'RCC CEILING SLAB / BEAM LEVEL (2400+ LVL)', 14, 'bold', 'middle', '#475569');
+
+      // Ceiling Filler (50mm packer)
+      var fillerH = 50 * scale;
+      canvas.rect(startX, ceilingY, 2000, fillerH, '#000000', 1.5, '#cbd5e1');
+      canvas.text(startX + 1000, ceilingY + fillerH / 2 + 4, '50mm CEILING FILLER / INFILL PACKER', 12, 'bold', 'middle', '#334155');
+
+      // Continuous Loft Run - Individual Shutters
+      var units = (loftUnits && loftUnits.length > 0) ? loftUnits : [
+        { code: 'LU01', dimensions: { W: 600, H: 600 } },
+        { code: 'LU02', dimensions: { W: 600, H: 600 } },
+        { code: 'LU03', dimensions: { W: 600, H: 600 } },
+        { code: 'LU04', dimensions: { W: 600, H: 600 } }
+      ];
+
+      var curX = startX + 40;
+      var loftTopY = ceilingY + fillerH;
+      var totalRunW = 0;
+
+      units.forEach(function (lu, idx) {
+        var w = ((lu.dimensions && parseFloat(lu.dimensions.W)) || 600) * scale;
+        var h = ((lu.dimensions && parseFloat(lu.dimensions.H)) || 600) * scale;
+        var uTag = lu.code || ('LU' + (idx < 9 ? '0' : '') + (idx + 1));
+
+        // Carcass frame & shutter
+        canvas.rect(curX, loftTopY, w, h, '#000000', 2, '#ffffff');
+        canvas.rect(curX + 6, loftTopY + 6, w - 12, h - 12, '#3b82f6', 1.5, '#f8fafc', 2);
+
+        // Opening direction swing lines
+        canvas.line(curX + 10, loftTopY + 10, curX + w / 2, loftTopY + h - 10, '#94a3b8', 1, '4,4');
+        canvas.line(curX + w - 10, loftTopY + 10, curX + w / 2, loftTopY + h - 10, '#94a3b8', 1, '4,4');
+
+        // Shutter handle / edge profile
+        canvas.rect(curX + w / 2 - 25, loftTopY + h - 14, 50, 6, '#0f172a', 1, '#1e293b');
+
+        // Code & Dimension
+        canvas.text(curX + w / 2, loftTopY + h / 2 - 10, uTag, 16, 'bold', 'middle', '#0f172a');
+        canvas.text(curX + w / 2, loftTopY + h / 2 + 15, Math.round(w / scale) + 'x' + Math.round(h / scale), 12, 'normal', 'middle', '#64748b');
+
+        // Horizontal dimension per shutter
+        canvas.dimH(curX, curX + w, loftTopY + h + 40, String(Math.round(w / scale)));
+
+        curX += w;
+        totalRunW += w;
+      });
+
+      // Corner return / side finish
+      canvas.rect(curX, loftTopY, 20 * scale, 600 * scale, '#000000', 1.5, '#cbd5e1');
+      canvas.text(curX + (20 * scale) / 2, loftTopY + (300 * scale), 'RETURN', 11, 'bold', 'middle', '#334155', -90);
+
+      // Overall running dimensions
+      canvas.dimH(startX + 40, curX, loftTopY + (600 * scale) + 85, String(Math.round(totalRunW / scale)) + ' OVERALL CONTINUOUS LOFT RUN');
+      canvas.dimV(loftTopY, loftTopY + (600 * scale), startX - 30, '600', 0, true);
+      canvas.dimV(ceilingY, loftTopY, startX - 30, '50 FILLER', 0, true);
+
+      return this._wrapCanvas(canvas);
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // MANUFACTURING APPENDIX SHEET (CABINET SCHEDULE, PANEL CUTLIST & HARDWARE)
+    // ─────────────────────────────────────────────────────────────────────────────
+    buildManufacturingAppendixSheet: function (pageNum, totalPages, pData) {
+      pData = pData || {};
+      var furniture = pData.furniture || [];
+      var canvas = this.createVectorCanvas();
+      this.drawA4Template(canvas, pageNum, totalPages, 'MANUFACTURING APPENDIX — COMPONENT CUTLIST & HARDWARE SCHEDULE');
+
+      var specs = [
+        { label: 'DOCUMENT', val: 'FACTORY SHOP DRAWINGS APPENDIX' },
+        { label: 'TOTAL UNITS', val: String(furniture.length) + ' PRODUCTION CABINETS' },
+        { label: 'EDGING', val: '2mm REHAU PVC (FACING) / 0.8mm (INTERNAL)' },
+        { label: 'BORING PATTERN', val: 'SYSTEM 32mm LINE DRILLING' },
+        { label: 'TOLERANCE', val: '± 0.5 mm CNC HIGH ACCURACY' },
+        { label: 'QC STATUS', val: 'APPROVED FOR FACTORY FABRICATION' }
+      ];
+      this.drawProductionDetails(canvas, specs);
+
+      var startX = 220;
+      var tab1Y = 320;
+      var rowH = 34;
+
+      // Table 1: Cabinet Schedule & Panel Breakdown
+      canvas.text(startX, tab1Y - 14, 'MASTER CABINET SCHEDULE & COMPONENT CUT-LIST', 18, 'bold', 'start', '#0f172a');
+      var cols = [
+        { label: 'TAG', w: 120 },
+        { label: 'DESCRIPTION', w: 380 },
+        { label: 'FINISHED (W x D x H)', w: 260 },
+        { label: 'MATERIAL & SHUTTER', w: 320 },
+        { label: 'QTY', w: 80 }
+      ];
+
+      var cX = startX;
+      canvas.rect(startX, tab1Y, 1160, rowH, '#000000', 1.5, '#0f172a');
+      cols.forEach(function (c) {
+        canvas.text(cX + c.w / 2, tab1Y + rowH / 2 + 5, c.label, 13, 'bold', 'middle', '#ffffff');
+        cX += c.w;
+      });
+
+      var items = furniture.slice(0, 10);
+      if (items.length === 0) {
+        items = [
+          { code: 'BU01', name: 'SINK UNIT 750', dimensions: { W: 750, D: 600, H: 860 }, unitConfig: { carcass: '18mm BWP Marine' } },
+          { code: 'BU02', name: 'CORNER UNIT 1050', dimensions: { W: 1050, D: 600, H: 860 }, unitConfig: { carcass: '18mm BWP Marine' } },
+          { code: 'BU03', name: 'GAS HOB 900', dimensions: { W: 900, D: 600, H: 860 }, unitConfig: { carcass: '18mm BWP Marine' } },
+          { code: 'WU01', name: 'WALL UNIT 600', dimensions: { W: 600, D: 350, H: 720 }, unitConfig: { carcass: '18mm BWP Marine' } },
+          { code: 'WU02', name: 'WALL GLASS 900', dimensions: { W: 900, D: 350, H: 720 }, unitConfig: { carcass: '18mm BWP Marine' } },
+          { code: 'LU01', name: 'LOFT SHUTTER 600', dimensions: { W: 600, D: 600, H: 600 }, unitConfig: { carcass: '18mm BWP Marine' } }
+        ];
+      }
+
+      items.forEach(function (fn, idx) {
+        var rY = tab1Y + (idx + 1) * rowH;
+        var d = fn.dimensions || {};
+        var dimsStr = Math.round(d.W || 600) + ' x ' + Math.round(d.D || 600) + ' x ' + Math.round(d.H || 720) + ' mm';
+        var matStr = (fn.unitConfig && fn.unitConfig.carcass) || '18mm BWP Ply / Laminate';
+        var rowData = [
+          fn.code || ('U' + (idx < 9 ? '0' : '') + (idx + 1)),
+          (fn.name || 'CABINET UNIT').toUpperCase(),
+          dimsStr,
+          matStr,
+          '1'
+        ];
+
+        canvas.rect(startX, rY, 1160, rowH, '#000000', 1, (idx % 2 === 0 ? '#f8fafc' : '#ffffff'));
+        var rx = startX;
+        rowData.forEach(function (val, cIdx) {
+          canvas.text(rx + cols[cIdx].w / 2, rY + rowH / 2 + 5, val, 12.5, (cIdx === 0 ? 'bold' : 'normal'), 'middle', '#1e293b');
+          rx += cols[cIdx].w;
+        });
+      });
+
+      // Table 2: Hardware & Fitting Schedule
+      var tab2Y = tab1Y + (items.length + 1) * rowH + 45;
+      canvas.text(startX, tab2Y - 14, 'HARDWARE, RUNNERS & COMPONENT SCHEDULE', 18, 'bold', 'start', '#0f172a');
+      var hCols = [
+        { label: 'HARDWARE ITEM', w: 320 },
+        { label: 'TECHNICAL SPECIFICATION / BRAND', w: 460 },
+        { label: 'REQ. QUANTITY', w: 180 },
+        { label: 'STATUS', w: 280 }
+      ];
+
+      var hcX = startX;
+      canvas.rect(startX, tab2Y, 1240, rowH, '#000000', 1.5, '#0f172a');
+      hCols.forEach(function (c) {
+        canvas.text(hcX + c.w / 2, tab2Y + rowH / 2 + 5, c.label, 13, 'bold', 'middle', '#ffffff');
+        hcX += c.w;
+      });
+
+      var hardwareRows = [
+        ['Concealed Soft-Close Hinges', 'EBCO 110° Soft-Closing (Crank 0/8)', '24 Pairs', 'VERIFIED READY'],
+        ['Tandem Drawer Runners', 'EBCO Soft-Close Tandem (30kg / 50kg)', '6 Sets', 'VERIFIED READY'],
+        ['Full-Length Shutter Handles', 'Extended Shutter Edge / G-Profile (20mm)', '18 Pieces', 'VERIFIED READY'],
+        ['Plinth Support Legs', '100mm PVC Heavy-Duty Leveling Legs', '20 Units', 'VERIFIED READY'],
+        ['Pooja CNC Cut Screen', '12mm CNC Routed MDF Mandala with Sacred ॐ', '1 Set', 'VERIFIED READY']
+      ];
+
+      hardwareRows.forEach(function (hr, hrIdx) {
+        var hry = tab2Y + (hrIdx + 1) * rowH;
+        canvas.rect(startX, hry, 1240, rowH, '#000000', 1, (hrIdx % 2 === 0 ? '#f8fafc' : '#ffffff'));
+        var cx = startX;
+        hr.forEach(function (val, cIdx) {
+          canvas.text(cx + hCols[cIdx].w / 2, hry + rowH / 2 + 5, val, 12.5, (cIdx === 3 ? 'bold' : 'normal'), 'middle', (cIdx === 3 ? '#047857' : '#1e293b'));
+          cx += hCols[cIdx].w;
+        });
+      });
+
+      return this._wrapCanvas(canvas);
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // MULTI-PAGE DECK COMPILER (V2 PRODUCTION DRAWING FLOW)
+    // ─────────────────────────────────────────────────────────────────────────────
     generateAllPages: function () {
       var pData = this.getProjectData();
       var walls = pData.walls || [];
@@ -52544,118 +53360,246 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
       if (proj.code) this.meta.prCode = proj.code;
       if (meta.designerName) this.meta.designer = meta.designerName;
 
-      var pages = [];
-
-      // Check if project has user-drawn walls or placed modular units:
       var isDynamicProject = (walls.length > 0 || furniture.length > 0);
+      var pageDescriptors = [];
+      var self = this;
 
       if (isDynamicProject) {
-        var loftUnits = furniture.filter(function (f) {
-          var c = (f.category || '').toLowerCase(), n = (f.name || '').toLowerCase();
-          return c.indexOf('loft') !== -1 || n.indexOf('loft') !== -1 || (f.unitConfig && f.unitConfig.loft);
+        // Group all objects room-wise and assembly-wise
+        var groups = this.classifyProjectObjects(pData);
+
+        // ═════════════════════════════════════════════════════════════════════
+        // PAGE 01: TOP VIEW / 2D FLOOR PLAN (WITHOUT LOFT)
+        // ═════════════════════════════════════════════════════════════════════
+        var isKitchenProject = (groups.kitchen.allUnits.length > 0) || (rooms.some(function (r) { return (r.name || '').toLowerCase().indexOf('kitchen') !== -1; }));
+        var p1Title = isKitchenProject ? ((this.meta.dwgTitle || 'KITCHEN') + ' — TOP VIEW WITHOUT LOFT') : ((this.meta.dwgTitle || '2D FLOOR PLAN') + ' — TOP VIEW WITHOUT LOFT');
+        pageDescriptors.push({
+          type: 'top_view_floor_plan',
+          title: p1Title,
+          build: function (pNum, tPages) { return self.buildDynamicPage1_FloorPlan(pNum, tPages, pData); }
         });
 
-        var totalPages = 2 + furniture.length + (loftUnits.length > 0 ? 1 : 0);
-
-        // Page 1: Real 2D Floor Plan
-        var p1 = this.buildDynamicPage1_FloorPlan(1, totalPages, pData);
-        pages.push({
-          index: 1,
-          title: (this.meta.dwgTitle || 'ROOM') + ' 2D FLOOR PLAN & UNIT LAYOUT',
-          svg: String(p1.svg || p1),
-          dxf: p1.dxf || (p1.canvas ? p1.canvas.toDXF() : ''),
-          canvas: p1.canvas || null
+        // ═════════════════════════════════════════════════════════════════════
+        // PAGE 02: COMPLETE AXONOMETRIC ELEVATION / 3D OVERVIEW (WITHOUT LOFT)
+        // ═════════════════════════════════════════════════════════════════════
+        var p2Title = isKitchenProject ? ((this.meta.dwgTitle || 'KITCHEN') + ' ELEVATION — COMPLETE AXONOMETRIC') : ((this.meta.dwgTitle || 'AXONOMETRIC ELEVATION') + ' — 3D OVERVIEW');
+        pageDescriptors.push({
+          type: 'axonometric_overview',
+          title: p2Title,
+          build: function (pNum, tPages) { return self.buildDynamicPage2_3DOverview(pNum, tPages, pData); }
         });
 
-        // Page 2: Real 3D Axonometric Overview
-        var p2 = this.buildDynamicPage2_3DOverview(2, totalPages, pData);
-        pages.push({
-          index: 2,
-          title: (this.meta.dwgTitle || 'ROOM') + ' 3D AXONOMETRIC & KEY UNIT',
-          svg: String(p2.svg || p2),
-          dxf: p2.dxf || (p2.canvas ? p2.canvas.toDXF() : ''),
-          canvas: p2.canvas || null
-        });
+        // ═════════════════════════════════════════════════════════════════════
+        // KITCHEN DRAWING SEQUENCE
+        // ═════════════════════════════════════════════════════════════════════
+        if (groups.kitchen.allUnits.length > 0 || (rooms.some(function (r) { return (r.name || '').toLowerCase().indexOf('kitchen') !== -1; }))) {
+          // Sheet 03 – Kitchen Elevation(s) (Connected External & Internal view)
+          var baseRun = groups.kitchen.baseUnits;
+          var wallRun = groups.kitchen.wallUnits;
 
-        // Pages 3+: Individual Unit Detailed Shop Drawings (External & Internal)
-        for (var i = 0; i < furniture.length; i++) {
-          var uIdx = i + 1;
-          var curPageNum = 3 + i;
-          var fn = furniture[i];
-          var uTitle = (fn.name || 'MODULAR UNIT') + ' (' + (fn.code || ('U0' + uIdx)) + ')';
-          var pu = this.buildDynamicUnitPage(curPageNum, totalPages, fn, i, pData);
-          pages.push({
-            index: curPageNum,
-            title: uTitle,
-            svg: String(pu.svg || pu),
-            dxf: pu.dxf || (pu.canvas ? pu.canvas.toDXF() : ''),
-            canvas: pu.canvas || null
+          if (baseRun.length > 0 || wallRun.length > 0) {
+            pageDescriptors.push({
+              type: 'kitchen_elevation_main',
+              title: (this.meta.dwgTitle || 'KITCHEN') + ' — MAIN ELEVATION (EXTERNAL & INTERNAL)',
+              build: function (pNum, tPages) {
+                return self.buildDynamicElevationRunSheet(pNum, tPages, baseRun, wallRun, pData, (self.meta.dwgTitle || 'KITCHEN') + ' — L-SHAPED EXTERNAL & INTERNAL ELEVATION');
+              }
+            });
+          }
+
+          // Sheet 04 – Kitchen Loft Only (Only if loft units exist)
+          if (groups.kitchen.loftUnits.length > 0) {
+            pageDescriptors.push({
+              type: 'kitchen_loft_only',
+              title: (this.meta.dwgTitle || 'KITCHEN') + ' LOFT — CONTINUOUS LOFT SHUTTERING RUN',
+              build: function (pNum, tPages) { return self.buildDynamicLoftPage(pNum, tPages, groups.kitchen.loftUnits, pData); }
+            });
+          }
+
+          // Sheet 05 – Breakfast Counter / Island (Only if present)
+          if (groups.kitchen.breakfastCounter.length > 0) {
+            pageDescriptors.push({
+              type: 'kitchen_island',
+              title: 'KITCHEN BREAKFAST COUNTER & ISLAND ASSEMBLY',
+              build: function (pNum, tPages) {
+                return self.buildDynamicElevationRunSheet(pNum, tPages, groups.kitchen.breakfastCounter, [], pData, 'KITCHEN BREAKFAST COUNTER — EXTERNAL & INTERNAL', { elevationType: 'BREAKFAST COUNTER' });
+              }
+            });
+          }
+        }
+
+        // ═════════════════════════════════════════════════════════════════════
+        // LIVING ROOM SHEETS (SHOE RACK, PARTITION, SEATER, TV UNIT)
+        // ═════════════════════════════════════════════════════════════════════
+        if (groups.living.shoeRacks.length > 0) {
+          pageDescriptors.push({
+            type: 'living_shoe_rack',
+            title: 'LIVING FOYER — SHOE RACK ASSEMBLY',
+            build: function (pNum, tPages) { return self.buildDynamicLivingAssemblySheet(pNum, tPages, 'shoe_rack', groups.living.shoeRacks, pData); }
+          });
+        }
+        if (groups.living.partitions.length > 0) {
+          pageDescriptors.push({
+            type: 'living_partition',
+            title: 'LIVING / DINING — ROOM DIVIDER & PARTITION',
+            build: function (pNum, tPages) { return self.buildDynamicLivingAssemblySheet(pNum, tPages, 'partition', groups.living.partitions, pData); }
+          });
+        }
+        if (groups.living.seaters.length > 0) {
+          pageDescriptors.push({
+            type: 'living_seater',
+            title: 'LIVING FOYER — SEATER BENCH & STORAGE',
+            build: function (pNum, tPages) { return self.buildDynamicLivingAssemblySheet(pNum, tPages, 'seater', groups.living.seaters, pData); }
+          });
+        }
+        if (groups.living.tvUnits.length > 0) {
+          pageDescriptors.push({
+            type: 'living_tv_unit',
+            title: 'LIVING ROOM — TV ENTERTAINMENT UNIT ASSEMBLY',
+            build: function (pNum, tPages) { return self.buildDynamicLivingAssemblySheet(pNum, tPages, 'tv_unit', groups.living.tvUnits, pData); }
           });
         }
 
-        // Optional Loft Sheet
-        if (loftUnits.length > 0) {
-          var loftPageNum = totalPages;
-          var pl = this.buildDynamicLoftPage(loftPageNum, totalPages, loftUnits, pData);
-          pages.push({
-            index: loftPageNum,
-            title: 'CONTINUOUS LOFT RUN (ONLY SHUTTERING)',
-            svg: String(pl.svg || pl),
-            dxf: pl.dxf || (pl.canvas ? pl.canvas.toDXF() : ''),
-            canvas: pl.canvas || null
+        // ═════════════════════════════════════════════════════════════════════
+        // DINING & POOJA SHEETS (CROCKERY AND POOJA)
+        // ═════════════════════════════════════════════════════════════════════
+        if (groups.dining.crockeryUnits.length > 0 || groups.dining.poojaUnits.length > 0) {
+          pageDescriptors.push({
+            type: 'dining_pooja',
+            title: 'DINING & POOJA — CROCKERY & POOJA UNIT ELEVATION',
+            build: function (pNum, tPages) { return self.buildDynamicCrockeryPoojaSheet(pNum, tPages, groups.dining.crockeryUnits, groups.dining.poojaUnits, pData); }
           });
         }
+
+        // ═════════════════════════════════════════════════════════════════════
+        // BEDROOM SHEETS (WARDROBE, SEATER, STUDY, WALK-IN, MIRROR)
+        // ═════════════════════════════════════════════════════════════════════
+        var bedNames = Object.keys(groups.bedrooms);
+        bedNames.forEach(function (bName) {
+          var bGroup = groups.bedrooms[bName];
+          if (bGroup.wardrobes.length > 0 || bGroup.studyUnits.length > 0 || bGroup.allUnits.length > 0) {
+            pageDescriptors.push({
+              type: 'bedroom_wardrobe',
+              title: bName.toUpperCase() + ' — WARDROBE & ASSOCIATED UNITS ELEVATION',
+              build: function (pNum, tPages) { return self.buildDynamicBedroomAssemblySheet(pNum, tPages, bName, bGroup.allUnits, pData); }
+            });
+          }
+          if (bGroup.lofts.length > 0) {
+            pageDescriptors.push({
+              type: 'bedroom_loft',
+              title: bName.toUpperCase() + ' — LOFT SHUTTERING ELEVATION',
+              build: function (pNum, tPages) { return self.buildDynamicLoftPage(pNum, tPages, bGroup.lofts, pData); }
+            });
+          }
+        });
+
+        // ═════════════════════════════════════════════════════════════════════
+        // BALCONY & UTILITY SHEETS
+        // ═════════════════════════════════════════════════════════════════════
+        if (groups.balcony.length > 0) {
+          pageDescriptors.push({
+            type: 'balcony',
+            title: 'BALCONY — STORAGE CABINETS, LOFT & LEDGES',
+            build: function (pNum, tPages) { return self.buildDynamicLivingAssemblySheet(pNum, tPages, 'seater', groups.balcony, pData); }
+          });
+        }
+        if (groups.utility.length > 0) {
+          pageDescriptors.push({
+            type: 'utility',
+            title: 'UTILITY AREA — STORAGE & APPLIANCE PROVISION',
+            build: function (pNum, tPages) { return self.buildDynamicLivingAssemblySheet(pNum, tPages, 'shoe_rack', groups.utility, pData); }
+          });
+        }
+
+        // ═════════════════════════════════════════════════════════════════════
+        // OPTIONAL MANUFACTURING APPENDIX (CUTLIST & HARDWARE SCHEDULE)
+        // ═════════════════════════════════════════════════════════════════════
+        pageDescriptors.push({
+          type: 'manufacturing_appendix',
+          title: 'MANUFACTURING APPENDIX — COMPONENT CUTLIST & HARDWARE',
+          build: function (pNum, tPages) { return self.buildManufacturingAppendixSheet(pNum, tPages, pData); }
+        });
 
       } else {
-        // Fallback to reference Cookscape standard demo deck (Pages 1-8) matching Mrs. Priyanka mam 2d.pdf
-        var demoWalls = [
-          { id: 'w1', start: { x: 0, y: 0 }, end: { x: 3080, y: 0 }, thickness: 150 },
-          { id: 'w2', start: { x: 3080, y: 0 }, end: { x: 3080, y: 2930 }, thickness: 150 },
-          { id: 'w3', start: { x: 3080, y: 2930 }, end: { x: 0, y: 2930 }, thickness: 150 },
-          { id: 'w4', start: { x: 0, y: 2930 }, end: { x: 0, y: 0 }, thickness: 150 }
-        ];
-        var demoOpenings = [
-          { id: 'op1', wallId: 'w1', type: 'window', offset: 1540, width: 1205 },
-          { id: 'op2', wallId: 'w3', type: 'door', offset: 1200, width: 900 }
-        ];
-        var demoFurniture = [
-          { id: 'df1', name: 'SINK UNIT 750', code: 'BU01', category: 'base', dimensions: { W: 750, D: 600, H: 860 }, pos: { x: 600, y: 350, z: 0 }, unitConfig: { shutters: 2, drawers: 0, hasSink: true, carcass: 'Half White', shutterCol: 'Surabhi' } },
-          { id: 'df2', name: 'CORNER UNIT 1050', code: 'BU02', category: 'base', dimensions: { W: 1050, D: 600, H: 860 }, pos: { x: 1550, y: 350, z: 0 }, unitConfig: { shutters: 1, drawers: 0, carcass: 'Half White', shutterCol: 'Surabhi' } },
-          { id: 'df3', name: 'GAS HOB UNIT 900', code: 'BU03', category: 'base', dimensions: { W: 900, D: 600, H: 860 }, pos: { x: 2400, y: 350, z: 0 }, unitConfig: { shutters: 2, drawers: 0, hasHob: true, carcass: 'Half White', shutterCol: 'Surabhi' } },
-          { id: 'df4', name: 'POOJA UNIT WITH CNC CUT JALI', code: 'PU01', category: 'tall', dimensions: { W: 900, D: 450, H: 1800 }, pos: { x: 2800, y: 1200, z: 0 }, unitConfig: { shutters: 2, drawers: 0, isPooja: true, carcass: 'Half White', shutterCol: 'Surabhi' } },
-          { id: 'df5', name: 'WALL UNIT 600 (WFM600)', code: 'WFM600', category: 'wall', dimensions: { W: 600, D: 350, H: 720 }, pos: { x: 600, y: 350, z: 1400 }, unitConfig: { shutters: 2, drawers: 0, shelves: 2, carcass: 'Half White', shutterCol: 'Surabhi' } },
-          { id: 'df6', name: 'WALL GLASS UNIT 900', code: 'WU02', category: 'wall', dimensions: { W: 900, D: 350, H: 720 }, pos: { x: 1550, y: 350, z: 1400 }, unitConfig: { shutters: 2, drawers: 0, shelves: 2, carcass: 'Half White', shutterCol: 'Frosty White' } }
-        ];
-        var demoRooms = [
-          { id: 'rm1', name: 'KITCHEN', area: 9024400, polygon: [{ x: 0, y: 0 }, { x: 3080, y: 0 }, { x: 3080, y: 2930 }, { x: 0, y: 2930 }] }
-        ];
+        // ═════════════════════════════════════════════════════════════════════
+        // DEFAULT COOKSCAPE 16-PAGE REFERENCE DRAWING TEMPLATE SEQUENCE
+        // ═════════════════════════════════════════════════════════════════════
         var demoPData = {
-          project: proj,
-          plan: { walls: demoWalls, openings: demoOpenings, furniture: demoFurniture, rooms: demoRooms },
-          walls: demoWalls,
-          openings: demoOpenings,
-          rooms: demoRooms,
-          furniture: demoFurniture
+          walls: [
+            { id: 'w1', start: { x: 0, y: 0 }, end: { x: 3080, y: 0 }, thickness: 150 },
+            { id: 'w2', start: { x: 3080, y: 0 }, end: { x: 3080, y: 2930 }, thickness: 150 },
+            { id: 'w3', start: { x: 3080, y: 2930 }, end: { x: 0, y: 2930 }, thickness: 150 },
+            { id: 'w4', start: { x: 0, y: 2930 }, end: { x: 0, y: 0 }, thickness: 150 }
+          ],
+          openings: [
+            { id: 'op1', wallId: 'w1', type: 'window', offset: 1540, width: 1205 },
+            { id: 'op2', wallId: 'w3', type: 'door', offset: 1200, width: 900 }
+          ],
+          rooms: [{ id: 'rm1', name: 'KITCHEN', area: 9024400, polygon: [{ x: 0, y: 0 }, { x: 3080, y: 0 }, { x: 3080, y: 2930 }, { x: 0, y: 2930 }] }],
+          furniture: [
+            { id: 'df1', name: 'SINK UNIT 750', code: 'BU01', category: 'base', dimensions: { W: 750, D: 600, H: 860 }, pos: { x: 600, y: 350, z: 0 }, unitConfig: { shutters: 2, drawers: 0, hasSink: true } },
+            { id: 'df2', name: 'CORNER UNIT 1050', code: 'BU02', category: 'base', dimensions: { W: 1050, D: 600, H: 860 }, pos: { x: 1550, y: 350, z: 0 }, unitConfig: { shutters: 1, drawers: 0 } },
+            { id: 'df3', name: 'GAS HOB UNIT 900', code: 'BU03', category: 'base', dimensions: { W: 900, D: 600, H: 860 }, pos: { x: 2400, y: 350, z: 0 }, unitConfig: { shutters: 2, drawers: 0, hasHob: true } },
+            { id: 'df4', name: 'POOJA UNIT WITH CNC CUT JALI', code: 'PU01', category: 'tall', dimensions: { W: 900, D: 450, H: 1800 }, pos: { x: 2800, y: 1200, z: 0 }, unitConfig: { shutters: 2, drawers: 0, isPooja: true } },
+            { id: 'df5', name: 'WALL UNIT 600 (WFM600)', code: 'WFM600', category: 'wall', dimensions: { W: 600, D: 350, H: 720 }, pos: { x: 600, y: 350, z: 1400 }, unitConfig: { shutters: 2, drawers: 0, shelves: 2 } },
+            { id: 'df6', name: 'WALL GLASS UNIT 900', code: 'WU02', category: 'wall', dimensions: { W: 900, D: 350, H: 720 }, pos: { x: 1550, y: 350, z: 1400 }, unitConfig: { shutters: 2, drawers: 0, shelves: 2 } },
+            { id: 'df7', name: 'LOFT SHUTTER 600', code: 'LU01', category: 'loft', dimensions: { W: 600, D: 600, H: 600 } },
+            { id: 'df8', name: 'LOFT SHUTTER 900', code: 'LU02', category: 'loft', dimensions: { W: 900, D: 600, H: 600 } }
+          ]
         };
 
-        var totalPages = 8;
-        var dp1 = this.buildDynamicPage1_FloorPlan(1, totalPages, demoPData);
-        pages.push({ index: 1, title: 'KITCHEN FLOOR PLAN & APPLIANCE LAYOUT (REFERENCE DEMO)', svg: String(dp1.svg || dp1), dxf: dp1.dxf || (dp1.canvas ? dp1.canvas.toDXF() : ''), canvas: dp1.canvas || null });
-        var dp2 = this.buildDynamicPage2_3DOverview(2, totalPages, demoPData);
-        pages.push({ index: 2, title: '3D AXONOMETRIC & WFM600 DETAIL (REFERENCE DEMO)', svg: String(dp2.svg || dp2), dxf: dp2.dxf || (dp2.canvas ? dp2.canvas.toDXF() : ''), canvas: dp2.canvas || null });
+        var dBase = demoPData.furniture.slice(0, 3);
+        var dWall = demoPData.furniture.slice(4, 6);
+        var dLoft = demoPData.furniture.slice(6, 8);
 
-        for (var d = 0; d < demoFurniture.length; d++) {
-          var dNum = 3 + d;
-          var dfn = demoFurniture[d];
-          var dpu = this.buildDynamicUnitPage(dNum, totalPages, dfn, d, demoPData);
-          pages.push({
-            index: dNum,
-            title: dfn.name + ' (' + dfn.code + ') [REFERENCE DEMO]',
-            svg: String(dpu.svg || dpu),
-            dxf: dpu.dxf || (dpu.canvas ? dpu.canvas.toDXF() : ''),
-            canvas: dpu.canvas || null
-          });
-        }
+        // Page 01: Kitchen – Top view without loft
+        pageDescriptors.push({ type: 'p01', title: 'KITCHEN — TOP VIEW WITHOUT LOFT', build: function (p, t) { return self.buildDynamicPage1_FloorPlan(p, t, demoPData); } });
+        // Page 02: Kitchen Elevation – Complete axonometric + cabinet detail
+        pageDescriptors.push({ type: 'p02', title: 'KITCHEN ELEVATION — COMPLETE AXONOMETRIC + CABINET DETAIL', build: function (p, t) { return self.buildDynamicPage2_3DOverview(p, t, demoPData); } });
+        // Page 03: Kitchen – L-shaped external & internal
+        pageDescriptors.push({ type: 'p03', title: 'KITCHEN — L-SHAPED EXTERNAL & INTERNAL', build: function (p, t) { return self.buildDynamicElevationRunSheet(p, t, dBase, dWall, demoPData, 'KITCHEN — L-SHAPED EXTERNAL & INTERNAL'); } });
+        // Page 04: Kitchen Loft – Loft only shuttering
+        pageDescriptors.push({ type: 'p04', title: 'KITCHEN LOFT — LOFT ONLY SHUTTERING', build: function (p, t) { return self.buildDynamicLoftPage(p, t, dLoft, demoPData); } });
+        // Page 05: Kitchen Breakfast Counter – External & internal
+        pageDescriptors.push({ type: 'p05', title: 'KITCHEN BREAKFAST COUNTER — EXTERNAL & INTERNAL', build: function (p, t) { return self.buildDynamicElevationRunSheet(p, t, [{ name: 'BREAKFAST COUNTER', code: 'BC01', dimensions: { W: 1200, D: 600, H: 900 } }], [], demoPData, 'KITCHEN BREAKFAST COUNTER — EXTERNAL & INTERNAL'); } });
+        // Page 06: Living Shoe Rack – External & internal
+        pageDescriptors.push({ type: 'p06', title: 'LIVING SHOE RACK — EXTERNAL & INTERNAL', build: function (p, t) { return self.buildDynamicLivingAssemblySheet(p, t, 'shoe_rack', [{ name: 'SHOE RACK', dimensions: { W: 900, H: 1000, D: 380 } }], demoPData); } });
+        // Page 07: Living Partition – External & internal
+        pageDescriptors.push({ type: 'p07', title: 'LIVING PARTITION — EXTERNAL & INTERNAL', build: function (p, t) { return self.buildDynamicLivingAssemblySheet(p, t, 'partition', [{ name: 'PARTITION', dimensions: { W: 1200, H: 2100, D: 100 } }], demoPData); } });
+        // Page 08: Living Seater – External & internal
+        pageDescriptors.push({ type: 'p08', title: 'LIVING SEATER — EXTERNAL & INTERNAL', build: function (p, t) { return self.buildDynamicLivingAssemblySheet(p, t, 'seater', [{ name: 'SEATER BENCH', dimensions: { W: 1000, H: 450, D: 450 } }], demoPData); } });
+        // Page 09: Living TV Unit – External, internal & key plan
+        pageDescriptors.push({ type: 'p09', title: 'LIVING TV UNIT — EXTERNAL, INTERNAL & KEY PLAN', build: function (p, t) { return self.buildDynamicLivingAssemblySheet(p, t, 'tv_unit', [{ name: 'TV UNIT', dimensions: { W: 1800, H: 1600, D: 450 } }], demoPData); } });
+        // Page 10: Crockery and Pooja – External, internal & detail
+        pageDescriptors.push({ type: 'p10', title: 'CROCKERY AND POOJA — EXTERNAL, INTERNAL & DETAIL', build: function (p, t) { return self.buildDynamicCrockeryPoojaSheet(p, t, [{ name: 'CROCKERY', dimensions: { W: 900, H: 1800, D: 400 } }], [{ name: 'POOJA', dimensions: { W: 900, H: 1800, D: 450 } }], demoPData); } });
+        // Page 11: Bedroom 1 Seater – Combined external & internal
+        pageDescriptors.push({ type: 'p11', title: 'BEDROOM 1 SEATER — COMBINED EXTERNAL & INTERNAL', build: function (p, t) { return self.buildDynamicLivingAssemblySheet(p, t, 'seater', [{ name: 'BEDROOM SEATER', dimensions: { W: 1200, H: 450, D: 500 } }], demoPData); } });
+        // Page 12: Bedroom 1 Foldable Ledge – Isometric detail
+        pageDescriptors.push({ type: 'p12', title: 'BEDROOM 1 FOLDABLE LEDGE — ISOMETRIC DETAIL', build: function (p, t) { return self.buildDynamicLivingAssemblySheet(p, t, 'seater', [{ name: 'FOLDABLE LEDGE', dimensions: { W: 900, H: 30, D: 400 } }], demoPData); } });
+        // Page 13: Bedroom 1 Walk-in – Shuttering elevation
+        pageDescriptors.push({ type: 'p13', title: 'BEDROOM 1 WALK-IN — SHUTTERING ELEVATION', build: function (p, t) { return self.buildDynamicBedroomAssemblySheet(p, t, 'Bedroom 1 Walk-in', [{ name: 'WALK-IN RUN 1', dimensions: { W: 1800, H: 2100, D: 600 } }], demoPData); } });
+        // Page 14: Bedroom 1 Walk-in – Secondary shuttering elevation
+        pageDescriptors.push({ type: 'p14', title: 'BEDROOM 1 WALK-IN — SECONDARY SHUTTERING ELEVATION', build: function (p, t) { return self.buildDynamicBedroomAssemblySheet(p, t, 'Bedroom 1 Walk-in', [{ name: 'WALK-IN RUN 2', dimensions: { W: 1500, H: 2100, D: 600 } }], demoPData); } });
+        // Page 15: Bedroom 1 Walk-in Mirror – Mirror elevation
+        pageDescriptors.push({ type: 'p15', title: 'BEDROOM 1 WALK-IN MIRROR — MIRROR ELEVATION', build: function (p, t) { return self.buildDynamicLivingAssemblySheet(p, t, 'partition', [{ name: 'FULL LENGTH MIRROR', dimensions: { W: 600, H: 1800, D: 50 } }], demoPData); } });
+        // Page 16: Balcony – Loft, mirror & ledges
+        pageDescriptors.push({ type: 'p16', title: 'BALCONY — LOFT, MIRROR & LEDGES', build: function (p, t) { return self.buildDynamicLivingAssemblySheet(p, t, 'shoe_rack', [{ name: 'BALCONY STORAGE & LOFT', dimensions: { W: 1200, H: 2100, D: 450 } }], demoPData); } });
+      }
+
+      var totalPages = pageDescriptors.length;
+      var pages = [];
+
+      for (var i = 0; i < pageDescriptors.length; i++) {
+        var pageNum = i + 1;
+        var desc = pageDescriptors[i];
+        var res = desc.build(pageNum, totalPages);
+        pages.push({
+          index: pageNum,
+          title: desc.title,
+          svg: String(res.svg || res),
+          dxf: res.dxf || (res.canvas ? res.canvas.toDXF() : ''),
+          canvas: res.canvas || null
+        });
       }
 
       return pages;
@@ -53197,8 +54141,8 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
   var DimensionEngine = {
     getDatumLevels: function () {
       return {
-        plinthBase: 100,
-        counterHeight: 820,
+        plinthBase: 110,
+        counterHeight: 860,
         backsplash: 600,
         wallBottom: 1460,
         wallTop: 2180,
@@ -61560,7 +62504,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
   // 1. Register Service Worker (web browsers only, not file:// in desktop app)
   if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=50')
+      navigator.serviceWorker.register('./sw.js?v=51')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 

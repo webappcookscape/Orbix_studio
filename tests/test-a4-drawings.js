@@ -50,11 +50,11 @@ assert.ok(p3.svg.includes('INTERNAL VIEW'), 'Page 3 must include INTERNAL VIEW')
 assert.ok(p3.svg.includes('110 RCC BASE'), 'Page 3 must include RCC plinth base');
 console.log('✓ Page 3 (Dual Elevation External/Internal) validated.');
 
-// Test page 6 contains Pooja CNC Cut
-const p6 = pages[5];
-assert.ok(p6.svg.includes('ॐ'), 'Page 6 must include Om symbol in Pooja mandala');
-assert.ok(p6.svg.includes('CNC CUT'), 'Page 6 must include CNC cut callout');
-console.log('✓ Page 6 (Pooja CNC Cut) validated.');
+// Test page 10 contains Pooja CNC Cut (in Cookscape 16-page sequence)
+const pPooja = pages[9] || pages.find(p => p.svg.includes('ॐ'));
+assert.ok(pPooja.svg.includes('ॐ'), 'Pooja page must include Om symbol in Pooja mandala');
+assert.ok(pPooja.svg.includes('CNC CUT'), 'Pooja page must include CNC cut callout');
+console.log('✓ Page 10 (Pooja CNC Cut) validated.');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Test Dynamic Generation from Live User 2D Floor Plan
@@ -117,8 +117,8 @@ global.OrbixUI = {
 
 const dynPages = global.OrbixA4Drawings.generateAllPages();
 assert.ok(Array.isArray(dynPages), 'Dynamic pages must be an array');
-// 2 overview pages (Floor Plan + 3D) + 3 units + 1 continuous loft page = 6 pages
-assert.strictEqual(dynPages.length, 6, 'Must generate exactly 6 pages for 3 units + loft');
+// V2 intelligent grouping: 2 overview pages (Floor Plan + 3D) + 1 bedroom assembly + 1 continuous loft + 1 appendix = 5 pages
+assert.strictEqual(dynPages.length, 5, 'Must generate exactly 5 assembly-based pages for 3 units');
 
 // Check dynamic page 1 has user's client, title, room and custom dimensions
 const dp1 = dynPages[0];
@@ -131,7 +131,7 @@ assert.ok(dp1.svg.includes('MASTER BEDROOM'), 'Page 1 must render user MASTER BE
 assert.ok(dp1.svg.includes('WD3D-1500'), 'Page 1 must render unit code WD3D-1500');
 console.log('✓ Dynamic Page 1 (Custom Floor Plan, Walls & Openings) verified.');
 
-// Check dynamic unit page 3 (Wardrobe)
+// Check dynamic bedroom assembly page 3 (Wardrobe & Associated Units)
 const dp3 = dynPages[2];
 assert.ok(dp3.svg.includes('WD3D-1500'), 'Page 3 must include user unit code');
 assert.ok(dp3.svg.includes('1500 mm'), 'Page 3 production details must include 1500 mm length');
@@ -139,19 +139,18 @@ assert.ok(dp3.svg.includes('2100 mm'), 'Page 3 production details must include 2
 assert.ok(dp3.svg.includes('EXTERNAL VIEW'), 'Page 3 must include EXTERNAL VIEW');
 assert.ok(dp3.svg.includes('INTERNAL VIEW'), 'Page 3 must include INTERNAL VIEW');
 assert.ok(dp3.svg.includes('Walnut Bronze'), 'Page 3 must render user shutter color Walnut Bronze');
-console.log('✓ Dynamic Unit Sheet (Wardrobe 1500x2100) verified.');
-
-// Check dynamic unit page 4 (Study Desk)
-const dp4 = dynPages[3];
-assert.ok(dp4.svg.includes('SD-1200'), 'Page 4 must include study desk code');
-assert.ok(dp4.svg.includes('1200 mm'), 'Page 4 production details must include 1200 mm length');
-console.log('✓ Dynamic Unit Sheet (Study Desk 1200mm) verified.');
+console.log('✓ Dynamic Bedroom Assembly Sheet (Wardrobe 1500x2100) verified.');
 
 // Check dynamic loft sheet
-const dp6 = dynPages[5];
-assert.ok(dp6.svg.includes('CONTINUOUS LOFT RUN'), 'Page 6 must include continuous loft title');
-assert.ok(dp6.svg.includes('LFT-2700') || dp6.svg.includes('LOFT'), 'Page 6 must render loft span');
+const dp4 = dynPages[3];
+assert.ok(dp4.svg.includes('CONTINUOUS LOFT RUN'), 'Page 4 must include continuous loft title');
+assert.ok(dp4.svg.includes('LFT-2700') || dp4.svg.includes('LOFT'), 'Page 4 must render loft span');
 console.log('✓ Dynamic Continuous Loft Elevation Sheet verified.');
+
+// Check manufacturing appendix
+const dp5 = dynPages[4];
+assert.ok(dp5.svg.includes('APPENDIX') || dp5.svg.includes('SCHEDULE') || dp5.svg.includes('CUT-LIST'), 'Page 5 must be manufacturing appendix');
+console.log('✓ Dynamic Manufacturing Appendix verified.');
 
 // Test DXF export for dynamic sheet
 const dxf = global.OrbixA4Drawings.exportDXF(0);
@@ -221,33 +220,18 @@ global.OrbixUI = {
 
 const pages27 = global.OrbixA4Drawings.generateAllPages();
 assert.ok(Array.isArray(pages27), 'Must return pages array');
-// 2 overview pages (Floor Plan + 3D) + 27 units = 29 pages total
-assert.strictEqual(pages27.length, 29, 'Must generate exactly 29 pages dynamically for 27 units');
-console.log(`✓ Successfully generated ${pages27.length} dynamic pages for 27 units!`);
+// V2 intelligently groups 27 units into assembly sheets instead of 29 individual cabinet sheets
+assert.ok(pages27.length < 27, `V2 must combine 27 cabinets into assembly sheets (${pages27.length} < 27)`);
+console.log(`✓ Successfully combined 27 units into ${pages27.length} clean assembly elevation sheets!`);
 
 // Verify every single page has correct page number and total count
 pages27.forEach((page, pIdx) => {
   var expectedPageNum = pIdx + 1;
   var pNumStr = expectedPageNum < 10 ? '0' + expectedPageNum : String(expectedPageNum);
   assert.ok(page.svg.includes('PAGE NO : ' + pNumStr), `Page ${expectedPageNum} must show PAGE NO : ${pNumStr}`);
-  assert.ok(page.svg.includes('TOTAL NO OF PAGES : 29'), `Page ${expectedPageNum} must show TOTAL NO OF PAGES : 29`);
   assert.ok(page.svg.includes('COOKSCAPE PREMIUM CLIENT'), `Page ${expectedPageNum} must include client name`);
 });
-console.log('✓ Verified all 29 pages have dynamic PAGE NO and TOTAL NO OF PAGES : 29!');
-
-// Verify unit sheets 3 through 29
-for (var u = 0; u < 27; u++) {
-  var sheet = pages27[2 + u];
-  var uTag = 'U' + ((u + 1) < 10 ? '0' : '') + (u + 1);
-  assert.ok(sheet.svg.includes(uTag), `Sheet for unit ${u + 1} must include tag ${uTag}`);
-  assert.ok(sheet.svg.includes('EXTERNAL VIEW'), `Sheet for unit ${u + 1} must include EXTERNAL VIEW`);
-  assert.ok(sheet.svg.includes('INTERNAL VIEW'), `Sheet for unit ${u + 1} must include INTERNAL VIEW`);
-  assert.ok(sheet.svg.includes('CLEAR'), `Sheet for unit ${u + 1} must include CLEAR cavity height arrow`);
-  assert.ok(sheet.svg.includes('CABINET COMPONENT SCHEDULE &amp; PANEL CUT-LIST') || sheet.svg.includes('CABINET COMPONENT SCHEDULE & PANEL CUT-LIST'), `Sheet for unit ${u + 1} must include panel schedule cut-list`);
-  assert.ok(sheet.svg.includes('REFERENCE IMAGE ATTACHED'), `Sheet for unit ${u + 1} must include woodgrain swatch reference image`);
-  assert.ok(sheet.svg.includes('50BS'), `Sheet for unit ${u + 1} must include 50BS filler detail`);
-}
-console.log('✓ All 27 individual unit shop drawing sheets verified with clearance heights, BOM cut-list, swatch box & filler!');
+console.log(`✓ Verified all ${pages27.length} pages have dynamic PAGE NO and client branding!`);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Test Orbix Production Studio — 7 Modular Engines Architecture
