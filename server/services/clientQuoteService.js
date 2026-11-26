@@ -102,36 +102,20 @@ function recalculateVariantCommercial(comm, overrides) {
   const freightPercent = (c.freightPercent !== undefined && c.freightPercent !== null && c.freightPercent !== '') ? Number(c.freightPercent) : 2.5;
   const gstPercent = (c.gstPercent !== undefined && c.gstPercent !== null && c.gstPercent !== '') ? Number(c.gstPercent) : 18;
 
-  // Elegant Surabhi Costing Benchmark & Slab Lookup (only active if explicitly specified)
-  const slabId = o.surabhiDesignSlab !== undefined ? o.surabhiDesignSlab : c.surabhiDesignSlab;
+  // Elegant Surabhi Costing Benchmark & Slab Lookup (Auto-applied by project woodwork value)
+  const slabId = o.surabhiDesignSlab !== undefined ? o.surabhiDesignSlab : (c.surabhiDesignSlab || 'auto');
   const surabhiWoodwork = (o.surabhiWoodworkSubtotal !== undefined)
     ? Number(o.surabhiWoodworkSubtotal)
     : (c.surabhiWoodworkSubtotal !== undefined ? Number(c.surabhiWoodworkSubtotal) : woodwork);
 
-  const activeSlab = (slabId && Core && Core.getSurabhiDesignFeeSlab)
+  const activeSlab = (Core && Core.getSurabhiDesignFeeSlab)
     ? Core.getSurabhiDesignFeeSlab(surabhiWoodwork, slabId)
     : null;
 
-  let designPercent = 9;
-  let designAmount = 0;
-  let adpP = 0;
-  let adpAmount = 0;
-
-  const adpOverride = o.adpPercent !== undefined ? o.adpPercent : c.adpPercent;
-  const designOverride = o.designPercent !== undefined ? o.designPercent : c.designPercent;
-
-  if (activeSlab && slabId !== 'custom' && designOverride === undefined && adpOverride === undefined) {
-    designAmount = activeSlab.fullDesignCharges;
-    adpP = activeSlab.discountPercent || 60;
-    adpAmount = Math.round(designAmount * (adpP / 100));
-    designPercent = woodwork > 0 ? (Math.round((designAmount / woodwork) * 1000) / 10) : 9;
-  } else {
-    const rawDesign = designOverride !== undefined ? designOverride : (activeSlab && slabId !== 'custom' ? (woodwork > 0 ? (Math.round((activeSlab.fullDesignCharges / woodwork) * 1000) / 10) : 9) : 9);
-    designPercent = (rawDesign !== undefined && rawDesign !== null && rawDesign !== '') ? Math.max(0, Math.min(100, Number(rawDesign) || 0)) : 9;
-    designAmount = (activeSlab && slabId !== 'custom' && designOverride === undefined) ? activeSlab.fullDesignCharges : Math.round(woodwork * (designPercent / 100));
-    adpP = Math.max(0, Math.min(100, Number(adpOverride !== undefined ? adpOverride : (activeSlab && slabId !== 'custom' ? (activeSlab.discountPercent || 60) : 0)) || 0));
-    adpAmount = Math.round(designAmount * (adpP / 100));
-  }
+  let designAmount = activeSlab ? activeSlab.fullDesignCharges : Math.round(woodwork * 0.09);
+  let adpP = activeSlab ? (activeSlab.discountPercent || 60) : 60;
+  let adpAmount = Math.round(designAmount * (adpP / 100));
+  let designPercent = woodwork > 0 ? (Math.round((designAmount / woodwork) * 1000) / 10) : 9;
 
   const freightAmount = freightEnabled ? Math.round(woodwork * (freightPercent / 100)) : 0;
   const originalBillableValue = Math.round(woodwork + designAmount + freightAmount);

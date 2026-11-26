@@ -8522,15 +8522,21 @@
       var addAccessories = accessoriesEnabled ? (parseFloat(charges.additionalAccessories || charges.accessories) || 0) : 0;
       var appliances = appliancesEnabled ? (parseFloat(charges.appliances) || 0) : 0;
 
-      // Design Charges (Untouchable / Non-editable - Fixed Standard 9%)
-      var designPercent = 9;
-      var designAmount = Math.round(woodworkSubtotal * 0.09);
-      var surabhiWoodwork = woodworkSubtotal;
-      var slabId = charges.surabhiDesignSlab || 'fixed_9';
-      var activeSlab = null;
+      // Elegant Surabhi Standard Design Fee Slab & 60% Discount (Non-editable / Untouchable)
+      var surabhiWoodwork = (charges.surabhiWoodworkSubtotal !== undefined)
+        ? Number(charges.surabhiWoodworkSubtotal)
+        : (this.getSurabhiWoodworkSubtotal ? this.getSurabhiWoodworkSubtotal() : woodworkSubtotal);
+      if (!surabhiWoodwork || isNaN(surabhiWoodwork)) surabhiWoodwork = woodworkSubtotal;
 
-      var adpPercent = parseFloat(charges.adpPercent || charges.adp) || 0;
+      var slabId = charges.surabhiDesignSlab || 'auto';
+      var activeSlab = (typeof Core !== 'undefined' && Core.getSurabhiDesignFeeSlab)
+        ? Core.getSurabhiDesignFeeSlab(surabhiWoodwork, slabId)
+        : null;
+
+      var designAmount = activeSlab ? activeSlab.fullDesignCharges : Math.round(woodworkSubtotal * 0.09);
+      var adpPercent = activeSlab ? (activeSlab.discountPercent || 60) : 60;
       var adpAmount = Math.round(designAmount * (adpPercent / 100));
+      var designPercent = (woodworkSubtotal > 0) ? (Math.round((designAmount / woodworkSubtotal) * 1000) / 10) : 9;
 
       var freightPercent = (charges.freightPercent !== undefined && charges.freightPercent !== null && charges.freightPercent !== '') ? parseFloat(charges.freightPercent) : 2.5;
       if (isNaN(freightPercent)) freightPercent = 2.5;
@@ -9100,13 +9106,15 @@
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
 
-        // Design Charges (Untouchable / Non-editable - standard 9%)
+        // Design Charges (Standard Slab - Untouchable / Non-editable)
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">Design Charges</td>' +
+        '<td colspan="4" class="bold">Design Charges' +
+        (commSummary.activeSlab ? (' <small style="color:#64748B;font-weight:normal;">(' + commSummary.activeSlab.label + ')</small>') : '') +
+        '</td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
-        '<span style="font-size:12px;font-weight:700;color:#0F172A;">9% &nbsp;=&nbsp; ₹</span>' +
+        '<span style="font-size:12px;font-weight:700;color:#0F172A;">₹</span>' +
         '<span id="commDesignAmount" class="bold" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.designAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
@@ -9133,15 +9141,13 @@
         '<span id="commDiscountAmount" class="bold text-red" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.discountAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 
-        // Discount on Design Charge (replaces ADP)
+        // Discount on Design Charge (Fixed 60% Standard - Untouchable / Non-editable)
         '<tr class="comm-charge-row">' +
         '<td colspan="4"></td>' +
         '<td colspan="4" class="bold text-red">Discount on Design Charge</td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px">' +
-        '<span style="font-size:11px;color:#DC2626;font-weight:600">(-)</span>' +
-        '<input type="number" min="0" max="100" step="any" class="comm-input is-discount" data-key="adpPercent" value="' + (commSummary.adpPercent || '') + '" style="width:55px" placeholder="enter %">' +
-        '<span style="font-size:11px;color:#DC2626;font-weight:600">% &nbsp;=&nbsp; (-) ₹</span>' +
+        '<span style="font-size:12px;font-weight:700;color:#DC2626;">60% &nbsp;=&nbsp; (-) ₹</span>' +
         '<span id="commAdpAmount" class="bold text-red" style="font-family:var(--mono);font-size:12px;display:inline-block;min-width:70px">' + commSummary.adpAmount.toLocaleString('en-IN') + '.00</span>' +
         '</div></td></tr>' +
 

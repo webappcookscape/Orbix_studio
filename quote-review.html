@@ -512,20 +512,18 @@
         var acc = accessoriesEnabled ? baseAcc : 0;
         var app = appliancesEnabled ? baseApp : 0;
 
-        var rawD = o.designPercent !== undefined ? o.designPercent : comm.designPercent;
-        var dPct = (rawD !== undefined && rawD !== null && rawD !== '') ? Math.max(0, Math.min(100, Number(rawD) || 0)) : 9;
         var fPct = comm.freightPercent !== undefined ? Number(comm.freightPercent) : 2.5;
         var gstPct = comm.gstPercent !== undefined ? Number(comm.gstPercent) : 18;
-        var designAmt = Math.round(woodwork * (dPct / 100));
+        var designAmt = (comm.designAmount !== undefined && comm.designAmount !== null) ? Number(comm.designAmount) : Math.round(woodwork * 0.09);
         var freightAmt = freightEnabled ? Math.round(woodwork * (fPct / 100)) : 0;
         var originalBillableValue = Math.round(woodwork + designAmt + freightAmt);
 
         var discP = Math.max(0, Math.min(100, Number(o.discountPercent !== undefined ? o.discountPercent : comm.discountPercent) || 0));
-        var adpP = Math.max(0, Math.min(100, Number(o.adpPercent !== undefined ? o.adpPercent : comm.adpPercent) || 0));
+        var adpP = (comm.adpPercent !== undefined && comm.adpPercent !== null) ? Number(comm.adpPercent) : 60;
         var discAmt = Math.round(woodwork * (discP / 100));
         var woodworkAfterDiscount = Math.max(0, woodwork - discAmt);
-        // Discount on Design Charge (replaces ADP): net value after % discount on Design Charges
-        var adpAmt = Math.round(designAmt * (adpP / 100));
+        // Discount on Design Charge (Fixed 60% Standard): net value after 60% discount on Design Charges
+        var adpAmt = (comm.adpAmount !== undefined && comm.adpAmount !== null) ? Number(comm.adpAmount) : Math.round(designAmt * (adpP / 100));
         var designAfterDiscount = Math.max(0, designAmt - adpAmt);
         var totalSavings = discAmt + adpAmt;
         var hasDiscount = totalSavings > 0;
@@ -747,14 +745,9 @@
             html += '</tbody></table>';
           }
 
-          html += '<table><thead><tr><th class="crimson-hdr">Cost Estimation Summary &amp; Editable Controls</th><th class="crimson-hdr num">Amount</th></tr></thead><tbody>' +
+          html += '<table><thead><tr><th class="crimson-hdr">Cost Estimation Summary &amp; Controls</th><th class="crimson-hdr num">Amount</th></tr></thead><tbody>' +
             '<tr><td><b>Modular Woodwork Subtotal</b></td><td class="num"><b>' + fmtINR(c.woodworkSubtotal) + '</b></td></tr>' +
-            '<tr class="discount-row">' +
-            '  <td><div class="disc-input-wrap"><b>Design Charges (%):</b> ' +
-            '    <input type="number" step="0.5" min="0" max="100" class="disc-input" data-idx="' + idx + '" data-kind="design" value="' + esc(c.designPercent !== undefined ? c.designPercent : 9) + '">' +
-            '    <span>%</span></div></td>' +
-            '  <td class="num" style="font-weight:700;" data-f="designAmt">' + fmtINR(c.designAmount) + '</td>' +
-            '</tr>' +
+            '<tr><td><b>Design Charges' + (v.activeSlab ? (' <small style="color:#64748B;font-weight:normal;">(' + esc(v.activeSlab.label) + ')</small>') : '') + '</b></td><td class="num" style="font-weight:700;" data-f="designAmt">' + fmtINR(c.designAmount) + '</td></tr>' +
             '<tr data-row="freight" style="' + (c.freightEnabled ? '' : 'opacity:0.5;') + '">' +
             '  <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="freightEnabled"' + (c.freightEnabled ? ' checked' : '') + '> <b>Freight Charges (' + esc(c.freightPercent) + '%)</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
             '  <td class="num" data-f="freightAmt">' + (c.freightEnabled ? fmtINR(c.freightAmount) : 'Disabled') + '</td>' +
@@ -766,10 +759,8 @@
             '    <span>%</span></div></td>' +
             '  <td class="num" style="color:#08231B;font-weight:700;" data-f="discAmt"><span>' + fmtINR(c.woodworkAfterDiscount) + '</span>' + (c.discountAmount > 0 ? ('<span class="disc-saved-hint">Saved ' + fmtINR(c.discountAmount) + '</span>') : '') + '</td>' +
             '</tr>' +
-            '<tr class="discount-row">' +
-            '  <td><div class="disc-input-wrap"><b>Discount on Design Charge (%):</b> ' +
-            '    <input type="number" step="0.5" min="0" max="100" class="disc-input" data-idx="' + idx + '" data-kind="adp" value="' + esc(c.adpPercent || 0) + '">' +
-            '    <span>%</span></div></td>' +
+            '<tr style="background:#FFF1F2;">' +
+            '  <td><b>Discount on Design Charge (Fixed 60% Standard):</b></td>' +
             '  <td class="num" style="color:#08231B;font-weight:700;" data-f="adpAmt"><span>' + fmtINR(c.designAfterDiscount) + '</span>' + (c.adpAmount > 0 ? ('<span class="disc-saved-hint">Saved ' + fmtINR(c.adpAmount) + '</span>') : '') + '</td>' +
             '</tr>' +
             '<tr><td><b>Grand Total (Without GST)</b></td><td class="num"><b data-f="netBeforeTax">' + fmtINR(c.netBeforeTax) + '</b></td></tr>' +
