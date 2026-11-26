@@ -534,6 +534,7 @@
         var coreGrandTotal = coreNetBeforeTax + coreGstAmount;
 
         var selectedAddons = Array.isArray(o.selectedAddons) ? o.selectedAddons : (Array.isArray(comm.selectedAddons) ? comm.selectedAddons : []);
+        var selectedCustomAddons = Array.isArray(o.selectedCustomAddons) ? o.selectedCustomAddons : (Array.isArray(comm.selectedCustomAddons) ? comm.selectedCustomAddons : []);
         var appliancesList = Array.isArray(o.appliancesList) ? o.appliancesList : (Array.isArray(comm.appliancesList) ? comm.appliancesList : []);
         var addonsTotal = acc + app;
         var totalInvestmentWithAddons = coreGrandTotal + addonsTotal;
@@ -555,6 +556,7 @@
           appliancesEnabled: appliancesEnabled,
           appliances: app,
           selectedAddons: selectedAddons,
+          selectedCustomAddons: selectedCustomAddons,
           appliancesList: appliancesList,
           addonsTotal: addonsTotal,
           totalInvestmentWithAddons: totalInvestmentWithAddons,

@@ -8556,6 +8556,7 @@
       var coreGrandTotal = coreNetBeforeTax + coreGstAmount;
 
       var selectedAddons = Array.isArray(charges.selectedAddons) ? charges.selectedAddons : [];
+      var selectedCustomAddons = Array.isArray(charges.selectedCustomAddons) ? charges.selectedCustomAddons : [];
       var appliancesList = Array.isArray(charges.appliancesList) ? charges.appliancesList : [];
       var addonsTotal = addAccessories + appliances;
       var totalInvestmentWithAddons = coreGrandTotal + addonsTotal;
@@ -8574,6 +8575,7 @@
         appliancesEnabled: appliancesEnabled,
         appliances: appliances,
         selectedAddons: selectedAddons,
+        selectedCustomAddons: selectedCustomAddons,
         appliancesList: appliancesList,
         addonsTotal: addonsTotal,
         totalInvestmentWithAddons: totalInvestmentWithAddons,
@@ -9089,6 +9091,17 @@
         '<input type="number" min="0" step="any" class="comm-input" data-key="additionalAccessories" value="' + (commCharges.additionalAccessories || '') + '" placeholder="enter amount"' + (commSummary.accessoriesEnabled ? '' : ' disabled') + '>' +
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
+        (commCharges.selectedAddons && commCharges.selectedAddons.length ? ('<tr id="commRowAccessoriesList"><td colspan="4"></td><td colspan="7" style="background:#FAF6F0;padding:8px 14px;font-size:11.5px;color:#334155;border-left:3px solid #08231B;">' +
+          commCharges.selectedAddons.map(function(it){
+            var q = it.qty !== undefined ? it.qty : 1;
+            var r = (it.customRate !== undefined && it.customRate !== null && it.customRate !== '') ? Number(it.customRate) : Number(it.rate || 0);
+            var a = it.amount !== undefined ? Number(it.amount) : Math.round(q * r);
+            var uText = (it.unit === 'meter') ? (q + ' meters @ ₹' + r.toLocaleString('en-IN') + '/m') :
+                        ((it.unit === 'sqft') ? (q + ' sq.ft @ ₹' + r.toLocaleString('en-IN') + '/sqft') :
+                        ('Qty: ' + q + (r > 0 ? (' @ ₹' + r.toLocaleString('en-IN')) : '')));
+            return '<div style="margin:2px 0;">• <b>' + (it.name || 'Accessory') + '</b> (' + uText + ') &mdash; ₹' + a.toLocaleString('en-IN') + '</div>';
+          }).join('') +
+          '</td></tr>') : '') +
 
         // Add ons (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAppliances" style="' + (commSummary.appliancesEnabled ? '' : 'opacity:0.55;') + '">' +
@@ -9105,6 +9118,17 @@
         '<input type="number" min="0" step="any" class="comm-input" data-key="appliances" value="' + (commCharges.appliances || '') + '" placeholder="enter amount"' + (commSummary.appliancesEnabled ? '' : ' disabled') + '>' +
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
+        (commCharges.selectedCustomAddons && commCharges.selectedCustomAddons.length ? ('<tr id="commRowCustomAddonsList"><td colspan="4"></td><td colspan="7" style="background:#FAF6F0;padding:8px 14px;font-size:11.5px;color:#334155;border-left:3px solid #047857;">' +
+          commCharges.selectedCustomAddons.map(function(ap){
+            var gBadge = ap.grade === 'premium' ? ' <span style="color:#B45309;font-weight:700;">[⭐ Premium]</span>' : ' <span style="color:#0369A1;font-weight:700;">[⚪ Regular]</span>';
+            var r = (ap.rate !== undefined && ap.rate !== null && ap.rate !== '') ? Number(ap.rate) : 0;
+            var dimText = (ap.length > 0 && ap.width > 0)
+              ? (' (' + ap.length + '\' &times; ' + ap.width + '\' = ' + ap.qty + ' sq.ft' + (r > 0 ? (' @ ₹' + r.toLocaleString('en-IN') + '/sqft') : '') + ')')
+              : (' (Qty: ' + (ap.qty || 1) + (r > 0 ? (' @ ₹' + r.toLocaleString('en-IN')) : '') + ')');
+            var a = ap.amount !== undefined ? Number(ap.amount) : Math.round((ap.qty || 1) * r);
+            return '<div style="margin:2px 0;">• <b>' + (ap.name || 'Add-on') + '</b> &mdash; ' + (ap.gradeName ? ap.gradeName : '') + gBadge + dimText + ' &mdash; ₹' + a.toLocaleString('en-IN') + '</div>';
+          }).join('') +
+          '</td></tr>') : '') +
 
         // Design Charges (Standard Slab - Untouchable / Non-editable)
         '<tr class="comm-charge-row">' +
@@ -9322,9 +9346,7 @@
       if (btnAddonsPicker) {
         btnAddonsPicker.addEventListener('click', function () {
           self.openAddonsPickerModal(function () {
-            refreshCommercialDom();
-            var accInp = boqEl.querySelector('.comm-input[data-key="additionalAccessories"]');
-            if (accInp) accInp.value = self.project.commercialCharges.additionalAccessories || 0;
+            self.renderCommercialChargesSummary(boqEl);
             self.saveToLocalStorage();
           });
         });
@@ -9334,9 +9356,7 @@
       if (btnCustomAddons) {
         btnCustomAddons.addEventListener('click', function () {
           self.openCustomAddonsConfiguratorModal(function () {
-            refreshCommercialDom();
-            var appInp = boqEl.querySelector('.comm-input[data-key="appliances"]');
-            if (appInp) appInp.value = self.project.commercialCharges.appliances || 0;
+            self.renderCommercialChargesSummary(boqEl);
             self.saveToLocalStorage();
           });
         });

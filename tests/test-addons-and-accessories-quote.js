@@ -110,6 +110,19 @@ const customSummary = Core.calculateAddonsSummary(customAddons, []);
 assert.strictEqual(customSummary.addonsSubtotal, 7975, 'Custom addons subtotal must equal (5.5 * 1450) = 7,975');
 console.log('✅ Custom rate and meter measurements verified successfully!');
 
+console.log('--- TEST: Verification of Add-Ons list persistence in commercial service & templates ---');
+const commWithCustomAddons = clientQuoteService.recalculateVariantCommercial(baseComm, {
+  appliancesEnabled: true,
+  appliances: 24000,
+  selectedCustomAddons: [
+    { id: 'wooden_panelling', name: 'WOODEN PANELLING', grade: 'premium', gradeName: 'Fluted Wooden Panelling', length: 8, width: 4, qty: 32, unit: 'sqft', rate: 1575, amount: 24000 }
+  ]
+});
+assert(Array.isArray(commWithCustomAddons.selectedCustomAddons), 'selectedCustomAddons must be preserved in commercial summary');
+assert.strictEqual(commWithCustomAddons.selectedCustomAddons.length, 1, 'Must have 1 custom add-on');
+assert.strictEqual(commWithCustomAddons.selectedCustomAddons[0].name, 'WOODEN PANELLING');
+console.log('✅ selectedCustomAddons persistence verified successfully in commercial calculation engine!');
+
 console.log('--- TEST: Paired Custom Add-Ons Catalog (Regular vs Premium) ---');
 const pairedCatalog = Core.getCookscapeCustomAddonsPairs();
 assert(Array.isArray(pairedCatalog), 'Paired catalog must be an array');

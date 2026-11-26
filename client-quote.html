@@ -1325,6 +1325,7 @@
 
         // ── ADD-ONS, ACCESSORIES & APPLIANCES (DOWN AFTER YOUR SAVINGS) ──
         var selectedAddons = Array.isArray(comm.selectedAddons) ? comm.selectedAddons : [];
+        var selectedCustomAddons = Array.isArray(comm.selectedCustomAddons) ? comm.selectedCustomAddons : [];
         var appliancesList = Array.isArray(comm.appliancesList) ? comm.appliancesList : [];
         var addAccVal = accEnabled ? Math.round(Number(comm.additionalAccessories || 0)) : 0;
         var appVal = appEnabled ? Math.round(Number(comm.appliances || 0)) : 0;
@@ -1333,7 +1334,7 @@
           ? Number(comm.totalInvestmentWithAddons)
           : (Number(comm.grandTotal || 0) + addonsTotal);
 
-        var hasAddonItems = (selectedAddons.length > 0) || (appliancesList.length > 0) || (addonsTotal > 0);
+        var hasAddonItems = (selectedAddons.length > 0) || (selectedCustomAddons.length > 0) || (appliancesList.length > 0) || (addonsTotal > 0);
 
         if (y + 70 < CANVAS_H - 120) {
           y += 16;
@@ -1354,14 +1355,24 @@
             addonRows.push(['• Selected Hardware Accessories Package', fmtINR(addAccVal)]);
           }
 
-          if (appliancesList.length > 0) {
+          if (selectedCustomAddons.length > 0) {
+            selectedCustomAddons.forEach(function (ap) {
+              var gBadge = ap.grade === 'premium' ? ' [⭐ Premium]' : ' [⚪ Regular]';
+              var r = (ap.rate !== undefined && ap.rate !== null && ap.rate !== '') ? Number(ap.rate) : 0;
+              var dimText = (ap.length > 0 && ap.width > 0)
+                ? (' (' + ap.length + '\' × ' + ap.width + '\' = ' + ap.qty + ' sq.ft' + (r > 0 ? (' @ ' + fmtINR(r) + '/sqft') : '') + ')')
+                : (' (Qty: ' + (ap.qty || 1) + (r > 0 ? (' @ ' + fmtINR(r)) : '') + ')');
+              var a = ap.amount !== undefined ? Number(ap.amount) : Math.round((ap.qty || 1) * r);
+              addonRows.push(['• ' + (ap.name || 'Add-on') + (ap.gradeName ? (' — ' + ap.gradeName) : '') + gBadge + dimText, fmtINR(a)]);
+            });
+          } else if (appliancesList.length > 0) {
             appliancesList.forEach(function (ap) {
               var q = Math.max(1, Number(ap.qty || 1));
               var a = ap.amount !== undefined ? Number(ap.amount) : (Number(ap.rate || 0) * q);
               addonRows.push(['• ' + (ap.name || 'Kitchen Appliance') + (q > 1 ? (' (Qty: ' + q + ')') : ''), fmtINR(a)]);
             });
           } else if (appVal > 0) {
-            addonRows.push(['• Selected Kitchen & Home Appliances Package', fmtINR(appVal)]);
+            addonRows.push(['• Selected Add-ons / Appliances Package', fmtINR(appVal)]);
           }
 
           if (hasAddonItems) {

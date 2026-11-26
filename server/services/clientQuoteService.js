@@ -134,6 +134,7 @@ function recalculateVariantCommercial(comm, overrides) {
 
   // Add-ons, Accessories & Appliances sit cleanly below savings without affecting the core proposal total
   const selectedAddons = Array.isArray(o.selectedAddons) ? o.selectedAddons : (Array.isArray(c.selectedAddons) ? c.selectedAddons : []);
+  const selectedCustomAddons = Array.isArray(o.selectedCustomAddons) ? o.selectedCustomAddons : (Array.isArray(c.selectedCustomAddons) ? c.selectedCustomAddons : []);
   const appliancesList = Array.isArray(o.appliancesList) ? o.appliancesList : (Array.isArray(c.appliancesList) ? c.appliancesList : []);
   const addonsTotal = acc + appliances;
   const totalInvestmentWithAddons = coreGrandTotal + addonsTotal;
@@ -155,6 +156,7 @@ function recalculateVariantCommercial(comm, overrides) {
     appliancesEnabled,
     appliances,
     selectedAddons,
+    selectedCustomAddons,
     appliancesList,
     addonsTotal,
     totalInvestmentWithAddons,
