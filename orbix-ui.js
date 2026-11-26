@@ -8474,6 +8474,23 @@
       if (c.gstPercent === undefined) c.gstPercent = 18;
       if (c.gstEnabled === undefined) c.gstEnabled = true;
       if (!c.surabhiDesignSlab) c.surabhiDesignSlab = 'auto';
+      if (c.appliances && c.appliances > 10000000 && Array.isArray(c.selectedCustomAddons)) {
+        var fixedTotal = 0;
+        c.selectedCustomAddons.forEach(function (it) {
+          var len = Number(it.length || 0);
+          var wid = Number(it.width || 0);
+          var q = Number(it.qty || 0);
+          if (len > 0 && wid > 0 && (len > 50 || wid > 50)) {
+            var correctSqft = Math.round(((len * wid) / 92903.04) * 100) / 100;
+            if (q > 500 || Math.abs(q - (len * wid)) < 5) {
+              it.qty = correctSqft;
+              q = correctSqft;
+            }
+          }
+          fixedTotal += Math.round(q * (it.effectiveRate || it.rate || 0));
+        });
+        if (fixedTotal < 10000000) c.appliances = fixedTotal;
+      }
       return this.project.commercialCharges;
     },
 
@@ -10482,11 +10499,21 @@
       var currentCharges = this.getCommercialCharges();
       var itemStateMap = {};
       (currentCharges.selectedCustomAddons || []).forEach(function (it) {
+        var len = Number(it.length || 0);
+        var wid = Number(it.width || 0);
+        var q = Number(it.qty || 0);
+        // Auto-correct any legacy raw mm multiplication to proper Sq.Ft (l * w / 92903.04)
+        if (len > 0 && wid > 0 && (len > 50 || wid > 50)) {
+          var correctSqft = Math.round(((len * wid) / 92903.04) * 100) / 100;
+          if (q > 500 || Math.abs(q - (len * wid)) < 5) {
+            q = correctSqft;
+          }
+        }
         itemStateMap[it.id] = {
           grade: it.grade || 'regular',
-          length: Number(it.length || 0),
-          width: Number(it.width || 0),
-          qty: Number(it.qty || 0),
+          length: len,
+          width: wid,
+          qty: q,
           subOption: it.subOption || 0
         };
       });
