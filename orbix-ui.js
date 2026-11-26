@@ -9560,6 +9560,29 @@
             }
             window.OrbixProjects.saveActiveProject({
               plan: self.project,
+              units: window.S ? window.S.units : []
+            });
+          }
+
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          var modal = document.getElementById('editProjectMetaModal');
+          if (modal) modal.classList.remove('is-open');
+          if (window.OrbixProjects && window.OrbixProjects.showToast) {
+            window.OrbixProjects.showToast('Client details updated & saved!', 'success');
+          }
+        };
+      }
+
+      var resetFilterBtn = document.getElementById('boqResetFilterBtn');
+      if (resetFilterBtn) {
+        resetFilterBtn.addEventListener('click', function () {
+          self.selectedBOQRooms = ['all'];
+          self.renderBOQ();
+        });
+      }
+
+      // Floor filter pill clicks
       var floorFilterBtns = boqEl.querySelectorAll('.floor-filter-pill');
       floorFilterBtns.forEach(function (btn) {
         btn.addEventListener('click', function (e) {

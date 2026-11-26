@@ -6677,14 +6677,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=49'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=49'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=49'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=50'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=50'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=50'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=49');
+          return loadScript('orbix-a4-drawings.js?v=50');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -47370,6 +47370,29 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
             }
             window.OrbixProjects.saveActiveProject({
               plan: self.project,
+              units: window.S ? window.S.units : []
+            });
+          }
+
+          self.saveToLocalStorage();
+          self.renderBOQ();
+          var modal = document.getElementById('editProjectMetaModal');
+          if (modal) modal.classList.remove('is-open');
+          if (window.OrbixProjects && window.OrbixProjects.showToast) {
+            window.OrbixProjects.showToast('Client details updated & saved!', 'success');
+          }
+        };
+      }
+
+      var resetFilterBtn = document.getElementById('boqResetFilterBtn');
+      if (resetFilterBtn) {
+        resetFilterBtn.addEventListener('click', function () {
+          self.selectedBOQRooms = ['all'];
+          self.renderBOQ();
+        });
+      }
+
+      // Floor filter pill clicks
       var floorFilterBtns = boqEl.querySelectorAll('.floor-filter-pill');
       floorFilterBtns.forEach(function (btn) {
         btn.addEventListener('click', function (e) {
@@ -61537,7 +61560,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
   // 1. Register Service Worker (web browsers only, not file:// in desktop app)
   if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=49')
+      navigator.serviceWorker.register('./sw.js?v=50')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 
