@@ -363,7 +363,7 @@ def run():
 
     # 8. Setup Architectural Sunlight (Direct warm sunlight entering the kitchen)
     sun_data = bpy.data.lights.new(name="OrbixSunlight", type='SUN')
-    sun_data.energy = max(3.5, daylight_pct * 0.20)
+    sun_data.energy = max(2.2, daylight_pct * 0.10)
     sun_data.color = (1.0, 0.98, 0.93) # 5500K warm architectural daylight
     sun_data.angle = math.radians(2.5) # Soft realistic shadow penumbra
     sun_obj = bpy.data.objects.new(name="OrbixSunlight", object_data=sun_data)
@@ -374,7 +374,7 @@ def run():
 
     # 9. Setup Window Area Lights (Directional Daylight entering through room openings)
     windows_data = data.get("windows", [])
-    window_energy_mult = daylight_pct * 12.0
+    window_energy_mult = daylight_pct * 4.0
 
     for idx, win in enumerate(windows_data):
         pos = win.get("pos", [0, 0, 1.2]) # [x, y, z] in meters
@@ -386,7 +386,7 @@ def run():
         w_light_data.shape = 'RECTANGLE'
         w_light_data.size = w
         w_light_data.size_y = h
-        w_light_data.energy = max(100.0, window_energy_mult * (w * h) * 4.5)
+        w_light_data.energy = max(40.0, window_energy_mult * (w * h) * 2.0)
         w_light_data.color = (0.92, 0.96, 1.0) # Daylight 6500K tint
 
         w_light_obj = bpy.data.objects.new(name=f"WindowLight_{idx+1}", object_data=w_light_data)
@@ -400,8 +400,8 @@ def run():
 
     # 10. Setup Warm Interior Fill Lights (Soft ceiling bounce centered inside the room)
     fill_light_data = bpy.data.lights.new(name="InteriorWarmFill", type='POINT')
-    fill_light_data.energy = max(350.0, fill_watts * 65.0)
-    fill_light_data.color = (1.0, 0.92, 0.82) # 3200K warm interior illumination
+    fill_light_data.energy = max(75.0, fill_watts * 12.0)
+    fill_light_data.color = (1.0, 0.93, 0.84) # 3200K warm interior illumination
     fill_light_data.shadow_soft_size = 1.0
 
     fill_obj = bpy.data.objects.new(name="InteriorWarmFill", object_data=fill_light_data)
@@ -412,11 +412,11 @@ def run():
     )
     bpy.context.collection.objects.link(fill_obj)
 
-    # Guaranteed Camera Vantage Fill (illuminates visible surfaces along camera line of sight)
+    # Gentle Camera Vantage Fill (balanced eye bounce without overexposing foreground)
     cam_fill_data = bpy.data.lights.new(name="CameraAmbientFill", type='POINT')
-    cam_fill_data.energy = max(300.0, fill_watts * 50.0)
-    cam_fill_data.color = (1.0, 0.95, 0.90)
-    cam_fill_data.shadow_soft_size = 1.2
+    cam_fill_data.energy = max(25.0, fill_watts * 5.0)
+    cam_fill_data.color = (1.0, 0.97, 0.92)
+    cam_fill_data.shadow_soft_size = 1.5
     cam_fill_obj = bpy.data.objects.new(name="CameraAmbientFill", object_data=cam_fill_data)
     cam_fill_obj.location = (cam_pos[0], cam_pos[1], cam_pos[2])
     bpy.context.collection.objects.link(cam_fill_obj)

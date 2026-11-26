@@ -6620,14 +6620,39 @@
     }
 
     var meshes = [];
+    function isNodeVisible(obj) {
+      var cur = obj;
+      while (cur) {
+        if (cur.visible === false) return false;
+        cur = cur.parent;
+      }
+      return true;
+    }
+
     function harvestMeshes(node) {
       if (!node) return;
       if (typeof node.updateMatrixWorld === 'function') node.updateMatrixWorld(true);
       node.traverse(function (obj) {
-        if (obj.isMesh && obj.visible !== false && obj.geometry) {
+        if (obj.isMesh && isNodeVisible(obj) && obj.geometry) {
           var geoParams = obj.geometry.parameters;
           if (geoParams && (geoParams.width > 50000 || geoParams.height > 50000)) return;
           if (obj.name === 'infinite_floor' || obj.name === 'floor_grass') return;
+
+          // Propagate role from ancestors if not directly defined on mesh
+          if (!obj.userData.role) {
+            var cur = obj;
+            while (cur) {
+              if (cur.name && (cur.name.indexOf('Wall_') === 0 || cur.name.indexOf('Floor_') === 0)) {
+                obj.userData.role = (cur.name.indexOf('Floor_') === 0) ? 'floor' : 'wall';
+                break;
+              }
+              if (cur.userData && (cur.userData.isWall || cur.userData.isSkirting || cur.userData.isDadoTile)) {
+                obj.userData.role = 'wall';
+                break;
+              }
+              cur = cur.parent;
+            }
+          }
           meshes.push(obj);
         }
       });
