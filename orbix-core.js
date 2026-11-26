@@ -7989,6 +7989,24 @@
     return SURABHI_DESIGN_FEE_SLABS[11]; // 25 to 30L+
   }
 
+  function getSurabhiWoodworkSubtotal(project, selectedRooms) {
+    if (!project) return 0;
+    try {
+      var baseRateCard = project.rateCard || DEFAULT_RATE_CARD;
+      var surabhiRateCard = Object.assign({}, baseRateCard, { selectedTier: 'SURABHI', roomTiers: {} });
+      var surabhiProj = {
+        plan: project.plan || project,
+        rateCard: surabhiRateCard,
+        commercialCharges: project.commercialCharges,
+        meta: project.meta
+      };
+      var q = generateFullQuotation(surabhiProj, selectedRooms || ['all']);
+      return q && q.subtotalWoodwork ? q.subtotalWoodwork : 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   // Cookscape Master Add-Ons & Accessories Catalog with Multi-Brand Rates (Ebco, Hettich, Grass, Livsmart)
   var COOKSCAPE_ADDONS_CATALOG = [
     { id: 'pvc_cutlery_inlet_450', name: 'PVC CUTLERY INLET - 450', category: 'Kitchen Inlets', brand: 'HETTICH', rate: 1385.00, ebcoRate: 1271.70, hettichRate: 1385.00 },
@@ -8336,6 +8354,7 @@
     SQM_FACTOR: SQM_FACTOR,
     SURABHI_DESIGN_FEE_SLABS: SURABHI_DESIGN_FEE_SLABS,
     getSurabhiDesignFeeSlab: getSurabhiDesignFeeSlab,
+    getSurabhiWoodworkSubtotal: getSurabhiWoodworkSubtotal,
     COOKSCAPE_ADDONS_CATALOG: COOKSCAPE_ADDONS_CATALOG,
     getCookscapeAddonsCatalog: getCookscapeAddonsCatalog,
     COOKSCAPE_CUSTOM_ADDONS_PAIRS: COOKSCAPE_CUSTOM_ADDONS_PAIRS,

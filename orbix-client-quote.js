@@ -206,7 +206,14 @@
     };
 
     var quote = Core.generateFullQuotation(clonedProj, app.selectedBOQRooms || ['all']);
-    var commCharges = app.getCommercialCharges();
+    var surabhiWoodwork = (Core && Core.getSurabhiWoodworkSubtotal)
+      ? Core.getSurabhiWoodworkSubtotal(proj, app.selectedBOQRooms || ['all'])
+      : (app.getSurabhiWoodworkSubtotal ? app.getSurabhiWoodworkSubtotal() : 0);
+    if (!surabhiWoodwork) surabhiWoodwork = quote.subtotalWoodwork;
+
+    var commCharges = Object.assign({}, app.getCommercialCharges() || {}, {
+      surabhiWoodworkSubtotal: surabhiWoodwork
+    });
     var comm = app.computeCommercialSummary(quote.subtotalWoodwork, commCharges);
 
     var varMeta = MASTER_VARIANTS.filter(function (v) { return v.key === normalized; })[0];
@@ -305,6 +312,9 @@
       roomBreakdown: roomsSummary,
       commercial: {
         woodworkSubtotal: comm.woodworkSubtotal,
+        surabhiWoodworkSubtotal: comm.surabhiWoodworkSubtotal || surabhiWoodwork,
+        surabhiDesignSlab: comm.surabhiDesignSlab || 'auto',
+        activeSlab: comm.activeSlab,
         accessoriesEnabled: comm.accessoriesEnabled !== false,
         additionalAccessories: comm.additionalAccessories,
         appliancesEnabled: comm.appliancesEnabled !== false,

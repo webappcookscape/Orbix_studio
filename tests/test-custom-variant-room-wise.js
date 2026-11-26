@@ -148,4 +148,13 @@ assert.strictEqual(mbrItem.baseRate, matteMbrItem.baseRate, 'Master Bedroom item
 console.log(`✓ Kitchen Rate: ₹${kitchenItem.baseRate}/sft (MR+ / 4X TG) | Bedroom Rate: ₹${mbrItem.baseRate}/sft (CC MATTE)`);
 console.log('✓ Room-Wise independent tier calculation confirmed 100% accurate!');
 
+// 6. Test that Design Fee Slab is anchored to that specific project's Surabhi Woodwork Value
+console.log('\n--- Test 6: Verify Design Charges Anchored to Project Surabhi Value ---');
+assert(typeof Core.getSurabhiWoodworkSubtotal === 'function', 'Core.getSurabhiWoodworkSubtotal must be exported');
+const surabhiWoodwork = Core.getSurabhiWoodworkSubtotal(sampleProject, ['all']);
+assert.ok(surabhiWoodwork > 0, 'Surabhi woodwork must be > 0');
+const slab = Core.getSurabhiDesignFeeSlab(surabhiWoodwork, 'auto');
+assert.ok(slab && slab.fullDesignCharges > 0, 'Slab must be determined from Surabhi woodwork');
+console.log(`✓ Project Surabhi Woodwork: ₹${surabhiWoodwork.toLocaleString('en-IN')} -> Slab: ${slab.label} (Full: ₹${slab.fullDesignCharges.toLocaleString('en-IN')}, Client Pays: ₹${slab.discountedCharges.toLocaleString('en-IN')})`);
+
 console.log('\n🎉 ALL CUSTOM VARIANT (ROOM-WISE) TESTS PASSED PERFECTLY! 🚀');
