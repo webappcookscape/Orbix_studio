@@ -8418,8 +8418,8 @@
     },
 
     COMMERCIAL_FIELDS: [
-      { key: 'additionalAccessories', label: 'Additional Accessories', type: 'amount', isDeduction: false },
-      { key: 'appliances', label: 'Appliances', type: 'amount', isDeduction: false },
+      { key: 'additionalAccessories', label: 'Accessories', type: 'amount', isDeduction: false },
+      { key: 'appliances', label: 'Add ons', type: 'amount', isDeduction: false },
       { key: 'designCharges', label: 'Design Charges', type: 'percent', defaultPercent: 9, isDeduction: false },
       { key: 'freightCharges', label: 'Freight Charges', type: 'percent', defaultPercent: 2.5, isDeduction: false },
       { key: 'loadingUnloading', label: 'Loading and unloading (material)', type: 'select', options: ['Additional', 'Included'], defaultVal: 'Additional' },
@@ -9071,13 +9071,13 @@
         '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
         '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>' +
 
-        // Additional Accessories (Enable/Disable + amount + catalog selector button)
+        // Accessories (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAccessories" style="' + (commSummary.accessoriesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
         '<td colspan="4" class="bold">' +
         '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Additional Accessories</label>' +
-        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Add-Ons Catalog (58 Items)</button>' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Accessories</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Accessories (69 Items)</button>' +
         (commCharges.selectedAddons && commCharges.selectedAddons.length ? ('<span id="commAddonsCountBadge" style="font-size:11px;color:#166534;font-weight:700;">(' + commCharges.selectedAddons.length + ' items selected)</span>') : '<span id="commAddonsCountBadge" style="display:none;font-size:11px;color:#166534;font-weight:700;"></span>') +
         '</div></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
@@ -9087,10 +9087,10 @@
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
 
-        // Appliances (Enable/Disable + amount)
+        // Add ons (Enable/Disable + amount)
         '<tr class="comm-charge-row" id="commRowAppliances" style="' + (commSummary.appliancesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Appliances</label></td>' +
+        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Add ons</label></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
@@ -9256,11 +9256,11 @@
         '<td colspan="3" class="c-num bold" id="commTotalSavings" style="font-size:13.5px;color:#166534;">₹ ' + (commSummary.totalSavings || 0).toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
 
-        // ── ADD-ONS & TOTAL INVESTMENT (DOWN AFTER SAVINGS) ──
-        '<tr class="sec-bar-row" style="background:#08231B;color:#fff;"><td colspan="11"><b>Add-Ons, Accessories &amp; Appliances (Down After Savings)</b></td></tr>' +
+        // ── ACCESSORIES, ADD-ONS & TOTAL INVESTMENT (DOWN AFTER SAVINGS) ──
+        '<tr class="sec-bar-row" style="background:#08231B;color:#fff;"><td colspan="11"><b>Accessories &amp; Add ons (Down After Savings)</b></td></tr>' +
         '<tr>' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold">Add-ons &amp; Accessories Subtotal</td>' +
+        '<td colspan="4" class="bold">Accessories &amp; Add ons Subtotal</td>' +
         '<td colspan="3" class="c-num bold" id="commAddonsSubtotal">₹ ' + (commSummary.addonsTotal || 0).toLocaleString('en-IN') + '.00</td>' +
         '</tr>' +
         '<tr style="background:#ECFDF5;border-top:1.5px solid #16A34A;">' +
@@ -10056,7 +10056,7 @@
           // Header
           '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
           '    <div>' +
-          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Add-Ons &amp; Accessories Catalog</h3>' +
+          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Accessories Catalog</h3>' +
           '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">69 Master Accessories &bull; Brand Rate Cards (Ebco, Hettich, Grass, Livsmart) &bull; Custom Profiles (Meters)</div>' +
           '    </div>' +
           '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
