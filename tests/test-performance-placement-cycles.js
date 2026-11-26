@@ -56,12 +56,12 @@ const indexHtml = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8')
 assert(indexHtml.includes('id="cpExportCyclesBtn"'), 'index.html must include cpExportCyclesBtn');
 assert(indexHtml.includes('id="planPlaceNextBtn"'), 'index.html must include planPlaceNextBtn');
 assert(indexHtml.includes('id="planWallOffsetInput"'), 'index.html must include planWallOffsetInput');
-assert(indexHtml.includes('orbix-3d.js?v=47'), 'index.html must use asset cache version v47');
+assert(indexHtml.includes('orbix-3d.js?v=48'), 'index.html must use asset cache version v48');
 console.log('✓ [UI Integration] Buttons, inputs, and toolbar controls verified');
 
 // 6. Verify Material Options Sanitizer & Three.js r128 Protection
 const swJs = fs.readFileSync(path.join(__dirname, '../sw.js'), 'utf8');
-assert(swJs.includes('orbix-studio-v47'), 'sw.js must define CACHE_NAME as orbix-studio-v47');
+assert(swJs.includes('orbix-studio-v48'), 'sw.js must define CACHE_NAME as orbix-studio-v48');
 
 assert(orbix3dJs.includes('function sanitizeMaterialOptions'), 'orbix-3d.js must implement sanitizeMaterialOptions');
 assert(orbix3dJs.includes('hookPhysicalMaterialSafeguards'), 'orbix-3d.js must implement hookPhysicalMaterialSafeguards');

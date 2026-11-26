@@ -6677,14 +6677,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=47'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=47'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=47'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=48'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=48'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=48'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=47');
+          return loadScript('orbix-a4-drawings.js?v=48');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -48362,17 +48362,17 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
               measureHtml =
                 '<div style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;">' +
                 '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
-                '    <span style="font-size:11px;color:#64748B;">L:</span>' +
-                '    <input type="number" min="0" step="0.5" class="addons-dim-len" data-id="' + it.id + '" value="' + (st.length || '') + '" placeholder="ft" style="width:48px;height:24px;border:1px solid #CBD5E1;border-radius:4px;padding:2px 4px;font-size:11.5px;text-align:center;font-weight:700;">' +
+                '    <span style="font-size:10px;color:#64748B;font-weight:700;">L:</span>' +
+                '    <input type="number" min="0" step="10" class="addons-dim-len" data-id="' + it.id + '" value="' + (st.length || '') + '" placeholder="mm" title="Length in millimeters (or feet)" style="width:58px;height:24px;border:1px solid #CBD5E1;border-radius:4px;padding:2px 4px;font-size:11.5px;text-align:center;font-weight:700;">' +
                 '  </div>' +
                 '  <span style="color:#94A3B8;font-size:11px;">&times;</span>' +
                 '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
-                '    <span style="font-size:11px;color:#64748B;">W:</span>' +
-                '    <input type="number" min="0" step="0.5" class="addons-dim-wid" data-id="' + it.id + '" value="' + (st.width || '') + '" placeholder="ft" style="width:48px;height:24px;border:1px solid #CBD5E1;border-radius:4px;padding:2px 4px;font-size:11.5px;text-align:center;font-weight:700;">' +
+                '    <span style="font-size:10px;color:#64748B;font-weight:700;">W:</span>' +
+                '    <input type="number" min="0" step="10" class="addons-dim-wid" data-id="' + it.id + '" value="' + (st.width || '') + '" placeholder="mm" title="Width in millimeters (or feet)" style="width:58px;height:24px;border:1px solid #CBD5E1;border-radius:4px;padding:2px 4px;font-size:11.5px;text-align:center;font-weight:700;">' +
                 '  </div>' +
                 '  <span style="color:#94A3B8;font-size:11px;">=</span>' +
                 '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
-                '    <input type="number" min="0" step="0.1" class="addons-dim-qty" data-id="' + it.id + '" value="' + (st.qty || '') + '" placeholder="0" style="width:58px;height:24px;border:1.5px solid #047857;border-radius:4px;padding:2px 4px;font-size:12px;text-align:center;font-weight:700;color:#047857;background:#F0FDF4;">' +
+                '    <input type="number" min="0" step="0.01" class="addons-dim-qty" data-id="' + it.id + '" value="' + (st.qty || '') + '" placeholder="0" title="Calculated area in Sq.Ft" style="width:64px;height:24px;border:1.5px solid #047857;border-radius:4px;padding:2px 4px;font-size:12px;text-align:center;font-weight:700;color:#047857;background:#F0FDF4;">' +
                 '    <span style="font-size:10.5px;color:#64748B;font-weight:600;">sq.ft</span>' +
                 '  </div>' +
                 '</div>';
@@ -48562,7 +48562,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
           });
         });
 
-        // Dimension inputs: Length & Width change calculates Sq.Ft Area live
+        // Dimension inputs: Length & Width change calculates Sq.Ft Area live (converts mm² to sq.ft via SFT_FACTOR 92903.04)
         modal.querySelectorAll('.addons-dim-len, .addons-dim-wid').forEach(function (inp) {
           inp.addEventListener('focus', function () { this.select(); });
           inp.addEventListener('input', function () {
@@ -48573,7 +48573,15 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
             var wInp = row.querySelector('.addons-dim-wid');
             var l = Math.max(0, parseFloat(lInp ? lInp.value : 0) || 0);
             var w = Math.max(0, parseFloat(wInp ? wInp.value : 0) || 0);
-            var area = (l > 0 && w > 0) ? Math.round(l * w * 10) / 10 : 0;
+            // SFT_FACTOR = 92903.04 mm² (304.8mm * 304.8mm). If l > 50 or w > 50, it is millimeters (CAD standard).
+            var area = 0;
+            if (l > 0 && w > 0) {
+              if (l > 50 || w > 50) {
+                area = Math.round(((l * w) / 92903.04) * 100) / 100;
+              } else {
+                area = Math.round((l * w) * 100) / 100;
+              }
+            }
             itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
             itemStateMap[id].length = l;
             itemStateMap[id].width = w;
@@ -61448,7 +61456,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
   // 1. Register Service Worker (web browsers only, not file:// in desktop app)
   if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=47')
+      navigator.serviceWorker.register('./sw.js?v=48')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 
