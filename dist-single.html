@@ -6677,14 +6677,14 @@ body.role-employee #adminCreateEmpBox,
       var api = {
         load3DTextures: function () {
           var tasks = [];
-          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=48'));
-          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=48'));
-          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=48'));
+          if (!window.ORBIX_DADO_TEXTURES) tasks.push(loadScript('orbix-dado-textures.js?v=49'));
+          if (!window.ORBIX_FLOOR_TEXTURES) tasks.push(loadScript('orbix-floor-textures.js?v=49'));
+          if (!window.ORBIX_COUNTERTOP_TEXTURES) tasks.push(loadScript('orbix-countertop-textures.js?v=49'));
           return tasks.length ? Promise.all(tasks) : Promise.resolve([]);
         },
         loadA4Drawings: function () {
           if (window.OrbixA4Drawings) return Promise.resolve(true);
-          return loadScript('orbix-a4-drawings.js?v=48');
+          return loadScript('orbix-a4-drawings.js?v=49');
         }
       };
       // Gently warm 3D texture packs in the background after initial page load completes
@@ -21478,6 +21478,83 @@ body.role-employee #adminCreateEmpBox,
       defaultGrade: 'regular',
       regular: { code: '9', name: 'INVISIBLE SAFETY GRILL Regular', rate: 145.00 },
       premium: { code: '90', name: 'INVISIBLE SAFETY GRILL Premium', rate: 225.00 }
+    },
+    {
+      id: 'granite_supply_installation',
+      code: '11 / 110',
+      name: 'Granite Supply and Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '11', name: 'Granite Supply and Installation', rate: 680.00 },
+      premium: { code: '110', name: 'Granite Supply and Installation', rate: 680.00 }
+    },
+    {
+      id: 'granite_only_installation',
+      code: '12 / 120',
+      name: 'Granite Only Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '12', name: 'Granite Only Installation', rate: 380.00 },
+      premium: { code: '120', name: 'Granite Only Installation', rate: 380.00 }
+    },
+    {
+      id: 'dado_tile_supply_installation',
+      code: '13 / 130',
+      name: 'Dado tile Supply and Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '13', name: 'Dado tile Supply and Installation', rate: 375.00 },
+      premium: { code: '130', name: 'Dado tile Supply and Installation', rate: 375.00 }
+    },
+    {
+      id: 'dado_tile_only_installation',
+      code: '14 / 140',
+      name: 'Dado tile Only Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '14', name: 'Dado tile Only Installation', rate: 225.00 },
+      premium: { code: '140', name: 'Dado tile Only Installation', rate: 225.00 }
+    },
+    {
+      id: 'wall_painting_regular',
+      code: '15 / 150',
+      name: 'Wall painting - regular (Putty including - Asian Paint)',
+      category: 'Painting & Finishes',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '15', name: 'Wall painting - regular (Putty including - Asian Paint)', rate: 40.00 },
+      premium: { code: '150', name: 'Wall painting - regular (Putty including - Asian Paint)', rate: 40.00 }
+    },
+    {
+      id: 'texture_paint',
+      code: '16 / 160',
+      name: 'Texture Paint',
+      category: 'Painting & Finishes',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '16', name: 'Texture Paint', rate: 180.00 },
+      premium: { code: '160', name: 'Texture Paint - Premium', rate: 245.00 }
+    },
+    {
+      id: 'grill_work_ms',
+      code: '17 / 170',
+      name: 'Grill Work - MS',
+      category: 'Safety & Grills',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '17', name: 'Grill Work - MS', rate: 350.00 },
+      premium: { code: '170', name: 'Grill Work - MS', rate: 350.00 }
     }
   ];
 
@@ -47293,29 +47370,6 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
             }
             window.OrbixProjects.saveActiveProject({
               plan: self.project,
-              units: window.S ? window.S.units : []
-            });
-          }
-
-          self.saveToLocalStorage();
-          self.renderBOQ();
-          var modal = document.getElementById('editProjectMetaModal');
-          if (modal) modal.classList.remove('is-open');
-          if (window.OrbixProjects && window.OrbixProjects.showToast) {
-            window.OrbixProjects.showToast('Client details updated & saved!', 'success');
-          }
-        };
-      }
-
-      var resetFilterBtn = document.getElementById('boqResetFilterBtn');
-      if (resetFilterBtn) {
-        resetFilterBtn.addEventListener('click', function () {
-          self.selectedBOQRooms = ['all'];
-          self.renderBOQ();
-        });
-      }
-
-      // Floor filter pill clicks
       var floorFilterBtns = boqEl.querySelectorAll('.floor-filter-pill');
       floorFilterBtns.forEach(function (btn) {
         btn.addEventListener('click', function (e) {
@@ -61483,7 +61537,7 @@ PlanEditor.prototype.renderOpenings = function (ctx) {
   // 1. Register Service Worker (web browsers only, not file:// in desktop app)
   if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js?v=48')
+      navigator.serviceWorker.register('./sw.js?v=49')
         .then(function (reg) {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
 

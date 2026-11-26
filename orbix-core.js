@@ -8216,6 +8216,83 @@
       defaultGrade: 'regular',
       regular: { code: '9', name: 'INVISIBLE SAFETY GRILL Regular', rate: 145.00 },
       premium: { code: '90', name: 'INVISIBLE SAFETY GRILL Premium', rate: 225.00 }
+    },
+    {
+      id: 'granite_supply_installation',
+      code: '11 / 110',
+      name: 'Granite Supply and Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '11', name: 'Granite Supply and Installation', rate: 680.00 },
+      premium: { code: '110', name: 'Granite Supply and Installation', rate: 680.00 }
+    },
+    {
+      id: 'granite_only_installation',
+      code: '12 / 120',
+      name: 'Granite Only Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '12', name: 'Granite Only Installation', rate: 380.00 },
+      premium: { code: '120', name: 'Granite Only Installation', rate: 380.00 }
+    },
+    {
+      id: 'dado_tile_supply_installation',
+      code: '13 / 130',
+      name: 'Dado tile Supply and Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '13', name: 'Dado tile Supply and Installation', rate: 375.00 },
+      premium: { code: '130', name: 'Dado tile Supply and Installation', rate: 375.00 }
+    },
+    {
+      id: 'dado_tile_only_installation',
+      code: '14 / 140',
+      name: 'Dado tile Only Installation',
+      category: 'Granite & Tiles',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '14', name: 'Dado tile Only Installation', rate: 225.00 },
+      premium: { code: '140', name: 'Dado tile Only Installation', rate: 225.00 }
+    },
+    {
+      id: 'wall_painting_regular',
+      code: '15 / 150',
+      name: 'Wall painting - regular (Putty including - Asian Paint)',
+      category: 'Painting & Finishes',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '15', name: 'Wall painting - regular (Putty including - Asian Paint)', rate: 40.00 },
+      premium: { code: '150', name: 'Wall painting - regular (Putty including - Asian Paint)', rate: 40.00 }
+    },
+    {
+      id: 'texture_paint',
+      code: '16 / 160',
+      name: 'Texture Paint',
+      category: 'Painting & Finishes',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '16', name: 'Texture Paint', rate: 180.00 },
+      premium: { code: '160', name: 'Texture Paint - Premium', rate: 245.00 }
+    },
+    {
+      id: 'grill_work_ms',
+      code: '17 / 170',
+      name: 'Grill Work - MS',
+      category: 'Safety & Grills',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '17', name: 'Grill Work - MS', rate: 350.00 },
+      premium: { code: '170', name: 'Grill Work - MS', rate: 350.00 }
     }
   ];
 

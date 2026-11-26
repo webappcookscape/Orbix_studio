@@ -131,6 +131,16 @@ assert.ok(ceilingPair, 'False ceiling must exist in paired catalog');
 assert.strictEqual(ceilingPair.regular.rate, 75.00, 'False ceiling Regular rate must be 75');
 assert.strictEqual(ceilingPair.premium.rate, 95.00, 'False ceiling Premium rate must be 95');
 
+const graniteSupply = pairedCatalog.find(i => i.id === 'granite_supply_installation');
+assert.ok(graniteSupply, 'Granite supply must exist in paired catalog');
+assert.strictEqual(graniteSupply.regular.rate, 680.00, 'Granite supply regular rate must be 680');
+assert.strictEqual(graniteSupply.premium.rate, 680.00, 'Granite supply premium rate must be 680');
+
+const texturePaint = pairedCatalog.find(i => i.id === 'texture_paint');
+assert.ok(texturePaint, 'Texture paint must exist in paired catalog');
+assert.strictEqual(texturePaint.regular.rate, 180.00, 'Texture paint regular rate must be 180');
+assert.strictEqual(texturePaint.premium.rate, 245.00, 'Texture paint premium rate must be 245');
+
 console.log('✅ Paired Custom Add-Ons Catalog (Regular vs Premium) verified successfully!');
 
 console.log('🎉 ALL TESTS PASSED!');
