@@ -814,6 +814,13 @@
             '        <span data-f="appDisabled" style="display:' + (c.appliancesEnabled ? 'none' : 'inline') + ';color:#64748B;">Disabled</span>' +
             '      </td>' +
             '    </tr>' +
+            (c.selectedCustomAddons && c.selectedCustomAddons.length ? ('<tr><td colspan="2" style="background:#FAF6F0;padding:6px 12px;font-size:11.5px;color:#334155;">' +
+              c.selectedCustomAddons.map(function(ap){
+                var gBadge = ap.grade === 'premium' ? ' <span style="color:#B45309;font-weight:700;">[⭐ Premium]</span>' : ' <span style="color:#0369A1;font-weight:700;">[⚪ Regular]</span>';
+                var dimText = (ap.length > 0 && ap.width > 0) ? (' (' + ap.length + '\' &times; ' + ap.width + '\' = ' + ap.qty + ' sq.ft)') : (' (Qty: ' + ap.qty + ')');
+                return '<div style="margin:2px 0;">• <b>' + esc(ap.name) + '</b> &mdash; ' + (ap.gradeName ? esc(ap.gradeName) : '') + gBadge + dimText + ' &mdash; ₹' + Number(ap.amount || 0).toLocaleString('en-IN') + '</div>';
+              }).join('') +
+              '</td></tr>') : '') +
             (c.appliancesList && c.appliancesList.length ? ('<tr><td colspan="2" style="background:#FAF6F0;padding:6px 12px;font-size:11.5px;color:#334155;">' +
               c.appliancesList.map(function(ap){ return '<div style="margin:2px 0;">• <b>' + esc(ap.name) + '</b> &mdash; ₹' + Number(ap.amount || ((ap.rate||0)*(ap.qty||1))).toLocaleString('en-IN') + '</div>'; }).join('') +
               '</td></tr>') : '') +

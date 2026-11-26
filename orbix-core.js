@@ -8062,8 +8062,169 @@
     { id: 'golden_strip', name: 'GOLDEN STRIP', category: 'Profiles & Handles', brand: 'CUSTOM', rate: 850.00, ebcoRate: 850.00, hettichRate: 850.00, minRate: 450, maxRate: 1500, unit: 'meter', unitLabel: 'meter(s)', step: 0.5, isCustom: true }
   ];
 
+  var COOKSCAPE_CUSTOM_ADDONS_PAIRS = [
+    {
+      id: 'wooden_panelling',
+      code: '1 / 10',
+      name: 'Wooden Panelling',
+      category: 'Wall Treatments',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '1', name: 'Wooden Panelling Regular', rate: 1150.00 },
+      premium: { code: '10', name: 'Wooden Panelling - Multi Texture/ Premium', rate: 1575.00 }
+    },
+    {
+      id: 'wooden_partition',
+      code: '1 / 10',
+      name: 'Wooden Partition',
+      category: 'Partitions',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '1', name: 'Wooden Partition', rate: 1350.00 },
+      premium: { code: '10', name: 'Wooden Partition - Premium', rate: 1350.00 }
+    },
+    {
+      id: 'wallpaper_per_roll',
+      code: '2 / 20',
+      name: 'Wallpaper (Per Roll)',
+      category: 'Wall Treatments',
+      unit: 'roll',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '2', name: 'WALLPAPER ( Per Roll)', rate: 4850.00 },
+      premium: { code: '20', name: 'Texture WALLPAPER - Washable ( Per Roll)', rate: 7860.00 }
+    },
+    {
+      id: 'fluted_panels',
+      code: '2 / 20',
+      name: 'Fluted Panels',
+      category: 'Wall Treatments',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '2', name: 'Fluted panels', rate: 680.00 },
+      premium: { code: '20', name: 'Fluted panels - Premium Grade', rate: 840.00 }
+    },
+    {
+      id: 'tinted_fluted_glass',
+      code: '3 / 30',
+      name: 'Tinted / Fluted / Designer Glass',
+      category: 'Glass & Partitions',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '3', name: 'Tinted Glass (₹550) / Fluted Glass (₹650)', rate: 550.00, altRate: 650.00, altName: 'Fluted Glass' },
+      premium: { code: '30', name: 'Designer Glass', rate: 750.00 }
+    },
+    {
+      id: 'bathroom_partition_openable',
+      code: '3 / 40',
+      name: 'Bathroom Partition - Openable',
+      category: 'Bathroom Fittings',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '3', name: 'Bathroom Partition - Open able (Omega Fittings)', rate: 850.00 },
+      premium: { code: '40', name: 'Bathroom Partition - Open able (Ozone Fittings)', rate: 1250.00 }
+    },
+    {
+      id: 'bathroom_partition_sliding',
+      code: '3 / 40',
+      name: 'Bathroom Partition - Sliding',
+      category: 'Bathroom Fittings',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '3', name: 'Bathroom Partition - Sliding (Omega Fittings)', rate: 925.00 },
+      premium: { code: '40', name: 'Bathroom Partition - Sliding (Ozone Fittings)', rate: 1375.00 }
+    },
+    {
+      id: 'king_size_cot_storage',
+      code: '5 / 50',
+      name: 'KING SIZE COT WITH STORAGE',
+      category: 'Beds & Cots',
+      unit: 'unit',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '5', name: 'KING SIZE COT WITH STORAGE - Prelam MDF', rate: 59740.00 },
+      premium: { code: '50', name: 'KING SIZE COT WITH STORAGE - BWP Plywood - Laminated', rate: 66920.00 }
+    },
+    {
+      id: 'headboard_6x3',
+      code: '5 / 50',
+      name: "HEADBOARD (6' X 3')",
+      category: 'Beds & Cots',
+      unit: 'unit',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '5', name: "PLAIN PANEL HEADBOARD (6' X 3')", rate: 890.00 },
+      premium: { code: '50', name: "HEAD BOARD WITH CUSSION (6' X 3')", rate: 1450.00 }
+    },
+    {
+      id: 'queen_size_cot_storage',
+      code: '6 / 60',
+      name: 'QUEEN SIZE COT WITH STORAGE',
+      category: 'Beds & Cots',
+      unit: 'unit',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '6', name: 'QUEEN SIZE COT WITH STORAGE - Prelam MDF', rate: 42650.00 },
+      premium: { code: '60', name: 'QUEEN SIZE COT WITH STORAGE - BWP Plywood - Laminated', rate: 48500.00 }
+    },
+    {
+      id: 'headboard_5x3',
+      code: '6 / 60',
+      name: "HEADBOARD (5' X 3')",
+      category: 'Beds & Cots',
+      unit: 'unit',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '6', name: "PLAIN PANEL HEADBOARD (5' X 3')", rate: 1250.00 },
+      premium: { code: '60', name: "HEAD BOARD WITH CUSSION (5' X 3')", rate: 1350.00 }
+    },
+    {
+      id: 'false_ceiling',
+      code: '7 / 70',
+      name: 'False Ceiling',
+      category: 'Ceiling Works',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '7', name: 'False Ceiling - PREMIUM Grade', rate: 75.00 },
+      premium: { code: '70', name: 'False Ceiling - Elite with HD Channels', rate: 95.00 }
+    },
+    {
+      id: 'bunker_cot_stairs',
+      code: '8 / 80',
+      name: 'Bunker Cot With Wooden Stairs',
+      category: 'Beds & Cots',
+      unit: 'unit',
+      hasDimensions: false,
+      defaultGrade: 'regular',
+      regular: { code: '8', name: 'Bunker Cot With Wooden Stairs - Ply wood laminated', rate: 118240.00 },
+      premium: { code: '80', name: 'Bunker Cot With Wooden Stairs - Rubber wood - lacquered', rate: 144760.00 }
+    },
+    {
+      id: 'safety_grill',
+      code: '9 / 90',
+      name: 'INVISIBLE SAFETY GRILL',
+      category: 'Safety & Grills',
+      unit: 'sqft',
+      hasDimensions: true,
+      defaultGrade: 'regular',
+      regular: { code: '9', name: 'INVISIBLE SAFETY GRILL Regular', rate: 145.00 },
+      premium: { code: '90', name: 'INVISIBLE SAFETY GRILL Premium', rate: 225.00 }
+    }
+  ];
+
   function getCookscapeAddonsCatalog() {
     return COOKSCAPE_ADDONS_CATALOG.slice();
+  }
+
+  function getCookscapeCustomAddonsPairs() {
+    return COOKSCAPE_CUSTOM_ADDONS_PAIRS.slice();
   }
 
   function calculateAddonsSummary(selectedAddons, appliancesList) {
@@ -8100,6 +8261,8 @@
     getSurabhiDesignFeeSlab: getSurabhiDesignFeeSlab,
     COOKSCAPE_ADDONS_CATALOG: COOKSCAPE_ADDONS_CATALOG,
     getCookscapeAddonsCatalog: getCookscapeAddonsCatalog,
+    COOKSCAPE_CUSTOM_ADDONS_PAIRS: COOKSCAPE_CUSTOM_ADDONS_PAIRS,
+    getCookscapeCustomAddonsPairs: getCookscapeCustomAddonsPairs,
     calculateAddonsSummary: calculateAddonsSummary,
     uid: uid,
     Vec2: Vec2,

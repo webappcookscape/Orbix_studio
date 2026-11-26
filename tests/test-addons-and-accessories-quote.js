@@ -110,4 +110,27 @@ const customSummary = Core.calculateAddonsSummary(customAddons, []);
 assert.strictEqual(customSummary.addonsSubtotal, 7975, 'Custom addons subtotal must equal (5.5 * 1450) = 7,975');
 console.log('✅ Custom rate and meter measurements verified successfully!');
 
+console.log('--- TEST: Paired Custom Add-Ons Catalog (Regular vs Premium) ---');
+const pairedCatalog = Core.getCookscapeCustomAddonsPairs();
+assert(Array.isArray(pairedCatalog), 'Paired catalog must be an array');
+assert(pairedCatalog.length >= 13, `Paired catalog must have at least 13 item pairs, found ${pairedCatalog.length}`);
+
+const kingCotPair = pairedCatalog.find(i => i.id === 'king_size_cot_storage');
+assert.ok(kingCotPair, 'King Size Cot must exist in paired catalog');
+assert.strictEqual(kingCotPair.regular.rate, 59740.00, 'King Size Cot Regular rate must be 59,740');
+assert.strictEqual(kingCotPair.premium.rate, 66920.00, 'King Size Cot Premium rate must be 66,920');
+
+const panellingPair = pairedCatalog.find(i => i.id === 'wooden_panelling');
+assert.ok(panellingPair, 'Wooden panelling must exist in paired catalog');
+assert.strictEqual(panellingPair.regular.rate, 1150.00, 'Wooden panelling Regular rate must be 1,150');
+assert.strictEqual(panellingPair.premium.rate, 1575.00, 'Wooden panelling Premium rate must be 1,575');
+assert.strictEqual(panellingPair.hasDimensions, true, 'Wooden panelling must support dimensions (Length x Width)');
+
+const ceilingPair = pairedCatalog.find(i => i.id === 'false_ceiling');
+assert.ok(ceilingPair, 'False ceiling must exist in paired catalog');
+assert.strictEqual(ceilingPair.regular.rate, 75.00, 'False ceiling Regular rate must be 75');
+assert.strictEqual(ceilingPair.premium.rate, 95.00, 'False ceiling Premium rate must be 95');
+
+console.log('✅ Paired Custom Add-Ons Catalog (Regular vs Premium) verified successfully!');
+
 console.log('🎉 ALL TESTS PASSED!');

@@ -9087,10 +9087,15 @@
         '<span style="font-size:11px;color:#94A3B8">.00</span>' +
         '</div></td></tr>' +
 
-        // Add ons (Enable/Disable + amount)
+        // Add ons (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAppliances" style="' + (commSummary.appliancesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
-        '<td colspan="4" class="bold"><label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Add ons</label></td>' +
+        '<td colspan="4" class="bold">' +
+        '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="appliancesEnabled"' + (commSummary.appliancesEnabled ? ' checked' : '') + '> Add ons</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenCustomAddonsConfigurator" style="background:#047857;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Add-Ons (Regular / Premium)</button>' +
+        (commCharges.selectedCustomAddons && commCharges.selectedCustomAddons.length ? ('<span id="commCustomAddonsCountBadge" style="font-size:11px;color:#047857;font-weight:700;">(' + commCharges.selectedCustomAddons.length + ' items selected)</span>') : '<span id="commCustomAddonsCountBadge" style="display:none;font-size:11px;color:#047857;font-weight:700;"></span>') +
+        '</div></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
         '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
         '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
@@ -9415,6 +9420,18 @@
             refreshCommercialDom();
             var accInp = boqEl.querySelector('.comm-input[data-key="additionalAccessories"]');
             if (accInp) accInp.value = self.project.commercialCharges.additionalAccessories || 0;
+            self.saveToLocalStorage();
+          });
+        });
+      }
+
+      var btnCustomAddons = boqEl.querySelector('#btnOpenCustomAddonsConfigurator');
+      if (btnCustomAddons) {
+        btnCustomAddons.addEventListener('click', function () {
+          self.openCustomAddonsConfiguratorModal(function () {
+            refreshCommercialDom();
+            var appInp = boqEl.querySelector('.comm-input[data-key="appliances"]');
+            if (appInp) appInp.value = self.project.commercialCharges.appliances || 0;
             self.saveToLocalStorage();
           });
         });
@@ -10444,6 +10461,478 @@
             self.project.commercialCharges.selectedAddons = chosen;
             self.project.commercialCharges.additionalAccessories = totalAmt;
             self.project.commercialCharges.accessoriesEnabled = true;
+
+            modal.style.display = 'none';
+            if (typeof onApply === 'function') onApply();
+          });
+        }
+      }
+
+      modal.style.display = 'flex';
+      renderModalContent();
+    },
+
+    openCustomAddonsConfiguratorModal: function (onApply) {
+      var self = this;
+      var catalog = (typeof Core !== 'undefined' && Core.getCookscapeCustomAddonsPairs)
+        ? Core.getCookscapeCustomAddonsPairs()
+        : [];
+      if (!catalog.length) return;
+
+      var currentCharges = this.getCommercialCharges();
+      var itemStateMap = {};
+      (currentCharges.selectedCustomAddons || []).forEach(function (it) {
+        itemStateMap[it.id] = {
+          grade: it.grade || 'regular',
+          length: Number(it.length || 0),
+          width: Number(it.width || 0),
+          qty: Number(it.qty || 0),
+          subOption: it.subOption || 0
+        };
+      });
+
+      var modalId = 'orbixCustomAddonsModal';
+      var modal = document.getElementById(modalId);
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;display:flex;align-items:center;justify-content:center;';
+        document.body.appendChild(modal);
+      }
+
+      var categories = ['All'];
+      catalog.forEach(function (it) {
+        if (it.category && categories.indexOf(it.category) === -1) {
+          categories.push(it.category);
+        }
+      });
+
+      var activeCategory = 'All';
+      var searchQuery = '';
+
+      function getEffectiveRate(it, state) {
+        if (state.grade === 'premium') {
+          return it.premium.rate;
+        }
+        if (it.regular.subOptions && state.subOption !== undefined) {
+          var opt = it.regular.subOptions[state.subOption] || it.regular.subOptions[0];
+          return opt.rate;
+        }
+        return it.regular.rate;
+      }
+
+      function getEffectiveName(it, state) {
+        if (state.grade === 'premium') {
+          return it.premium.name;
+        }
+        if (it.regular.subOptions && state.subOption !== undefined) {
+          var opt = it.regular.subOptions[state.subOption] || it.regular.subOptions[0];
+          return opt.name;
+        }
+        return it.regular.name;
+      }
+
+      function renderModalContent() {
+        var filtered = catalog.filter(function (it) {
+          var matchCat = (activeCategory === 'All') || (it.category === activeCategory);
+          var matchSearch = !searchQuery ||
+            (it.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.category.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.regular.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1) ||
+            (it.premium.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1);
+          return matchCat && matchSearch;
+        });
+
+        var selectedCount = 0;
+        var selectedTotal = 0;
+        catalog.forEach(function (it) {
+          var st = itemStateMap[it.id];
+          if (st && st.qty > 0) {
+            selectedCount += 1;
+            selectedTotal += Math.round(st.qty * getEffectiveRate(it, st));
+          }
+        });
+
+        // Preserve scroll position across re-renders
+        var prevScrollTop = 0;
+        var prevList = modal.querySelector('#customAddonsItemList');
+        if (prevList) prevScrollTop = prevList.scrollTop;
+
+        modal.innerHTML =
+          '<div class="addons-backdrop" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,35,27,0.65);backdrop-filter:blur(3px);"></div>' +
+          '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(1040px, 96vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
+
+          // Header
+          '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
+          '    <div>' +
+          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Add-Ons Catalog (Regular vs Premium)</h3>' +
+          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">Enter value once &bull; Auto-syncs to Regular &amp; Premium &bull; 1-Click Grade Toggle &bull; Length &times; Width Area Calculation</div>' +
+          '    </div>' +
+          '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
+          '  </div>' +
+
+          // Search, Batch Switcher & Category Filters
+          '  <div style="background:#FAF6F0;padding:12px 20px;border-bottom:1px solid #E2D5C3;display:flex;flex-direction:column;gap:10px;">' +
+          '    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">' +
+          '      <input type="text" id="customAddonsSearchInput" value="' + searchQuery.replace(/"/g, '&quot;') + '" placeholder="🔍 Search add-ons (e.g. Panelling, Partition, Cot, Headboard, Glass, Ceiling, Grill)..." style="flex:1;min-width:240px;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-size:13px;outline:none;background:#FFF;">' +
+          '      <div style="display:flex;gap:6px;align-items:center;">' +
+          '        <span style="font-size:11px;font-weight:700;color:#64748B;">⚡ SWITCH ALL:</span>' +
+          '        <button type="button" id="addonsSwitchAllRegular" style="padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;background:#E0F2FE;border:1px solid #7DD3FC;color:#0369A1;cursor:pointer;">⚪ All to Regular (Codes 1-9)</button>' +
+          '        <button type="button" id="addonsSwitchAllPremium" style="padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;background:#FEF3C7;border:1px solid #FCD34D;color:#B45309;cursor:pointer;">⭐ All to Premium (Codes 10-90)</button>' +
+          '      </div>' +
+          '    </div>' +
+
+          // Category Pills
+          '    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;" id="customAddonsCatPills">' +
+          '      <span style="font-size:11px;font-weight:700;color:#64748B;white-space:nowrap;align-self:center;">CATEGORY:</span>' +
+          categories.map(function (cat) {
+            var isSel = cat === activeCategory;
+            return '<button type="button" class="addons-cat-btn" data-cat="' + cat.replace(/"/g, '&quot;') + '" style="padding:3px 9px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid ' + (isSel ? '#08231B' : '#CBD5E1') + ';background:' + (isSel ? '#08231B' : '#FFF') + ';color:' + (isSel ? '#FFF' : '#334155') + ';">' + cat + '</button>';
+          }).join('') +
+          '    </div>' +
+          '  </div>' +
+
+          // Item List Body
+          '  <div style="flex:1;overflow-y:auto;padding:12px 20px;" id="customAddonsItemList">' +
+          '    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">' +
+          '      <thead>' +
+          '        <tr style="border-bottom:2px solid #E2E8F0;color:#64748B;font-size:11px;text-align:left;">' +
+          '          <th style="padding:6px 8px;width:240px;">CODE &amp; ITEM DETAILS</th>' +
+          '          <th style="padding:6px 8px;text-align:center;width:240px;">MEASUREMENT / QUANTITY</th>' +
+          '          <th style="padding:6px 8px;text-align:center;width:280px;">GRADE (1 vs 10 SWITCHER)</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:110px;">UNIT RATE</th>' +
+          '          <th style="padding:6px 8px;text-align:right;width:120px;">SUBTOTAL</th>' +
+          '        </tr>' +
+          '      </thead>' +
+          '      <tbody>' +
+          (filtered.length ? filtered.map(function (it) {
+            var st = itemStateMap[it.id] || { grade: it.defaultGrade || 'regular', length: 0, width: 0, qty: 0, subOption: 0 };
+            var curGrade = st.grade || 'regular';
+            var curRate = getEffectiveRate(it, st);
+            var sub = Math.round((st.qty || 0) * curRate);
+            var isPrem = (curGrade === 'premium');
+
+            // Grade Switcher HTML
+            var gradeHtml =
+              '<div style="display:inline-flex;gap:4px;background:#F1F5F9;padding:3px;border-radius:7px;border:1px solid #CBD5E1;">' +
+              '  <button type="button" class="addons-grade-toggle-btn" data-id="' + it.id + '" data-grade="regular" style="padding:3px 8px;border-radius:5px;font-size:10.5px;font-weight:700;cursor:pointer;border:none;background:' + (!isPrem ? '#0284C7' : 'transparent') + ';color:' + (!isPrem ? '#FFF' : '#475569') + ';">' +
+              '    ⚪ ' + (it.regular.code ? ('[' + it.regular.code + '] ') : '') + 'Regular ₹' + Math.round(it.regular.rate).toLocaleString('en-IN') +
+              '  </button>' +
+              '  <button type="button" class="addons-grade-toggle-btn" data-id="' + it.id + '" data-grade="premium" style="padding:3px 8px;border-radius:5px;font-size:10.5px;font-weight:700;cursor:pointer;border:none;background:' + (isPrem ? '#D97706' : 'transparent') + ';color:' + (isPrem ? '#FFF' : '#475569') + ';">' +
+              '    ⭐ ' + (it.premium.code ? ('[' + it.premium.code + '] ') : '') + 'Premium ₹' + Math.round(it.premium.rate).toLocaleString('en-IN') +
+              '  </button>' +
+              '</div>';
+
+            // Measurement HTML
+            var measureHtml = '';
+            if (it.hasDimensions) {
+              measureHtml =
+                '<div style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;justify-content:center;">' +
+                '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
+                '    <span style="font-size:11px;color:#64748B;">L:</span>' +
+                '    <input type="number" min="0" step="0.5" class="addons-dim-len" data-id="' + it.id + '" value="' + (st.length || '') + '" placeholder="ft" style="width:48px;height:24px;border:1px solid #CBD5E1;border-radius:4px;padding:2px 4px;font-size:11.5px;text-align:center;font-weight:700;">' +
+                '  </div>' +
+                '  <span style="color:#94A3B8;font-size:11px;">&times;</span>' +
+                '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
+                '    <span style="font-size:11px;color:#64748B;">W:</span>' +
+                '    <input type="number" min="0" step="0.5" class="addons-dim-wid" data-id="' + it.id + '" value="' + (st.width || '') + '" placeholder="ft" style="width:48px;height:24px;border:1px solid #CBD5E1;border-radius:4px;padding:2px 4px;font-size:11.5px;text-align:center;font-weight:700;">' +
+                '  </div>' +
+                '  <span style="color:#94A3B8;font-size:11px;">=</span>' +
+                '  <div style="display:inline-flex;align-items:center;gap:2px;">' +
+                '    <input type="number" min="0" step="0.1" class="addons-dim-qty" data-id="' + it.id + '" value="' + (st.qty || '') + '" placeholder="0" style="width:58px;height:24px;border:1.5px solid #047857;border-radius:4px;padding:2px 4px;font-size:12px;text-align:center;font-weight:700;color:#047857;background:#F0FDF4;">' +
+                '    <span style="font-size:10.5px;color:#64748B;font-weight:600;">sq.ft</span>' +
+                '  </div>' +
+                '</div>';
+            } else {
+              measureHtml =
+                '<div style="display:inline-flex;align-items:center;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden;background:#FFF;">' +
+                '  <button type="button" class="addons-unit-qty-btn" data-id="' + it.id + '" data-delta="-1" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">-</button>' +
+                '  <input type="number" min="0" step="1" class="addons-unit-qty-inp" data-id="' + it.id + '" value="' + (st.qty || 0) + '" style="width:46px;height:26px;border:none;border-left:1px solid #E2E8F0;border-right:1px solid #E2E8F0;text-align:center;font-weight:700;font-size:12px;">' +
+                '  <button type="button" class="addons-unit-qty-btn" data-id="' + it.id + '" data-delta="1" style="width:28px;height:26px;border:none;background:#F8FAFC;cursor:pointer;font-weight:700;color:#334155;">+</button>' +
+                '</div>' +
+                '<span style="font-size:11px;color:#64748B;margin-left:5px;">' + (it.unit === 'roll' ? 'roll(s)' : 'unit(s)') + '</span>';
+            }
+
+            var activeSpecText = isPrem ? it.premium.name : it.regular.name;
+
+            return '<tr class="addons-pair-row" data-id="' + it.id + '" style="border-bottom:1px solid #F1F5F9;' + (st.qty > 0 ? 'background:#F0FDF4;' : '') + '">' +
+              '<td style="padding:8px;">' +
+              '  <div style="display:flex;align-items:center;gap:6px;">' +
+              '    <span style="font-size:10px;font-weight:800;background:#E2E8F0;color:#334155;padding:2px 5px;border-radius:4px;font-family:monospace;">' + it.code + '</span>' +
+              '    <span style="font-weight:700;color:#08231B;">' + it.name + '</span>' +
+              '  </div>' +
+              '  <div class="addons-active-spec" data-id="' + it.id + '" style="font-size:11px;color:' + (isPrem ? '#B45309' : '#0369A1') + ';margin-top:2px;font-weight:600;">' + activeSpecText + '</div>' +
+              '</td>' +
+              '<td style="padding:8px;text-align:center;">' + measureHtml + '</td>' +
+              '<td style="padding:8px;text-align:center;">' + gradeHtml + '</td>' +
+              '<td class="addons-rate-cell" data-id="' + it.id + '" style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:#08231B;">₹ ' + curRate.toLocaleString('en-IN') + '</td>' +
+              '<td class="addons-pair-subtotal-cell" data-id="' + it.id + '" style="padding:8px;text-align:right;font-family:monospace;font-weight:700;color:' + (st.qty > 0 ? '#166534' : '#94A3B8') + ';">₹ ' + sub.toLocaleString('en-IN') + '</td>' +
+              '</tr>';
+          }).join('') : '<tr><td colspan="5" style="text-align:center;padding:30px;color:#64748B;">No add-on items found.</td></tr>') +
+          '      </tbody>' +
+          '    </table>' +
+          '  </div>' +
+
+          // Sticky Footer
+          '  <div style="background:#FAF6F0;border-top:1px solid #E2D5C3;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;">' +
+          '    <div>' +
+          '      <span style="font-size:12px;color:#475569;font-weight:600;">Selected Add-Ons: </span>' +
+          '      <b id="customAddonsSelectedCount" style="color:#08231B;font-size:13px;">' + selectedCount + ' items</b> &bull; ' +
+          '      <span style="font-size:12px;color:#475569;font-weight:600;">Subtotal: </span>' +
+          '      <b id="customAddonsSelectedTotal" style="color:#166534;font-size:15px;font-family:monospace;">₹ ' + selectedTotal.toLocaleString('en-IN') + '</b>' +
+          '    </div>' +
+          '    <div style="display:flex;gap:10px;">' +
+          '      <button type="button" class="addons-close-btn btn" style="background:#E2E8F0;color:#1E293B;border-radius:6px;padding:7px 14px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">Cancel</button>' +
+          '      <button type="button" id="customAddonsApplyBtn" class="btn" style="background:#047857;color:#FFF;border-radius:6px;padding:7px 18px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;">✅ Apply to Quotation</button>' +
+          '    </div>' +
+          '  </div>' +
+          '</div>';
+
+        // Restore scroll position after DOM rebuild
+        var nextList = modal.querySelector('#customAddonsItemList');
+        if (nextList && prevScrollTop > 0) {
+          nextList.scrollTop = prevScrollTop;
+        }
+
+        // Live in-place row & footer update helpers
+        function updateFooterSummary() {
+          var count = 0;
+          var total = 0;
+          catalog.forEach(function (it) {
+            var st = itemStateMap[it.id];
+            if (st && st.qty > 0) {
+              count += 1;
+              total += Math.round(st.qty * getEffectiveRate(it, st));
+            }
+          });
+          var cEl = modal.querySelector('#customAddonsSelectedCount');
+          if (cEl) cEl.textContent = count + ' items';
+          var tEl = modal.querySelector('#customAddonsSelectedTotal');
+          if (tEl) tEl.textContent = '₹ ' + total.toLocaleString('en-IN');
+        }
+
+        function updateRowDisplay(id, skipInputClass) {
+          var row = modal.querySelector('tr.addons-pair-row[data-id="' + id + '"]');
+          var it = catalog.find(function (x) { return x.id === id; });
+          if (!row || !it) return;
+
+          var st = itemStateMap[id] || { grade: it.defaultGrade || 'regular', length: 0, width: 0, qty: 0 };
+          var curRate = getEffectiveRate(it, st);
+          var sub = Math.round((st.qty || 0) * curRate);
+          var isPrem = (st.grade === 'premium');
+
+          row.style.background = st.qty > 0 ? '#F0FDF4' : '';
+
+          var specEl = row.querySelector('.addons-active-spec[data-id="' + id + '"]');
+          if (specEl) {
+            specEl.textContent = getEffectiveName(it, st);
+            specEl.style.color = isPrem ? '#B45309' : '#0369A1';
+          }
+
+          var rateCell = row.querySelector('.addons-rate-cell[data-id="' + id + '"]');
+          if (rateCell) {
+            rateCell.textContent = '₹ ' + curRate.toLocaleString('en-IN');
+          }
+
+          var subCell = row.querySelector('.addons-pair-subtotal-cell[data-id="' + id + '"]');
+          if (subCell) {
+            subCell.textContent = '₹ ' + sub.toLocaleString('en-IN');
+            subCell.style.color = st.qty > 0 ? '#166534' : '#94A3B8';
+          }
+
+          // Grade button styles
+          var regBtn = row.querySelector('.addons-grade-toggle-btn[data-grade="regular"]');
+          var premBtn = row.querySelector('.addons-grade-toggle-btn[data-grade="premium"]');
+          if (regBtn) {
+            regBtn.style.background = !isPrem ? '#0284C7' : 'transparent';
+            regBtn.style.color = !isPrem ? '#FFF' : '#475569';
+          }
+          if (premBtn) {
+            premBtn.style.background = isPrem ? '#D97706' : 'transparent';
+            premBtn.style.color = isPrem ? '#FFF' : '#475569';
+          }
+
+          // Input values sync
+          if (skipInputClass !== 'qty') {
+            var qtyInp = row.querySelector('.addons-dim-qty[data-id="' + id + '"], .addons-unit-qty-inp[data-id="' + id + '"]');
+            if (qtyInp && document.activeElement !== qtyInp) {
+              qtyInp.value = st.qty || 0;
+            }
+          }
+
+          updateFooterSummary();
+        }
+
+        // Close handlers
+        modal.querySelectorAll('.addons-close-btn, .addons-backdrop').forEach(function (el) {
+          el.addEventListener('click', function () {
+            modal.style.display = 'none';
+          });
+        });
+
+        // Search handler
+        var sInp = modal.querySelector('#customAddonsSearchInput');
+        if (sInp) {
+          sInp.addEventListener('input', function () {
+            searchQuery = sInp.value;
+            renderModalContent();
+            var restored = modal.querySelector('#customAddonsSearchInput');
+            if (restored) {
+              restored.focus();
+              restored.setSelectionRange(restored.value.length, restored.value.length);
+            }
+          });
+        }
+
+        // Category filter pills
+        modal.querySelectorAll('.addons-cat-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            activeCategory = btn.getAttribute('data-cat');
+            renderModalContent();
+          });
+        });
+
+        // Switch All Regular / Premium Buttons
+        var allRegBtn = modal.querySelector('#addonsSwitchAllRegular');
+        if (allRegBtn) {
+          allRegBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              itemStateMap[it.id] = itemStateMap[it.id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+              itemStateMap[it.id].grade = 'regular';
+              updateRowDisplay(it.id);
+            });
+          });
+        }
+
+        var allPremBtn = modal.querySelector('#addonsSwitchAllPremium');
+        if (allPremBtn) {
+          allPremBtn.addEventListener('click', function () {
+            catalog.forEach(function (it) {
+              itemStateMap[it.id] = itemStateMap[it.id] || { grade: 'premium', length: 0, width: 0, qty: 0 };
+              itemStateMap[it.id].grade = 'premium';
+              updateRowDisplay(it.id);
+            });
+          });
+        }
+
+        // 1-Click Grade Toggle per Row (In-place update)
+        modal.querySelectorAll('.addons-grade-toggle-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-id');
+            var grade = btn.getAttribute('data-grade');
+            var it = catalog.find(function (x) { return x.id === id; });
+            if (it && grade) {
+              itemStateMap[id] = itemStateMap[id] || { grade: grade, length: 0, width: 0, qty: 0 };
+              itemStateMap[id].grade = grade;
+              updateRowDisplay(id);
+            }
+          });
+        });
+
+        // Dimension inputs: Length & Width change calculates Sq.Ft Area live
+        modal.querySelectorAll('.addons-dim-len, .addons-dim-wid').forEach(function (inp) {
+          inp.addEventListener('focus', function () { this.select(); });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var row = modal.querySelector('tr.addons-pair-row[data-id="' + id + '"]');
+            if (!row) return;
+            var lInp = row.querySelector('.addons-dim-len');
+            var wInp = row.querySelector('.addons-dim-wid');
+            var l = Math.max(0, parseFloat(lInp ? lInp.value : 0) || 0);
+            var w = Math.max(0, parseFloat(wInp ? wInp.value : 0) || 0);
+            var area = (l > 0 && w > 0) ? Math.round(l * w * 10) / 10 : 0;
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].length = l;
+            itemStateMap[id].width = w;
+            itemStateMap[id].qty = area;
+            var qInp = row.querySelector('.addons-dim-qty');
+            if (qInp) qInp.value = area;
+            updateRowDisplay(id, 'qty');
+          });
+        });
+
+        // Direct Qty input for dimensioned items (allows direct sq.ft override)
+        modal.querySelectorAll('.addons-dim-qty').forEach(function (inp) {
+          inp.addEventListener('focus', function () { this.select(); });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseFloat(inp.value) || 0);
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].qty = val;
+            updateRowDisplay(id, 'qty');
+          });
+        });
+
+        // Unit Qty Delta (+ / -)
+        modal.querySelectorAll('.addons-unit-qty-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-id');
+            var delta = parseFloat(btn.getAttribute('data-delta')) || 0;
+            var st = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            var next = Math.max(0, Math.round(((st.qty || 0) + delta) * 10) / 10);
+            st.qty = next;
+            itemStateMap[id] = st;
+            var row = modal.querySelector('tr.addons-pair-row[data-id="' + id + '"]');
+            if (row) {
+              var qInp = row.querySelector('.addons-unit-qty-inp');
+              if (qInp) qInp.value = next;
+              updateRowDisplay(id, 'qty');
+            }
+          });
+        });
+
+        // Unit Qty Input
+        modal.querySelectorAll('.addons-unit-qty-inp').forEach(function (inp) {
+          inp.addEventListener('focus', function () { this.select(); });
+          inp.addEventListener('input', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseFloat(inp.value) || 0);
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].qty = val;
+            updateRowDisplay(id, 'qty');
+          });
+          inp.addEventListener('blur', function () {
+            var id = inp.getAttribute('data-id');
+            var val = Math.max(0, parseFloat(inp.value) || 0);
+            itemStateMap[id] = itemStateMap[id] || { grade: 'regular', length: 0, width: 0, qty: 0 };
+            itemStateMap[id].qty = val;
+            inp.value = val;
+            updateRowDisplay(id);
+          });
+        });
+
+        // Apply to Quotation
+        var applyBtn = modal.querySelector('#customAddonsApplyBtn');
+        if (applyBtn) {
+          applyBtn.addEventListener('click', function () {
+            var chosen = [];
+            var totalAmt = 0;
+            catalog.forEach(function (it) {
+              var st = itemStateMap[it.id];
+              if (st && st.qty > 0) {
+                var r = getEffectiveRate(it, st);
+                var amt = Math.round(st.qty * r);
+                chosen.push({
+                  id: it.id,
+                  name: it.name,
+                  category: it.category,
+                  grade: st.grade || 'regular',
+                  gradeName: getEffectiveName(it, st),
+                  length: st.length || 0,
+                  width: st.width || 0,
+                  unit: it.unit || 'sqft',
+                  qty: st.qty,
+                  rate: r,
+                  amount: amt
+                });
+                totalAmt += amt;
+              }
+            });
+
+            self.project.commercialCharges = self.project.commercialCharges || {};
+            self.project.commercialCharges.selectedCustomAddons = chosen;
+            self.project.commercialCharges.appliances = totalAmt;
+            self.project.commercialCharges.appliancesEnabled = true;
 
             modal.style.display = 'none';
             if (typeof onApply === 'function') onApply();
