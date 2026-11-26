@@ -673,13 +673,10 @@ def build_pdf(payload, out_path):
                 'cells': ['Discount on Wood Work', fmt_inr(ww_after)],
                 'bg': C_DISC_BG,
                 'border': C_DISC_BORDER,
-                'lw': 0.9,
+                'lw': 0.8,
                 'text_color': C_DISC_TEXT,
                 'val_color': C_DISC_VAL,
-                'bold': True,
-                'font_size': 9.8,
-                'val_font_size': 10.4,
-                'pad_y': 6.2
+                'bold': True
             })
         if float(comm.get('adpAmount') or 0) > 0:
             dc_after = comm.get('designAfterDiscount')
@@ -689,13 +686,10 @@ def build_pdf(payload, out_path):
                 'cells': ['Discount on Design Charge', fmt_inr(dc_after)],
                 'bg': C_DISC_BG,
                 'border': C_DISC_BORDER,
-                'lw': 0.9,
+                'lw': 0.8,
                 'text_color': C_DISC_TEXT,
                 'val_color': C_DISC_VAL,
-                'bold': True,
-                'font_size': 9.8,
-                'val_font_size': 10.4,
-                'pad_y': 6.2
+                'bold': True
             })
         c_rows.append(['Grand Total (Without GST)', fmt_inr(comm.get('netBeforeTax', 0))])
         if gst_enabled:
@@ -708,12 +702,10 @@ def build_pdf(payload, out_path):
             'accent': True,
             'bg': C_GOLD,
             'border': C_CRIMSON,
-            'lw': 1.5,
+            'lw': 1.0,
             'text_color': C_FOREST,
             'val_color': C_CRIMSON,
-            'font_size': 11.2,
-            'val_font_size': 13.2,
-            'pad_y': 8.0
+            'bold': True
         })
         total_savings = comm.get('totalSavings')
         if total_savings is None:
@@ -722,13 +714,10 @@ def build_pdf(payload, out_path):
             'cells': ['YOUR SAVINGS', fmt_inr(total_savings)],
             'bg': C_SAVE_BG,
             'border': C_SAVE_BORDER,
-            'lw': 1.3,
+            'lw': 0.9,
             'text_color': C_SAVE_TEXT,
             'val_color': C_SAVE_VAL,
-            'bold': True,
-            'font_size': 10.6,
-            'val_font_size': 12.4,
-            'pad_y': 7.5
+            'bold': True
         })
 
         y = draw_table_ops(ops, c_rows, 30, y, PAGE_W - 60, [0.70, 0.30], font_size=8.8, header_fill=C_CRIMSON, right_cols={1}, bold_first=False, pad_y=5.5) + 14.0

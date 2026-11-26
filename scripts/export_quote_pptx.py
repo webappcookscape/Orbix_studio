@@ -498,7 +498,6 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
         comm_items.append(('GST', fmt_inr(comm.get('gstAmount', 0)), False, 'normal'))
 
     c_row_h = 330000 if len(comm_items) <= 8 else 285000
-    disc_row_h = 380000 if len(comm_items) <= 8 else 340000
     comm_rows = [
         (360000, [
             build_ooxml_cell('COST ESTIMATION SUMMARY', fill_hex='C00000', text_hex='FFFFFF', bold=True, font_sz=1050, align='l', border_hex='C00000'),
@@ -507,9 +506,9 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
     ]
     for idx, (lbl, val, is_b, style_kind) in enumerate(comm_items):
         if style_kind == 'discount':
-            comm_rows.append((disc_row_h, [
-                build_ooxml_cell(lbl, fill_hex='FFF4E5', text_hex='9A3412', bold=True, font_sz=1120, align='l', border_hex='EA580C'),
-                build_ooxml_cell(val, fill_hex='FFF4E5', text_hex='C2410C', bold=True, font_sz=1180, align='r', border_hex='EA580C'),
+            comm_rows.append((c_row_h, [
+                build_ooxml_cell(lbl, fill_hex='FFF4E5', text_hex='9A3412', bold=True, font_sz=1000, align='l', border_hex='EA580C'),
+                build_ooxml_cell(val, fill_hex='FFF4E5', text_hex='C2410C', bold=True, font_sz=1000, align='r', border_hex='EA580C'),
             ]))
         else:
             bg = 'FFFFFF' if idx % 2 == 0 else 'FAF6F0'
@@ -521,16 +520,16 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
     grand_total = fmt_inr(comm.get('grandTotal', variant_quote.get('grandTotal', 0)))
     has_discount = (float(comm.get('discountAmount') or 0) > 0) or (float(comm.get('adpAmount') or 0) > 0) or (float(comm.get('totalSavings') or 0) > 0)
     final_lbl = ('FINAL DISCOUNTED VALUE (WITH GST)' if gst_enabled else 'FINAL DISCOUNTED VALUE') if has_discount else ('FINAL TOTAL (WITH GST)' if gst_enabled else 'FINAL TOTAL')
-    comm_rows.append((520000, [
-        build_ooxml_cell(final_lbl, fill_hex='FEF3C7', text_hex='08231B', bold=True, font_sz=1350, align='l', border_hex='C00000'),
-        build_ooxml_cell(grand_total, fill_hex='FEF3C7', text_hex='C00000', bold=True, font_sz=1600, align='r', border_hex='C00000'),
+    comm_rows.append((c_row_h, [
+        build_ooxml_cell(final_lbl, fill_hex='FEF3C7', text_hex='08231B', bold=True, font_sz=1000, align='l', border_hex='C00000'),
+        build_ooxml_cell(grand_total, fill_hex='FEF3C7', text_hex='C00000', bold=True, font_sz=1000, align='r', border_hex='C00000'),
     ]))
     total_savings = comm.get('totalSavings')
     if total_savings is None:
         total_savings = float(comm.get('discountAmount') or 0) + float(comm.get('adpAmount') or 0)
-    comm_rows.append((440000, [
-        build_ooxml_cell('YOUR SAVINGS', fill_hex='DCFCE7', text_hex='14532D', bold=True, font_sz=1200, align='l', border_hex='16A34A'),
-        build_ooxml_cell(fmt_inr(total_savings), fill_hex='DCFCE7', text_hex='15803D', bold=True, font_sz=1450, align='r', border_hex='16A34A'),
+    comm_rows.append((c_row_h, [
+        build_ooxml_cell('YOUR SAVINGS', fill_hex='DCFCE7', text_hex='14532D', bold=True, font_sz=1000, align='l', border_hex='16A34A'),
+        build_ooxml_cell(fmt_inr(total_savings), fill_hex='DCFCE7', text_hex='15803D', bold=True, font_sz=1000, align='r', border_hex='16A34A'),
     ]))
 
     shapes.append(build_ooxml_table(

@@ -1114,7 +1114,7 @@
 
             // Line Total
             var ax = px + colW[6];
-            ctx.fillStyle = '#C00000';
+            ctx.fillStyle = '#000000';
             ctx.font = 'bold 13.5px "Segoe UI", Arial, sans-serif';
             ctx.fillText(fmtINR(it.amount || 0), ax + colW[7] - 8, y + 54);
             ctx.textAlign = 'left';
@@ -1235,13 +1235,10 @@
           var wwDiscRow = ['Discount on Wood Work', fmtINR(wwAfter)];
           wwDiscRow._bg = '#FFF4E5';
           wwDiscRow._borderColor = '#EA580C';
-          wwDiscRow._borderWidth = 1.4;
+          wwDiscRow._borderWidth = 1.2;
           wwDiscRow._textColor = '#9A3412';
           wwDiscRow._valColor = '#C2410C';
           wwDiscRow._bold = true;
-          wwDiscRow._fontSize = 15;
-          wwDiscRow._valFontSize = 16;
-          wwDiscRow._padY = 10;
           cRows.push(wwDiscRow);
         }
         if (Number(comm.adpAmount || 0) > 0) {
@@ -1251,13 +1248,10 @@
           var dcDiscRow = ['Discount on Design Charge', fmtINR(dcAfter)];
           dcDiscRow._bg = '#FFF4E5';
           dcDiscRow._borderColor = '#EA580C';
-          dcDiscRow._borderWidth = 1.4;
+          dcDiscRow._borderWidth = 1.2;
           dcDiscRow._textColor = '#9A3412';
           dcDiscRow._valColor = '#C2410C';
           dcDiscRow._bold = true;
-          dcDiscRow._fontSize = 15;
-          dcDiscRow._valFontSize = 16;
-          dcDiscRow._padY = 10;
           cRows.push(dcDiscRow);
         }
         cRows.push(['Grand Total (Without GST)', fmtINR(comm.netBeforeTax || 0)]);
@@ -1274,13 +1268,21 @@
         grandRow._accent = true;
         grandRow._bg = '#FEF3C7';
         grandRow._borderColor = '#C00000';
-        grandRow._borderWidth = 2.2;
+        grandRow._borderWidth = 1.4;
         grandRow._textColor = '#08231B';
         grandRow._valColor = '#C00000';
-        grandRow._fontSize = 17;
-        grandRow._valFontSize = 21;
-        grandRow._padY = 12;
+        grandRow._bold = true;
         cRows.push(grandRow);
+
+        var totalSavings = Number(comm.totalSavings !== undefined ? comm.totalSavings : ((Number(comm.discountAmount) || 0) + (Number(comm.adpAmount) || 0)));
+        var savingsRow = ['YOUR SAVINGS', fmtINR(totalSavings)];
+        savingsRow._bg = '#DCFCE7';
+        savingsRow._borderColor = '#16A34A';
+        savingsRow._borderWidth = 1.2;
+        savingsRow._textColor = '#14532D';
+        savingsRow._valColor = '#15803D';
+        savingsRow._bold = true;
+        cRows.push(savingsRow);
 
         y = drawTable(ctx, cRows, 54, y, CANVAS_W - 108, [0.70, 0.30], {
           fontSize: 13.5,
@@ -1289,21 +1291,6 @@
           rightAlignCols: [1],
           headerBg: '#C00000'
         });
-
-        var totalSavings = Number(comm.totalSavings !== undefined ? comm.totalSavings : ((Number(comm.discountAmount) || 0) + (Number(comm.adpAmount) || 0)));
-        if (y + 58 < CANVAS_H - 140) {
-          y += 14;
-          drawRoundedRect(ctx, 54, y, CANVAS_W - 108, 52, 9, '#DCFCE7', '#16A34A', 2.2);
-          ctx.fillStyle = '#14532D';
-          ctx.font = 'bold 16.5px "Segoe UI", Arial, sans-serif';
-          ctx.fillText('YOUR SAVINGS', 74, y + 32);
-          ctx.textAlign = 'right';
-          ctx.fillStyle = '#15803D';
-          ctx.font = 'bold 20px "Segoe UI", Arial, sans-serif';
-          ctx.fillText(fmtINR(totalSavings), CANVAS_W - 74, y + 33);
-          ctx.textAlign = 'left';
-          y += 58;
-        }
 
         // ── ADD-ONS, ACCESSORIES & APPLIANCES (DOWN AFTER YOUR SAVINGS) ──
         var selectedAddons = Array.isArray(comm.selectedAddons) ? comm.selectedAddons : [];
