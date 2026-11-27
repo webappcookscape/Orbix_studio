@@ -864,16 +864,6 @@ def build_pdf(payload, out_path):
                 'val_color': C_FOREST,
                 'bold': True
             })
-            addon_rows.append({
-                'cells': ['TOTAL PROJECT INVESTMENT (PROPOSAL + ADD-ONS)', '', '', fmt_inr(total_investment)],
-                'span_first': 3,
-                'bg': C_INV_BG,
-                'border': C_SAVE_BORDER,
-                'lw': 0.9,
-                'text_color': C_FOREST,
-                'val_color': C_SAVE_VAL,
-                'bold': True
-            })
         else:
             addon_rows.append({
                 'cells': ['None Selected (Optional Cookscape Master Add-ons available upon request)', '', '', 'Rs. 0'],
