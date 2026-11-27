@@ -804,15 +804,36 @@
           var rLineH = Math.round(Math.max(rFont, rValFont) * 1.38);
           var isRowBold = isHeader || !!row._highlight || !!row._bold;
 
+          var spanFirst = (!isHeader && row._spanFirstCols && row._spanFirstCols > 1 && row._spanFirstCols < colWidths.length)
+            ? row._spanFirstCols
+            : 0;
+          var cellSpecs = [];
+          if (spanFirst) {
+            var mergedW = 0;
+            for (var mc = 0; mc < spanFirst; mc++) mergedW += colWidths[mc];
+            cellSpecs.push({ colIdx: 0, x: x, w: mergedW, val: row[0] !== undefined ? String(row[0]) : '', isLast: false });
+            var curX = x + mergedW;
+            for (var rc = spanFirst; rc < colWidths.length; rc++) {
+              cellSpecs.push({ colIdx: rc, x: curX, w: colWidths[rc], val: row[rc] !== undefined ? String(row[rc]) : '', isLast: rc === colWidths.length - 1 });
+              curX += colWidths[rc];
+            }
+          } else {
+            var curX2 = x;
+            for (var c = 0; c < colWidths.length; c++) {
+              cellSpecs.push({ colIdx: c, x: curX2, w: colWidths[c], val: row[c] !== undefined ? String(row[c]) : '', isLast: c === colWidths.length - 1 });
+              curX2 += colWidths[c];
+            }
+          }
+
           var cellWrapped = [];
           var maxLines = 1;
-          for (var c = 0; c < colWidths.length; c++) {
-            var val = row[c] !== undefined ? String(row[c]) : '';
-            var cFont = (c === colWidths.length - 1) ? rValFont : rFont;
-            ctx.font = (isRowBold || (c === 0 && opts.boldFirstCol))
+          for (var cs = 0; cs < cellSpecs.length; cs++) {
+            var spec = cellSpecs[cs];
+            var cFont = spec.isLast ? rValFont : rFont;
+            ctx.font = (isRowBold || (spec.colIdx === 0 && opts.boldFirstCol))
               ? ('bold ' + cFont + 'px "Segoe UI", Arial, sans-serif')
               : (cFont + 'px "Segoe UI", Arial, sans-serif');
-            var wrapped = wrapLines(ctx, val, Math.max(28, colWidths[c] - padX * 2));
+            var wrapped = wrapLines(ctx, spec.val, Math.max(28, spec.w - padX * 2));
             cellWrapped.push(wrapped);
             if (wrapped.length > maxLines) maxLines = wrapped.length;
           }
@@ -820,44 +841,43 @@
           var rowH = maxLines * rLineH + rPadY * 2;
           if (y + rowH > CANVAS_H - 60) break;
 
-          var bg = isHeader ? (opts.headerBg || '#C00000') : (r % 2 === 0 ? '#FFFDF9' : '#FAF6F0');
+          var bg = isHeader ? (opts.headerBg || '#C00000') : (r % 2 === 1 ? '#FFFFFF' : '#F7F4EC');
           if (row._highlight) bg = '#FEF3C7';
           if (row._bg) bg = row._bg;
 
           ctx.fillStyle = bg;
           ctx.fillRect(x, y, width, rowH);
           ctx.strokeStyle = row._borderColor || (row._highlight ? '#C00000' : '#D2C6B6');
-          ctx.lineWidth = row._borderWidth || (row._highlight ? 2 : 1);
+          ctx.lineWidth = row._borderWidth || (row._highlight ? 1.5 : 1);
           ctx.strokeRect(x, y, width, rowH);
 
-          var cx = x;
-          for (var c2 = 0; c2 < colWidths.length; c2++) {
+          for (var c2 = 0; c2 < cellSpecs.length; c2++) {
+            var sp = cellSpecs[c2];
             if (c2 > 0) {
               ctx.strokeStyle = row._borderColor || '#D2C6B6';
               ctx.lineWidth = 1;
               ctx.beginPath();
-              ctx.moveTo(cx, y);
-              ctx.lineTo(cx, y + rowH);
+              ctx.moveTo(sp.x, y);
+              ctx.lineTo(sp.x, y + rowH);
               ctx.stroke();
             }
             var lines = cellWrapped[c2];
-            var isRight = opts.rightAlignCols && opts.rightAlignCols.indexOf(c2) !== -1 && !isHeader;
-            var isLastCol = (c2 === colWidths.length - 1);
-            var cFont2 = isLastCol ? rValFont : rFont;
-            var defColor = isLastCol
+            var isRight = opts.rightAlignCols && opts.rightAlignCols.indexOf(sp.colIdx) !== -1;
+            var isCenter = !spanFirst && opts.centerAlignCols && opts.centerAlignCols.indexOf(sp.colIdx) !== -1;
+            var cFont2 = sp.isLast ? rValFont : rFont;
+            var defColor = sp.isLast
               ? (row._valColor || (row._accent ? '#C00000' : (row._textColor || '#08231B')))
               : (row._textColor || '#08231B');
             ctx.fillStyle = isHeader ? '#FFFFFF' : defColor;
-            ctx.font = (isRowBold || (c2 === 0 && opts.boldFirstCol))
+            ctx.font = (isRowBold || (sp.colIdx === 0 && opts.boldFirstCol))
               ? ('bold ' + cFont2 + 'px "Segoe UI", Arial, sans-serif')
               : (cFont2 + 'px "Segoe UI", Arial, sans-serif');
-            ctx.textAlign = isRight ? 'right' : 'left';
-            var tx = isRight ? (cx + colWidths[c2] - padX) : (cx + padX);
+            ctx.textAlign = isRight ? 'right' : (isCenter ? 'center' : 'left');
+            var tx = isRight ? (sp.x + sp.w - padX) : (isCenter ? (sp.x + sp.w / 2) : (sp.x + padX));
             var baseOffsetY = y + (rowH - lines.length * rLineH) / 2 + cFont2 * 0.86;
             for (var li = 0; li < lines.length; li++) {
               ctx.fillText(lines[li], tx, baseOffsetY + li * rLineH);
             }
-            cx += colWidths[c2];
           }
           ctx.textAlign = 'left';
           y += rowH;
@@ -1236,19 +1256,14 @@
           y += 28;
         }
 
-        ctx.fillStyle = '#08231B';
-        ctx.font = 'bold 17px Georgia, "Times New Roman", serif';
-        ctx.fillText('COST ESTIMATION SUMMARY', 54, y);
-        y += 12;
-
         var accEnabled = comm.accessoriesEnabled !== false;
         var appEnabled = comm.appliancesEnabled !== false;
         var frtEnabled = comm.freightEnabled !== false;
         var gstEnabled = comm.gstEnabled !== false;
 
-        // Core Woodwork Commercial Table (excludes Add-ons / Accessories & Appliances so they do not alter Final Discounted Value)
+        // Core Woodwork Commercial Table (exact reference style matching PPTX & PDF)
         var cRows = [
-          ['Description', 'Amount'],
+          ['COST ESTIMATION SUMMARY', 'AMOUNT'],
           ['Modular Woodwork Subtotal', fmtINR(comm.woodworkSubtotal || 0)]
         ];
         cRows.push(['Design Charges', fmtINR(comm.designAmount || 0)]);
@@ -1317,13 +1332,13 @@
 
         y = drawTable(ctx, cRows, 54, y, CANVAS_W - 108, [0.70, 0.30], {
           fontSize: 13.5,
-          padY: 8.5,
+          padY: 7.5,
           boldFirstCol: false,
           rightAlignCols: [1],
           headerBg: '#C00000'
         });
 
-        // ── ADD-ONS, ACCESSORIES & APPLIANCES (DOWN AFTER YOUR SAVINGS) ──
+        // ── ADD-ONS, ACCESSORIES & APPLIANCES (4 COLUMNS: ACCESSORIES NAME, QUANTITY, BRAND, AMOUNT) ──
         var selectedAddons = Array.isArray(comm.selectedAddons) ? comm.selectedAddons : [];
         var selectedCustomAddons = Array.isArray(comm.selectedCustomAddons) ? comm.selectedCustomAddons : [];
         var appliancesList = Array.isArray(comm.appliancesList) ? comm.appliancesList : [];
@@ -1336,58 +1351,80 @@
 
         var hasAddonItems = (selectedAddons.length > 0) || (selectedCustomAddons.length > 0) || (appliancesList.length > 0) || (addonsTotal > 0);
 
-        if (y + 70 < CANVAS_H - 120) {
-          y += 16;
+        if (y + 70 < CANVAS_H - 90) {
+          y += 14;
           var addonRows = [
-            ['ADD-ONS, ACCESSORIES & APPLIANCES (SELECTED ITEMS)', 'AMOUNT']
+            ['ACCESSORIES NAME', 'QUANTITY', 'BRAND', 'AMOUNT']
           ];
           if (selectedAddons.length > 0) {
             selectedAddons.forEach(function (it) {
               var q = Number(it.qty !== undefined ? it.qty : 1);
               var r = Number((it.customRate !== undefined && it.customRate !== null && it.customRate !== '') ? it.customRate : (it.rate || 0));
               var a = it.amount !== undefined ? Number(it.amount) : Math.round(q * r);
-              var uText = (it.unit === 'meter') ? (q + ' meters @ ' + fmtINR(r) + '/m') :
-                          ((it.unit === 'sqft') ? (q + ' sq.ft @ ' + fmtINR(r) + '/sqft') :
-                          ('Qty: ' + q + (r > 0 ? (' @ ' + fmtINR(r)) : '')));
-              addonRows.push(['• ' + (it.name || 'Accessory Item') + ' (' + uText + ')', fmtINR(a)]);
+              var qtyDisp = (it.unit === 'meter') ? (q + ' m') : ((it.unit === 'sqft') ? (q + ' sq.ft') : String(q));
+              var brandDisp = (it.brand && String(it.brand).trim()) ? String(it.brand).trim() : '-';
+              addonRows.push([String(it.name || 'Accessory Item'), qtyDisp, brandDisp, fmtINR(a)]);
             });
           } else if (addAccVal > 0) {
-            addonRows.push(['• Selected Hardware Accessories Package', fmtINR(addAccVal)]);
+            addonRows.push(['Selected Hardware Accessories Package', '1', '-', fmtINR(addAccVal)]);
           }
 
           if (selectedCustomAddons.length > 0) {
             selectedCustomAddons.forEach(function (ap) {
-              var gBadge = ap.grade === 'premium' ? ' [⭐ Premium]' : ' [⚪ Regular]';
+              var q = Number(ap.qty || 1);
               var r = (ap.rate !== undefined && ap.rate !== null && ap.rate !== '') ? Number(ap.rate) : 0;
-              var dimText = (ap.length > 0 && ap.width > 0)
-                ? (' (' + ap.length + '\' × ' + ap.width + '\' = ' + ap.qty + ' sq.ft' + (r > 0 ? (' @ ' + fmtINR(r) + '/sqft') : '') + ')')
-                : (' (Qty: ' + (ap.qty || 1) + (r > 0 ? (' @ ' + fmtINR(r)) : '') + ')');
-              var a = ap.amount !== undefined ? Number(ap.amount) : Math.round((ap.qty || 1) * r);
-              addonRows.push(['• ' + (ap.name || 'Add-on') + (ap.gradeName ? (' — ' + ap.gradeName) : '') + gBadge + dimText, fmtINR(a)]);
+              var qtyDisp = (ap.length > 0 && ap.width > 0) ? (q + ' sq.ft') : String(q);
+              var a = ap.amount !== undefined ? Number(ap.amount) : Math.round(q * r);
+              var brandDisp = (ap.brand && String(ap.brand).trim())
+                ? String(ap.brand).trim()
+                : (ap.gradeName ? String(ap.gradeName).trim() : (ap.grade === 'premium' ? 'Premium' : 'Regular'));
+              addonRows.push([String(ap.name || 'Add-on'), qtyDisp, brandDisp, fmtINR(a)]);
             });
           } else if (appliancesList.length > 0) {
             appliancesList.forEach(function (ap) {
               var q = Math.max(1, Number(ap.qty || 1));
               var a = ap.amount !== undefined ? Number(ap.amount) : (Number(ap.rate || 0) * q);
-              addonRows.push(['• ' + (ap.name || 'Kitchen Appliance') + (q > 1 ? (' (Qty: ' + q + ')') : ''), fmtINR(a)]);
+              var brandDisp = (ap.brand && String(ap.brand).trim()) ? String(ap.brand).trim() : '-';
+              addonRows.push([String(ap.name || 'Kitchen Appliance'), String(q), brandDisp, fmtINR(a)]);
             });
           } else if (appVal > 0) {
-            addonRows.push(['• Selected Add-ons / Appliances Package', fmtINR(appVal)]);
+            addonRows.push(['Selected Add-ons / Appliances Package', '1', '-', fmtINR(appVal)]);
           }
 
           if (hasAddonItems) {
-            var subRow = ['Add-ons & Accessories Subtotal', fmtINR(addonsTotal)];
-            subRow._highlight = true;
+            var subRow = ['Add-ons & Accessories Subtotal', '', '', fmtINR(addonsTotal)];
+            subRow._spanFirstCols = 3;
+            subRow._bg = '#FEF9C3';
+            subRow._borderColor = '#D2C6B6';
+            subRow._textColor = '#08231B';
+            subRow._valColor = '#08231B';
+            subRow._bold = true;
             addonRows.push(subRow);
+
+            var invRow = ['TOTAL PROJECT INVESTMENT (PROPOSAL + ADD-ONS)', '', '', fmtINR(totalInvestment)];
+            invRow._spanFirstCols = 3;
+            invRow._bg = '#ECFDF5';
+            invRow._borderColor = '#16A34A';
+            invRow._borderWidth = 1.2;
+            invRow._textColor = '#08231B';
+            invRow._valColor = '#15803D';
+            invRow._bold = true;
+            addonRows.push(invRow);
           } else {
-            addonRows.push(['None Selected (Optional Cookscape Master Add-ons available upon request)', '₹ 0']);
+            var noneRow = ['None Selected (Optional Cookscape Master Add-ons available upon request)', '', '', 'Rs. 0'];
+            noneRow._spanFirstCols = 3;
+            noneRow._bg = '#FFFFFF';
+            noneRow._textColor = '#64748B';
+            noneRow._valColor = '#64748B';
+            addonRows.push(noneRow);
           }
 
-          y = drawTable(ctx, addonRows, 54, y, CANVAS_W - 108, [0.70, 0.30], {
+          y = drawTable(ctx, addonRows, 54, y, CANVAS_W - 108, [0.46, 0.14, 0.18, 0.22], {
             fontSize: 12.5,
             padY: 6.5,
-            boldFirstCol: true,
-            rightAlignCols: [1],
+            boldFirstCol: false,
+            centerAlignCols: [1, 2],
+            rightAlignCols: [3],
             headerBg: '#08231B'
           });
         }

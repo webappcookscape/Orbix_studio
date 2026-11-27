@@ -18,6 +18,47 @@ import zlib
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS_DIR = os.path.join(ROOT_DIR, 'server', 'quote-assets')
 TEMPLATE_DATA_PATH = os.path.join(ASSETS_DIR, 'template-data.json')
+ADDONS_BRANDS_PATH = os.path.join(ASSETS_DIR, 'addons-brands.json')
+_ADDONS_BRANDS_CACHE = None
+
+
+def load_addons_brands():
+    global _ADDONS_BRANDS_CACHE
+    if _ADDONS_BRANDS_CACHE is not None:
+        return _ADDONS_BRANDS_CACHE
+    try:
+        with open(ADDONS_BRANDS_PATH, 'r', encoding='utf-8') as f:
+            _ADDONS_BRANDS_CACHE = json.load(f)
+    except Exception:
+        _ADDONS_BRANDS_CACHE = {'byId': {}, 'byName': {}}
+    return _ADDONS_BRANDS_CACHE
+
+
+def resolve_addon_brand(item):
+    if isinstance(item, dict) and str(item.get('brand') or '').strip():
+        return str(item.get('brand')).strip()
+    if not isinstance(item, dict):
+        return '-'
+    db = load_addons_brands()
+    id_k = str(item.get('id') or '').strip().lower()
+    nm_k = str(item.get('name') or '').strip().lower()
+    rec = (db.get('byId') or {}).get(id_k) or (db.get('byName') or {}).get(nm_k)
+    if not rec:
+        return '-'
+    raw_r = item.get('customRate') if item.get('customRate') not in (None, '') else item.get('rate', 0)
+    try:
+        rv = float(raw_r or 0)
+    except Exception:
+        rv = 0.0
+    if rec.get('brand') and rec.get('rate') and abs(rv - float(rec['rate'])) < 0.05:
+        return str(rec['brand'])
+    if rec.get('hettichRate') and abs(rv - float(rec['hettichRate'])) < 0.05:
+        return 'HETTICH'
+    if rec.get('ebcoRate') and abs(rv - float(rec['ebcoRate'])) < 0.05:
+        return 'EBCO'
+    if rec.get('grassRate') and abs(rv - float(rec['grassRate'])) < 0.05:
+        return 'GRASS'
+    return str(rec.get('brand') or '-')
 
 PAGE_W = 595.28   # A4 Portrait width in pt
 PAGE_H = 841.89   # A4 Portrait height in pt
@@ -45,6 +86,8 @@ C_SAVE_BG = (220 / 255.0, 252 / 255.0, 231 / 255.0)
 C_SAVE_BORDER = (22 / 255.0, 163 / 255.0, 74 / 255.0)
 C_SAVE_TEXT = (20 / 255.0, 83 / 255.0, 45 / 255.0)
 C_SAVE_VAL = (21 / 255.0, 128 / 255.0, 61 / 255.0)
+C_SUB_BG = (254 / 255.0, 249 / 255.0, 195 / 255.0)
+C_INV_BG = (236 / 255.0, 253 / 255.0, 245 / 255.0)
 
 
 def normalize_tier_key(raw):
@@ -306,7 +349,20 @@ def op_text(text, x, y_top, size=10.0, color=C_FOREST, font='F1', align='l', box
     safe = pdf_safe_text(text)
     if not safe:
         return ''
-    est_w = len(safe) * size * (0.53 if font == 'F2' else 0.49)
+    scale = 1.06 if font == 'F2' else 1.0
+    est_w = 0.0
+    for ch in safe:
+        if ch in ' iIl1.,:;|!':
+            est_w += 0.28
+        elif ch in 'MW@#%':
+            est_w += 0.85
+        elif ch.isupper():
+            est_w += 0.68
+        elif ch.isdigit():
+            est_w += 0.56
+        else:
+            est_w += 0.50
+    est_w = est_w * size * scale
     draw_x = x
     if align == 'r' and box_w > 0:
         draw_x = max(x, x + box_w - est_w)
@@ -346,8 +402,9 @@ def draw_frame_header(pdf, ops, used_assets, logo_asset, logo_rect, title, subti
     ops.append(op_rect(30, 112, PAGE_W - 60, 1.5, fill=C_CRIMSON))
 
 
-def draw_table_ops(ops, rows, x, y, total_w, col_ratios, font_size=8.2, header_fill=C_CRIMSON, right_cols=None, bold_first=False, pad_y=4.5):
+def draw_table_ops(ops, rows, x, y, total_w, col_ratios, font_size=8.2, header_fill=C_CRIMSON, right_cols=None, center_cols=None, bold_first=False, pad_y=4.5):
     right_cols = set(right_cols or [])
+    center_cols = set(center_cols or [])
     col_ws = [total_w * r for r in col_ratios]
 
     for r_idx, row in enumerate(rows):
@@ -360,6 +417,7 @@ def draw_table_ops(ops, rows, x, y, total_w, col_ratios, font_size=8.2, header_f
         custom_lw = None
         custom_text_color = None
         custom_val_color = None
+        span_first = 0
         r_font = font_size
         r_val_font = font_size
         r_pad_y = pad_y
@@ -374,6 +432,7 @@ def draw_table_ops(ops, rows, x, y, total_w, col_ratios, font_size=8.2, header_f
             custom_lw = row.get('lw')
             custom_text_color = row.get('text_color')
             custom_val_color = row.get('val_color')
+            span_first = int(row.get('span_first') or 0) if not is_hdr else 0
             if row.get('font_size'):
                 r_font = float(row['font_size'])
             r_val_font = float(row.get('val_font_size') or r_font)
@@ -382,16 +441,32 @@ def draw_table_ops(ops, rows, x, y, total_w, col_ratios, font_size=8.2, header_f
 
         line_h = max(r_font, r_val_font) * 1.28
 
+        # Build effective cell layout (supports spanning first N columns for subtotal/total rows)
+        cell_specs = []
+        if 1 < span_first < len(col_ws):
+            merged_w = sum(col_ws[:span_first])
+            cell_specs.append((0, x, merged_w, cells[0] if len(cells) > 0 else '', False))
+            cur_x = x + merged_w
+            for c_idx in range(span_first, len(col_ws)):
+                raw_v = cells[c_idx] if c_idx < len(cells) else ''
+                cell_specs.append((c_idx, cur_x, col_ws[c_idx], raw_v, c_idx == len(col_ws) - 1))
+                cur_x += col_ws[c_idx]
+        else:
+            cur_x = x
+            for c_idx, cw in enumerate(col_ws):
+                raw_v = cells[c_idx] if c_idx < len(cells) else ''
+                cell_specs.append((c_idx, cur_x, cw, raw_v, c_idx == len(col_ws) - 1))
+                cur_x += cw
+
         wrapped = []
         max_lines = 1
-        for c_idx in range(len(col_ws)):
-            raw_val = cells[c_idx] if c_idx < len(cells) else ''
-            c_fs = r_val_font if (c_idx == len(col_ws) - 1 and not is_hdr) else r_font
-            ls = wrap_text(raw_val, col_ws[c_idx] - 10, c_fs, bold=(is_hdr or is_bold_row or (c_idx == 0 and bold_first)))
+        for c_idx, _cx, cw, raw_val, is_last_col in cell_specs:
+            c_fs = r_val_font if (is_last_col and not is_hdr) else r_font
+            ls = wrap_text(raw_val, cw - 10, c_fs, bold=(is_hdr or is_bold_row or (c_idx == 0 and bold_first)))
             wrapped.append(ls)
             max_lines = max(max_lines, len(ls))
 
-        row_h = max(18.0, max_lines * line_h + r_pad_y * 2)
+        row_h = max(17.5, max_lines * line_h + r_pad_y * 2)
         if y + row_h > PAGE_H - 36:
             break
 
@@ -408,11 +483,9 @@ def draw_table_ops(ops, rows, x, y, total_w, col_ratios, font_size=8.2, header_f
         stroke_lw = custom_lw if custom_lw is not None else (1.3 if is_hl else 0.5)
         ops.append(op_rect(x, y, total_w, row_h, fill=bg, stroke=stroke_c, lw=stroke_lw))
 
-        cx = x
-        for c_idx, cw in enumerate(col_ws):
-            if c_idx > 0:
+        for s_idx, (c_idx, cx, cw, _raw_val, is_last_col) in enumerate(cell_specs):
+            if s_idx > 0:
                 ops.append(op_rect(cx, y, 0.5, row_h, fill=(custom_border or C_BORDER)))
-            is_last_col = (c_idx == len(col_ws) - 1)
             c_fs = r_val_font if (is_last_col and not is_hdr) else r_font
             fnt = 'F2' if (is_hdr or is_bold_row or (c_idx == 0 and bold_first)) else 'F1'
             if is_hdr:
@@ -425,11 +498,15 @@ def draw_table_ops(ops, rows, x, y, total_w, col_ratios, font_size=8.2, header_f
                 clr = custom_text_color
             else:
                 clr = C_FOREST
-            algn = 'r' if (c_idx in right_cols and not is_hdr) else 'l'
-            text_y_start = y + (row_h - len(wrapped[c_idx]) * line_h) / 2.0 + (line_h - c_fs) * 0.35
-            for li, line in enumerate(wrapped[c_idx]):
+            if c_idx in right_cols:
+                algn = 'r'
+            elif c_idx in center_cols and not (1 < span_first < len(col_ws)):
+                algn = 'c'
+            else:
+                algn = 'l'
+            text_y_start = y + (row_h - len(wrapped[s_idx]) * line_h) / 2.0 + (line_h - c_fs) * 0.35
+            for li, line in enumerate(wrapped[s_idx]):
                 ops.append(op_text(line, cx + 5, text_y_start + li * line_h, size=c_fs, color=clr, font=fnt, align=algn, box_w=cw - 10))
-            cx += cw
 
         y += row_h
     return y
@@ -658,10 +735,6 @@ def build_pdf(payload, out_path):
             ['COST ESTIMATION SUMMARY', 'AMOUNT'],
             ['Modular Woodwork Subtotal', fmt_inr(comm.get('woodworkSubtotal', 0))],
         ]
-        if acc_enabled:
-            c_rows.append(['Accessories', fmt_inr(comm.get('additionalAccessories', 0))])
-        if app_enabled:
-            c_rows.append(['Add ons', fmt_inr(comm.get('appliances', 0))])
         c_rows.append(['Design Charges', fmt_inr(comm.get('designAmount', 0))])
         if frt_enabled:
             c_rows.append(['Freight Charges', fmt_inr(comm.get('freightAmount', 0))])
@@ -730,7 +803,101 @@ def build_pdf(payload, out_path):
             'bold': False
         })
 
-        y = draw_table_ops(ops, c_rows, 30, y, PAGE_W - 60, [0.70, 0.30], font_size=8.8, header_fill=C_CRIMSON, right_cols={1}, bold_first=False, pad_y=5.5) + 14.0
+        y = draw_table_ops(ops, c_rows, 30, y, PAGE_W - 60, [0.70, 0.30], font_size=8.6, header_fill=C_CRIMSON, right_cols={1}, bold_first=False, pad_y=4.8) + 12.0
+
+        # ── ADD-ONS, ACCESSORIES & APPLIANCES (4 COLUMNS: ACCESSORIES NAME, QUANTITY, BRAND, AMOUNT) ──
+        selected_addons = comm.get('selectedAddons') or []
+        selected_custom_addons = comm.get('selectedCustomAddons') or []
+        appliances_list = comm.get('appliancesList') or []
+        add_acc_amt = float(comm.get('additionalAccessories') or 0) if acc_enabled else 0
+        app_amt = float(comm.get('appliances') or 0) if app_enabled else 0
+        addons_total = comm.get('addonsTotal')
+        if addons_total is None:
+            addons_total = add_acc_amt + app_amt
+        else:
+            addons_total = float(addons_total)
+        total_investment = comm.get('totalInvestmentWithAddons')
+        if total_investment is None:
+            total_investment = float(comm.get('grandTotal', vq.get('grandTotal', 0)) or 0) + addons_total
+        else:
+            total_investment = float(total_investment)
+        has_addons = bool(selected_addons or selected_custom_addons or appliances_list or (addons_total > 0))
+
+        addon_rows = [['ACCESSORIES NAME', 'QUANTITY', 'BRAND', 'AMOUNT']]
+        if selected_addons:
+            for it in selected_addons:
+                q_raw = it.get('qty', 1)
+                q_num = float(q_raw if q_raw not in (None, '') else 1)
+                q_clean = int(q_num) if q_num == int(q_num) else q_num
+                unit = str(it.get('unit') or '').lower()
+                qty_disp = f"{q_clean} m" if unit == 'meter' else (f"{q_clean} sq.ft" if unit == 'sqft' else str(q_clean))
+                r = float(it.get('customRate') if it.get('customRate') not in (None, '') else (it.get('rate') or 0))
+                amt = float(it.get('amount') if it.get('amount') is not None else round(q_num * r))
+                addon_rows.append([str(it.get('name') or 'Accessory Item'), qty_disp, resolve_addon_brand(it), fmt_inr(amt)])
+        elif add_acc_amt > 0:
+            addon_rows.append(['Selected Hardware Accessories Package', '1', '-', fmt_inr(add_acc_amt)])
+
+        if selected_custom_addons:
+            for ap in selected_custom_addons:
+                q_num = float(ap.get('qty') or 1)
+                q_clean = int(q_num) if q_num == int(q_num) else q_num
+                qty_disp = f"{q_clean} sq.ft" if (float(ap.get('length') or 0) > 0 and float(ap.get('width') or 0) > 0) else str(q_clean)
+                r = float(ap.get('rate') or 0)
+                amt = float(ap.get('amount') if ap.get('amount') is not None else round(q_num * r))
+                brand_disp = str(ap.get('brand') or ap.get('gradeName') or ('Premium' if ap.get('grade') == 'premium' else 'Regular'))
+                addon_rows.append([str(ap.get('name') or 'Add-on'), qty_disp, brand_disp, fmt_inr(amt)])
+        elif appliances_list:
+            for ap in appliances_list:
+                q = max(1, int(ap.get('qty', 1)))
+                amt = float(ap.get('amount') if ap.get('amount') is not None else (float(ap.get('rate', 0)) * q))
+                addon_rows.append([str(ap.get('name') or 'Kitchen Appliance'), str(q), str(ap.get('brand') or '-'), fmt_inr(amt)])
+        elif app_amt > 0:
+            addon_rows.append(['Selected Kitchen & Home Appliances Package', '1', '-', fmt_inr(app_amt)])
+
+        if has_addons:
+            addon_rows.append({
+                'cells': ['Add-ons & Accessories Subtotal', '', '', fmt_inr(addons_total)],
+                'span_first': 3,
+                'bg': C_SUB_BG,
+                'border': C_BORDER,
+                'text_color': C_FOREST,
+                'val_color': C_FOREST,
+                'bold': True
+            })
+            addon_rows.append({
+                'cells': ['TOTAL PROJECT INVESTMENT (PROPOSAL + ADD-ONS)', '', '', fmt_inr(total_investment)],
+                'span_first': 3,
+                'bg': C_INV_BG,
+                'border': C_SAVE_BORDER,
+                'lw': 0.9,
+                'text_color': C_FOREST,
+                'val_color': C_SAVE_VAL,
+                'bold': True
+            })
+        else:
+            addon_rows.append({
+                'cells': ['None Selected (Optional Cookscape Master Add-ons available upon request)', '', '', 'Rs. 0'],
+                'span_first': 3,
+                'bg': C_WHITE,
+                'text_color': C_MUTED,
+                'val_color': C_MUTED,
+                'bold': False
+            })
+
+        needed_addon_h = len(addon_rows) * 18.5 + 16.0
+        if y + needed_addon_h > PAGE_H - 42:
+            add_footer(ops, footer_text, page_counter, True)
+            pdf.add_page(ops, used)
+            page_counter += 1
+            ops = []
+            used = set()
+            draw_frame_header(pdf, ops, used, logo_asset, logo_rect, f'{v_title} - ADD-ONS & ACCESSORIES', f'Patron: {client_name}  |  Ref: {quote_code}')
+            y = 128.0
+
+        y = draw_table_ops(
+            ops, addon_rows, 30, y, PAGE_W - 60, [0.46, 0.14, 0.18, 0.22],
+            font_size=8.0, header_fill=C_FOREST, center_cols={1, 2}, right_cols={3}, bold_first=False, pad_y=4.2
+        ) + 12.0
         if y < PAGE_H - 55:
             scope_notes = (
                 f"Loading/Unloading: {comm.get('loadingUnloadingStatus', 'Additional')} | "

@@ -319,7 +319,25 @@
         additionalAccessories: comm.additionalAccessories,
         appliancesEnabled: comm.appliancesEnabled !== false,
         appliances: comm.appliances,
-        selectedAddons: commCharges.selectedAddons || comm.selectedAddons || [],
+        selectedAddons: (commCharges.selectedAddons || comm.selectedAddons || []).map(function (it) {
+          if (!it || typeof it !== 'object') return it;
+          if (it.brand && String(it.brand).trim()) return it;
+          var catList = (Core && typeof Core.getCookscapeAddonsCatalog === 'function') ? Core.getCookscapeAddonsCatalog() : [];
+          var hit = catList.find(function (c) {
+            return (it.id && c.id === it.id) || (it.name && c.name && c.name.trim().toLowerCase() === String(it.name).trim().toLowerCase());
+          });
+          var resolvedBrand = '';
+          if (hit) {
+            var r = Number((it.customRate !== undefined && it.customRate !== null && it.customRate !== '') ? it.customRate : (it.rate || 0));
+            var defBrand = String(hit.brand || '').trim().toUpperCase();
+            if (defBrand && hit.rate && Math.abs(r - hit.rate) < 0.05) resolvedBrand = defBrand;
+            else if (hit.hettichRate && Math.abs(r - hit.hettichRate) < 0.05) resolvedBrand = 'HETTICH';
+            else if (hit.ebcoRate && Math.abs(r - hit.ebcoRate) < 0.05) resolvedBrand = 'EBCO';
+            else if (hit.grassRate && Math.abs(r - hit.grassRate) < 0.05) resolvedBrand = 'GRASS';
+            else resolvedBrand = defBrand;
+          }
+          return Object.assign({}, it, { brand: resolvedBrand });
+        }),
         selectedCustomAddons: commCharges.selectedCustomAddons || comm.selectedCustomAddons || [],
         appliancesList: commCharges.appliancesList || comm.appliancesList || [],
         addonsTotal: comm.addonsTotal !== undefined ? comm.addonsTotal : ((comm.accessoriesEnabled !== false ? Number(comm.additionalAccessories || 0) : 0) + (comm.appliancesEnabled !== false ? Number(comm.appliances || 0) : 0)),

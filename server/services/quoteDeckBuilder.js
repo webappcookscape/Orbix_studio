@@ -8,8 +8,50 @@ const path = require('path');
 
 const ASSETS_DIR = path.join(__dirname, '..', 'quote-assets');
 const TEMPLATE_DATA_PATH = path.join(ASSETS_DIR, 'template-data.json');
+const ADDONS_BRANDS_PATH = path.join(ASSETS_DIR, 'addons-brands.json');
 
 let cachedTemplateData = null;
+let cachedAddonsBrands = null;
+
+function loadAddonsBrands() {
+  if (cachedAddonsBrands) return cachedAddonsBrands;
+  try {
+    if (fs.existsSync(ADDONS_BRANDS_PATH)) {
+      cachedAddonsBrands = JSON.parse(fs.readFileSync(ADDONS_BRANDS_PATH, 'utf8'));
+      return cachedAddonsBrands;
+    }
+  } catch (_) {}
+  cachedAddonsBrands = { byId: {}, byName: {} };
+  return cachedAddonsBrands;
+}
+
+function resolveAddonBrand(item) {
+  if (!item || typeof item !== 'object') return '-';
+  if (item.brand && String(item.brand).trim()) return String(item.brand).trim();
+  const db = loadAddonsBrands();
+  const idKey = String(item.id || '').trim().toLowerCase();
+  const nameKey = String(item.name || '').trim().toLowerCase();
+  const rec = (idKey && db.byId && db.byId[idKey]) || (nameKey && db.byName && db.byName[nameKey]) || null;
+  if (!rec) return '-';
+  const r = Number((item.customRate !== undefined && item.customRate !== null && item.customRate !== '') ? item.customRate : (item.rate || 0));
+  if (rec.brand && rec.rate && Math.abs(r - rec.rate) < 0.05) return rec.brand;
+  if (rec.hettichRate && Math.abs(r - rec.hettichRate) < 0.05) return 'HETTICH';
+  if (rec.ebcoRate && Math.abs(r - rec.ebcoRate) < 0.05) return 'EBCO';
+  if (rec.grassRate && Math.abs(r - rec.grassRate) < 0.05) return 'GRASS';
+  return rec.brand || '-';
+}
+
+function enrichCommercialAddons(comm) {
+  if (!comm || typeof comm !== 'object') return {};
+  const out = Object.assign({}, comm);
+  if (Array.isArray(out.selectedAddons)) {
+    out.selectedAddons = out.selectedAddons.map((it) => {
+      if (!it || typeof it !== 'object') return it;
+      return Object.assign({}, it, { brand: resolveAddonBrand(it) });
+    });
+  }
+  return out;
+}
 
 function loadTemplateData() {
   if (cachedTemplateData) return cachedTemplateData;
@@ -310,7 +352,7 @@ function buildClientQuoteDeck(quoteRecord) {
       roomScopeLabel: vq.roomScopeLabel || 'All Rooms (Entire Home)',
       currencySymbol: vq.currencySymbol || '₹',
       roomsSummary: normalizeRoomsSummary(vq.roomsSummary),
-      commercial: vq.commercial || {},
+      commercial: enrichCommercialAddons(vq.commercial || {}),
       footer: footerText
     });
   });

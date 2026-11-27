@@ -9931,10 +9931,14 @@
       var currentCharges = this.getCommercialCharges();
       var selectedMap = {};
       var customRateMap = {};
+      var selectedBrandMap = {};
       (currentCharges.selectedAddons || []).forEach(function (it) {
         selectedMap[it.id] = Math.max(0, Number(it.qty || 1));
         if (it.customRate !== undefined || it.rate !== undefined) {
           customRateMap[it.id] = Math.max(0, Number(it.customRate !== undefined ? it.customRate : it.rate));
+        }
+        if (it.brand) {
+          selectedBrandMap[it.id] = String(it.brand).trim().toUpperCase();
         }
       });
 
@@ -10237,8 +10241,10 @@
           pill.addEventListener('click', function () {
             var id = pill.getAttribute('data-id');
             var rate = parseFloat(pill.getAttribute('data-rate')) || 0;
+            var brandKey = String(pill.getAttribute('data-brand') || '').trim().toUpperCase();
             if (id && rate > 0) {
               customRateMap[id] = rate;
+              if (brandKey) selectedBrandMap[id] = brandKey;
               var row = modal.querySelector('tr.addons-row[data-id="' + id + '"]');
               if (row) {
                 var rInp = row.querySelector('.addons-rate-inp[data-id="' + id + '"]');
@@ -10254,7 +10260,10 @@
         if (setEbcoBtn) {
           setEbcoBtn.addEventListener('click', function () {
             catalog.forEach(function (it) {
-              if (it.ebcoRate) customRateMap[it.id] = it.ebcoRate;
+              if (it.ebcoRate) {
+                customRateMap[it.id] = it.ebcoRate;
+                selectedBrandMap[it.id] = 'EBCO';
+              }
             });
             renderModalContent();
           });
@@ -10264,7 +10273,10 @@
         if (setHettichBtn) {
           setHettichBtn.addEventListener('click', function () {
             catalog.forEach(function (it) {
-              if (it.hettichRate) customRateMap[it.id] = it.hettichRate;
+              if (it.hettichRate) {
+                customRateMap[it.id] = it.hettichRate;
+                selectedBrandMap[it.id] = 'HETTICH';
+              }
             });
             renderModalContent();
           });
@@ -10274,7 +10286,10 @@
         if (setGrassBtn) {
           setGrassBtn.addEventListener('click', function () {
             catalog.forEach(function (it) {
-              if (it.grassRate) customRateMap[it.id] = it.grassRate;
+              if (it.grassRate) {
+                customRateMap[it.id] = it.grassRate;
+                selectedBrandMap[it.id] = 'GRASS';
+              }
             });
             renderModalContent();
           });
@@ -10368,10 +10383,20 @@
               if (q > 0) {
                 var r = (customRateMap[it.id] !== undefined) ? customRateMap[it.id] : (it.rate || 0);
                 var amt = Math.round(q * r);
+                var resolvedBrand = selectedBrandMap[it.id] || '';
+                if (!resolvedBrand) {
+                  var defBrand = String(it.brand || '').trim().toUpperCase();
+                  if (defBrand && it.rate && Math.abs(r - it.rate) < 0.05) resolvedBrand = defBrand;
+                  else if (it.hettichRate && Math.abs(r - it.hettichRate) < 0.05) resolvedBrand = 'HETTICH';
+                  else if (it.ebcoRate && Math.abs(r - it.ebcoRate) < 0.05) resolvedBrand = 'EBCO';
+                  else if (it.grassRate && Math.abs(r - it.grassRate) < 0.05) resolvedBrand = 'GRASS';
+                  else resolvedBrand = defBrand;
+                }
                 chosen.push({
                   id: it.id,
                   name: it.name,
                   category: it.category,
+                  brand: resolvedBrand,
                   rate: r,
                   customRate: r,
                   unit: it.unit || 'unit',
