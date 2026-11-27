@@ -85,6 +85,9 @@ function recalculateVariantCommercial(comm, overrides) {
   const o = (overrides && typeof overrides === 'object') ? overrides : {};
   const woodwork = Math.round(Number(c.woodworkSubtotal) || 0);
   const accessoriesEnabled = o.accessoriesEnabled !== undefined ? Boolean(o.accessoriesEnabled) : (c.accessoriesEnabled !== false);
+  const accessoriesSet2Enabled = o.accessoriesSet2Enabled !== undefined
+    ? Boolean(o.accessoriesSet2Enabled)
+    : (c.accessoriesSet2Enabled !== undefined ? Boolean(c.accessoriesSet2Enabled) : Boolean(c.additionalAccessoriesSet2 || (c.selectedAddonsSet2 && c.selectedAddonsSet2.length)));
   const appliancesEnabled = o.appliancesEnabled !== undefined ? Boolean(o.appliancesEnabled) : (c.appliancesEnabled !== false);
   const freightEnabled = o.freightEnabled !== undefined ? Boolean(o.freightEnabled) : (c.freightEnabled !== false);
   const gstEnabled = o.gstEnabled !== undefined ? Boolean(o.gstEnabled) : (c.gstEnabled !== false);
@@ -92,12 +95,18 @@ function recalculateVariantCommercial(comm, overrides) {
   const rawAcc = (o.additionalAccessories !== undefined && o.additionalAccessories !== null && o.additionalAccessories !== '')
     ? o.additionalAccessories
     : (c.baseAdditionalAccessories !== undefined ? c.baseAdditionalAccessories : c.additionalAccessories);
+  const rawAcc2 = (o.additionalAccessoriesSet2 !== undefined && o.additionalAccessoriesSet2 !== null && o.additionalAccessoriesSet2 !== '')
+    ? o.additionalAccessoriesSet2
+    : (c.baseAdditionalAccessoriesSet2 !== undefined ? c.baseAdditionalAccessoriesSet2 : c.additionalAccessoriesSet2);
   const rawApp = (o.appliances !== undefined && o.appliances !== null && o.appliances !== '')
     ? o.appliances
     : (c.baseAppliances !== undefined ? c.baseAppliances : c.appliances);
   const baseAcc = Math.max(0, Math.round(Number(rawAcc) || 0));
+  const baseAcc2 = Math.max(0, Math.round(Number(rawAcc2) || 0));
   const baseApp = Math.max(0, Math.round(Number(rawApp) || 0));
   const acc = accessoriesEnabled ? baseAcc : 0;
+  const acc2 = accessoriesSet2Enabled ? baseAcc2 : 0;
+  const totalAccessories = acc + acc2;
   const appliances = appliancesEnabled ? baseApp : 0;
   const freightPercent = (c.freightPercent !== undefined && c.freightPercent !== null && c.freightPercent !== '') ? Number(c.freightPercent) : 2.5;
   const gstPercent = (c.gstPercent !== undefined && c.gstPercent !== null && c.gstPercent !== '') ? Number(c.gstPercent) : 18;
@@ -134,9 +143,10 @@ function recalculateVariantCommercial(comm, overrides) {
 
   // Add-ons, Accessories & Appliances sit cleanly below savings without affecting the core proposal total
   const selectedAddons = Array.isArray(o.selectedAddons) ? o.selectedAddons : (Array.isArray(c.selectedAddons) ? c.selectedAddons : []);
+  const selectedAddonsSet2 = Array.isArray(o.selectedAddonsSet2) ? o.selectedAddonsSet2 : (Array.isArray(c.selectedAddonsSet2) ? c.selectedAddonsSet2 : []);
   const selectedCustomAddons = Array.isArray(o.selectedCustomAddons) ? o.selectedCustomAddons : (Array.isArray(c.selectedCustomAddons) ? c.selectedCustomAddons : []);
   const appliancesList = Array.isArray(o.appliancesList) ? o.appliancesList : (Array.isArray(c.appliancesList) ? c.appliancesList : []);
-  const addonsTotal = acc + appliances;
+  const addonsTotal = totalAccessories + appliances;
   const totalInvestmentWithAddons = coreGrandTotal + addonsTotal;
 
   // Set netBeforeTax and grandTotal to core proposal values (unaffected by add-ons)
@@ -150,12 +160,17 @@ function recalculateVariantCommercial(comm, overrides) {
     activeSlab,
     woodworkSubtotal: woodwork,
     baseAdditionalAccessories: baseAcc,
+    baseAdditionalAccessoriesSet2: baseAcc2,
     baseAppliances: baseApp,
     accessoriesEnabled,
     additionalAccessories: acc,
+    accessoriesSet2Enabled,
+    additionalAccessoriesSet2: acc2,
+    totalAccessories,
     appliancesEnabled,
     appliances,
     selectedAddons,
+    selectedAddonsSet2,
     selectedCustomAddons,
     appliancesList,
     addonsTotal,

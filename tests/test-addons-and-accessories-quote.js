@@ -156,4 +156,26 @@ assert.strictEqual(texturePaint.premium.rate, 245.00, 'Texture paint premium rat
 
 console.log('✅ Paired Custom Add-Ons Catalog (Regular vs Premium) verified successfully!');
 
+console.log('--- TEST: Dual Accessories Sets (Option A + Option B) ---');
+const commDualSets = clientQuoteService.recalculateVariantCommercial(baseComm, {
+  accessoriesEnabled: true,
+  additionalAccessories: 40000,
+  selectedAddons: [
+    { id: 'magic_corner', name: 'MAGIC CORNER (Option A / Set 1)', rate: 40000, qty: 1, amount: 40000 }
+  ],
+  accessoriesSet2Enabled: true,
+  additionalAccessoriesSet2: 30000,
+  selectedAddonsSet2: [
+    { id: 'pvc_cutlery_inlet_450', name: 'PVC Cutlery (Option B / Set 2)', rate: 30000, qty: 1, amount: 30000 }
+  ]
+});
+
+assert.strictEqual(commDualSets.additionalAccessories, 40000, 'Set 1 accessories amount should be 40,000');
+assert.strictEqual(commDualSets.additionalAccessoriesSet2, 30000, 'Set 2 accessories amount should be 30,000');
+assert.strictEqual(commDualSets.totalAccessories, 70000, 'Total accessories should be 70,000');
+assert.strictEqual(commDualSets.addonsTotal, 70000, 'Add-ons total should be 70,000');
+assert.strictEqual(commDualSets.selectedAddons.length, 1, 'Set 1 should have 1 item');
+assert.strictEqual(commDualSets.selectedAddonsSet2.length, 1, 'Set 2 should have 1 item');
+console.log('✅ Dual Accessories Sets (Option A & Option B) verified successfully!');
+
 console.log('🎉 ALL TESTS PASSED!');

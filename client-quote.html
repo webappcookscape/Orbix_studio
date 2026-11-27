@@ -1340,16 +1340,19 @@
 
         // ── ADD-ONS, ACCESSORIES & APPLIANCES (4 COLUMNS: ACCESSORIES NAME, QUANTITY, BRAND, AMOUNT) ──
         var selectedAddons = Array.isArray(comm.selectedAddons) ? comm.selectedAddons : [];
+        var selectedAddonsSet2 = Array.isArray(comm.selectedAddonsSet2) ? comm.selectedAddonsSet2 : [];
         var selectedCustomAddons = Array.isArray(comm.selectedCustomAddons) ? comm.selectedCustomAddons : [];
         var appliancesList = Array.isArray(comm.appliancesList) ? comm.appliancesList : [];
+        var accSet2Enabled = comm.accessoriesSet2Enabled !== false && Boolean(comm.additionalAccessoriesSet2 || selectedAddonsSet2.length);
         var addAccVal = accEnabled ? Math.round(Number(comm.additionalAccessories || 0)) : 0;
+        var addAcc2Val = accSet2Enabled ? Math.round(Number(comm.additionalAccessoriesSet2 || 0)) : 0;
         var appVal = appEnabled ? Math.round(Number(comm.appliances || 0)) : 0;
-        var addonsTotal = comm.addonsTotal !== undefined ? Number(comm.addonsTotal) : (addAccVal + appVal);
+        var addonsTotal = comm.addonsTotal !== undefined ? Number(comm.addonsTotal) : (addAccVal + addAcc2Val + appVal);
         var totalInvestment = comm.totalInvestmentWithAddons !== undefined
           ? Number(comm.totalInvestmentWithAddons)
           : (Number(comm.grandTotal || 0) + addonsTotal);
 
-        var hasAddonItems = (selectedAddons.length > 0) || (selectedCustomAddons.length > 0) || (appliancesList.length > 0) || (addonsTotal > 0);
+        var hasAddonItems = (selectedAddons.length > 0) || (selectedAddonsSet2.length > 0) || (selectedCustomAddons.length > 0) || (appliancesList.length > 0) || (addonsTotal > 0);
 
         if (y + 70 < CANVAS_H - 90) {
           y += 14;
@@ -1357,16 +1360,31 @@
             ['ACCESSORIES NAME', 'QUANTITY', 'BRAND', 'AMOUNT']
           ];
           if (selectedAddons.length > 0) {
+            var prefix1 = (selectedAddonsSet2.length > 0 || addAcc2Val > 0) ? '[Set 1] ' : '';
             selectedAddons.forEach(function (it) {
               var q = Number(it.qty !== undefined ? it.qty : 1);
               var r = Number((it.customRate !== undefined && it.customRate !== null && it.customRate !== '') ? it.customRate : (it.rate || 0));
               var a = it.amount !== undefined ? Number(it.amount) : Math.round(q * r);
               var qtyDisp = (it.unit === 'meter') ? (q + ' m') : ((it.unit === 'sqft') ? (q + ' sq.ft') : String(q));
               var brandDisp = (it.brand && String(it.brand).trim()) ? String(it.brand).trim() : '-';
-              addonRows.push([String(it.name || 'Accessory Item'), qtyDisp, brandDisp, fmtINR(a)]);
+              addonRows.push([prefix1 + String(it.name || 'Accessory Item'), qtyDisp, brandDisp, fmtINR(a)]);
             });
           } else if (addAccVal > 0) {
-            addonRows.push(['Selected Hardware Accessories Package', '1', '-', fmtINR(addAccVal)]);
+            var prefix1 = (selectedAddonsSet2.length > 0 || addAcc2Val > 0) ? '[Set 1] ' : '';
+            addonRows.push([prefix1 + 'Selected Hardware Accessories Package', '1', '-', fmtINR(addAccVal)]);
+          }
+
+          if (selectedAddonsSet2.length > 0) {
+            selectedAddonsSet2.forEach(function (it) {
+              var q = Number(it.qty !== undefined ? it.qty : 1);
+              var r = Number((it.customRate !== undefined && it.customRate !== null && it.customRate !== '') ? it.customRate : (it.rate || 0));
+              var a = it.amount !== undefined ? Number(it.amount) : Math.round(q * r);
+              var qtyDisp = (it.unit === 'meter') ? (q + ' m') : ((it.unit === 'sqft') ? (q + ' sq.ft') : String(q));
+              var brandDisp = (it.brand && String(it.brand).trim()) ? String(it.brand).trim() : '-';
+              addonRows.push(['[Set 2] ' + String(it.name || 'Accessory Item'), qtyDisp, brandDisp, fmtINR(a)]);
+            });
+          } else if (addAcc2Val > 0) {
+            addonRows.push(['[Set 2] Selected Hardware Accessories Package', '1', '-', fmtINR(addAcc2Val)]);
           }
 
           if (selectedCustomAddons.length > 0) {

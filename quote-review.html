@@ -497,6 +497,9 @@
         var o = overrides || {};
         var woodwork = Math.round(Number(comm.woodworkSubtotal) || 0);
         var accessoriesEnabled = o.accessoriesEnabled !== undefined ? Boolean(o.accessoriesEnabled) : (comm.accessoriesEnabled !== false);
+        var accessoriesSet2Enabled = o.accessoriesSet2Enabled !== undefined
+          ? Boolean(o.accessoriesSet2Enabled)
+          : (comm.accessoriesSet2Enabled !== undefined ? Boolean(comm.accessoriesSet2Enabled) : Boolean(comm.additionalAccessoriesSet2 || (comm.selectedAddonsSet2 && comm.selectedAddonsSet2.length)));
         var appliancesEnabled = o.appliancesEnabled !== undefined ? Boolean(o.appliancesEnabled) : (comm.appliancesEnabled !== false);
         var freightEnabled = o.freightEnabled !== undefined ? Boolean(o.freightEnabled) : (comm.freightEnabled !== false);
         var gstEnabled = o.gstEnabled !== undefined ? Boolean(o.gstEnabled) : (comm.gstEnabled !== false);
@@ -504,12 +507,18 @@
         var rawAcc = (o.additionalAccessories !== undefined && o.additionalAccessories !== null && o.additionalAccessories !== '')
           ? o.additionalAccessories
           : (comm.baseAdditionalAccessories !== undefined ? comm.baseAdditionalAccessories : comm.additionalAccessories);
+        var rawAcc2 = (o.additionalAccessoriesSet2 !== undefined && o.additionalAccessoriesSet2 !== null && o.additionalAccessoriesSet2 !== '')
+          ? o.additionalAccessoriesSet2
+          : (comm.baseAdditionalAccessoriesSet2 !== undefined ? comm.baseAdditionalAccessoriesSet2 : comm.additionalAccessoriesSet2);
         var rawApp = (o.appliances !== undefined && o.appliances !== null && o.appliances !== '')
           ? o.appliances
           : (comm.baseAppliances !== undefined ? comm.baseAppliances : comm.appliances);
         var baseAcc = Math.max(0, Math.round(Number(rawAcc) || 0));
+        var baseAcc2 = Math.max(0, Math.round(Number(rawAcc2) || 0));
         var baseApp = Math.max(0, Math.round(Number(rawApp) || 0));
         var acc = accessoriesEnabled ? baseAcc : 0;
+        var acc2 = accessoriesSet2Enabled ? baseAcc2 : 0;
+        var totalAccessories = acc + acc2;
         var app = appliancesEnabled ? baseApp : 0;
 
         var fPct = comm.freightPercent !== undefined ? Number(comm.freightPercent) : 2.5;
@@ -534,9 +543,10 @@
         var coreGrandTotal = coreNetBeforeTax + coreGstAmount;
 
         var selectedAddons = Array.isArray(o.selectedAddons) ? o.selectedAddons : (Array.isArray(comm.selectedAddons) ? comm.selectedAddons : []);
+        var selectedAddonsSet2 = Array.isArray(o.selectedAddonsSet2) ? o.selectedAddonsSet2 : (Array.isArray(comm.selectedAddonsSet2) ? comm.selectedAddonsSet2 : []);
         var selectedCustomAddons = Array.isArray(o.selectedCustomAddons) ? o.selectedCustomAddons : (Array.isArray(comm.selectedCustomAddons) ? comm.selectedCustomAddons : []);
         var appliancesList = Array.isArray(o.appliancesList) ? o.appliancesList : (Array.isArray(comm.appliancesList) ? comm.appliancesList : []);
-        var addonsTotal = acc + app;
+        var addonsTotal = totalAccessories + app;
         var totalInvestmentWithAddons = coreGrandTotal + addonsTotal;
 
         var netBeforeTax = coreNetBeforeTax;
@@ -550,12 +560,17 @@
         return Object.assign({}, comm, {
           woodworkSubtotal: woodwork,
           baseAdditionalAccessories: baseAcc,
+          baseAdditionalAccessoriesSet2: baseAcc2,
           baseAppliances: baseApp,
           accessoriesEnabled: accessoriesEnabled,
           additionalAccessories: acc,
+          accessoriesSet2Enabled: accessoriesSet2Enabled,
+          additionalAccessoriesSet2: acc2,
+          totalAccessories: totalAccessories,
           appliancesEnabled: appliancesEnabled,
           appliances: app,
           selectedAddons: selectedAddons,
+          selectedAddonsSet2: selectedAddonsSet2,
           selectedCustomAddons: selectedCustomAddons,
           appliancesList: appliancesList,
           addonsTotal: addonsTotal,
@@ -598,6 +613,15 @@
         if (accInputWrap) accInputWrap.style.display = c.accessoriesEnabled ? 'inline-flex' : 'none';
         if (accDis) accDis.style.display = c.accessoriesEnabled ? 'none' : 'inline';
         if (accInp && document.activeElement !== accInp) accInp.value = String(c.baseAdditionalAccessories || 0);
+
+        var accSet2Row = card.querySelector('[data-row="accessoriesSet2"]');
+        if (accSet2Row) accSet2Row.style.opacity = c.accessoriesSet2Enabled ? '' : '0.5';
+        var accSet2InputWrap = card.querySelector('[data-wrap="accSet2Input"]');
+        var accSet2Dis = card.querySelector('[data-f="accSet2Disabled"]');
+        var accSet2Inp = card.querySelector('[data-kind="accessoriesSet2"]');
+        if (accSet2InputWrap) accSet2InputWrap.style.display = c.accessoriesSet2Enabled ? 'inline-flex' : 'none';
+        if (accSet2Dis) accSet2Dis.style.display = c.accessoriesSet2Enabled ? 'none' : 'inline';
+        if (accSet2Inp && document.activeElement !== accSet2Inp) accSet2Inp.value = String(c.baseAdditionalAccessoriesSet2 || 0);
 
         var appRow = card.querySelector('[data-row="appliances"]');
         if (appRow) appRow.style.opacity = c.appliancesEnabled ? '' : '0.5';
@@ -786,7 +810,7 @@
             '  </div>' +
             '  <table><tbody>' +
             '    <tr data-row="accessories" style="' + (c.accessoriesEnabled ? '' : 'opacity:0.5;') + '">' +
-            '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="accessoriesEnabled"' + (c.accessoriesEnabled ? ' checked' : '') + '> <b>Accessories</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
+            '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="accessoriesEnabled"' + (c.accessoriesEnabled ? ' checked' : '') + '> <b>Accessories &mdash; Set 1 (Option A)</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
             '      <td class="num">' +
             '        <span class="amt-input-wrap" data-wrap="accInput" style="display:' + (c.accessoriesEnabled ? 'inline-flex' : 'none') + ';">' +
             '          <span>₹</span><input type="number" step="100" min="0" class="amt-input" data-idx="' + idx + '" data-kind="accessories" value="' + esc(c.baseAdditionalAccessories || 0) + '" placeholder="0">' +
@@ -805,6 +829,28 @@
                 return '<div style="margin:2px 0;">• <b>' + esc(it.name) + '</b> (' + uText + ') &mdash; ₹' + a.toLocaleString('en-IN') + '</div>';
               }).join('') +
               '</td></tr>') : '') +
+            ((c.accessoriesSet2Enabled || (c.selectedAddonsSet2 && c.selectedAddonsSet2.length) || c.baseAdditionalAccessoriesSet2) ? (
+            '    <tr data-row="accessoriesSet2" style="' + (c.accessoriesSet2Enabled ? '' : 'opacity:0.5;') + '">' +
+            '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="accessoriesSet2Enabled"' + (c.accessoriesSet2Enabled ? ' checked' : '') + '> <b>Accessories &mdash; Set 2 (Option B)</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
+            '      <td class="num">' +
+            '        <span class="amt-input-wrap" data-wrap="accSet2Input" style="display:' + (c.accessoriesSet2Enabled ? 'inline-flex' : 'none') + ';">' +
+            '          <span>₹</span><input type="number" step="100" min="0" class="amt-input" data-idx="' + idx + '" data-kind="accessoriesSet2" value="' + esc(c.baseAdditionalAccessoriesSet2 || 0) + '" placeholder="0">' +
+            '        </span>' +
+            '        <span data-f="accSet2Disabled" style="display:' + (c.accessoriesSet2Enabled ? 'none' : 'inline') + ';color:#64748B;">Disabled</span>' +
+            '      </td>' +
+            '    </tr>' +
+            (c.selectedAddonsSet2 && c.selectedAddonsSet2.length ? ('<tr><td colspan="2" style="background:#FAF6F0;padding:6px 12px;font-size:11.5px;color:#334155;">' +
+              c.selectedAddonsSet2.map(function(it){
+                var q = it.qty !== undefined ? it.qty : 1;
+                var r = (it.customRate !== undefined && it.customRate !== null && it.customRate !== '') ? Number(it.customRate) : Number(it.rate || 0);
+                var a = it.amount !== undefined ? Number(it.amount) : Math.round(q * r);
+                var uText = (it.unit === 'meter') ? (q + ' meters @ ₹' + r.toLocaleString('en-IN') + '/m') :
+                            ((it.unit === 'sqft') ? (q + ' sq.ft @ ₹' + r.toLocaleString('en-IN') + '/sqft') :
+                            ('Qty: ' + q + (r > 0 ? (' @ ₹' + r.toLocaleString('en-IN')) : '')));
+                return '<div style="margin:2px 0;">• <b>' + esc(it.name) + '</b> (' + uText + ') &mdash; ₹' + a.toLocaleString('en-IN') + '</div>';
+              }).join('') +
+              '</td></tr>') : '')
+            ) : '') +
             '    <tr data-row="appliances" style="' + (c.appliancesEnabled ? '' : 'opacity:0.5;') + '">' +
             '      <td><label style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" class="rev-toggle" data-idx="' + idx + '" data-toggle="appliancesEnabled"' + (c.appliancesEnabled ? ' checked' : '') + '> <b>Add ons</b> <span style="font-size:11px;color:#64748B;">(Enable / Disable)</span></label></td>' +
             '      <td class="num">' +
@@ -880,6 +926,7 @@
             return el ? el.checked : true;
           };
           var accInput = card.querySelector('[data-kind="accessories"]');
+          var accSet2Input = card.querySelector('[data-kind="accessoriesSet2"]');
           var appInput = card.querySelector('[data-kind="appliances"]');
           var discInp = card.querySelector('[data-kind="discount"]');
           var dInp = card.querySelector('[data-kind="design"]');
@@ -889,8 +936,10 @@
             discountPercent: discInp ? discInp.value : 0,
             adpPercent: adpInp ? adpInp.value : 60,
             additionalAccessories: accInput ? accInput.value : 0,
+            additionalAccessoriesSet2: accSet2Input ? accSet2Input.value : 0,
             appliances: appInput ? appInput.value : 0,
             accessoriesEnabled: getChk('accessoriesEnabled'),
+            accessoriesSet2Enabled: getChk('accessoriesSet2Enabled'),
             appliancesEnabled: getChk('appliancesEnabled'),
             freightEnabled: getChk('freightEnabled'),
             gstEnabled: getChk('gstEnabled')

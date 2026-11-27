@@ -572,13 +572,16 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
 
     # ── ADD-ONS, ACCESSORIES & APPLIANCES (4 COLUMNS: ACCESSORIES NAME, QUANTITY, BRAND, AMOUNT) ──
     selected_addons = comm.get('selectedAddons') or []
+    selected_addons_set2 = comm.get('selectedAddonsSet2') or []
     selected_custom_addons = comm.get('selectedCustomAddons') or []
     appliances_list = comm.get('appliancesList') or []
+    acc_set2_enabled = comm.get('accessoriesSet2Enabled') is not False and bool(comm.get('additionalAccessoriesSet2') or selected_addons_set2)
     add_acc_amt = float(comm.get('additionalAccessories') or 0) if acc_enabled else 0
+    add_acc2_amt = float(comm.get('additionalAccessoriesSet2') or 0) if acc_set2_enabled else 0
     app_amt = float(comm.get('appliances') or 0) if app_enabled else 0
     addons_total = comm.get('addonsTotal')
     if addons_total is None:
-        addons_total = add_acc_amt + app_amt
+        addons_total = add_acc_amt + add_acc2_amt + app_amt
     else:
         addons_total = float(addons_total)
     total_investment = comm.get('totalInvestmentWithAddons')
@@ -614,7 +617,7 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
             return 'GRASS'
         return str(rec.get('brand') or '-')
 
-    has_addons = bool(selected_addons or selected_custom_addons or appliances_list or (addons_total > 0))
+    has_addons = bool(selected_addons or selected_addons_set2 or selected_custom_addons or appliances_list or (addons_total > 0))
     if y < 12100000:
         addon_col_ws = [4200000, 1280000, 1640000, 2005700]
         addon_rows = [
@@ -626,6 +629,7 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
             ])
         ]
         row_idx_a = 0
+        prefix1 = "[Set 1] " if (selected_addons_set2 or add_acc2_amt > 0) else ""
         if selected_addons:
             for it in selected_addons:
                 bg_a = 'FFFFFF' if row_idx_a % 2 == 0 else 'FAF6F0'
@@ -639,7 +643,7 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
                 amt = float(it.get('amount') if it.get('amount') is not None else round(q_num * r))
                 brand_disp = _resolve_brand(it)
                 addon_rows.append((265000, [
-                    build_ooxml_cell(str(it.get('name') or 'Accessory Item'), fill_hex=bg_a, text_hex='08231B', bold=False, font_sz=920, align='l'),
+                    build_ooxml_cell(prefix1 + str(it.get('name') or 'Accessory Item'), fill_hex=bg_a, text_hex='08231B', bold=False, font_sz=920, align='l'),
                     build_ooxml_cell(qty_disp, fill_hex=bg_a, text_hex='08231B', bold=False, font_sz=920, align='ctr'),
                     build_ooxml_cell(brand_disp, fill_hex=bg_a, text_hex='08231B', bold=False, font_sz=920, align='ctr'),
                     build_ooxml_cell(fmt_inr(amt), fill_hex=bg_a, text_hex='08231B', bold=False, font_sz=920, align='r'),
@@ -647,10 +651,37 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
         elif add_acc_amt > 0:
             row_idx_a += 1
             addon_rows.append((265000, [
-                build_ooxml_cell('Selected Hardware Accessories Package', fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='l'),
+                build_ooxml_cell(prefix1 + 'Selected Hardware Accessories Package', fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='l'),
                 build_ooxml_cell('1', fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='ctr'),
                 build_ooxml_cell('-', fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='ctr'),
                 build_ooxml_cell(fmt_inr(add_acc_amt), fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='r'),
+            ]))
+
+        if selected_addons_set2:
+            for it in selected_addons_set2:
+                bg_a = 'FFFFFF' if row_idx_a % 2 == 0 else 'FAF6F0'
+                row_idx_a += 1
+                q_raw = it.get('qty', 1)
+                q_num = float(q_raw if q_raw not in (None, '') else 1)
+                q_clean = int(q_num) if q_num == int(q_num) else q_num
+                unit = str(it.get('unit') or '').lower()
+                qty_disp = f"{q_clean} m" if unit == 'meter' else (f"{q_clean} sq.ft" if unit == 'sqft' else str(q_clean))
+                r = float(it.get('customRate') if it.get('customRate') not in (None, '') else (it.get('rate') or 0))
+                amt = float(it.get('amount') if it.get('amount') is not None else round(q_num * r))
+                brand_disp = _resolve_brand(it)
+                addon_rows.append((265000, [
+                    build_ooxml_cell('[Set 2] ' + str(it.get('name') or 'Accessory Item'), fill_hex=bg_a, text_hex='08231B', bold=False, font_sz=920, align='l'),
+                    build_ooxml_cell(qty_disp, fill_hex=bg_a, text_hex='08231B', bold=False, font_sz=920, align='ctr'),
+                    build_ooxml_cell(brand_disp, fill_hex=bg_a, text_hex='08231B', bold=False, font_sz=920, align='ctr'),
+                    build_ooxml_cell(fmt_inr(amt), fill_hex=bg_a, text_hex='08231B', bold=False, font_sz=920, align='r'),
+                ]))
+        elif add_acc2_amt > 0:
+            row_idx_a += 1
+            addon_rows.append((265000, [
+                build_ooxml_cell('[Set 2] Selected Hardware Accessories Package', fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='l'),
+                build_ooxml_cell('1', fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='ctr'),
+                build_ooxml_cell('-', fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='ctr'),
+                build_ooxml_cell(fmt_inr(add_acc2_amt), fill_hex='FFFFFF', text_hex='08231B', bold=False, font_sz=920, align='r'),
             ]))
 
         if selected_custom_addons:

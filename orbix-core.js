@@ -8322,9 +8322,11 @@
     return COOKSCAPE_CUSTOM_ADDONS_PAIRS.slice();
   }
 
-  function calculateAddonsSummary(selectedAddons, appliancesList) {
+  function calculateAddonsSummary(selectedAddons, appliancesList, selectedCustomAddons, selectedAddonsSet2) {
     var items = Array.isArray(selectedAddons) ? selectedAddons : [];
+    var itemsSet2 = Array.isArray(selectedAddonsSet2) ? selectedAddonsSet2 : [];
     var appliances = Array.isArray(appliancesList) ? appliancesList : [];
+    var customAddons = Array.isArray(selectedCustomAddons) ? selectedCustomAddons : [];
     var addonsTotal = 0;
     items.forEach(function (it) {
       var qty = Math.max(0, Number(it.qty || 1));
@@ -8334,6 +8336,20 @@
       var amt = it.amount !== undefined ? Number(it.amount) : Math.round(qty * rate);
       addonsTotal += amt;
     });
+    var addonsSet2Total = 0;
+    itemsSet2.forEach(function (it) {
+      var qty = Math.max(0, Number(it.qty || 1));
+      var rate = (it.customRate !== undefined && it.customRate !== null && it.customRate !== '')
+        ? Number(it.customRate)
+        : Math.max(0, Number(it.rate || 0));
+      var amt = it.amount !== undefined ? Number(it.amount) : Math.round(qty * rate);
+      addonsSet2Total += amt;
+    });
+    var customAddonsTotal = 0;
+    customAddons.forEach(function (ap) {
+      var amt = ap.amount !== undefined ? Number(ap.amount) : Math.round((ap.qty || 1) * (ap.rate || 0));
+      customAddonsTotal += amt;
+    });
     var appliancesTotal = 0;
     appliances.forEach(function (ap) {
       var qty = Math.max(1, Number(ap.qty || 1));
@@ -8342,10 +8358,14 @@
     });
     return {
       selectedAddons: items,
+      selectedAddonsSet2: itemsSet2,
+      selectedCustomAddons: customAddons,
       appliancesList: appliances,
       addonsSubtotal: addonsTotal,
+      addonsSet2Subtotal: addonsSet2Total,
+      customAddonsSubtotal: customAddonsTotal,
       appliancesSubtotal: appliancesTotal,
-      grandAddonsTotal: addonsTotal + appliancesTotal
+      grandAddonsTotal: addonsTotal + addonsSet2Total + customAddonsTotal + appliancesTotal
     };
   }
 

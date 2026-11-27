@@ -8438,6 +8438,8 @@
         this.project.commercialCharges = {
           additionalAccessories: 0,
           accessoriesEnabled: true,
+          additionalAccessoriesSet2: 0,
+          accessoriesSet2Enabled: false,
           appliances: 0,
           appliancesEnabled: true,
           designPercent: 9,
@@ -8520,6 +8522,9 @@
       var gstEnabled = charges.gstEnabled !== false;
 
       var addAccessories = accessoriesEnabled ? (parseFloat(charges.additionalAccessories || charges.accessories) || 0) : 0;
+      var accessoriesSet2Enabled = charges.accessoriesSet2Enabled !== false && Boolean(charges.additionalAccessoriesSet2 || (charges.selectedAddonsSet2 && charges.selectedAddonsSet2.length));
+      var addAccessoriesSet2 = accessoriesSet2Enabled ? (parseFloat(charges.additionalAccessoriesSet2) || 0) : 0;
+      var totalAccessories = addAccessories + addAccessoriesSet2;
       var appliances = appliancesEnabled ? (parseFloat(charges.appliances) || 0) : 0;
 
       // Elegant Surabhi Standard Design Fee Slab & 60% Discount (Non-editable / Untouchable)
@@ -8556,9 +8561,10 @@
       var coreGrandTotal = coreNetBeforeTax + coreGstAmount;
 
       var selectedAddons = Array.isArray(charges.selectedAddons) ? charges.selectedAddons : [];
+      var selectedAddonsSet2 = Array.isArray(charges.selectedAddonsSet2) ? charges.selectedAddonsSet2 : [];
       var selectedCustomAddons = Array.isArray(charges.selectedCustomAddons) ? charges.selectedCustomAddons : [];
       var appliancesList = Array.isArray(charges.appliancesList) ? charges.appliancesList : [];
-      var addonsTotal = addAccessories + appliances;
+      var addonsTotal = totalAccessories + appliances;
       var totalInvestmentWithAddons = coreGrandTotal + addonsTotal;
 
       var netValue = coreNetBeforeTax;
@@ -8572,9 +8578,13 @@
         activeSlab: activeSlab,
         accessoriesEnabled: accessoriesEnabled,
         additionalAccessories: addAccessories,
+        accessoriesSet2Enabled: accessoriesSet2Enabled,
+        additionalAccessoriesSet2: addAccessoriesSet2,
+        totalAccessories: totalAccessories,
         appliancesEnabled: appliancesEnabled,
         appliances: appliances,
         selectedAddons: selectedAddons,
+        selectedAddonsSet2: selectedAddonsSet2,
         selectedCustomAddons: selectedCustomAddons,
         appliancesList: appliancesList,
         addonsTotal: addonsTotal,
@@ -9076,13 +9086,13 @@
         '<tr><td colspan="4"></td><td colspan="4" class="bold">Modular Woodwork Subtotal</td><td colspan="3" class="c-num bold">₹ ' + commSummary.woodworkSubtotal.toLocaleString('en-IN') + '.00</td></tr>' +
         '<tr><td colspan="4"></td><td colspan="4" class="bold" style="color:#64748B">Hardware &amp; Functional Fittings Subtotal</td><td colspan="3" class="c-num" style="color:#64748B">₹ 0.00</td></tr>' +
 
-        // Accessories (Enable/Disable + amount + catalog selector button)
+        // Accessories - Set 1 (Option A) (Enable/Disable + amount + catalog selector button)
         '<tr class="comm-charge-row" id="commRowAccessories" style="' + (commSummary.accessoriesEnabled ? '' : 'opacity:0.55;') + '">' +
         '<td colspan="4"></td>' +
         '<td colspan="4" class="bold">' +
         '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Accessories</label>' +
-        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Accessories (69 Items)</button>' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesEnabled"' + (commSummary.accessoriesEnabled ? ' checked' : '') + '> Accessories — Set 1 (Option A)</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPicker" style="background:#08231B;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Set 1 (69 Items)</button>' +
         (commCharges.selectedAddons && commCharges.selectedAddons.length ? ('<span id="commAddonsCountBadge" style="font-size:11px;color:#166534;font-weight:700;">(' + commCharges.selectedAddons.length + ' items selected)</span>') : '<span id="commAddonsCountBadge" style="display:none;font-size:11px;color:#166534;font-weight:700;"></span>') +
         '</div></td>' +
         '<td colspan="3" style="text-align:right;white-space:nowrap">' +
@@ -9093,6 +9103,33 @@
         '</div></td></tr>' +
         (commCharges.selectedAddons && commCharges.selectedAddons.length ? ('<tr id="commRowAccessoriesList"><td colspan="4"></td><td colspan="7" style="background:#FAF6F0;padding:8px 14px;font-size:11.5px;color:#334155;border-left:3px solid #08231B;">' +
           commCharges.selectedAddons.map(function(it){
+            var q = it.qty !== undefined ? it.qty : 1;
+            var r = (it.customRate !== undefined && it.customRate !== null && it.customRate !== '') ? Number(it.customRate) : Number(it.rate || 0);
+            var a = it.amount !== undefined ? Number(it.amount) : Math.round(q * r);
+            var uText = (it.unit === 'meter') ? (q + ' meters @ ₹' + r.toLocaleString('en-IN') + '/m') :
+                        ((it.unit === 'sqft') ? (q + ' sq.ft @ ₹' + r.toLocaleString('en-IN') + '/sqft') :
+                        ('Qty: ' + q + (r > 0 ? (' @ ₹' + r.toLocaleString('en-IN')) : '')));
+            return '<div style="margin:2px 0;">• <b>' + (it.name || 'Accessory') + '</b> (' + uText + ') &mdash; ₹' + a.toLocaleString('en-IN') + '</div>';
+          }).join('') +
+          '</td></tr>') : '') +
+
+        // Accessories - Set 2 (Option B) (Enable/Disable + amount + catalog selector button)
+        '<tr class="comm-charge-row" id="commRowAccessoriesSet2" style="' + (commSummary.accessoriesSet2Enabled ? '' : 'opacity:0.55;') + '">' +
+        '<td colspan="4"></td>' +
+        '<td colspan="4" class="bold">' +
+        '<div style="display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+        '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" class="comm-toggle" data-toggle="accessoriesSet2Enabled"' + (commSummary.accessoriesSet2Enabled ? ' checked' : '') + '> Accessories — Set 2 (Option B)</label>' +
+        '<button type="button" class="btn btn-sm" id="btnOpenAddonsPickerSet2" style="background:#0F766E;color:#fff;border-radius:5px;font-size:11px;font-weight:700;padding:2px 8px;cursor:pointer;">🛍️ Select Set 2 (69 Items)</button>' +
+        (commCharges.selectedAddonsSet2 && commCharges.selectedAddonsSet2.length ? ('<span id="commAddonsSet2CountBadge" style="font-size:11px;color:#0F766E;font-weight:700;">(' + commCharges.selectedAddonsSet2.length + ' items selected)</span>') : '<span id="commAddonsSet2CountBadge" style="display:none;font-size:11px;color:#0F766E;font-weight:700;"></span>') +
+        '</div></td>' +
+        '<td colspan="3" style="text-align:right;white-space:nowrap">' +
+        '<div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:4px">' +
+        '<span style="font-size:11px;color:#64748B;font-weight:600">₹</span>' +
+        '<input type="number" min="0" step="any" class="comm-input" data-key="additionalAccessoriesSet2" value="' + (commCharges.additionalAccessoriesSet2 || '') + '" placeholder="enter amount"' + (commSummary.accessoriesSet2Enabled ? '' : ' disabled') + '>' +
+        '<span style="font-size:11px;color:#94A3B8">.00</span>' +
+        '</div></td></tr>' +
+        (commCharges.selectedAddonsSet2 && commCharges.selectedAddonsSet2.length ? ('<tr id="commRowAccessoriesSet2List"><td colspan="4"></td><td colspan="7" style="background:#F0FDFA;padding:8px 14px;font-size:11.5px;color:#134E4A;border-left:3px solid #0F766E;">' +
+          commCharges.selectedAddonsSet2.map(function(it){
             var q = it.qty !== undefined ? it.qty : 1;
             var r = (it.customRate !== undefined && it.customRate !== null && it.customRate !== '') ? Number(it.customRate) : Number(it.rate || 0);
             var a = it.amount !== undefined ? Number(it.amount) : Math.round(q * r);
@@ -9280,6 +9317,16 @@
             badgeEl.style.display = 'none';
           }
         }
+        var badgeSet2El = document.getElementById('commAddonsSet2CountBadge');
+        if (badgeSet2El) {
+          var selCount2 = (self.project.commercialCharges && self.project.commercialCharges.selectedAddonsSet2) ? self.project.commercialCharges.selectedAddonsSet2.length : 0;
+          if (selCount2 > 0) {
+            badgeSet2El.textContent = '(' + selCount2 + ' items selected)';
+            badgeSet2El.style.display = 'inline';
+          } else {
+            badgeSet2El.style.display = 'none';
+          }
+        }
         var headerTotalEl = document.getElementById('boqHeaderTotalAmount');
         if (headerTotalEl) headerTotalEl.textContent = 'INR ' + summary.grandTotal.toLocaleString('en-IN') + '.00';
       }
@@ -9348,7 +9395,17 @@
           self.openAddonsPickerModal(function () {
             self.renderBOQ(true);
             self.saveToLocalStorage();
-          });
+          }, 1);
+        });
+      }
+
+      var btnAddonsPickerSet2 = boqEl.querySelector('#btnOpenAddonsPickerSet2');
+      if (btnAddonsPickerSet2) {
+        btnAddonsPickerSet2.addEventListener('click', function () {
+          self.openAddonsPickerModal(function () {
+            self.renderBOQ(true);
+            self.saveToLocalStorage();
+          }, 2);
         });
       }
 
@@ -9921,7 +9978,7 @@
       }
     },
 
-    openAddonsPickerModal: function (onApply) {
+    openAddonsPickerModal: function (onApply, initialSet) {
       var self = this;
       var catalog = (typeof Core !== 'undefined' && Core.getCookscapeAddonsCatalog)
         ? Core.getCookscapeAddonsCatalog()
@@ -9929,16 +9986,31 @@
       if (!catalog.length) return;
 
       var currentCharges = this.getCommercialCharges();
-      var selectedMap = {};
-      var customRateMap = {};
-      var selectedBrandMap = {};
+      var activeSet = (initialSet === 2) ? 2 : 1;
+
+      var selectedMapSet1 = {};
+      var customRateMapSet1 = {};
+      var selectedBrandMapSet1 = {};
       (currentCharges.selectedAddons || []).forEach(function (it) {
-        selectedMap[it.id] = Math.max(0, Number(it.qty || 1));
+        selectedMapSet1[it.id] = Math.max(0, Number(it.qty || 1));
         if (it.customRate !== undefined || it.rate !== undefined) {
-          customRateMap[it.id] = Math.max(0, Number(it.customRate !== undefined ? it.customRate : it.rate));
+          customRateMapSet1[it.id] = Math.max(0, Number(it.customRate !== undefined ? it.customRate : it.rate));
         }
         if (it.brand) {
-          selectedBrandMap[it.id] = String(it.brand).trim().toUpperCase();
+          selectedBrandMapSet1[it.id] = String(it.brand).trim().toUpperCase();
+        }
+      });
+
+      var selectedMapSet2 = {};
+      var customRateMapSet2 = {};
+      var selectedBrandMapSet2 = {};
+      (currentCharges.selectedAddonsSet2 || []).forEach(function (it) {
+        selectedMapSet2[it.id] = Math.max(0, Number(it.qty || 1));
+        if (it.customRate !== undefined || it.rate !== undefined) {
+          customRateMapSet2[it.id] = Math.max(0, Number(it.customRate !== undefined ? it.customRate : it.rate));
+        }
+        if (it.brand) {
+          selectedBrandMapSet2[it.id] = String(it.brand).trim().toUpperCase();
         }
       });
 
@@ -9968,6 +10040,9 @@
       var searchQuery = '';
 
       function renderModalContent() {
+        var selectedMap = (activeSet === 2) ? selectedMapSet2 : selectedMapSet1;
+        var customRateMap = (activeSet === 2) ? customRateMapSet2 : customRateMapSet1;
+
         var filtered = catalog.filter(function (it) {
           var matchCat = (activeCategory === 'All') || (it.category === activeCategory);
           var itBrand = (it.brand || '').trim().toUpperCase();
@@ -9979,16 +10054,28 @@
           return matchCat && matchBrand && matchSearch;
         });
 
-        var selectedCount = 0;
-        var selectedTotal = 0;
+        var count1 = 0, tot1 = 0;
         catalog.forEach(function (it) {
-          var q = selectedMap[it.id] || 0;
+          var q = selectedMapSet1[it.id] || 0;
           if (q > 0) {
-            selectedCount += (it.unit === 'sqft' || it.unit === 'meter') ? 1 : q;
-            var r = (customRateMap[it.id] !== undefined) ? customRateMap[it.id] : (it.rate || 0);
-            selectedTotal += Math.round(q * r);
+            count1 += (it.unit === 'sqft' || it.unit === 'meter') ? 1 : q;
+            var r = (customRateMapSet1[it.id] !== undefined) ? customRateMapSet1[it.id] : (it.rate || 0);
+            tot1 += Math.round(q * r);
           }
         });
+
+        var count2 = 0, tot2 = 0;
+        catalog.forEach(function (it) {
+          var q = selectedMapSet2[it.id] || 0;
+          if (q > 0) {
+            count2 += (it.unit === 'sqft' || it.unit === 'meter') ? 1 : q;
+            var r = (customRateMapSet2[it.id] !== undefined) ? customRateMapSet2[it.id] : (it.rate || 0);
+            tot2 += Math.round(q * r);
+          }
+        });
+
+        var selectedCount = (activeSet === 2) ? count2 : count1;
+        var selectedTotal = (activeSet === 2) ? tot2 : tot1;
 
         // Preserve scroll position across full filter re-renders
         var prevScrollTop = 0;
@@ -9999,13 +10086,25 @@
           '<div class="addons-backdrop" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(8,35,27,0.65);backdrop-filter:blur(3px);"></div>' +
           '<div class="addons-dialog" style="position:relative;background:#FFF;border-radius:12px;width:min(960px, 95vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;border:1px solid #E2E8F0;font-family:\'Segoe UI\',system-ui,sans-serif;">' +
 
-          // Header
-          '  <div style="background:#08231B;color:#FFF;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">' +
-          '    <div>' +
-          '      <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Accessories Catalog</h3>' +
-          '      <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">69 Master Accessories &bull; Brand Rate Cards (Ebco, Hettich, Grass, Livsmart) &bull; Custom Profiles (Meters)</div>' +
+          // Header with Set Switcher Tabs
+          '  <div style="background:#08231B;color:#FFF;padding:14px 20px 10px 20px;">' +
+          '    <div style="display:flex;align-items:center;justify-content:space-between;">' +
+          '      <div>' +
+          '        <h3 style="margin:0;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;">🛍️ Cookscape Master Accessories Catalog</h3>' +
+          '        <div style="font-size:11.5px;color:#A7F3D0;margin-top:2px;">69 Master Accessories &bull; Attach Two Sets (Option A / Option B) &bull; Brand Rate Cards</div>' +
+          '      </div>' +
+          '      <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
           '    </div>' +
-          '    <button type="button" class="addons-close-btn" style="background:transparent;border:none;color:#FFF;font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>' +
+          '    <div style="display:flex;gap:10px;margin-top:12px;">' +
+          '      <button type="button" class="addons-set-switch" data-set="1" style="flex:1;padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;border:2px solid ' + (activeSet === 1 ? '#10B981' : '#1E4035') + ';background:' + (activeSet === 1 ? '#047857' : '#0B3B2E') + ';color:#FFF;display:flex;align-items:center;justify-content:space-between;">' +
+          '        <span>📦 SET 1 (Option A)</span>' +
+          '        <span style="font-size:11.5px;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:12px;">' + count1 + ' items &bull; ₹ ' + tot1.toLocaleString('en-IN') + '</span>' +
+          '      </button>' +
+          '      <button type="button" class="addons-set-switch" data-set="2" style="flex:1;padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;border:2px solid ' + (activeSet === 2 ? '#0EA5E9' : '#1E4035') + ';background:' + (activeSet === 2 ? '#0284C7' : '#0B3B2E') + ';color:#FFF;display:flex;align-items:center;justify-content:space-between;">' +
+          '        <span>📦 SET 2 (Option B)</span>' +
+          '        <span style="font-size:11.5px;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:12px;">' + count2 + ' items &bull; ₹ ' + tot2.toLocaleString('en-IN') + '</span>' +
+          '      </button>' +
+          '    </div>' +
           '  </div>' +
 
           // Search, Brand Switcher & Filters
@@ -10153,6 +10252,10 @@
           if (cEl) cEl.textContent = count + ' items';
           var tEl = modal.querySelector('#addonsSelectedTotal');
           if (tEl) tEl.textContent = '₹ ' + total.toLocaleString('en-IN');
+          var activeTabSpan = modal.querySelector('.addons-set-switch[data-set="' + activeSet + '"] span:last-child');
+          if (activeTabSpan) {
+            activeTabSpan.textContent = count + ' items • ₹ ' + total.toLocaleString('en-IN');
+          }
         }
 
         function updateRowDisplay(id, skipQtyInput) {
@@ -10221,6 +10324,16 @@
             }
           });
         }
+
+        modal.querySelectorAll('.addons-set-switch').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var targetSet = parseInt(btn.getAttribute('data-set'), 10) || 1;
+            if (activeSet !== targetSet) {
+              activeSet = targetSet;
+              renderModalContent();
+            }
+          });
+        });
 
         modal.querySelectorAll('.addons-cat-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
@@ -10376,14 +10489,14 @@
         var applyBtn = modal.querySelector('#addonsApplyBtn');
         if (applyBtn) {
           applyBtn.addEventListener('click', function () {
-            var chosen = [];
-            var totalAmt = 0;
+            var chosen1 = [];
+            var totalAmt1 = 0;
             catalog.forEach(function (it) {
-              var q = selectedMap[it.id] || 0;
+              var q = selectedMapSet1[it.id] || 0;
               if (q > 0) {
-                var r = (customRateMap[it.id] !== undefined) ? customRateMap[it.id] : (it.rate || 0);
+                var r = (customRateMapSet1[it.id] !== undefined) ? customRateMapSet1[it.id] : (it.rate || 0);
                 var amt = Math.round(q * r);
-                var resolvedBrand = selectedBrandMap[it.id] || '';
+                var resolvedBrand = selectedBrandMapSet1[it.id] || '';
                 if (!resolvedBrand) {
                   var defBrand = String(it.brand || '').trim().toUpperCase();
                   if (defBrand && it.rate && Math.abs(r - it.rate) < 0.05) resolvedBrand = defBrand;
@@ -10392,7 +10505,7 @@
                   else if (it.grassRate && Math.abs(r - it.grassRate) < 0.05) resolvedBrand = 'GRASS';
                   else resolvedBrand = defBrand;
                 }
-                chosen.push({
+                chosen1.push({
                   id: it.id,
                   name: it.name,
                   category: it.category,
@@ -10403,14 +10516,49 @@
                   qty: q,
                   amount: amt
                 });
-                totalAmt += amt;
+                totalAmt1 += amt;
+              }
+            });
+
+            var chosen2 = [];
+            var totalAmt2 = 0;
+            catalog.forEach(function (it) {
+              var q = selectedMapSet2[it.id] || 0;
+              if (q > 0) {
+                var r = (customRateMapSet2[it.id] !== undefined) ? customRateMapSet2[it.id] : (it.rate || 0);
+                var amt = Math.round(q * r);
+                var resolvedBrand2 = selectedBrandMapSet2[it.id] || '';
+                if (!resolvedBrand2) {
+                  var defBrand = String(it.brand || '').trim().toUpperCase();
+                  if (defBrand && it.rate && Math.abs(r - it.rate) < 0.05) resolvedBrand2 = defBrand;
+                  else if (it.hettichRate && Math.abs(r - it.hettichRate) < 0.05) resolvedBrand2 = 'HETTICH';
+                  else if (it.ebcoRate && Math.abs(r - it.ebcoRate) < 0.05) resolvedBrand2 = 'EBCO';
+                  else if (it.grassRate && Math.abs(r - it.grassRate) < 0.05) resolvedBrand2 = 'GRASS';
+                  else resolvedBrand2 = defBrand;
+                }
+                chosen2.push({
+                  id: it.id,
+                  name: it.name,
+                  category: it.category,
+                  brand: resolvedBrand2,
+                  rate: r,
+                  customRate: r,
+                  unit: it.unit || 'unit',
+                  qty: q,
+                  amount: amt
+                });
+                totalAmt2 += amt;
               }
             });
 
             self.project.commercialCharges = self.project.commercialCharges || {};
-            self.project.commercialCharges.selectedAddons = chosen;
-            self.project.commercialCharges.additionalAccessories = totalAmt;
-            self.project.commercialCharges.accessoriesEnabled = true;
+            self.project.commercialCharges.selectedAddons = chosen1;
+            self.project.commercialCharges.additionalAccessories = totalAmt1;
+            self.project.commercialCharges.accessoriesEnabled = (chosen1.length > 0 || totalAmt1 > 0) ? true : (self.project.commercialCharges.accessoriesEnabled !== false);
+
+            self.project.commercialCharges.selectedAddonsSet2 = chosen2;
+            self.project.commercialCharges.additionalAccessoriesSet2 = totalAmt2;
+            self.project.commercialCharges.accessoriesSet2Enabled = (chosen2.length > 0 || totalAmt2 > 0) ? true : Boolean(self.project.commercialCharges.accessoriesSet2Enabled);
 
             modal.style.display = 'none';
             if (typeof onApply === 'function') onApply();
@@ -10745,6 +10893,16 @@
         }
 
         // Category filter pills
+        modal.querySelectorAll('.addons-set-switch').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var targetSet = parseInt(btn.getAttribute('data-set'), 10) || 1;
+            if (activeSet !== targetSet) {
+              activeSet = targetSet;
+              renderModalContent();
+            }
+          });
+        });
+
         modal.querySelectorAll('.addons-cat-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             activeCategory = btn.getAttribute('data-cat');
