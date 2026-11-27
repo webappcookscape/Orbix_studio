@@ -604,10 +604,6 @@ def inject_quotation_tables_into_slide(slide_xml, variant_quote, payload, slide_
                 build_ooxml_cell('Add-ons & Accessories Subtotal', fill_hex='FEF9C3', text_hex='08231B', bold=True, font_sz=980, align='l'),
                 build_ooxml_cell(fmt_inr(addons_total), fill_hex='FEF9C3', text_hex='08231B', bold=True, font_sz=1000, align='r'),
             ]))
-            addon_rows.append((380000, [
-                build_ooxml_cell('TOTAL PROJECT INVESTMENT (PROPOSAL + ADD-ONS)', fill_hex='ECFDF5', text_hex='08231B', bold=True, font_sz=1050, align='l', border_hex='16A34A'),
-                build_ooxml_cell(fmt_inr(total_investment), fill_hex='ECFDF5', text_hex='166534', bold=True, font_sz=1200, align='r', border_hex='16A34A'),
-            ]))
         else:
             addon_rows.append((270000, [
                 build_ooxml_cell('None Selected (Optional Cookscape Master Add-ons available upon request)', fill_hex='FFFFFF', text_hex='64748B', bold=False, font_sz=900, align='l'),
