@@ -155,11 +155,17 @@ function formatProjectSummary(p) {
 
 class ProjectService {
   // 1. Get all accessible projects for user (lightweight metadata summaries; full plan loads on GET /api/projects/:id)
-  async getProjects(user) {
+  // Supports optional { limit, offset } for fast first-page lazy loading while remaining 100% backward compatible.
+  async getProjects(user, opts = {}) {
+    const hasLimit = opts && opts.limit !== undefined && opts.limit !== null && Number.isFinite(Number(opts.limit)) && Number(opts.limit) > 0;
+    const limit = hasLimit ? Math.min(200, Math.max(1, Math.floor(Number(opts.limit)))) : null;
+    const offset = hasLimit ? Math.max(0, Math.floor(Number(opts.offset) || 0)) : 0;
+
     // Fast-path for live PostgreSQL: extract ONLY lightweight card metadata & data->'details'/'shareNotice'
     // inside PostgreSQL so multi-MB data->'plan' / base64 underlays are NEVER read or transferred on list load!
     if (prismaConfig.isConnected && typeof prisma.$queryRawUnsafe === 'function') {
       try {
+        const countCol = hasLimit ? ', COUNT(*) OVER()::int AS "_totalCount"' : '';
         const baseCols = `
           SELECT
             id,
@@ -179,11 +185,27 @@ class ProjectService {
             jsonb_build_object(
               'details', COALESCE(data->'details', '{}'::jsonb),
               'shareNotice', data->'shareNotice'
-            ) AS data
+            ) AS data${countCol}
           FROM projects
         `;
         let rows;
-        if (user && user.role !== 'admin') {
+        const isRestricted = !!(user && user.role !== 'admin');
+        if (hasLimit) {
+          if (isRestricted) {
+            rows = await prisma.$queryRawUnsafe(
+              `${baseCols} WHERE created_by = $1 OR is_shared = true ORDER BY updated_at DESC LIMIT $2 OFFSET $3`,
+              String(user.id || ''),
+              limit,
+              offset
+            );
+          } else {
+            rows = await prisma.$queryRawUnsafe(
+              `${baseCols} ORDER BY updated_at DESC LIMIT $1 OFFSET $2`,
+              limit,
+              offset
+            );
+          }
+        } else if (isRestricted) {
           rows = await prisma.$queryRawUnsafe(
             `${baseCols} WHERE created_by = $1 OR is_shared = true ORDER BY updated_at DESC`,
             String(user.id || '')
@@ -191,13 +213,35 @@ class ProjectService {
         } else {
           rows = await prisma.$queryRawUnsafe(`${baseCols} ORDER BY updated_at DESC`);
         }
+
         if (Array.isArray(rows)) {
-          return rows.map((r) => {
+          let total = rows.length;
+          if (hasLimit) {
+            if (rows.length > 0 && rows[0]._totalCount !== undefined) {
+              total = Number(rows[0]._totalCount) || rows.length;
+            } else if (offset > 0) {
+              const cntRows = isRestricted
+                ? await prisma.$queryRawUnsafe(
+                  `SELECT COUNT(*)::int AS cnt FROM projects WHERE created_by = $1 OR is_shared = true`,
+                  String(user.id || '')
+                )
+                : await prisma.$queryRawUnsafe(`SELECT COUNT(*)::int AS cnt FROM projects`);
+              total = (Array.isArray(cntRows) && cntRows[0]) ? (Number(cntRows[0].cnt) || 0) : 0;
+            } else {
+              total = 0;
+            }
+          }
+          const formatted = rows.map((r) => {
+            if (r && r._totalCount !== undefined) delete r._totalCount;
             if (r && r.data && r.data.shareNotice === null) {
               delete r.data.shareNotice;
             }
             return formatProjectSummary(r);
           });
+          if (hasLimit) {
+            return { projects: formatted, total, limit, offset, hasMore: (offset + formatted.length) < total };
+          }
+          return formatted;
         }
       } catch (sqlErr) {
         console.warn('[ProjectService] Selective SQL summary fallback:', sqlErr.message);
@@ -212,6 +256,20 @@ class ProjectService {
           { isShared: true }
         ]
       };
+    }
+
+    if (hasLimit) {
+      const [projects, total] = await Promise.all([
+        prisma.project.findMany({
+          where,
+          orderBy: { updatedAt: 'desc' },
+          skip: offset,
+          take: limit
+        }),
+        prisma.project.count({ where })
+      ]);
+      const formatted = projects.map(formatProjectSummary);
+      return { projects: formatted, total, limit, offset, hasMore: (offset + formatted.length) < total };
     }
 
     const projects = await prisma.project.findMany({

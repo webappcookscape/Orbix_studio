@@ -352,6 +352,17 @@
     bhFilter: '',
     creatorFilter: '',
     searchQuery: '',
+    pageSize: 5,
+    currentPage: 1,
+    _serverTotalCount: null,
+    _lazyFetchSeq: 0,
+    _lazyLoadComplete: true,
+    _lazyLoadingMore: false,
+    _lazyBatchTimer: null,
+    _lazyImmediateRequested: false,
+    _prefetchCache: {},
+    _prefetchInFlightId: null,
+    _cardObserver: null,
     dbStatus: null,
     vpsSyncStatus: 'connected',
     _saveSeq: 0,
@@ -1342,6 +1353,105 @@
       });
     },
 
+    _ensureAllProjectsLoaded: function () {
+      if (this._lazyLoadComplete || !this._lazyLoadingMore) return;
+      this._lazyImmediateRequested = true;
+      if (this._lazyBatchTimer) {
+        clearTimeout(this._lazyBatchTimer);
+        this._lazyBatchTimer = null;
+        if (typeof this._lazyNextStep === 'function') {
+          var fn = this._lazyNextStep;
+          this._lazyNextStep = null;
+          fn();
+        }
+      }
+    },
+
+    _lazyLoadRemainingProjects: function (fetchSeq, startOffset, seenRemoteIds) {
+      var self = this;
+      if (fetchSeq !== this._lazyFetchSeq) return;
+      var roleParam = this.isAdmin() ? 'admin' : 'employee';
+      var batchSize = 40;
+
+      var runBatch = function (offset) {
+        if (fetchSeq !== self._lazyFetchSeq) return;
+        var batchUrl = '/api/projects?limit=' + batchSize +
+          '&offset=' + offset +
+          '&userId=' + encodeURIComponent(self.currentUser.id) +
+          '&userRole=' + encodeURIComponent(roleParam);
+
+        OrbixProjects.apiFetch(batchUrl)
+          .then(function (r) {
+            if (!r.ok) throw new Error('Lazy batch failed (' + r.status + ')');
+            return r.json();
+          })
+          .then(function (data) {
+            if (fetchSeq !== self._lazyFetchSeq) return;
+            var batch = Array.isArray(data) ? data : (data && Array.isArray(data.projects) ? data.projects : []);
+            batch.forEach(function (p) { if (p && p.id) seenRemoteIds[String(p.id)] = true; });
+
+            if (data && typeof data.total === 'number') {
+              self._serverTotalCount = data.total;
+            }
+            if (batch.length > 0) {
+              self.projects = self._mergeProjects(self.projects || [], batch);
+            }
+
+            var hasMore = !!(data && data.hasMore && batch.length > 0);
+            if (hasMore) {
+              self.renderProjectsList();
+              var nextOffset = offset + batch.length;
+              var nextFn = function () { runBatch(nextOffset); };
+              if (self._lazyImmediateRequested) {
+                nextFn();
+              } else {
+                self._lazyNextStep = nextFn;
+                self._lazyBatchTimer = setTimeout(function () {
+                  self._lazyBatchTimer = null;
+                  self._lazyNextStep = null;
+                  nextFn();
+                }, 70);
+              }
+            } else {
+              // All remote pages loaded: prune stale locally-cached projects that were deleted remotely (keep unsynced drafts)
+              if (Object.keys(seenRemoteIds).length > 0 || self._serverTotalCount === 0) {
+                self.projects = (self.projects || []).filter(function (p) {
+                  return p && (seenRemoteIds[String(p.id)] || p._needsVpsPush);
+                });
+              }
+              self._lazyLoadComplete = true;
+              self._lazyLoadingMore = false;
+              self._lazyImmediateRequested = false;
+              self._serverTotalCount = self.projects.length;
+              self._persistLightweightProjectList();
+              self.renderProjectsList();
+              self.renderSharedCopyAlert();
+              self.syncLocalProjectsToVPS();
+            }
+          })
+          .catch(function (err) {
+            if (fetchSeq !== self._lazyFetchSeq) return;
+            console.warn('[OrbixProjects] Background lazy batch stopped:', err && err.message ? err.message : err);
+            self._lazyLoadComplete = true;
+            self._lazyLoadingMore = false;
+            self._lazyImmediateRequested = false;
+            self.renderProjectsList();
+          });
+      };
+
+      var startFn = function () { runBatch(startOffset); };
+      if (this._lazyImmediateRequested) {
+        startFn();
+      } else {
+        this._lazyNextStep = startFn;
+        this._lazyBatchTimer = setTimeout(function () {
+          self._lazyBatchTimer = null;
+          self._lazyNextStep = null;
+          startFn();
+        }, 80);
+      }
+    },
+
     fetchProjects: function (cb) {
       var self = this;
       if (!this.currentUser) {
@@ -1353,14 +1463,28 @@
         } catch (e) { }
         if (!this.currentUser) {
           self.projects = [];
+          self._serverTotalCount = 0;
+          self._lazyLoadComplete = true;
+          self._lazyLoadingMore = false;
           self.renderProjectsList();
           if (cb) cb();
           return;
         }
       }
 
+      var fetchSeq = ++this._lazyFetchSeq;
+      if (this._lazyBatchTimer) {
+        clearTimeout(this._lazyBatchTimer);
+        this._lazyBatchTimer = null;
+      }
+      this._lazyNextStep = null;
+      this._lazyImmediateRequested = false;
+
       var roleParam = this.isAdmin() ? 'admin' : 'employee';
-      var url = '/api/projects?userId=' + encodeURIComponent(this.currentUser.id) +
+      var firstBatchSize = this.pageSize || 5;
+      var url = '/api/projects?limit=' + firstBatchSize +
+        '&offset=0' +
+        '&userId=' + encodeURIComponent(this.currentUser.id) +
         '&userRole=' + encodeURIComponent(roleParam);
 
       var listContainer = document.getElementById('projectsGrid');
@@ -1381,36 +1505,60 @@
       } catch (e) { }
 
       if (listContainer && (!self.projects || !self.projects.length)) {
-        listContainer.innerHTML = '<div class="proj-loading">Loading projects from VPS & Database...</div>';
+        listContainer.innerHTML = '<div class="proj-loading">Loading projects...</div>';
       }
 
-      // 2. Fetch fresh projects from VPS / Backend API
+      // 2. Fast First-Paint Lazy Load: fetch ONLY the newest 5 lightweight summaries first (~2 KB),
+      // render Page 1 immediately, then lazily stream remaining pages in the background!
+      this._lazyLoadComplete = false;
+      this._lazyLoadingMore = true;
+
       OrbixProjects.apiFetch(url)
         .then(function (r) {
           if (!r.ok) throw new Error('Failed to fetch projects (status ' + r.status + ')');
           return r.json();
         })
         .then(function (data) {
-          // Robust parser: handles both array direct return [p1, p2] and object { projects: [p1, p2] }
+          if (fetchSeq !== self._lazyFetchSeq) return;
           var remoteList = Array.isArray(data) ? data : (data && Array.isArray(data.projects) ? data.projects : []);
+          var seenRemoteIds = {};
+          remoteList.forEach(function (p) { if (p && p.id) seenRemoteIds[String(p.id)] = true; });
 
-          // Merge remote projects with local projects without blowing away drafts
+          if (data && typeof data.total === 'number') {
+            self._serverTotalCount = data.total;
+          } else {
+            self._serverTotalCount = remoteList.length;
+          }
+
           self.projects = self._mergeProjects(self.projects || [], remoteList);
 
-          self._persistLightweightProjectList();
+          var hasMore = !!(data && data.hasMore && remoteList.length > 0);
+          if (!hasMore) {
+            self.projects = (self.projects || []).filter(function (p) {
+              return p && (seenRemoteIds[String(p.id)] || p._needsVpsPush);
+            });
+            self._lazyLoadComplete = true;
+            self._lazyLoadingMore = false;
+            self._serverTotalCount = self.projects.length;
+            self._persistLightweightProjectList();
+            self.syncLocalProjectsToVPS();
+          }
 
           self.renderProjectsList();
           self.renderSharedCopyAlert();
           self.updateVpsSyncStatus('connected', 'Synced with VPS');
 
-          // Auto-sync any local unsaved projects to VPS in background
-          self.syncLocalProjectsToVPS();
-
           if (cb) cb();
+
+          if (hasMore) {
+            self._lazyLoadRemainingProjects(fetchSeq, remoteList.length, seenRemoteIds);
+          }
         })
         .catch(function (err) {
+          if (fetchSeq !== self._lazyFetchSeq) return;
           console.warn('[OrbixProjects] Projects API offline or VPS unreachable:', err.message);
-          // If offline or network failed, we already loaded localSaved above!
+          self._lazyLoadComplete = true;
+          self._lazyLoadingMore = false;
           self.renderProjectsList();
           self.renderSharedCopyAlert();
           self.updateVpsSyncStatus('offline', 'VPS Offline (Local Safe)');
@@ -1583,7 +1731,8 @@
       if (q) {
         var details = (p.data && p.data.details) ? p.data.details : {};
         var creatorInfo = this._getProjectCreatorInfo(p);
-        var hay = [
+        var rawHay = [
+          p.id,
           p.title,
           p.name,
           p.client,
@@ -1593,6 +1742,7 @@
           p.owner_email,
           p.ownerEmail,
           creatorInfo.name,
+          creatorInfo.email,
           this._getProjectBh(p),
           p.cp_code,
           p.cpCode,
@@ -1602,11 +1752,23 @@
           details.location,
           details.siteAddress,
           p.contact_number,
+          p.contactNumber,
           details.contactNumber,
           details.phone,
-          p.status
+          p.status,
+          p.type
         ].filter(Boolean).join(' ').toLowerCase();
-        if (hay.indexOf(q) === -1) return false;
+        var haySpaced = rawHay.replace(/[^a-z0-9]+/g, ' ');
+        var hayCompact = rawHay.replace(/[^a-z0-9]+/g, '');
+        var tokens = q.split(/\s+/).filter(Boolean);
+        for (var ti = 0; ti < tokens.length; ti++) {
+          var tok = tokens[ti];
+          var tokClean = tok.replace(/[^a-z0-9]+/g, '');
+          var matchedTok = rawHay.indexOf(tok) !== -1 ||
+            haySpaced.indexOf(tok) !== -1 ||
+            (tokClean && (haySpaced.indexOf(tokClean) !== -1 || hayCompact.indexOf(tokClean) !== -1));
+          if (!matchedTok) return false;
+        }
       }
 
       return true;
@@ -1640,8 +1802,11 @@
       this.bhFilter = '';
       this.creatorFilter = '';
       this.searchQuery = '';
+      this.currentPage = 1;
       var searchInput = document.getElementById('projectSearchInput');
       if (searchInput) searchInput.value = '';
+      var searchClearBtn = document.getElementById('projectSearchClearBtn');
+      if (searchClearBtn) searchClearBtn.hidden = true;
       var bhSearch = document.getElementById('bhFilterSearch');
       if (bhSearch) bhSearch.value = '';
       var userSearch = document.getElementById('userFilterSearch');
@@ -1827,6 +1992,8 @@
         bhTotal,
         function (val) {
           self.bhFilter = val;
+          self.currentPage = 1;
+          self._ensureAllProjectsLoaded();
           self._closeProjectFilterMenus();
           self.renderProjectsList();
         },
@@ -1842,6 +2009,8 @@
         userTotal,
         function (val) {
           self.creatorFilter = val;
+          self.currentPage = 1;
+          self._ensureAllProjectsLoaded();
           self._closeProjectFilterMenus();
           self.renderProjectsList();
         },
@@ -1849,13 +2018,150 @@
       );
     },
 
+    goToPage: function (pageNum) {
+      var target = Math.max(1, parseInt(pageNum, 10) || 1);
+      if (target > 1) {
+        this._ensureAllProjectsLoaded();
+      }
+      this.currentPage = target;
+      this.renderProjectsList();
+      var sec = document.getElementById('homeProjectsSection');
+      if (sec && typeof sec.getBoundingClientRect === 'function') {
+        var rect = sec.getBoundingClientRect();
+        if (rect.top < 0 && typeof sec.scrollIntoView === 'function') {
+          sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    },
+
+    _observeLazyCards: function (container) {
+      if (!container) return;
+      var cards = container.querySelectorAll('.proj-card');
+      if (!cards || !cards.length) return;
+      if (this._cardObserver && typeof this._cardObserver.disconnect === 'function') {
+        try { this._cardObserver.disconnect(); } catch (_) { }
+      }
+      if (typeof IntersectionObserver !== 'function') {
+        cards.forEach(function (c) {
+          c.classList.remove('is-lazy-enter');
+          c.classList.add('is-lazy-visible');
+        });
+        return;
+      }
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.remove('is-lazy-enter');
+            entry.target.classList.add('is-lazy-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '120px 0px', threshold: 0.01 });
+      this._cardObserver = observer;
+      cards.forEach(function (c) { observer.observe(c); });
+    },
+
+    prefetchProject: function (id) {
+      var self = this;
+      if (!id || this.vpsSyncStatus === 'offline') return;
+      if (typeof navigator !== 'undefined' && navigator.connection && navigator.connection.saveData) return;
+      var sid = String(id);
+      var cached = this._prefetchCache && this._prefetchCache[sid];
+      if (cached && (Date.now() - cached.fetchedAt) < 30000) return;
+      if (this._prefetchInFlightId) return;
+
+      this._prefetchInFlightId = sid;
+      OrbixProjects.apiFetch('/api/projects/' + encodeURIComponent(sid), { timeoutMs: 8000 })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          var liveProj = (data && (data.project || (data.id && data))) || null;
+          if (!liveProj) return;
+          self._prefetchCache = self._prefetchCache || {};
+          var keys = Object.keys(self._prefetchCache);
+          if (keys.length >= 2) {
+            keys.sort(function (a, b) {
+              return (self._prefetchCache[a].fetchedAt || 0) - (self._prefetchCache[b].fetchedAt || 0);
+            });
+            delete self._prefetchCache[keys[0]];
+          }
+          self._prefetchCache[sid] = { project: liveProj, fetchedAt: Date.now() };
+        })
+        .catch(function () { })
+        .then(function () {
+          if (self._prefetchInFlightId === sid) self._prefetchInFlightId = null;
+        });
+    },
+
+    renderPaginationBar: function (totalMatches, totalPages, startIdx, endIdx) {
+      var self = this;
+      var bar = document.getElementById('projectsPagination');
+      if (!bar) return;
+
+      if (!totalMatches || totalMatches <= 0) {
+        bar.hidden = true;
+        bar.innerHTML = '';
+        return;
+      }
+
+      bar.hidden = false;
+      var cur = this.currentPage;
+      var showStart = startIdx + 1;
+      var showEnd = Math.min(endIdx, totalMatches);
+      var lazyHint = this._lazyLoadingMore ? '<span class="plazy-pill">Lazy loading more...</span>' : '';
+
+      var pageItems = [];
+      if (totalPages <= 7) {
+        for (var p = 1; p <= totalPages; p++) pageItems.push(p);
+      } else {
+        pageItems.push(1);
+        if (cur > 3) pageItems.push('...');
+        var winStart = Math.max(2, cur - 1);
+        var winEnd = Math.min(totalPages - 1, cur + 1);
+        if (cur <= 3) winEnd = 4;
+        if (cur >= totalPages - 2) winStart = totalPages - 3;
+        for (var wp = winStart; wp <= winEnd; wp++) pageItems.push(wp);
+        if (cur < totalPages - 2) pageItems.push('...');
+        pageItems.push(totalPages);
+      }
+
+      var btnsHtml = '<button type="button" class="ppage-btn" data-page="' + (cur - 1) + '"' + (cur <= 1 ? ' disabled' : '') + '>&larr; Prev</button>';
+      pageItems.forEach(function (item) {
+        if (item === '...') {
+          btnsHtml += '<span class="ppage-ellipsis">&hellip;</span>';
+        } else {
+          btnsHtml += '<button type="button" class="ppage-btn' + (item === cur ? ' is-active' : '') + '" data-page="' + item + '">' + item + '</button>';
+        }
+      });
+      btnsHtml += '<button type="button" class="ppage-btn" data-page="' + (cur + 1) + '"' + (cur >= totalPages ? ' disabled' : '') + '>Next &rarr;</button>';
+
+      bar.innerHTML = '<div class="ppage-info">Showing <strong>' + showStart + '&ndash;' + showEnd + '</strong> of <strong>' + totalMatches + '</strong> ' +
+        (totalMatches === 1 ? 'project' : 'projects') + ' &middot; Page ' + cur + ' of ' + totalPages + lazyHint + '</div>' +
+        '<div class="ppage-controls">' + btnsHtml + '</div>';
+
+      bar.querySelectorAll('.ppage-btn[data-page]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (btn.disabled) return;
+          self.goToPage(btn.getAttribute('data-page'));
+        });
+      });
+    },
+
     renderProjectsList: function () {
       var container = document.getElementById('projectsGrid');
       if (!container) return;
 
+      // Sync search clear button visibility
+      var searchClearBtn = document.getElementById('projectSearchClearBtn');
+      if (searchClearBtn) {
+        searchClearBtn.hidden = !this.searchQuery;
+      }
+
       this.updateFilterCountsAndMenus();
 
-      var allTotal = Array.isArray(this.projects) ? this.projects.length : 0;
+      var loadedTotal = Array.isArray(this.projects) ? this.projects.length : 0;
+      var effectiveTotal = (this._lazyLoadingMore && typeof this._serverTotalCount === 'number' && this._serverTotalCount > loadedTotal)
+        ? this._serverTotalCount
+        : loadedTotal;
       var visibleProjects = this._getFilteredProjects();
       var hasAnyFilter = !!(this.bhFilter || this.creatorFilter || this.searchQuery || (this.filter && this.filter !== 'all'));
 
@@ -1868,16 +2174,19 @@
 
       var countEl = document.getElementById('projectCountLabel');
       if (countEl) {
-        if (hasAnyFilter && allTotal > 0 && visibleProjects.length !== allTotal) {
-          countEl.textContent = visibleProjects.length + ' of ' + allTotal + ' projects';
+        if (hasAnyFilter && effectiveTotal > 0 && visibleProjects.length !== effectiveTotal) {
+          countEl.textContent = visibleProjects.length + ' of ' + effectiveTotal + ' projects';
         } else {
-          countEl.textContent = visibleProjects.length + (visibleProjects.length === 1 ? ' project' : ' projects');
+          var badgeNum = (!hasAnyFilter && effectiveTotal > visibleProjects.length) ? effectiveTotal : visibleProjects.length;
+          countEl.textContent = badgeNum + (badgeNum === 1 ? ' project' : ' projects');
         }
       }
 
+      var rangeEl = document.getElementById('projectsRangeSummary');
+
       if (!visibleProjects.length) {
         var emptyMsg = 'Create your first project or launch from a pre-set catalogue design.';
-        if (hasAnyFilter && allTotal > 0) {
+        if (hasAnyFilter && loadedTotal > 0) {
           var parts = [];
           if (this.filter === 'mine') parts.push('My Projects');
           if (this.filter === 'shared') parts.push('Shared with Me');
@@ -1889,6 +2198,10 @@
           if (this.searchQuery) parts.push('"' + this.searchQuery + '"');
           emptyMsg = 'No projects matched ' + parts.join(' • ') + '.';
         }
+        if (rangeEl) {
+          rangeEl.innerHTML = this._lazyLoadingMore ? '<span class="plazy-pill">Loading more projects...</span>' : '0 matching projects';
+        }
+        this.renderPaginationBar(0, 1, 0, 0);
         container.innerHTML = '<div class="proj-empty">' +
           '<div class="proj-empty-icon">' +
           '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
@@ -1896,7 +2209,7 @@
           '<h3>No projects found</h3>' +
           '<p>' + escHtml(emptyMsg) + '</p>' +
           '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
-          (hasAnyFilter && allTotal > 0 ? '<button class="btn big" id="emptyClearFiltersBtn" type="button">Clear All Filters</button>' : '') +
+          (hasAnyFilter && loadedTotal > 0 ? '<button class="btn big" id="emptyClearFiltersBtn" type="button">Clear All Filters</button>' : '') +
           '<button class="btn primary big" id="emptyCreateBtn">+ Create New Project</button>' +
           '</div>' +
           '</div>';
@@ -1916,9 +2229,27 @@
         return;
       }
 
+      // Pagination: 5 projects per page (mounts only 5 cards in DOM for fast paint & low memory)
+      var perPage = Math.max(1, parseInt(this.pageSize, 10) || 5);
+      var displayTotal = (!hasAnyFilter && effectiveTotal > visibleProjects.length) ? effectiveTotal : visibleProjects.length;
+      var totalPages = Math.max(1, Math.ceil(displayTotal / perPage));
+      if (!this.currentPage || this.currentPage < 1) this.currentPage = 1;
+      var loadedPages = Math.max(1, Math.ceil(visibleProjects.length / perPage));
+      if (this.currentPage > totalPages) this.currentPage = totalPages;
+      var effectivePage = Math.min(this.currentPage, loadedPages);
+
+      var startIdx = (effectivePage - 1) * perPage;
+      var endIdx = startIdx + perPage;
+      var pageProjects = visibleProjects.slice(startIdx, endIdx);
+
+      if (rangeEl) {
+        var lazyTag = this._lazyLoadingMore ? ' <span class="plazy-pill">Syncing...</span>' : '';
+        rangeEl.innerHTML = 'Showing ' + (startIdx + 1) + '&ndash;' + (startIdx + pageProjects.length) + ' of ' + displayTotal + lazyTag;
+      }
+
       var html = '';
-      for (var i = 0; i < visibleProjects.length; i++) {
-        var p = visibleProjects[i];
+      for (var i = 0; i < pageProjects.length; i++) {
+        var p = pageProjects[i];
         var isOwner = this._isProjectOwner(p);
         var creatorInfo = this._getProjectCreatorInfo(p);
         var ownerName = creatorInfo.name;
@@ -1946,7 +2277,7 @@
         var statusClass = (p.status === 'Active' || p.status === 'In Progress') ? 'pstatus-active' : (p.status === 'Completed' ? 'pstatus-done' : 'pstatus-draft');
         var typeBadge = p.type || 'Interior CAD';
 
-        html += '<div class="proj-card' + (p.id === this.activeProjectId ? ' is-active-proj' : '') + '" data-id="' + escHtml(p.id) + '">' +
+        html += '<div class="proj-card is-lazy-enter' + (p.id === this.activeProjectId ? ' is-active-proj' : '') + '" data-id="' + escHtml(p.id) + '">' +
           '<div class="pcard-top">' +
           '<div class="pcard-badges">' +
           (bhStr ? '<span class="ptag bh-badge">BH: ' + escHtml(bhStr) + '</span>' : '<span class="ptag type-wardrobe">' + escHtml(typeBadge) + '</span>') +
@@ -1996,6 +2327,8 @@
 
       container.innerHTML = html;
       this.bindCardEvents();
+      this._observeLazyCards(container);
+      this.renderPaginationBar(displayTotal, totalPages, startIdx, startIdx + pageProjects.length);
     },
 
     bindCardEvents: function () {
@@ -2003,6 +2336,22 @@
       var cards = document.querySelectorAll('.proj-card');
       cards.forEach(function (card) {
         var id = card.getAttribute('data-id');
+
+        // Intent-based hover prefetch: lazily warms full project JSON if hovered 350ms
+        var hoverTimer = null;
+        card.addEventListener('mouseenter', function () {
+          hoverTimer = setTimeout(function () {
+            if (typeof self.prefetchProject === 'function') {
+              self.prefetchProject(id);
+            }
+          }, 350);
+        });
+        card.addEventListener('mouseleave', function () {
+          if (hoverTimer) {
+            clearTimeout(hoverTimer);
+            hoverTimer = null;
+          }
+        });
 
         // Clicking anywhere on the project card opens it in 2D
         card.style.cursor = 'pointer';
@@ -2153,12 +2502,28 @@
         this._safeLocalSet('orbix_active_project_id', String(id));
       }
 
+      // Check short-lived hover prefetch cache for instant hydration!
+      var prefEntry = this._prefetchCache && this._prefetchCache[String(id)];
+      if (prefEntry && prefEntry.project && (Date.now() - prefEntry.fetchedAt) < 30000) {
+        project = Object.assign({}, project, prefEntry.project);
+        if (Array.isArray(self.projects)) {
+          var prefIdx = self.projects.findIndex(function (p) { return p && String(p.id) === String(id); });
+          if (prefIdx !== -1) self.projects[prefIdx] = project;
+        }
+      }
+
       var cachedStats = this._countPlanElements(project);
       var hasCachedPlan = !!(project && project.data && project.data.plan && (cachedStats.total > 0 || (project.data.plan.plan && Array.isArray(project.data.plan.plan.walls))));
       this._isAwaitingHydration = !hasCachedPlan;
 
       // 1. Immediately switch view and load workspace without waiting for async API!
       self._loadProjectIntoWorkspace(project, switchView, { skipAutoSave: true });
+
+      // If freshly prefetched within 15s and already has full plan, skip redundant round-trip!
+      if (prefEntry && prefEntry.project && hasCachedPlan && (Date.now() - prefEntry.fetchedAt) < 15000) {
+        this._isAwaitingHydration = false;
+        return;
+      }
 
       // 2. Fetch fresh live project from PostgreSQL in background
       OrbixProjects.apiFetch('/api/projects/' + id)
@@ -3242,6 +3607,8 @@
           filterButtons.forEach(function (b) { b.classList.remove('is-active'); });
           btn.classList.add('is-active');
           self.filter = btn.getAttribute('data-filter') || 'all';
+          self.currentPage = 1;
+          self._ensureAllProjectsLoaded();
           self.renderProjectsList();
         });
       });
@@ -3263,6 +3630,7 @@
           var willOpen = bhMenu.hidden;
           self._closeProjectFilterMenus();
           if (willOpen) {
+            self._ensureAllProjectsLoaded();
             self.updateFilterCountsAndMenus();
             bhMenu.hidden = false;
             bhBtn.classList.add('is-open');
@@ -3279,6 +3647,7 @@
         bhClear.addEventListener('click', function (e) {
           e.stopPropagation();
           self.bhFilter = '';
+          self.currentPage = 1;
           self._closeProjectFilterMenus();
           self.renderProjectsList();
         });
@@ -3293,6 +3662,8 @@
             self._bhFilterTotal || 0,
             function (val) {
               self.bhFilter = val;
+              self.currentPage = 1;
+              self._ensureAllProjectsLoaded();
               self._closeProjectFilterMenus();
               self.renderProjectsList();
             },
@@ -3307,6 +3678,7 @@
           var willOpen = userMenu.hidden;
           self._closeProjectFilterMenus();
           if (willOpen) {
+            self._ensureAllProjectsLoaded();
             self.updateFilterCountsAndMenus();
             userMenu.hidden = false;
             userBtn.classList.add('is-open');
@@ -3323,6 +3695,7 @@
         userClear.addEventListener('click', function (e) {
           e.stopPropagation();
           self.creatorFilter = '';
+          self.currentPage = 1;
           self._closeProjectFilterMenus();
           self.renderProjectsList();
         });
@@ -3337,6 +3710,8 @@
             self._userFilterTotal || 0,
             function (val) {
               self.creatorFilter = val;
+              self.currentPage = 1;
+              self._ensureAllProjectsLoaded();
               self._closeProjectFilterMenus();
               self.renderProjectsList();
             },
@@ -3358,16 +3733,45 @@
         if (e.key === 'Escape') self._closeProjectFilterMenus();
       });
 
-      // Search input
+      // Search input (multi-token instant search + Enter/Escape + inline clear button)
       var searchInput = document.getElementById('projectSearchInput');
+      var searchClearBtn = document.getElementById('projectSearchClearBtn');
       if (searchInput) {
         var debounce = null;
-        searchInput.addEventListener('input', function () {
+        var applySearchNow = function () {
           clearTimeout(debounce);
-          debounce = setTimeout(function () {
-            self.searchQuery = searchInput.value.trim();
-            self.renderProjectsList();
-          }, 120);
+          self.searchQuery = searchInput.value.trim();
+          self.currentPage = 1;
+          if (searchClearBtn) searchClearBtn.hidden = !self.searchQuery;
+          if (self.searchQuery) self._ensureAllProjectsLoaded();
+          self.renderProjectsList();
+        };
+        searchInput.addEventListener('input', function () {
+          if (searchClearBtn) searchClearBtn.hidden = !searchInput.value.trim();
+          clearTimeout(debounce);
+          debounce = setTimeout(applySearchNow, 60);
+        });
+        searchInput.addEventListener('change', applySearchNow);
+        searchInput.addEventListener('search', applySearchNow);
+        searchInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            applySearchNow();
+          } else if (e.key === 'Escape' && searchInput.value) {
+            e.stopPropagation();
+            searchInput.value = '';
+            applySearchNow();
+          }
+        });
+      }
+      if (searchClearBtn && searchInput) {
+        searchClearBtn.addEventListener('click', function () {
+          searchInput.value = '';
+          self.searchQuery = '';
+          self.currentPage = 1;
+          searchClearBtn.hidden = true;
+          self.renderProjectsList();
+          searchInput.focus();
         });
       }
 

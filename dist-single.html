@@ -1975,33 +1975,68 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 
 /* Toolbar */
 .ptoolbar{
+  display:flex;flex-direction:column;gap:10px;
+}
+.ptoolbar-top{
   display:flex;justify-content:space-between;align-items:center;
-  gap:10px 14px;flex-wrap:wrap;
+  gap:12px;flex-wrap:wrap;
 }
 .psearch-box{
   display:flex;align-items:center;gap:8px;background:#F8FAFC;
-  border:1px solid #CBD5E1;border-radius:8px;padding:8px 12px;
-  flex:1 1 240px;max-width:340px;min-width:210px;
+  border:1px solid #CBD5E1;border-radius:8px;padding:7px 10px 7px 12px;
+  flex:1 1 280px;max-width:440px;min-width:220px;
+  transition:border-color .15s ease,box-shadow .15s ease,background .15s ease;
+}
+.psearch-box:focus-within{
+  background:#FFFFFF;border-color:var(--blue);
+  box-shadow:0 0 0 2px rgba(211,47,47,.10);
 }
 .psearch-box svg{color:#64748B;flex:0 0 auto}
 .psearch-box input{
   border:none;background:transparent;outline:none;font-size:13px;
-  color:#1E293B;width:100%;
+  color:#1E293B;width:100%;min-width:0;
+}
+.psearch-clear-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border:none;border-radius:50%;
+  background:#E2E8F0;color:#475569;font-size:14px;line-height:1;
+  font-weight:700;cursor:pointer;flex:0 0 auto;transition:all .12s ease;
+}
+.psearch-clear-btn:hover{background:var(--blue);color:#FFFFFF}
+.psearch-clear-btn[hidden]{display:none}
+.ptoolbar-filters{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px 14px;flex-wrap:wrap;
+  padding:8px 12px;border-radius:9px;
+  background:#F8FAFC;border:1px solid #E2E8F0;
+}
+.pfilter-bar-lbl{
+  font-family:var(--cond);font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:#64748B;
+  margin-right:2px;white-space:nowrap;
 }
 .pdropdown-filters{
   display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.ptoolbar-meta{
+  font-size:12px;color:#64748B;font-weight:500;
+  display:flex;align-items:center;gap:8px;white-space:nowrap;
+}
+.plazy-pill{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;
+  padding:2px 7px;border-radius:999px;background:#EFF6FF;color:#1D4ED8;
 }
 .pdropdown-wrap{
   position:relative;
 }
 .pdropdown-btn{
-  display:inline-flex;align-items:center;gap:7px;height:34px;
+  display:inline-flex;align-items:center;gap:7px;height:32px;
   font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.03em;
   padding:0 11px;border-radius:7px;border:1px solid #CBD5E1;
   background:#FFFFFF;color:#334155;cursor:pointer;transition:all .15s ease;
-  max-width:220px;white-space:nowrap;
+  max-width:230px;white-space:nowrap;
 }
-.pdropdown-btn:hover{background:#F8FAFC;border-color:#94A3B8;color:#0F172A}
+.pdropdown-btn:hover{background:#FFFFFF;border-color:#94A3B8;color:#0F172A}
 .pdropdown-btn.is-open{border-color:var(--blue);box-shadow:0 0 0 2px rgba(211,47,47,.12)}
 .pdropdown-btn.is-filtered{
   background:var(--blue-soft);border-color:#FECACA;color:var(--blue);
@@ -2063,11 +2098,12 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
   padding:14px 10px;text-align:center;color:#94A3B8;font-size:12px;
 }
 .pfilter-reset-btn{
-  height:34px;padding:0 10px;border-radius:7px;border:1px dashed #CBD5E1;
-  background:#F8FAFC;color:#64748B;font-size:11.5px;font-weight:600;
-  cursor:pointer;transition:all .15s ease;
+  height:32px;padding:0 11px;border-radius:7px;border:1px solid #FECACA;
+  background:#FFFFFF;color:var(--blue);font-size:11.5px;font-weight:600;
+  cursor:pointer;transition:all .15s ease;white-space:nowrap;
 }
-.pfilter-reset-btn:hover{border-color:var(--blue);color:var(--blue);background:#FEF2F2}
+.pfilter-reset-btn:hover{background:var(--blue);border-color:var(--blue);color:#FFFFFF}
+.pfilter-reset-btn[hidden]{display:none}
 .pfilters{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
 .pfilter-btn{
   display:inline-flex;align-items:center;gap:6px;
@@ -2086,6 +2122,45 @@ body.embed #stage::after{background:radial-gradient(120% 92% at 50% 44%, rgba(0,
 }
 .pfilter-btn.is-active .pfilter-cnt{
   background:#FECACA;color:var(--blue);
+}
+
+/* Pagination Bar */
+.ppagination{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;
+  margin-top:20px;padding-top:16px;border-top:1px solid #E2E8F0;
+}
+.ppagination[hidden]{display:none}
+.ppage-info{
+  font-size:12.5px;color:#64748B;font-weight:500;
+  display:flex;align-items:center;gap:8px;
+}
+.ppage-controls{
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;
+}
+.ppage-btn{
+  min-width:34px;height:34px;padding:0 10px;border-radius:7px;
+  border:1px solid #CBD5E1;background:#FFFFFF;color:#334155;
+  font-family:var(--mono);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .15s ease;
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;
+}
+.ppage-btn:hover:not(:disabled){background:#F8FAFC;border-color:#94A3B8;color:#0F172A}
+.ppage-btn.is-active{
+  background:var(--blue);border-color:var(--blue);color:#FFFFFF;
+}
+.ppage-btn:disabled{
+  opacity:.42;cursor:not-allowed;background:#F8FAFC;
+}
+.ppage-ellipsis{
+  padding:0 4px;color:#94A3B8;font-size:12px;user-select:none;
+}
+.proj-card.is-lazy-enter{
+  opacity:0;transform:translateY(6px);
+}
+.proj-card.is-lazy-visible{
+  opacity:1;transform:translateY(0);
+  transition:opacity .18s ease,transform .18s ease,border-color .2s ease,box-shadow .2s ease;
 }
 
 /* Projects Grid */
@@ -4683,69 +4758,80 @@ body.role-employee #adminCreateEmpBox,
 
             <!-- Filter & Search Toolbar -->
             <div class="ptoolbar">
-              <div class="psearch-box">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input type="text" id="projectSearchInput" placeholder="Search projects by title, client, BH or creator..."
-                  autocomplete="off">
-              </div>
-
-              <div class="pdropdown-filters">
-                <!-- Filter by BH -->
-                <div class="pdropdown-wrap" id="bhFilterWrap">
-                  <button type="button" class="pdropdown-btn" id="bhFilterBtn" aria-haspopup="listbox" aria-expanded="false">
-                    <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                    </svg>
-                    <span class="pdd-label" id="bhFilterLabel">Filter by BH</span>
-                    <span class="pdd-clear" id="bhFilterClear" title="Clear BH filter" hidden>&times;</span>
-                    <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                  </button>
-                  <div class="pdropdown-menu" id="bhFilterMenu" role="listbox" hidden>
-                    <div class="pdropdown-search-wrap">
-                      <input type="text" class="pdropdown-search" id="bhFilterSearch" placeholder="Search BH name..." autocomplete="off">
-                    </div>
-                    <div class="pdropdown-list" id="bhFilterList"></div>
-                  </div>
+              <div class="ptoolbar-top">
+                <div class="psearch-box">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input type="text" id="projectSearchInput" placeholder="Search by title, client, phone, CP code, BH or user..."
+                    autocomplete="off">
+                  <button type="button" class="psearch-clear-btn" id="projectSearchClearBtn" title="Clear search" aria-label="Clear search" hidden>&times;</button>
                 </div>
 
-                <!-- Filter by User (Creator) -->
-                <div class="pdropdown-wrap" id="userFilterWrap">
-                  <button type="button" class="pdropdown-btn" id="userFilterBtn" aria-haspopup="listbox" aria-expanded="false">
-                    <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span class="pdd-label" id="userFilterLabel">Filter by User</span>
-                    <span class="pdd-clear" id="userFilterClear" title="Clear user filter" hidden>&times;</span>
-                    <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                  </button>
-                  <div class="pdropdown-menu" id="userFilterMenu" role="listbox" hidden>
-                    <div class="pdropdown-search-wrap">
-                      <input type="text" class="pdropdown-search" id="userFilterSearch" placeholder="Search created by..." autocomplete="off">
-                    </div>
-                    <div class="pdropdown-list" id="userFilterList"></div>
-                  </div>
+                <div class="pfilters">
+                  <button type="button" class="pfilter-btn is-active" data-filter="all">All Projects <span class="pfilter-cnt" data-filter-count="all">0</span></button>
+                  <button type="button" class="pfilter-btn" data-filter="mine">My Projects <span class="pfilter-cnt" data-filter-count="mine">0</span></button>
+                  <button type="button" class="pfilter-btn" data-filter="shared">Shared with Me <span class="pfilter-cnt" data-filter-count="shared">0</span></button>
                 </div>
-
-                <button type="button" class="pfilter-reset-btn" id="clearProjectFiltersBtn" hidden>Clear Filters</button>
               </div>
 
-              <div class="pfilters">
-                <button type="button" class="pfilter-btn is-active" data-filter="all">All Projects <span class="pfilter-cnt" data-filter-count="all">0</span></button>
-                <button type="button" class="pfilter-btn" data-filter="mine">My Projects <span class="pfilter-cnt" data-filter-count="mine">0</span></button>
-                <button type="button" class="pfilter-btn" data-filter="shared">Shared with Me <span class="pfilter-cnt" data-filter-count="shared">0</span></button>
+              <div class="ptoolbar-filters">
+                <div class="pdropdown-filters">
+                  <span class="pfilter-bar-lbl">Filter by:</span>
+                  <!-- Filter by BH -->
+                  <div class="pdropdown-wrap" id="bhFilterWrap">
+                    <button type="button" class="pdropdown-btn" id="bhFilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                      <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                      </svg>
+                      <span class="pdd-label" id="bhFilterLabel">Filter by BH</span>
+                      <span class="pdd-clear" id="bhFilterClear" title="Clear BH filter" hidden>&times;</span>
+                      <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                    <div class="pdropdown-menu" id="bhFilterMenu" role="listbox" hidden>
+                      <div class="pdropdown-search-wrap">
+                        <input type="text" class="pdropdown-search" id="bhFilterSearch" placeholder="Search BH name..." autocomplete="off">
+                      </div>
+                      <div class="pdropdown-list" id="bhFilterList"></div>
+                    </div>
+                  </div>
+
+                  <!-- Filter by User (Creator) -->
+                  <div class="pdropdown-wrap" id="userFilterWrap">
+                    <button type="button" class="pdropdown-btn" id="userFilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                      <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      <span class="pdd-label" id="userFilterLabel">Filter by User</span>
+                      <span class="pdd-clear" id="userFilterClear" title="Clear user filter" hidden>&times;</span>
+                      <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                    <div class="pdropdown-menu" id="userFilterMenu" role="listbox" hidden>
+                      <div class="pdropdown-search-wrap">
+                        <input type="text" class="pdropdown-search" id="userFilterSearch" placeholder="Search created by..." autocomplete="off">
+                      </div>
+                      <div class="pdropdown-list" id="userFilterList"></div>
+                    </div>
+                  </div>
+
+                  <button type="button" class="pfilter-reset-btn" id="clearProjectFiltersBtn" hidden>Clear Filters</button>
+                </div>
+
+                <div class="ptoolbar-meta" id="projectsRangeSummary"></div>
               </div>
             </div>
 
             <!-- Projects Grid -->
             <div class="projects-grid" id="projectsGrid"></div>
+
+            <!-- Pagination Bar (5 projects per page) -->
+            <div class="ppagination" id="projectsPagination" hidden></div>
           </div>
 
         </div>
@@ -7375,6 +7461,17 @@ body.role-employee #adminCreateEmpBox,
     bhFilter: '',
     creatorFilter: '',
     searchQuery: '',
+    pageSize: 5,
+    currentPage: 1,
+    _serverTotalCount: null,
+    _lazyFetchSeq: 0,
+    _lazyLoadComplete: true,
+    _lazyLoadingMore: false,
+    _lazyBatchTimer: null,
+    _lazyImmediateRequested: false,
+    _prefetchCache: {},
+    _prefetchInFlightId: null,
+    _cardObserver: null,
     dbStatus: null,
     vpsSyncStatus: 'connected',
     _saveSeq: 0,
@@ -8365,6 +8462,105 @@ body.role-employee #adminCreateEmpBox,
       });
     },
 
+    _ensureAllProjectsLoaded: function () {
+      if (this._lazyLoadComplete || !this._lazyLoadingMore) return;
+      this._lazyImmediateRequested = true;
+      if (this._lazyBatchTimer) {
+        clearTimeout(this._lazyBatchTimer);
+        this._lazyBatchTimer = null;
+        if (typeof this._lazyNextStep === 'function') {
+          var fn = this._lazyNextStep;
+          this._lazyNextStep = null;
+          fn();
+        }
+      }
+    },
+
+    _lazyLoadRemainingProjects: function (fetchSeq, startOffset, seenRemoteIds) {
+      var self = this;
+      if (fetchSeq !== this._lazyFetchSeq) return;
+      var roleParam = this.isAdmin() ? 'admin' : 'employee';
+      var batchSize = 40;
+
+      var runBatch = function (offset) {
+        if (fetchSeq !== self._lazyFetchSeq) return;
+        var batchUrl = '/api/projects?limit=' + batchSize +
+          '&offset=' + offset +
+          '&userId=' + encodeURIComponent(self.currentUser.id) +
+          '&userRole=' + encodeURIComponent(roleParam);
+
+        OrbixProjects.apiFetch(batchUrl)
+          .then(function (r) {
+            if (!r.ok) throw new Error('Lazy batch failed (' + r.status + ')');
+            return r.json();
+          })
+          .then(function (data) {
+            if (fetchSeq !== self._lazyFetchSeq) return;
+            var batch = Array.isArray(data) ? data : (data && Array.isArray(data.projects) ? data.projects : []);
+            batch.forEach(function (p) { if (p && p.id) seenRemoteIds[String(p.id)] = true; });
+
+            if (data && typeof data.total === 'number') {
+              self._serverTotalCount = data.total;
+            }
+            if (batch.length > 0) {
+              self.projects = self._mergeProjects(self.projects || [], batch);
+            }
+
+            var hasMore = !!(data && data.hasMore && batch.length > 0);
+            if (hasMore) {
+              self.renderProjectsList();
+              var nextOffset = offset + batch.length;
+              var nextFn = function () { runBatch(nextOffset); };
+              if (self._lazyImmediateRequested) {
+                nextFn();
+              } else {
+                self._lazyNextStep = nextFn;
+                self._lazyBatchTimer = setTimeout(function () {
+                  self._lazyBatchTimer = null;
+                  self._lazyNextStep = null;
+                  nextFn();
+                }, 70);
+              }
+            } else {
+              // All remote pages loaded: prune stale locally-cached projects that were deleted remotely (keep unsynced drafts)
+              if (Object.keys(seenRemoteIds).length > 0 || self._serverTotalCount === 0) {
+                self.projects = (self.projects || []).filter(function (p) {
+                  return p && (seenRemoteIds[String(p.id)] || p._needsVpsPush);
+                });
+              }
+              self._lazyLoadComplete = true;
+              self._lazyLoadingMore = false;
+              self._lazyImmediateRequested = false;
+              self._serverTotalCount = self.projects.length;
+              self._persistLightweightProjectList();
+              self.renderProjectsList();
+              self.renderSharedCopyAlert();
+              self.syncLocalProjectsToVPS();
+            }
+          })
+          .catch(function (err) {
+            if (fetchSeq !== self._lazyFetchSeq) return;
+            console.warn('[OrbixProjects] Background lazy batch stopped:', err && err.message ? err.message : err);
+            self._lazyLoadComplete = true;
+            self._lazyLoadingMore = false;
+            self._lazyImmediateRequested = false;
+            self.renderProjectsList();
+          });
+      };
+
+      var startFn = function () { runBatch(startOffset); };
+      if (this._lazyImmediateRequested) {
+        startFn();
+      } else {
+        this._lazyNextStep = startFn;
+        this._lazyBatchTimer = setTimeout(function () {
+          self._lazyBatchTimer = null;
+          self._lazyNextStep = null;
+          startFn();
+        }, 80);
+      }
+    },
+
     fetchProjects: function (cb) {
       var self = this;
       if (!this.currentUser) {
@@ -8376,14 +8572,28 @@ body.role-employee #adminCreateEmpBox,
         } catch (e) { }
         if (!this.currentUser) {
           self.projects = [];
+          self._serverTotalCount = 0;
+          self._lazyLoadComplete = true;
+          self._lazyLoadingMore = false;
           self.renderProjectsList();
           if (cb) cb();
           return;
         }
       }
 
+      var fetchSeq = ++this._lazyFetchSeq;
+      if (this._lazyBatchTimer) {
+        clearTimeout(this._lazyBatchTimer);
+        this._lazyBatchTimer = null;
+      }
+      this._lazyNextStep = null;
+      this._lazyImmediateRequested = false;
+
       var roleParam = this.isAdmin() ? 'admin' : 'employee';
-      var url = '/api/projects?userId=' + encodeURIComponent(this.currentUser.id) +
+      var firstBatchSize = this.pageSize || 5;
+      var url = '/api/projects?limit=' + firstBatchSize +
+        '&offset=0' +
+        '&userId=' + encodeURIComponent(this.currentUser.id) +
         '&userRole=' + encodeURIComponent(roleParam);
 
       var listContainer = document.getElementById('projectsGrid');
@@ -8404,36 +8614,60 @@ body.role-employee #adminCreateEmpBox,
       } catch (e) { }
 
       if (listContainer && (!self.projects || !self.projects.length)) {
-        listContainer.innerHTML = '<div class="proj-loading">Loading projects from VPS & Database...</div>';
+        listContainer.innerHTML = '<div class="proj-loading">Loading projects...</div>';
       }
 
-      // 2. Fetch fresh projects from VPS / Backend API
+      // 2. Fast First-Paint Lazy Load: fetch ONLY the newest 5 lightweight summaries first (~2 KB),
+      // render Page 1 immediately, then lazily stream remaining pages in the background!
+      this._lazyLoadComplete = false;
+      this._lazyLoadingMore = true;
+
       OrbixProjects.apiFetch(url)
         .then(function (r) {
           if (!r.ok) throw new Error('Failed to fetch projects (status ' + r.status + ')');
           return r.json();
         })
         .then(function (data) {
-          // Robust parser: handles both array direct return [p1, p2] and object { projects: [p1, p2] }
+          if (fetchSeq !== self._lazyFetchSeq) return;
           var remoteList = Array.isArray(data) ? data : (data && Array.isArray(data.projects) ? data.projects : []);
+          var seenRemoteIds = {};
+          remoteList.forEach(function (p) { if (p && p.id) seenRemoteIds[String(p.id)] = true; });
 
-          // Merge remote projects with local projects without blowing away drafts
+          if (data && typeof data.total === 'number') {
+            self._serverTotalCount = data.total;
+          } else {
+            self._serverTotalCount = remoteList.length;
+          }
+
           self.projects = self._mergeProjects(self.projects || [], remoteList);
 
-          self._persistLightweightProjectList();
+          var hasMore = !!(data && data.hasMore && remoteList.length > 0);
+          if (!hasMore) {
+            self.projects = (self.projects || []).filter(function (p) {
+              return p && (seenRemoteIds[String(p.id)] || p._needsVpsPush);
+            });
+            self._lazyLoadComplete = true;
+            self._lazyLoadingMore = false;
+            self._serverTotalCount = self.projects.length;
+            self._persistLightweightProjectList();
+            self.syncLocalProjectsToVPS();
+          }
 
           self.renderProjectsList();
           self.renderSharedCopyAlert();
           self.updateVpsSyncStatus('connected', 'Synced with VPS');
 
-          // Auto-sync any local unsaved projects to VPS in background
-          self.syncLocalProjectsToVPS();
-
           if (cb) cb();
+
+          if (hasMore) {
+            self._lazyLoadRemainingProjects(fetchSeq, remoteList.length, seenRemoteIds);
+          }
         })
         .catch(function (err) {
+          if (fetchSeq !== self._lazyFetchSeq) return;
           console.warn('[OrbixProjects] Projects API offline or VPS unreachable:', err.message);
-          // If offline or network failed, we already loaded localSaved above!
+          self._lazyLoadComplete = true;
+          self._lazyLoadingMore = false;
           self.renderProjectsList();
           self.renderSharedCopyAlert();
           self.updateVpsSyncStatus('offline', 'VPS Offline (Local Safe)');
@@ -8606,7 +8840,8 @@ body.role-employee #adminCreateEmpBox,
       if (q) {
         var details = (p.data && p.data.details) ? p.data.details : {};
         var creatorInfo = this._getProjectCreatorInfo(p);
-        var hay = [
+        var rawHay = [
+          p.id,
           p.title,
           p.name,
           p.client,
@@ -8616,6 +8851,7 @@ body.role-employee #adminCreateEmpBox,
           p.owner_email,
           p.ownerEmail,
           creatorInfo.name,
+          creatorInfo.email,
           this._getProjectBh(p),
           p.cp_code,
           p.cpCode,
@@ -8625,11 +8861,23 @@ body.role-employee #adminCreateEmpBox,
           details.location,
           details.siteAddress,
           p.contact_number,
+          p.contactNumber,
           details.contactNumber,
           details.phone,
-          p.status
+          p.status,
+          p.type
         ].filter(Boolean).join(' ').toLowerCase();
-        if (hay.indexOf(q) === -1) return false;
+        var haySpaced = rawHay.replace(/[^a-z0-9]+/g, ' ');
+        var hayCompact = rawHay.replace(/[^a-z0-9]+/g, '');
+        var tokens = q.split(/\s+/).filter(Boolean);
+        for (var ti = 0; ti < tokens.length; ti++) {
+          var tok = tokens[ti];
+          var tokClean = tok.replace(/[^a-z0-9]+/g, '');
+          var matchedTok = rawHay.indexOf(tok) !== -1 ||
+            haySpaced.indexOf(tok) !== -1 ||
+            (tokClean && (haySpaced.indexOf(tokClean) !== -1 || hayCompact.indexOf(tokClean) !== -1));
+          if (!matchedTok) return false;
+        }
       }
 
       return true;
@@ -8663,8 +8911,11 @@ body.role-employee #adminCreateEmpBox,
       this.bhFilter = '';
       this.creatorFilter = '';
       this.searchQuery = '';
+      this.currentPage = 1;
       var searchInput = document.getElementById('projectSearchInput');
       if (searchInput) searchInput.value = '';
+      var searchClearBtn = document.getElementById('projectSearchClearBtn');
+      if (searchClearBtn) searchClearBtn.hidden = true;
       var bhSearch = document.getElementById('bhFilterSearch');
       if (bhSearch) bhSearch.value = '';
       var userSearch = document.getElementById('userFilterSearch');
@@ -8850,6 +9101,8 @@ body.role-employee #adminCreateEmpBox,
         bhTotal,
         function (val) {
           self.bhFilter = val;
+          self.currentPage = 1;
+          self._ensureAllProjectsLoaded();
           self._closeProjectFilterMenus();
           self.renderProjectsList();
         },
@@ -8865,6 +9118,8 @@ body.role-employee #adminCreateEmpBox,
         userTotal,
         function (val) {
           self.creatorFilter = val;
+          self.currentPage = 1;
+          self._ensureAllProjectsLoaded();
           self._closeProjectFilterMenus();
           self.renderProjectsList();
         },
@@ -8872,13 +9127,150 @@ body.role-employee #adminCreateEmpBox,
       );
     },
 
+    goToPage: function (pageNum) {
+      var target = Math.max(1, parseInt(pageNum, 10) || 1);
+      if (target > 1) {
+        this._ensureAllProjectsLoaded();
+      }
+      this.currentPage = target;
+      this.renderProjectsList();
+      var sec = document.getElementById('homeProjectsSection');
+      if (sec && typeof sec.getBoundingClientRect === 'function') {
+        var rect = sec.getBoundingClientRect();
+        if (rect.top < 0 && typeof sec.scrollIntoView === 'function') {
+          sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    },
+
+    _observeLazyCards: function (container) {
+      if (!container) return;
+      var cards = container.querySelectorAll('.proj-card');
+      if (!cards || !cards.length) return;
+      if (this._cardObserver && typeof this._cardObserver.disconnect === 'function') {
+        try { this._cardObserver.disconnect(); } catch (_) { }
+      }
+      if (typeof IntersectionObserver !== 'function') {
+        cards.forEach(function (c) {
+          c.classList.remove('is-lazy-enter');
+          c.classList.add('is-lazy-visible');
+        });
+        return;
+      }
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.remove('is-lazy-enter');
+            entry.target.classList.add('is-lazy-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '120px 0px', threshold: 0.01 });
+      this._cardObserver = observer;
+      cards.forEach(function (c) { observer.observe(c); });
+    },
+
+    prefetchProject: function (id) {
+      var self = this;
+      if (!id || this.vpsSyncStatus === 'offline') return;
+      if (typeof navigator !== 'undefined' && navigator.connection && navigator.connection.saveData) return;
+      var sid = String(id);
+      var cached = this._prefetchCache && this._prefetchCache[sid];
+      if (cached && (Date.now() - cached.fetchedAt) < 30000) return;
+      if (this._prefetchInFlightId) return;
+
+      this._prefetchInFlightId = sid;
+      OrbixProjects.apiFetch('/api/projects/' + encodeURIComponent(sid), { timeoutMs: 8000 })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          var liveProj = (data && (data.project || (data.id && data))) || null;
+          if (!liveProj) return;
+          self._prefetchCache = self._prefetchCache || {};
+          var keys = Object.keys(self._prefetchCache);
+          if (keys.length >= 2) {
+            keys.sort(function (a, b) {
+              return (self._prefetchCache[a].fetchedAt || 0) - (self._prefetchCache[b].fetchedAt || 0);
+            });
+            delete self._prefetchCache[keys[0]];
+          }
+          self._prefetchCache[sid] = { project: liveProj, fetchedAt: Date.now() };
+        })
+        .catch(function () { })
+        .then(function () {
+          if (self._prefetchInFlightId === sid) self._prefetchInFlightId = null;
+        });
+    },
+
+    renderPaginationBar: function (totalMatches, totalPages, startIdx, endIdx) {
+      var self = this;
+      var bar = document.getElementById('projectsPagination');
+      if (!bar) return;
+
+      if (!totalMatches || totalMatches <= 0) {
+        bar.hidden = true;
+        bar.innerHTML = '';
+        return;
+      }
+
+      bar.hidden = false;
+      var cur = this.currentPage;
+      var showStart = startIdx + 1;
+      var showEnd = Math.min(endIdx, totalMatches);
+      var lazyHint = this._lazyLoadingMore ? '<span class="plazy-pill">Lazy loading more...</span>' : '';
+
+      var pageItems = [];
+      if (totalPages <= 7) {
+        for (var p = 1; p <= totalPages; p++) pageItems.push(p);
+      } else {
+        pageItems.push(1);
+        if (cur > 3) pageItems.push('...');
+        var winStart = Math.max(2, cur - 1);
+        var winEnd = Math.min(totalPages - 1, cur + 1);
+        if (cur <= 3) winEnd = 4;
+        if (cur >= totalPages - 2) winStart = totalPages - 3;
+        for (var wp = winStart; wp <= winEnd; wp++) pageItems.push(wp);
+        if (cur < totalPages - 2) pageItems.push('...');
+        pageItems.push(totalPages);
+      }
+
+      var btnsHtml = '<button type="button" class="ppage-btn" data-page="' + (cur - 1) + '"' + (cur <= 1 ? ' disabled' : '') + '>&larr; Prev</button>';
+      pageItems.forEach(function (item) {
+        if (item === '...') {
+          btnsHtml += '<span class="ppage-ellipsis">&hellip;</span>';
+        } else {
+          btnsHtml += '<button type="button" class="ppage-btn' + (item === cur ? ' is-active' : '') + '" data-page="' + item + '">' + item + '</button>';
+        }
+      });
+      btnsHtml += '<button type="button" class="ppage-btn" data-page="' + (cur + 1) + '"' + (cur >= totalPages ? ' disabled' : '') + '>Next &rarr;</button>';
+
+      bar.innerHTML = '<div class="ppage-info">Showing <strong>' + showStart + '&ndash;' + showEnd + '</strong> of <strong>' + totalMatches + '</strong> ' +
+        (totalMatches === 1 ? 'project' : 'projects') + ' &middot; Page ' + cur + ' of ' + totalPages + lazyHint + '</div>' +
+        '<div class="ppage-controls">' + btnsHtml + '</div>';
+
+      bar.querySelectorAll('.ppage-btn[data-page]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (btn.disabled) return;
+          self.goToPage(btn.getAttribute('data-page'));
+        });
+      });
+    },
+
     renderProjectsList: function () {
       var container = document.getElementById('projectsGrid');
       if (!container) return;
 
+      // Sync search clear button visibility
+      var searchClearBtn = document.getElementById('projectSearchClearBtn');
+      if (searchClearBtn) {
+        searchClearBtn.hidden = !this.searchQuery;
+      }
+
       this.updateFilterCountsAndMenus();
 
-      var allTotal = Array.isArray(this.projects) ? this.projects.length : 0;
+      var loadedTotal = Array.isArray(this.projects) ? this.projects.length : 0;
+      var effectiveTotal = (this._lazyLoadingMore && typeof this._serverTotalCount === 'number' && this._serverTotalCount > loadedTotal)
+        ? this._serverTotalCount
+        : loadedTotal;
       var visibleProjects = this._getFilteredProjects();
       var hasAnyFilter = !!(this.bhFilter || this.creatorFilter || this.searchQuery || (this.filter && this.filter !== 'all'));
 
@@ -8891,16 +9283,19 @@ body.role-employee #adminCreateEmpBox,
 
       var countEl = document.getElementById('projectCountLabel');
       if (countEl) {
-        if (hasAnyFilter && allTotal > 0 && visibleProjects.length !== allTotal) {
-          countEl.textContent = visibleProjects.length + ' of ' + allTotal + ' projects';
+        if (hasAnyFilter && effectiveTotal > 0 && visibleProjects.length !== effectiveTotal) {
+          countEl.textContent = visibleProjects.length + ' of ' + effectiveTotal + ' projects';
         } else {
-          countEl.textContent = visibleProjects.length + (visibleProjects.length === 1 ? ' project' : ' projects');
+          var badgeNum = (!hasAnyFilter && effectiveTotal > visibleProjects.length) ? effectiveTotal : visibleProjects.length;
+          countEl.textContent = badgeNum + (badgeNum === 1 ? ' project' : ' projects');
         }
       }
 
+      var rangeEl = document.getElementById('projectsRangeSummary');
+
       if (!visibleProjects.length) {
         var emptyMsg = 'Create your first project or launch from a pre-set catalogue design.';
-        if (hasAnyFilter && allTotal > 0) {
+        if (hasAnyFilter && loadedTotal > 0) {
           var parts = [];
           if (this.filter === 'mine') parts.push('My Projects');
           if (this.filter === 'shared') parts.push('Shared with Me');
@@ -8912,6 +9307,10 @@ body.role-employee #adminCreateEmpBox,
           if (this.searchQuery) parts.push('"' + this.searchQuery + '"');
           emptyMsg = 'No projects matched ' + parts.join(' • ') + '.';
         }
+        if (rangeEl) {
+          rangeEl.innerHTML = this._lazyLoadingMore ? '<span class="plazy-pill">Loading more projects...</span>' : '0 matching projects';
+        }
+        this.renderPaginationBar(0, 1, 0, 0);
         container.innerHTML = '<div class="proj-empty">' +
           '<div class="proj-empty-icon">' +
           '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>' +
@@ -8919,7 +9318,7 @@ body.role-employee #adminCreateEmpBox,
           '<h3>No projects found</h3>' +
           '<p>' + escHtml(emptyMsg) + '</p>' +
           '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
-          (hasAnyFilter && allTotal > 0 ? '<button class="btn big" id="emptyClearFiltersBtn" type="button">Clear All Filters</button>' : '') +
+          (hasAnyFilter && loadedTotal > 0 ? '<button class="btn big" id="emptyClearFiltersBtn" type="button">Clear All Filters</button>' : '') +
           '<button class="btn primary big" id="emptyCreateBtn">+ Create New Project</button>' +
           '</div>' +
           '</div>';
@@ -8939,9 +9338,27 @@ body.role-employee #adminCreateEmpBox,
         return;
       }
 
+      // Pagination: 5 projects per page (mounts only 5 cards in DOM for fast paint & low memory)
+      var perPage = Math.max(1, parseInt(this.pageSize, 10) || 5);
+      var displayTotal = (!hasAnyFilter && effectiveTotal > visibleProjects.length) ? effectiveTotal : visibleProjects.length;
+      var totalPages = Math.max(1, Math.ceil(displayTotal / perPage));
+      if (!this.currentPage || this.currentPage < 1) this.currentPage = 1;
+      var loadedPages = Math.max(1, Math.ceil(visibleProjects.length / perPage));
+      if (this.currentPage > totalPages) this.currentPage = totalPages;
+      var effectivePage = Math.min(this.currentPage, loadedPages);
+
+      var startIdx = (effectivePage - 1) * perPage;
+      var endIdx = startIdx + perPage;
+      var pageProjects = visibleProjects.slice(startIdx, endIdx);
+
+      if (rangeEl) {
+        var lazyTag = this._lazyLoadingMore ? ' <span class="plazy-pill">Syncing...</span>' : '';
+        rangeEl.innerHTML = 'Showing ' + (startIdx + 1) + '&ndash;' + (startIdx + pageProjects.length) + ' of ' + displayTotal + lazyTag;
+      }
+
       var html = '';
-      for (var i = 0; i < visibleProjects.length; i++) {
-        var p = visibleProjects[i];
+      for (var i = 0; i < pageProjects.length; i++) {
+        var p = pageProjects[i];
         var isOwner = this._isProjectOwner(p);
         var creatorInfo = this._getProjectCreatorInfo(p);
         var ownerName = creatorInfo.name;
@@ -8969,7 +9386,7 @@ body.role-employee #adminCreateEmpBox,
         var statusClass = (p.status === 'Active' || p.status === 'In Progress') ? 'pstatus-active' : (p.status === 'Completed' ? 'pstatus-done' : 'pstatus-draft');
         var typeBadge = p.type || 'Interior CAD';
 
-        html += '<div class="proj-card' + (p.id === this.activeProjectId ? ' is-active-proj' : '') + '" data-id="' + escHtml(p.id) + '">' +
+        html += '<div class="proj-card is-lazy-enter' + (p.id === this.activeProjectId ? ' is-active-proj' : '') + '" data-id="' + escHtml(p.id) + '">' +
           '<div class="pcard-top">' +
           '<div class="pcard-badges">' +
           (bhStr ? '<span class="ptag bh-badge">BH: ' + escHtml(bhStr) + '</span>' : '<span class="ptag type-wardrobe">' + escHtml(typeBadge) + '</span>') +
@@ -9019,6 +9436,8 @@ body.role-employee #adminCreateEmpBox,
 
       container.innerHTML = html;
       this.bindCardEvents();
+      this._observeLazyCards(container);
+      this.renderPaginationBar(displayTotal, totalPages, startIdx, startIdx + pageProjects.length);
     },
 
     bindCardEvents: function () {
@@ -9026,6 +9445,22 @@ body.role-employee #adminCreateEmpBox,
       var cards = document.querySelectorAll('.proj-card');
       cards.forEach(function (card) {
         var id = card.getAttribute('data-id');
+
+        // Intent-based hover prefetch: lazily warms full project JSON if hovered 350ms
+        var hoverTimer = null;
+        card.addEventListener('mouseenter', function () {
+          hoverTimer = setTimeout(function () {
+            if (typeof self.prefetchProject === 'function') {
+              self.prefetchProject(id);
+            }
+          }, 350);
+        });
+        card.addEventListener('mouseleave', function () {
+          if (hoverTimer) {
+            clearTimeout(hoverTimer);
+            hoverTimer = null;
+          }
+        });
 
         // Clicking anywhere on the project card opens it in 2D
         card.style.cursor = 'pointer';
@@ -9176,12 +9611,28 @@ body.role-employee #adminCreateEmpBox,
         this._safeLocalSet('orbix_active_project_id', String(id));
       }
 
+      // Check short-lived hover prefetch cache for instant hydration!
+      var prefEntry = this._prefetchCache && this._prefetchCache[String(id)];
+      if (prefEntry && prefEntry.project && (Date.now() - prefEntry.fetchedAt) < 30000) {
+        project = Object.assign({}, project, prefEntry.project);
+        if (Array.isArray(self.projects)) {
+          var prefIdx = self.projects.findIndex(function (p) { return p && String(p.id) === String(id); });
+          if (prefIdx !== -1) self.projects[prefIdx] = project;
+        }
+      }
+
       var cachedStats = this._countPlanElements(project);
       var hasCachedPlan = !!(project && project.data && project.data.plan && (cachedStats.total > 0 || (project.data.plan.plan && Array.isArray(project.data.plan.plan.walls))));
       this._isAwaitingHydration = !hasCachedPlan;
 
       // 1. Immediately switch view and load workspace without waiting for async API!
       self._loadProjectIntoWorkspace(project, switchView, { skipAutoSave: true });
+
+      // If freshly prefetched within 15s and already has full plan, skip redundant round-trip!
+      if (prefEntry && prefEntry.project && hasCachedPlan && (Date.now() - prefEntry.fetchedAt) < 15000) {
+        this._isAwaitingHydration = false;
+        return;
+      }
 
       // 2. Fetch fresh live project from PostgreSQL in background
       OrbixProjects.apiFetch('/api/projects/' + id)
@@ -10265,6 +10716,8 @@ body.role-employee #adminCreateEmpBox,
           filterButtons.forEach(function (b) { b.classList.remove('is-active'); });
           btn.classList.add('is-active');
           self.filter = btn.getAttribute('data-filter') || 'all';
+          self.currentPage = 1;
+          self._ensureAllProjectsLoaded();
           self.renderProjectsList();
         });
       });
@@ -10286,6 +10739,7 @@ body.role-employee #adminCreateEmpBox,
           var willOpen = bhMenu.hidden;
           self._closeProjectFilterMenus();
           if (willOpen) {
+            self._ensureAllProjectsLoaded();
             self.updateFilterCountsAndMenus();
             bhMenu.hidden = false;
             bhBtn.classList.add('is-open');
@@ -10302,6 +10756,7 @@ body.role-employee #adminCreateEmpBox,
         bhClear.addEventListener('click', function (e) {
           e.stopPropagation();
           self.bhFilter = '';
+          self.currentPage = 1;
           self._closeProjectFilterMenus();
           self.renderProjectsList();
         });
@@ -10316,6 +10771,8 @@ body.role-employee #adminCreateEmpBox,
             self._bhFilterTotal || 0,
             function (val) {
               self.bhFilter = val;
+              self.currentPage = 1;
+              self._ensureAllProjectsLoaded();
               self._closeProjectFilterMenus();
               self.renderProjectsList();
             },
@@ -10330,6 +10787,7 @@ body.role-employee #adminCreateEmpBox,
           var willOpen = userMenu.hidden;
           self._closeProjectFilterMenus();
           if (willOpen) {
+            self._ensureAllProjectsLoaded();
             self.updateFilterCountsAndMenus();
             userMenu.hidden = false;
             userBtn.classList.add('is-open');
@@ -10346,6 +10804,7 @@ body.role-employee #adminCreateEmpBox,
         userClear.addEventListener('click', function (e) {
           e.stopPropagation();
           self.creatorFilter = '';
+          self.currentPage = 1;
           self._closeProjectFilterMenus();
           self.renderProjectsList();
         });
@@ -10360,6 +10819,8 @@ body.role-employee #adminCreateEmpBox,
             self._userFilterTotal || 0,
             function (val) {
               self.creatorFilter = val;
+              self.currentPage = 1;
+              self._ensureAllProjectsLoaded();
               self._closeProjectFilterMenus();
               self.renderProjectsList();
             },
@@ -10381,16 +10842,45 @@ body.role-employee #adminCreateEmpBox,
         if (e.key === 'Escape') self._closeProjectFilterMenus();
       });
 
-      // Search input
+      // Search input (multi-token instant search + Enter/Escape + inline clear button)
       var searchInput = document.getElementById('projectSearchInput');
+      var searchClearBtn = document.getElementById('projectSearchClearBtn');
       if (searchInput) {
         var debounce = null;
-        searchInput.addEventListener('input', function () {
+        var applySearchNow = function () {
           clearTimeout(debounce);
-          debounce = setTimeout(function () {
-            self.searchQuery = searchInput.value.trim();
-            self.renderProjectsList();
-          }, 120);
+          self.searchQuery = searchInput.value.trim();
+          self.currentPage = 1;
+          if (searchClearBtn) searchClearBtn.hidden = !self.searchQuery;
+          if (self.searchQuery) self._ensureAllProjectsLoaded();
+          self.renderProjectsList();
+        };
+        searchInput.addEventListener('input', function () {
+          if (searchClearBtn) searchClearBtn.hidden = !searchInput.value.trim();
+          clearTimeout(debounce);
+          debounce = setTimeout(applySearchNow, 60);
+        });
+        searchInput.addEventListener('change', applySearchNow);
+        searchInput.addEventListener('search', applySearchNow);
+        searchInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            applySearchNow();
+          } else if (e.key === 'Escape' && searchInput.value) {
+            e.stopPropagation();
+            searchInput.value = '';
+            applySearchNow();
+          }
+        });
+      }
+      if (searchClearBtn && searchInput) {
+        searchClearBtn.addEventListener('click', function () {
+          searchInput.value = '';
+          self.searchQuery = '';
+          self.currentPage = 1;
+          searchClearBtn.hidden = true;
+          self.renderProjectsList();
+          searchInput.focus();
         });
       }
 

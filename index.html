@@ -180,69 +180,80 @@
 
             <!-- Filter & Search Toolbar -->
             <div class="ptoolbar">
-              <div class="psearch-box">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input type="text" id="projectSearchInput" placeholder="Search projects by title, client, BH or creator..."
-                  autocomplete="off">
-              </div>
-
-              <div class="pdropdown-filters">
-                <!-- Filter by BH -->
-                <div class="pdropdown-wrap" id="bhFilterWrap">
-                  <button type="button" class="pdropdown-btn" id="bhFilterBtn" aria-haspopup="listbox" aria-expanded="false">
-                    <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                    </svg>
-                    <span class="pdd-label" id="bhFilterLabel">Filter by BH</span>
-                    <span class="pdd-clear" id="bhFilterClear" title="Clear BH filter" hidden>&times;</span>
-                    <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                  </button>
-                  <div class="pdropdown-menu" id="bhFilterMenu" role="listbox" hidden>
-                    <div class="pdropdown-search-wrap">
-                      <input type="text" class="pdropdown-search" id="bhFilterSearch" placeholder="Search BH name..." autocomplete="off">
-                    </div>
-                    <div class="pdropdown-list" id="bhFilterList"></div>
-                  </div>
+              <div class="ptoolbar-top">
+                <div class="psearch-box">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input type="text" id="projectSearchInput" placeholder="Search by title, client, phone, CP code, BH or user..."
+                    autocomplete="off">
+                  <button type="button" class="psearch-clear-btn" id="projectSearchClearBtn" title="Clear search" aria-label="Clear search" hidden>&times;</button>
                 </div>
 
-                <!-- Filter by User (Creator) -->
-                <div class="pdropdown-wrap" id="userFilterWrap">
-                  <button type="button" class="pdropdown-btn" id="userFilterBtn" aria-haspopup="listbox" aria-expanded="false">
-                    <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span class="pdd-label" id="userFilterLabel">Filter by User</span>
-                    <span class="pdd-clear" id="userFilterClear" title="Clear user filter" hidden>&times;</span>
-                    <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                  </button>
-                  <div class="pdropdown-menu" id="userFilterMenu" role="listbox" hidden>
-                    <div class="pdropdown-search-wrap">
-                      <input type="text" class="pdropdown-search" id="userFilterSearch" placeholder="Search created by..." autocomplete="off">
-                    </div>
-                    <div class="pdropdown-list" id="userFilterList"></div>
-                  </div>
+                <div class="pfilters">
+                  <button type="button" class="pfilter-btn is-active" data-filter="all">All Projects <span class="pfilter-cnt" data-filter-count="all">0</span></button>
+                  <button type="button" class="pfilter-btn" data-filter="mine">My Projects <span class="pfilter-cnt" data-filter-count="mine">0</span></button>
+                  <button type="button" class="pfilter-btn" data-filter="shared">Shared with Me <span class="pfilter-cnt" data-filter-count="shared">0</span></button>
                 </div>
-
-                <button type="button" class="pfilter-reset-btn" id="clearProjectFiltersBtn" hidden>Clear Filters</button>
               </div>
 
-              <div class="pfilters">
-                <button type="button" class="pfilter-btn is-active" data-filter="all">All Projects <span class="pfilter-cnt" data-filter-count="all">0</span></button>
-                <button type="button" class="pfilter-btn" data-filter="mine">My Projects <span class="pfilter-cnt" data-filter-count="mine">0</span></button>
-                <button type="button" class="pfilter-btn" data-filter="shared">Shared with Me <span class="pfilter-cnt" data-filter-count="shared">0</span></button>
+              <div class="ptoolbar-filters">
+                <div class="pdropdown-filters">
+                  <span class="pfilter-bar-lbl">Filter by:</span>
+                  <!-- Filter by BH -->
+                  <div class="pdropdown-wrap" id="bhFilterWrap">
+                    <button type="button" class="pdropdown-btn" id="bhFilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                      <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                      </svg>
+                      <span class="pdd-label" id="bhFilterLabel">Filter by BH</span>
+                      <span class="pdd-clear" id="bhFilterClear" title="Clear BH filter" hidden>&times;</span>
+                      <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                    <div class="pdropdown-menu" id="bhFilterMenu" role="listbox" hidden>
+                      <div class="pdropdown-search-wrap">
+                        <input type="text" class="pdropdown-search" id="bhFilterSearch" placeholder="Search BH name..." autocomplete="off">
+                      </div>
+                      <div class="pdropdown-list" id="bhFilterList"></div>
+                    </div>
+                  </div>
+
+                  <!-- Filter by User (Creator) -->
+                  <div class="pdropdown-wrap" id="userFilterWrap">
+                    <button type="button" class="pdropdown-btn" id="userFilterBtn" aria-haspopup="listbox" aria-expanded="false">
+                      <svg class="pdd-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      <span class="pdd-label" id="userFilterLabel">Filter by User</span>
+                      <span class="pdd-clear" id="userFilterClear" title="Clear user filter" hidden>&times;</span>
+                      <svg class="pdd-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                    <div class="pdropdown-menu" id="userFilterMenu" role="listbox" hidden>
+                      <div class="pdropdown-search-wrap">
+                        <input type="text" class="pdropdown-search" id="userFilterSearch" placeholder="Search created by..." autocomplete="off">
+                      </div>
+                      <div class="pdropdown-list" id="userFilterList"></div>
+                    </div>
+                  </div>
+
+                  <button type="button" class="pfilter-reset-btn" id="clearProjectFiltersBtn" hidden>Clear Filters</button>
+                </div>
+
+                <div class="ptoolbar-meta" id="projectsRangeSummary"></div>
               </div>
             </div>
 
             <!-- Projects Grid -->
             <div class="projects-grid" id="projectsGrid"></div>
+
+            <!-- Pagination Bar (5 projects per page) -->
+            <div class="ppagination" id="projectsPagination" hidden></div>
           </div>
 
         </div>

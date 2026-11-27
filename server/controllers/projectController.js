@@ -6,11 +6,28 @@ const projectService = require('../services/projectService');
 const userService = require('../services/userService');
 
 class ProjectController {
-  // GET /api/projects
+  // GET /api/projects (supports optional ?limit=&offset= for lazy-loaded first-paint & pagination)
   async getAll(req, res) {
     try {
+      const q = req.query || {};
+      const hasLimit = q.limit !== undefined && q.limit !== '';
+      if (hasLimit) {
+        const result = await projectService.getProjects(req.user, {
+          limit: q.limit,
+          offset: q.offset || 0
+        });
+        return res.json({
+          success: true,
+          projects: (result && result.projects) || [],
+          total: (result && typeof result.total === 'number') ? result.total : 0,
+          limit: result && result.limit,
+          offset: result && result.offset,
+          hasMore: !!(result && result.hasMore)
+        });
+      }
       const projects = await projectService.getProjects(req.user);
-      res.json({ success: true, projects: projects || [] });
+      const list = Array.isArray(projects) ? projects : [];
+      res.json({ success: true, projects: list, total: list.length, hasMore: false });
     } catch (err) {
       console.error('getProjects error:', err);
       res.status(500).json({ success: false, error: err.message, projects: [] });
